@@ -184,7 +184,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                         searchQuery={searchValue || ""}
                         setSearchQuery={setSearchValue}
                         placeholder={allHiddenConnectors.length > 300 ? "Search through 400+ wallets..." : "Search wallet"}
-                        className="w-full !mb-0"
+                        className="w-full mb-0!"
                     />
                     {
                         (!selectedProvider || selectedProvider?.isSelectedFromFilter) &&
@@ -197,7 +197,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 </div>
                 <div
                     onScroll={handleScroll}
-                    className={clsx('overflow-y-scroll max-sm:h-[55svh] -mr-4 pr-2 scrollbar:!w-1.5 scrollbar:!h-1.5 overflow-x-hidden scrollbar-thumb:bg-transparent', {
+                    className={clsx('overflow-y-scroll max-sm:h-[55svh] -mr-4 pr-2 scrollbar:w-1.5! scrollbar:h-1.5! overflow-x-hidden scrollbar-thumb:bg-transparent', {
                         'styled-scroll': isScrolling
                     })}
                 >
@@ -272,7 +272,7 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
                                     connectionError ?
                                         <Link2Off className="w-auto h-auto place-self-center" />
                                         :
-                                        <div className="loader !text-[3px] place-self-center" />
+                                        <div className="loader text-[3px]! place-self-center" />
                                 }
                                 <div className="p-3 bg-secondary-700 rounded-lg z-10">
                                     <ConnectorIcon className="w-11 h-auto" />
@@ -293,7 +293,7 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
                 connectionError &&
                 <div className={`bg-secondary-500 rounded-lg flex flex-col gap-1.5 items-center p-3 w-full bottom-0`}>
                     <div className="flex w-full gap-1 text-sm text-secondary-text justify-start">
-                        <CircleX className="w-5 h-5 stroke-primary-500 mr-1 mt-0.5 flex-shrink-0" />
+                        <CircleX className="w-5 h-5 stroke-primary-500 mr-1 mt-0.5 shrink-0" />
                         <div className='flex flex-col gap-1'>
                             <p className='text-base text-white'>Failed to connect</p>
                             <p className="text-sm font-normal">
@@ -330,12 +330,12 @@ const ProviderPicker: FC<{ providers: WalletProvider[], selectedProviderName: st
         <Popover open={open} onOpenChange={() => setOpen(!open)}>
             <PopoverTrigger
                 className={clsx('p-3 border border-secondary-500 rounded-lg bg-secondary-600 hover:brightness-125', {
-                    '!bg-secondary-500 brightness-125': !!selectedProviderName,
+                    'bg-secondary-500! brightness-125': !!selectedProviderName,
                 })}
             >
                 <SlidersHorizontal className="h-4 w-4 text-secondary-text" />
             </PopoverTrigger>
-            <PopoverContent align="end" className="min-w-40 !text-primary-text p-2 space-y-1 !bg-secondary-600 !rounded-xl">
+            <PopoverContent align="end" className="min-w-40 text-primary-text! p-2 space-y-1 bg-secondary-600! rounded-xl!">
                 {
                     values.sort().map((item, index) => (
                         <div key={index} className="px-3 py-1 text-left flex items-center w-full gap-3 hover:bg-secondary-800 rounded-lg transition-colors duration-200 text-secondary-text cursor-pointer">

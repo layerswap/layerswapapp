@@ -33,7 +33,7 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
     if (!values.toAsset) {
         return { message: 'Select destination asset' };
     }
-    if (!amount) {
+    if (amount === undefined || isNaN(Number(amount))) {
         return { message: 'Enter an amount' };
     }
     if (amount < 0) {
