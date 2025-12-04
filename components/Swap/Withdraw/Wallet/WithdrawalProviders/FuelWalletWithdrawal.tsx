@@ -9,7 +9,7 @@ import {
 import { coinQuantityfy, CoinQuantityLike, Provider, ScriptTransactionRequest } from 'fuels';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import ActionMessages from '../../messages/TransactionMessages';
-import { useSelectedAccount } from '@/context/balanceAccounts';
+import { useSelectedAccount } from '@/context/swapAccounts';
 
 export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);

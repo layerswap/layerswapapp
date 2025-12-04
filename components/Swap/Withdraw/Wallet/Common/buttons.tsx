@@ -12,12 +12,12 @@ import { Network, NetworkRoute } from "@/Models/Network";
 import { useQueryState } from "@/context/query";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
-import { BackendTransactionStatus, DepositAction, SwapBasicData, SwapDetails } from "@/lib/apiClients/layerSwapApiClient";
+import LayerSwapApiClient, { BackendTransactionStatus, DepositAction, SwapBasicData, SwapDetails } from "@/lib/apiClients/layerSwapApiClient";
 import sleep from "@/lib/wallets/utils/sleep";
 import { isDiffByPercent } from "@/components/utils/numbers";
 import posthog from "posthog-js";
 import { useWalletWithdrawalState } from "@/context/withdrawalContext";
-import { useSelectedAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount } from "@/context/swapAccounts";
 import { resolvePriceImpactValues } from "@/lib/fees";
 import InfoIcon from "@/components/icons/InfoIcon";
 import { useGoHome } from "@/hooks/useGoHome";
@@ -168,6 +168,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const { setSwapTransaction } = useSwapTransactionStore();
 
 
+    const layerswapApiClient = new LayerSwapApiClient()
     const selectedSourceAccount = useSelectedAccount("from", swapBasicData.source_network?.name);
     const { wallets } = useWallet(swapBasicData.source_network, 'withdrawal')
 
@@ -246,6 +247,27 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             if (hash) {
                 onWalletWithdrawalSuccess?.();
                 setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, hash);
+                try {
+                    await layerswapApiClient.SwapCatchup(swapData.id, hash);
+                } catch (e) {
+                    console.error('Error in SwapCatchup:', e)
+                    const swapWithdrawalError = new Error(e);
+                    swapWithdrawalError.name = `SwapCatchupError`;
+                    swapWithdrawalError.cause = e;
+                    posthog.capture('$exception', {
+                        name: swapWithdrawalError.name,
+                        cause: swapWithdrawalError.cause,
+                        message: swapWithdrawalError.message,
+                        $layerswap_exception_type: "Swap Catchup Error",
+                        $fromAddress: selectedSourceAccount?.address,
+                        $toAddress: swapBasicData?.destination_address,
+                        $txHash: hash,
+                        $swapId: swapData.id,
+                        stack: swapWithdrawalError.stack,
+                        where: 'WalletTransaction',
+                        severity: 'error',
+                    });
+                }
             }
         }
         catch (e) {
@@ -343,8 +365,8 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
 
 const resolveTransactionData = (swapDetails: SwapDetails, deposit_actions: DepositAction[], destination_address: string, source_network: Network): TransferProps => {
-    const depositAction = deposit_actions?.find(action => 
-        action.type === 'transfer' 
+    const depositAction = deposit_actions?.find(action =>
+        action.type === 'transfer'
         || ExceptionNetworks.includes(source_network.name) && action.type === 'manual_transfer');
     if (!depositAction) {
         throw new Error('No deposit action found')

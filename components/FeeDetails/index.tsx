@@ -17,7 +17,7 @@ import ExchangeGasIcon from '../icons/ExchangeGasIcon';
 import useSWRNftBalance from '@/lib/nft/useSWRNftBalance';
 import NumberFlow from '@number-flow/react';
 import { resolveTokenUsdPrice } from '@/helpers/tokenHelper';
-import { useSelectedAccount } from '@/context/balanceAccounts';
+import { useSelectedAccount } from '@/context/swapAccounts';
 import { DetailedEstimates } from './SwapQuote/DetailedEstimates';
 
 export interface SwapValues extends Omit<SwapFormValues, 'from' | 'to'> {

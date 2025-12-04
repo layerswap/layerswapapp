@@ -187,5 +187,10 @@ const connectorsConfigs = [
         id: "keplr",
         name: 'Keplr',
         installLink: "https://chromewebstore.google.com/detail/keplr/dmkamcknogkgcdfhhbddcghachkejeap"
+    },
+    {
+        id: "xverse",
+        name: 'Xverse Wallet',
+        installLink: "https://chromewebstore.google.com/detail/xverse-bitcoin-crypto-wal/idnnbdplmphpflfnlkomgpfbpcgelopg"
     }
 ]
