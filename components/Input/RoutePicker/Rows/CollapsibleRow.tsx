@@ -1,13 +1,12 @@
-import { RefObject, useEffect, useMemo, useRef, useState, } from "react";
+import { RefObject, useMemo, useRef, useState, } from "react";
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/shadcn/accordion";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { NetworkElement, GroupedTokenElement, } from "@/Models/Route";
 import { SwapDirection } from "@/components/DTOs/SwapFormValues";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { CollapsableHeader } from "./CollapsableHeader";
 import { StickyHeader } from "./StickyHeader";
 import { CurrencySelectItemDisplay } from "../Routes";
-import { useBalanceStore } from "@/stores/balanceStore";
 
 type GenericAccordionRowProps = {
   item: NetworkElement | GroupedTokenElement;

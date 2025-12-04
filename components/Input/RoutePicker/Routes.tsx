@@ -83,13 +83,9 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
         secondaryLogoSrc={route.logo}
     >
         {(tokenbalance && Number(tokenbalance?.amount) > 0) ? (
-            <span className="text-sm text-secondary-text text-right my-auto leading-4 font-medium">
+            <span className="text-sm text-secondary-text text-right my-auto font-medium space-y-0.5">
                 {Number(usdAmount) > 0 && (
-                    <div
-                        className={clsx("text-primary-text text-base",
-                            { '!text-lg !leading-[22px]': type === 'suggested_token' }
-                        )}
-                    >{formatUsd(usdAmount)}</div>
+                    <div className="text-primary-text text-lg leading-[22px]">{formatUsd(usdAmount)}</div>
                 )}
                 <div className='text-xs leading-4'>
                     {formatted_balance_amount}
@@ -328,29 +324,34 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
         <span className="flex grow text-left items-center text-xs md:text-base relative">
             {showContent ? (
                 <>
-                    <div className="inline-flex items-center relative shrink-0">
-                        <ImageWithFallback
-                            src={token.logo}
-                            alt="Token Logo"
-                            height="24"
-                            width="24"
-                            loading="eager"
-                            fetchPriority="high"
-                            className="rounded-full object-contain"
-                        />
-                        <ImageWithFallback
-                            src={route.logo}
-                            alt="Network Logo"
-                            height="12"
-                            width="12"
-                            loading="eager"
-                            fetchPriority="high"
-                            className="h-3.5 w-3.5 absolute left-3.5 top-3.5 object-contain rounded border-1 border-secondary-300"
-                        />
+                    <div className="inline-flex items-center relative shrink-0 h-7 w-7">
+                        <div className="h-6 w-6">
+                            <ImageWithFallback
+                                src={token.logo}
+                                alt="Token Logo"
+                                height="24"
+                                width="24"
+                                loading="eager"
+                                fetchPriority="high"
+                                className="rounded-full object-contain"
+                            />
+                        </div>
+                        <div className="absolute left-[13px] top-3.5 h-4 w-4 rounded border border-secondary-500 overflow-hidden">
+                            <ImageWithFallback
+                                src={route.logo}
+                                alt="Network Logo"
+                                height="14"
+                                width="14"
+                                loading="eager"
+                                fetchPriority="high"
+                                className="object-contain"
+                            />
+                        </div>
+
                     </div>
-                    <div className="ml-3 flex flex-col grow font-medium text-primary-text overflow-hidden min-w-0 max-w-3/4 group-[.exchange-picker]:max-w-full">
-                        <p className="leading-5">{token.symbol}</p>
-                        <p className="text-secondary-text grow font-normal text-sm leading-4 truncate whitespace-nowrap">
+                    <div className="ml-2 flex flex-col grow text-primary-text overflow-hidden min-w-0 max-w-3/4 group-[.exchange-picker]:max-w-full">
+                        <p className="text-base leading-5 font-medium">{token.symbol}</p>
+                        <p className="text-secondary-text grow text-sm font-normal leading-4 truncate whitespace-nowrap">
                             {route.display_name}
                         </p>
                     </div>
@@ -358,7 +359,7 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
             ) : (
                 <SelectedRoutePlaceholder placeholder={placeholder} />
             )}
-            <span className="px-1 pr-2 pointer-events-none text-primary-text">
+            <span className="px-2 pointer-events-none text-primary-text">
                 <ChevronDown className="h-4 w-4 text-secondary-text" aria-hidden="true" />
             </span>
         </span>

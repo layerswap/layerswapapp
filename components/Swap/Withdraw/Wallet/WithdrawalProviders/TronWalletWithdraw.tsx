@@ -65,7 +65,7 @@ export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refue
     }
 
     return (
-        <div className="w-full space-y-3 flex flex-col justify-between h-full text-primary-text">
+        <div className="w-full space-y-3 h-fit text-primary-text">
             <TransactionMessage
                 error={error}
                 isLoading={loading}
