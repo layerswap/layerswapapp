@@ -11,6 +11,10 @@
 
 /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
 
+/*! noble-hashes - MIT License (c) 2022 Paul Miller (paulmillr.com) */
+
+/*! scure-base - MIT License (c) 2022 Paul Miller (paulmillr.com) */
+
 /**
  * @license lucide-react v0.379.0 - ISC
  *
