@@ -12,6 +12,8 @@ import { ArgentMobileConnector } from "starknetkit/argentMobile"
 import { InjectedConnector } from "starknetkit/injected"
 // @ts-ignore
 import { WebWalletConnector } from "starknetkit/webwallet"
+// @ts-ignore
+import { ControllerConnector } from "starknetkit/controller"
 
 const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b';
 class DiscoveryConnector extends Connector {
@@ -121,6 +123,11 @@ const StarknetProvider: FC<{ children: ReactNode }> = ({ children }) => {
                 chainId: "SN_MAIN"
             }
         }))
+
+        defaultConnectors.push(
+            new ControllerConnector(),
+        )
+
         defaultConnectors.push(new WebWalletConnector())
 
         return defaultConnectors
