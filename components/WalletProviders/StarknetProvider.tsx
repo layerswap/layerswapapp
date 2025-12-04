@@ -119,8 +119,7 @@ const StarknetProvider: FC<{ children: ReactNode }> = ({ children }) => {
                 dappName: 'Layerswap',
                 projectId: WALLETCONNECT_PROJECT_ID,
                 url: 'https://www.layerswap.io/app/',
-                description: 'Move crypto across exchanges, blockchains, and wallets.',
-                chainId: "SN_MAIN"
+                description: 'Move crypto across exchanges, blockchains, and wallets.'
             }
         }))
 
