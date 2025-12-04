@@ -67,7 +67,7 @@ export const ModalContent = (props: ModalContentProps) => {
     if (!isOpen) return null;
 
     const modalElement = (
-        <div className={clsx("absolute inset-0 z-50 bg-secondary-700 rounded-t-3xl sm:rounded-3xl flex flex-col", className)}>
+        <div className={clsx("fixed sm:absolute inset-0 z-50 bg-secondary-700 rounded-t-3xl sm:rounded-3xl flex flex-col overscroll-none", className)}>
             {(header || showCloseButton) && (
                 <div className="w-full relative">
                     <div className="flex items-center w-full text-left justify-between px-4 pt-2 pb-2 gap-x-1">
