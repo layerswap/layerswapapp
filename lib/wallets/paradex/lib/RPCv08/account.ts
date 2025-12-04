@@ -34,7 +34,7 @@ export async function fromEthSigner({
     accountClassHash: config.paraclearAccountHash,
     accountProxyClassHash: config.paraclearAccountProxyHash,
   });
-  return new Starknet.Account(provider, address, `0x${privateKey}`);
+  return new Starknet.Account({provider, address, signer: `0x${privateKey}`});
 }
 
 interface FromStarknetAccountParams {
@@ -75,7 +75,7 @@ export async function fromStarknetAccount({
     accountClassHash: config.paraclearAccountHash,
     accountProxyClassHash: config.paraclearAccountProxyHash,
   });
-  return new Starknet.Account(provider, address, `0x${privateKey}`);
+  return new Starknet.Account({provider, address, signer: `0x${privateKey}`});
 }
 
 interface GenerateAccountAddressParams {

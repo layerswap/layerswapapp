@@ -5,9 +5,9 @@ import { useSettingsState } from "../../context/settings";
 import { useStarknetStore } from "../../stores/starknetWalletStore";
 import KnownInternalNames from "../../lib/knownIds";
 import useStarknet, { resolveStarknetWallet } from "../../lib/wallets/starknet/useStarknet";
-import { RpcMessage, RequestFnCall, RpcTypeToMessageMap } from "@starknet-io/starknet-types-07";
+import { RpcMessage, RequestFnCall, RpcTypeToMessageMap } from "@starknet-io/types-js";
 //@ts-ignore
-import { ArgentMobileConnector } from "starknetkit/argentMobile";
+import { ArgentMobileConnector } from "starknetkit/argentMobile"
 // @ts-ignore
 import { InjectedConnector } from "starknetkit/injected"
 // @ts-ignore
@@ -119,7 +119,7 @@ const StarknetProvider: FC<{ children: ReactNode }> = ({ children }) => {
                 dappName: 'Layerswap',
                 projectId: WALLETCONNECT_PROJECT_ID,
                 url: 'https://www.layerswap.io/app/',
-                description: 'Move crypto across exchanges, blockchains, and wallets.',
+                description: 'Move crypto across exchanges, blockchains, and wallets.'
             }
         }))
 
