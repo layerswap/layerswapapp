@@ -74,7 +74,7 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
                             :
                             <p className="flex items-center gap-1 text-xs text-secondary-text">
                                 <span>•</span>
-                                <span className="truncate max-w-[80px]">{item.display_asset || item.symbol}</span>
+                                <span className="truncate max-w-20">{item.display_asset || item.symbol}</span>
                             </p>
                     }
                 </div>
@@ -123,7 +123,7 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
     const showTokenLogos = hasLoadedBalances && filteredNetworkTokens?.length;
 
     return (
-        <SelectItem className="bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative pr-7 py-2">
+        <SelectItem className="bg-secondary-500 group rounded-xl hover:bg-secondary-400 group-[.is-focused]/accordion:bg-secondary-400 group/item relative pr-7 py-2">
             <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} className="rounded-md" />
             <SelectItem.Title>
                 <>
@@ -345,7 +345,7 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
                             width="12"
                             loading="eager"
                             fetchPriority="high"
-                            className="h-3.5 w-3.5 absolute left-3.5 top-3.5 object-contain rounded border-1 border-secondary-300"
+                            className="h-3.5 w-3.5 absolute left-3.5 top-3.5 object-contain rounded border border-secondary-300"
                         />
                     </div>
                     <div className="ml-3 flex flex-col grow font-medium text-primary-text overflow-hidden min-w-0 max-w-3/4 group-[.exchange-picker]:max-w-full">
