@@ -31,7 +31,7 @@ export class StarknetBalanceProvider extends BalanceProvider {
         for (const token of tokens) {
             try {
 
-                const erc20 = new Contract(Erc20Abi, token.contract!, provider);
+                const erc20 = new Contract({ abi: Erc20Abi, address: token.contract!, providerOrAccount: provider });
                 const balanceResult = await erc20.balanceOf(address);
                 const balanceInWei = BigNumber.from(uint256.uint256ToBN(balanceResult.balance).toString()).toString();
 

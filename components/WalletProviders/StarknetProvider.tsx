@@ -5,9 +5,9 @@ import { useSettingsState } from "../../context/settings";
 import { useStarknetStore } from "../../stores/starknetWalletStore";
 import KnownInternalNames from "../../lib/knownIds";
 import useStarknet, { resolveStarknetWallet } from "../../lib/wallets/starknet/useStarknet";
-import { RpcMessage, RequestFnCall, RpcTypeToMessageMap } from "@starknet-io/starknet-types-07";
+import { RpcMessage, RequestFnCall, RpcTypeToMessageMap } from "@starknet-io/types-js";
 //@ts-ignore
-import { isInArgentMobileAppBrowser, ArgentMobileConnector } from "starknetkit/argentMobile"
+import { ArgentMobileConnector } from "starknetkit/argentMobile"
 // @ts-ignore
 import { InjectedConnector } from "starknetkit/injected"
 // @ts-ignore

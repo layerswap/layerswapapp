@@ -139,9 +139,9 @@ export async function resolveStarknetWallet(props: ResolveStarknetWalletProps): 
     try {
         const walletChain = network?.chain_id;
         const { RpcProvider, WalletAccount } = await import('starknet')
-        const rpcProvider = new RpcProvider({ nodeUrl: 'https://starknet-rpc.publicnode.com'})
+        const rpcProvider = new RpcProvider({ nodeUrl: network?.node_url })
 
-        const walletAccount = new WalletAccount({provider: rpcProvider, walletProvider: (connector as any).wallet, address})
+        const walletAccount = new WalletAccount({ provider: rpcProvider, walletProvider: (connector as any).wallet, address })
 
         const accounts = await walletAccount.requestAccounts(true)
         const account = accounts?.[0];

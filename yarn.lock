@@ -6427,6 +6427,11 @@
   resolved "https://registry.yarnpkg.com/@starknet-io/types-js/-/types-js-0.9.1.tgz#0c93a54fb802cba4feddb56216887eb46ba068bc"
   integrity sha512-ngLjOFuWOI4EFij8V+nl5tgHVACr6jqgLNUQbgD+AgnTcAN33SemBPXDIsovwK1Mz1U04Cz3qjDOnTq7067ZQw==
 
+"@starknet-io/types-js@^0.10.0":
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/@starknet-io/types-js/-/types-js-0.10.0.tgz#cc6c270ce392bb2a8c460464f8192d413772f150"
+  integrity sha512-7ALSydz6pq3YIOpq5a7OkkxqwJciMc9Nlph0OGjhcC3xX0xH30XgizmziLyYVN10oO9+BJk8M9KbJjpzdbtRSw==
+
 "@starknet-io/types-js@^0.7.10", "@starknet-io/types-js@^0.7.7":
   version "0.7.10"
   resolved "https://registry.yarnpkg.com/@starknet-io/types-js/-/types-js-0.7.10.tgz#d21dc973d0cd04d7b6293ce461f2f06a5873c760"
