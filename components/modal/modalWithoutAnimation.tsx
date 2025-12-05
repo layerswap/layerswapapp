@@ -14,12 +14,12 @@ type ModalProps = {
 
 const ModalContext = createContext<ModalProps>({ isOpen: false, setIsOpen: () => { }, shouldFocus: false, setShouldFocus: () => { } });
 
-export const Modal = ({ children }) => {
+export const Modal = ({ children, isOpen: _isOpen, setIsOpen: _setIsOpen }: { children: ReactNode, isOpen?: ModalProps['isOpen'], setIsOpen?: ModalProps['setIsOpen'] }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [shouldFocus, setShouldFocus] = useState(false);
 
     return (
-        <ModalContext.Provider value={{ isOpen, setIsOpen, shouldFocus, setShouldFocus }}>
+        <ModalContext.Provider value={{ isOpen: _isOpen || isOpen, setIsOpen: _setIsOpen || setIsOpen, shouldFocus, setShouldFocus }}>
             {children}
         </ModalContext.Provider>
     );
@@ -67,10 +67,10 @@ export const ModalContent = (props: ModalContentProps) => {
     if (!isOpen) return null;
 
     const modalElement = (
-        <div className={clsx("absolute inset-0 z-50 bg-secondary-700 rounded-t-3xl sm:rounded-3xl flex flex-col", className)}>
+        <div className={clsx("fixed sm:absolute inset-0 z-50 bg-secondary-700 rounded-t-3xl sm:rounded-3xl flex flex-col overscroll-none", className)}>
             {(header || showCloseButton) && (
                 <div className="w-full relative">
-                    <div className="flex items-center w-full text-left justify-between px-4 pt-2 pb-2 gap-x-1">
+                    <div className="flex items-center w-full text-left justify-between px-4 pt-2 pb-2 gap-x-2 sm:gap-x-1">
                         <div className="flex-1 text-lg text-secondary-text font-semibold w-full flex justify-end">
                             {header}
                         </div>

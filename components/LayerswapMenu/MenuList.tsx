@@ -9,12 +9,12 @@ import GitHubLogo from "../icons/GitHubLogo";
 import SubstackLogo from "../icons/SubstackLogo";
 import TwitterLogo from "../icons/TwitterLogo";
 import Link from "next/link";
-import Popover from "../modal/popover";
 import SendFeedback from "../sendFeedback";
 import YoutubeLogo from "../icons/YoutubeLogo";
 import Menu from "./Menu";
 import dynamic from "next/dynamic";
 import { MenuStep } from "../../Models/Wizard";
+import VaulDrawer from "../modal/vaulModal";
 
 const WalletsMenu = dynamic(() => import("../Wallet/ConnectedWallets").then((comp) => comp.WalletsMenu), {
     loading: () => <></>
@@ -89,22 +89,21 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
             </Menu.Group>
 
             <Menu.Group>
-                <Popover
-                    opener={
-                        <Menu.Item onClick={() => setOpenFeedbackModal(true)} target="_blank" icon={<MessageSquarePlus className="h-5 w-5" />} >
-                            Suggest a Feature
-                        </Menu.Item>
-                    }
-                    isNested={true}
+                <Menu.Item onClick={() => setOpenFeedbackModal(true)} target="_blank" icon={<MessageSquarePlus className="h-5 w-5" />} >
+                    Suggest a Feature
+                </Menu.Item>
+                <VaulDrawer
                     show={openFeedbackModal}
                     header="Suggest a Feature"
                     setShow={setOpenFeedbackModal}
-                    popoverId={"feedback"}
+                    modalId="suggestFeature"
                 >
-                    <div className="p-0 md:max-w-md">
-                        <SendFeedback onSend={handleCloseFeedback} />
-                    </div>
-                </Popover>
+                    <VaulDrawer.Snap id="item-1">
+                        <div className="p-0 md:max-w-md">
+                            <SendFeedback onSend={handleCloseFeedback} />
+                        </div>
+                    </VaulDrawer.Snap>
+                </VaulDrawer>
             </Menu.Group>
 
             <div className="space-y-3 w-full">

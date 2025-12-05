@@ -93,7 +93,7 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
 const AccountsPickerButton: FC<{ accounts: AccountIdentity[], onOpenModalClick: () => void }> = ({ accounts, onOpenModalClick }) => {
     const firstWallet = useMemo(() => accounts[0], [accounts])
     if (accounts.length > 0) {
-        return <button onClick={onOpenModalClick} type="button" className="p-1.5 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-hidden inline-flex rounded-lg items-center">
+        return <button onClick={onOpenModalClick} type="button" className="p-1.5 max-sm:p-2 justify-self-start text-secondary-text hover:bg-secondary-500 max-sm:bg-secondary-500 hover:text-primary-text focus:outline-hidden inline-flex rounded-lg items-center active:animate-press-down">
             {
                 accounts.length === 1 ?
                     <div className="flex gap-2 items-center text-sm text-secondary-text">
@@ -112,13 +112,12 @@ const AccountsPickerButton: FC<{ accounts: AccountIdentity[], onOpenModalClick: 
 
     return (
         <ConnectButton>
-            <div className="p-1.5 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-hidden inline-flex rounded-lg items-center">
+            <div className="p-1.5 max-sm:p-2 justify-self-start text-secondary-text hover:bg-secondary-500 max-sm:bg-secondary-500 hover:text-primary-text focus:outline-hidden inline-flex rounded-lg items-center active:animate-press-down">
                 <WalletIcon className="h-6 w-6 mx-0.5" strokeWidth="2" />
             </div>
         </ConnectButton>
     )
 }
-
 
 type Props = {
     token?: Token;
