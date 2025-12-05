@@ -119,7 +119,6 @@ const AccountsPickerButton: FC<{ accounts: AccountIdentity[], onOpenModalClick: 
     )
 }
 
-
 type Props = {
     token?: Token;
     network?: Network;

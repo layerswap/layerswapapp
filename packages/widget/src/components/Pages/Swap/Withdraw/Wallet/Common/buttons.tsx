@@ -162,11 +162,12 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     refuel,
     ...props
 }) => {
-    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse } = useSwapDataState()
+    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, refuel: refuelData } = useSwapDataState()
     const { onWalletWithdrawalSuccess: onWalletWithdrawalSuccess, onCancelWithdrawal } = useWalletWithdrawalState();
     const { createSwap, setSwapId, setQuoteLoading } = useSwapDataUpdate()
     const { setSwapTransaction } = useSwapTransactionStore();
     const initialSettings = useInitialSettings()
+
 
     const layerswapApiClient = new LayerSwapApiClient()
     const selectedSourceAccount = useSelectedAccount("from", swapBasicData.source_network?.name);
@@ -180,7 +181,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const [loading, setLoading] = useState(false)
     const [showCriticalMarketPriceImpactButtons, setShowCriticalMarketPriceImpactButtons] = useState(false)
 
-    const priceImpactValues = useMemo(() => quote ? resolvePriceImpactValues(quote) : undefined, [quote]);
+    const priceImpactValues = useMemo(() => quote ? resolvePriceImpactValues(quote, refuel ? refuelData : undefined) : undefined, [quote, refuel]);
     const criticalMarketPriceImpact = useMemo(() => priceImpactValues?.criticalMarketPriceImpact, [priceImpactValues]);
 
     const handleClick = async () => {
@@ -221,7 +222,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
                 setSwapId(newSwapId)
 
-                const priceImpactValues = newSwapData.quote ? resolvePriceImpactValues(newSwapData.quote) : undefined;
+                const priceImpactValues = newSwapData.quote ? resolvePriceImpactValues(newSwapData.quote, newSwapData.refuel) : undefined;
 
                 if (priceImpactValues?.criticalMarketPriceImpact) {
                     setShowCriticalMarketPriceImpactButtons(true)

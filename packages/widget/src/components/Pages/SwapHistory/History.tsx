@@ -67,7 +67,7 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
 
     const rowVirtualizer = useVirtualizer({
         count: (list?.length || 0),
-        getScrollElement: () => window.document.getElementById('virtualListContainer'),
+        getScrollElement: () => parentRef.current,
         estimateSize: () => 35,
     })
 

@@ -41,8 +41,8 @@ export const CampaignDetailsComponent: FC<{ campaignName: string | undefined }> 
     }
 
     return (
-        <>
-            <Widget.Content>
+        <div className="h-full flex flex-col justify-between gap-3">
+            <Widget.Content fitContent>
                 <div className="space-y-5">
                     <div className="flex items-center gap-1">
                         <div className="h-7 w-7 relative">
@@ -77,7 +77,7 @@ export const CampaignDetailsComponent: FC<{ campaignName: string | undefined }> 
                     </Widget.Footer>
                 }
             </>
-        </ >
+        </div>
     )
 }
 
