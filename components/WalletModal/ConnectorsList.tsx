@@ -27,7 +27,6 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     const [connectionError, setConnectionError] = useState<string | undefined>(undefined);
     const [searchValue, setSearchValue] = useState<string | undefined>(undefined)
     const [isScrolling, setIsScrolling] = useState(false);
-    const [showQrForBrowserExtension, setShowQrForBrowserExtension] = useState(false);
     const scrollTimeout = useRef<any>(null);
 
     const handleScroll = () => {
@@ -43,10 +42,6 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     useEffect(() => {
         return () => clearTimeout(scrollTimeout.current as any);
     }, []);
-
-    useEffect(() => {
-        setShowQrForBrowserExtension(false);
-    }, [selectedConnector?.name]);
 
     const connect = async (connector: InternalConnector, provider: WalletProvider) => {
         try {
@@ -129,7 +124,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
             'name'
         );
     }, [allFeaturedConnectors, allHiddenConnectors, searchValue?.length, recentConnectors])
-    if (selectedConnector?.hasBrowserExtension && !showQrForBrowserExtension && selectedConnector?.qr?.state) {
+    if (selectedConnector?.hasBrowserExtension && !selectedConnector?.qr?.showQrCode && selectedConnector?.qr?.state) {
         const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector?.name, iconUrl: selectedConnector.icon });
         return <div className='w-full h-[60vh] sm:h-full flex flex-col justify-between font-semibold'>
             <div className="flex grow items-center justify-center">
@@ -142,7 +137,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 </div>
             </div>
             <SubmitButton
-                onClick={() => setShowQrForBrowserExtension(true)}
+                onClick={() => { if (selectedConnector.qr) { setSelectedConnector({ ...selectedConnector, qr: { ...selectedConnector.qr, showQrCode: true } as typeof selectedConnector.qr }) } }}
                 buttonStyle="secondary"
                 className="w-full"
             >
@@ -153,7 +148,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
             </SubmitButton>
         </div>
     }
-    if (selectedConnector?.qr?.state && (!selectedConnector?.hasBrowserExtension || showQrForBrowserExtension)) {
+    if (selectedConnector?.qr?.state && (!selectedConnector?.hasBrowserExtension || selectedConnector?.qr?.showQrCode)) {
         const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector?.name, iconUrl: selectedConnector.icon });
 
         return <div className="flex flex-col justify-start space-y-2">
