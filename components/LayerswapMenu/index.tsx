@@ -39,10 +39,10 @@ const Comp = () => {
         <div className="text-secondary-text cursor-pointer relative">
             <Modal>
                 <ResetHandler goToStep={goToStep} router={router} />
-                <ModalTrigger disabled={false} className="bg-secondary-500 sm:bg-transparent p-0! rounded-lg hover:bg-secondary-500 hover:text-primary-text transition-colors sm:-mr-2 mr-0">
-                    <div className="p-1.5 inline-flex active:animate-press-down">
+                <ModalTrigger disabled={false} className="sm:-mr-2 mr-0 bg-secondary-500 sm:bg-transparent p-0!">
+                    <IconButton className="inline-flex active:animate-press-down" icon={
                         <MenuIcon strokeWidth="2" />
-                    </div>
+                    } />
                 </ModalTrigger>
                 <ModalContent
                     header={
