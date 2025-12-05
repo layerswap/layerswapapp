@@ -8,7 +8,6 @@ import useSWR from 'swr'
 import { useQueryState } from "@/context/query";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import NumberFlow from "@number-flow/react";
-import clsx from "clsx";
 import { PriceImpact } from "@/components/Input/Amount/PriceImpact";
 import { Token } from "@/Models/Network";
 
@@ -58,9 +57,9 @@ const Summary: FC<SwapInfoProps> = (props) => {
                     <div className="flex flex-col col-start-7 col-span-4 items-end">
                         {
                             requestedAmount &&
-                            <p className="text-primary-text text-sm whitespace-nowrap">{truncateDecimals(Number(requestedAmount), sourceCurrency.precision)} {sourceCurrency.symbol}</p>
+                            <p className="text-primary-text text-xl leading-6 font-normal whitespace-nowrap">{truncateDecimals(Number(requestedAmount), sourceCurrency.precision)} {sourceCurrency.symbol}</p>
                         }
-                        <p className="text-secondary-text text-sm flex justify-end"><NumberFlow value={requestedAmountInUsd || 0} format={{ style: 'currency', currency: 'USD' }} trend={0} /></p>
+                        <p className="text-secondary-text text-sm leading-5 flex font-medium justify-end"><NumberFlow value={requestedAmountInUsd || 0} format={{ style: 'currency', currency: 'USD' }} trend={0} /></p>
                     </div>
                 </div>
                 <div className="relative text-secondary-text">
@@ -74,12 +73,12 @@ const Summary: FC<SwapInfoProps> = (props) => {
                     />
                     {
                         receiveAmount && (
-                            <div className="flex flex-col justify-end items-end w-full col-start-7 col-span-4">
-                                <p className={clsx("text-primary-text text-sm text-end")}>
+                            <div className="flex flex-col justify-end items-end w-full col-start-7 col-span-4 h-[44px]">
+                                <p className="text-primary-text text-xl font-normal text-end">
                                     <NumberFlow value={receiveAmount} suffix={` ${destinationCurrency.symbol}`} trend={0} format={{ maximumFractionDigits: quote.quote.destination_token?.decimals || 2 }} />
                                 </p>
-                                <p className="text-secondary-text text-sm flex items-center gap-1">
-                                    <PriceImpact className="text-sm" quote={swapQuote} />
+                                <p className="text-secondary-text text-sm flex items-center gap-1 font-medium">
+                                    <PriceImpact className="text-sm" quote={swapQuote} refuel={refuel} />
                                     <NumberFlow value={receiveAmountInUsd || 0} format={{ style: 'currency', currency: 'USD' }} trend={0} />
                                 </p>
                             </div>
@@ -117,7 +116,7 @@ const RouteTokenPair: FC<RouteTokenPairProps> = ({ route, token }) => {
 
     return (
         <div className="flex grow gap-4 text-left items-center md:text-base relative col-span-6 align-center">
-            <div className="inline-flex items-center relative shrink-0 mb-1.5">
+            <div className="inline-flex items-center relative shrink-0 h-8 w-8">
                 <ImageWithFallback
                     src={token.logo}
                     alt="Token Logo"
@@ -127,23 +126,23 @@ const RouteTokenPair: FC<RouteTokenPairProps> = ({ route, token }) => {
                     fetchPriority="high"
                     className="rounded-full object-contain"
                 />
-                <ImageWithFallback
-                    src={route.logo}
-                    alt="Route Logo"
-                    height="16"
-                    width="16"
-                    loading="eager"
-                    fetchPriority="high"
-                    className="absolute -right-1.5 -bottom-1.5 object-contain rounded-md border-1 border-secondary-300"
-                />
-            </div>
-            <div className="flex flex-col font-medium text-primary-text overflow-hidden">
-                <span className="leading-4 text-sm p-[1.75px]">{token.symbol}</span>
-                <div className="flex items-center gap-1 leading-3 text-sm sm:text-base">
-                    <p className="text-secondary-text text-sm truncate whitespace-nowrap p-[1.75px]">
-                        {route.display_name}
-                    </p>
+                <div className="absolute -right-0.5 -bottom-0.5 rounded border border-secondary-500 overflow-hidden">
+                    <ImageWithFallback
+                        src={route.logo}
+                        alt="Route Logo"
+                        height="16"
+                        width="16"
+                        loading="eager"
+                        fetchPriority="high"
+                        className="object-contain"
+                    />
                 </div>
+            </div>
+            <div className="text-primary-text overflow-hidden">
+                <p className="text-xl leading-6 font-normal">{token.symbol}</p>
+                <p className="text-secondary-text text-sm truncate whitespace-nowrap font-medium leading-5">
+                    {route.display_name}
+                </p>
             </div>
         </div>
     )
