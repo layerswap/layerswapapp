@@ -9,10 +9,10 @@ import WizardItem from "../Wizard/WizardItem";
 import { NextRouter, useRouter } from "next/router";
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import HistoryList from "../SwapHistory/History";
-import { Selector, SelectorContent, SelectorTrigger, useSelectorState } from "@/components/Select/Selector/Index";
+import { Modal, ModalContent, ModalTrigger, useModalState } from "@/components/modal/modalWithoutAnimation";
 
 const ResetHandler = ({ goToStep, router }) => {
-    const { isOpen } = useSelectorState()
+    const { isOpen } = useModalState()
 
     useEffect(() => {
         goToStep(MenuStep.Menu)
@@ -37,15 +37,14 @@ const Comp = () => {
 
     return <>
         <div className="text-secondary-text cursor-pointer relative">
-            <Selector>
+            <Modal>
                 <ResetHandler goToStep={goToStep} router={router} />
-                <SelectorTrigger disabled={false} className="bg-secondary-500 sm:bg-transparent p-0! rounded-lg hover:bg-secondary-500 hover:text-primary-text transition-colors sm:-mr-2 mr-0">
+                <ModalTrigger disabled={false} className="bg-secondary-500 sm:bg-transparent p-0! rounded-lg hover:bg-secondary-500 hover:text-primary-text transition-colors sm:-mr-2 mr-0">
                     <div className="p-1.5 inline-flex active:animate-press-down">
                         <MenuIcon strokeWidth="2" />
                     </div>
-                </SelectorTrigger>
-                <SelectorContent
-                    isLoading={false}
+                </ModalTrigger>
+                <ModalContent
                     header={
                         <div className="inline-flex items-center w-full">
                             {
@@ -73,8 +72,8 @@ const Comp = () => {
                             </Wizard>
                         </div>
                     )}
-                </SelectorContent>
-            </Selector>
+                </ModalContent>
+            </Modal>
         </div >
     </>
 }
