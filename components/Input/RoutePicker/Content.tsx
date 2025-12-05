@@ -91,7 +91,6 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             isOpen={shouldFocus}
-            onArrowDown={() => { window.dispatchEvent(new Event('blurSearch')); }}
         />
         <LayoutGroup>
             <motion.div layoutScroll className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll pr-3 h-full" ref={parentRef}>

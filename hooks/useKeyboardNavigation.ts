@@ -10,15 +10,7 @@ export const useKeyboardNavigation = (
     (event: KeyboardEvent) => {
       if (!enabled) return;
 
-      const isTextInput =
-        event.target instanceof HTMLTextAreaElement ||
-        (event.target instanceof HTMLInputElement &&
-          (!event.target.type || event.target.type === 'text')) ||
-        (event.target as HTMLElement).isContentEditable;
-      const isArrowKey = ['ArrowDown', 'ArrowUp'].includes(event.key);
-
-      if (isTextInput && !isArrowKey) return;
-
+      // Only handle arrow keys and Enter - let all other keys pass through to search
       switch (event.key) {
         case 'ArrowDown':
           event.preventDefault();

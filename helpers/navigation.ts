@@ -16,18 +16,24 @@ const parseIndex = (index: string): { parent: number; child?: number } => {
 export const useRoutePickerNavigation = (navigableItems: NavigableItem[], searchQuery: string, shouldFocus: boolean) => {
     const [focusedIndex, setFocusedIndex] = useState<string | null>(null);
     const [isKeyboardNavigating, setIsKeyboardNavigating] = useState(false);
+    const [isMouseMoving, setIsMouseMoving] = useState(false);
 
-    // Reset focus when search query changes
+    // Reset focus to first item when search query changes
     useEffect(() => {
-        setFocusedIndex(null);
-    }, [searchQuery]);
+        if (searchQuery && navigableItems.length > 0) {
+            setFocusedIndex("0");
+        } else {
+            setFocusedIndex(null);
+        }
+    }, [searchQuery, navigableItems.length]);
 
     const handleArrowDown = useCallback(() => {
         setIsKeyboardNavigating(true);
+        setIsMouseMoving(false);
+
         if (focusedIndex === null) {
             if (navigableItems.length > 0) {
                 setFocusedIndex("0");
-                window.dispatchEvent(new Event('blurSearch'));
             }
             return;
         }
@@ -58,8 +64,12 @@ export const useRoutePickerNavigation = (navigableItems: NavigableItem[], search
 
     const handleArrowUp = useCallback(() => {
         setIsKeyboardNavigating(true);
+        setIsMouseMoving(false);
+
+        // If no focus, ArrowUp does nothing (search bar is not navigatable)
         if (focusedIndex === null)
             return;
+
         const { parent, child } = parseIndex(focusedIndex);
         const navItem = navigableItems[parent];
 
@@ -83,10 +93,9 @@ export const useRoutePickerNavigation = (navigableItems: NavigableItem[], search
                 } else {
                     setFocusedIndex(`${parent - 1}`);
                 }
-            } else {
-                setFocusedIndex(null);
-                window.dispatchEvent(new Event('focusSearch'));
             }
+            // When at first item (parent === 0), ArrowUp does nothing - stay at first item
+            // Search bar is never part of navigation
         }
     }, [focusedIndex, navigableItems]);
 
@@ -106,13 +115,12 @@ export const useRoutePickerNavigation = (navigableItems: NavigableItem[], search
     );
 
     const handleHover = useCallback((index: string) => {
-        if (isKeyboardNavigating) return;
+        // Only update on hover if mouse is actively moving (not keyboard navigating)
+        if (!isMouseMoving) return;
         setFocusedIndex(index);
-        // Blur search if it's focused
-        window.dispatchEvent(new Event('blurSearch'));
-    }, [isKeyboardNavigating]);
+    }, [isMouseMoving]);
 
-    // Add/remove body class and detect mouse movement to re-enable hover
+    // Detect mouse movement to enable hover updates
     useEffect(() => {
         if (isKeyboardNavigating) {
             document.body.classList.add('keyboard-navigating');
@@ -120,16 +128,24 @@ export const useRoutePickerNavigation = (navigableItems: NavigableItem[], search
             document.body.classList.remove('keyboard-navigating');
         }
 
+        let mouseMoveTimeout: NodeJS.Timeout;
         const handleMouseMove = () => {
-            if (isKeyboardNavigating) {
-                setIsKeyboardNavigating(false);
-            }
+            // Enable mouse hover updates when mouse is actively moving
+            setIsMouseMoving(true);
+            setIsKeyboardNavigating(false);
+
+            // Debounce to detect when mouse stops moving
+            clearTimeout(mouseMoveTimeout);
+            mouseMoveTimeout = setTimeout(() => {
+                setIsMouseMoving(false);
+            }, 100);
         };
 
         window.addEventListener('mousemove', handleMouseMove);
         return () => {
             window.removeEventListener('mousemove', handleMouseMove);
             document.body.classList.remove('keyboard-navigating');
+            clearTimeout(mouseMoveTimeout);
         };
     }, [isKeyboardNavigating]);
 
