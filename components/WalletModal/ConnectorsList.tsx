@@ -153,7 +153,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
             </SubmitButton>
         </div>
     }
-    if (selectedConnector?.qr?.state && showQrForBrowserExtension) {
+    if (selectedConnector?.qr?.state && (!selectedConnector?.hasBrowserExtension || showQrForBrowserExtension)) {
         const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector?.name, iconUrl: selectedConnector.icon });
 
         return <div className="flex flex-col justify-start space-y-2">
