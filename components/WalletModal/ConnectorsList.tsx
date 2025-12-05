@@ -148,7 +148,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
             >
                 <span className="flex items-center justify-center gap-2">
                     <ScanLine className="w-5 h-5" />
-                    Connect with your phone
+                    {"Connect with your phone"}
                 </span>
             </SubmitButton>
         </div>
