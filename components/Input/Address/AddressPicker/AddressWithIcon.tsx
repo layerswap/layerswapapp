@@ -236,7 +236,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, is
                         </div>
 
                     )}
-                    <p className="text-secondary-text text-sm leading-5 font-mono break-all text-left">
+                    <p className={`text-secondary-text text-sm leading-5 break-all text-left ${!isNativeToken ? 'font-mono' : ''}`}>
                         {
                             isNativeToken ? address :
                                 <><span className="text-primary-text font-medium">{address.slice(0, 4)}</span><span>{address.slice(4, -4)}</span><span className="text-primary-text font-medium">{address.slice(-4)}</span></>
