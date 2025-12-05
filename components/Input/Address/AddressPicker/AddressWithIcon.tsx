@@ -125,6 +125,7 @@ type ExtendedAddressProps = {
     logo?: string | ((e: SVGProps<SVGSVGElement>) => ReactNode);
     children?: ReactNode
     shouldShowChevron?: boolean
+    isNativeToken?: boolean;
 }
 
 const calculateMaxWidth = (balance: string | undefined) => {
@@ -139,12 +140,14 @@ const calculateMaxWidth = (balance: string | undefined) => {
     }
 };
 
-export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, isForCurrency, children, onDisconnect, showDetails = false, title, description, logo: Logo, shouldShowChevron = true }) => {
+export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, isForCurrency, children, onDisconnect, showDetails = false, title, description, logo: Logo, shouldShowChevron = true, isNativeToken = false }) => {
     const [isCopied, setCopied] = useCopyClipboard()
     const [isPopoverOpen, setPopoverOpen] = useState(false)
 
     // Resolver for action buttons
     const getActionButtons = () => {
+        if (isNativeToken) return { buttons: [], showTitles: false };
+
         const buttons: ActionButtonProps[] = [
             {
                 title: 'Copy',
@@ -234,17 +237,22 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, is
 
                     )}
                     <p className="text-secondary-text text-sm leading-5 font-mono break-all text-left">
-                        <span className="text-primary-text font-medium">{address.slice(0, 4)}</span><span>{address.slice(4, -4)}</span><span className="text-primary-text font-medium">{address.slice(-4)}</span>
+                        {
+                            isNativeToken ? address :
+                                <><span className="text-primary-text font-medium">{address.slice(0, 4)}</span><span>{address.slice(4, -4)}</span><span className="text-primary-text font-medium">{address.slice(-4)}</span></>
+                        }
                     </p>
-                    <div className="flex gap-3">
-                        {buttons.map((button) => (
-                            <ActionButton
-                                key={button.title}
-                                showTitle={showTitles}
-                                {...button}
-                            />
-                        ))}
-                    </div>
+                    {buttons.length > 0 && (
+                        <div className="flex gap-3">
+                            {buttons.map((button) => (
+                                <ActionButton
+                                    key={button.title}
+                                    showTitle={showTitles}
+                                    {...button}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </PopoverContent>
             </Popover>
         </div>

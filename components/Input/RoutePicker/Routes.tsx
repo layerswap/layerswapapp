@@ -9,7 +9,6 @@ import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { GroupedTokenElement, RowElement } from "@/Models/Route";
 import { getKey, useBalanceStore } from "@/stores/balanceStore";
 import { useSwapAccounts } from "@/context/swapAccounts";
-import clsx from "clsx";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
 import { ExtendedAddress } from "../Address/AddressPicker/AddressWithIcon";
 import { getTotalBalanceInUSD } from "@/helpers/balanceHelper";
@@ -61,22 +60,23 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
             <div className="flex items-center gap-1">
                 <span>{route.display_name}</span>
                 <div className="transition-all duration-300 opacity-0 group-hover:opacity-100 group-hover:delay-400 click-delay-on-hover">
-                    {
-                        item.contract ?
-                            <ExtendedAddress network={route} isForCurrency showDetails address={item.contract} logo={item.logo} title={item.symbol} description={item.display_asset}>
-                                <div className="flex items-center gap-1 text-secondary-text text-xs cursor-pointer hover:text-primary-text">
-                                    <p className="max-w-[90px] truncate">
-                                        <span>•</span> <span>{item.display_asset || item.symbol}</span>
-                                    </p>
-                                    <Info className="h-3 w-3" />
-                                </div>
-                            </ExtendedAddress>
-                            :
-                            <p className="flex items-center gap-1 text-xs text-secondary-text">
-                                <span>•</span>
-                                <span className="truncate max-w-[80px]">{item.display_asset || item.symbol}</span>
+                    <ExtendedAddress
+                        network={item.contract ? route : undefined}
+                        isForCurrency
+                        showDetails
+                        address={item.contract || `${route.display_name} native coin`}
+                        logo={item.logo}
+                        title={item.symbol}
+                        description={item.display_asset}
+                        isNativeToken={!item.contract}
+                    >
+                        <div className="flex items-center gap-1 text-secondary-text text-xs cursor-pointer hover:text-primary-text">
+                            <p className="max-w-[90px] truncate">
+                                <span>•</span> <span>{item.display_asset || item.symbol}</span>
                             </p>
-                    }
+                            <Info className="h-3 w-3" />
+                        </div>
+                    </ExtendedAddress>
                 </div>
             </div>
         }
