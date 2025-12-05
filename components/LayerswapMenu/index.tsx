@@ -1,5 +1,5 @@
 import { MenuIcon, ChevronLeft } from "lucide-react";
-import { FC, useEffect } from "react";
+import { FC, useEffect, useState } from "react";
 import IconButton from "../buttons/iconButton";
 import { FormWizardProvider, useFormWizardaUpdate, useFormWizardState } from "../../context/formWizardProvider";
 import { MenuStep } from "../../Models/Wizard";
@@ -9,21 +9,11 @@ import WizardItem from "../Wizard/WizardItem";
 import { NextRouter, useRouter } from "next/router";
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import HistoryList from "../SwapHistory/History";
-import { Modal, ModalContent, ModalTrigger, useModalState } from "@/components/modal/modalWithoutAnimation";
-
-const ResetHandler = ({ goToStep, router }) => {
-    const { isOpen } = useModalState()
-
-    useEffect(() => {
-        goToStep(MenuStep.Menu)
-        clearMenuPath(router)
-    }, [isOpen, goToStep, router])
-
-    return null
-}
+import { Modal, ModalContent } from "@/components/modal/modalWithoutAnimation";
 
 const Comp = () => {
     const router = useRouter();
+    const [isOpen, setIsOpen] = useState(false)
 
     const { goBack, currentStepName } = useFormWizardState()
     const { goToStep } = useFormWizardaUpdate()
@@ -35,15 +25,21 @@ const Comp = () => {
         setMenuPath(path, router)
     }
 
+    useEffect(() => {
+        if(isOpen) {
+            goToStep(MenuStep.Menu)
+            clearMenuPath(router)
+        }
+    }, [isOpen, goToStep, router])
+
     return <>
         <div className="text-secondary-text cursor-pointer relative">
-            <Modal>
-                <ResetHandler goToStep={goToStep} router={router} />
-                <ModalTrigger disabled={false} className="sm:-mr-2 mr-0 bg-secondary-500 sm:bg-transparent p-0!">
-                    <IconButton className="inline-flex active:animate-press-down" icon={
-                        <MenuIcon strokeWidth="2" />
-                    } />
-                </ModalTrigger>
+            <div className="sm:-mr-2 mr-0">
+                <IconButton className="inline-flex active:animate-press-down" onClick={() => setIsOpen(true)} icon={
+                    <MenuIcon strokeWidth="2" />
+                } />
+            </div>
+            <Modal isOpen={isOpen} setIsOpen={setIsOpen}>
                 <ModalContent
                     header={
                         <div className="inline-flex items-center w-full">
