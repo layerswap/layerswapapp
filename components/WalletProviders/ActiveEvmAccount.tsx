@@ -40,7 +40,7 @@ export const ActiveEvmAccountProvider: FC<Props> = ({ children }) => {
 
 export function useActiveEvmAccount() {
     const data = useContext(ActiveEvmAccountContext as Context<ActiveAccountState>)
-    if (data === null) {
+    if (!data) {
         throw new Error('useActiveEvmAccount must be used within a ActiveEvmAccountProvider')
     }
     return data
