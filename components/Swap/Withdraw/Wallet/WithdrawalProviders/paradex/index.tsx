@@ -10,7 +10,7 @@ import { WalletIcon } from 'lucide-react';
 import { WithdrawPageProps } from '../../Common/sharedTypes';
 import { useConnectModal } from '@/components/WalletModal';
 import { useActiveParadexAccount } from '@/components/WalletProviders/ActiveParadexAccount';
-import { useSelectedAccount, useUpdateBalanceAccount } from '@/context/balanceAccounts';
+import { useSelectedAccount, useSelectSwapAccount } from '@/context/swapAccounts';
 
 export const ParadexWalletWithdraw: FC<WithdrawPageProps> = ({ refuel, swapBasicData, swapId }) => {
 
@@ -41,7 +41,7 @@ const ConnectWalletModal = () => {
     const { source_network } = swapBasicData || {}
     const { provider } = useWallet(source_network, 'withdrawal')
     const { connect } = useConnectModal()
-    const selectSourceAccount = useUpdateBalanceAccount("from");
+    const selectSourceAccount = useSelectSwapAccount("from");
 
     const handleConnect = async () => {
         const result = await connect(provider)

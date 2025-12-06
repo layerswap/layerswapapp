@@ -9,7 +9,7 @@ import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
 import { ConnectWalletButton, SendTransactionButton } from '../../Common/buttons';
 import ActionMessages from '../../../messages/TransactionMessages';
 import WalletMessage from '../../../messages/Message';
-import { useSelectedAccount } from '@/context/balanceAccounts';
+import { useSelectedAccount } from '@/context/swapAccounts';
 import { useBalance } from '@/lib/balances/useBalance';
 
 export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {

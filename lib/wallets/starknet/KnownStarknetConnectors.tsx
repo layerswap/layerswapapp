@@ -2,6 +2,7 @@ import Argent from "@/components/icons/Wallets/Argent"
 import ArgentX from "@/components/icons/Wallets/ArgentX"
 import Braavos from "@/components/icons/Wallets/Braavos"
 import Keplr from "@/components/icons/Wallets/Keplr"
+import Xverse from "@/components/icons/Wallets/Xverse"
 
 const KnownStarknetConnectors = [
     {
@@ -19,6 +20,10 @@ const KnownStarknetConnectors = [
     {
         id: 'keplr',
         icon: Keplr
+    },
+    {
+        id: 'xverse wallet',
+        icon: Xverse
     }
 ]
 

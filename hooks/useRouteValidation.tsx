@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { useQueryState } from '@/context/query';
 import { useFormikContext } from 'formik';
 import { QuoteError } from './useFee';
-import { useSelectedAccount } from '@/context/balanceAccounts';
+import { useSelectedAccount } from '@/context/swapAccounts';
 import { ICON_CLASSES_WARNING } from '@/components/validationError/constants';
 
 interface ValidationDetails {

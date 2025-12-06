@@ -70,15 +70,15 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
                 ref={amountRef}
                 precision={fromCurrency?.precision}
                 tempValue={actionValue}
-                className="w-full text-[28px] leading-[34px] rounded-xl text-primary-text focus:outline-none focus:border-none focus:ring-0 duration-300 ease-in-out !bg-secondary-500 !font-normal group-[.exchange-amount-field]:px-2.5 group-[.exchange-amount-field]:pb-2 group-[.exchange-amount-field]:pr-2 group-[.exchange-amount-field]:bg-secondary-300! pl-0"
+                className="w-full text-[28px] leading-[34px] rounded-xl text-primary-text focus:outline-none focus:border-none focus:ring-0 duration-300 ease-in-out bg-secondary-500! font-normal! group-[.exchange-amount-field]:text-xl group-[.exchange-amount-field]:px-2.5 group-[.exchange-amount-field]:pb-2 group-[.exchange-amount-field]:pr-2 group-[.exchange-amount-field]:bg-secondary-300! pl-0"
                 onChange={e => {
                     /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                 }}
             />
             <div className={clsx(
-                "usd-suffix text-base leading-5 font-medium text-secondary-text pointer-events-none",
+                "usd-suffix text-base group-[.exchange-amount-field]:text-sm leading-5 font-medium text-secondary-text pointer-events-none",
                 {
-                    "absolute bottom-3": usdPosition === "right",
+                    "absolute bottom-3 group-[.exchange-amount-field]:bottom-3.5": usdPosition === "right",
                     "h-5": usdPosition !== "right",
                     "text-secondary-text/45": !!actionValueInUsd
                 },

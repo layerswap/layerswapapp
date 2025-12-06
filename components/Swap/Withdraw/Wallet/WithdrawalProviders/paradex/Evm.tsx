@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 import AuhorizeEthereum from '@/lib/wallets/paradex/Authorize/Ethereum';
 import WalletIcon from '@/components/icons/WalletIcon';
 import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
-import { useSelectedAccount } from '@/context/balanceAccounts';
+import { useSelectedAccount } from '@/context/swapAccounts';
 import useWallet from '@/hooks/useWallet';
 
 const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {

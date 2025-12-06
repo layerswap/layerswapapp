@@ -119,7 +119,7 @@ export const ModalTrigger = (props: ModalTriggerProps) => {
     }
 
     return (
-        <div className="shadow-sm/30 rounded-2xl flex items-center relative w-full z-10 self-end">
+        <div className="rounded-2xl flex items-center relative w-full z-10 self-end">
             <button
                 type="button"
                 onClick={openModal}

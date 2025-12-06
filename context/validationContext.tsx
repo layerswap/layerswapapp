@@ -6,7 +6,7 @@ import { transformFormValuesToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { resolveFormValidation } from '@/hooks/useFormValidation';
 import { resolveRouteValidation } from '@/hooks/useRouteValidation';
 import { useSwapDataState } from './swap';
-import { useSelectedAccount } from './balanceAccounts';
+import { useSelectedAccount } from './swapAccounts';
 
 export interface ValidationDetails {
     title?: string;

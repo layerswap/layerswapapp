@@ -6,7 +6,7 @@ import TransferTokenButton from "./TransferToken";
 import ActionMessages from "../../../messages/TransactionMessages";
 import { useQueryState } from "@/context/query";
 import { WithdrawPageProps } from "../../Common/sharedTypes";
-import { useSelectedAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount } from "@/context/swapAccounts";
 import useWallet from "@/hooks/useWallet";
 
 export const EVMWalletWithdrawal: FC<WithdrawPageProps> = ({

@@ -9,13 +9,13 @@ import { addressFormat } from "@/lib/address/formatter";
 import ManualAddressInput from "./ManualAddressInput";
 import Modal from "@/components/modal/modal";
 import ConnectWalletButton from "@/components/Common/ConnectWalletButton";
-import { Network, NetworkType, NetworkRoute } from "@/Models/Network";
+import { Network, NetworkRoute } from "@/Models/Network";
 import AddressBook from "./AddressBook";
 import AddressButton from "./AddressButton";
 import { useQueryState } from "@/context/query";
 import ConnectedWallets from "./ConnectedWallets";
 import { Wallet } from "@/Models/WalletProvider";
-import { useSelectedAccount, useUpdateBalanceAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts";
 
 export enum AddressGroup {
     ConnectedWallet = "Connected wallet",
@@ -60,14 +60,16 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
     const query = useQueryState()
     const { destination_address, to: destination, toExchange } = values
-    const selectDestinationAccount = useUpdateBalanceAccount("to");
+    const selectDestinationAccount = useSelectSwapAccount("to");
 
-    const { provider, unAvailableWallets } = useWallet(destination, 'autofil')
+    const { provider, unAvailableWallets } = useWallet(destination, 'autofill')
     const connectedWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
     const defaultAccount = useSelectedAccount("to", values.to?.name);
     const connectedWalletskey = connectedWallets?.map(w => w.addresses.join('')).join('')
     const [manualAddress, setManualAddress] = useState<string>('')
-    const [newAddress, setNewAddress] = useState<{ address: string, networkType: NetworkType | string } | undefined>()
+    
+    // Get manually added address from context (shared across all AddressPicker instances)
+    const manualAddressFromContext = defaultAccount?.id === 'manually_added' ? defaultAccount.address : undefined
 
     useEffect(() => {
         if (destination_address && destination && !isValidAddress(destination_address, destination)) {
@@ -83,10 +85,11 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
             address_book,
             destination,
             wallets: connectedWallets,
-            newAddress,
-            addressFromQuery: query.destination_address
+            manualAddressFromContext,
+            addressFromQuery: query.destination_address,
+            destination_address,
         })
-    }, [address_book, destination, connectedWallets, newAddress, query.destination_address, connectedWalletskey])
+    }, [address_book, destination, connectedWallets, manualAddressFromContext, query.destination_address, connectedWalletskey, destination_address])
 
     const destinationAddressItem = destination && destination_address ?
         groupedAddresses?.find(a => a.address.toLowerCase() === destination_address.toLowerCase())
@@ -182,7 +185,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                         <ManualAddressInput
                             manualAddress={manualAddress}
                             setManualAddress={setManualAddress}
-                            setNewAddress={(props) => { setNewAddress(props); updateDestAddress(props?.address) }}
+                            setNewAddress={(props) => updateDestAddress(props?.address)}
                             values={values}
                             partner={partner}
                             name={name}
@@ -227,14 +230,16 @@ const resolveAddressGroups = ({
     address_book,
     destination,
     wallets,
-    newAddress,
+    manualAddressFromContext,
     addressFromQuery,
+    destination_address,
 }: {
     address_book: AddressBookItem[] | undefined,
     destination: NetworkRoute | undefined,
     wallets: Wallet[] | undefined,
-    newAddress: { address: string, networkType: NetworkType | string } | undefined,
+    manualAddressFromContext: string | undefined,
     addressFromQuery: string | undefined,
+    destination_address: string | undefined,
 }) => {
 
     if (!destination) return
@@ -256,8 +261,9 @@ const resolveAddressGroups = ({
         addresses = [...addresses, ...recentlyUsedAddresses]
     }
 
-    if (newAddress?.address && newAddress.networkType === destination?.type) {
-        addresses.push({ address: newAddress.address, group: AddressGroup.ManualAdded })
+    // Include manually added address from context (shared across all instances)
+    if (manualAddressFromContext && isValidAddress(manualAddressFromContext, destination)) {
+        addresses.push({ address: manualAddressFromContext, group: AddressGroup.ManualAdded })
     }
 
     const uniqueAddresses = addresses.filter((a, index, self) => self.findIndex(t => addressFormat(t.address, destination) === addressFormat(a.address, destination)) === index)

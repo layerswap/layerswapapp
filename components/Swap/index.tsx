@@ -17,8 +17,8 @@ type Props = {
     partner?: Partner
 }
 
-const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal, partner }) => {
-    const { swapDetails, swapBasicData, quote, refuel, depositActionsResponse } = useSwapDataState()
+const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, partner, onCancelWithdrawal }) => {
+    const { swapDetails, swapBasicData, refuel, depositActionsResponse, quote, quoteIsLoading } = useSwapDataState()
 
     const swapStatus = swapDetails?.status || SwapStatus.UserTransferPending;
     const storedWalletTransactions = useSwapTransactionStore()
@@ -49,7 +49,7 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, onCancelWithd
                     && !(swapInputTransaction || storedWalletTransaction))) ?
                     (
                         swapBasicData?.use_deposit_address === true
-                            ? <ManualWithdraw swapBasicData={swapBasicData} quote={quote} depositActions={depositActionsResponse} refuel={refuel} partner={partner} type={type} />
+                            ? <ManualWithdraw swapBasicData={swapBasicData} depositActions={depositActionsResponse} refuel={refuel} partner={partner} type={type} quote={quote} isQuoteLoading={quoteIsLoading} />
                             : <Withdraw type={type} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} onCancelWithdrawal={onCancelWithdrawal} partner={partner} />
                     )
                     :

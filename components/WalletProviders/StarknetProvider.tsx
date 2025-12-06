@@ -6,7 +6,6 @@ import { useStarknetStore } from "../../stores/starknetWalletStore";
 import KnownInternalNames from "../../lib/knownIds";
 import useStarknet, { resolveStarknetWallet } from "../../lib/wallets/starknet/useStarknet";
 import { RpcMessage, RequestFnCall, RpcTypeToMessageMap } from "@starknet-io/starknet-types-07";
-import sleep from "@/lib/wallets/utils/sleep";
 //@ts-ignore
 import { ArgentMobileConnector } from "starknetkit/argentMobile";
 // @ts-ignore
@@ -97,6 +96,9 @@ const StarknetProvider: FC<{ children: ReactNode }> = ({ children }) => {
             }
             defaultConnectors.push(
                 new InjectedConnector({ options: { id: "braavos" } }),
+            )
+            defaultConnectors.push(
+                new InjectedConnector({ options: { id: "xverse" } }),
             )
         }
 

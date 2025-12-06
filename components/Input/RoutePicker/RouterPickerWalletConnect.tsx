@@ -12,7 +12,7 @@ import { SwapDirection, SwapFormValues } from "@/components/DTOs/SwapFormValues"
 import { WalletsIcons } from "@/components/Wallet/ConnectedWallets";
 import { useFormikContext } from "formik";
 import { isValidAddress } from "@/lib/address/validator";
-import { AccountIdentity, useBalanceAccounts, useUpdateBalanceAccount } from "@/context/balanceAccounts";
+import { AccountIdentity, useSwapAccounts, useSelectSwapAccount } from "@/context/swapAccounts";
 import { addressFormat } from "@/lib/address/formatter";
 
 const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) => {
@@ -23,8 +23,8 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
         setFieldValue
     } = useFormikContext<SwapFormValues>();
 
-    const balanceAccounts = useBalanceAccounts(direction)
-    const selectBalanceAccount = useUpdateBalanceAccount(direction)
+    const swapAccounts = useSwapAccounts(direction)
+    const selectSwapAccount = useSelectSwapAccount(direction)
 
     const { connect } = useConnectModal()
 
@@ -41,7 +41,7 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
         const { walletId, address, providerName } = props
         if (direction == 'to' && isValidAddress(address, values.to))
             setFieldValue(`destination_address`, address)
-        selectBalanceAccount({
+        selectSwapAccount({
             id: walletId,
             address,
             providerName,
@@ -50,7 +50,7 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
     }
 
     return <>
-        <AccountsPickerButton accounts={balanceAccounts} onOpenModalClick={() => setOpenModal(true)} />
+        <AccountsPickerButton accounts={swapAccounts} onOpenModalClick={() => setOpenModal(true)} />
         <VaulDrawer
             show={openModal}
             setShow={setOpenModal}
@@ -67,7 +67,7 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
                     </div>
                 </button>
                 {
-                    balanceAccounts.map((account, index) => {
+                    swapAccounts.map((account, index) => {
                         return (
                             <div key={index}>
                                 <div className="flex justify-between items-center px-4 pt-2">

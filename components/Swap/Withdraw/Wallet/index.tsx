@@ -7,7 +7,7 @@ import {
 import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { WithdrawalProvider } from "@/context/withdrawalContext";
 import useWallet from "@/hooks/useWallet";
-import { useSelectedAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount } from "@/context/swapAccounts";
 
 type Props = {
     swapData: SwapBasicData

@@ -5,7 +5,7 @@ import { useContractWalletsStore } from "../stores/contractWalletsStore"
 import resolveChain from "../lib/resolveChain"
 import { createPublicClient, http } from "viem"
 import { useSettingsState } from "../context/settings"
-import { useSelectedAccount } from "@/context/balanceAccounts"
+import { useSelectedAccount } from "@/context/swapAccounts"
 
 export default function useWalletTransferOptions() {
     const { swapBasicData } = useSwapDataState()
