@@ -58,7 +58,6 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
             const selectedAccountAddress = selectedWallet ? selectedSourceAccounts.find(acc => acc.providerName === provider.name && acc.id === selectedWallet.id)?.address : undefined
             const address = selectedAccountAddress ? selectedAccountAddress : wallet.address;
 
-
             const res = ResolveWalletSwapAccount(provider, wallet, address);
 
             if (!selectedAccountAddress) {
@@ -72,7 +71,7 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
                     return [...prev, res];
                 });
             }
-            
+
             return res
         }).filter(Boolean) as AccountIdentityWithSupportedNetworks[];
     }, [providers, selectedSourceAccounts])
@@ -166,7 +165,7 @@ export function useSelectedAccount(direction: SwapDirection, networkName: string
     if (values === undefined) {
         throw new Error('useSwapAccounts must be used within a SwapAccountsProvider');
     }
-    return direction === "from" ? values.sourceAccounts.find(acc => acc.provider.withdrawalSupportedNetworks?.some(n => n === networkName))
+    return direction === "from" ? values.sourceAccounts.find(acc => acc.walletWithdrawalSupportedNetworks?.some(n => n === networkName))
         :
         values.destinationAccounts.find(acc => {
             if ('walletAutofillSupportedNetworks' in acc) {
