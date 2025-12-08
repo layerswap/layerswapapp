@@ -9,11 +9,11 @@ import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { GroupedTokenElement, RowElement } from "@/Models/Route";
 import { getKey, useBalanceStore } from "@/stores/balanceStore";
 import { useSwapAccounts } from "@/context/swapAccounts";
-import clsx from "clsx";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
 import { ExtendedAddress } from "../Address/AddressPicker/AddressWithIcon";
 import { getTotalBalanceInUSD } from "@/helpers/balanceHelper";
 import { useMemo } from "react";
+import { isNewListed, NewBadge } from "@/lib/isNewListed";
 
 type TokenItemProps = {
     route: NetworkRoute;
@@ -54,29 +54,40 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     const formatted_balance_amount = (tokenbalance?.amount || tokenbalance?.amount === 0) ? truncateDecimals(tokenbalance?.amount, item.precision) : ''
     const usdAmount = (tokenbalance?.amount && item?.price_in_usd) ? item?.price_in_usd * tokenbalance?.amount : undefined;
 
+    const isNewlyListed = isNewListed(item?.listing_date);
+
     return <SelectItem.DetailedTitle
-        title={item.symbol}
+        title={<div className="flex items-center gap-2">
+            <p>
+                {item.symbol}
+            </p>
+            {
+                isNewlyListed &&
+                <NewBadge />
+            }
+        </div>}
         secondaryImageAlt={route.display_name}
         secondary={
             <div className="flex items-center gap-1">
                 <span>{route.display_name}</span>
                 <div className="transition-all duration-300 opacity-0 group-hover:opacity-100 group-hover:delay-400 click-delay-on-hover">
-                    {
-                        item.contract ?
-                            <ExtendedAddress network={route} isForCurrency showDetails address={item.contract} logo={item.logo} title={item.symbol} description={item.display_asset}>
-                                <div className="flex items-center gap-1 text-secondary-text text-xs cursor-pointer hover:text-primary-text">
-                                    <p className="max-w-[90px] truncate">
-                                        <span>•</span> <span>{item.display_asset || item.symbol}</span>
-                                    </p>
-                                    <Info className="h-3 w-3" />
-                                </div>
-                            </ExtendedAddress>
-                            :
-                            <p className="flex items-center gap-1 text-xs text-secondary-text">
-                                <span>•</span>
-                                <span className="truncate max-w-[80px]">{item.display_asset || item.symbol}</span>
+                    <ExtendedAddress
+                        network={item.contract ? route : undefined}
+                        isForCurrency
+                        showDetails
+                        address={item.contract || `${route.display_name} native coin`}
+                        logo={item.logo}
+                        title={item.symbol}
+                        description={item.display_asset}
+                        isNativeToken={!item.contract}
+                    >
+                        <div className="flex items-center gap-1 text-secondary-text text-xs cursor-pointer hover:text-primary-text">
+                            <p className="max-w-[90px] truncate">
+                                <span>•</span> <span>{item.display_asset || item.symbol}</span>
                             </p>
-                    }
+                            <Info className="h-3 w-3" />
+                        </div>
+                    </ExtendedAddress>
                 </div>
             </div>
         }
@@ -118,12 +129,24 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
     const hasLoadedBalances = totalInUSD !== null && Number(totalInUSD) > 0;
     const showTokenLogos = hasLoadedBalances && filteredNetworkTokens?.length;
 
+    const haveNewlyListedTokens = useMemo(() => item.tokens?.some(t => isNewListed(t.listing_date)), [item]);
+
     return (
         <SelectItem className="bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative pr-7 py-2">
             <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} className="rounded-md" />
             <SelectItem.Title>
                 <>
-                    <span>{item.display_name}</span>
+                    <span>
+                        <div className="flex items-center gap-2">
+                            <p>
+                                {item.display_name}
+                            </p>
+                            {
+                                haveNewlyListedTokens &&
+                                <NewBadge />
+                            }
+                        </div>
+                    </span>
 
                     {hasLoadedBalances ? (
                         <div className={`${showTokenLogos ? "flex flex-col space-y-0.5" : ""} ${hideTokenImages ? "hidden" : ""}`}>
@@ -185,6 +208,7 @@ export const GroupedTokenHeader = ({
     const swapAccounts = useSwapAccounts(direction)
 
     const tokens = item.items;
+    const haveNewlyListedTokens = useMemo(() => tokens.some(t => isNewListed(t.route.token.listing_date)), [tokens]);
 
     const balances = useBalanceStore(s => s.balances)
 
@@ -214,7 +238,6 @@ export const GroupedTokenHeader = ({
         const key = address && route.route ? getKey(address, route.route) : 'unknown'
 
         const tokenSymbol = route.token.symbol;
-        const networkName = route.route.name;
         const price = route.token.price_in_usd;
 
         const networkBalances = balances?.[key];
@@ -239,7 +262,16 @@ export const GroupedTokenHeader = ({
             />
             <SelectItem.Title>
                 <>
-                    <span>{mainToken.symbol}</span>
+                    <span><div className="flex items-center gap-2">
+                        <p>
+                            {mainToken.symbol}
+                        </p>
+                        {
+                            haveNewlyListedTokens &&
+                            <NewBadge />
+                        }
+                    </div>
+                    </span>
                     {hasLoadedBalances ? (
                         <div className={`${showNetworkIcons ? "flex flex-col space-y-0.5" : ""} ${hideTokenImages ? "invisible" : "visible"}`}>
                             <span className="text-secondary-text text-sm leading-4 font-medium">
