@@ -66,7 +66,7 @@ export const ActiveParadexAccountProvider: FC<Props> = ({ children }) => {
 
 export function useActiveParadexAccount() {
     const data = useContext(ActiveParadexAccountContext as Context<ActiveAccountState>)
-    if (data === null) {
+    if (!data) {
         throw new Error('useActiveParadexAccount must be used within a ActiveParadexAccountProvider')
     }
     return data

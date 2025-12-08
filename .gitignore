@@ -12,7 +12,6 @@ dist/
 # next.js
 *.next/
 /out/
-next-env.d.ts
 
 # production
 /build
@@ -41,3 +40,6 @@ storybook-static/*
 .sentryclirc
 .env*.local
 
+# typescript
+*.tsbuildinfo
+next-env.d.ts
