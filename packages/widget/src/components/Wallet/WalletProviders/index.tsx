@@ -59,17 +59,17 @@ const WalletsProviders: FC<{
 
     return (
         <WalletProvidersListContext.Provider value={walletProviders}>
-            <DynamicProviderWrapper
-                providers={walletProviders}
-                themeData={themeData}
-                appName={appName}
-            >
-                <WalletModalProvider>
+            <WalletModalProvider>
+                <DynamicProviderWrapper
+                    providers={walletProviders}
+                    themeData={themeData}
+                    appName={appName}
+                >
                     <WalletProvidersProvider walletProviders={providersWithWalletConnectionProvider as WalletProvider[]}>
                         {children}
                     </WalletProvidersProvider>
-                </WalletModalProvider>
-            </DynamicProviderWrapper>
+                </DynamicProviderWrapper>
+            </WalletModalProvider>
         </WalletProvidersListContext.Provider>
     )
 }
