@@ -21,19 +21,19 @@ const WalletsProviders: FC<{ children: JSX.Element | JSX.Element[], basePath: st
                     <StarknetProvider>
                         <EvmConnectorsProvider>
                             <Wagmi>
-                                <ActiveParadexAccountProvider>
-                                    <FuelProviderWrapper>
-                                        <ImtblPassportProvider>
-                                            <BitcoinProvider>
-                                                <WalletModalProvider>
+                                <WalletModalProvider>
+                                    <ActiveParadexAccountProvider>
+                                        <FuelProviderWrapper>
+                                            <ImtblPassportProvider>
+                                                <BitcoinProvider>
                                                     <WalletProvidersProvider>
                                                         {children}
                                                     </WalletProvidersProvider>
-                                                </WalletModalProvider>
-                                            </BitcoinProvider>
-                                        </ImtblPassportProvider>
-                                    </FuelProviderWrapper>
-                                </ActiveParadexAccountProvider>
+                                                </BitcoinProvider>
+                                            </ImtblPassportProvider>
+                                        </FuelProviderWrapper>
+                                    </ActiveParadexAccountProvider>
+                                </WalletModalProvider>
                             </Wagmi>
                         </EvmConnectorsProvider>
                     </StarknetProvider>

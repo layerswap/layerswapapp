@@ -197,7 +197,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 </div>
                 <div
                     onScroll={handleScroll}
-                    className={clsx('overflow-y-scroll max-sm:h-[55svh] -mr-4 pr-2 scrollbar:!w-1.5 scrollbar:!h-1.5 overflow-x-hidden scrollbar-thumb:bg-transparent', {
+                    className={clsx('overflow-y-scroll max-sm:h-[55svh] -mr-4 pr-2 scrollbar:w-1.5! scrollbar:h-1.5! overflow-x-hidden scrollbar-thumb:bg-transparent', {
                         'styled-scroll': isScrolling
                     })}
                 >

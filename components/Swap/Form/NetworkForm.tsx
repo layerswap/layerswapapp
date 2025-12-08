@@ -26,7 +26,7 @@ import { useSwapDataState } from "@/context/swap";
 import RefuelToggle from "@/components/FeeDetails/Refuel";
 import ReserveGasNote from "@/components/ReserveGasNote";
 import RefuelModal from "@/components/FeeDetails/RefuelModal";
-import { useSelectedAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount } from "@/context/swapAccounts";
 import posthog from "posthog-js";
 
 type Props = {
@@ -89,7 +89,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
             <DepositMethodComponent />
             <Form className="h-full grow flex flex-col flex-1 justify-between w-full gap-3">
                 <Widget.Content>
-                    <div className="w-full flex flex-col justify-between flex-1 gap-3">
+                    <div className="w-full flex flex-col justify-between flex-1">
                         <div className='flex-col relative flex justify-between gap-2 w-full leading-4'>
                             {
                                 !(query?.hideFrom && values?.from) && <SourcePicker
@@ -115,28 +115,32 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                 />
                             }
                         </div>
-                        {
-                            Number(values.amount) > 0 &&
-                            <ReserveGasNote
-                                maxAllowedAmount={minAllowedAmount}
-                                minAllowedAmount={maxAllowedAmount}
-                                onSubmit={handleReserveGas}
-                            />
-                        }
-                        {
-                            values.toAsset?.refuel && !query.hideRefuel &&
-                            <RefuelToggle
-                                quote={quote}
-                                onButtonClick={() => setOpenRefuelModal(true)}
-                                minAllowedAmount={minAllowedAmount}
-                            />
-                        }
-                        {
-                            routeValidation.message
-                                ? <ValidationError />
-                                : null
-                        }
-                        <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
+                        <div>
+                            {
+                                Number(values.amount) > 0 &&
+                                <ReserveGasNote
+                                    maxAllowedAmount={maxAllowedAmount}
+                                    minAllowedAmount={minAllowedAmount}
+                                    onSubmit={handleReserveGas}
+                                />
+                            }
+                            {
+                                values.toAsset?.refuel && !query.hideRefuel &&
+                                <RefuelToggle
+                                    quote={quote}
+                                    onButtonClick={() => setOpenRefuelModal(true)}
+                                    minAllowedAmount={minAllowedAmount}
+                                />
+                            }
+                            {
+                                routeValidation.message
+                                    ? <div className="mt-3">
+                                        <ValidationError />
+                                    </div>
+                                    : null
+                            }
+                            <QuoteDetails swapValues={values} quote={quote?.quote} reward={quote?.reward} isQuoteLoading={isQuoteLoading} />
+                        </div>
                     </div>
                 </Widget.Content>
                 <Widget.Footer showPoweredBy>

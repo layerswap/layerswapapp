@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { AuthorizeStarknet } from '@/lib/wallets/paradex/Authorize/Starknet';
 import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
 import { SendTransactionButton } from '../../Common/buttons';
-import { useSelectedAccount } from '@/context/balanceAccounts';
+import { useSelectedAccount } from '@/context/swapAccounts';
 import useWallet from '@/hooks/useWallet';
 
 const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
@@ -37,8 +37,10 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => 
                 if (!snAccount) {
                     throw Error("Starknet account not found")
                 }
-                const paradexAccount = await AuthorizeStarknet(snAccount as any)
-
+                if (!starknet?.node_url) {
+                    throw Error("Starknet node url not found")
+                }
+                const paradexAccount = await AuthorizeStarknet(snAccount as any, starknet.node_url)
                 const parsedCallData = JSON.parse(callData || "")
 
                 const res = await paradexAccount.execute(parsedCallData, { maxFee: '1000000000000000' });

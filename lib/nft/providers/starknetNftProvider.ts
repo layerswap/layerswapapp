@@ -40,7 +40,7 @@ export class StarknetNftProvider implements Provider {
         });
 
         try {
-            const contract = new Contract(NFT_ABI, contractAddress, provider);
+            const contract = new Contract({ abi: NFT_ABI, address: contractAddress, providerOrAccount: provider });
             const response = await contract.balanceOf(address);
             
             if (!response || typeof response.balance === 'undefined') {

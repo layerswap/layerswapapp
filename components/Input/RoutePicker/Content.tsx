@@ -11,6 +11,7 @@ import useWallet from "@/hooks/useWallet";
 import ConnectWalletButton from "@/components/Common/ConnectWalletButton";
 import { SearchComponent } from "../Search";
 import { useRoutePickerNavigation } from "@/helpers/navigation";
+import clsx from "clsx";
 
 type ContentProps = {
     onSelect: (route: NetworkRoute, token: NetworkRouteToken) => Promise<void> | void;
@@ -27,6 +28,23 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
     const [openValues, setOpenValues] = useState<string[]>(selectedRoute ? [selectedRoute] : [])
     const { shouldFocus } = useSelectorState();
     const { wallets } = useWallet()
+
+    const [isScrolling, setIsScrolling] = useState(false);
+    const scrollTimeout = useRef<any>(null);
+
+    const handleScroll = () => {
+        setIsScrolling(true);
+
+        if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+
+        scrollTimeout.current = setTimeout(() => {
+            setIsScrolling(false);
+        }, 1000);
+    };
+
+    useEffect(() => {
+        return () => clearTimeout(scrollTimeout.current as any);
+    }, []);
 
     const toggleAccordionItem = (value: string) => {
         setOpenValues((prev) =>
@@ -86,14 +104,20 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
     useEffect(() => {
         return () => setSearchQuery('')
     }, [])
-    return <div className="overflow-y-auto flex flex-col h-full z-40 openpicker" >
-        <SearchComponent
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            isOpen={shouldFocus}
-        />
+    return <div className="overflow-y-auto overflow-x-hidden flex flex-col h-full z-40 openpicker" >
+        <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={shouldFocus} />
         <LayoutGroup>
-            <motion.div layoutScroll className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll pr-3 h-full" ref={parentRef}>
+            <motion.div
+                layoutScroll
+                onScroll={handleScroll}
+                className={clsx(
+                    "select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden scrollbar:w-1! scrollbar:h-1! pr-0.5 scrollbar-thumb:bg-transparent h-full",
+                    {
+                        "styled-scroll!": isScrolling
+                    }
+                )}
+                ref={parentRef}
+            >
                 {
                     wallets.length === 0 && direction === 'from' && !searchQuery &&
                     <ConnectWalletButton

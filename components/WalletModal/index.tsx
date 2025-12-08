@@ -101,7 +101,7 @@ export const useConnectModal = () => {
 
     const context = useContext<ConnectModalContextType>(ConnectModalContext as Context<ConnectModalContextType>);
 
-    if (context === undefined) {
+    if (!context) {
         throw new Error('useConnectModal must be used within a ConnectModalProvider');
     }
 
