@@ -1,8 +1,8 @@
-import { Dispatch, FC, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
+import { FC, useEffect, useMemo, useRef, useState } from "react";
 import useWallet from "../../hooks/useWallet";
 import { useConnectModal, WalletModalConnector } from ".";
 import { InternalConnector, Wallet, WalletProvider } from "../../Models/WalletProvider";
-import { CircleX, Link2Off, RotateCw, SlidersHorizontal } from "lucide-react";
+import { CircleX, Link2Off, RotateCw } from "lucide-react";
 import { resolveWalletConnectorIcon } from "../../lib/wallets/utils/resolveWalletIcon";
 import { QRCodeSVG } from "qrcode.react";
 import CopyButton from "../buttons/copyButton";
@@ -18,6 +18,7 @@ import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
 import { ImageWithFallback } from "../Common/ImageWithFallback";
 import { SearchComponent } from "../Input/Search";
 import { featuredWalletsIds } from "@/context/evmConnectorsContext";
+import MenuIcon from "../icons/MenuIcon";
 
 const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { providers } = useWallet();
@@ -93,14 +94,24 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         }
     }
 
-    const handleSelectProvider = (providerName?: string) => {
-        const provider = filteredProviders.find(p => p.name === providerName)
-        if (!provider) return setSelectedProvider(undefined)
-        setSelectedProvider({ ...provider, isSelectedFromFilter: true })
+    const [selectedProviderNames, setSelectedProviderNames] = useState<string[]>([])
+
+    const handleSelectProvider = (providerNames: string[]) => {
+        setSelectedProviderNames(providerNames)
+        if (providerNames.length === 0) {
+            setSelectedProvider(undefined)
+        } else {
+            const provider = filteredProviders.find(p => p.name === providerNames[0])
+            if (provider) {
+                setSelectedProvider({ ...provider, isSelectedFromFilter: true })
+            }
+        }
     }
 
     const filteredProviders = providers.filter(p => !p.hideFromList)
-    const featuredProviders = selectedProvider ? [selectedProvider] : filteredProviders
+    const featuredProviders = selectedProviderNames.length > 0
+        ? filteredProviders.filter(p => selectedProviderNames.includes(p.name))
+        : (selectedProvider ? [selectedProvider] : filteredProviders)
 
     const allFeaturedConnectors = useMemo(() => featuredProviders.filter(g => g.availableWalletsForConnect && g.availableWalletsForConnect?.length > 0).map((provider) =>
         provider.availableWalletsForConnect?.filter(v => searchValue ? (v.name.toLowerCase().includes(searchValue?.toLowerCase())) : true).map((connector) => ({ ...connector, providerName: provider.name }))).flat(), [featuredProviders, searchValue])
@@ -190,8 +201,8 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                         (!selectedProvider || selectedProvider?.isSelectedFromFilter) &&
                         <ProviderPicker
                             providers={filteredProviders}
-                            selectedProviderName={selectedProvider?.name}
-                            setSelectedProviderName={handleSelectProvider}
+                            selectedProviderNames={selectedProviderNames}
+                            setSelectedProviderNames={handleSelectProvider}
                         />
                     }
                 </div>
@@ -315,46 +326,65 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
     )
 }
 
-const ProviderPicker: FC<{ providers: WalletProvider[], selectedProviderName: string | undefined, setSelectedProviderName: Dispatch<SetStateAction<string | undefined>> }> = ({ providers, selectedProviderName, setSelectedProviderName }) => {
+const ProviderPicker: FC<{ providers: WalletProvider[], selectedProviderNames: string[], setSelectedProviderNames: (providerNames: string[]) => void }> = ({ providers, selectedProviderNames, setSelectedProviderNames }) => {
     const values = providers.map(p => p.name)
+    const [open, setOpen] = useState(false)
 
     const onSelect = (item: string) => {
-        setOpen(false)
-        if (selectedProviderName === item) return setSelectedProviderName(undefined)
-        setSelectedProviderName(item)
+        if (selectedProviderNames.includes(item)) {
+            const next = selectedProviderNames.filter(p => p !== item)
+            setSelectedProviderNames(next)
+        } else {
+            setSelectedProviderNames([...selectedProviderNames, item])
+        }
     }
 
-    const [open, setOpen] = useState(false)
+    const handleClear = () => {
+        setSelectedProviderNames([])
+        setOpen(false)
+    }
 
     return (
         <Popover open={open} onOpenChange={() => setOpen(!open)}>
             <PopoverTrigger
-                className={clsx('p-3 border border-secondary-500 rounded-lg bg-secondary-600 hover:brightness-125', {
-                    '!bg-secondary-500 brightness-125': !!selectedProviderName,
+                className={clsx('p-2 border border-secondary-500 rounded-lg bg-secondary-600 hover:brightness-125 relative overflow-visible z-50', {
+                    'bg-secondary-300! brightness-125': selectedProviderNames.length > 0,
                 })}
             >
-                <SlidersHorizontal className="h-4 w-4 text-secondary-text" />
+                <MenuIcon className="h-6 w-6 text-secondary-text" />
+                {selectedProviderNames.length > 0 && (
+                    <div className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-secondary-300 border border-secondary-700 flex items-center justify-center text-[10px] font-medium text-primary-text z-50">
+                        {selectedProviderNames.length}
+                    </div>
+                )}
             </PopoverTrigger>
-            <PopoverContent align="end" className="min-w-40 !text-primary-text p-2 space-y-1 !bg-secondary-600 !rounded-xl">
+            <PopoverContent align="end" className="w-[130px]! text-primary-text! p-2 space-y-1 bg-secondary-600! rounded-xl!" style={{ width: '130px', minWidth: '130px', maxWidth: '130px' }}>
                 {
                     values.sort().map((item, index) => (
-                        <div key={index} className="px-3 py-1 text-left flex items-center w-full gap-3 hover:bg-secondary-800 rounded-lg transition-colors duration-200 text-secondary-text cursor-pointer">
+                        <div key={index} className="px-1 py-1 text-left flex items-center w-full gap-2.5 hover:bg-secondary-500 rounded-lg transition-colors duration-200 text-secondary-text cursor-pointer">
                             <Checkbox
                                 id={item}
-                                checked={selectedProviderName === item}
+                                checked={selectedProviderNames.includes(item)}
                                 onClick={() => onSelect(item)}
                             />
-                            <label htmlFor={item} className="w-full cursor-pointer">
+                            <label htmlFor={item} className="w-full cursor-pointer text-sm leading-[17px]">
                                 {item}
                             </label>
                         </div>
                     ))
                 }
+                {selectedProviderNames.length > 0 && (
+                    <button
+                        onClick={handleClear}
+                        className="w-full px-3 py-1 mt-1 text-sm font-medium text-secondary-text hover:text-primary-text bg-secondary-500 hover:bg-secondary-400 rounded-lg transition-colors duration-200"
+                    >
+                        Clear
+                    </button>
+                )}
             </PopoverContent>
         </Popover>
     )
 }
-
 
 type MultichainConnectorModalProps = {
     selectedConnector: WalletModalConnector,
