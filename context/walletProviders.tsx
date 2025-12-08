@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo, useState, useEffect } from "react";
+import React, { createContext, useContext, useMemo } from "react";
 import { WalletProvider } from "../Models/WalletProvider";
 import { useSettingsState } from "../context/settings";
 import VaulDrawer from "../components/modal/vaulModal";
@@ -20,8 +20,7 @@ import useWindowDimensions from "@/hooks/useWindowDimensions";
 
 const WalletProvidersContext = createContext<WalletProvider[]>([]);
 
-// Inner component that uses all the wallet hooks (client-side only)
-const WalletProvidersInner: React.FC<React.PropsWithChildren> = ({ children }) => {
+export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
     const { networks } = useSettingsState();
     const isMobilePlatform = isMobile();
     const { isMobile: isMobileSize } = useWindowDimensions()
@@ -80,26 +79,6 @@ const WalletProvidersInner: React.FC<React.PropsWithChildren> = ({ children }) =
             </VaulDrawer>
         </WalletProvidersContext.Provider>
     );
-};
-
-// Wrapper component that ensures client-side only rendering for wallet hooks
-export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    // During SSR or before hydration, render children with empty provider
-    if (!mounted) {
-        return (
-            <WalletProvidersContext.Provider value={[]}>
-                {children}
-            </WalletProvidersContext.Provider>
-        );
-    }
-
-    return <WalletProvidersInner>{children}</WalletProvidersInner>;
 };
 
 export const useWalletProviders = () => useContext(WalletProvidersContext);
