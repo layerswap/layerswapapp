@@ -190,7 +190,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     return (
         <>
             <div className="text-primary-text space-y-3 flex flex-col w-full styled-scroll relative h-full">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 pt-1">
                     <SearchComponent
                         searchQuery={searchValue || ""}
                         setSearchQuery={setSearchValue}
@@ -358,16 +358,17 @@ const ProviderPicker: FC<{ providers: WalletProvider[], selectedProviderNames: s
                     </div>
                 )}
             </PopoverTrigger>
-            <PopoverContent align="end" className="w-[130px]! text-primary-text! p-2 space-y-1 bg-secondary-600! rounded-xl!" style={{ width: '130px', minWidth: '130px', maxWidth: '130px' }}>
+            <PopoverContent align="end" className="w-[130px]! text-primary-text! p-2 space-y-1 bg-secondary-500! rounded-xl!" style={{ width: '130px', minWidth: '130px', maxWidth: '130px' }}>
                 {
                     values.sort().map((item, index) => (
-                        <div key={index} className="px-1 py-1 text-left flex items-center w-full gap-2.5 hover:bg-secondary-500 rounded-lg transition-colors duration-200 text-secondary-text cursor-pointer">
+                        <div key={index} onClick={() => onSelect(item)} className="px-1 py-1 text-left flex items-center w-full gap-2.5 hover:bg-secondary-400 rounded-lg transition-colors duration-200 text-secondary-text cursor-pointer">
                             <Checkbox
                                 id={item}
                                 checked={selectedProviderNames.includes(item)}
-                                onClick={() => onSelect(item)}
+                                onClick={(e) => e.stopPropagation()}
+                                onCheckedChange={() => onSelect(item)}
                             />
-                            <label htmlFor={item} className="w-full cursor-pointer text-sm leading-[17px]">
+                            <label htmlFor={item} className="w-full cursor-pointer text-sm leading-[17px]" onClick={(e) => e.preventDefault()}>
                                 {item}
                             </label>
                         </div>
@@ -376,7 +377,7 @@ const ProviderPicker: FC<{ providers: WalletProvider[], selectedProviderNames: s
                 {selectedProviderNames.length > 0 && (
                     <button
                         onClick={handleClear}
-                        className="w-full px-3 py-1 mt-1 text-sm font-medium text-secondary-text hover:text-primary-text bg-secondary-500 hover:bg-secondary-400 rounded-lg transition-colors duration-200"
+                        className="w-full px-3 py-1 mt-1 text-sm font-medium text-secondary-text hover:text-primary-text bg-secondary-300 hover:bg-secondary-200 rounded-lg transition-colors duration-200"
                     >
                         Clear
                     </button>
