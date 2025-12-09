@@ -71,15 +71,15 @@ const Footer = () => {
                 ))}
             </div>
             <div className="flex justify-center mt-3 md:mt-0 gap-6 order-2 place-self-center">
-                <Link target="_blank" href="https://docs.layerswap.io/user-docs/more-information/privacy-policy/" className="text-xs leading-6 text-primary-text-muted hover:text-opacity-70 duration-200 transition-all">
+                <Link target="_blank" href="https://docs.layerswap.io/user-docs/more-information/privacy-policy/" className="text-xs leading-6 text-primary-text-tertiary hover:text-opacity-70 duration-200 transition-all">
                     Privacy Policy
                 </Link>
-                <Link target="_blank" href="https://docs.layerswap.io/user-docs/more-information/terms-of-services/" className="text-xs leading-6 text-primary-text-muted hover:text-opacity-70 duration-200 transition-all">
+                <Link target="_blank" href="https://docs.layerswap.io/user-docs/more-information/terms-of-services/" className="text-xs leading-6 text-primary-text-tertiary hover:text-opacity-70 duration-200 transition-all">
                     Terms of Services
                 </Link>
             </div>
             <div className="mt-3 order-1 md:mt-0 place-self-start">
-                <p className="text-center text-xs text-primary-text-muted leading-6">
+                <p className="text-center text-xs text-primary-text-tertiary leading-6">
                     &copy; {new Date().getFullYear()} Layerswap Labs, Inc. All rights reserved.
                 </p>
             </div>

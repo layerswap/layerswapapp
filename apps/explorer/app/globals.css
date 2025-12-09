@@ -47,13 +47,10 @@
   --color-secondary-900: rgb(var(--ls-colors-secondary-900, 6, 10, 20));
   --color-secondary-text: rgb(var(--ls-colors-secondary-text, 163, 173, 194));
 
-  --color-coinbase-primary: rgb(74, 108, 238);
-  --color-coinbase-diabled: rgb(25, 26, 69);
-
   --color-warning-foreground: rgb(var(--ls-colors-warning-foreground, 255, 201, 74));
   --color-warning-background: rgb(var(--ls-colors-warning-background, 47, 43, 29));
-  --color-error-foreground: rgb(var(--ls-color-error-foreground, 255, 97, 97));
-  --color-error-background: rgb(var(--ls-color-error-background, 46, 27, 27));
+  --color-error-foreground: rgb(var(--ls-colors-error-foreground, 255, 97, 97));
+  --color-error-background: rgb(var(--ls-colors-error-background, 46, 27, 27));
   --color-success-foreground: rgb(var(--ls-colors-success-foreground, 89, 224, 125));
   --color-success-background: rgb(var(--ls-colors-success-background, 14, 43, 22));
 
