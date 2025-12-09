@@ -33,41 +33,50 @@ type FooterProps = {
     showPoweredBy?: boolean
 }
 
-const Comp = ({ children, hidden, sticky = true }: FooterProps) => {
+const Comp = ({ children, hidden, sticky = true, showPoweredBy }: FooterProps) => {
     let [footerRef, { height }] = useMeasure();
 
     return (
-        sticky ?
-            <>
-                <motion.div
-                    ref={footerRef}
-                    transition={{
-                        duration: 0.15,
-                    }}
-                    custom={{ direction: -1, width: 100 }}
-                    variants={variants}
-                    className={`text-primary-text text-base
-                        max-sm:fixed
-                        max-sm:inset-x-0
-                        max-sm:bottom-0 
-                        max-sm:z-30
-                        max-sm:bg-secondary-700 
-                        max-sm:shadow-widget-footer 
-                        max-sm:p-4 
-                        max-sm:px-4 
-                        max-sm:w-full ${hidden ? 'animation-slide-out' : ''} w-full`}>
-                    {children}
-                </motion.div>
+        <>
+            {
 
-                <div style={{ height: `${height}px` }}
-                    className={`text-primary-text text-base      
-                             max-sm:inset-x-0
-                             max-sm:bottom-0 
-                             max-sm:p-4 max-sm:w-full invisible sm:hidden w-full`}>
-                </div>
-            </>
-            :
-            children
+                sticky ?
+                    <>
+                        <motion.div
+                            ref={footerRef}
+                            transition={{
+                                duration: 0.15,
+                            }}
+                            custom={{ direction: -1, width: 100 }}
+                            variants={variants}
+                            className={`text-primary-text text-base
+            max-sm:fixed
+            max-sm:inset-x-0
+            max-sm:bottom-0 
+            max-sm:z-30
+            max-sm:bg-secondary-700 
+            max-sm:shadow-widget-footer 
+            max-sm:p-4 
+            max-sm:px-4 
+            max-sm:w-full ${hidden ? 'animation-slide-out' : ''} w-full`}>
+                            {children}
+                        </motion.div>
+
+                        <div style={{ height: `${height}px` }}
+                            className={`text-primary-text text-base      
+                 max-sm:inset-x-0
+                 max-sm:bottom-0 
+                 max-sm:p-4 max-sm:w-full invisible sm:hidden w-full`}>
+                        </div>
+                    </>
+                    :
+                    <div
+                        className={clsx('space-y-3', { 'mb-3 sm:mb-0': !showPoweredBy })}
+                    >
+                        {children}
+                    </div>
+            }
+        </>
     )
 }
 
@@ -76,7 +85,7 @@ const Footer = ({ children, hidden, sticky, showPoweredBy }: FooterProps) => {
     const isPoweredByVisible = !AppSettings.ThemeData?.hidePoweredBy && showPoweredBy
 
     return (
-        <Comp hidden={hidden} sticky={isFooterSticky ? sticky : false}>
+        <Comp hidden={hidden} sticky={isFooterSticky ? sticky : false} showPoweredBy={isPoweredByVisible}>
             {children}
             {
                 isPoweredByVisible &&
