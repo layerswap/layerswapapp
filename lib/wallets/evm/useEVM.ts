@@ -108,8 +108,8 @@ export default function useEVM(): WalletProvider {
 
         return dedupePreferInjected(allConnectors.filter(filterConnectors))
             .map(w => {
-                const isWalletConnectSupported = walletConnectConnectors.some(w2 => w2.name.toLowerCase().includes(w.name.toLowerCase()) && (w2.mobile.universal || w2.mobile.native || w2?.desktop?.native || w2?.desktop?.universal)) || w.name === "WalletConnect"
-                const walletConnectWallet = walletConnectConnectors.find(w2 => w2.name.toLowerCase() === w.name.toLowerCase() || w2.id.toLowerCase() === w.id.toLowerCase())
+                const walletConnectWallet = walletConnectConnectors.find(w2 => w2.name.toLowerCase().includes(w.name.toLowerCase()) || w2.id.toLowerCase() === w.id.toLowerCase())
+                const isWalletConnectSupported = walletConnectWallet?.mobile.universal || walletConnectWallet?.mobile.native || walletConnectWallet?.desktop?.native || walletConnectWallet?.desktop?.universal || w.name === "WalletConnect"
                 return {
                     ...w,
                     order: resolveWalletConnectorIndex(w.id),
@@ -157,7 +157,7 @@ export default function useEVM(): WalletProvider {
                     })
                 }
             }
-            else if ((connector.type !== 'injected' && connector.isMobileSupported && connector.id !== "coinbaseWalletSDK" && connector.id !== "metaMaskSDK") || internalConnector.showQrCode) {
+            else if ((connector.type !== 'injected' && connector.isMobileSupported && connector.id !== "coinbaseWalletSDK" && connector.id !== "metaMaskSDK")) {
                 setSelectedConnector({ ...connector, qr: { state: 'loading', value: undefined }, showQrCode: internalConnector.showQrCode })
                 getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
                     setSelectedConnector({ ...connector, icon: base64Icon, qr: { state: 'fetched', value: uri }, showQrCode: internalConnector.showQrCode })
