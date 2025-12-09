@@ -1,20 +1,20 @@
 import { BookOpen, Gift, Map, Home, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus } from "lucide-react";
 import { useRouter } from "next/router";
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 import { useIntercom } from "react-use-intercom";
 import ChatIcon from "../icons/ChatIcon";
-import inIframe from "../utils/inIframe";
 import DiscordLogo from "../icons/DiscordLogo";
 import GitHubLogo from "../icons/GitHubLogo";
 import SubstackLogo from "../icons/SubstackLogo";
 import TwitterLogo from "../icons/TwitterLogo";
 import Link from "next/link";
-import Popover from "../modal/popover";
 import SendFeedback from "../sendFeedback";
 import YoutubeLogo from "../icons/YoutubeLogo";
 import Menu from "./Menu";
 import dynamic from "next/dynamic";
 import { MenuStep } from "../../Models/Wizard";
+import VaulDrawer from "../modal/vaulModal";
+import { useSettingsState } from "@/context/settings";
 
 const WalletsMenu = dynamic(() => import("../Wallet/ConnectedWallets").then((comp) => comp.WalletsMenu), {
     loading: () => <></>
@@ -23,12 +23,8 @@ const WalletsMenu = dynamic(() => import("../Wallet/ConnectedWallets").then((com
 const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ goToStep }) => {
     const router = useRouter();
     const { boot, show, update } = useIntercom()
-    const [embedded, setEmbedded] = useState<boolean>()
     const [openFeedbackModal, setOpenFeedbackModal] = useState(false);
-
-    useEffect(() => {
-        setEmbedded(inIframe())
-    }, [])
+    const { isEmbedded } = useSettingsState()
 
     const handleCloseFeedback = () => {
         setOpenFeedbackModal(false)
@@ -56,7 +52,7 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
                     }
                 </>
                 <>
-                    {!embedded && router.pathname != '/campaigns' &&
+                    {!isEmbedded && router.pathname != '/campaigns' &&
                         <Menu.Item pathname='/campaigns' icon={<Gift className="h-5 w-5" />} >
                             Campaigns
                         </Menu.Item>
@@ -89,22 +85,21 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
             </Menu.Group>
 
             <Menu.Group>
-                <Popover
-                    opener={
-                        <Menu.Item onClick={() => setOpenFeedbackModal(true)} target="_blank" icon={<MessageSquarePlus className="h-5 w-5" />} >
-                            Suggest a Feature
-                        </Menu.Item>
-                    }
-                    isNested={true}
+                <Menu.Item onClick={() => setOpenFeedbackModal(true)} target="_blank" icon={<MessageSquarePlus className="h-5 w-5" />} >
+                    Suggest a Feature
+                </Menu.Item>
+                <VaulDrawer
                     show={openFeedbackModal}
                     header="Suggest a Feature"
                     setShow={setOpenFeedbackModal}
-                    popoverId={"feedback"}
+                    modalId="suggestFeature"
                 >
-                    <div className="p-0 md:max-w-md">
-                        <SendFeedback onSend={handleCloseFeedback} />
-                    </div>
-                </Popover>
+                    <VaulDrawer.Snap id="item-1">
+                        <div className="p-0 md:max-w-md">
+                            <SendFeedback onSend={handleCloseFeedback} />
+                        </div>
+                    </VaulDrawer.Snap>
+                </VaulDrawer>
             </Menu.Group>
 
             <div className="space-y-3 w-full">

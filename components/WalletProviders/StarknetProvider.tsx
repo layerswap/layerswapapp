@@ -5,13 +5,15 @@ import { useSettingsState } from "../../context/settings";
 import { useStarknetStore } from "../../stores/starknetWalletStore";
 import KnownInternalNames from "../../lib/knownIds";
 import useStarknet, { resolveStarknetWallet } from "../../lib/wallets/starknet/useStarknet";
-import { RpcMessage, RequestFnCall, RpcTypeToMessageMap } from "@starknet-io/starknet-types-07";
+import { RpcMessage, RequestFnCall, RpcTypeToMessageMap } from "@starknet-io/types-js";
 //@ts-ignore
-import { ArgentMobileConnector } from "starknetkit/argentMobile";
+import { ArgentMobileConnector } from "starknetkit/argentMobile"
 // @ts-ignore
 import { InjectedConnector } from "starknetkit/injected"
 // @ts-ignore
 import { WebWalletConnector } from "starknetkit/webwallet"
+// @ts-ignore
+import { ControllerConnector } from "starknetkit/controller"
 
 const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b';
 class DiscoveryConnector extends Connector {
@@ -117,9 +119,14 @@ const StarknetProvider: FC<{ children: ReactNode }> = ({ children }) => {
                 dappName: 'Layerswap',
                 projectId: WALLETCONNECT_PROJECT_ID,
                 url: 'https://www.layerswap.io/app/',
-                description: 'Move crypto across exchanges, blockchains, and wallets.',
+                description: 'Move crypto across exchanges, blockchains, and wallets.'
             }
         }))
+
+        defaultConnectors.push(
+            new ControllerConnector(),
+        )
+
         defaultConnectors.push(new WebWalletConnector())
 
         return defaultConnectors
@@ -176,9 +183,9 @@ const StarknetWalletInitializer = () => {
             }
         };
         checkConnectorsReady();
-        
+
         const interval = setInterval(checkConnectorsReady, 500);
-        
+
         return () => clearInterval(interval);
     }, [connectors, connectorsReady, starknetAccounts])
 
