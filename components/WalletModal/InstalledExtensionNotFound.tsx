@@ -1,10 +1,13 @@
-import { Dispatch, FC, SetStateAction } from "react";
+import { FC } from "react";
 import { WalletModalConnector } from ".";
 import { ScanLine } from "lucide-react";
 import { resolveWalletConnectorIcon } from "../../lib/wallets/utils/resolveWalletIcon";
 import SubmitButton from "../buttons/submitButton";
 
-export const InstalledExtensionNotFound: FC<{ selectedConnector: WalletModalConnector, setSelectedConnector: Dispatch<SetStateAction<WalletModalConnector | undefined>> }> = ({ selectedConnector, setSelectedConnector }) => {
+export const InstalledExtensionNotFound: FC<{
+    selectedConnector: WalletModalConnector,
+    onConnect: (connector: WalletModalConnector) => void
+}> = ({ selectedConnector, onConnect }) => {
     const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector?.name, iconUrl: selectedConnector.icon });
     return <div className='w-full h-[60vh] sm:h-full flex flex-col justify-between font-semibold'>
         <div className="flex grow items-center justify-center">
@@ -17,7 +20,7 @@ export const InstalledExtensionNotFound: FC<{ selectedConnector: WalletModalConn
             </div>
         </div>
         <SubmitButton
-            onClick={() => { if (selectedConnector.qr) { setSelectedConnector({ ...selectedConnector, showQrCode: true }) } }}
+            onClick={() => { onConnect({ ...selectedConnector, showQrCode: true }) }}
             buttonStyle="secondary"
             className="w-full"
         >

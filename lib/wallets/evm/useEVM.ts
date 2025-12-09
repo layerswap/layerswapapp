@@ -10,7 +10,7 @@ import { isMobile } from "../../isMobile"
 import convertSvgComponentToBase64 from "@/components/utils/convertSvgComponentToBase64"
 import { LSConnector } from "../connectors/types"
 import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvider"
-import { useConnectModal } from "@/components/WalletModal"
+import { useConnectModal, WalletModalConnector } from "@/components/WalletModal"
 import { explicitInjectedProviderDetected } from "../connectors/explicitInjectedProviderDetected"
 import sleep from "../utils/sleep"
 import { useEvmConnectors } from "@/context/evmConnectorsContext"
@@ -120,7 +120,7 @@ export default function useEVM(): WalletProvider {
             })
     }, [allConnectors, walletConnectConnectors])
 
-    const connectWallet = useCallback(async (props: { connector: InternalConnector }) => {
+    const connectWallet = useCallback(async (props: { connector: WalletModalConnector }) => {
         try {
             const internalConnector = props?.connector;
             if (!internalConnector) return;
@@ -130,7 +130,7 @@ export default function useEVM(): WalletProvider {
                 if (!walletConnectConnector) throw new Error("Connector not found")
                 await addWalletConnectWallet(walletConnectConnector)
 
-                connector = await new Promise<InternalConnector & LSConnector>((res, rej) => {
+                connector = await new Promise<WalletModalConnector & LSConnector>((res, rej) => {
                     pendingId.current = walletConnectConnector.id
                     pendingResolve.current = res
                     setTimeout(() => {
@@ -157,10 +157,10 @@ export default function useEVM(): WalletProvider {
                     })
                 }
             }
-            else if (connector.type !== 'injected' && connector.isMobileSupported && connector.id !== "coinbaseWalletSDK" && connector.id !== "metaMaskSDK") {
-                setSelectedConnector({ ...connector, qr: { state: 'loading', value: undefined } })
+            else if ((connector.type !== 'injected' && connector.isMobileSupported && connector.id !== "coinbaseWalletSDK" && connector.id !== "metaMaskSDK") || internalConnector.showQrCode) {
+                setSelectedConnector({ ...connector, qr: { state: 'loading', value: undefined }, showQrCode: internalConnector.showQrCode })
                 getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
-                    setSelectedConnector({ ...connector, icon: base64Icon, qr: { state: 'fetched', value: uri } })
+                    setSelectedConnector({ ...connector, icon: base64Icon, qr: { state: 'fetched', value: uri }, showQrCode: internalConnector.showQrCode })
                 })
             }
 

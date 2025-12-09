@@ -1,6 +1,6 @@
 import { FC, useEffect, useRef, useState } from "react";
 import useWallet from "../../hooks/useWallet";
-import { useConnectModal } from ".";
+import { useConnectModal, WalletModalConnector } from ".";
 import { InternalConnector, Wallet, WalletProvider } from "../../Models/WalletProvider";
 import clsx from "clsx";
 import Connector from "./Connector";
@@ -36,7 +36,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         return () => clearTimeout(scrollTimeout.current as any);
     }, []);
 
-    const connect = async (connector: InternalConnector, provider: WalletProvider) => {
+    const connect = async (connector: WalletModalConnector, provider: WalletProvider) => {
         try {
             setConnectionError(undefined)
             if (connector?.isMultiChain) {
@@ -44,6 +44,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 return;
             }
             setSelectedConnector(connector)
+            if (connector?.hasBrowserExtension && !connector?.showQrCode) return
             if (connector.installUrl) return
             if (!provider.ready) {
                 setConnectionError("Wallet provider is still initializing. Please wait a moment and try again.")
@@ -107,18 +108,18 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         setSelectedProvider({ ...provider, isSelectedFromFilter: true })
     }
 
-    if (selectedConnector?.hasBrowserExtension && !selectedConnector?.showQrCode && selectedConnector?.qr?.state) {
-        return <InstalledExtensionNotFound selectedConnector={selectedConnector} setSelectedConnector={setSelectedConnector} />
+    if (selectedConnector?.hasBrowserExtension && !selectedConnector?.showQrCode) {
+        const provider = featuredProviders.find(p => p.name === selectedConnector?.providerName)
+        return <InstalledExtensionNotFound selectedConnector={selectedConnector} onConnect={(connector) => { connect(connector, provider!) }} />
     }
     if (selectedConnector?.qr?.state && (!selectedConnector?.hasBrowserExtension || selectedConnector?.showQrCode)) {
         return <WalletQrCode selectedConnector={selectedConnector} />
     }
 
     if (selectedConnector) {
-        const connector = featuredConnectors.find(c => c?.name === selectedConnector.name)
-        const provider = featuredProviders.find(p => p.name === connector?.providerName)
+        const provider = featuredProviders.find(p => p.name === selectedConnector?.providerName)
         return <LoadingConnect
-            onRetry={() => { (connector && provider) && connect(connector, provider) }}
+            onRetry={() => { (selectedConnector && provider) && connect(selectedConnector, provider) }}
             selectedConnector={selectedConnector}
             connectionError={connectionError}
         />
