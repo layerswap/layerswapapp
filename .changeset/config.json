@@ -13,6 +13,7 @@
   },
   "ignore": [
     "@layerswap/bridge",
-    "widget-playground"
+    "widget-playground",
+    "layerswap-explorer"
   ]
 }
