@@ -141,7 +141,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                     </div>
                     <div>
                         <span>
-                            {swapInputTransaction && swapInputTransaction?.confirmations >= 0 && (
+                            {swapInputTransaction && swapInputTransaction?.confirmations > 0 && (
                                 <div>
                                     <span className='whitespace-nowrap'>| Confirmations </span>
                                     <span className="text-primary-text ml-1">
