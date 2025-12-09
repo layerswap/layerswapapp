@@ -1,9 +1,8 @@
 import { BookOpen, Gift, Map, Home, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus } from "lucide-react";
 import { useRouter } from "next/router";
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 import { useIntercom } from "react-use-intercom";
 import ChatIcon from "../icons/ChatIcon";
-import inIframe from "../utils/inIframe";
 import DiscordLogo from "../icons/DiscordLogo";
 import GitHubLogo from "../icons/GitHubLogo";
 import SubstackLogo from "../icons/SubstackLogo";
@@ -15,6 +14,7 @@ import Menu from "./Menu";
 import dynamic from "next/dynamic";
 import { MenuStep } from "../../Models/Wizard";
 import VaulDrawer from "../modal/vaulModal";
+import { useSettingsState } from "@/context/settings";
 
 const WalletsMenu = dynamic(() => import("../Wallet/ConnectedWallets").then((comp) => comp.WalletsMenu), {
     loading: () => <></>
@@ -23,12 +23,8 @@ const WalletsMenu = dynamic(() => import("../Wallet/ConnectedWallets").then((com
 const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ goToStep }) => {
     const router = useRouter();
     const { boot, show, update } = useIntercom()
-    const [embedded, setEmbedded] = useState<boolean>()
     const [openFeedbackModal, setOpenFeedbackModal] = useState(false);
-
-    useEffect(() => {
-        setEmbedded(inIframe())
-    }, [])
+    const { isEmbedded } = useSettingsState()
 
     const handleCloseFeedback = () => {
         setOpenFeedbackModal(false)
@@ -56,7 +52,7 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
                     }
                 </>
                 <>
-                    {!embedded && router.pathname != '/campaigns' &&
+                    {!isEmbedded && router.pathname != '/campaigns' &&
                         <Menu.Item pathname='/campaigns' icon={<Gift className="h-5 w-5" />} >
                             Campaigns
                         </Menu.Item>
