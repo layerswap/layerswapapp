@@ -5,12 +5,11 @@ export type WalletModalConnector = InternalConnector & {
     qr?: ({
         state: 'loading',
         value: undefined,
-        showQrCode?: boolean
     } | {
         state: 'fetched',
         value: string,
-        showQrCode?: boolean
     });
+    showQrCode?: boolean
 }
 
 export type ModalWalletProvider = WalletProvider & {
