@@ -1,6 +1,6 @@
 {
   "name": "@layerswap/wallet-evm",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "EVM Wallet Provider for Layerswap Widget",
   "type": "module",
   "main": "dist/esm/index.js",
@@ -19,7 +19,7 @@
   ],
   "scripts": {
     "build": "pnpm run clean && pnpm run build:esm+types",
-    "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm",
+    "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm && tsc-alias -p tsconfig.json --outDir ./dist/types",
     "check:types": "tsc --noEmit",
     "clean": "rimraf dist tsconfig.tsbuildinfo actions chains codegen experimental internal query",
     "dev": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types --watch"
@@ -49,25 +49,12 @@
   "dependencies": {
     "@metamask/sdk": "^0.33.1",
     "@walletconnect/ethereum-provider": "2.21.8",
-    "axios": "catalog:",
-    "bignumber.js": "^9.3.1",
-    "blake2b": "^2.1.4",
-    "bn.js": "^5.2.0",
-    "crypto-js": "^4.1.1",
-    "ethereumjs-util": "^7.1.5",
     "ethers": "5.7.2",
-    "js-sha3": "^0.8.0",
-    "js-sha512": "^0.9.0",
-    "jsbn": "^1.1.0",
-    "lucide-react": "^0.379.0",
-    "swr": "catalog:",
-    "web-encoding": "^1.1.5",
-    "zksync": "0.13.1"
+    "js-sha3": "^0.8.0"
   },
   "devDependencies": {
     "@layerswap/widget": "workspace:^",
     "@tailwindcss/postcss": "^4.0.15",
-    "@tanstack/react-query": "catalog:",
     "@types/react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",

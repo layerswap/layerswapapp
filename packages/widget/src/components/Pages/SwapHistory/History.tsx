@@ -67,7 +67,7 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
 
     const rowVirtualizer = useVirtualizer({
         count: (list?.length || 0),
-        getScrollElement: () => window.document.getElementById('virtualListContainer'),
+        getScrollElement: () => parentRef.current,
         estimateSize: () => 35,
     })
 
@@ -229,7 +229,7 @@ const BlankHistory = ({ onNewTransferClick }: BlankHistoryProps) => {
     return <div className="w-full h-full min-h-[inherit] flex flex-col justify-between items-center space-y-10">
         <div />
         <div className="w-full h-full flex flex-col justify-center items-center ">
-            <HistoryItemSceleton className="scale-[.63] w-full shadow-lg mr-7" />
+            <HistoryItemSceleton className="scale-[.63] w-full shadow-card mr-7" />
             <HistoryItemSceleton className="scale-[.63] -mt-12 shadow-card ml-7 w-full" />
             <div className="mt-2 text-center space-y-2">
                 <h1 className="text-secondary-text text-[28px] font-bold tracking-wide" >

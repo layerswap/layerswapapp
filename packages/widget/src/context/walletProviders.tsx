@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useMemo } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { WalletConnectionProvider, WalletProvider } from "@/types";
 import { useSettingsState } from "./settings";
 import VaulDrawer from "@/components/Modal/vaulModal";
@@ -8,12 +8,17 @@ import { ChevronLeft } from "lucide-react";
 import ConnectorsList from "@/components/Wallet/WalletModal/ConnectorsList";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { isMobile } from "@/lib/wallets/utils/isMobile";
+import AppSettings from "@/lib/AppSettings";
+import { filterSourceNetworks } from "@/helpers/filterSourceNetworks";
+import useWindowDimensions from "@/hooks/useWindowDimensions";
 
 const WalletProvidersContext = createContext<WalletConnectionProvider[]>([]);
 
 export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walletProviders: WalletProvider[] }> = ({ children, walletProviders }) => {
     const { networks } = useSettingsState();
+    const settings = useSettingsState();
     const isMobilePlatform = isMobile();
+    const { isMobile: isMobileSize } = useWindowDimensions()
     const { goBack, onFinish, open, setOpen, selectedConnector, selectedMultiChainConnector } = useConnectModal()
 
     const allProviders = walletProviders.map(provider => provider.walletConnectionProvider ? provider.walletConnectionProvider({ networks }) : undefined).filter(provider => provider !== undefined) as WalletConnectionProvider[];
@@ -26,7 +31,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
                 provider.asSourceSupportedNetworks?.includes(net.name)
             )
         );
-
+        AppSettings.AvailableSourceNetworkTypes = filterSourceNetworks(settings, filteredProviders)
         return filteredProviders
     }, [networks, isMobilePlatform, allProviders]);
 
@@ -42,7 +47,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
                     <div className="flex items-center gap-1">
                         {
                             (selectedConnector || selectedMultiChainConnector) &&
-                            <div className="sm:-ml-2 -ml-0">
+                            <div className="sm:-ml-2 ml-0">
                                 <IconButton onClick={goBack} icon={
                                     <ChevronLeft className="h-6 w-6" />
                                 }>
@@ -52,7 +57,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
                         <p>{(selectedMultiChainConnector && !selectedConnector) ? "Select ecosystem" : "Connect wallet"}</p>
                     </div>
                 }>
-                <VaulDrawer.Snap openFullHeight={!isMobilePlatform} id='item-1' className="pb-4 sm:!pb-0 sm:h-full">
+                <VaulDrawer.Snap openFullHeight={!isMobileSize} id='item-1' className="pb-4 sm:pb-0! sm:h-full">
                     <ConnectorsList onFinish={onFinish} />
                 </VaulDrawer.Snap>
             </VaulDrawer>

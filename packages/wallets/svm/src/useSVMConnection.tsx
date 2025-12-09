@@ -1,9 +1,9 @@
 import { useWallet } from "@solana/wallet-adapter-react"
 import { KnownInternalNames } from "@layerswap/widget/internal"
-import { InternalConnector, Wallet, WalletConnectionProvider, TransactionMessageType, NetworkType, WalletConnectionProviderProps } from "@layerswap/widget/types"
-import { useMemo } from "react"
-import { configureAndSendCurrentTransaction } from "./services/transferService/transactionSender"
+import { InternalConnector, Wallet, WalletConnectionProvider, NetworkType, WalletConnectionProviderProps } from "@layerswap/widget/types"
+import { useMemo, useCallback } from "react"
 import { resolveSolanaWalletConnectorIcon } from "./utils"
+import { useSVMTransfer } from "./transferProvider/useSVMTransfer"
 
 const solanaNames = [KnownInternalNames.Networks.SolanaMainnet, KnownInternalNames.Networks.SolanaDevnet, KnownInternalNames.Networks.SolanaTestnet]
 
@@ -75,69 +75,12 @@ export default function useSVMConnection({ networks }: WalletConnectionProviderP
             await disconnect()
         }
         catch (e) {
+            //TODO: handle error
             console.log(e)
         }
     }
 
-    const transfer: WalletConnectionProvider['transfer'] = async (params) => {
-        const { callData, network, token, amount, balances } = params
-
-        const { Connection, Transaction, LAMPORTS_PER_SOL } = await import("@solana/web3.js")
-
-        if (!signTransaction) throw new Error('Missing signTransaction')
-
-        const connection = new Connection(
-            `${network.node_url}`,
-            "confirmed"
-        );
-
-        const arrayBufferCallData = Uint8Array.from(atob(callData), c => c.charCodeAt(0))
-        const transaction = Transaction.from(arrayBufferCallData)
-
-        try {
-            const feeInLamports = await transaction.getEstimatedFee(connection)
-            const feeInSol = feeInLamports / LAMPORTS_PER_SOL
-
-            const nativeTokenBalance = balances?.find(b => b.token == network?.token?.symbol)
-            const tokenbalanceData = balances?.find(b => b.token == token?.symbol)
-            const tokenBalanceAmount = tokenbalanceData?.amount
-            const nativeTokenBalanceAmount = nativeTokenBalance?.amount
-
-            const insufficientTokensArr: string[] = []
-
-            if (network?.token && (Number(nativeTokenBalanceAmount) < feeInSol || isNaN(Number(nativeTokenBalanceAmount)))) {
-                insufficientTokensArr.push(network.token?.symbol);
-            }
-            if (network?.token?.symbol !== token?.symbol && amount && token?.symbol && Number(tokenBalanceAmount) < amount) {
-                insufficientTokensArr.push(token?.symbol);
-            }
-
-            if (insufficientTokensArr.length > 0) throw new Error(TransactionMessageType.InsufficientFunds)
-
-            const signature = await configureAndSendCurrentTransaction(
-                transaction,
-                connection,
-                signTransaction
-            );
-
-            return signature;
-        } catch (error) {
-            const e = new Error()
-            e.message = error.message
-            if (error in TransactionMessageType) {
-                e.name = error
-                throw e
-            }
-            else if (error.message === "User rejected the request.") {
-                e.name = TransactionMessageType.TransactionRejected
-                throw e
-            }
-            else {
-                e.name = TransactionMessageType.UnexpectedErrorMessage
-                throw e
-            }
-        }
-    }
+    const { executeTransfer: transfer } = useSVMTransfer()
 
     const availableWalletsForConnect = useMemo(() => {
         const connectors: InternalConnector[] = [];
@@ -158,10 +101,22 @@ export default function useSVMConnection({ networks }: WalletConnectionProviderP
         return connectors;
     }, [wallets]);
 
+    const isNotAvailableCondition = useCallback((connectorId: string | undefined, network: string | undefined, purpose?: "withdrawal" | "autofill" | "asSource") => {
+        if (!network) return false
+        if (!connectorId) return true
+
+        if (!purpose) {
+            return resolveSupportedNetworks([network], connectorId).length === 0
+        }
+
+        const supportedNetworksByPurpose = resolveSupportedNetworks(commonSupportedNetworks, connectorId)
+        return supportedNetworksByPurpose.length === 0 || !supportedNetworksByPurpose.includes(network)
+    }, [commonSupportedNetworks]);
+
     const provider: WalletConnectionProvider = {
         connectWallet,
         disconnectWallets: disconnectWallet,
-        isNotAvailableCondition: isNotAvailable,
+        isNotAvailableCondition,
 
         transfer,
 
@@ -178,12 +133,6 @@ export default function useSVMConnection({ networks }: WalletConnectionProviderP
     }
 
     return provider
-}
-
-const isNotAvailable = (connector: string | undefined, network: string | undefined) => {
-    if (!network) return false
-    if (!connector) return true
-    return resolveSupportedNetworks([network], connector).length === 0
 }
 
 const networkSupport = {

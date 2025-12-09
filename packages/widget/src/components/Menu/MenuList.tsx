@@ -1,4 +1,4 @@
-import { BookOpen, Gift, Map, Home, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus } from "lucide-react";
+import { BookOpen, Gift, Map, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus } from "lucide-react";
 import { FC, useState } from "react";
 import { useIntercom } from "react-use-intercom";
 import ChatIcon from "../Icons/ChatIcon";
@@ -6,12 +6,13 @@ import DiscordLogo from "../Icons/DiscordLogo";
 import GitHubLogo from "../Icons/GitHubLogo";
 import SubstackLogo from "../Icons/SubstackLogo";
 import TwitterLogo from "../Icons/TwitterLogo";
-import Popover from "../Modal/popover";
 import SendFeedback from "./Feedback";
 import YoutubeLogo from "../Icons/YoutubeLogo";
 import Menu from "./Menu";
 import { MenuStep } from "../../Models/Wizard";
 import { WalletsMenu } from "../Wallet/WalletComponents/ConnectedWallets";
+import VaulDrawer from "../Modal/vaulModal";
+
 
 const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ goToStep }) => {
     const { boot, show, update } = useIntercom()
@@ -74,22 +75,21 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
             </Menu.Group>
 
             <Menu.Group>
-                <Popover
-                    opener={
-                        <Menu.Item onClick={() => setOpenFeedbackModal(true)} target="_blank" icon={<MessageSquarePlus className="h-5 w-5" />} >
-                            Suggest a Feature
-                        </Menu.Item>
-                    }
-                    isNested={true}
+                <Menu.Item onClick={() => setOpenFeedbackModal(true)} target="_blank" icon={<MessageSquarePlus className="h-5 w-5" />} >
+                    Suggest a Feature
+                </Menu.Item>
+                <VaulDrawer
                     show={openFeedbackModal}
                     header="Suggest a Feature"
                     setShow={setOpenFeedbackModal}
-                    popoverId={"feedback"}
+                    modalId="suggestFeature"
                 >
-                    <div className="p-0 md:max-w-md">
-                        <SendFeedback onSend={handleCloseFeedback} />
-                    </div>
-                </Popover>
+                    <VaulDrawer.Snap id="item-1">
+                        <div className="p-0 md:max-w-md">
+                            <SendFeedback onSend={handleCloseFeedback} />
+                        </div>
+                    </VaulDrawer.Snap>
+                </VaulDrawer>
             </Menu.Group>
 
             <div className="space-y-3 w-full">

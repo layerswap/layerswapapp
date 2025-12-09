@@ -1,14 +1,16 @@
 import { WagmiContext, WagmiProvider } from 'wagmi'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClient, QueryClientContext, QueryClientProvider, useQueryClient } from '@tanstack/react-query'
 import { createConfig } from 'wagmi';
 import { EvmConnectorsProvider, useEvmConnectors } from "./evmConnectorsContext";
 import { ActiveEvmAccountProvider } from "./ActiveEvmAccount";
 import { useSettingsState } from "@layerswap/widget/internal";
 import { useContext } from 'react';
 import { useChainConfigs } from '../evmUtils/chainConfigs';
+import { WalletConnectConfig } from '../index';
 
 type Props = {
     children: JSX.Element | JSX.Element[]
+    walletConnectConfigs?: WalletConnectConfig
 }
 
 const queryClient = new QueryClient()
@@ -27,22 +29,37 @@ function WagmiComponent({ children }: Props) {
 
     return (
         <WagmiProvider config={config}>
-            <QueryClientProvider client={queryClient}>
+            <QueryWrapper>
                 <ActiveEvmAccountProvider>
                     {children}
                 </ActiveEvmAccountProvider>
-            </QueryClientProvider>
+            </QueryWrapper>
         </WagmiProvider>
     )
 }
 
-const EVMProvider = ({ children }: Props) => {
+const EVMProvider = ({ children, walletConnectConfigs }: Props) => {
     return (
-        <EvmConnectorsProvider>
+        <EvmConnectorsProvider walletConnectConfigs={walletConnectConfigs}>
             <WagmiWrapper>
                 {children}
             </WagmiWrapper>
         </EvmConnectorsProvider>
+    )
+}
+
+const QueryWrapper = ({ children }: Props) => {
+
+    const context = useContext(QueryClientContext)
+
+    if (context) {
+        return <>{children}</>
+    }
+
+    return (
+        <QueryClientProvider client={queryClient}>
+            {children}
+        </QueryClientProvider>
     )
 }
 

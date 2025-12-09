@@ -1,6 +1,6 @@
 {
   "name": "@layerswap/widget",
-  "version": "1.0.6",
+  "version": "1.1.0",
   "description": "Streamline your asset transaction experience with Layerswap Widget across 60+ blockchains and 15+ exchanges.",
   "type": "module",
   "main": "dist/esm/index.js",
@@ -30,9 +30,9 @@
   "scripts": {
     "build": "pnpm clean && pnpm build:esm+types && pnpm build:css",
     "build:css": "postcss ./src/styles/globals.css -o dist/index.css --config postcss.config.js --env production",
-    "build:esm+types": "tsc --project tsconfig.json --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm",
+    "build:esm+types": "tsc --project tsconfig.json --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm && tsc-alias -p tsconfig.json --outDir ./dist/types",
     "check:types": "tsc --noEmit",
-    "clean": "rimraf dist tsconfig.tsbuildinfo actions chains codegen experimental internal query",
+    "clean": "rimraf dist tsconfig.tsbuildinfo",
     "dev": "tsc-watch -p tsconfig.json --outDir ./dist/esm --onSuccess \"tsc-alias -p tsconfig.json --outDir ./dist/esm\""
   },
   "author": "Layerswap",

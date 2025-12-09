@@ -9,12 +9,19 @@ import {
     WalletProvider,
 } from "@solana/wallet-adapter-react";
 import { ReactNode, useMemo } from "react";
+import type { ReactElement } from "react";
 import { CoinbaseWalletAdapter } from "@solana/wallet-adapter-coinbase";
-import { AppSettings } from "@layerswap/widget/internal";
+import { WalletConnectConfig } from ".";
 
-const WALLETCONNECT_PROJECT_ID = AppSettings.WalletConnectConfig.projectId
+type SolanaProviderProps = {
+    children: ReactNode
+    walletConnectConfigs?: WalletConnectConfig
+}
 
-function SolanaProvider({ children }: { children: ReactNode }) {
+function SolanaProvider({ children, walletConnectConfigs }: SolanaProviderProps): ReactElement {
+    const walletConnectConfig = walletConnectConfigs
+    const WALLETCONNECT_PROJECT_ID = walletConnectConfig?.projectId
+
     const solNetwork = WalletAdapterNetwork.Mainnet;
     const endpoint = useMemo(() => clusterApiUrl(solNetwork), [solNetwork]);
     const wallets = useMemo(
@@ -28,15 +35,15 @@ function SolanaProvider({ children }: { children: ReactNode }) {
                 options: {
                     projectId: WALLETCONNECT_PROJECT_ID,
                     metadata: {
-                        name: 'Layerwap',
-                        description: 'Layerswap App',
-                        url: 'https://layerswap.io/app/',
-                        icons: ['https://www.layerswap.io/app/symbol.png'],
+                        name: walletConnectConfig?.name || 'Layerwap',
+                        description: walletConnectConfig?.description || 'Layerswap App',
+                        url: walletConnectConfig?.url || 'https://layerswap.io/app/',
+                        icons: walletConnectConfig?.icons || ['https://www.layerswap.io/app/symbol.png'],
                     },
                 },
             })
         ],
-        [solNetwork]
+        [solNetwork, WALLETCONNECT_PROJECT_ID, walletConnectConfig]
     );
 
     return (

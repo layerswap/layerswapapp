@@ -3,13 +3,13 @@ import { useRouter } from 'next/router';
 import Head from "next/head";
 import AppWrapper from "./AppWrapper";
 import { useEffect } from "react";
+import posthog from "posthog-js";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
   settings?: LayerSwapSettings;
   themeData?: ThemeData | null
 };
-
 
 export default function Layout({ children, themeData }: Props) {
   const router = useRouter();
@@ -42,6 +42,10 @@ export default function Layout({ children, themeData }: Props) {
         'amount',
         'destAddress'
       ])
+
+      posthog.capture('$pageview', {
+        custom_url: customUrl,
+      })
     }
 
     trackPageview()
@@ -73,6 +77,8 @@ export default function Layout({ children, themeData }: Props) {
       <meta name="twitter:title" content="Layerswap App" />
       <meta name="twitter:description" content="Streamline your asset transaction experience with Layerswap across 50+ blockchains and 15+ exchanges. Fast, affordable and secure." />
       <meta name="twitter:image" content={`https://layerswap.io/${basePath}/opengraphtw.jpg`} />
+
+      <meta name="color-scheme" content="light dark"></meta>
     </Head>
     <AppWrapper>
       {children}

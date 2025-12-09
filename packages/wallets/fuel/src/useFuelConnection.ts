@@ -1,12 +1,12 @@
-import { useConnectors, useFuel as useGlobalFuel, } from '@fuels/react';
-import { FuelConnector, FuelConnectorEventTypes, Provider, } from '@fuel-ts/account';
+import { useConnectors, useFuel as useGlobalFuel } from '@fuels/react';
+import { FuelConnector, FuelConnectorEventTypes } from '@fuel-ts/account';
 import { Address } from '@fuel-ts/address';
 import { useWalletStore, sleep, KnownInternalNames } from "@layerswap/widget/internal";
 import { useEffect, useMemo } from "react";
-import { transactionBuilder } from "./services/transferService/transactionBuilder";
 import { BAKO_STATE } from "./connectors/bako-safe/Bako";
-import { TransactionMessageType, InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps } from "@layerswap/widget/types";
+import { InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps } from "@layerswap/widget/types";
 import { resolveFuelWalletConnectorIcon } from './utils';
+import { useFuelTransfer } from './transferProvider/useFuelTransfer';
 
 export default function useFuelConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
     const commonSupportedNetworks = [
@@ -62,7 +62,6 @@ export default function useFuelConnection({ networks }: WalletConnectionProvider
                     await sleep(1000)
                     return await attemptConnection(true)
                 }
-                console.log(e)
                 throw new Error(e)
             }
         }
@@ -79,6 +78,7 @@ export default function useFuelConnection({ networks }: WalletConnectionProvider
             await fuelConnector.disconnect()
         }
         catch (e) {
+            //TODO: handle error
             console.log(e)
         } finally {
             removeWallet(name, connectorName)
@@ -95,6 +95,7 @@ export default function useFuelConnection({ networks }: WalletConnectionProvider
             }
         }
         catch (e) {
+            //TODO: handle error
             console.log(e)
         }
     }
@@ -105,6 +106,7 @@ export default function useFuelConnection({ networks }: WalletConnectionProvider
 
             if (!res) throw new Error('Could not switch account')
         } catch (e) {
+            //TODO: handle error
             console.log(e)
         }
     }
@@ -119,46 +121,12 @@ export default function useFuelConnection({ networks }: WalletConnectionProvider
 
             if (!res) throw new Error('Could not switch chain')
         } catch (e) {
+            //TODO: handle error
             console.log(e)
         }
     }
 
-    const transfer: WalletConnectionProvider['transfer'] = async (params) => {
-        const { callData, network, selectedWallet, swapId } = params
-
-        const fuelProvider = new Provider(network.node_url);
-        const fuelWallet = await fuel.getWallet(selectedWallet.address, fuelProvider);
-
-        if (!fuelWallet) throw Error("Fuel wallet not found")
-
-        try {
-            const scriptTransaction = await transactionBuilder({ fuelWallet, callData })
-            await fuelProvider.simulate(scriptTransaction);
-
-            const transactionResponse = await fuelWallet.sendTransaction(scriptTransaction);
-
-            if (swapId && transactionResponse) {
-                return transactionResponse.id;
-            }
-        } catch (error) {
-            const e = new Error()
-            e.message = error.message
-            if (error === "The account(s) sending the transaction don't have enough funds to cover the transaction."
-                || error === "the target cannot be met due to no coins available or exceeding the 255 coin limit."
-            ) {
-                error.name = TransactionMessageType.InsufficientFunds
-                throw e
-            }
-            else if (error === "Request cancelled without user response!" || error === "User rejected the transaction!" || error === "User canceled sending transaction") {
-                e.name = TransactionMessageType.TransactionRejected
-                throw e
-            }
-            else {
-                e.name = TransactionMessageType.UnexpectedErrorMessage
-                throw e
-            }
-        }
-    }
+    const { executeTransfer: transfer } = useFuelTransfer()
 
     const connectedConnectors = useMemo(() => connectors.filter(w => w.connected), [connectors])
 
@@ -186,6 +154,7 @@ export default function useFuelConnection({ networks }: WalletConnectionProvider
                 }
 
             } catch (e) {
+                //TODO: handle error
                 console.log(e)
             }
         }

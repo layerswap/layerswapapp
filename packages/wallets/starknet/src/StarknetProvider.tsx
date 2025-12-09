@@ -1,19 +1,24 @@
 import { FC, ReactNode, useEffect, useState } from "react";
 import { mainnet, sepolia } from "@starknet-react/chains"
 import { Connector, ConnectorNotConnectedError, UserNotConnectedError, StarknetConfig, publicProvider, useConnect, useDisconnect } from '@starknet-react/core';
-import { AppSettings, KnownInternalNames, useSettingsState } from "@layerswap/widget/internal";
+import { WalletConnectConfig } from "./index";
+import { KnownInternalNames, useSettingsState } from "@layerswap/widget/internal";
 //@ts-ignore
-import { ArgentMobileConnector } from "starknetkit/argentMobile";
+import { ArgentMobileConnector } from "starknetkit/argentMobile"
 // @ts-ignore
 import { InjectedConnector } from "starknetkit/injected"
 // @ts-ignore
 import { WebWalletConnector } from "starknetkit/webwallet"
+// @ts-ignore
+import { ControllerConnector } from "starknetkit/controller"
 import { RpcMessage, RequestFnCall, RpcTypeToMessageMap } from "@starknet-io/types-js";
 import useStarknetConnection, { resolveStarknetWallet } from "./useStarknetConnection";
 import { useStarknetStore } from "./starknetWalletStore";
 
-
-const WALLETCONNECT_PROJECT_ID = AppSettings.WalletConnectConfig.projectId
+type StarknetProviderProps = {
+    children: ReactNode
+    walletConnectConfigs?: WalletConnectConfig
+}
 
 class DiscoveryConnector extends Connector {
     #wallet;
@@ -72,8 +77,12 @@ class DiscoveryConnector extends Connector {
 
 }
 
-const StarknetProvider: FC<{ children: ReactNode }> = ({ children }) => {
+
+const StarknetProvider: FC<StarknetProviderProps> = ({ children, walletConnectConfigs }) => {
     const [connectors, setConnectors] = useState<any[]>([])
+
+    const walletConnectConfig = walletConnectConfigs
+    const WALLETCONNECT_PROJECT_ID = walletConnectConfig?.projectId
 
     const resolveConnectors = async () => {
 
@@ -98,6 +107,9 @@ const StarknetProvider: FC<{ children: ReactNode }> = ({ children }) => {
             defaultConnectors.push(
                 new InjectedConnector({ options: { id: "braavos" } }),
             )
+            defaultConnectors.push(
+                new InjectedConnector({ options: { id: "xverse" } }),
+            )
         }
 
         if ((isAndroid || isIOS) && !defaultConnectors.some(c => c.id === "braavos")) {
@@ -112,12 +124,17 @@ const StarknetProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
         defaultConnectors.push(ArgentMobileConnector.init({
             options: {
-                dappName: 'Layerswap',
+                dappName: walletConnectConfig?.name || 'Layerswap',
                 projectId: WALLETCONNECT_PROJECT_ID,
-                url: 'https://www.layerswap.io/app/',
-                description: 'Move crypto across exchanges, blockchains, and wallets.',
+                url: walletConnectConfig?.url || 'https://www.layerswap.io/app/',
+                description: walletConnectConfig?.description || 'Move crypto across exchanges, blockchains, and wallets.',
             }
         }))
+
+        defaultConnectors.push(
+            new ControllerConnector(),
+        )
+
         defaultConnectors.push(new WebWalletConnector())
 
         return defaultConnectors
@@ -174,9 +191,9 @@ const StarknetWalletInitializer = () => {
             }
         };
         checkConnectorsReady();
-        
+
         const interval = setInterval(checkConnectorsReady, 500);
-        
+
         return () => clearInterval(interval);
     }, [connectors, connectorsReady, starknetAccounts])
 

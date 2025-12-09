@@ -1,6 +1,6 @@
 {
   "name": "@layerswap/wallet-starknet",
-  "version": "1.0.2",
+  "version": "1.1.1",
   "description": "Starknet Wallet Provider for Layerswap Widget",
   "type": "module",
   "main": "dist/esm/index.js",
@@ -19,7 +19,7 @@
   ],
   "scripts": {
     "build": "pnpm run clean && pnpm run build:esm+types",
-    "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm",
+    "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm && tsc-alias -p tsconfig.json --outDir ./dist/types",
     "check:types": "tsc --noEmit",
     "clean": "rimraf dist tsconfig.tsbuildinfo actions chains codegen experimental internal query"
   },
@@ -43,14 +43,14 @@
     "zustand": "catalog:"
   },
   "dependencies": {
-    "@starknet-io/types-js": "^0.9.2",
-    "@starknet-react/chains": "^3.1.0",
-    "@starknet-react/core": "^3.7.2",
+    "@starknet-io/types-js": "^0.10.0",
+    "@starknet-react/chains": "^5.0.3",
+    "@starknet-react/core": "^5.0.3",
     "bn.js": "^5.2.2",
     "ethers": "5.7.2",
     "get-starknet-core": "^3.3.4",
     "starknet": "catalog:",
-    "starknetkit": "^3.0.3"
+    "starknetkit": "^3.4.0"
   },
   "devDependencies": {
     "@layerswap/widget": "workspace:^",

@@ -1,6 +1,6 @@
 {
   "name": "@layerswap/wallet-bitcoin",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Bitcoin Wallet Provider for Layerswap Widget",
   "type": "module",
   "main": "dist/esm/index.js",
@@ -19,7 +19,7 @@
   ],
   "scripts": {
     "build": "pnpm run clean && pnpm run build:esm+types",
-    "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm",
+    "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm && tsc-alias -p tsconfig.json --outDir ./dist/types",
     "check:types": "tsc --noEmit",
     "clean": "rimraf dist tsconfig.tsbuildinfo actions chains codegen experimental internal query"
   },
@@ -37,6 +37,7 @@
   ],
   "license": "MIT",
   "peerDependencies": {
+    "@tanstack/react-query": "catalog:",
     "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
     "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
     "@layerswap/widget": "workspace:^",

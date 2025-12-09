@@ -2,20 +2,31 @@ import { FC } from "react";
 import { Swap, LayerswapProvider, LayerSwapSettings, ThemeData } from '@layerswap/widget'
 import { StarknetWalletConnectors } from "@dynamic-labs/starknet";
 import { DynamicContextProvider, DynamicWidget } from "@dynamic-labs/sdk-react-core";
-import { EVMProvider } from "@layerswap/wallet-evm"
-import { StarknetProvider } from "@layerswap/wallet-starknet"
-import { SVMProvider } from "@layerswap/wallet-svm"
-import { BitcoinProvider } from "@layerswap/wallet-bitcoin"
+import { createEVMProvider } from "@layerswap/wallet-evm"
+import { createStarknetProvider } from "@layerswap/wallet-starknet"
+import { createSVMProvider } from "@layerswap/wallet-svm"
+import { createBitcoinProvider } from "@layerswap/wallet-bitcoin"
 import useCustomStarknet from "../hooks/useCustomStarknet";
 import { WalletProvider } from "@layerswap/widget/types";
 import "@layerswap/widget/index.css"
 
 const PageComponent: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
 
-    const starknetProvider: WalletProvider = {
-        ...StarknetProvider,
-        walletConnectionProvider: useCustomStarknet
-    }
+    const starknetProvider: WalletProvider = createStarknetProvider({
+        customHook: useCustomStarknet,
+        walletConnectConfigs: walletConnect
+    })
+
+    const walletProviders = [
+        starknetProvider,
+        createEVMProvider({
+            walletConnectConfigs: walletConnect
+        }),
+        createSVMProvider({
+            walletConnectConfigs: walletConnect
+        }),
+        createBitcoinProvider(),
+    ]
 
     return (
         <DynamicContextProvider
@@ -25,6 +36,7 @@ const PageComponent: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
                 walletConnectors: [StarknetWalletConnectors],
                 initialAuthenticationMode: 'connect-only'
             }}
+            
         >
             <div className="h-screen flex flex-col items-center justify-center gap-4 w-full">
                 
@@ -48,7 +60,7 @@ const PageComponent: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
                                     lockTo: true
                                 },
                             }}
-                            walletProviders={[EVMProvider, starknetProvider, SVMProvider, BitcoinProvider]}
+                            walletProviders={walletProviders}
                         >
                             <Swap />
                         </LayerswapProvider>
@@ -89,6 +101,14 @@ const theme: ThemeData = {
         900: '0, 0, 0',
         text: '128, 128, 143',
     }
+}
+
+const walletConnect = {
+    projectId: '28168903b2d30c75e5f7f2d71902581b',
+    name: 'Layerswap Example',
+    description: 'Layerswap Example',
+    url: 'https://layerswap.io/app/',
+    icons: ['https://layerswap.io/app/symbol.png']
 }
 
 export default PageComponent

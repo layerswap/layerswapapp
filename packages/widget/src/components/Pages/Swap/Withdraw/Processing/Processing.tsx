@@ -1,6 +1,6 @@
 'use client'
 import LinkWithIcon from '@/components/Common/LinkWithIcon';
-import React, { FC, useCallback, useEffect, useRef } from 'react'
+import { FC, useCallback, useEffect, useRef } from 'react'
 import { Widget } from '@/components/Widget/Index';
 import SwapSummary from '../Summary';
 import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, Transaction, SwapBasicData, SwapDetails, SwapQuote, Refuel } from '@/lib/apiClients/layerSwapApiClient';
@@ -16,10 +16,9 @@ import CountdownTimer from '@/components/Common/CountDownTimer';
 import useSWR from 'swr';
 import { ApiResponse } from '@/Models/ApiResponse';
 import { useIntercom } from 'react-use-intercom';
-import logError from '@/lib/logError';
-import SubmitButton from '@/components/Buttons/submitButton';
-// import { posthog } from 'posthog-js';
 import Steps from './StepsComponent';
+import { useCallbacks } from '@/context/callbackProvider';
+import { ErrorHandler } from '@/lib/ErrorHandler';
 
 type Props = {
     swapBasicData: SwapBasicData;
@@ -29,9 +28,9 @@ type Props = {
 }
 
 const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) => {
-    const { boot, show, update, showNewMessages } = useIntercom();
+    const { boot, show, update } = useIntercom();
     const { setSwapTransaction, swapTransactions } = useSwapTransactionStore();
-
+    const { onSwapStatusChange } = useCallbacks()
     const {
         source_network,
         destination_network,
@@ -64,19 +63,6 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
 
     const loggedNotDetectedTxAt = useRef<number | null>(null);
 
-    const handleSupportClick = useCallback(() => {
-        const transactionHash = swapInputTransaction?.transaction_hash || storedWalletTransaction?.hash;
-        const message = `Hi! My transaction (Swap ID: ${swapDetails.id}) has been processing for longer than expected. ${transactionHash ? `Transaction hash: ${transactionHash}` : ''} Could you please help me check the status?`;
-
-        boot();
-        update({
-            customAttributes: {
-                swapId: swapDetails.id,
-            }
-        });
-        showNewMessages(message)
-    }, [boot, show, update, swapDetails.id, swapInputTransaction, storedWalletTransaction]);
-
     useEffect(() => {
         if (inputTxStatus === TransactionStatus.Completed || inputTxStatus === TransactionStatus.Pending) {
             if (swapDetails?.transactions?.find(t => t.type === TransactionType.Input) || !swapDetails) {
@@ -84,7 +70,14 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             }
             if (Date.now() - (loggedNotDetectedTxAt.current || storedWalletTransaction.timestamp) > 60000) {
                 loggedNotDetectedTxAt.current = Date.now();
-                logError(`Transaction not detected in ${source_network.name}. Tx hash: \`${transactionHash}\`. Tx status: ${inputTxStatus}. Swap id: \`${swapDetails.id}\`. ${source_network.display_name} explorer: ${source_network?.transaction_explorer_template?.replace("{0}", transactionHash)} . LS explorer: https://layerswap.io/explorer/${storedWalletTransaction?.hash} `);
+                const error = new Error(`Transaction not detected in ${source_network.name}. Tx hash: \`${transactionHash}\`. Tx status: ${inputTxStatus}. Swap id: \`${swapDetails.id}\`. ${source_network.display_name} explorer: ${source_network?.transaction_explorer_template?.replace("{0}", transactionHash)} . LS explorer: https://layerswap.io/explorer/${storedWalletTransaction?.hash} `);
+                ErrorHandler({
+                    type: "TransactionNotDetected",
+                    message: error.message,
+                    name: error.name,
+                    stack: error.stack,
+                    cause: error.cause
+                })
             }
         }
     }, [swapDetails, storedWalletTransaction, source_network]);
@@ -96,34 +89,34 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     useEffect(() => {
         if (inputTxStatus === TransactionStatus.Failed) {
             const err = new Error("Transaction failed")
-            const renderingError = new Error(`Swap:${swapDetails?.id} transaction:${transactionHash} failed`);
-            renderingError.name = `TransactionFailed`;
-            renderingError.cause = err;
-            // posthog.capture('$exception', {
-            //     name: renderingError.name,
-            //     message: renderingError.message,
-            //     $layerswap_exception_type: "Transaction Error",
-            //     stack: renderingError.stack,
-            //     cause: renderingError.cause,
-            //     where: 'TransactionError',
-            //     severity: 'error',
-            // });
+            const error = new Error(`Swap:${swapDetails?.id} transaction:${transactionHash} failed`);
+            error.name = `TransactionFailed`;
+            error.cause = err;
+            ErrorHandler({
+                type: "TransactionFailed",
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                cause: error.cause
+            })
         }
     }, [inputTxStatus, transactionHash, swapDetails?.id])
 
-    // useEffect(() => {
-    //     if (
-    //         swapDetails?.status === SwapStatus.Completed ||
-    //         swapDetails?.status === SwapStatus.Failed ||
-    //         swapDetails?.status === SwapStatus.Expired ||
-    //         swapDetails?.status === SwapStatus.LsTransferPending
-    //     ) {
-    //         posthog?.capture(`${swapDetails?.status}`, {
-    //             swap_id: swapDetails?.id,
-    //             status: swapDetails?.status,
-    //         })
-    //     }
-    // }, [swapDetails?.status, swapDetails?.id])
+    useEffect(() => {
+        const status = swapDetails?.status
+        if (
+            status === SwapStatus.Completed ||
+            status === SwapStatus.Failed ||
+            status === SwapStatus.Expired ||
+            status === SwapStatus.LsTransferPending
+        ) {
+            onSwapStatusChange({
+                type: status,
+                swapId: swapDetails?.id!,
+                path: 'Processing',
+            })
+        }
+    }, [swapDetails?.status, swapDetails?.id])
 
     const truncatedRefuelAmount = refuel && truncateDecimals(refuel.amount, refuel.token?.precision)
 
@@ -347,7 +340,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
 
     const swapStatus = swapDetails.status;
     return (
-        <Widget.Content>
+        <Widget.Content fitContent>
             <div className={`w-full min-h-[410px] h-full space-y-3 flex flex-col justify-between text-primary-text`}>
                 <SwapSummary />
                 <div className="bg-secondary-500 font-normal px-3 pt-6 pb-3 rounded-2xl space-y-4 flex flex-col w-full relative z-10 divide-y-2 divide-secondary-300 divide-dashed">

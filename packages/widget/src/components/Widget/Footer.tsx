@@ -33,41 +33,50 @@ type FooterProps = {
     showPoweredBy?: boolean
 }
 
-const Comp = ({ children, hidden, sticky = true }: FooterProps) => {
+const Comp = ({ children, hidden, sticky = true, showPoweredBy }: FooterProps) => {
     let [footerRef, { height }] = useMeasure();
 
     return (
-        sticky ?
-            <>
-                <motion.div
-                    ref={footerRef}
-                    transition={{
-                        duration: 0.15,
-                    }}
-                    custom={{ direction: -1, width: 100 }}
-                    variants={variants}
-                    className={`text-primary-text text-base
-                        max-sm:fixed
-                        max-sm:inset-x-0
-                        max-sm:bottom-0 
-                        max-sm:z-30
-                        max-sm:bg-secondary-700 
-                        max-sm:shadow-widget-footer 
-                        max-sm:p-4 
-                        max-sm:px-4 
-                        max-sm:w-full ${hidden ? 'animation-slide-out' : ''} w-full`}>
-                    {children}
-                </motion.div>
+        <>
+            {
 
-                <div style={{ height: `${height}px` }}
-                    className={`text-primary-text text-base      
-                             max-sm:inset-x-0
-                             max-sm:bottom-0 
-                             max-sm:p-4 max-sm:w-full invisible sm:hidden w-full`}>
-                </div>
-            </ >
-            :
-            children
+                sticky ?
+                    <>
+                        <motion.div
+                            ref={footerRef}
+                            transition={{
+                                duration: 0.15,
+                            }}
+                            custom={{ direction: -1, width: 100 }}
+                            variants={variants}
+                            className={`text-primary-text text-base
+            max-sm:fixed
+            max-sm:inset-x-0
+            max-sm:bottom-0 
+            max-sm:z-30
+            max-sm:bg-secondary-700 
+            max-sm:shadow-widget-footer 
+            max-sm:p-4 
+            max-sm:px-4 
+            max-sm:w-full ${hidden ? 'animation-slide-out' : ''} w-full`}>
+                            {children}
+                        </motion.div>
+
+                        <div style={{ height: `${height}px` }}
+                            className={`text-primary-text text-base      
+                 max-sm:inset-x-0
+                 max-sm:bottom-0 
+                 max-sm:p-4 max-sm:w-full invisible sm:hidden w-full`}>
+                        </div>
+                    </>
+                    :
+                    <div
+                        className={clsx('space-y-3', { 'mb-3 sm:mb-0': !showPoweredBy })}
+                    >
+                        {children}
+                    </div>
+            }
+        </>
     )
 }
 
@@ -76,7 +85,7 @@ const Footer = ({ children, hidden, sticky, showPoweredBy }: FooterProps) => {
     const isPoweredByVisible = !AppSettings.ThemeData?.hidePoweredBy && showPoweredBy
 
     return (
-        <Comp hidden={hidden} sticky={isFooterSticky ? sticky : false}>
+        <Comp hidden={hidden} sticky={isFooterSticky ? sticky : false} showPoweredBy={isPoweredByVisible}>
             {children}
             {
                 isPoweredByVisible &&
@@ -93,7 +102,7 @@ const Footer = ({ children, hidden, sticky, showPoweredBy }: FooterProps) => {
     )
 }
 
-const PoweredBy = (props: SVGProps<SVGSVGElement>) => {
+export const PoweredBy = (props: SVGProps<SVGSVGElement>) => {
     return (
         <svg xmlns="http://www.w3.org/2000/svg" width="152" height="14" viewBox="0 0 152 14" fill="currentColor" {...props}>
             <path d="M92.9333 11.2374C92.7677 11.2374 92.6334 11.0985 92.6334 10.9271V3.21025C92.6334 3.03884 92.7677 2.8999 92.9333 2.8999H94.105C94.2707 2.8999 94.4048 3.03884 94.4048 3.21025V9.68817H97.8308C97.9962 9.68817 98.1306 9.8271 98.1306 9.99851V10.9271C98.1306 11.0985 97.9962 11.2374 97.8308 11.2374H92.9333Z" fill="currentColor" />

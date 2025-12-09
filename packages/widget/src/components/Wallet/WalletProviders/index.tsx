@@ -1,5 +1,5 @@
 'use client'
-import { FC, ReactNode, createElement, useMemo } from "react"
+import { FC, ReactNode, createElement, useMemo, createContext, useContext } from "react"
 import { ThemeData } from "@/Models/Theme"
 import { WalletProvidersProvider } from "@/context/walletProviders";
 import { WalletModalProvider } from "../WalletModal";
@@ -58,18 +58,23 @@ const WalletsProviders: FC<{
     const providersWithWalletConnectionProvider = useMemo(() => walletProviders.filter(provider => typeof provider === 'object' && 'walletConnectionProvider' in provider), [walletProviders]);
 
     return (
-        <DynamicProviderWrapper
-            providers={walletProviders}
-            themeData={themeData}
-            appName={appName}
-        >
+        <WalletProvidersListContext.Provider value={walletProviders}>
             <WalletModalProvider>
-                <WalletProvidersProvider walletProviders={providersWithWalletConnectionProvider}>
-                    {children}
-                </WalletProvidersProvider>
+                <DynamicProviderWrapper
+                    providers={walletProviders}
+                    themeData={themeData}
+                    appName={appName}
+                >
+                    <WalletProvidersProvider walletProviders={providersWithWalletConnectionProvider as WalletProvider[]}>
+                        {children}
+                    </WalletProvidersProvider>
+                </DynamicProviderWrapper>
             </WalletModalProvider>
-        </DynamicProviderWrapper>
+        </WalletProvidersListContext.Provider>
     )
 }
 
 export default WalletsProviders
+
+export const WalletProvidersListContext = createContext<(WalletProvider | WalletWrapper)[]>([])
+export const useWalletProvidersList = () => useContext(WalletProvidersListContext)

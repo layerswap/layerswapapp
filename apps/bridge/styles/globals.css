@@ -52,8 +52,8 @@
 
   --color-warning-foreground: rgb(var(--ls-colors-warning-foreground, 255, 201, 74));
   --color-warning-background: rgb(var(--ls-colors-warning-background, 47, 43, 29));
-  --color-error-foreground: rgb(var(--ls-color-error-foreground, 255, 97, 97));
-  --color-error-background: rgb(var(--ls-color-error-background, 46, 27, 27));
+  --color-error-foreground: rgb(var(--ls-colors-error-foreground, 255, 97, 97));
+  --color-error-background: rgb(var(--ls-colors-error-background, 46, 27, 27));
   --color-success-foreground: rgb(var(--ls-colors-success-foreground, 89, 224, 125));
   --color-success-background: rgb(var(--ls-colors-success-background, 14, 43, 22));
 
@@ -104,6 +104,12 @@
 
   body {
     @apply bg-secondary-900 sm:bg-gradient-to-b to-secondary-500 from-secondary-900;
+  }
+
+  /* Transparent background for immutable theme (iframe embedding) */
+  html:has(#widget[style*="transparent"]),
+  body:has(#widget[style*="transparent"]) {
+    background: transparent !important;
   }
 
   /* On iOS disabled inputs have default opacitiy */
@@ -335,9 +341,15 @@ body {
   background-color: rgb(var(--ls-colors-secondary-700));
 }
 
+
 body::-webkit-scrollbar {
   --tw-bg-opacity: 1;
   background-color: rgb(var(--ls-colors-secondary-700));
+}
+
+/* Transparent scrollbar background for immutable theme */
+body:has(#widget[style*="transparent"])::-webkit-scrollbar {
+  background-color: transparent !important;
 }
 
 body::-webkit-scrollbar {

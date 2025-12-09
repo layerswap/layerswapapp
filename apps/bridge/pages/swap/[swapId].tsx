@@ -4,15 +4,35 @@ import { getThemeData } from '../../helpers/settingsHelper';
 import { SwapWithdrawal } from '@layerswap/widget';
 import { LayerswapApiClient } from '@layerswap/widget/internal';
 import Layout from '../../components/layout';
-import { EVMProvider, FuelProvider, ParadexProvider, StarknetProvider, BitcoinProvider, ImmutableXProvider, TonProvider, SVMProvider, TronProvider, ImtblPassportProvider } from "@layerswap/wallets";
+import { useRouter } from 'next/router';
+import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
+import WidgetWrapper from '../../components/WidgetWrapper';
+
+
 
 const SwapDetails = ({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+  const router = useRouter()
+
   return (<>
     <Layout settings={settings || undefined} themeData={themeData}>
-      <SwapWithdrawal
-        config={{ theme: { ...themeData, borderRadius: 'default', enablePortal: true, enableWideVersion: true, hidePoweredBy: true }, apiKey, settings }}
-        walletProviders={[EVMProvider, StarknetProvider, FuelProvider, ParadexProvider, BitcoinProvider, ImmutableXProvider, TonProvider, SVMProvider, TronProvider, ImtblPassportProvider]}
-      />
+      <WidgetWrapper
+        settings={settings}
+        themeData={themeData}
+        apiKey={apiKey}
+        configOverrides={{
+          initialValues: { swapId: router.query.swapId?.toString()! }
+        }}
+        callbacks={{
+          onBackClick() {
+            router.push({
+              pathname: "/",
+              query: { ...resolvePersistantQueryParams(router.query) }
+            })
+          }
+        }}
+      >
+        <SwapWithdrawal />
+      </WidgetWrapper>
     </Layout>
   </>)
 }

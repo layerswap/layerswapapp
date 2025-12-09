@@ -14,3 +14,11 @@ export type TransferProps = {
     selectedWallet: Wallet
     balances?: TokenBalance[] | undefined | null
 }
+
+export interface TransferProvider {
+    supportsNetwork(network: Network): boolean
+    executeTransfer(params: TransferProps, wallet?: Wallet): Promise<string>
+}
+
+// Hook-based transfer provider factory
+export type TransferProviderHook = () => TransferProvider

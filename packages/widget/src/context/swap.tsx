@@ -12,12 +12,12 @@ import { Network } from '@/Models/Network';
 import { useSettingsState } from './settings';
 import { QuoteError, transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { useRecentNetworksStore } from '@/stores/recentRoutesStore';
-import { useSelectedAccount } from './balanceAccounts';
+import { useSelectedAccount } from './swapAccounts';
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues';
 import { useInitialSettings } from './settings';
 import { addressFormat } from '@/lib/address/formatter';
 import { useSlippageStore } from '@/stores/slippageStore';
-// import { posthog } from 'posthog-js';
+import { useCallbacks } from './callbackProvider';
 
 export const SwapDataStateContext = createContext<SwapContextData>({
     depositAddressIsFromAccount: false,
@@ -71,18 +71,21 @@ export type SwapContextData = {
 }
 
 export function SwapDataProvider({ children }) {
+    const { sourceRoutes, destinationRoutes } = useSettingsState()
+    const initialSettings = useInitialSettings()
+    const { onSwapCreate } = useCallbacks()
+    const updateRecentTokens = useRecentNetworksStore(state => state.updateRecentNetworks)
+
+    const [swapBasicFormData, setSwapBasicFormData] = useState<SwapBasicData & { refuel: boolean }>()
+    const { providers } = useWallet(swapBasicFormData?.source_network, 'asSource')
+
     const [quoteIsLoading, setQuoteLoading] = useState<boolean>(false)
     const [withdrawType, setWithdrawType] = useState<WithdrawType>()
     const [depositAddressIsFromAccount, setDepositAddressIsFromAccount] = useState<boolean>()
-    const initialSettings = useInitialSettings()
     const [swapId, setSwapId] = useState<string | undefined>(initialSettings.swapId?.toString())
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
-    const { sourceRoutes, destinationRoutes } = useSettingsState()
-    const [swapBasicFormData, setSwapBasicFormData] = useState<SwapBasicData & { refuel: boolean }>()
-    const updateRecentTokens = useRecentNetworksStore(state => state.updateRecentNetworks)
     const [swapModalOpen, setSwapModalOpen] = useState(false)
     const [swapError, setSwapError] = useState<string>('')
-    const { providers } = useWallet(swapBasicFormData?.source_network, 'asSource')
 
     const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapBasicFormData, !!swapBasicFormData?.refuel), [swapBasicFormData]);
 
@@ -230,23 +233,22 @@ export function SwapDataProvider({ children }) {
             throw swapResponse?.error
         }
 
+
+
         const swap = swapResponse?.data;
         if (!swap?.swap.id)
             throw new Error("Could not create swap")
+
+        onSwapCreate(swap)
 
         updateRecentTokens({
             from: !fromExchange ? { network: from.name, token: fromCurrency.symbol } : undefined,
             to: { network: to.name, token: toCurrency.symbol }
         });
 
-        // posthog.capture('Swap initiated', {
-        //     name: 'Swap initiated',
-        //     swapId: swapDetails?.id ?? null,
-        //     path: typeof window !== 'undefined' ? window.location.pathname : undefined,
-        // });
 
         return swap;
-    }, [selectedSourceAccount, formDataQuote])
+    }, [selectedSourceAccount, formDataQuote, onSwapCreate])
 
     const updateFns: UpdateSwapInterface = {
         createSwap,

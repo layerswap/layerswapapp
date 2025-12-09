@@ -1,7 +1,7 @@
-import { AppSettings } from "@layerswap/widget/internal";
 import { useEffect, ReactNode } from "react"
+import { ImtblPassportConfig } from "./index";
 
-export const initilizePassport = async (configs: typeof AppSettings.ImtblPassportConfig) => {
+export const initilizePassport = async (configs: ImtblPassportConfig | undefined) => {
 
     const { publishableKey, clientId, redirectUri, logoutRedirectUri } = configs || {};
 
@@ -26,16 +26,21 @@ export const initilizePassport = async (configs: typeof AppSettings.ImtblPasspor
 
 export var passportInstance: any = undefined
 
-export function ImtblPassportProviderWrapper({ children }: { children: ReactNode }) {
+type ImtblPassportProviderWrapperProps = {
+    children: ReactNode
+    imtblPassportConfig?: ImtblPassportConfig
+}
+
+export function ImtblPassportProviderWrapper({ children, imtblPassportConfig }: ImtblPassportProviderWrapperProps) {
 
     useEffect(() => {
         if (!passportInstance) {
             (async () => {
-                await initilizePassport(AppSettings.ImtblPassportConfig)
+                await initilizePassport(imtblPassportConfig)
                 passportInstance.connectEvm() // EIP-6963
             })()
         }
-    }, [passportInstance])
+    }, [passportInstance, imtblPassportConfig])
 
     return (
         <>
@@ -44,14 +49,14 @@ export function ImtblPassportProviderWrapper({ children }: { children: ReactNode
     )
 }
 
-export const ImtblRedirect = () => {
+export const ImtblRedirect = ({ imtblPassportConfig }: { imtblPassportConfig?: ImtblPassportConfig }) => {
 
     useEffect(() => {
         (async () => {
-            if (!passportInstance) await initilizePassport(AppSettings.ImtblPassportConfig)
+            if (!passportInstance) await initilizePassport(imtblPassportConfig)
             passportInstance.loginCallback();
         })()
-    }, [passportInstance])
+    }, [passportInstance, imtblPassportConfig])
 
     return (
         <div>

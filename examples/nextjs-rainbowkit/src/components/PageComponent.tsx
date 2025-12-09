@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { Swap, LayerswapProvider, LayerSwapSettings, ThemeData } from '@layerswap/widget'
-import { EVMProvider } from "@layerswap/wallet-evm"
+import { createEVMProvider } from "@layerswap/wallet-evm"
 import "@layerswap/widget/index.css"
 import '@rainbow-me/rainbowkit/styles.css';
 import { ConnectButton, darkTheme, getDefaultConfig, RainbowKitProvider, } from '@rainbow-me/rainbowkit';
@@ -31,6 +31,7 @@ const PageComponent: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
 
 
 const Comp: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
+    const walletProviders = [createEVMProvider({ walletConnectConfigs: walletConnect })]
 
     return (<div className="h-screen flex flex-col items-center justify-center gap-4">
         <h1 className="text-2xl font-bold text-white text-center">Layerswap Widget with RainbowKit Example</h1>
@@ -52,7 +53,7 @@ const Comp: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
                         lockAsset: true
                     },
                 }}
-                walletProviders={[EVMProvider]}
+                walletProviders={walletProviders}
             >
                 <Swap />
             </LayerswapProvider>
@@ -92,6 +93,12 @@ const theme: ThemeData = {
     },
 }
 
-
+const walletConnect = {
+    projectId: '28168903b2d30c75e5f7f2d71902581b',
+    name: 'Layerswap Example',
+    description: 'Layerswap Example',
+    url: 'https://layerswap.io/app/',
+    icons: ['https://layerswap.io/app/symbol.png']
+}
 
 export default PageComponent

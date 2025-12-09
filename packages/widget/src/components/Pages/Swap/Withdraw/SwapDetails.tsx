@@ -9,6 +9,7 @@ import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import SubmitButton from '@/components/Buttons/submitButton';
 import ManualWithdraw from './ManualWithdraw';
 import { Partner } from '@/Models';
+import { useCallbacks } from "@/context/callbackProvider";
 
 type Props = {
     type: "widget" | "contained",
@@ -18,8 +19,8 @@ type Props = {
 }
 
 const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal, partner }) => {
-    const { swapDetails, swapBasicData, quote, refuel, depositActionsResponse } = useSwapDataState()
-
+    const { swapDetails, swapBasicData, refuel, depositActionsResponse, quote, quoteIsLoading } = useSwapDataState()
+    const { onBackClick } = useCallbacks()
     const swapStatus = swapDetails?.status || SwapStatus.UserTransferPending;
     const storedWalletTransactions = useSwapTransactionStore()
 
@@ -43,13 +44,13 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, onCancelWithd
     </>
 
     return (
-        <Container type={type}>
+        <Container type={type} goBack={onBackClick}>
             {
                 ((swapStatus === SwapStatus.UserTransferPending
                     && !(swapInputTransaction || storedWalletTransaction))) ?
                     (
                         swapBasicData?.use_deposit_address === true
-                            ? <ManualWithdraw swapBasicData={swapBasicData} quote={quote} depositActions={depositActionsResponse} refuel={refuel} partner={partner} type={type} />
+                            ? <ManualWithdraw swapBasicData={swapBasicData} depositActions={depositActionsResponse} refuel={refuel} partner={partner} type={type} quote={quote} isQuoteLoading={quoteIsLoading} />
                             : <Withdraw type={type} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} onCancelWithdrawal={onCancelWithdrawal} partner={partner} />
                     )
                     :
@@ -67,11 +68,12 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, onCancelWithd
     )
 }
 
-const Container = ({ type, children }: Props & {
-    children: JSX.Element | JSX.Element[]
+const Container = ({ type, children, goBack }: Props & {
+    children: JSX.Element | JSX.Element[],
+    goBack: () => void
 }) => {
     if (type === "widget")
-        return <Widget><>{children}</></Widget>
+        return <Widget goBack={goBack}><>{children}</></Widget>
     else
         return <div className="w-full flex flex-col justify-between h-full space-y-3 text-secondary-text">
             {children}

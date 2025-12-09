@@ -3,18 +3,16 @@ import { InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionPr
 import { AuthorizeStarknet } from "./Authorize/Starknet"
 import { walletClientToSigner } from "./utils/ethers"
 import AuhorizeEthereum from "./Authorize/Ethereum"
-import { getWalletClient, switchChain, getChainId,  type ConnectorAlreadyConnectedError } from '@wagmi/core'
+import { getWalletClient, switchChain, getChainId, type ConnectorAlreadyConnectedError } from '@wagmi/core'
 import { useConfig } from "wagmi"
 import { shortenAddress, sleep, KnownInternalNames, useWalletStore, useConnectModal } from "@layerswap/widget/internal"
 import { useActiveParadexAccount } from "./ActiveParadexAccount"
 import ParadexMultiStepHandler from "./components/ParadexMultiStepHandler"
-import { EVMProvider } from "@layerswap/wallet-evm";
-import { StarknetProvider } from "@layerswap/wallet-starknet";
 
 export function useParadexConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
     const name = 'Paradex'
     const id = 'prdx'
-    const { activeConnection, setActiveAddress } = useActiveParadexAccount()
+    const { activeConnection, setActiveAddress, evmProvider: evmProviderInstance, starknetProvider: starknetProviderInstance } = useActiveParadexAccount()
     const paradexAccounts = useWalletStore((state) => state.paradexAccounts)
     const addParadexAccount = useWalletStore((state) => state.addParadexAccount)
     const removeParadexAccount = useWalletStore((state) => state.removeParadexAccount)
@@ -29,15 +27,13 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
     const asSourceSupportedNetworks = [
         ...withdrawalSupportedNetworks
     ]
-    const useEVMConnection = EVMProvider.walletConnectionProvider
-    const useStarknetConnection = StarknetProvider.walletConnectionProvider
 
     const { setSelectedConnector } = useConnectModal()
-    const evmProvider = useEVMConnection({ networks })
-    const starknetProvider = useStarknetConnection({ networks })
+    const evmProvider = evmProviderInstance.walletConnectionProvider({ networks })
+    const starknetProvider = starknetProviderInstance.walletConnectionProvider({ networks })
 
     const config = useConfig()
-
+    const starknetNetwork = networks.find(n => n.name === KnownInternalNames.Networks.StarkNetMainnet || n.name === KnownInternalNames.Networks.StarkNetGoerli || n.name === KnownInternalNames.Networks.StarkNetSepolia)
     const connectWallet = async (props?: { connector: InternalConnector }) => {
         const { connector } = props || {};
         if (!connector) {
@@ -113,7 +109,10 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
                     if (!snAccount) {
                         throw Error("Starknet account not found")
                     }
-                    const paradexAccount = await AuthorizeStarknet(snAccount as any)
+                    if (!starknetNetwork?.node_url) {
+                        throw Error("Starknet node url not found")
+                    }
+                    const paradexAccount = await AuthorizeStarknet(snAccount as any, starknetNetwork.node_url)
                     addParadexAccount({ l1Address: connectionResult.address, paradexAddress: paradexAccount.address })
                     accounts = { [connectionResult.address.toLowerCase()]: paradexAccount.address }
                 }
@@ -159,7 +158,10 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
     }, [evmProvider, starknetProvider, paradexAccounts])
 
     const availableWalletsForConnect = useMemo(() => {
-        return [...(evmProvider.availableWalletsForConnect ? evmProvider.availableWalletsForConnect : []), ...(starknetProvider?.availableWalletsForConnect ? starknetProvider.availableWalletsForConnect : [])]
+        return [
+            ...(evmProvider.availableWalletsForConnect ? evmProvider.availableWalletsForConnect : []),
+            ...(starknetProvider?.availableWalletsForConnect ? starknetProvider.availableWalletsForConnect : [])
+        ]
     }, [evmProvider, starknetProvider])
 
     const switchAccount = async (wallet: Wallet, address: string) => {
@@ -186,7 +188,7 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
             disconnect: removeParadexAccount,
             networkIcon: paradexNetwork?.logo
         })
-    }, [evmProvider.activeWallet, starknetProvider.activeWallet, activeConnection])
+    }, [evmProvider.activeWallet, starknetProvider.activeWallet, activeConnection, paradexAccounts])
 
     const providerIcon = useMemo(() => paradexNetwork?.logo, [paradexNetwork])
 
@@ -203,7 +205,7 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
         id,
         providerIcon,
         hideFromList: true,
-        ready: evmProvider.ready && starknetProvider.ready,
+        ready: (typeof evmProvider.ready === 'boolean' ? evmProvider.ready : true) && (typeof starknetProvider.ready === 'boolean' ? starknetProvider.ready : true),
         multiStepHandlers: [
             {
                 component: ParadexMultiStepHandler,

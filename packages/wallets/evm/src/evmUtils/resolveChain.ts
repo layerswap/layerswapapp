@@ -1,6 +1,6 @@
 import { defineChain, parseGwei } from "viem";
 import { Network } from "@layerswap/widget/types";
-import { NetworkSettings, logError } from "@layerswap/widget/internal";
+import { ErrorHandler, NetworkSettings } from "@layerswap/widget/internal";
 
 export default function resolveChain(network: Network) {
 
@@ -14,7 +14,14 @@ export default function resolveChain(network: Network) {
     const { evm_multicall_contract } = metadata || {}
 
     if (!nativeCurrency) {
-        logError(`UI Settings error: could not find native currency for ${network.name} ${JSON.stringify(network)} %0A`)
+        const error = new Error(`UI Settings error: could not find native currency for ${network.name} ${JSON.stringify(network)} %0A`);
+        ErrorHandler({
+            type: "ChainError",
+            message: error.message,
+            name: error.name,
+            stack: error.stack,
+            cause: error.cause
+        })
         return
     }
 

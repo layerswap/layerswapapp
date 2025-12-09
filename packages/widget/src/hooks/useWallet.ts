@@ -3,7 +3,7 @@ import { Wallet, WalletConnectionProvider } from "@/types/wallet";
 import { useCallback, useMemo } from "react";
 import { useWalletProviders } from "@/context/walletProviders";
 
-export type WalletPurpose = "autofil" | "withdrawal" | "asSource"
+export type WalletPurpose = "autofill" | "withdrawal" | "asSource"
 
 export default function useWallet(network?: Network | undefined, purpose?: WalletPurpose) {
     const walletProviders = useWalletProviders()
@@ -53,7 +53,7 @@ const resolveProvider = (network: Network | undefined, walletProviders: WalletCo
         case "withdrawal":
             provider = walletProviders.find(provider => provider.withdrawalSupportedNetworks?.includes(network.name))
             break;
-        case "autofil":
+        case "autofill":
             provider = walletProviders.find(provider => provider.autofillSupportedNetworks?.includes(network.name))
             break;
         case "asSource":
@@ -61,19 +61,19 @@ const resolveProvider = (network: Network | undefined, walletProviders: WalletCo
             break;
     }
 
-    if (provider?.isNotAvailableCondition) {
-        const availableWalletsForConnect = provider.availableWalletsForConnect?.filter(connector => (provider.isNotAvailableCondition && network?.name) ? !provider.isNotAvailableCondition(connector.id, network?.name) : true)
+    if (provider?.isNotAvailableCondition && purpose) {
+        const availableWalletsForConnect = provider.availableWalletsForConnect?.filter(connector => (provider.isNotAvailableCondition && network?.name) ? !provider.isNotAvailableCondition(connector.id, network?.name, purpose) : true)
         const resolvedProvider = {
             ...provider,
             connectedWallets: provider.connectedWallets?.map(wallet => {
                 return {
                     ...wallet,
-                    isNotAvailable: (provider.isNotAvailableCondition && network?.name && wallet.internalId) ? provider.isNotAvailableCondition(wallet.internalId, network?.name) : false,
+                    isNotAvailable: (provider.isNotAvailableCondition && network?.name && wallet.internalId) ? provider.isNotAvailableCondition(wallet.internalId, network?.name, purpose) : false,
                 }
             }),
             activeWallet: provider.activeWallet ? {
                 ...provider.activeWallet,
-                isNotAvailable: (network?.name) ? provider.isNotAvailableCondition(provider.activeWallet.id, network?.name) : false,
+                isNotAvailable: (network?.name) ? provider.isNotAvailableCondition(provider.activeWallet.id, network?.name, purpose) : false,
             } : undefined,
             availableWalletsForConnect
         }
@@ -85,14 +85,14 @@ const resolveProvider = (network: Network | undefined, walletProviders: WalletCo
 
 const resolveWallet = (wallet: Wallet, network: Network | undefined, provider: WalletConnectionProvider, purpose?: WalletPurpose) => {
 
-    if (provider.isNotAvailableCondition && network?.name && wallet.internalId) {
+    if (provider.isNotAvailableCondition && network?.name && wallet.internalId && !purpose) {
         return {
             ...wallet,
             isNotAvailable: provider.isNotAvailableCondition(wallet.internalId, network?.name),
         }
     }
 
-    if (purpose === "autofil") {
+    if (purpose === "autofill") {
         return {
             ...wallet,
             isNotAvailable: !wallet.autofillSupportedNetworks?.some(n => n.toLowerCase() === network?.name.toLowerCase()),

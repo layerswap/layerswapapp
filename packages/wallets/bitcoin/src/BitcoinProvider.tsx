@@ -4,23 +4,52 @@ import type { CreateConnectorFn } from '@bigmi/client'
 import { http, bitcoin, createClient, defineChain, Chain, ChainId } from '@bigmi/core'
 import { NetworkType, NetworkWithTokens, InternalConnector } from '@layerswap/widget/types'
 import { useSettingsState } from '@layerswap/widget/internal'
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import type { ReactElement } from 'react'
+import { QueryClient, QueryClientContext, QueryClientProvider } from '@tanstack/react-query'
 
-export const BitcoinProvider = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
+export const BitcoinProvider = ({ children }: { children: ReactNode }): ReactElement => {
     const { networks } = useSettingsState()
     const network = networks.find(n => n.type === NetworkType.Bitcoin)
     const config = createDefaultBigmiConfig(network)
 
+    const [isClient, setIsClient] = useState<boolean>(false)
+
+    useEffect(() => {
+        setIsClient(true)
+    }, [])
+
+    if (!isClient) {
+        return null
+    }
+
     return (
         <BigmiProvider config={config} reconnectOnMount={true}>
-            <ConnectorsContext>
-                {children}
-            </ConnectorsContext>
+            <QueryWrapper>
+                <ConnectorsContext>
+                    {children}
+                </ConnectorsContext>
+            </QueryWrapper>
         </BigmiProvider>
     )
 }
 
-const ConnectorsContext = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
+const queryClient = new QueryClient()
+
+const QueryWrapper = ({ children }: { children: ReactNode }): ReactElement => {
+    const context = useContext(QueryClientContext)
+    if (context) {
+        return <>{children}</>
+    }
+    return (
+        <QueryClientProvider client={queryClient}>
+            {children}
+        </QueryClientProvider>
+    )
+}
+
+
+const ConnectorsContext = ({ children }: { children: ReactNode }): ReactElement => {
     const { connectors } = useConnect()
     const [resolvedConnectors, setResolvedConnectors] = useState<InternalConnector[]>([])
 

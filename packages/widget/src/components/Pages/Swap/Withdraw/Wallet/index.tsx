@@ -2,15 +2,17 @@ import { FC, useCallback, useEffect, useState } from "react";
 import { PublishedSwapTransactions, SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { WithdrawalProvider } from "@/context/withdrawalContext";
 import useWallet from "@/hooks/useWallet";
-import { useSelectedAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount } from "@/context/swapAccounts";
 import { WithdrawPageProps } from "./Common/sharedTypes";
 import { ChangeNetworkButton, ConnectWalletButton, SendTransactionButton } from "./Common/buttons";
-import TransactionMessages, { TransactionMessageType } from "../messages/TransactionMessages";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
 import WalletIcon from "@/components/Icons/WalletIcon";
 import { useBalance } from "@/lib/balances/useBalance";
 import { TransferProps } from "@/types";
-// import { posthog } from "posthog-js";
+import { ActionMessage } from "./Common/actionMessage";
+import { ActionMessages } from "../messages/TransactionMessages";
+import { useTransfer } from "@/hooks/useTransfer";
+import { ErrorHandler } from "@/lib/ErrorHandler";
 
 type Props = {
     swapData: SwapBasicData
@@ -57,7 +59,7 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
     const { wallets, provider } = useWallet(source_network, "withdrawal")
     const { sameAccountNetwork } = useInitialSettings()
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id && w.withdrawalSupportedNetworks?.includes(source_network?.name))
-    const networkChainId = Number(source_network?.chain_id) ?? undefined
+    const networkChainId = source_network?.chain_id ?? undefined
     const [savedTransactionHash, setSavedTransactionHash] = useState<string>()
 
     useEffect(() => {
@@ -92,15 +94,15 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
     if ((source_network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase() || destination_network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase())
         && (selectedSourceAccount?.address && destination_address && selectedSourceAccount?.address.toLowerCase() !== destination_address?.toLowerCase())) {
         const network = source_network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase() ? source_network : destination_network
-        return <TransactionMessages.DifferentAccountsNotAllowedError network={network?.display_name!} />
+        return <ActionMessages.DifferentAccountsNotAllowedError network={network?.display_name!} />
     }
 
     if (!wallet) {
         return <ConnectWalletButton />
     }
-    else if (wallet.chainId && wallet.chainId !== networkChainId && source_network) {
+    else if (wallet.chainId && wallet.chainId != networkChainId && source_network) {
         return <ChangeNetworkButton
-            chainId={networkChainId}
+            chainId={Number(networkChainId)}
             network={source_network}
         />
     }
@@ -108,7 +110,7 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
         return <TransferTokenButton
             swapData={swapBasicData}
             refuel={refuel}
-            chainId={networkChainId}
+            chainId={Number(networkChainId)}
             savedTransactionHash={savedTransactionHash as `0x${string}`}
         />
     }
@@ -128,7 +130,7 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
     refuel
 }) => {
     const [buttonClicked, setButtonClicked] = useState(false)
-    const [error, setError] = useState<any | undefined>()
+    const [error, setError] = useState<Error | undefined>()
     const [loading, setLoading] = useState(false)
 
     const selectedSourceAccount = useSelectedAccount("from", swapData.source_network.name);
@@ -139,8 +141,9 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
     const { provider, wallets } = useWallet(swapData.source_network, "withdrawal")
     const { balances } = useBalance(selectedSourceAccount?.address, networkWithTokens)
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
+    const { executeTransfer } = useTransfer()
 
-    const clickHandler = useCallback(async ({ amount, callData, depositAddress }: TransferProps) => {
+    const clickHandler = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
         setButtonClicked(true)
         setError(undefined)
         setLoading(true)
@@ -151,38 +154,65 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
                 throw new Error('Missing amount')
             if (!wallet)
                 throw new Error('No selected account')
-            if (!provider?.transfer) throw new Error('No provider transfer')
 
-            const tx = await provider.transfer({
-                token: swapData.source_token,
-                amount,
-                depositAddress,
-                callData,
-                selectedWallet: wallet,
-                network: swapData.source_network,
-                balances: balances,
-                userDestinationAddress: swapData.destination_address,
-            })
-            if (!tx)
-                throw new Error('No transaction')
+            try {
+                const tx = await executeTransfer({
+                    token: swapData.source_token,
+                    amount,
+                    depositAddress,
+                    callData,
+                    selectedWallet: wallet,
+                    network: swapData.source_network,
+                    balances: balances,
+                    userDestinationAddress: swapData.destination_address,
+                    swapId,
+                }, wallet)
 
-            if (tx) {
-                return tx
+                if (!tx)
+                    throw new Error('No transaction')
+
+                if (tx) {
+                    return tx
+                }
+            } catch (e) {
+                if (typeof e === 'string' && e?.includes('No transfer provider found for network:')) {
+                    if (!provider?.transfer) throw new Error('No provider transfer')
+
+                    const tx = await provider.transfer({
+                        token: swapData.source_token,
+                        amount,
+                        depositAddress,
+                        callData,
+                        selectedWallet: wallet,
+                        network: swapData.source_network,
+                        balances: balances,
+                        userDestinationAddress: swapData.destination_address,
+                    }, wallet)
+
+                    if (!tx)
+                        throw new Error('No transaction')
+
+                    if (tx) {
+                        return tx
+                    }
+                } else {
+                    throw e
+                }
+
             }
-
         } catch (e) {
             setLoading(false)
             setError(e)
 
             throw e
         }
-    }, [provider, chainId, selectedSourceAccount?.address])
+    }, [executeTransfer, chainId, selectedSourceAccount?.address, wallet, swapData, balances])
 
 
     return <div className="w-full space-y-3 flex flex-col justify-between h-full text-primary-text">
         {
             buttonClicked &&
-            <TransactionMessage
+            <ActionMessage
                 error={error}
                 isLoading={loading}
             />
@@ -198,41 +228,4 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
             />
         }
     </div>
-}
-
-const TransactionMessage: FC<{ error: Error, isLoading: boolean }> = ({ error, isLoading }) => {
-    if (isLoading) {
-        return <TransactionMessages.ConfirmTransactionMessage />
-    }
-    else if (error.name === TransactionMessageType.TransactionRejected) {
-        return <TransactionMessages.TransactionRejectedMessage />
-    }
-    else if (error.name === TransactionMessageType.TransactionFailed) {
-        return <TransactionMessages.TransactionFailedMessage />
-    }
-    else if (error.name === TransactionMessageType.InsufficientFunds) {
-        return <TransactionMessages.InsufficientFundsMessage />
-    }
-    else if (error.name === TransactionMessageType.WaletMismatch) {
-        return <TransactionMessages.WaletMismatchMessage address={error.message} />
-    }
-    else if (error.name === TransactionMessageType.DifferentAccountsNotAllowedError) {
-        return <TransactionMessages.DifferentAccountsNotAllowedError network={error.message} />
-    }
-    else if (error) {
-        const swapWithdrawalError = new Error(error.message);
-        swapWithdrawalError.name = `SwapWithdrawalError`;
-        swapWithdrawalError.cause = error;
-        // posthog.captureException('$exception', {
-        //     name: swapWithdrawalError.name,
-        //     message: swapWithdrawalError.message,
-        //     $layerswap_exception_type: "Swap Withdrawal Error",
-        //     stack: swapWithdrawalError.stack,
-        //     cause: swapWithdrawalError.cause,
-        //     where: 'swapWithdrawalError',
-        //     severity: 'error',
-        // });
-        return <TransactionMessages.UnexpectedErrorMessage message={error.message} />
-    }
-    else return <></>
 }

@@ -1,7 +1,7 @@
 import { FC, useState } from 'react'
 import { useAccount } from 'wagmi';
-import { ChangeNetworkButton, ConnectWalletButton, SendTransactionButton, KnownInternalNames, useSelectedAccount, useWallet, useSettingsState } from '@layerswap/widget/internal';
-import { WithdrawPageProps, TransactionMessageType, TransferProps } from '@layerswap/widget/types';
+import { ChangeNetworkButton, ConnectWalletButton, SendTransactionButton, KnownInternalNames, useSelectedAccount, useWallet, useSettingsState, ActionMessage, ErrorHandler } from '@layerswap/widget/internal';
+import { WithdrawPageProps, ActionMessageType, TransferProps } from '@layerswap/widget/types';
 import { useEthersSigner } from '../../utils/ethers';
 import AuhorizeEthereum from '../../Authorize/Ethereum';
 import { WalletIcon } from 'lucide-react';
@@ -9,6 +9,8 @@ import { WalletIcon } from 'lucide-react';
 const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
 
     const [loading, setLoading] = useState(false)
+    const [buttonClicked, setButtonClicked] = useState(false)
+    const [error, setError] = useState<Error | undefined>()
 
     const { networks } = useSettingsState();
     const l1Network = networks.find(n => n.name === KnownInternalNames.Networks.EthereumMainnet || n.name === KnownInternalNames.Networks.EthereumSepolia);
@@ -26,6 +28,8 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refue
         if (!source_token || !amount || !callData || !swapId || !ethersSigner) return
 
         setLoading(true)
+        setButtonClicked(true)
+        setError(undefined)
         try {
             const account = await AuhorizeEthereum(ethersSigner)
 
@@ -37,10 +41,18 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refue
                 return res.transaction_hash
             }
         } catch (error) {
+            (error as Error).name = ActionMessageType.UnexpectedErrorMessage
+            setError(error as Error)
+            ErrorHandler({
+                type: "TransferError",
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                cause: error.cause
+            });
+        }
+        finally {
             setLoading(false)
-            error.name = TransactionMessageType.UnexpectedErrorMessage
-            error.message = error
-            throw new Error(error)
         }
     }
 
@@ -58,16 +70,25 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refue
     }
 
     return (
-        <SendTransactionButton
-            isDisabled={!!(loading || !ethersSigner)}
-            isSubmitting={!!(loading || !ethersSigner)}
-            onClick={handleTransfer}
-            icon={<WalletIcon className="h-5 w-5 stroke-2" aria-hidden="true" />}
-            swapData={swapBasicData}
-            refuel={refuel}
-        >
-            Send from EVM wallet
-        </SendTransactionButton>
+        <>
+            {
+                buttonClicked &&
+                <ActionMessage
+                    error={error}
+                    isLoading={loading}
+                />
+            }
+            <SendTransactionButton
+                isDisabled={!!(loading || !ethersSigner)}
+                isSubmitting={!!(loading || !ethersSigner)}
+                onClick={handleTransfer}
+                icon={<WalletIcon className="h-5 w-5 stroke-2" aria-hidden="true" />}
+                swapData={swapBasicData}
+                refuel={refuel}
+            >
+                Send from EVM wallet
+            </SendTransactionButton>
+        </>
     )
 }
 export default ParadexWalletWithdrawStep;

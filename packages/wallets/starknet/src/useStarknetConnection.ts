@@ -1,8 +1,9 @@
 import { Connector, useConnect, useDisconnect } from "@starknet-react/core";
-import { InternalConnector, Wallet, WalletConnectionProvider, TransactionMessageType, WalletConnectionProviderProps, NetworkWithTokens } from "@layerswap/widget/types";
-import { KnownInternalNames } from "@layerswap/widget/internal";
-import { resolveStarknetWalletConnectorIcon } from "./utils";
+import { InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps, NetworkWithTokens } from "@layerswap/widget/types";
+import { KnownInternalNames, walletIconResolver } from "@layerswap/widget/internal";
 import { useStarknetStore } from "./starknetWalletStore";
+import { useStarknetTransfer } from "./useStarknetTransfer";
+import { resolveStarknetWalletIcon } from "./utils";
 
 const starknetNames = [KnownInternalNames.Networks.StarkNetGoerli, KnownInternalNames.Networks.StarkNetMainnet, KnownInternalNames.Networks.StarkNetSepolia]
 export default function useStarknetConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
@@ -71,7 +72,6 @@ export default function useStarknetConnection({ networks }: WalletConnectionProv
         }
 
         catch (e) {
-            console.log(e)
             throw new Error(e)
         }
     }
@@ -82,6 +82,7 @@ export default function useStarknetConnection({ networks }: WalletConnectionProv
             if (address) removeAccount(address)
         }
         catch (e) {
+            //TODO: handle error
             console.log(e)
         }
     }
@@ -93,7 +94,7 @@ export default function useStarknetConnection({ networks }: WalletConnectionProv
         return {
             name: name,
             id: connector.id,
-            icon: typeof connector.icon === 'string' ? connector.icon : (connector.icon.light.startsWith('data:') ? connector.icon.light : `data:image/svg+xml;base64,${btoa(connector.icon.light.replaceAll('currentColor', '#FFFFFF'))}`),
+            icon: resolveStarknetWalletIcon({ icon: connector.icon }),
             type: connector?.["_wallet"] ? 'injected' : 'other',
             installUrl: connector?.["_wallet"] ? undefined : connectorsConfigs.find(c => c.id === connector.id)?.installLink,
         }
@@ -103,32 +104,7 @@ export default function useStarknetConnection({ networks }: WalletConnectionProv
         setActiveWallet(address);
     };
 
-    const transfer: WalletConnectionProvider['transfer'] = async (params, wallet) => {
-        const { callData } = params
-
-        try {
-            const { transaction_hash: transferTxHash } = (await wallet?.metadata?.starknetAccount?.execute(JSON.parse(callData || "")) || {});
-
-            if (transferTxHash) {
-                return transferTxHash
-            }
-        } catch (error) {
-            const e = new Error()
-            e.message = error
-            if (error === "An error occurred (USER_REFUSED_OP)" || error === "Execute failed") {
-                e.name = TransactionMessageType.TransactionRejected
-                throw e
-            }
-            else if (error === "failedTransfer") {
-                e.name = TransactionMessageType.TransactionFailed
-                throw e
-            }
-            else {
-                e.name = TransactionMessageType.UnexpectedErrorMessage
-                throw e
-            }
-        }
-    }
+    const { executeTransfer: transfer } = useStarknetTransfer()
 
     const provider: WalletConnectionProvider = {
         connectWallet,
@@ -168,7 +144,7 @@ export async function resolveStarknetWallet(props: ResolveStarknetWalletProps): 
         const { RpcProvider, WalletAccount } = await import('starknet')
         const rpcProvider = new RpcProvider({ nodeUrl: network?.node_url })
 
-        const walletAccount = new WalletAccount(rpcProvider, (connector as any).wallet, address)
+        const walletAccount = new WalletAccount({ provider: rpcProvider, walletProvider: (connector as any).wallet, address })
 
         const accounts = await walletAccount.requestAccounts(true)
         const account = accounts?.[0];
@@ -179,7 +155,7 @@ export async function resolveStarknetWallet(props: ResolveStarknetWalletProps): 
             address: account,
             addresses: [account],
             chainId: walletChain || '',
-            icon: resolveStarknetWalletConnectorIcon({ connector: connector.name, address: account }),
+            icon: walletIconResolver(address, resolveStarknetWalletIcon({ icon: connector.icon })),
             providerName: name,
             metadata: {
                 starknetAccount: walletAccount,
@@ -214,5 +190,10 @@ const connectorsConfigs = [
         id: "keplr",
         name: 'Keplr',
         installLink: "https://chromewebstore.google.com/detail/keplr/dmkamcknogkgcdfhhbddcghachkejeap"
+    },
+    {
+        id: "xverse",
+        name: 'Xverse Wallet',
+        installLink: "https://chromewebstore.google.com/detail/xverse-bitcoin-crypto-wal/idnnbdplmphpflfnlkomgpfbpcgelopg"
     }
 ]

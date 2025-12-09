@@ -1,8 +1,9 @@
 type ContetProps = {
     center?: boolean,
     children?: JSX.Element | JSX.Element[];
+    fitContent?: boolean;
 }
-const Content = ({ children, center }: ContetProps) => {
+const Content = ({ children, center, fitContent }: ContetProps) => {
     return center ?
         <div className='flex flex-col self-center grow w-full h-full min-h-0'>
             <div className='flex self-center grow w-full h-full min-h-0'>
@@ -11,6 +12,6 @@ const Content = ({ children, center }: ContetProps) => {
                 </div>
             </div>
         </div>
-        : children
+        : <div className={fitContent ? 'min-h-0 flex w-full' : 'h-full min-h-0 grow flex flex-1 w-full'}>{children}</div>
 }
 export default Content

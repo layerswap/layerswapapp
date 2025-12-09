@@ -7,7 +7,6 @@ import SpinIcon from "@/components/Icons/spinIcon";
 import useSWR from 'swr'
 import { Widget } from "@/components/Widget/Index";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
-import { LayerswapContextProps, LayerswapProvider } from "@/context/LayerswapProvider";
 
 export const CampaignsComponent = ({ onCampaignSelect }: { onCampaignSelect: (campaign: Campaign) => void }) => {
 
@@ -28,7 +27,7 @@ export const CampaignsComponent = ({ onCampaignSelect }: { onCampaignSelect: (ca
         <>
             <Widget.Content>
                 {!isLoading ?
-                    <div className="space-y-5 h-full text-primary-text sm:min-h-[350px]">
+                    <div className="space-y-5 h-full w-full text-primary-text sm:min-h-[350px]">
                         <div className="space-y-2">
                             <p className="font-bold text-left leading-5">Campaigns</p>
                             <div className="bg-secondary-500 divide-y divide-secondary-500 rounded-lg shadow-lg border border-secondary-500 hover:border-secondary-400 transition duration-200">
@@ -68,8 +67,10 @@ export const CampaignsComponent = ({ onCampaignSelect }: { onCampaignSelect: (ca
                         }
                     </div >
                     :
-                    <div className="absolute top-[calc(50%-5px)] left-[calc(50%-5px)]">
-                        <SpinIcon className="animate-spin h-5 w-5" />
+                    <div className="h-full w-full relative min-h-[350px]">
+                        <div className="absolute top-[calc(50%-5px)] left-[calc(50%-5px)]">
+                            <SpinIcon className="animate-spin h-5 w-5" />
+                        </div>
                     </div>
                 }
             </Widget.Content>
@@ -114,12 +115,10 @@ function IsCampaignActive(campaign: Campaign) {
     return (new Date(campaign?.end_date).getTime() > now.getTime())
 }
 
-export const Campaigns: FC<LayerswapContextProps & { hideMenu?: boolean; goBack: () => void, onCampaignSelect: (campaign: Campaign) => void }> = (props) => {
+export const Campaigns: FC<{ hideMenu?: boolean; goBack: () => void, onCampaignSelect: (campaign: Campaign) => void }> = (props) => {
     return (
-        <LayerswapProvider {...props}>
-            <Widget goBack={props.goBack} hideMenu={props.hideMenu}>
-                <CampaignsComponent onCampaignSelect={props.onCampaignSelect} />
-            </Widget>
-        </LayerswapProvider>
+        <Widget goBack={props.goBack} hideMenu={props.hideMenu}>
+            <CampaignsComponent onCampaignSelect={props.onCampaignSelect} />
+        </Widget>
     )
 }

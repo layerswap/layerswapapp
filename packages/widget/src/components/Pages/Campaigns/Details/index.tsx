@@ -14,7 +14,6 @@ import SpinIcon from "@/components/Icons/spinIcon"
 import useWallet from "@/hooks/useWallet"
 import { useConnectModal } from "@/components/Wallet/WalletModal"
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback"
-import { LayerswapContextProps, LayerswapProvider } from "@/context/LayerswapProvider"
 
 export const CampaignDetailsComponent: FC<{ campaignName: string | undefined }> = ({ campaignName }) => {
 
@@ -23,7 +22,7 @@ export const CampaignDetailsComponent: FC<{ campaignName: string | undefined }> 
     const campaign = campaignsData?.data?.find(c => c.name === campaignName)
     const network = campaign?.network
 
-    const { provider } = useWallet(network, 'autofil')
+    const { provider } = useWallet(network, 'autofill')
     const { connect } = useConnectModal()
 
     const handleConnect = useCallback(async () => {
@@ -42,8 +41,8 @@ export const CampaignDetailsComponent: FC<{ campaignName: string | undefined }> 
     }
 
     return (
-        <>
-            <Widget.Content>
+        <div className="h-full flex flex-col justify-between gap-3">
+            <Widget.Content fitContent>
                 <div className="space-y-5">
                     <div className="flex items-center gap-1">
                         <div className="h-7 w-7 relative">
@@ -78,7 +77,7 @@ export const CampaignDetailsComponent: FC<{ campaignName: string | undefined }> 
                     </Widget.Footer>
                 }
             </>
-        </ >
+        </div>
     )
 }
 
@@ -120,12 +119,10 @@ const NotFound = () => <Widget>
     </Widget.Content>
 </Widget>
 
-export const CampaignDetails: FC<LayerswapContextProps & { campaignName: string; goBack: () => void }> = (props) => {
+export const CampaignDetails: FC<{ campaignName: string; goBack: () => void }> = (props) => {
     return (
-        <LayerswapProvider {...props}>
-            <Widget goBack={props.goBack}>
-                <CampaignDetailsComponent campaignName={props.campaignName} />
-            </Widget>
-        </LayerswapProvider>
+        <Widget goBack={props.goBack}>
+            <CampaignDetailsComponent campaignName={props.campaignName} />
+        </Widget>
     )
 }

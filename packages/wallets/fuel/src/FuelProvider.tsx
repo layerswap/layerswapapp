@@ -6,13 +6,15 @@ import { FueletWalletConnector } from './connectors/fuelet-wallet';
 import { FuelWalletConnector } from './connectors/fuel-wallet';
 import { useSettingsState } from '@layerswap/widget/internal';
 import { NetworkType } from '@layerswap/widget/types';
-import { useMemo } from 'react';
+import { useMemo, useContext } from 'react';
+import type { ReactElement } from 'react';
+import { QueryClient, QueryClientContext, QueryClientProvider } from '@tanstack/react-query';
 
 const HOST_URL = 'https://api.bako.global';
 
-const FuelProviderWrapper = ({
+const Comp = ({
     children
-}: { children: React.ReactNode }) => {
+}: { children: React.ReactNode }): ReactElement => {
 
     const { networks } = useSettingsState()
 
@@ -34,6 +36,29 @@ const FuelProviderWrapper = ({
         <FuelProvider uiConfig={{ suggestBridge: false }} theme={'dark'} fuelConfig={fuelConfig} networks={fuelNetworks}>
             {children}
         </FuelProvider>
+    );
+};
+
+const queryClient = new QueryClient()
+
+const FuelProviderWrapper = ({
+    children
+}: { children: React.ReactNode }): ReactElement => {
+
+    const context = useContext(QueryClientContext)
+
+    if (context) {
+        return <Comp>
+            {children}
+        </Comp>;
+    }
+
+    return (
+        <QueryClientProvider client={queryClient}>
+            <Comp>
+                {children}
+            </Comp>
+        </QueryClientProvider>
     );
 };
 

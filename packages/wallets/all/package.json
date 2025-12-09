@@ -1,6 +1,6 @@
 {
   "name": "@layerswap/wallets",
-  "version": "0.0.0",
+  "version": "1.0.1",
   "description": "All Layerswap Wallet Providers bundled together",
   "type": "module",
   "main": "dist/esm/index.js",
@@ -19,7 +19,7 @@
   ],
   "scripts": {
     "build": "pnpm run clean && pnpm run build:esm+types",
-    "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm",
+    "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm && tsc-alias -p tsconfig.json --outDir ./dist/types",
     "check:types": "tsc --noEmit",
     "clean": "rimraf dist tsconfig.tsbuildinfo"
   },
@@ -41,8 +41,10 @@
     "@layerswap/wallet-bitcoin": "workspace:^",
     "@layerswap/wallet-evm": "workspace:^",
     "@layerswap/wallet-fuel": "workspace:^",
-    "@layerswap/wallet-imtbl-x": "workspace:^",
     "@layerswap/wallet-imtbl-passport": "workspace:^",
+    "@layerswap/wallet-imtbl-x": "workspace:^",
+    "@layerswap/wallet-module-loopring": "workspace:^",
+    "@layerswap/wallet-module-zksync": "workspace:^",
     "@layerswap/wallet-paradex": "workspace:^",
     "@layerswap/wallet-starknet": "workspace:^",
     "@layerswap/wallet-svm": "workspace:^",
@@ -50,18 +52,20 @@
     "@layerswap/wallet-tron": "workspace:^"
   },
   "peerDependencies": {
+    "@layerswap/widget": "workspace:^",
+    "@tanstack/react-query": "catalog:",
     "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
     "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
-    "@layerswap/widget": "workspace:^",
-    "wagmi": "catalog:",
     "viem": "catalog:",
-    "@tanstack/react-query": "catalog:"
+    "wagmi": "catalog:"
   },
   "engines": {
     "node": ">=22"
   },
   "bugs": {
     "url": "https://github.com/layerswap/layerswapapp/issues"
+  },
+  "devDependencies": {
+    "@layerswap/widget": "workspace:^"
   }
 }
-
