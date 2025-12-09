@@ -105,15 +105,24 @@ export const CollapsibleRow = forwardRef<HTMLDivElement, GenericAccordionRowProp
           }}
           id={headerId}
           data-nav-index={navigableIndex >= 0 ? navigableIndex.toString() : undefined}
+          tabIndex={0}
           onClick={() => toggleContent(groupName)}
+          onKeyDown={(e) => {
+            if (e.key === ' ') {
+              e.preventDefault();
+              toggleContent(groupName);
+            }
+          }}
           onMouseEnter={() => navigableIndex >= 0 && onHover(navigableIndex.toString())}
           className={clsx(
             "cursor-pointer rounded-lg relative group/accordion",
+            !isFocused && "hover:bg-secondary-500",
+            isFocused && "bg-secondary-500",
             isSticky && "opacity-0",
             isFocused && "is-focused"
           )}
         >
-          <AccordionTrigger>
+          <AccordionTrigger tabIndex={-1}>
             <CollapsableHeader
               item={item}
               direction={direction}
@@ -151,12 +160,19 @@ export const CollapsibleRow = forwardRef<HTMLDivElement, GenericAccordionRowProp
                     key={`${groupName}-${childIndex}`}
                     ref={(el) => { childRefs.current[childIndex] = el; }}
                     data-nav-index={`${navigableIndex}.${childIndex}`}
+                    tabIndex={0}
                     className={clsx(
                       "token-item pl-2 pr-3 cursor-pointer rounded-xl outline-none disabled:cursor-not-allowed",
                       !isThisChildFocused && "hover:bg-secondary-400",
                       isThisChildFocused && "bg-secondary-400"
                     )}
                     onClick={() => onSelect(route, token)}
+                    onKeyDown={(e) => {
+                      if (e.key === ' ') {
+                        e.preventDefault();
+                        onSelect(route, token);
+                      }
+                    }}
                     onMouseEnter={() => onHover(`${navigableIndex}.${childIndex}`)}
                   >
                     <CurrencySelectItemDisplay

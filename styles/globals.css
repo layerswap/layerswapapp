@@ -532,3 +532,23 @@ body.keyboard-navigating .openpicker [class*="hover:bg-"]:hover {
 body.keyboard-navigating .openpicker .bg-secondary-500[class*="hover:bg-"]:hover {
   background-color: rgb(var(--ls-colors-secondary-500)) !important;
 }
+
+/* Tab navigation focus styles - only show when using keyboard Tab navigation */
+[data-nav-index]:focus-visible {
+  outline: 2px solid rgb(var(--ls-colors-primary-500)) !important;
+  outline-offset: -2px;
+}
+
+/* Apply outline to SelectItem children when parent accordion is focused via tab */
+[data-nav-index]:focus-visible > button > * {
+  outline: 2px solid rgb(var(--ls-colors-primary-500)) !important;
+  outline-offset: -2px;
+}
+
+/* Apply consistent focus styling to all focusable elements */
+button:focus-visible,
+[role="button"]:focus-visible,
+a:focus-visible {
+  outline: 2px solid rgb(var(--ls-colors-primary-500)) !important;
+  outline-offset: 2px;
+}

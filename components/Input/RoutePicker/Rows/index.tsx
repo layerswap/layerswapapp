@@ -85,7 +85,14 @@ export default function Row({
                         !isFocused && "hover:bg-secondary-500",
                         isFocused && "bg-secondary-500"
                     )}
+                    tabIndex={0}
                     onClick={() => onSelect(route, token)}
+                    onKeyDown={(e) => {
+                        if (e.key === ' ') {
+                            e.preventDefault();
+                            onSelect(route, token);
+                        }
+                    }}
                     onMouseEnter={() => navigableIndex >= 0 && onHover(navigableIndex.toString())}
                 >
                     <CurrencySelectItemDisplay
