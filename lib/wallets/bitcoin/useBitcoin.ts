@@ -10,8 +10,9 @@ import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon"
 import KnownInternalNames from "../../knownIds"
 import { isValidAddress } from "@/lib/address/validator"
 import { useBitcoinConnectors } from "@/components/WalletProviders/BitcoinProvider"
-import { useAccount } from "wagmi"
-import { Connector, CreateConnectorFn, getConnections } from '@wagmi/core'
+import { Connector, CreateConnectorFn } from "@bigmi/client"
+import { useAccount } from "./useAccount"
+import { getConnections } from "./getConnections"
 
 const bitcoinNames = [KnownInternalNames.Networks.BitcoinMainnet, KnownInternalNames.Networks.BitcoinTestnet]
 
@@ -29,11 +30,7 @@ export default function useBitcoin(): WalletProvider {
     const { setSelectedConnector } = useConnectModal()
 
     const config = useConfig()
-    const account = useAccount({ config: config as any })
-
-    const switchAccount = async (wallet: Wallet, address: string) => {
-        // as we do not have multiple accounts management we will leave the method empty
-    }
+    const account = useAccount()
 
     const disconnectWallet = async (connectorName: string) => {
         try {
@@ -110,15 +107,15 @@ export default function useBitcoin(): WalletProvider {
     }
 
     const resolvedWallet = useMemo(() => {
-        const connections = getConnections(config as any)
+        const connections = getConnections(config)
         const connector = connections.find(c => c.connector.id === account.connector?.id)?.connector
 
         if (!account || !connector) return undefined
 
         const wallet = resolveWallet({
-            activeConnection: { address: account.address || '', id: connector.id },
+            activeConnection: { address: account.account?.address || '', id: connector.id },
             connector,
-            addresses: account.address ? [account.address] : [],
+            addresses: account.account ? [account.account.address] : [],
             networks,
             discconnect: disconnectWallet,
             supportedNetworks: {
@@ -149,7 +146,6 @@ export default function useBitcoin(): WalletProvider {
         id,
         providerIcon,
         unsupportedPlatforms: ["mobile"],
-        switchAccount,
         ready: connectors.length > 0
     }
 

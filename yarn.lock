@@ -1036,7 +1036,7 @@
   resolved "https://registry.yarnpkg.com/@badrap/bar-of-progress/-/bar-of-progress-0.2.2.tgz#4eb1a197f9727748cd9c9f5269339dd0bf6c1b0c"
   integrity sha512-Ig7MdFQM3OA7Ror5UB1ZutXNZFwxh6YExZvcd6EZloOgcXUR8PKNLH2wUVoeh92NMPnPWr6J/l9Mp+f3z7O7MQ==
 
-"@bigmi/client@^0.6.3":
+"@bigmi/client@0.6.3", "@bigmi/client@^0.6.3":
   version "0.6.3"
   resolved "https://registry.yarnpkg.com/@bigmi/client/-/client-0.6.3.tgz#cdc5a04b2cc21885d12c236caa3ebde0e71d0c76"
   integrity sha512-V/hQOJtOAuhueQMjr/pkzkNVTSoV8qwDe4LmjdKRnwIiKet7AGBMREi4NDBzYjrDAZsUt+RsZjgO0n8DByttGg==
@@ -1045,7 +1045,7 @@
     eventemitter3 "^5.0.1"
     zustand "^5.0.8"
 
-"@bigmi/core@^0.6.3":
+"@bigmi/core@0.6.3", "@bigmi/core@^0.6.3":
   version "0.6.3"
   resolved "https://registry.yarnpkg.com/@bigmi/core/-/core-0.6.3.tgz#6afa05d33ebc9391c00c50c2460f82206563ba3e"
   integrity sha512-d4hHD1Ic0rXbC65GRecfqNsGd7jLl/R86NTC65kBGUqdMXHtBKYain++jtTTxzXPZ1vc7FpB/npsYrPquntYEw==
@@ -1057,7 +1057,7 @@
     eventemitter3 "^5.0.1"
     zustand "^5.0.8"
 
-"@bigmi/react@^0.6.3":
+"@bigmi/react@0.6.3":
   version "0.6.3"
   resolved "https://registry.yarnpkg.com/@bigmi/react/-/react-0.6.3.tgz#c30108f1636191e8379e24453d332d209ec9daf0"
   integrity sha512-NxSj5IwL/5Ru+Ifw1qf1JHzWizCpuoQ6PVzzd5Rs83i9P4WbgqQNNo3GVM8kR7f5ucTV/PaaGgsgc+5ruLKsiw==

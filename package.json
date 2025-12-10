@@ -14,9 +14,9 @@
   },
   "dependencies": {
     "@badrap/bar-of-progress": "^0.2.2",
-    "@bigmi/client": "^0.6.3",
-    "@bigmi/core": "^0.6.3",
-    "@bigmi/react": "^0.6.3",
+    "@bigmi/client": "0.6.3",
+    "@bigmi/core": "0.6.3",
+    "@bigmi/react": "0.6.3",
     "@bitcoinerlab/secp256k1": "^1.2.0",
     "@bitget-wallet/web3-sdk": "^0.0.8",
     "@fuel-ts/account": "^0.101.3",
