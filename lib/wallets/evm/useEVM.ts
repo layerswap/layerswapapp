@@ -25,6 +25,9 @@ type DynamicWalletMetadata = {
     id: string
 }
 
+// Pending metadata for wallets being connected (before address is known)
+let pendingDynamicWalletMetadata: DynamicWalletMetadata | null = null
+
 // Get stored metadata for dynamic wallets connected via hidden connector
 const getDynamicWalletMetadata = (address: string): DynamicWalletMetadata | null => {
     if (typeof window === 'undefined') return null
@@ -223,6 +226,15 @@ export default function useEVM(): WalletProvider {
                 })
             }
 
+            // Set pending metadata BEFORE connectAsync so it's available during re-render
+            if (actualConnector.id === HIDDEN_WALLETCONNECT_ID) {
+                pendingDynamicWalletMetadata = {
+                    name: connector.name,
+                    icon: typeof connector.icon === 'string' ? connector.icon : '',
+                    id: connector.id
+                }
+            }
+
             // Use actualConnector for wagmi connect
             await connectAsync({ connector: actualConnector });
 
@@ -230,11 +242,8 @@ export default function useEVM(): WalletProvider {
             
             // If we used the hidden connector, store the wallet metadata for later resolution
             if (actualConnector.id === HIDDEN_WALLETCONNECT_ID && activeAccount.address) {
-                setDynamicWalletMetadata(activeAccount.address, {
-                    name: connector.name,
-                    icon: typeof connector.icon === 'string' ? connector.icon : '',
-                    id: connector.id
-                })
+                setDynamicWalletMetadata(activeAccount.address, pendingDynamicWalletMetadata!)
+                pendingDynamicWalletMetadata = null // Clear pending after storing
             }
             
             const connections = getConnections(config)
@@ -415,7 +424,10 @@ const ResolveWallet = (props: ResolveWalletProps): Wallet | undefined => {
 
     // Check if this is a dynamic wallet connected via hidden connector
     const isHiddenConnector = connector.id === HIDDEN_WALLETCONNECT_ID
-    const dynamicMetadata = isHiddenConnector ? getDynamicWalletMetadata(address) : null
+    // Try address-based lookup first, fallback to pending metadata (for first connection)
+    const dynamicMetadata = isHiddenConnector 
+        ? (getDynamicWalletMetadata(address) || pendingDynamicWalletMetadata) 
+        : null
     
     // Use dynamic metadata if available, otherwise use connector info
     const walletName = dynamicMetadata?.name || connector.name
