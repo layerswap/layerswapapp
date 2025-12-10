@@ -14,6 +14,8 @@ import { ExtendedAddress } from "../Address/AddressPicker/AddressWithIcon";
 import { getTotalBalanceInUSD } from "@/helpers/balanceHelper";
 import { useMemo } from "react";
 import { isNewListed, NewBadge } from "@/lib/isNewListed";
+import useWindowDimensions from "@/hooks/useWindowDimensions";
+import clsx from "clsx";
 
 type TokenItemProps = {
     route: NetworkRoute;
@@ -351,6 +353,7 @@ type SelectedRouteDisplayProps = {
 
 export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRouteDisplayProps) => {
     const showContent = token && route;
+    const { windowSize } = useWindowDimensions()
 
     return (
         <span className="flex grow text-left items-center text-xs md:text-base relative">
@@ -381,7 +384,12 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
                         </div>
 
                     </div>
-                    <div className="ml-2 flex flex-col grow text-primary-text overflow-hidden min-w-0 max-w-3/4 group-[.exchange-picker]:max-w-full">
+                    <div
+                        className={clsx(
+                            "ml-2 flex flex-col grow text-primary-text overflow-hidden min-w-0 max-w-3/4 group-[.exchange-picker]:max-w-full",
+                            { "max-w-[60px]": windowSize?.width && windowSize.width < 350 }
+                        )}
+                    >
                         <p className="text-base leading-5 font-medium">{token.symbol}</p>
                         <p className="text-secondary-text grow text-sm font-normal leading-4 truncate whitespace-nowrap">
                             {route.display_name}
