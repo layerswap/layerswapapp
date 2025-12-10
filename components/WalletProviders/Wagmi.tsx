@@ -1,9 +1,9 @@
 import { useSettingsState } from "../../context/settings";
 import { NetworkType } from "../../Models/Network";
 import resolveChain from "../../lib/resolveChain";
-import React, { useMemo, useRef } from "react";
+import React, { useMemo } from "react";
 import NetworkSettings from "../../lib/NetworkSettings";
-import { WagmiProvider, createConfig, createStorage, Config } from 'wagmi'
+import { WagmiProvider, createConfig, Config } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Chain, http } from 'viem';
 import { useEvmConnectors } from "../../context/evmConnectorsContext";
@@ -20,10 +20,8 @@ const chainsToFilter = [
     70701
 ]
 
-// Create storage outside component to ensure stability
-const storage = typeof window !== 'undefined' 
-    ? createStorage({ storage: window.localStorage, key: 'wagmi' })
-    : undefined
+// Module level cache - config is created ONCE and never recreated to preserve connection state
+let cachedConfig: Config | null = null
 
 function WagmiComponent({ children }: Props) {
     const settings = useSettingsState();
@@ -50,28 +48,27 @@ function WagmiComponent({ children }: Props) {
         return t
     }, [settingsChains])
 
-    // Use ref to keep config stable across renders - create once and reuse
-    const configRef = useRef<Config | null>(null)
-    
-    // Only create config once - it will persist across renders
-    if (!configRef.current) {
-        configRef.current = createConfig({
-            connectors,
-            chains: settingsChains as [Chain, ...Chain[]],
-            transports: transports,
-            ssr: true,
-            storage,
-        })
-    }
+    // Create config ONCE - never recreate to preserve connection state
+    const config = useMemo(() => {
+        if (!cachedConfig) {
+            cachedConfig = createConfig({
+                connectors,
+                chains: settingsChains as [Chain, ...Chain[]],
+                transports: transports,
+                ssr: true
+            })
+        }
+        return cachedConfig
+    }, []) // Empty deps - only create once
 
     return (
-        <WagmiProvider config={configRef.current} reconnectOnMount={true}>
+        <WagmiProvider config={config} reconnectOnMount={true}>
             <QueryClientProvider client={queryClient}>
                 <ActiveEvmAccountProvider>
                     {children}
                 </ActiveEvmAccountProvider>
             </QueryClientProvider>
-        </WagmiProvider >
+        </WagmiProvider>
     )
 }
 
