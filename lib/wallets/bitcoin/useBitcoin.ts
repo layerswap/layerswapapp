@@ -2,15 +2,16 @@ import { NetworkType, NetworkWithTokens } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
 import { useConnectModal } from "../../../components/WalletModal"
-import { useConnect, useAccount, useConfig } from '@bigmi/react'
+import { useConnect, useConfig } from '@bigmi/react'
 import { disconnect } from "@bigmi/client"
 import { useMemo } from "react"
 import convertSvgComponentToBase64 from "../../../components/utils/convertSvgComponentToBase64"
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon"
 import KnownInternalNames from "../../knownIds"
-import { Connector, CreateConnectorFn } from "@bigmi/client"
 import { isValidAddress } from "@/lib/address/validator"
 import { useBitcoinConnectors } from "@/components/WalletProviders/BitcoinProvider"
+import { useAccount } from "wagmi"
+import { Connector, CreateConnectorFn, getConnections } from '@wagmi/core'
 
 const bitcoinNames = [KnownInternalNames.Networks.BitcoinMainnet, KnownInternalNames.Networks.BitcoinTestnet]
 
@@ -24,10 +25,11 @@ export default function useBitcoin(): WalletProvider {
         ...networks.filter(network => network.type === NetworkType.Bitcoin).map(l => l.name),
     ]
 
-    const account = useAccount()
     const { connectAsync, connectors } = useConnect()
-    const config = useConfig()
     const { setSelectedConnector } = useConnectModal()
+
+    const config = useConfig()
+    const account = useAccount({ config: config as any })
 
     const switchAccount = async (wallet: Wallet, address: string) => {
         // as we do not have multiple accounts management we will leave the method empty
@@ -71,11 +73,11 @@ export default function useBitcoin(): WalletProvider {
 
             if (!result.accounts) throw new Error("No result from connector")
 
-            const address = result.accounts[0]
+            const connectedAccount = result.accounts[0]
             const network = networks.find(n => commonSupportedNetworks.includes(n.name))
-            const wrongChanin = !isValidAddress(address, network)
+            const wrongChanin = !isValidAddress(connectedAccount?.address, network)
 
-            if (address && wrongChanin) {
+            if (connectedAccount?.address && wrongChanin) {
                 await disconnect(config, { connector })
                 const isMainnet = network?.name === KnownInternalNames.Networks.BitcoinMainnet
                 const errorMessage = `Please switch the network in your wallet to ${isMainnet ? 'Mainnet' : 'Testnet'} and click connect again`
@@ -83,9 +85,9 @@ export default function useBitcoin(): WalletProvider {
             }
 
             const wallet = resolveWallet({
-                activeConnection: { address: address, id: connector.id },
+                activeConnection: { address: connectedAccount?.address, id: connector.id },
                 connector,
-                addresses: [address],
+                addresses: [connectedAccount?.address],
                 networks,
                 discconnect: disconnectWallet,
                 supportedNetworks: {
@@ -108,7 +110,8 @@ export default function useBitcoin(): WalletProvider {
     }
 
     const resolvedWallet = useMemo(() => {
-        const connector = account.connector
+        const connections = getConnections(config as any)
+        const connector = connections.find(c => c.connector.id === account.connector?.id)?.connector
 
         if (!account || !connector) return undefined
 
