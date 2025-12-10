@@ -17,6 +17,24 @@
   ::file-selector-button {
     border-color: transparent;
   }
+
+  /* remove all focus outlines at base layer to prevent flash while navigating with Tab key*/
+  *:focus,
+  *:focus-visible {
+    outline: none;
+    outline-width: 0;
+    outline-style: none;
+    box-shadow: none;
+    transition: outline 0s, outline-width 0s, outline-style 0s, box-shadow 0s;
+  }
+
+  button,
+  [role="button"],
+  a,
+  [tabindex] {
+    outline: none;
+    transition: outline 0s;
+  }
 }
 
 @theme static {
@@ -545,10 +563,31 @@ body.keyboard-navigating .openpicker .bg-secondary-500[class*="hover:bg-"]:hover
   outline-offset: -2px;
 }
 
-/* Apply consistent focus styling to all focusable elements */
+/* Apply consistent focus styling to buttons and links - only on keyboard Tab navigation */
 button:focus-visible,
 [role="button"]:focus-visible,
-a:focus-visible {
+a:focus-visible,
+[tabindex]:focus-visible {
   outline: 2px solid rgb(var(--ls-colors-primary-500)) !important;
-  outline-offset: 2px;
+  outline-offset: 2px !important;
+  outline-style: solid !important;
+  outline-width: 2px !important;
+  box-shadow: none !important;
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Prevent SVG and child elements from being focusable */
+svg,
+svg *,
+path {
+  pointer-events: none !important;
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Ensure motion/framer-motion elements are never focusable */
+[data-projection-id],
+[style*="pointer-events"] {
+  outline: none !important;
 }
