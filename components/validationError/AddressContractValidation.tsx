@@ -1,6 +1,5 @@
 import React from 'react';
 import { Network } from '@/Models/Network';
-import { useContractAddressStore } from '@/stores/contractAddressStore';
 import { useContractAddressCheck } from '@/hooks/useContractAddressCheck';
 import { ErrorDisplay } from './ErrorDisplay';
 import { ICON_CLASSES_WARNING } from './constants';
@@ -14,11 +13,10 @@ interface AddressContractValidationProps {
 
 const ContractAddressValidation: React.FC<AddressContractValidationProps> = ({ source_network, destination_network, destination_address }) => {
     const { 
+        isChecking,
         isContractInNetwork, 
         isContractInAnyNetwork
-    } = useContractAddressStore();
-    
-    const { isChecking } = useContractAddressCheck(destination_address, source_network, destination_network);
+    } = useContractAddressCheck(destination_address, source_network, destination_network);
 
     if (!destination_address || !destination_network) {
         return null;

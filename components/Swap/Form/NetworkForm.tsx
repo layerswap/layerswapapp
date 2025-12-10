@@ -140,11 +140,11 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                     </div>
                                     : null
                             }
-                            <ContractAddressValidation
+                            {/* <ContractAddressValidation
                                 source_network={source}
                                 destination_network={destination}
                                 destination_address={values.destination_address}
-                            />
+                            /> */}
                             <QuoteDetails swapValues={values} quote={quote?.quote} reward={quote?.reward} isQuoteLoading={isQuoteLoading} />
                         </div>
                     </div>
