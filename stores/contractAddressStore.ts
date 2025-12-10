@@ -55,8 +55,11 @@ const isContractAddress = async (address: string, network: Network): Promise<boo
         const bytecode = await publicClient.getCode({
             address: address as `0x${string}`
         });
-
-        return !!bytecode && bytecode !== '0x';
+        if(bytecode && bytecode !== '0x' && !bytecode.startsWith('0xef0100')) {
+            return true;
+        } else {
+            return false;
+        }
     } catch (error) {
         console.log(error)
         return false;
