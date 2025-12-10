@@ -44,7 +44,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 return;
             }
             setSelectedConnector(connector)
-            if (connector?.hasBrowserExtension && !connector?.showQrCode) return
+            if (connector?.hasBrowserExtension && connector?.showQrCode == false && connector.type !== 'injected') return
             if (connector.installUrl) return
             if (!provider.ready) {
                 setConnectionError("Wallet provider is still initializing. Please wait a moment and try again.")
@@ -108,7 +108,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         setSelectedProvider({ ...provider, isSelectedFromFilter: true })
     }
 
-    if (selectedConnector?.hasBrowserExtension && !selectedConnector?.showQrCode) {
+    if (selectedConnector?.hasBrowserExtension && !selectedConnector?.showQrCode && selectedConnector.type !== 'injected' && !selectedMultiChainConnector) {
         const provider = featuredProviders.find(p => p.name === selectedConnector?.providerName)
         return <InstalledExtensionNotFound selectedConnector={selectedConnector} onConnect={(connector) => { connect(connector, provider!) }} />
     }

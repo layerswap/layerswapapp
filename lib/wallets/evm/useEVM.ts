@@ -119,7 +119,7 @@ export default function useEVM(): WalletProvider {
                 }
             })
     }, [allConnectors, walletConnectConnectors])
-
+    console.log(availableFeaturedWalletsForConnect)
     const connectWallet = useCallback(async (props: { connector: WalletModalConnector }) => {
         try {
             const internalConnector = props?.connector;
