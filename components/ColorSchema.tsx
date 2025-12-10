@@ -40,12 +40,12 @@ const ColorSchema: FC<Props> = ({ themeData }) => {
                         --ls-colors-secondary-900: ${themeData.secondary?.[900]};
                         --ls-colors-secondary-text: ${themeData.secondary?.text};
 
-                        --ls-color-warning-foreground: ${themeData.warning?.Foreground}
-                        --ls-colors-warning-background: ${themeData.warning?.Background}
-                        --ls-color-error-foreground: ${themeData.error?.Foreground}
-                        --ls-colors-error-background: ${themeData.error?.Background}
-                        --ls-color-success-foreground: ${themeData.success?.Foreground}
-                        --ls-colors-success-background: ${themeData.success?.Background}
+                        --ls-colors-warning-foreground: ${themeData.warning?.Foreground};
+                        --ls-colors-warning-background: ${themeData.warning?.Background};
+                        --ls-colors-error-foreground: ${themeData.error?.Foreground};
+                        --ls-colors-error-background: ${themeData.error?.Background};
+                        --ls-colors-success-foreground: ${themeData.success?.Foreground};
+                        --ls-colors-success-background: ${themeData.success?.Background};
                     }
                     .headerLogo {
                         display: ${themeData.headerLogo};

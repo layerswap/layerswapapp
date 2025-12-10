@@ -80,7 +80,7 @@ export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData
     }
 
     return (
-        <div className="w-full space-y-3 flex flex-col justify-between h-full text-primary-text">
+        <div className="w-full space-y-3 h-fit text-primary-text">
             {
                 transactionErrorMessage &&
                 <TransactionMessage isLoading={loading} error={transactionErrorMessage} sourceAddress={selectedSourceAccount?.address} destAddress={swapBasicData?.destination_address} />

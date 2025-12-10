@@ -12,11 +12,9 @@ type Props = {
 }
 const WalletTransferButton: FC<Props> = ({ swapBasicData: swapData, swapId, refuel, balanceWarning, onWalletWithdrawalSuccess, onCancelWithdrawal }) => {
     return <>
-        <div className='rounded-2xl bg-secondary-500 divide-y divide-secondary-300 p-3'>
-            <div className='space-y-2.5'>
-                {balanceWarning}
-                <WalletTransferAction swapData={swapData} swapId={swapId} refuel={refuel} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} onCancelWithdrawal={onCancelWithdrawal} />
-            </div>
+        <div className='space-y-2.5'>
+            {balanceWarning}
+            <WalletTransferAction swapData={swapData} swapId={swapId} refuel={refuel} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} onCancelWithdrawal={onCancelWithdrawal} />
         </div>
     </>
 }
