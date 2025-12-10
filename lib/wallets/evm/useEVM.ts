@@ -487,6 +487,7 @@ const resolveSupportedNetworks = (supportedNetworks: string[], connectorId: stri
                 KnownInternalNames.Networks.EthereumMainnet,
                 KnownInternalNames.Networks.BaseMainnet,
                 KnownInternalNames.Networks.PolygonMainnet,
+                KnownInternalNames.Networks.MonadMainnet
             ]
         }
     ]
