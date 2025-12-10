@@ -1,4 +1,3 @@
-import posthog from "posthog-js";
 import { TokenBalance } from "./Balance";
 import { Network, NetworkWithTokens, Token } from "./Network";
 

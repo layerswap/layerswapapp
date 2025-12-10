@@ -17,6 +17,7 @@ import {
     ZkSyncBalanceProvider,
     HyperliquidBalanceProvider
 } from "./providers";
+import { SendErrorMessage } from "../telegram";
 
 export class BalanceResolver {
 
@@ -55,8 +56,9 @@ export class BalanceResolver {
                     address: address,
                     balances: errorBalances,
                     where: 'BalanceProviderError',
-                    message: `Could not fetch balance for ${errorBalances.map(t=>t.token).join(", ")} in ${network.name}, message: ${errorBalances.map(b=>b.error).join(", ")}`,
+                    message: `Could not fetch balance for ${errorBalances.map(t => t.token).join(", ")} in ${network.name}, message: ${errorBalances.map(b => b.error).join(", ")}`,
                 });
+                if (process.env.NEXT_PUBLIC_VERCEL_ENV == "production") SendErrorMessage("BalanceError", `Could not fetch balance for ${errorBalances.map(t => t.token).join(", ")} in ${network.name},  %0A domain: ${window.location.hostname} %0A message: ${errorBalances.map(b => b.error).join(", ")}`)
             }
 
             return { balances };
