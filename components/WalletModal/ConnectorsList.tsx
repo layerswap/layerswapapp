@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useWallet from "../../hooks/useWallet";
 import { useConnectModal, WalletModalConnector } from ".";
 import { InternalConnector, Wallet, WalletProvider } from "../../Models/WalletProvider";
@@ -19,6 +19,12 @@ import { ImageWithFallback } from "../Common/ImageWithFallback";
 import { SearchComponent } from "../Input/Search";
 import { featuredWalletsIds } from "@/context/evmConnectorsContext";
 import MenuIcon from "../icons/MenuIcon";
+import CircularLoader from "../icons/CircularLoader";
+
+const LAZY_LOAD_CONFIG = {
+    itemsPerLoad: 20,
+    enabled: true
+};
 
 const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { providers } = useWallet();
@@ -28,6 +34,10 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     const [searchValue, setSearchValue] = useState<string | undefined>(undefined)
     const [isScrolling, setIsScrolling] = useState(false);
     const scrollTimeout = useRef<any>(null);
+
+    const [displayedCount, setDisplayedCount] = useState(LAZY_LOAD_CONFIG.itemsPerLoad);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
 
     const handleScroll = () => {
         setIsScrolling(true);
@@ -113,18 +123,47 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         ? filteredProviders.filter(p => selectedProviderNames.includes(p.name))
         : (selectedProvider ? [selectedProvider] : filteredProviders)
 
-    const allFeaturedConnectors = useMemo(() => featuredProviders.filter(g => g.availableWalletsForConnect && g.availableWalletsForConnect?.length > 0).map((provider) =>
-        provider.availableWalletsForConnect?.filter(v => searchValue ? (v.name.toLowerCase().includes(searchValue?.toLowerCase())) : true).map((connector) => ({ ...connector, providerName: provider.name }))).flat(), [featuredProviders, searchValue])
-    const allHiddenConnectors = useMemo(() =>
-        featuredProviders
+    const allFeaturedConnectors = useMemo(() => {
+        const connectors = featuredProviders.filter(g => g.availableWalletsForConnect && g.availableWalletsForConnect?.length > 0).map((provider) =>
+            provider.availableWalletsForConnect?.filter(v => searchValue ? (v.name.toLowerCase().includes(searchValue?.toLowerCase())) : true).map((connector) => ({ ...connector, providerName: provider.name }))).flat();
+        return removeDuplicatesWithKey(connectors.filter(c => c).sort((a, b) => sortRecentConnectors(a!, b!, recentConnectors)), 'name') as InternalConnector[];
+    }, [featuredProviders, searchValue, recentConnectors]);
+
+    const allHiddenConnectors = useMemo(() => {
+        const connectors = featuredProviders
             .filter(g => g.availableHiddenWalletsForConnect && g.availableHiddenWalletsForConnect?.length > 0)
             .map((provider) =>
                 provider.availableHiddenWalletsForConnect
                     ?.filter(v => (searchValue ? (v.name.toLowerCase().includes(searchValue?.toLowerCase())) : true) && !featuredWalletsIds.includes(v.id.toLowerCase()))
                     .map((connector) => ({ ...connector, providerName: provider.name, isHidden: true })))
-            .flat(), [featuredProviders, searchValue])
+            .flat();
+        return removeDuplicatesWithKey(connectors.filter(c => c).sort((a, b) => sortRecentConnectors(a!, b!, recentConnectors)), 'name') as InternalConnector[];
+    }, [featuredProviders, searchValue, recentConnectors]);
 
-    const allConnectors: InternalConnector[] = useMemo(() => removeDuplicatesWithKey(([...allFeaturedConnectors, ...allHiddenConnectors] as InternalConnector[]).filter(c => searchValue?.length ? true : !c.isHidden).sort((a, b) => sortRecentConnectors(a, b, recentConnectors)), 'name'), [allFeaturedConnectors, allHiddenConnectors, searchValue?.length])
+    const isFiltered = selectedProviderNames.length > 0 || !!searchValue;
+    const allConnectors = useMemo(() => [...allFeaturedConnectors, ...allHiddenConnectors], [allFeaturedConnectors, allHiddenConnectors]);
+
+    const displayedConnectors = useMemo(() => {
+        if (isFiltered) return allConnectors.slice(0, displayedCount);
+        return [...allFeaturedConnectors, ...allHiddenConnectors.slice(0, Math.max(0, displayedCount - allFeaturedConnectors.length))];
+    }, [isFiltered, allConnectors, allFeaturedConnectors, allHiddenConnectors, displayedCount]);
+
+    const hasMoreToLoad = displayedCount < allConnectors.length;
+
+    useEffect(() => setDisplayedCount(isFiltered ? LAZY_LOAD_CONFIG.itemsPerLoad : allFeaturedConnectors.length + LAZY_LOAD_CONFIG.itemsPerLoad), [isFiltered, searchValue, selectedProviderNames, allFeaturedConnectors.length]);
+
+    const loadMore = useCallback(() => {
+        if (!hasMoreToLoad || isLoadingMore) return;
+        setIsLoadingMore(true);
+        setTimeout(() => { setDisplayedCount(prev => prev + LAZY_LOAD_CONFIG.itemsPerLoad); setIsLoadingMore(false); }, 300);
+    }, [hasMoreToLoad, isLoadingMore]);
+
+    useEffect(() => {
+        if (!loadMoreTriggerRef.current) return;
+        const observer = new IntersectionObserver((e) => e[0].isIntersecting && hasMoreToLoad && !isLoadingMore && loadMore(), { threshold: 0.1, rootMargin: '100px' });
+        observer.observe(loadMoreTriggerRef.current);
+        return () => observer.disconnect();
+    }, [hasMoreToLoad, isLoadingMore, loadMore]);
 
     if (selectedConnector?.qr?.state) {
         const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector?.name, iconUrl: selectedConnector.icon });
@@ -214,7 +253,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 >
                     <div className='grid grid-cols-2 gap-2'>
                         {
-                            allConnectors.map(item => {
+                            displayedConnectors.map(item => {
                                 const provider = featuredProviders.find(p => p.name === item.providerName)
                                 const isRecent = recentConnectors?.some(v => v.connectorName === item.name)
                                 return (
@@ -230,6 +269,11 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                             })
                         }
                     </div>
+                    {hasMoreToLoad && (
+                        <div ref={loadMoreTriggerRef} className="col-span-2 flex justify-center items-center pt-2.5">
+                            <CircularLoader className="w-8 h-8 animate-spin" />
+                        </div>
+                    )}
                 </div>
             </div>
         </>
