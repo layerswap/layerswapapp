@@ -1036,34 +1036,34 @@
   resolved "https://registry.yarnpkg.com/@badrap/bar-of-progress/-/bar-of-progress-0.2.2.tgz#4eb1a197f9727748cd9c9f5269339dd0bf6c1b0c"
   integrity sha512-Ig7MdFQM3OA7Ror5UB1ZutXNZFwxh6YExZvcd6EZloOgcXUR8PKNLH2wUVoeh92NMPnPWr6J/l9Mp+f3z7O7MQ==
 
-"@bigmi/client@0.6.3", "@bigmi/client@^0.6.3":
-  version "0.6.3"
-  resolved "https://registry.yarnpkg.com/@bigmi/client/-/client-0.6.3.tgz#cdc5a04b2cc21885d12c236caa3ebde0e71d0c76"
-  integrity sha512-V/hQOJtOAuhueQMjr/pkzkNVTSoV8qwDe4LmjdKRnwIiKet7AGBMREi4NDBzYjrDAZsUt+RsZjgO0n8DByttGg==
+"@bigmi/client@^0.3.1":
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/@bigmi/client/-/client-0.3.1.tgz#824f01b857ef0bc9aeb8791b16593e5ca8bcc4ab"
+  integrity sha512-7VLRMuOSJtV72VhWSEk7b2FLAGzPvSr1s3aBPobYdndMqrkt1UF9b+2IudkRinsRKetuV8uaH1DtWsyrYCXGKg==
   dependencies:
-    "@bigmi/core" "^0.6.3"
+    "@bigmi/core" "^0.3.1"
     eventemitter3 "^5.0.1"
-    zustand "^5.0.8"
+    zustand "^5.0.5"
 
-"@bigmi/core@0.6.3", "@bigmi/core@^0.6.3":
-  version "0.6.3"
-  resolved "https://registry.yarnpkg.com/@bigmi/core/-/core-0.6.3.tgz#6afa05d33ebc9391c00c50c2460f82206563ba3e"
-  integrity sha512-d4hHD1Ic0rXbC65GRecfqNsGd7jLl/R86NTC65kBGUqdMXHtBKYain++jtTTxzXPZ1vc7FpB/npsYrPquntYEw==
+"@bigmi/core@^0.3.1":
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/@bigmi/core/-/core-0.3.1.tgz#5d0ac4ecbbf8d70af797fbbea58772dbafd4535d"
+  integrity sha512-KU2KZJmyHPtw7m9sTfOWZ2gQaE8iONpLajmh4gCZfscZIRiL1LddqWkLuFIoFNfY0jbJmvqX46leLUw5YIOVDw==
   dependencies:
     "@noble/hashes" "^1.8.0"
     bech32 "^2.0.0"
-    bitcoinjs-lib "^7.0.0"
+    bitcoinjs-lib "^7.0.0-rc.0"
     bs58 "^6.0.0"
     eventemitter3 "^5.0.1"
-    zustand "^5.0.8"
+    zustand "^5.0.5"
 
-"@bigmi/react@0.6.3":
-  version "0.6.3"
-  resolved "https://registry.yarnpkg.com/@bigmi/react/-/react-0.6.3.tgz#c30108f1636191e8379e24453d332d209ec9daf0"
-  integrity sha512-NxSj5IwL/5Ru+Ifw1qf1JHzWizCpuoQ6PVzzd5Rs83i9P4WbgqQNNo3GVM8kR7f5ucTV/PaaGgsgc+5ruLKsiw==
+"@bigmi/react@^0.3.1":
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/@bigmi/react/-/react-0.3.1.tgz#edf3cd6b09555ef8f26131ab3415306d08381380"
+  integrity sha512-+evNAsf/TNAGuSLwToQEyqX++FddLCqRBGKnRhmnk5WZJuOUtr+LwpjDFkGu2PNSMbbIFd8eprysMhVIGnEM3w==
   dependencies:
-    "@bigmi/client" "^0.6.3"
-    "@bigmi/core" "^0.6.3"
+    "@bigmi/client" "^0.3.1"
+    "@bigmi/core" "^0.3.1"
 
 "@biom3/design-tokens@^0.4.0", "@biom3/design-tokens@~0.4.2":
   version "0.4.8"
@@ -10516,7 +10516,7 @@ bitcoin-ops@^1.3.0, bitcoin-ops@^1.4.1:
   resolved "https://registry.yarnpkg.com/bitcoin-ops/-/bitcoin-ops-1.4.1.tgz#e45de620398e22fd4ca6023de43974ff42240278"
   integrity sha512-pef6gxZFztEhaE9RY9HmWVmiIHqCb2OyS4HPKkpc6CIiiOa3Qmuoylxc5P2EkU3w+5eTSifI9SEZC88idAIGow==
 
-bitcoinjs-lib@^7.0.0:
+bitcoinjs-lib@^7.0.0-rc.0:
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/bitcoinjs-lib/-/bitcoinjs-lib-7.0.0.tgz#0bea06c164b9048b4453914507514ed7ee3018c2"
   integrity sha512-2W6dGXFd1KG3Bs90Bzb5+ViCeSKNIYkCUWZ4cvUzUgwnneiNNZ6Sk8twGNcjlesmxC0JyLc/958QycfpvXLg7A==
@@ -20677,7 +20677,7 @@ zustand@^4.4.1:
   dependencies:
     use-sync-external-store "^1.2.2"
 
-zustand@^5.0.8:
+zustand@^5.0.5:
   version "5.0.9"
   resolved "https://registry.yarnpkg.com/zustand/-/zustand-5.0.9.tgz#389dcd0309b9c545d7a461bd3c54955962847654"
   integrity sha512-ALBtUj0AfjJt3uNRQoL1tL2tMvj6Gp/6e39dnfT6uzpelGru8v1tPOGBzayOWbPJvujM8JojDk3E1LxeFisBNg==

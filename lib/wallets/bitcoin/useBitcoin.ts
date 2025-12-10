@@ -70,11 +70,11 @@ export default function useBitcoin(): WalletProvider {
 
             if (!result.accounts) throw new Error("No result from connector")
 
-            const connectedAccount = result.accounts[0]
+            const address = result.accounts[0]
             const network = networks.find(n => commonSupportedNetworks.includes(n.name))
-            const wrongChanin = !isValidAddress(connectedAccount?.address, network)
+            const wrongChanin = !isValidAddress(address, network)
 
-            if (connectedAccount?.address && wrongChanin) {
+            if (address && wrongChanin) {
                 await disconnect(config, { connector })
                 const isMainnet = network?.name === KnownInternalNames.Networks.BitcoinMainnet
                 const errorMessage = `Please switch the network in your wallet to ${isMainnet ? 'Mainnet' : 'Testnet'} and click connect again`
@@ -82,9 +82,9 @@ export default function useBitcoin(): WalletProvider {
             }
 
             const wallet = resolveWallet({
-                activeConnection: { address: connectedAccount?.address, id: connector.id },
+                activeConnection: { address: address, id: connector.id },
                 connector,
-                addresses: [connectedAccount?.address],
+                addresses: [address],
                 networks,
                 discconnect: disconnectWallet,
                 supportedNetworks: {
@@ -113,9 +113,9 @@ export default function useBitcoin(): WalletProvider {
         if (!account || !connector) return undefined
 
         const wallet = resolveWallet({
-            activeConnection: { address: account.account?.address || '', id: connector.id },
+            activeConnection: { address: account.address || '', id: connector.id },
             connector,
-            addresses: account.account ? [account.account.address] : [],
+            addresses: account.address ? [account.address] : [],
             networks,
             discconnect: disconnectWallet,
             supportedNetworks: {
