@@ -19,8 +19,7 @@ This repository contains implementation of Layerswap UI
  
 ### Required environment variables
 
-  ```yaml
-  NEXT_PUBLIC_LS_API = https://api-dev.layerswap.cloud/
-  NEXT_PUBLIC_API_KEY = mainnet #sandbox for testnets
-  ```
-
+```yaml
+NEXT_PUBLIC_LS_API = https://api-dev.layerswap.cloud/
+NEXT_PUBLIC_API_KEY = mainnet #sandbox for testnets
+```
