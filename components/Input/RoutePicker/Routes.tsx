@@ -387,7 +387,7 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
                     <div
                         className={clsx(
                             "ml-2 flex flex-col grow text-primary-text overflow-hidden min-w-0 max-w-3/4 group-[.exchange-picker]:max-w-full",
-                            { "max-w-[60px]": windowSize?.width && windowSize.width < 350 }
+                            { "max-w-[60px]": windowSize?.width && windowSize.width < 400 }
                         )}
                     >
                         <p className="text-base leading-5 font-medium">{token.symbol}</p>
