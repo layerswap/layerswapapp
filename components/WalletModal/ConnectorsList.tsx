@@ -12,6 +12,7 @@ import { ProviderPicker } from "./ProviderPicker";
 import { InstalledExtensionNotFound } from "./InstalledExtensionNotFound";
 import { WalletQrCode } from "./WalletQrCode";
 import { LoadingConnect } from "./LoadingConnect";
+import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
 
 const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { providers } = useWallet();
@@ -21,6 +22,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     const [searchValue, setSearchValue] = useState<string | undefined>(undefined)
     const [isScrolling, setIsScrolling] = useState(false);
     const scrollTimeout = useRef<any>(null);
+    const isMobilePlatfrom = isMobile();
 
     const handleScroll = () => {
         setIsScrolling(true);
@@ -44,7 +46,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 return;
             }
             setSelectedConnector(connector)
-            if (connector?.hasBrowserExtension && connector?.showQrCode == false && connector.type !== 'injected') return
+            if (connector?.hasBrowserExtension && !connector?.showQrCode && connector.type == 'walletConnect' && !isMobilePlatfrom) return
             if (connector.installUrl) return
             if (!provider.ready) {
                 setConnectionError("Wallet provider is still initializing. Please wait a moment and try again.")
@@ -101,14 +103,13 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         searchValue,
         recentConnectors,
     });
-
     const handleSelectProvider = (providerName?: string) => {
         const provider = filteredProviders.find(p => p.name === providerName)
         if (!provider) return setSelectedProvider(undefined)
         setSelectedProvider({ ...provider, isSelectedFromFilter: true })
     }
 
-    if (selectedConnector?.hasBrowserExtension && !selectedConnector?.showQrCode && selectedConnector.type !== 'injected' && !selectedMultiChainConnector) {
+    if (selectedConnector?.hasBrowserExtension && !selectedConnector?.showQrCode && selectedConnector.type == 'walletConnect' && !isMobilePlatfrom) {
         const provider = featuredProviders.find(p => p.name === selectedConnector?.providerName)
         return <InstalledExtensionNotFound selectedConnector={selectedConnector} onConnect={(connector) => { connect(connector, provider!) }} />
     }

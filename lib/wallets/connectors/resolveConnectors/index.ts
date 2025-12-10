@@ -56,6 +56,9 @@ const resolveWallet = (wallet: any) => {
         throw new Error(`Wallet ${wallet.name} not found`)
     }
 
+    const isMobileSupported = !!wallet.mobile.universal || !!wallet.mobile.native
+    const isWalletConnectSupported = isMobileSupported || !!wallet.desktop?.universal || !!wallet.desktop?.native
+
     const w: WalletConnectWallet = {
         id: wallet.slug,
         name: wallet.name,
@@ -66,8 +69,8 @@ const resolveWallet = (wallet: any) => {
         showQrModal: false,
         customStoragePrefix: wallet.slug,
         order: resolveWalletConnectorIndex(wallet.slug),
-        type: "other",
-        isMobileSupported: wallet.mobile.universal || wallet.mobile.native,
+        type: isWalletConnectSupported ? "walletConnect" : "other",
+        isMobileSupported: isMobileSupported,
         hasBrowserExtension: wallet.injected != null
     }
 

@@ -109,17 +109,17 @@ export default function useEVM(): WalletProvider {
         return dedupePreferInjected(allConnectors.filter(filterConnectors))
             .map(w => {
                 const walletConnectWallet = walletConnectConnectors.find(w2 => w2.name.toLowerCase().includes(w.name.toLowerCase()) || w2.id.toLowerCase() === w.id.toLowerCase())
-                const isWalletConnectSupported = walletConnectWallet?.mobile.universal || walletConnectWallet?.mobile.native || walletConnectWallet?.desktop?.native || walletConnectWallet?.desktop?.universal || w.name === "WalletConnect"
+                const isWalletConnectSupported = w.type === "walletConnect" || w.name === "WalletConnect"
                 return {
                     ...w,
                     order: resolveWalletConnectorIndex(w.id),
-                    type: (w.type == 'injected' && w.id !== 'com.immutable.passport') ? w.type : "other",
+                    type: ((w.type == 'injected' && w.id !== 'com.immutable.passport') || w.id === "metaMaskSDK" || isWalletConnectSupported) ? w.type : "other",
                     isMobileSupported: isWalletConnectSupported,
                     hasBrowserExtension: walletConnectWallet?.hasBrowserExtension
                 }
             })
     }, [allConnectors, walletConnectConnectors])
-    console.log(availableFeaturedWalletsForConnect)
+
     const connectWallet = useCallback(async (props: { connector: WalletModalConnector }) => {
         try {
             const internalConnector = props?.connector;
