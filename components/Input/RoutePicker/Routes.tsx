@@ -85,7 +85,7 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
                             <p className="max-w-[90px] truncate">
                                 <span>•</span> <span>{item.display_asset || item.symbol}</span>
                             </p>
-                            <Info className="h-3 w-3 shrink-0" />
+                            <Info className="h-3 w-3" />
                         </div>
                     </ExtendedAddress>
                 </div>
@@ -94,14 +94,14 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
         secondaryLogoSrc={route.logo}
     >
         {(tokenbalance && Number(tokenbalance?.amount) > 0) ? (
-            <div className="text-sm text-secondary-text my-auto font-medium space-y-0.5 truncate">
+            <span className="text-sm text-secondary-text text-right my-auto font-medium space-y-0.5">
                 {Number(usdAmount) > 0 && (
-                    <div className="text-primary-text text-lg leading-[22px] truncate">{formatUsd(usdAmount)}</div>
+                    <div className="text-primary-text text-lg leading-[22px]">{formatUsd(usdAmount)}</div>
                 )}
-                <div className='text-xs leading-4 truncate'>
+                <div className='text-xs leading-4'>
                     {formatted_balance_amount}
                 </div>
-            </div>
+            </span>
         ) : <></>}
     </SelectItem.DetailedTitle>
 }
