@@ -28,7 +28,7 @@ import ReserveGasNote from "@/components/ReserveGasNote";
 import RefuelModal from "@/components/FeeDetails/RefuelModal";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import posthog from "posthog-js";
-import ContractAddressValidation from "@/components/validationError/AddressContractValidation";
+import ContractAddressValidationCache from "@/components/validationError/ContractAddressValidationCache";
 
 type Props = {
     partner?: Partner;
@@ -139,11 +139,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                     </div>
                                     : null
                             }
-                            {/* <ContractAddressValidation
-                                source_network={source}
-                                destination_network={destination}
-                                destination_address={values.destination_address}
-                            /> */}
                             <QuoteDetails swapValues={values} quote={quote?.quote} reward={quote?.reward} isQuoteLoading={isQuoteLoading} />
                         </div>
                     </div>
@@ -162,6 +157,11 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                     openModal={openRefuelModal}
                     setOpenModal={setOpenRefuelModal}
                     fee={quote}
+                />
+                <ContractAddressValidationCache
+                    source_network={source}
+                    destination_network={destination}
+                    destination_address={values.destination_address}
                 />
             </Form>
         </>
