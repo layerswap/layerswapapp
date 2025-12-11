@@ -1,4 +1,4 @@
-import { Dispatch, FC, SetStateAction, useState } from "react";
+import { Dispatch, FC, SetStateAction, useMemo, useState } from "react";
 import { WalletProvider } from "../../Models/WalletProvider";
 import { SlidersHorizontal } from "lucide-react";
 import clsx from "clsx";
@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import { Checkbox } from "../shadcn/checkbox";
 
 export const ProviderPicker: FC<{ providers: WalletProvider[], selectedProviderName: string | undefined, setSelectedProviderName: Dispatch<SetStateAction<string | undefined>> }> = ({ providers, selectedProviderName, setSelectedProviderName }) => {
-    const values = providers.map(p => p.name)
+    const values = useMemo(() => providers.map(p => p.name).sort(), [providers])
 
     const onSelect = (item: string) => {
         setOpen(false)
@@ -27,7 +27,7 @@ export const ProviderPicker: FC<{ providers: WalletProvider[], selectedProviderN
             </PopoverTrigger>
             <PopoverContent align="end" className="min-w-40 text-primary-text! p-2 space-y-1 bg-secondary-600! rounded-xl!">
                 {
-                    values.sort().map((item, index) => (
+                    values.map((item, index) => (
                         <div key={index} className="px-3 py-1 text-left flex items-center w-full gap-3 hover:bg-secondary-800 rounded-lg transition-colors duration-200 text-secondary-text cursor-pointer">
                             <Checkbox
                                 id={item}
