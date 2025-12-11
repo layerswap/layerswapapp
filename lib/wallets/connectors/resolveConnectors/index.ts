@@ -44,10 +44,22 @@ export const resolveWallets: () => WalletConnectWallet[] = () => {
 }
 
 
+// Cache for connector instances to ensure stable references for wagmi reconnection
+const connectorCache = new Map<string, ReturnType<typeof walletConnect>>()
+
 export const resolveConnector = (name: string) => {
+    // Return cached connector if available
+    if (connectorCache.has(name)) {
+        return connectorCache.get(name)!
+    }
+    
     const wallet = wallets.find(w => w.name === name && !walletsToFilter.includes(w.id))
     const params = resolveWallet(wallet)
-    return walletConnect(params as any)
+    const connector = walletConnect(params as any)
+    
+    // Cache the connector for future use
+    connectorCache.set(name, connector)
+    return connector
 }
 
 const resolveWallet = (wallet: any) => {

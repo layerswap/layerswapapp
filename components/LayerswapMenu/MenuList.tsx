@@ -1,9 +1,8 @@
 import { BookOpen, Gift, Map, Home, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus } from "lucide-react";
 import { useRouter } from "next/router";
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 import { useIntercom } from "react-use-intercom";
 import ChatIcon from "../icons/ChatIcon";
-import inIframe from "../utils/inIframe";
 import DiscordLogo from "../icons/DiscordLogo";
 import GitHubLogo from "../icons/GitHubLogo";
 import SubstackLogo from "../icons/SubstackLogo";
@@ -15,6 +14,7 @@ import Menu from "./Menu";
 import dynamic from "next/dynamic";
 import { MenuStep } from "../../Models/Wizard";
 import VaulDrawer from "../modal/vaulModal";
+import { useSettingsState } from "@/context/settings";
 
 const WalletsMenu = dynamic(() => import("../Wallet/ConnectedWallets").then((comp) => comp.WalletsMenu), {
     loading: () => <></>
@@ -23,12 +23,8 @@ const WalletsMenu = dynamic(() => import("../Wallet/ConnectedWallets").then((com
 const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ goToStep }) => {
     const router = useRouter();
     const { boot, show, update } = useIntercom()
-    const [embedded, setEmbedded] = useState<boolean>()
     const [openFeedbackModal, setOpenFeedbackModal] = useState(false);
-
-    useEffect(() => {
-        setEmbedded(inIframe())
-    }, [])
+    const { isEmbedded } = useSettingsState()
 
     const handleCloseFeedback = () => {
         setOpenFeedbackModal(false)
@@ -56,7 +52,7 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
                     }
                 </>
                 <>
-                    {!embedded && router.pathname != '/campaigns' &&
+                    {!isEmbedded && router.pathname != '/campaigns' &&
                         <Menu.Item pathname='/campaigns' icon={<Gift className="h-5 w-5" />} >
                             Campaigns
                         </Menu.Item>
@@ -113,7 +109,7 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
 
             <div className="grid grid-cols-2 gap-2 justify-center">
                 {navigation.social.map((item, index) => (
-                    <Link key={index} target="_blank" href={item.href} className={`flex relative bg-secondary-500 hover:bg-secondary-400 rounded-xl cursor-pointer select-none items-center outline-hidden text-primary-text ${item.className}`}>
+                    <Link key={index} target="_blank" href={item.href} className={`flex relative bg-secondary-500 hover:bg-secondary-400 rounded-xl cursor-pointer select-none items-center outline-hidden text-primary-text`}>
                         <div className="p-2 w-full flex justify-center gap-1">
                             <item.icon className="h-5 w-5" aria-hidden="true" />
                             <p>{item.name}</p>
@@ -130,39 +126,33 @@ const navigation = {
         {
             name: 'Twitter',
             href: 'https://twitter.com/layerswap/',
-            icon: (props) => TwitterLogo(props),
-            className: 'plausible-event-name=Twitter'
+            icon: (props) => TwitterLogo(props)
         },
         {
             name: 'GitHub',
             href: 'https://github.com/layerswap/layerswapapp/',
-            icon: (props) => GitHubLogo(props),
-            className: 'plausible-event-name=GitHub'
+            icon: (props) => GitHubLogo(props)
         },
         {
             name: 'Discord',
             href: 'https://discord.com/invite/KhwYN35sHy/',
-            icon: (props) => DiscordLogo(props),
-            className: 'plausible-event-name=Discord'
+            icon: (props) => DiscordLogo(props)
         },
         {
             name: 'YouTube',
             href: 'https://www.youtube.com/@layerswaphq/',
-            icon: (props) => YoutubeLogo(props),
-            className: 'plausible-event-name=Youtube'
+            icon: (props) => YoutubeLogo(props)
         },
         {
             name: 'Substack',
             href: 'https://layerswap.substack.com/',
-            icon: (props) => SubstackLogo(props),
-            className: 'plausible-event-name=Substack'
+            icon: (props) => SubstackLogo(props)
         },
         {
             name: 'Roadmap',
             href: 'https://layerswap.ducalis.io/roadmap/summary/',
-            icon: (props) => <Map {...props}></Map>,
-            className: 'plausible-event-name=Roadmap'
-        },
+            icon: (props) => <Map {...props}></Map>
+        }
     ]
 }
 
