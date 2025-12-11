@@ -110,7 +110,7 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
     useEffect(() => {
         const selectedWallet = wallets.find(w => w.id === selectedSourceAccount?.id && w.addresses.some(a => a.toLowerCase() === selectedSourceAccount.address.toLowerCase()))
         if (selectedSourceAccount && selectedWallet) {
-            provider?.switchAccount(selectedWallet, selectedSourceAccount.address)
+            provider?.switchAccount?.(selectedWallet, selectedSourceAccount.address)
         }
     }, [selectedSourceAccount?.address])
 
