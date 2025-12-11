@@ -38,6 +38,12 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, quote }) => {
 
     }, [to, destination_address, toCurrency])
 
+    useEffect(() => {
+        if (!needRefuel && refuel) {
+            setFieldValue('refuel', false)
+        }
+    }, [needRefuel, refuel, setFieldValue])
+
     const handleConfirmToggleChange = (value: boolean) => {
         setFieldValue('refuel', value)
     }
