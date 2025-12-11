@@ -129,7 +129,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                 <RefuelToggle
                                     quote={quote}
                                     onButtonClick={() => setOpenRefuelModal(true)}
-                                    minAllowedAmount={minAllowedAmount}
                                 />
                             }
                             {

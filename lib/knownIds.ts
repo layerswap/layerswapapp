@@ -257,6 +257,8 @@ export default class KnownInternalNames {
 
         public static readonly HyperliquidTestnet: string = "HYPERLIQUID_TESTNET"
 
+        public static readonly MonadMainnet: string = "MONAD_MAINNET"
+
     }
 
     static Currencies = class {
