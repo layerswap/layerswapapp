@@ -35,6 +35,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
     const [isAddressFromQueryConfirmed, setIsAddressFromQueryConfirmed] = useState(false);
+    const dontShowContractWarningRef = useRef(false);
 
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
     const router = useRouter();
@@ -93,15 +94,21 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
             if (!alreadyConfirmed) {
                 const { isContractInAnyNetwork, destinationIsContract } = await checkContractStatus(destination_address, values.from, values.to);
                 if (isContractInAnyNetwork && !destinationIsContract) {
+                    dontShowContractWarningRef.current = false;
+                    
+                    const handleDontShowAgainChange = (checked: boolean) => {
+                        dontShowContractWarningRef.current = checked;
+                    };
+                    
                     const confirmed = await getConfirmation({
-                        content: <ContractAddressNote values={values} />,
+                        content: <ContractAddressNote values={values} onDontShowAgainChange={handleDontShowAgainChange} />,
                         submitText: 'Confirm',
                         dismissText: 'Cancel'
                     });
                     
-                    if (confirmed) {
+                    if (confirmed && dontShowContractWarningRef.current) {
                         setConfirmed(destination_address, values.to.name);
-                    } else {
+                    } else if (!confirmed) {
                         return;
                     }
                 }
