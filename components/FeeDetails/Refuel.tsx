@@ -13,10 +13,9 @@ import { FORM_VALIDATION_ERROR_CODES } from "@/hooks/useFormValidation";
 type RefuelProps = {
     onButtonClick: () => void
     quote: ReturnType<typeof useQuoteData>['quote']
-    minAllowedAmount: ReturnType<typeof useQuoteData>['minAllowedAmount']
 }
 
-const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, quote, minAllowedAmount }) => {
+const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, quote }) => {
 
     const {
         values,
