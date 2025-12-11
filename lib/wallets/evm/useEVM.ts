@@ -10,7 +10,7 @@ import { isMobile } from "../../isMobile"
 import convertSvgComponentToBase64 from "@/components/utils/convertSvgComponentToBase64"
 import { LSConnector } from "../connectors/types"
 import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvider"
-import { useConnectModal } from "@/components/WalletModal"
+import { useConnectModal, WalletModalConnector } from "@/components/WalletModal"
 import { explicitInjectedProviderDetected } from "../connectors/explicitInjectedProviderDetected"
 import sleep from "../utils/sleep"
 import { useEvmConnectors, HIDDEN_WALLETCONNECT_ID } from "@/context/evmConnectorsContext"
@@ -150,17 +150,19 @@ export default function useEVM(): WalletProvider {
 
         return dedupePreferInjected(allConnectors.filter(filterConnectors))
             .map(w => {
-                const isWalletConnectSupported = walletConnectConnectors.some(w2 => w2.name.toLowerCase().includes(w.name.toLowerCase()) && (w2.mobile.universal || w2.mobile.native || w2?.desktop?.native || w2?.desktop?.universal)) || w.name === "WalletConnect"
+                const walletConnectWallet = walletConnectConnectors.find(w2 => w2.name.toLowerCase().includes(w.name.toLowerCase()) || w2.id.toLowerCase() === w.id.toLowerCase())
+                const isWalletConnectSupported = w.type === "walletConnect" || w.name === "WalletConnect"
                 return {
                     ...w,
                     order: resolveWalletConnectorIndex(w.id),
-                    type: (w.type == 'injected' && w.id !== 'com.immutable.passport') ? w.type : "other",
-                    isMobileSupported: isWalletConnectSupported
+                    type: ((w.type == 'injected' && w.id !== 'com.immutable.passport') || w.id === "metaMaskSDK" || isWalletConnectSupported) ? w.type : "other",
+                    isMobileSupported: isWalletConnectSupported,
+                    hasBrowserExtension: walletConnectWallet?.hasBrowserExtension
                 }
             })
     }, [allConnectors, walletConnectConnectors])
 
-    const connectWallet = useCallback(async (props: { connector: InternalConnector }) => {
+    const connectWallet = useCallback(async (props: { connector: WalletModalConnector }) => {
         try {
             const internalConnector = props?.connector;
             if (!internalConnector) return;
@@ -219,10 +221,10 @@ export default function useEVM(): WalletProvider {
                 }
             }
             else if (connector.type !== 'injected' && connector.isMobileSupported && connector.id !== "coinbaseWalletSDK" && connector.id !== "metaMaskSDK") {
-                setSelectedConnector({ ...connector, qr: { state: 'loading', value: undefined } })
+                setSelectedConnector({ ...connector, qr: { state: 'loading', value: undefined }, showQrCode: internalConnector.showQrCode })
                 // Use actualConnector for getProvider, but connector.resolveURI for deep links
                 getWalletConnectUri(actualConnector, connector?.resolveURI, (uri: string) => {
-                    setSelectedConnector({ ...connector, icon: base64Icon, qr: { state: 'fetched', value: uri } })
+                    setSelectedConnector({ ...connector, icon: base64Icon, qr: { state: 'fetched', value: uri }, showQrCode: internalConnector.showQrCode })
                 })
             }
 
