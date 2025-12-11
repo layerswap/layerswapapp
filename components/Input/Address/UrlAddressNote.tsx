@@ -6,12 +6,12 @@ import AddressIcon from "@/components/AddressIcon"
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues"
 import { Partner } from "@/Models/Partner"
 
-type AddressNoteModalProps = {
+type Props = {
     partner: Partner | undefined;
     values: SwapFormValues
 }
 
-const AddressNote: FC<AddressNoteModalProps> = ({ partner, values }) => {
+const UrlAddressNote: FC<Props> = ({ partner, values }) => {
 
     const {
         to: destination,
@@ -58,4 +58,4 @@ const AddressNote: FC<AddressNoteModalProps> = ({ partner, values }) => {
     )
 }
 
-export default AddressNote
+export default UrlAddressNote
