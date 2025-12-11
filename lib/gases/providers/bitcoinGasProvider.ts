@@ -4,13 +4,14 @@ import { Network } from "@/Models/Network";
 import { formatUnits } from "viem";
 import KnownInternalNames from "../../knownIds";
 import { JsonRpcClient } from "@/lib/apiClients/jsonRpcClient";
+import { GasProvider, GasWithToken } from "./types";
 
-export class BitcoinGasProvider {
+export class BitcoinGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {
         return KnownInternalNames.Networks.BitcoinMainnet.includes(network.name) || KnownInternalNames.Networks.BitcoinTestnet.includes(network.name)
     }
 
-    async getGas({ address, network, recipientAddress, amount }: GasProps): Promise<number | undefined> {
+    async getGas({ address, network, recipientAddress, amount }: GasProps): Promise<GasWithToken | undefined> {
         if (!network?.token) throw new Error("No native token provided")
         if (!address) throw new Error("No address provided")
         if (!amount) throw new Error("No amount provided")
@@ -32,7 +33,9 @@ export class BitcoinGasProvider {
                 rpcClient: rpcClient
             })
             const formattedGas = Number(formatUnits(BigInt(fee), network.token.decimals))
-            return formattedGas
+            if (formattedGas) {
+                return { gas: formattedGas, token: network.token }
+            }
 
         } catch (e) {
             console.log(e)
