@@ -88,7 +88,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
             }
         }
 
-        if (destination_address && values.from && values.to) {
+        if (destination_address && values.from && values.to && values.to.type === 'evm') {
             const alreadyConfirmed = isConfirmed(destination_address, values.to.name);
             
             if (!alreadyConfirmed) {
