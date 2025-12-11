@@ -6,12 +6,13 @@ export type InternalConnector = {
     id: string,
     icon?: string | undefined,
     order?: number,
-    type?: 'injected' | 'other',
+    type?: 'injected' | 'walletConnect' | 'other' | string,
     isMultiChain?: boolean,
     providerName?: string,
     installUrl?: string,
     isMobileSupported?: boolean,
     isHidden?: boolean,
+    hasBrowserExtension?: boolean,
 }
 
 export type Wallet = {
