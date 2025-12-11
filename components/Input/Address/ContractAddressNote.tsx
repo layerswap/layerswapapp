@@ -43,7 +43,7 @@ const ContractAddressNote: FC<Props> = ({ values, onDontShowAgainChange }) => {
                     onClick={handleCheckboxChange}
                 />
                 <label htmlFor="dont-show-again" className="w-full cursor-pointer">
-                    <span className="text-sm text-secondary-text">Don't show this again</span>
+                    <span className="text-sm text-secondary-text">Don&apos;t show this again</span>
                 </label>
             </div>
         </div>
