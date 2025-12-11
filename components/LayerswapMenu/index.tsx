@@ -41,6 +41,7 @@ const Comp = () => {
             </div>
             <Modal isOpen={isOpen} setIsOpen={setIsOpen}>
                 <ModalContent
+                    className="pb-4"
                     header={
                         <div className="inline-flex items-center w-full">
                             {
