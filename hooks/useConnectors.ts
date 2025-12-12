@@ -18,27 +18,32 @@ export function useConnectors({
     recentConnectors,
 }: UseConnectorsParams) {
 
-    const featuredConnectors = useMemo(() => {
-        const connectors = featuredProviders
+    const featuredConnectors = useMemo(() =>
+        featuredProviders
             .filter(g => g.availableWalletsForConnect && g.availableWalletsForConnect?.length > 0)
             .map((provider) =>
                 provider.availableWalletsForConnect
-                    ?.filter(v => searchValue ? (v.name.toLowerCase().includes(searchValue?.toLowerCase())) : true)
+                    ?.filter(v => searchValue ? v.name.toLowerCase().includes(searchValue.toLowerCase()) : true)
                     .map((connector) => ({ ...connector, providerName: provider.name }))
-            ).flat();
-        return removeDuplicatesWithKey(connectors.filter(c => c).sort((a, b) => sortRecentConnectors(a!, b!, recentConnectors)), 'name') as InternalConnector[];
-    }, [featuredProviders, searchValue, recentConnectors]);
+            )
+            .flat() as InternalConnector[],
+        [featuredProviders, searchValue]
+    );
 
-    const hiddenConnectors = useMemo(() => {
-        const connectors = featuredProviders
+    const hiddenConnectors = useMemo(() =>
+        featuredProviders
             .filter(g => g.availableHiddenWalletsForConnect && g.availableHiddenWalletsForConnect?.length > 0)
             .map((provider) =>
                 provider.availableHiddenWalletsForConnect
-                    ?.filter(v => (searchValue ? (v.name.toLowerCase().includes(searchValue?.toLowerCase())) : true) && !featuredWalletsIds.includes(v.id.toLowerCase()))
-                    .map((connector) => ({ ...connector, providerName: provider.name, isHidden: true })))
-            .flat();
-        return removeDuplicatesWithKey(connectors.filter(c => c).sort((a, b) => sortRecentConnectors(a!, b!, recentConnectors)), 'name') as InternalConnector[];
-    }, [featuredProviders, searchValue, recentConnectors]);
+                    ?.filter(v =>
+                        (searchValue ? v.name.toLowerCase().includes(searchValue.toLowerCase()) : true) &&
+                        !featuredWalletsIds.includes(v.id.toLowerCase())
+                    )
+                    .map((connector) => ({ ...connector, providerName: provider.name, isHidden: true }))
+            )
+            .flat() as InternalConnector[],
+        [featuredProviders, searchValue]
+    );
 
 
     const initialConnectors: InternalConnector[] = useMemo(() => {

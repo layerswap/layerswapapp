@@ -131,7 +131,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
 
     const displayedConnectors = useMemo(() => {
         if (isFiltered) return initialConnectors.slice(0, displayedCount);
-        return [...featuredConnectors, ...hiddenConnectors.slice(0, Math.max(0, displayedCount - featuredConnectors.length))];
+        return initialConnectors.slice(0, Math.max(0, displayedCount - featuredConnectors.length));
     }, [isFiltered, initialConnectors, featuredConnectors, hiddenConnectors, displayedCount]);
 
     const hasMoreToLoad = displayedCount < initialConnectors.length;
