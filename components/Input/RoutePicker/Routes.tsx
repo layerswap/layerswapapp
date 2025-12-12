@@ -134,7 +134,7 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
     const haveNewlyListedTokens = useMemo(() => item.tokens?.some(t => isNewListed(t.listing_date)), [item]);
 
     return (
-        <SelectItem className="bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative pr-7 py-2">
+        <SelectItem className="bg-secondary-500 group rounded-xl hover:bg-secondary-400 group-[.is-focused]/accordion:bg-secondary-400 group/item relative pr-7 py-2">
             <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} className="rounded-md" />
             <SelectItem.Title>
                 <>
@@ -256,7 +256,7 @@ export const GroupedTokenHeader = ({
     const showNetworkIcons = hasLoadedBalances && networksWithBalance.length > 0;
 
     return (
-        <SelectItem className="bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative pr-7 py-2">
+        <SelectItem className="bg-secondary-500 group rounded-xl hover:bg-secondary-400 group-[.is-focused]/accordion:bg-secondary-400 group/item relative pr-7 py-2">
             <SelectItem.Logo
                 imgSrc={mainToken.logo}
                 altText={`${mainToken.symbol} logo`}
@@ -305,7 +305,7 @@ export const GroupedTokenHeader = ({
                     ) : <></>}
 
                     <ChevronDown
-                        className="!w-3.5 !h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
+                        className="w-3.5! h-3.5! absolute right-2 top-1/2 -translate-y-1/2 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
                         aria-hidden="true"
                     />
                 </>

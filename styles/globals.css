@@ -17,6 +17,24 @@
   ::file-selector-button {
     border-color: transparent;
   }
+
+  /* remove all focus outlines at base layer to prevent flash while navigating with Tab key*/
+  *:focus,
+  *:focus-visible {
+    outline: none;
+    outline-width: 0;
+    outline-style: none;
+    box-shadow: none;
+    transition: outline 0s, outline-width 0s, outline-style 0s, box-shadow 0s;
+  }
+
+  button,
+  [role="button"],
+  a,
+  [tabindex] {
+    outline: none;
+    transition: outline 0s;
+  }
 }
 
 @theme static {
@@ -501,4 +519,74 @@ padding: calc(var(--number-flow-mask-height, 0.25em) / 2) 0;
 .click-delay-on-hover:hover::after {
   pointer-events: auto;
   animation: releasePointerAfterDelay 300ms linear forwards;
+}
+
+/* Hide cursor everywhere during keyboard navigation */
+body.keyboard-navigating,
+body.keyboard-navigating *,
+body.keyboard-navigating *::before,
+body.keyboard-navigating *::after {
+  cursor: none !important;
+}
+
+/* Disable pointer events only in the picker during keyboard navigation */
+body.keyboard-navigating .openpicker * {
+  pointer-events: none !important;
+}
+
+/* Re-enable pointer events on clickable elements so Enter key still works */
+body.keyboard-navigating .openpicker [data-nav-index] {
+  pointer-events: auto !important;
+}
+
+/* Prevent hover background changes during keyboard navigation */
+/* Target elements that have both a base bg and hover:bg class */
+body.keyboard-navigating .openpicker [class*="hover:bg-"]:hover {
+  /* Don't change background on hover - keep original */
+  background-color: initial !important;
+}
+
+/* For elements with explicit background colors, maintain them during hover in keyboard nav */
+body.keyboard-navigating .openpicker .bg-secondary-500[class*="hover:bg-"]:hover {
+  background-color: rgb(var(--ls-colors-secondary-500)) !important;
+}
+
+/* Tab navigation focus styles - only show when using keyboard Tab navigation */
+[data-nav-index]:focus-visible {
+  outline: 2px solid rgb(var(--ls-colors-primary-500)) !important;
+  outline-offset: -2px;
+}
+
+/* Apply outline to SelectItem children when parent accordion is focused via tab */
+[data-nav-index]:focus-visible > button > * {
+  outline: 2px solid rgb(var(--ls-colors-primary-500)) !important;
+  outline-offset: -2px;
+}
+
+/* Apply consistent focus styling to all focusable elements */
+button:focus-visible,
+[role="button"]:focus-visible,
+a:focus-visible {
+  outline: 2px solid rgb(var(--ls-colors-primary-500)) !important;
+  outline-offset: 2px !important;
+  outline-style: solid !important;
+  outline-width: 2px !important;
+  box-shadow: none !important;
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Prevent SVG and child elements from being focusable */
+svg,
+svg *,
+path {
+  pointer-events: none !important;
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Ensure motion/framer-motion elements are never focusable */
+[data-projection-id],
+[style*="pointer-events"] {
+  outline: none !important;
 }
