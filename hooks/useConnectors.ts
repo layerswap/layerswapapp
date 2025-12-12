@@ -18,39 +18,34 @@ export function useConnectors({
     recentConnectors,
 }: UseConnectorsParams) {
 
-    const featuredConnectors = useMemo(() =>
-        featuredProviders
+    const featuredConnectors = useMemo(() => {
+        const connectors = featuredProviders
             .filter(g => g.availableWalletsForConnect && g.availableWalletsForConnect?.length > 0)
             .map((provider) =>
                 provider.availableWalletsForConnect
-                    ?.filter(v => searchValue ? v.name.toLowerCase().includes(searchValue.toLowerCase()) : true)
+                    ?.filter(v => searchValue ? (v.name.toLowerCase().includes(searchValue?.toLowerCase())) : true)
                     .map((connector) => ({ ...connector, providerName: provider.name }))
-            )
-            .flat(),
-        [featuredProviders, searchValue]
-    );
+            ).flat();
+        return removeDuplicatesWithKey(connectors.filter(c => c).sort((a, b) => sortRecentConnectors(a!, b!, recentConnectors)), 'name') as InternalConnector[];
+    }, [featuredProviders, searchValue, recentConnectors]);
 
-    const hiddenConnectors = useMemo(() =>
-        featuredProviders
+    const hiddenConnectors = useMemo(() => {
+        const connectors = featuredProviders
             .filter(g => g.availableHiddenWalletsForConnect && g.availableHiddenWalletsForConnect?.length > 0)
             .map((provider) =>
                 provider.availableHiddenWalletsForConnect
-                    ?.filter(v =>
-                        (searchValue ? v.name.toLowerCase().includes(searchValue.toLowerCase()) : true) &&
-                        !featuredWalletsIds.includes(v.id.toLowerCase())
-                    )
-                    .map((connector) => ({ ...connector, providerName: provider.name, isHidden: true }))
-            )
-            .flat(),
-        [featuredProviders, searchValue]
-    );
+                    ?.filter(v => (searchValue ? (v.name.toLowerCase().includes(searchValue?.toLowerCase())) : true) && !featuredWalletsIds.includes(v.id.toLowerCase()))
+                    .map((connector) => ({ ...connector, providerName: provider.name, isHidden: true })))
+            .flat();
+        return removeDuplicatesWithKey(connectors.filter(c => c).sort((a, b) => sortRecentConnectors(a!, b!, recentConnectors)), 'name') as InternalConnector[];
+    }, [featuredProviders, searchValue, recentConnectors]);
+
 
     const initialConnectors: InternalConnector[] = useMemo(() => {
         const isMobilePlatform = isMobile();
         return removeDuplicatesWithKey(
             ([...featuredConnectors, ...hiddenConnectors] as InternalConnector[])
                 .filter(c =>
-                    (searchValue?.length ? true : !c.isHidden) &&
                     (isMobilePlatform ? c.isMobileSupported !== false : true)
                 )
                 .sort((a, b) => sortRecentConnectors(a, b, recentConnectors)),
