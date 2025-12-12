@@ -9,6 +9,7 @@ export type WalletModalConnector = InternalConnector & {
         state: 'fetched',
         value: string
     });
+    showQrCode?: boolean
 }
 
 export type ModalWalletProvider = WalletProvider & {

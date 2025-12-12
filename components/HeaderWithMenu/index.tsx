@@ -4,21 +4,15 @@ import { ArrowLeft } from 'lucide-react'
 import LayerswapMenu from "../LayerswapMenu"
 import { useQueryState } from "@/context/query"
 import { WalletsHeader } from "../Wallet/ConnectedWallets"
-import inIframe from "../utils/inIframe"
-import { useEffect, useState } from "react"
 import { THEME_COLORS } from "@/Models/Theme"
+import { useSettingsState } from "@/context/settings"
 type Props = {
    goBack: (() => void) | undefined | null
    contextualMenu?: React.ReactNode
 }
 function HeaderWithMenu({ goBack, contextualMenu }: Props) {
    const query = useQueryState()
-
-   const [embedded, setEmbedded] = useState<boolean>(false)
-   useEffect(() => {
-      setEmbedded(inIframe())
-   }, [])
-
+   const { isEmbedded } = useSettingsState()
    const theme = THEME_COLORS[query.theme || 'default']
 
    return (
@@ -36,7 +30,7 @@ function HeaderWithMenu({ goBack, contextualMenu }: Props) {
                </div>
             }
             {
-               !query.hideLogo && !embedded && <div className="md:hidden mt-0.5">
+               !query.hideLogo && !isEmbedded && <div className="md:hidden mt-0.5">
                   <GoHomeButton />
                </div>
             }
