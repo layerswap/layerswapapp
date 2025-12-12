@@ -74,7 +74,7 @@
     "json-rpc-2.0": "1.7.0",
     "lucide-react": "^0.379.0",
     "memoizee": "^0.4.17",
-    "next": "^14.0.4",
+    "next": "14.2.35",
     "posthog-js": "^1.272.0",
     "qrcode.react": "^3.1.0",
     "react": "^18.2.0",
