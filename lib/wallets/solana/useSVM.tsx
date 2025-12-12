@@ -24,33 +24,31 @@ export default function useSVM(): WalletProvider {
 
     const connectedWallets = useMemo(() => {
 
-        const wallet: Wallet | undefined = (connectedAddress && connectedAdapterName) ? {
-            id: connectedAdapterName,
-            address: connectedAddress,
-            displayName: `${connectedWallet?.adapter.name} - Solana`,
-            providerName: name,
-            icon: resolveWalletConnectorIcon({ connector: String(connectedAdapterName), address: connectedAddress, iconUrl: connectedWallet?.adapter.icon }),
-            disconnect,
-            isActive: true,
-            addresses: [connectedAddress],
-            asSourceSupportedNetworks: resolveSupportedNetworks(commonSupportedNetworks, connectedAdapterName),
-            autofillSupportedNetworks: resolveSupportedNetworks(commonSupportedNetworks, connectedAdapterName),
-            withdrawalSupportedNetworks: resolveSupportedNetworks(commonSupportedNetworks, connectedAdapterName),
-            networkIcon: networks.find(n => solanaNames.some(name => name === n.name))?.logo
-        } : undefined
+        if (solanaWallet?.adapter.connected === true) {
+            const wallet: Wallet | undefined = (connectedAddress && connectedAdapterName) ? {
+                id: connectedAdapterName,
+                address: connectedAddress,
+                displayName: `${connectedWallet?.adapter.name} - Solana`,
+                providerName: name,
+                icon: resolveWalletConnectorIcon({ connector: String(connectedAdapterName), address: connectedAddress, iconUrl: connectedWallet?.adapter.icon }),
+                disconnect,
+                isActive: true,
+                addresses: [connectedAddress],
+                asSourceSupportedNetworks: resolveSupportedNetworks(commonSupportedNetworks, connectedAdapterName),
+                autofillSupportedNetworks: resolveSupportedNetworks(commonSupportedNetworks, connectedAdapterName),
+                withdrawalSupportedNetworks: resolveSupportedNetworks(commonSupportedNetworks, connectedAdapterName),
+                networkIcon: networks.find(n => solanaNames.some(name => name === n.name))?.logo
+            } : undefined
 
-        if (wallet) {
-            return [wallet]
+            if (wallet) {
+                return [wallet]
+            }
         }
 
     }, [connectedAddress, connectedAdapterName])
 
-
-    const switchAccount = async (wallet: Wallet, address: string) => {
-        // as we do not have multiple accounts management we will leave the method empty
-    }
-
     const connectWallet = async ({ connector }: { connector: InternalConnector }) => {
+        debugger
         const solanaConnector = wallets.find(w => w.adapter.name.includes(connector.name))
         if (!solanaConnector) throw new Error('Connector not found')
         if (connectedWallet) await solanaConnector.adapter.disconnect()
@@ -130,7 +128,6 @@ export default function useSVM(): WalletProvider {
         name,
         id,
         providerIcon: networks.find(n => solanaNames.some(name => name === n.name))?.logo,
-        switchAccount,
         ready: wallets.length > 0
     }
 
