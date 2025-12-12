@@ -48,7 +48,7 @@ export default function useSVM(): WalletProvider {
     }, [connectedAddress, connectedAdapterName])
 
     const connectWallet = async ({ connector }: { connector: InternalConnector }) => {
-        debugger
+        
         const solanaConnector = wallets.find(w => w.adapter.name.includes(connector.name))
         if (!solanaConnector) throw new Error('Connector not found')
         if (connectedWallet) await solanaConnector.adapter.disconnect()
