@@ -20,7 +20,7 @@
     "framer-motion": "^10.16.15",
     "heroicons": "^2.0.18",
     "lucide-react": "^0.379.0",
-    "next": "^15.5.7",
+    "next": "15.5.9",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-router-dom": "^6.14.1",
