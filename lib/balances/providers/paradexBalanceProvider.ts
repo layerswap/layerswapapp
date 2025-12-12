@@ -16,7 +16,7 @@ export class ParadexBalanceProvider extends BalanceProvider {
         const paradex = getParadex(config);
         const paraclearProvider = new paradex.ParaclearProvider.DefaultProvider(config);
 
-        const tokens = insertIfNotExists(network.tokens || [], network.token)
+        const tokens = network.tokens
 
         const balances: TokenBalance[] = []
 
