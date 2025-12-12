@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { InternalConnector, WalletProvider } from "../Models/WalletProvider";
 import { removeDuplicatesWithKey, sortRecentConnectors } from "../components/WalletModal/utils";
-import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
 import { featuredWalletsIds } from "@/context/evmConnectorsContext";
 
 type UseConnectorsParams = {
