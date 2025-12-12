@@ -82,7 +82,7 @@
     "lodash": "^4.17.21",
     "lucide-react": "^0.379.0",
     "memoizee": "^0.4.17",
-    "next": "^15.0.5",
+    "next": "15.5.9",
     "posthog-js": "^1.272.0",
     "qrcode.react": "^3.1.0",
     "react": "^18.2.0",
