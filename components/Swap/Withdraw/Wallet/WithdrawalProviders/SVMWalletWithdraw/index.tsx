@@ -80,13 +80,15 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
                 setError('Wallet not connected')
                 return
             }
-            setLoading(false)
             if (e?.message) {
                 if (e?.logs?.some(m => m?.includes('insufficient funds')) || e.message.includes('Attempt to debit an account')) setError('insufficientFunds')
                 else setError(e.message)
                 return
             }
             setError(e.message)
+        }
+        finally {
+            setLoading(false)
         }
     }, [walletPublicKey, signTransaction, source_network, source_token, solanaWallet])
 
