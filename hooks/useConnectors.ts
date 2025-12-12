@@ -49,9 +49,6 @@ export function useConnectors({
     const initialConnectors: InternalConnector[] = useMemo(() => {
         return removeDuplicatesWithKey(
             ([...featuredConnectors, ...hiddenConnectors] as InternalConnector[])
-                .filter(c =>
-                    (searchValue?.length ? true : !c.isHidden)
-                )
                 .sort((a, b) => sortRecentConnectors(a, b, recentConnectors)),
             'name'
         );
