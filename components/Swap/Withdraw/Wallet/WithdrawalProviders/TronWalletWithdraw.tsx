@@ -8,7 +8,7 @@ import { Token } from '@/Models/Network';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import ActionMessages from '../../messages/TransactionMessages';
-import { useSelectedAccount } from '@/context/balanceAccounts';
+import { useSelectedAccount } from '@/context/swapAccounts';
 import useWallet from '@/hooks/useWallet';
 
 export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
@@ -65,7 +65,7 @@ export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refue
     }
 
     return (
-        <div className="w-full space-y-3 flex flex-col justify-between h-full text-primary-text">
+        <div className="w-full space-y-3 h-fit text-primary-text">
             <TransactionMessage
                 error={error}
                 isLoading={loading}
@@ -79,6 +79,7 @@ export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refue
                     error={!!error}
                     refuel={refuel}
                     swapData={swapBasicData}
+                    clearError={() => setError(undefined)}
                 />
             }
         </div>

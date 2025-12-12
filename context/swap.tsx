@@ -17,7 +17,7 @@ import { QuoteError, transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/
 import { useRecentNetworksStore } from '@/stores/recentRoutesStore';
 import { parse, ParsedUrlQuery } from 'querystring';
 import { resolvePersistantQueryParams } from '@/helpers/querryHelper';
-import { useSelectedAccount } from './balanceAccounts';
+import { useSelectedAccount } from './swapAccounts';
 import { addressFormat } from '@/lib/address/formatter';
 import { useSlippageStore } from '@/stores/slippageStore';
 import { posthog } from 'posthog-js';

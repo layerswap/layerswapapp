@@ -34,7 +34,7 @@ export async function fromEthSigner({
     accountClassHash: config.paraclearAccountHash,
     accountProxyClassHash: config.paraclearAccountProxyHash,
   });
-  return new Starknet.Account(provider, address, `0x${privateKey}`);
+  return new Starknet.Account({provider, address, signer: `0x${privateKey}`});
 }
 
 interface FromStarknetAccountParams {
@@ -42,6 +42,7 @@ interface FromStarknetAccountParams {
   readonly provider: Starknet.ProviderOptions | Starknet.ProviderInterface;
   readonly config: ParadexConfig;
   readonly account: Starknet.AccountInterface;
+  readonly nodeUrl: string;
   readonly starknetProvider?: Starknet.ProviderInterface;
 }
 
@@ -54,6 +55,7 @@ export async function fromStarknetAccount({
   config,
   account,
   starknetProvider,
+  nodeUrl,
 }: FromStarknetAccountParams): Promise<Account> {
   const starkKeyTypedData = starknetSigner.buildStarknetStarkKeyTypedData(
     config.starknetChainId,
@@ -62,7 +64,7 @@ export async function fromStarknetAccount({
   const accountSupport = await starknetSigner.getAccountSupport(
     account,
     starknetProvider ??
-      starknetSigner.getPublicProvider(config.starknetChainId),
+      starknetSigner.getPublicProvider(config.starknetChainId, nodeUrl),
   );
   const signature = await account.signMessage(starkKeyTypedData);
   const seed = accountSupport.getSeedFromSignature(signature);
@@ -73,7 +75,7 @@ export async function fromStarknetAccount({
     accountClassHash: config.paraclearAccountHash,
     accountProxyClassHash: config.paraclearAccountProxyHash,
   });
-  return new Starknet.Account(provider, address, `0x${privateKey}`);
+  return new Starknet.Account({provider, address, signer: `0x${privateKey}`});
 }
 
 interface GenerateAccountAddressParams {

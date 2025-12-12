@@ -46,7 +46,7 @@ const Success: FC = () => {
                                 :
                                 <div className='grow'>
                                     <GoHomeButton>
-                                        <SubmitButton className='plausible-event-name=Swap+more' text_align='center' buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={<Home className="h-5 w-5" aria-hidden="true" />}>
+                                        <SubmitButton text_align='center' buttonStyle='outline' isDisabled={false} isSubmitting={false} icon={<Home className="h-5 w-5" aria-hidden="true" />}>
                                             Swap more
                                         </SubmitButton>
                                     </GoHomeButton>

@@ -9,7 +9,7 @@ import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
 import { ConnectWalletButton, SendTransactionButton } from '../../Common/buttons';
 import ActionMessages from '../../../messages/TransactionMessages';
 import WalletMessage from '../../../messages/Message';
-import { useSelectedAccount } from '@/context/balanceAccounts';
+import { useSelectedAccount } from '@/context/swapAccounts';
 import { useBalance } from '@/lib/balances/useBalance';
 
 export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
@@ -95,7 +95,7 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
     }
 
     return (
-        <div className="w-full space-y-3 flex flex-col justify-between h-full text-primary-text">
+        <div className="w-full space-y-3 h-fit text-primary-text">
             <TransactionMessage
                 error={error}
                 isLoading={loading}
@@ -108,6 +108,7 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
                     isSubmitting={!!loading}
                     onClick={handleTransfer}
                     error={!!error}
+                    clearError={() => setError(undefined)}
                     refuel={refuel}
                     swapData={swapBasicData}
                 />

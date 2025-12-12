@@ -13,10 +13,9 @@ import { FORM_VALIDATION_ERROR_CODES } from "@/hooks/useFormValidation";
 type RefuelProps = {
     onButtonClick: () => void
     quote: ReturnType<typeof useQuoteData>['quote']
-    minAllowedAmount: ReturnType<typeof useQuoteData>['minAllowedAmount']
 }
 
-const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, quote, minAllowedAmount }) => {
+const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, quote }) => {
 
     const {
         values,
@@ -39,16 +38,22 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, quote, minAllowedAmount 
 
     }, [to, destination_address, toCurrency])
 
+    useEffect(() => {
+        if (!needRefuel && refuel) {
+            setFieldValue('refuel', false)
+        }
+    }, [needRefuel, refuel, setFieldValue])
+
     const handleConfirmToggleChange = (value: boolean) => {
         setFieldValue('refuel', value)
     }
 
-    const showRefuel = needRefuel && (quote && (Number(amount) === Number(minAllowedAmount) || refuel) || (refuel && formValidation.code === FORM_VALIDATION_ERROR_CODES.MIN_AMOUNT_ERROR))
+    const showRefuel = needRefuel && formValidation.code !== FORM_VALIDATION_ERROR_CODES.ROUTE_NOT_FOUND
 
     return (
         showRefuel &&
         <div
-            className={clsx("gap-4 flex relative items-center outline-hidden w-full text-primary-text px-4 py-3 bg-secondary-500 border border-transparent transition-colors duration-200 rounded-2xl mt-auto", {
+            className={clsx("gap-4 flex relative items-center outline-hidden w-full text-primary-text px-4 py-3 bg-secondary-500 border border-transparent transition-colors duration-200 rounded-2xl mt-3", {
                 "border-primary!": needRefuel && !refuel
             })}
         >

@@ -13,7 +13,7 @@ import WalletsList from "@/components/Wallet/WalletsList";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
 import FilledCheck from "@/components/icons/FilledCheck";
 import clsx from "clsx";
-import { useSelectedAccount, useUpdateBalanceAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts";
 
 const SourceWalletPicker: FC = () => {
     const [openModal, setOpenModal] = useState<boolean>(false)
@@ -24,7 +24,7 @@ const SourceWalletPicker: FC = () => {
     } = useFormikContext<SwapFormValues>();
 
     const source_token = values.fromAsset
-    const selectSourceAccount = useUpdateBalanceAccount("from");
+    const selectSourceAccount = useSelectSwapAccount("from");
 
     const { provider } = useWallet(values.from, "withdrawal")
     const selectedSourceAccount = useSelectedAccount("from", values.from?.name);
@@ -169,7 +169,7 @@ export const FormSourceWalletButton: FC = () => {
 
     const { isWalletModalOpen, cancel, selectedConnector, connect } = useConnectModal()
 
-    const selectSourceAccount = useUpdateBalanceAccount("from");
+    const selectSourceAccount = useSelectSwapAccount("from");
 
     const handleWalletChange = () => {
         setOpenModal(true)
@@ -260,6 +260,9 @@ export const FormSourceWalletButton: FC = () => {
 
 const Connect: FC<{ connectFn?: () => Promise<Wallet | undefined | void>; setMountWalletPortal?: Dispatch<SetStateAction<boolean>> }> = ({ connectFn, setMountWalletPortal }) => {
     const { connect } = useConnectModal()
+    const { providers } = useWallet()
+
+    const isProvidersReady =  providers.every(p => p.ready)
 
     const connectWallet = async () => {
         setMountWalletPortal && setMountWalletPortal(true)
@@ -267,7 +270,12 @@ const Connect: FC<{ connectFn?: () => Promise<Wallet | undefined | void>; setMou
         setMountWalletPortal && setMountWalletPortal(false)
     }
 
-    return <SubmitButton onClick={() => connectFn ? connectFn() : connectWallet()} type="button" icon={<WalletIcon className="h-6 w-6" strokeWidth={2} />} >
+    return <SubmitButton
+        onClick={() => connectFn ? connectFn() : connectWallet()}
+        type="button"
+        icon={<WalletIcon className="h-6 w-6" strokeWidth={2} />}
+        isDisabled={!isProvidersReady}
+    >
         Connect a wallet
     </SubmitButton>
 }

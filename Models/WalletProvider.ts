@@ -1,4 +1,4 @@
-import { AccountInterface, WalletAccount } from 'starknet';
+import { WalletAccount } from 'starknet';
 import { StarknetWindowObject } from 'starknetkit';
 
 export type InternalConnector = {
@@ -6,12 +6,13 @@ export type InternalConnector = {
     id: string,
     icon?: string | undefined,
     order?: number,
-    type?: 'injected' | 'other',
+    type?: 'injected' | 'walletConnect' | 'other' | string,
     isMultiChain?: boolean,
     providerName?: string,
     installUrl?: string,
     isMobileSupported?: boolean,
     isHidden?: boolean,
+    hasBrowserExtension?: boolean,
 }
 
 export type Wallet = {
@@ -48,9 +49,9 @@ export type WalletProvider = {
     hideFromList?: boolean,
     connectWallet: (props?: { connector?: InternalConnector }) => Promise<Wallet | undefined> | undefined,
     disconnectWallets?: () => Promise<void> | undefined | void,
-    switchAccount: (connector: Wallet, address: string) => Promise<void>,
+    switchAccount?: (connector: Wallet, address: string) => Promise<void>,
     switchChain?: (connector: Wallet, chainId: string | number) => Promise<void>
-    isNotAvailableCondition?: (connector: string, network: string) => boolean,
+    isNotAvailableCondition?: (connector: string, network: string, purpose?: "withdrawal" | "autofill" | "asSource") => boolean,
     availableWalletsForConnect?: InternalConnector[],
     availableHiddenWalletsForConnect?: InternalConnector[],
     connectedWallets: Wallet[] | undefined,
@@ -62,6 +63,7 @@ export type WalletProvider = {
     id: string,
     providerIcon?: string,
     unsupportedPlatforms?: string[],
+    ready: boolean,
 }
 
 

@@ -17,7 +17,7 @@ export type UseSwrSwapsArgs = {
 const getSwapsKey = (index: number, statuses: string[], addresses?: string[]) => {
     const addressesParams = addresses?.map(a => `&addresses=${a}`).join('') || ''
     const statusesParams = statuses.map(s => `&statuses=${s}`).join('') || ''
-    return `/internal/swaps?page=${index + 1}${statusesParams}${addressesParams}`
+    return `/swaps/internal?page=${index + 1}${statusesParams}${addressesParams}`
 }
 
 export function useSwrSwaps({ statuses, addresses, refreshInterval, autoLoadAllInitially, revalidateAll, revalidateFirstPage }: UseSwrSwapsArgs) {

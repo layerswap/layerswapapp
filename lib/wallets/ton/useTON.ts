@@ -132,7 +132,8 @@ export default function useTON(): WalletProvider {
         asSourceSupportedNetworks: commonSupportedNetworks,
         name,
         id,
-        switchAccount
+        switchAccount,
+        ready: !!tonConnectUI
     }
 
     return provider

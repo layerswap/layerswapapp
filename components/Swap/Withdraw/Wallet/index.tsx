@@ -7,16 +7,17 @@ import {
 import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { WithdrawalProvider } from "@/context/withdrawalContext";
 import useWallet from "@/hooks/useWallet";
-import { useSelectedAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount } from "@/context/swapAccounts";
 
 type Props = {
     swapData: SwapBasicData
     swapId: string | undefined
     refuel: boolean
     onWalletWithdrawalSuccess?: () => void
+    onCancelWithdrawal?: () => void
 };
 //TODO have separate components for evm and none_evm as others are sweepless anyway
-export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWalletWithdrawalSuccess }) => {
+export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWalletWithdrawalSuccess, onCancelWithdrawal }) => {
     const { source_network } = swapData
     const source_network_internal_name = source_network?.name;
 
@@ -109,14 +110,14 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
     useEffect(() => {
         const selectedWallet = wallets.find(w => w.id === selectedSourceAccount?.id && w.addresses.some(a => a.toLowerCase() === selectedSourceAccount.address.toLowerCase()))
         if (selectedSourceAccount && selectedWallet) {
-            provider?.switchAccount(selectedWallet, selectedSourceAccount.address)
+            provider?.switchAccount?.(selectedWallet, selectedSourceAccount.address)
         }
     }, [selectedSourceAccount?.address])
 
     return <>
         {
             swapData && WithdrawalComponent &&
-            <WithdrawalProvider onWalletWithdrawalSuccess={onWalletWithdrawalSuccess}>
+            <WithdrawalProvider onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} onCancelWithdrawal={onCancelWithdrawal}>
                 <WithdrawalComponent
                     swapId={swapId}
                     swapBasicData={swapData}

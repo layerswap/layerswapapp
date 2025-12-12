@@ -9,7 +9,7 @@ import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import ActionMessages from '../../messages/TransactionMessages';
 import { useConnectModal } from '@/components/WalletModal';
-import { useSelectedAccount } from '@/context/balanceAccounts';
+import { useSelectedAccount } from '@/context/swapAccounts';
 
 export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
@@ -64,7 +64,7 @@ export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
     }
 
     return (
-        <div className="w-full space-y-3 flex flex-col justify-between h-full text-primary-text">
+        <div className="w-full space-y-3 h-fit text-primary-text">
             {
                 transactionErrorMessage &&
                 <TransactionMessage isLoading={loading} error={transactionErrorMessage} />
@@ -78,6 +78,7 @@ export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
                     error={!!transactionErrorMessage}
                     swapData={swapBasicData}
                     refuel={refuel}
+                    clearError={() => setTransactionErrorMessage(undefined)}
                 />
             }
         </div>

@@ -17,7 +17,7 @@ import ColorSchema from "./ColorSchema";
 import { IsExtensionError } from "../helpers/errorHelper";
 import { AsyncModalProvider } from "../context/asyncModal";
 import WalletsProviders from "./WalletProviders";
-import { BalanceAccountsProvider } from "@/context/balanceAccounts";
+import { SwapAccountsProvider } from "@/context/swapAccounts";
 import posthog from "posthog-js";
 
 type Props = {
@@ -122,6 +122,8 @@ export default function Layout({ children, settings, themeData }: Props) {
       <meta name="twitter:title" content="Layerswap App" />
       <meta name="twitter:description" content="Streamline your asset transaction experience with Layerswap across 50+ blockchains and 15+ exchanges. Fast, affordable and secure." />
       <meta name="twitter:image" content={`https://layerswap.io/${basePath}/opengraphtw.jpg`} />
+
+      <meta name="color-scheme" content="light dark"></meta>
     </Head>
     {
       <ColorSchema themeData={themeData} />
@@ -131,7 +133,7 @@ export default function Layout({ children, settings, themeData }: Props) {
         <QueryProvider query={query}>
           <SettingsProvider data={appSettings}>
             <WalletsProviders basePath={basePath} themeData={themeData || THEME_COLORS.default} appName={router.query.appName?.toString()}>
-              <BalanceAccountsProvider>
+              <SwapAccountsProvider>
                 <ThemeWrapper>
                   <AsyncModalProvider>
                     {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
@@ -139,7 +141,7 @@ export default function Layout({ children, settings, themeData }: Props) {
                       : children}
                   </AsyncModalProvider>
                 </ThemeWrapper>
-              </BalanceAccountsProvider>
+              </SwapAccountsProvider>
             </WalletsProviders>
           </SettingsProvider >
         </QueryProvider >

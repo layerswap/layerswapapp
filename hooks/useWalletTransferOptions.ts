@@ -5,7 +5,7 @@ import { useContractWalletsStore } from "../stores/contractWalletsStore"
 import resolveChain from "../lib/resolveChain"
 import { createPublicClient, http } from "viem"
 import { useSettingsState } from "../context/settings"
-import { useSelectedAccount } from "@/context/balanceAccounts"
+import { useSelectedAccount } from "@/context/swapAccounts"
 
 export default function useWalletTransferOptions() {
     const { swapBasicData } = useSwapDataState()
@@ -52,7 +52,7 @@ let checkContractWallet = async (address, network) => {
             transport: http()
         })
         try {
-            const bytecode = await publicClient.getBytecode({
+            const bytecode = await publicClient.getCode({
                 address: address as `0x${string}`
             });
 

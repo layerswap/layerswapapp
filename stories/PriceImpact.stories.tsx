@@ -11,6 +11,7 @@ import { SwapDataProvider } from '../context/swap';
 import { SettingsStateContext } from '../context/settings';
 import { TimerProvider } from '@/context/timerContext';
 import { PriceImpact } from '@/components/Input/Amount/PriceImpact';
+import { SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
 
 type PriceImpactRelevant = {
     requested_amount: number;
@@ -19,28 +20,22 @@ type PriceImpactRelevant = {
     service_fee: number;
     source_token: { price_in_usd: number };
     destination_token: { price_in_usd: number };
+    refuelInUsd?: number;
 };
 
 const Comp: FC<{ quote: PriceImpactRelevant; theme?: 'default' | 'light' }> = ({ quote, theme }) => {
     const appSettings = new LayerSwapAppSettings(Settings);
     if (!appSettings) return <div>Loading...</div>;
     const themeData = theme ? THEME_COLORS[theme] : THEME_COLORS['default'];
-
+    //TODO: Add refuel
     return (
         <IntercomProvider appId="123">
             <SettingsStateContext.Provider value={appSettings}>
-                <Layout settings={Settings} themeData={themeData}>
+                <Layout settings={Settings || undefined} themeData={themeData}>
                     <SwapDataProvider>
                         <TimerProvider>
                             <WalletsProviders basePath="/" themeData={THEME_COLORS['default']} appName="Layerswap">
-                                <PriceImpact
-                                    bridgeFee={quote.blockchain_fee}
-                                    destinationTokenPriceUsd={quote.destination_token.price_in_usd}
-                                    receiveAmount={quote.receive_amount}
-                                    requestedAmount={quote.requested_amount}
-                                    serviceFee={quote.service_fee}
-                                    sourceTokenPriceUsd={quote.source_token.price_in_usd}
-                                />
+                                <PriceImpact quote={quote as SwapQuote} refuel={undefined} />
                             </WalletsProviders>
                         </TimerProvider>
                     </SwapDataProvider>
@@ -58,6 +53,7 @@ type Args = {
     receiveAmount: number;
     sourceTokenPriceUsd: number;
     destinationTokenPriceUsd: number;
+    refuelInUsd?: number;
 };
 
 const StoryWrapper: FC<Args> = ({
@@ -68,6 +64,7 @@ const StoryWrapper: FC<Args> = ({
     receiveAmount,
     sourceTokenPriceUsd,
     destinationTokenPriceUsd,
+    refuelInUsd,
 }) => {
     const minimalQuote: PriceImpactRelevant = {
         requested_amount: requestedAmount,
@@ -76,6 +73,7 @@ const StoryWrapper: FC<Args> = ({
         service_fee: serviceFee,
         source_token: { price_in_usd: sourceTokenPriceUsd },
         destination_token: { price_in_usd: destinationTokenPriceUsd },
+        refuelInUsd: refuelInUsd,
     };
 
     const themeForComp: 'default' | 'light' = theme === 'light' ? 'light' : 'default';
@@ -90,12 +88,13 @@ const meta: Meta<Args> = {
     },
     args: {
         theme: 'default',
-        bridgeFee: initialQuote.blockchain_fee,
-        serviceFee: initialQuote.service_fee,
-        requestedAmount: initialQuote.requested_amount,
-        receiveAmount: initialQuote.receive_amount,
-        sourceTokenPriceUsd: initialQuote?.source_token?.price_in_usd,
-        destinationTokenPriceUsd: initialQuote?.destination_token?.price_in_usd,
+        bridgeFee: initialQuote.quote.blockchain_fee,
+        serviceFee: initialQuote.quote.service_fee,
+        requestedAmount: initialQuote.quote.requested_amount,
+        receiveAmount: initialQuote.quote.receive_amount,
+        sourceTokenPriceUsd: initialQuote?.quote.source_token?.price_in_usd,
+        destinationTokenPriceUsd: initialQuote?.quote.destination_token?.price_in_usd,
+        refuelInUsd: initialQuote?.refuel?.amount_in_usd,
     },
     argTypes: {
         theme: {

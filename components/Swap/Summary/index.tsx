@@ -5,7 +5,7 @@ import { TransactionType } from "@/lib/apiClients/layerSwapApiClient"
 import { shortenEmail } from "@/components/utils/ShortenAddress"
 import KnownInternalNames from "@/lib/knownIds"
 import { useQueryState } from "@/context/query"
-import { useSelectedAccount } from "@/context/balanceAccounts"
+import { useSelectedAccount } from "@/context/swapAccounts"
 
 const SwapSummary: FC = () => {
 
@@ -29,7 +29,7 @@ const SwapSummary: FC = () => {
     const requested_amount = (swapInputTransaction?.amount ?? swapBasicData.requested_amount) || undefined
 
     const receiveAmount = quote?.receive_amount
-    const calculatedReceiveAmount = swapOutputTransaction?.amount ?? receiveAmount
+    const calculatedReceiveAmount = swapOutputTransaction?.amount ? swapOutputTransaction?.amount : receiveAmount
     let sourceAccountAddress = ""
     if (hideFrom && account) {
         sourceAccountAddress = account;

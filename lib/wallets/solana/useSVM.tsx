@@ -3,7 +3,7 @@ import { useWallet } from "@solana/wallet-adapter-react"
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon"
 import { NetworkType } from "@/Models/Network"
 import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvider"
-import { useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { useSettingsState } from "@/context/settings"
 
 const solanaNames = [KnownInternalNames.Networks.SolanaMainnet, KnownInternalNames.Networks.SolanaDevnet, KnownInternalNames.Networks.SolanaTestnet]
@@ -105,12 +105,24 @@ export default function useSVM(): WalletProvider {
         return connectors;
     }, [wallets]);
 
+    const isNotAvailableCondition = useCallback((connectorId: string | undefined, network: string | undefined, purpose?: "withdrawal" | "autofill" | "asSource") => {
+        if (!network) return false
+        if (!connectorId) return true
+
+        if (!purpose) {
+            return resolveSupportedNetworks([network], connectorId).length === 0
+        }
+
+        const supportedNetworksByPurpose = resolveSupportedNetworks(commonSupportedNetworks, connectorId)
+        return supportedNetworksByPurpose.length === 0 || !supportedNetworksByPurpose.includes(network)
+    }, [commonSupportedNetworks]);
+
     const provider: WalletProvider = {
         connectedWallets: connectedWallets,
         activeWallet: connectedWallets?.[0],
         connectWallet,
         disconnectWallets: disconnectWallet,
-        isNotAvailableCondition: isNotAvailable,
+        isNotAvailableCondition,
         availableWalletsForConnect,
         withdrawalSupportedNetworks: commonSupportedNetworks,
         autofillSupportedNetworks: commonSupportedNetworks,
@@ -118,16 +130,11 @@ export default function useSVM(): WalletProvider {
         name,
         id,
         providerIcon: networks.find(n => solanaNames.some(name => name === n.name))?.logo,
-        switchAccount
+        switchAccount,
+        ready: wallets.length > 0
     }
 
     return provider
-}
-
-const isNotAvailable = (connector: string | undefined, network: string | undefined) => {
-    if (!network) return false
-    if (!connector) return true
-    return resolveSupportedNetworks([network], connector).length === 0
 }
 
 const networkSupport = {
