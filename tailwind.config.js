@@ -6,6 +6,9 @@ module.exports = {
   darkMode: 'media',
   theme: {
     extend: {
+      screens: {
+        'xs': {'max': '400px'},
+      },
       opacity: {
         '35': '.35',
       },
