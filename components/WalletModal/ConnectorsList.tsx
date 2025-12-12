@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useWallet from "../../hooks/useWallet";
 import { useConnectModal, WalletModalConnector } from ".";
 import { InternalConnector, Wallet, WalletProvider } from "../../Models/WalletProvider";
@@ -7,12 +7,18 @@ import Connector from "./Connector";
 import { usePersistedState } from "../../hooks/usePersistedState";
 import { useConnectors } from "../../hooks/useConnectors";
 import { SearchComponent } from "../Input/Search";
+import CircularLoader from "../icons/CircularLoader";
 import { MultichainConnectorPicker } from "./MultichainConnectorPicker";
 import { ProviderPicker } from "./ProviderPicker";
 import { InstalledExtensionNotFound } from "./InstalledExtensionNotFound";
 import { WalletQrCode } from "./WalletQrCode";
 import { LoadingConnect } from "./LoadingConnect";
 import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
+
+const LAZY_LOAD_CONFIG = {
+    itemsPerLoad: 20,
+    enabled: true
+};
 
 const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { providers } = useWallet();
@@ -23,6 +29,10 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     const [isScrolling, setIsScrolling] = useState(false);
     const scrollTimeout = useRef<any>(null);
     const isMobilePlatfrom = isMobile();
+
+    const [displayedCount, setDisplayedCount] = useState(LAZY_LOAD_CONFIG.itemsPerLoad);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
 
     const handleScroll = () => {
         setIsScrolling(true);
@@ -90,8 +100,23 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         }
     }
 
-    const filteredProviders = providers.filter(p => !p.hideFromList);
-    const featuredProviders = selectedProvider ? [selectedProvider] : filteredProviders;
+    const [selectedProviderNames, setSelectedProviderNames] = useState<string[]>([])
+    const isFiltered = selectedProviderNames.length > 0 || !!searchValue;
+
+    const handleSelectProvider = (providerNames: string[]) => {
+        setSelectedProviderNames(providerNames)
+        if (providerNames.length === 0) {
+            setSelectedProvider(undefined)
+        } else {
+            const provider = filteredProviders.find(p => p.name === providerNames[0])
+            if (provider) {
+                setSelectedProvider({ ...provider, isSelectedFromFilter: true })
+            }
+        }
+    }
+
+    const filteredProviders = providers.filter(p => !p.hideFromList)
+    const featuredProviders = selectedProviderNames.length > 0 ? filteredProviders.filter(p => selectedProviderNames.includes(p.name)) : (selectedProvider ? [selectedProvider] : filteredProviders)
 
     const {
         featuredConnectors,
@@ -103,11 +128,28 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         searchValue,
         recentConnectors,
     });
-    const handleSelectProvider = (providerName?: string) => {
-        const provider = filteredProviders.find(p => p.name === providerName)
-        if (!provider) return setSelectedProvider(undefined)
-        setSelectedProvider({ ...provider, isSelectedFromFilter: true })
-    }
+
+    const displayedConnectors = useMemo(() => {
+        if (isFiltered) return initialConnectors.slice(0, displayedCount);
+        return initialConnectors.slice(0, Math.max(0, displayedCount - featuredConnectors.length));
+    }, [isFiltered, initialConnectors, featuredConnectors, displayedCount]);
+
+    const hasMoreToLoad = displayedCount < initialConnectors.length;
+
+    useEffect(() => setDisplayedCount(isFiltered ? LAZY_LOAD_CONFIG.itemsPerLoad : featuredConnectors.length + LAZY_LOAD_CONFIG.itemsPerLoad), [isFiltered, searchValue, selectedProviderNames, featuredConnectors.length]);
+
+    const loadMore = useCallback(() => {
+        if (!hasMoreToLoad || isLoadingMore) return;
+        setIsLoadingMore(true);
+        setTimeout(() => { setDisplayedCount(prev => prev + LAZY_LOAD_CONFIG.itemsPerLoad); setIsLoadingMore(false); }, 300);
+    }, [hasMoreToLoad, isLoadingMore]);
+
+    useEffect(() => {
+        if (!loadMoreTriggerRef.current) return;
+        const observer = new IntersectionObserver((e) => e[0].isIntersecting && hasMoreToLoad && !isLoadingMore && loadMore(), { threshold: 0.1, rootMargin: '100px' });
+        observer.observe(loadMoreTriggerRef.current);
+        return () => observer.disconnect();
+    }, [hasMoreToLoad, isLoadingMore, loadMore]);
 
     if (selectedConnector?.hasBrowserExtension && !selectedConnector?.showQrCode && selectedConnector.type == 'walletConnect' && !isMobilePlatfrom) {
         const provider = featuredProviders.find(p => p.name === selectedConnector?.providerName)
@@ -138,7 +180,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     return (
         <>
             <div className="text-primary-text space-y-3 flex flex-col w-full styled-scroll relative h-full">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 pt-1">
                     <SearchComponent
                         searchQuery={searchValue || ""}
                         setSearchQuery={setSearchValue}
@@ -149,8 +191,8 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                         (!selectedProvider || selectedProvider?.isSelectedFromFilter) &&
                         <ProviderPicker
                             providers={filteredProviders}
-                            selectedProviderName={selectedProvider?.name}
-                            setSelectedProviderName={handleSelectProvider}
+                            selectedProviderNames={selectedProviderNames}
+                            setSelectedProviderNames={handleSelectProvider}
                         />
                     }
                 </div>
@@ -162,7 +204,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 >
                     <div className='grid grid-cols-2 gap-2'>
                         {
-                            initialConnectors.map(item => {
+                            displayedConnectors.map(item => {
                                 const provider = featuredProviders.find(p => p.name === item.providerName)
                                 const isRecent = recentConnectors?.some(v => v.connectorName === item.name)
                                 return (
@@ -178,6 +220,11 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                             })
                         }
                     </div>
+                    {hasMoreToLoad && (
+                        <div ref={loadMoreTriggerRef} className="col-span-2 flex justify-center items-center pt-2.5">
+                            <CircularLoader className="w-8 h-8 animate-spin" />
+                        </div>
+                    )}
                 </div>
             </div>
         </>

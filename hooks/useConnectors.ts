@@ -25,7 +25,7 @@ export function useConnectors({
                     ?.filter(v => searchValue ? v.name.toLowerCase().includes(searchValue.toLowerCase()) : true)
                     .map((connector) => ({ ...connector, providerName: provider.name }))
             )
-            .flat(),
+            .flat() as InternalConnector[],
         [featuredProviders, searchValue]
     );
 
@@ -40,16 +40,14 @@ export function useConnectors({
                     )
                     .map((connector) => ({ ...connector, providerName: provider.name, isHidden: true }))
             )
-            .flat(),
+            .flat() as InternalConnector[],
         [featuredProviders, searchValue]
     );
+
 
     const initialConnectors: InternalConnector[] = useMemo(() => {
         return removeDuplicatesWithKey(
             ([...featuredConnectors, ...hiddenConnectors] as InternalConnector[])
-                .filter(c =>
-                    (searchValue?.length ? true : !c.isHidden) 
-                )
                 .sort((a, b) => sortRecentConnectors(a, b, recentConnectors)),
             'name'
         );
