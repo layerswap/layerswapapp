@@ -49,7 +49,7 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
             const transaction = Transaction.from(arrayBufferCallData)
 
             const feeInLamports = await transaction.getEstimatedFee(connection)
-            const feeInSol = feeInLamports / LAMPORTS_PER_SOL
+            const feeInSol = (feeInLamports || 0) / LAMPORTS_PER_SOL
 
             const nativeTokenBalance = balances?.find(b => b.token == source_network?.token?.symbol)
             const tokenbalanceData = balances?.find(b => b.token == source_token?.symbol)
