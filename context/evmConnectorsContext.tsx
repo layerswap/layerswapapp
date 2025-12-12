@@ -17,7 +17,7 @@ type ContextType = {
 const EvmConnectorsContext = createContext<ContextType | null>(null);
 
 export const featuredWalletsIds = [
-    'metamask',
+    'metaMaskSDK',
     'argent',
     'rainbow',
     'bitkeep',
