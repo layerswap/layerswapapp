@@ -149,7 +149,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         const observer = new IntersectionObserver((e) => e[0].isIntersecting && hasMoreToLoad && !isLoadingMore && loadMore(), { threshold: 0.1, rootMargin: '100px' });
         observer.observe(loadMoreTriggerRef.current);
         return () => observer.disconnect();
-    }, [hasMoreToLoad, isLoadingMore, loadMore]);
+    }, [hasMoreToLoad, isLoadingMore, loadMore, selectedConnector, selectedMultiChainConnector]);
 
     if (selectedConnector?.hasBrowserExtension && !selectedConnector?.showQrCode && selectedConnector.type == 'walletConnect' && !isMobilePlatfrom) {
         const provider = featuredProviders.find(p => p.name === selectedConnector?.providerName)
