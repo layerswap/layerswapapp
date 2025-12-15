@@ -1,7 +1,7 @@
 import { BigmiProvider, useConnect } from '@bigmi/react'
 import { createConfig, leather, onekey, phantom, unisat, xverse } from '@bigmi/client'
 import type { CreateConnectorFn } from '@bigmi/client'
-import { http, bitcoin, createClient, defineChain, Chain, ChainId } from '@bigmi/core'
+import { http, bitcoin, createClient, defineChain, Chain } from '@bigmi/core'
 import { NetworkType, NetworkWithTokens, InternalConnector } from '@layerswap/widget/types'
 import { useSettingsState } from '@layerswap/widget/internal'
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
@@ -149,7 +149,7 @@ function createDefaultBigmiConfig(network?: NetworkWithTokens) {
 }
 
 const bitcoinTestnet = (network: NetworkWithTokens) => defineChain({
-    id: ChainId.BITCOIN_TESTNET,
+    id: 20000000000002,
     name: 'Bitcoin Testnet',
     nativeCurrency: { name: 'Bitcoin', symbol: 'BTC', decimals: 8 },
     rpcUrls: {

@@ -26,7 +26,7 @@ export function useSVMTransfer(): TransferProvider {
             try {
                 // Validate sufficient balance for fees
                 const feeInLamports = await transaction.getEstimatedFee(connection)
-                const feeInSol = feeInLamports / LAMPORTS_PER_SOL
+                const feeInSol = (feeInLamports || 0) / LAMPORTS_PER_SOL
 
                 const nativeTokenBalance = balances?.find(b => b.token == network?.token?.symbol)
                 const tokenbalanceData = balances?.find(b => b.token == token?.symbol)

@@ -119,7 +119,7 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
             })
     }, [allConnectors, walletConnectConnectors])
 
-    const connectWallet = useCallback(async (props: { connector: InternalConnector & LSConnector }) => {
+    const connectWallet = useCallback(async (props: { connector: InternalConnector & LSConnector & { showQrCode?: boolean } }) => {
         try {
             const internalConnector = props?.connector;
             if (!internalConnector) return;

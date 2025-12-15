@@ -66,7 +66,7 @@ export default function useBitcoinConnection({ networks }: WalletConnectionProvi
 
             if (!result.accounts) throw new Error("No result from connector")
 
-            const address = result.accounts[0].address
+            const address = result.accounts[0]
             const network = networks.find(n => commonSupportedNetworks.includes(n.name))
             if (!network) throw new Error("Network not found")
             const wrongChanin = !isBitcoinAddressValid(address, network)

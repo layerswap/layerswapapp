@@ -1,9 +1,10 @@
 import { BalanceResolver } from "@/lib/balances/balanceResolver";
 import { GasResolver } from "@/lib/gases/gasResolver";
 import { AddressUtilsResolver } from '@/lib/address/addressUtilsResolver'
-import { AddressUtilsProvider, BalanceProvider, GasProvider, NftProvider, TransferProvider } from "@/types";
+import { AddressUtilsProvider, BalanceProvider, ContractAddressCheckerProvider, GasProvider, NftProvider, TransferProvider } from "@/types";
 import { NftBalanceResolver } from "../nft/nftBalanceResolver";
 import { TransferResolver } from "../transfers/transferResolver";
+import { ContractAddressResolver } from "@/lib/address/contractAddressResolver";
 
 class UtilsResolverService {
     private balanceResolver: BalanceResolver | null = null;
@@ -11,13 +12,22 @@ class UtilsResolverService {
     private addressUtilsResolver: AddressUtilsResolver | null = null;
     private nftResolver: NftBalanceResolver | null = null;
     private transferResolver: TransferResolver | null = null;
+    private contractAddressResolver: ContractAddressResolver | null = null;
 
-    setProviders(balanceProviders: BalanceProvider[], gasProviders: GasProvider[], addressUtilsProviders: AddressUtilsProvider[], nftProviders: NftProvider[], transferProviders: TransferProvider[]) {
+    setProviders(
+        balanceProviders: BalanceProvider[],
+        gasProviders: GasProvider[],
+        addressUtilsProviders: AddressUtilsProvider[],
+        nftProviders: NftProvider[],
+        transferProviders: TransferProvider[],
+        contractAddressProviders: ContractAddressCheckerProvider[],
+    ) {
         this.balanceResolver = new BalanceResolver(balanceProviders);
         this.gasResolver = new GasResolver(gasProviders);
         this.addressUtilsResolver = new AddressUtilsResolver(addressUtilsProviders);
         this.nftResolver = new NftBalanceResolver(nftProviders);
         this.transferResolver = new TransferResolver(transferProviders);
+        this.contractAddressResolver = new ContractAddressResolver(contractAddressProviders);
     }
 
     getBalanceResolver(): BalanceResolver {
@@ -53,6 +63,13 @@ class UtilsResolverService {
             throw new Error('TransferResolver not initialized. Make sure to call setProviders first.');
         }
         return this.transferResolver;
+    }
+
+    getContractAddressResolver(): ContractAddressResolver {
+        if (!this.contractAddressResolver) {
+            throw new Error('ContractAddressResolver not initialized. Make sure to call setProviders first.');
+        }
+        return this.contractAddressResolver;
     }
 }
 

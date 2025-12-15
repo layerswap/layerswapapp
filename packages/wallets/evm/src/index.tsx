@@ -7,6 +7,7 @@ import { EVMGasProvider } from "./gasProviders"
 import { EVMAddressUtilsProvider } from "./evmAddressUtilsProvider"
 import { AppSettings } from "@layerswap/widget/internal";
 import { useEVMTransfer } from "./transferProvider/useEVMTransfer";
+import { EVMContractAddressProvider } from "./evmContractAddressProvider";
 
 export type WalletConnectConfig = {
     projectId: string
@@ -29,7 +30,8 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         balanceProviders,
         gasProviders,
         addressUtilsProviders,
-        transferProviders
+        transferProviders,
+        contractAddressProviders,
     } = config;
 
     const WrapperComponent = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
@@ -87,6 +89,11 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
         : defaultAddressUtilsProviders;
 
+    const defaultContractAddressProviders = [new EVMContractAddressProvider()];
+    const finalContractAddressProviders = contractAddressProviders !== undefined
+        ? (Array.isArray(contractAddressProviders) ? contractAddressProviders : [contractAddressProviders])
+        : defaultContractAddressProviders;
+
     const defaultTransferProviders = [useEVMTransfer];
     const finalTransferProviders = transferProviders !== undefined
         ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
@@ -100,6 +107,7 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
         transferProvider: finalTransferProviders,
+        contractAddressProvider: finalContractAddressProviders,
     };
 }
 
@@ -124,4 +132,5 @@ export const EVMProvider: WalletProvider = {
     gasProvider: [new EVMGasProvider()],
     balanceProvider: [new EVMBalanceProvider(), new HyperliquidBalanceProvider()],
     transferProvider: [useEVMTransfer],
+    contractAddressProvider: [new EVMContractAddressProvider()],
 };

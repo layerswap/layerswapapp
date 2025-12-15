@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useMemo } from "react";
-import { WalletProvider, NftProvider, BalanceProvider, GasProvider, AddressUtilsProvider, TransferProvider } from "@/types";
+import { WalletProvider, NftProvider, BalanceProvider, GasProvider, AddressUtilsProvider, TransferProvider, ContractAddressCheckerProvider } from "@/types";
 import { resolverService } from "@/lib/resolvers/resolverService";
 
 type ResolverContextType = {
@@ -18,6 +18,11 @@ export const ResolverProviders: React.FC<React.PropsWithChildren<{ walletProvide
         .flat()
         .filter((provider): provider is (() => TransferProvider) => Boolean(provider))
         .map(provider => provider())
+
+    const contractAddressProviders: ContractAddressCheckerProvider[] = walletProviders
+        .map(provider => provider.contractAddressProvider)
+        .flat()
+        .filter((provider): provider is ContractAddressCheckerProvider => Boolean(provider));
 
     const isInitialized = useMemo(() => {
         // Extract balance providers from wallet providers
@@ -43,7 +48,7 @@ export const ResolverProviders: React.FC<React.PropsWithChildren<{ walletProvide
             .flat()
             .filter((provider): provider is NftProvider => Boolean(provider));
 
-        resolverService.setProviders(balanceProviders, gasProviders, addressUtilsProviders, nftProviders, transferProviders)
+        resolverService.setProviders(balanceProviders, gasProviders, addressUtilsProviders, nftProviders, transferProviders, contractAddressProviders)
 
         return true;
     }, [walletProviders, transferProviders]);

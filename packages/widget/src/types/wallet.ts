@@ -6,6 +6,7 @@ import { BalanceProvider } from './balance';
 import { GasProvider } from './gas';
 import { AddressUtilsProvider } from './addressUtils';
 import { NftProvider } from './nft';
+import { ContractAddressCheckerProvider } from './contract';
 
 export type InternalConnector = {
     name: string,
@@ -54,6 +55,7 @@ export type WalletProvider = WalletWrapper & {
     gasProvider?: GasProvider | GasProvider[],
     balanceProvider?: BalanceProvider | BalanceProvider[],
     transferProvider?: (() => TransferProvider) | (() => TransferProvider)[],
+    contractAddressProvider?: ContractAddressCheckerProvider | ContractAddressCheckerProvider[],
 }
 
 export type WalletWrapper = {
@@ -119,4 +121,5 @@ export type BaseWalletProviderConfig = {
     gasProviders?: GasProvider | GasProvider[]
     addressUtilsProviders?: AddressUtilsProvider | AddressUtilsProvider[]
     transferProviders?: (() => TransferProvider) | (() => TransferProvider)[]
-}
+    contractAddressProviders?: ContractAddressCheckerProvider | ContractAddressCheckerProvider[]
+} 
