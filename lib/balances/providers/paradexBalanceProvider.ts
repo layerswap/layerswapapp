@@ -16,7 +16,7 @@ export class ParadexBalanceProvider extends BalanceProvider {
         const paradex = getParadex(config);
         const paraclearProvider = new paradex.ParaclearProvider.DefaultProvider(config);
 
-        const tokens = network.tokens
+        const tokens = network.tokens.filter(token => token.symbol == 'USDC');
 
         const balances: TokenBalance[] = []
 
