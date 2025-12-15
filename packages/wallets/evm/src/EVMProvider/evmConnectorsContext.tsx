@@ -36,9 +36,8 @@ export const HIDDEN_WALLETCONNECT_ID = 'hiddenWalletConnect'
 
 export function EvmConnectorsProvider({ children, walletConnectConfigs }: EvmConnectorsProviderProps) {
 
-    const walletConnectConfig = walletConnectConfigs
-    const WALLETCONNECT_PROJECT_ID = walletConnectConfig?.projectId || ''
-    
+    const WALLETCONNECT_PROJECT_ID = walletConnectConfigs?.projectId || ''
+
     const wltcnnct_inited = useMemo(() => walletConnect({
         projectId: WALLETCONNECT_PROJECT_ID,
         showQrModal: isMobile(),
@@ -63,20 +62,20 @@ export function EvmConnectorsProvider({ children, walletConnectConfigs }: EvmCon
     const defaultConnectors: CreateConnectorFn[] = useMemo(() => [
         metaMask({
             dappMetadata: {
-                name: walletConnectConfig?.name || 'Layerswap',
-                url: walletConnectConfig?.url || 'https://layerswap.io/app/',
-                iconUrl: walletConnectConfig?.icons?.[0] || 'https://layerswap.io/app/symbol.png'
+                name: walletConnectConfigs?.name || 'Layerswap',
+                url: walletConnectConfigs?.url || 'https://layerswap.io/app/',
+                iconUrl: walletConnectConfigs?.icons?.[0] || 'https://layerswap.io/app/symbol.png'
             }
         }),
         coinbaseWallet({
-            appName: walletConnectConfig?.name || 'Layerswap',
-            appLogoUrl: walletConnectConfig?.icons?.[0] || 'https://layerswap.io/app/symbol.png'
+            appName: walletConnectConfigs?.name || 'Layerswap',
+            appLogoUrl: walletConnectConfigs?.icons?.[0] || 'https://layerswap.io/app/symbol.png'
         }),
         wltcnnct_inited,
         ...featuredConnectors,
         browserInjected(),
         hiddenWalletConnectConnector // Hidden connector for dynamic wallets
-    ], [wltcnnct_inited, featuredConnectors, walletConnectConfig]);
+    ], [wltcnnct_inited, featuredConnectors, walletConnectConfigs]);
 
     const connectors = useMemo(() => {
         return [
