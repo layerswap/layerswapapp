@@ -1,5 +1,3 @@
-
-
 import { SVGProps } from "react"
 
 const GasIcon = (props: SVGProps<SVGSVGElement>) => {

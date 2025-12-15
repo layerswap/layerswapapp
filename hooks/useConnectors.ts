@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { InternalConnector, WalletProvider } from "../Models/WalletProvider";
 import { removeDuplicatesWithKey, sortRecentConnectors } from "../components/WalletModal/utils";
-import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
 import { featuredWalletsIds } from "@/context/evmConnectorsContext";
 
 type UseConnectorsParams = {
@@ -26,7 +25,7 @@ export function useConnectors({
                     ?.filter(v => searchValue ? v.name.toLowerCase().includes(searchValue.toLowerCase()) : true)
                     .map((connector) => ({ ...connector, providerName: provider.name }))
             )
-            .flat(),
+            .flat() as InternalConnector[],
         [featuredProviders, searchValue]
     );
 
@@ -41,18 +40,14 @@ export function useConnectors({
                     )
                     .map((connector) => ({ ...connector, providerName: provider.name, isHidden: true }))
             )
-            .flat(),
+            .flat() as InternalConnector[],
         [featuredProviders, searchValue]
     );
 
+
     const initialConnectors: InternalConnector[] = useMemo(() => {
-        const isMobilePlatform = isMobile();
         return removeDuplicatesWithKey(
             ([...featuredConnectors, ...hiddenConnectors] as InternalConnector[])
-                .filter(c =>
-                    (searchValue?.length ? true : !c.isHidden) &&
-                    (isMobilePlatform ? c.isMobileSupported !== false : true)
-                )
                 .sort((a, b) => sortRecentConnectors(a, b, recentConnectors)),
             'name'
         );
