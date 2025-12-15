@@ -12,6 +12,7 @@ import Menu from "./Menu";
 import { MenuStep } from "../../Models/Wizard";
 import { WalletsMenu } from "../Wallet/WalletComponents/ConnectedWallets";
 import VaulDrawer from "../Modal/vaulModal";
+import { useSettingsState } from "@/context/settings";
 
 
 const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ goToStep }) => {
@@ -41,9 +42,10 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
                             Transactions
                         </Menu.Item>
                     }
-                    {
-                        window.location.pathname != '/campaigns' &&
-                        <Menu.Item onClick={() => goToStep(MenuStep.Campaigns, '/campaigns')} icon={<Gift className="h-5 w-5" />} >
+                </>
+                <>
+                    {window.location.pathname != '/campaigns' &&
+                        <Menu.Item pathname='/campaigns' icon={<Gift className="h-5 w-5" />} >
                             Campaigns
                         </Menu.Item>
                     }
@@ -99,7 +101,7 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
 
             <div className="grid grid-cols-2 gap-2 justify-center">
                 {navigation.social.map((item, index) => (
-                    <a key={index} target="_blank" href={item.href} className={`flex relative bg-secondary-500 hover:bg-secondary-400 rounded-xl cursor-pointer select-none items-center outline-hidden text-primary-text ${item.className}`} rel="noopener noreferrer">
+                    <a key={index} target="_blank" href={item.href} className="flex relative bg-secondary-500 hover:bg-secondary-400 rounded-xl cursor-pointer select-none items-center outline-hidden text-primary-text" rel="noopener noreferrer">
                         <div className="p-2 w-full flex justify-center gap-1">
                             <item.icon className="h-5 w-5" aria-hidden="true" />
                             <p>{item.name}</p>
@@ -116,39 +118,33 @@ const navigation = {
         {
             name: 'Twitter',
             href: 'https://twitter.com/layerswap/',
-            icon: (props) => TwitterLogo(props),
-            className: 'plausible-event-name=Twitter'
+            icon: (props) => TwitterLogo(props)
         },
         {
             name: 'GitHub',
             href: 'https://github.com/layerswap/layerswapapp/',
-            icon: (props) => GitHubLogo(props),
-            className: 'plausible-event-name=GitHub'
+            icon: (props) => GitHubLogo(props)
         },
         {
             name: 'Discord',
             href: 'https://discord.com/invite/KhwYN35sHy/',
-            icon: (props) => DiscordLogo(props),
-            className: 'plausible-event-name=Discord'
+            icon: (props) => DiscordLogo(props)
         },
         {
             name: 'YouTube',
             href: 'https://www.youtube.com/@layerswaphq/',
-            icon: (props) => YoutubeLogo(props),
-            className: 'plausible-event-name=Youtube'
+            icon: (props) => YoutubeLogo(props)
         },
         {
             name: 'Substack',
             href: 'https://layerswap.substack.com/',
-            icon: (props) => SubstackLogo(props),
-            className: 'plausible-event-name=Substack'
+            icon: (props) => SubstackLogo(props)
         },
         {
             name: 'Roadmap',
             href: 'https://layerswap.ducalis.io/roadmap/summary/',
-            icon: (props) => <Map {...props}></Map>,
-            className: 'plausible-event-name=Roadmap'
-        },
+            icon: (props) => <Map {...props}></Map>
+        }
     ]
 }
 

@@ -1,14 +1,14 @@
 import { useConnectModal, KnownInternalNames, convertSvgComponentToBase64, JsonRpcClient, walletIconResolver } from "@layerswap/widget/internal"
-import { ActionMessageType, InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps, NetworkType, NetworkWithTokens } from "@layerswap/widget/types";
-import { useConnect, useAccount, useConfig } from '@bigmi/react'
+import { InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps, NetworkType, NetworkWithTokens } from "@layerswap/widget/types";
+import { useConnect, useConfig } from '@bigmi/react'
 import { disconnect } from "@bigmi/client"
 import { useMemo } from "react"
 import { Connector, CreateConnectorFn } from "@bigmi/client"
 import { isBitcoinAddressValid } from "./utils/isValidAddress"
 import { useBitcoinConnectors } from "./BitcoinProvider"
-import { sendTransaction } from "./transferProvider/sendTransaction"
 import { useBitcoinTransfer } from "./transferProvider/useBitcoinTransfer";
-
+import { useAccount } from "./useAccount"
+import { getConnections } from "./getConnections"
 const bitcoinNames = [KnownInternalNames.Networks.BitcoinMainnet, KnownInternalNames.Networks.BitcoinTestnet]
 
 export default function useBitcoinConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
@@ -20,10 +20,11 @@ export default function useBitcoinConnection({ networks }: WalletConnectionProvi
         ...networks.filter(network => network.type === NetworkType.Bitcoin).map(l => l.name),
     ]
 
-    const { account, connector } = useAccount()
     const { connectAsync, connectors } = useConnect()
-    const config = useConfig()
     const { setSelectedConnector } = useConnectModal()
+
+    const config = useConfig()
+    const account = useAccount()
 
     const disconnectWallet = async (connectorName: string) => {
         try {
@@ -105,6 +106,8 @@ export default function useBitcoinConnection({ networks }: WalletConnectionProvi
     const { executeTransfer: transfer } = useBitcoinTransfer()
 
     const resolvedWallet = useMemo(() => {
+        const connections = getConnections(config)
+        const connector = connections.find(c => c.connector.id === account.connector?.id)?.connector
 
         if (!account || !connector) return undefined
 

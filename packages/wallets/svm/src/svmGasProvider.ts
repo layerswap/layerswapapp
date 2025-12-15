@@ -30,10 +30,10 @@ export class SolanaGasProvider implements GasProvider {
             const message = transaction.compileMessage();
             const result = await connection.getFeeForMessage(message)
 
-            const formatedGas = Number(formatUnits(BigInt(result.value), network.token?.decimals))
-
-            if (formatedGas) return { gas: formatedGas, token: network.token }
-
+            if (result.value) {
+                const formatedGas = Number(formatUnits(BigInt(result.value), network.token?.decimals))
+                return { gas: formatedGas, token: network.token }
+            }
         }
         catch (e) {
             const error = e as Error;

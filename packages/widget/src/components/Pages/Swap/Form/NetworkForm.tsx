@@ -2,7 +2,8 @@ import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { Form, FormikHelpers, useFormikContext } from "formik";
 import { Partner } from "@/Models/Partner";
 import { TokenBalance } from "@/Models/Balance";
-import ValidationError from "@/components/Pages/Swap/Form/SecondaryComponents/validationError";
+import ValidationError from "./SecondaryComponents/validationError";
+import ContractAddressValidationCache from "./SecondaryComponents/validationError/ContractAddressValidationCache";
 import useWallet from "@/hooks/useWallet";
 import SourcePicker from "@/components/Input/SourcePicker";
 import DestinationPicker from "@/components/Input/DestinationPicker";
@@ -128,7 +129,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                 <RefuelToggle
                                     quote={quote}
                                     onButtonClick={() => setOpenRefuelModal(true)}
-                                    minAllowedAmount={minAllowedAmount}
                                 />
                             }
                             {
@@ -157,7 +157,12 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                     setOpenModal={setOpenRefuelModal}
                     fee={quote}
                 />
-            </Form >
+                <ContractAddressValidationCache
+                    source_network={source}
+                    destination_network={destination}
+                    destination_address={values.destination_address}
+                />
+            </Form>
         </>
     );
 };

@@ -1,6 +1,5 @@
 // import { WalletAccount } from 'starknet';
 // @ts-ignore
-import { StarknetWindowObject } from 'starknetkit';
 import { TransferProps, TransferProvider } from './transfer';
 import { NetworkWithTokens } from '@/Models/Network';
 import { BalanceProvider } from './balance';
@@ -13,28 +12,27 @@ export type InternalConnector = {
     id: string,
     icon?: string | undefined,
     order?: number,
-    type?: 'injected' | 'other',
+    type?: 'injected' | 'walletConnect' | 'other' | string,
     isMultiChain?: boolean,
     providerName?: string,
     installUrl?: string,
     isMobileSupported?: boolean,
     isHidden?: boolean,
+    hasBrowserExtension?: boolean,
 }
 
 export type Wallet = {
     id: string;
     internalId?: string;
     displayName?: string;
-    // TODO: might be unused and unnecessary check
     isActive: boolean;
     address: string | `0x${string}`;
     addresses: string[];
     providerName: string
     icon: (props: any) => React.JSX.Element;
-    //TODO: this is name of the connector, should be changed to connectorId
     metadata?: {
         starknetAccount?: any,
-        wallet?: StarknetWindowObject,
+        wallet?: any,
         l1Address?: string,
         deepLink?: string
     }
@@ -43,7 +41,6 @@ export type Wallet = {
     disconnect?: () => Promise<void> | undefined | void;
     connect?: () => Promise<Wallet | undefined>;
     isNotAvailable?: boolean;
-    //TODO: refactor
     withdrawalSupportedNetworks?: string[],
     asSourceSupportedNetworks?: string[],
     autofillSupportedNetworks?: string[],

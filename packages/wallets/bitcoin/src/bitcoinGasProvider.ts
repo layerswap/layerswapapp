@@ -29,7 +29,9 @@ export class BitcoinGasProvider implements GasProvider {
                 rpcClient: rpcClient
             })
             const formattedGas = Number(formatUnits(BigInt(fee), network.token.decimals))
-            return { gas: formattedGas, token: network.token }
+            if (formattedGas) {
+                return { gas: formattedGas, token: network.token }
+            }
 
         } catch (e) {
             const error = e as Error;

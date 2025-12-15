@@ -101,7 +101,13 @@ export async function buildPsbt({
       })
 
       // re‐estimate fee on this draft PSBT
-      fee = BigInt((await estimateFee(psbt, rpcClient, version)).toFixed())
+      try {
+        const recommendedFee = await estimateFee(psbt, rpcClient, version)
+        fee = BigInt(recommendedFee.toFixed())
+      } catch (e) {
+        console.log(e)
+        fee = MIN_FEE
+      }
     } while (totalSelected < BigInt(amount) + fee)
     // 5️⃣ add change if any
     const change = totalSelected - BigInt(amount) - fee

@@ -17,6 +17,7 @@ export type WalletConnectWallet = {
         universal?: boolean;
     };
     rdns?: string;
+    hasBrowserExtension?: boolean;
     type: string;
     icon: string;
     projectId: string;
@@ -43,10 +44,22 @@ export const resolveWallets: (projectId: string) => WalletConnectWallet[] = (pro
 }
 
 
+// Cache for connector instances to ensure stable references for wagmi reconnection
+const connectorCache = new Map<string, ReturnType<typeof walletConnect>>()
+
 export const resolveConnector = (name: string, projectId: string) => {
+    // Return cached connector if available
+    if (connectorCache.has(name)) {
+        return connectorCache.get(name)!
+    }
+
     const wallet = wallets.find(w => w.name === name && !walletsToFilter.includes(w.id))
     const params = resolveWallet(wallet, projectId)
-    return walletConnect(params as any)
+    const connector = walletConnect(params as any)
+
+    // Cache the connector for future use
+    connectorCache.set(name, connector)
+    return connector
 }
 
 const resolveWallet = (wallet: any, projectId: string) => {
@@ -54,6 +67,9 @@ const resolveWallet = (wallet: any, projectId: string) => {
     if (!wallet) {
         throw new Error(`Wallet ${wallet?.name} not found`)
     }
+
+    const isMobileSupported = !!wallet.mobile.universal || !!wallet.mobile.native
+    const isWalletConnectSupported = isMobileSupported || !!wallet.desktop?.universal || !!wallet.desktop?.native
 
     const w: WalletConnectWallet = {
         id: wallet.slug,
@@ -66,8 +82,9 @@ const resolveWallet = (wallet: any, projectId: string) => {
         showQrModal: false,
         customStoragePrefix: wallet.slug,
         order: resolveEVMWalletConnectorIndex(wallet.slug),
-        type: "other",
-        isMobileSupported: wallet.mobile.universal || wallet.mobile.native
+        type: isWalletConnectSupported ? "walletConnect" : "other",
+        isMobileSupported: isMobileSupported,
+        hasBrowserExtension: wallet.injected != null
     }
 
     return w

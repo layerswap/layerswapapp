@@ -2,8 +2,8 @@ import { FC } from "react"
 import { ExternalLink } from "lucide-react"
 import CopyButton from "@/components/Buttons/copyButton"
 import AddressIcon from "@/components/Common/AddressIcon"
-import { Partner } from "@/components/../Models/Partner"
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues"
+import { Partner } from "@/Models"
 
 type Props = {
     partner: Partner | undefined;

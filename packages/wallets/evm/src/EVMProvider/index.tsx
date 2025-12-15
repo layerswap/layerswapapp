@@ -1,10 +1,10 @@
-import { WagmiContext, WagmiProvider } from 'wagmi'
+import { Config, WagmiContext, WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientContext, QueryClientProvider, useQueryClient } from '@tanstack/react-query'
 import { createConfig } from 'wagmi';
 import { EvmConnectorsProvider, useEvmConnectors } from "./evmConnectorsContext";
 import { ActiveEvmAccountProvider } from "./ActiveEvmAccount";
 import { useSettingsState } from "@layerswap/widget/internal";
-import { useContext } from 'react';
+import { useContext, useMemo } from 'react';
 import { useChainConfigs } from '../evmUtils/chainConfigs';
 import { WalletConnectConfig } from '../index';
 
@@ -15,20 +15,29 @@ type Props = {
 
 const queryClient = new QueryClient()
 
+let cachedConfig: Config | null = null
+
 function WagmiComponent({ children }: Props) {
     const settings = useSettingsState();
 
     const { connectors } = useEvmConnectors()
     const { chains, transports } = useChainConfigs(settings?.networks)
 
-    const config = createConfig({
-        connectors,
-        chains,
-        transports,
-    });
+    // Create config ONCE - never recreate to preserve connection state
+    const config = useMemo(() => {
+        if (!cachedConfig) {
+            cachedConfig = createConfig({
+                connectors,
+                chains: chains,
+                transports: transports,
+                ssr: true
+            })
+        }
+        return cachedConfig
+    }, []) // Empty deps - only create once
 
     return (
-        <WagmiProvider config={config}>
+        <WagmiProvider config={config} reconnectOnMount={true}>
             <QueryWrapper>
                 <ActiveEvmAccountProvider>
                     {children}

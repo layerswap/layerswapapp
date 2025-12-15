@@ -42,17 +42,11 @@
     "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc"
   },
   "dependencies": {
-    "@solana/spl-token": "^0.3.9",
-    "@solana/wallet-adapter-base": "^0.9.26",
-    "@solana/wallet-adapter-coinbase": "^0.1.22",
-    "@solana/wallet-adapter-glow": "^0.1.18",
-    "@solana/wallet-adapter-nightly": "^0.1.20",
-    "@solana/wallet-adapter-phantom": "^0.9.27",
-    "@solana/wallet-adapter-react": "^0.15.38",
-    "@solana/wallet-adapter-solflare": "^0.6.31",
-    "@solana/wallet-adapter-walletconnect": "^0.1.20",
-    "@solana/wallet-adapter-wallets": "^0.19.36",
-    "@solana/web3.js": "1.66.0"
+    "@solana/spl-token": "^0.4.14",
+    "@solana/wallet-adapter-base": "^0.9.27",
+    "@solana/wallet-adapter-react": "^0.15.39",
+    "@solana/wallet-adapter-wallets": "^0.19.37",
+    "@solana/web3.js": "^1.98.4"
   },
   "devDependencies": {
     "@layerswap/widget": "workspace:^",

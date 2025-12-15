@@ -50,6 +50,9 @@ export class LoopringBalanceProvider extends BalanceProvider {
             ]
         }
         catch (e) {
+            if (e?.response?.data?.resultInfo?.message === 'account not found') {
+                return []
+            }
             balances = network.tokens.map((currency) => (this.resolveTokenBalanceFetchError(e, currency, network)))
         }
 

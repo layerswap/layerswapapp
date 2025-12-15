@@ -42,7 +42,6 @@ const FormButton = ({
 
     return (
         <SubmitButton
-            className="plausible-event-name=Swap+initiated"
             type="submit"
             isDisabled={disabled}
             isSubmitting={isSubmitting}

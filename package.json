@@ -25,8 +25,6 @@
   },
   "resolutions": {
     "@radix-ui/react-dismissable-layer": "1.1.1",
-    "rpc-websockets": "7.11.0",
-    "@solana/web3.js": "1.66.0",
     "@walletconnect/universal-provider": "2.21.8",
     "@walletconnect/ethereum-provider": "2.21.8"
   },

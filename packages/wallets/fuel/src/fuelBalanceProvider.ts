@@ -61,8 +61,7 @@ export class FuelBalanceProvider extends BalanceProvider {
                     decimals: token.decimals,
                     isNativeCurrency: network.token?.symbol === token.symbol,
                     token: token.symbol,
-                    request_time: new Date().toJSON(),
-                    error: balance?.amount === undefined ? `Could not fetch balance for ${token.symbol}` : undefined
+                    request_time: new Date().toJSON()
                 }
 
                 balances.push(balanceObj)

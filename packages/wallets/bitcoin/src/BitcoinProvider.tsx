@@ -13,16 +13,6 @@ export const BitcoinProvider = ({ children }: { children: ReactNode }): ReactEle
     const network = networks.find(n => n.type === NetworkType.Bitcoin)
     const config = createDefaultBigmiConfig(network)
 
-    const [isClient, setIsClient] = useState<boolean>(false)
-
-    useEffect(() => {
-        setIsClient(true)
-    }, [])
-
-    if (!isClient) {
-        return null
-    }
-
     return (
         <BigmiProvider config={config} reconnectOnMount={true}>
             <QueryWrapper>

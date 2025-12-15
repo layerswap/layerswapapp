@@ -38,12 +38,12 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
 
     let initialSourceCurrency = filteredSourceCurrencies?.find(c => c.symbol?.toUpperCase() == fromAsset?.toUpperCase())
     if (!initialSourceCurrency && !fromAsset && sourceNetwork) {
-        initialSourceCurrency = filteredSourceCurrencies?.[0]
+        initialSourceCurrency = filteredSourceCurrencies?.sort((a, b) => a.symbol.localeCompare(b.symbol))?.find(c => c.status === "active")
     }
 
     let initialDestinationCurrency = filteredDestinationCurrencies?.find(c => c.symbol?.toUpperCase() == toAsset?.toUpperCase())
     if (!initialDestinationCurrency && !toAsset && destinationNetwork) {
-        initialDestinationCurrency = filteredDestinationCurrencies?.[0]
+        initialDestinationCurrency = filteredDestinationCurrencies?.sort((a, b) => a.symbol.localeCompare(b.symbol))?.find(c => c.status === "active")
     }
 
     //TODO this looks wrong

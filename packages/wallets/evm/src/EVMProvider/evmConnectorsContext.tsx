@@ -2,6 +2,7 @@ import { createContext, useContext, useMemo, useState } from 'react'
 import { resolveConnector, resolveWallets, WalletConnectWallet } from '../connectors/resolveConnectors';
 import { CreateConnectorFn } from 'wagmi';
 import { coinbaseWallet, walletConnect, metaMask } from '@wagmi/connectors'
+import { walletConnect as customWalletConnect } from '../connectors/resolveConnectors/walletConnect';
 import { browserInjected } from '../connectors/browserInjected';
 import { isMobile, usePersistedState } from '@layerswap/widget/internal';
 import { WalletConnectConfig } from '..';
@@ -9,7 +10,7 @@ import { WalletConnectConfig } from '..';
 type ContextType = {
     connectors: CreateConnectorFn[],
     walletConnectConnectors: WalletConnectWallet[],
-    addToAdditionalWallets: (connector: WalletConnectWallet) => Promise<void>
+    addToAdditionalWallets: (connector: WalletConnectWallet) => void
 }
 
 const EvmConnectorsContext = createContext<ContextType | null>(null);
@@ -31,10 +32,13 @@ type EvmConnectorsProviderProps = {
     walletConnectConfigs?: WalletConnectConfig
 }
 
+export const HIDDEN_WALLETCONNECT_ID = 'hiddenWalletConnect'
+
 export function EvmConnectorsProvider({ children, walletConnectConfigs }: EvmConnectorsProviderProps) {
 
     const walletConnectConfig = walletConnectConfigs
     const WALLETCONNECT_PROJECT_ID = walletConnectConfig?.projectId || ''
+    
     const wltcnnct_inited = useMemo(() => walletConnect({
         projectId: WALLETCONNECT_PROJECT_ID,
         showQrModal: isMobile(),
@@ -42,6 +46,19 @@ export function EvmConnectorsProvider({ children, walletConnectConfigs }: EvmCon
     }), [WALLETCONNECT_PROJECT_ID])
 
     const { additionalConnectors, allWallets, addToAdditionalWallets, featuredConnectors } = useWalletConnectors(WALLETCONNECT_PROJECT_ID)
+
+    // Hidden WalletConnect connector for dynamic wallets - not shown in the list
+    // Uses custom walletConnect with unique ID so we can identify it
+    const hiddenWalletConnectConnector = useMemo(() => customWalletConnect({
+        id: HIDDEN_WALLETCONNECT_ID,
+        name: 'Hidden WalletConnect',
+        rdns: '',
+        type: 'other',
+        mobile: { native: '', universal: '' },
+        icon: '',
+        projectId: WALLETCONNECT_PROJECT_ID,
+        showQrModal: false,
+    }), [WALLETCONNECT_PROJECT_ID])
 
     const defaultConnectors: CreateConnectorFn[] = useMemo(() => [
         metaMask({
@@ -57,7 +74,8 @@ export function EvmConnectorsProvider({ children, walletConnectConfigs }: EvmCon
         }),
         wltcnnct_inited,
         ...featuredConnectors,
-        browserInjected()
+        browserInjected(),
+        hiddenWalletConnectConnector // Hidden connector for dynamic wallets
     ], [wltcnnct_inited, featuredConnectors, walletConnectConfig]);
 
     const connectors = useMemo(() => {
@@ -121,12 +139,12 @@ const useWalletConnectors = (projectId: string) => {
         const recentConnectors = recentWallets.map(wallet => {
             return resolveConnector(wallet?.name, projectId)
         })
-        const rest = additionalWallets.map(wallet => {
-            return resolveConnector(wallet.name, projectId)
-        })
+        // const rest = additionalWallets.map(wallet => {
+        //     return resolveConnector(wallet.name, projectId)
+        // })
         return [
             ...recentConnectors,
-            ...rest
+            // ...rest
         ]
     }, [recentWallets, additionalWallets, projectId]);
 
