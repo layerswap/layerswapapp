@@ -551,30 +551,25 @@ body.keyboard-navigating .openpicker .bg-secondary-500[class*="hover:bg-"]:hover
   background-color: rgb(var(--ls-colors-secondary-500)) !important;
 }
 
-/* Tab navigation focus styles - only show when using keyboard Tab navigation */
-[data-nav-index]:focus-visible {
-  outline: 2px solid rgb(var(--ls-colors-primary-500)) !important;
-  outline-offset: -2px;
-}
-
-/* Apply outline to SelectItem children when parent accordion is focused via tab */
-[data-nav-index]:focus-visible > button > * {
-  outline: 2px solid rgb(var(--ls-colors-primary-500)) !important;
-  outline-offset: -2px;
-}
-
-/* Apply consistent focus styling to all focusable elements */
+/* TAB navigation — thin INNER border (no cropping) */
+[data-nav-index]:focus-visible,
 button:focus-visible,
 [role="button"]:focus-visible,
 a:focus-visible {
-  outline: 2px solid rgb(var(--ls-colors-primary-500)) !important;
-  outline-offset: 2px !important;
-  outline-style: solid !important;
-  outline-width: 2px !important;
-  box-shadow: none !important;
+  outline: none !important;
+  box-shadow: inset 0 0 0 1px rgb(var(--ls-colors-primary-500)) !important;
+  border-radius: inherit;
   transition: none !important;
   animation: none !important;
 }
+
+/* Inner wrapper case (accordion / SelectItem) */
+[data-nav-index]:focus-visible > button > * {
+  outline: none !important;
+  box-shadow: inset 0 0 0 1px rgb(var(--ls-colors-primary-500)) !important;
+  border-radius: inherit;
+}
+
 
 /* Prevent SVG and child elements from being focusable */
 svg,
@@ -589,4 +584,40 @@ path {
 [data-projection-id],
 [style*="pointer-events"] {
   outline: none !important;
+}
+.refuel-row-btn:focus-visible {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.refuel-row-btn:focus-visible .refuel-info-ring {
+  box-shadow: inset 0 0 0 1px rgb(var(--ls-colors-primary-500)) !important;
+  border-radius: 6px;
+}
+.refuel-button:focus-visible {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.refuel-button:focus-visible .refuel-info-icon {
+  box-shadow: inset 0 0 0 1px rgb(var(--ls-colors-primary-500)) !important;
+  border-radius: 6px;
+}
+.swap-btn:focus-visible {
+  border: 1px solid rgb(var(--ls-colors-primary-500)) !important;
+  border-radius: 8px;
+}
+.submit-btn:focus-visible {
+  outline: none !important;
+}
+
+.submit-btn:focus-visible {
+  box-shadow: inset 0 0 0 2px rgb(var(--ls-colors-primary-text)) !important;
+  border-radius: 12px;
+}
+.refuel-toggle:focus-visible {
+  border-color: rgb(var(--ls-colors-primary-text)) !important;
+  box-shadow: none !important;
+  outline: none !important;
+  border-radius: 12px;
 }
