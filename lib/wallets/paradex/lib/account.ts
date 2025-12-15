@@ -1,10 +1,10 @@
 import { keyDerivation } from '@starkware-industries/starkware-crypto-utils';
-import * as Starknet from 'starknet-old';
+import * as Starknet from 'starknet';
 
-import type { ParadexConfig } from '../config';
-import * as ethereumSigner from '../ethereum-signer';
+import type { ParadexConfig } from './config';
+import * as ethereumSigner from './ethereum-signer';
 import * as starknetSigner from './starknet-signer';
-import type { Hex } from '../types';
+import type { Hex } from './types';
 
 export interface Account extends Starknet.Account {}
 
@@ -34,7 +34,7 @@ export async function fromEthSigner({
     accountClassHash: config.paraclearAccountHash,
     accountProxyClassHash: config.paraclearAccountProxyHash,
   });
-  return new Starknet.Account(provider, address, `0x${privateKey}`);
+  return new Starknet.Account({provider, address, signer: `0x${privateKey}`});
 }
 
 interface FromStarknetAccountParams {
@@ -42,8 +42,8 @@ interface FromStarknetAccountParams {
   readonly provider: Starknet.ProviderOptions | Starknet.ProviderInterface;
   readonly config: ParadexConfig;
   readonly account: Starknet.AccountInterface;
-  readonly starknetProvider?: Starknet.ProviderInterface;
   readonly nodeUrl: string;
+  readonly starknetProvider?: Starknet.ProviderInterface;
 }
 
 /**
@@ -75,7 +75,7 @@ export async function fromStarknetAccount({
     accountClassHash: config.paraclearAccountHash,
     accountProxyClassHash: config.paraclearAccountProxyHash,
   });
-  return new Starknet.Account(provider, address, `0x${privateKey}`);
+  return new Starknet.Account({provider, address, signer: `0x${privateKey}`});
 }
 
 interface GenerateAccountAddressParams {

@@ -174,16 +174,19 @@ export default function useParadex(): WalletProvider {
     }, [evmProvider, starknetProvider])
 
     const switchAccount = async (wallet: Wallet, address: string) => {
+
         const providers = [evmProvider, starknetProvider]
         const paradexProvider = providers.find(p => p?.connectedWallets?.find(w => w.id === wallet.id))
         const paradexWallet = paradexProvider?.connectedWallets?.find(w => w.id === wallet.id)
 
-        if (paradexProvider?.name && wallet.metadata?.l1Address)
+        if (paradexProvider?.name && wallet.metadata?.l1Address) {
             setActiveAddress({
                 l1Address: wallet.metadata.l1Address,
                 id: wallet.id,
                 providerName: paradexProvider.name as "Starknet" | "EVM"
             })
+            paradexProvider?.switchAccount?.(wallet, wallet.metadata.l1Address)
+        }
     }
 
     const activeWallet = useMemo(() => {
@@ -199,7 +202,17 @@ export default function useParadex(): WalletProvider {
             networkIcon: paradexNetwork?.logo
         })
     }, [evmProvider.activeWallet, starknetProvider.activeWallet, activeConnection, paradexAccounts])
-
+    console.log("activeWallet", activeWallet)
+    console.log("evmProvider.activeWallet", evmProvider.activeWallet)
+    console.log("starknetProvider.activeWallet", starknetProvider.activeWallet)
+    console.log("activeConnection", activeConnection)
+    console.log("paradexAccounts", paradexAccounts)
+    console.log("name", name)
+    console.log("id", id)
+    console.log("withdrawalSupportedNetworks", withdrawalSupportedNetworks)
+    console.log("autofillSupportedNetworks", autofillSupportedNetworks)
+    console.log("asSourceSupportedNetworks", asSourceSupportedNetworks)
+    console.log("availableWalletsForConnect", availableWalletsForConnect)
     const provider: WalletProvider = {
         connectWallet,
         switchAccount,

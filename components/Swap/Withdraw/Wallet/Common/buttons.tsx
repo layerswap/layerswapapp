@@ -178,7 +178,9 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
     const priceImpactValues = useMemo(() => quote ? resolvePriceImpactValues(quote, refuel ? refuelData : undefined) : undefined, [quote, refuel]);
     const criticalMarketPriceImpact = useMemo(() => priceImpactValues?.criticalMarketPriceImpact, [priceImpactValues]);
+    const selectedWallet = wallets.find(w => w.id === selectedSourceAccount?.id)
 
+    console.log("selectedWallet", selectedWallet)
     const handleClick = async () => {
         try {
             const selectedWallet = wallets.find(w => w.id === selectedSourceAccount?.id)
