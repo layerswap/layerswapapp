@@ -2,6 +2,7 @@ import posthog from "posthog-js";
 import { NetworkBalance } from "@/Models/Balance";
 import { BalanceProvider } from "@/Models/BalanceProvider";
 import { NetworkWithTokens } from "@/Models/Network";
+import { classifyNodeError } from "./nodeErrorClassifier";
 import {
     BitcoinBalanceProvider,
     EVMBalanceProvider,
@@ -52,8 +53,10 @@ export class BalanceResolver {
                     name: "BalanceError",
                     $layerswap_exception_type: "Balance Error",
                     network: network.name,
+                    node_url: network.node_url,
                     address: address,
                     balances: errorBalances,
+                    error_categories: [...new Set(errorBalances.map(b => classifyNodeError(b.error)))],
                     where: 'BalanceProviderError',
                     message: `Could not fetch balance for ${errorBalances.map(t=>t.token).join(", ")} in ${network.name}, message: ${errorBalances.map(b=>b.error).join(", ")}`,
                 });
@@ -69,6 +72,9 @@ export class BalanceResolver {
                 name: error.name,
                 message: error.message,
                 $layerswap_exception_type: "Balance Error",
+                network: network.name,
+                node_url: network.node_url,
+                error_category: classifyNodeError(e),
                 stack: error.stack,
                 cause: error.cause,
                 type: 'BalanceError',

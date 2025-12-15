@@ -112,17 +112,6 @@ export class EVMBalanceProvider extends BalanceProvider {
                     isNativeCurrency: false,
                 }
             }
-            else {
-                return {
-                    network: network.name,
-                    token: token.symbol,
-                    amount: undefined,
-                    request_time: new Date().toJSON(),
-                    decimals: token.decimals,
-                    isNativeCurrency: false,
-                    error: `Could not fetch ${token.symbol} balance`
-                }
-            }
         })
 
         const nativeTokenBalance = Number(balances?.[1]?.[balances?.[1]?.length - 1])
@@ -134,7 +123,6 @@ export class EVMBalanceProvider extends BalanceProvider {
             request_time: new Date().toJSON(),
             decimals: network.token?.decimals,
             isNativeCurrency: true,
-            error: nativeTokenBalance === undefined ? "Could not fetch native token balance" : undefined
         } : undefined
 
         const res = [...resolvedERC20Balances, nativeTokenResolvedBalance].filter((b): b is TokenBalance => b !== undefined)
