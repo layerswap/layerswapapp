@@ -12,8 +12,6 @@ import Menu from "./Menu";
 import { MenuStep } from "../../Models/Wizard";
 import { WalletsMenu } from "../Wallet/WalletComponents/ConnectedWallets";
 import VaulDrawer from "../Modal/vaulModal";
-import { useSettingsState } from "@/context/settings";
-
 
 const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ goToStep }) => {
     const { boot, show, update } = useIntercom()
@@ -29,27 +27,12 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
             <WalletsMenu />
 
             <Menu.Group>
-                <>
-                    {/* {
-                        window.location.pathname != '/' &&
-                        <Menu.Item pathname='/' icon={<Home className="h-5 w-5" />} >
-                            Home
-                        </Menu.Item>
-                    } */}
-                    {
-                        window.location.pathname != '/transactions' &&
-                        <Menu.Item onClick={() => goToStep(MenuStep.Transactions, "/transactions")} icon={<ScrollText className="h-5 w-5" />} >
-                            Transactions
-                        </Menu.Item>
-                    }
-                </>
-                <>
-                    {window.location.pathname != '/campaigns' &&
-                        <Menu.Item pathname='/campaigns' icon={<Gift className="h-5 w-5" />} >
-                            Campaigns
-                        </Menu.Item>
-                    }
-                </>
+                <Menu.Item onClick={() => goToStep(MenuStep.Transactions, "/transactions")} icon={<ScrollText className="h-5 w-5" />} >
+                    Transactions
+                </Menu.Item>
+                <Menu.Item onClick={() => goToStep(MenuStep.Campaigns, '/campaigns')} icon={<Gift className="h-5 w-5" />} >
+                    Campaigns
+                </Menu.Item>
             </Menu.Group>
             <Menu.Group>
                 <Menu.Item onClick={() => {

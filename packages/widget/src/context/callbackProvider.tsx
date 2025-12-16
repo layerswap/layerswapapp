@@ -12,6 +12,7 @@ export interface CallbacksContextType {
     onBackClick?: () => void
     onError?: (error: ErrorEventType) => void
     onSwapStatusChange?: (event: SwapStatusEvent) => void
+    onMenuNavigationChange?: (path: string) => void
 }
 
 export interface CallbackProviderProps {
@@ -31,6 +32,7 @@ export function CallbackProvider({ children, callbacks }: CallbackProviderProps)
             onBackClick: () => { try { callbacks?.onBackClick?.() } catch (error) { ErrorHandler(error) } },
             onError: (error: ErrorEventType) => { try { callbacks?.onError?.(error) } catch (error) { ErrorHandler(error) } },
             onSwapStatusChange: (event: SwapStatusEvent) => { try { callbacks?.onSwapStatusChange?.(event) } catch (error) { ErrorHandler(error) } },
+            onMenuNavigationChange: (path: string) => { try { callbacks?.onMenuNavigationChange?.(path) } catch (error) { ErrorHandler(error) } },
         }
     }, [callbacks])
     return (

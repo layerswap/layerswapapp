@@ -2,7 +2,7 @@ import { LayerswapProvider, LayerSwapSettings, ThemeData } from "@layerswap/widg
 import { useRouter } from "next/router"
 import { ComponentProps, ReactNode } from "react"
 import { updateFormBulk } from "./utils/updateForm"
-import { removeSwapPath, setSwapPath } from "./utils/updateSwapPath"
+import { removeSwapPath, setMenuPath, setSwapPath } from "./utils/updatePath"
 import { getDefaultProviders } from "@layerswap/wallets";
 import { ParsedUrlQuery } from "querystring"
 import { logError } from "./utils/logError"
@@ -98,6 +98,9 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
             if (!open) {
                 removeSwapPath(router)
             }
+        },
+        onMenuNavigationChange(path) {
+            setMenuPath(path, router)
         },
         onError: logError,
     } : undefined

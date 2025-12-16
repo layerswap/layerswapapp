@@ -10,11 +10,13 @@ import HistoryList from "../Pages/SwapHistory/History";
 import { CampaignsComponent } from "../Pages/Campaigns";
 import { CampaignDetailsComponent } from "../Pages/Campaigns/Details";
 import { Modal, ModalContent } from "../Modal/modalWithoutAnimation";
+import { useCallbacks } from "../../context/callbackProvider";
 
 const Comp = () => {
 
     const { goBack, currentStepName } = useFormWizardState()
     const { goToStep } = useFormWizardaUpdate()
+    const { onMenuNavigationChange } = useCallbacks()
 
     const [isOpen, setIsOpen] = useState(false)
     const [selectedCampaign, setSelectedCampaign] = useState<undefined | string>(undefined)
@@ -23,12 +25,19 @@ const Comp = () => {
         setIsOpen(value)
         if (value === false) {
             goToStep(MenuStep.Menu)
+            onMenuNavigationChange("/")
         }
     }
-    const goBackToMenuStep = () => { goToStep(MenuStep.Menu, "back") }
+    const goBackToMenuStep = () => {
+        goToStep(MenuStep.Menu, "back")
+        onMenuNavigationChange("/")
+    }
 
-    const handleGoToStep = (step: MenuStep) => {
+    const handleGoToStep = (step: MenuStep, path?: string) => {
         goToStep(step)
+        if (path) {
+            onMenuNavigationChange(path)
+        }
     }
 
     return <>
@@ -68,7 +77,7 @@ const Comp = () => {
                                 <WizardItem StepName={MenuStep.Campaigns} GoBack={goBackToMenuStep} className="h-full" inModal>
                                     <CampaignsComponent onCampaignSelect={(campaign) => { handleGoToStep(MenuStep.CampaignDetails); setSelectedCampaign(campaign.name) }} />
                                 </WizardItem>
-                                <WizardItem StepName={MenuStep.CampaignDetails} GoBack={() => goToStep(MenuStep.Campaigns, "back")} className="h-full" inModal>
+                                <WizardItem StepName={MenuStep.CampaignDetails} GoBack={() => { goToStep(MenuStep.Campaigns, "back"); onMenuNavigationChange("/campaigns") }} className="h-full" inModal>
                                     <CampaignDetailsComponent campaignName={selectedCampaign} />
                                 </WizardItem>
                             </Wizard>
