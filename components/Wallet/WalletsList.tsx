@@ -84,7 +84,7 @@ type WalletItemProps = {
     onWalletSelect?: (props: SelectAccountProps) => void;
     isCompatible?: boolean;
 }
-export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = ({ selectable, account: wallet, network, onWalletSelect, token, selectedAddress, isCompatible = true, ...props }) => {
+export const WalletItem: FC<WalletItemProps> = ({ selectable, account: wallet, network, onWalletSelect, token, selectedAddress, isCompatible = true }) => {
     const { networks } = useSettingsState()
     const balanceNetwork = token ? networks.find(n => n.name === network?.name && n.tokens.some(t => t.symbol === token.symbol)) : undefined
 
@@ -99,14 +99,16 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
     const walletBalanceAmount = walletBalance?.amount !== undefined ? truncateDecimals(walletBalance.amount, token?.precision) : ''
 
     return (
-        <div {...props} className="rounded-md outline-hidden text-primary-tex">
-            <div
+        <div className="rounded-md outline-hidden text-primary-tex">
+            <button
+                type="button"
+                disabled={!(selectable && wallet.addresses.length == 1)}
                 onClick={() => (selectable && wallet.addresses.length == 1 && onWalletSelect) && onWalletSelect({
                     providerName: wallet.providerName,
                     walletId: wallet.id,
                     address: wallet.address
                 })}
-                className={clsx('w-full relative items-center justify-between gap-2 flex rounded-lg outline-hidden bg-secondary-500 text-primary-text p-3 group/addressItem', {
+                className={clsx('wallet-item-btn w-full relative items-center justify-between gap-2 flex rounded-lg outline-hidden bg-secondary-500 text-primary-text p-3 group/addressItem', {
                     'hover:bg-secondary-400 cursor-pointer': selectable && wallet.addresses.length == 1,
                     'bg-secondary-600 py-2': wallet.addresses.length > 1
                 })}>
@@ -201,7 +203,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
                         <FilledCheck />
                     </div>
                 }
-            </div>
+            </button>
             {
                 wallet.addresses.length > 1 &&
                 <div className='w-full grow py-1 mt-1 bg-secondary-500 rounded-lg' >
@@ -236,7 +238,7 @@ type NestedWalletAddressProps = {
     isCompatible?: boolean;
 }
 
-const NestedWalletAddress: FC<HTMLAttributes<HTMLDivElement> & NestedWalletAddressProps> = ({ selectable, address, network, onWalletSelect, token, wallet, selectedAddress, isCompatible, ...props }) => {
+const NestedWalletAddress: FC<NestedWalletAddressProps> = ({ selectable, address, network, onWalletSelect, token, wallet, selectedAddress, isCompatible }) => {
     const { networks } = useSettingsState()
     const balanceNetwork = token ? networks.find(n => n.name === network?.name && n.tokens.some(t => t.symbol === token.symbol)) : undefined
     const { balances, isLoading: isBalanceLoading } = useBalance(
@@ -249,14 +251,15 @@ const NestedWalletAddress: FC<HTMLAttributes<HTMLDivElement> & NestedWalletAddre
     const nestedWalletBalanceAmount = nestedWalletBalance?.amount !== undefined ? truncateDecimals(nestedWalletBalance.amount, token?.precision) : ''
 
     return (
-        <div
-            {...props}
+        <button
+            type="button"
+            disabled={!selectable}
             onClick={() => (selectable && onWalletSelect) && onWalletSelect({
                 providerName: wallet.providerName,
                 walletId: wallet.id,
                 address: address
             })}
-            className={clsx('flex w-full justify-between gap-3 items-center pl-6 pr-4 py-2 group/addressItem', {
+            className={clsx('wallet-item-btn flex w-full justify-between gap-3 items-center pl-6 pr-4 py-2 group/addressItem', {
                 'hover:bg-secondary-400 cursor-pointer': selectable
             })}
         >
@@ -306,7 +309,7 @@ const NestedWalletAddress: FC<HTMLAttributes<HTMLDivElement> & NestedWalletAddre
                     </div>
                 }
             </div>
-        </div>
+        </button>
     )
 
 }

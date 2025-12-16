@@ -621,3 +621,12 @@ path {
   outline: none !important;
   border-radius: 12px;
 }
+.address-btn:focus-visible {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.address-btn:focus-visible > div {
+  box-shadow: inset 0 0 0 1px rgb(var(--ls-colors-primary-500)) !important;
+  border-radius: inherit;
+}
