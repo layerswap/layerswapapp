@@ -32,7 +32,8 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refue
 
         setLoading(true)
         try {
-            const account = await AuhorizeEthereum(ethersSigner)
+            const client = await AuhorizeEthereum(ethersSigner)
+            const account = (client as any).account;
 
             if (!account) throw new Error('Account not found')
 
@@ -49,6 +50,9 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refue
             }
             toast.error(e.message, { duration: 30000 })
             throw e
+        }
+        finally {
+            setLoading(false)
         }
     }
 
