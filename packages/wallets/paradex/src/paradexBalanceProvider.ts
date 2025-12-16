@@ -1,4 +1,4 @@
-import { AppSettings, KnownInternalNames, insertIfNotExists } from "@layerswap/widget/internal";
+import { AppSettings, KnownInternalNames } from "@layerswap/widget/internal";
 import { BalanceProvider, TokenBalance } from "@layerswap/widget/types";
 import { Config, getParadex } from "./lib";
 
@@ -13,7 +13,7 @@ export class ParadexBalanceProvider extends BalanceProvider {
         const paradex = getParadex(config);
         const paraclearProvider = new paradex.ParaclearProvider.DefaultProvider(config);
 
-        const tokens = network.tokens.filter(token => token.symbol == 'USDC')
+        const tokens = network.tokens.filter(token => token.symbol == 'USDC');
 
         const balances: TokenBalance[] = []
 
