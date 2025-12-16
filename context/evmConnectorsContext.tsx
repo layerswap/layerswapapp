@@ -25,7 +25,7 @@ export const featuredWalletsIds = [
 ]
 
 const resolveFeaturedWallets = (wallets: WalletConnectWallet[]) => {
-    return wallets.filter(wallet => featuredWalletsIds.includes(wallet.id.toLowerCase()))
+    return wallets.filter(wallet => featuredWalletsIds.includes(wallet.id.toLowerCase()) || featuredWalletsIds.some(id => wallet.name.toLowerCase().includes(id.toLowerCase())))
 }
 
 const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b';
