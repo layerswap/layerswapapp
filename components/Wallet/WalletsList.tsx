@@ -102,13 +102,12 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: wallet, n
         <div className="rounded-md outline-hidden text-primary-tex">
             <button
                 type="button"
-                disabled={!(selectable && wallet.addresses.length == 1)}
                 onClick={() => (selectable && wallet.addresses.length == 1 && onWalletSelect) && onWalletSelect({
                     providerName: wallet.providerName,
                     walletId: wallet.id,
                     address: wallet.address
                 })}
-                className={clsx('wallet-item-btn w-full relative items-center justify-between gap-2 flex rounded-lg outline-hidden bg-secondary-500 text-primary-text p-3 group/addressItem', {
+                className={clsx('w-full relative items-center justify-between gap-2 flex rounded-lg outline-hidden bg-secondary-500 text-primary-text p-3 group/addressItem', {
                     'hover:bg-secondary-400 cursor-pointer': selectable && wallet.addresses.length == 1,
                     'bg-secondary-600 py-2': wallet.addresses.length > 1
                 })}>
@@ -259,7 +258,7 @@ const NestedWalletAddress: FC<NestedWalletAddressProps> = ({ selectable, address
                 walletId: wallet.id,
                 address: address
             })}
-            className={clsx('wallet-item-btn flex w-full justify-between gap-3 items-center pl-6 pr-4 py-2 group/addressItem', {
+            className={clsx('flex w-full justify-between gap-3 items-center pl-6 pr-4 py-2 group/addressItem', {
                 'hover:bg-secondary-400 cursor-pointer': selectable
             })}
         >
