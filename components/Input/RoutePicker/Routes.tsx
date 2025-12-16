@@ -13,7 +13,7 @@ import { formatUsd } from "@/components/utils/formatUsdAmount";
 import { getTotalBalanceInUSD } from "@/helpers/balanceHelper";
 import { useMemo } from "react";
 import { isNewListed, NewBadge } from "@/lib/isNewListed";
-import { TokenInfoIcon, TokenTitleWithBalance } from "./RoutesComponents";
+import { TokenInfoIcon, TokenTitleWithBalance } from "./TokenTitleDetails";
 
 type TokenItemProps = {
     route: NetworkRoute;
