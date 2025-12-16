@@ -43,10 +43,10 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => 
                 const paradexAccount = await AuthorizeStarknet(snAccount as any, starknet.node_url)
                 const parsedCallData = JSON.parse(callData || "")
 
-                const res = await paradexAccount.execute(parsedCallData, { maxFee: '1000000000000000' });
+                const res = await paradexAccount.withdraw("USDC", amount.toString(), parsedCallData);
 
-                if (res.transaction_hash) {
-                    return res.transaction_hash
+                if (res.hash) {
+                    return res.hash
                 }
             }
             catch (e) {
