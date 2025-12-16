@@ -32,7 +32,7 @@ export class BalanceResolver {
         new TonBalanceProvider(),
         new ZkSyncBalanceProvider(),
         new TronBalanceProvider(),
-        new ParadexBalanceProvider(),
+        // new ParadexBalanceProvider(),
         new BitcoinBalanceProvider(),
         new HyperliquidBalanceProvider()
     ];

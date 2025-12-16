@@ -90,8 +90,10 @@ export default function useParadex(): WalletProvider {
                         throw Error("Could not initialize ethers signer")
                     }
                     const paradexAccount = await AuhorizeEthereum(ethersSigner)
-                    addParadexAccount({ l1Address: connectionResult.address, paradexAddress: paradexAccount.address })
-                    accounts = { [connectionResult.address.toLowerCase()]: paradexAccount.address }
+                    const paradexAddress = paradexAccount.getAddress()
+
+                    addParadexAccount({ l1Address: connectionResult.address, paradexAddress: paradexAddress })
+                    accounts = { [connectionResult.address.toLowerCase()]: paradexAddress }
                 } else {
                     accounts = { [connectionResult.address.toLowerCase()]: paradexAccounts[connectionResult.address.toLowerCase()] }
                 }
@@ -121,9 +123,12 @@ export default function useParadex(): WalletProvider {
                     if (!starknetNetwork?.node_url) {
                         throw Error("Starknet node url not found")
                     }
-                    const paradexAccount = await AuthorizeStarknet(snAccount as any, starknetNetwork.node_url)
-                    addParadexAccount({ l1Address: connectionResult.address, paradexAddress: paradexAccount.address })
-                    accounts = { [connectionResult.address.toLowerCase()]: paradexAccount.address }
+                    const paradexAccount = await AuthorizeStarknet(snAccount as any)
+                    const paradexAddress = paradexAccount.getAddress()
+
+
+                    addParadexAccount({ l1Address: connectionResult.address, paradexAddress: paradexAddress })
+                    accounts = { [connectionResult.address.toLowerCase()]: paradexAddress }
                 }
                 else {
                     accounts = { [connectionResult.address.toLowerCase()]: paradexAccounts[connectionResult.address.toLowerCase()] }
@@ -174,6 +179,7 @@ export default function useParadex(): WalletProvider {
     }, [evmProvider, starknetProvider])
 
     const switchAccount = async (wallet: Wallet, address: string) => {
+
         const providers = [evmProvider, starknetProvider]
         const paradexProvider = providers.find(p => p?.connectedWallets?.find(w => w.id === wallet.id))
         const paradexWallet = paradexProvider?.connectedWallets?.find(w => w.id === wallet.id)
@@ -202,6 +208,10 @@ export default function useParadex(): WalletProvider {
         })
     }, [evmProvider.activeWallet, starknetProvider.activeWallet, activeConnection, paradexAccounts])
 
+    const icon = useMemo(() => {
+        return paradexNetwork?.logo
+    }, [paradexNetwork])
+
     const provider: WalletProvider = {
         connectWallet,
         switchAccount,
@@ -213,6 +223,7 @@ export default function useParadex(): WalletProvider {
         availableWalletsForConnect,
         name,
         id,
+        providerIcon: icon,
         hideFromList: true,
         ready: evmProvider.ready && starknetProvider.ready
     }
