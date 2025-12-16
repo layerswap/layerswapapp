@@ -55,7 +55,7 @@ const SourceWalletPicker: FC = () => {
         return <></>
 
     return <>
-        {
+        <span> {
             values.depositMethod === 'deposit_address' ?
                 (
                     provider
@@ -88,7 +88,7 @@ const SourceWalletPicker: FC = () => {
                         </div>
                     </div>
                 </button>
-        }
+        }</span>
         <VaulDrawer
             show={openModal}
             setShow={setOpenModal}
