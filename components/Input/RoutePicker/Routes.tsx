@@ -2,7 +2,7 @@ import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { SwapDirection } from "@/components/DTOs/SwapFormValues";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import { SelectItem } from "@/components/Select/Selector/SelectItem";
-import { ChevronDown, Info } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import RoutePickerIcon from "@/components/icons/RoutePickerPlaceholder";
 import { useBalance } from "@/lib/balances/useBalance";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
@@ -10,10 +10,10 @@ import { GroupedTokenElement, RowElement } from "@/Models/Route";
 import { getKey, useBalanceStore } from "@/stores/balanceStore";
 import { useSwapAccounts } from "@/context/swapAccounts";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
-import { ExtendedAddress } from "../Address/AddressPicker/AddressWithIcon";
 import { getTotalBalanceInUSD } from "@/helpers/balanceHelper";
 import { useMemo } from "react";
 import { isNewListed, NewBadge } from "@/lib/isNewListed";
+import { TokenInfoIcon, TokenTitleWithBalance } from "./RoutesComponents";
 
 type TokenItemProps = {
     route: NetworkRoute;
@@ -42,29 +42,6 @@ type NetworkTokenItemProps = {
     direction: SwapDirection;
     type?: RowElement['type'];
 }
-const TokenInfoIcon = ({ item, route, className, iconOnly = false }: { item: NetworkRouteToken, route: NetworkRoute, className?: string, iconOnly?: boolean }) => (
-    <div className={className}>
-        <ExtendedAddress
-            network={item.contract ? route : undefined}
-            isForCurrency
-            showDetails
-            address={item.contract || `${route.display_name} native coin`}
-            logo={item.logo}
-            title={item.symbol}
-            description={item.display_asset}
-            isNativeToken={!item.contract}
-        >
-            <div className={`flex items-center gap-1 text-secondary-text cursor-pointer hover:text-primary-text ${iconOnly ? '' : 'text-xs'}`}>
-                {!iconOnly && (
-                    <p className="max-w-[90px] truncate">
-                        <span>•</span> <span>{item.display_asset || item.symbol}</span>
-                    </p>
-                )}
-                <Info className={iconOnly ? "h-4 w-4" : "h-3 w-3"} />
-            </div>
-        </ExtendedAddress>
-    </div>
-);
 
 export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     const { item, route, direction, type } = props
@@ -81,26 +58,13 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     const isNewlyListed = isNewListed(item?.listing_date);
 
     return <SelectItem.DetailedTitle
-        title={<div className="flex items-center gap-2 justify-between w-full">
-            <div className="flex items-center gap-2">
-                <p>
-                    {item.symbol}
-                </p>
-                {
-                    isNewlyListed &&
-                    <NewBadge />
-                }
-                <TokenInfoIcon
-                    item={item}
-                    route={route}
-                    iconOnly
-                    className="hidden xs:block transition-all duration-300 opacity-0 group-hover:opacity-100 group-hover:delay-400 click-delay-on-hover"
-                />
-            </div>
-            {(tokenbalance && Number(tokenbalance?.amount) > 0 && Number(usdAmount) > 0) && (
-                <div className="text-primary-text text-lg leading-[22px] font-medium">{formatUsd(usdAmount)}</div>
-            )}
-        </div>}
+        title={<TokenTitleWithBalance
+            item={item}
+            route={route}
+            tokenbalance={tokenbalance}
+            usdAmount={usdAmount}
+            isNewlyListed={isNewlyListed}
+        />}
         secondaryImageAlt={route.display_name}
         secondary={
             <div className="flex items-center gap-1">
