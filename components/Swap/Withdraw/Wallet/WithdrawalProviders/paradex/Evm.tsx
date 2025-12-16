@@ -32,15 +32,15 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refue
 
         setLoading(true)
         try {
-            debugger
-            const account = await AuhorizeEthereum(ethersSigner)
+            const client = await AuhorizeEthereum(ethersSigner)
+            const account = (client as any).account;
 
             if (!account) throw new Error('Account not found')
 
-            const res = await account.withdraw("USDC", amount.toString(), JSON.parse(callData || ""));
+            const res = await account.execute(JSON.parse(callData || ""));
 
-            if (res.hash) {
-                return res.hash
+            if (res.transaction_hash) {
+                return res.transaction_hash
             }
         } catch (e) {
             setLoading(false)
@@ -50,6 +50,9 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refue
             }
             toast.error(e.message, { duration: 30000 })
             throw e
+        }
+        finally {
+            setLoading(false)
         }
     }
 

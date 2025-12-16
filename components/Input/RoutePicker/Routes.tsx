@@ -371,7 +371,7 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
                                 className="rounded-full object-contain"
                             />
                         </div>
-                        <div className="absolute left-[13px] top-3.5 h-4 w-4 rounded border border-secondary-500 overflow-hidden">
+                        <div className="absolute left-[13px] top-3.5 h-4 w-4 rounded border border-secondary-500 bg-secondary-400 overflow-hidden">
                             <ImageWithFallback
                                 src={route.logo}
                                 alt="Network Logo"

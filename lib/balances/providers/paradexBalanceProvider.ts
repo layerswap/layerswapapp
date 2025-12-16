@@ -1,6 +1,5 @@
 import { BalanceProvider } from "@/Models/BalanceProvider";
 import { TokenBalance } from "@/Models/Balance";
-import { NetworkWithTokens } from "@/Models/Network";
 import KnownInternalNames from "@/lib/knownIds";
 import * as Paradex from "@/lib/wallets/paradex/lib";
 

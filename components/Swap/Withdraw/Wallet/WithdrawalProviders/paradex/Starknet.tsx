@@ -40,13 +40,14 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => 
                 if (!starknet?.node_url) {
                     throw Error("Starknet node url not found")
                 }
-                const paradexAccount = await AuthorizeStarknet(snAccount as any, starknet.node_url)
+                const client = await AuthorizeStarknet(snAccount as any)
+                const account = (client as any).account;
                 const parsedCallData = JSON.parse(callData || "")
 
-                const res = await paradexAccount.withdraw("USDC", amount.toString(), parsedCallData);
+                const res = await account.execute(parsedCallData, { maxFee: '1000000000000000' });
 
-                if (res.hash) {
-                    return res.hash
+                if (res.transaction_hash) {
+                    return res.transaction_hash
                 }
             }
             catch (e) {

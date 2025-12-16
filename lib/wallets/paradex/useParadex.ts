@@ -123,7 +123,7 @@ export default function useParadex(): WalletProvider {
                     if (!starknetNetwork?.node_url) {
                         throw Error("Starknet node url not found")
                     }
-                    const paradexAccount = await AuthorizeStarknet(snAccount as any, starknetNetwork.node_url)
+                    const paradexAccount = await AuthorizeStarknet(snAccount as any)
                     const paradexAddress = paradexAccount.getAddress()
 
 
