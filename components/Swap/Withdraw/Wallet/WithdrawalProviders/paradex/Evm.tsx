@@ -37,7 +37,7 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refue
 
             if (!account) throw new Error('Account not found')
 
-            const res = await account.execute(JSON.parse(callData || ""));
+            const res = await account.execute(JSON.parse(callData || ""), { maxFee: '1000000000000000' });
 
             if (res.transaction_hash) {
                 return res.transaction_hash
