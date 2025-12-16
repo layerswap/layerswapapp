@@ -84,16 +84,10 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             const renderingError = new Error(`Swap:${swapDetails?.id} transaction:${transactionHash} failed`);
             renderingError.name = `TransactionFailed`;
             renderingError.cause = err;
-            posthog.capture('$exception', {
-                name: renderingError.name,
-                message: renderingError.message,
+            posthog.captureException(renderingError, {
                 $layerswap_exception_type: "Transaction Error",
                 $fromAddress: swapInputTransaction?.from,
-                $toAddress: swapBasicData?.destination_address,
-                stack: renderingError.stack,
-                cause: renderingError.cause,
-                where: 'TransactionError',
-                severity: 'error',
+                $toAddress: swapBasicData?.destination_address
             });
         }
     }, [inputTxStatus, transactionHash, swapDetails?.id])

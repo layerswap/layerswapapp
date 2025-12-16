@@ -254,18 +254,10 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     const swapWithdrawalError = new Error(e);
                     swapWithdrawalError.name = `SwapCatchupError`;
                     swapWithdrawalError.cause = e;
-                    posthog.capture('$exception', {
-                        name: swapWithdrawalError.name,
-                        cause: swapWithdrawalError.cause,
-                        message: swapWithdrawalError.message,
+                    posthog.captureException(swapWithdrawalError, {
                         $layerswap_exception_type: "Swap Catchup Error",
                         $fromAddress: selectedSourceAccount?.address,
-                        $toAddress: swapBasicData?.destination_address,
-                        $txHash: hash,
-                        $swapId: swapData.id,
-                        stack: swapWithdrawalError.stack,
-                        where: 'WalletTransaction',
-                        severity: 'error',
+                        $toAddress: swapBasicData?.destination_address
                     });
                 }
             }
@@ -278,16 +270,10 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             const swapWithdrawalError = new Error(e);
             swapWithdrawalError.name = `SwapWithdrawalError`;
             swapWithdrawalError.cause = e;
-            posthog.capture('$exception', {
-                name: swapWithdrawalError.name,
-                cause: swapWithdrawalError.cause,
-                message: swapWithdrawalError.message,
+            posthog.captureException(swapWithdrawalError, {
                 $layerswap_exception_type: "Swap Withdrawal Error",
                 $fromAddress: selectedSourceAccount?.address,
                 $toAddress: swapBasicData?.destination_address,
-                stack: swapWithdrawalError.stack,
-                where: 'TransactionError',
-                severity: 'error',
             });
 
         }

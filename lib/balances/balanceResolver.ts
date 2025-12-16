@@ -1,5 +1,5 @@
 import posthog from "posthog-js";
-import { NetworkBalance } from "@/Models/Balance";
+import { NetworkBalance, TokenBalance } from "@/Models/Balance";
 import { BalanceProvider } from "@/Models/BalanceProvider";
 import { NetworkWithTokens } from "@/Models/Network";
 import { classifyNodeError } from "./nodeErrorClassifier";
@@ -18,6 +18,45 @@ import {
     ZkSyncBalanceProvider,
     HyperliquidBalanceProvider
 } from "./providers";
+
+type ErrorDetails = {
+    message: string;
+    name?: string;
+    stack?: string;
+    status?: number;
+    statusText?: string;
+    responseData?: unknown;
+    requestUrl?: string;
+    code?: string;
+}
+
+function extractErrorDetails(error: unknown): ErrorDetails {
+    const err = error as Error & {
+        response?: { status?: number; statusText?: string; data?: unknown };
+        request?: { url?: string };
+        code?: string;
+        cause?: unknown;
+    };
+
+    return {
+        message: err?.message || String(error),
+        name: err?.name,
+        stack: err?.stack,
+        status: err?.response?.status,
+        statusText: err?.response?.statusText,
+        responseData: err?.response?.data,
+        requestUrl: err?.request?.url,
+        code: err?.code,
+    };
+}
+
+function formatErrorBalances(errorBalances: TokenBalance[]) {
+    return errorBalances.map(b => ({
+        token: b.token,
+        error: b.error,
+        error_category: classifyNodeError(b.error),
+    }));
+}
 
 export class BalanceResolver {
 
@@ -49,37 +88,36 @@ export class BalanceResolver {
 
             const errorBalances = balances?.filter(b => b.error)
             if (errorBalances?.length) {
-                posthog.capture('$exception', {
-                    name: "BalanceError",
+                const balanceError = new Error(`Could not fetch balance for ${errorBalances.map(t => t.token).join(", ")} in ${network.name}`);
+                balanceError.name = "BalanceError";
+                posthog.captureException(balanceError, {
                     $layerswap_exception_type: "Balance Error",
                     network: network.name,
                     node_url: network.node_url,
                     address: address,
-                    balances: errorBalances,
+                    failed_tokens: formatErrorBalances(errorBalances),
                     error_categories: [...new Set(errorBalances.map(b => classifyNodeError(b.error)))],
-                    where: 'BalanceProviderError',
-                    message: `Could not fetch balance for ${errorBalances.map(t=>t.token).join(", ")} in ${network.name}, message: ${errorBalances.map(b=>b.error).join(", ")}`,
                 });
             }
 
             return { balances };
         }
         catch (e) {
-            const error = new Error(e)
-            error.name = "BalanceError"
-            error.cause = e
-            posthog.capture('$exception', {
-                name: error.name,
-                message: error.message,
+            const errorDetails = extractErrorDetails(e);
+            const error = new Error(errorDetails.message);
+            error.name = "BalanceError";
+            error.cause = e;
+            posthog.captureException(error, {
                 $layerswap_exception_type: "Balance Error",
                 network: network.name,
                 node_url: network.node_url,
+                address: address,
                 error_category: classifyNodeError(e),
-                stack: error.stack,
-                cause: error.cause,
-                type: 'BalanceError',
-                where: 'BalanceProviderError',
-                severity: 'error',
+                error_code: errorDetails.code,
+                response_status: errorDetails.status,
+                response_status_text: errorDetails.statusText,
+                response_data: errorDetails.responseData,
+                request_url: errorDetails.requestUrl,
             });
 
             return { balances: [] }

@@ -111,16 +111,10 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined, so
         const swapWithdrawalError = new Error(error);
         swapWithdrawalError.name = `SwapWithdrawalError`;
         swapWithdrawalError.cause = error;
-        posthog.captureException('$exception', {
-            name: swapWithdrawalError.name,
-            message: swapWithdrawalError.message,
+        posthog.captureException(swapWithdrawalError, {
             $layerswap_exception_type: "Swap Withdrawal Error",
             $fromAddress: sourceAddress,
-            $toAddress: destAddress,
-            stack: swapWithdrawalError.stack,
-            cause: swapWithdrawalError.cause,
-            where: 'swapWithdrawalError',
-            severity: 'error',
+            $toAddress: destAddress
         });
 
         return <ActionMessages.UexpectedErrorMessage message={error} />
