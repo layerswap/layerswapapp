@@ -19,7 +19,6 @@ import { useSelectedAccount } from "@/context/swapAccounts";
 import SwapDetails from "../Withdraw/SwapDetails";
 import { SwapFormValues } from "./SwapFormValues";
 import { useCallbacks } from "@/context/callbackProvider";
-import { useContractAddressCheck } from "@/hooks/useContractAddressCheck";
 import ContractAddressNote from "@/components/Input/Address/ContractAddressNote";
 import { useContractAddressStore } from "@/stores/contractAddressStore";
 import UrlAddressNote from "@/components/Input/Address/UrlAddressNote";
@@ -51,8 +50,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
     const { createSwap, setSwapId, setSubmitedFormValues, setSwapModalOpen } = useSwapDataUpdate()
     const { setSwapError } = useSwapDataState()
 
-    const { checkContractStatus } = useContractAddressCheck();
-    const { setConfirmed, isConfirmed } = useContractAddressStore();
+    const { setConfirmed, isConfirmed, checkContractStatus } = useContractAddressStore();
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         setSwapError && setSwapError('')
@@ -88,22 +86,22 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
 
         if (destination_address && values.from && values.to && values.to.type === 'evm') {
             const alreadyConfirmed = isConfirmed(destination_address, values.to.name);
-            
+
             if (!alreadyConfirmed) {
                 const { isContractInAnyNetwork, destinationIsContract } = await checkContractStatus(destination_address, values.from, values.to);
                 if (isContractInAnyNetwork && !destinationIsContract) {
                     dontShowContractWarningRef.current = false;
-                    
+
                     const handleDontShowAgainChange = (checked: boolean) => {
                         dontShowContractWarningRef.current = checked;
                     };
-                    
+
                     const confirmed = await getConfirmation({
                         content: <ContractAddressNote values={values} onDontShowAgainChange={handleDontShowAgainChange} />,
                         submitText: 'Confirm',
                         dismissText: 'Cancel'
                     });
-                    
+
                     if (confirmed && dontShowContractWarningRef.current) {
                         setConfirmed(destination_address, values.to.name);
                     } else if (!confirmed) {

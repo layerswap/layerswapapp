@@ -9,13 +9,11 @@ import { GroupedTokenElement, RowElement } from "@/Models/Route";
 import { getKey, useBalanceStore } from "@/stores/balanceStore";
 import { useSwapAccounts } from "@/context/swapAccounts";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
-import { ExtendedAddress } from "../Address/AddressPicker/AddressWithIcon";
 import { SwapDirection } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { getTotalBalanceInUSD } from "@/helpers/balanceHelper";
 import { useMemo } from "react";
 import { isNewListed, NewBadge } from "@/lib/isNewListed";
-import useWindowDimensions from "@/hooks/useWindowDimensions";
-import clsx from "clsx";
+import { TokenInfoIcon, TokenTitleWithBalance } from "./TokenTitleDetails";
 
 type TokenItemProps = {
     route: NetworkRoute;
@@ -44,6 +42,7 @@ type NetworkTokenItemProps = {
     direction: SwapDirection;
     type?: RowElement['type'];
 }
+
 export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     const { item, route, direction, type } = props
     const swapAccounts = useSwapAccounts(direction)
@@ -59,48 +58,29 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     const isNewlyListed = isNewListed(item?.listing_date);
 
     return <SelectItem.DetailedTitle
-        title={<div className="flex items-center gap-2">
-            <p>
-                {item.symbol}
-            </p>
-            {
-                isNewlyListed &&
-                <NewBadge />
-            }
-        </div>}
+        title={<TokenTitleWithBalance
+            item={item}
+            route={route}
+            tokenbalance={tokenbalance}
+            usdAmount={usdAmount}
+            isNewlyListed={isNewlyListed}
+        />}
         secondaryImageAlt={route.display_name}
         secondary={
             <div className="flex items-center gap-1">
-                <span>{route.display_name}</span>
-                <div className="transition-all duration-300 opacity-0 group-hover:opacity-100 group-hover:delay-400 click-delay-on-hover">
-                    <ExtendedAddress
-                        network={item.contract ? route : undefined}
-                        isForCurrency
-                        showDetails
-                        address={item.contract || `${route.display_name} native coin`}
-                        logo={item.logo}
-                        title={item.symbol}
-                        description={item.display_asset}
-                        isNativeToken={!item.contract}
-                    >
-                        <div className="flex items-center gap-1 text-secondary-text text-xs cursor-pointer hover:text-primary-text">
-                            <p className="max-w-[90px] truncate">
-                                <span>•</span> <span>{item.display_asset || item.symbol}</span>
-                            </p>
-                            <Info className="h-3 w-3" />
-                        </div>
-                    </ExtendedAddress>
-                </div>
+                <span className="truncate">{route.display_name}</span>
+                <TokenInfoIcon
+                    item={item}
+                    route={route}
+                    className="xs:hidden transition-all duration-300 opacity-0 group-hover:opacity-100 group-hover:delay-400 click-delay-on-hover shrink-0"
+                />
             </div>
         }
         secondaryLogoSrc={route.logo}
     >
         {(tokenbalance && Number(tokenbalance?.amount) > 0) ? (
-            <span className="text-sm text-secondary-text text-right my-auto font-medium space-y-0.5">
-                {Number(usdAmount) > 0 && (
-                    <div className="text-primary-text text-lg leading-[22px]">{formatUsd(usdAmount)}</div>
-                )}
-                <div className='text-xs leading-4'>
+            <span className="text-sm text-secondary-text text-right my-auto font-medium block">
+                <div className='text-xs leading-4 truncate'>
                     {formatted_balance_amount}
                 </div>
             </span>
@@ -353,7 +333,6 @@ type SelectedRouteDisplayProps = {
 
 export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRouteDisplayProps) => {
     const showContent = token && route;
-    const { windowSize } = useWindowDimensions()
 
     return (
         <span className="flex grow text-left items-center text-xs md:text-base relative">
@@ -384,12 +363,7 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
                         </div>
 
                     </div>
-                    <div
-                        className={clsx(
-                            "ml-2 flex flex-col grow text-primary-text overflow-hidden min-w-0 max-w-3/4 group-[.exchange-picker]:max-w-full",
-                            { "max-w-[60px]": windowSize?.width && windowSize.width < 400 }
-                        )}
-                    >
+                    <div className="ml-2 flex flex-col grow text-primary-text overflow-hidden min-w-0 max-w-3/4 group-[.exchange-picker]:max-w-full xs:max-w-[60px]"                    >
                         <p className="text-base leading-5 font-medium">{token.symbol}</p>
                         <p className="text-secondary-text grow text-sm font-normal leading-4 truncate whitespace-nowrap">
                             {route.display_name}
