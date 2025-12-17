@@ -47,7 +47,7 @@
     "wagmi": "catalog:"
   },
   "dependencies": {
-    "@paradex/sdk": "0.6.0",
+    "@paradex/sdk": "0.8.1",
     "@starkware-industries/starkware-crypto-utils": "^0.2.1",
     "bignumber.js": "^9.3.1",
     "ethers": "5.7.2",

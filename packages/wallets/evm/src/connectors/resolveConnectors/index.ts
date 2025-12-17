@@ -35,7 +35,7 @@ export const resolveWallets: (projectId: string) => WalletConnectWallet[] = (pro
     const resolvedWallets = pickLatestBy(
         wallets,
         c => c.slug
-    ).filter(w => w.name && w.slug && !walletsToFilter.some(wtf => wtf == w.id)).map(wallet => {
+    ).filter(w => (w.mobile.native || w.mobile.universal) && w.name && w.slug && !walletsToFilter.some(wtf => wtf == w.id)).map(wallet => {
         const w = resolveWallet(wallet, projectId)
         return w
     })

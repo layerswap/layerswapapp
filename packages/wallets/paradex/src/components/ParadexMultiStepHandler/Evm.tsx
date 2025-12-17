@@ -31,7 +31,8 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refue
         setButtonClicked(true)
         setError(undefined)
         try {
-            const account = await AuhorizeEthereum(ethersSigner)
+            const client = await AuhorizeEthereum(ethersSigner)
+            const account = (client as any).account;
 
             if (!account) throw new Error('Account not found')
 

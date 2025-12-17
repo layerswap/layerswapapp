@@ -81,8 +81,10 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
                         throw Error("Could not initialize ethers signer")
                     }
                     const paradexAccount = await AuhorizeEthereum(ethersSigner)
-                    addParadexAccount({ l1Address: connectionResult.address, paradexAddress: paradexAccount.address })
-                    accounts = { [connectionResult.address.toLowerCase()]: paradexAccount.address }
+                    const paradexAddress = paradexAccount.getAddress()
+
+                    addParadexAccount({ l1Address: connectionResult.address, paradexAddress: paradexAddress })
+                    accounts = { [connectionResult.address.toLowerCase()]: paradexAddress }
                 } else {
                     accounts = { [connectionResult.address.toLowerCase()]: paradexAccounts[connectionResult.address.toLowerCase()] }
                 }
@@ -112,9 +114,12 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
                     if (!starknetNetwork?.node_url) {
                         throw Error("Starknet node url not found")
                     }
-                    const paradexAccount = await AuthorizeStarknet(snAccount as any, starknetNetwork.node_url)
-                    addParadexAccount({ l1Address: connectionResult.address, paradexAddress: paradexAccount.address })
-                    accounts = { [connectionResult.address.toLowerCase()]: paradexAccount.address }
+                    const paradexAccount = await AuthorizeStarknet(snAccount as any)
+                    const paradexAddress = paradexAccount.getAddress()
+
+
+                    addParadexAccount({ l1Address: connectionResult.address, paradexAddress: paradexAddress })
+                    accounts = { [connectionResult.address.toLowerCase()]: paradexAddress }
                 }
                 else {
                     accounts = { [connectionResult.address.toLowerCase()]: paradexAccounts[connectionResult.address.toLowerCase()] }
@@ -165,6 +170,7 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
     }, [evmProvider, starknetProvider])
 
     const switchAccount = async (wallet: Wallet, address: string) => {
+
         const providers = [evmProvider, starknetProvider]
         const paradexProvider = providers.find(p => p?.connectedWallets?.find(w => w.id === wallet.id))
 

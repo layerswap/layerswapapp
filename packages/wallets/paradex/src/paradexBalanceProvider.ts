@@ -1,6 +1,6 @@
 import { AppSettings, KnownInternalNames } from "@layerswap/widget/internal";
 import { BalanceProvider, TokenBalance } from "@layerswap/widget/types";
-import { Config, getParadex } from "./lib";
+import * as Paradex from "@paradex/sdk";
 
 export class ParadexBalanceProvider extends BalanceProvider {
     supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
@@ -8,38 +8,37 @@ export class ParadexBalanceProvider extends BalanceProvider {
     }
 
     fetchBalance: BalanceProvider['fetchBalance'] = async (address, network) => {
-        const environment = AppSettings.ApiVersion === 'testnet' ? 'testnet' : 'prod'
-        const config = await Config.fetchConfig(environment);
-        const paradex = getParadex(config);
-        const paraclearProvider = new paradex.ParaclearProvider.DefaultProvider(config);
+        // const environment = AppSettings.ApiVersion === 'testnet' ? 'testnet' : 'prod'
+        // const config = await Paradex.Config.fetch(environment);
 
-        const tokens = network.tokens.filter(token => token.symbol == 'USDC');
 
-        const balances: TokenBalance[] = []
+        // const tokens = network.tokens.filter(token => token.symbol == 'USDC');
 
-        for (const token of tokens) {
-            try {
-                const getBalanceResult = await paradex.Paraclear.getTokenBalance({
-                    provider: paraclearProvider, //account can be passed as the provider
-                    config,
-                    account: { address },
-                    token: token.symbol,
-                });
+        // const balances: TokenBalance[] = []
 
-                const balance = {
-                    network: network.name,
-                    token: token.symbol,
-                    amount: Number(getBalanceResult.size),
-                    request_time: new Date().toJSON(),
-                    decimals: Number(token?.decimals),
-                    isNativeCurrency: false
-                }
-                balances.push(balance)
-            }
-            catch (e) {
-                balances.push(this.resolveTokenBalanceFetchError(e, token, network))
-            }
-        }
-        return balances
+        // for (const token of tokens) {
+        //     try {
+        //         const getBalanceResult = await Paradex.Client.fromEthSigner({
+        //             config,
+        //             account: { address },
+        //             token: token.symbol,
+        //         });
+
+        //         const balance = {
+        //             network: network.name,
+        //             token: token.symbol,
+        //             amount: Number(getBalanceResult.size),
+        //             request_time: new Date().toJSON(),
+        //             decimals: Number(token?.decimals),
+        //             isNativeCurrency: false
+        //         }
+        //         balances.push(balance)
+        //     }
+        //     catch (e) {
+        //         balances.push(this.resolveTokenBalanceFetchError(e, token, network))
+        //     }
+        // }
+        // return balances
+        return []
     }
 }

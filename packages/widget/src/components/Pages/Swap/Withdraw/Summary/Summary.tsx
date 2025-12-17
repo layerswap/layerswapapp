@@ -127,7 +127,7 @@ const RouteTokenPair: FC<RouteTokenPairProps> = ({ route, token }) => {
                     fetchPriority="high"
                     className="rounded-full object-contain"
                 />
-                <div className="absolute -right-0.5 -bottom-0.5 rounded border border-secondary-500 overflow-hidden">
+                <div className="absolute -right-0.5 -bottom-0.5 rounded border border-secondary-500 bg-secondary-400 overflow-hidden">
                     <ImageWithFallback
                         src={route.logo}
                         alt="Route Logo"

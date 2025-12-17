@@ -24,7 +24,7 @@ export const featuredWalletsIds = [
 ]
 
 const resolveFeaturedWallets = (wallets: WalletConnectWallet[]) => {
-    return wallets.filter(wallet => featuredWalletsIds.includes(wallet.id.toLowerCase()))
+    return wallets.filter(wallet => featuredWalletsIds.includes(wallet.id.toLowerCase()) || featuredWalletsIds.some(id => wallet.name.toLowerCase().includes(id.toLowerCase())))
 }
 
 type EvmConnectorsProviderProps = {

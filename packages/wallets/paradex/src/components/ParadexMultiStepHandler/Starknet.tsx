@@ -41,11 +41,11 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => 
             if (!starknet?.node_url) {
                 throw Error("Starknet node url not found")
             }
-            const paradexAccount = await AuthorizeStarknet(snAccount as any, starknet.node_url)
-
+            const client = await AuthorizeStarknet(snAccount as any)
+            const account = (client as any).account;
             const parsedCallData = JSON.parse(callData || "")
 
-            const res = await paradexAccount.execute(parsedCallData, { maxFee: '1000000000000000' });
+            const res = await account.execute(parsedCallData, { maxFee: '1000000000000000' });
 
             if (res.transaction_hash) {
                 return res.transaction_hash
@@ -80,8 +80,7 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => 
             <div className="w-full space-y-5 flex flex-col justify-between h-full text-secondary-text">
                 {
                     selectedSourceAccount &&
-                    <div className="flex flex-row
-                    text-primary-text text-base space-x-2">
+                    <div className="flex flex-row text-primary-text text-base space-x-2">
                         <SendTransactionButton
                             isDisabled={!!(loading)}
                             isSubmitting={!!(loading)}
