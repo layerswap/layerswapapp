@@ -38,17 +38,6 @@ export class LoopringBalanceProvider extends BalanceProvider {
 
             const loopringBalances = tokens?.map(asset => {
                 const amount = result.data.find(d => d.tokenId == Number(asset.contract))?.total;
-                
-                // If we couldn't fetch balance data, return an error balance
-                if (amount === undefined && !result.data) {
-                    return this.resolveTokenBalanceFetchError(
-                        new Error(`Could not fetch balance for ${asset.symbol}`),
-                        asset,
-                        network,
-                        false
-                    );
-                }
-                
                 return ({
                     network: network.name,
                     token: asset?.symbol,
@@ -67,7 +56,7 @@ export class LoopringBalanceProvider extends BalanceProvider {
             if (e?.response?.data?.resultInfo?.message === 'account not found') {
                 return []
             }
-            balances = network.tokens.map((currency) => (this.resolveTokenBalanceFetchError(e, currency, network)))
+            throw e
         }
 
         return balances
