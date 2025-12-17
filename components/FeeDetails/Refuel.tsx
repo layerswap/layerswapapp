@@ -13,10 +13,9 @@ import { FORM_VALIDATION_ERROR_CODES } from "@/hooks/useFormValidation";
 type RefuelProps = {
     onButtonClick: () => void
     quote: ReturnType<typeof useQuoteData>['quote']
-    minAllowedAmount: ReturnType<typeof useQuoteData>['minAllowedAmount']
 }
 
-const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, quote, minAllowedAmount }) => {
+const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, quote }) => {
 
     const {
         values,
@@ -38,6 +37,12 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, quote, minAllowedAmount 
         previouslySelectedDestination.current = to
 
     }, [to, destination_address, toCurrency])
+
+    useEffect(() => {
+        if (!needRefuel && refuel) {
+            setFieldValue('refuel', false)
+        }
+    }, [needRefuel, refuel, setFieldValue])
 
     const handleConfirmToggleChange = (value: boolean) => {
         setFieldValue('refuel', value)

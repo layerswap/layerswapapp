@@ -49,7 +49,7 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
             const transaction = Transaction.from(arrayBufferCallData)
 
             const feeInLamports = await transaction.getEstimatedFee(connection)
-            const feeInSol = feeInLamports / LAMPORTS_PER_SOL
+            const feeInSol = (feeInLamports || 0) / LAMPORTS_PER_SOL
 
             const nativeTokenBalance = balances?.find(b => b.token == source_network?.token?.symbol)
             const tokenbalanceData = balances?.find(b => b.token == source_token?.symbol)
@@ -80,13 +80,15 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
                 setError('Wallet not connected')
                 return
             }
-            setLoading(false)
             if (e?.message) {
                 if (e?.logs?.some(m => m?.includes('insufficient funds')) || e.message.includes('Attempt to debit an account')) setError('insufficientFunds')
                 else setError(e.message)
                 return
             }
             setError(e.message)
+        }
+        finally {
+            setLoading(false)
         }
     }, [walletPublicKey, signTransaction, source_network, source_token, solanaWallet])
 

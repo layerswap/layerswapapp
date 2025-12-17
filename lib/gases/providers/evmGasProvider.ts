@@ -126,16 +126,9 @@ abstract class getEVMGas {
 
         } catch (e) {
             const error = new Error(e)
-            error.name = "GasPriceError"
             error.cause = e
-            posthog.capture('$exception', {
-                name: error.name,
-                message: error.message,
-                $layerswap_exception_type: "Gas Price Error",
-                stack: error.stack,
-                cause: error.cause,
-                where: 'getGasPrice',
-                severity: 'error',
+            posthog.captureException(error, {
+                $layerswap_exception_type: "Gas Price Error"
             })
         }
     }
@@ -145,16 +138,9 @@ abstract class getEVMGas {
 
         } catch (e) {
             const error = new Error(e)
-            error.name = "FeesPerGasError"
             error.cause = e
-            posthog.capture('$exception', {
-                name: error.name,
-                message: error.message,
-                $layerswap_exception_type: "Fees Per Gas Error",
-                stack: error.stack,
-                cause: error.cause,
-                where: 'feesPerGasError',
-                severity: 'error',
+            posthog.captureException(error, {
+                $layerswap_exception_type: "Fees Per Gas Error"
             })
         }
     }
@@ -164,16 +150,9 @@ abstract class getEVMGas {
 
         } catch (e) {
             const error = new Error(e)
-            error.name = "MaxPriorityFeePerGasError"
             error.cause = e
-            posthog.capture('$exception', {
-                name: error.name,
-                message: error.message,
-                $layerswap_exception_type: "Max Priority Fee Per Gas Error",
-                stack: error.stack,
-                cause: error.cause,
-                where: 'maxPriorityFeePerGasError',
-                severity: 'error',
+            posthog.captureException(error, {
+                $layerswap_exception_type: "Max Priority Fee Per Gas Error"
             })
         }
     }
@@ -251,7 +230,7 @@ export default class getOptimismGas extends getEVMGas {
 
     resolveGas = async () => {
         const feeData = await this.resolveFeeData()
-        
+
         const estimatedGasLimit = this.contract_address ?
             await this.estimateERC20GasLimit()
             : await this.estimateNativeGasLimit()

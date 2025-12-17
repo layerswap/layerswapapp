@@ -2,15 +2,17 @@ import { NetworkType, NetworkWithTokens } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
 import { useConnectModal } from "../../../components/WalletModal"
-import { useConnect, useAccount, useConfig } from '@bigmi/react'
+import { useConnect, useConfig } from '@bigmi/react'
 import { disconnect } from "@bigmi/client"
 import { useMemo } from "react"
 import convertSvgComponentToBase64 from "../../../components/utils/convertSvgComponentToBase64"
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon"
 import KnownInternalNames from "../../knownIds"
-import { Connector, CreateConnectorFn } from "@bigmi/client"
 import { isValidAddress } from "@/lib/address/validator"
 import { useBitcoinConnectors } from "@/components/WalletProviders/BitcoinProvider"
+import { Connector, CreateConnectorFn } from "@bigmi/client"
+import { useAccount } from "./useAccount"
+import { getConnections } from "./getConnections"
 
 const bitcoinNames = [KnownInternalNames.Networks.BitcoinMainnet, KnownInternalNames.Networks.BitcoinTestnet]
 
@@ -24,14 +26,11 @@ export default function useBitcoin(): WalletProvider {
         ...networks.filter(network => network.type === NetworkType.Bitcoin).map(l => l.name),
     ]
 
-    const account = useAccount()
     const { connectAsync, connectors } = useConnect()
-    const config = useConfig()
     const { setSelectedConnector } = useConnectModal()
 
-    const switchAccount = async (wallet: Wallet, address: string) => {
-        // as we do not have multiple accounts management we will leave the method empty
-    }
+    const config = useConfig()
+    const account = useAccount()
 
     const disconnectWallet = async (connectorName: string) => {
         try {
@@ -108,7 +107,8 @@ export default function useBitcoin(): WalletProvider {
     }
 
     const resolvedWallet = useMemo(() => {
-        const connector = account.connector
+        const connections = getConnections(config)
+        const connector = connections.find(c => c.connector.id === account.connector?.id)?.connector
 
         if (!account || !connector) return undefined
 
@@ -146,7 +146,6 @@ export default function useBitcoin(): WalletProvider {
         id,
         providerIcon,
         unsupportedPlatforms: ["mobile"],
-        switchAccount,
         ready: connectors.length > 0
     }
 

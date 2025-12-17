@@ -1,10 +1,10 @@
 import BigNumber from 'bignumber.js';
-import * as Starknet from 'starknet-old';
+import * as Starknet from 'starknet';
 
 import type { Account } from './account';
-import type { ParadexConfig } from '../config';
+import type { ParadexConfig } from './config';
 import type { ParaclearProvider } from './paraclear-provider';
-import type { Hex } from '../types';
+import type { Hex } from './types';
 
 const MAX_FEE = BigNumber('5e17'); // 5e17 WEI = 0.5 ETH
 
@@ -275,7 +275,7 @@ export async function withdraw(
         ? params.bridgeCall
         : [params.bridgeCall]),
     ],
-    { maxFee: maxFee.toString() },
+    { maxFee: maxFee.toString() } as any,
   );
 
   return { hash: result.transaction_hash as Hex };

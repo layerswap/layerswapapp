@@ -1,8 +1,8 @@
 import { keyDerivation } from '@starkware-industries/starkware-crypto-utils';
-import type { Signature, SignerInterface, TypedData } from 'starknet-old';
-import * as Starknet from 'starknet-old';
+import type { Signature, SignerInterface, TypedData } from 'starknet';
+import * as Starknet from 'starknet';
 
-import { STARKNET_MAINNET_CHAIN_ID } from '../constants';
+import { STARKNET_MAINNET_CHAIN_ID } from './constants';
 import { AccountSupport } from './starknet-account-support';
 
 export type { SignerInterface as Signer, TypedData, Signature };
@@ -85,7 +85,6 @@ export async function getAccountSupport(
   return accountSupport;
 }
 
-
 export function getPublicProvider(chainId: string, nodeUrl: string): Starknet.ProviderInterface {
   if (!nodeUrl) throw new Error('No public provider defined');
   const provider = new Starknet.RpcProvider({ nodeUrl });
@@ -112,10 +111,10 @@ async function buildAccountContract(
   accountAddress: string,
 ): Promise<Starknet.Contract> {
   const accountClass = await provider.getClassAt(accountAddress);
-  const contract = new Starknet.Contract(
-    accountClass.abi,
-    accountAddress,
-    provider,
-  );
+  const contract = new Starknet.Contract({
+    abi: accountClass.abi,
+    address: accountAddress,
+    providerOrAccount: provider,
+  });
   return contract;
 }

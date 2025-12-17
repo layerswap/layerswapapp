@@ -59,17 +59,16 @@ export default class LayerSwapApiClient {
                     return Promise.resolve(new EmptyApiResponse());
                 }
                 else {
-                    const renderingError = new Error(`API request error with uri:${uri}`);
-                    renderingError.name = `APIError`;
-                    renderingError.cause = reason;
-                    posthog.capture('$exception', {
-                        name: renderingError.name,
-                        message: renderingError.message,
+                    let error: Error;
+                    if (reason instanceof Error) {
+                        error = reason;
+                    } else {
+                        error = new Error(String(reason));
+                        error.name = "APIError";
+                    }
+                    
+                    posthog.captureException(error, {
                         $layerswap_exception_type: "API Error",
-                        stack: renderingError.stack,
-                        cause: renderingError.cause,
-                        where: 'apiClient',
-                        severity: 'error',
                     });
                     return Promise.reject(reason);
                 }

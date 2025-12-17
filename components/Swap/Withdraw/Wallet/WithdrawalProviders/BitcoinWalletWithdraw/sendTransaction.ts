@@ -39,12 +39,16 @@ export const sendTransaction = async ({ amount, callData, depositAddress, isTest
 
     const psbtHex = psbt.toHex();
 
+    // Taproot addresses (bc1p/tb1p) require SIGHASH_DEFAULT (0), others use SIGHASH_ALL (1)
+    const isTaproot = userAddress.startsWith('bc1p') || userAddress.startsWith('tb1p')
+
     const signature = await provider.request({
         method: 'signPsbt',
         params: {
             psbt: psbtHex,
             inputsToSign,
-            finalize: false
+            finalize: false,
+            sighashTypes: isTaproot ? [0] : [1]
         }
     })
 
