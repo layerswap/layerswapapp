@@ -34,7 +34,7 @@ export function createParadexProvider(config: ParadexProviderConfig = {}): Walle
         walletConnectionProvider,
         addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
-        balanceProvider: finalBalanceProviders,
+        // balanceProvider: finalBalanceProviders,
     };
 }
 
