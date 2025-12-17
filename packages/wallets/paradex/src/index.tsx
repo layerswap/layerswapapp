@@ -47,5 +47,5 @@ export const ParadexProvider: WalletProvider = {
     id: "paradex",
     wrapper: ActiveParadexAccountProvider,
     walletConnectionProvider: useParadexConnection,
-    balanceProvider: [new ParadexBalanceProvider()],
+    // balanceProvider: [new ParadexBalanceProvider()]
 };
