@@ -1,16 +1,13 @@
 import { NextRouter } from "next/router";
-import { parse, ParsedUrlQuery } from "querystring";
-import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
+import { resolvePersistantQueryParams, QueryParams } from "../../helpers/querryHelper";
 
 export const setSwapPath = (swapId: string, router: NextRouter) => {
     //TODO: as path should be without basepath and host
     const basePath = router?.basePath || ""
     var swapURL = window.location.protocol + "//"
         + window.location.host + `${basePath}/swap/${swapId}`;
-    const raw = window.location.search.startsWith("?")
-        ? window.location.search.slice(1)
-        : window.location.search;
-    const existing: ParsedUrlQuery = parse(raw);
+    const searchParams = new URLSearchParams(window.location.search);
+    const existing: QueryParams = Object.fromEntries(searchParams.entries());
     const params = resolvePersistantQueryParams(existing)
     if (params && Object.keys(params).length) {
         const search = new URLSearchParams(params as any);
@@ -26,10 +23,8 @@ export const removeSwapPath = (router: NextRouter) => {
     let homeURL = window.location.protocol + "//"
         + window.location.host + basePath
 
-    const raw = window.location.search.startsWith("?")
-        ? window.location.search.slice(1)
-        : window.location.search;
-    const existing: ParsedUrlQuery = parse(raw);
+    const searchParams = new URLSearchParams(window.location.search);
+    const existing: QueryParams = Object.fromEntries(searchParams.entries());
     const params = resolvePersistantQueryParams(existing)
     if (params && Object.keys(params).length) {
         const search = new URLSearchParams(params as any);
@@ -44,10 +39,8 @@ export const setMenuPath = (path: string, router: NextRouter) => {
     let menuURL = window.location.protocol + "//"
         + window.location.host + basePath + path;
 
-    const raw = window.location.search.startsWith("?")
-        ? window.location.search.slice(1)
-        : window.location.search;
-    const existing: ParsedUrlQuery = parse(raw);
+    const searchParams = new URLSearchParams(window.location.search);
+    const existing: QueryParams = Object.fromEntries(searchParams.entries());
     const params = resolvePersistantQueryParams(existing)
     if (params && Object.keys(params).length) {
         const search = new URLSearchParams(params as any);

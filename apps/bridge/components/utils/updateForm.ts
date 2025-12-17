@@ -1,5 +1,4 @@
-import { parse, ParsedUrlQuery } from "querystring";
-import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
+import { resolvePersistantQueryParams, QueryParams } from "../../helpers/querryHelper";
 import { SwapFormValues } from "@layerswap/widget";
 
 const fieldMapping: Record<string, string> = {
@@ -22,11 +21,9 @@ function updateQueries({ formDataKey, formDataValue, }: { formDataKey: string; f
         window.location.host +
         window.location.pathname;
 
-    // parse existing
-    const raw = window.location.search.startsWith("?")
-        ? window.location.search.slice(1)
-        : window.location.search;
-    const existing: ParsedUrlQuery = parse(raw);
+    // parse existing using URLSearchParams
+    const searchParams = new URLSearchParams(window.location.search);
+    const existing: QueryParams = Object.fromEntries(searchParams.entries());
     const params = resolvePersistantQueryParams(existing) as Record<string, any>;
 
     if (formDataValue == null || formDataValue === "") {
@@ -63,10 +60,8 @@ function updateQueriesBulk(
         window.location.host +
         window.location.pathname;
 
-    const raw = window.location.search.startsWith("?")
-        ? window.location.search.slice(1)
-        : window.location.search;
-    const existing: ParsedUrlQuery = parse(raw);
+    const searchParams = new URLSearchParams(window.location.search);
+    const existing: QueryParams = Object.fromEntries(searchParams.entries());
     const params = resolvePersistantQueryParams(existing) as Record<string, any>;
 
     // apply each update: delete null/undefined, or set the string

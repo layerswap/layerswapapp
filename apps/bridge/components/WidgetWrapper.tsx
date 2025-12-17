@@ -4,7 +4,7 @@ import { ComponentProps, ReactNode } from "react"
 import { updateFormBulk } from "./utils/updateForm"
 import { removeSwapPath, setMenuPath, setSwapPath } from "./utils/updatePath"
 import { getDefaultProviders } from "@layerswap/wallets";
-import { ParsedUrlQuery } from "querystring"
+import { QueryParams } from "../helpers/querryHelper"
 import { logError } from "./utils/logError"
 
 type LayerswapProviderComponentProps = ComponentProps<typeof LayerswapProvider>;
@@ -14,7 +14,7 @@ type WidgetWrapperProps<T extends Record<string, unknown> = Record<string, never
     settings?: LayerSwapSettings;
     themeData?: ThemeData | null;
     apiKey?: string;
-    initialValues?: ParsedUrlQuery;
+    initialValues?: QueryParams;
     callbacks?: LayerswapProviderComponentProps['callbacks'];
     walletProviders?: LayerswapProviderComponentProps['walletProviders'];
     configOverrides?: Partial<LayerswapProviderComponentProps['config']>;
