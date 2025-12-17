@@ -50,7 +50,8 @@ const MinMax = (props: MinMaxProps) => {
         return limitsMinAmount || (fromCurrency.price_in_usd > 0 ? 0.01 / fromCurrency.price_in_usd : 0.01);
     }, [walletBalance, limitsMinAmount, fromCurrency.price_in_usd]);
 
-    const halfOfBalance = walletBalance?.amount ? (walletBalance?.amount) / 2 : 0;
+    const halfOfBalance = (walletBalance?.amount || maxAllowedAmount) ? (walletBalance?.amount || maxAllowedAmount) / 2 : 0;
+    
     const handleSetValue = (value: string) => {
         mutateBalances()
         setFieldValue('amount', value, true)
