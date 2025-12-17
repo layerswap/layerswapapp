@@ -1,3 +1,5 @@
+import { TokenBalanceError } from "@/Models/Balance";
+
 export type NodeErrorCategory =
     | 'timeout'
     | 'connection_refused'
@@ -6,7 +8,16 @@ export type NodeErrorCategory =
     | 'network_error'
     | 'unknown'
 
-export function classifyNodeError(error: Error | unknown): NodeErrorCategory {
+export function classifyNodeError(error: Error | unknown | TokenBalanceError): NodeErrorCategory {
+    // If it's already a structured error with category, return it
+    if (typeof error === 'object' && error !== null && 'category' in error) {
+        const category = (error as TokenBalanceError).category;
+        if (category) {
+            return category;
+        }
+    }
+    
+    // Otherwise classify from message
     const message = ((error as Error)?.message || String(error)).toLowerCase()
 
     if (message.includes('timeout') || message.includes('timed out'))

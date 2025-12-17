@@ -41,11 +41,10 @@ export class LoopringBalanceProvider extends BalanceProvider {
                 return ({
                     network: network.name,
                     token: asset?.symbol,
-                    amount: amount ? Number(formatUnits(BigInt(amount), Number(asset?.decimals))) : result.data ? 0 : undefined,
+                    amount: amount ? Number(formatUnits(BigInt(amount), Number(asset?.decimals))) : 0,
                     request_time: new Date().toJSON(),
                     decimals: Number(asset?.decimals),
                     isNativeCurrency: false,
-                    error: (amount === undefined && !result.data) ? `Could not fetch balance for ${asset.symbol}` : undefined
                 })
             });
 
@@ -57,7 +56,7 @@ export class LoopringBalanceProvider extends BalanceProvider {
             if (e?.response?.data?.resultInfo?.message === 'account not found') {
                 return []
             }
-            balances = network.tokens.map((currency) => (this.resolveTokenBalanceFetchError(e, currency, network)))
+            throw e
         }
 
         return balances

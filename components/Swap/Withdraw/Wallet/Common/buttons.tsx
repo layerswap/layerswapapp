@@ -250,22 +250,12 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 try {
                     await layerswapApiClient.SwapCatchup(swapData.id, hash);
                 } catch (e) {
-                    console.error('Error in SwapCatchup:', e)
-                    const swapWithdrawalError = new Error(e);
-                    swapWithdrawalError.name = `SwapCatchupError`;
-                    swapWithdrawalError.cause = e;
-                    posthog.capture('$exception', {
-                        name: swapWithdrawalError.name,
-                        cause: swapWithdrawalError.cause,
-                        message: swapWithdrawalError.message,
+                    posthog.captureException(e, {
                         $layerswap_exception_type: "Swap Catchup Error",
+                        swapId: swapData.id,
+                        transactionHash: hash,
                         $fromAddress: selectedSourceAccount?.address,
-                        $toAddress: swapBasicData?.destination_address,
-                        $txHash: hash,
-                        $swapId: swapData.id,
-                        stack: swapWithdrawalError.stack,
-                        where: 'WalletTransaction',
-                        severity: 'error',
+                        $toAddress: swapBasicData?.destination_address
                     });
                 }
             }
@@ -273,21 +263,11 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         catch (e) {
             setSwapId(undefined)
 
-            console.log('Error in SendTransactionButton:', e)
-
-            const swapWithdrawalError = new Error(e);
-            swapWithdrawalError.name = `SwapWithdrawalError`;
-            swapWithdrawalError.cause = e;
-            posthog.capture('$exception', {
-                name: swapWithdrawalError.name,
-                cause: swapWithdrawalError.cause,
-                message: swapWithdrawalError.message,
+            posthog.captureException(e, {
                 $layerswap_exception_type: "Swap Withdrawal Error",
+                swapId: swapId,
                 $fromAddress: selectedSourceAccount?.address,
                 $toAddress: swapBasicData?.destination_address,
-                stack: swapWithdrawalError.stack,
-                where: 'TransactionError',
-                severity: 'error',
             });
 
         }

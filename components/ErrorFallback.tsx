@@ -16,13 +16,8 @@ export default function ErrorFallback({ error, resetErrorBoundary }) {
     const updateWithProps = () => update({ customAttributes: { swapId: query?.swapId } })
 
     useEffect(() => {
-        posthog.captureException('$error_fallback', {
-            name: error?.name,
+        posthog.captureException(error, {
             $layerswap_exception_type: "Error Fallback",
-            message: error?.message,
-            cause: error?.cause,
-            where: 'ErrorFallback',
-            severity: 'error',
         });
     }, [])
 

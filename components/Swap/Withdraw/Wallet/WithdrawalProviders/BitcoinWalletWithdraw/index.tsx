@@ -1,4 +1,4 @@
-import { FC, useCallback, useMemo, useState } from 'react'
+import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast';
 import useWallet from '@/hooks/useWallet';
 import WalletIcon from '@/components/icons/WalletIcon';
@@ -98,6 +98,17 @@ export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData
 }
 
 const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined, sourceAddress: string | undefined, destAddress: string | undefined }> = ({ isLoading, error, sourceAddress, destAddress }) => {
+
+    useEffect(() => {
+        if (error) {
+            posthog.captureException(new Error(error), {
+                $layerswap_exception_type: "Swap Withdrawal Error",
+                $fromAddress: sourceAddress,
+                $toAddress: destAddress
+            });
+        }
+    }, [error, sourceAddress, destAddress])
+
     if (isLoading) {
         return <ActionMessages.ConfirmTransactionMessage />
     }
@@ -108,21 +119,6 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined, so
         return <ActionMessages.InsufficientFundsMessage />
     }
     else if (error) {
-        const swapWithdrawalError = new Error(error);
-        swapWithdrawalError.name = `SwapWithdrawalError`;
-        swapWithdrawalError.cause = error;
-        posthog.captureException('$exception', {
-            name: swapWithdrawalError.name,
-            message: swapWithdrawalError.message,
-            $layerswap_exception_type: "Swap Withdrawal Error",
-            $fromAddress: sourceAddress,
-            $toAddress: destAddress,
-            stack: swapWithdrawalError.stack,
-            cause: swapWithdrawalError.cause,
-            where: 'swapWithdrawalError',
-            severity: 'error',
-        });
-
         return <ActionMessages.UexpectedErrorMessage message={error} />
     }
     else return <></>

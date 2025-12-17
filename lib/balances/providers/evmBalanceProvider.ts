@@ -72,7 +72,7 @@ export class EVMBalanceProvider extends BalanceProvider {
             return res.concat(erc20Balances, nativeBalance ? [nativeBalance] : [])
         }
         catch (e) {
-            return network.tokens.map(t => this.resolveTokenBalanceFetchError(e, t, network))
+            throw e
         }
     }
 
