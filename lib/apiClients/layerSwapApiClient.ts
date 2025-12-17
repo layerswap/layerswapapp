@@ -59,7 +59,12 @@ export default class LayerSwapApiClient {
                     return Promise.resolve(new EmptyApiResponse());
                 }
                 else {
-                    posthog.captureException(reason, {
+                    const error = reason instanceof Error 
+                        ? reason 
+                        : new Error(String(reason));
+                    error.name = error.name || "APIError";
+                    
+                    posthog.captureException(error, {
                         $layerswap_exception_type: "API Error",
                     });
                     return Promise.reject(reason);

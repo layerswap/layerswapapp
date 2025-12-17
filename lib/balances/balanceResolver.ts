@@ -3,6 +3,7 @@ import { NetworkBalance, TokenBalance } from "@/Models/Balance";
 import { BalanceProvider } from "@/Models/BalanceProvider";
 import { NetworkWithTokens } from "@/Models/Network";
 import { classifyNodeError } from "./nodeErrorClassifier";
+import { extractErrorDetails } from "./errorUtils";
 import {
     BitcoinBalanceProvider,
     EVMBalanceProvider,
@@ -19,42 +20,22 @@ import {
     HyperliquidBalanceProvider
 } from "./providers";
 
-type ErrorDetails = {
-    message: string;
-    name?: string;
-    stack?: string;
-    status?: number;
-    statusText?: string;
-    responseData?: unknown;
-    requestUrl?: string;
-    code?: string;
-}
-
-function extractErrorDetails(error: unknown): ErrorDetails {
-    const err = error as Error & {
-        response?: { status?: number; statusText?: string; data?: unknown };
-        request?: { url?: string };
-        code?: string;
-        cause?: unknown;
-    };
-
-    return {
-        message: err?.message || String(error),
-        name: err?.name,
-        stack: err?.stack,
-        status: err?.response?.status,
-        statusText: err?.response?.statusText,
-        responseData: err?.response?.data,
-        requestUrl: err?.request?.url,
-        code: err?.code,
-    };
-}
-
 function formatErrorBalances(errorBalances: TokenBalance[]) {
     return errorBalances.map(b => ({
         token: b.token,
-        error: b.error,
-        error_category: classifyNodeError(b.error),
+        error_message: b.error?.message,
+        error_name: b.error?.name,
+        error_code: b.error?.code,
+        error_category: b.error?.category,
+        response_status: b.error?.status,
+        response_status_text: b.error?.statusText,
+        request_url: b.error?.requestUrl,
+        // Include first 500 chars of stack trace for debugging
+        error_stack: b.error?.stack?.substring(0, 500),
+        // Include response data if available (truncated for size)
+        response_data: b.error?.responseData 
+            ? JSON.stringify(b.error.responseData).substring(0, 1000)
+            : undefined
     }));
 }
 
@@ -89,14 +70,15 @@ export class BalanceResolver {
             const errorBalances = balances?.filter(b => b.error)
             if (errorBalances?.length) {
                 const balanceError = new Error(`Could not fetch balance for ${errorBalances.map(t => t.token).join(", ")} in ${network.name}`);
-                balanceError.name = "BalanceError";
                 posthog.captureException(balanceError, {
                     $layerswap_exception_type: "Balance Error",
                     network: network.name,
                     node_url: network.node_url,
                     address: address,
                     failed_tokens: formatErrorBalances(errorBalances),
-                    error_categories: [...new Set(errorBalances.map(b => classifyNodeError(b.error)))],
+                    error_categories: [...new Set(errorBalances.map(b => b.error?.category).filter(Boolean))],
+                    error_codes: [...new Set(errorBalances.map(b => b.error?.code).filter(Boolean))],
+                    http_statuses: [...new Set(errorBalances.map(b => b.error?.status).filter(Boolean))]
                 });
             }
 
