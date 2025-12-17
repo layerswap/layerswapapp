@@ -74,7 +74,7 @@ export class FuelBalanceProvider extends BalanceProvider {
             }
 
         } catch (e) {
-            return network.tokens.map((currency) => (this.resolveTokenBalanceFetchError(e, currency, network)))
+            throw e
         }
 
         return balances

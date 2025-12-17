@@ -60,36 +60,40 @@ const HistorySummary: FC<SwapInfoProps> = ({
     }
 
     const destAddress = (hideAddress && hideTo && account) ? account : destination_address
-    
+
     return (
         source_token && <>
             <div className={`${className || ""} bg-secondary-500 relative z-10 w-full rounded-xl overflow-hidden hover:bg-secondary-400`}>
                 <div className="grid grid-cols-12 items-center gap-2 relative z-50">
                     <div className="col-span-6 flex items-center gap-2 p-3">
                         <div className="w-8 h-8 relative">
-                            <ImageWithFallback
-                                src={source_token.logo}
-                                alt={`${source_token.symbol} logo`}
-                                width={30}
-                                height={30}
-                                className="rounded-full"
-                            />
-                            {source?.logo && (
+                            <div className="h-[30px] w-[30px] rounded-full overflow-hidden">
                                 <ImageWithFallback
-                                    src={source.logo}
-                                    alt={`${source.display_name} badge`}
-                                    width={18}
-                                    height={18}
-                                    className="absolute -bottom-1 -right-1 h-[18px] w-[18px] rounded-md"
+                                    src={source_token.logo}
+                                    alt={`${source_token.symbol} logo`}
+                                    width={30}
+                                    height={30}
+                                    className="rounded-full"
                                 />
+                            </div>
+                            {source?.logo && (
+                                <div className="absolute -bottom-0.5 -right-1 h-[18px] w-[18px] rounded-md overflow-hidden border border-secondary-500">
+                                    <ImageWithFallback
+                                        src={source.logo}
+                                        alt={`${source.display_name} badge`}
+                                        width={18}
+                                        height={18}
+                                        className=""
+                                    />
+                                </div>
                             )}
                         </div>
 
-                        <div className="flex min-w-0 flex-col items-start space-y-0.5">
-                            <span className="text-white text-lg leading-5 flex min-w-0">
+                        <div className="flex min-w-0 flex-col items-start space-y-0.5 overflow-hidden">
+                            <div className="text-white text-sm sm:text-lg leading-5 flex items-center min-w-0 gap-1 w-full">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <span className="truncate overflow-hidden whitespace-nowrap max-w-[100px]">
+                                        <span className="truncate block shrink">
                                             {requested_amount.toLocaleString('en-US', { maximumFractionDigits: 20 })}
                                         </span>
                                     </TooltipTrigger>
@@ -98,10 +102,10 @@ const HistorySummary: FC<SwapInfoProps> = ({
                                     </TooltipContent>
                                 </Tooltip>
 
-                                &nbsp;{source_token.symbol}
-                            </span>
+                                <span className="shrink-0">{source_token.symbol}</span>
+                            </div>
 
-                            <span className="text-secondary-text text-sm leading-[14px]">
+                            <span className="text-secondary-text text-sm text-left leading-3.5">
                                 {source?.display_name || ""}
                             </span>
                         </div>
@@ -114,11 +118,11 @@ const HistorySummary: FC<SwapInfoProps> = ({
                     </div>
 
                     <div className="col-span-6 flex items-center justify-end gap-2 bg-secondary-400 p-3 rounded-xl">
-                        <div className="flex min-w-0 flex-col items-end space-y-0.5">
-                            <span className="text-white text-lg leading-5 flex min-w-0">
+                        <div className="flex min-w-0 flex-col items-end space-y-0.5 overflow-hidden">
+                            <div className="text-white text-sm sm:text-lg leading-5 flex items-center min-w-0 gap-1 w-full justify-end">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <span className="truncate overflow-hidden whitespace-nowrap max-w-[100px]">
+                                        <span className="truncate block shrink">
                                             {calculatedReceiveAmount.toLocaleString('en-US', { maximumFractionDigits: 20 })}
                                         </span>
                                     </TooltipTrigger>
@@ -127,30 +131,34 @@ const HistorySummary: FC<SwapInfoProps> = ({
                                     </TooltipContent>
                                 </Tooltip>
 
-                                &nbsp;{destination_token.symbol}
-                            </span>
+                                <span className="shrink-0">{destination_token.symbol}</span>
+                            </div>
 
-                            <span className="text-secondary-text text-sm leading-[14px]">
+                            <span className="text-secondary-text text-sm text-right leading-3.5">
                                 {destination?.display_name || ""}
                             </span>
                         </div>
 
                         <div className="relative w-8 h-8">
-                            <ImageWithFallback
-                                src={destination_token.logo}
-                                alt={`${destination_token.symbol} logo`}
-                                width={30}
-                                height={30}
-                                className="rounded-full"
-                            />
-                            {destination?.logo && (
+                            <div className="h-[30px] w-[30px] rounded-full overflow-hidden">
                                 <ImageWithFallback
-                                    src={destination.logo}
-                                    alt={`${destination.display_name} badge`}
-                                    width={18}
-                                    height={18}
-                                    className="absolute -bottom-1 -right-1 h-[18px] w-[18px] rounded-md"
+                                    src={destination_token.logo}
+                                    alt={`${destination_token.symbol} logo`}
+                                    width={30}
+                                    height={30}
+                                    className="rounded-full"
                                 />
+                            </div>
+                            {destination?.logo && (
+                                <div className="absolute -bottom-0.5 -right-1 h-[18px] w-[18px] rounded-md overflow-hidden border border-secondary-500">
+                                    <ImageWithFallback
+                                        src={destination.logo}
+                                        alt={`${destination.display_name} badge`}
+                                        width={18}
+                                        height={18}
+                                        className=""
+                                    />
+                                </div>
                             )}
                         </div>
                     </div>

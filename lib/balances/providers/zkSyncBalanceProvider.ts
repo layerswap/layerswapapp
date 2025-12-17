@@ -30,7 +30,7 @@ export class ZkSyncBalanceProvider extends BalanceProvider {
             return zkSyncBalances
         }
         catch (e) {
-            return tokens.map((currency) => (this.resolveTokenBalanceFetchError(e, currency, network)))
+            throw e
         }
     }
 
