@@ -40,7 +40,7 @@ interface BalanceStore {
   sortingDataIsLoading: boolean
   partialPublished: boolean
   startTimeOfInit?: number
-  sortingTimerId?: NodeJS.Timeout
+  sortingTimerId?: ReturnType<typeof setTimeout>
   sortingUnsubscribe?: () => void
   initSortingBalances: (
     pairs: Array<{ address: string; network: NetworkWithTokens }>
