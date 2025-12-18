@@ -125,7 +125,8 @@ abstract class getEVMGas {
             return await this.publicClient.getGasPrice()
 
         } catch (e) {
-            const error = e as Error;
+            const error = new Error(e)
+            error.cause = e;
             ErrorHandler({
                 type: 'GasPriceError',
                 message: error.message,
@@ -140,7 +141,8 @@ abstract class getEVMGas {
             return await this.publicClient.estimateFeesPerGas()
 
         } catch (e) {
-            const error = e as Error;
+            const error = new Error(e)
+            error.cause = e;
             ErrorHandler({
                 type: 'FeesPerGasError',
                 message: error.message,
@@ -154,7 +156,8 @@ abstract class getEVMGas {
         try {
             return await this.publicClient.estimateMaxPriorityFeePerGas()
         } catch (e) {
-            const error = e as Error;
+            const error = new Error(e)
+            error.cause = e;
             ErrorHandler({
                 type: 'MaxPriorityFeePerGasError',
                 message: error.message,

@@ -265,6 +265,10 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                         name: swapWithdrawalError.name,
                         stack: swapWithdrawalError.stack,
                         cause: swapWithdrawalError.cause,
+                        swapId: swapData.id,
+                        transactionHash: hash,
+                        fromAddress: selectedSourceAccount?.address,
+                        toAddress: swapBasicData?.destination_address
                     });
                 }
             }
@@ -277,7 +281,10 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 message: error.message,
                 name: error.name,
                 stack: error.stack,
-                cause: error.cause
+                cause: error.cause,
+                swapId: swapId,
+                fromAddress: selectedSourceAccount?.address,
+                toAddress: swapBasicData?.destination_address
             });
         }
         finally {

@@ -1,4 +1,3 @@
-import { TokenBalance } from "@/Models";
 import { SwapStatus } from "@/Models/SwapStatus";
 
 export interface BaseErrorProps {
@@ -17,16 +16,29 @@ export type BalanceError = ({
     network?: string;
     node_url?: string;
     address?: string;
-    balances?: TokenBalance[];
-    error_categories?: string[];
-    error_category?: string;
-    where?: string;
     message?: string;
+    error_categories?: (string | undefined)[];
+    error_category?: string;
+    error_codes?: (string | undefined)[];
+    http_statuses?: (number | undefined)[];
+    failed_tokens?: any[];
+    request_url?: string;
+    response_data?: unknown;
+    response_status?: number;
+    response_status_text?: string;  
+    error_code?: string;
 } & BaseErrorProps)
 
 export type GasFeeError = ({ type: 'MaxPriorityFeePerGasError' | 'FeesPerGasError' | 'GasPriceError' | 'GasProviderError' } & BaseErrorProps)
 
-export type WalletWithdrawalError = ({ type: 'SwapWithdrawalError' | 'TransactionFailed' } & BaseErrorProps)
+export type WalletWithdrawalError = ({
+    type: 'SwapWithdrawalError' | 'TransactionFailed' | 'SwapCatchupError'
+    swapId?: string;
+    transactionHash?: string;
+    fromAddress?: string;
+    toAddress?: string;
+} & BaseErrorProps)
+
 
 export type TransactionNotDetectedError = ({ type: 'TransactionNotDetected' } & BaseErrorProps)
 

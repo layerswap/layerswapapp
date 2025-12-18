@@ -40,9 +40,12 @@ interface BalanceStore {
   sortingDataIsLoading: boolean
   partialPublished: boolean
   startTimeOfInit?: number
+  sortingTimerId?: ReturnType<typeof setTimeout>
+  sortingUnsubscribe?: () => void
   initSortingBalances: (
     pairs: Array<{ address: string; network: NetworkWithTokens }>
   ) => void
+  cleanupSortingBalances: () => void
 }
 
 // balanceFetcher is now accessed through resolverService
@@ -66,6 +69,21 @@ export const useBalanceStore = create<BalanceStore>()(
     sortingDataIsLoading: false,
     partialPublished: false,
     startTimeOfInit: undefined,
+    sortingTimerId: undefined,
+    sortingUnsubscribe: undefined,
+
+    cleanupSortingBalances: () => {
+      const { sortingTimerId, sortingUnsubscribe } = get()
+      if (sortingTimerId) {
+        clearTimeout(sortingTimerId)
+        set({ sortingTimerId: undefined })
+      }
+      if (sortingUnsubscribe) {
+        sortingUnsubscribe()
+        set({ sortingUnsubscribe: undefined })
+      }
+    },
+
     fetchBalance: (address, network, options) => {
       const key = getKey(address, network)
       const entry = get().balances[key]
@@ -124,6 +142,10 @@ export const useBalanceStore = create<BalanceStore>()(
     },
 
     initSortingBalances: pairs => {
+
+      get().cleanupSortingBalances()
+
+      // Setup initiated balances and start fetches
       const initiatedBalances = pairs.reduce<Record<string, string>>(
         (acc, { address, network }) => {
           const key = getKey(address, network)
@@ -134,41 +156,50 @@ export const useBalanceStore = create<BalanceStore>()(
       sortedpairs.forEach(({ address, network }) => {
         get().fetchBalance(address, network, { dedupeInterval: 120_000, ignoreCache: false, retryCount: 0 })
       })
+
       set({ sortingDataIsLoading: true })
       set({ initiatedBalances })
       set({ startTimeOfInit: Date.now() })
       set({ partialPublished: false })
-      api.subscribe(
+
+      // Active timer - fires at 3 seconds
+      const timerId = setTimeout(() => {
+        const state = get()
+        // Only publish if not already published and still loading
+        if (!state.partialPublished && state.sortingDataIsLoading) {
+          const partial: Record<string, string> = {}
+          const balances = state.balances
+          Object.entries(state.initiatedBalances || {}).forEach(([networkName, key]) => {
+            if (balances[key]?.data) {
+              partial[networkName] = key
+            }
+          })
+          set({ balanceKeysForSorting: partial })
+          set({ partialPublished: true })
+        }
+      }, 3000)
+
+      set({ sortingTimerId: timerId })
+
+      //Subscribe for completion detection
+      const unsubscribe = api.subscribe(
         state => state.balances,
         balances => {
-
           const keysArray = Object.entries(get().initiatedBalances || {})
-          const done = keysArray.every(
-            ([_, key]) =>
-              balances[key].data
-          )
+          const done = keysArray.every(([_, key]) => balances[key]?.data)
+
           if (done) {
+            // All complete - cleanup and finalize
+            get().cleanupSortingBalances()
             set({ sortingDataIsLoading: false })
             set({ balanceKeysForSorting: get().initiatedBalances })
-            set({ partialPublished: false })
-          } else {
-
-            const startedAt = get().startTimeOfInit ?? 0
-            const elapsed = Date.now() - startedAt
-            if (!get().partialPublished && elapsed >= 3000) {
-              const partial: Record<string, string> = {}
-              keysArray.forEach(([networkName, key]) => {
-                if (balances[key]?.data) {
-                  partial[networkName] = key
-                }
-              })
-              set({ balanceKeysForSorting: partial })
-              set({ partialPublished: true })
-            }
+            set({ partialPublished: false }) // Reset for next time
           }
         },
         { fireImmediately: true }
       )
+
+      set({ sortingUnsubscribe: unsubscribe })
     }
   }))
 )

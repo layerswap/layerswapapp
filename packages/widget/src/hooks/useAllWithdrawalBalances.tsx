@@ -33,6 +33,12 @@ export default function useAllWithdrawalBalances() {
             useBalanceStore.getState().initSortingBalances(walletNetworks)
     }, [walletNetwokrsString])
 
+    useEffect(() => {
+        return () => {
+            useBalanceStore.getState().cleanupSortingBalances()
+        }
+    }, [])
+
     const lastBalancesRef = useRef<Record<string, NetworkBalance> | null>(null)
     const resolvedBalances = useBalanceStore(selectResolvedSortingBalances)
     const isLoading = useBalanceStore(s => s.sortingDataIsLoading)
