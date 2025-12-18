@@ -15,21 +15,21 @@ export default function Header() {
                 version === 'sandbox' &&
                 <div className='px-6 lg:px-8'>
                     <div className="h-0.5 bg-[#D95E1B] rounded-full " />
-                    <div className="absolute -top-0.5 right-[calc(50%-68px)] bg-[#D95E1B] py-0.5 px-10 rounded-b-md text-xs scale-75 text-white">
+                    <div className="absolute -top-0.5 right-[calc(50%-68px)] bg-[#D95E1B] py-0.5 px-10 rounded-b-md text-xs scale-75 text-primary-text">
                         TESTNET
                     </div>
                 </div>
             }
-            <nav className={`mx-auto max-w-6xl pt-6 px-6 lg:px-8 flex flex-col ${pathname !== '/' ? 'grid-rows-2' : 'grid-rows-1'}`} aria-label="Global">
+            <nav className={`mx-auto max-w-6xl pt-6 px-4 lg:px-8 flex flex-col ${pathname !== '/' ? 'grid-rows-2' : 'grid-rows-1'}`} aria-label="Global">
                 <div className='flex justify-between'>
                     <Link href="/" className="-m-1.5 p-1.5">
                         <LayerswapExplorerLogo className="h-14 w-auto text-primary-logoColor" />
                     </Link>
                     <div className="flex">
-                        <Link target='_blank' href={'https://layerswap.io/'} className='px-2 sm:px-3 py-1 sm:py-2 hover:opacity-70 flex items-center gap-1 text-white text-sm sm:text-base transition-all duartion-200'>
+                        <Link target='_blank' href={'https://layerswap.io/'} className='px-2 sm:px-3 py-1 sm:py-2 hover:opacity-70 flex items-center gap-1 text-primary-text text-sm sm:text-base transition-all duartion-200'>
                             <span>App</span>
                         </Link>
-                        <Link target='_blank' href={'https://docs.layerswap.io/'} className='px-2 sm:px-3 py-1 sm:py-2 hover:opacity-70 flex items-center gap-1 text-white text-sm sm:text-base transition-all duartion-200'>
+                        <Link target='_blank' href={'https://docs.layerswap.io/'} className='px-2 sm:px-3 py-1 sm:py-2 hover:opacity-70 flex items-center gap-1 text-primary-text text-sm sm:text-base transition-all duartion-200'>
                             <span>Docs</span>
                         </Link>
                     </div>

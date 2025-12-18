@@ -4,7 +4,7 @@ export default async function Page({ params }: { params: Promise<{ searchParam: 
   const { searchParam } = await params;
 
   return (
-    <main className="w-full py-5 px-6 xl:px-0">
+    <main className="w-full pb-5 px-4 lg:px-0">
       <SearchData searchParam={decodeURIComponent(searchParam)} />
     </main>
   )

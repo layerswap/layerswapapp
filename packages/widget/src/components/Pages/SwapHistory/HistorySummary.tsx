@@ -91,7 +91,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                         </div>
 
                         <div className="flex min-w-0 flex-col items-start space-y-0.5 overflow-hidden">
-                            <div className="text-white text-sm sm:text-lg leading-5 flex items-center min-w-0 gap-1 w-full">
+                            <div className="text-primary-text text-sm sm:text-lg leading-5 flex items-center min-w-0 gap-1 w-full">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <span className="truncate block shrink">
@@ -120,7 +120,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
 
                     <div className="col-span-6 flex items-center justify-end gap-2 bg-secondary-400 p-3 rounded-xl">
                         <div className="flex min-w-0 flex-col items-end space-y-0.5 overflow-hidden">
-                            <div className="text-white text-sm sm:text-lg leading-5 flex items-center min-w-0 gap-1 w-full justify-end">
+                            <div className="text-primary-text text-sm sm:text-lg leading-5 flex items-center min-w-0 gap-1 w-full justify-end">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <span className="truncate block shrink">

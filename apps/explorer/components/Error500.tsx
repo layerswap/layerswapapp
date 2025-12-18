@@ -11,11 +11,11 @@ const Error500 = () => {
                         <circle cx="58" cy="58" r="45" fill="#E43636" fillOpacity="0.5" />
                         <circle cx="58" cy="58" r="30" fill="#E43636" />
                     </svg>
-                    <ServerOff className="text-white absolute top-[calc(50%-16px)] right-[calc(50%-16px)] h-8 w-auto" />
+                    <ServerOff className="text-primary-text absolute top-[calc(50%-16px)] right-[calc(50%-16px)] h-8 w-auto" />
                 </div>
-                <h1 className="mt-5 text-[36px] font-bold text-white lg:text-[50px]">500 - Oops</h1>
+                <h1 className="mt-5 text-[36px] font-bold text-primary-text lg:text-[50px]">500 - Oops</h1>
                 <p className="text-primary-text my-5 lg:text-lg">Something went wrong. Try to refresh this page or <br /> feel free to contact us if the problem presists.</p>
-                <Link href={'http://discord.gg/layerswap'} target="_blank" className="w-1/2 px-5 py-2 text-sm tracking-wide text-white transition-colors duration-200 bg-primary-500 rounded-lg shrink-0 sm:w-auto hover:bg-primary-500/80">
+                <Link href={'http://discord.gg/layerswap'} target="_blank" className="w-1/2 px-5 py-2 text-sm tracking-wide text-primary-text transition-colors duration-200 bg-primary-500 rounded-lg shrink-0 sm:w-auto hover:bg-primary-500/80">
                     Contact support
                 </Link>
             </div>

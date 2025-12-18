@@ -31,7 +31,7 @@ const WalletMessage: FC<WalletMessageProps> = ({ header, details, status, showIn
                             <Accordion type="single" collapsible>
                                 <AccordionItem value="wallet-message">
                                     <AccordionTrigger className="flex justify-between w-full items-center mt-0.5">
-                                        <p className="text-white font-medium leading-4 text-base mt-0.5">{header}</p>
+                                        <p className="text-primary-text font-medium leading-4 text-base mt-0.5">{header}</p>
                                         <ChevronDown className="h-4 w-4 shrink-0 text-primary-text transition-transform duration-200 data-[state=open]:rotate-180" />
                                     </AccordionTrigger>
                                     <AccordionContent>
@@ -46,7 +46,7 @@ const WalletMessage: FC<WalletMessageProps> = ({ header, details, status, showIn
                         </div>
                     ) : (
                         <div className="flex flex-col gap-1">
-                            <p className="text-white font-medium leading-4 text-base mt-0.5">{header}</p>
+                            <p className="text-primary-text font-medium leading-4 text-base mt-0.5">{header}</p>
                             {details ? <p className="text-secondary-text text-sm leading-[18px]">{details}</p> : null}
                         </div>
                     )

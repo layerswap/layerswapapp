@@ -51,7 +51,7 @@ const Search = () => {
                     onChange={(v) => setSearchParam(v.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Search by Address / Source Tx / Destination Tx"
-                    className="block w-full rounded-md pl-3 pr-4 border-2 border-transparent placeholder:text-xs md:placeholder:text-base placeholder:leading-3 focus:border-secondary-500 duration-200 transition-all outline-none text-white bg-secondary-600 shadow-sm placeholder:text-primary-text "
+                    className="block w-full rounded-md pl-3 pr-4 border-2 border-transparent placeholder:text-xs md:placeholder:text-base placeholder:leading-3 focus:border-secondary-500 duration-200 transition-all outline-none text-primary-text bg-secondary-600 shadow-sm placeholder:text-primary-text "
                 />
                 {searchParam &&
                     <XCircle onClick={clearSearch} className="h-5 w-5 absolute z-20 right-2 top-2.5 cursor-pointer" stroke="#20283D" fill="#adb5d0" />
@@ -61,7 +61,7 @@ const Search = () => {
                 <button
                     disabled={!searchParam}
                     onClick={handleSearch}
-                    className="disabled:bg-primary-text-tertiary disabled:hover:text-white rounded-lg bg-primary-500 shadow-lg p-2 hover:bg-primary-700 hover:text-primary-text active:scale-90 duration-200 transition-all font-sans text-xs text-white"
+                    className="disabled:bg-primary-text-tertiary disabled:hover:text-primary-text rounded-lg bg-primary-500 shadow-lg p-2 hover:bg-primary-700 hover:text-primary-text active:scale-90 duration-200 transition-all font-sans text-xs text-primary-text"
                 >
                     <SearchIcon className="h-5 w-5" />
                 </button>

@@ -33,16 +33,16 @@ export default function DataTable() {
                             <table className="min-w-full divide-y divide-secondary-500 relative">
                                 <thead className="bg-secondary-700 sticky -top-1 z-10 sm:rounded-lg">
                                     <tr>
-                                        <th scope="col" className="sticky top-0 px-3 py-3.5 text-left text-sm font-semibold text-white rounded-tl-lg">
+                                        <th scope="col" className="sticky top-0 px-3 py-3.5 text-left text-sm font-semibold text-primary-text rounded-tl-lg">
                                             Status
                                         </th>
-                                        <th scope="col" className="sticky top-0 px-3 py-3.5 text-left text-sm font-semibold text-white">
+                                        <th scope="col" className="sticky top-0 px-3 py-3.5 text-left text-sm font-semibold text-primary-text">
                                             Source
                                         </th>
-                                        <th scope="col" className="sticky top-0 px-3 py-3.5 text-left text-sm font-semibold text-white rounded-tr-lg">
+                                        <th scope="col" className="sticky top-0 px-3 py-3.5 text-left text-sm font-semibold text-primary-text rounded-tr-lg">
                                             Destination
                                         </th>
-                                        <th scope="col" className="sticky top-0 px-4 py-3.5 text-left text-sm font-semibold text-white rounded-tr-lg">
+                                        <th scope="col" className="sticky top-0 px-4 py-3.5 text-left text-sm font-semibold text-primary-text rounded-tr-lg">
 
                                         </th>
                                     </tr>
@@ -63,7 +63,7 @@ export default function DataTable() {
 
                                         return (
                                             <tr key={index} onClick={() => router.push(`/${encodeURIComponent(String(input_transaction?.transaction_hash))}`)} className="cursor-pointer hover:bg-secondary-500">
-                                                <td className="whitespace-nowrap py-2 px-3 text-sm font-medium text-white flex flex-col">
+                                                <td className="whitespace-nowrap py-2 px-3 text-sm font-medium text-primary-text flex flex-col">
                                                     <div className="flex flex-row items-center text-btn-success bg-btn-success py-1 rounded">
                                                         {DestTxStatus(swap)}
                                                     </div>
@@ -72,8 +72,8 @@ export default function DataTable() {
                                                 <td className="whitespace-nowrap px-3 py-2 text-sm text-primary-text">
                                                     <div className="flex flex-row">
                                                         <div className="flex flex-col items-start mr-4">
-                                                            <span className="text-sm md:text-base font-normal text-socket-ternary place-items-end mb-1">Token:</span>
-                                                            <span className="text-sm md:text-base font-normal text-socket-ternary place-items-end min-w-[70px]">Source:</span>
+                                                            <span className="text-sm md:text-base font-normal text-primary-text-tertiary place-items-end mb-1">Token:</span>
+                                                            <span className="text-sm md:text-base font-normal text-primary-text-tertiary place-items-end min-w-[70px]">Source:</span>
                                                         </div>
                                                         <div className="flex flex-col">
                                                             <div className="text-sm md:text-base flex flex-row mb-1">
@@ -84,8 +84,8 @@ export default function DataTable() {
                                                                         </span>
                                                                     </div>
                                                                     <div className="mx-2.5">
-                                                                        <span className="text-white">{formatAmount(input_transaction?.amount)}</span>
-                                                                        <span className="mx-1 text-white">{sourceToken?.symbol}</span>
+                                                                        <span className="text-primary-text">{formatAmount(input_transaction?.amount)}</span>
+                                                                        <span className="mx-1 text-primary-text">{sourceToken?.symbol}</span>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -95,7 +95,7 @@ export default function DataTable() {
                                                                         <Image alt={`Source chain icon ${index}`} src={sourceExchange ? sourceExchange?.logo : sourceNetwork?.logo || ''} width={20} height={20} decoding="async" data-nimg="responsive" className="rounded-md" />
                                                                     </span>
                                                                 </div>
-                                                                <div className="mx-2 text-white">
+                                                                <div className="mx-2 text-primary-text">
                                                                     <Link href={`${sourceNetwork?.transaction_explorer_template?.replace('{0}', (input_transaction?.transaction_hash || ''))}`} onClick={(e) => e.stopPropagation()} target="_blank" className="hover:text-gray-300 inline-flex items-center w-fit">
                                                                         <span className="mx-0.5 hover:text-gray-300 underline hover:no-underline">{sourceExchange ? sourceExchange?.display_name : sourceNetwork?.display_name}</span>
                                                                     </Link>
@@ -107,8 +107,8 @@ export default function DataTable() {
                                                 <td className="whitespace-nowrap px-3 py-2 text-sm text-primary-text">
                                                     <div className="flex flex-row">
                                                         <div className="flex flex-col items-start">
-                                                            <span className="text-sm md:text-base font-normal text-socket-ternary place-items-end mb-1">Token:</span>
-                                                            <span className="text-sm md:text-base font-normal text-socket-ternary place-items-end min-w-[70px]">Destination:</span>
+                                                            <span className="text-sm md:text-base font-normal text-primary-text-tertiary place-items-end mb-1">Token:</span>
+                                                            <span className="text-sm md:text-base font-normal text-primary-text-tertiary place-items-end min-w-[70px]">Destination:</span>
                                                         </div>
                                                         <div className="flex flex-col">
                                                             <div className="text-sm md:text-base flex flex-row">
@@ -120,8 +120,8 @@ export default function DataTable() {
                                                                     </div>
                                                                     {output_transaction?.amount ?
                                                                         <div className="mx-2.5">
-                                                                            <span className="text-white">{formatAmount(output_transaction?.amount)}</span>
-                                                                            <span className="mx-1 text-white">{destinationToken?.symbol}</span>
+                                                                            <span className="text-primary-text">{formatAmount(output_transaction?.amount)}</span>
+                                                                            <span className="mx-1 text-primary-text">{destinationToken?.symbol}</span>
                                                                         </div>
                                                                         :
                                                                         <span className="ml-2.5">-</span>
@@ -134,7 +134,7 @@ export default function DataTable() {
                                                                         <Image alt={`Destination chain icon ${index}`} src={destinationExchange ? destinationExchange?.logo : destinationNetwork?.logo || ''} width={20} height={20} decoding="async" data-nimg="responsive" className="rounded-md" />
                                                                     </span>
                                                                 </div>
-                                                                <div className="mx-2 text-white">
+                                                                <div className="mx-2 text-primary-text">
                                                                     {
                                                                         output_transaction?.transaction_hash ?
                                                                             <Link href={`${destinationNetwork?.transaction_explorer_template?.replace('{0}', (output_transaction?.transaction_hash || ''))}`} onClick={(e) => e.stopPropagation()} target="_blank" className={`${!output_transaction ? "disabled" : ""} hover:text-gray-300 inline-flex items-center w-fit`}>
