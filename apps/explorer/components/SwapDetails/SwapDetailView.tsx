@@ -75,69 +75,71 @@ export default function SwapDetailView({
                         sourceTokenSymbol={source_token?.symbol}
                         sourceTokenPrecision={source_token?.precision}
                     />
+                    <div className="flex flex-col gap-4">
+                        {/* Refund Info */}
+                        {refundedTransaction && <Refund refund={refundedTransaction} />}
 
-                    {/* Refund Info */}
-                    {refundedTransaction && <Refund refund={refundedTransaction} />}
+                        {/* Transaction Cards */}
+                        <div className="flex flex-col lg:flex-row items-start rounded-md text-primary-text gap-4">
+                            {/* Source Transaction Card */}
+                            <div className="lg:max-w-[50%] w-full">
+                                <TransactionCard
+                                    title="From"
+                                    transaction={inputTransaction}
+                                    amount={inputTransaction.amount}
+                                    tokenLogo={source_token?.logo}
+                                    tokenSymbol={source_token?.symbol}
+                                    networkLogo={source_network?.logo}
+                                    networkName={source_exchange ? source_network?.display_name : undefined}
+                                    exchangeLogo={source_exchange?.logo}
+                                    exchangeName={source_exchange?.display_name || source_network?.display_name}
+                                    accountExplorerUrl={source_network?.account_explorer_template?.replace('{0}', inputTransaction.from)}
+                                    txExplorerUrl={source_network?.transaction_explorer_template?.replace('{0}', inputTransaction.transaction_hash)}
+                                    showConfirmations={true}
+                                />
+                            </div>
 
-                    {/* Transaction Cards */}
-                    <div className="flex flex-col lg:flex-row items-start rounded-md text-primary-text gap-4">
-                        {/* Source Transaction Card */}
-                        <div className="lg:max-w-[50%] w-full">
-                            <TransactionCard
-                                title="From"
-                                transaction={inputTransaction}
-                                amount={inputTransaction.amount}
-                                tokenLogo={source_token?.logo}
-                                tokenSymbol={source_token?.symbol}
-                                networkLogo={source_network?.logo}
-                                networkName={source_exchange ? source_network?.display_name : undefined}
-                                exchangeLogo={source_exchange?.logo}
-                                exchangeName={source_exchange?.display_name || source_network?.display_name}
-                                accountExplorerUrl={source_network?.account_explorer_template?.replace('{0}', inputTransaction.from)}
-                                txExplorerUrl={source_network?.transaction_explorer_template?.replace('{0}', inputTransaction.transaction_hash)}
-                                showConfirmations={true}
-                            />
-                        </div>
+                            {/* Arrow */}
+                            <div className="rotate-90 lg:rotate-0 self-center">
+                                <ArrowRight className="text-primary-text w-6 h-auto" />
+                            </div>
 
-                        {/* Arrow */}
-                        <div className="rotate-90 lg:rotate-0 self-center">
-                            <ArrowRight className="text-primary-text w-6 h-auto" />
-                        </div>
+                            {/* Destination Transaction Card */}
+                            <div className="w-full">
+                                <TransactionCard
+                                    title="To"
+                                    titleClassName={isFailed ? 'text-[#FF6161]' : ''}
+                                    transaction={outputTransaction}
+                                    refundedTransaction={refundedTransaction}
+                                    amount={(outputTransaction || refundedTransaction)?.amount}
+                                    tokenLogo={destination_token?.logo}
+                                    tokenSymbol={destination_token?.symbol}
+                                    networkLogo={destination_network?.logo}
+                                    networkName={destination_exchange ? destination_network?.display_name : undefined}
+                                    exchangeLogo={destination_exchange?.logo}
+                                    exchangeName={destination_exchange?.display_name || destination_network?.display_name}
+                                    accountExplorerUrl={destination_network?.account_explorer_template?.replace('{0}', (outputTransaction || refundedTransaction)?.to || '')}
+                                    txExplorerUrl={destination_network?.transaction_explorer_template?.replace('{0}', outputTransaction?.transaction_hash || '')}
+                                    isPending={isPending}
+                                    isRefunded={!!refundedTransaction}
+                                />
 
-                        {/* Destination Transaction Card */}
-                        <div className="w-full">
-                            <TransactionCard
-                                title="To"
-                                titleClassName={isFailed ? 'text-[#FF6161]' : ''}
-                                transaction={outputTransaction}
-                                refundedTransaction={refundedTransaction}
-                                amount={(outputTransaction || refundedTransaction)?.amount}
-                                tokenLogo={destination_token?.logo}
-                                tokenSymbol={destination_token?.symbol}
-                                networkLogo={destination_network?.logo}
-                                networkName={destination_exchange ? destination_network?.display_name : undefined}
-                                exchangeLogo={destination_exchange?.logo}
-                                exchangeName={destination_exchange?.display_name || destination_network?.display_name}
-                                accountExplorerUrl={destination_network?.account_explorer_template?.replace('{0}', (outputTransaction || refundedTransaction)?.to || '')}
-                                txExplorerUrl={destination_network?.transaction_explorer_template?.replace('{0}', outputTransaction?.transaction_hash || '')}
-                                isPending={isPending}
-                                isRefunded={!!refundedTransaction}
-                            />
-
-                            {/* Refuel Section */}
-                            {hasRefuel && (
-                                <div className="mt-3">
-                                    <RefuelCard
-                                        refuelTransaction={refuelTransaction}
-                                        refuelAmount={refuel?.amount}
-                                        refuelTokenLogo={refuel?.token?.logo}
-                                        refuelTokenSymbol={refuel?.token?.symbol}
-                                        refuelTokenPrecision={refuel?.token?.precision}
-                                    />
-                                </div>
-                            )}
+                                {/* Refuel Section */}
+                                {hasRefuel && (
+                                    <div className="mt-3">
+                                        <RefuelCard
+                                            refuelTransaction={refuelTransaction}
+                                            refuelAmount={refuel?.amount}
+                                            refuelTokenLogo={refuel?.token?.logo}
+                                            refuelTokenSymbol={refuel?.token?.symbol}
+                                            refuelTokenPrecision={refuel?.token?.precision}
+                                        />
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>

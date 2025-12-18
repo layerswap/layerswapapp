@@ -8,7 +8,7 @@ export default async function Home() {
     return <MaintananceContent />
 
   return (
-    <main className="w-full pb-5 px-6 xl:px-0 h-full flex flex-col">
+    <main className="w-full pb-5 px-4 xl:px-0 h-full flex flex-col">
       <div className="mx-auto w-full lg:px-8 flex flex-col">
         <Search />
       </div>

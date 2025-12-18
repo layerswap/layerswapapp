@@ -27,7 +27,7 @@ export default function DataTable() {
     return (
         <div className="px-4 sm:px-6 lg:px-8 w-full">
             <div className="mt-8 flow-root">
-                <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8 h-full max-h-[55vh] 2xl:max-h-[65vh] dataTable">
+                <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8 h-full max-h-[60dvh] 2xl:max-h-[70dvh] dataTable">
                     <div className="inline-block h-screen min-w-full pb-2 align-middle sm:px-6 lg:px-8">
                         <div className="shadow ring-1 ring-white/5 sm:rounded-lg">
                             <table className="min-w-full divide-y divide-secondary-500 relative">
@@ -67,13 +67,13 @@ export default function DataTable() {
                                                     <div className="flex flex-row items-center text-btn-success bg-btn-success py-1 rounded">
                                                         {DestTxStatus(swap)}
                                                     </div>
-                                                    <span className="text-primary-text">{new Date(swap.created_date).toLocaleString()}</span>
+                                                    <span className="text-secondary-text">{new Date(swap.created_date).toLocaleString()}</span>
                                                 </td>
                                                 <td className="whitespace-nowrap px-3 py-2 text-sm text-primary-text">
                                                     <div className="flex flex-row">
                                                         <div className="flex flex-col items-start mr-4">
-                                                            <span className="text-sm md:text-base font-normal text-primary-text-tertiary place-items-end mb-1">Token:</span>
-                                                            <span className="text-sm md:text-base font-normal text-primary-text-tertiary place-items-end min-w-[70px]">Source:</span>
+                                                            <span className="text-sm md:text-base font-normal text-secondary-text place-items-end mb-1">Token:</span>
+                                                            <span className="text-sm md:text-base font-normal text-secondary-text place-items-end min-w-[70px]">Source:</span>
                                                         </div>
                                                         <div className="flex flex-col">
                                                             <div className="text-sm md:text-base flex flex-row mb-1">
@@ -107,8 +107,8 @@ export default function DataTable() {
                                                 <td className="whitespace-nowrap px-3 py-2 text-sm text-primary-text">
                                                     <div className="flex flex-row">
                                                         <div className="flex flex-col items-start">
-                                                            <span className="text-sm md:text-base font-normal text-primary-text-tertiary place-items-end mb-1">Token:</span>
-                                                            <span className="text-sm md:text-base font-normal text-primary-text-tertiary place-items-end min-w-[70px]">Destination:</span>
+                                                            <span className="text-sm md:text-base font-normal text-secondary-text place-items-end mb-1">Token:</span>
+                                                            <span className="text-sm md:text-base font-normal text-secondary-text place-items-end min-w-[70px]">Destination:</span>
                                                         </div>
                                                         <div className="flex flex-col">
                                                             <div className="text-sm md:text-base flex flex-row">
