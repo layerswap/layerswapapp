@@ -630,3 +630,19 @@ path {
   box-shadow: inset 0 0 0 1px rgb(var(--ls-colors-primary-500)) !important;
   border-radius: inherit;
 }
+button.route-token-switch-btn:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  transition: none !important;
+  animation: none !important;
+}
+
+button.route-token-switch-btn:focus-visible::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  box-shadow: inset 0 0 0 1px rgb(var(--ls-colors-primary-500)) !important;
+  border-radius: 8px !important;
+  pointer-events: none;
+}
