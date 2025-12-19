@@ -27,7 +27,7 @@ export const ExchangeReceiveAmount: FC<ReceiveAmountProps> = ({ destination_toke
             </div>
             <div className="flex items-baseline space-x-2 mt-1.5">
                 <span className="text-sm leading-4 font-medium text-secondary-text h-5">
-                    <NumberFlow className="p-0" value={Number(receiveAmountInUsd) || 0} format={{ style: 'currency', currency: 'USD', maximumFractionDigits: receiveAmountInUsd ? 2 : 0 }} trend={0} />
+                    <NumberFlow className="p-0" prefix="$" value={Number(receiveAmountInUsd || 0)} format={{ maximumFractionDigits: receiveAmountInUsd ? 2 : 0 }} trend={0} />
                 </span>
             </div>
         </div>

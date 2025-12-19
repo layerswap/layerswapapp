@@ -38,23 +38,39 @@ export default function useStarknetConnection({ networks }: WalletConnectionProv
         try {
             const starknetConnector = connectors.find(c => c.id === connector.id)
 
-            const result = await starknetConnector?.connect({})
+            let result = await starknetConnector?.connect({})
 
             const walletChain = `0x${result?.chainId?.toString(16)}`
-            const wrongChanin = walletChain == '0x534e5f4d41494e' ? !isMainnet : isMainnet
-            const starkent = networks.find(n => n.name === KnownInternalNames.Networks.StarkNetMainnet || n.name === KnownInternalNames.Networks.StarkNetSepolia)
+            const isWalletOnMainnet = walletChain === '0x534e5f4d41494e'
+            const wrongChain = isWalletOnMainnet !== isMainnet
+            const starknetNetwork = networks.find(n => n.name === KnownInternalNames.Networks.StarkNetMainnet || n.name === KnownInternalNames.Networks.StarkNetSepolia)
 
-            if (result?.account && wrongChanin) {
-                disconnectWallets(connector?.name, result?.account)
-                const errorMessage = `Please switch the network in your wallet to ${isMainnet ? 'Mainnet' : 'Sepolia'} and click connect again`
-                throw new Error(errorMessage)
+            if (result?.account && wrongChain) {
+                const wallet = (starknetConnector as any)?._wallet || (starknetConnector as any)?.wallet
+                if (wallet?.request) {
+                    const targetChainId = isMainnet ? 'SN_MAIN' : 'SN_SEPOLIA'
+                    try {
+                        await wallet.request({
+                            type: "wallet_switchStarknetChain",
+                            params: { chainId: targetChainId }
+                        })
+                        result = await starknetConnector?.connect({})
+                    } catch (switchError) {
+                        console.log('Chain switch failed:', switchError)
+                        disconnectWallets(connector?.name, result?.account)
+                        throw new Error(`Failed to switch network. Please switch manually to ${isMainnet ? 'Mainnet' : 'Sepolia'} in your wallet.`)
+                    }
+                } else {
+                    disconnectWallets(connector?.name, result?.account)
+                    throw new Error(`Please switch the network in your wallet to ${isMainnet ? 'Mainnet' : 'Sepolia'} and connect again.`)
+                }
             }
 
             if (result?.account && starknetConnector) {
-                const wallet = await resolveStarknetWallet({
+                const resolvedWallet = await resolveStarknetWallet({
                     name,
                     connector: starknetConnector,
-                    network: starkent,
+                    network: starknetNetwork,
                     disconnectWallets: () => disconnectWallets(starknetConnector.id, result?.account),
                     address: result?.account,
                     withdrawalSupportedNetworks,
@@ -63,16 +79,15 @@ export default function useStarknetConnection({ networks }: WalletConnectionProv
                 });
 
                 addAccount(starknetConnector.id, result.account);
-                if (wallet) {
-                    addWallet(wallet);
-                    setActiveWallet(wallet.address)
-                    return wallet;
+                if (resolvedWallet) {
+                    addWallet(resolvedWallet);
+                    setActiveWallet(resolvedWallet.address)
+                    return resolvedWallet;
                 }
             }
         }
-
         catch (e) {
-            throw new Error(e)
+            throw e
         }
     }
 

@@ -60,7 +60,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                             requestedAmount &&
                             <p className="text-primary-text text-xl leading-6 font-normal whitespace-nowrap">{truncateDecimals(Number(requestedAmount), sourceCurrency.precision)} {sourceCurrency.symbol}</p>
                         }
-                        <p className="text-secondary-text text-sm leading-5 flex font-medium justify-end"><NumberFlow value={Number(requestedAmountInUsd || 0)} format={{ style: 'currency', currency: 'USD' }} trend={0} /></p>
+                        <p className="text-secondary-text text-sm leading-5 flex font-medium justify-end"><NumberFlow value={Number(requestedAmountInUsd || 0)} prefix="$" trend={0} /></p>
                     </div>
                 </div>
                 <div className="relative text-secondary-text">
@@ -80,7 +80,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                                 </p>
                                 <p className="text-secondary-text text-sm flex items-center gap-1 font-medium">
                                     <PriceImpact className="text-sm" quote={swapQuote} refuel={refuel} />
-                                    <NumberFlow value={Number(receiveAmountInUsd || 0)} format={{ style: 'currency', currency: 'USD' }} trend={0} />
+                                    <NumberFlow value={Number(receiveAmountInUsd || 0)} prefix="$" trend={0} />
                                 </p>
                             </div>
                         )
