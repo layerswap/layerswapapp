@@ -191,7 +191,7 @@ export function getDefaultProviders(config: DefaultWalletConfig = {}) {
         // Paradex
         createParadexProvider(),
         // Bitcoin
-        // createBitcoinProvider(),
+        createBitcoinProvider(),
         // Immutable X
         createImmutableXProvider(),
         // TON (always included with optional config)

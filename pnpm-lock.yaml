@@ -508,14 +508,14 @@ importers:
         version: 1.6.0(react@18.3.1)
     devDependencies:
       '@bigmi/client':
-        specifier: ^0.3.1
-        version: 0.3.1(@tanstack/query-core@5.90.11)(@types/react@18.3.1)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))
+        specifier: ^0.6.4
+        version: 0.6.4(@tanstack/query-core@5.90.11)(@types/react@18.3.1)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))
       '@bigmi/core':
-        specifier: ^0.3.1
-        version: 0.3.1(@types/react@18.3.1)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))
+        specifier: ^0.6.4
+        version: 0.6.4(@types/react@18.3.1)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))
       '@bigmi/react':
-        specifier: ^0.3.1
-        version: 0.3.1(@tanstack/query-core@5.90.11)(@tanstack/react-query@5.90.11(react@18.3.1))(@types/react@18.3.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))
+        specifier: ^0.6.4
+        version: 0.6.4(@tanstack/query-core@5.90.11)(@tanstack/react-query@5.90.11(react@18.3.1))(@types/react@18.3.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))
       '@layerswap/widget':
         specifier: workspace:^
         version: link:../../widget
@@ -1763,31 +1763,31 @@ packages:
   '@base-org/account@1.1.1':
     resolution: {integrity: sha512-IfVJPrDPhHfqXRDb89472hXkpvJuQQR7FDI9isLPHEqSYt/45whIoBxSPgZ0ssTt379VhQo4+87PWI1DoLSfAQ==}
 
-  '@bigmi/client@0.3.1':
-    resolution: {integrity: sha512-7VLRMuOSJtV72VhWSEk7b2FLAGzPvSr1s3aBPobYdndMqrkt1UF9b+2IudkRinsRKetuV8uaH1DtWsyrYCXGKg==}
-    peerDependencies:
-      '@tanstack/query-core': '>=5.68.0'
-
   '@bigmi/client@0.6.3':
     resolution: {integrity: sha512-V/hQOJtOAuhueQMjr/pkzkNVTSoV8qwDe4LmjdKRnwIiKet7AGBMREi4NDBzYjrDAZsUt+RsZjgO0n8DByttGg==}
     peerDependencies:
       '@tanstack/query-core': '>=5.68.0'
 
-  '@bigmi/core@0.3.1':
-    resolution: {integrity: sha512-KU2KZJmyHPtw7m9sTfOWZ2gQaE8iONpLajmh4gCZfscZIRiL1LddqWkLuFIoFNfY0jbJmvqX46leLUw5YIOVDw==}
+  '@bigmi/client@0.6.4':
+    resolution: {integrity: sha512-MuA8lIP6BgM9rU0FKqtD2In4bTGF3JUge2X8yURVCZ2pZMbZIYyPBlMiJ382fcBPZiguCiOI4GcdUVRQS9StaA==}
+    peerDependencies:
+      '@tanstack/query-core': '>=5.68.0'
 
   '@bigmi/core@0.6.3':
     resolution: {integrity: sha512-d4hHD1Ic0rXbC65GRecfqNsGd7jLl/R86NTC65kBGUqdMXHtBKYain++jtTTxzXPZ1vc7FpB/npsYrPquntYEw==}
 
-  '@bigmi/react@0.3.1':
-    resolution: {integrity: sha512-+evNAsf/TNAGuSLwToQEyqX++FddLCqRBGKnRhmnk5WZJuOUtr+LwpjDFkGu2PNSMbbIFd8eprysMhVIGnEM3w==}
+  '@bigmi/core@0.6.4':
+    resolution: {integrity: sha512-aLGDX0aF29bq5PWSB/m23RVw4nATNY/EtNhNTg+4KcJdyj8CKv+Fh2OWnnqcoseli/iLB9kVk7UgOUlq1/p2Xg==}
+
+  '@bigmi/react@0.6.3':
+    resolution: {integrity: sha512-NxSj5IwL/5Ru+Ifw1qf1JHzWizCpuoQ6PVzzd5Rs83i9P4WbgqQNNo3GVM8kR7f5ucTV/PaaGgsgc+5ruLKsiw==}
     peerDependencies:
       '@tanstack/react-query': '>=5.68.0'
       react: ^18.0.0 || ^19.0.0
       react-dom: ^18.0.0 || ^19.0.0
 
-  '@bigmi/react@0.6.3':
-    resolution: {integrity: sha512-NxSj5IwL/5Ru+Ifw1qf1JHzWizCpuoQ6PVzzd5Rs83i9P4WbgqQNNo3GVM8kR7f5ucTV/PaaGgsgc+5ruLKsiw==}
+  '@bigmi/react@0.6.4':
+    resolution: {integrity: sha512-NZ4jdGnPgzBdDL8OnajjFU+1bbXafgJrZwzT9nUMNLdODpTUsfei60Dxes010pgJKCU0QBd9V2mbd9oKmQ+CUw==}
     peerDependencies:
       '@tanstack/react-query': '>=5.68.0'
       react: ^18.0.0 || ^19.0.0
@@ -14072,6 +14072,24 @@ packages:
       use-sync-external-store:
         optional: true
 
+  zustand@5.0.9:
+    resolution: {integrity: sha512-ALBtUj0AfjJt3uNRQoL1tL2tMvj6Gp/6e39dnfT6uzpelGru8v1tPOGBzayOWbPJvujM8JojDk3E1LxeFisBNg==}
+    engines: {node: '>=12.20.0'}
+    peerDependencies:
+      '@types/react': '>=18.0.0'
+      immer: '>=9.0.6'
+      react: '>=18.0.0'
+      use-sync-external-store: '>=1.2.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      immer:
+        optional: true
+      react:
+        optional: true
+      use-sync-external-store:
+        optional: true
+
 snapshots:
 
   '@0no-co/graphql.web@1.2.0(graphql@16.12.0)':
@@ -14961,19 +14979,6 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@bigmi/client@0.3.1(@tanstack/query-core@5.90.11)(@types/react@18.3.1)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))':
-    dependencies:
-      '@bigmi/core': 0.3.1(@types/react@18.3.1)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))
-      '@tanstack/query-core': 5.90.11
-      eventemitter3: 5.0.1
-      zustand: 5.0.8(@types/react@18.3.1)(react@18.3.1)(use-sync-external-store@1.6.0(react@18.3.1))
-    transitivePeerDependencies:
-      - '@types/react'
-      - immer
-      - react
-      - typescript
-      - use-sync-external-store
-
   '@bigmi/client@0.6.3(@tanstack/query-core@5.90.11)(@types/react@18.3.1)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))':
     dependencies:
       '@bigmi/core': 0.6.3(@types/react@18.3.1)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))
@@ -14987,14 +14992,12 @@ snapshots:
       - typescript
       - use-sync-external-store
 
-  '@bigmi/core@0.3.1(@types/react@18.3.1)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))':
+  '@bigmi/client@0.6.4(@tanstack/query-core@5.90.11)(@types/react@18.3.1)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))':
     dependencies:
-      '@noble/hashes': 1.8.0
-      bech32: 2.0.0
-      bitcoinjs-lib: 7.0.0(typescript@5.9.3)
-      bs58: 6.0.0
+      '@bigmi/core': 0.6.4(@types/react@18.3.1)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))
+      '@tanstack/query-core': 5.90.11
       eventemitter3: 5.0.1
-      zustand: 5.0.8(@types/react@18.3.1)(react@18.3.1)(use-sync-external-store@1.6.0(react@18.3.1))
+      zustand: 5.0.9(@types/react@18.3.1)(react@18.3.1)(use-sync-external-store@1.6.0(react@18.3.1))
     transitivePeerDependencies:
       - '@types/react'
       - immer
@@ -15017,10 +15020,25 @@ snapshots:
       - typescript
       - use-sync-external-store
 
-  '@bigmi/react@0.3.1(@tanstack/query-core@5.90.11)(@tanstack/react-query@5.90.11(react@18.3.1))(@types/react@18.3.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))':
+  '@bigmi/core@0.6.4(@types/react@18.3.1)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))':
     dependencies:
-      '@bigmi/client': 0.3.1(@tanstack/query-core@5.90.11)(@types/react@18.3.1)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))
-      '@bigmi/core': 0.3.1(@types/react@18.3.1)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))
+      '@noble/hashes': 1.8.0
+      bech32: 2.0.0
+      bitcoinjs-lib: 7.0.0(typescript@5.9.3)
+      bs58: 6.0.0
+      eventemitter3: 5.0.1
+      zustand: 5.0.9(@types/react@18.3.1)(react@18.3.1)(use-sync-external-store@1.6.0(react@18.3.1))
+    transitivePeerDependencies:
+      - '@types/react'
+      - immer
+      - react
+      - typescript
+      - use-sync-external-store
+
+  '@bigmi/react@0.6.3(@tanstack/query-core@5.90.11)(@tanstack/react-query@5.90.11(react@18.3.1))(@types/react@18.3.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))':
+    dependencies:
+      '@bigmi/client': 0.6.3(@tanstack/query-core@5.90.11)(@types/react@18.3.1)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))
+      '@bigmi/core': 0.6.3(@types/react@18.3.1)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))
       '@tanstack/react-query': 5.90.11(react@18.3.1)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
@@ -15031,10 +15049,10 @@ snapshots:
       - typescript
       - use-sync-external-store
 
-  '@bigmi/react@0.6.3(@tanstack/query-core@5.90.11)(@tanstack/react-query@5.90.11(react@18.3.1))(@types/react@18.3.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))':
+  '@bigmi/react@0.6.4(@tanstack/query-core@5.90.11)(@tanstack/react-query@5.90.11(react@18.3.1))(@types/react@18.3.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))':
     dependencies:
-      '@bigmi/client': 0.6.3(@tanstack/query-core@5.90.11)(@types/react@18.3.1)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))
-      '@bigmi/core': 0.6.3(@types/react@18.3.1)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))
+      '@bigmi/client': 0.6.4(@tanstack/query-core@5.90.11)(@types/react@18.3.1)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))
+      '@bigmi/core': 0.6.4(@types/react@18.3.1)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))
       '@tanstack/react-query': 5.90.11(react@18.3.1)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
@@ -33408,6 +33426,12 @@ snapshots:
       use-sync-external-store: 1.6.0(react@18.3.1)
 
   zustand@5.0.8(@types/react@18.3.1)(react@18.3.1)(use-sync-external-store@1.6.0(react@18.3.1)):
+    optionalDependencies:
+      '@types/react': 18.3.1
+      react: 18.3.1
+      use-sync-external-store: 1.6.0(react@18.3.1)
+
+  zustand@5.0.9(@types/react@18.3.1)(react@18.3.1)(use-sync-external-store@1.6.0(react@18.3.1)):
     optionalDependencies:
       '@types/react': 18.3.1
       react: 18.3.1

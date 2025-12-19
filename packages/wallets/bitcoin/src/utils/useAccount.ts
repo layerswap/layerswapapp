@@ -6,12 +6,13 @@ import {
   getAccount,
   watchAccount,
 } from '@bigmi/client'
-import { useSyncExternalStoreWithTracked } from './useSyncExternalStoreWithTracked'
+
+// @ts-ignore
+import type { ResolvedRegister } from '@bigmi/react/dist/esm/types'
+// @ts-ignore
+import { type ConfigParameter } from '@bigmi/react/dist/esm/hooks/useConfig'
+import { useSyncExternalStoreWithTracked } from './useSyncExternalStoreWithTracked.js'
 import { useConfig } from '@bigmi/react'
-// @ts-ignore
-import { ResolvedRegister } from '@bigmi/react/dist/esm/types'
-// @ts-ignore
-import { ConfigParameter } from '@bigmi/react/dist/esm/hooks/useConfig'
 
 export type UseAccountParameters<config extends Config = Config> =
   ConfigParameter<config>
@@ -26,6 +27,7 @@ export function useAccount<C extends Config = ResolvedRegister['config']>(
 
   return useSyncExternalStoreWithTracked(
     (onChange) => watchAccount(config, { onChange }),
-    () => getAccount(config)
+    () => getAccount(config),
+    undefined // Pass undefined for getServerSnapshot to avoid infinite loop from non-cached object references
   )
 }

@@ -7,8 +7,8 @@ import { Connector, CreateConnectorFn } from "@bigmi/client"
 import { isBitcoinAddressValid } from "./utils/isValidAddress"
 import { useBitcoinConnectors } from "./BitcoinProvider"
 import { useBitcoinTransfer } from "./transferProvider/useBitcoinTransfer";
-import { useAccount } from "./useAccount"
-import { getConnections } from "./getConnections"
+import { useAccount } from "./utils/useAccount"
+
 const bitcoinNames = [KnownInternalNames.Networks.BitcoinMainnet, KnownInternalNames.Networks.BitcoinTestnet]
 
 export default function useBitcoinConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
@@ -24,7 +24,7 @@ export default function useBitcoinConnection({ networks }: WalletConnectionProvi
     const { setSelectedConnector } = useConnectModal()
 
     const config = useConfig()
-    const account = useAccount()
+    const { account, connector } = useAccount()
 
     const disconnectWallet = async (connectorName: string) => {
         try {
@@ -66,7 +66,7 @@ export default function useBitcoinConnection({ networks }: WalletConnectionProvi
 
             if (!result.accounts) throw new Error("No result from connector")
 
-            const address = result.accounts[0]
+            const address = result.accounts[0].address
             const network = networks.find(n => commonSupportedNetworks.includes(n.name))
             if (!network) throw new Error("Network not found")
             const wrongChanin = !isBitcoinAddressValid(address, network)
@@ -106,9 +106,6 @@ export default function useBitcoinConnection({ networks }: WalletConnectionProvi
     const { executeTransfer: transfer } = useBitcoinTransfer()
 
     const resolvedWallet = useMemo(() => {
-        const connections = getConnections(config)
-        const connector = connections.find(c => c.connector.id === account.connector?.id)?.connector
-
         if (!account || !connector) return undefined
 
         const wallet = resolveWallet({
