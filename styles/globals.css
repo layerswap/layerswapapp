@@ -585,15 +585,70 @@ path {
 [style*="pointer-events"] {
   outline: none !important;
 }
-.refuel-row-btn:focus-visible {
+/* Focus-visible utility classes */
+
+/* Focus ring on child element with 6px border radius */
+.focus-ring-child-sm:focus-visible {
   box-shadow: none !important;
   outline: none !important;
 }
 
-.refuel-row-btn:focus-visible .refuel-info-ring {
+.focus-ring-child-sm:focus-visible > :first-child {
   box-shadow: inset 0 0 0 1px rgb(var(--ls-colors-primary-500)) !important;
   border-radius: 6px;
 }
+
+/* Focus ring - 1px border with 8px radius */
+.focus-border-primary-md:focus-visible {
+  border: 1px solid rgb(var(--ls-colors-primary-500)) !important;
+  border-radius: 8px;
+}
+
+/* Focus ring - 2px primary text inset with 12px radius */
+.focus-ring-text-bold-lg:focus-visible {
+  outline: none !important;
+  box-shadow: inset 0 0 0 2px rgb(var(--ls-colors-primary-text)) !important;
+  border-radius: 12px;
+}
+
+/* Focus border - primary text color with 12px radius */
+.focus-border-text-lg:focus-visible {
+  border-color: rgb(var(--ls-colors-primary-text)) !important;
+  box-shadow: none !important;
+  outline: none !important;
+  border-radius: 12px;
+}
+
+/* Focus ring on direct child with inherited radius */
+.focus-ring-child:focus-visible {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.focus-ring-child:focus-visible > div {
+  box-shadow: inset 0 0 0 1px rgb(var(--ls-colors-primary-500)) !important;
+  border-radius: inherit;
+}
+
+/* Focus ring with pseudo-element overlay and 8px radius */
+.focus-ring-overlay-md:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  transition: none !important;
+  animation: none !important;
+}
+
+.focus-ring-overlay-md:focus-visible::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  box-shadow: inset 0 0 0 1px rgb(var(--ls-colors-primary-500)) !important;
+  border-radius: 8px !important;
+  pointer-events: none;
+}
+
+/* Custom refuel button - focus ring only on icon */
 .refuel-button:focus-visible {
   box-shadow: none !important;
   outline: none !important;
@@ -602,47 +657,4 @@ path {
 .refuel-button:focus-visible .refuel-info-icon {
   box-shadow: inset 0 0 0 1px rgb(var(--ls-colors-primary-500)) !important;
   border-radius: 6px;
-}
-.swap-btn:focus-visible {
-  border: 1px solid rgb(var(--ls-colors-primary-500)) !important;
-  border-radius: 8px;
-}
-.submit-btn:focus-visible {
-  outline: none !important;
-}
-
-.submit-btn:focus-visible {
-  box-shadow: inset 0 0 0 2px rgb(var(--ls-colors-primary-text)) !important;
-  border-radius: 12px;
-}
-.refuel-toggle:focus-visible {
-  border-color: rgb(var(--ls-colors-primary-text)) !important;
-  box-shadow: none !important;
-  outline: none !important;
-  border-radius: 12px;
-}
-.address-btn:focus-visible {
-  box-shadow: none !important;
-  outline: none !important;
-}
-
-.address-btn:focus-visible > div {
-  box-shadow: inset 0 0 0 1px rgb(var(--ls-colors-primary-500)) !important;
-  border-radius: inherit;
-}
-button.route-token-switch-btn:focus-visible {
-  outline: none !important;
-  box-shadow: none !important;
-  transition: none !important;
-  animation: none !important;
-}
-
-button.route-token-switch-btn:focus-visible::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 30;
-  box-shadow: inset 0 0 0 1px rgb(var(--ls-colors-primary-500)) !important;
-  border-radius: 8px !important;
-  pointer-events: none;
 }

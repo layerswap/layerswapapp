@@ -26,7 +26,7 @@ const RouteTokenSwitch: FC = () => {
                             <TooltipTrigger
                                 type="button"
                                 onClick={() => { setShowTokens(item.value); }}
-                                className="route-token-switch-btn z-10 flex items-center justify-center rounded-lg px-4 py-1 relative outline-hidden">
+                                className="focus-ring-overlay-md z-10 flex items-center justify-center rounded-lg px-4 py-1 relative outline-hidden">
                                 {activeTab === item.id && (
                                     <motion.span
                                         layoutId="bubble"
