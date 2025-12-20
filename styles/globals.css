@@ -658,3 +658,8 @@ path {
   box-shadow: inset 0 0 0 1px rgb(var(--ls-colors-primary-500)) !important;
   border-radius: 6px;
 }
+
+/* Accordion item - highlight when parent accordion is focused */
+.group.is-focused .accordion-item-focused {
+  background-color: rgb(var(--ls-colors-secondary-400)) !important;
+}
