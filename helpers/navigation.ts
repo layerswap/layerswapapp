@@ -130,9 +130,9 @@ export const useRoutePickerNavigation = (navigableItems: NavigableItem[], search
 
         let mouseMoveTimeout: NodeJS.Timeout;
         const handleMouseMove = () => {
-            // Enable mouse hover updates when mouse is actively moving
-            setIsMouseMoving(true);
-            setIsKeyboardNavigating(false);
+            // Guard state updates to avoid unnecessary renders on every mousemove
+            setIsMouseMoving((prev) => (prev ? prev : true));
+            setIsKeyboardNavigating((prev) => (prev ? false : prev));
 
             // Debounce to detect when mouse stops moving
             clearTimeout(mouseMoveTimeout);

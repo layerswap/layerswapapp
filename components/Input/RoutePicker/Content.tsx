@@ -69,6 +69,14 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
         }, []);
     }, [rowElements, openValues]);
 
+    const navigableIndexMap = useMemo(() => {
+        const map = new Map<number, number>();
+        navigableItems.forEach((item, index) => {
+            map.set(item.rowIndex, index);
+        });
+        return map;
+    }, [navigableItems]);
+
     const { focusedIndex, handleHover } = useRoutePickerNavigation(
         navigableItems,
         searchQuery,
@@ -147,7 +155,7 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
                                     {items.map((virtualRow) => {
                                         const data = rowElements?.[virtualRow.index]
                                         const key = ((data as any)?.route as any)?.name || virtualRow.key;
-                                        const navigableIndex = navigableItems.findIndex(ni => ni.rowIndex === virtualRow.index);
+                                        const navigableIndex = navigableIndexMap.get(virtualRow.index) ?? -1;
                                         return <div
                                             className="py-1 box-border w-full overflow-hidden select-none"
                                             key={key}
