@@ -660,6 +660,6 @@ path {
 }
 
 /* Accordion item - highlight when parent accordion is focused */
-.group.is-focused .accordion-item-focused {
+.group\/accordion.is-focused .accordion-item-focused {
   background-color: rgb(var(--ls-colors-secondary-400)) !important;
 }
