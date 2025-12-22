@@ -14,33 +14,82 @@ yarn add @layerswap/wallets wagmi viem @tanstack/react-query @bigmi/client @bigm
 pnpm add @layerswap/wallets wagmi viem @tanstack/react-query @bigmi/client @bigmi/core @bigmi/react
 ```
 
-Notes:
-- You also need `react` and `react-dom` in your app.
-- Some networks may require additional peers (e.g. Solana adapters, TON libs) which are pulled by the individual wallet packages as needed.
-
 ## Quick start
+
+## Convenience function
+
+For a quick setup with all providers, use `getDefaultProviders()`:
+
+```tsx
+import { getDefaultProviders } from "@layerswap/wallets";
+import { LayerswapProvider, Swap } from "@layerswap/widget";
+
+export default function Page() {
+  const walletProviders = getDefaultProviders({
+    walletConnect: {
+      projectId: "your-project-id",
+      name: "Your App",
+      description: "Your app description",
+      url: "https://your-app.com",
+      icons: ["https://your-app.com/icon.png"]
+    },
+    ton: {
+      tonApiKey: "your-ton-api-key",
+      manifestUrl: "https://your-app.com/tonconnect-manifest.json"
+    }
+  });
+  
+  return (
+    <LayerswapProvider walletProviders={walletProviders}>
+      <Swap />
+    </LayerswapProvider>
+  );
+}
+```
 
 Render the Layerswap Widget with the wallet providers you want to enable. Only the providers you include are bundled (tree-shakeable).
 
 ```tsx
 import { LayerswapProvider, Swap } from "@layerswap/widget";
 import {
-  EVMProvider,
-  StarknetProvider,
-  SVMProvider,
-  TonProvider,
-  TronProvider,
+  createEVMProvider,
+  createStarknetProvider,
+  createSVMProvider,
+  createTONProvider,
+  createTronProvider,
 } from "@layerswap/wallets";
 
 export default function Page() {
+
+  const walletConnectConfigs = {
+    projectId: "your-project-id",
+    name: "Your App",
+    description: "Your app description",
+    url: "https://your-app.com",
+    icons: ["https://your-app.com/icon.png"]
+  }
+
+  const walletProviders = [
+    createEVMProvider({
+      walletConnectConfigs
+    }),
+    createStarknetProvider({
+      walletConnectConfigs
+    }),
+    createSVMProvider({
+      walletConnectConfigs
+    }),
+    createTONProvider({
+      tonConfigs: {
+        tonApiKey: "your-ton-api-key",
+        manifestUrl: "https://your-app.com/tonconnect-manifest.json"
+      }
+    }),
+    createTronProvider(),
+  ];
+  
   return (
-    <LayerswapProvider walletProviders={[
-      EVMProvider,
-      StarknetProvider,
-      SVMProvider,
-      TonProvider,
-      TronProvider,
-    ]}>
+    <LayerswapProvider walletProviders={walletProviders}>
       <Swap />
     </LayerswapProvider>
   );
@@ -49,18 +98,20 @@ export default function Page() {
 
 ## Usage by network
 
-All providers are exported from `@layerswap/wallets` and can be passed directly to `LayerswapProvider`:
+All provider factories are exported from `@layerswap/wallets`:
 
-- EVM (Ethereum, L2s): `EVMProvider`
-- Starknet: `StarknetProvider`
-- Solana: `SVMProvider`
-- TON: `TonProvider`
-- Tron: `TronProvider`
-- Fuel: `FuelProvider`
-- Bitcoin: `BitcoinProvider`
-- Paradex: `ParadexProvider`
-- Immutable X: `ImtblXProvider`
-- Immutable Passport: `ImtblPassportProvider`
+- EVM (Ethereum, L2s): `createEVMProvider()`
+- Starknet: `createStarknetProvider()`
+- Solana: `createSVMProvider()`
+- TON: `createTONProvider()`
+- Tron: `createTronProvider()`
+- Fuel: `createFuelProvider()`
+- Bitcoin: `createBitcoinProvider()`
+- Paradex: `createParadexProvider()`
+- Immutable X: `createImmutableXProvider()`
+- Immutable Passport: `createImmutablePassportProvider()`
+- Loopring (module): `createLoopringModule()` - use with `createEVMProvider()`
+- zkSync (module): `createZkSyncModule()` - use with `createEVMProvider()`
 
 You can mix and match any subset depending on your app needs.
 
@@ -84,4 +135,3 @@ All providers ship type definitions. You can import types either from specific p
 ## Versioning and updates
 
 This package auto-bumps when any of the individual wallet packages receives a release, so you always get the latest providers with a single upgrade.
-
