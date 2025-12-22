@@ -50,13 +50,14 @@ export default function TransactionCard({
 
     return (
         <div className="rounded-md w-full lg:p-6 grid gap-y-3 text-primary-text relative">
-            {isPending && <span className="pendingAnim"></span>}
 
             <div className="flex items-center text-primary-text">
                 <div className={`mr-2 text-2xl font-medium ${titleClassName}`}>{title}</div>
             </div>
 
+
             <div className="rounded-lg w-full grid text-primary-text bg-secondary-500 shadow-lg relative border-secondary-400 border-t-4 divide-y divide-secondary-400">
+                {isPending && <span className="pendingAnim"></span>}
                 {/* Asset & Network Row */}
                 <div className="flex justify-around">
                     <div className="flex-1 p-4 whitespace-nowrap">
