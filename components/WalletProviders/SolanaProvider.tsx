@@ -11,8 +11,7 @@ import {
     SolflareWalletAdapter,
     BitgetWalletAdapter,
     TrustWalletAdapter,
-    LedgerWalletAdapter,
-    HuobiWalletAdapter
+    LedgerWalletAdapter
 } from "@solana/wallet-adapter-wallets";
 import { ReactNode, useMemo } from "react";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
@@ -28,7 +27,6 @@ const adapters = [
     new BitgetWalletAdapter(),
     new TrustWalletAdapter(),
     new LedgerWalletAdapter(),
-    new HuobiWalletAdapter(),
     new WalletConnectWalletAdapter({
         network: SOLANA_NETWORK,
         options: {

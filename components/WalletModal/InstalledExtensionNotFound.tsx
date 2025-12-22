@@ -19,15 +19,29 @@ export const InstalledExtensionNotFound: FC<{
                 </div>
             </div>
         </div>
-        <SubmitButton
-            onClick={() => { onConnect({ ...selectedConnector, showQrCode: true }) }}
-            buttonStyle="secondary"
-            className="w-full"
-        >
-            <span className="flex items-center justify-center gap-2">
-                <ScanLine className="w-5 h-5" />
-                <span>Connect with your phone</span>
-            </span>
-        </SubmitButton>
+        <div className="flex flex-col gap-2 w-full">
+            <SubmitButton
+                onClick={() => {
+                    if (!selectedConnector?.extensionUrl) return;
+                    window.open(selectedConnector.extensionUrl, '_blank', 'noopener,noreferrer');
+                }}
+                buttonStyle="secondary"
+                className="w-full"
+            >
+                <span className="flex items-center justify-center gap-2">
+                    <span>Install</span>
+                </span>
+            </SubmitButton>
+            <SubmitButton
+                onClick={() => { onConnect({ ...selectedConnector, showQrCode: true }) }}
+                buttonStyle="secondary"
+                className="w-full"
+            >
+                <span className="flex items-center justify-center gap-2">
+                    <ScanLine className="w-5 h-5" />
+                    <span>Connect with your phone</span>
+                </span>
+            </SubmitButton>
+        </div>
     </div>
 }

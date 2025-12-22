@@ -5,6 +5,7 @@ import { NetworkType } from "@/Models/Network"
 import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvider"
 import { useCallback, useMemo } from "react"
 import { useSettingsState } from "@/context/settings"
+import { isSolanaAdapterSupported } from "./utils"
 
 const solanaNames = [KnownInternalNames.Networks.SolanaMainnet, KnownInternalNames.Networks.SolanaDevnet, KnownInternalNames.Networks.SolanaTestnet]
 
@@ -21,7 +22,6 @@ export default function useSVM(): WalletProvider {
     const connectedWallet = solanaWallet?.adapter.connected === true ? solanaWallet : undefined
     const connectedAddress = connectedWallet?.adapter.publicKey?.toBase58()
     const connectedAdapterName = connectedWallet?.adapter.name
-
     const connectedWallets = useMemo(() => {
 
         if (solanaWallet?.adapter.connected === true) {
@@ -48,7 +48,7 @@ export default function useSVM(): WalletProvider {
     }, [connectedAddress, connectedAdapterName])
 
     const connectWallet = async ({ connector }: { connector: InternalConnector }) => {
-        
+
         const solanaConnector = wallets.find(w => w.adapter.name.includes(connector.name))
         if (!solanaConnector) throw new Error('Connector not found')
         if (connectedWallet) await solanaConnector.adapter.disconnect()
@@ -95,8 +95,8 @@ export default function useSVM(): WalletProvider {
                 icon: wallet.adapter.icon,
                 type: wallet.readyState === 'Installed' ? 'injected' : 'other',
                 installUrl: (wallet.readyState === 'Installed' || wallet.readyState === 'Loadable') ? undefined : wallet.adapter?.url,
+                hasBrowserExtension: isSolanaAdapterSupported(wallet.adapter.name)
             }
-
             connectors.push(internalConnector)
         }
 
