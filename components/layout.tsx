@@ -98,29 +98,29 @@ export default function Layout({ children, settings, themeData }: Props) {
   const isCanonical = (router.pathname === "/app" || router.pathname === "/") && Object.keys(router.query).length === 0;
   return (<>
     <Head>
-      <title>Layerswap App</title>
+      <title>Layerswap App I Bridge & Swap Tokens Across Chains</title>
       <link rel="apple-touch-icon" sizes="180x180" href={`${basePath}/favicon/apple-touch-icon.png`} />
       <link rel="icon" type="image/png" sizes="32x32" href={`${basePath}/favicon/favicon-32x32.png`} />
       <link rel="icon" type="image/png" sizes="16x16" href={`${basePath}/favicon/favicon-16x16.png`} />
       <link rel="manifest" href={`${basePath}/favicon/site.webmanifest`} />
       <meta name="msapplication-TileColor" content="#ffffff" />
       <meta name="theme-color" content={`rgb(${themeData?.secondary?.[900] || THEME_COLORS.default.secondary?.[900]})`} />
-      <meta name="description" content="Streamline your asset transaction experience with Layerswap across 50+ blockchains and 15+ exchanges. Fast, affordable and secure." />
+      <meta name="description" content="Layerswap is the most affordable way to swap & bridge crypto assets across Solana, Ethereum, Bitcoin, Starknet, TON, Fuel, and 80+ more blockchains." />
       {isCanonical && <link rel="canonical" href="https://layerswap.io/app/" />}
 
       {/* Facebook Meta Tags */}
       <meta property="og:url" content={`https://www.layerswap.io/${basePath}`} />
       <meta property="og:type" content="website" />
-      <meta property="og:title" content="Layerswap App" />
-      <meta property="og:description" content="Streamline your asset transaction experience with Layerswap across 50+ blockchains and 15+ exchanges. Fast, affordable and secure." />
+      <meta property="og:title" content="Layerswap App I Bridge & Swap Tokens Across Chains" />
+      <meta property="og:description" content="Layerswap is the most affordable way to swap & bridge crypto assets across Solana, Ethereum, Bitcoin, Starknet, TON, Fuel, and 80+ more blockchains." />
       <meta property="og:image" content={`https://layerswap.io/${basePath}/opengraph.jpg?v=2`} />
 
       {/* Twitter Meta Tags */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta property="twitter:domain" content="layerswap.io" />
       <meta property="twitter:url" content={`https://www.layerswap.io/${basePath}`} />
-      <meta name="twitter:title" content="Layerswap App" />
-      <meta name="twitter:description" content="Streamline your asset transaction experience with Layerswap across 50+ blockchains and 15+ exchanges. Fast, affordable and secure." />
+      <meta name="twitter:title" content="Layerswap App I Bridge & Swap Tokens Across Chains" />
+      <meta name="twitter:description" content="Layerswap is the most affordable way to swap & bridge crypto assets across Solana, Ethereum, Bitcoin, Starknet, TON, Fuel, and 80+ more blockchains." />
       <meta name="twitter:image" content={`https://layerswap.io/${basePath}/opengraphtw.jpg`} />
 
       <meta name="color-scheme" content="light dark"></meta>
