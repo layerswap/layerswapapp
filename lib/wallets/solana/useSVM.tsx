@@ -6,6 +6,7 @@ import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvid
 import { useCallback, useMemo } from "react"
 import { useSettingsState } from "@/context/settings"
 import { isSolanaAdapterSupported } from "./utils"
+import { WalletModalConnector } from "@/components/WalletModal"
 
 const solanaNames = [KnownInternalNames.Networks.SolanaMainnet, KnownInternalNames.Networks.SolanaDevnet, KnownInternalNames.Networks.SolanaTestnet]
 
@@ -47,9 +48,13 @@ export default function useSVM(): WalletProvider {
 
     }, [connectedAddress, connectedAdapterName])
 
-    const connectWallet = async ({ connector }: { connector: InternalConnector }) => {
+    const connectWallet = async ({ connector }: { connector: WalletModalConnector }) => {
 
-        const solanaConnector = wallets.find(w => w.adapter.name.includes(connector.name))
+        const internalConnector = wallets.find(w => w.adapter.name.includes(connector.name))
+        const walletConnectConnector = wallets.find(w => w.adapter.name === 'WalletConnect')
+
+        const solanaConnector = connector.hasBrowserExtension && connector.showQrCode ? walletConnectConnector : internalConnector
+
         if (!solanaConnector) throw new Error('Connector not found')
         if (connectedWallet) await solanaConnector.adapter.disconnect()
         select(solanaConnector.adapter.name)
@@ -86,16 +91,16 @@ export default function useSVM(): WalletProvider {
 
     const availableWalletsForConnect = useMemo(() => {
         const connectors: InternalConnector[] = [];
-
         for (const wallet of wallets) {
-
+            const hasBrowserExtension = isSolanaAdapterSupported(wallet.adapter.name);
             const internalConnector: InternalConnector = {
                 name: wallet.adapter.name.trim(),
                 id: wallet.adapter.name.trim(),
                 icon: wallet.adapter.icon,
                 type: wallet.readyState === 'Installed' ? 'injected' : 'other',
-                installUrl: (wallet.readyState === 'Installed' || wallet.readyState === 'Loadable') ? undefined : wallet.adapter?.url,
-                hasBrowserExtension: isSolanaAdapterSupported(wallet.adapter.name)
+                installUrl: (wallet.readyState === 'Installed' || wallet.readyState === 'Loadable' || hasBrowserExtension) ? undefined : wallet.adapter?.url,
+                hasBrowserExtension: hasBrowserExtension,
+                extensionUrl: wallet.adapter.url,
             }
             connectors.push(internalConnector)
         }

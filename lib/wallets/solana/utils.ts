@@ -1,13 +1,10 @@
-import walletsData from "@/public/walletsData.json"
-
-const wallets = Object.values(walletsData.listings)
-const solanaWallets = wallets.filter(w => w.injected != null && (w.mobile?.universal || w.mobile?.native) && w.chains?.some(c => c.startsWith("solana:")))
+import { solanaWalletConnectWallets } from "../connectors/resolveConnectors"
 
 export const isSolanaAdapterSupported = (adapterName: string): boolean => {
     const normalizedAdapterName = adapterName.toLowerCase().trim()
 
-    return solanaWallets.some(wallet => {
-        const matchName = (wallet.metadata?.shortName || wallet.slug)?.toLowerCase().trim()
+    return solanaWalletConnectWallets.some(wallet => {
+        const matchName = wallet.shortName?.toLowerCase().trim()
         if (!matchName) return false
 
         if (normalizedAdapterName === matchName) return true

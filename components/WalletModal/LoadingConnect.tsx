@@ -6,6 +6,7 @@ import clsx from "clsx";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
 import LayerSwapLogoSmall from "../icons/layerSwapLogoSmall";
 import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
+import SubmitButton from "../buttons/submitButton";
 
 export const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalConnector, connectionError: string | undefined }> = ({ onRetry, selectedConnector, connectionError }) => {
     const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector?.name, iconUrl: selectedConnector.icon });
@@ -22,15 +23,15 @@ export const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: Wallet
                             <span>{selectedConnector?.name}</span> <span>is not installed</span>
                         </p>
                     </div>
-                    <button
-                        onClick={() => window.open(selectedConnector.installUrl, '_blank')}
-                        type="button"
-                        className="px-3 py-1 rounded-full bg-secondary-600 text-primary-500 font-semibold text-base hover:brightness-125 transition-all duration-200"
-                    >
-                        INSTALL
-                    </button>
                 </div>
             </div>
+            <SubmitButton
+                onClick={() => window.open(selectedConnector.installUrl, '_blank')}
+                buttonStyle="secondary"
+                className="w-full"
+            >
+                Install
+            </SubmitButton>
         </div>
     }
 
