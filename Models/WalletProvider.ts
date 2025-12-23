@@ -14,7 +14,6 @@ export type InternalConnector = {
     isHidden?: boolean,
     hasBrowserExtension?: boolean,
     extensionNotFound?: boolean,
-    connectExternally?: boolean,
 }
 
 export type Wallet = {

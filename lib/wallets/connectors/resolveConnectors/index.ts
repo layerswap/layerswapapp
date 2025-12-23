@@ -20,7 +20,6 @@ export type WalletConnectWallet = {
     rdns?: string;
     hasBrowserExtension?: boolean;
     extensionNotFound?: boolean,
-    connectExternally?: boolean;
     type: string;
     icon: string;
     projectId: string;
@@ -92,22 +91,6 @@ const resolveWallet = (wallet: any) => {
     return w
 }
 export const walletConnectWallets = resolveWallets()
-
-const resolveSolanaWallets = () => {
-    return pickLatestBy(
-        wallets,
-        c => c.slug
-    ).filter(w =>
-        w.injected != null &&
-        (w.mobile?.universal || w.mobile?.native) &&
-        w.chains?.some(c => c.startsWith("solana:"))
-    ).map(wallet => ({
-        name: wallet.name,
-        shortName: wallet.metadata?.shortName || wallet.slug
-    }))
-}
-
-export const solanaWalletConnectWallets = resolveSolanaWallets()
 
 function pickLatestBy<T>(
     connectors: T[],
