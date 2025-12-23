@@ -19,7 +19,7 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ destination_token, fee, 
 
     const tokenAmount = <NumberFlow value={receive_amount || 0} trend={0} format={{ maximumFractionDigits: fee?.quote.destination_token?.decimals || 2 }} />
 
-    const usdAmount = <NumberFlow className="p-0" value={receiveAmountInUsd || 0} format={{ style: 'currency', currency: 'USD', maximumFractionDigits: receiveAmountInUsd ? 2 : 0 }} trend={0} />
+    const usdAmount = <NumberFlow className="p-0" value={receiveAmountInUsd || 0} prefix="$" format={{ maximumFractionDigits: receiveAmountInUsd ? 2 : 0 }} trend={0} />
 
     return (<>
         <div className="flex-col w-full flex min-w-0 font-normal border-0 text-[28px] leading-7 text-primary-text relative truncate">
@@ -36,7 +36,7 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ destination_token, fee, 
                 <span className="text-base leading-5 font-medium text-secondary-text h-5">
                     {isUsdPrimary ? tokenAmount : usdAmount}
                 </span>
-                <PriceImpact className="h-5 text-base leading-5" quote={quote} />
+                <PriceImpact className="h-5 text-base leading-5" quote={quote} refuel={fee?.refuel} />
             </div>
         </div>
     </>)

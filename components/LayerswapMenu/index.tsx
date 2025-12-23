@@ -1,5 +1,5 @@
 import { MenuIcon, ChevronLeft } from "lucide-react";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import IconButton from "../buttons/iconButton";
 import { FormWizardProvider, useFormWizardaUpdate, useFormWizardState } from "../../context/formWizardProvider";
 import { MenuStep } from "../../Models/Wizard";
@@ -9,23 +9,15 @@ import WizardItem from "../Wizard/WizardItem";
 import { NextRouter, useRouter } from "next/router";
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import HistoryList from "../SwapHistory/History";
-import Modal from "../modal/modal";
+import { Modal, ModalContent } from "@/components/modal/modalWithoutAnimation";
 
 const Comp = () => {
     const router = useRouter();
+    const [isOpen, setIsOpen] = useState(false)
 
     const { goBack, currentStepName } = useFormWizardState()
     const { goToStep } = useFormWizardaUpdate()
 
-    const [openTopModal, setOpenTopModal] = useState(false);
-
-    const handleModalOpenStateChange = (value: boolean) => {
-        setOpenTopModal(value)
-        if (value === false) {
-            goToStep(MenuStep.Menu)
-            clearMenuPath(router)
-        }
-    }
     const goBackToMenuStep = () => { goToStep(MenuStep.Menu, "back"); clearMenuPath(router) }
 
     const handleGoToStep = (step: MenuStep, path: string) => {
@@ -33,40 +25,51 @@ const Comp = () => {
         setMenuPath(path, router)
     }
 
+    useEffect(() => {
+        if(isOpen) {
+            goToStep(MenuStep.Menu)
+            clearMenuPath(router)
+        }
+    }, [isOpen, goToStep, router])
+
     return <>
         <div className="text-secondary-text cursor-pointer relative">
-            <div className="sm:-mr-2 -mr-0">
-                <IconButton className="inline-flex active:animate-press-down" onClick={() => setOpenTopModal(true)} icon={
+            <div className="sm:-mr-2 mr-0">
+                <IconButton className="inline-flex active:animate-press-down" onClick={() => setIsOpen(true)} icon={
                     <MenuIcon strokeWidth="2" />
                 } />
             </div>
-            <Modal
-                modalId="menuModal"
-                show={openTopModal}
-                setShow={handleModalOpenStateChange}
-                header={
-                    <div className="inline-flex items-center">
-                        {
-                            goBack &&
-                            <div className="-ml-2">
-                                <IconButton className="inline-flex" onClick={goBack} icon={
-                                    <ChevronLeft strokeWidth="2" />
-                                }>
-                                </IconButton>
-                            </div>
-                        }
-                        <h2>{currentStepName as string}</h2>
-                    </div>
-                }
-            >
-                <Wizard wizardId='menuWizard' >
-                    <WizardItem StepName={MenuStep.Menu} inModal>
-                        <MenuList goToStep={handleGoToStep} />
-                    </WizardItem>
-                    <WizardItem StepName={MenuStep.Transactions} GoBack={goBackToMenuStep} className="h-full" inModal>
-                        <HistoryList onNewTransferClick={() => handleModalOpenStateChange(false)} />
-                    </WizardItem>
-                </Wizard>
+            <Modal isOpen={isOpen} setIsOpen={setIsOpen}>
+                <ModalContent
+                    className="pb-4"
+                    header={
+                        <div className="inline-flex items-center w-full">
+                            {
+                                goBack &&
+                                <div className="-ml-2">
+                                    <IconButton className="inline-flex" onClick={goBack} icon={
+                                        <ChevronLeft strokeWidth="2" />
+                                    }>
+                                    </IconButton>
+                                </div>
+                            }
+                            <h2 className="flex-1">{currentStepName as string}</h2>
+                        </div>
+                    }
+                >
+                    {({ closeModal }) => (
+                        <div className="openpicker h-full" id="virtualListContainer">
+                            <Wizard wizardId='menuWizard' >
+                                <WizardItem StepName={MenuStep.Menu} inModal>
+                                    <MenuList goToStep={handleGoToStep} />
+                                </WizardItem>
+                                <WizardItem StepName={MenuStep.Transactions} GoBack={goBackToMenuStep} className="h-full" inModal>
+                                    <HistoryList onNewTransferClick={closeModal} />
+                                </WizardItem>
+                            </Wizard>
+                        </div>
+                    )}
+                </ModalContent>
             </Modal>
         </div >
     </>

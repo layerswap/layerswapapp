@@ -2,12 +2,12 @@ import HeaderWithMenu from "../HeaderWithMenu"
 import { useRouter } from "next/router"
 import { default as Content } from './Content';
 import { default as Footer } from './Footer';
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef } from "react";
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import AppSettings from "../../lib/AppSettings";
 import { THEME_COLORS } from "@/Models/Theme";
 import clsx from "clsx";
-import inIframe from "../utils/inIframe";
+import { useSettingsState } from "@/context/settings";
 
 type Props = {
    children: JSX.Element | JSX.Element[];
@@ -31,12 +31,7 @@ const Widget = ({ children, hideMenu, contextualMenu }: Props) => {
 
    const theme = THEME_COLORS[router.query.theme?.toString() || 'default']
 
-   const [embedded, setEmbedded] = useState<boolean>(false)
-
-   useEffect(() => {
-      setEmbedded(inIframe())
-   }, [])
-
+   const { isEmbedded } = useSettingsState()
    const handleBack = router.pathname === "/" ? null : goBack
    const isTransparentTheme = theme?.cardBackgroundStyle?.backgroundColor === 'transparent'
 
@@ -47,9 +42,9 @@ const Widget = ({ children, hideMenu, contextualMenu }: Props) => {
       <div
          style={theme?.cardBackgroundStyle}
          id="widget"
-         className={clsx('md:shadow-lg sm:pb-4 rounded-3xl w-full sm:overflow-hidden relative has-expandContainerHeight:min-h-[650px] max-sm:has-openpicker:min-h-svh max-sm:min-h-[99.8svh] sm:has-openpicker:min-h-[79svh] h-full flex flex-col',
+         className={clsx('md:shadow-lg sm:pb-4 rounded-3xl w-full sm:overflow-hidden relative has-expandContainerHeight:min-h-[675px] max-sm:has-openpicker:min-h-svh max-sm:min-h-[99.8svh] sm:has-openpicker:min-h-[79svh] h-full flex flex-col',
             {
-               "max-sm:min-h-[99svh]!": embedded,
+               "max-sm:min-h-[99svh]!": isEmbedded,
                "bg-secondary-700": !isTransparentTheme
             }
          )}

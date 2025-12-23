@@ -9,6 +9,7 @@ export type WalletModalConnector = InternalConnector & {
         state: 'fetched',
         value: string
     });
+    showQrCode?: boolean
 }
 
 export type ModalWalletProvider = WalletProvider & {
@@ -101,7 +102,7 @@ export const useConnectModal = () => {
 
     const context = useContext<ConnectModalContextType>(ConnectModalContext as Context<ConnectModalContextType>);
 
-    if (context === undefined) {
+    if (!context) {
         throw new Error('useConnectModal must be used within a ConnectModalProvider');
     }
 

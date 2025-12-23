@@ -81,7 +81,7 @@ const TransferTokenButton: FC<Props> = ({
         isPending: loading,
     }
 
-    return <div className="w-full space-y-3 flex flex-col justify-between h-full text-primary-text">
+    return <div className="w-full space-y-3 h-fit text-primary-text">
         {
             (buttonClicked || swapError) ? (
                 <TransactionMessage

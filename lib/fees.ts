@@ -1,4 +1,4 @@
-import { SwapQuote } from "./apiClients/layerSwapApiClient";
+import { Refuel, SwapQuote } from "./apiClients/layerSwapApiClient";
 
 export function CalculateMinimalAuthorizeAmount(usd_price: number, amount: number) {
     return Math.ceil((usd_price * amount) + (usd_price * amount * 0.02))
@@ -18,7 +18,7 @@ type PriceImpactValues = {
     minReceiveAmountUSD?: string | undefined;
 };
 
-export const resolvePriceImpactValues = (quote: SwapQuote | undefined): PriceImpactValues => {
+export const resolvePriceImpactValues = (quote: SwapQuote | undefined, refuel: Refuel | undefined): PriceImpactValues => {
 
     const receiveAmount = quote?.receive_amount;
     const requestedAmount = quote?.requested_amount;
@@ -48,7 +48,7 @@ export const resolvePriceImpactValues = (quote: SwapQuote | undefined): PriceImp
         : undefined;
 
     const marketImpact = priceImpact !== undefined && layerswapFees !== undefined && bridgeExpenses !== undefined
-        ? priceImpact + Number(layerswapFees) + Number(bridgeExpenses)
+        ? priceImpact + Number(layerswapFees) + Number(bridgeExpenses) + Number(refuel?.amount_in_usd || 0)
         : undefined;
 
     const priceImpactPercentage = requestedAmountUSD !== undefined && receiveAmountUSD !== undefined

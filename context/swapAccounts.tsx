@@ -58,7 +58,6 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
             const selectedAccountAddress = selectedWallet ? selectedSourceAccounts.find(acc => acc.providerName === provider.name && acc.id === selectedWallet.id)?.address : undefined
             const address = selectedAccountAddress ? selectedAccountAddress : wallet.address;
 
-
             const res = ResolveWalletSwapAccount(provider, wallet, address);
 
             if (!selectedAccountAddress) {
@@ -72,7 +71,7 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
                     return [...prev, res];
                 });
             }
-            
+
             return res
         }).filter(Boolean) as AccountIdentityWithSupportedNetworks[];
     }, [providers, selectedSourceAccounts])
