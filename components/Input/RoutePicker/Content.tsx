@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { RowElement } from "@/Models/Route";
 import { SwapDirection } from "@/components/DTOs/SwapFormValues";
 import { useVirtualizer } from "@/lib/virtual";
@@ -10,6 +10,7 @@ import { useSelectorState } from "@/components/Select/Selector/Index";
 import useWallet from "@/hooks/useWallet";
 import ConnectWalletButton from "@/components/Common/ConnectWalletButton";
 import { SearchComponent } from "../Search";
+import { useRoutePickerNavigation } from "@/helpers/navigation";
 import clsx from "clsx";
 
 type ContentProps = {
@@ -50,6 +51,38 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
             prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
         )
     }
+
+    const navigableItems = useMemo(() => {
+        return rowElements.reduce<Array<{ rowIndex: number; childCount: number }>>((acc, item, index) => {
+            if (item.type === 'group_title' || item.type === 'sceleton_token') return acc;
+
+            let childCount = 0;
+            if (item.type === 'network' || item.type === 'grouped_token') {
+                const groupName = item.type === "grouped_token" ? item.symbol : item.route.name;
+                const isOpen = openValues.includes(groupName);
+                if (isOpen) {
+                    childCount = item.type === 'network' ? item.route.tokens.length : item.items.length;
+                }
+            }
+            acc.push({ rowIndex: index, childCount });
+            return acc;
+        }, []);
+    }, [rowElements, openValues]);
+
+    const navigableIndexMap = useMemo(() => {
+        const map = new Map<number, number>();
+        navigableItems.forEach((item, index) => {
+            map.set(item.rowIndex, index);
+        });
+        return map;
+    }, [navigableItems]);
+
+    const { focusedIndex, handleHover } = useRoutePickerNavigation(
+        navigableItems,
+        searchQuery,
+        shouldFocus
+    );
+
     const virtualizer = useVirtualizer({
         count: rowElements.length,
         estimateSize: (index) => {
@@ -122,6 +155,7 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
                                     {items.map((virtualRow) => {
                                         const data = rowElements?.[virtualRow.index]
                                         const key = ((data as any)?.route as any)?.name || virtualRow.key;
+                                        const navigableIndex = navigableIndexMap.get(virtualRow.index) ?? -1;
                                         return <div
                                             className="py-1 box-border w-full overflow-hidden select-none"
                                             key={key}
@@ -138,6 +172,9 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
                                                 selectedToken={selectedToken}
                                                 searchQuery={searchQuery}
                                                 toggleContent={toggleAccordionItem}
+                                                focusedIndex={focusedIndex}
+                                                navigableIndex={navigableIndex}
+                                                onHover={handleHover}
                                             />
                                         </div>
                                     })}
