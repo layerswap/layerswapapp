@@ -71,8 +71,8 @@ export const ModalContent = (props: ModalContentProps) => {
         <div className={clsx("inset-0 z-50 bg-secondary-700 rounded-t-3xl sm:rounded-3xl flex flex-col overscroll-none",
             className,
             { 
-                'fixed sm:absolute': AppSettings.ThemeData?.enablePortal == true,
-                'absolute': AppSettings.ThemeData?.enablePortal == false
+                'max-sm:fixed absolute': AppSettings.ThemeData?.enablePortal == true,
+                'absolute': !AppSettings.ThemeData?.enablePortal
              }
         )}>
             {(header || showCloseButton) && (
