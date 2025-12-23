@@ -157,8 +157,9 @@ export default function useEVM(): WalletProvider {
                     order: resolveWalletConnectorIndex(w.id),
                     type: ((w.type == 'injected' && w.id !== 'com.immutable.passport') || w.id === "metaMaskSDK" || isWalletConnectSupported) ? w.type : "other",
                     isMobileSupported: isWalletConnectSupported,
+                    installUrl: walletConnectWallet?.installUrl,
                     hasBrowserExtension: walletConnectWallet?.hasBrowserExtension,
-                    extensionUrl: walletConnectWallet?.extensionUrl,
+                    extensionNotFound: walletConnectWallet?.type == 'walletConnect'
                 }
             })
     }, [allConnectors, walletConnectConnectors])

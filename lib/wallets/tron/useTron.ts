@@ -90,7 +90,7 @@ export default function useTron(): WalletProvider {
             name: wallet.adapter.name,
             icon: wallet.adapter.icon,
             type: isNotInstalled ? 'other' : 'injected',
-            installUrl: isNotInstalled ? wallet.adapter?.url : undefined,
+            installUrl: wallet.adapter?.url,
         }
     }), [wallets])
 

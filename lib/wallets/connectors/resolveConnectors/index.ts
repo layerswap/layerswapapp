@@ -19,7 +19,7 @@ export type WalletConnectWallet = {
     };
     rdns?: string;
     hasBrowserExtension?: boolean;
-    extensionUrl?: string;
+    extensionNotFound?: boolean,
     connectExternally?: boolean;
     type: string;
     icon: string;
@@ -86,7 +86,7 @@ const resolveWallet = (wallet: any) => {
         type: isWalletConnectSupported ? "walletConnect" : "other",
         isMobileSupported: isMobileSupported,
         hasBrowserExtension: wallet.injected != null,
-        extensionUrl: wallet.injected != null ? wallet.app.browser ?? wallet.app.chrome : undefined
+        installUrl: wallet.injected != null ? wallet.app.browser ?? wallet.app.chrome : undefined
     }
 
     return w

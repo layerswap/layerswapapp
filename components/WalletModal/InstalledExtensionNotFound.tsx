@@ -22,8 +22,8 @@ export const InstalledExtensionNotFound: FC<{
         <div className="flex flex-col gap-2 w-full">
             <SubmitButton
                 onClick={() => {
-                    if (!selectedConnector?.extensionUrl) return;
-                    window.open(selectedConnector.extensionUrl, '_blank', 'noopener,noreferrer');
+                    if (!selectedConnector?.installUrl) return;
+                    window.open(selectedConnector.installUrl, '_blank', 'noopener,noreferrer');
                 }}
                 buttonStyle="secondary"
                 className="w-full"

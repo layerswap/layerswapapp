@@ -13,7 +13,7 @@ export const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: Wallet
     const { isMobile: isMobileSize } = useWindowDimensions()
     const isMobilePlatform = isMobile();
 
-    if (selectedConnector.installUrl) {
+    if (selectedConnector.installUrl && !selectedConnector.hasBrowserExtension) {
         return <div className='w-full h-[60vh] sm:h-full flex flex-col justify-center items-center font-semibold relative'>
             <div className="flex grow items-center">
                 <div className="flex flex-col gap-4 items-center justify-end row-start-2 row-span-1">

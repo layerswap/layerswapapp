@@ -98,10 +98,9 @@ export default function useSVM(): WalletProvider {
                 id: wallet.adapter.name.trim(),
                 icon: wallet.adapter.icon,
                 type: wallet.readyState === 'Installed' ? 'injected' : 'other',
-                installUrl: (wallet.readyState === 'Installed' || wallet.readyState === 'Loadable' || hasBrowserExtension) ? undefined : wallet.adapter?.url,
+                installUrl: wallet.adapter?.url,
                 hasBrowserExtension: hasBrowserExtension,
-                extensionUrl: wallet.adapter.url,
-                connectExternally: (wallet.readyState === 'NotDetected' && hasBrowserExtension)
+                extensionNotFound: wallet.readyState === 'NotDetected'
             }
             connectors.push(internalConnector)
         }
