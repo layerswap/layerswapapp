@@ -1,11 +1,14 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useEffect, useMemo, useRef } from "react";
+import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import NumericInput from "../NumericInput";
 import { useQuoteData } from "@/hooks/useFee";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
 import clsx from "clsx";
 import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
+import { useSwitchUsdToken } from "@/context/switchUsdToken";
+import NumericInputControlled from "./NumericInputControlled";
+import { ArrowUpDown } from "lucide-react";
 
 interface AmountFieldProps {
     usdPosition?: "right" | "bottom";
@@ -15,11 +18,16 @@ interface AmountFieldProps {
 }
 
 const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", actionValue, fee, className }: AmountFieldProps, ref: any) {
-    const { values, handleChange } = useFormikContext<SwapFormValues>();
+
+    const { values, handleChange, setFieldValue } = useFormikContext<SwapFormValues>();
     const { fromAsset: fromCurrency, amount, toAsset: toCurrency, fromExchange } = values || {};
     const name = "amount"
     const amountRef = useRef(ref)
     const suffixRef = useRef<HTMLDivElement>(null);
+
+    const [usdAmount, setUsdAmount] = useState<string>("");
+    const lastEditRef = useRef<"usd" | "token" | null>(null);
+    const { isUsdPrimary, toggleUsdPrimary } = useSwitchUsdToken()
 
     const sourceCurrencyPriceInUsd = resolveTokenUsdPrice(fromCurrency, fee?.quote)
 
@@ -37,6 +45,43 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
         return formatUsd(sourceCurrencyPriceInUsd * amountNumber)
     }, [actionValue, sourceCurrencyPriceInUsd]);
 
+    const tokenSuffixText = useMemo(() => {
+        const precision = fromCurrency?.precision ?? 6;
+
+        if (actionValue && Number(actionValue) > 0) {
+            return `${formatTokenAmount(actionValue, precision)}`;
+        }
+
+        const usdN = Number(usdAmount);
+        if (
+            !sourceCurrencyPriceInUsd ||
+            isNaN(usdN) ||
+            usdN <= 0
+        ) {
+            return `0$`;
+        }
+
+        const tokenN = usdN / sourceCurrencyPriceInUsd;
+        return `${formatTokenAmount(tokenN, precision)} ${fromCurrency?.symbol}`;
+    }, [usdAmount, actionValue, sourceCurrencyPriceInUsd, fromCurrency]);
+
+    useEffect(() => {
+        if (!isUsdPrimary || lastEditRef.current === "usd") return;
+
+        const amountNumber = Number(amount);
+        if (
+            !sourceCurrencyPriceInUsd ||
+            isNaN(amountNumber) ||
+            amountNumber <= 0
+        ) {
+            setUsdAmount("");
+            return;
+        }
+
+        const usd = amountNumber * sourceCurrencyPriceInUsd;
+        setUsdAmount(trimZeros(usd.toFixed(2)));
+    }, [isUsdPrimary, amount, sourceCurrencyPriceInUsd]);
+
     useEffect(() => {
         const input = amountRef.current;
         const suffix = suffixRef.current;
@@ -48,13 +93,15 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
         suffix.style.left = `${width + 16}px`;
     }, [amount, requestedAmountInUsd, actionValue]);
 
-    const placeholder = '0'
+    const placeholder = "0";
+    const step = 1 / Math.pow(10, fromCurrency?.precision || 1);
+    const disabled = Boolean(fromExchange && !toCurrency);
 
-    const step = 1 / Math.pow(10, fromCurrency?.precision || 1)
+    const onToggle = () => {
+        toggleUsdPrimary();
+    };
 
-    const disabled = Boolean(fromExchange && !toCurrency)
-
-    return (<>
+    return (
         <div className={clsx("flex flex-col bg-secondary-500 space-y-0.5 relative w-full group",
             className,
             {
@@ -62,35 +109,84 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
             }
         )}
         >
-            <NumericInput
-                disabled={disabled}
-                placeholder={placeholder}
-                step={isNaN(step) ? 0.01 : step}
-                name={name}
-                ref={amountRef}
-                precision={fromCurrency?.precision}
-                tempValue={actionValue}
-                className="w-full text-[28px] leading-[34px] rounded-xl text-primary-text focus:outline-none focus:border-none focus:ring-0 duration-300 ease-in-out bg-secondary-500! font-normal! group-[.exchange-amount-field]:text-xl group-[.exchange-amount-field]:px-2.5 group-[.exchange-amount-field]:pb-2 group-[.exchange-amount-field]:pr-2 group-[.exchange-amount-field]:bg-secondary-300! pl-0"
-                onChange={e => {
-                    /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
-                }}
-            />
-            <div className={clsx(
-                "usd-suffix text-base group-[.exchange-amount-field]:text-sm leading-5 font-medium text-secondary-text pointer-events-none",
-                {
-                    "absolute bottom-3 group-[.exchange-amount-field]:bottom-3.5": usdPosition === "right",
-                    "h-5": usdPosition !== "right",
-                    "text-secondary-text/45": !!actionValueInUsd
-                },
-                "group-hover:block"
-            )} ref={suffixRef}>
-                {`${actionValueInUsd ?? requestedAmountInUsd ?? '$0'}`}
+            {!isUsdPrimary ? (
+                <NumericInput
+                    disabled={disabled}
+                    placeholder={placeholder}
+                    step={isNaN(step) ? 0.01 : step}
+                    name={name}
+                    ref={amountRef}
+                    precision={fromCurrency?.precision}
+                    tempValue={actionValue}
+                    className="w-full text-[28px] leading-[34px] rounded-xl text-primary-text focus:outline-none focus:border-none focus:ring-0 duration-300 ease-in-out bg-secondary-500! font-normal! group-[.exchange-amount-field]:text-xl group-[.exchange-amount-field]:px-2.5 group-[.exchange-amount-field]:pb-2 group-[.exchange-amount-field]:pr-2 group-[.exchange-amount-field]:bg-secondary-300! pl-0"
+                    onChange={e => {
+                        /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
+                    }}
+                />
+            ) : (
+                <NumericInputControlled
+                    disabled={disabled}
+                    placeholder={placeholder}
+                    step={0.01}
+                    precision={2}
+                    ref={amountRef}
+                    tempValue={actionValueInUsd}
+                    value={usdAmount}
+                    onValueChange={(val) => {
+                        lastEditRef.current = "usd";
+                        setUsdAmount(val);
+
+                        const usdN = Number(val);
+                        if (
+                            !sourceCurrencyPriceInUsd ||
+                            isNaN(usdN) ||
+                            usdN <= 0
+                        ) {
+                            setFieldValue("amount", "");
+                            return;
+                        }
+
+                        const precision = fromCurrency?.precision ?? 6;
+                        const tokenN = usdN / sourceCurrencyPriceInUsd;
+                        const tokenStr = formatTokenAmount(tokenN, precision);
+                        setFieldValue("amount", tokenStr);
+                    }}
+                    className="w-full text-[28px] leading-[34px] rounded-xl text-primary-text focus:outline-none focus:border-none focus:ring-0 duration-300 ease-in-out bg-secondary-500! font-normal! group-[.exchange-amount-field]:text-xl group-[.exchange-amount-field]:px-2.5 group-[.exchange-amount-field]:pb-2 group-[.exchange-amount-field]:pr-2 group-[.exchange-amount-field]:bg-secondary-300! pl-0"
+                />
+            )}
+
+            <div className="flex items-center gap-1">
+                <div
+                    className={clsx(
+                        "usd-suffix text-base group-[.exchange-amount-field]:text-sm leading-5 font-medium text-secondary-text pointer-events-none",
+                        {
+                            "absolute bottom-3 group-[.exchange-amount-field]:bottom-3.5":
+                                usdPosition === "right",
+                            "h-5": usdPosition !== "right",
+                            "text-secondary-text/45": !!actionValueInUsd,
+                        },
+                        "group-hover:block"
+                    )}
+                    ref={suffixRef}
+                >
+                    {!isUsdPrimary
+                        ? `${actionValueInUsd ?? requestedAmountInUsd ?? "$0"}`
+                        : tokenSuffixText}
+                </div>
+
+                <button
+                    type="button"
+                    onClick={onToggle}
+                    className="text-primary-text bg-secondary-300 hover:bg-secondary-200 p-0.5 rounded-sm transition hidden group-hover:block"
+                >
+                    <ArrowUpDown className="w-4 h-4" />
+                </button>
             </div>
         </div>
-    </>)
+    );
 });
 
-export default AmountField
+export default AmountField;
 
 function getTextWidth(text: string = '', font: string): number {
     if (typeof document === "undefined") return 0;
@@ -107,4 +203,13 @@ function getFontFromElement(el: HTMLElement | null): string {
     if (!el) return '28px sans-serif';
     const style = window.getComputedStyle(el);
     return `${style.fontSize} ${style.fontFamily}`;
+}
+
+function trimZeros(s: string) {
+    return s.replace(/\.?0+$/, "");
+}
+
+function formatTokenAmount(value: number, precision: number) {
+    if (!isFinite(value) || value <= 0) return "0";
+    return Number(value).toFixed(precision);
 }

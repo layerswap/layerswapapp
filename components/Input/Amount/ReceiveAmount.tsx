@@ -4,6 +4,7 @@ import { Quote } from "@/lib/apiClients/layerSwapApiClient";
 import NumberFlow from "@number-flow/react";
 import clsx from "clsx";
 import { PriceImpact } from "./PriceImpact";
+import { useSwitchUsdToken } from "@/context/switchUsdToken";
 
 type ReceiveAmountProps = {
     destination_token: Token | undefined;
@@ -14,6 +15,11 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ destination_token, fee, 
     const receive_amount = fee?.quote.receive_amount
     const receiveAmountInUsd = receive_amount && destination_token && fee.quote?.destination_token?.price_in_usd ? (receive_amount * fee.quote.destination_token.price_in_usd).toFixed(2) : undefined
     const quote = fee?.quote
+    const { isUsdPrimary } = useSwitchUsdToken()
+
+    const tokenAmount = <NumberFlow value={receive_amount || 0} trend={0} format={{ maximumFractionDigits: fee?.quote.destination_token?.decimals || 2 }} />
+
+    const usdAmount = <NumberFlow className="p-0" value={receiveAmountInUsd || 0} format={{ style: 'currency', currency: 'USD', maximumFractionDigits: receiveAmountInUsd ? 2 : 0 }} trend={0} />
 
     return (<>
         <div className="flex-col w-full flex min-w-0 font-normal border-0 text-[28px] leading-7 text-primary-text relative truncate">
@@ -23,12 +29,12 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ destination_token, fee, 
                     { "animate-pulse-stronger": isFeeLoading },
                     { "text-secondary-text": !receive_amount }
                 )}>
-                    <NumberFlow value={receive_amount || 0} trend={0} format={{ maximumFractionDigits: fee?.quote.destination_token?.decimals || 2 }} />
+                    {isUsdPrimary ? usdAmount : tokenAmount}
                 </div>
             </div>
             <div className="flex items-baseline space-x-2">
                 <span className="text-base leading-5 font-medium text-secondary-text h-5">
-                    <NumberFlow className="p-0" value={receiveAmountInUsd || 0} format={{ style: 'currency', currency: 'USD', maximumFractionDigits: receiveAmountInUsd ? 2 : 0 }} trend={0} />
+                    {isUsdPrimary ? tokenAmount : usdAmount}
                 </span>
                 <PriceImpact className="h-5 text-base leading-5" quote={quote} />
             </div>
