@@ -8,6 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/too
 import { useSelectedAccount } from "@/context/swapAccounts";
 import { useBalance } from "@/lib/balances/useBalance";
 import useWallet from "@/hooks/useWallet";
+import { useSwitchUsdToken } from "@/context/switchUsdToken";
 
 type MinMaxProps = {
     fromCurrency: NetworkRouteToken,
@@ -15,19 +16,21 @@ type MinMaxProps = {
     limitsMaxAmount: number | undefined,
     limitsMinAmount: number | undefined,
     onActionHover: (value: number | undefined) => void,
-    depositMethod: 'wallet' | 'deposit_address' | undefined
+    depositMethod: 'wallet' | 'deposit_address' | undefined,
+    tokenUsdPrice?: number;
 }
 
 const MinMax = (props: MinMaxProps) => {
 
     const { setFieldValue, values } = useFormikContext<SwapFormValues>();
-    const { fromCurrency, from, limitsMinAmount, limitsMaxAmount, onActionHover, depositMethod } = props;
+    const { fromCurrency, from, limitsMinAmount, limitsMaxAmount, onActionHover, depositMethod, tokenUsdPrice } = props;
 
     const selectedSourceAccount = useSelectedAccount("from", from?.name);
     const { wallets } = useWallet(from, 'withdrawal')
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
     const { gasData } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency, values.amount, wallet)
     const { balances, mutate: mutateBalances } = useBalance(selectedSourceAccount?.address, from)
+    const { isUsdPrimary } = useSwitchUsdToken();
 
     const walletBalance = useMemo(() => {
         return selectedSourceAccount?.address ? balances?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol) : undefined
@@ -42,6 +45,13 @@ const MinMax = (props: MinMaxProps) => {
     let maxAllowedAmount: number | undefined = useMemo(() => {
         return resolveMaxAllowedAmount({ fromCurrency, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod })
     }, [fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod])
+
+    const toHoverValue = (tokenAmount?: number) => {
+        if (!tokenAmount) return undefined;
+        if (!isUsdPrimary) return tokenAmount; 
+        if (!tokenUsdPrice) return undefined;  
+        return tokenAmount * tokenUsdPrice;    
+    };
 
     const handleSetValue = (value: string) => {
         mutateBalances()
@@ -80,7 +90,7 @@ const MinMax = (props: MinMaxProps) => {
                 Number(limitsMinAmount) > 0 ?
                     <ActionButton
                         label="Min"
-                        onMouseEnter={() => onActionHover(limitsMinAmount)}
+                        onMouseEnter={() => onActionHover(toHoverValue(limitsMinAmount))}
                         onClick={handleSetMinAmount}
                         disabled={!limitsMinAmount}
                     />
@@ -91,7 +101,7 @@ const MinMax = (props: MinMaxProps) => {
                 (depositMethod === 'wallet' && halfOfBalance > 0 && (halfOfBalance < (maxAllowedAmount || Infinity))) ?
                     <ActionButton
                         label="50%"
-                        onMouseEnter={() => onActionHover(halfOfBalance)}
+                        onMouseEnter={() => onActionHover(toHoverValue(halfOfBalance))}
                         onClick={handleSetHalfAmount}
                     />
                     :
@@ -103,7 +113,7 @@ const MinMax = (props: MinMaxProps) => {
                         <TooltipTrigger asChild>
                             <ActionButton
                                 label="Max"
-                                onMouseEnter={() => onActionHover(maxAllowedAmount)}
+                                onMouseEnter={() => onActionHover(toHoverValue(maxAllowedAmount))}
                                 disabled={!maxAllowedAmount}
                                 onClick={handleSetMaxAmount}
                             />

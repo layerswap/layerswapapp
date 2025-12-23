@@ -18,34 +18,15 @@ type Props = {
 };
 
 const NumericInputControlled: FC<Props> = forwardRef<HTMLInputElement, Props>(
-    function NumericInputControlled(
-        {
-            value,
-            onValueChange,
-            tempValue,
-            disabled,
-            placeholder,
-            minLength,
-            maxLength,
-            precision,
-            step,
-            className,
-        },
-        ref
-    ) {
-        const formattedTempValue =
-            tempValue
-                ? isScientific(tempValue)
-                    ? !isNaN(Number(tempValue))
-                        ? Number(tempValue)
-                            .toFixed(precision ?? 0)
-                            .replace(/\.?0+$/, "")
-                        : ""
-                    : tempValue?.toString()
-                : "";
+    function NumericInputControlled({ value, onValueChange, tempValue, disabled, placeholder, minLength, maxLength, precision, step, className, }, ref) {
+        const formattedTempValue = tempValue ? isScientific(tempValue)
+            ? (!isNaN(Number(tempValue))
+                ? Number(tempValue).toFixed(precision ?? 0).replace(/\.?0+$/, '')
+                : '')
+            : tempValue?.toString()
+            : '';
 
         const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-            // allow only decimal numeric text
             if (!/^[0-9]*[.,]?[0-9]*$/.test(e.target.value)) return;
 
             // normalize comma -> dot
@@ -56,7 +37,8 @@ const NumericInputControlled: FC<Props> = forwardRef<HTMLInputElement, Props>(
 
             onValueChange(e.target.value);
         };
-
+console.log(formattedTempValue);
+console.log(tempValue);
         return (
             <div className="flex relative w-full">
                 {Number(tempValue) > 0 && (
@@ -65,8 +47,7 @@ const NumericInputControlled: FC<Props> = forwardRef<HTMLInputElement, Props>(
                             "py-2 flex text-secondary-text/45 items-center h-12 leading-4 bg-secondary-700 min-w-0 rounded-lg font-semibold border-0",
                             className
                         )}
-                        // ref is used for measuring text width as well
-                        ref={ref as any}
+                        ref={ref}
                     >
                         <span>{formattedTempValue}</span>
                     </span>

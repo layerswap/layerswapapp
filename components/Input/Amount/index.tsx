@@ -15,12 +15,13 @@ interface AmountFieldProps {
     fee: ReturnType<typeof useQuoteData>['quote'];
     actionValue?: number;
     className?: string;
+    showQuickActions?: boolean;
 }
 
-const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", actionValue, fee, className }: AmountFieldProps, ref: any) {
+const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", actionValue, fee, className, showQuickActions }: AmountFieldProps, ref: any) {
 
     const { values, handleChange, setFieldValue } = useFormikContext<SwapFormValues>();
-    const { fromAsset: fromCurrency, amount, toAsset: toCurrency, fromExchange } = values || {};
+    const { fromAsset: fromCurrency, amount, toAsset: toCurrency, fromExchange, from } = values || {};
     const name = "amount"
     const amountRef = useRef(ref)
     const suffixRef = useRef<HTMLDivElement>(null);
@@ -45,6 +46,13 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
         return formatUsd(sourceCurrencyPriceInUsd * amountNumber)
     }, [actionValue, sourceCurrencyPriceInUsd]);
 
+    const actionUsdNumber = useMemo(() => {
+        if (!actionValue || !sourceCurrencyPriceInUsd) return undefined;
+        const n = Number(actionValue);
+        if (isNaN(n) || n <= 0) return undefined;
+        return (n * sourceCurrencyPriceInUsd).toFixed(2);
+    }, [actionValue, sourceCurrencyPriceInUsd]);
+
     const tokenSuffixText = useMemo(() => {
         const precision = fromCurrency?.precision ?? 6;
 
@@ -58,7 +66,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
             isNaN(usdN) ||
             usdN <= 0
         ) {
-            return `0$`;
+            return `$0`;
         }
 
         const tokenN = usdN / sourceCurrencyPriceInUsd;
@@ -130,7 +138,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
                     step={0.01}
                     precision={2}
                     ref={amountRef}
-                    tempValue={actionValueInUsd}
+                    tempValue={actionUsdNumber}
                     value={usdAmount}
                     onValueChange={(val) => {
                         lastEditRef.current = "usd";
@@ -174,13 +182,22 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
                         : tokenSuffixText}
                 </div>
 
-                <button
-                    type="button"
-                    onClick={onToggle}
-                    className="text-primary-text bg-secondary-300 hover:bg-secondary-200 p-0.5 rounded-sm transition hidden group-hover:block"
-                >
-                    <ArrowUpDown className="w-4 h-4" />
-                </button>
+                {from && fromCurrency && !fromExchange &&
+                    <button
+                        type="button"
+                        onClick={onToggle}
+                        className={clsx(
+                            "text-primary-text bg-secondary-300 hover:bg-secondary-200 p-0.5 rounded-sm transition",
+                            {
+                                "hidden": !showQuickActions,
+                                "block": showQuickActions
+                            },
+                            "group-hover:block"
+                        )}
+                    >
+                        <ArrowUpDown className="w-4 h-4" />
+                    </button>
+                }
             </div>
         </div>
     );
