@@ -13,6 +13,7 @@ export type InternalConnector = {
     isMobileSupported?: boolean,
     isHidden?: boolean,
     hasBrowserExtension?: boolean,
+    connectExternally?: boolean,
     extensionUrl?: string,
 }
 

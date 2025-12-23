@@ -20,6 +20,7 @@ export type WalletConnectWallet = {
     rdns?: string;
     hasBrowserExtension?: boolean;
     extensionUrl?: string;
+    connectExternally?: boolean;
     type: string;
     icon: string;
     projectId: string;
