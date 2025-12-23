@@ -1,5 +1,11 @@
 # @layerswap/widget
 
+## 1.1.2
+
+### Patch Changes
+
+- Modal and loading minor style fixes
+
 ## 1.1.1
 
 ### Patch Changes

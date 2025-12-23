@@ -2,6 +2,7 @@ import useWindowDimensions from "@/hooks/useWindowDimensions";
 import { useEffect, useRef } from "react";
 import FilledX from "../Icons/FilledX";
 import SearchIcon from "../Icons/SearchIcon";
+import clsx from "clsx";
 
 type SearchComponentProps = {
     searchQuery: string;
@@ -21,7 +22,7 @@ export const SearchComponent = ({ searchQuery, setSearchQuery, isOpen, className
         }
     }, [isOpen]);
 
-    return <div className={`flex items-center bg-secondary-500 focus-within:bg-secondary-300 rounded-lg px-2 h-10 ${className}`}>
+    return <div className={clsx("flex items-center bg-secondary-500 focus-within:bg-secondary-300 rounded-lg px-2 h-10", className)}>
         <div className="w-6 h-6 flex items-center justify-center mr-1">
             <SearchIcon className="text-primary-text-tertiary" />
         </div>

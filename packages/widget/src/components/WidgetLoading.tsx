@@ -20,7 +20,7 @@ export const WidgetLoading: FC = () => {
                         <div className="invisible sm:visible absolute inset-0 rounded-[25px] sm:pb-4 bg-gradient-to-t from-secondary-800 to-secondary-300 pointer-events-none" />
                     </>
                 }
-                <div className="layerswap-styles w-full sm:pb-4 z-[1] mx-auto rounded-3xl md:shadow-lg  relative bg-gradient-to-b from-secondary-700 to-secondary-700 ">
+                <div className="layerswap-styles w-full sm:pb-4 z-[1] mx-auto rounded-3xl md:shadow-lg relative bg-gradient-to-b from-secondary-700 to-secondary-700 ">
                     <div className="flex h-full content-center items-center justify-center flex-col container mx-auto">
                         <div className="flex h-full flex-col w-wit">
                             <div className="w-full overflow-visible relative text-left">
@@ -51,7 +51,7 @@ export const WidgetLoading: FC = () => {
                                                     </div>
                                                     <div className="px-4 h-full grow flex flex-col flex-1 justify-between w-full gap-3">
                                                         <div className="flex-col relative flex justify-between gap-2 w-full leading-4">
-                                                            <div className="flex flex-col bg-secondary-500 rounded-2xl p-4 pb-[15px] space-y-[27px] w-[438px] h-[156px] group animate-pulse">
+                                                            <div className="flex flex-col bg-secondary-500 rounded-2xl p-4 pb-[15px] space-y-[27px] w-[438px] max-sm:w-full h-[156px] group animate-pulse">
                                                                 <div className="grid grid-cols-9 gap-2 items-center h-7">
                                                                     <div className="block col-span-5 h-5" />
                                                                 </div>
@@ -66,7 +66,7 @@ export const WidgetLoading: FC = () => {
                                                                 </div>
                                                             </div>
                                                             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 rounded-lg w-7 h-7 bg-secondary-400 animate-pulse" />
-                                                            <div className="flex flex-col bg-secondary-500 rounded-2xl p-4 pb-[15px] space-y-[27px] w-[438px] h-[156px] group animate-pulse">
+                                                            <div className="flex flex-col bg-secondary-500 rounded-2xl p-4 pb-[15px] space-y-[27px] w-[438px] max-sm:w-full h-[156px] group animate-pulse">
                                                                 <div className="grid grid-cols-9 gap-2 items-center h-7">
                                                                     <div className="block col-span-5 h-5" />
                                                                 </div>
