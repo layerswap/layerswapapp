@@ -3,7 +3,7 @@ import { SVGProps } from "react";
 const Solflare = (props: SVGProps<SVGSVGElement>) => {
     return (
         <svg xmlns="http://www.w3.org/2000/svg" width="290" height="290" viewBox="0 0 290 290" fill="none" {...props}>
-            <g clip-path="url(#clip0_1796_821)">
+            <g clipPath="url(#clip0_1796_821)">
                 <rect width="290" height="290" fill="#FFEF46" />
                 <mask id="mask0_1796_821" style={{ "maskType": "luminance" }} maskUnits="userSpaceOnUse" x="0" y="0" width="290" height="290">
                     <path d="M290 0H0V290H290V0Z" fill="white" />
