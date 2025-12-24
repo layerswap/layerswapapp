@@ -100,14 +100,13 @@ export default function useSVM(): WalletProvider {
                 type: wallet.readyState === 'Installed' ? 'injected' : 'other',
                 installUrl: wallet.adapter?.url,
                 hasBrowserExtension: hasBrowserExtension,
-                extensionNotFound: wallet.readyState === 'NotDetected'
+                extensionNotFound: !(wallet.readyState === 'Installed' || wallet.readyState === 'Loadable')
             }
             connectors.push(internalConnector)
         }
 
         return connectors;
     }, [wallets]);
-
     const isNotAvailableCondition = useCallback((connectorId: string | undefined, network: string | undefined, purpose?: "withdrawal" | "autofill" | "asSource") => {
         if (!network) return false
         if (!connectorId) return true

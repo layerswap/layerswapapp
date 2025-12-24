@@ -152,17 +152,25 @@ export default function useEVM(): WalletProvider {
             .map(w => {
                 const walletConnectWallet = walletConnectConnectors.find(w2 => w2.name.toLowerCase().includes(w.name.toLowerCase()) || w2.id.toLowerCase() === w.id.toLowerCase())
                 const isWalletConnectSupported = w.type === "walletConnect" || w.name === "WalletConnect"
+                const type = ((w.type == 'injected' && w.id !== 'com.immutable.passport') || w.id === "metaMaskSDK" || isWalletConnectSupported) ? w.type : "other"
                 return {
                     ...w,
                     order: resolveWalletConnectorIndex(w.id),
-                    type: ((w.type == 'injected' && w.id !== 'com.immutable.passport') || w.id === "metaMaskSDK" || isWalletConnectSupported) ? w.type : "other",
+                    type: type,
                     isMobileSupported: isWalletConnectSupported,
                     installUrl: walletConnectWallet?.installUrl,
                     hasBrowserExtension: walletConnectWallet?.hasBrowserExtension,
-                    extensionNotFound: walletConnectWallet?.type == 'walletConnect'
+                    extensionNotFound: walletConnectWallet?.hasBrowserExtension ? type == 'walletConnect' : undefined
                 }
             })
     }, [allConnectors, walletConnectConnectors])
+
+    const availableHiddenWalletsForConnect = useMemo(() => {
+        return walletConnectConnectors.map(w => ({
+            ...w,
+            extensionNotFound: w.type == 'walletConnect'
+        }))
+    }, [walletConnectConnectors])
 
     const connectWallet = useCallback(async (props: { connector: WalletModalConnector }) => {
         try {
@@ -365,7 +373,7 @@ export default function useEVM(): WalletProvider {
             withdrawalSupportedNetworks,
             asSourceSupportedNetworks,
             availableWalletsForConnect: availableFeaturedWalletsForConnect,
-            availableHiddenWalletsForConnect: walletConnectConnectors,
+            availableHiddenWalletsForConnect: availableHiddenWalletsForConnect,
             name,
             id,
             providerIcon,

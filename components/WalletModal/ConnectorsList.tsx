@@ -51,13 +51,13 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     const connect = async (connector: WalletModalConnector, provider: WalletProvider) => {
         try {
             setConnectionError(undefined)
+            console.log(connector)
             if (connector?.isMultiChain) {
                 setSelectedMultiChainConnector(connector)
                 return;
             }
             setSelectedConnector(connector)
-            if ((connector?.hasBrowserExtension && !connector?.showQrCode && !isMobilePlatfrom) || connector.extensionNotFound) return
-            // if (connector.installUrl && !connector.hasBrowserExtension) return
+            if ((connector?.hasBrowserExtension && connector?.extensionNotFound && !connector?.showQrCode && !isMobilePlatfrom)) return
             if (!provider.ready) {
                 setConnectionError("Wallet provider is still initializing. Please wait a moment and try again.")
                 return
@@ -151,7 +151,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         return () => observer.disconnect();
     }, [hasMoreToLoad, isLoadingMore, loadMore, selectedConnector, selectedMultiChainConnector]);
 
-    if ((selectedConnector?.hasBrowserExtension && !selectedConnector?.showQrCode && !isMobilePlatfrom) || selectedConnector?.extensionNotFound) {
+    if ((selectedConnector?.hasBrowserExtension && selectedConnector?.extensionNotFound && !selectedConnector?.showQrCode && !isMobilePlatfrom)) {
         const provider = featuredProviders.find(p => p.name === selectedConnector?.providerName)
         return <InstalledExtensionNotFound selectedConnector={selectedConnector} onConnect={(connector) => { connect(connector, provider!) }} />
     }
