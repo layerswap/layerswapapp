@@ -37,8 +37,10 @@ const NumericInputControlled: FC<Props> = forwardRef<HTMLInputElement, Props>(
 
             onValueChange(e.target.value);
         };
-console.log(formattedTempValue);
-console.log(tempValue);
+
+        // Remove pl-0 from className if it exists to allow pl-4 for $ symbol
+        const inputClassName = className ? className.replace(/\bpl-0\b/g, '') : '';
+
         return (
             <div className="flex relative w-full">
                 {Number(tempValue) > 0 && (
@@ -49,29 +51,32 @@ console.log(tempValue);
                         )}
                         ref={ref}
                     >
-                        <span>{formattedTempValue}</span>
+                        <span>${formattedTempValue}</span>
                     </span>
                 )}
 
                 {!tempValue && (
-                    <input
-                        ref={ref}
-                        value={value}
-                        onChange={handleChange}
-                        inputMode="decimal"
-                        autoComplete="off"
-                        autoCorrect="off"
-                        disabled={disabled}
-                        placeholder={placeholder}
-                        minLength={minLength}
-                        maxLength={maxLength}
-                        type="text"
-                        step={step}
-                        className={classNames(
-                            "disabled:cursor-not-allowed h-12 leading-4 border-secondary-500 placeholder:text-secondary-text bg-secondary-700 focus:ring-primary focus:border-primary block min-w-0 rounded-lg font-semibold border-0",
-                            className
-                        )}
-                    />
+                    <div className="relative w-full flex items-center">
+                        <span className="absolute left-0 leading-4 text-primary-text pointer-events-none text-[28px]">$</span>
+                        <input
+                            ref={ref}
+                            value={value}
+                            onChange={handleChange}
+                            inputMode="decimal"
+                            autoComplete="off"
+                            autoCorrect="off"
+                            disabled={disabled}
+                            placeholder={placeholder}
+                            minLength={minLength}
+                            maxLength={maxLength}
+                            type="text"
+                            step={step}
+                            className={classNames(
+                                "disabled:cursor-not-allowed h-12 leading-4 border-secondary-500 placeholder:text-secondary-text bg-secondary-700 focus:ring-primary focus:border-primary block min-w-0 rounded-lg font-semibold border-0 pl-4",
+                                inputClassName
+                            )}
+                        />
+                    </div>
                 )}
             </div>
         );

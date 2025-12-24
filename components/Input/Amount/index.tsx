@@ -11,14 +11,13 @@ import NumericInputControlled from "./NumericInputControlled";
 import { ArrowUpDown } from "lucide-react";
 
 interface AmountFieldProps {
-    usdPosition?: "right" | "bottom";
     fee: ReturnType<typeof useQuoteData>['quote'];
     actionValue?: number;
     className?: string;
     showQuickActions?: boolean;
 }
 
-const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", actionValue, fee, className, showQuickActions }: AmountFieldProps, ref: any) {
+const AmountField = forwardRef(function AmountField({ actionValue, fee, className, showQuickActions }: AmountFieldProps, ref: any) {
 
     const { values, handleChange, setFieldValue } = useFormikContext<SwapFormValues>();
     const { fromAsset: fromCurrency, amount, toAsset: toCurrency, fromExchange, from } = values || {};
@@ -46,32 +45,17 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
         return formatUsd(sourceCurrencyPriceInUsd * amountNumber)
     }, [actionValue, sourceCurrencyPriceInUsd]);
 
-    const actionUsdNumber = useMemo(() => {
-        if (!actionValue || !sourceCurrencyPriceInUsd) return undefined;
-        const n = Number(actionValue);
-        if (isNaN(n) || n <= 0) return undefined;
-        return (n * sourceCurrencyPriceInUsd).toFixed(2);
-    }, [actionValue, sourceCurrencyPriceInUsd]);
-
     const tokenSuffixText = useMemo(() => {
-        const precision = fromCurrency?.precision ?? 6;
-
         if (actionValue && Number(actionValue) > 0) {
-            return `${formatTokenAmount(actionValue, precision)}`;
+            return Number(actionValue);
         }
 
-        const usdN = Number(usdAmount);
-        if (
-            !sourceCurrencyPriceInUsd ||
-            isNaN(usdN) ||
-            usdN <= 0
-        ) {
-            return `$0`;
+        if (amount && Number(amount) > 0) {
+            return `${amount} ${fromCurrency?.symbol}`;
         }
 
-        const tokenN = usdN / sourceCurrencyPriceInUsd;
-        return `${formatTokenAmount(tokenN, precision)} ${fromCurrency?.symbol}`;
-    }, [usdAmount, actionValue, sourceCurrencyPriceInUsd, fromCurrency]);
+        return `0 ${fromCurrency?.symbol}`;
+    }, [amount, actionValue, fromCurrency]);
 
     useEffect(() => {
         if (!isUsdPrimary || lastEditRef.current === "usd") return;
@@ -111,10 +95,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
 
     return (
         <div className={clsx("flex flex-col bg-secondary-500 space-y-0.5 relative w-full group",
-            className,
-            {
-                'focus-within:[&_.usd-suffix]:invisible': usdPosition === "right"
-            }
+            className
         )}
         >
             {!isUsdPrimary ? (
@@ -138,7 +119,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
                     step={0.01}
                     precision={2}
                     ref={amountRef}
-                    tempValue={actionUsdNumber}
+                    tempValue={actionValueInUsd?.replace("$", "")}
                     value={usdAmount}
                     onValueChange={(val) => {
                         lastEditRef.current = "usd";
@@ -166,11 +147,8 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
             <div className="flex items-center gap-1">
                 <div
                     className={clsx(
-                        "usd-suffix text-base group-[.exchange-amount-field]:text-sm leading-5 font-medium text-secondary-text pointer-events-none",
+                        "usd-suffix text-base leading-5 font-medium text-secondary-text pointer-events-none h-5",
                         {
-                            "absolute bottom-3 group-[.exchange-amount-field]:bottom-3.5":
-                                usdPosition === "right",
-                            "h-5": usdPosition !== "right",
                             "text-secondary-text/45": !!actionValueInUsd,
                         },
                         "group-hover:block"

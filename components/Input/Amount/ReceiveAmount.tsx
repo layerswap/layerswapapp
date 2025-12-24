@@ -33,9 +33,18 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ destination_token, fee, 
                 </div>
             </div>
             <div className="flex items-baseline space-x-2">
-                <span className="text-base leading-5 font-medium text-secondary-text h-5">
-                    {isUsdPrimary ? tokenAmount : usdAmount}
-                </span>
+                <div className="flex items-center gap-1">
+                    <span className="text-base leading-5 font-medium text-secondary-text ">
+                        {isUsdPrimary ? tokenAmount : usdAmount}
+                    </span>
+                    {
+                        isUsdPrimary && (
+                            <span className="text-base leading-5 font-medium text-secondary-text h-5">
+                                {destination_token?.symbol}
+                            </span>
+                        )
+                    }
+                </div>
                 <PriceImpact className="h-5 text-base leading-5" quote={quote} refuel={fee?.refuel} />
             </div>
         </div>

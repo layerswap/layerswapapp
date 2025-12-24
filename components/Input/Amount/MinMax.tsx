@@ -8,7 +8,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/too
 import { useSelectedAccount } from "@/context/swapAccounts";
 import { useBalance } from "@/lib/balances/useBalance";
 import useWallet from "@/hooks/useWallet";
-import { useSwitchUsdToken } from "@/context/switchUsdToken";
 
 type MinMaxProps = {
     fromCurrency: NetworkRouteToken,
@@ -23,14 +22,13 @@ type MinMaxProps = {
 const MinMax = (props: MinMaxProps) => {
 
     const { setFieldValue, values } = useFormikContext<SwapFormValues>();
-    const { fromCurrency, from, limitsMinAmount, limitsMaxAmount, onActionHover, depositMethod, tokenUsdPrice } = props;
+    const { fromCurrency, from, limitsMinAmount, limitsMaxAmount, onActionHover, depositMethod } = props;
 
     const selectedSourceAccount = useSelectedAccount("from", from?.name);
     const { wallets } = useWallet(from, 'withdrawal')
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
     const { gasData } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency, values.amount, wallet)
     const { balances, mutate: mutateBalances } = useBalance(selectedSourceAccount?.address, from)
-    const { isUsdPrimary } = useSwitchUsdToken();
 
     const walletBalance = useMemo(() => {
         return selectedSourceAccount?.address ? balances?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol) : undefined
@@ -45,13 +43,6 @@ const MinMax = (props: MinMaxProps) => {
     let maxAllowedAmount: number | undefined = useMemo(() => {
         return resolveMaxAllowedAmount({ fromCurrency, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod })
     }, [fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod])
-
-    const toHoverValue = (tokenAmount?: number) => {
-        if (!tokenAmount) return undefined;
-        if (!isUsdPrimary) return tokenAmount; 
-        if (!tokenUsdPrice) return undefined;  
-        return tokenAmount * tokenUsdPrice;    
-    };
 
     const handleSetValue = (value: string) => {
         mutateBalances()
@@ -71,7 +62,7 @@ const MinMax = (props: MinMaxProps) => {
         e.stopPropagation()
         if (!walletBalance?.amount)
             throw new Error("Wallet balance is not available");
-        handleSetValue((walletBalance?.amount / 2).toString())
+        handleSetValue((walletBalance.amount / 2).toString())
     }
 
     const handleSetMaxAmount = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -90,7 +81,9 @@ const MinMax = (props: MinMaxProps) => {
                 Number(limitsMinAmount) > 0 ?
                     <ActionButton
                         label="Min"
-                        onMouseEnter={() => onActionHover(toHoverValue(limitsMinAmount))}
+                        onMouseEnter={() => {
+                            onActionHover(limitsMinAmount);
+                        }}
                         onClick={handleSetMinAmount}
                         disabled={!limitsMinAmount}
                     />
@@ -101,7 +94,9 @@ const MinMax = (props: MinMaxProps) => {
                 (depositMethod === 'wallet' && halfOfBalance > 0 && (halfOfBalance < (maxAllowedAmount || Infinity))) ?
                     <ActionButton
                         label="50%"
-                        onMouseEnter={() => onActionHover(toHoverValue(halfOfBalance))}
+                        onMouseEnter={() => {
+                            onActionHover(halfOfBalance);
+                        }}
                         onClick={handleSetHalfAmount}
                     />
                     :
@@ -113,12 +108,14 @@ const MinMax = (props: MinMaxProps) => {
                         <TooltipTrigger asChild>
                             <ActionButton
                                 label="Max"
-                                onMouseEnter={() => onActionHover(toHoverValue(maxAllowedAmount))}
+                                onMouseEnter={() => {
+                                    onActionHover(maxAllowedAmount);
+                                }}
                                 disabled={!maxAllowedAmount}
                                 onClick={handleSetMaxAmount}
                             />
                         </TooltipTrigger>
-                        {showMaxTooltip ? <TooltipContent className="pointer-events-none w-80 grow p-2 !border-none !bg-secondary-300 text-xs rounded-xl" side="top" align="start" alignOffset={-10}>
+                        {showMaxTooltip ? <TooltipContent className="pointer-events-none w-80 grow p-2 border-none! bg-secondary-300! text-xs rounded-xl" side="top" align="start" alignOffset={-10}>
                             <p>Max is calculated based on your balance minus gas fee for the transaction</p>
                         </TooltipContent> : null}
                     </Tooltip>
