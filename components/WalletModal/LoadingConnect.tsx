@@ -6,7 +6,6 @@ import clsx from "clsx";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
 import LayerSwapLogoSmall from "../icons/layerSwapLogoSmall";
 import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
-import SubmitButton from "../buttons/submitButton";
 
 export const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalConnector, connectionError: string | undefined }> = ({ onRetry, selectedConnector, connectionError }) => {
     const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector?.name, iconUrl: selectedConnector.icon });
