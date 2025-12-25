@@ -431,7 +431,8 @@ const resolveSupportedNetworks = (supportedNetworks: string[], connectorId: stri
                 KnownInternalNames.Networks.ImmutableXMainnet,
                 KnownInternalNames.Networks.ImmutableXGoerli,
                 KnownInternalNames.Networks.ImmutableXSepolia,
-                KnownInternalNames.Networks.ImmutableZkEVM
+                KnownInternalNames.Networks.ImmutableZkEVM,
+                KnownInternalNames.Networks.ImmutableZkTestnet
             ]
         },
         {

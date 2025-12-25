@@ -41,7 +41,7 @@ export default function useImtblXConnection({ networks }: WalletConnectionProvid
                 id: 'immutablex',
                 displayName: name,
                 address: res.address,
-                providerName: id,
+                providerName: name,
                 icon: IMX,
                 disconnect: () => disconnectWallet(),
                 isActive: true,

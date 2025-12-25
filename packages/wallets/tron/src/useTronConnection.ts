@@ -25,7 +25,7 @@ export default function useTronConnection({ networks }: WalletConnectionProvider
         address,
         displayName: `${tronWallet.adapter.name} - Tron`,
         networkIcon: network?.logo,
-        providerName: id,
+        providerName: name,
         isActive: true,
         icon: walletIconResolver(address, tronWallet.adapter.icon),
         disconnect: () => disconnectWallet(),

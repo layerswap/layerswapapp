@@ -200,7 +200,7 @@ function sortGroupedTokensByBalance(tokenElements: GroupedTokenElement[], balanc
 }
 
 function resolveSearch(routes: NetworkRoute[], search: string, direction: SwapDirection, balances: Record<string, NetworkBalance> | null, routesHistory: RoutesHistory): RowElement[] {
-    const matchedNetworks = searchInNetworks(routes, search)
+    const matchedNetworks = searchInNetworks(routes, search, direction, balances)
     const matchedTokens = searchInTokens(routes, search).sort(sortSuggestedTokenElements(direction, balances, routesHistory))
     return [
         ...(matchedNetworks.length ? [resolveTitle('Networks'), ...matchedNetworks] : []),
@@ -209,14 +209,22 @@ function resolveSearch(routes: NetworkRoute[], search: string, direction: SwapDi
 }
 
 
-const searchInNetworks = (routes: NetworkRoute[], search: string): NetworkElement[] => {
+const searchInNetworks = (routes: NetworkRoute[], search: string, direction: SwapDirection, balances: Record<string, NetworkBalance> | null): NetworkElement[] => {
     const lower = search.toLowerCase().trim();
 
     return routes.filter(r => {
         const internalNameMatch = r.name.toLowerCase().includes(lower);
         const displayNameMatch = r.display_name?.toLowerCase().includes(lower);
         return internalNameMatch || displayNameMatch;
-    }).map(r => ({ type: 'network', route: r }));
+    }).map(r => ({
+        type: 'network',
+        route: {
+            ...r,
+            tokens: (direction === "from" && balances)
+                ? sortNetworkTokens(r, balances)
+                : r.tokens
+        }
+    }));
 }
 
 const searchInTokens = (routes: NetworkRoute[], search: string): NetworkTokenElement[] => {

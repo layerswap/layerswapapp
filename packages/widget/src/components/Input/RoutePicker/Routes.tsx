@@ -12,7 +12,6 @@ import { formatUsd } from "@/components/utils/formatUsdAmount";
 import { SwapDirection } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { getTotalBalanceInUSD } from "@/helpers/balanceHelper";
 import { useMemo } from "react";
-import { isNewListed, NewBadge } from "@/lib/isNewListed";
 import { TokenInfoIcon, TokenTitleWithBalance } from "./TokenTitleDetails";
 
 type TokenItemProps = {
@@ -55,15 +54,12 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     const formatted_balance_amount = (tokenbalance?.amount || tokenbalance?.amount === 0) ? truncateDecimals(tokenbalance?.amount, item.precision) : ''
     const usdAmount = (tokenbalance?.amount && item?.price_in_usd) ? item?.price_in_usd * tokenbalance?.amount : undefined;
 
-    const isNewlyListed = isNewListed(item?.listing_date);
-
     return <SelectItem.DetailedTitle
         title={<TokenTitleWithBalance
             item={item}
             route={route}
             tokenbalance={tokenbalance}
             usdAmount={usdAmount}
-            isNewlyListed={isNewlyListed}
         />}
         secondaryImageAlt={route.display_name}
         secondary={
@@ -111,23 +107,13 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
     const hasLoadedBalances = totalInUSD !== null && Number(totalInUSD) > 0;
     const showTokenLogos = hasLoadedBalances && filteredNetworkTokens?.length;
 
-    const haveNewlyListedTokens = useMemo(() => item.tokens?.some(t => isNewListed(t.listing_date)), [item]);
-
     return (
         <SelectItem className="bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative pr-7 py-2">
             <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} className="rounded-md" />
             <SelectItem.Title>
                 <>
                     <span>
-                        <div className="flex items-center gap-2">
-                            <p>
-                                {item.display_name}
-                            </p>
-                            {
-                                haveNewlyListedTokens &&
-                                <NewBadge />
-                            }
-                        </div>
+                        {item.display_name}
                     </span>
 
                     {hasLoadedBalances ? (
@@ -161,7 +147,7 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
                     ) : <></>}
 
                     <ChevronDown
-                        className="!w-3.5 !h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
+                        className="w-3.5! h-3.5! absolute right-2 top-1/2 -translate-y-1/2 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
                         aria-hidden="true"
                     />
                 </>
@@ -190,8 +176,6 @@ export const GroupedTokenHeader = ({
     const swapAccounts = useSwapAccounts(direction)
 
     const tokens = item.items;
-    const haveNewlyListedTokens = useMemo(() => tokens.some(t => isNewListed(t.route.token.listing_date)), [tokens]);
-
     const balances = useBalanceStore(s => s.balances)
 
     const networksWithBalance: NetworkRoute[] = Array.from(
@@ -244,15 +228,8 @@ export const GroupedTokenHeader = ({
             />
             <SelectItem.Title>
                 <>
-                    <span><div className="flex items-center gap-2">
-                        <p>
-                            {mainToken.symbol}
-                        </p>
-                        {
-                            haveNewlyListedTokens &&
-                            <NewBadge />
-                        }
-                    </div>
+                    <span>
+                        {mainToken.symbol}
                     </span>
                     {hasLoadedBalances ? (
                         <div className={`${showNetworkIcons ? "flex flex-col space-y-0.5" : ""} ${hideTokenImages ? "invisible" : "visible"}`}>
