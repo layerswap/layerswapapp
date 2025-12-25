@@ -2,14 +2,12 @@ import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { Info } from "lucide-react";
 import { ExtendedAddress } from "../Address/AddressPicker/AddressWithIcon";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
-import { NewBadge } from "@/lib/isNewListed";
 import { TokenBalance } from "@/Models/Balance";
 type TokenTitleWithBalanceProps = {
     item: NetworkRouteToken;
     route: NetworkRoute;
     tokenbalance?: TokenBalance;
     usdAmount?: number;
-    isNewlyListed: boolean;
 }
 
 export const TokenInfoIcon = ({ item, route, className, iconOnly = false }: { item: NetworkRouteToken, route: NetworkRoute, className?: string, iconOnly?: boolean }) => (
@@ -36,17 +34,13 @@ export const TokenInfoIcon = ({ item, route, className, iconOnly = false }: { it
     </div>
 );
 
-export const TokenTitleWithBalance = ({ item, route, tokenbalance, usdAmount, isNewlyListed }: TokenTitleWithBalanceProps) => {
+export const TokenTitleWithBalance = ({ item, route, tokenbalance, usdAmount }: TokenTitleWithBalanceProps) => {
     return (
         <div className="flex items-center gap-2 justify-between w-full">
             <div className="flex items-center gap-2">
                 <p>
                     {item.symbol}
                 </p>
-                {
-                    isNewlyListed &&
-                    <NewBadge />
-                }
                 <TokenInfoIcon
                     item={item}
                     route={route}
