@@ -48,25 +48,26 @@ const Comp = ({ children, hidden, sticky = true, showPoweredBy }: FooterProps) =
                                 duration: 0.15,
                             }}
                             custom={{ direction: -1, width: 100 }}
+                            style={AppSettings.ThemeData?.cardBackgroundStyle}
                             variants={variants}
                             className={`text-primary-text text-base
-            max-sm:fixed
-            max-sm:inset-x-0
-            max-sm:bottom-0 
-            max-sm:z-30
-            max-sm:bg-secondary-700 
-            max-sm:shadow-widget-footer 
-            max-sm:p-4 
-            max-sm:px-4 
-            max-sm:w-full ${hidden ? 'animation-slide-out' : ''} w-full`}>
+                                        max-sm:fixed
+                                        max-sm:inset-x-0
+                                        max-sm:bottom-0 
+                                        max-sm:z-30
+                                        max-sm:bg-secondary-700 
+                                        max-sm:shadow-widget-footer 
+                                        max-sm:p-4 
+                                        max-sm:px-4 
+                                        max-sm:w-full ${hidden ? 'animation-slide-out' : ''} w-full`}>
                             {children}
                         </motion.div>
 
                         <div style={{ height: `${height}px` }}
                             className={`text-primary-text text-base      
-                 max-sm:inset-x-0
-                 max-sm:bottom-0 
-                 max-sm:p-4 max-sm:w-full invisible sm:hidden w-full`}>
+                                        max-sm:inset-x-0
+                                        max-sm:bottom-0 
+                                        max-sm:p-4 max-sm:w-full invisible sm:hidden w-full`}>
                         </div>
                     </>
                     :

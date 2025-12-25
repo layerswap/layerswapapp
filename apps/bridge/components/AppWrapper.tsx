@@ -17,8 +17,6 @@ export default function ThemeWrapper({ children }: Props) {
                     color: 'rgb(var(--ls-colors-secondary-text))'
                 },
                 position: 'top-center',
-
-
                 error: {
                     duration: Infinity,
                 },

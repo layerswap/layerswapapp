@@ -69,7 +69,7 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
 
     const baseTheme: ThemeData = {
         ...(themeData ?? {}),
-        ...themeOverrides,
+        ...(!router.query.theme ? themeOverrides : {}),
     } as ThemeData
 
     const apiVersion = process.env.NEXT_PUBLIC_API_VERSION as ('mainnet' | 'testnet') | undefined

@@ -5,6 +5,7 @@ import { default as Footer } from './Footer';
 import { useRef } from "react";
 import AppSettings from "@/lib/AppSettings";
 import clsx from "clsx";
+import { useSettingsState } from "@/exports";
 
 type Props = {
    children: JSX.Element | JSX.Element[];
@@ -16,10 +17,11 @@ type Props = {
 
 const Widget = ({ children, hideMenu, goBack, contextualMenu }: Props) => {
    const wrapper = useRef(null);
+   const { isEmbedded } = useSettingsState()
 
    return <div className="relative p-px h-full">
       {
-         AppSettings.ThemeData?.enableWideVersion &&
+         AppSettings.ThemeData?.enableWideVersion && !isEmbedded &&
          <div className="invisible sm:visible absolute inset-0 rounded-[25px] bg-linear-to-t from-secondary-800 to-secondary-300 pointer-events-none" />
       }
       <div
@@ -27,6 +29,7 @@ const Widget = ({ children, hideMenu, goBack, contextualMenu }: Props) => {
          style={AppSettings.ThemeData?.cardBackgroundStyle}
          className={clsx("sm:pb-4 rounded-3xl w-full overflow-hidden relative bg-secondary-700 h-full flex flex-col has-expandContainerHeight:min-h-[650px]", {
             "max-sm:has-openpicker:min-h-svh max-sm:min-h-[99.8svh] sm:has-openpicker:min-h-[79svh]": AppSettings.ThemeData?.enableWideVersion,
+            "max-sm:min-h-[99svh]!": isEmbedded,
             "has-openpicker:min-h-[675px]": !AppSettings.ThemeData?.enableWideVersion
          })}
       >

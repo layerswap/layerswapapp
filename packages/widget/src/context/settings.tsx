@@ -1,10 +1,12 @@
-import React, { Context, FC } from 'react'
+import React, { Context, FC, useEffect, useState } from 'react'
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
 import { InitialSettings } from '../Models/InitialSettings';
+import inIframe from '@/components/utils/inIframe';
 
 export interface SettingsContextValue {
   settings: LayerSwapAppSettings;
   initialSettings: InitialSettings;
+  isEmbedded: boolean;
 }
 
 export const SettingsStateContext = React.createContext<SettingsContextValue | null>(null);
@@ -16,11 +18,17 @@ export const SettingsProvider: FC<{
 }> = ({ children, initialLayerswapData, initialSettings: initialSettings = {} }) => {
   const value: SettingsContextValue = {
     settings: initialLayerswapData,
-    initialSettings: mapLegacySettings(initialSettings)
+    initialSettings: mapLegacySettings(initialSettings),
+    isEmbedded: false,
   };
 
+  const [embedded, setEmbedded] = useState<boolean>(false)
+  useEffect(() => {
+    setEmbedded(inIframe())
+  }, [])
+
   return (
-    <SettingsStateContext.Provider value={value}>
+    <SettingsStateContext.Provider value={{ ...value, isEmbedded: embedded }}>
       {children}
     </SettingsStateContext.Provider>
   );
@@ -33,7 +41,10 @@ export function useSettingsState() {
     throw new Error('useSettingsState must be used within a SettingsProvider');
   }
 
-  return data.settings;
+  return {
+    ...data.settings,
+    isEmbedded: data.isEmbedded,
+  };
 }
 
 export function useInitialSettings() {
