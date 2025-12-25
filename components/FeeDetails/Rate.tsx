@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { ArrowRight } from "lucide-react"
-import { truncateDecimals } from "../utils/RoundDecimals"
+import { getPrecisionForMinUsd, truncateDecimals } from "../utils/RoundDecimals"
 import { NetworkRouteToken } from "@/Models/Network"
 
 export const RateElement = ({
@@ -29,7 +29,10 @@ export const RateElement = ({
     const toRate = requestAmount / totalAmount
 
     const fromRateTruncated = truncateDecimals(fromRate, fromAsset?.precision || 6)
-    const toRateTruncated = truncateDecimals(toRate, toAsset?.precision || 6)
+
+    const dynamicToRatePrecision = getPrecisionForMinUsd(toAsset.price_in_usd);
+
+    const toRateTruncated = truncateDecimals(toRate, Math.max(dynamicToRatePrecision, toAsset?.precision));
 
     return (
         <div
