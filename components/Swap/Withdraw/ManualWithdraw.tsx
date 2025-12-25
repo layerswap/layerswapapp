@@ -234,7 +234,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
                                                 <PopoverTrigger asChild>
                                                     <div className="relative">
                                                         <QRIcon
-                                                            className="bg-secondary-300 p-1 rounded-lg cursor-pointer hover:opacity-80"
+                                                            className="bg-secondary-300 p-1 rounded-lg cursor-pointer hover:opacity-80 fill-primary-text text-primary-text"
                                                         />
                                                     </div>
                                                 </PopoverTrigger>
@@ -333,7 +333,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
                                     </span>
                                 }
                             />
-                            <QuoteDetails swapValues={swapValues} quote={quote} isQuoteLoading={isQuoteLoading} />
+                            <QuoteDetails swapValues={swapValues} quote={quote} isQuoteLoading={isQuoteLoading} triggerClassnames='mt-0!' />
                         </>
                     )}
                 </div>
@@ -344,7 +344,6 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
                 </SubmitButton>
             </Widget.Footer>
         </>
-
     )
 }
 

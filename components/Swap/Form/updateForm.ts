@@ -1,7 +1,6 @@
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { resolvePersistantQueryParams } from "@/helpers/querryHelper";
 import { FormikHelpers } from "formik";
-import { parse, ParsedUrlQuery } from "querystring";
 
 const fieldMapping: Record<string, string> = {
     to: "name",
@@ -21,11 +20,12 @@ function updateQueries({ formDataKey, formDataValue, }: { formDataKey: string; f
         window.location.host +
         window.location.pathname;
 
-    // parse existing
-    const raw = window.location.search.startsWith("?")
-        ? window.location.search.slice(1)
-        : window.location.search;
-    const existing: ParsedUrlQuery = parse(raw);
+    // parse existing using URLSearchParams
+    const searchParams = new URLSearchParams(window.location.search);
+    const existing: Record<string, string> = {};
+    searchParams.forEach((value, key) => {
+        existing[key] = value;
+    });
     const params = resolvePersistantQueryParams(existing) as Record<string, any>;
 
     if (formDataValue == null || formDataValue === "") {
@@ -64,10 +64,11 @@ function updateQueriesBulk(
         window.location.host +
         window.location.pathname;
 
-    const raw = window.location.search.startsWith("?")
-        ? window.location.search.slice(1)
-        : window.location.search;
-    const existing: ParsedUrlQuery = parse(raw);
+    const searchParams = new URLSearchParams(window.location.search);
+    const existing: Record<string, string> = {};
+    searchParams.forEach((value, key) => {
+        existing[key] = value;
+    });
     const params = resolvePersistantQueryParams(existing) as Record<string, any>;
 
     // apply each update: delete null/undefined, or set the string
