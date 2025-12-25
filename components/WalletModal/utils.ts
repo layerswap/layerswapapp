@@ -1,10 +1,19 @@
 export function removeDuplicatesWithKey(arr: any[], key: string) {
     const countMap = {};
+    const providerMap = {};
 
-    // First pass: Count occurrences of each unique key.
+    // First pass: Count occurrences of each unique key and track unique providers.
     arr.forEach(item => {
         const identifier = item[key];
         countMap[identifier] = (countMap[identifier] || 0) + 1;
+
+        // Track unique provider names for this connector
+        if (!providerMap[identifier]) {
+            providerMap[identifier] = new Set();
+        }
+        if (item.providerName) {
+            providerMap[identifier].add(item.providerName);
+        }
     });
 
     // Second pass: Create a new array with one instance of each object.
@@ -15,10 +24,11 @@ export function removeDuplicatesWithKey(arr: any[], key: string) {
         const identifier = item[key];
         if (!seen.has(identifier)) {
             seen.add(identifier);
-            // Add a property 'duplicateCount' to indicate extra duplicates found.
+            // Only mark as multichain if there are duplicates across different providers
+            const uniqueProviders = providerMap[identifier]?.size || 0;
             unique.push({
                 ...item,
-                isMultiChain: countMap[identifier] > 1
+                isMultiChain: countMap[identifier] > 1 && uniqueProviders > 1
             });
         }
     });
