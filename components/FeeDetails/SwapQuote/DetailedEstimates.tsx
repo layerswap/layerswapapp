@@ -43,7 +43,7 @@ export const DetailedEstimates: FC<DetailedEstimatesProps> = ({
     return <div className="flex flex-col w-full px-2">
         {variant === "extended" && <GasFee values={values} quote={quote} />}
         <Fees quote={quote} values={values} />
-        {values.depositMethod !== "deposit_address" && <Rate fromAsset={values?.fromAsset} toAsset={values?.toAsset} requestAmount={quote?.requested_amount} receiveAmount={quote?.receive_amount} totalFeeInUsd={quote?.total_fee_in_usd} />}
+        {values.depositMethod !== "deposit_address" && <Rate fromAsset={values?.fromAsset} toAsset={values?.toAsset} rate={quote?.rate} />}
         {values.depositMethod === "deposit_address" && variant === "extended" && values?.fromAsset?.contract && <ExchangeTokenContract fromAsset={values?.fromAsset} network={values?.from} />}
         {variant === "extended" && values.depositMethod === "wallet" && <Slippage quoteData={quote} values={values} />}
         <Estimates quote={quote} />
@@ -194,16 +194,14 @@ const Reward = ({ reward }: { reward: QuoteReward }) => {
 type RateProps = {
     fromAsset?: NetworkRouteToken
     toAsset?: NetworkRouteToken
-    requestAmount?: number
-    receiveAmount?: number
-    totalFeeInUsd?: number
+    rate?: number
 }
-const Rate = ({ fromAsset, toAsset, requestAmount, receiveAmount, totalFeeInUsd }: RateProps) => {
-    if (!fromAsset || !toAsset || !requestAmount || !receiveAmount || !totalFeeInUsd) {
+const Rate = ({ fromAsset, toAsset, rate }: RateProps) => {
+    if (!fromAsset || !toAsset || !rate) {
         return null
     }
     return <RowWrapper title="Rate">
-        <RateElement fromAsset={fromAsset} toAsset={toAsset} requestAmount={requestAmount} receiveAmount={receiveAmount} totalFeeInUsd={totalFeeInUsd} />
+        <RateElement fromAsset={fromAsset} toAsset={toAsset} rate={rate} />
     </RowWrapper>
 }
 

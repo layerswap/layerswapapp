@@ -252,6 +252,7 @@ export type SwapQuote = {
     avg_completion_time: string,
     refuel_in_source?: number,
     slippage?: number,
+    rate?: number,
 }
 
 export type AddressBookItem = {

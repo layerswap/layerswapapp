@@ -6,30 +6,17 @@ import { NetworkRouteToken } from "@/Models/Network"
 export const RateElement = ({
     fromAsset,
     toAsset,
-    requestAmount,
-    receiveAmount,
-    totalFeeInUsd
+    rate
 }: {
     fromAsset: NetworkRouteToken
     toAsset: NetworkRouteToken
-    requestAmount: number
-    receiveAmount: number
-    totalFeeInUsd: number
+    rate: number
 }) => {
     const [flipped, setFlipped] = useState(false)
 
-    if (toAsset.price_in_usd === 0) {
-        return null
-    }
-
-    const totalFee = totalFeeInUsd ? totalFeeInUsd / toAsset.price_in_usd : 0
-    const totalAmount = receiveAmount + totalFee
-
-    const fromRate = totalAmount / requestAmount
-    const toRate = requestAmount / totalAmount
-
-    const fromRateTruncated = truncateDecimals(fromRate, fromAsset?.precision || 6)
-    const toRateTruncated = truncateDecimals(toRate, toAsset?.precision || 6)
+    const flippedRate = 1 / rate
+    const rateTruncated = truncateDecimals(rate, toAsset?.precision || 6)
+    const flippedRateTruncated = truncateDecimals(flippedRate, fromAsset?.precision || 6)
 
     return (
         <div
@@ -40,13 +27,13 @@ export const RateElement = ({
                 <>
                     <p><span>1</span> <span>{fromAsset?.symbol}</span></p>
                     <ArrowRight className="w-3 h-3 mx-1" />
-                    <span>{fromRateTruncated} {toAsset?.symbol}</span>
+                    <span>{rateTruncated} {toAsset?.symbol}</span>
                 </>
             ) : (
                 <>
                     <p><span>1</span> <span>{toAsset?.symbol}</span></p>
                     <ArrowRight className="w-3 h-3 mx-1" />
-                    <span>{toRateTruncated} {fromAsset?.symbol}</span>
+                    <span>{flippedRateTruncated} {fromAsset?.symbol}</span>
                 </>
             )}
         </div>
