@@ -55,7 +55,7 @@ const CexPicker: FC = () => {
     return (
         <div className="flex w-full flex-col self-end relative ml-auto items-center">
             <Selector>
-                <SelectorTrigger disabled={false} className="bg-secondary-500 !p-3">
+                <SelectorTrigger disabled={false} className="bg-secondary-500 p-3!">
                     <SelectedExchangeDisplay exchange={fromExchange} placeholder="Select Exchange" />
                 </SelectorTrigger>
                 <SelectorContent isLoading={isLoading} searchHint="Search">
@@ -102,7 +102,7 @@ const ExchangeNetwork = (props: ExchangeNetworkProps) => {
     return <div className="bg-secondary-500 cursor-pointer hover:bg-secondary-400 rounded-xl outline-none disabled:cursor-not-allowed relative" onClick={() => onSelect(route)} >
         <SelectItem>
             <SelectItem.Logo imgSrc={route.logo} altText={`${route.display_name} logo`} />
-            <SelectItem.Title className="!py-3">{route.display_name}</SelectItem.Title>
+            <SelectItem.Title className="py-3!">{route.display_name}</SelectItem.Title>
         </SelectItem>
     </div>
 }

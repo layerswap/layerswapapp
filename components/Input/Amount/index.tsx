@@ -9,6 +9,7 @@ import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
 import { useSwitchUsdToken } from "@/context/switchUsdToken";
 import NumericInputControlled from "./NumericInputControlled";
 import { ArrowUpDown } from "lucide-react";
+import { formatTokenAmount, trimZeros } from "@/components/utils/numbers";
 
 interface AmountFieldProps {
     fee: ReturnType<typeof useQuoteData>['quote'];
@@ -107,7 +108,7 @@ const AmountField = forwardRef(function AmountField({ actionValue, fee, classNam
                     ref={amountRef}
                     precision={fromCurrency?.precision}
                     tempValue={actionValue}
-                    className="w-full text-[28px] leading-[34px] rounded-xl text-primary-text focus:outline-none focus:border-none focus:ring-0 duration-300 ease-in-out bg-secondary-500! font-normal! group-[.exchange-amount-field]:text-xl group-[.exchange-amount-field]:px-2.5 group-[.exchange-amount-field]:pb-2 group-[.exchange-amount-field]:pr-2 group-[.exchange-amount-field]:bg-secondary-300! pl-0"
+                    className="w-full text-[28px] leading-[34px] rounded-xl text-primary-text focus:outline-none focus:border-none focus:ring-0 duration-300 ease-in-out bg-secondary-500! font-normal! pl-0"
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                     }}
@@ -119,7 +120,7 @@ const AmountField = forwardRef(function AmountField({ actionValue, fee, classNam
                     step={0.01}
                     precision={2}
                     ref={amountRef}
-                    tempValue={actionValueInUsd?.replace("$", "")}
+                    tempValue={Number(actionValueInUsd?.replace("$", ""))}
                     value={usdAmount}
                     onValueChange={(val) => {
                         lastEditRef.current = "usd";
@@ -140,7 +141,7 @@ const AmountField = forwardRef(function AmountField({ actionValue, fee, classNam
                         const tokenStr = formatTokenAmount(tokenN, precision);
                         setFieldValue("amount", tokenStr);
                     }}
-                    className="w-full text-[28px] leading-[34px] rounded-xl text-primary-text focus:outline-none focus:border-none focus:ring-0 duration-300 ease-in-out bg-secondary-500! font-normal! group-[.exchange-amount-field]:text-xl group-[.exchange-amount-field]:px-2.5 group-[.exchange-amount-field]:pb-2 group-[.exchange-amount-field]:pr-2 group-[.exchange-amount-field]:bg-secondary-300! pl-0"
+                    className="w-full text-[28px] leading-[34px] rounded-xl text-primary-text focus:outline-none focus:border-none focus:ring-0 duration-300 ease-in-out bg-secondary-500! font-normal! pl-0"
                 />
             )}
 
@@ -198,13 +199,4 @@ function getFontFromElement(el: HTMLElement | null): string {
     if (!el) return '28px sans-serif';
     const style = window.getComputedStyle(el);
     return `${style.fontSize} ${style.fontFamily}`;
-}
-
-function trimZeros(s: string) {
-    return s.replace(/\.?0+$/, "");
-}
-
-function formatTokenAmount(value: number, precision: number) {
-    if (!isFinite(value) || value <= 0) return "0";
-    return Number(value).toFixed(precision);
 }
