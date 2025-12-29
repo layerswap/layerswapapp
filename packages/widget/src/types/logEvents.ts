@@ -9,7 +9,17 @@ export interface BaseErrorProps {
 
 export type AlertUIEvent = { type: 'AlertUI' } & BaseErrorProps;
 
-export type WidgetError = ({ type: 'APIError' | 'ErrorFallback' | 'NotFound' | 'SwapFailed' } & BaseErrorProps)
+export type WidgetError = ({ type: 'ErrorFallback' | 'NotFound' | 'SwapFailed' } & BaseErrorProps)
+
+export type APIError = ({
+    type: 'APIError'
+    endpoint: string,
+    status: string,
+    statusText: string,
+    responseData: any,
+    requestUrl: string,
+    requestMethod: string,
+} & BaseErrorProps)
 
 export type BalanceError = ({
     type: 'BalanceResolverError' | 'BalanceProviderError'
@@ -25,7 +35,7 @@ export type BalanceError = ({
     request_url?: string;
     response_data?: unknown;
     response_status?: number;
-    response_status_text?: string;  
+    response_status_text?: string;
     error_code?: string;
 } & BaseErrorProps)
 
@@ -49,7 +59,7 @@ export type TransferError = ({ type: 'TransferError' } & BaseErrorProps)
 export type WalletError = ({ type: 'WalletError' } & BaseErrorProps)
 
 
-export type ErrorEventType = WidgetError | BalanceError | GasFeeError | WalletWithdrawalError | AlertUIEvent | TransactionNotDetectedError | ChainError | TransferError | WalletError;
+export type ErrorEventType = WidgetError | APIError | BalanceError | GasFeeError | WalletWithdrawalError | AlertUIEvent | TransactionNotDetectedError | ChainError | TransferError | WalletError;
 
 export type SwapStatusEvent = {
     type: SwapStatus;
