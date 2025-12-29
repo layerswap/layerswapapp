@@ -61,6 +61,7 @@ const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
         setActionTempValue(value)
     }
 
+    const amountLabel = isUsdPrimary ? "Enter USD amount" : "Enter amount";
     const tokenUsdPrice = resolveTokenUsdPrice(fromCurrency, quote?.quote)
     const onToggle = () => {
         toggleUsdPrimary();
@@ -134,8 +135,11 @@ const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
                             <div className="bg-secondary-500 rounded-2xl p-3 group space-y-2" onClick={setShowQuickActions} ref={parentRef}>
                                 <div className="flex justify-between items-center">
                                     <div className="flex items-center gap-2">
-                                        <label htmlFor="From" className="block font-normal text-secondary-text text-base ml-2 leading-5">
-                                            Enter {isUsdPrimary ? "USD" : ''} amount
+                                        <label
+                                            htmlFor="From"
+                                            className="block font-normal text-secondary-text text-base ml-2 leading-5"
+                                        >
+                                            {amountLabel}
                                         </label>
                                         {from && fromCurrency &&
                                             <button
