@@ -44,8 +44,8 @@ export const Slippage = ({ quoteData, values, disableEditingBackground }: Slippa
     }, [autoSlippage, setAutoSlippage, setEditingCustomSlippage, setSlippage, inputRef])
 
     return (
-        <div ref={ref} className={clsx("flex items-center w-full justify-between gap-1 text-sm px-2 py-1", { "bg-secondary-700 rounded-xl": editingSlippage && !disableEditingBackground })}>
-            <div className="inline-flex items-center text-left py-2">
+        <div ref={ref} className={clsx("flex items-center w-full justify-between gap-1 text-sm p-3", { "bg-secondary-700 rounded-xl": editingSlippage && !disableEditingBackground })}>
+            <div className="inline-flex items-center text-left">
                 <label className="flex items-center gap-1">
                     <span className={clsx(isHighSlippage ? "text-warning-foreground" : "text-secondary-text")}>
                         {editingSlippage ? (isHighSlippage ? "High" : "Slippage") : (isHighSlippage ? "High slippage" : "Slippage")}
