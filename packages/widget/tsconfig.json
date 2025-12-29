@@ -1,0 +1,29 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "emitDeclarationOnly": false,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "preserveSymlinks": false,
+    "composite": true,
+    "rootDir": "src",
+    "declaration": true,
+    "noEmit": false,
+    "declarationDir": "dist",
+    "outDir": "dist",
+    "esModuleInterop": true,
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    }
+  },
+  "include": [
+    "src",
+    "src/lib/jsons/*/*.json"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

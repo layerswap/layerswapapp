@@ -1,0 +1,19 @@
+# @layerswap/widget
+
+## 1.1.3
+
+### Patch Changes
+
+- Fix modal overlay
+
+## 1.1.2
+
+### Patch Changes
+
+- Modal and loading minor style fixes
+
+## 1.1.1
+
+### Patch Changes
+
+- Minor bug fixes and improvements
