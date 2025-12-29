@@ -17,7 +17,7 @@ import sleep from "@/lib/wallets/utils/sleep";
 import { isDiffByPercent } from "@/components/utils/numbers";
 import posthog from "posthog-js";
 import { useWalletWithdrawalState } from "@/context/withdrawalContext";
-import { useSelectedAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount } from "@/context/swapAccounts";
 import { resolvePriceImpactValues } from "@/lib/fees";
 import InfoIcon from "@/components/icons/InfoIcon";
 import { useGoHome } from "@/hooks/useGoHome";
@@ -162,10 +162,11 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 }) => {
     const query = useQueryState()
     const goHome = useGoHome()
-    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse } = useSwapDataState()
+    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, refuel: refuelData } = useSwapDataState()
     const { onWalletWithdrawalSuccess: onWalletWithdrawalSuccess, onCancelWithdrawal } = useWalletWithdrawalState();
     const { createSwap, setSwapId, setQuoteLoading } = useSwapDataUpdate()
     const { setSwapTransaction } = useSwapTransactionStore();
+
 
     const layerswapApiClient = new LayerSwapApiClient()
     const selectedSourceAccount = useSelectedAccount("from", swapBasicData.source_network?.name);
@@ -175,7 +176,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const [loading, setLoading] = useState(false)
     const [showCriticalMarketPriceImpactButtons, setShowCriticalMarketPriceImpactButtons] = useState(false)
 
-    const priceImpactValues = useMemo(() => quote ? resolvePriceImpactValues(quote) : undefined, [quote]);
+    const priceImpactValues = useMemo(() => quote ? resolvePriceImpactValues(quote, refuel ? refuelData : undefined) : undefined, [quote, refuel]);
     const criticalMarketPriceImpact = useMemo(() => priceImpactValues?.criticalMarketPriceImpact, [priceImpactValues]);
 
     const handleClick = async () => {
@@ -216,7 +217,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
                 setSwapId(newSwapId)
 
-                const priceImpactValues = newSwapData.quote ? resolvePriceImpactValues(newSwapData.quote) : undefined;
+                const priceImpactValues = newSwapData.quote ? resolvePriceImpactValues(newSwapData.quote, newSwapData.refuel) : undefined;
 
                 if (priceImpactValues?.criticalMarketPriceImpact) {
                     setShowCriticalMarketPriceImpactButtons(true)
@@ -249,22 +250,12 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 try {
                     await layerswapApiClient.SwapCatchup(swapData.id, hash);
                 } catch (e) {
-                    console.error('Error in SwapCatchup:', e)
-                    const swapWithdrawalError = new Error(e);
-                    swapWithdrawalError.name = `SwapCatchupError`;
-                    swapWithdrawalError.cause = e;
-                    posthog.capture('$exception', {
-                        name: swapWithdrawalError.name,
-                        cause: swapWithdrawalError.cause,
-                        message: swapWithdrawalError.message,
+                    posthog.captureException(e, {
                         $layerswap_exception_type: "Swap Catchup Error",
+                        swapId: swapData.id,
+                        transactionHash: hash,
                         $fromAddress: selectedSourceAccount?.address,
-                        $toAddress: swapBasicData?.destination_address,
-                        $txHash: hash,
-                        $swapId: swapData.id,
-                        stack: swapWithdrawalError.stack,
-                        where: 'WalletTransaction',
-                        severity: 'error',
+                        $toAddress: swapBasicData?.destination_address
                     });
                 }
             }
@@ -272,21 +263,11 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         catch (e) {
             setSwapId(undefined)
 
-            console.log('Error in SendTransactionButton:', e)
-
-            const swapWithdrawalError = new Error(e);
-            swapWithdrawalError.name = `SwapWithdrawalError`;
-            swapWithdrawalError.cause = e;
-            posthog.capture('$exception', {
-                name: swapWithdrawalError.name,
-                cause: swapWithdrawalError.cause,
-                message: swapWithdrawalError.message,
+            posthog.captureException(e, {
                 $layerswap_exception_type: "Swap Withdrawal Error",
+                swapId: swapId,
                 $fromAddress: selectedSourceAccount?.address,
                 $toAddress: swapBasicData?.destination_address,
-                stack: swapWithdrawalError.stack,
-                where: 'TransactionError',
-                severity: 'error',
             });
 
         }

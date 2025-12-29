@@ -1,5 +1,7 @@
-import { AlertOctagon, Scroll } from "lucide-react";
+import { Scroll } from "lucide-react";
 import { FC } from "react";
+import { ICON_CLASSES_WARNING } from "./validationError/constants";
+import InfoIcon from "./icons/InfoIcon";
 
 type messageType = 'warning' | 'informing'
 
@@ -15,7 +17,7 @@ function constructIcons(messageType: messageType) {
 
     switch (messageType) {
         case 'warning':
-            iconStyle = <AlertOctagon className="sm:h-5 h-4 text-primary-text inline sm:block" />;
+            iconStyle = <InfoIcon className={ICON_CLASSES_WARNING} />
             break;
         case 'informing':
             iconStyle = <Scroll className="sm:h-5 h-4 text-primary-text inline sm:block" />;

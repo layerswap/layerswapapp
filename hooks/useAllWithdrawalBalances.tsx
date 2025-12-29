@@ -3,15 +3,15 @@ import { selectResolvedSortingBalances, useBalanceStore } from "../stores/balanc
 import { useEffect, useMemo, useRef } from "react"
 import { NetworkWithTokens } from "../Models/Network"
 import { NetworkBalance } from "@/Models/Balance"
-import { useBalanceAccounts } from "@/context/balanceAccounts"
+import { useSwapAccounts } from "@/context/swapAccounts"
 
 
 export default function useAllWithdrawalBalances() {
 
     const networks = useSettingsState().networks
-    const balanceAccounts = useBalanceAccounts("from")
+    const swapAccounts = useSwapAccounts("from")
     const walletNetworks = useMemo(() => {
-        return balanceAccounts.map(account => {
+        return swapAccounts.map(account => {
             const withdrawalNetworks = account.walletWithdrawalSupportedNetworks
             if (!withdrawalNetworks || withdrawalNetworks.length === 0) return []
             return withdrawalNetworks.map(networkName => {
@@ -23,7 +23,7 @@ export default function useAllWithdrawalBalances() {
                 }
             })
         }).flat().filter(item => item !== null) as Array<{ address: string, network: NetworkWithTokens }>
-    }, [balanceAccounts, networks])
+    }, [swapAccounts, networks])
 
     const walletNetwokrsString = useMemo(() => {
         return walletNetworks.map(item => `${item.address}-${item.network.name}`).join(',')
@@ -33,6 +33,12 @@ export default function useAllWithdrawalBalances() {
         if (walletNetworks)
             useBalanceStore.getState().initSortingBalances(walletNetworks)
     }, [walletNetwokrsString])
+
+    useEffect(() => {
+        return () => {
+            useBalanceStore.getState().cleanupSortingBalances()
+        }
+    }, [])
 
     const lastBalancesRef = useRef<Record<string, NetworkBalance> | null>(null)
     const resolvedBalances = useBalanceStore(selectResolvedSortingBalances)

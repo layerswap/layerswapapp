@@ -16,13 +16,8 @@ export default function ErrorFallback({ error, resetErrorBoundary }) {
     const updateWithProps = () => update({ customAttributes: { swapId: query?.swapId } })
 
     useEffect(() => {
-        posthog.captureException('$error_fallback', {
-            name: error?.name,
+        posthog.captureException(error, {
             $layerswap_exception_type: "Error Fallback",
-            message: error?.message,
-            cause: error?.cause,
-            where: 'ErrorFallback',
-            severity: 'error',
         });
     }, [])
 
@@ -37,7 +32,7 @@ export default function ErrorFallback({ error, resetErrorBoundary }) {
             <main className="styled-scroll">
                 <div className="min-h-screen overflow-hidden relative font-robo">
                     <Navbar />
-                    <div className="mx-auto max-w-lg bg-secondary-700 shadow-card rounded-lg w-full overflow-hidden relative px-6 pt-6 pb-2 h-[500px] min-h-[550px]">
+                    <div className="mx-auto max-w-md bg-secondary-700 sm:shadow-card rounded-3xl w-full overflow-hidden relative px-4 pt-6 pb-4 h-dvh sm:h-[500px] min-h-[550px]">
                         <MessageComponent>
                             <MessageComponent.Content center>
                                 <MessageComponent.Header className="mb-3">

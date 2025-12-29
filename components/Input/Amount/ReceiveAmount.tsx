@@ -28,9 +28,9 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ destination_token, fee, 
             </div>
             <div className="flex items-baseline space-x-2">
                 <span className="text-base leading-5 font-medium text-secondary-text h-5">
-                    <NumberFlow className="p-0" value={receiveAmountInUsd || 0} format={{ style: 'currency', currency: 'USD', maximumFractionDigits: receiveAmountInUsd ? 2 : 0 }} trend={0} />
+                    <NumberFlow className="p-0" value={receiveAmountInUsd || 0} prefix="$" format={{ maximumFractionDigits: receiveAmountInUsd ? 2 : 0 }} trend={0} />
                 </span>
-                <PriceImpact className="h-5 text-base leading-5" quote={quote} />
+                <PriceImpact className="h-5 text-base leading-5" quote={quote} refuel={fee?.refuel} />
             </div>
         </div>
     </>)

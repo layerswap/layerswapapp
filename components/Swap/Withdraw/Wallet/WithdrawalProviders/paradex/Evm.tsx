@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 import AuhorizeEthereum from '@/lib/wallets/paradex/Authorize/Ethereum';
 import WalletIcon from '@/components/icons/WalletIcon';
 import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
-import { useSelectedAccount } from '@/context/balanceAccounts';
+import { useSelectedAccount } from '@/context/swapAccounts';
 import useWallet from '@/hooks/useWallet';
 
 const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
@@ -32,7 +32,8 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refue
 
         setLoading(true)
         try {
-            const account = await AuhorizeEthereum(ethersSigner)
+            const client = await AuhorizeEthereum(ethersSigner)
+            const account = (client as any).account;
 
             if (!account) throw new Error('Account not found')
 
@@ -49,6 +50,9 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refue
             }
             toast.error(e.message, { duration: 30000 })
             throw e
+        }
+        finally {
+            setLoading(false)
         }
     }
 

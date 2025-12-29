@@ -2,18 +2,17 @@ import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { SwapDirection } from "@/components/DTOs/SwapFormValues";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import { SelectItem } from "@/components/Select/Selector/SelectItem";
-import { ChevronDown, Info } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import RoutePickerIcon from "@/components/icons/RoutePickerPlaceholder";
 import { useBalance } from "@/lib/balances/useBalance";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { GroupedTokenElement, RowElement } from "@/Models/Route";
 import { getKey, useBalanceStore } from "@/stores/balanceStore";
-import { useBalanceAccounts } from "@/context/balanceAccounts";
-import clsx from "clsx";
+import { useSwapAccounts } from "@/context/swapAccounts";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
-import { ExtendedAddress } from "../Address/AddressPicker/AddressWithIcon";
 import { getTotalBalanceInUSD } from "@/helpers/balanceHelper";
 import { useMemo } from "react";
+import { TokenInfoIcon, TokenTitleWithBalance } from "./TokenTitleDetails";
 
 type TokenItemProps = {
     route: NetworkRoute;
@@ -42,10 +41,11 @@ type NetworkTokenItemProps = {
     direction: SwapDirection;
     type?: RowElement['type'];
 }
+
 export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     const { item, route, direction, type } = props
-    const balanceAccounts = useBalanceAccounts(direction)
-    const selectedAccount = balanceAccounts?.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.name));
+    const swapAccounts = useSwapAccounts(direction)
+    const selectedAccount = swapAccounts?.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.name));
 
     const { balances } = useBalance(selectedAccount?.address, route)
 
@@ -55,43 +55,28 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     const usdAmount = (tokenbalance?.amount && item?.price_in_usd) ? item?.price_in_usd * tokenbalance?.amount : undefined;
 
     return <SelectItem.DetailedTitle
-        title={item.symbol}
+        title={<TokenTitleWithBalance
+            item={item}
+            route={route}
+            tokenbalance={tokenbalance}
+            usdAmount={usdAmount}
+        />}
         secondaryImageAlt={route.display_name}
         secondary={
             <div className="flex items-center gap-1">
-                <span>{route.display_name}</span>
-                <div className="transition-all duration-300 opacity-0 group-hover:opacity-100 group-hover:delay-400 click-delay-on-hover">
-                    {
-                        item.contract ?
-                            <ExtendedAddress network={route} isForCurrency showDetails address={item.contract} logo={item.logo} title={item.symbol} description={item.display_asset}>
-                                <div className="flex items-center gap-1 text-secondary-text text-xs cursor-pointer hover:text-primary-text">
-                                    <p className="max-w-[90px] truncate">
-                                        <span>•</span> <span>{item.display_asset || item.symbol}</span>
-                                    </p>
-                                    <Info className="h-3 w-3" />
-                                </div>
-                            </ExtendedAddress>
-                            :
-                            <p className="flex items-center gap-1 text-xs text-secondary-text">
-                                <span>•</span>
-                                <span className="truncate max-w-[80px]">{item.display_asset || item.symbol}</span>
-                            </p>
-                    }
-                </div>
+                <span className="truncate">{route.display_name}</span>
+                <TokenInfoIcon
+                    item={item}
+                    route={route}
+                    className="xs:hidden transition-all duration-300 opacity-0 group-hover:opacity-100 group-hover:delay-400 click-delay-on-hover shrink-0"
+                />
             </div>
         }
         secondaryLogoSrc={route.logo}
     >
         {(tokenbalance && Number(tokenbalance?.amount) > 0) ? (
-            <span className="text-sm text-secondary-text text-right my-auto leading-4 font-medium">
-                {Number(usdAmount) > 0 && (
-                    <div
-                        className={clsx("text-primary-text text-base",
-                            { '!text-lg !leading-[22px]': type === 'suggested_token' }
-                        )}
-                    >{formatUsd(usdAmount)}</div>
-                )}
-                <div className='text-xs leading-4'>
+            <span className="text-sm text-secondary-text text-right my-auto font-medium block">
+                <div className='text-xs leading-4 truncate'>
                     {formatted_balance_amount}
                 </div>
             </span>
@@ -108,9 +93,9 @@ type NetworkRouteItemProps = {
 
 export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
     const { item, direction, hideTokenImages } = props
-    const balanceAccounts = useBalanceAccounts(direction)
+    const swapAccounts = useSwapAccounts(direction)
 
-    const selectedAccount = balanceAccounts?.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(item.name));
+    const selectedAccount = swapAccounts?.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(item.name));
     const networkBalances = useBalance(selectedAccount?.address, item)
     const totalInUSD = useMemo(() => networkBalances ? getTotalBalanceInUSD(networkBalances, item) : undefined, [networkBalances.balances, item])
     const tokensWithBalance = networkBalances.balances?.filter(b => b.amount && b.amount > 0)
@@ -127,7 +112,9 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
             <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} className="rounded-md" />
             <SelectItem.Title>
                 <>
-                    <span>{item.display_name}</span>
+                    <span>
+                        {item.display_name}
+                    </span>
 
                     {hasLoadedBalances ? (
                         <div className={`${showTokenLogos ? "flex flex-col space-y-0.5" : ""} ${hideTokenImages ? "hidden" : ""}`}>
@@ -160,7 +147,7 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
                     ) : <></>}
 
                     <ChevronDown
-                        className="!w-3.5 !h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
+                        className="w-3.5! h-3.5! absolute right-2 top-1/2 -translate-y-1/2 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
                         aria-hidden="true"
                     />
                 </>
@@ -186,17 +173,16 @@ export const GroupedTokenHeader = ({
     direction: SwapDirection;
     hideTokenImages?: boolean;
 }) => {
-    const balanceAccounts = useBalanceAccounts(direction)
+    const swapAccounts = useSwapAccounts(direction)
 
     const tokens = item.items;
-
     const balances = useBalanceStore(s => s.balances)
 
     const networksWithBalance: NetworkRoute[] = Array.from(
         new Map(
             tokens
                 .map(({ route }) => {
-                    const address = balanceAccounts.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.route.name))?.address
+                    const address = swapAccounts.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.route.name))?.address
                     const key = address && route.route ? getKey(address, route.route) : 'unknown'
 
                     const tokenSymbol = route.token.symbol;
@@ -214,11 +200,10 @@ export const GroupedTokenHeader = ({
     );
 
     const tokenBalances = tokens.reduce((acc, { route }) => {
-        const address = balanceAccounts.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.route.name))?.address
+        const address = swapAccounts.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.route.name))?.address
         const key = address && route.route ? getKey(address, route.route) : 'unknown'
 
         const tokenSymbol = route.token.symbol;
-        const networkName = route.route.name;
         const price = route.token.price_in_usd;
 
         const networkBalances = balances?.[key];
@@ -243,7 +228,9 @@ export const GroupedTokenHeader = ({
             />
             <SelectItem.Title>
                 <>
-                    <span>{mainToken.symbol}</span>
+                    <span>
+                        {mainToken.symbol}
+                    </span>
                     {hasLoadedBalances ? (
                         <div className={`${showNetworkIcons ? "flex flex-col space-y-0.5" : ""} ${hideTokenImages ? "invisible" : "visible"}`}>
                             <span className="text-secondary-text text-sm leading-4 font-medium">
@@ -328,29 +315,34 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
         <span className="flex grow text-left items-center text-xs md:text-base relative">
             {showContent ? (
                 <>
-                    <div className="inline-flex items-center relative shrink-0">
-                        <ImageWithFallback
-                            src={token.logo}
-                            alt="Token Logo"
-                            height="24"
-                            width="24"
-                            loading="eager"
-                            fetchPriority="high"
-                            className="rounded-full object-contain"
-                        />
-                        <ImageWithFallback
-                            src={route.logo}
-                            alt="Network Logo"
-                            height="12"
-                            width="12"
-                            loading="eager"
-                            fetchPriority="high"
-                            className="h-3.5 w-3.5 absolute left-3.5 top-3.5 object-contain rounded border-1 border-secondary-300"
-                        />
+                    <div className="inline-flex items-center relative shrink-0 h-7 w-7">
+                        <div className="h-6 w-6">
+                            <ImageWithFallback
+                                src={token.logo}
+                                alt="Token Logo"
+                                height="24"
+                                width="24"
+                                loading="eager"
+                                fetchPriority="high"
+                                className="rounded-full object-contain"
+                            />
+                        </div>
+                        <div className="absolute left-[13px] top-3.5 h-4 w-4 rounded border border-secondary-500 bg-secondary-400 overflow-hidden">
+                            <ImageWithFallback
+                                src={route.logo}
+                                alt="Network Logo"
+                                height="14"
+                                width="14"
+                                loading="eager"
+                                fetchPriority="high"
+                                className="object-contain"
+                            />
+                        </div>
+
                     </div>
-                    <div className="ml-3 flex flex-col grow font-medium text-primary-text overflow-hidden min-w-0 max-w-3/4 group-[.exchange-picker]:max-w-full">
-                        <p className="leading-5">{token.symbol}</p>
-                        <p className="text-secondary-text grow font-normal text-sm leading-4 truncate whitespace-nowrap">
+                    <div className="ml-2 flex flex-col grow text-primary-text overflow-hidden min-w-0 max-w-3/4 group-[.exchange-picker]:max-w-full xs:max-w-[60px]"                    >
+                        <p className="text-base leading-5 font-medium">{token.symbol}</p>
+                        <p className="text-secondary-text grow text-sm font-normal leading-4 truncate whitespace-nowrap">
                             {route.display_name}
                         </p>
                     </div>
@@ -358,7 +350,7 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
             ) : (
                 <SelectedRoutePlaceholder placeholder={placeholder} />
             )}
-            <span className="px-1 pr-2 pointer-events-none text-primary-text">
+            <span className="px-2 pointer-events-none text-primary-text">
                 <ChevronDown className="h-4 w-4 text-secondary-text" aria-hidden="true" />
             </span>
         </span>

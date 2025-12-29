@@ -17,7 +17,7 @@ import ExchangeGasIcon from '../icons/ExchangeGasIcon';
 import useSWRNftBalance from '@/lib/nft/useSWRNftBalance';
 import NumberFlow from '@number-flow/react';
 import { resolveTokenUsdPrice } from '@/helpers/tokenHelper';
-import { useSelectedAccount } from '@/context/balanceAccounts';
+import { useSelectedAccount } from '@/context/swapAccounts';
 import { DetailedEstimates } from './SwapQuote/DetailedEstimates';
 
 export interface SwapValues extends Omit<SwapFormValues, 'from' | 'to'> {
@@ -33,9 +33,10 @@ export interface QuoteComponentProps {
     destinationAddress?: string;
     reward?: QuoteReward | undefined;
     variant?: 'extended' | 'base';
+    triggerClassnames?: string;
 }
 
-export default function QuoteDetails({ swapValues: values, quote, isQuoteLoading, reward, variant = 'extended' }: QuoteComponentProps) {
+export default function QuoteDetails({ swapValues: values, quote, isQuoteLoading, reward, variant = 'extended', triggerClassnames }: QuoteComponentProps) {
     const { toAsset, fromAsset: fromCurrency, destination_address } = values || {};
     const [isAccordionOpen, setIsAccordionOpen] = useState<boolean>(false);
 
@@ -47,6 +48,7 @@ export default function QuoteDetails({ swapValues: values, quote, isQuoteLoading
                     <AccordionItem value='quote' className='bg-secondary-500 rounded-2xl'>
                         <AccordionTrigger className={clsx(
                             'p-3.5 pr-5 w-full rounded-2xl flex items-center justify-between transition-colors duration-200 hover:bg-secondary-400 mt-3',
+                            triggerClassnames,
                             {
                                 'bg-secondary-500': !isAccordionOpen,
                                 'bg-secondary-400': isAccordionOpen,
@@ -116,7 +118,7 @@ export const DetailsButton: FC<QuoteComponentProps> = ({ quote, reward, isQuoteL
                                 <GasIcon className='h-4 w-4 text-secondary-text' /> : <ExchangeGasIcon className='h-5 w-5 text-secondary-text' />
                             }
                         </div>
-                        <NumberFlow className="text-primary-text text-sm leading-6" value={gasFeeInUsd < 0.01 ? '0.01' : gasFeeInUsd} format={{ style: 'currency', currency: 'USD' }} prefix={gasFeeInUsd < 0.01 ? '<' : undefined} />
+                        <NumberFlow className="text-primary-text text-sm leading-6" value={gasFeeInUsd < 0.01 ? '0.01' : gasFeeInUsd} prefix={gasFeeInUsd < 0.01 ? '<$' : '$'} />
 
                     </div>
                     <div className="w-px h-3 bg-primary-text-tertiary rounded-2xl" />
@@ -145,7 +147,7 @@ export const DetailsButton: FC<QuoteComponentProps> = ({ quote, reward, isQuoteL
                         <div className='p-0.5'>
                             <Image src={rewardCup} alt="Reward" width={16} height={16} />
                         </div>
-                        <NumberFlow value={reward?.amount_in_usd < 0.01 ? '0.01' : reward?.amount_in_usd} format={{ style: 'currency', currency: 'USD' }} prefix={reward?.amount_in_usd < 0.01 ? '<' : undefined} />
+                        <NumberFlow value={reward?.amount_in_usd < 0.01 ? '0.01' : reward?.amount_in_usd} prefix={reward?.amount_in_usd < 0.01 ? '<$' : '$'} />
                     </div>
                 </>
             }

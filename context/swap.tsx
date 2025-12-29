@@ -15,9 +15,8 @@ import { TrackEvent } from "@/pages/_document";
 import { useSettingsState } from './settings';
 import { QuoteError, transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { useRecentNetworksStore } from '@/stores/recentRoutesStore';
-import { parse, ParsedUrlQuery } from 'querystring';
 import { resolvePersistantQueryParams } from '@/helpers/querryHelper';
-import { useSelectedAccount } from './balanceAccounts';
+import { useSelectedAccount } from './swapAccounts';
 import { addressFormat } from '@/lib/address/formatter';
 import { useSlippageStore } from '@/stores/slippageStore';
 import { posthog } from 'posthog-js';
@@ -330,10 +329,11 @@ export const setSwapPath = (swapId: string, router: NextRouter) => {
     const basePath = router?.basePath || ""
     var swapURL = window.location.protocol + "//"
         + window.location.host + `${basePath}/swap/${swapId}`;
-    const raw = window.location.search.startsWith("?")
-        ? window.location.search.slice(1)
-        : window.location.search;
-    const existing: ParsedUrlQuery = parse(raw);
+    const searchParams = new URLSearchParams(window.location.search);
+    const existing: Record<string, string> = {};
+    searchParams.forEach((value, key) => {
+        existing[key] = value;
+    });
     const params = resolvePersistantQueryParams(existing)
     if (params && Object.keys(params).length) {
         const search = new URLSearchParams(params as any);
@@ -349,10 +349,11 @@ export const removeSwapPath = (router: NextRouter) => {
     let homeURL = window.location.protocol + "//"
         + window.location.host + basePath
 
-    const raw = window.location.search.startsWith("?")
-        ? window.location.search.slice(1)
-        : window.location.search;
-    const existing: ParsedUrlQuery = parse(raw);
+    const searchParams = new URLSearchParams(window.location.search);
+    const existing: Record<string, string> = {};
+    searchParams.forEach((value, key) => {
+        existing[key] = value;
+    });
     const params = resolvePersistantQueryParams(existing)
     if (params && Object.keys(params).length) {
         const search = new URLSearchParams(params as any);

@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useMemo, useState } from 'react'
+import { FC, useCallback, useEffect, useState } from 'react'
 import useWallet from '@/hooks/useWallet';
 import { ButtonWrapper, ChangeNetworkMessage, ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import {
@@ -9,7 +9,7 @@ import {
 import { coinQuantityfy, CoinQuantityLike, Provider, ScriptTransactionRequest } from 'fuels';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import ActionMessages from '../../messages/TransactionMessages';
-import { useSelectedAccount } from '@/context/balanceAccounts';
+import { useSelectedAccount } from '@/context/swapAccounts';
 
 export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
@@ -93,7 +93,7 @@ export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, r
         />
     }
     return (
-        <div className="w-full space-y-3 flex flex-col justify-between h-full text-primary-text">
+        <div className="w-full space-y-3 h-fit text-primary-text">
             {
                 buttonClicked &&
                 <TransactionMessage
@@ -124,7 +124,7 @@ const ChangeNetworkButton: FC<{ chainId: number, network: string, onChange: () =
         onChange();
     }, [selectNetworkAsync, chainId])
 
-    return <div className="w-full space-y-3 flex flex-col justify-between h-full text-primary-text">
+    return <div className="w-full space-y-3 h-fit text-primary-text">
 
         {
             <ChangeNetworkMessage

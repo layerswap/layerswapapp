@@ -104,6 +104,8 @@ export default class KnownInternalNames {
 
         public static readonly ImmutableZkEVM: string = "IMMUTABLEZK_MAINNET";
 
+        public static readonly ImmutableZkTestnet: string = "IMMUTABLEZK_TESTNET";
+
         public static readonly AstarMainnet: string = "ASTAR_MAINNET";
 
         public static readonly NahmiiMainnet: string = "NAHMII_MAINNET";
@@ -256,6 +258,8 @@ export default class KnownInternalNames {
         public static readonly HyperliquidMainnet: string = "HYPERLIQUID_MAINNET"
 
         public static readonly HyperliquidTestnet: string = "HYPERLIQUID_TESTNET"
+
+        public static readonly MonadMainnet: string = "MONAD_MAINNET"
 
     }
 

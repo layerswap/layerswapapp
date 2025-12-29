@@ -7,7 +7,7 @@ import {
 import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { WithdrawalProvider } from "@/context/withdrawalContext";
 import useWallet from "@/hooks/useWallet";
-import { useSelectedAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount } from "@/context/swapAccounts";
 
 type Props = {
     swapData: SwapBasicData
@@ -110,7 +110,7 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
     useEffect(() => {
         const selectedWallet = wallets.find(w => w.id === selectedSourceAccount?.id && w.addresses.some(a => a.toLowerCase() === selectedSourceAccount.address.toLowerCase()))
         if (selectedSourceAccount && selectedWallet) {
-            provider?.switchAccount(selectedWallet, selectedSourceAccount.address)
+            provider?.switchAccount?.(selectedWallet, selectedSourceAccount.address)
         }
     }, [selectedSourceAccount?.address])
 
