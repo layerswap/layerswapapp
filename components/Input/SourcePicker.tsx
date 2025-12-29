@@ -8,6 +8,7 @@ import { useQuoteData } from "@/hooks/useFee";
 import clsx from "clsx";
 import { useClickOutside } from "@/hooks/useClickOutside";
 import { useState } from "react";
+import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
 
 type Props = {
     minAllowedAmount: ReturnType<typeof useQuoteData>['minAllowedAmount'];
@@ -21,6 +22,7 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fe
     const { fromAsset: fromCurrency, from, depositMethod } = values || {}
     const { ref: parentRef, isActive: showQuickActions, activate: setShowQuickActions } = useClickOutside<HTMLDivElement>(false)
     const [actiontempValue, setActionTempValue] = useState<number | undefined>(undefined)
+    const tokenUsdPrice = resolveTokenUsdPrice(fromCurrency, fee?.quote)
 
     const handleActionHover = (value: number | undefined) => {
         setActionTempValue(value)
@@ -51,7 +53,7 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fe
             }
             <div className="grid grid-cols-[1fr_auto] gap-2 w-full max-w-full">
                 <div className="min-w-0 overflow-hidden">
-                    <AmountField fee={fee} actionValue={actiontempValue} showQuickActions={showQuickActions} />
+                    <AmountField fee={fee} actionValue={actiontempValue} />
                 </div>
 
                 <div className="justify-self-end self-start">
