@@ -6,6 +6,7 @@ import { useFormikContext } from 'formik';
 import { QuoteError } from './useFee';
 import { useSelectedAccount } from '@/context/swapAccounts';
 import { ICON_CLASSES_WARNING } from '@/components/validationError/constants';
+import { useSlippageStore } from '@/stores/slippageStore';
 
 interface ValidationDetails {
     title?: string;
@@ -13,14 +14,20 @@ interface ValidationDetails {
     icon?: React.ReactNode;
 }
 
-export function resolveRouteValidation(quoteError?: QuoteError) {
+export function resolveRouteValidation(quoteError?: QuoteError, hasQuote?: boolean) {
     const { values } = useFormikContext<SwapFormValues>();
-    const { to, from, destination_address } = values;
+    const { to, from, destination_address, amount } = values;
     const selectedSourceAccount = useSelectedAccount("from", from?.name);
     const query = useQueryState();
+    const { autoSlippage } = useSlippageStore();
     const quoteErrorCode = quoteError?.response?.data?.error?.code || quoteError?.code;
     let validationMessage: string = '';
     let validationDetails: ValidationDetails = {};
+
+    if (!autoSlippage && !hasQuote && amount && Number(amount) > 0 && from && to) {
+        validationDetails = { title: 'Route Unavailable', type: 'warning', icon: <RouteOff className={ICON_CLASSES_WARNING} /> };
+        validationMessage = `This might be because of high slippage, try switching the slippage percentage to "Auto"`;
+    }
 
     if (((from?.name && from?.name.toLowerCase() === query.sameAccountNetwork?.toLowerCase()) || (to?.name && to?.name.toLowerCase() === query.sameAccountNetwork?.toLowerCase()))) {
         const network = from?.name.toLowerCase() === query.sameAccountNetwork?.toLowerCase() ? from : to;

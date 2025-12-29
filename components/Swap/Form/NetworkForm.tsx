@@ -29,6 +29,8 @@ import RefuelModal from "@/components/FeeDetails/RefuelModal";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import posthog from "posthog-js";
 import ContractAddressValidationCache from "@/components/validationError/ContractAddressValidationCache";
+import { Slippage } from "@/components/FeeDetails/Slippage";
+import { useSlippageStore } from "@/stores/slippageStore";
 
 type Props = {
     partner?: Partner;
@@ -59,9 +61,12 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const fromAsset = values.fromAsset;
     const { formValidation, routeValidation } = useValidationContext();
     const query = useQueryState();
+    const { autoSlippage } = useSlippageStore();
 
     const isValid = !formValidation.message;
     const error = formValidation.message;
+
+    const showSlippageOnly = !autoSlippage && !quote && values.amount && Number(values.amount) > 0;
 
     useEffect(() => {
         if (!source || !toAsset || !toAsset.refuel) {
@@ -133,13 +138,24 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                 />
                             }
                             {
+                                showSlippageOnly && (
+                                    <div className="mt-2 bg-secondary-500 rounded-xl">
+                                        <Slippage quoteData={undefined} values={values} disableEditingBackground />
+                                    </div>
+                                )
+                            }
+                            {
                                 routeValidation.message
-                                    ? <div className="mt-3">
+                                    ? <div className="mt-2">
                                         <ValidationError />
                                     </div>
                                     : null
                             }
-                            <QuoteDetails swapValues={values} quote={quote?.quote} reward={quote?.reward} isQuoteLoading={isQuoteLoading} />
+                            {
+                                !showSlippageOnly && (
+                                    <QuoteDetails swapValues={values} quote={quote?.quote} reward={quote?.reward} isQuoteLoading={isQuoteLoading} />
+                                )
+                            }
                         </div>
                     </div>
                 </Widget.Content>
