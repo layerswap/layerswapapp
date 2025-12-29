@@ -40,9 +40,9 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
     const selectedSourceAccount = useSelectedAccount("from", values.from?.name);
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
-    const { minAllowedAmount, maxAllowedAmount, quoteError, quote } = useQuoteData(quoteArgs, quoteRefreshInterval)
+    const { minAllowedAmount, maxAllowedAmount, quoteError, quote, isQuoteLoading, isDebouncing } = useQuoteData(quoteArgs, quoteRefreshInterval)
 
-    const routeValidation = resolveRouteValidation(quoteError, !!quote);
+    const routeValidation = resolveRouteValidation(quoteError, !!quote, isQuoteLoading || isDebouncing);
 
     const formValidation = resolveFormValidation({
         values,

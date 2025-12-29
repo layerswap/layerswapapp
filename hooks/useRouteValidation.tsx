@@ -14,7 +14,7 @@ interface ValidationDetails {
     icon?: React.ReactNode;
 }
 
-export function resolveRouteValidation(quoteError?: QuoteError, hasQuote?: boolean) {
+export function resolveRouteValidation(quoteError?: QuoteError, hasQuote?: boolean, isQuoteLoading?: boolean) {
     const { values } = useFormikContext<SwapFormValues>();
     const { to, from, destination_address, amount } = values;
     const selectedSourceAccount = useSelectedAccount("from", from?.name);
@@ -24,7 +24,7 @@ export function resolveRouteValidation(quoteError?: QuoteError, hasQuote?: boole
     let validationMessage: string = '';
     let validationDetails: ValidationDetails = {};
 
-    if (!autoSlippage && !hasQuote && amount && Number(amount) > 0 && from && to) {
+    if (!autoSlippage && !hasQuote && amount && Number(amount) > 0 && from && to && !quoteErrorCode && !isQuoteLoading) {
         validationDetails = { title: 'Route Unavailable', type: 'warning', icon: <RouteOff className={ICON_CLASSES_WARNING} /> };
         validationMessage = `This might be because of high slippage, try switching the slippage percentage to "Auto"`;
     }

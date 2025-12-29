@@ -44,8 +44,8 @@ export const Slippage = ({ quoteData, values, disableEditingBackground }: Slippa
     }, [autoSlippage, setAutoSlippage, setEditingCustomSlippage, setSlippage, inputRef])
 
     return (
-        <div ref={ref} className={clsx("flex items-center w-full justify-between gap-1 text-sm p-3", { "bg-secondary-700 rounded-xl": editingSlippage && !disableEditingBackground })}>
-            <div className="inline-flex items-center text-left">
+        <div ref={ref} className={clsx("flex items-center w-full justify-between gap-1 text-sm py-1", disableEditingBackground ? "px-3" : "px-2", { "bg-secondary-700 rounded-xl": editingSlippage && !disableEditingBackground })}>
+            <div className="inline-flex items-center text-left py-2">
                 <label className="flex items-center gap-1">
                     <span className={clsx(isHighSlippage ? "text-warning-foreground" : "text-secondary-text")}>
                         {editingSlippage ? (isHighSlippage ? "High" : "Slippage") : (isHighSlippage ? "High slippage" : "Slippage")}
@@ -54,7 +54,7 @@ export const Slippage = ({ quoteData, values, disableEditingBackground }: Slippa
                         <TooltipTrigger asChild>
                             <Info className={clsx('w-4 h-4', isHighSlippage ? "text-warning-foreground" : "")} />
                         </TooltipTrigger>
-                        <TooltipContent className="pointer-events-none w-80 grow p-2 !border-none !bg-secondary-300 text-xs rounded-xl" side="top" align="start" alignOffset={-30}>
+                        <TooltipContent className="pointer-events-none w-80 grow p-2 border-none! bg-secondary-300! text-xs rounded-xl" side="top" align="start" alignOffset={-30}>
                             <p>Your transaction will be refunded if the price moves more than the slippage percentage.</p>
                         </TooltipContent>
                     </Tooltip>
