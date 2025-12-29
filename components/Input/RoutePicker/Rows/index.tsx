@@ -64,7 +64,6 @@ export default function Row({
                         selected={isSelected}
                         route={route}
                         direction={direction}
-                        type={item.type}
                     />
                 </div>
             );

@@ -6,9 +6,9 @@ import { ChevronDown } from "lucide-react";
 import RoutePickerIcon from "@/components/icons/RoutePickerPlaceholder";
 import { useBalance } from "@/lib/balances/useBalance";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
-import { GroupedTokenElement, RowElement } from "@/Models/Route";
+import { GroupedTokenElement } from "@/Models/Route";
 import { getKey, useBalanceStore } from "@/stores/balanceStore";
-import { useSwapAccounts } from "@/context/swapAccounts";
+import { AccountIdentity, AccountIdentityWithSupportedNetworks, useSwapAccounts } from "@/context/swapAccounts";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
 import { getTotalBalanceInUSD } from "@/helpers/balanceHelper";
 import { useMemo } from "react";
@@ -17,13 +17,12 @@ import { TokenInfoIcon, TokenTitleWithBalance } from "./TokenTitleDetails";
 type TokenItemProps = {
     route: NetworkRoute;
     item: NetworkRouteToken;
-    type?: RowElement['type'];
     selected: boolean;
     direction: SwapDirection;
 };
 
 export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
-    const { item, route, direction, type } = props
+    const { item, route, direction } = props
 
     return <SelectItem className="group">
         <SelectItem.Logo
@@ -31,7 +30,7 @@ export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
             altText={`${item.symbol} logo`}
             className="rounded-full"
         />
-        <NetworkTokenTitle item={item} route={route} direction={direction} type={type} />
+        <NetworkTokenTitle item={item} route={route} direction={direction} />
     </SelectItem>
 }
 
@@ -39,13 +38,11 @@ type NetworkTokenItemProps = {
     route: NetworkRoute;
     item: NetworkRouteToken;
     direction: SwapDirection;
-    type?: RowElement['type'];
 }
 
 export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
-    const { item, route, direction, type } = props
-    const swapAccounts = useSwapAccounts(direction)
-    const selectedAccount = swapAccounts?.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.name));
+    const { item, route, direction } = props
+    const selectedAccount = useSwapAccounts(direction, route.name);
 
     const { balances } = useBalance(selectedAccount?.address, route)
 
@@ -93,9 +90,8 @@ type NetworkRouteItemProps = {
 
 export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
     const { item, direction, hideTokenImages } = props
-    const swapAccounts = useSwapAccounts(direction)
 
-    const selectedAccount = swapAccounts?.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(item.name));
+    const selectedAccount = useSwapAccounts(direction, item.name);
     const networkBalances = useBalance(selectedAccount?.address, item)
     const totalInUSD = useMemo(() => networkBalances ? getTotalBalanceInUSD(networkBalances, item) : undefined, [networkBalances.balances, item])
     const tokensWithBalance = networkBalances.balances?.filter(b => b.amount && b.amount > 0)
@@ -182,7 +178,7 @@ export const GroupedTokenHeader = ({
         new Map(
             tokens
                 .map(({ route }) => {
-                    const address = swapAccounts.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.route.name))?.address
+                    const address = findAccountByNetwork(swapAccounts, direction, route.route.name)?.address
                     const key = address && route.route ? getKey(address, route.route) : 'unknown'
 
                     const tokenSymbol = route.token.symbol;
@@ -200,7 +196,7 @@ export const GroupedTokenHeader = ({
     );
 
     const tokenBalances = tokens.reduce((acc, { route }) => {
-        const address = swapAccounts.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.route.name))?.address
+        const address = findAccountByNetwork(swapAccounts, direction, route.route.name)?.address
         const key = address && route.route ? getKey(address, route.route) : 'unknown'
 
         const tokenSymbol = route.token.symbol;
@@ -262,7 +258,7 @@ export const GroupedTokenHeader = ({
                     ) : <></>}
 
                     <ChevronDown
-                        className="!w-3.5 !h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
+                        className="w-3.5! h-3.5! absolute right-2 top-1/2 -translate-y-1/2 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
                         aria-hidden="true"
                     />
                 </>
@@ -367,3 +363,19 @@ export const SelectedRoutePlaceholder = ({ placeholder }: { placeholder: string 
         </span>
     </>
 )
+
+function findAccountByNetwork(
+    accounts: (AccountIdentity | AccountIdentityWithSupportedNetworks)[],
+    direction: SwapDirection,
+    networkName: string
+) {
+    return accounts.find(acc => {
+        if (direction === 'from' && 'walletWithdrawalSupportedNetworks' in acc) {
+            return acc.walletWithdrawalSupportedNetworks?.includes(networkName)
+        }
+        if ('walletAutofillSupportedNetworks' in acc) {
+            return acc.walletAutofillSupportedNetworks?.includes(networkName)
+        }
+        return acc.provider?.autofillSupportedNetworks?.includes(networkName)
+    });
+}

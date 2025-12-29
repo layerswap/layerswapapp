@@ -15,6 +15,7 @@ type PickerAccountsProviderProps = {
 type SwapAccountsContextType = {
     sourceAccounts: AccountIdentityWithSupportedNetworks[];
     destinationAccounts: (AccountIdentity | AccountIdentityWithSupportedNetworks)[];
+    selectedSourceWalletId: string | undefined;
 }
 
 type SwapAccountsUpdateContextType = {
@@ -45,35 +46,24 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
 
     const [selectedDestAccounts, setSelectedDestinationAccounts] = useState<BaseAccountIdentity[]>([])
     const [selectedSourceAccounts, setSelectedSourceAccounts] = useState<BaseAccountIdentity[]>([])
+    const [selectedSourceWalletId, setSelectedSourceWalletId] = useState<string | undefined>(undefined)
     const { providers } = useWallet()
 
     const sourceAccounts: AccountIdentityWithSupportedNetworks[] = useMemo(() => {
-        return providers.map(provider => {
-            if (!hasWallet(provider)) return null;
+        return providers.flatMap(provider => {
+            if (!hasWallet(provider)) return [];
 
-            const selectedWallet = provider.connectedWallets?.find(wallet => wallet.id === selectedSourceAccounts.find(acc =>
-                acc.providerName === provider.name && wallet.addresses.some(a => a === acc.address))?.id && wallet.addresses)
+            const connectedWallets = provider.connectedWallets || [];
 
-            const wallet = selectedWallet || provider.activeWallet;
-            const selectedAccountAddress = selectedWallet ? selectedSourceAccounts.find(acc => acc.providerName === provider.name && acc.id === selectedWallet.id)?.address : undefined
-            const address = selectedAccountAddress ? selectedAccountAddress : wallet.address;
+            return connectedWallets.map(wallet => {
+                const selectedAccount = selectedSourceAccounts.find(acc =>
+                    acc.providerName === provider.name && acc.id === wallet.id
+                );
+                const address = selectedAccount?.address || wallet.address;
 
-            const res = ResolveWalletSwapAccount(provider, wallet, address);
-
-            if (!selectedAccountAddress) {
-                setSelectedSourceAccounts(prev => {
-                    const existingAccountIndex = prev.findIndex(acc => acc.providerName === res.providerName);
-                    if (existingAccountIndex !== -1) {
-                        const updatedAccounts = [...prev];
-                        updatedAccounts[existingAccountIndex] = res;
-                        return updatedAccounts;
-                    }
-                    return [...prev, res];
-                });
-            }
-
-            return res
-        }).filter(Boolean) as AccountIdentityWithSupportedNetworks[];
+                return ResolveWalletSwapAccount(provider, wallet, address);
+            });
+        });
     }, [providers, selectedSourceAccounts])
 
     const destinationAccounts: AccountIdentity[] = useMemo(() => {
@@ -111,12 +101,13 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
         });
     }, [])
     const selectSourceAccount = useCallback((account: BaseAccountIdentity) => {
-        const previousSourceAccount = sourceAccounts.find(acc => acc.providerName === account.providerName);
+        const previousSourceAccount = sourceAccounts.find(acc => acc.providerName === account.providerName && acc.id === account.id);
         if (destinationAccounts.some(acc => acc.address === previousSourceAccount?.address && acc.providerName === previousSourceAccount?.providerName)) {
             selectDestinationAccount(account);
         }
+        setSelectedSourceWalletId(account.id);
         setSelectedSourceAccounts(prev => {
-            const existingAccountIndex = prev.findIndex(acc => acc.providerName === account.providerName);
+            const existingAccountIndex = prev.findIndex(acc => acc.providerName === account.providerName && acc.id === account.id);
             if (existingAccountIndex !== -1) {
                 const updatedAccounts = [...prev];
                 updatedAccounts[existingAccountIndex] = account;
@@ -128,8 +119,9 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
 
     const stateValues: SwapAccountsContextType = useMemo(() => ({
         sourceAccounts,
-        destinationAccounts
-    }), [sourceAccounts, destinationAccounts]);
+        destinationAccounts,
+        selectedSourceWalletId
+    }), [sourceAccounts, destinationAccounts, selectedSourceWalletId]);
 
     const update: SwapAccountsUpdateContextType = useMemo(() => ({
         selectDestinationAccount,
@@ -144,16 +136,44 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
         </SwapAccountsStateContext.Provider>
     )
 }
+export function useSwapAccounts(direction: "from", network: string): AccountIdentityWithSupportedNetworks | undefined;
 export function useSwapAccounts(direction: "from"): AccountIdentityWithSupportedNetworks[];
+export function useSwapAccounts(direction: "to", network: string): AccountIdentity | undefined;
 export function useSwapAccounts(direction: "to"): AccountIdentity[];
+export function useSwapAccounts(direction: SwapDirection, network: string): (AccountIdentity | AccountIdentityWithSupportedNetworks) | undefined;
 export function useSwapAccounts(direction: SwapDirection): (AccountIdentity | AccountIdentityWithSupportedNetworks)[];
-export function useSwapAccounts(direction: SwapDirection) {
+export function useSwapAccounts(direction: SwapDirection, network?: string) {
     const values = useContext<SwapAccountsContextType>(SwapAccountsStateContext as Context<SwapAccountsContextType>);
 
     if (values === undefined) {
         throw new Error('useSwapAccounts must be used within a SwapAccountsProvider');
     }
-    return direction === "from" ? values.sourceAccounts : values.destinationAccounts;
+
+    const accounts = direction === "from" ? values.sourceAccounts : values.destinationAccounts;
+
+    if (network) {
+        if (direction === 'from') {
+            // First, try to find the explicitly selected wallet if it supports this network
+            if (values.selectedSourceWalletId) {
+                const selectedWallet = values.sourceAccounts.find(acc =>
+                    acc.id === values.selectedSourceWalletId &&
+                    acc.walletWithdrawalSupportedNetworks?.includes(network)
+                );
+                if (selectedWallet) return selectedWallet;
+            }
+            // Fallback to any wallet that supports the network
+            return values.sourceAccounts.find(acc => acc.walletWithdrawalSupportedNetworks?.includes(network));
+        }
+
+        return accounts.find(acc => {
+            if ('walletAutofillSupportedNetworks' in acc) {
+                return acc.walletAutofillSupportedNetworks?.includes(network)
+            }
+            return acc.provider?.autofillSupportedNetworks?.includes(network)
+        });
+    }
+
+    return accounts;
 }
 
 export function useSelectedAccount(direction: "from", networkName: string | undefined): AccountIdentityWithSupportedNetworks | undefined;
@@ -165,14 +185,26 @@ export function useSelectedAccount(direction: SwapDirection, networkName: string
     if (values === undefined) {
         throw new Error('useSwapAccounts must be used within a SwapAccountsProvider');
     }
-    return direction === "from" ? values.sourceAccounts.find(acc => acc.provider.withdrawalSupportedNetworks?.some(n => n === networkName))
-        :
-        values.destinationAccounts.find(acc => {
-            if ('walletAutofillSupportedNetworks' in acc) {
-                return acc.walletAutofillSupportedNetworks?.some(n => n === networkName)
-            }
-            return acc.provider?.autofillSupportedNetworks?.some(n => n === networkName)
-        });
+
+    if (direction === "from") {
+        // First, try to find the explicitly selected wallet if it supports this network
+        if (values.selectedSourceWalletId) {
+            const selectedWallet = values.sourceAccounts.find(acc =>
+                acc.id === values.selectedSourceWalletId &&
+                acc.walletWithdrawalSupportedNetworks?.some(n => n === networkName)
+            );
+            if (selectedWallet) return selectedWallet;
+        }
+        // Fallback to any wallet that supports the network
+        return values.sourceAccounts.find(acc => acc.walletWithdrawalSupportedNetworks?.some(n => n === networkName));
+    }
+
+    return values.destinationAccounts.find(acc => {
+        if ('walletAutofillSupportedNetworks' in acc) {
+            return acc.walletAutofillSupportedNetworks?.some(n => n === networkName)
+        }
+        return acc.provider?.autofillSupportedNetworks?.some(n => n === networkName)
+    });
 }
 
 export function useNetworkBalanceKey(direction: SwapDirection, networkName: string | undefined) {
