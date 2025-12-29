@@ -7,7 +7,7 @@ import useCopyClipboard from "@/hooks/useCopyClipboard";
 import { Check, CopyIcon } from "lucide-react";
 import { Network } from "@/Models/Network";
 
-const HEALTH_CHECK_INTERVAL = 1000 // 1 second
+const HEALTH_CHECK_INTERVAL = 1500 // 1.5 seconds
 
 type SuggestRpcResult = { success: true } | { success: false; error: string }
 
@@ -24,7 +24,6 @@ const RPCUnhealthyMessage: FC<Props> = ({ network, suggestRpcForCurrentChain, is
     // Poll health check while unhealthy
     useEffect(() => {
         const interval = setInterval(() => {
-            console.log('Checking health...')
             checkManually()
         }, HEALTH_CHECK_INTERVAL)
 
@@ -88,9 +87,10 @@ const MessageContent: FC<MessageContentProps> = ({ RPCUrl, isSuggestingRpc, rpcA
             <span>Update your RPC URL manually or add our</span>
             <Tooltip>
                 <TooltipTrigger onClick={() => setCopied(RPCUrl)}>
-                    <span className="text-primary-text cursor-pointer underline flex items-baseline gap-1">{isCopied ? (
-                        <Check className="h-3 w-3" />
-                    ) : <CopyIcon className="h-3 w-3" />}
+                    <span className="text-primary-text cursor-pointer underline flex items-baseline gap-1">
+                        {isCopied ? (
+                            <Check className="h-3 w-3" />
+                        ) : <CopyIcon className="h-3 w-3" />}
                         <span>RPC URL</span>
                     </span>
                 </TooltipTrigger>

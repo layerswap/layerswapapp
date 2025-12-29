@@ -2,8 +2,7 @@ import { useAccount } from 'wagmi'
 import { useCallback, useEffect, useState } from 'react'
 
 export type WalletRpcHealth =
-  | { status: 'idle' }
-  | { status: 'checking' }
+  | { status: undefined }
   | { status: 'healthy'; latencyMs: number; blockAgeSec: number }
   | { status: 'unhealthy'; reason: string }
 
@@ -25,7 +24,7 @@ type SuggestRpcResult =
 
 export function useWalletRpcHealth() {
   const { isConnected, connector, chainId } = useAccount()
-  const [health, setHealth] = useState<WalletRpcHealth>({ status: 'idle' })
+  const [health, setHealth] = useState<WalletRpcHealth>({ status: undefined })
   const [isSuggestingRpc, setIsSuggestingRpc] = useState(false)
 
   const check = useCallback(async () => {
@@ -42,8 +41,7 @@ export function useWalletRpcHealth() {
 
       const start = performance.now()
 
-      const [chainIdHex, latestBlock] = await Promise.all([
-        provider.request({ method: 'eth_chainId', params: [] }),
+      const [latestBlock] = await Promise.all([
         provider.request({
           method: 'eth_getBlockByNumber',
           params: ['latest', false],
@@ -66,15 +64,12 @@ export function useWalletRpcHealth() {
         if (tooSlow) reason += `Wallet RPC is slow (${latencyMs.toFixed(0)}ms). `
         if (tooStale) reason += `Latest block is stale (${blockAgeSec.toFixed(0)}s old).`
         setHealth({ status: 'unhealthy', reason: reason.trim() })
-        console.log('Health check failed')
         return
       }
-      console.log('Health check successful')
       setHealth({ status: 'healthy', latencyMs, blockAgeSec })
     } catch (e: any) {
       const msg = e?.message || 'Unknown error from wallet RPC'
       setHealth({ status: 'unhealthy', reason: msg })
-      console.log('Health check failed', e)
     }
   }, [connector, isConnected])
 
