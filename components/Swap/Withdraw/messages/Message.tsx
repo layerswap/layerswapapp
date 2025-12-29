@@ -50,7 +50,7 @@ export const WalletUnknownError: FC = () => {
                 <AccordionContent>
                     <div className="text-left space-y-1 bg-secondary-500 px-10 py-3">
                         <p className="text-sm text-secondary-text wrap-anywhere whitespace-pre-wrap">
-                            Try one of the following:
+                            <span>Try one of the following:</span>
                             <ul className="list-outside pl-6 list-disc">
                                 <li>Reconnect your wallet</li>
                                 <li>Switch the wallet network, to match the swap’s source network</li>
