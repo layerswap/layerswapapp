@@ -1,4 +1,4 @@
-import { createContext, ReactNode, SetStateAction, useContext, useEffect, useState } from "react";
+import { createContext, DetailedHTMLProps, HTMLAttributes, ReactNode, SetStateAction, useContext, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
 import IconButton from "@/components/buttons/iconButton";
@@ -100,7 +100,7 @@ export const ModalContent = (props: ModalContentProps) => {
     return createPortal(modalElement, widgetElement);
 }
 
-type ModalTriggerProps = {
+type ModalTriggerProps = DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement> & {
     disabled?: boolean;
     children: React.ReactNode | React.ReactNode[];
     className?: string;
@@ -108,7 +108,7 @@ type ModalTriggerProps = {
 }
 
 export const ModalTrigger = (props: ModalTriggerProps) => {
-    const { disabled = false, children, className = "", onClick } = props
+    const { disabled = false, children, className = "", onClick, ...rest } = props
     const { setIsOpen, setShouldFocus } = useContext(ModalContext);
     const { isDesktop } = useWindowDimensions();
 
@@ -119,7 +119,10 @@ export const ModalTrigger = (props: ModalTriggerProps) => {
     }
 
     return (
-        <div className="rounded-2xl flex items-center relative w-full z-10 self-end">
+        <div
+            {...rest}
+            className="rounded-2xl flex items-center relative w-full z-10 self-end"
+        >
             <button
                 type="button"
                 onClick={openModal}
