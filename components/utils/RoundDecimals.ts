@@ -63,3 +63,38 @@ export function isScientific(x) {
     //    and see if toString() uses 'e' (lowercased for consistency):
     return Number(s).toString().toLowerCase().includes('e');
 }
+
+
+export function calculatePrecisionForUsdValue(
+    amount: number,
+    priceInUsd: number | undefined | null,
+    defaultPrecision: number,
+    maxPrecision: number = 18
+): number {
+    // If no price or amount is 0, return default precision
+    if (!priceInUsd || amount <= 0 || !isFinite(amount) || !isFinite(priceInUsd)) {
+        return defaultPrecision;
+    }
+
+    const usdValue = amount * priceInUsd;
+
+    // If USD value is already >= $0.01, use default precision
+    if (usdValue >= 0.01) {
+        return defaultPrecision;
+    }
+
+    // If USD value < $0.01, find smallest precision where rounded amount >= $0.01 USD
+    for (let precision = 0; precision <= maxPrecision; precision++) {
+        const factor = Math.pow(10, precision);
+        // Round up to ensure we reach >= $0.01
+        const roundedAmount = Math.ceil(amount * factor) / factor;
+        const roundedUsdValue = roundedAmount * priceInUsd;
+
+        if (roundedUsdValue >= 0.01) {
+            return precision;
+        }
+    }
+
+    // If we couldn't find a precision that reaches $0.01, return max precision
+    return maxPrecision;
+}

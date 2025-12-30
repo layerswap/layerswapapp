@@ -1,6 +1,6 @@
 import { ArrowDown, Fuel } from "lucide-react";
 import { FC } from "react";
-import { truncateDecimals } from "@/components/utils/RoundDecimals";
+import { truncateDecimals, calculatePrecisionForUsdValue } from "@/components/utils/RoundDecimals";
 import LayerSwapApiClient, { Quote, SwapBasicData, SwapResponse } from "@/lib/apiClients/layerSwapApiClient";
 import { ApiResponse } from "@/Models/ApiResponse";
 import { Partner } from "@/Models/Partner";
@@ -41,8 +41,20 @@ const Summary: FC<SwapInfoProps> = (props) => {
     const receiveAmountInUsd = receiveAmount ? (destinationCurrency?.price_in_usd * receiveAmount).toFixed(2) : undefined
     const nativeCurrency = refuel?.token
 
+    const requestedAmountPrecision = requestedAmount && sourceCurrency?.price_in_usd
+        ? calculatePrecisionForUsdValue(Number(requestedAmount), sourceCurrency.price_in_usd, sourceCurrency.precision)
+        : sourceCurrency?.precision || 2
+
+    const receiveAmountPrecision = receiveAmount && destinationCurrency?.price_in_usd
+        ? calculatePrecisionForUsdValue(receiveAmount, destinationCurrency.price_in_usd, destinationCurrency.decimals || 2)
+        : destinationCurrency?.decimals || 2
+
+    const refuelAmountPrecision = nativeCurrency && refuel && nativeCurrency.price_in_usd
+        ? calculatePrecisionForUsdValue(refuel.amount, nativeCurrency.price_in_usd, nativeCurrency.precision)
+        : nativeCurrency?.precision || 2
+
     const truncatedRefuelAmount = nativeCurrency && !!refuel ?
-        truncateDecimals(refuel.amount, nativeCurrency?.precision) : null
+        truncateDecimals(refuel.amount, refuelAmountPrecision) : null
     const refuelAmountInUsd = nativeCurrency && ((nativeCurrency?.price_in_usd || 1) * (Number(truncatedRefuelAmount) || 0)).toFixed(2)
 
     return (
@@ -57,7 +69,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                     <div className="flex flex-col col-start-7 col-span-4 items-end">
                         {
                             requestedAmount &&
-                            <p className="text-primary-text text-xl leading-6 font-normal whitespace-nowrap">{truncateDecimals(Number(requestedAmount), sourceCurrency.precision)} {sourceCurrency.symbol}</p>
+                            <p className="text-primary-text text-xl leading-6 font-normal whitespace-nowrap">{truncateDecimals(Number(requestedAmount), requestedAmountPrecision)} {sourceCurrency.symbol}</p>
                         }
                         <p className="text-secondary-text text-sm leading-5 flex font-medium justify-end"><NumberFlow value={requestedAmountInUsd || 0} prefix="$" trend={0} /></p>
                     </div>
@@ -75,7 +87,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                         receiveAmount && (
                             <div className="flex flex-col justify-end items-end w-full col-start-7 col-span-4 h-[44px]">
                                 <p className="text-primary-text text-xl font-normal text-end">
-                                    <NumberFlow value={receiveAmount} suffix={` ${destinationCurrency.symbol}`} trend={0} format={{ maximumFractionDigits: quote.quote.destination_token?.decimals || 2 }} />
+                                    <NumberFlow value={receiveAmount} suffix={` ${destinationCurrency.symbol}`} trend={0} format={{ maximumFractionDigits: receiveAmountPrecision }} />
                                 </p>
                                 <p className="text-secondary-text text-sm flex items-center gap-1 font-medium">
                                     <PriceImpact className="text-sm" quote={swapQuote} refuel={refuel} />

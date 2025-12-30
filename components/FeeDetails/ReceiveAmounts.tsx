@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { Token } from "../../Models/Network";
-import { truncateDecimals } from "../utils/RoundDecimals";
+import { truncateDecimals, calculatePrecisionForUsdValue } from "../utils/RoundDecimals";
 import { Quote } from "@/lib/apiClients/layerSwapApiClient";
 import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
 
@@ -13,9 +13,14 @@ type WillReceiveProps = {
 
 export const ReceiveAmounts: FC<WillReceiveProps> = ({ source_token, destination_token, fee, isFeeLoading }) => {
     const receive_amount = fee?.quote.receive_amount
-    const parsedReceiveAmount = truncateDecimals(receive_amount ?? 0, destination_token?.precision);
     const receiveTokenPriceInUsd = resolveTokenUsdPrice(destination_token, fee?.quote)
     const receiveAmountInUsd = receive_amount && receiveTokenPriceInUsd ? (receive_amount * receiveTokenPriceInUsd).toFixed(2) : undefined
+
+    const receiveAmountPrecision = receive_amount && receiveTokenPriceInUsd
+        ? calculatePrecisionForUsdValue(receive_amount, receiveTokenPriceInUsd, destination_token?.precision || 2)
+        : destination_token?.precision || 2
+
+    const parsedReceiveAmount = truncateDecimals(receive_amount ?? 0, receiveAmountPrecision);
 
     return <div className="w-full h-full mt-3">
         <div className="flex flex-col justify-between w-full px-2 pb-2">
