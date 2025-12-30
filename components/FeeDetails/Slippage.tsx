@@ -183,40 +183,45 @@ const SlippageInput = forwardRef<HTMLInputElement, SlippageInputProps>(function 
     return (
         <div className="relative">
             <Popover open={invalid}>
-                <PopoverTrigger className={clsx("flex items-center gap-1 text-sm px-2 h-8 w-16 border border-secondary-300 rounded-lg font-normal leading-4 focus-within:outline-none focus-within:ring-0",
-                    invalid && "animate-shake",
-                    isHighSlippage && "shadow-[inset_0_0_0_1px] shadow-warning-foreground"
-                )}>
-                    <input
-                        type="number"
-                        ref={ref}
-                        autoComplete="off"
-                        autoFocus={false}
-                        title=""
-                        className={clsx("w-8 bg-transparent border-none outline-none focus:outline-none focus-visible:outline-none ring-0 focus:ring-0 focus-visible:ring-0 focus:border-transparent focus:shadow-none text-base leading-3.5 p-0 text-right",
-                            isHighSlippage ? "text-warning-foreground" : "text-primary-text"
+                <PopoverTrigger asChild>
+                    <div
+                        className={clsx(
+                            "flex items-center gap-1 text-sm px-2 h-8 w-16 border border-secondary-300 rounded-lg font-normal leading-4 focus-within:outline-none focus-within:ring-0",
+                            invalid && "animate-shake",
+                            isHighSlippage && "shadow-[inset_0_0_0_1px] shadow-warning-foreground"
                         )}
-                        value={localPercent}
-                        onChange={(e) => {
-                            const next = e.target.value === "" ? undefined : Number(e.target.value)
-                            if (!Number.isNaN(next as number)) {
-                                onEditing?.()
-                                setLocalPercent(next)
-                            }
-                        }}
-                        onKeyDown={(e) => {
-                            if (e.key == "Enter") {
-                                e.preventDefault();
-                                return false;
-                            }
-                        }}
-                    />
-                    <span className="text-secondary-text">%</span>
+                    >
+                        <input
+                            type="number"
+                            ref={ref}
+                            autoComplete="off"
+                            autoFocus={false}
+                            title=""
+                            className={clsx("w-8 bg-transparent border-none outline-none focus:outline-none focus-visible:outline-none ring-0 focus:ring-0 focus-visible:ring-0 focus:border-transparent focus:shadow-none text-base leading-3.5 p-0 text-right",
+                                isHighSlippage ? "text-warning-foreground" : "text-primary-text"
+                            )}
+                            value={localPercent}
+                            onChange={(e) => {
+                                const next = e.target.value === "" ? undefined : Number(e.target.value)
+                                if (!Number.isNaN(next as number)) {
+                                    onEditing?.()
+                                    setLocalPercent(next)
+                                }
+                            }}
+                            onKeyDown={(e) => {
+                                if (e.key == "Enter") {
+                                    e.preventDefault();
+                                    return false;
+                                }
+                            }}
+                        />
+                        <span className="text-secondary-text">%</span>
+                    </div>
                 </PopoverTrigger>
                 <PopoverContent side="top" align="center" className="text-xs">
                     Slippage can not be out of 0.1% - 5% range.
                 </PopoverContent>
             </Popover>
-        </div>
+        </div >
     )
 })
