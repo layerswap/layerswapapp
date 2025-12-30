@@ -2,7 +2,7 @@ import { useFormikContext } from "formik";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import useSWRGas from "@/lib/gases/useSWRGas";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
-import React, { useMemo } from "react";
+import React, { FC, useMemo } from "react";
 import { resolveMaxAllowedAmount } from "./helpers";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import { useSelectedAccount } from "@/context/swapAccounts";
@@ -124,22 +124,23 @@ const MinMax = (props: MinMaxProps) => {
 
 export default MinMax
 
-type ActionButtonProps = {
+type ActionButtonProps = React.DetailedHTMLProps<React.ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> & {
     label: string;
     onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
     onMouseEnter: () => void;
     disabled?: boolean;
 }
 
-const ActionButton = ({ label, onClick, onMouseEnter, disabled }: ActionButtonProps) => {
+const ActionButton: FC<ActionButtonProps> = ({ label, onClick, onMouseEnter, disabled, ...rest }) => {
     return (
         <button
+            {...rest}
             onMouseEnter={onMouseEnter}
             onClick={onClick}
             typeof="button"
             type="button"
             disabled={disabled}
-            className={"px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer enabled:active:animate-press-down"}
+            className="px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer enabled:active:animate-press-down"
         >
             {label}
         </button>
