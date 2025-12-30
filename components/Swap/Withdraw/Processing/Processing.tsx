@@ -4,7 +4,7 @@ import { Widget } from '@/components/Widget/Index';
 import Steps from '../../StepsComponent';
 import SwapSummary from '../../Summary';
 import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, Transaction, SwapBasicData, SwapDetails, SwapQuote, Refuel } from '@/lib/apiClients/layerSwapApiClient';
-import { truncateDecimals } from '@/components/utils/RoundDecimals';
+import { truncateDecimals, calculatePrecisionForUsdValue } from '@/components/utils/RoundDecimals';
 import { SwapStatus } from '@/Models/SwapStatus';
 import { SwapFailReasons } from '@/Models/RangeError';
 import { Gauge } from '@/components/gauge';
@@ -105,7 +105,11 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
         }
     }, [swapDetails?.status, swapDetails?.id])
 
-    const truncatedRefuelAmount = refuel && truncateDecimals(refuel.amount, refuel.token?.precision)
+    const refuelAmountPrecision = refuel && refuel.token?.price_in_usd
+        ? calculatePrecisionForUsdValue(refuel.amount, refuel.token.price_in_usd, refuel.token.precision)
+        : refuel?.token?.precision || 2
+
+    const truncatedRefuelAmount = refuel && truncateDecimals(refuel.amount, refuelAmountPrecision)
 
     const progressStatuses = getProgressStatuses(swapDetails, refuel, inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus)
     const stepStatuses = progressStatuses.stepStatuses;

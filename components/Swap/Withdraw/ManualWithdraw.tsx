@@ -21,7 +21,7 @@ import { useAsyncModal } from '@/context/asyncModal'
 import { handleLimitsUpdate } from './QuoteUpdate'
 import SubmitButton from '@/components/buttons/submitButton'
 import { Widget } from '@/components/Widget/Index'
-import { truncateDecimals } from '@/components/utils/RoundDecimals'
+import { truncateDecimals, calculatePrecisionForUsdValue } from '@/components/utils/RoundDecimals'
 import { Partner } from '@/Models/Partner'
 import { addressFormat } from '@/lib/address/formatter'
 import { isValidAddress } from '@/lib/address/validator'
@@ -131,9 +131,13 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
 
     const { networks: withdrawalNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeNetworks(exchangeNetworkParams);
 
+    const requestedAmountPrecision = swapBasicData?.requested_amount && swapBasicData?.source_token?.price_in_usd
+        ? calculatePrecisionForUsdValue(Number(swapBasicData.requested_amount), swapBasicData.source_token.price_in_usd, swapBasicData.source_token.precision)
+        : swapBasicData?.source_token?.precision || 2
+
     const requestAmount = (
         <span className='inline-flex items-center gap-1 px-1.5 mx-1 bg-secondary-300 rounded-lg'>
-            <span>{truncateDecimals(Number(swapBasicData?.requested_amount), swapBasicData?.source_token?.precision)}</span> <span>{swapBasicData?.source_token?.symbol}</span>
+            <span>{truncateDecimals(Number(swapBasicData?.requested_amount), requestedAmountPrecision)}</span> <span>{swapBasicData?.source_token?.symbol}</span>
             <CopyButton toCopy={swapBasicData?.requested_amount} iconClassName='text-secondary-text' />
         </span>
     )

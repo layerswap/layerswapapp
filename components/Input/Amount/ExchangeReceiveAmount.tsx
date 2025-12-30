@@ -3,6 +3,7 @@ import { Token } from "@/Models/Network";
 import { Quote } from "@/lib/apiClients/layerSwapApiClient";
 import NumberFlow from "@number-flow/react";
 import clsx from "clsx";
+import { calculatePrecisionForUsdValue } from "@/components/utils/RoundDecimals";
 
 type ReceiveAmountProps = {
     destination_token: Token | undefined;
@@ -13,6 +14,10 @@ export const ExchangeReceiveAmount: FC<ReceiveAmountProps> = ({ destination_toke
     const receive_amount = fee?.quote.receive_amount
     const receiveAmountInUsd = receive_amount && destination_token && fee.quote?.destination_token?.price_in_usd ? (receive_amount * fee.quote.destination_token.price_in_usd).toFixed(2) : undefined
 
+    const receiveAmountPrecision = receive_amount && fee?.quote?.destination_token?.price_in_usd
+        ? calculatePrecisionForUsdValue(receive_amount, fee.quote.destination_token.price_in_usd, fee.quote.destination_token?.decimals || 2)
+        : fee?.quote?.destination_token?.decimals || 2
+
     return (<>
         <div className="w-full flex min-w-0 font-normal border-0 text-xl text-primary-text relative truncate items-baseline flex-row">
             <div className="flex items-center justify-start relative w-fit">
@@ -21,7 +26,7 @@ export const ExchangeReceiveAmount: FC<ReceiveAmountProps> = ({ destination_toke
                     { "animate-pulse-stronger": isFeeLoading },
                     { "text-secondary-text": !receive_amount }
                 )}>
-                    <NumberFlow value={receive_amount || 0} trend={0} format={{ maximumFractionDigits: fee?.quote.destination_token?.decimals || 2 }} />
+                    <NumberFlow value={receive_amount || 0} trend={0} format={{ maximumFractionDigits: receiveAmountPrecision }} />
                     <span className="ml-1">{destination_token?.symbol}</span>
                 </div>
             </div>
