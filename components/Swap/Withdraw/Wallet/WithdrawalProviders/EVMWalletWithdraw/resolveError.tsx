@@ -27,7 +27,7 @@ const resolveError = (error: BaseError): ResolvedError | undefined => {
         || code_name === 'EstimateGasExecutionError'
         || code_name === 3)
         return "insufficient_funds"
-    else if (code_name === 4001) {
+    else if (code_name === 4001 || inner_code === -1) {
         return "transaction_rejected"
     }
 }
