@@ -51,6 +51,7 @@ export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
         icon={loading ? <Loader2 className="h-6 w-6 animate-spin" /> : (props.icon ?? <WalletIcon className="stroke-2 w-6 h-6" />)}
         isDisabled={loading || props.isDisabled}
         isSubmitting={loading || props.isSubmitting}
+        data-attr="send-from-wallet"
         {...props}
     >
         Send from wallet

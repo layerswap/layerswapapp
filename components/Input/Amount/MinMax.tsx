@@ -79,6 +79,7 @@ const MinMax = (props: MinMaxProps) => {
             {
                 Number(limitsMinAmount) > 0 ?
                     <ActionButton
+                        data-attr="min-amount"
                         label="Min"
                         onMouseEnter={() => onActionHover(limitsMinAmount)}
                         onClick={handleSetMinAmount}
@@ -90,6 +91,7 @@ const MinMax = (props: MinMaxProps) => {
             {
                 (depositMethod === 'wallet' && halfOfBalance > 0 && (halfOfBalance < (maxAllowedAmount || Infinity))) ?
                     <ActionButton
+                        data-attr="half-amount"
                         label="50%"
                         onMouseEnter={() => onActionHover(halfOfBalance)}
                         onClick={handleSetHalfAmount}
@@ -102,6 +104,7 @@ const MinMax = (props: MinMaxProps) => {
                     <Tooltip disableHoverableContent={true}>
                         <TooltipTrigger asChild>
                             <ActionButton
+                                data-attr="max-amount"
                                 label="Max"
                                 onMouseEnter={() => onActionHover(maxAllowedAmount)}
                                 disabled={!maxAllowedAmount}
