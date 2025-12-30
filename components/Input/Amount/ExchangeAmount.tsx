@@ -8,27 +8,23 @@ import clsx from "clsx";
 import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
 import { useSwitchUsdToken } from "@/context/switchUsdToken";
 import NumericInputControlled from "./NumericInputControlled";
-import { ArrowUpDown } from "lucide-react";
 import { formatTokenAmount, trimZeros } from "@/components/utils/numbers";
 
 interface AmountFieldProps {
     fee: ReturnType<typeof useQuoteData>['quote'];
     actionValue?: number;
     className?: string;
-    showQuickActions?: boolean;
 }
 
-const AmountField = forwardRef(function AmountField({ actionValue, fee, className, showQuickActions }: AmountFieldProps, ref: any) {
-
+const ExchangeAmountField = forwardRef(function AmountField({ actionValue, fee, className }: AmountFieldProps, ref: any) {
     const { values, handleChange, setFieldValue } = useFormikContext<SwapFormValues>();
-    const { fromAsset: fromCurrency, amount, toAsset: toCurrency, fromExchange, from } = values || {};
+    const { fromAsset: fromCurrency, amount, toAsset: toCurrency, fromExchange } = values || {};
     const name = "amount"
     const amountRef = useRef(ref)
     const suffixRef = useRef<HTMLDivElement>(null);
-
+    const { isUsdPrimary } = useSwitchUsdToken()
     const [usdAmount, setUsdAmount] = useState<string>("");
     const lastEditRef = useRef<"usd" | "token" | null>(null);
-    const { isUsdPrimary, toggleUsdPrimary } = useSwitchUsdToken()
 
     const sourceCurrencyPriceInUsd = resolveTokenUsdPrice(fromCurrency, fee?.quote)
 
@@ -46,17 +42,21 @@ const AmountField = forwardRef(function AmountField({ actionValue, fee, classNam
         return formatUsd(sourceCurrencyPriceInUsd * amountNumber)
     }, [actionValue, sourceCurrencyPriceInUsd]);
 
-    const tokenSuffixText = useMemo(() => {
-        if (actionValue && Number(actionValue) > 0) {
-            return Number(actionValue);
-        }
+    useEffect(() => {
+        const input = amountRef.current;
+        const suffix = suffixRef.current;
 
-        if (amount && Number(amount) > 0) {
-            return `${amount} ${fromCurrency?.symbol}`;
-        }
+        if (!input || !suffix) return;
 
-        return `0 ${fromCurrency?.symbol}`;
-    }, [amount, actionValue, fromCurrency]);
+        const font = getFontFromElement(input);
+        
+        const textToMeasure = isUsdPrimary 
+            ? (actionValueInUsd?.replace("$", "") || usdAmount || "0")
+            : (actionValue?.toString() || amount || "0");
+        const width = getTextWidth(textToMeasure, font);
+        const offset = isUsdPrimary ? 28 : 16;
+        suffix.style.left = `${width + offset}px`;
+    }, [amount, requestedAmountInUsd, actionValue, isUsdPrimary, usdAmount, actionValueInUsd]);
 
     useEffect(() => {
         if (!isUsdPrimary || lastEditRef.current === "usd") return;
@@ -75,27 +75,27 @@ const AmountField = forwardRef(function AmountField({ actionValue, fee, classNam
         setUsdAmount(trimZeros(usd.toFixed(2)));
     }, [isUsdPrimary, amount, sourceCurrencyPriceInUsd]);
 
-    useEffect(() => {
-        const input = amountRef.current;
-        const suffix = suffixRef.current;
+    const tokenSuffixText = useMemo(() => {
+        if (actionValue && Number(actionValue) > 0) {
+            return Number(actionValue);
+        }
 
-        if (!input || !suffix) return;
+        if (amount && Number(amount) > 0) {
+            return `${amount} ${fromCurrency?.symbol}`;
+        }
 
-        const font = getFontFromElement(input);
-        const width = getTextWidth(actionValue?.toString() || amount || "0", font);
-        suffix.style.left = `${width + 16}px`;
-    }, [amount, requestedAmountInUsd, actionValue]);
+        return `0 ${fromCurrency?.symbol}`;
+    }, [amount, actionValue, fromCurrency]);
 
-    const placeholder = "0";
-    const step = 1 / Math.pow(10, fromCurrency?.precision || 1);
-    const disabled = Boolean(fromExchange && !toCurrency);
+    const placeholder = '0'
 
-    const onToggle = () => {
-        toggleUsdPrimary();
-    };
+    const step = 1 / Math.pow(10, fromCurrency?.precision || 1)
 
-    return (
+    const disabled = Boolean(fromExchange && !toCurrency)
+
+    return (<>
         <div className={clsx("flex flex-col bg-secondary-500 space-y-0.5 relative w-full group",
+            "focus-within:[&_.usd-suffix]:invisible",
             className
         )}
         >
@@ -108,7 +108,7 @@ const AmountField = forwardRef(function AmountField({ actionValue, fee, classNam
                     ref={amountRef}
                     precision={fromCurrency?.precision}
                     tempValue={actionValue}
-                    className="w-full text-[28px] leading-[34px] rounded-xl text-primary-text focus:outline-none focus:border-none focus:ring-0 duration-300 ease-in-out bg-secondary-500! font-normal! pl-0"
+                    className="w-full leading-[34px] rounded-xl text-primary-text focus:outline-none focus:border-none focus:ring-0 duration-300 ease-in-out font-normal! text-xl px-2.5! pb-2 pr-2 bg-secondary-300! pl-0"
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                     }}
@@ -120,7 +120,7 @@ const AmountField = forwardRef(function AmountField({ actionValue, fee, classNam
                     step={0.01}
                     precision={2}
                     ref={amountRef}
-                    tempValue={Number(actionValueInUsd?.replace("$", ""))}
+                    tempValue={actionValueInUsd ? Number(actionValueInUsd.replace("$", "").replace(/,/g, "")) : undefined}
                     value={usdAmount}
                     onValueChange={(val) => {
                         lastEditRef.current = "usd";
@@ -141,48 +141,27 @@ const AmountField = forwardRef(function AmountField({ actionValue, fee, classNam
                         const tokenStr = formatTokenAmount(tokenN, precision);
                         setFieldValue("amount", tokenStr);
                     }}
-                    className="w-full text-[28px] leading-[34px] rounded-xl text-primary-text focus:outline-none focus:border-none focus:ring-0 duration-300 ease-in-out bg-secondary-500! font-normal! pl-0"
+                    className="w-full text-xl leading-[34px] rounded-xl text-primary-text focus:outline-none focus:border-none focus:ring-0 duration-300 ease-in-out font-normal! pb-2 pr-2 bg-secondary-300! pl-0 px-2.5"
                 />
             )}
 
-            <div className="flex items-center gap-1">
-                <div
-                    className={clsx(
-                        "usd-suffix text-base leading-5 font-medium text-secondary-text pointer-events-none h-5",
-                        {
-                            "text-secondary-text/45": !!actionValueInUsd,
-                        },
-                        "group-hover:block"
-                    )}
-                    ref={suffixRef}
-                >
-                    {!isUsdPrimary
-                        ? `${actionValueInUsd ?? requestedAmountInUsd ?? "$0"}`
-                        : tokenSuffixText}
-                </div>
-
-                {from && fromCurrency && !fromExchange &&
-                    <button
-                        type="button"
-                        onClick={onToggle}
-                        className={clsx(
-                            "text-primary-text bg-secondary-300 hover:bg-secondary-200 p-0.5 rounded-sm transition",
-                            {
-                                "hidden": !showQuickActions,
-                                "block": showQuickActions
-                            },
-                            "group-hover:block"
-                        )}
-                    >
-                        <ArrowUpDown className="w-4 h-4" />
-                    </button>
-                }
+            <div className={clsx(
+                "usd-suffix text-sm leading-5 font-medium text-secondary-text pointer-events-none",
+                {
+                    "absolute bottom-3.5": true,
+                    "text-secondary-text/45": !!actionValueInUsd
+                },
+                "group-hover:block"
+            )} ref={suffixRef}>
+                {!isUsdPrimary
+                    ? `${actionValueInUsd ?? requestedAmountInUsd ?? "$0"}`
+                    : tokenSuffixText}
             </div>
         </div>
-    );
+    </>)
 });
 
-export default AmountField;
+export default ExchangeAmountField
 
 function getTextWidth(text: string = '', font: string): number {
     if (typeof document === "undefined") return 0;
