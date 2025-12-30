@@ -4,7 +4,7 @@ import { FC, useState } from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
 import clsx from 'clsx';
 import { ChevronDown } from 'lucide-react';
-import { Quote, QuoteReward, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
+import { QuoteReward, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
 import AverageCompletionTime from '../Common/AverageCompletionTime';
 import useSWRGas from "@/lib/gases/useSWRGas";
 import GasIcon from '../icons/GasIcon';
