@@ -17,7 +17,6 @@ const Comp: FC<{ theme?: "default" | "light", header: string, status: 'pending' 
             <WalletMessage status={status}
                 header={header}
                 details={details}
-                showInModal={!!showInModal}
             />
         </Widget.Footer>
         <ColorSchema themeData={themeData} />
@@ -62,7 +61,6 @@ export const ConfirmTransactionMessage: Story = {
         header: 'Confirm in wallet',
         status: 'pending',
         details: 'Please confirm the transaction in your wallet',
-        showInModal: true
     } as WalletMessageProps
 };
 export const TransactionInProgressMessage: Story = {

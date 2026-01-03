@@ -1,5 +1,5 @@
 import { FC } from "react"
-import WalletMessage from "./Message"
+import WalletMessage, { WalletUnknownError } from "./Message"
 import shortenAddress from "../../../utils/ShortenAddress"
 
 const ConfirmTransactionMessage: FC = () => {
@@ -59,11 +59,7 @@ const SwapErrorMessage: FC<{ message: string }> = ({ message }) => {
 }
 
 const UexpectedErrorMessage: FC<{ message: string }> = ({ message }) => {
-    return <WalletMessage
-        status="error"
-        header='Unexpected error'
-        details={message}
-        showInModal />
+    return <WalletUnknownError />
 }
 
 const ActionMessages = {
