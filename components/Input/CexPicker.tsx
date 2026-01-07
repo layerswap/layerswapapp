@@ -55,7 +55,7 @@ const CexPicker: FC = () => {
     return (
         <div className="flex w-full flex-col self-end relative ml-auto items-center">
             <Selector>
-                <SelectorTrigger disabled={false} className="bg-secondary-500 !p-3">
+                <SelectorTrigger data-attr="from-cex-picker" disabled={false} className="bg-secondary-500 !p-3">
                     <SelectedExchangeDisplay exchange={fromExchange} placeholder="Select Exchange" />
                 </SelectorTrigger>
                 <SelectorContent isLoading={isLoading} searchHint="Search">

@@ -2,7 +2,7 @@ import { useFormikContext } from "formik";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import useSWRGas from "@/lib/gases/useSWRGas";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
-import React, { useMemo } from "react";
+import React, { FC, useMemo } from "react";
 import { resolveMaxAllowedAmount } from "./helpers";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import { useSelectedAccount } from "@/context/swapAccounts";
@@ -51,7 +51,7 @@ const MinMax = (props: MinMaxProps) => {
     }, [walletBalance, limitsMinAmount, fromCurrency.price_in_usd]);
 
     const halfOfBalance = (walletBalance?.amount || maxAllowedAmount) ? (walletBalance?.amount || maxAllowedAmount) / 2 : 0;
-    
+
     const handleSetValue = (value: string) => {
         mutateBalances()
         setFieldValue('amount', value, true)
@@ -84,11 +84,13 @@ const MinMax = (props: MinMaxProps) => {
     return (
         <div className="flex gap-1.5 group text-xs leading-4" onMouseLeave={() => onActionHover(undefined)}>
             <ActionButton
+                data-attr="min-amount"
                 label="Min"
                 onMouseEnter={() => onActionHover(minAmount)}
                 onClick={handleSetMinAmount}
             />
             <ActionButton
+                data-attr="half-amount"
                 label="50%"
                 onMouseEnter={() => onActionHover(halfOfBalance)}
                 onClick={handleSetHalfAmount}
@@ -96,6 +98,7 @@ const MinMax = (props: MinMaxProps) => {
             <Tooltip disableHoverableContent={true}>
                 <TooltipTrigger asChild>
                     <ActionButton
+                        data-attr="max-amount"
                         label="Max"
                         onMouseEnter={() => onActionHover(maxAllowedAmount)}
                         onClick={handleSetMaxAmount}
@@ -111,22 +114,23 @@ const MinMax = (props: MinMaxProps) => {
 
 export default MinMax
 
-type ActionButtonProps = {
+type ActionButtonProps = React.DetailedHTMLProps<React.ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> & {
     label: string;
     onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
     onMouseEnter: () => void;
     disabled?: boolean;
 }
 
-const ActionButton = ({ label, onClick, onMouseEnter, disabled }: ActionButtonProps) => {
+const ActionButton: FC<ActionButtonProps> = ({ label, onClick, onMouseEnter, disabled, ...rest }) => {
     return (
         <button
+            {...rest}
             onMouseEnter={onMouseEnter}
             onClick={onClick}
             typeof="button"
             type="button"
             disabled={disabled}
-            className={"px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer enabled:active:animate-press-down"}
+            className="px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer enabled:active:animate-press-down"
         >
             {label}
         </button>
