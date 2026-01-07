@@ -9,8 +9,8 @@ import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { useSelectorState } from "@/components/Select/Selector/Index";
 import useWallet from "@/hooks/useWallet";
 import ConnectWalletButton from "@/components/Common/ConnectWalletButton";
-import { SearchComponent } from "../Search";
 import clsx from "clsx";
+import RouteSearch from "./RouteSearch";
 
 type ContentProps = {
     onSelect: (route: NetworkRoute, token: NetworkRouteToken) => Promise<void> | void;
@@ -80,7 +80,7 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
         return () => setSearchQuery('')
     }, [])
     return <div className="overflow-y-auto overflow-x-hidden flex flex-col h-full z-40 openpicker" >
-        <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={shouldFocus} />
+        <RouteSearch searchQuery={searchQuery} setSearchQuery={setSearchQuery} shouldFocus={shouldFocus} />
         <LayoutGroup>
             <motion.div
                 layoutScroll
