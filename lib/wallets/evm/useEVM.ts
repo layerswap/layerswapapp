@@ -61,6 +61,7 @@ export default function useEVM(): WalletProvider {
     const name = 'EVM'
     const id = 'evm'
     const { networks } = useSettingsState()
+    const isMobilePlatform = useMemo(() => isMobile(), []);
 
     const asSourceSupportedNetworks = useMemo(() => [
         ...networks.filter(network => network.type === NetworkType.EVM).map(l => l.name),
@@ -160,7 +161,7 @@ export default function useEVM(): WalletProvider {
                     isMobileSupported: isWalletConnectSupported,
                     installUrl: walletConnectWallet?.installUrl,
                     hasBrowserExtension: walletConnectWallet?.hasBrowserExtension,
-                    extensionNotFound: walletConnectWallet?.hasBrowserExtension ? type == 'walletConnect' : undefined
+                    extensionNotFound: walletConnectWallet?.hasBrowserExtension ? (type == 'walletConnect' && !isMobilePlatform) : undefined
                 }
             })
     }, [allConnectors, walletConnectConnectors])
@@ -222,7 +223,7 @@ export default function useEVM(): WalletProvider {
                 await disconnectAsync({ connector: actualConnector })
             }
 
-            if (isMobile()) {
+            if (isMobilePlatform) {
                 if (connector.id !== "walletConnect") {
                     // Use actualConnector for getProvider, but connector.resolveURI for deep links
                     getWalletConnectUri(actualConnector, connector?.resolveURI, (uri: string) => {

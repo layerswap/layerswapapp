@@ -7,7 +7,6 @@ import {
     NightlyWalletAdapter,
     WalletConnectWalletAdapter,
     PhantomWalletAdapter,
-    CoinbaseWalletAdapter,
     SolflareWalletAdapter,
     BitgetWalletAdapter,
     TrustWalletAdapter,
@@ -21,7 +20,6 @@ const SOLANA_NETWORK = process.env.NEXT_PUBLIC_API_VERSION == 'sandbox' ? Wallet
 
 const adapters = [
     new PhantomWalletAdapter(),
-    new CoinbaseWalletAdapter(),
     new NightlyWalletAdapter(),
     new SolflareWalletAdapter(),
     new BitgetWalletAdapter(),

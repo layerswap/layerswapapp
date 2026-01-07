@@ -7,11 +7,13 @@ import { useCallback, useMemo } from "react"
 import { useSettingsState } from "@/context/settings"
 import { isSolanaAdapterSupported } from "./utils"
 import { WalletModalConnector } from "@/components/WalletModal"
+import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
 
 const solanaNames = [KnownInternalNames.Networks.SolanaMainnet, KnownInternalNames.Networks.SolanaDevnet, KnownInternalNames.Networks.SolanaTestnet]
 
 export default function useSVM(): WalletProvider {
     const { networks } = useSettingsState()
+    const isMobilePlatform = useMemo(() => isMobile(), []);
 
     const commonSupportedNetworks = [
         ...networks.filter(network => network.type === NetworkType.Solana).map(l => l.name)
@@ -47,13 +49,11 @@ export default function useSVM(): WalletProvider {
         }
 
     }, [connectedAddress, connectedAdapterName])
-
     const connectWallet = async ({ connector }: { connector: WalletModalConnector }) => {
-
         const internalConnector = wallets.find(w => w.adapter.name.includes(connector.name))
         const walletConnectConnector = wallets.find(w => w.adapter.name === 'WalletConnect')
 
-        const solanaConnector = connector.hasBrowserExtension && connector.showQrCode ? walletConnectConnector : internalConnector
+        const solanaConnector = connector.hasBrowserExtension && (connector.showQrCode || isMobilePlatform) ? walletConnectConnector : internalConnector
 
         if (!solanaConnector) throw new Error('Connector not found')
         if (connectedWallet) await solanaConnector.adapter.disconnect()
@@ -100,7 +100,7 @@ export default function useSVM(): WalletProvider {
                 type: wallet.readyState === 'Installed' ? 'injected' : 'other',
                 installUrl: wallet.adapter?.url,
                 hasBrowserExtension: hasBrowserExtension,
-                extensionNotFound: !(wallet.readyState === 'Installed' || wallet.readyState === 'Loadable')
+                extensionNotFound: !(wallet.readyState === 'Installed' || wallet.readyState === 'Loadable' || wallet.adapter.name == "Coinbase Wallet")
             }
             connectors.push(internalConnector)
         }
