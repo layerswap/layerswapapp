@@ -28,6 +28,7 @@ const AmountField = forwardRef(function AmountField({ actionValue, fee, classNam
 
     const [usdAmount, setUsdAmount] = useState<string>("");
     const lastEditRef = useRef<"usd" | "token" | null>(null);
+    const isUpdatingFromUsdInputRef = useRef<boolean>(false);
     const { isUsdPrimary, toggleUsdPrimary } = useSwitchUsdToken()
 
     const sourceCurrencyPriceInUsd = resolveTokenUsdPrice(fromCurrency, fee?.quote)
@@ -59,7 +60,16 @@ const AmountField = forwardRef(function AmountField({ actionValue, fee, classNam
     }, [amount, actionValue, fromCurrency]);
 
     useEffect(() => {
-        if (!isUsdPrimary || lastEditRef.current === "usd") return;
+        if (!isUsdPrimary) return;
+
+        if (isUpdatingFromUsdInputRef.current) {
+            isUpdatingFromUsdInputRef.current = false;
+            return;
+        }
+
+        if (lastEditRef.current === "usd") {
+            lastEditRef.current = null;
+        }
 
         const amountNumber = Number(amount);
         if (
@@ -124,6 +134,7 @@ const AmountField = forwardRef(function AmountField({ actionValue, fee, classNam
                     value={usdAmount}
                     onValueChange={(val) => {
                         lastEditRef.current = "usd";
+                        isUpdatingFromUsdInputRef.current = true;
                         setUsdAmount(val);
 
                         const usdN = Number(val);
