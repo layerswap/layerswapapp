@@ -42,6 +42,7 @@ const FormButton = ({
 
     return (
         <SubmitButton
+            data-attr="submit-swap"
             type="submit"
             isDisabled={disabled}
             isSubmitting={isSubmitting}

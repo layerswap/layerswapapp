@@ -28,3 +28,4 @@ export * from "../context/swap"
 export { useWalletProvidersList } from "../components/Wallet/WalletProviders"
 export { ErrorHandler } from '../lib/ErrorHandler';
 export type { ErrorEventType } from '../types/logEvents';
+export { useRpcHealth } from "../context/rpcHealthContext";

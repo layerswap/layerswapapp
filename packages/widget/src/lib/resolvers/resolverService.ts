@@ -2,9 +2,11 @@ import { BalanceResolver } from "@/lib/balances/balanceResolver";
 import { GasResolver } from "@/lib/gases/gasResolver";
 import { AddressUtilsResolver } from '@/lib/address/addressUtilsResolver'
 import { AddressUtilsProvider, BalanceProvider, ContractAddressCheckerProvider, GasProvider, NftProvider, TransferProvider } from "@/types";
+import { RpcHealthCheckProvider } from "@/types/rpcHealth";
 import { NftBalanceResolver } from "../nft/nftBalanceResolver";
 import { TransferResolver } from "../transfers/transferResolver";
 import { ContractAddressResolver } from "@/lib/address/contractAddressResolver";
+import { RpcHealthCheckResolver } from "../rpcHealth/rpcHealthCheckResolver";
 
 class UtilsResolverService {
     private balanceResolver: BalanceResolver | null = null;
@@ -13,6 +15,7 @@ class UtilsResolverService {
     private nftResolver: NftBalanceResolver | null = null;
     private transferResolver: TransferResolver | null = null;
     private contractAddressResolver: ContractAddressResolver | null = null;
+    private rpcHealthCheckResolver: RpcHealthCheckResolver | null = null;
 
     setProviders(
         balanceProviders: BalanceProvider[],
@@ -21,6 +24,7 @@ class UtilsResolverService {
         nftProviders: NftProvider[],
         transferProviders: TransferProvider[],
         contractAddressProviders: ContractAddressCheckerProvider[],
+        rpcHealthCheckProviders?: RpcHealthCheckProvider[],
     ) {
         this.balanceResolver = new BalanceResolver(balanceProviders);
         this.gasResolver = new GasResolver(gasProviders);
@@ -28,6 +32,7 @@ class UtilsResolverService {
         this.nftResolver = new NftBalanceResolver(nftProviders);
         this.transferResolver = new TransferResolver(transferProviders);
         this.contractAddressResolver = new ContractAddressResolver(contractAddressProviders);
+        this.rpcHealthCheckResolver = new RpcHealthCheckResolver(rpcHealthCheckProviders);
     }
 
     getBalanceResolver(): BalanceResolver {
@@ -70,6 +75,10 @@ class UtilsResolverService {
             throw new Error('ContractAddressResolver not initialized. Make sure to call setProviders first.');
         }
         return this.contractAddressResolver;
+    }
+
+    getRpcHealthCheckResolver(): RpcHealthCheckResolver | null {
+        return this.rpcHealthCheckResolver;
     }
 }
 

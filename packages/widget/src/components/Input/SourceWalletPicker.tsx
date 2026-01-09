@@ -273,6 +273,7 @@ const Connect: FC<{ connectFn?: () => Promise<Wallet | undefined | void>; setMou
     return <SubmitButton
         onClick={() => connectFn ? connectFn() : connectWallet()}
         type="button"
+        data-attr="connect-wallet"
         icon={<WalletIcon className="h-6 w-6" strokeWidth={2} />}
         isDisabled={!isProvidersReady}
     >

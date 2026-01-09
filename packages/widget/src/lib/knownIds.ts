@@ -251,15 +251,16 @@ export default class KnownInternalNames {
         public static readonly SeiMainnet: string = "SEI_MAINNET";
         
         public static readonly GravityMainnet: string = "GRAVITY_MAINNET";
-        public static readonly BitcoinMainnet: string = "BITCOIN_MAINNET"
 
-        public static readonly BitcoinTestnet: string = "BITCOIN_TESTNET"
+        public static readonly BitcoinMainnet: string = "BITCOIN_MAINNET";
 
-        public static readonly HyperliquidMainnet: string = "HYPERLIQUID_MAINNET"
+        public static readonly BitcoinTestnet: string = "BITCOIN_TESTNET";
 
-        public static readonly HyperliquidTestnet: string = "HYPERLIQUID_TESTNET"
+        public static readonly HyperliquidMainnet: string = "HYPERLIQUID_MAINNET";
 
-        public static readonly MonadMainnet: string = "MONAD_MAINNET"
+        public static readonly HyperliquidTestnet: string = "HYPERLIQUID_TESTNET";
+
+        public static readonly MonadMainnet: string = "MONAD_MAINNET";
 
     }
 

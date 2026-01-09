@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useMemo } from "react";
-import { WalletProvider, NftProvider, BalanceProvider, GasProvider, AddressUtilsProvider, TransferProvider, ContractAddressCheckerProvider } from "@/types";
+import { WalletProvider, NftProvider, BalanceProvider, GasProvider, AddressUtilsProvider, TransferProvider, ContractAddressCheckerProvider, RpcHealthCheckProvider } from "@/types";
 import { resolverService } from "@/lib/resolvers/resolverService";
 
 type ResolverContextType = {
@@ -23,6 +23,11 @@ export const ResolverProviders: React.FC<React.PropsWithChildren<{ walletProvide
         .map(provider => provider.contractAddressProvider)
         .flat()
         .filter((provider): provider is ContractAddressCheckerProvider => Boolean(provider));
+
+    const rpcHealthCheckProviders: RpcHealthCheckProvider[] = walletProviders
+        .map(provider => provider.rpcHealthCheckProvider)
+        .flat()
+        .filter((provider): provider is RpcHealthCheckProvider => Boolean(provider));
 
     const isInitialized = useMemo(() => {
         // Extract balance providers from wallet providers
@@ -48,10 +53,10 @@ export const ResolverProviders: React.FC<React.PropsWithChildren<{ walletProvide
             .flat()
             .filter((provider): provider is NftProvider => Boolean(provider));
 
-        resolverService.setProviders(balanceProviders, gasProviders, addressUtilsProviders, nftProviders, transferProviders, contractAddressProviders)
+        resolverService.setProviders(balanceProviders, gasProviders, addressUtilsProviders, nftProviders, transferProviders, contractAddressProviders, rpcHealthCheckProviders)
 
         return true;
-    }, [walletProviders, transferProviders]);
+    }, [walletProviders, transferProviders, contractAddressProviders, rpcHealthCheckProviders]);
 
     return (
         <ResolverContext.Provider value={{ isInitialized }}>

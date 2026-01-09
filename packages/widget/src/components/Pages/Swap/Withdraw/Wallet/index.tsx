@@ -12,7 +12,8 @@ import { TransferProps } from "@/types";
 import { ActionMessage } from "./Common/actionMessage";
 import { ActionMessages } from "../messages/TransactionMessages";
 import { useTransfer } from "@/hooks/useTransfer";
-import { ErrorHandler } from "@/lib/ErrorHandler";
+import { useRpcHealth } from "@/context/rpcHealthContext";
+import RPCUnhealthyMessage from "./RPCUnhealthyMessage";
 
 type Props = {
     swapData: SwapBasicData
@@ -142,7 +143,8 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
     const { balances } = useBalance(selectedSourceAccount?.address, networkWithTokens)
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
     const { executeTransfer } = useTransfer()
-
+    const rpcHealth = useRpcHealth(swapData.source_network)
+console.log("rpcHealth", rpcHealth)
     const clickHandler = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
         setButtonClicked(true)
         setError(undefined)
@@ -208,6 +210,15 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
         }
     }, [executeTransfer, chainId, selectedSourceAccount?.address, wallet, swapData, balances])
 
+    // Show RPC health message if available and unhealthy (EVM wallets only)
+    if (rpcHealth?.health.status === 'unhealthy') {
+        return <RPCUnhealthyMessage
+            network={swapData.source_network}
+            suggestRpcForCurrentChain={rpcHealth.suggestRpcForCurrentChain}
+            isSuggestingRpc={rpcHealth.isSuggestingRpc}
+            checkManually={rpcHealth.checkManually}
+        />
+    }
 
     return <div className="w-full space-y-3 flex flex-col justify-between h-full text-primary-text">
         {

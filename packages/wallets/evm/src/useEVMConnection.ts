@@ -63,9 +63,6 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
     const config = useConfig()
     const { connectAsync } = useConnect();
 
-    const pendingResolve = useRef<((c: InternalConnector & LSConnector) => void) | undefined>()
-    const pendingId = useRef<string>()
-
     const { setSelectedConnector } = useConnectModal()
     const { walletConnectConnectors, addToAdditionalWallets } = useEvmConnectors()
 
@@ -300,15 +297,6 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
     const activeWallet = useMemo(() => resolvedConnectors.find(w => w.isActive), [resolvedConnectors])
     const providerIcon = useMemo(() => networks.find(n => ethereumNames.some(name => name === n.name))?.logo, [networks])
 
-    useEffect(() => {
-        if (!pendingResolve.current) return
-        const found = availableFeaturedWalletsForConnect.find(c => c.id === pendingId.current)
-        if (found) {
-            pendingResolve.current(found as any)
-            pendingResolve.current = undefined
-        }
-    }, [availableFeaturedWalletsForConnect, pendingId.current, pendingResolve.current])
-
     const provider: WalletConnectionProvider = useMemo(() => {
         return {
             connectWallet,
@@ -401,6 +389,7 @@ const ResolveWallet = (props: ResolveWalletProps): Wallet | undefined => {
     const walletDisplayName = `${walletName} ${walletId === "com.immutable.passport" ? "" : " - EVM"}`
 
     const wallet: Wallet = {
+        chainId: connection?.chainId,
         id: walletName,
         internalId: walletId,
         isActive: walletIsActive,

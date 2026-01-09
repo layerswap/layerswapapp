@@ -17,7 +17,7 @@ export default function useImtblXConnection({ networks }: WalletConnectionProvid
     const wallets = useWalletStore((state) => state.connectedWallets)
     const addWallet = useWalletStore((state) => state.connectWallet)
     const removeWallet = useWalletStore((state) => state.disconnectWallet)
-    const wallet = wallets.find(wallet => wallet.providerName === id)
+    const wallet = wallets.find(wallet => wallet.providerName === name)
 
     const getWallet = () => {
         if (wallet) {

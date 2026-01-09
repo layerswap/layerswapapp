@@ -64,6 +64,7 @@ export const Slippage = ({ quoteData, values }: SlippageProps) => {
                     {!slippage && <div className="text-secondary-text">(Auto)</div>}
                     <span>{(((slippage ?? quoteData?.slippage) ?? 0) * 100).toFixed(2)}%</span>
                     <div
+                        data-attr="edit-slippage"
                         onClick={() => { setEditingSlippage(true); activate() }}
                         className="cursor-pointer hover:bg-secondary-400 p-1 bg-secondary-300 rounded-md text-secondary-text">
                         <Pencil className="h-3 w-3" />

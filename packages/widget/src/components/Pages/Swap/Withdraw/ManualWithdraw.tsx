@@ -344,7 +344,6 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
                 </SubmitButton>
             </Widget.Footer>
         </>
-
     )
 }
 

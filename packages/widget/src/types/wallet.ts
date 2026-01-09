@@ -7,6 +7,7 @@ import { GasProvider } from './gas';
 import { AddressUtilsProvider } from './addressUtils';
 import { NftProvider } from './nft';
 import { ContractAddressCheckerProvider } from './contract';
+import { RpcHealthCheckProvider } from './rpcHealth';
 
 export type InternalConnector = {
     name: string,
@@ -56,6 +57,7 @@ export type WalletProvider = WalletWrapper & {
     balanceProvider?: BalanceProvider | BalanceProvider[],
     transferProvider?: (() => TransferProvider) | (() => TransferProvider)[],
     contractAddressProvider?: ContractAddressCheckerProvider | ContractAddressCheckerProvider[],
+    rpcHealthCheckProvider?: RpcHealthCheckProvider | RpcHealthCheckProvider[],
 }
 
 export type WalletWrapper = {
@@ -122,4 +124,5 @@ export type BaseWalletProviderConfig = {
     addressUtilsProviders?: AddressUtilsProvider | AddressUtilsProvider[]
     transferProviders?: (() => TransferProvider) | (() => TransferProvider)[]
     contractAddressProviders?: ContractAddressCheckerProvider | ContractAddressCheckerProvider[]
+    rpcHealthCheckProviders?: RpcHealthCheckProvider | RpcHealthCheckProvider[]
 } 

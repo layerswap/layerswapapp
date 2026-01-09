@@ -8,6 +8,7 @@ import { EVMAddressUtilsProvider } from "./evmAddressUtilsProvider"
 import { AppSettings } from "@layerswap/widget/internal";
 import { useEVMTransfer } from "./transferProvider/useEVMTransfer";
 import { EVMContractAddressProvider } from "./evmContractAddressProvider";
+import { EVMRpcHealthCheckProvider } from "./rpcHealthCheckProvider";
 
 export type WalletConnectConfig = {
     projectId: string
@@ -32,6 +33,7 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         addressUtilsProviders,
         transferProviders,
         contractAddressProviders,
+        rpcHealthCheckProviders
     } = config;
 
     const WrapperComponent = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
@@ -99,6 +101,11 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
         : defaultTransferProviders;
 
+    const defaultRPCHealtCheckProviders = [new EVMRpcHealthCheckProvider()];
+    const finalRPCHealtCheckProviders = rpcHealthCheckProviders !== undefined
+        ? (Array.isArray(rpcHealthCheckProviders) ? rpcHealthCheckProviders : [rpcHealthCheckProviders])
+        : defaultRPCHealtCheckProviders;
+
     return {
         id: "evm",
         wrapper: WrapperComponent,
@@ -108,6 +115,7 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         balanceProvider: finalBalanceProviders,
         transferProvider: finalTransferProviders,
         contractAddressProvider: finalContractAddressProviders,
+        rpcHealthCheckProvider: finalRPCHealtCheckProviders,
     };
 }
 
@@ -133,4 +141,5 @@ export const EVMProvider: WalletProvider = {
     balanceProvider: [new EVMBalanceProvider(), new HyperliquidBalanceProvider()],
     transferProvider: [useEVMTransfer],
     contractAddressProvider: [new EVMContractAddressProvider()],
+    rpcHealthCheckProvider: [new EVMRpcHealthCheckProvider()],
 };

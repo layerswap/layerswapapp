@@ -37,8 +37,8 @@ export const ActionMessage: FC<{ error: Error | undefined, isLoading: boolean }>
         return <ActionMessages.DifferentAccountsNotAllowedError network={error?.message} />
     }
     else if (error) {
-        if (!error.message) return <ActionMessages.UnexpectedErrorMessage message={'Something went wrong'} />
-        return <ActionMessages.UnexpectedErrorMessage message={error.message} />
+        if (!error.message) return <ActionMessages.UnexpectedErrorMessage />
+        return <ActionMessages.UnexpectedErrorMessage />
     }
     else return <></>
 }

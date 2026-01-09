@@ -153,7 +153,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         {
                             isMobileWithoutPortal &&
                             <div className="flex justify-center w-full mt-2 mb-[6px]" >
-                                <Drawer.Handle className='!w-12 !bg-primary-text-tertiary' />
+                                <Drawer.Handle className='w-12! bg-primary-text-tertiary!' />
                             </div>
                         }
 
@@ -192,7 +192,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                                     transition={{ duration: 0.15 }}
                                     ref={expandRef}
                                     style={{ top: `${Number(snapElement.height?.toString().replace('px', '')) - 88}px` }} className='w-full fixed left-0 z-50'>
-                                    <button type='button' onClick={goToNextSnap} className="w-full px-4 pt-10 pb-4 justify-center from-secondary-700 bg-gradient-to-t items-center gap-2 inline-flex text-secondary-text">
+                                    <button type='button' onClick={goToNextSnap} className="w-full px-4 pt-10 pb-4 justify-center from-secondary-700 bg-linear-to-t items-center gap-2 inline-flex text-secondary-text">
                                         <ChevronUp className="w-6 h-6 relative" />
                                         <div className="text-sm font-medium">Expand</div>
                                     </button>
