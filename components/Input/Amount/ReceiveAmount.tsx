@@ -4,7 +4,7 @@ import { Quote } from "@/lib/apiClients/layerSwapApiClient";
 import NumberFlow from "@number-flow/react";
 import clsx from "clsx";
 import { PriceImpact } from "./PriceImpact";
-import { calculatePrecisionForUsdValue } from "@/components/utils/RoundDecimals";
+import { calculatePrecision } from "@/components/utils/RoundDecimals";
 
 type ReceiveAmountProps = {
     destination_token: Token | undefined;
@@ -17,7 +17,7 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ destination_token, fee, 
     const quote = fee?.quote
 
     const receiveAmountPrecision = receive_amount && fee?.quote?.destination_token?.price_in_usd
-        ? calculatePrecisionForUsdValue(receive_amount, fee.quote.destination_token.price_in_usd, fee.quote.destination_token?.decimals || 2)
+        ? calculatePrecision(receive_amount, fee.quote.destination_token.price_in_usd, fee.quote.destination_token?.decimals || 2)
         : fee?.quote?.destination_token?.decimals || 2
 
     return (<>

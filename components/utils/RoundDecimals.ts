@@ -65,36 +65,34 @@ export function isScientific(x) {
 }
 
 
-export function calculatePrecisionForUsdValue(
+export function calculatePrecision(
     amount: number,
     priceInUsd: number | undefined | null,
     defaultPrecision: number,
-    maxPrecision: number = 18
+    maxPrecision: number = 18,
+    minUsdTail: number = 0.01
 ): number {
-    // If no price or amount is 0, return default precision
-    if (!priceInUsd || amount <= 0 || !isFinite(amount) || !isFinite(priceInUsd)) {
+    if (!priceInUsd || !isFinite(amount) || !isFinite(priceInUsd)) {
         return defaultPrecision;
     }
 
-    const usdValue = amount * priceInUsd;
+    const eps = 1e-12; // helps with floating point edge cases
 
-    // If USD value is already >= $0.01, use default precision
-    if (usdValue >= 0.01) {
-        return defaultPrecision;
-    }
-
-    // If USD value < $0.01, find smallest precision where rounded amount >= $0.01 USD
+    // Try from fewer decimals → more decimals, and return the first precision
+    // where the *removed tail* is worth < $0.01.
     for (let precision = 0; precision <= maxPrecision; precision++) {
         const factor = Math.pow(10, precision);
-        // Round up to ensure we reach >= $0.01
-        const roundedAmount = Math.ceil(amount * factor) / factor;
-        const roundedUsdValue = roundedAmount * priceInUsd;
 
-        if (roundedUsdValue >= 0.01) {
-            return precision;
+        // truncate (NOT round): cut digits after `precision`
+        const truncated = Math.floor((amount + eps) * factor) / factor;
+
+        const tail = amount - truncated; // the part we'd cut off
+        const tailUsd = tail * priceInUsd;
+
+        if (tailUsd < minUsdTail - eps) {
+            return Math.max(precision, defaultPrecision);
         }
     }
 
-    // If we couldn't find a precision that reaches $0.01, return max precision
     return maxPrecision;
 }

@@ -3,7 +3,7 @@ import { Token } from "@/Models/Network";
 import { Quote } from "@/lib/apiClients/layerSwapApiClient";
 import NumberFlow from "@number-flow/react";
 import clsx from "clsx";
-import { calculatePrecisionForUsdValue } from "@/components/utils/RoundDecimals";
+import { calculatePrecision } from "@/components/utils/RoundDecimals";
 
 type ReceiveAmountProps = {
     destination_token: Token | undefined;
@@ -15,7 +15,7 @@ export const ExchangeReceiveAmount: FC<ReceiveAmountProps> = ({ destination_toke
     const receiveAmountInUsd = receive_amount && destination_token && fee.quote?.destination_token?.price_in_usd ? (receive_amount * fee.quote.destination_token.price_in_usd).toFixed(2) : undefined
 
     const receiveAmountPrecision = receive_amount && fee?.quote?.destination_token?.price_in_usd
-        ? calculatePrecisionForUsdValue(receive_amount, fee.quote.destination_token.price_in_usd, fee.quote.destination_token?.decimals || 2)
+        ? calculatePrecision(receive_amount, fee.quote.destination_token.price_in_usd, fee.quote.destination_token?.decimals || 2)
         : fee?.quote?.destination_token?.decimals || 2
 
     return (<>
