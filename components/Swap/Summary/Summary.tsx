@@ -1,6 +1,6 @@
 import { ArrowDown, Fuel } from "lucide-react";
 import { FC } from "react";
-import { truncateDecimals, calculatePrecisionForUsdValue } from "@/components/utils/RoundDecimals";
+import { truncateDecimals, calculatePrecision } from "@/components/utils/RoundDecimals";
 import LayerSwapApiClient, { Quote, SwapBasicData, SwapResponse } from "@/lib/apiClients/layerSwapApiClient";
 import { ApiResponse } from "@/Models/ApiResponse";
 import { Partner } from "@/Models/Partner";
@@ -42,15 +42,15 @@ const Summary: FC<SwapInfoProps> = (props) => {
     const nativeCurrency = refuel?.token
 
     const requestedAmountPrecision = requestedAmount && sourceCurrency?.price_in_usd
-        ? calculatePrecisionForUsdValue(Number(requestedAmount), sourceCurrency.price_in_usd, sourceCurrency.precision)
+        ? calculatePrecision(Number(requestedAmount), sourceCurrency.price_in_usd, sourceCurrency.precision)
         : sourceCurrency?.precision || 2
 
     const receiveAmountPrecision = receiveAmount && destinationCurrency?.price_in_usd
-        ? calculatePrecisionForUsdValue(receiveAmount, destinationCurrency.price_in_usd, destinationCurrency.decimals || 2)
+        ? calculatePrecision(receiveAmount, destinationCurrency.price_in_usd, destinationCurrency.decimals || 2)
         : destinationCurrency?.decimals || 2
 
     const refuelAmountPrecision = nativeCurrency && refuel && nativeCurrency.price_in_usd
-        ? calculatePrecisionForUsdValue(refuel.amount, nativeCurrency.price_in_usd, nativeCurrency.precision)
+        ? calculatePrecision(refuel.amount, nativeCurrency.price_in_usd, nativeCurrency.precision)
         : nativeCurrency?.precision || 2
 
     const truncatedRefuelAmount = nativeCurrency && !!refuel ?

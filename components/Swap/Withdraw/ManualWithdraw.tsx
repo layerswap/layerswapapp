@@ -21,7 +21,7 @@ import { useAsyncModal } from '@/context/asyncModal'
 import { handleLimitsUpdate } from './QuoteUpdate'
 import SubmitButton from '@/components/buttons/submitButton'
 import { Widget } from '@/components/Widget/Index'
-import { truncateDecimals, calculatePrecisionForUsdValue } from '@/components/utils/RoundDecimals'
+import { truncateDecimals, calculatePrecision } from '@/components/utils/RoundDecimals'
 import { Partner } from '@/Models/Partner'
 import { addressFormat } from '@/lib/address/formatter'
 import { isValidAddress } from '@/lib/address/validator'
@@ -132,7 +132,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
     const { networks: withdrawalNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeNetworks(exchangeNetworkParams);
 
     const requestedAmountPrecision = swapBasicData?.requested_amount && swapBasicData?.source_token?.price_in_usd
-        ? calculatePrecisionForUsdValue(Number(swapBasicData.requested_amount), swapBasicData.source_token.price_in_usd, swapBasicData.source_token.precision)
+        ? calculatePrecision(Number(swapBasicData.requested_amount), swapBasicData.source_token.price_in_usd, swapBasicData.source_token.precision)
         : swapBasicData?.source_token?.precision || 2
 
     const requestAmount = (
