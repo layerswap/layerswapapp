@@ -13,6 +13,7 @@ import { swapInProgress } from "@/components/utils/swapUtils";
 import { updateForm } from "@/components/Swap/Form/updateForm";
 import clsx from "clsx";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
+import useWallet from "@/hooks/useWallet";
 
 const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, className?: string }> = ({ direction, isExchange = false, className }) => {
     const {
@@ -21,10 +22,12 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
     } = useFormikContext<SwapFormValues>();
     const [searchQuery, setSearchQuery] = useState("")
     const { windowSize } = useWindowDimensions();
-    
+    const { wallets } = useWallet()
+
     const suggestionsLimit = useMemo(() => {
         if (!windowSize?.height) return 4;
-        
+
+        const CONNECT_WALLET_BUTTON = wallets.length > 0 ? 0 : 128
         const SUGGESTION_ROW_HEIGHT = 60;
         const COLLAPSED_ROW_HEIGHT = 60;
         const SEARCH_HEIGHT = 40;
@@ -33,21 +36,21 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
         const ALL_NETWORKS_VISIBLE_ROWS = 2.5 * COLLAPSED_ROW_HEIGHT;
         const HEADER_HEIGHT = 52;
         const PADDING = 12;
-        
+
         const isDesktop = windowSize.width && windowSize.width >= 640;
-        const maxModalHeight = isDesktop 
-            ? windowSize.height * 0.79 
+        const maxModalHeight = isDesktop
+            ? windowSize.height * 0.79
             : windowSize.height * 0.90;
-        
-        const fixedHeight = SEARCH_HEIGHT + SUGGESTIONS_TITLE_HEIGHT + 
-                          ALL_NETWORKS_TITLE_HEIGHT + ALL_NETWORKS_VISIBLE_ROWS + 
-                          HEADER_HEIGHT + PADDING + (isDesktop ? 0 : -100);
-        
+
+        const fixedHeight = SEARCH_HEIGHT + SUGGESTIONS_TITLE_HEIGHT + CONNECT_WALLET_BUTTON + 
+            ALL_NETWORKS_TITLE_HEIGHT + ALL_NETWORKS_VISIBLE_ROWS +
+            HEADER_HEIGHT + PADDING + (isDesktop ? 0 : -100);
+
         const availableForSuggestions = maxModalHeight - fixedHeight;
         const calculatedCount = Math.floor(availableForSuggestions / SUGGESTION_ROW_HEIGHT);
-        
+
         return Math.max(4, Math.min(15, calculatedCount));
-    }, [windowSize.height]);
+    }, [windowSize.height, wallets.length]);
 
     const { allRoutes, isLoading, routeElements, selectedRoute, selectedToken } = useFormRoutes({ direction, values }, searchQuery, suggestionsLimit)
     const currencyFieldName = direction === 'from' ? 'fromAsset' : 'toAsset';
