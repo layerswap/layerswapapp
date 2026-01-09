@@ -69,7 +69,7 @@ export const ModalContent = (props: ModalContentProps) => {
     const modalElement = (
         <div className={clsx("fixed sm:absolute inset-0 z-50 bg-secondary-700 rounded-t-3xl sm:rounded-3xl flex flex-col overscroll-none", className)}>
             {(header || showCloseButton) && (
-                <div className="w-full relative">
+                <div className="w-full relative z-20">
                     <div className="flex items-center w-full text-left justify-between px-4 pt-2 pb-2 gap-x-2 sm:gap-x-1">
                         <div className="flex-1 text-lg text-secondary-text font-semibold w-full flex justify-end">
                             {header}
@@ -84,7 +84,7 @@ export const ModalContent = (props: ModalContentProps) => {
                 </div>
             )}
 
-            <div className="flex flex-col w-full h-full max-h-[90dvh] px-4 styled-scroll overflow-x-hidden overflow-y-auto relative pb-3">
+            <div className="flex flex-col w-full h-full max-h-[90dvh] px-4 styled-scroll overflow-x-hidden overflow-y-auto pb-3 z-0">
                 {typeof children === 'function' ? children({ closeModal, shouldFocus }) : children}
             </div>
         </div>

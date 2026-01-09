@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import { RowElement } from "@/Models/Route";
 import { SwapDirection } from "@/components/DTOs/SwapFormValues";
 import { useVirtualizer } from "@/lib/virtual";
@@ -6,7 +6,6 @@ import { Accordion } from "@/components/shadcn/accordion";
 import Row from "./Rows";
 import { LayoutGroup, motion } from "framer-motion";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
-import { useSelectorState } from "@/components/Select/Selector/Index";
 import useWallet from "@/hooks/useWallet";
 import ConnectWalletButton from "@/components/Common/ConnectWalletButton";
 import clsx from "clsx";
@@ -22,13 +21,21 @@ type ContentProps = {
     direction: SwapDirection;
     partialPublished?: boolean;
 }
-export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToken, selectedRoute, direction, onSelect, partialPublished }: ContentProps) => {
+
+export const Content: FC<ContentProps> = (props) => {
+    const [isItemsScrolling, setIsItemsScrolling] = useState(false);
+
+    return <div className="overflow-y-auto overflow-x-hidden flex flex-col h-full z-40 openpicker" >
+        <RouteSearch searchQuery={props.searchQuery} setSearchQuery={props.setSearchQuery} rowElements={props.rowElements} isItemsScrolling={isItemsScrolling} />
+        <Items {...props} isScrolling={isItemsScrolling} setIsScrolling={setIsItemsScrolling} />
+    </div>
+}
+
+const Items: FC<ContentProps & { isScrolling: boolean; setIsScrolling: (isScrolling: boolean) => void; }> = ({ searchQuery, setSearchQuery, rowElements, selectedToken, selectedRoute, direction, onSelect, isScrolling, setIsScrolling }) => {
     const parentRef = useRef<HTMLDivElement>(null)
     const [openValues, setOpenValues] = useState<string[]>(selectedRoute ? [selectedRoute] : [])
-    const { shouldFocus } = useSelectorState();
     const { wallets } = useWallet()
 
-    const [isScrolling, setIsScrolling] = useState(false);
     const scrollTimeout = useRef<any>(null);
 
     const handleScroll = () => {
@@ -79,74 +86,72 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
     useEffect(() => {
         return () => setSearchQuery('')
     }, [])
-    return <div className="overflow-y-auto overflow-x-hidden flex flex-col h-full z-40 openpicker" >
-        <RouteSearch searchQuery={searchQuery} setSearchQuery={setSearchQuery} shouldFocus={shouldFocus} />
-        <LayoutGroup>
-            <motion.div
-                layoutScroll
-                onScroll={handleScroll}
-                className={clsx(
-                    "select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden scrollbar:w-1! scrollbar:h-1! pr-0.5 scrollbar-thumb:bg-transparent h-full",
-                    {
-                        "styled-scroll!": isScrolling
-                    }
-                )}
-                ref={parentRef}
-            >
+
+    return <LayoutGroup>
+        <motion.div
+            layoutScroll
+            onScroll={handleScroll}
+            className={clsx(
+                "select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden scrollbar:w-1! scrollbar:h-1! pr-0.5 scrollbar-thumb:bg-transparent h-full",
                 {
-                    wallets.length === 0 && direction === 'from' && !searchQuery &&
-                    <ConnectWalletButton
-                        descriptionText="Connect your wallet to browse your assets and choose easier"
-                        className="w-full my-2.5"
-                    />
+                    "styled-scroll!": isScrolling
                 }
-                <div className="relative">
-                    <Accordion type="multiple" value={openValues}>
-                        <div>
+            )}
+            ref={parentRef}
+        >
+            {
+                wallets.length === 0 && direction === 'from' && !searchQuery &&
+                <ConnectWalletButton
+                    descriptionText="Connect your wallet to browse your assets and choose easier"
+                    className="w-full my-2.5"
+                />
+            }
+            <div className="relative">
+                <Accordion type="multiple" value={openValues}>
+                    <div>
+                        <div
+                            style={{
+                                height: virtualizer.getTotalSize(),
+                                width: '100%',
+                                position: 'relative',
+                            }}
+                        >
+                            <div className="sticky top-0 z-50" id="sticky_accordion_header" />
                             <div
                                 style={{
-                                    height: virtualizer.getTotalSize(),
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
                                     width: '100%',
-                                    position: 'relative',
-                                }}
-                            >
-                                <div className="sticky top-0 z-50" id="sticky_accordion_header" />
-                                <div
-                                    style={{
-                                        position: 'absolute',
-                                        top: 0,
-                                        left: 0,
-                                        width: '100%',
-                                        transform: `translateY(${items[0]?.start ? (items[0]?.start - 0) : 0}px)`,
-                                    }}>
-                                    {items.map((virtualRow) => {
-                                        const data = rowElements?.[virtualRow.index]
-                                        const key = ((data as any)?.route as any)?.name || virtualRow.key;
-                                        return <div
-                                            className="py-1 box-border w-full overflow-hidden select-none"
-                                            key={key}
-                                            data-index={virtualRow.index}
-                                            ref={virtualizer.measureElement}>
-                                            <Row
-                                                index={virtualRow.index}
-                                                scrollContainerRef={parentRef}
-                                                openValues={openValues}
-                                                onSelect={onSelect}
-                                                direction={direction}
-                                                item={data}
-                                                selectedRoute={selectedRoute}
-                                                selectedToken={selectedToken}
-                                                searchQuery={searchQuery}
-                                                toggleContent={toggleAccordionItem}
-                                            />
-                                        </div>
-                                    })}
-                                </div>
+                                    transform: `translateY(${items[0]?.start ? (items[0]?.start - 0) : 0}px)`,
+                                }}>
+                                {items.map((virtualRow) => {
+                                    const data = rowElements?.[virtualRow.index]
+                                    const key = ((data as any)?.route as any)?.name || virtualRow.key;
+                                    return <div
+                                        className="py-1 box-border w-full overflow-hidden select-none"
+                                        key={key}
+                                        data-index={virtualRow.index}
+                                        ref={virtualizer.measureElement}>
+                                        <Row
+                                            index={virtualRow.index}
+                                            scrollContainerRef={parentRef}
+                                            openValues={openValues}
+                                            onSelect={onSelect}
+                                            direction={direction}
+                                            item={data}
+                                            selectedRoute={selectedRoute}
+                                            selectedToken={selectedToken}
+                                            searchQuery={searchQuery}
+                                            toggleContent={toggleAccordionItem}
+                                        />
+                                    </div>
+                                })}
                             </div>
                         </div>
-                    </Accordion>
-                </div>
-            </motion.div>
-        </LayoutGroup>
-    </div >
+                    </div>
+                </Accordion>
+            </div>
+        </motion.div>
+    </LayoutGroup>
 }

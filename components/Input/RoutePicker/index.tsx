@@ -47,8 +47,8 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
         const calculatedCount = Math.floor(availableForSuggestions / SUGGESTION_ROW_HEIGHT);
         
         return Math.max(4, Math.min(15, calculatedCount));
-    }, [windowSize]);
-    
+    }, [windowSize.height]);
+
     const { allRoutes, isLoading, routeElements, selectedRoute, selectedToken } = useFormRoutes({ direction, values }, searchQuery, suggestionsLimit)
     const currencyFieldName = direction === 'from' ? 'fromAsset' : 'toAsset';
 

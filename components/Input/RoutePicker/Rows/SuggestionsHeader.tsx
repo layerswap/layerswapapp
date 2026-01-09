@@ -61,7 +61,7 @@ export function TypingEffect({ text = 'Typing Effect', onComplete }: { text: str
     }, [isInView, text.length, onComplete]);
 
     return (
-        <div ref={ref} className="text-transparent text-base font-normal leading-5 pl-1  top-0 z-50  items-baseline bg-[linear-gradient(120deg,var(--color-primary-text-tertiary)_40%,var(--color-primary-text),var(--color-primary-text-tertiary)_60%)]
+        <div ref={ref} className="text-transparent text-base font-normal leading-5 pl-1 top-0 z-50 items-baseline bg-[linear-gradient(120deg,var(--color-primary-text-tertiary)_40%,var(--color-primary-text),var(--color-primary-text-tertiary)_60%)]
          bg-[length:200%_100%]
          bg-clip-text
          animate-shine"
