@@ -5,6 +5,7 @@ import useWindowDimensions from "@/hooks/useWindowDimensions";
 import clsx from "clsx";
 import { NetworkElement, RowElement } from "@/Models/Route";
 import { useSelectorState } from "@/components/Select/Selector/Index";
+import { TypingEffect } from "./Rows/SuggestionsHeader";
 
 type RouteSearchProps = {
     searchQuery: string;
@@ -107,43 +108,16 @@ const RouteSearch: FC<RouteSearchProps> = ({ searchQuery, setSearchQuery, rowEle
             />
             {showExpanded && !searchQuery && (
                 <div className="absolute top-3 left-3">
-                    <motion.p
-                        className='text-2xl leading-4 text-secondary-text'
-                        variants={sentence}
-                        initial='hidden'
-                        animate='visible'
+                    <TypingEffect
                         key={randomRouteName}
-                    >
-                        {randomRouteName.split("").map((char, index) => {
-                            return (
-                                <motion.span key={char + "-" + index} variants={letter}>
-                                    {char}
-                                </motion.span>
-                            )
-                        })}
-                    </motion.p>
+                        text={randomRouteName}
+                        withShine={false}
+                        className="text-2xl leading-4 text-secondary-text"
+                    />
                 </div>
             )}
         </motion.div>
     </div>
-}
-
-const sentence = {
-    hidden: { opacity: 1 },
-    visible: {
-        opacity: 1,
-        transition: {
-            staggerChildren: 0.05
-        }
-    }
-}
-
-const letter = {
-    hidden: { opacity: 0, y: 50 },
-    visible: {
-        opacity: 1,
-        y: 0
-    }
 }
 
 const sidebarVariants = {

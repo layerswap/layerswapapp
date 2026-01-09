@@ -45,7 +45,14 @@ const SuggestionsHeader = () => {
     return <TypingEffect text={`${textToType} Suggestions`} onComplete={() => setTypingComplete(true)} />
 }
 
-export function TypingEffect({ text = 'Typing Effect', onComplete }: { text: string; onComplete?: () => void }) {
+type TypingEffectProps = {
+    text: string;
+    onComplete?: () => void;
+    withShine?: boolean;
+    className?: string;
+}
+
+export function TypingEffect({ text = 'Typing Effect', onComplete, withShine = true, className }: TypingEffectProps) {
     const ref = useRef<HTMLDivElement>(null);
     const isInView = useInView(ref, { once: true });
 
@@ -60,11 +67,14 @@ export function TypingEffect({ text = 'Typing Effect', onComplete }: { text: str
         }
     }, [isInView, text.length, onComplete]);
 
+    const shineClasses = withShine
+        ? "text-transparent bg-[linear-gradient(120deg,var(--color-primary-text-tertiary)_40%,var(--color-primary-text),var(--color-primary-text-tertiary)_60%)] bg-[length:200%_100%] bg-clip-text animate-shine"
+        : "";
+
     return (
-        <div ref={ref} className="text-transparent text-base font-normal leading-5 pl-1 top-0 z-50 items-baseline bg-[linear-gradient(120deg,var(--color-primary-text-tertiary)_40%,var(--color-primary-text),var(--color-primary-text-tertiary)_60%)]
-         bg-[length:200%_100%]
-         bg-clip-text
-         animate-shine"
+        <div
+            ref={ref}
+            className={className ?? `text-base font-normal leading-5 pl-1 top-0 z-50 items-baseline ${shineClasses}`}
             key={text}
         >
             {text.split('').map((letter, index) => (
@@ -77,7 +87,7 @@ export function TypingEffect({ text = 'Typing Effect', onComplete }: { text: str
                     {letter}
                 </motion.span>
             ))}
-        </div >
+        </div>
     );
 }
 
