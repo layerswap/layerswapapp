@@ -1,3 +1,4 @@
+'use client';
 import React, { Context, FC, useEffect, useState } from 'react'
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
 import { InitialSettings } from '../Models/InitialSettings';
