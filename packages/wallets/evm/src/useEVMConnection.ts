@@ -1,9 +1,10 @@
 import { useConfig, useConnect, useConnectors, useDisconnect, useSwitchAccount, Connector } from "wagmi"
 import { CreateConnectorFn, getAccount, getConnections } from '@wagmi/core'
-import { useCallback, useEffect, useMemo, useRef } from "react"
+import { useCallback, useMemo } from "react"
 import { NetworkType, NetworkWithTokens, InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps } from "@layerswap/widget/types"
 import { isMobile, sleep, convertSvgComponentToBase64, useConnectModal, KnownInternalNames } from "@layerswap/widget/internal"
 import { evmConnectorNameResolver, resolveEVMWalletConnectorIcon, resolveEVMWalletConnectorIndex } from "./evmUtils"
+import KnownEVMConnectors from "./evmUtils/KnownEVMConnectors"
 import { LSConnector } from "./connectors/types"
 import { explicitInjectedProviderDetected } from "./connectors/explicitInjectedProviderDetected"
 import { useEvmConnectors, HIDDEN_WALLETCONNECT_ID } from "./EVMProvider/evmConnectorsContext"
@@ -106,12 +107,15 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
             .map(w => {
                 const walletConnectWallet = walletConnectConnectors.find(w2 => w2.name.toLowerCase().includes(w.name.toLowerCase()) || w2.id.toLowerCase() === w.id.toLowerCase())
                 const isWalletConnectSupported = w.type === "walletConnect" || w.name === "WalletConnect"
+                const resolvedConnectorName = evmConnectorNameResolver(w)
+                const knownConnector = KnownEVMConnectors.find(c => c.id.toLowerCase() === resolvedConnectorName.toLowerCase())
                 return {
                     ...w,
                     order: resolveEVMWalletConnectorIndex(w.id),
                     type: ((w.type == 'injected' && w.id !== 'com.immutable.passport') || w.id === "metaMaskSDK" || isWalletConnectSupported) ? w.type : "other",
                     isMobileSupported: isWalletConnectSupported,
-                    hasBrowserExtension: walletConnectWallet?.hasBrowserExtension
+                    hasBrowserExtension: walletConnectWallet?.hasBrowserExtension,
+                    icon: w.icon || (knownConnector ? convertSvgComponentToBase64(knownConnector.icon) || walletConnectWallet?.icon : undefined)
                 }
             })
     }, [allConnectors, walletConnectConnectors])
