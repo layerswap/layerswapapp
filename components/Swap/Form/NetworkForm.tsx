@@ -38,6 +38,8 @@ type Props = {
 
 const NetworkForm: FC<Props> = ({ partner }) => {
     const [openRefuelModal, setOpenRefuelModal] = useState(false);
+    const [hasShownSlippage, setHasShownSlippage] = useState(false);
+    const [prevAmount, setPrevAmount] = useState("");
     const {
         values,
         setValues, isSubmitting, setFieldValue
@@ -66,7 +68,23 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const isValid = !formValidation.message;
     const error = formValidation.message;
 
-    const showSlippageOnly = !autoSlippage && !quote && values.amount && Number(values.amount) > 0;
+    const showSlippageOnly = !autoSlippage && Number(values.amount) > 0;
+
+    useEffect(() => {
+        setHasShownSlippage(false);
+    }, [values.amount, values.from, values.to, values.fromAsset, values.toAsset]);
+
+    useEffect(() => {
+        if (showSlippageOnly && !quote && !hasShownSlippage) {
+            setHasShownSlippage(true);
+        }
+    }, [showSlippageOnly, quote, hasShownSlippage]);
+
+    useEffect(() => {
+        setPrevAmount(values.amount || "");
+    }, [values.amount]);
+
+    const shouldShowSlippage = showSlippageOnly && hasShownSlippage && !(prevAmount !== "" && quote);
 
     useEffect(() => {
         if (!source || !toAsset || !toAsset.refuel) {
@@ -93,7 +111,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     return (
         <>
             <DepositMethodComponent />
-            <Form className="h-full grow flex flex-col flex-1 justify-between w-full gap-3">
+            <Form className="h-full grow flex flex-col flex-1 justify-between w-full gap-2">
                 <Widget.Content>
                     <div className="w-full flex flex-col justify-between flex-1">
                         <div className='flex-col relative flex justify-between gap-2 w-full leading-4'>
@@ -138,11 +156,11 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                 />
                             }
                             {
-                                showSlippageOnly && (
+                                shouldShowSlippage ? (
                                     <div className="mt-2 bg-secondary-500 rounded-xl">
                                         <Slippage quoteData={undefined} values={values} disableEditingBackground />
                                     </div>
-                                )
+                                ) : null
                             }
                             {
                                 routeValidation.message
@@ -152,9 +170,9 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                     : null
                             }
                             {
-                                !showSlippageOnly && (
+                                !(showSlippageOnly && !quote) ? (
                                     <QuoteDetails swapValues={values} quote={quote?.quote} reward={quote?.reward} isQuoteLoading={isQuoteLoading} />
-                                )
+                                ) : null
                             }
                         </div>
                     </div>

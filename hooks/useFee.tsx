@@ -185,7 +185,7 @@ export function transformSwapDataToQuoteArgs(swapData: SwapBasicData | undefined
     }
 }
 
-type QuoteUrlArgs = {
+export type QuoteUrlArgs = {
     sourceNetwork: string
     sourceToken: string
     destinationNetwork: string

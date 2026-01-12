@@ -164,9 +164,14 @@ type SlippageInputProps = {
 
 const SlippageInput = forwardRef<HTMLInputElement, SlippageInputProps>(function SlippageInput({ valueDecimal, onDebouncedChange, onEditing }, ref) {
     const [localPercent, setLocalPercent] = useState<number | undefined>(valueDecimal !== undefined ? valueDecimal * 100 : undefined)
+    const [previousValidValue, setPreviousValidValue] = useState<number | undefined>(valueDecimal !== undefined ? valueDecimal * 100 : undefined)
 
     useEffect(() => {
-        setLocalPercent(valueDecimal !== undefined ? Math.round(valueDecimal * 10000) / 100 : undefined)
+        const newPercent = valueDecimal !== undefined ? Math.round(valueDecimal * 10000) / 100 : undefined
+        setLocalPercent(newPercent)
+        if (newPercent !== undefined && newPercent >= 0.1 && newPercent <= 5) {
+            setPreviousValidValue(newPercent)
+        }
     }, [valueDecimal])
 
     const invalid = localPercent !== undefined && (localPercent < 0.1 || localPercent > 5)
@@ -175,6 +180,9 @@ const SlippageInput = forwardRef<HTMLInputElement, SlippageInputProps>(function 
     useEffect(() => {
         const t = setTimeout(() => {
             if (invalid) return
+            if (localPercent !== undefined && localPercent >= 0.1 && localPercent <= 5) {
+                setPreviousValidValue(localPercent)
+            }
             onDebouncedChange(localPercent !== undefined ? Math.round(localPercent * 100) / 10000 : undefined)
         }, 300)
         return () => clearTimeout(t)
@@ -200,12 +208,20 @@ const SlippageInput = forwardRef<HTMLInputElement, SlippageInputProps>(function 
                             className={clsx("w-8 bg-transparent border-none outline-none focus:outline-none focus-visible:outline-none ring-0 focus:ring-0 focus-visible:ring-0 focus:border-transparent focus:shadow-none text-base leading-3.5 p-0 text-right",
                                 isHighSlippage ? "text-warning-foreground" : "text-primary-text"
                             )}
-                            value={localPercent}
+                            value={localPercent ?? ""}
                             onChange={(e) => {
                                 const next = e.target.value === "" ? undefined : Number(e.target.value)
                                 if (!Number.isNaN(next as number)) {
                                     onEditing?.()
                                     setLocalPercent(next)
+                                }
+                            }}
+                            onBlur={() => {
+                                if (localPercent === undefined || localPercent === 0 || invalid) {
+                                    setLocalPercent(previousValidValue)
+                                    if (previousValidValue !== undefined) {
+                                        onDebouncedChange(Math.round(previousValidValue * 100) / 10000)
+                                    }
                                 }
                             }}
                             onKeyDown={(e) => {
