@@ -62,7 +62,7 @@ const MinMax = (props: MinMaxProps) => {
         e.stopPropagation()
         if (!walletBalance?.amount)
             throw new Error("Wallet balance is not available");
-        handleSetValue((walletBalance.amount / 2).toString())
+        handleSetValue((walletBalance?.amount / 2).toString())
     }
 
     const handleSetMaxAmount = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -81,9 +81,7 @@ const MinMax = (props: MinMaxProps) => {
                 Number(limitsMinAmount) > 0 ?
                     <ActionButton
                         label="Min"
-                        onMouseEnter={() => {
-                            onActionHover(limitsMinAmount);
-                        }}
+                        onMouseEnter={() => onActionHover(limitsMinAmount)}
                         onClick={handleSetMinAmount}
                         disabled={!limitsMinAmount}
                     />
@@ -94,9 +92,7 @@ const MinMax = (props: MinMaxProps) => {
                 (depositMethod === 'wallet' && halfOfBalance > 0 && (halfOfBalance < (maxAllowedAmount || Infinity))) ?
                     <ActionButton
                         label="50%"
-                        onMouseEnter={() => {
-                            onActionHover(halfOfBalance);
-                        }}
+                        onMouseEnter={() => onActionHover(halfOfBalance)}
                         onClick={handleSetHalfAmount}
                     />
                     :
@@ -108,9 +104,7 @@ const MinMax = (props: MinMaxProps) => {
                         <TooltipTrigger asChild>
                             <ActionButton
                                 label="Max"
-                                onMouseEnter={() => {
-                                    onActionHover(maxAllowedAmount);
-                                }}
+                                onMouseEnter={() => onActionHover(maxAllowedAmount)}
                                 disabled={!maxAllowedAmount}
                                 onClick={handleSetMaxAmount}
                             />
