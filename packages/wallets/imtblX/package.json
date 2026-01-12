@@ -42,7 +42,7 @@
     "@layerswap/widget": "workspace:^"
   },
   "dependencies": {
-    "@imtbl/imx-sdk": "2.1.1",
+    "@imtbl/imx-sdk": "3.8.2",
     "@imtbl/sdk": "1.45.10",
     "axios": "catalog:"
   },

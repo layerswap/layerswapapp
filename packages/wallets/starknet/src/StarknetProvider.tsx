@@ -113,7 +113,7 @@ const StarknetProvider: FC<StarknetProviderProps> = ({ children, walletConnectCo
         }
 
         if ((isAndroid || isIOS) && !defaultConnectors.some(c => c.id === "braavos")) {
-            const starknet = (await import('get-starknet-core')).default
+            const starknet = (await import('@starknet-io/get-starknet-core')).default
 
             const discoverWallets = (await starknet.getDiscoveryWallets()).filter(w => {
                 return (isAndroid && w.downloads["android"]) || (isIOS && w.downloads["ios"]);

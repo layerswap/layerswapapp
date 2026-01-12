@@ -48,7 +48,7 @@
     "@starknet-react/core": "^5.0.3",
     "bn.js": "^5.2.2",
     "ethers": "5.7.2",
-    "get-starknet-core": "^3.3.4",
+    "@starknet-io/get-starknet-core": "^4.0.8",
     "starknet": "catalog:",
     "starknetkit": "^3.4.0"
   },
