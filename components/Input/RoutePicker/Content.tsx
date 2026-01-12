@@ -25,10 +25,10 @@ type ContentProps = {
 export const Content: FC<ContentProps> = (props) => {
     const [isItemsScrolling, setIsItemsScrolling] = useState(false);
 
-    return <div className="overflow-y-auto overflow-x-hidden flex flex-col h-full z-40 openpicker" >
+    return <>
         <RouteSearch searchQuery={props.searchQuery} setSearchQuery={props.setSearchQuery} rowElements={props.rowElements} isItemsScrolling={isItemsScrolling} />
         <Items {...props} isScrolling={isItemsScrolling} setIsScrolling={setIsItemsScrolling} />
-    </div>
+    </>
 }
 
 const Items: FC<ContentProps & { isScrolling: boolean; setIsScrolling: (isScrolling: boolean) => void; }> = ({ searchQuery, setSearchQuery, rowElements, selectedToken, selectedRoute, direction, onSelect, isScrolling, setIsScrolling }) => {
