@@ -81,19 +81,12 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     useEffect(() => {
         if (inputTxStatus === TransactionStatus.Failed) {
             const err = new Error("Transaction failed")
-            const renderingError = new Error(`Swap:${swapDetails?.id} transaction:${transactionHash} failed`);
-            renderingError.name = `TransactionFailed`;
-            renderingError.cause = err;
-            posthog.capture('$exception', {
-                name: renderingError.name,
-                message: renderingError.message,
+            posthog.captureException(err, {
                 $layerswap_exception_type: "Transaction Error",
                 $fromAddress: swapInputTransaction?.from,
-                $toAddress: swapBasicData?.destination_address,
-                stack: renderingError.stack,
-                cause: renderingError.cause,
-                where: 'TransactionError',
-                severity: 'error',
+                transactionHash: transactionHash,
+                swapId: swapDetails?.id,
+                $toAddress: swapBasicData?.destination_address
             });
         }
     }, [inputTxStatus, transactionHash, swapDetails?.id])
@@ -206,7 +199,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             },
             complete: {
                 name: `${swapOutputTransaction?.amount && truncateDecimals(swapOutputTransaction?.amount, destination_token.decimals)} ${destination_token.symbol} was sent to your address`,
-                description: swapOutputTransaction ? <div className="flex flex-col">
+                description: swapOutputTransaction?.amount ? <div className="flex flex-col">
                     <div className='flex items-center space-x-1'>
                         <span>Transaction: </span>
                         <LinkWithIcon
@@ -429,9 +422,9 @@ const getProgressStatuses = (swapDetails: SwapDetails, refuel: Refuel | undefine
 
     let input_transfer = transactionStatusToProgressStatus(swapInputTxStatus) || ''
 
-    let output_transfer = swapOutputTransaction?.transaction_hash ? ProgressStatus.Complete : inputIsCompleted ? ProgressStatus.Current : ProgressStatus.Upcoming;
+    let output_transfer = (swapOutputTransaction?.transaction_hash && swapOutputTransaction?.amount) ? ProgressStatus.Complete : inputIsCompleted ? ProgressStatus.Current : ProgressStatus.Upcoming;
 
-    let refuel_transfer = swapRefuelTransaction?.transaction_hash ? ProgressStatus.Complete : !!refuel ? ProgressStatus.Upcoming : ProgressStatus.Removed;
+    let refuel_transfer = (swapRefuelTransaction?.transaction_hash && swapRefuelTransaction?.amount) ? ProgressStatus.Complete : !!refuel ? ProgressStatus.Upcoming : ProgressStatus.Removed;
 
     let refund_status = ProgressStatus.Removed;
 

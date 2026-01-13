@@ -59,17 +59,21 @@ export default class LayerSwapApiClient {
                     return Promise.resolve(new EmptyApiResponse());
                 }
                 else {
-                    const renderingError = new Error(`API request error with uri:${uri}`);
-                    renderingError.name = `APIError`;
-                    renderingError.cause = reason;
-                    posthog.capture('$exception', {
-                        name: renderingError.name,
-                        message: renderingError.message,
+                    let error: Error;
+                    if (reason instanceof Error) {
+                        error = reason;
+                    } else {
+                        error = new Error(String(reason));
+                        error.name = "APIError";
+                    }
+                    posthog.captureException(error, {
                         $layerswap_exception_type: "API Error",
-                        stack: renderingError.stack,
-                        cause: renderingError.cause,
-                        where: 'apiClient',
-                        severity: 'error',
+                        endpoint: endpoint,
+                        status: reason.response?.status,
+                        statusText: reason.response?.statusText,
+                        responseData: reason.response?.data,
+                        requestUrl: reason.request?.url,
+                        requestMethod: reason.request?.method,
                     });
                     return Promise.reject(reason);
                 }
@@ -248,6 +252,7 @@ export type SwapQuote = {
     avg_completion_time: string,
     refuel_in_source?: number,
     slippage?: number,
+    rate?: number,
 }
 
 export type AddressBookItem = {

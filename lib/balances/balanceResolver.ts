@@ -1,7 +1,9 @@
 import posthog from "posthog-js";
-import { NetworkBalance } from "@/Models/Balance";
+import { NetworkBalance, TokenBalance } from "@/Models/Balance";
 import { BalanceProvider } from "@/Models/BalanceProvider";
 import { NetworkWithTokens } from "@/Models/Network";
+import { classifyNodeError } from "./nodeErrorClassifier";
+import { extractErrorDetails } from "./errorUtils";
 import {
     BitcoinBalanceProvider,
     EVMBalanceProvider,
@@ -18,6 +20,25 @@ import {
     HyperliquidBalanceProvider
 } from "./providers";
 
+function formatErrorBalances(errorBalances: TokenBalance[]) {
+    return errorBalances.map(b => ({
+        token: b.token,
+        error_message: b.error?.message,
+        error_name: b.error?.name,
+        error_code: b.error?.code,
+        error_category: b.error?.category,
+        response_status: b.error?.status,
+        response_status_text: b.error?.statusText,
+        request_url: b.error?.requestUrl,
+        // Include first 500 chars of stack trace for debugging
+        error_stack: b.error?.stack?.substring(0, 500),
+        // Include response data if available (truncated for size)
+        response_data: b.error?.responseData 
+            ? JSON.stringify(b.error.responseData).substring(0, 1000)
+            : undefined
+    }));
+}
+
 export class BalanceResolver {
 
     private providers: BalanceProvider[] = [
@@ -31,7 +52,7 @@ export class BalanceResolver {
         new TonBalanceProvider(),
         new ZkSyncBalanceProvider(),
         new TronBalanceProvider(),
-        new ParadexBalanceProvider(),
+        // new ParadexBalanceProvider(),
         new BitcoinBalanceProvider(),
         new HyperliquidBalanceProvider()
     ];
@@ -48,32 +69,37 @@ export class BalanceResolver {
 
             const errorBalances = balances?.filter(b => b.error)
             if (errorBalances?.length) {
-                posthog.capture('$exception', {
-                    name: "BalanceError",
+                const balanceError = new Error(`Could not fetch balance for ${errorBalances.map(t => t.token).join(", ")} in ${network.name}`);
+                posthog.captureException(balanceError, {
                     $layerswap_exception_type: "Balance Error",
                     network: network.name,
+                    node_url: network.node_url,
                     address: address,
-                    balances: errorBalances,
-                    where: 'BalanceProviderError',
-                    message: `Could not fetch balance for ${errorBalances.map(t=>t.token).join(", ")} in ${network.name}, message: ${errorBalances.map(b=>b.error).join(", ")}`,
+                    failed_tokens: formatErrorBalances(errorBalances),
+                    error_categories: [...new Set(errorBalances.map(b => b.error?.category).filter(Boolean))],
+                    error_codes: [...new Set(errorBalances.map(b => b.error?.code).filter(Boolean))],
+                    http_statuses: [...new Set(errorBalances.map(b => b.error?.status).filter(Boolean))]
                 });
             }
 
             return { balances };
         }
         catch (e) {
-            const error = new Error(e)
-            error.name = "BalanceError"
-            error.cause = e
-            posthog.capture('$exception', {
-                name: error.name,
-                message: error.message,
+            const errorDetails = extractErrorDetails(e);
+            const error = new Error(errorDetails.message);
+            error.name = "BalanceError";
+            error.cause = e;
+            posthog.captureException(error, {
                 $layerswap_exception_type: "Balance Error",
-                stack: error.stack,
-                cause: error.cause,
-                type: 'BalanceError',
-                where: 'BalanceProviderError',
-                severity: 'error',
+                network: network.name,
+                node_url: network.node_url,
+                address: address,
+                error_category: classifyNodeError(e),
+                error_code: errorDetails.code,
+                response_status: errorDetails.status,
+                response_status_text: errorDetails.statusText,
+                response_data: errorDetails.responseData,
+                request_url: errorDetails.requestUrl,
             });
 
             return { balances: [] }

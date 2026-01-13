@@ -21,7 +21,6 @@ import UrlAddressNote from "@/components/Input/Address/UrlAddressNote";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import SwapDetails from "..";
 import { useBalance } from "@/lib/balances/useBalance";
-import { useContractAddressCheck } from "@/hooks/useContractAddressCheck";
 import ContractAddressNote from "@/components/Input/Address/ContractAddressNote";
 import { useContractAddressStore } from "@/stores/contractAddressStore";
 
@@ -53,8 +52,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
     const { createSwap, setSwapId, setSubmitedFormValues, setSwapModalOpen } = useSwapDataUpdate()
     const { setSwapError } = useSwapDataState()
 
-    const { checkContractStatus } = useContractAddressCheck();
-    const { setConfirmed, isConfirmed } = useContractAddressStore();
+    const { setConfirmed, isConfirmed, checkContractStatus } = useContractAddressStore();
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         setSwapError && setSwapError('')
@@ -90,22 +88,22 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
 
         if (destination_address && values.from && values.to && values.to.type === 'evm') {
             const alreadyConfirmed = isConfirmed(destination_address, values.to.name);
-            
+
             if (!alreadyConfirmed) {
                 const { isContractInAnyNetwork, destinationIsContract } = await checkContractStatus(destination_address, values.from, values.to);
                 if (isContractInAnyNetwork && !destinationIsContract) {
                     dontShowContractWarningRef.current = false;
-                    
+
                     const handleDontShowAgainChange = (checked: boolean) => {
                         dontShowContractWarningRef.current = checked;
                     };
-                    
+
                     const confirmed = await getConfirmation({
                         content: <ContractAddressNote values={values} onDontShowAgainChange={handleDontShowAgainChange} />,
                         submitText: 'Confirm',
                         dismissText: 'Cancel'
                     });
-                    
+
                     if (confirmed && dontShowContractWarningRef.current) {
                         setConfirmed(destination_address, values.to.name);
                     } else if (!confirmed) {
@@ -176,9 +174,9 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                 <VaulDrawer
                     show={swapModalOpen}
                     setShow={handleShowSwapModal}
-                    header={`Complete the swap`}
+                    header='Complete the swap'
                     modalId="showSwap"
-                    className={!swapBasicData?.use_deposit_address ? "expandContainerHeight" : ""}>
+                    className="expandContainerHeight">
                     <VaulDrawer.Snap id="item-1">
                         <SwapDetails type="contained" onWalletWithdrawalSuccess={handleWalletWithdrawalSuccess} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />
                     </VaulDrawer.Snap>

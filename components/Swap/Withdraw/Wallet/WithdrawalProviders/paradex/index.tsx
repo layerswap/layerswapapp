@@ -54,7 +54,7 @@ const ConnectWalletModal = () => {
         }
     }
 
-    return <SubmitButton onClick={handleConnect} type="button" icon={<WalletIcon className="h-6 w-6" strokeWidth={2} />} >
+    return <SubmitButton data-attr="connect-wallet" onClick={handleConnect} type="button" icon={<WalletIcon className="h-6 w-6" strokeWidth={2} />} >
         Connect a wallet
     </SubmitButton>
 }

@@ -59,7 +59,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                             requestedAmount &&
                             <p className="text-primary-text text-xl leading-6 font-normal whitespace-nowrap">{truncateDecimals(Number(requestedAmount), sourceCurrency.precision)} {sourceCurrency.symbol}</p>
                         }
-                        <p className="text-secondary-text text-sm leading-5 flex font-medium justify-end"><NumberFlow value={requestedAmountInUsd || 0} format={{ style: 'currency', currency: 'USD' }} trend={0} /></p>
+                        <p className="text-secondary-text text-sm leading-5 flex font-medium justify-end"><NumberFlow value={requestedAmountInUsd || 0} prefix="$" trend={0} /></p>
                     </div>
                 </div>
                 <div className="relative text-secondary-text">
@@ -79,7 +79,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                                 </p>
                                 <p className="text-secondary-text text-sm flex items-center gap-1 font-medium">
                                     <PriceImpact className="text-sm" quote={swapQuote} refuel={refuel} />
-                                    <NumberFlow value={receiveAmountInUsd || 0} format={{ style: 'currency', currency: 'USD' }} trend={0} />
+                                    <NumberFlow value={receiveAmountInUsd || 0} prefix="$" trend={0} />
                                 </p>
                             </div>
                         )
@@ -126,7 +126,7 @@ const RouteTokenPair: FC<RouteTokenPairProps> = ({ route, token }) => {
                     fetchPriority="high"
                     className="rounded-full object-contain"
                 />
-                <div className="absolute -right-0.5 -bottom-0.5 rounded border border-secondary-500 overflow-hidden">
+                <div className="absolute -right-0.5 -bottom-0.5 rounded border border-secondary-500 bg-secondary-400 overflow-hidden">
                     <ImageWithFallback
                         src={route.logo}
                         alt="Route Logo"

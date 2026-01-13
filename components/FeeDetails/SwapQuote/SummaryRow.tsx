@@ -87,6 +87,7 @@ export const SummaryRow: FC<{
                 <DetailsButton quote={quoteData?.quote} isQuoteLoading={isQuoteLoading} swapValues={values} destination={destination} destinationAddress={destinationAddress} reward={quoteData?.reward} />
 
                 <button
+                    data-attr="see-swap-details"
                     type="button"
                     onClick={(e) => {
                         e.stopPropagation()

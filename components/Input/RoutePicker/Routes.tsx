@@ -2,7 +2,7 @@ import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { SwapDirection } from "@/components/DTOs/SwapFormValues";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import { SelectItem } from "@/components/Select/Selector/SelectItem";
-import { ChevronDown, Info } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import RoutePickerIcon from "@/components/icons/RoutePickerPlaceholder";
 import { useBalance } from "@/lib/balances/useBalance";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
@@ -10,12 +10,9 @@ import { GroupedTokenElement, RowElement } from "@/Models/Route";
 import { getKey, useBalanceStore } from "@/stores/balanceStore";
 import { useSwapAccounts } from "@/context/swapAccounts";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
-import { ExtendedAddress } from "../Address/AddressPicker/AddressWithIcon";
 import { getTotalBalanceInUSD } from "@/helpers/balanceHelper";
 import { useMemo } from "react";
-import { isNewListed, NewBadge } from "@/lib/isNewListed";
-import useWindowDimensions from "@/hooks/useWindowDimensions";
-import clsx from "clsx";
+import { TokenInfoIcon, TokenTitleWithBalance } from "./TokenTitleDetails";
 
 type TokenItemProps = {
     route: NetworkRoute;
@@ -44,6 +41,7 @@ type NetworkTokenItemProps = {
     direction: SwapDirection;
     type?: RowElement['type'];
 }
+
 export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     const { item, route, direction, type } = props
     const swapAccounts = useSwapAccounts(direction)
@@ -56,51 +54,29 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     const formatted_balance_amount = (tokenbalance?.amount || tokenbalance?.amount === 0) ? truncateDecimals(tokenbalance?.amount, item.precision) : ''
     const usdAmount = (tokenbalance?.amount && item?.price_in_usd) ? item?.price_in_usd * tokenbalance?.amount : undefined;
 
-    const isNewlyListed = isNewListed(item?.listing_date);
-
     return <SelectItem.DetailedTitle
-        title={<div className="flex items-center gap-2">
-            <p>
-                {item.symbol}
-            </p>
-            {
-                isNewlyListed &&
-                <NewBadge />
-            }
-        </div>}
+        title={<TokenTitleWithBalance
+            item={item}
+            route={route}
+            tokenbalance={tokenbalance}
+            usdAmount={usdAmount}
+        />}
         secondaryImageAlt={route.display_name}
         secondary={
             <div className="flex items-center gap-1">
-                <span>{route.display_name}</span>
-                <div className="transition-all duration-300 opacity-0 group-hover:opacity-100 group-hover:delay-400 click-delay-on-hover">
-                    <ExtendedAddress
-                        network={item.contract ? route : undefined}
-                        isForCurrency
-                        showDetails
-                        address={item.contract || `${route.display_name} native coin`}
-                        logo={item.logo}
-                        title={item.symbol}
-                        description={item.display_asset}
-                        isNativeToken={!item.contract}
-                    >
-                        <div className="flex items-center gap-1 text-secondary-text text-xs cursor-pointer hover:text-primary-text">
-                            <p className="max-w-[90px] truncate">
-                                <span>•</span> <span>{item.display_asset || item.symbol}</span>
-                            </p>
-                            <Info className="h-3 w-3" />
-                        </div>
-                    </ExtendedAddress>
-                </div>
+                <span className="truncate">{route.display_name}</span>
+                <TokenInfoIcon
+                    item={item}
+                    route={route}
+                    className="xs:hidden transition-all duration-300 opacity-0 group-hover:opacity-100 group-hover:delay-400 click-delay-on-hover shrink-0"
+                />
             </div>
         }
         secondaryLogoSrc={route.logo}
     >
         {(tokenbalance && Number(tokenbalance?.amount) > 0) ? (
-            <span className="text-sm text-secondary-text text-right my-auto font-medium space-y-0.5">
-                {Number(usdAmount) > 0 && (
-                    <div className="text-primary-text text-lg leading-[22px]">{formatUsd(usdAmount)}</div>
-                )}
-                <div className='text-xs leading-4'>
+            <span className="text-sm text-secondary-text text-right my-auto font-medium block">
+                <div className='text-xs leading-4 truncate'>
                     {formatted_balance_amount}
                 </div>
             </span>
@@ -131,23 +107,13 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
     const hasLoadedBalances = totalInUSD !== null && Number(totalInUSD) > 0;
     const showTokenLogos = hasLoadedBalances && filteredNetworkTokens?.length;
 
-    const haveNewlyListedTokens = useMemo(() => item.tokens?.some(t => isNewListed(t.listing_date)), [item]);
-
     return (
         <SelectItem className="accordion-item-focused bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative pr-7 py-2">
             <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} className="rounded-md" />
             <SelectItem.Title>
                 <>
                     <span>
-                        <div className="flex items-center gap-2">
-                            <p>
-                                {item.display_name}
-                            </p>
-                            {
-                                haveNewlyListedTokens &&
-                                <NewBadge />
-                            }
-                        </div>
+                        {item.display_name}
                     </span>
 
                     {hasLoadedBalances ? (
@@ -181,7 +147,7 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
                     ) : <></>}
 
                     <ChevronDown
-                        className="!w-3.5 !h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
+                        className="w-3.5! h-3.5! absolute right-2 top-1/2 -translate-y-1/2 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
                         aria-hidden="true"
                     />
                 </>
@@ -210,8 +176,6 @@ export const GroupedTokenHeader = ({
     const swapAccounts = useSwapAccounts(direction)
 
     const tokens = item.items;
-    const haveNewlyListedTokens = useMemo(() => tokens.some(t => isNewListed(t.route.token.listing_date)), [tokens]);
-
     const balances = useBalanceStore(s => s.balances)
 
     const networksWithBalance: NetworkRoute[] = Array.from(
@@ -264,15 +228,8 @@ export const GroupedTokenHeader = ({
             />
             <SelectItem.Title>
                 <>
-                    <span><div className="flex items-center gap-2">
-                        <p>
-                            {mainToken.symbol}
-                        </p>
-                        {
-                            haveNewlyListedTokens &&
-                            <NewBadge />
-                        }
-                    </div>
+                    <span>
+                        {mainToken.symbol}
                     </span>
                     {hasLoadedBalances ? (
                         <div className={`${showNetworkIcons ? "flex flex-col space-y-0.5" : ""} ${hideTokenImages ? "invisible" : "visible"}`}>
@@ -353,7 +310,6 @@ type SelectedRouteDisplayProps = {
 
 export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRouteDisplayProps) => {
     const showContent = token && route;
-    const { windowSize } = useWindowDimensions()
 
     return (
         <span className="flex grow text-left items-center text-xs md:text-base relative">
@@ -371,7 +327,7 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
                                 className="rounded-full object-contain"
                             />
                         </div>
-                        <div className="absolute left-[13px] top-3.5 h-4 w-4 rounded border border-secondary-500 overflow-hidden">
+                        <div className="absolute left-[13px] top-3.5 h-4 w-4 rounded border border-secondary-500 bg-secondary-400 overflow-hidden">
                             <ImageWithFallback
                                 src={route.logo}
                                 alt="Network Logo"
@@ -384,12 +340,7 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
                         </div>
 
                     </div>
-                    <div
-                        className={clsx(
-                            "ml-2 flex flex-col grow text-primary-text overflow-hidden min-w-0 max-w-3/4 group-[.exchange-picker]:max-w-full",
-                            { "max-w-[60px]": windowSize?.width && windowSize.width < 400 }
-                        )}
-                    >
+                    <div className="ml-2 flex flex-col grow text-primary-text overflow-hidden min-w-0 max-w-3/4 group-[.exchange-picker]:max-w-full xs:max-w-[60px]"                    >
                         <p className="text-base leading-5 font-medium">{token.symbol}</p>
                         <p className="text-secondary-text grow text-sm font-normal leading-4 truncate whitespace-nowrap">
                             {route.display_name}

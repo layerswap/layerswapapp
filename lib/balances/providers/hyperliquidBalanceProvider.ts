@@ -50,7 +50,7 @@ export class HyperliquidBalanceProvider extends BalanceProvider {
 
             return balances;
         } catch (error) {
-            return network.tokens.map(t => this.resolveTokenBalanceFetchError(error, t, network))
+            throw error
         }
     }
 }
