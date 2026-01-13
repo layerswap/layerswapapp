@@ -119,6 +119,7 @@ export default function useTON(): WalletProvider {
         id: id,
         name: name,
         icon: logo,
+        extensionNotFound: false
     }]
 
     const provider: WalletProvider = {

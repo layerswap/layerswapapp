@@ -161,17 +161,10 @@ export default function useEVM(): WalletProvider {
                     isMobileSupported: isWalletConnectSupported,
                     installUrl: walletConnectWallet?.installUrl,
                     hasBrowserExtension: walletConnectWallet?.hasBrowserExtension,
-                    extensionNotFound: walletConnectWallet?.hasBrowserExtension ? (type == 'walletConnect' && !isMobilePlatform) : undefined
+                    extensionNotFound: walletConnectWallet?.hasBrowserExtension ? (type == 'walletConnect' && !isMobilePlatform) : false
                 }
             })
     }, [allConnectors, walletConnectConnectors])
-
-    const availableHiddenWalletsForConnect = useMemo(() => {
-        return walletConnectConnectors.map(w => ({
-            ...w,
-            extensionNotFound: w.type == 'walletConnect'
-        }))
-    }, [walletConnectConnectors])
 
     const connectWallet = useCallback(async (props: { connector: WalletModalConnector }) => {
         try {
@@ -374,7 +367,7 @@ export default function useEVM(): WalletProvider {
             withdrawalSupportedNetworks,
             asSourceSupportedNetworks,
             availableWalletsForConnect: availableFeaturedWalletsForConnect,
-            availableHiddenWalletsForConnect: availableHiddenWalletsForConnect,
+            availableHiddenWalletsForConnect: walletConnectConnectors,
             name,
             id,
             providerIcon,

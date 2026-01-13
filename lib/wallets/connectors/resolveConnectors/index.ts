@@ -19,7 +19,7 @@ export type WalletConnectWallet = {
     };
     rdns?: string;
     hasBrowserExtension?: boolean;
-    extensionNotFound?: boolean,
+    extensionNotFound: boolean,
     type: string;
     icon: string;
     projectId: string;
@@ -71,6 +71,7 @@ const resolveWallet = (wallet: any) => {
 
     const isMobileSupported = !!wallet.mobile.universal || !!wallet.mobile.native
     const isWalletConnectSupported = isMobileSupported || !!wallet.desktop?.universal || !!wallet.desktop?.native
+    const type = isWalletConnectSupported ? "walletConnect" : "other"
 
     const w: WalletConnectWallet = {
         id: wallet.slug,
@@ -82,10 +83,11 @@ const resolveWallet = (wallet: any) => {
         showQrModal: false,
         customStoragePrefix: wallet.slug,
         order: resolveWalletConnectorIndex(wallet.slug),
-        type: isWalletConnectSupported ? "walletConnect" : "other",
+        type,
         isMobileSupported: isMobileSupported,
         hasBrowserExtension: wallet.injected != null,
-        installUrl: wallet.injected != null ? wallet.app.browser ?? wallet.app.chrome : undefined
+        installUrl: wallet.injected != null ? wallet.app.browser ?? wallet.app.chrome : undefined,
+        extensionNotFound: type == 'walletConnect'
     }
 
     return w

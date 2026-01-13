@@ -56,7 +56,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 return;
             }
             setSelectedConnector(connector)
-            if (connector?.hasBrowserExtension !== false && connector?.extensionNotFound && !connector?.showQrCode && !isMobilePlatfrom) return
+            if (connector?.hasBrowserExtension !== false && connector.extensionNotFound && !connector?.showQrCode && !isMobilePlatfrom) return
             if (!provider.ready) {
                 setConnectionError("Wallet provider is still initializing. Please wait a moment and try again.")
                 return
