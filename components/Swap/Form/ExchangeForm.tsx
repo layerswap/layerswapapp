@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useMemo, useState } from "react";
 import ValidationError from "@/components/validationError";
 import CexPicker, { SelectedEchangePlaceholder } from "@/components/Input/CexPicker";
 import QuoteDetails from "@/components/FeeDetails";
@@ -98,7 +98,7 @@ const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
                                 <div className="relative group exchange-picker">
                                     <RoutePicker direction="to" isExchange={true} />
                                 </div>
-                                <div className="hover:bg-secondary-300 bg-secondary-500 rounded-2xl p-3 h-[52px]">
+                                <div className="hover:bg-secondary-300 bg-secondary-500 rounded-2xl p-3 h-13">
                                     <Address partner={partner} >{
                                         ({ addressItem }) => {
                                             const addressProviderIcon = (partner?.is_wallet && addressItem?.group === AddressGroup.FromQuery && partner?.logo) ? partner.logo : undefined

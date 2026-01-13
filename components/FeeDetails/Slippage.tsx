@@ -87,9 +87,7 @@ export const Slippage = ({ quoteData, values, disableEditingBackground }: Slippa
 
                     {!editingCustomSlippage &&
                         <div
-                            className={clsx("flex items-center gap-1 text-sm px-2 h-8 border border-secondary-300 rounded-lg font-normal leading-4 cursor-pointer",
-                                isHighSlippage && "shadow-[inset_0_0_0_1px] shadow-warning-foreground"
-                            )}
+                            className={clsx("flex items-center gap-1 text-sm px-2 h-8 border border-secondary-300 rounded-lg font-normal leading-4 cursor-pointer", isHighSlippage && "shadow-[inset_0_0_0_1px] shadow-warning-foreground")}
                             onClick={() => {
                                 if (!slippage && quoteData?.slippage) {
                                     setSlippage(quoteData.slippage);
@@ -180,9 +178,7 @@ const SlippageInput = forwardRef<HTMLInputElement, SlippageInputProps>(function 
     useEffect(() => {
         const t = setTimeout(() => {
             if (invalid) return
-            if (localPercent !== undefined && localPercent >= 0.1 && localPercent <= 5) {
-                setPreviousValidValue(localPercent)
-            }
+            if (localPercent !== undefined && localPercent >= 0.1 && localPercent <= 5) setPreviousValidValue(localPercent)
             onDebouncedChange(localPercent !== undefined ? Math.round(localPercent * 100) / 10000 : undefined)
         }, 300)
         return () => clearTimeout(t)
