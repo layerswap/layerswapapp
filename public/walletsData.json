@@ -10683,38 +10683,35 @@
     "2c69b45f625add0acd3354df4ab757067143b7f54b937311966f55be60a89c41": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.gayawalletmobapp&pcampaignid=web_share&pli=1",
-        "browser": "",
-        "chrome": "",
-        "edge": "",
-        "firefox": "",
+        "browser": null,
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
         "ios": "https://apps.apple.com/pk/app/gaya-wallet/id6741714278",
-        "linux": "",
-        "mac": "",
-        "opera": "",
-        "safari": "",
-        "windows": ""
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
       },
       "app_type": "wallet",
       "category": null,
       "chains": [
         "eip155:1",
-        "eip155:137",
-        "eip155:42161",
-        "eip155:56",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
       ],
-      "description": "Gaya Wallet is a Multichain wallet on Solana, EVM and other chains. Create or import wallets, send, receive and swap assets, bridge across chains, buy and sell crypto, connect to dApps, explore Web3, track tokens and transactions, earn rewards through tasks and referrals, and manage everything under one secure identity.",
+      "description": "Gaya Wallet is a secure, non-custodial multichain wallet for Solana & Ethereum. Manage assets, swap tokens, and stay in full control.",
       "desktop": {
         "native": "",
-        "universal": ""
+        "universal": null
       },
       "homepage": "https://gayawallet.com",
       "id": "2c69b45f625add0acd3354df4ab757067143b7f54b937311966f55be60a89c41",
-      "image_id": "40cb8a5d-6118-404d-7156-4ab9bfb18600",
+      "image_id": "67e7c918-8cf2-4781-0a10-e7e6f4c48900",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/40cb8a5d-6118-404d-7156-4ab9bfb18600?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/40cb8a5d-6118-404d-7156-4ab9bfb18600?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/40cb8a5d-6118-404d-7156-4ab9bfb18600?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/67e7c918-8cf2-4781-0a10-e7e6f4c48900?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/67e7c918-8cf2-4781-0a10-e7e6f4c48900?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/67e7c918-8cf2-4781-0a10-e7e6f4c48900?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
       "injected": null,
       "metadata": {
@@ -10729,7 +10726,7 @@
         "universal": "https://gayawallet.com"
       },
       "name": "Gaya Wallet",
-      "rdns": "",
+      "rdns": null,
       "sdks": [
         "sign_v1",
         "sign_v2"
@@ -17858,8 +17855,8 @@
         "shortName": null
       },
       "mobile": {
-        "native": "nvxowallet://wc",
-        "universal": "https://www.nvxowallet.com/wc"
+        "native": "",
+        "universal": "https://play.google.com/store/apps/details?id=com.nvwallet.wallet"
       },
       "name": "NVXO Wallet",
       "rdns": "",
@@ -39558,31 +39555,28 @@
     "ce02f1ae74686234eabfa7d31876c442779b730dfe7924a3ca0e6559a7afa30f": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.creditcoin.mobile",
-        "browser": "",
-        "chrome": "",
-        "edge": "",
-        "firefox": "",
+        "browser": null,
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
         "ios": "https://apps.apple.com/us/app/apple-store/id6478491272",
-        "linux": "",
-        "mac": "",
-        "opera": "",
-        "safari": "",
-        "windows": ""
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
       },
       "app_type": "wallet",
       "category": "Mobile Wallets",
       "chains": [
         "eip155:1",
-        "eip155:102030",
-        "eip155:102031",
-        "eip155:102032",
         "eip155:11155111",
         "polkadot:91b171bb158e2d3848fa23a9f1c25182"
       ],
       "description": "The Multichain Credit Protocol Powering Real-World Assets",
       "desktop": {
         "native": "",
-        "universal": ""
+        "universal": null
       },
       "homepage": "https://app.creditcoin.org",
       "id": "ce02f1ae74686234eabfa7d31876c442779b730dfe7924a3ca0e6559a7afa30f",
@@ -39602,10 +39596,10 @@
       },
       "mobile": {
         "native": "creditwallet://",
-        "universal": ""
+        "universal": null
       },
       "name": "Credit Wallet",
-      "rdns": "",
+      "rdns": null,
       "sdks": [
         "sign_v1",
         "sign_v2",
