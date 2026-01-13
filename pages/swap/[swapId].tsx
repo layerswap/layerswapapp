@@ -38,6 +38,17 @@ export const getServerSideProps = async (ctx) => {
   const apiClient = new LayerSwapApiClient()
   const { data: networkData } = await apiClient.GetLSNetworksAsync()
 
+  const { data: swapData } = await apiClient.GetSwapAsync(params.swapId)
+
+  if (swapData?.swap.transactions.length == 0) {
+    return {
+      redirect: {
+        destination: `/?from=${swapData?.swap.source_network.name}&to=${swapData?.swap.destination_network.name}&fromAsset=${swapData?.swap.source_token.symbol}&toAsset=${swapData?.swap.destination_token.symbol}&amount=${swapData?.swap.requested_amount}`,
+        permanent: true,
+      }
+    }
+  }
+
   if (!networkData) return
 
   const settings = {

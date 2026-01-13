@@ -37,6 +37,7 @@ const ConnectorsContext = ({ children }: { children: JSX.Element | JSX.Element[]
                     icon: connector.icon,
                     type: isInjected ? 'injected' : 'other',
                     installUrl: installLink,
+                    extensionNotFound: !isInjected
                 }
                 return internalConnector
             }))

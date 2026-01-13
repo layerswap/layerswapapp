@@ -12,28 +12,6 @@ export const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: Wallet
     const { isMobile: isMobileSize } = useWindowDimensions()
     const isMobilePlatform = isMobile();
 
-    if (selectedConnector.installUrl) {
-        return <div className='w-full h-[60vh] sm:h-full flex flex-col justify-center items-center font-semibold relative'>
-            <div className="flex grow items-center">
-                <div className="flex flex-col gap-4 items-center justify-end row-start-2 row-span-1">
-                    <div className="flex-col flex items-center gap-1">
-                        <ConnectorIcon className="w-11 h-auto p-0.5 rounded-md bg-secondary-800" />
-                        <p className='text-base font-semibold'>
-                            <span>{selectedConnector?.name}</span> <span>is not installed</span>
-                        </p>
-                    </div>
-                    <button
-                        onClick={() => window.open(selectedConnector.installUrl, '_blank')}
-                        type="button"
-                        className="px-3 py-1 rounded-full bg-secondary-600 text-primary-500 font-semibold text-base hover:brightness-125 transition-all duration-200"
-                    >
-                        INSTALL
-                    </button>
-                </div>
-            </div>
-        </div>
-    }
-
     return (
         <div
             className={clsx('w-full flex flex-col justify-center items-center font-semibold relative', {
