@@ -29,10 +29,10 @@ export default function resolveChain(network: Network) {
         },
         rpcUrls: {
             default: {
-                http: [network.node_url],
+                http: network.nodes?.length > 0 ? network.nodes : [network.node_url],
             },
             public: {
-                http: [network.node_url],
+                http: network.nodes?.length > 0 ? network.nodes : [network.node_url],
             },
         },
         ...(blockExplorersBaseURL ? {
