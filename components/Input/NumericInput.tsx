@@ -41,14 +41,14 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const fullTooltipText = displayValue && Number(displayValue) > 0
             ? `${displayValue}${tokenSymbol ? ` ${tokenSymbol}` : ''}`
             : undefined;
-            
+
         return <div>
             {label &&
                 <label htmlFor={name} className="block font-semibold text-secondary-text text-sm mb-1.5 w-full">
                     {label}
                 </label>
             }
-            <Tooltip>
+            <Tooltip disableHoverableContent>
                 <TooltipTrigger asChild>
                     <div className="flex relative w-full">
                         {
@@ -92,11 +92,9 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                         {<>{children}</>}
                     </div>
                 </TooltipTrigger>
-                {fullTooltipText && (
-                    <TooltipContent className="bg-secondary-300! border-secondary-300! text-primary-text!">
-                        <p>{fullTooltipText}</p>
-                    </TooltipContent>
-                )}
+                <TooltipContent className="bg-secondary-300! border-secondary-300! text-primary-text!">
+                    <p>{fullTooltipText}</p>
+                </TooltipContent>
             </Tooltip>
         </div>;
     });
