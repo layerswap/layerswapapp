@@ -19,7 +19,6 @@ function TooltipProvider({
 
 type TooltipProps = React.ComponentProps<typeof TooltipPrimitive.Root> & {
   openOnClick?: boolean
-  disableHoverableContent?: boolean
 }
 
 const TooltipClickContext = React.createContext<{
@@ -30,7 +29,6 @@ const TooltipClickContext = React.createContext<{
 function Tooltip({
   delayDuration = 400,
   openOnClick,
-  disableHoverableContent,
   open: controlledOpen,
   onOpenChange,
   ...props
@@ -56,7 +54,7 @@ function Tooltip({
   }, [open, isControlled, onOpenChange])
 
   return (
-    <TooltipProvider disableHoverableContent={disableHoverableContent}>
+    <TooltipProvider>
       <TooltipClickContext.Provider value={{ openOnClick: isClickable, toggle }}>
         <TooltipPrimitive.Root
           data-slot="tooltip"
