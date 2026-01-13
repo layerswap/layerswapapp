@@ -80,7 +80,6 @@ export class EVMBalanceProvider extends BalanceProvider {
     contractGetBalances = async (address: string, chain: Chain, network: NetworkWithTokens, options?: { timeoutMs?: number, retryCount?: number }): Promise<TokenBalance[] | null> => {
         if (!network) throw new Error("Network is required for contract get balances")
 
-        console.log("contractGetBalances")
         const { createPublicClient } = await import("viem")
         const publicClient = createPublicClient({
             chain,
@@ -236,7 +235,6 @@ export const getErc20Balances = async ({
             const failedIndices: number[] = []
             contractRes.forEach((result, index) => {
                 if (result.status === 'failure') {
-                    console.log("failure", `index:${index}`, `error:${result.error}`)
                     failedIndices.push(index)
                 }
             })
@@ -253,7 +251,6 @@ export const getErc20Balances = async ({
                             functionName: 'balanceOf',
                             args: [address as `0x${string}`]
                         })
-                        console.log("success", `index:${index}`, `balance:${balance}`)
                         mutableResults[index] = {
                             status: 'success',
                             result: balance,
