@@ -38,7 +38,7 @@ const DestinationPicker = (props: Props) => {
             </div>
         </div>
         <div className="items-center space-y-2">
-            <div className="grid grid-cols-[1fr_auto] gap-2 w-full max-w-full">
+            <div className="grid grid-cols-[1fr_auto] gap-1 w-full max-w-full">
                 <div className="min-w-0 overflow-hidden">
                     <ReceiveAmount
                         destination_token={toCurrency}
