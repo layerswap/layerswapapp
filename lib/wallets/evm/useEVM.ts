@@ -109,9 +109,6 @@ export default function useEVM(): WalletProvider {
     const config = useConfig()
     const { connectAsync } = useConnect();
 
-    const pendingResolve = useRef<((c: InternalConnector & LSConnector) => void) | undefined>()
-    const pendingId = useRef<string>()
-
     const { setSelectedConnector } = useConnectModal()
     const { walletConnectConnectors, addWalletConnectWallet } = useEvmConnectors()
 
@@ -345,15 +342,6 @@ export default function useEVM(): WalletProvider {
     const activeWallet = useMemo(() => resolvedConnectors.find(w => w.isActive), [resolvedConnectors])
     const providerIcon = useMemo(() => networks.find(n => ethereumNames.some(name => name === n.name))?.logo, [networks])
 
-    useEffect(() => {
-        if (!pendingResolve.current) return
-        const found = availableFeaturedWalletsForConnect.find(c => c.id === pendingId.current)
-        if (found) {
-            pendingResolve.current(found as any)
-            pendingResolve.current = undefined
-        }
-    }, [availableFeaturedWalletsForConnect, pendingId.current, pendingResolve.current])
-
     const provider = useMemo(() => {
         return {
             connectWallet,
@@ -473,7 +461,8 @@ const resolveSupportedNetworks = (supportedNetworks: string[], connectorId: stri
                 KnownInternalNames.Networks.ImmutableXMainnet,
                 KnownInternalNames.Networks.ImmutableXGoerli,
                 KnownInternalNames.Networks.ImmutableXSepolia,
-                KnownInternalNames.Networks.ImmutableZkEVM
+                KnownInternalNames.Networks.ImmutableZkEVM,
+                KnownInternalNames.Networks.ImmutableZkTestnet
             ]
         },
         {

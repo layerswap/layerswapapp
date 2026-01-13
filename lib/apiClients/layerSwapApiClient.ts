@@ -66,9 +66,14 @@ export default class LayerSwapApiClient {
                         error = new Error(String(reason));
                         error.name = "APIError";
                     }
-                    
                     posthog.captureException(error, {
                         $layerswap_exception_type: "API Error",
+                        endpoint: endpoint,
+                        status: reason.response?.status,
+                        statusText: reason.response?.statusText,
+                        responseData: reason.response?.data,
+                        requestUrl: reason.request?.url,
+                        requestMethod: reason.request?.method,
                     });
                     return Promise.reject(reason);
                 }
@@ -247,6 +252,7 @@ export type SwapQuote = {
     avg_completion_time: string,
     refuel_in_source?: number,
     slippage?: number,
+    rate?: number,
 }
 
 export type AddressBookItem = {

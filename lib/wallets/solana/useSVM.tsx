@@ -57,8 +57,8 @@ export default function useSVM(): WalletProvider {
 
         if (!solanaConnector) throw new Error('Connector not found')
         if (connectedWallet) await solanaConnector.adapter.disconnect()
-        select(solanaConnector.adapter.name)
         await solanaConnector.adapter.connect()
+        select(solanaConnector.adapter.name)
 
         const newConnectedWallet = wallets.find(w => w.adapter.connected === true)
         const connectedAddress = newConnectedWallet?.adapter.publicKey?.toBase58()
