@@ -28,8 +28,13 @@ export const useRoutePickerNavigation = (navigableItems: NavigableItem[], search
     }, [searchQuery, navigableItems.length]);
 
     const handleArrowDown = useCallback(() => {
-        setIsKeyboardNavigating(true);
-        setIsMouseMoving(false);
+        // Batch state updates for better performance
+        if (!isKeyboardNavigating) {
+            setIsKeyboardNavigating(true);
+        }
+        if (isMouseMoving) {
+            setIsMouseMoving(false);
+        }
 
         if (focusedIndex === null) {
             if (navigableItems.length > 0) {
@@ -41,8 +46,9 @@ export const useRoutePickerNavigation = (navigableItems: NavigableItem[], search
         const navItem = navigableItems[parent];
 
         if (!navItem) {
-            if (navigableItems.length > 0)
+            if (navigableItems.length > 0) {
                 setFocusedIndex("0");
+            }
             return;
         }
 
@@ -50,8 +56,9 @@ export const useRoutePickerNavigation = (navigableItems: NavigableItem[], search
             if (child < navItem.childCount - 1) {
                 setFocusedIndex(`${parent}.${child + 1}`);
             } else {
-                if (parent < navigableItems.length - 1)
+                if (parent < navigableItems.length - 1) {
                     setFocusedIndex(`${parent + 1}`);
+                }
             }
         } else {
             if (navItem.childCount > 0) {
@@ -60,22 +67,29 @@ export const useRoutePickerNavigation = (navigableItems: NavigableItem[], search
                 setFocusedIndex(`${parent + 1}`);
             }
         }
-    }, [focusedIndex, navigableItems]);
+    }, [focusedIndex, navigableItems, isKeyboardNavigating, isMouseMoving]);
 
     const handleArrowUp = useCallback(() => {
-        setIsKeyboardNavigating(true);
-        setIsMouseMoving(false);
+        // Batch state updates for better performance
+        if (!isKeyboardNavigating) {
+            setIsKeyboardNavigating(true);
+        }
+        if (isMouseMoving) {
+            setIsMouseMoving(false);
+        }
 
         // If no focus, ArrowUp does nothing (search bar is not navigatable)
-        if (focusedIndex === null)
+        if (focusedIndex === null) {
             return;
+        }
 
         const { parent, child } = parseIndex(focusedIndex);
         const navItem = navigableItems[parent];
 
         if (!navItem) {
-            if (navigableItems.length > 0)
+            if (navigableItems.length > 0) {
                 setFocusedIndex("0");
+            }
             return;
         }
 
@@ -97,14 +111,18 @@ export const useRoutePickerNavigation = (navigableItems: NavigableItem[], search
             // When at first item (parent === 0), ArrowUp does nothing - stay at first item
             // Search bar is never part of navigation
         }
-    }, [focusedIndex, navigableItems]);
+    }, [focusedIndex, navigableItems, isKeyboardNavigating, isMouseMoving]);
 
     const handleEnter = useCallback(() => {
-        if (focusedIndex === null) return;
+        if (focusedIndex === null) {
+            return;
+        }
         // Find the focused element and trigger its click event
         const element = document.querySelector(`[data-nav-index="${focusedIndex}"]`) as HTMLElement;
 
-        if (element) element.click();
+        if (element) {
+            element.click();
+        }
     }, [focusedIndex]);
 
     useKeyboardNavigation(
@@ -120,19 +138,25 @@ export const useRoutePickerNavigation = (navigableItems: NavigableItem[], search
         setFocusedIndex(index);
     }, [isMouseMoving]);
 
-    // Detect mouse movement to enable hover updates
+    // Manage keyboard-navigating CSS class
     useEffect(() => {
         if (isKeyboardNavigating) {
             document.body.classList.add('keyboard-navigating');
         } else {
             document.body.classList.remove('keyboard-navigating');
         }
+        return () => {
+            document.body.classList.remove('keyboard-navigating');
+        };
+    }, [isKeyboardNavigating]);
 
+    // Detect mouse movement to enable hover updates
+    useEffect(() => {
         let mouseMoveTimeout: NodeJS.Timeout;
         const handleMouseMove = () => {
-            // Guard state updates to avoid unnecessary renders on every mousemove
-            setIsMouseMoving((prev) => (prev ? prev : true));
-            setIsKeyboardNavigating((prev) => (prev ? false : prev));
+            // Only update state if it's actually changing (prevents unnecessary renders)
+            setIsMouseMoving(true);
+            setIsKeyboardNavigating(false);
 
             // Debounce to detect when mouse stops moving
             clearTimeout(mouseMoveTimeout);
@@ -141,13 +165,12 @@ export const useRoutePickerNavigation = (navigableItems: NavigableItem[], search
             }, 100);
         };
 
-        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mousemove', handleMouseMove, { passive: true });
         return () => {
             window.removeEventListener('mousemove', handleMouseMove);
-            document.body.classList.remove('keyboard-navigating');
             clearTimeout(mouseMoveTimeout);
         };
-    }, [isKeyboardNavigating]);
+    }, []);
 
     return {
         focusedIndex,

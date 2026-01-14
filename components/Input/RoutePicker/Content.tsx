@@ -120,9 +120,7 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
                 onScroll={handleScroll}
                 className={clsx(
                     "select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden scrollbar:w-1! scrollbar:h-1! pr-0.5 scrollbar-thumb:bg-transparent h-full",
-                    {
-                        "styled-scroll!": isScrolling
-                    }
+                    { "styled-scroll!": isScrolling }
                 )}
                 ref={parentRef}
             >

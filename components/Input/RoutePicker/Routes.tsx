@@ -11,7 +11,7 @@ import { getKey, useBalanceStore } from "@/stores/balanceStore";
 import { useSwapAccounts } from "@/context/swapAccounts";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
 import { getTotalBalanceInUSD } from "@/helpers/balanceHelper";
-import { useMemo } from "react";
+import { useMemo, memo } from "react";
 import { TokenInfoIcon, TokenTitleWithBalance } from "./TokenTitleDetails";
 
 type TokenItemProps = {
@@ -22,7 +22,7 @@ type TokenItemProps = {
     direction: SwapDirection;
 };
 
-export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
+export const CurrencySelectItemDisplay = memo((props: TokenItemProps) => {
     const { item, route, direction, type } = props
 
     return <SelectItem className="group">
@@ -33,7 +33,7 @@ export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
         />
         <NetworkTokenTitle item={item} route={route} direction={direction} type={type} />
     </SelectItem>
-}
+});
 
 type NetworkTokenItemProps = {
     route: NetworkRoute;

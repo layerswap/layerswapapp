@@ -44,7 +44,7 @@ export default function Row({
 
     useEffect(() => {
         if (isFocused && rowRef.current) {
-            rowRef.current.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            rowRef.current.scrollIntoView({ block: 'nearest', behavior: 'auto' });
         }
     }, [isFocused]);
 
