@@ -10,8 +10,8 @@ import { useSelectorState } from "@/components/Select/Selector/Index";
 import useWallet from "@/hooks/useWallet";
 import ConnectWalletButton from "@/components/Common/ConnectWalletButton";
 import { SearchComponent } from "../Search";
-import { useRoutePickerNavigation } from "@/helpers/navigation";
 import clsx from "clsx";
+import NavigatableList from "@/components/NavigatableList";
 
 type ContentProps = {
     onSelect: (route: NetworkRoute, token: NetworkRouteToken) => Promise<void> | void;
@@ -77,11 +77,6 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
         return map;
     }, [navigableItems]);
 
-    const { focusedIndex, handleHover } = useRoutePickerNavigation(
-        navigableItems,
-        searchQuery,
-        shouldFocus
-    );
 
     const virtualizer = useVirtualizer({
         count: rowElements.length,
@@ -114,74 +109,78 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
     }, [])
     return <div className="overflow-y-auto overflow-x-hidden flex flex-col h-full z-40 openpicker" >
         <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={shouldFocus} />
-        <LayoutGroup>
-            <motion.div
-                layoutScroll
-                onScroll={handleScroll}
-                className={clsx(
-                    "select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden scrollbar:w-1! scrollbar:h-1! pr-0.5 scrollbar-thumb:bg-transparent h-full",
-                    { "styled-scroll!": isScrolling }
-                )}
-                ref={parentRef}
-            >
-                {
-                    wallets.length === 0 && direction === 'from' && !searchQuery &&
-                    <ConnectWalletButton
-                        descriptionText="Connect your wallet to browse your assets and choose easier"
-                        className="w-full my-2.5"
-                    />
-                }
-                <div className="relative">
-                    <Accordion type="multiple" value={openValues}>
-                        <div>
-                            <div
-                                style={{
-                                    height: virtualizer.getTotalSize(),
-                                    width: '100%',
-                                    position: 'relative',
-                                }}
-                            >
-                                <div className="sticky top-0 z-50" id="sticky_accordion_header" />
+        <NavigatableList
+            navigableItems={navigableItems}
+            enabled={shouldFocus}
+            onReset={searchQuery ? () => {} : undefined}
+        >
+            <LayoutGroup>
+                <motion.div
+                    layoutScroll
+                    onScroll={handleScroll}
+                    className={clsx(
+                        "select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden scrollbar:w-1! scrollbar:h-1! pr-0.5 scrollbar-thumb:bg-transparent h-full",
+                        { "styled-scroll!": isScrolling }
+                    )}
+                    ref={parentRef}
+                >
+                    {
+                        wallets.length === 0 && direction === 'from' && !searchQuery &&
+                        <ConnectWalletButton
+                            descriptionText="Connect your wallet to browse your assets and choose easier"
+                            className="w-full my-2.5"
+                        />
+                    }
+                    <div className="relative">
+                        <Accordion type="multiple" value={openValues}>
+                            <div>
                                 <div
                                     style={{
-                                        position: 'absolute',
-                                        top: 0,
-                                        left: 0,
+                                        height: virtualizer.getTotalSize(),
                                         width: '100%',
-                                        transform: `translateY(${items[0]?.start ? (items[0]?.start - 0) : 0}px)`,
-                                    }}>
-                                    {items.map((virtualRow) => {
-                                        const data = rowElements?.[virtualRow.index]
-                                        const key = ((data as any)?.route as any)?.name || virtualRow.key;
-                                        const navigableIndex = navigableIndexMap.get(virtualRow.index) ?? -1;
-                                        return <div
-                                            className="py-1 box-border w-full overflow-hidden select-none"
-                                            key={key}
-                                            data-index={virtualRow.index}
-                                            ref={virtualizer.measureElement}>
-                                            <Row
-                                                index={virtualRow.index}
-                                                scrollContainerRef={parentRef}
-                                                openValues={openValues}
-                                                onSelect={onSelect}
-                                                direction={direction}
-                                                item={data}
-                                                selectedRoute={selectedRoute}
-                                                selectedToken={selectedToken}
-                                                searchQuery={searchQuery}
-                                                toggleContent={toggleAccordionItem}
-                                                focusedIndex={focusedIndex}
-                                                navigableIndex={navigableIndex}
-                                                onHover={handleHover}
-                                            />
-                                        </div>
-                                    })}
+                                        position: 'relative',
+                                    }}
+                                >
+                                    <div className="sticky top-0 z-50" id="sticky_accordion_header" />
+                                    <div
+                                        style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            width: '100%',
+                                            transform: `translateY(${items[0]?.start ? (items[0]?.start - 0) : 0}px)`,
+                                        }}>
+                                        {items.map((virtualRow) => {
+                                            const data = rowElements?.[virtualRow.index]
+                                            const key = ((data as any)?.route as any)?.name || virtualRow.key;
+                                            const navigableIndex = navigableIndexMap.get(virtualRow.index) ?? -1;
+                                            return <div
+                                                className="py-1 box-border w-full overflow-hidden select-none"
+                                                key={key}
+                                                data-index={virtualRow.index}
+                                                ref={virtualizer.measureElement}>
+                                                <Row
+                                                    index={virtualRow.index}
+                                                    scrollContainerRef={parentRef}
+                                                    openValues={openValues}
+                                                    onSelect={onSelect}
+                                                    direction={direction}
+                                                    item={data}
+                                                    selectedRoute={selectedRoute}
+                                                    selectedToken={selectedToken}
+                                                    searchQuery={searchQuery}
+                                                    toggleContent={toggleAccordionItem}
+                                                    navigableIndex={navigableIndex}
+                                                />
+                                            </div>
+                                        })}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </Accordion>
-                </div>
-            </motion.div>
-        </LayoutGroup>
+                        </Accordion>
+                    </div>
+                </motion.div>
+            </LayoutGroup>
+        </NavigatableList>
     </div >
 }

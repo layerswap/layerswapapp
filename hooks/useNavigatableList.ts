@@ -1,8 +1,8 @@
 import { useCallback, useState, useEffect } from 'react';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
 
-interface NavigableItem {
-    childCount: number;
+export interface NavigableItem {
+    childCount?: number;
 }
 
 const parseIndex = (index: string): { parent: number; child?: number } => {
@@ -13,19 +13,39 @@ const parseIndex = (index: string): { parent: number; child?: number } => {
     };
 };
 
-export const useRoutePickerNavigation = (navigableItems: NavigableItem[], searchQuery: string, shouldFocus: boolean) => {
+export interface UseNavigatableListOptions {
+    navigableItems?: NavigableItem[];
+    itemCount?: number;
+    enabled?: boolean;
+    onReset?: () => void;
+    keyboardNavigatingClass?: string;
+}
+
+export const useNavigatableList = ({
+    navigableItems: providedItems,
+    itemCount,
+    enabled = true,
+    onReset,
+    keyboardNavigatingClass = 'keyboard-navigating'
+}: UseNavigatableListOptions) => {
     const [focusedIndex, setFocusedIndex] = useState<string | null>(null);
     const [isKeyboardNavigating, setIsKeyboardNavigating] = useState(false);
     const [isMouseMoving, setIsMouseMoving] = useState(false);
 
-    // Reset focus to first item when search query changes
+    // Create navigableItems from itemCount if provided, otherwise use providedItems
+    const navigableItems = providedItems ?? (itemCount ? Array(itemCount).fill({ childCount: 0 }) : []);
+
+    // Reset focus when onReset callback changes (e.g., search query changes)
     useEffect(() => {
-        if (searchQuery && navigableItems.length > 0) {
+        if (onReset) {
+            onReset();
+        }
+        if (navigableItems.length > 0) {
             setFocusedIndex("0");
         } else {
             setFocusedIndex(null);
         }
-    }, [searchQuery, navigableItems.length]);
+    }, [onReset, navigableItems.length]);
 
     const handleArrowDown = useCallback(() => {
         // Batch state updates for better performance
@@ -78,7 +98,7 @@ export const useRoutePickerNavigation = (navigableItems: NavigableItem[], search
             setIsMouseMoving(false);
         }
 
-        // If no focus, ArrowUp does nothing (search bar is not navigatable)
+        // If no focus, ArrowUp does nothing
         if (focusedIndex === null) {
             return;
         }
@@ -109,7 +129,6 @@ export const useRoutePickerNavigation = (navigableItems: NavigableItem[], search
                 }
             }
             // When at first item (parent === 0), ArrowUp does nothing - stay at first item
-            // Search bar is never part of navigation
         }
     }, [focusedIndex, navigableItems, isKeyboardNavigating, isMouseMoving]);
 
@@ -129,7 +148,7 @@ export const useRoutePickerNavigation = (navigableItems: NavigableItem[], search
         handleArrowDown,
         handleArrowUp,
         handleEnter,
-        shouldFocus
+        enabled
     );
 
     const handleHover = useCallback((index: string) => {
@@ -141,14 +160,14 @@ export const useRoutePickerNavigation = (navigableItems: NavigableItem[], search
     // Manage keyboard-navigating CSS class
     useEffect(() => {
         if (isKeyboardNavigating) {
-            document.body.classList.add('keyboard-navigating');
+            document.body.classList.add(keyboardNavigatingClass);
         } else {
-            document.body.classList.remove('keyboard-navigating');
+            document.body.classList.remove(keyboardNavigatingClass);
         }
         return () => {
-            document.body.classList.remove('keyboard-navigating');
+            document.body.classList.remove(keyboardNavigatingClass);
         };
-    }, [isKeyboardNavigating]);
+    }, [isKeyboardNavigating, keyboardNavigatingClass]);
 
     // Detect mouse movement to enable hover updates
     useEffect(() => {
@@ -174,6 +193,7 @@ export const useRoutePickerNavigation = (navigableItems: NavigableItem[], search
 
     return {
         focusedIndex,
-        handleHover
+        handleHover,
+        isKeyboardNavigating
     };
 };

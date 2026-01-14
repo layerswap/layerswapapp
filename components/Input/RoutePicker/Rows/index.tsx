@@ -1,12 +1,12 @@
-import { RefObject, useEffect, useRef } from "react";
+import { RefObject } from "react";
 import { RowElement } from "@/Models/Route";
 import { SwapDirection } from "@/components/DTOs/SwapFormValues";
 import { CurrencySelectItemDisplay } from "../Routes";
 import { CollapsibleRow } from "./CollapsibleRow";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
-import clsx from "clsx";
 import { SelectItem } from "@/components/Select/Selector/SelectItem";
 import TitleRow from "./TitleRow";
+import { NavigatableItem } from "@/components/NavigatableList";
 
 type Props = {
     item: RowElement;
@@ -19,9 +19,7 @@ type Props = {
     openValues: string[];
     scrollContainerRef: RefObject<HTMLDivElement>;
     index: number;
-    focusedIndex: string | null;
     navigableIndex: number;
-    onHover: (index: string) => void;
 };
 
 export default function Row({
@@ -35,25 +33,14 @@ export default function Row({
     openValues,
     scrollContainerRef,
     index,
-    focusedIndex,
     navigableIndex,
-    onHover,
 }: Props) {
-    const rowRef = useRef<HTMLDivElement>(null);
-    const isFocused = focusedIndex !== null && focusedIndex === navigableIndex.toString() && focusedIndex.indexOf('.') === -1;
-
-    useEffect(() => {
-        if (isFocused && rowRef.current) {
-            rowRef.current.scrollIntoView({ block: 'nearest', behavior: 'auto' });
-        }
-    }, [isFocused]);
 
     switch (item.type) {
         case "network":
         case "grouped_token":
             return (
                 <CollapsibleRow
-                    ref={rowRef}
                     index={index}
                     item={item}
                     direction={direction}
@@ -64,10 +51,7 @@ export default function Row({
                     onSelect={onSelect}
                     openValues={openValues}
                     scrollContainerRef={scrollContainerRef}
-                    focusedIndex={focusedIndex}
                     navigableIndex={navigableIndex}
-                    isFocused={isFocused}
-                    onHover={onHover}
                 />
             );
         case "network_token":
@@ -77,23 +61,11 @@ export default function Row({
             const isSelected = selectedRoute === route.name && selectedToken === token.symbol;
 
             return (
-                <div
-                    ref={rowRef}
-                    data-nav-index={navigableIndex >= 0 ? navigableIndex.toString() : undefined}
-                    className={clsx(
-                        "cursor-pointer outline-none disabled:cursor-not-allowed rounded-xl",
-                        !isFocused && "hover:bg-secondary-500",
-                        isFocused && "bg-secondary-500"
-                    )}
-                    tabIndex={0}
+                <NavigatableItem
+                    index={navigableIndex >= 0 ? navigableIndex.toString() : "-1"}
                     onClick={() => onSelect(route, token)}
-                    onKeyDown={(e) => {
-                        if (e.key === ' ') {
-                            e.preventDefault();
-                            onSelect(route, token);
-                        }
-                    }}
-                    onMouseEnter={() => navigableIndex >= 0 && onHover(navigableIndex.toString())}
+                    className="cursor-pointer outline-none disabled:cursor-not-allowed rounded-xl hover:bg-secondary-500"
+                    focusedClassName="bg-secondary-500"
                 >
                     <CurrencySelectItemDisplay
                         item={token}
@@ -102,7 +74,7 @@ export default function Row({
                         direction={direction}
                         type={item.type}
                     />
-                </div>
+                </NavigatableItem>
             );
         }
         case "group_title":
