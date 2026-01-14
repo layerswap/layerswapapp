@@ -8,6 +8,7 @@ import { AddressUtilsProvider } from './addressUtils';
 import { NftProvider } from './nft';
 import { ContractAddressCheckerProvider } from './contract';
 import { RpcHealthCheckProvider } from './rpcHealth';
+export { type WalletModalConnector } from '@/components/Wallet/WalletModal'
 
 export type InternalConnector = {
     name: string,
@@ -21,6 +22,7 @@ export type InternalConnector = {
     isMobileSupported?: boolean,
     isHidden?: boolean,
     hasBrowserExtension?: boolean,
+    extensionNotFound: boolean
 }
 
 export type Wallet = {

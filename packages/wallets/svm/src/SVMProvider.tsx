@@ -7,12 +7,10 @@ import {
     NightlyWalletAdapter,
     WalletConnectWalletAdapter,
     PhantomWalletAdapter,
-    CoinbaseWalletAdapter,
     SolflareWalletAdapter,
     BitgetWalletAdapter,
     TrustWalletAdapter,
-    LedgerWalletAdapter,
-    HuobiWalletAdapter
+    LedgerWalletAdapter
 } from "@solana/wallet-adapter-wallets";
 import { ReactNode, useMemo } from "react";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
@@ -34,13 +32,11 @@ function SolanaProvider({ children, walletConnectConfigs }: SolanaProviderProps)
     const adapters = useMemo(
         () => [
             new PhantomWalletAdapter(),
-            new CoinbaseWalletAdapter(),
             new NightlyWalletAdapter(),
             new SolflareWalletAdapter(),
             new BitgetWalletAdapter(),
             new TrustWalletAdapter(),
             new LedgerWalletAdapter(),
-            new HuobiWalletAdapter(),
             new WalletConnectWalletAdapter({
                 network: solNetwork,
                 options: {

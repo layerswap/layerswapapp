@@ -1,6 +1,6 @@
 import { NetworkSettings } from "@layerswap/widget/internal";
 import { Network, NetworkType } from "@layerswap/widget/types";
-import { Chain, http } from 'viem';
+import { Chain, http, fallback } from 'viem';
 import resolveChain from "./resolveChain";
 import { useMemo } from "react";
 
@@ -23,9 +23,10 @@ export function useChainConfigs(networks: Network[]) {
     }, [networks])
 
     const transports = useMemo(() => {
-        const t: Record<number, ReturnType<typeof http>> = {}
+        const t: Record<number, ReturnType<typeof fallback> | ReturnType<typeof http>> = {}
         settingsChains.forEach(chain => {
-            t[chain.id] = chain.rpcUrls.default.http[0] ? http(chain.rpcUrls.default.http[0]) : http()
+            const urls = chain.rpcUrls.default.http
+            t[chain.id] = urls.length > 0 ? fallback(urls.map(url => http(url))) : http()
         })
         return t
     }, [settingsChains])
