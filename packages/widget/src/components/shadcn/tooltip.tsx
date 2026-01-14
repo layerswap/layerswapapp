@@ -100,7 +100,7 @@ function TooltipContent({
   arrowClasses,
   ...props
 }: TooltipContentProps) {
-  const container = document.getElementById('widget');
+  const container = typeof document !== 'undefined' ? document.getElementById('widget') : null;
   return (
     <TooltipPrimitive.Portal container={container}>
       <TooltipPrimitive.Content
