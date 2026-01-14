@@ -63,3 +63,34 @@ export function isScientific(x) {
     //    and see if toString() uses 'e' (lowercased for consistency):
     return Number(s).toString().toLowerCase().includes('e');
 }
+
+
+export function calculatePrecision(
+    amount: number,
+    priceInUsd: number | undefined | null,
+    defaultPrecision: number,
+    maxPrecision: number = 18,
+    minUsdTail: number = 0.01
+): number {
+    if (!priceInUsd || !isFinite(amount) || !isFinite(priceInUsd)) {
+        return defaultPrecision;
+    }
+
+    // Try from fewer decimals → more decimals, and return the first precision
+    // where the *removed tail* is worth < $0.01.
+    for (let precision = 0; precision <= maxPrecision; precision++) {
+        const factor = Math.pow(10, precision);
+
+        // truncate (NOT round): cut digits after `precision`
+        const truncated = Math.floor(amount * factor) / factor;
+
+        const tail = amount - truncated; // the part we'd cut off
+        const tailUsd = tail * priceInUsd;
+
+        if (tailUsd < minUsdTail) {
+            return Math.max(precision, defaultPrecision);
+        }
+    }
+
+    return maxPrecision;
+}

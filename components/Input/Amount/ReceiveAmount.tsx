@@ -4,6 +4,7 @@ import { Quote } from "@/lib/apiClients/layerSwapApiClient";
 import NumberFlow from "@number-flow/react";
 import clsx from "clsx";
 import { PriceImpact } from "./PriceImpact";
+import { calculatePrecision } from "@/components/utils/RoundDecimals";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 
 type ReceiveAmountProps = {
@@ -16,6 +17,10 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ destination_token, fee, 
     const receiveAmountInUsd = receive_amount && destination_token && fee.quote?.destination_token?.price_in_usd ? (receive_amount * fee.quote.destination_token.price_in_usd).toFixed(2) : undefined
     const quote = fee?.quote
 
+    const receiveAmountPrecision = receive_amount && fee?.quote?.destination_token?.price_in_usd
+        ? calculatePrecision(receive_amount, fee.quote.destination_token.price_in_usd, fee.quote.destination_token?.decimals || 2)
+        : fee?.quote?.destination_token?.decimals || 2
+        
     const fullAmountText = receive_amount && destination_token
         ? `${receive_amount} ${destination_token.symbol}`
         : undefined;
@@ -30,7 +35,7 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ destination_token, fee, 
                             { "animate-pulse-stronger": isFeeLoading },
                             { "text-secondary-text": !receive_amount }
                         )}>
-                            <NumberFlow value={receive_amount || 0} trend={0} format={{ maximumFractionDigits: fee?.quote.destination_token?.decimals || 2 }} />
+                            <NumberFlow value={receive_amount || 0} trend={0} format={{ maximumFractionDigits: receiveAmountPrecision }} />
                         </div>
                     </TooltipTrigger>
                     {fullAmountText && (
