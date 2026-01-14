@@ -383,7 +383,8 @@ a:focus-visible {
 }
 
 /* Inner wrapper case (accordion / SelectItem) */
-[data-nav-index]:focus-visible > button > * {
+[data-nav-index]:focus-visible > button > *,
+[data-nav-index]:focus-visible > div > button > * {
   outline: none !important;
   box-shadow: inset 0 0 0 1px rgb(var(--ls-colors-primary-500)) !important;
   border-radius: inherit;
@@ -407,31 +408,31 @@ path {
 /* Focus-visible utility classes */
 
 /* Focus ring on child element with 6px border radius */
-.focus-ring-child-sm:focus-visible {
+.navigation-focus-ring-child-sm:focus-visible {
   box-shadow: none !important;
   outline: none !important;
 }
 
-.focus-ring-child-sm:focus-visible > :first-child {
+.navigation-focus-ring-child-sm:focus-visible > :first-child {
   box-shadow: inset 0 0 0 1px rgb(var(--ls-colors-primary-500)) !important;
   border-radius: 6px;
 }
 
 /* Focus ring - 1px border with 8px radius */
-.focus-border-primary-md:focus-visible {
+.navigation-focus-border-primary-md:focus-visible {
   border: 1px solid rgb(var(--ls-colors-primary-500)) !important;
   border-radius: 8px;
 }
 
 /* Focus ring - 2px primary text inset with 12px radius */
-.focus-ring-text-bold-lg:focus-visible {
+.navigation-focus-ring-text-bold-lg:focus-visible {
   outline: none !important;
   box-shadow: inset 0 0 0 2px rgb(var(--ls-colors-primary-text)) !important;
   border-radius: 12px;
 }
 
 /* Focus border - primary text color with 12px radius */
-.focus-border-text-lg:focus-visible {
+.navigation-focus-border-text-lg:focus-visible {
   border-color: rgb(var(--ls-colors-primary-text)) !important;
   box-shadow: none !important;
   outline: none !important;
@@ -439,25 +440,25 @@ path {
 }
 
 /* Focus ring on direct child with inherited radius */
-.focus-ring-child:focus-visible {
+.navigation-focus-ring-child:focus-visible {
   box-shadow: none !important;
   outline: none !important;
 }
 
-.focus-ring-child:focus-visible > div {
+.navigation-focus-ring-child:focus-visible > div {
   box-shadow: inset 0 0 0 1px rgb(var(--ls-colors-primary-500)) !important;
   border-radius: inherit;
 }
 
 /* Focus ring with pseudo-element overlay and 8px radius */
-.focus-ring-overlay-md:focus-visible {
+.navigation-focus-ring-overlay-md:focus-visible {
   outline: none !important;
   box-shadow: none !important;
   transition: none !important;
   animation: none !important;
 }
 
-.focus-ring-overlay-md:focus-visible::after {
+.navigation-focus-ring-overlay-md:focus-visible::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -468,12 +469,12 @@ path {
 }
 
 /* Custom refuel button - focus ring only on icon */
-.refuel-button:focus-visible {
+.navigation-refuel-button:focus-visible {
   box-shadow: none !important;
   outline: none !important;
 }
 
-.refuel-button:focus-visible .refuel-info-icon {
+.navigation-refuel-button:focus-visible .refuel-info-icon {
   box-shadow: inset 0 0 0 1px rgb(var(--ls-colors-primary-500)) !important;
   border-radius: 6px;
 }

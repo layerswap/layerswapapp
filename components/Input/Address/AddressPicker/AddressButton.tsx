@@ -15,7 +15,7 @@ type AddressButtonProps = {
 }
 
 const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, children, destination }) => {
-    return <button type="button" className="focus-ring-child w-full outline-hidden" onClick={openAddressModal} tabIndex={destination ? 0 : -1}>
+    return <button type="button" className="navigation-focus-ring-child w-full outline-hidden" onClick={openAddressModal} tabIndex={destination ? 0 : -1}>
         {children}
     </button>
 }

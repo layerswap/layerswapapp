@@ -252,7 +252,7 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<
             disabled={valuesSwapperDisabled}
             tabIndex={valuesSwapperDisabled ? -1 : 0}
             onClick={valuesSwapper}
-            className="focus-border-primary-md hover:text-primary-text text-secondary-text absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none">
+            className="navigation-focus-border-primary-md hover:text-primary-text text-secondary-text absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none">
             <motion.div
                 animate={animate}
                 transition={{ duration: 0.3 }}
