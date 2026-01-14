@@ -3,6 +3,7 @@ import { ChangeEvent, FC, forwardRef } from "react";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { classNames } from '@/components/utils/classNames'
 import { isScientific } from "@/components/utils/RoundDecimals";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 
 type Input = {
     tempValue?: number;
@@ -20,20 +21,26 @@ type Input = {
     onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
     onFocus?: () => void;
     onBlur?: () => void;
+    tokenSymbol?: string;
 }
 
 // Use with Formik
 const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
-    function NumericInput({ label, disabled, tempValue, placeholder, minLength, maxLength, precision, step, name, className, children, onChange, onFocus, onBlur }, ref) {
+    function NumericInput({ label, disabled, tempValue, placeholder, minLength, maxLength, precision, step, name, className, children, onChange, onFocus, onBlur, tokenSymbol }, ref) {
         const { handleChange } = useFormikContext<SwapFormValues>();
         const [field] = useField(name)
 
-        const formattedTempValue = tempValue ? isScientific(tempValue)
+        const formattedTempValue = Number(tempValue) >= 0 ? isScientific(tempValue)
             ? (!isNaN(Number(tempValue))
                 ? Number(tempValue).toFixed(precision ?? 0).replace(/\.?0+$/, '')
                 : '')
             : tempValue?.toString()
             : '';
+
+        const displayValue = !isNaN(Number(tempValue)) ? formattedTempValue : field.value;
+        const fullTooltipText = displayValue && Number(displayValue) > 0
+            ? `${displayValue}${tokenSymbol ? ` ${tokenSymbol}` : ''}`
+            : undefined;
 
         return <div>
             {label &&
@@ -41,47 +48,54 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                     {label}
                 </label>
             }
-            <div className="flex relative w-full">
-                {
-                    Number(tempValue) > 0 &&
-                    <span className={classNames(
-                        'py-2 flex text-secondary-text/45 items-center h-12 leading-4 bg-secondary-700 min-w-0 rounded-lg font-semibold border-0 ',
-                        className
-                    )}
-                        ref={ref}
-                    >
-                        <span>{formattedTempValue}</span>
-                    </span>
-                }
-                {
-                    !tempValue &&
-                    <input
-                        {...field}
-                        inputMode="decimal"
-                        autoComplete="off"
-                        disabled={disabled}
-                        placeholder={placeholder}
-                        autoCorrect="off"
-                        minLength={minLength}
-                        maxLength={maxLength}
-                        onInput={(event: React.ChangeEvent<HTMLInputElement>) => { replaceComma(event); limitDecimalPlaces(event, precision) }}
-                        onFocus={onFocus}
-                        onBlur={onBlur}
-                        type="text"
-                        step={step}
-                        name={name}
-                        id={name}
-                        ref={ref}
-                        className={classNames(
-                            'disabled:cursor-not-allowed h-12 leading-4 border-secondary-500 placeholder:text-secondary-text bg-secondary-700 focus:ring-primary focus:border-primary block min-w-0 rounded-lg font-semibold border-0',
-                            className
-                        )}
-                        onChange={onChange ? onChange : e => {
-                            /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
-                        }}
-                    />}
-                {<>{children}</>}
-            </div>
+            <Tooltip disableHoverableContent>
+                <TooltipTrigger asChild>
+                    <div className="flex relative w-full">
+                        {
+                            !isNaN(Number(tempValue)) &&
+                            <span className={classNames(
+                                'py-2 flex text-secondary-text/45 items-center h-12 leading-4 bg-secondary-700 min-w-0 rounded-lg font-semibold border-0 ',
+                                className
+                            )}
+                                ref={ref}
+                            >
+                                <span>{formattedTempValue}</span>
+                            </span>
+                        }
+                        {
+                            isNaN(Number(tempValue)) &&
+                            <input
+                                {...field}
+                                inputMode="decimal"
+                                autoComplete="off"
+                                disabled={disabled}
+                                placeholder={placeholder}
+                                autoCorrect="off"
+                                minLength={minLength}
+                                maxLength={maxLength}
+                                onInput={(event: React.ChangeEvent<HTMLInputElement>) => { replaceComma(event); limitDecimalPlaces(event, precision) }}
+                                onFocus={onFocus}
+                                onBlur={onBlur}
+                                type="text"
+                                step={step}
+                                name={name}
+                                id={name}
+                                ref={ref}
+                                className={classNames(
+                                    'disabled:cursor-not-allowed h-12 leading-4 border-secondary-500 placeholder:text-secondary-text bg-secondary-700 focus:ring-primary focus:border-primary block min-w-0 rounded-lg font-semibold border-0',
+                                    className
+                                )}
+                                onChange={onChange ? onChange : e => {
+                                    /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
+                                }}
+                            />}
+                        {<>{children}</>}
+                    </div>
+                </TooltipTrigger>
+                <TooltipContent className="bg-secondary-300! border-secondary-300! text-primary-text!">
+                    <p>{fullTooltipText}</p>
+                </TooltipContent>
+            </Tooltip>
         </div>;
     });
 
