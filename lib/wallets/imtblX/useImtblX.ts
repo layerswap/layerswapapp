@@ -73,6 +73,7 @@ export default function useImtblX(): WalletProvider {
         id: id,
         name: name,
         icon: logo,
+        extensionNotFound: false,
     }]
 
     const provider: WalletProvider = {
