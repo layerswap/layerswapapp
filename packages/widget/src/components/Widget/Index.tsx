@@ -1,5 +1,6 @@
 "use client";
 import HeaderWithMenu from "../HeaderWithMenu"
+import type { JSX } from 'react';
 import { default as Content } from './Content';
 import { default as Footer } from './Footer';
 import { useRef } from "react";

@@ -9,8 +9,8 @@ type StickyHeaderProps = {
     direction: SwapDirection;
     scrollContainer: HTMLDivElement | null;
     open: boolean | undefined;
-    headerRef: React.RefObject<HTMLDivElement>;
-    contentRef: React.RefObject<HTMLDivElement>;
+    headerRef: React.RefObject<HTMLDivElement | null>;
+    contentRef: React.RefObject<HTMLDivElement | null>;
     childrenCount?: number;
     onClick: () => void;
     isSticky: boolean;

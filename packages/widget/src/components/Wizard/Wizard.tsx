@@ -1,4 +1,5 @@
 import { FC, useEffect, useRef } from 'react'
+import type { JSX } from 'react';
 import { useFormWizardaUpdate, useFormWizardState } from '../../context/formWizardProvider';
 import { AnimatePresence } from 'framer-motion';
 import HeaderWithMenu from '../HeaderWithMenu';

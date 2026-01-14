@@ -25,7 +25,7 @@ type GenericAccordionRowProps = {
   searchQuery: string
   toggleContent: (itemName: string) => void;
   openValues?: string[];
-  scrollContainerRef: RefObject<HTMLDivElement>;
+  scrollContainerRef: RefObject<HTMLDivElement | null>;
 };
 
 type ChildWrapper = {

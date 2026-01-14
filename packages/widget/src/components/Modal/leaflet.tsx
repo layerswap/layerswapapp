@@ -1,4 +1,5 @@
 import { Dispatch, PropsWithChildren, SetStateAction, useCallback, useEffect, useRef } from 'react'
+import type { JSX } from 'react'
 import { motion, useAnimation } from "framer-motion";
 import { forwardRef } from 'react';
 import IconButton from '../Buttons/iconButton';
@@ -24,7 +25,7 @@ export interface LeafletProps {
 export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps>>(function Leaflet({ show, setShow, children, title, className, height, position, onClose }, topmostRef) {
     const mobileModalRef = useRef<HTMLDivElement>(null);
     const controls = useAnimation();
-    const transitionProps = { type: "spring", stiffness: 500, damping: 40 };
+    const transitionProps = { type: "spring" as const, stiffness: 500, damping: 40 };
     const { isMobileWithPortal: isMobile } = useWindowDimensions()
 
     const handleDragEnd = useCallback(async (_, info) => {

@@ -1,6 +1,7 @@
 import { ImageWithFallback } from '@/components/Common/ImageWithFallback';
 import clsx from 'clsx';
 import { ReactNode } from 'react';
+import type { JSX } from 'react';
 
 type SelectItemWrapperProps = {
     className?: string;

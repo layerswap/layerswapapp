@@ -1,4 +1,5 @@
 import React, { createContext, useContext, FC, ReactNode, useState, SVGProps } from 'react'
+import type { JSX } from 'react';
 import { motion } from 'framer-motion'
 import clsx from 'clsx'
 import useWindowDimensions from '@/hooks/useWindowDimensions'

@@ -30,7 +30,7 @@ const DepositMethodComponent: FC = () => {
     const menuItems = from && GenerateDepositMethodMenuItems(from, depositMethods, provider)
 
     const defaultMethod = menuItems?.find(i => i.id === defaultDepositMethod)
-    const menuItemsRef = useRef<DepositMethod[] | undefined>()
+    const menuItemsRef = useRef<DepositMethod[] | undefined>(undefined)
     menuItemsRef.current = menuItems
 
     useEffect(() => {

@@ -1,4 +1,5 @@
 import { FC } from "react";
+import type { JSX } from 'react';
 import { Paperclip } from 'lucide-react'
 import * as ContextMenuPrimitive from '@radix-ui/react-context-menu';
 import { useGoHome } from "../../hooks/useGoHome";

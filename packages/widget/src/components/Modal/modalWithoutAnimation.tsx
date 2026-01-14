@@ -1,4 +1,5 @@
 import { createContext, DetailedHTMLProps, HTMLAttributes, ReactNode, SetStateAction, useContext, useEffect, useState } from "react";
+import type { JSX } from 'react';
 import { createPortal } from "react-dom";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
 import IconButton from "@/components/Buttons/iconButton";

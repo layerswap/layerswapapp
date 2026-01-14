@@ -1,4 +1,5 @@
 import { FC } from "react";
+import type { JSX } from 'react';
 import CopyButton from "@/components/Buttons/copyButton";
 import QRCodeModal from "./QRCodeWallet";
 import useWindowDimensions from "@/hooks/useWindowDimensions";

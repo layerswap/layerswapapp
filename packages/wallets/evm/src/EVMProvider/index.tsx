@@ -5,6 +5,7 @@ import { EvmConnectorsProvider, useEvmConnectors } from "./evmConnectorsContext"
 import { ActiveEvmAccountProvider } from "./ActiveEvmAccount";
 import { useSettingsState } from "@layerswap/widget/internal";
 import { useContext, useMemo } from 'react';
+import type { JSX } from 'react';
 import { useChainConfigs } from '../evmUtils/chainConfigs';
 import { WalletConnectConfig } from '../index';
 

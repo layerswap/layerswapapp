@@ -1,5 +1,6 @@
 import { Scroll } from "lucide-react";
 import { FC } from "react";
+import type { JSX } from 'react';
 import InfoIcon from "@/components/Icons/InfoIcon";
 import { ICON_CLASSES_WARNING } from "@/components/Pages/Swap/Form/SecondaryComponents/validationError/constants";
 

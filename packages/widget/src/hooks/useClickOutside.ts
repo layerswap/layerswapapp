@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 type UseClickOutsideReturn<T extends HTMLElement> = {
-  ref: React.RefObject<T>;
+  ref: React.RefObject<T | null>;
   isActive: boolean;
   setIsActive: (value: boolean) => void;
   activate: () => void;

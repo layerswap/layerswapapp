@@ -1,4 +1,5 @@
 import { FC } from 'react'
+import type { JSX } from 'react';
 import { useSwapDataState } from '@/context/swap';
 import KnownInternalNames from '@/lib/knownIds';
 import SwapSummary from './Summary';

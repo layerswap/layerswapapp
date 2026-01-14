@@ -1,4 +1,5 @@
 import { FC, useCallback } from 'react'
+import type { JSX } from 'react';
 import { Widget } from '@/components/Widget/Index';
 import { useSwapDataState } from '@/context/swap';
 import Withdraw from './Withdraw';

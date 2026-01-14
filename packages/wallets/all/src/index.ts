@@ -194,8 +194,8 @@ export function getDefaultProviders(config: DefaultWalletConfig = {}) {
         createBitcoinProvider(),
         // Immutable X
         createImmutableXProvider(),
-        // TON (always included with optional config)
-        createTONProvider(ton ? { tonConfigs: ton } : {}),
+        // TON
+        ...(ton ? [createTONProvider({ tonConfigs: ton })] : []),
         // SVM (Solana)
         createSVMProvider({
             walletConnectConfigs: walletConnect

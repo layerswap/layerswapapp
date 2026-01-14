@@ -1,4 +1,5 @@
 import { Context, FC, createContext, useCallback, useContext, useMemo, useState } from 'react';
+import type { JSX } from 'react';
 import { useAccount } from 'wagmi';
 
 type ActiveAccountState = {

@@ -1,3 +1,5 @@
+import type { JSX } from "react";
+
 export class SelectMenuItem<T> implements ISelectMenuItem {
     id: string;
     name: string;

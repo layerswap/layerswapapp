@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import type { JSX } from 'react';
 import { Modal, ModalContent, ModalTrigger, useModalState } from "@/components/Modal/modalWithoutAnimation";
 
 export const Selector = ({ children }) => {

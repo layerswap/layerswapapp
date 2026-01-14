@@ -17,7 +17,7 @@ type Props = {
     toggleContent: (itemName: string) => void;
     onSelect: (route: NetworkRoute, token: NetworkRouteToken) => void;
     openValues: string[];
-    scrollContainerRef: RefObject<HTMLDivElement>;
+    scrollContainerRef: RefObject<HTMLDivElement | null>;
     index: number;
 };
 

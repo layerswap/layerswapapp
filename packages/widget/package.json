@@ -76,7 +76,7 @@
     "color": "4.2.3",
     "copy-to-clipboard": "^3.3.3",
     "formik": "^2.2.9",
-    "framer-motion": "^10.16.15",
+    "framer-motion": "^12.26.2",
     "lucide-react": "^0.379.0",
     "qrcode.react": "^3.1.0",
     "react-error-boundary": "^4.0.11",
@@ -88,15 +88,15 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.0.15",
+    "@types/react": "catalog:",
     "chromatic": "^6.24.1",
     "esbuild-plugin-path-alias": "^1.0.7",
     "postcss": "^8.5.3",
     "postcss-cli": "^11.0.1",
     "postcss-prefixwrap": "^1.55.0",
-    "tailwindcss": "^4.0.15",
-    "@types/react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "tailwindcss": "^4.0.15",
     "zustand": "catalog:"
   },
   "engines": {

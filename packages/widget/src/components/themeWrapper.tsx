@@ -1,6 +1,7 @@
 import { X } from "lucide-react";
 import toast, { ToastBar, Toaster } from "react-hot-toast"
 import { TooltipProvider } from "./shadcn/tooltip";
+import type { JSX } from 'react';
 
 type Props = {
     children: JSX.Element | JSX.Element[]

@@ -1,6 +1,7 @@
 import { AnimatePresence } from "framer-motion";
 import { Dispatch, ReactNode, SetStateAction, useEffect, useRef, useState } from "react";
 import { FC } from "react"
+import type { JSX } from 'react';
 import useWindowDimensions from "../../hooks/useWindowDimensions";
 import { Leaflet, LeafletHeight } from "./leaflet";
 import ReactPortal from "../Common/ReactPortal";

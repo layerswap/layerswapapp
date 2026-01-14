@@ -1,5 +1,6 @@
 import { AlertOctagon, Scroll } from "lucide-react";
 import { FC } from "react";
+import type { JSX } from 'react';
 
 type messageType = 'warning' | 'informing'
 

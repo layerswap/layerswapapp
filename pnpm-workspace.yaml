@@ -4,12 +4,12 @@ packages:
 
 catalog:
   '@tanstack/react-query': 5.90.11
-  '@types/react': 18.3.1
+  '@types/react': 19.2.3
   '@wagmi/connectors': 5.7.7
   '@wagmi/core': 2.16.4
   axios: 1.12.2
-  react: 18.3.1
-  react-dom: 18.3.1
+  react: 19.2.3
+  react-dom: 19.2.3
   swr: ^2.2.5
   viem: ^2.21.16
   wagmi: 2.14.11

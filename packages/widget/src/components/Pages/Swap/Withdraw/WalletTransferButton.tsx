@@ -1,4 +1,5 @@
 import { FC } from 'react';
+import type { JSX } from 'react';
 import { SwapBasicData } from '@/lib/apiClients/layerSwapApiClient';
 import { WalletTransferAction } from './Wallet';
 

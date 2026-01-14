@@ -4,6 +4,7 @@ import Head from "next/head";
 import AppWrapper from "./AppWrapper";
 import { useEffect } from "react";
 import posthog from "posthog-js";
+import type { JSX } from 'react';
 
 type Props = {
   children: JSX.Element | JSX.Element[];

@@ -1,4 +1,5 @@
 import React, { Context, useCallback, useState } from 'react'
+import type { JSX } from 'react';
 import { Steps } from '../Models/Wizard';
 import { LSAPIKnownErrorCode } from '@layerswap/widget/types';
 

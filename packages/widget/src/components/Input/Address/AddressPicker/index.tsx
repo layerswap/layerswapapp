@@ -1,5 +1,6 @@
 import { useFormikContext } from "formik";
 import { FC, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { JSX } from 'react';
 import { AddressBookItem } from "@/lib/apiClients/layerSwapApiClient";
 import { isValidAddress } from "@/lib/address/validator";
 import { Partner } from "@/Models/Partner";

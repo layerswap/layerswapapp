@@ -1,5 +1,6 @@
 'use client'
 import { WalletProvider, BaseWalletProviderConfig, WalletProviderModule } from "@layerswap/widget/types";
+import type { JSX } from 'react';
 import { EVMBalanceProvider, HyperliquidBalanceProvider } from "./balanceProviders"
 import useEVMConnection from "./useEVMConnection"
 import EVMProviderWrapper from "./EVMProvider"

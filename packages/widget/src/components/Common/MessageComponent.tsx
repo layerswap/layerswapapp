@@ -2,6 +2,7 @@ import CancelIcon from "../Icons/CancelIcon";
 import DelayIcon from "../Icons/DelayIcon";
 import FailIcon from "../Icons/FailIcon";
 import SuccessIcon from "../Icons/SuccessIcon";
+import type { JSX } from 'react';
 type iconStyle = 'red' | 'green' | 'yellow' | 'gray'
 
 class MessageComponentProps {

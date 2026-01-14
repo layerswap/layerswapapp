@@ -19,7 +19,7 @@ type Account = {
 }
 
 type Props = {
-    children?: JSX.Element | JSX.Element[];
+    children?: React.ReactNode;
 }
 
 export const ActiveParadexAccountProvider: FC<Props> = ({ children }) => {

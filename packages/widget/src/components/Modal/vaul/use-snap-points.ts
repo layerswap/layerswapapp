@@ -20,8 +20,8 @@ export function useSnapPoints({
   setActiveSnapPointProp?(snapPoint: number | null | string): void;
   snapPoints?: (number | string)[];
   fadeFromIndex?: number;
-  drawerRef: React.RefObject<HTMLDivElement>;
-  overlayRef: React.RefObject<HTMLDivElement>;
+  drawerRef: React.RefObject<HTMLDivElement | null>;
+  overlayRef: React.RefObject<HTMLDivElement | null>;
   onSnapPointChange(activeSnapPointIndex: number): void;
   direction?: DrawerDirection;
   container?: HTMLElement | null | undefined;

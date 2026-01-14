@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { FC, useEffect } from 'react'
+import type { JSX } from 'react';
 import { useFormWizardaUpdate, useFormWizardState } from '../../context/formWizardProvider';
 import { Steps } from '../../Models/Wizard';
 

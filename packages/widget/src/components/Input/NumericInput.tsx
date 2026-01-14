@@ -1,5 +1,6 @@
 import { useField, useFormikContext } from "formik";
 import { ChangeEvent, FC, forwardRef } from "react";
+import type { JSX } from 'react';
 import { classNames } from '../utils/classNames'
 import { isScientific } from "../utils/RoundDecimals";
 import { SwapFormValues } from "../Pages/Swap/Form/SwapFormValues";

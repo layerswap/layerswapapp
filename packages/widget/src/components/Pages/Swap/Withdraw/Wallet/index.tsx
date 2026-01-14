@@ -144,7 +144,7 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
     const { executeTransfer } = useTransfer()
     const rpcHealth = useRpcHealth(swapData.source_network)
-console.log("rpcHealth", rpcHealth)
+
     const clickHandler = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
         setButtonClicked(true)
         setError(undefined)

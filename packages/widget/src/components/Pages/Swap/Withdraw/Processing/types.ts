@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 
 export type ProgressStates = {
     [key in Progress]?: {
