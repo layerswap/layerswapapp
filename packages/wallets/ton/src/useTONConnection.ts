@@ -120,6 +120,7 @@ export default function useTONConnection({ networks }: WalletConnectionProviderP
         id: id,
         name: name,
         icon: logo,
+        extensionNotFound: false
     }]
 
     const provider: WalletConnectionProvider = {

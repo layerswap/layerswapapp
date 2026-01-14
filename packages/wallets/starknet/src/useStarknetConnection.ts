@@ -111,7 +111,8 @@ export default function useStarknetConnection({ networks }: WalletConnectionProv
             id: connector.id,
             icon: resolveStarknetWalletIcon({ icon: connector.icon }),
             type: connector?.["_wallet"] ? 'injected' : 'other',
-            installUrl: connector?.["_wallet"] ? undefined : connectorsConfigs.find(c => c.id === connector.id)?.installLink,
+            installUrl: connectorsConfigs.find(c => c.id === connector.id)?.installLink,
+            extensionNotFound: !connector?.["_wallet"] && connectorsConfigs.find(c => c.id === connector.id)?.installLink !== undefined
         }
     })
 

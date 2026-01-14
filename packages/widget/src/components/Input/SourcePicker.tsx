@@ -49,7 +49,7 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fe
                     <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} onActionHover={handleActionHover} depositMethod={depositMethod} />
                 </div>
             }
-            <div className="grid grid-cols-[1fr_auto] gap-2 w-full max-w-full">
+            <div className="grid grid-cols-[1fr_auto] gap-1 w-full max-w-full">
                 <div className="min-w-0 overflow-hidden">
                     <AmountField fee={fee} actionValue={actiontempValue} />
                 </div>

@@ -17,6 +17,7 @@ const immutableZKEvm = [KnownInternalNames.Networks.ImmutableZkEVM]
 export default function useEVMConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
     const name = 'EVM'
     const id = 'evm'
+    const isMobilePlatform = useMemo(() => isMobile(), []);
 
     const asSourceSupportedNetworks = useMemo(() => [
         ...networks.filter(network => network.type === NetworkType.EVM).map(l => l.name),
@@ -107,15 +108,20 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
             .map(w => {
                 const walletConnectWallet = walletConnectConnectors.find(w2 => w2.name.toLowerCase().includes(w.name.toLowerCase()) || w2.id.toLowerCase() === w.id.toLowerCase())
                 const isWalletConnectSupported = w.type === "walletConnect" || w.name === "WalletConnect"
+                const type = ((w.type == 'injected' && w.id !== 'com.immutable.passport') || w.id === "metaMaskSDK" || isWalletConnectSupported) ? w.type : "other"
                 const resolvedConnectorName = evmConnectorNameResolver(w)
                 const knownConnector = KnownEVMConnectors.find(c => c.id.toLowerCase() === resolvedConnectorName.toLowerCase())
+
                 return {
                     ...w,
                     order: resolveEVMWalletConnectorIndex(w.id),
-                    type: ((w.type == 'injected' && w.id !== 'com.immutable.passport') || w.id === "metaMaskSDK" || isWalletConnectSupported) ? w.type : "other",
+                    type: type,
                     isMobileSupported: isWalletConnectSupported,
+                    installUrl: walletConnectWallet?.installUrl,
                     hasBrowserExtension: walletConnectWallet?.hasBrowserExtension,
+                    extensionNotFound: walletConnectWallet?.hasBrowserExtension ? (type == 'walletConnect' && !isMobilePlatform) : false,
                     icon: w.icon || (knownConnector ? convertSvgComponentToBase64(knownConnector.icon) || walletConnectWallet?.icon : undefined)
+
                 }
             })
     }, [allConnectors, walletConnectConnectors])
@@ -170,7 +176,7 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
                 await disconnectAsync({ connector: actualConnector })
             }
 
-            if (isMobile()) {
+            if (isMobilePlatform) {
                 if (connector.id !== "walletConnect") {
                     // Use actualConnector for getProvider, but connector.resolveURI for deep links
                     getWalletConnectUri(actualConnector, connector?.resolveURI, (uri: string) => {

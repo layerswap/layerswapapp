@@ -1,13 +1,15 @@
 import { useWallet } from "@solana/wallet-adapter-react"
-import { KnownInternalNames } from "@layerswap/widget/internal"
-import { InternalConnector, Wallet, WalletConnectionProvider, NetworkType, WalletConnectionProviderProps } from "@layerswap/widget/types"
+import { isMobile, KnownInternalNames } from "@layerswap/widget/internal"
+import { InternalConnector, Wallet, WalletConnectionProvider, NetworkType, WalletConnectionProviderProps, WalletModalConnector } from "@layerswap/widget/types"
 import { useMemo, useCallback } from "react"
 import { resolveSolanaWalletConnectorIcon } from "./utils"
 import { useSVMTransfer } from "./transferProvider/useSVMTransfer"
+import { isSolanaAdapterSupported } from "./utils"
 
 const solanaNames = [KnownInternalNames.Networks.SolanaMainnet, KnownInternalNames.Networks.SolanaDevnet, KnownInternalNames.Networks.SolanaTestnet]
 
 export default function useSVMConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
+    const isMobilePlatform = useMemo(() => isMobile(), []);
 
     const commonSupportedNetworks = [
         ...networks.filter(network => network.type === NetworkType.Solana).map(l => l.name)
@@ -19,7 +21,6 @@ export default function useSVMConnection({ networks }: WalletConnectionProviderP
     const connectedWallet = solanaWallet?.adapter.connected === true ? solanaWallet : undefined
     const connectedAddress = connectedWallet?.adapter.publicKey?.toBase58()
     const connectedAdapterName = connectedWallet?.adapter.name
-
     const connectedWallets = useMemo(() => {
 
         if (solanaWallet?.adapter.connected === true) {
@@ -44,10 +45,12 @@ export default function useSVMConnection({ networks }: WalletConnectionProviderP
         }
 
     }, [connectedAddress, connectedAdapterName])
+    const connectWallet = async ({ connector }: { connector: WalletModalConnector }) => {
+        const internalConnector = wallets.find(w => w.adapter.name.includes(connector.name))
+        const walletConnectConnector = wallets.find(w => w.adapter.name === 'WalletConnect')
 
-    const connectWallet = async ({ connector }: { connector: InternalConnector }) => {
-        
-        const solanaConnector = wallets.find(w => w.adapter.name.includes(connector.name))
+        const solanaConnector = connector.hasBrowserExtension && (connector.showQrCode || isMobilePlatform) ? walletConnectConnector : internalConnector
+
         if (!solanaConnector) throw new Error('Connector not found')
         if (connectedWallet) await solanaConnector.adapter.disconnect()
         select(solanaConnector.adapter.name)
@@ -87,23 +90,22 @@ export default function useSVMConnection({ networks }: WalletConnectionProviderP
 
     const availableWalletsForConnect = useMemo(() => {
         const connectors: InternalConnector[] = [];
-
         for (const wallet of wallets) {
-
+            const hasBrowserExtension = isSolanaAdapterSupported(wallet.adapter.name);
             const internalConnector: InternalConnector = {
                 name: wallet.adapter.name.trim(),
                 id: wallet.adapter.name.trim(),
                 icon: wallet.adapter.icon,
                 type: wallet.readyState === 'Installed' ? 'injected' : 'other',
-                installUrl: (wallet.readyState === 'Installed' || wallet.readyState === 'Loadable') ? undefined : wallet.adapter?.url,
+                installUrl: wallet.adapter?.url,
+                hasBrowserExtension: hasBrowserExtension,
+                extensionNotFound: !(wallet.readyState === 'Installed' || wallet.readyState === 'Loadable' || wallet.adapter.name == "Coinbase Wallet")
             }
-
             connectors.push(internalConnector)
         }
 
         return connectors;
     }, [wallets]);
-
     const isNotAvailableCondition = useCallback((connectorId: string | undefined, network: string | undefined, purpose?: "withdrawal" | "autofill" | "asSource") => {
         if (!network) return false
         if (!connectorId) return true

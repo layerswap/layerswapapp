@@ -70,6 +70,7 @@ export default function useImtblXConnection({ networks }: WalletConnectionProvid
         id: id,
         name: name,
         icon: logo,
+        extensionNotFound: false,
     }]
 
     const provider: WalletConnectionProvider = {
