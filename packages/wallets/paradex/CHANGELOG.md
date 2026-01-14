@@ -1,5 +1,14 @@
 # @layerswap/wallet-paradex
 
+## 1.2.0
+
+### Patch Changes
+
+- Updated dependencies
+  - @layerswap/widget@1.2.0
+  - @layerswap/wallet-evm@1.2.0
+  - @layerswap/wallet-starknet@1.2.0
+
 ## 1.1.2
 
 ### Patch Changes

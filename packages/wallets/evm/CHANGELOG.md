@@ -1,5 +1,13 @@
 # @layerswap/wallet-evm
 
+## 1.2.0
+
+### Patch Changes
+
+- Implement RPC callback functionality
+- Updated dependencies
+  - @layerswap/widget@1.2.0
+
 ## 1.1.2
 
 ### Patch Changes

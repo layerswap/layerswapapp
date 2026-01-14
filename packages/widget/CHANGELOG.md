@@ -1,5 +1,11 @@
 # @layerswap/widget
 
+## 1.2.0
+
+### Minor Changes
+
+- Fix issues related to React 19, and implement global UX improvements
+
 ## 1.1.5
 
 ### Patch Changes

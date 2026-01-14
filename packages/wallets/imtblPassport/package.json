@@ -1,6 +1,6 @@
 {
   "name": "@layerswap/wallet-imtbl-passport",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "ImmutablePassport Wallet Provider for Layerswap Widget",
   "type": "module",
   "main": "dist/esm/index.js",
