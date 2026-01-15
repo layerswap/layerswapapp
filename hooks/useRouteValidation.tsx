@@ -17,7 +17,7 @@ interface ValidationDetails {
 
 export function resolveRouteValidation(quoteError?: QuoteError, hasQuote?: boolean, isQuoteLoading?: boolean) {
     const { values } = useFormikContext<SwapFormValues>();
-    const { to, from, destination_address, amount, refuel, depositMethod, fromAsset, toAsset } = values;
+    const { to, from, destination_address, amount } = values;
     const selectedSourceAccount = useSelectedAccount("from", from?.name);
     const query = useQueryState();
     const { autoSlippage } = useSlippageStore();
@@ -25,18 +25,9 @@ export function resolveRouteValidation(quoteError?: QuoteError, hasQuote?: boole
     let validationMessage: string = '';
     let validationDetails: ValidationDetails = {};
 
-    const shouldTestAutoSlippage: boolean = !!(!autoSlippage && !hasQuote && amount && Number(amount) > 0 && from && to && !quoteErrorCode && !isQuoteLoading);
+    const shouldTestAutoSlippage = !autoSlippage && !hasQuote && !!amount && Number(amount) > 0 && !!from && !!to && !quoteErrorCode && !isQuoteLoading;
 
-    const { autoSlippageWouldWork } = useAutoSlippageTest({
-        shouldTest: shouldTestAutoSlippage,
-        sourceNetwork: from?.name ?? '',
-        sourceToken: fromAsset?.symbol ?? '',
-        destinationNetwork: to?.name ?? '',
-        destinationToken: toAsset?.symbol ?? '',
-        amount: amount ?? '',
-        refuel: !!refuel,
-        useDepositAddress: depositMethod !== 'wallet',
-    });
+    const { autoSlippageWouldWork } = useAutoSlippageTest({ values, shouldTest: shouldTestAutoSlippage, });
 
     if (shouldTestAutoSlippage && autoSlippageWouldWork) {
         validationDetails = { title: 'Route Unavailable', type: 'warning', icon: <RouteOff className={ICON_CLASSES_WARNING} /> };

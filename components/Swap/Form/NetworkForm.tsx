@@ -31,6 +31,7 @@ import posthog from "posthog-js";
 import ContractAddressValidationCache from "@/components/validationError/ContractAddressValidationCache";
 import { Slippage } from "@/components/FeeDetails/Slippage";
 import { useSlippageStore } from "@/stores/slippageStore";
+import { useAutoSlippageTest } from "@/hooks/useAutoSlippageTest";
 
 type Props = {
     partner?: Partner;
@@ -38,8 +39,6 @@ type Props = {
 
 const NetworkForm: FC<Props> = ({ partner }) => {
     const [openRefuelModal, setOpenRefuelModal] = useState(false);
-    const [hasShownSlippage, setHasShownSlippage] = useState(false);
-    const [prevAmount, setPrevAmount] = useState("");
     const {
         values,
         setValues, isSubmitting, setFieldValue
@@ -68,23 +67,9 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const isValid = !formValidation.message;
     const error = formValidation.message;
 
-    const showSlippageOnly = !autoSlippage && Number(values.amount) > 0;
-
-    useEffect(() => {
-        setHasShownSlippage(false);
-    }, [values.amount, values.from, values.to, values.fromAsset, values.toAsset]);
-
-    useEffect(() => {
-        if (showSlippageOnly && !quote && !hasShownSlippage) {
-            setHasShownSlippage(true);
-        }
-    }, [showSlippageOnly, quote, hasShownSlippage]);
-
-    useEffect(() => {
-        setPrevAmount(values.amount || "");
-    }, [values.amount]);
-
-    const shouldShowSlippage = showSlippageOnly && hasShownSlippage && !(prevAmount !== "" && quote);
+    const shouldTestAutoSlippage = !autoSlippage && !quote && !!values.amount && Number(values.amount) > 0 && !!values.from && !!values.to && !isQuoteLoading;
+    const { autoSlippageWouldWork, isTestingAutoSlippage } = useAutoSlippageTest({ values, shouldTest: shouldTestAutoSlippage, });
+    const shouldShowSlippage = autoSlippageWouldWork && !isTestingAutoSlippage;
 
     useEffect(() => {
         if (!source || !toAsset || !toAsset.refuel) {
@@ -170,7 +155,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                     : null
                             }
                             {
-                                !(showSlippageOnly && !quote) ? (
+                                !autoSlippageWouldWork ? (
                                     <QuoteDetails swapValues={values} quote={quote?.quote} reward={quote?.reward} isQuoteLoading={isQuoteLoading} />
                                 ) : null
                             }
