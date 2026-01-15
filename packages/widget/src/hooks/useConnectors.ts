@@ -34,14 +34,13 @@ export function useConnectors({
                 provider.availableHiddenWalletsForConnect
                     ?.filter(v =>
                         (searchValue ? v.name.toLowerCase().includes(searchValue.toLowerCase()) : true) &&
-                        !featuredWalletsIds.includes(v.id.toLowerCase())
+                        !featuredConnectors.some(c => c.id.toLowerCase() === v.id.toLowerCase())
                     )
                     .map((connector) => ({ ...connector, providerName: provider.name, isHidden: true }))
             )
             .flat() as InternalConnector[],
         [featuredProviders, searchValue]
     );
-
 
     const initialConnectors: InternalConnector[] = useMemo(() => {
         return removeDuplicatesWithKey(
@@ -59,14 +58,6 @@ export function useConnectors({
         filteredProviders,
     };
 }
-
-const featuredWalletsIds = [
-    'metamask',
-    'argent',
-    'rainbow',
-    'bitkeep',
-    'okx-wallet',
-]
 
 function removeDuplicatesWithKey(arr: any[], key: string) {
     const countMap = {};
