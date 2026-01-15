@@ -1,5 +1,4 @@
-import { ChevronRight, Clock } from "lucide-react"
-import BackgroundField from "./backgroundField"
+import { ChevronRight } from "lucide-react"
 import { classNames } from "../utils/classNames"
 
 export const SwapHistoryComponentSceleton = () => {
@@ -248,56 +247,20 @@ export const ExchangesComponentSceleton = () => {
 export const RewardsComponentSceleton = () => {
   return (
     <div className="space-y-5">
-      <div className="space-y-2">
-        <div className="flex justify-start">
-          <div className="rounded-md w-48 bg-gray-500 h-[28px] animate-pulse" />
-        </div>
-        <div className=" bg-secondary-700 divide-y divide-secondary-500 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
-          <BackgroundField header={<span className="flex justify-between"><span>Pending Earnings</span><span>Next Airdrop</span></span>} withoutBorder>
-            <div className="flex justify-between w-full text-2xl">
-              <div className="flex items-center space-x-1">
-                <div className="w-32 h-6 rounded-md animate-pulse bg-gray-500" />
-              </div>
-              <div className="flex items-center space-x-1">
-                <Clock className="h-5" />
-                <div className="w-14 h-6 rounded-md animate-pulse bg-gray-500" />
-              </div>
-            </div>
-          </BackgroundField>
-          <BackgroundField header={<span className="flex justify-between"><span>Total Earnings</span><span>Current Value</span></span>} withoutBorder>
-            <div className="flex justify-between w-full text-slate-300 text-2xl">
-              <div className="flex items-center space-x-1">
-                <div className="w-40 h-6 rounded-md animate-pulse bg-gray-500" />
-              </div>
-              <div className="w-20 h-6 rounded-md animate-pulse bg-gray-500" />
-            </div>
-          </BackgroundField>
-        </div>
-        <div className="bg-secondary-700 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
-          <BackgroundField header='Daily Reward Claimed' withoutBorder>
-            <div className="flex flex-col w-full gap-2">
-              <div className="rounded-full h-4 bg-gray-500 w-full animate-pulse" />
-              <div className="flex justify-between w-full font-semibold text-sm ">
-                <div className="rounded-md w-20 h-5 animate-pulse bg-gray-500" />
-                <div className="rounded-md w-32 h-5 animate-pulse bg-gray-500" />
-              </div>
-            </div>
-          </BackgroundField>
-        </div>
+      <div className="space-y-4">
+        <div className="rounded-md w-full bg-gray-500 animate-pulse h-12" />
+        <div className="rounded-lg w-full h-[calc(5rem+2px)] bg-gray-500 animate-pulse" />
       </div>
-      <div className="space-y-2">
-        <div className="flex justify-start">
-          <div className="rounded-md w-48 bg-gray-500 h-5 animate-pulse" />
-        </div>
-        <div className=" bg-secondary-700 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
-          <div className="p-3">
-            <div className="space-y-6">
-              {[...Array(4)]?.map((user, index) => (
-                <div key={index} className="items-center flex justify-between">
-                  <div className="w-full h-4 rounded-md bg-gray-500 animate-pulse" />
-                </div>
-              ))
-              }
+
+      <div className="rounded-lg bg-secondary-700 animate-pulse h-[calc(5.75rem+2px)] w-full">
+        <div className="relative w-full p-3">
+          <div className="flex justify-start">
+            <div className="h-5 w-11 bg-gray-500 animate-pulse rounded-md" />
+          </div>
+          <div className="flex items-center justify-between w-full mt-1 space-x-2">
+            <div className="flex flex-col w-full gap-2">
+              <div className="relative h-4 w-full overflow-hidden rounded-full bg-primary animate-pulse" />
+              <div className="h-5 w-11 bg-gray-500 animate-pulse rounded-md" />
             </div>
           </div>
         </div>
@@ -310,20 +273,10 @@ export const RewardsComponentLeaderboardSceleton = () => {
   return (
     <div className="space-y-2">
       <div className="flex justify-start">
-        <div className="rounded-md w-48 bg-gray-500 h-5 animate-pulse" />
+        <div className="rounded-md w-25 bg-gray-500 h-5 animate-pulse" />
       </div>
-      <div className="bg-secondary-700 border border-secondary-700 hover:border-secondary-500 transition duration-200 rounded-lg">
-        <div className="p-3">
-          <div className="space-y-6">
-            {[...Array(4)]?.map((user, index) => (
-              <div key={index} className="items-center flex justify-between">
-                <div className="w-full h-4 rounded-md bg-gray-500 animate-pulse" />
-              </div>
-            ))
-            }
-          </div>
-        </div>
-      </div>
+      <div className="rounded-md w-full bg-gray-500 animate-pulse h-10" />
+      <div className="animate-pulse rounded-lg bg-gray-500 w-full h-[calc(9.75rem+2px)]" />
     </div>
   )
 }
