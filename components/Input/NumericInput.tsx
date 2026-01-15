@@ -39,7 +39,7 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
             : '';
 
         const displayValue = !isNaN(Number(tempValue)) ? formattedTempValue : field.value;
-        const fullTooltipText = displayValue && Number(displayValue) > 0
+        const tooltipContent = displayValue && Number(displayValue) > 0
             ? `${displayValue}${tokenSymbol ? ` ${tokenSymbol}` : ''}`
             : undefined;
 
@@ -93,9 +93,9 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                         {<>{children}</>}
                     </div>
                 </TooltipTrigger>
-                {fullTooltipText &&
+                {tooltipContent &&
                     <TooltipContent side="top" arrowClasses="fill-secondary-400 [filter:drop-shadow(0px_1px_3px_rgba(0,0,0,0.5))] translate-y-[-1px]" showArrow sideOffset={-8} className="bg-secondary-400! border-secondary-400! text-primary-text! shadow-[0px_1px_3px_0px_rgba(0,0,0,0.5)]!">
-                        <p>{fullTooltipText}</p>
+                        <p>{tooltipContent}</p>
                     </TooltipContent>
                 }
             </Tooltip>
