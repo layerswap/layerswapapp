@@ -1,4 +1,4 @@
-import React, { ComponentProps, FC, forwardRef } from 'react'
+import React, { ComponentProps, forwardRef } from 'react'
 import { classNames } from '../utils/classNames'
 
 interface IconButtonProps extends Omit<ComponentProps<'button'>, 'color' | 'ref'> {
