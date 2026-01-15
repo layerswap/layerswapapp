@@ -1,6 +1,7 @@
-import React, { memo, useCallback, ReactNode, useRef, useEffect } from 'react';
-import { useNavigatableListState, useNavigatableListUpdate } from './context';
+import React, { memo, useCallback, ReactNode } from 'react';
+import { useNavigatableListState } from './context';
 import clsx from 'clsx';
+import { useScrollIntoView, useSpaceKeyClick, useHoverHandler, useMergedRefs } from './hooks';
 
 export interface NavigatableChildProps {
     parentIndex: string;
@@ -26,8 +27,6 @@ const NavigatableChild = memo<NavigatableChildProps>(({
     tabIndex = 0
 }) => {
     const { focusedIndex } = useNavigatableListState();
-    const { handleHover } = useNavigatableListUpdate();
-    const internalRef = useRef<HTMLDivElement | null>(null);
 
     const fullIndex = `${parentIndex}.${childIndex}`;
 
@@ -40,19 +39,10 @@ const NavigatableChild = memo<NavigatableChildProps>(({
                      focusedParent === parseInt(parentIndex) &&
                      focusedChild === childIndex;
 
-    // Scroll into view when focused
-    useEffect(() => {
-        if (isFocused && internalRef.current) {
-            internalRef.current.scrollIntoView({ block: 'nearest', behavior: 'auto' });
-        }
-    }, [isFocused]);
-
-    const handleRef = useCallback((el: HTMLDivElement | null) => {
-        internalRef.current = el;
-        if (setRef) {
-            setRef(childIndex, el);
-        }
-    }, [childIndex, setRef]);
+    // Use shared hooks
+    const internalRef = useScrollIntoView(isFocused);
+    const handleKeyDownInternal = useSpaceKeyClick(onClick, onKeyDown);
+    const handleMouseEnter = useHoverHandler(fullIndex);
 
     const handleClick = useCallback(() => {
         if (onClick) {
@@ -60,21 +50,15 @@ const NavigatableChild = memo<NavigatableChildProps>(({
         }
     }, [onClick]);
 
-    const handleKeyDownInternal = useCallback((e: React.KeyboardEvent) => {
-        if (e.key === ' ') {
-            e.preventDefault();
-            if (onClick) {
-                onClick();
+    // Merge internal ref with setRef callback
+    const handleRef = useMergedRefs(
+        internalRef,
+        useCallback((el: HTMLDivElement | null) => {
+            if (setRef) {
+                setRef(childIndex, el);
             }
-        }
-        if (onKeyDown) {
-            onKeyDown(e);
-        }
-    }, [onClick, onKeyDown]);
-
-    const handleMouseEnter = useCallback(() => {
-        handleHover(fullIndex);
-    }, [handleHover, fullIndex]);
+        }, [childIndex, setRef])
+    );
 
     return (
         <div
