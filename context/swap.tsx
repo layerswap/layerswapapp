@@ -75,7 +75,7 @@ export type SwapContextData = {
     setSwapError?: (value: string) => void
 }
 
-export function SwapDataProvider({ children }) {
+export function SwapDataProvider({ children, initialSwapData }: { children: React.ReactNode, initialSwapData?: SwapResponse | null }) {
     const [codeRequested, setCodeRequested] = useState<boolean>(false)
     const [quoteIsLoading, setQuoteLoading] = useState<boolean>(false)
     const [withdrawType, setWithdrawType] = useState<WithdrawType>()
@@ -125,7 +125,7 @@ export function SwapDataProvider({ children }) {
     const layerswapApiClient = new LayerSwapApiClient()
     const swap_details_endpoint = `/swaps/${swapId}?exclude_deposit_actions=true`
     const [interval, setInterval] = useState(0)
-    const { data, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval, dedupingInterval: interval || 1000 })
+    const { data, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval, dedupingInterval: interval || 1000, fallbackData: initialSwapData ? { data: initialSwapData } : undefined })
 
     const swapBasicData = useMemo(() => {
         if (swapId && data?.data) {
