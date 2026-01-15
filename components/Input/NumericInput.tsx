@@ -4,6 +4,7 @@ import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { classNames } from '@/components/utils/classNames'
 import { isScientific } from "@/components/utils/RoundDecimals";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
+import { TriangleIcon } from "lucide-react";
 
 type Input = {
     tempValue?: number;
@@ -92,9 +93,11 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                         {<>{children}</>}
                     </div>
                 </TooltipTrigger>
-                <TooltipContent className="bg-secondary-300! border-secondary-300! text-primary-text!">
-                    <p>{fullTooltipText}</p>
-                </TooltipContent>
+                {fullTooltipText &&
+                    <TooltipContent side="top" arrowClasses="fill-secondary-400 [filter:drop-shadow(0px_1px_3px_rgba(0,0,0,0.5))] translate-y-[-1px]" showArrow sideOffset={-8} className="bg-secondary-400! border-secondary-400! text-primary-text! shadow-[0px_1px_3px_0px_rgba(0,0,0,0.5)]!">
+                        <p>{fullTooltipText}</p>
+                    </TooltipContent>
+                }
             </Tooltip>
         </div>;
     });
