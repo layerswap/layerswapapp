@@ -109,6 +109,7 @@ export default function useEVM(): WalletConnectionProvider {
         id: id,
         name: name,
         icon: logo,
+        extensionNotFound: false
     }]
 
     return {
