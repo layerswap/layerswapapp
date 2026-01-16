@@ -16,7 +16,7 @@ import useWallet from "@/hooks/useWallet";
 import { useAsyncModal } from "@/context/asyncModal";
 import { QueryParams } from "@/Models/QueryParams";
 import VaulDrawer from "@/components/modal/vaulModal";
-import { addressFormat } from "@/lib/address/formatter";
+import { Address } from "@/lib/address";
 import UrlAddressNote from "@/components/Input/Address/UrlAddressNote";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import SwapDetails from "..";
@@ -66,11 +66,11 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
             to &&
             destination_address &&
             destinationAddressFromQuery &&
-            (addressFormat(destinationAddressFromQuery?.toString(), to) === addressFormat(destination_address, to)) &&
+            new Address(destinationAddressFromQuery?.toString(), to).equals(destination_address) &&
             !isAddressFromQueryConfirmed
         ) {
             const provider = to && getProvider(to, 'autofill')
-            const isDestAddressConnected = destination_address && provider?.connectedWallets?.some((wallet) => addressFormat(wallet.address, to) === addressFormat(destination_address, to))
+            const isDestAddressConnected = destination_address && provider?.connectedWallets?.some((wallet) => new Address(wallet.address, to).equals(destination_address))
 
             const confirmed = !isDestAddressConnected ? await getConfirmation({
                 content: <UrlAddressNote partner={partner} values={values} />,

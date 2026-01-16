@@ -1,7 +1,7 @@
 import { FC, MouseEventHandler, ReactNode, SVGProps, useState } from "react"
 import { AddressGroup, AddressItem } from ".";
 import AddressIcon from "@/components//AddressIcon";
-import shortenAddress from "@/components//utils/ShortenAddress";
+import { Address } from "@/lib/address";
 import { History, Copy, Check, ChevronDown, WalletIcon, Pencil, Link2, SquareArrowOutUpRight, Unplug, Info } from "lucide-react";
 import { Partner } from "@/Models/Partner";
 import { Network } from "@/Models/Network";
@@ -71,7 +71,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
                             />
                         )
                     ) : (
-                        <AddressIcon className="scale-150 h-9 w-9" address={addressItem.address} size={36} />
+                        <AddressIcon className="scale-150 h-9 w-9" address={new Address(addressItem.address, network).full} size={36} />
                     )
                 }
             </div>
@@ -116,6 +116,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
 type ExtendedAddressProps = {
     address: string;
     network?: Network;
+    providerName?: string;
     isForCurrency?: boolean;
     addressClassNames?: string;
     onDisconnect?: () => void;
@@ -140,9 +141,11 @@ const calculateMaxWidth = (balance: string | undefined) => {
     }
 };
 
-export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, isForCurrency, children, onDisconnect, showDetails = false, title, description, logo: Logo, shouldShowChevron = true, isNativeToken = false }) => {
+export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, providerName, isForCurrency, children, onDisconnect, showDetails = false, title, description, logo: Logo, shouldShowChevron = true, isNativeToken = false }) => {
     const [isCopied, setCopied] = useCopyClipboard()
     const [isPopoverOpen, setPopoverOpen] = useState(false)
+
+    const addr = new Address(address, network, providerName);
 
     // Resolver for action buttons
     const getActionButtons = () => {
@@ -152,12 +155,12 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, is
             {
                 title: 'Copy',
                 Icon: isCopied ? Check : Copy,
-                onClick: (e: React.MouseEvent<HTMLDivElement>) => { e.stopPropagation(); setCopied(address); }
+                onClick: (e: React.MouseEvent<HTMLDivElement>) => { e.stopPropagation(); setCopied(addr.normalized); }
             },
             ...(network ? [{
                 title: 'View',
                 Icon: SquareArrowOutUpRight,
-                href: network.account_explorer_template?.replace('{0}', address)
+                href: network.account_explorer_template?.replace('{0}', addr.full)
             }] : []),
             ...(onDisconnect ? [{
                 title: 'Disconnect',
@@ -185,7 +188,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, is
                                     children ??
                                     <div className="group-hover/addressItem:underline hover:text-secondary-text transition duration-200 no-underline flex gap-1 items-center cursor-pointer">
                                         <p className={`${isForCurrency ? "text-xs self-end" : "text-sm"} block font-medium`}>
-                                            {shortenAddress(address)}
+                                            {addr.toShortString()}
                                         </p>
                                         {shouldShowChevron ?
                                             <ChevronDown className="invisible group-hover/addressItem:visible h-4 w-4" />
@@ -238,8 +241,10 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, is
                     )}
                     <p className={`text-secondary-text text-sm leading-5 break-all text-left ${!isNativeToken ? 'font-mono' : ''}`}>
                         {
-                            isNativeToken ? address :
-                                <><span className="text-primary-text font-medium">{address.slice(0, 4)}</span><span>{address.slice(4, -4)}</span><span className="text-primary-text font-medium">{address.slice(-4)}</span></>
+                            isNativeToken ? address : (() => {
+                                const { start, middle, end } = addr.toEmphasizedParts();
+                                return <><span className="text-primary-text font-medium">{start}</span><span>{middle}</span><span className="text-primary-text font-medium">{end}</span></>;
+                            })()
                         }
                     </p>
                     {buttons.length > 0 && (

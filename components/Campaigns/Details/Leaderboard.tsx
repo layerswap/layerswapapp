@@ -4,7 +4,7 @@ import { RewardsComponentLeaderboardSceleton } from "../../Sceletons"
 import useSWR from "swr"
 import { ApiResponse } from "../../../Models/ApiResponse"
 import ClickTooltip from "../../Tooltips/ClickTooltip"
-import shortenAddress from "../../utils/ShortenAddress"
+import { Address } from "@/lib/address"
 import { useAccount } from "wagmi"
 import { truncateDecimals } from "../../utils/RoundDecimals"
 import AddressIcon from "../../AddressIcon";
@@ -25,7 +25,7 @@ const Component: FC<Props> = ({ campaign }) => {
 
     const apiClient = new LayerSwapApiClient()
     const { data: leaderboardData, isLoading } = useSWR<ApiResponse<Leaderboard>>(`/campaigns/${campaign?.id}/leaderboard`, apiClient.fetcher, { dedupingInterval: 60000 })
-    const { data: rewardsData, isLoading: rewardsIsLoading } = useSWR<ApiResponse<Reward>>(`/campaigns/${campaign.id}/rewards/${address}`, apiClient.fetcher, { dedupingInterval: 60000 })
+    const { data: rewardsData } = useSWR<ApiResponse<Reward>>(`/campaigns/${campaign.id}/rewards/${address}`, apiClient.fetcher, { dedupingInterval: 60000 })
     const leaderboard = leaderboardData?.data
 
     if (isLoading) {
@@ -105,11 +105,11 @@ const LeaderbordComponent: FC<{
                                 <div className="flex items-center">
                                     <p className="text-xl font-medium text-primary-text w-fit mr-1">{user.position}.</p>
                                     <div className="cols-start-2 flex items-center space-x-2">
-                                        <AddressIcon address={user.address} size={25} />
+                                        <AddressIcon address={new Address(user.address, network).full} size={25} />
                                         <div>
                                             <div className="text-sm font-bold text-primary-text leading-3">
                                                 {user?.address && network?.account_explorer_template && <Link target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", user?.address)}>
-                                                    {user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}
+                                                    {user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : new Address(user.address, network).toShortString()}
                                                 </Link>}
                                             </div>
                                             <p className="mt-1 text-sm font-medium text-secondary-text leading-3">{truncateDecimals(user.amount, token?.precision)} {token?.symbol}</p>
@@ -151,7 +151,7 @@ const LeaderbordComponent: FC<{
                                 <div className="flex items-center">
                                     <p className="text-xl font-medium text-primary-text w-fit mr-1">{position}.</p>
                                     <div className="cols-start-2 flex items-center space-x-2">
-                                        <AddressIcon address={address} size={25} />
+                                        <AddressIcon address={new Address(address, network).full} size={25} />
                                         <div>
                                             <div className="text-sm font-bold text-primary-text leading-3">
                                                 {network?.account_explorer_template && <Link target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", address)}>

@@ -4,7 +4,7 @@ import LayerSwapApiClient, { SwapResponse, TransactionType } from "@/lib/apiClie
 import { ApiResponse } from "@/Models/ApiResponse"
 import { useQueryState } from "@/context/query"
 import { Partner } from "@/Models/Partner"
-import { addressEnding, shortenEmail } from "../utils/ShortenAddress"
+import { Address } from "@/lib/address"
 import KnownInternalNames from "@/lib/knownIds"
 import { ChevronRightIcon } from 'lucide-react'
 import StatusIcon from "./StatusIcons"
@@ -53,10 +53,10 @@ const HistorySummary: FC<SwapInfoProps> = ({
         sourceAccountAddress = "Exchange"
     }
     else if (sourceAddressFromInput) {
-        sourceAccountAddress = addressEnding(sourceAddressFromInput)
+        sourceAccountAddress = new Address(sourceAddressFromInput, source_network).toEndingString()
     }
-    else if (source_network?.name === KnownInternalNames.Exchanges.Coinbase && exchange_account_connected) {
-        sourceAccountAddress = shortenEmail(exchange_account_name, 10);
+    else if (source_network?.name === KnownInternalNames.Exchanges.Coinbase && exchange_account_connected && exchange_account_name) {
+        sourceAccountAddress = Address.fromEmail(exchange_account_name, 10).toShortString();
     }
 
     const destAddress = (hideAddress && hideTo && account) ? account : destination_address

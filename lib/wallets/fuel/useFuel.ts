@@ -11,7 +11,7 @@ import {
     getPredicateRoot,
 } from '@fuel-ts/account';
 import { Address } from '@fuel-ts/address';
-import shortenAddress from "@/components/utils/ShortenAddress";
+import { Address as LayerswapAddress } from "@/lib/address";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvider";
 import { useEffect, useMemo } from "react";
@@ -249,7 +249,7 @@ const resolveFuelWallet = async ({ address, addresses, commonSupportedNetworks, 
         );
         const convertedAddress = Address.fromB256(getPredicateRoot(predicateBytes)).toString();
         if (convertedAddress.toLowerCase() === address.toLowerCase()) {
-            fuelCurrentConnector = `${evmConnector.name} (${shortenAddress(evmAddress)})`
+            fuelCurrentConnector = `${evmConnector.name} (${new LayerswapAddress(evmAddress).toShortString()})`
             customConnectorname = evmConnector.name
         }
     }

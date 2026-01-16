@@ -147,6 +147,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
                                         <ExtendedAddress
                                             address={wallet.address}
                                             network={network}
+                                            providerName={wallet.providerName}
                                             title={wallet.displayName?.split("-")[0]}
                                             description={wallet.providerName}
                                             logo={wallet.icon}

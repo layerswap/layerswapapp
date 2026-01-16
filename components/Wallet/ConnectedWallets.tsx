@@ -1,5 +1,5 @@
 import WalletIcon from "../icons/WalletIcon"
-import shortenAddress from "../utils/ShortenAddress"
+import { Address } from "@/lib/address"
 import useWallet from "../../hooks/useWallet"
 import ConnectButton from "../buttons/connectButton"
 import { useState } from "react"
@@ -108,7 +108,7 @@ const WalletsMenuWalletsList = ({ wallets }: { wallets: Wallet[] }) => {
                 wallets.length === 1 ?
                     <div className="flex gap-4 items-start text-primary-text">
                         <wallet.icon className='h-5 w-5' />
-                        {!wallet.isLoading && wallet.address && <p>{shortenAddress(wallet.address)}</p>}
+                        {!wallet.isLoading && wallet.address && <p>{new Address(wallet.address, null, wallet.providerName).toShortString()}</p>}
                     </div>
                     :
                     <>

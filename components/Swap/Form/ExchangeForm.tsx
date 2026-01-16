@@ -12,6 +12,7 @@ import AmountField from "@/components/Input/Amount";
 import Address from "@/components/Input/Address";
 import { ChevronDown, X } from "lucide-react";
 import AddressIcon from "@/components/AddressIcon";
+import { Address as AddressClass } from "@/lib/address";
 import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
 import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
 import MinMax from "@/components/Input/Amount/MinMax";
@@ -201,7 +202,7 @@ const AddressButton = ({ address, network, wallet, addressProviderIcon }: { addr
                         width="36"
                         height="36"
                     />) : (
-                        <AddressIcon className="scale-150 h-9 w-9" address={address} size={36} />
+                        <AddressIcon className="scale-150 h-9 w-9" address={new AddressClass(address, network).full} size={36} />
                     )
                 }
             </div>

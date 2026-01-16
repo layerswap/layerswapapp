@@ -1,11 +1,9 @@
 import { FC } from 'react'
 import { ChevronDown } from 'lucide-react'
 import AddressIcon from '../../AddressIcon'
-import shortenAddress from '../../utils/ShortenAddress'
+import { Address } from "@/lib/address";
 import { Wallet } from '@/Models/WalletProvider'
 import { SwapValues } from '..'
-import { isValidAddress } from '@/lib/address/validator'
-import { addressFormat } from '@/lib/address/formatter'
 import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
 import { DetailsButton } from '..'
 import { Quote } from '@/lib/apiClients/layerSwapApiClient'
@@ -32,7 +30,7 @@ export const SummaryRow: FC<{
 }> = ({ quoteData, isQuoteLoading, values, wallet, onOpen, sourceAddress, isOpen, destination, destinationAddress, partner }) => {
     const query = useQueryState()
     const { destination_address: destinationAddressFromQuery } = query
-    const addressProviderIcon = destinationAddressFromQuery && partner?.is_wallet && addressFormat(destinationAddressFromQuery, values?.to!) === addressFormat(values?.destination_address!, values?.to!) && partner?.logo
+    const addressProviderIcon = destinationAddressFromQuery && partner?.is_wallet && new Address(destinationAddressFromQuery, values?.to!).equals(values?.destination_address!) && partner?.logo
 
     return (
         <div className={clsx("flex flex-col w-full p-2", { "pb-0 -mb-1": isOpen })}>
@@ -53,15 +51,15 @@ export const SummaryRow: FC<{
                                     width="36"
                                     height="36"
                                 />) : (
-                                <AddressIcon className="h-4 w-4" address={values.destination_address} size={36} rounded="4px" />
+                                <AddressIcon className="h-4 w-4" address={new Address(values.destination_address, values.to).full} size={36} rounded="4px" />
                             )}
                             {
-                                ((isValidAddress(values?.destination_address, values?.to) && values?.to) ?
+                                ((Address.isValid(values?.destination_address, values?.to) && values?.to) ?
                                     <div className="text-sm group/addressItem text-secondary-text">
-                                        <ExtendedAddress address={addressFormat(values?.destination_address, values?.to)} network={values?.to} showDetails={wallet ? true : false} title={wallet?.displayName?.split("-")[0]} description={wallet?.providerName} logo={wallet?.icon} shouldShowChevron={false} />
+                                        <ExtendedAddress address={values?.destination_address} network={values?.to} showDetails={wallet ? true : false} title={wallet?.displayName?.split("-")[0]} description={wallet?.providerName} logo={wallet?.icon} shouldShowChevron={false} />
                                     </div>
                                     :
-                                    <p className="text-sm text-secondary-text">{shortenAddress(values?.destination_address)}</p>)
+                                    <p className="text-sm text-secondary-text">{new Address(values?.destination_address, values?.to).toShortString()}</p>)
                             }
                         </span>
                     </div>
