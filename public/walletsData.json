@@ -3589,8 +3589,8 @@
         "shortName": null
       },
       "mobile": {
-        "native": "rewardwallet://wc",
-        "universal": "https://www.rewardywallet.com/wc"
+        "native": "rewardywallet://",
+        "universal": ""
       },
       "name": "Rewardy Wallet",
       "rdns": "",
