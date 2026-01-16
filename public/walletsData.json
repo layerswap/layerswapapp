@@ -1,5 +1,5 @@
 {
-  "count": 604,
+  "count": 606,
   "listings": {
     "00e39f835988d1bb783b2a0748e18bc6278dec03492d00b0e102a466cd8b3d77": {
       "app": {
@@ -3589,8 +3589,8 @@
         "shortName": null
       },
       "mobile": {
-        "native": "rewardwallet://wc",
-        "universal": "https://www.rewardywallet.com/wc"
+        "native": "rewardywallet://",
+        "universal": ""
       },
       "name": "Rewardy Wallet",
       "rdns": "",
@@ -8536,6 +8536,68 @@
         "2"
       ]
     },
+    "22eafea695da55c0a8c3a37c5dd6ecd7ee45927a859b9536ae068e5dba4eeed2": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.askroi.onlybulls",
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "https://apps.apple.com/us/app/onlybulls/id6746166943",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:10",
+        "eip155:137",
+        "eip155:42161",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "description": "The OnlyBulls super app wallet",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://onlybulls.com",
+      "id": "22eafea695da55c0a8c3a37c5dd6ecd7ee45927a859b9536ae068e5dba4eeed2",
+      "image_id": "f51e7b10-7a66-437f-8d13-666c660e8500",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/f51e7b10-7a66-437f-8d13-666c660e8500?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/f51e7b10-7a66-437f-8d13-666c660e8500?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/f51e7b10-7a66-437f-8d13-666c660e8500?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "",
+        "universal": "https://onlybulls.com"
+      },
+      "name": "OnlyBulls Wallet",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "onlybulls-wallet",
+      "updatedAt": "2026-01-13T11:04:40.588881+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "23d57b0a48df6cec411e609ddedaa290dae4a844ea90909ddd33aca794574603": {
       "app": {
         "android": null,
@@ -9180,6 +9242,65 @@
       "versions": [
         "1",
         "2"
+      ]
+    },
+    "25f2e87390f32e4a132c27cbbbca95bc0434f5cba32db613defff0ea2bbf6cd3": {
+      "app": {
+        "android": "",
+        "browser": "",
+        "chrome": "https://chromewebstore.google.com/detail/nodevault-%E2%80%94-web3-wallet/nhihmlanbfomighpjodmmliikbnlmaog?utm_source=item-share-cb",
+        "edge": null,
+        "firefox": null,
+        "ios": "",
+        "linux": "",
+        "mac": "",
+        "opera": null,
+        "safari": null,
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:10",
+        "eip155:11155111",
+        "eip155:14",
+        "eip155:56288"
+      ],
+      "description": "A Real Name KYC Embeded Wallet",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://chain.dolphinode.world/wallet",
+      "id": "25f2e87390f32e4a132c27cbbbca95bc0434f5cba32db613defff0ea2bbf6cd3",
+      "image_id": "4e143d7c-27cb-4d7f-a4e0-bf612ef58000",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/4e143d7c-27cb-4d7f-a4e0-bf612ef58000?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/4e143d7c-27cb-4d7f-a4e0-bf612ef58000?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/4e143d7c-27cb-4d7f-a4e0-bf612ef58000?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "",
+        "universal": ""
+      },
+      "name": "NodeVault",
+      "rdns": "world.dolphinode.chain",
+      "sdks": [
+        "sign_v1"
+      ],
+      "slug": "nodevault",
+      "updatedAt": "2026-01-13T11:10:17.071533+00:00",
+      "versions": [
+        "1"
       ]
     },
     "26d3d9e7224a1eb49089aa5f03fb9f3b883e04050404594d980d4e1e74e1dbea": {
@@ -10683,35 +10804,38 @@
     "2c69b45f625add0acd3354df4ab757067143b7f54b937311966f55be60a89c41": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.gayawalletmobapp&pcampaignid=web_share&pli=1",
-        "browser": null,
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
         "ios": "https://apps.apple.com/pk/app/gaya-wallet/id6741714278",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": null,
       "chains": [
         "eip155:1",
+        "eip155:137",
+        "eip155:42161",
+        "eip155:56",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
       ],
-      "description": "Gaya Wallet is a secure, non-custodial multichain wallet for Solana & Ethereum. Manage assets, swap tokens, and stay in full control.",
+      "description": "Gaya Wallet is a Multichain wallet on Solana, EVM and other chains. Create or import wallets, send, receive and swap assets, bridge across chains, buy and sell crypto, connect to dApps, explore Web3, track tokens and transactions, earn rewards through tasks and referrals, and manage everything under one secure identity.",
       "desktop": {
         "native": "",
-        "universal": null
+        "universal": ""
       },
       "homepage": "https://gayawallet.com",
       "id": "2c69b45f625add0acd3354df4ab757067143b7f54b937311966f55be60a89c41",
-      "image_id": "67e7c918-8cf2-4781-0a10-e7e6f4c48900",
+      "image_id": "40cb8a5d-6118-404d-7156-4ab9bfb18600",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/67e7c918-8cf2-4781-0a10-e7e6f4c48900?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/67e7c918-8cf2-4781-0a10-e7e6f4c48900?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/67e7c918-8cf2-4781-0a10-e7e6f4c48900?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/40cb8a5d-6118-404d-7156-4ab9bfb18600?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/40cb8a5d-6118-404d-7156-4ab9bfb18600?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/40cb8a5d-6118-404d-7156-4ab9bfb18600?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
       "injected": null,
       "metadata": {
@@ -10726,7 +10850,7 @@
         "universal": "https://gayawallet.com"
       },
       "name": "Gaya Wallet",
-      "rdns": null,
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2"
@@ -11443,16 +11567,16 @@
     "34af9f895e03259fb008e8ff4ea5ca5d75fcfcb606ec563c332004f39ab47803": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.billionwallet",
-        "browser": null,
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
-        "ios": null,
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "https://apps.apple.com/app/billion-crypto-wallet/id6746122902",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": null,
@@ -11489,7 +11613,7 @@
         "universal": "https://w.billionwallet.io"
       },
       "name": "Billion Wallet",
-      "rdns": null,
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2"
@@ -17855,8 +17979,8 @@
         "shortName": null
       },
       "mobile": {
-        "native": "",
-        "universal": "https://play.google.com/store/apps/details?id=com.nvwallet.wallet"
+        "native": "nvxowallet://wc",
+        "universal": "https://www.nvxowallet.com/wc"
       },
       "name": "NVXO Wallet",
       "rdns": "",
@@ -23727,16 +23851,16 @@
     "78a926e8758e4464162818353637b11fead41489598dd7f47e4b247eaf8008c3": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.diamante.diamwallet&hl=en_IN",
-        "browser": null,
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
         "ios": "https://apps.apple.com/in/app/diam-wallet/id6450691849",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": null,
@@ -23772,7 +23896,7 @@
         "universal": "https://dwconnect.diamante.io/wc"
       },
       "name": "DIAM Wallet",
-      "rdns": null,
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2"
@@ -30156,7 +30280,8 @@
       "app_type": "wallet",
       "category": null,
       "chains": [
-        "eip155:4352"
+        "eip155:4352",
+        "eip155:43521"
       ],
       "description": "MeCo wallet: Safe, Fast & Non-Custodial",
       "desktop": {
@@ -30183,7 +30308,7 @@
         "native": "mecowallet://",
         "universal": ""
       },
-      "name": "MeCo",
+      "name": "MeCo Wallet",
       "rdns": "",
       "sdks": [
         "sign_v1",
@@ -39555,28 +39680,31 @@
     "ce02f1ae74686234eabfa7d31876c442779b730dfe7924a3ca0e6559a7afa30f": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.creditcoin.mobile",
-        "browser": null,
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
         "ios": "https://apps.apple.com/us/app/apple-store/id6478491272",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": "Mobile Wallets",
       "chains": [
         "eip155:1",
+        "eip155:102030",
+        "eip155:102031",
+        "eip155:102032",
         "eip155:11155111",
         "polkadot:91b171bb158e2d3848fa23a9f1c25182"
       ],
       "description": "The Multichain Credit Protocol Powering Real-World Assets",
       "desktop": {
         "native": "",
-        "universal": null
+        "universal": ""
       },
       "homepage": "https://app.creditcoin.org",
       "id": "ce02f1ae74686234eabfa7d31876c442779b730dfe7924a3ca0e6559a7afa30f",
@@ -39596,10 +39724,10 @@
       },
       "mobile": {
         "native": "creditwallet://",
-        "universal": null
+        "universal": ""
       },
       "name": "Credit Wallet",
-      "rdns": null,
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2",
@@ -44573,16 +44701,16 @@
     "e6a8cb6abe47f88d7511b0698829eab01d76e78bad82b8ccca66004055055d89": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.flowfoundation.wallet",
-        "browser": null,
+        "browser": "",
         "chrome": "https://chrome.google.com/webstore/detail/flow-reference/hpclkefagolihohboafpheddmmgdffjm",
-        "edge": null,
-        "firefox": null,
+        "edge": "",
+        "firefox": "",
         "ios": "https://apps.apple.com/ca/app/flow-wallet-nfts-and-crypto/id6478996750",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": "Mobile Wallets",
@@ -49077,5 +49205,5 @@
       ]
     }
   },
-  "total": 604
+  "total": 606
 }
