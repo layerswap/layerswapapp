@@ -10,7 +10,7 @@ import WidgetWrapper from '../../components/WidgetWrapper';
 
 
 
-const SwapDetails = ({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const SwapDetails = ({ settings, themeData, apiKey, swapData }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter()
 
   return (<>
@@ -31,7 +31,7 @@ const SwapDetails = ({ settings, themeData, apiKey }: InferGetServerSidePropsTyp
           }
         }}
       >
-        <SwapWithdrawal />
+        <SwapWithdrawal initialSwapData={swapData} />
       </WidgetWrapper>
     </Layout>
   </>)
@@ -77,7 +77,8 @@ export const getServerSideProps = async (ctx) => {
     props: {
       settings,
       themeData,
-      apiKey
+      apiKey,
+      swapData: swapData || null
     }
   }
 }
