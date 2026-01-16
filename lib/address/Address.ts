@@ -16,7 +16,7 @@ export interface AddressFormatOptions {
  * ```typescript
  * const addr = new Address('0x1234...', network);
  * addr.toShortString(); // "0x123...5678"
- * addr.isValid(); // true
+ * Address.isValid('0x1234...', { name: 'ETHEREUM_MAINNET' }); // true
  * ```
  */
 export class Address {
@@ -28,7 +28,7 @@ export class Address {
 
   /**
    * Creates a new Address instance
-   * @param address - The raw address string (may include network prefixes like ronin:, zksync:)
+   * @param address - The raw address string
    * @param network - Optional network context for network-specific formatting
    * @param providerName - Optional provider name for provider-specific formatting when network is unavailable
    */
@@ -37,18 +37,9 @@ export class Address {
     this._network = network;
     this._providerName = providerName;
 
-    // Extract network prefix if present
-    const prefixMatch = this._raw.match(/^(ronin|zksync):/);
-    this._prefix = prefixMatch ? prefixMatch[1] : null;
-
-    // Normalize address using existing formatter
-    const addressWithoutPrefix = this._prefix
-      ? this._raw.replace(`${this._prefix}:`, '')
-      : this._raw;
-
     this._normalized = (network || providerName)
-      ? addressFormat({ address: addressWithoutPrefix, network, providerName })
-      : addressWithoutPrefix;
+      ? addressFormat({ address: this._raw, network, providerName })
+      : this._raw;
   }
 
   /**
