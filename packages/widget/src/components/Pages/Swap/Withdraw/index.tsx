@@ -5,6 +5,7 @@ import { SwapDataProvider, useSwapDataState, useSwapDataUpdate } from "@/context
 import NotFound from "./NotFound";
 import SwapDetails from "./SwapDetails";
 import { useCallbacks } from "@/context/callbackProvider";
+import { SwapResponse } from "@/lib/apiClients/layerSwapApiClient";
 
 const Comp: FC = () => {
     const { swapBasicData, swapApiError, swapId } = useSwapDataState()
@@ -31,9 +32,9 @@ const Comp: FC = () => {
     )
 };
 
-export const SwapWithdrawal: FC = () => {
+export const SwapWithdrawal: FC<{ initialSwapData?: SwapResponse }> = ({ initialSwapData }) => {
     return (
-        <SwapDataProvider>
+        <SwapDataProvider initialSwapData={initialSwapData}>
             <Comp />
         </SwapDataProvider >
     )

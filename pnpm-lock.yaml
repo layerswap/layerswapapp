@@ -858,6 +858,9 @@ importers:
       '@tronweb3/tronwallet-adapter-ledger':
         specifier: ^1.1.11
         version: 1.1.11(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      '@tronweb3/tronwallet-adapter-metamask-tron':
+        specifier: ^1.0.0
+        version: 1.0.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@tronweb3/tronwallet-adapter-okxwallet':
         specifier: ^1.0.6
         version: 1.0.7(bufferutil@4.1.0)(utf-8-validate@5.0.10)
@@ -3299,6 +3302,10 @@ packages:
   '@metamask/json-rpc-middleware-stream@7.0.2':
     resolution: {integrity: sha512-yUdzsJK04Ev98Ck4D7lmRNQ8FPioXYhEUZOMS01LXW8qTvPGiRVXmVltj2p4wrLkh0vW7u6nv0mNl5xzC5Qmfg==}
     engines: {node: '>=16.0.0'}
+
+  '@metamask/multichain-api-client@0.10.1':
+    resolution: {integrity: sha512-LsqO2SiDcTgOuXyVYEB0zgBaVNhryhP2tYI3L7tLa7PoeDqMkNIreFhDeu8jM5tPWkCimQvMwCkG3DF4P5dD3A==}
+    engines: {node: ^18.20 || ^20.17 || >=22}
 
   '@metamask/object-multiplex@2.1.0':
     resolution: {integrity: sha512-4vKIiv0DQxljcXwfpnbsXcfa5glMj5Zg9mqn4xpIWqkv6uJ2ma5/GtUfLFSxhlxnR8asRMv8dDmWya1Tc1sDFA==}
@@ -6838,6 +6845,10 @@ packages:
 
   '@tronweb3/tronwallet-adapter-ledger@1.1.11':
     resolution: {integrity: sha512-r0S/4W9fszd247nKa+e/QWTdd1q6crqtUsHumbkT6YSU//tAy2iDoI9Ecz5o1ORabZ5WL7nLiuEr/ZuqCYcabA==}
+    engines: {node: '>=16', pnpm: '>=7'}
+
+  '@tronweb3/tronwallet-adapter-metamask-tron@1.0.0':
+    resolution: {integrity: sha512-NmIQjqvyoAnNypXA4Kq00+mnxqQVKzBPhKGdlqhJepa6Z/5Pf/qt/brEM+oLvzTNWJjPxWt8LTKhnfLEEXthmw==}
     engines: {node: '>=16', pnpm: '>=7'}
 
   '@tronweb3/tronwallet-adapter-okxwallet@1.0.7':
@@ -17713,6 +17724,8 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@metamask/multichain-api-client@0.10.1': {}
+
   '@metamask/object-multiplex@2.1.0':
     dependencies:
       once: 1.4.0
@@ -24085,6 +24098,15 @@ snapshots:
       buffer: 6.0.3
       eventemitter3: 4.0.7
       preact: 10.28.2
+    transitivePeerDependencies:
+      - bufferutil
+      - debug
+      - utf-8-validate
+
+  '@tronweb3/tronwallet-adapter-metamask-tron@1.0.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@metamask/multichain-api-client': 0.10.1
+      '@tronweb3/tronwallet-abstract-adapter': 1.1.10(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - bufferutil
       - debug
