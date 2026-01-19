@@ -48,7 +48,7 @@ const NetworkIssue: FC<{ network: NetworkRoute | undefined }> = ({ network }) =>
                 <p>Network issue</p>
             </div>
         </TooltipTrigger>
-        <TooltipContent className="!bg-secondary-400 !border-0 !p-3 !rounded-xl">
+        <TooltipContent className="bg-secondary-400! border-0! p-3! rounded-xl!">
             <div className="flex items-center gap-2 justify-center max-w-[300px]">
                 <div className="w-4 h-4">
                     <InfoIcon className='w-4 h-4 text-warning-foreground' />
@@ -71,17 +71,23 @@ const NetworkIssue: FC<{ network: NetworkRoute | undefined }> = ({ network }) =>
 }
 
 const InsufficientBalance: FC<{ balance: string }> = ({ balance }) => {
-    return <Tooltip openOnClick>
+    return <Tooltip openOnClick defaultOpen={true} open>
         <TooltipTrigger asChild>
             <div className="flex items-center gap-1 text-warning-foreground justify-center">
                 <InfoIcon className='w-3 h-3' />
                 <p>{balance}</p>
             </div>
         </TooltipTrigger>
-        <TooltipContent className="!bg-secondary-400 !border-0 !p-3 !rounded-xl">
-            <div className="flex items-center gap-2 justify-center">
-                <InfoIcon className='w-4 h-4 text-warning-foreground' />
-                <p className="text-sm">Insufficient balance</p>
+        <TooltipContent className="bg-secondary-400! border-0! p-3! rounded-xl! max-w-[250px]">
+            <div className="flex items-start gap-2">
+                <InfoIcon className="w-4 h-4 text-warning-foreground shrink-0 mt-0.5" />
+
+                <div className="flex flex-col gap-1">
+                    <p className="text-sm text-primary-text font-medium">Insufficient balance</p>
+                    <p className="text-xs text-secondary-text ">
+                        Tap <span className="font-bold">Max</span> to use your available balance, or refresh to check for new funds
+                    </p>
+                </div>
             </div>
         </TooltipContent>
     </Tooltip>
