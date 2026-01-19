@@ -39,8 +39,15 @@ export function useSwapHistoryData(addresses?: string[]) {
         revalidateFirstPage: true,
     })
 
-    // Stable key for swapTransactions
-    const storeSwapIds = useMemo(() => Object.keys(swapTransactions || {}).sort().join(','), [swapTransactions])
+    // Stable key for swapTransactions (only include swaps from the last week)
+    const storeSwapIds = useMemo(() => {
+        const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
+        return Object.entries(swapTransactions || {})
+            .filter(([, tx]) => tx.timestamp >= oneWeekAgo)
+            .map(([id]) => id)
+            .sort()
+            .join(',')
+    }, [swapTransactions])
 
     // Fetch swaps from store that are not in the backend results
     useEffect(() => {
