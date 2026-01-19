@@ -4,6 +4,7 @@ import { ExtendedAddress } from "../Address/AddressPicker/AddressWithIcon";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
 import { TokenBalance } from "@/Models/Balance";
 import { useState } from "react";
+import clsx from "clsx";
 
 type TokenTitleWithBalanceProps = {
     item: NetworkRouteToken;
@@ -30,7 +31,7 @@ export const TokenInfoIcon = ({ item, route, className, iconOnly = false }: { it
                 onPopoverOpenChange={setIsPopoverOpen}
                 onTooltipOpenChange={setIsTooltipOpen}
             >
-                <div className={`flex items-center gap-1 text-secondary-text cursor-pointer hover:text-primary-text data-[popover-open=true]:text-primary-text ${iconOnly ? '' : 'text-xs'}`} data-popover-open={isPopoverOpen}>
+                <div className={clsx('flex items-center gap-1 text-secondary-text cursor-pointer hover:text-primary-text data-[popover-open=true]:text-primary-text', !iconOnly && 'text-xs')} data-popover-open={isPopoverOpen}>
                     {!iconOnly && (
                         <p className="max-w-[90px] truncate">
                             <span>•</span> <span>{item.display_asset || item.symbol}</span>
