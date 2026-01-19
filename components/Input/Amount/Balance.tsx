@@ -6,6 +6,7 @@ import { useBalance } from "@/lib/balances/useBalance";
 import { FC } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import { NetworkRoute } from "@/Models/Network";
+import { RefreshCw } from "lucide-react";
 
 const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
 
@@ -14,7 +15,7 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
     const token = direction === 'from' ? fromCurrency : toCurrency
     const network = direction === 'from' ? from : to
     const address = direction === 'from' ? selectedSourceAccount?.address : destination_address
-    const { balances, isLoading } = useBalance(address, network, { refreshInterval: 20000, dedupeInterval: 20000 })
+    const { balances, isLoading, mutate } = useBalance(address, network, { refreshInterval: 20000, dedupeInterval: 20000 })
     const tokenBalance = balances?.find(
         b => b?.network === network?.name && b?.token === token?.symbol
     )
@@ -31,7 +32,7 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
                     <NetworkIssue network={network} />
                     : (network && token && truncatedBalance) ?
                         ((Number(tokenBalance?.amount) >= 0 && Number(tokenBalance?.amount) < Number(values.amount) && values.depositMethod === 'wallet' && direction == 'from') ?
-                            <InsufficientBalance balance={truncatedBalance} />
+                            <InsufficientBalance balance={truncatedBalance} onRefresh={mutate} />
                             :
                             <span>{truncatedBalance}</span>
                         )
@@ -70,15 +71,25 @@ const NetworkIssue: FC<{ network: NetworkRoute | undefined }> = ({ network }) =>
     </Tooltip>
 }
 
-const InsufficientBalance: FC<{ balance: string }> = ({ balance }) => {
+const InsufficientBalance: FC<{ balance: string; onRefresh: () => void }> = ({ balance, onRefresh }) => {
     return <Tooltip openOnClick defaultOpen={true} open>
         <TooltipTrigger asChild>
-            <div className="flex items-center gap-1 text-warning-foreground justify-center">
-                <InfoIcon className='w-3 h-3' />
+            <div className="flex items-center gap-1 text-warning-foreground justify-center group/insufficient">
+                <InfoIcon className="w-3 h-3 group-hover/insufficient:hidden" />
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onRefresh();
+                    }}
+                    className="hidden group-hover/insufficient:block"
+                >
+                    <RefreshCw className='w-3 h-3 hover:animate-spin' />
+                </button>
                 <p>{balance}</p>
             </div>
         </TooltipTrigger>
-        <TooltipContent className="bg-secondary-400! border-0! p-3! rounded-xl! max-w-[250px]">
+        <TooltipContent showArrow side="top" arrowClasses="fill-secondary-400 [filter:drop-shadow(0px_1px_3px_rgba(0,0,0,0.5))] translate-y-[-1px]" className="shadow-[0px_1px_3px_0px_rgba(0,0,0,0.5)]! bg-secondary-400! border-0! p-3! rounded-xl! max-w-[250px]">
             <div className="flex items-start gap-2">
                 <InfoIcon className="w-4 h-4 text-warning-foreground shrink-0 mt-0.5" />
 
