@@ -1,4 +1,4 @@
-import { FC, useState } from 'react'
+import { FC } from 'react'
 import { SwapResponse, TransactionType } from '../../lib/apiClients/layerSwapApiClient';
 import shortenAddress from '../utils/ShortenAddress';
 import CopyButton from '../buttons/copyButton';
@@ -6,13 +6,10 @@ import StatusIcon from './StatusIcons';
 import { ExternalLink } from 'lucide-react';
 import isGuid from '../utils/isGuid';
 import KnownInternalNames from '../../lib/knownIds';
-import { useQueryState } from '../../context/query';
 import { SwapStatus } from '../../Models/SwapStatus';
 import { getDateDifferenceString } from '../utils/dateDifference';
 import SubmitButton from '../buttons/submitButton';
-import { useSettingsState } from '@/context/settings';
 import { useSwapDataUpdate } from '@/context/swap';
-import { generateSwapInitialValuesFromSwap } from '@/lib/generateSwapInitialValues';
 import SecondaryButton from '../buttons/secondaryButton';
 import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '@/helpers/querryHelper';
@@ -24,61 +21,24 @@ type Props = {
 const SwapDetails: FC<Props> = ({ swapResponse }) => {
 
     const { swap } = swapResponse
-    const { source_network, destination_network, source_exchange, destination_exchange, requested_amount, destination_address, source_token, destination_token } = swap
+    const { source_network, destination_network, requested_amount, destination_address, source_token, destination_token } = swap
     const router = useRouter()
-    const initialSettings = useQueryState()
 
-    const { setSubmitedFormValues, setSwapModalOpen, setSwapId, createSwap } = useSwapDataUpdate()
-    const settings = useSettingsState()
-    const [isRepeatLoading, setIsRepeatLoading] = useState(false)
+    const { setSwapModalOpen, setSwapId } = useSwapDataUpdate()
 
     const handleRepeatSwap = async () => {
-        if (router.pathname.includes('transactions')) {
-            router.push({
-                pathname: `/`,
-                query: {
-                    amount: requested_amount,
-                    destAddress: destination_address,
-                    from: source_network?.name,
-                    to: destination_network?.name,
-                    fromAsset: source_token.symbol,
-                    toAsset: destination_token.symbol,
-                    ...resolvePersistantQueryParams(router.query),
-                }
-            }, undefined, { shallow: false })
-            return
-        }
-
-        if (isRepeatLoading) return
-
-        setIsRepeatLoading(true)
-        try {
-            // Create a new swap based on the current swap data
-            // Determine if this is a cross-chain or exchange swap
-            const swapType = (source_exchange || destination_exchange) ? 'exchange' : 'cross-chain'
-            const newSwapData = generateSwapInitialValuesFromSwap({
-                ...swap,
-                requested_amount: swap.requested_amount.toString()
-            }, false, settings, swapType)
-            setSubmitedFormValues(newSwapData)
-
-            // For wallet deposits, follow the same flow as FormWrapper's handleCreateSwap
-            if (newSwapData.depositMethod === 'wallet') {
-                setSwapId(undefined)
-                setSwapModalOpen(true)
-            } else {
-                // For deposit address method, create the swap first then open modal
-                setSwapId(undefined)
-                const swapResponse = await createSwap(newSwapData, initialSettings, undefined)
-                setSwapId(swapResponse.swap.id)
-                setSwapModalOpen(true)
+        router.push({
+            pathname: `/`,
+            query: {
+                amount: requested_amount,
+                destAddress: destination_address,
+                from: source_network?.name,
+                to: destination_network?.name,
+                fromAsset: source_token.symbol,
+                toAsset: destination_token.symbol,
+                ...resolvePersistantQueryParams(router.query),
             }
-        } catch (error) {
-            // Handle error appropriately
-            console.log('Failed to create swap:', error)
-        } finally {
-            setIsRepeatLoading(false)
-        }
+        }, undefined, { shallow: false })
     }
 
     const handleViewCompleteSwap = () => {
@@ -211,10 +171,9 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                             type='button'
                             size='xl'
                             onClick={handleRepeatSwap}
-                            isLoading={isRepeatLoading}
                         >
                             <p className='text-primary-text'>
-                                {isRepeatLoading ? 'Creating Swap...' : 'Repeat Swap'}
+                                Repeat Swap
                             </p>
                         </SecondaryButton>
                     }
