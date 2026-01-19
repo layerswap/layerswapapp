@@ -94,9 +94,9 @@ const InsufficientBalance: FC<{ balance: string; onRefresh: () => void }> = ({ b
                 <InfoIcon className="w-4 h-4 text-warning-foreground shrink-0 mt-0.5" />
 
                 <div className="flex flex-col gap-1">
-                    <p className="text-sm text-primary-text font-medium">Insufficient balance</p>
+                    <p className="text-sm text-primary-text font-medium"><span>Insufficient balance</span></p>
                     <p className="text-xs text-secondary-text ">
-                        Tap <span className="font-bold">Max</span> to use your available balance, or refresh to check for new funds
+                        <span>Tap <span className="font-bold">Max</span> to use your available balance, or refresh to check for new funds</span>
                     </p>
                 </div>
             </div>
