@@ -126,6 +126,8 @@ type ExtendedAddressProps = {
     children?: ReactNode
     shouldShowChevron?: boolean
     isNativeToken?: boolean;
+    onPopoverOpenChange?: (open: boolean) => void;
+    onTooltipOpenChange?: (open: boolean) => void;
 }
 
 const calculateMaxWidth = (balance: string | undefined) => {
@@ -140,9 +142,14 @@ const calculateMaxWidth = (balance: string | undefined) => {
     }
 };
 
-export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, isForCurrency, children, onDisconnect, showDetails = false, title, description, logo: Logo, shouldShowChevron = true, isNativeToken = false }) => {
+export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, isForCurrency, children, onDisconnect, showDetails = false, title, description, logo: Logo, shouldShowChevron = true, isNativeToken = false, onPopoverOpenChange, onTooltipOpenChange }) => {
     const [isCopied, setCopied] = useCopyClipboard()
     const [isPopoverOpen, setPopoverOpen] = useState(false)
+
+    const handlePopoverChange = (open: boolean) => {
+        setPopoverOpen(open)
+        onPopoverOpenChange?.(open)
+    }
 
     // Resolver for action buttons
     const getActionButtons = () => {
@@ -176,10 +183,10 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, is
 
     return (
         <div onClick={(e) => e.stopPropagation()}>
-            <Popover open={isPopoverOpen} onOpenChange={() => setPopoverOpen(!isPopoverOpen)} modal={true}>
+            <Popover open={isPopoverOpen} onOpenChange={handlePopoverChange} modal={true}>
                 <PopoverTrigger asChild>
                     <div>
-                        <Tooltip>
+                        <Tooltip onOpenChange={onTooltipOpenChange}>
                             <TooltipTrigger asChild>
                                 {
                                     children ??
