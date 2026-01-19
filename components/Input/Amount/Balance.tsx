@@ -72,7 +72,7 @@ const NetworkIssue: FC<{ network: NetworkRoute | undefined }> = ({ network }) =>
 }
 
 const InsufficientBalance: FC<{ balance: string; onRefresh: () => void }> = ({ balance, onRefresh }) => {
-    return <Tooltip openOnClick defaultOpen={true} open>
+    return <Tooltip openOnClick>
         <TooltipTrigger asChild>
             <div className="flex items-center gap-1 text-warning-foreground justify-center group/insufficient">
                 <InfoIcon className="w-3 h-3 group-hover/insufficient:hidden" />
