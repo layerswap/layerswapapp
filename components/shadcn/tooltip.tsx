@@ -90,7 +90,8 @@ function TooltipTrigger({
 }
 
 type TooltipContentProps = React.ComponentProps<typeof TooltipPrimitive.Content> & {
-  arrowClasses?: string
+  arrowClasses?: string,
+  showArrow?: boolean
 }
 
 function TooltipContent({
@@ -98,6 +99,7 @@ function TooltipContent({
   sideOffset = 0,
   children,
   arrowClasses,
+  showArrow = false,
   ...props
 }: TooltipContentProps) {
   return (
@@ -111,6 +113,7 @@ function TooltipContent({
         )}
         {...props}
       >
+        {showArrow && <TooltipArrow className={arrowClasses} />}
         {children}
       </TooltipPrimitive.Content>
     </TooltipPrimitive.Portal>
@@ -118,6 +121,13 @@ function TooltipContent({
 }
 
 function TooltipArrow({ className, ...props }: React.ComponentProps<typeof TooltipPrimitive.Arrow>) {
-  return <TooltipPrimitive.Arrow className={clsx("bg-secondary-500 fill-secondary-500 z-50 size-2.5 translate-y-[calc(-50%_-_2px)] rotate-45 rounded-[2px]", className)} {...props} />
+  return (
+    <TooltipPrimitive.Arrow
+      data-slot="tooltip-arrow"
+      className={clsx("w-2.5 h-1.5", className)}
+      {...props}
+    />
+  )
 }
+
 export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider, TooltipArrow }
