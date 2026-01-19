@@ -249,7 +249,7 @@ const resolveFuelWallet = async ({ address, addresses, commonSupportedNetworks, 
         );
         const convertedAddress = Address.fromB256(getPredicateRoot(predicateBytes)).toString();
         if (convertedAddress.toLowerCase() === address.toLowerCase()) {
-            fuelCurrentConnector = `${evmConnector.name} (${new LayerswapAddress(evmAddress).toShortString()})`
+            fuelCurrentConnector = `${evmConnector.name} (${new LayerswapAddress(evmAddress, null, 'evm').toShortString()})`
             customConnectorname = evmConnector.name
         }
     }

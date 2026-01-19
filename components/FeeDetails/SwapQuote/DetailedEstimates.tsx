@@ -1,11 +1,9 @@
-import { FC, SVGProps, useMemo } from 'react'
+import { FC, useMemo } from 'react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../shadcn/tooltip'
 import AverageCompletionTime from '../../Common/AverageCompletionTime'
 import { RateElement } from '../Rate'
-import { Quote, QuoteReward, SwapQuote } from '@/lib/apiClients/layerSwapApiClient'
-import { Wallet } from '@/Models/WalletProvider'
+import { QuoteReward, SwapQuote } from '@/lib/apiClients/layerSwapApiClient'
 import { SwapValues } from '..'
-import { deriveQuoteComputed } from './utils'
 import useWallet from '@/hooks/useWallet'
 import useSWRGas from '@/lib/gases/useSWRGas'
 import { resolveTokenUsdPrice } from '@/helpers/tokenHelper'
@@ -16,6 +14,7 @@ import { truncateDecimals } from '@/components/utils/RoundDecimals'
 import { Network, NetworkRouteToken } from '@/Models/Network'
 import { Address } from "@/lib/address";
 import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
+import shortenString from '@/components/utils/ShortenString'
 
 type DetailedEstimatesProps = {
     quote: SwapQuote | undefined,
@@ -211,7 +210,7 @@ const ExchangeTokenContract = ({ fromAsset, network }: { fromAsset: NetworkRoute
                     <ExtendedAddress address={fromAsset?.contract} network={network} showDetails={false} shouldShowChevron={false} />
                 </div>
                 :
-                <p className="text-sm text-secondary-text">{fromAsset?.contract ? new Address(fromAsset.contract, network).toShortString() : ''}</p>)
+                <p className="text-sm text-secondary-text">{(fromAsset?.contract && network) ? new Address(fromAsset.contract, network).toShortString() : (fromAsset?.contract ? shortenString(fromAsset?.contract) : '')}</p>)
         }
     </RowWrapper >
 }

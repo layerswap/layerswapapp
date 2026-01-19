@@ -1,4 +1,4 @@
-import { FC, MouseEventHandler, ReactNode, SVGProps, useState } from "react"
+import { FC, MouseEventHandler, ReactNode, SVGProps, useCallback, useMemo, useState } from "react"
 import { AddressGroup, AddressItem } from ".";
 import AddressIcon from "@/components//AddressIcon";
 import { Address } from "@/lib/address";
@@ -11,6 +11,7 @@ import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components//shadcn/tooltip";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import clsx from "clsx";
+import shortenString from "@/components/utils/ShortenString";
 
 type Props = {
     addressItem: AddressItem;
@@ -20,7 +21,7 @@ type Props = {
     onDisconnect?: ExtendedAddressProps['onDisconnect']
 }
 
-const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, onDisconnect }) => {
+const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance }) => {
 
     const difference_in_days = addressItem?.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(addressItem.date).getTime()) / (1000 * 3600 * 24))) : undefined
     const maxWalletNameWidth = calculateMaxWidth(String(balance?.amount));
@@ -71,14 +72,21 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
                             />
                         )
                     ) : (
-                        <AddressIcon className="scale-150 h-9 w-9" address={new Address(addressItem.address, network).full} size={36} />
+                        <AddressIcon className="scale-150 h-9 w-9" address={network ? new Address(addressItem.address, network).full : addressItem.address} size={36} />
                     )
                 }
             </div>
 
             <div className="flex flex-col items-start grow min-w-0 ml-3 text-sm">
                 <div className="flex w-full min-w-0">
-                    <ExtendedAddress address={addressItem.address} network={network} showDetails={addressItem.wallet ? true : false} title={addressItem.wallet?.displayName?.split("-")[0]} description={addressItem.wallet?.providerName} logo={addressItem.wallet?.icon} />
+                    {network ? (
+                        <ExtendedAddress address={addressItem.address} network={network} showDetails={addressItem.wallet ? true : false} title={addressItem.wallet?.displayName?.split("-")[0]} description={addressItem.wallet?.providerName} logo={addressItem.wallet?.icon} />
+                    ) : addressItem.wallet?.providerName ? (
+                        <ExtendedAddress address={addressItem.address} providerName={addressItem.wallet.providerName} showDetails={true} title={addressItem.wallet?.displayName?.split("-")[0]} description={addressItem.wallet?.providerName} logo={addressItem.wallet?.icon} />
+                    ) : <p className="text-sm block font-medium">
+                        {shortenString(addressItem.address)}
+                    </p>
+                    }
                 </div>
                 <div className="text-secondary-text w-full min-w-0">
                     <div className="flex items-center gap-1 text-xs">
@@ -113,10 +121,8 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
     )
 }
 
-type ExtendedAddressProps = {
+type ExtendedAddressBaseProps = {
     address: string;
-    network?: Network;
-    providerName?: string;
     isForCurrency?: boolean;
     addressClassNames?: string;
     onDisconnect?: () => void;
@@ -128,6 +134,10 @@ type ExtendedAddressProps = {
     shouldShowChevron?: boolean
     isNativeToken?: boolean;
 }
+
+type ExtendedAddressProps =
+    | (ExtendedAddressBaseProps & { network: Network; providerName?: string })
+    | (ExtendedAddressBaseProps & { network?: undefined; providerName: string })
 
 const calculateMaxWidth = (balance: string | undefined) => {
     const symbolCount = balance?.length || 0;
@@ -145,10 +155,15 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, pr
     const [isCopied, setCopied] = useCopyClipboard()
     const [isPopoverOpen, setPopoverOpen] = useState(false)
 
-    const addr = new Address(address, network, providerName);
+    const addr = useMemo(() => {
+        if (network) {
+            return new Address(address, network, providerName)
+        }
+        return new Address(address, null, providerName!)
+    }, [address, network, providerName]);
 
     // Resolver for action buttons
-    const getActionButtons = () => {
+    const getActionButtons = useCallback(() => {
         if (isNativeToken) return { buttons: [], showTitles: false };
 
         const buttons: ActionButtonProps[] = [
@@ -157,7 +172,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, pr
                 Icon: isCopied ? Check : Copy,
                 onClick: (e: React.MouseEvent<HTMLDivElement>) => { e.stopPropagation(); setCopied(addr.normalized); }
             },
-            ...(network ? [{
+            ...((network && !isNativeToken) ? [{
                 title: 'View',
                 Icon: SquareArrowOutUpRight,
                 href: network.account_explorer_template?.replace('{0}', addr.full)
@@ -173,7 +188,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, pr
         const showTitles = buttons.length <= 2;
 
         return { buttons, showTitles };
-    }
+    }, [address, network, providerName, isNativeToken, onDisconnect]);
 
     const { buttons, showTitles } = getActionButtons();
 
@@ -204,7 +219,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, pr
                     </div>
                 </PopoverTrigger>
                 <PopoverContent
-                    className="w-auto p-3 min-w-72 flex flex-col gap-3 items-stretch !rounded-2xl !bg-secondary-500"
+                    className="w-auto p-3 min-w-72 flex flex-col gap-3 items-stretch rounded-2xl! bg-secondary-500!"
                     side="top"
                     avoidCollisions={true}
                     collisionPadding={8}
@@ -223,12 +238,12 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, pr
                                             width="40"
                                             loading="eager"
                                             fetchPriority="high"
-                                            className="rounded-full object-contain flex-shrink-0 h-10 w-10"
+                                            className="rounded-full object-contain shrink-0 h-10 w-10"
                                         />
                                     ) : (
-                                        <Logo className="w-10 h-10 text-secondary-text flex-shrink-0" />
+                                        <Logo className="w-10 h-10 text-secondary-text shrink-0" />
                                     ) : (
-                                        <Info className="w-10 h-10 text-secondary-text flex-shrink-0" />
+                                        <Info className="w-10 h-10 text-secondary-text shrink-0" />
                                     )}
                                 <div className="flex-1 font-medium">
                                     {title && <h3 className="text-base leading-5 text-primary-text">{title}</h3>}

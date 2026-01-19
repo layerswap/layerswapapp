@@ -22,24 +22,45 @@ export interface AddressFormatOptions {
 export class Address {
   private readonly _raw: string;
   private readonly _normalized: string;
-  private readonly _network: { name: string } | null;
+  private readonly _network: { name: string } | null | undefined;
   private readonly _prefix: string | null;
   private readonly _providerName: string | undefined;
 
   /**
-   * Creates a new Address instance
+   * Creates a new Address instance with network context
    * @param address - The raw address string
-   * @param network - Optional network context for network-specific formatting
-   * @param providerName - Optional provider name for provider-specific formatting when network is unavailable
+   * @param network - Network context for network-specific formatting
+   * @param providerName - Optional provider name for additional context
    */
-  constructor(address: string, network: { name: string } | null = null, providerName?: string) {
+  constructor(address: string, network: { name: string }, providerName?: string);
+
+  /**
+   * Creates a new Address instance with provider name only
+   * @param address - The raw address string
+   * @param network - Must be null or undefined when using providerName alone
+   * @param providerName - Provider name for provider-specific formatting
+   */
+  constructor(address: string, network: null | undefined, providerName: string);
+
+  /**
+   * Creates a new Address instance with optional network and required provider name
+   * Used when network may or may not be available but provider name is known
+   * @param address - The raw address string
+   * @param network - Optional network context (can be null or undefined)
+   * @param providerName - Provider name for provider-specific formatting
+   */
+  constructor(address: string, network: { name: string } | null | undefined, providerName: string);
+
+  constructor(address: string, network: { name: string } | null | undefined, providerName?: string) {
+    if (!network && !providerName) {
+      throw new Error('Address requires either network or providerName');
+    }
+
     this._raw = address || '';
     this._network = network;
     this._providerName = providerName;
 
-    this._normalized = (network || providerName)
-      ? addressFormat({ address: this._raw, network, providerName })
-      : this._raw;
+    this._normalized = addressFormat({ address: this._raw, network, providerName });
   }
 
   /**
@@ -75,7 +96,7 @@ export class Address {
   /**
    * Get the associated network
    */
-  get network(): { name: string } | null {
+  get network(): { name: string } | null | undefined {
     return this._network;
   }
 
@@ -135,10 +156,9 @@ export class Address {
    * Used by AddressIcon component with Jazzicon
    * @returns Integer seed for deterministic icon generation
    */
-  toIconSeed(): number {
-    const addr = this._normalized;
-    if (!addr || addr.length < 10) return 0;
-    return parseInt(addr.slice(2, 10), 16);
+  static toIconSeed(address: string): number {
+    if (!address || address.length < 10) return 0;
+    return parseInt(address.slice(2, 10), 16);
   }
 
   /**
@@ -164,7 +184,9 @@ export class Address {
    * @param other - Raw address string to compare
    */
   equals(other: string): boolean {
-    const otherAddr = new Address(other, this._network, this._providerName);
+    const otherAddr = this._network
+      ? new Address(other, this._network, this._providerName)
+      : new Address(other, null, this._providerName!);
     return this._normalized === otherAddr.normalized;
   }
 }
@@ -180,14 +202,6 @@ export class EmailAddress {
   constructor(email: string, maxNameLength: number = 14) {
     this._email = email || '';
     this._maxNameLength = maxNameLength;
-  }
-
-  get raw(): string {
-    return this._email;
-  }
-
-  get full(): string {
-    return this._email;
   }
 
   /**
@@ -213,31 +227,6 @@ export class EmailAddress {
     return `${shortName}@${domain}`;
   }
 
-  toEndingString(): string {
-    return this.toShortString();
-  }
-
-  toString(): string {
-    return this._email;
-  }
-
-  isValid(): boolean {
-    return this._email.includes('@') && this._email.split('@')[1]?.length > 0;
-  }
-
-  toEmphasizedParts(): { start: string; middle: string; end: string } {
-    return { start: this._email, middle: '', end: '' };
-  }
-
-  toIconSeed(): number {
-    // Use email hash for icon generation
-    let hash = 0;
-    for (let i = 0; i < this._email.length; i++) {
-      hash = ((hash << 5) - hash) + this._email.charCodeAt(i);
-      hash = hash & hash; // Convert to 32bit integer
-    }
-    return Math.abs(hash);
-  }
 }
 
 /**

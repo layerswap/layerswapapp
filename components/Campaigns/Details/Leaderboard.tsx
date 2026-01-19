@@ -1,4 +1,4 @@
-import { FC, useState } from "react"
+import { FC, useMemo, useState } from "react"
 import LayerSwapApiClient, { Campaign, Leaderboard, Reward } from "../../../lib/apiClients/layerSwapApiClient"
 import { RewardsComponentLeaderboardSceleton } from "../../Sceletons"
 import useSWR from "swr"
@@ -69,12 +69,15 @@ const LeaderbordComponent: FC<{
     campaign: Campaign,
     leaderboardData: ApiResponse<Leaderboard> | undefined,
     rewardsData: ApiResponse<Reward> | undefined,
-    address: `0x${string}` | undefined,
+    address: string | undefined,
     lines?: number,
     className?: string,
 }> = ({ campaign, leaderboardData, rewardsData, address, lines, className }) => {
 
     const leaderboard = leaderboardData?.data
+    const network = campaign.network
+
+    const addressInstance = useMemo(() => address ? new Address(address, network) : null, [address, network])
 
     if (!leaderboard) {
         //TODO handle
@@ -83,8 +86,6 @@ const LeaderbordComponent: FC<{
 
     const rewards = rewardsData?.data
 
-
-    const network = campaign.network
     const position = rewards?.user_reward.position || NaN
 
     const token = campaign.token
@@ -94,6 +95,7 @@ const LeaderbordComponent: FC<{
         leaderboard.leaderboard_budget * 0.3,
         leaderboard.leaderboard_budget * 0.1
     ]
+
 
     return (
         <div className={`bg-secondary-500 border border-secondary-500 hover:border-secondary-400 transition duration-200 rounded-lg shadow-lg${className || ''}`}>
@@ -105,11 +107,11 @@ const LeaderbordComponent: FC<{
                                 <div className="flex items-center">
                                     <p className="text-xl font-medium text-primary-text w-fit mr-1">{user.position}.</p>
                                     <div className="cols-start-2 flex items-center space-x-2">
-                                        <AddressIcon address={new Address(user.address, network).full} size={25} />
+                                        <AddressIcon address={addressInstance?.full || ''} size={25} />
                                         <div>
                                             <div className="text-sm font-bold text-primary-text leading-3">
                                                 {user?.address && network?.account_explorer_template && <Link target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", user?.address)}>
-                                                    {user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : new Address(user.address, network).toShortString()}
+                                                    {user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : addressInstance?.toShortString() || ''}
                                                 </Link>}
                                             </div>
                                             <p className="mt-1 text-sm font-medium text-secondary-text leading-3">{truncateDecimals(user.amount, token?.precision)} {token?.symbol}</p>
@@ -151,7 +153,7 @@ const LeaderbordComponent: FC<{
                                 <div className="flex items-center">
                                     <p className="text-xl font-medium text-primary-text w-fit mr-1">{position}.</p>
                                     <div className="cols-start-2 flex items-center space-x-2">
-                                        <AddressIcon address={new Address(address, network).full} size={25} />
+                                        <AddressIcon address={addressInstance?.full || ''} size={25} />
                                         <div>
                                             <div className="text-sm font-bold text-primary-text leading-3">
                                                 {network?.account_explorer_template && <Link target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", address)}>

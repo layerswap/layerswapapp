@@ -276,6 +276,7 @@ const NestedWalletAddress: FC<HTMLAttributes<HTMLDivElement> & NestedWalletAddre
                         <ExtendedAddress
                             address={address}
                             network={network}
+                            providerName={wallet.providerName}
                             addressClassNames="font-normal text-sm"
                             onDisconnect={() => hasDisconnect(wallet) && wallet?.disconnect()}
                         />

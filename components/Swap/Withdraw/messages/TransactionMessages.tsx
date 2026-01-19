@@ -44,11 +44,11 @@ const TransactionFailedMessage: FC = () => {
         details={`Transfer failed or terminated`} />
 }
 
-const WaletMismatchMessage: FC<{ address: string }> = ({ address }) => {
+const WaletMismatchMessage: FC<{ address: string; network: { name: string } }> = ({ address, network }) => {
     return <WalletMessage
         status="error"
         header='Account mismatch'
-        details={`Select ${new Address(address).toShortString()} in your wallet, then try again`} />
+        details={`Select ${new Address(address, network).toShortString()} in your wallet, then try again`} />
 }
 
 const SwapErrorMessage: FC<{ message: string }> = ({ message }) => {

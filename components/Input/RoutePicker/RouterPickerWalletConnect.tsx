@@ -98,7 +98,7 @@ const AccountsPickerButton: FC<{ accounts: AccountIdentity[], network: NetworkRo
                         <firstWallet.icon className='h-5 w-5' />
                         {
                             firstWallet.address &&
-                            <p>{new Address(firstWallet.address, network).toShortString()}</p>
+                            <p>{new Address(firstWallet.address, null, firstWallet.providerName).toShortString()}</p>
                         }
                         <ChevronDown className="h-5 w-5" />
                     </div>

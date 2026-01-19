@@ -52,8 +52,6 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quo
                         values={values}
                         wallet={wallet}
                         quoteData={quoteData}
-                        destination={values.to}
-                        destinationAddress={values.destination_address}
                         onOpen={() => setIsOpen(true)}
                         isOpen={isOpen}
                         sourceAddress={selectedSourceAccount?.address}

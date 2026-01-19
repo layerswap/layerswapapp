@@ -14,8 +14,7 @@ const AddressIcon: FC<Props> = ({ address, size, className, rounded }) => {
     useEffect(() => {
         if (address && ref.current) {
             ref.current.innerHTML = "";
-            const addr = new Address(address);
-            const iconElement = Jazzicon(size, addr.toIconSeed())
+            const iconElement = Jazzicon(size, Address.toIconSeed(address))
             if (iconElement) {
                 iconElement.style.display = 'block'
                 iconElement.style.width = "100%"
