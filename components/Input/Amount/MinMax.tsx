@@ -47,7 +47,7 @@ const MinMax = (props: MinMaxProps) => {
         if (walletBalance && walletBalance.amount !== undefined && limitsMinAmount !== undefined) {
             return Number(walletBalance.amount) < limitsMinAmount ? Number(walletBalance.amount) : limitsMinAmount;
         }
-        return limitsMinAmount || (fromCurrency.price_in_usd > 0 ? 0.01 / fromCurrency.price_in_usd : 0.01);
+        return (limitsMinAmount !== undefined && limitsMinAmount > 0) ? limitsMinAmount : (fromCurrency.price_in_usd > 0 ? 0.01 / fromCurrency.price_in_usd : 0.01);
     }, [walletBalance, limitsMinAmount, fromCurrency.price_in_usd]);
 
     const halfOfBalance = (walletBalance?.amount || maxAllowedAmount) ? (walletBalance?.amount || maxAllowedAmount) / 2 : 0;
