@@ -1,5 +1,5 @@
 import React, { FC, SetStateAction, Dispatch } from 'react'
-import { useTimerState } from '../context/timerContext';
+import { useTimerStore } from '../stores/timerStore';
 
 type TimerProps = {
     seconds?: number
@@ -10,7 +10,8 @@ type TimerProps = {
 }
 
 const TimerWithContext: FC<TimerProps> = (({ isStarted, waitingComponent, children }, ref) => {
-    const { secondsRemaining, started } = useTimerState()
+    const secondsRemaining = useTimerStore(state => state.secondsRemaining)
+    const started = useTimerStore(state => state.started)
     const twoDigits = (num) => String(num).padStart(2, '0')
 
     const secondsToDisplay = Number(secondsRemaining) % 60
