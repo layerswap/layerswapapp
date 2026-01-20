@@ -108,8 +108,7 @@ export default function useEVM(): WalletConnectionProvider {
     const availableWalletsForConnect: InternalConnector[] = [{
         id: id,
         name: name,
-        icon: logo,
-        extensionNotFound: false
+        icon: logo
     }]
 
     return {

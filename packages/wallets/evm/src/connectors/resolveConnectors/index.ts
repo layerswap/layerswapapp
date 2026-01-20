@@ -18,7 +18,6 @@ export type WalletConnectWallet = {
     };
     rdns?: string;
     hasBrowserExtension?: boolean;
-    extensionNotFound: boolean,
     type: string;
     icon: string;
     projectId: string;
