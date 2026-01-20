@@ -184,7 +184,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                             onClick={handleViewCompleteSwap}
                         >
                             <p>
-                                {swap.status == SwapStatus.LsTransferPending ? "View Swap" : "Complete Swap"}
+                                {swap.status == SwapStatus.LsTransferPending || swapInputTransaction ? "View Swap" : "Complete Swap"}
                             </p>
                         </SubmitButton>
                     }
