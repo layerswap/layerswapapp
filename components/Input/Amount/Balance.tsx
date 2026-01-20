@@ -7,8 +7,10 @@ import { FC } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import { NetworkRoute } from "@/Models/Network";
 import { RefreshCw } from "lucide-react";
+import useSWRGas from "@/lib/gases/useSWRGas";
+import ReserveGasNote from "@/components/ReserveGasNote";
 
-const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
+const Balance = ({ values, direction, minAllowedAmount, maxAllowedAmount }: { values: SwapFormValues, direction: string, minAllowedAmount?: number, maxAllowedAmount?: number }) => {
 
     const { to, fromAsset: fromCurrency, toAsset: toCurrency, from, destination_address } = values
     const selectedSourceAccount = useSelectedAccount("from", from?.name);
@@ -16,26 +18,43 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
     const network = direction === 'from' ? from : to
     const address = direction === 'from' ? selectedSourceAccount?.address : destination_address
     const { balances, isLoading, mutate } = useBalance(address, network, { refreshInterval: 20000, dedupeInterval: 20000 })
+
+    const { gasData } = useSWRGas(selectedSourceAccount?.address, values.from, values.fromAsset, values.amount)
+    const nativeTokenBalance = balances?.find(b => b.token == values?.from?.token?.symbol)
+
     const tokenBalance = balances?.find(
         b => b?.network === network?.name && b?.token === token?.symbol
     )
     const truncatedBalance = tokenBalance?.amount !== undefined ? truncateDecimals(tokenBalance?.amount, token?.precision) : ''
 
+    const mightBeOutOfGas = !!(nativeTokenBalance?.amount && !!(gasData && nativeTokenBalance?.isNativeCurrency && (Number(values.amount)
+        + gasData.gas) > nativeTokenBalance.amount
+        && minAllowedAmount && maxAllowedAmount && values.amount
+        && values.fromAsset?.symbol === values.from?.token?.symbol
+        && nativeTokenBalance.amount > minAllowedAmount
+        && !(Number(values.amount) > nativeTokenBalance.amount)
+        && !(maxAllowedAmount && (nativeTokenBalance.amount > (maxAllowedAmount + gasData.gas))))
+    )
+    const gasToReserveFormatted = mightBeOutOfGas ? truncateDecimals(gasData.gas, values?.fromAsset?.precision) : ''
+
+    const insufficientBalance = Number(tokenBalance?.amount) >= 0 && Number(tokenBalance?.amount) < Number(values.amount) && values.depositMethod === 'wallet' && direction == 'from'
+    const outOfGas = mightBeOutOfGas && gasToReserveFormatted
+
     if (!isLoading && !(network && token && tokenBalance))
         return null;
 
-    return <div className="min-w-4/5 -top-px p-1 mx-2 relative rounded-b-lg text-center bg-secondary-400 py-0.5 text-xs text-secondary-text leading-[18px] font-normal">
+    return <div className={`${(insufficientBalance || outOfGas) ? "bg-warning-background" : ""} min-w-4/5 -top-px p-1 mx-2 relative rounded-b-lg text-center bg-secondary-400 py-0.5 text-xs text-secondary-text leading-[18px] font-normal`}>
         {
             isLoading ?
                 <div className='h-[10px] w-fit px-4 inline-flex bg-gray-500 rounded-xs animate-pulse' />
                 : !truncatedBalance ?
                     <NetworkIssue network={network} />
                     : (network && token && truncatedBalance) ?
-                        ((Number(tokenBalance?.amount) >= 0 && Number(tokenBalance?.amount) < Number(values.amount) && values.depositMethod === 'wallet' && direction == 'from') ?
+                        insufficientBalance ?
                             <InsufficientBalance balance={truncatedBalance} onRefresh={mutate} />
-                            :
-                            <span>{truncatedBalance}</span>
-                        )
+                            : outOfGas ?
+                                <ReserveGasNote balance={truncatedBalance} />
+                                : <span>{truncatedBalance}</span>
                         : null
         }
     </div>

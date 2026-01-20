@@ -1,70 +1,29 @@
-import WarningMessage from "./WarningMessage"
-import { useFormikContext } from "formik"
-import { SwapFormValues } from "./DTOs/SwapFormValues"
-import { truncateDecimals } from "./utils/RoundDecimals"
-import { TokenBalance } from "../Models/Balance"
-import useSWRGas from "../lib/gases/useSWRGas"
-import { useQuoteData } from "@/hooks/useFee"
-import { useSelectedAccount } from "@/context/swapAccounts"
-import { useBalance } from "@/lib/balances/useBalance";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
+import InfoIcon from "@/components/icons/InfoIcon";
 
-type Props = {
-    onSubmit: (nativeTokenBalance: TokenBalance, networkGas: number) => void
-    minAllowedAmount: ReturnType<typeof useQuoteData>['minAllowedAmount']
-    maxAllowedAmount: ReturnType<typeof useQuoteData>['maxAllowedAmount']
-}
+const ReserveGasNote = ({ balance }: { balance: string }) => {
+    return <Tooltip openOnClick>
+        <TooltipTrigger asChild>
+            <div className="flex items-center gap-1 text-warning-foreground justify-center">
+                <InfoIcon className="w-3 h-3" />
+                <p>{balance}</p>
+            </div>
+        </TooltipTrigger>
+        <TooltipContent showArrow side="top" arrowClasses="fill-secondary-400 [filter:drop-shadow(0px_1px_3px_rgba(0,0,0,0.5))] translate-y-[-1px]" className="shadow-[0px_1px_3px_0px_rgba(0,0,0,0.5)]! bg-secondary-400! border-0! p-3! rounded-xl! max-w-[250px]">
+            <div className="flex items-start gap-2">
+                <InfoIcon className="w-4 h-4 text-warning-foreground shrink-0 mt-0.5" />
 
-const ReserveGasNote = ({ onSubmit, minAllowedAmount, maxAllowedAmount }: Props) => {
-    const {
-        values,
-    } = useFormikContext<SwapFormValues>();
-    const selectedSourceAccount = useSelectedAccount("from", values.from?.name);
-    const { balances } = useBalance(selectedSourceAccount?.address, values.from)
-    const { gasData } = useSWRGas(selectedSourceAccount?.address, values.from, values.fromAsset, values.amount)
-
-    const nativeTokenBalance = balances?.find(b => b.token == values?.from?.token?.symbol)
-
-    const mightBeOutOfGas = !!(nativeTokenBalance?.amount && !!(gasData && nativeTokenBalance?.isNativeCurrency && (Number(values.amount)
-        + gasData.gas) > nativeTokenBalance.amount
-        && minAllowedAmount && maxAllowedAmount && values.amount
-        && values.fromAsset?.symbol === values.from?.token?.symbol
-        && nativeTokenBalance.amount > minAllowedAmount
-        && !(Number(values.amount) > nativeTokenBalance.amount)
-        && !(maxAllowedAmount && (nativeTokenBalance.amount > (maxAllowedAmount + gasData.gas))))
-    )
-    const gasToReserveFormatted = mightBeOutOfGas ? truncateDecimals(gasData.gas, values?.fromAsset?.precision) : ''
-
-    return (
-        <>
-            {
-                mightBeOutOfGas && gasToReserveFormatted ?
-                    (
-                        <div className="mt-3">
-                            {
-                                (Number(nativeTokenBalance.amount) < Number(gasData.gas)) ?
-                                    <WarningMessage messageType="warning">
-                                        <div className="font-normal text-primary-text">
-                                            You don&apos;t have enough funds to cover gas fees.
-                                        </div>
-                                    </WarningMessage>
-                                    :
-                                    <WarningMessage messageType="warning">
-                                        <div className="font-normal text-primary-text">
-                                            <div>
-                                                You might not be able to complete the transaction.
-                                            </div>
-                                            <div onClick={() => onSubmit(nativeTokenBalance, gasData.gas)} className="cursor-pointer border-b border-dotted border-primary-text w-fit hover:text-primary hover:border-primary text-primary-text">
-                                                <span>Reserve</span> <span>{gasToReserveFormatted}</span> <span>{nativeTokenBalance?.token}</span> <span>for gas.</span>
-                                            </div>
-                                        </div>
-                                    </WarningMessage>
-                            }
-                        </div>
-                    ) : null
-            }
-        </>
-
-    )
+                <div className="flex flex-col gap-1">
+                    <p className="text-sm text-primary-text font-medium">
+                        <span>Insufficient balance for gas</span>
+                    </p>
+                    <p className="text-xs text-secondary-text">
+                        <span>Your total balance must cover the transfer amount + gas fee. Tap Max to calculate the limit.</span>
+                    </p>
+                </div>
+            </div>
+        </TooltipContent>
+    </Tooltip >
 }
 
 export default ReserveGasNote

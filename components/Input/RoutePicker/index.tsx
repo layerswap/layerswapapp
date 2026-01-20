@@ -13,7 +13,7 @@ import { swapInProgress } from "@/components/utils/swapUtils";
 import { updateForm } from "@/components/Swap/Form/updateForm";
 import clsx from "clsx";
 
-const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, className?: string }> = ({ direction, isExchange = false, className }) => {
+const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, className?: string, minAllowedAmount?: number, maxAllowedAmount?: number }> = ({ direction, isExchange = false, className, minAllowedAmount, maxAllowedAmount }) => {
     const {
         values,
         setFieldValue,
@@ -84,7 +84,7 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
             </Selector>
             {
                 showbalance &&
-                <Balance values={values} direction={direction} />
+                <Balance values={values} direction={direction} minAllowedAmount={minAllowedAmount} maxAllowedAmount={maxAllowedAmount} />
             }
         </div>
     )
