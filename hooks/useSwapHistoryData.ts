@@ -39,11 +39,11 @@ export function useSwapHistoryData(addresses?: string[]) {
         revalidateFirstPage: true,
     })
 
-    // Stable key for swapTransactions (only include swaps from the last week)
+    // Stable key for swapTransactions (only include non-completed swaps from the last 30 minutes)
     const storeSwapIds = useMemo(() => {
-        const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
+        const thirtyMinutesAgo = Date.now() - 30 * 60 * 1000
         return Object.entries(swapTransactions || {})
-            .filter(([, tx]) => tx.timestamp >= oneWeekAgo)
+            .filter(([, tx]) => tx.status !== 'completed' && tx.timestamp >= thirtyMinutesAgo)
             .map(([id]) => id)
             .sort()
             .join(',')
