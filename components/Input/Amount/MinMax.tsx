@@ -44,8 +44,7 @@ const MinMax = (props: MinMaxProps) => {
     }, [fromCurrency.price_in_usd]);
 
     let maxAllowedAmount: number = useMemo(() => {
-        const resolvedMax = resolveMaxAllowedAmount({ fromCurrency, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod }) || 0;
-        return resolvedMax <= 0 ? fallbackAmount : resolvedMax;
+        return resolveMaxAllowedAmount({ fromCurrency, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod, fallbackAmount }) || 0;
     }, [fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod, fallbackAmount])
 
     const minAmount = useMemo(() => {
