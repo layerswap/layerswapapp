@@ -25,7 +25,7 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
     const source_network = swapBasicData?.source_network && networks.find(n => n.name === swapBasicData?.source_network?.name)
     const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
 
-    const { balances } = useBalance(selectedSourceAccount?.address, source_network)
+    const { balances, mutate, isLoading } = useBalance(selectedSourceAccount?.address, source_network)
     const walletBalance = source_network && balances?.find(b => b?.network === source_network?.name && b?.token === swapBasicData?.source_token?.symbol)
     const walletBalanceAmount = walletBalance?.amount
 
@@ -39,14 +39,17 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
         && Number(swapBasicData?.requested_amount)
         && Number(walletBalanceAmount) < Number(swapBasicData?.requested_amount)
 
-    if (swapBasicData?.use_deposit_address === false) {
+    if (swapBasicData?.use_deposit_address === false && showInsufficientBalanceWarning) {
+        withdraw = {
+            footer: <ErrorDisplay errorName='insufficientFunds' refreshBalance={mutate} isBalanceLoading={isLoading} />
+        }
+    } else if (swapBasicData?.use_deposit_address === false) {
         withdraw = {
             footer: <WalletTransferButton
                 swapBasicData={swapBasicData}
                 swapId={swapDetails?.id}
                 refuel={!!refuel}
                 onWalletWithdrawalSuccess={onWalletWithdrawalSuccess}
-                balanceWarning={showInsufficientBalanceWarning ? <ErrorDisplay errorName='insufficientFunds' /> : null}
                 onCancelWithdrawal={onCancelWithdrawal}
             />
         }
