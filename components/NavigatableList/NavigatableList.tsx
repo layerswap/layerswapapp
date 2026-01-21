@@ -21,8 +21,14 @@ interface StoreSnapshot {
     indexMap: Map<number, number>;
 }
 
+// Convert FocusedIndex to a string key for Map storage
+function indexToKey(index: { parent: number; child?: number }): string {
+    return index.child !== undefined ? `${index.parent}.${index.child}` : `${index.parent}`;
+}
+
 function createAutoDetectionStore() {
     let registeredItems = new Map<number, RegisteredItem>();
+    let clickHandlers = new Map<string, () => void>();
     let listeners = new Set<() => void>();
     let cachedSnapshot: StoreSnapshot = { items: [], indexMap: new Map() };
 
@@ -75,6 +81,17 @@ function createAutoDetectionStore() {
         getNavigableIndex(index: number): number {
             return cachedSnapshot.indexMap.get(index) ?? -1;
         },
+        // Click handler registry - avoids DOM querySelector
+        registerClickHandler(index: { parent: number; child?: number }, handler: () => void) {
+            clickHandlers.set(indexToKey(index), handler);
+        },
+        unregisterClickHandler(index: { parent: number; child?: number }) {
+            clickHandlers.delete(indexToKey(index));
+        },
+        triggerClick(index: { parent: number; child?: number }) {
+            const handler = clickHandlers.get(indexToKey(index));
+            if (handler) handler();
+        },
         getSnapshot(): StoreSnapshot {
             return cachedSnapshot;
         },
@@ -110,11 +127,12 @@ function NavigatableListRoot({
         store.getSnapshot
     );
 
-    const { focusedIndex, handleHover, isKeyboardNavigating } = useNavigatableList({
+    const { focusedIndex, handleHover, handleFocus, isKeyboardNavigating } = useNavigatableList({
         navigableItems: snapshot.items,
         enabled,
         onReset,
-        keyboardNavigatingClass
+        keyboardNavigatingClass,
+        onEnter: store.triggerClick
     });
 
     const stateValue: NavigatableListStateContextType = useMemo(() => ({
@@ -123,8 +141,9 @@ function NavigatableListRoot({
     }), [focusedIndex, isKeyboardNavigating]);
 
     const updateValue: NavigatableListUpdateContextType = useMemo(() => ({
-        handleHover
-    }), [handleHover]);
+        handleHover,
+        handleFocus
+    }), [handleHover, handleFocus]);
 
     // Registration context is stable - functions read from store directly
     const registrationValue: NavigatableRegistrationContextType = useMemo(() => ({
@@ -132,7 +151,9 @@ function NavigatableListRoot({
         unregister: store.unregister,
         registerChild: store.registerChild,
         unregisterChild: store.unregisterChild,
-        getNavigableIndex: store.getNavigableIndex
+        getNavigableIndex: store.getNavigableIndex,
+        registerClickHandler: store.registerClickHandler,
+        unregisterClickHandler: store.unregisterClickHandler
     }), [store]);
 
     return (

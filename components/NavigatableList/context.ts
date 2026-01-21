@@ -23,6 +23,7 @@ export interface NavigatableListStateContextType {
 
 export interface NavigatableListUpdateContextType {
     handleHover: (index: FocusedIndex) => void;
+    handleFocus: (index: FocusedIndex) => void;
 }
 
 export interface NavigatableRegistrationContextType {
@@ -31,6 +32,8 @@ export interface NavigatableRegistrationContextType {
     registerChild: (parentId: number, childIndex: number) => void;
     unregisterChild: (parentId: number, childIndex: number) => void;
     getNavigableIndex: (id: number) => number;
+    registerClickHandler: (index: FocusedIndex, handler: () => void) => void;
+    unregisterClickHandler: (index: FocusedIndex) => void;
 }
 
 export const NavigatableListStateContext = React.createContext<NavigatableListStateContextType | null>(null);

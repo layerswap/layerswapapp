@@ -1,6 +1,6 @@
 import { useCallback, useState, useEffect, useRef } from 'react';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
-import { FocusedIndex, focusedIndexToString } from '@/components/NavigatableList/context';
+import { FocusedIndex } from '@/components/NavigatableList/context';
 
 export interface NavigableItem {
     childCount: number;
@@ -11,18 +11,29 @@ export interface UseNavigatableListOptions {
     enabled?: boolean;
     onReset?: () => void;
     keyboardNavigatingClass?: string;
+    /** Callback to trigger click on focused item (replaces DOM querySelector) */
+    onEnter?: (index: FocusedIndex) => void;
 }
 
 export const useNavigatableList = ({
     navigableItems,
     enabled = true,
     onReset,
-    keyboardNavigatingClass = 'keyboard-navigating'
+    keyboardNavigatingClass = 'keyboard-navigating',
+    onEnter
 }: UseNavigatableListOptions) => {
     const [focusedIndex, setFocusedIndex] = useState<FocusedIndex | null>(null);
     const [isKeyboardNavigating, setIsKeyboardNavigating] = useState(false);
-    const [isMouseMoving, setIsMouseMoving] = useState(false);
     const hasInitializedRef = useRef(false);
+    
+    // Use refs for transient state to keep callbacks stable and avoid unnecessary re-renders
+    const isMouseMovingRef = useRef(false);
+    const isKeyboardNavigatingRef = useRef(false);
+    
+    // Sync ref with state (ref is read in event handler to avoid stale closure)
+    useEffect(() => {
+        isKeyboardNavigatingRef.current = isKeyboardNavigating;
+    }, [isKeyboardNavigating]);
 
     // Reset focus only when explicitly requested (e.g., search query changes)
     useEffect(() => {
@@ -45,13 +56,8 @@ export const useNavigatableList = ({
     }, [navigableItems.length]);
 
     const handleArrowDown = useCallback(() => {
-        // Batch state updates for better performance
-        if (!isKeyboardNavigating) {
-            setIsKeyboardNavigating(true);
-        }
-        if (isMouseMoving) {
-            setIsMouseMoving(false);
-        }
+        setIsKeyboardNavigating(true);
+        isMouseMovingRef.current = false;
 
         if (focusedIndex === null) {
             if (navigableItems.length > 0) {
@@ -85,16 +91,11 @@ export const useNavigatableList = ({
                 setFocusedIndex({ parent: parent + 1 });
             }
         }
-    }, [focusedIndex, navigableItems, isKeyboardNavigating, isMouseMoving]);
+    }, [focusedIndex, navigableItems]);
 
     const handleArrowUp = useCallback(() => {
-        // Batch state updates for better performance
-        if (!isKeyboardNavigating) {
-            setIsKeyboardNavigating(true);
-        }
-        if (isMouseMoving) {
-            setIsMouseMoving(false);
-        }
+        setIsKeyboardNavigating(true);
+        isMouseMovingRef.current = false;
 
         // If no focus, ArrowUp does nothing
         if (focusedIndex === null) {
@@ -128,20 +129,17 @@ export const useNavigatableList = ({
             }
             // When at first item (parent === 0), ArrowUp does nothing - stay at first item
         }
-    }, [focusedIndex, navigableItems, isKeyboardNavigating, isMouseMoving]);
+    }, [focusedIndex, navigableItems]);
 
     const handleEnter = useCallback(() => {
         if (focusedIndex === null) {
             return;
         }
-        // Find the focused element and trigger its click event
-        const indexStr = focusedIndexToString(focusedIndex);
-        const element = document.querySelector(`[data-nav-index="${indexStr}"]`) as HTMLElement;
-
-        if (element) {
-            element.click();
+        // Trigger click via callback registry (no DOM manipulation)
+        if (onEnter) {
+            onEnter(focusedIndex);
         }
-    }, [focusedIndex]);
+    }, [focusedIndex, onEnter]);
 
     useKeyboardNavigation(
         handleArrowDown,
@@ -150,11 +148,19 @@ export const useNavigatableList = ({
         enabled
     );
 
+    // Stable callback - uses ref to check mouse movement state
     const handleHover = useCallback((index: FocusedIndex) => {
         // Only update on hover if mouse is actively moving (not keyboard navigating)
-        if (!isMouseMoving) return;
+        if (!isMouseMovingRef.current) return;
         setFocusedIndex(index);
-    }, [isMouseMoving]);
+    }, []);
+
+    // Handle focus from Tab navigation - always update focusedIndex
+    const handleFocus = useCallback((index: FocusedIndex) => {
+        setFocusedIndex(index);
+        setIsKeyboardNavigating(true);
+        isMouseMovingRef.current = false;
+    }, []);
 
     // Manage keyboard-navigating CSS class
     useEffect(() => {
@@ -172,14 +178,19 @@ export const useNavigatableList = ({
     useEffect(() => {
         let mouseMoveTimeout: NodeJS.Timeout;
         const handleMouseMove = () => {
-            // Only update state if it's actually changing (prevents unnecessary renders)
-            setIsMouseMoving(true);
-            setIsKeyboardNavigating(false);
+            // Update ref immediately (no re-render)
+            isMouseMovingRef.current = true;
+            
+            // Only trigger re-render if keyboard navigating state is actually changing
+            // Uses ref to check current state without causing effect to re-run
+            if (isKeyboardNavigatingRef.current) {
+                setIsKeyboardNavigating(false);
+            }
 
             // Debounce to detect when mouse stops moving
             clearTimeout(mouseMoveTimeout);
             mouseMoveTimeout = setTimeout(() => {
-                setIsMouseMoving(false);
+                isMouseMovingRef.current = false;
             }, 100);
         };
 
@@ -193,6 +204,7 @@ export const useNavigatableList = ({
     return {
         focusedIndex,
         handleHover,
+        handleFocus,
         isKeyboardNavigating
     };
 };

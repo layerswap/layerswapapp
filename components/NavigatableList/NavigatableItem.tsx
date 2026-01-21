@@ -1,7 +1,7 @@
-import React, { forwardRef, ReactNode, useEffect, useContext, useCallback, memo } from 'react';
+import React, { forwardRef, ReactNode, useEffect, useContext, useCallback, memo, useRef } from 'react';
 import { useNavigatableListState, NavigatableRegistrationContext, FocusedIndex, focusedIndexEquals, focusedIndexToString } from './context';
 import clsx from 'clsx';
-import { useScrollIntoView, useSpaceKeyClick, useHoverHandler, useMergedRefs } from './hooks';
+import { useScrollIntoView, useSpaceKeyClick, useHoverHandler, useFocusHandler, useMergedRefs } from './hooks';
 
 export interface NavigatableItemProps {
     /**
@@ -39,22 +39,6 @@ const NavigatableItemInner = forwardRef<HTMLDivElement, NavigatableItemProps>(({
 
     const isChild = parentIndex !== undefined;
 
-    // Auto-register this item with the NavigatableList
-    useEffect(() => {
-        if (!registrationContext) return;
-
-        if (isChild) {
-            // Register as child
-            registrationContext.registerChild(parentIndex, index);
-            return () => registrationContext.unregisterChild(parentIndex, index);
-        } else if (index >= 0) {
-            // Register as parent
-            registrationContext.register(index);
-            return () => registrationContext.unregister(index);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [index, parentIndex, isChild]);
-
     // Compute effective index for navigation (no memoization - must recalculate on each render
     // because registrationContext is a stable ref but its internal state changes)
     let effectiveIndex: FocusedIndex;
@@ -69,6 +53,37 @@ const NavigatableItemInner = forwardRef<HTMLDivElement, NavigatableItemProps>(({
         effectiveIndex = { parent: navigableIndex >= 0 ? navigableIndex : index };
     }
 
+    // Auto-register this item with the NavigatableList
+    useEffect(() => {
+        if (!registrationContext) return;
+
+        if (isChild) {
+            // Register as child
+            registrationContext.registerChild(parentIndex, index);
+            return () => registrationContext.unregisterChild(parentIndex, index);
+        } else if (index >= 0) {
+            // Register as parent
+            registrationContext.register(index);
+            return () => registrationContext.unregister(index);
+        }
+    }, [index, parentIndex, isChild, registrationContext]);
+
+    // Use ref for onClick to avoid re-registering handler when callback identity changes
+    const onClickRef = useRef(onClick);
+    useEffect(() => {
+        onClickRef.current = onClick;
+    }, [onClick]);
+
+    // Register click handler for Enter key navigation (avoids DOM querySelector)
+    // Handler wrapper reads from ref, so we only need to register once per index
+    useEffect(() => {
+        if (!registrationContext) return;
+
+        const handler = () => onClickRef.current?.();
+        registrationContext.registerClickHandler(effectiveIndex, handler);
+        return () => registrationContext.unregisterClickHandler(effectiveIndex);
+    }, [effectiveIndex.parent, effectiveIndex.child, registrationContext]);
+
     // Check if this item is focused using structured comparison
     const isFocused = focusedIndexEquals(focusedIndex, effectiveIndex);
 
@@ -79,6 +94,7 @@ const NavigatableItemInner = forwardRef<HTMLDivElement, NavigatableItemProps>(({
     const itemRef = useScrollIntoView(isFocused);
     const handleKeyDownInternal = useSpaceKeyClick(onClick, onKeyDown);
     const handleMouseEnterInternal = useHoverHandler(effectiveIndex, onMouseEnter);
+    const handleFocusInternal = useFocusHandler(effectiveIndex);
     const setRefs = useMergedRefs(itemRef, ref);
 
     const handleClick = useCallback(() => {
@@ -95,6 +111,7 @@ const NavigatableItemInner = forwardRef<HTMLDivElement, NavigatableItemProps>(({
             onClick={handleClick}
             onKeyDown={handleKeyDownInternal}
             onMouseEnter={handleMouseEnterInternal}
+            onFocus={handleFocusInternal}
             className={clsx(
                 className,
                 isFocused && focusedClassName

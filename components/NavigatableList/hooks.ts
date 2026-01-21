@@ -39,12 +39,29 @@ export function useSpaceKeyClick(onClick?: () => void, onKeyDown?: (e: React.Key
 export function useHoverHandler(index: FocusedIndex, onMouseEnter?: () => void) {
     const { handleHover } = useNavigatableListUpdate();
 
+    // Use primitive values as deps to avoid new callback on every render
+    // (index is a new object each render, but parent/child are stable)
     return useCallback(() => {
         handleHover(index);
         if (onMouseEnter) {
             onMouseEnter();
         }
-    }, [handleHover, index, onMouseEnter]);
+    }, [handleHover, index.parent, index.child, onMouseEnter]);
+}
+
+/**
+ * Hook to handle focus events (e.g., from Tab navigation)
+ */
+export function useFocusHandler(index: FocusedIndex, onFocus?: () => void) {
+    const { handleFocus } = useNavigatableListUpdate();
+
+    // Use primitive values as deps to avoid new callback on every render
+    return useCallback(() => {
+        handleFocus(index);
+        if (onFocus) {
+            onFocus();
+        }
+    }, [handleFocus, index.parent, index.child, onFocus]);
 }
 
 /**
