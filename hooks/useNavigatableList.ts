@@ -2,7 +2,7 @@ import { useCallback, useState, useEffect, useRef } from 'react';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
 
 export interface NavigableItem {
-    childCount?: number;
+    childCount: number;
 }
 
 const parseIndex = (index: string): { parent: number; child?: number } => {
@@ -14,16 +14,14 @@ const parseIndex = (index: string): { parent: number; child?: number } => {
 };
 
 export interface UseNavigatableListOptions {
-    navigableItems?: NavigableItem[];
-    itemCount?: number;
+    navigableItems: NavigableItem[];
     enabled?: boolean;
     onReset?: () => void;
     keyboardNavigatingClass?: string;
 }
 
 export const useNavigatableList = ({
-    navigableItems: providedItems,
-    itemCount,
+    navigableItems,
     enabled = true,
     onReset,
     keyboardNavigatingClass = 'keyboard-navigating'
@@ -32,9 +30,6 @@ export const useNavigatableList = ({
     const [isKeyboardNavigating, setIsKeyboardNavigating] = useState(false);
     const [isMouseMoving, setIsMouseMoving] = useState(false);
     const hasInitializedRef = useRef(false);
-
-    // Create navigableItems from itemCount if provided, otherwise use providedItems
-    const navigableItems = providedItems ?? (itemCount ? Array(itemCount).fill({ childCount: 0 }) : []);
 
     // Reset focus only when explicitly requested (e.g., search query changes)
     useEffect(() => {

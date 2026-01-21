@@ -91,10 +91,6 @@ function createAutoDetectionStore() {
 
 export interface NavigatableListProps {
     children: ReactNode;
-    /** @deprecated Items auto-register now. Only use for manual override. */
-    navigableItems?: NavigableItem[];
-    /** @deprecated Items auto-register now. Only use for manual override. */
-    itemCount?: number;
     enabled?: boolean;
     onReset?: () => void;
     keyboardNavigatingClass?: string;
@@ -102,8 +98,6 @@ export interface NavigatableListProps {
 
 function NavigatableListRoot({
     children,
-    navigableItems: providedNavigableItems,
-    itemCount,
     enabled = true,
     onReset,
     keyboardNavigatingClass = 'keyboard-navigating'
@@ -120,11 +114,8 @@ function NavigatableListRoot({
         store.getSnapshot
     );
 
-    // Use provided items or auto-detected items
-    const navigableItems = providedNavigableItems ?? (itemCount ? Array(itemCount).fill({ childCount: 0 }) : snapshot.items);
-
     const { focusedIndex, handleHover, isKeyboardNavigating } = useNavigatableList({
-        navigableItems,
+        navigableItems: snapshot.items,
         enabled,
         onReset,
         keyboardNavigatingClass
