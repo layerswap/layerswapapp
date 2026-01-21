@@ -7,12 +7,12 @@ import { TimerProvider } from '../../context/timerContext';
 import { getThemeData } from '../../helpers/settingsHelper';
 import SwapWithdrawal from '../../components/SwapWithdrawal'
 
-const SwapDetails = ({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const SwapDetails = ({ settings, themeData, apiKey, swapData }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   LayerSwapApiClient.apiKey = apiKey
 
   return (<>
     <Layout settings={settings || undefined} themeData={themeData}>
-      <SwapDataProvider >
+      <SwapDataProvider initialSwapData={swapData}>
         <TimerProvider>
           <SwapWithdrawal />
         </TimerProvider>
@@ -61,7 +61,8 @@ export const getServerSideProps = async (ctx) => {
     props: {
       settings,
       themeData,
-      apiKey
+      apiKey,
+      swapData: swapData || null
     }
   }
 }

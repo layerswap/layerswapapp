@@ -81,6 +81,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
             const allWalletAddresses = wallets.flatMap(w => w.addresses).filter(Boolean);
             posthog.setPersonProperties({
                 accounts: allWalletAddresses,
+                wallets: wallets.map(w => ({ wallet: w.id, addresses: w.addresses})),
             });
         }
     }, [wallets]);

@@ -59,6 +59,7 @@
     "@tronweb3/tronwallet-adapter-gatewallet": "^1.0.3",
     "@tronweb3/tronwallet-adapter-imtoken": "^1.0.2",
     "@tronweb3/tronwallet-adapter-ledger": "^1.1.11",
+    "@tronweb3/tronwallet-adapter-metamask-tron": "^1.0.0",
     "@tronweb3/tronwallet-adapter-okxwallet": "^1.0.6",
     "@tronweb3/tronwallet-adapter-react-hooks": "^1.1.10",
     "@tronweb3/tronwallet-adapter-tokenpocket": "^1.0.6",
