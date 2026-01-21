@@ -13425,7 +13425,7 @@
         "eip155:8217",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
       ],
-      "description": "Klip for WalletConnect",
+      "description": "No. 1 Personal Crypto Wallet in South Korea",
       "desktop": {
         "native": "",
         "universal": ""
@@ -13450,7 +13450,7 @@
         "native": "klipwallet://",
         "universal": "https://klipwallet.com"
       },
-      "name": "Klip",
+      "name": "klip",
       "rdns": "",
       "sdks": [
         "sign_v1",
