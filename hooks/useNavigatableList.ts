@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
 
 export interface NavigableItem {
@@ -31,21 +31,30 @@ export const useNavigatableList = ({
     const [focusedIndex, setFocusedIndex] = useState<string | null>(null);
     const [isKeyboardNavigating, setIsKeyboardNavigating] = useState(false);
     const [isMouseMoving, setIsMouseMoving] = useState(false);
+    const hasInitializedRef = useRef(false);
 
     // Create navigableItems from itemCount if provided, otherwise use providedItems
     const navigableItems = providedItems ?? (itemCount ? Array(itemCount).fill({ childCount: 0 }) : []);
 
-    // Reset focus when onReset callback changes (e.g., search query changes)
+    // Reset focus only when explicitly requested (e.g., search query changes)
     useEffect(() => {
         if (onReset) {
             onReset();
+            setFocusedIndex(navigableItems.length > 0 ? "0" : null);
         }
-        if (navigableItems.length > 0) {
+    }, [onReset]);
+
+    // Set initial focus when items first become available
+    useEffect(() => {
+        if (!hasInitializedRef.current && navigableItems.length > 0) {
+            hasInitializedRef.current = true;
             setFocusedIndex("0");
-        } else {
-            setFocusedIndex(null);
         }
-    }, [onReset, navigableItems.length]);
+        // Reset initialization flag when all items are removed
+        if (navigableItems.length === 0) {
+            hasInitializedRef.current = false;
+        }
+    }, [navigableItems.length]);
 
     const handleArrowDown = useCallback(() => {
         // Batch state updates for better performance

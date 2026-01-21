@@ -20,7 +20,8 @@ type GenericAccordionRowProps = {
   toggleContent: (itemName: string) => void;
   openValues?: string[];
   scrollContainerRef: RefObject<HTMLDivElement>;
-  navigableIndex: number;
+  /** Number of visible children (for keyboard navigation) */
+  childCount: number;
 };
 
 type ChildWrapper = {
@@ -39,7 +40,7 @@ export const CollapsibleRow = ({
   searchQuery,
   openValues,
   scrollContainerRef,
-  navigableIndex
+  childCount
 }: GenericAccordionRowProps & { index: number }) => {
   const groupName = item.type === "grouped_token" ? item.symbol : item.route.name;
   const headerId = `${groupName}-header`;
@@ -78,7 +79,8 @@ export const CollapsibleRow = ({
     <motion.div {...(!searchQuery && { layout: "position" })} key={searchQuery ? "search" : "default"}>
       <AccordionItem value={groupName}>
         <NavigatableItem
-          index={navigableIndex >= 0 ? navigableIndex.toString() : "-1"}
+          index={index.toString()}
+          childCount={childCount}
           onClick={() => toggleContent(groupName)}
           className={clsx(
             "cursor-pointer rounded-lg relative group/accordion hover:bg-secondary-500",
@@ -127,7 +129,7 @@ export const CollapsibleRow = ({
                     route={route}
                     childIndex={childIndex}
                     groupName={groupName}
-                    navigableIndex={navigableIndex}
+                    parentIndex={index}
                     isSelected={isSelected}
                     direction={direction}
                     onSelect={onSelect}
@@ -148,7 +150,7 @@ const TokenItem = memo<{
   route: NetworkRoute;
   childIndex: number;
   groupName: string;
-  navigableIndex: number;
+  parentIndex: number;
   isSelected: boolean;
   direction: SwapDirection;
   onSelect: (route: NetworkRoute, token: NetworkRouteToken) => void;
@@ -157,7 +159,7 @@ const TokenItem = memo<{
   route,
   childIndex,
   groupName,
-  navigableIndex,
+  parentIndex,
   isSelected,
   direction,
   onSelect,
@@ -169,7 +171,7 @@ const TokenItem = memo<{
   return (
     <NavigatableChild
       key={`${groupName}-${childIndex}`}
-      parentIndex={navigableIndex.toString()}
+      parentIndex={parentIndex.toString()}
       childIndex={childIndex}
       onClick={handleClick}
       className="token-item pl-2 pr-3 cursor-pointer rounded-xl outline-none disabled:cursor-not-allowed hover:bg-secondary-400"

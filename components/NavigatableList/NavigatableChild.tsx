@@ -1,9 +1,10 @@
-import React, { memo, useCallback, ReactNode } from 'react';
-import { useNavigatableListState } from './context';
+import React, { memo, useCallback, ReactNode, useContext } from 'react';
+import { useNavigatableListState, NavigatableRegistrationContext } from './context';
 import clsx from 'clsx';
 import { useScrollIntoView, useSpaceKeyClick, useHoverHandler, useMergedRefs } from './hooks';
 
 export interface NavigatableChildProps {
+    /** Parent item's index (the original index passed to NavigatableItem) */
     parentIndex: string;
     childIndex: number;
     children: ReactNode | ((props: { isFocused: boolean }) => ReactNode);
@@ -27,8 +28,13 @@ const NavigatableChild = memo<NavigatableChildProps>(({
     tabIndex = 0
 }) => {
     const { focusedIndex } = useNavigatableListState();
+    const registrationContext = useContext(NavigatableRegistrationContext);
 
-    const fullIndex = `${parentIndex}.${childIndex}`;
+    // Get the computed navigable index for the parent
+    const parentNavigableIndex = registrationContext?.getNavigableIndex(parentIndex) ?? -1;
+    const effectiveParentIndex = parentNavigableIndex >= 0 ? parentNavigableIndex.toString() : parentIndex;
+
+    const fullIndex = `${effectiveParentIndex}.${childIndex}`;
 
     // Parse focused index to check if this child is focused
     const focusedParts = focusedIndex?.split('.') || [];
@@ -36,7 +42,7 @@ const NavigatableChild = memo<NavigatableChildProps>(({
     const focusedChild = focusedParts[1] !== undefined ? parseInt(focusedParts[1]) : undefined;
 
     const isFocused = focusedIndex !== null &&
-                     focusedParent === parseInt(parentIndex) &&
+                     focusedParent === parseInt(effectiveParentIndex) &&
                      focusedChild === childIndex;
 
     // Use shared hooks
