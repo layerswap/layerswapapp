@@ -8,7 +8,7 @@ import { CollapsableHeader } from "./CollapsableHeader";
 import { StickyHeader } from "./StickyHeader";
 import { CurrencySelectItemDisplay } from "../Routes";
 import clsx from "clsx";
-import { NavigatableItem, NavigatableChild } from "@/components/NavigatableList";
+import { NavigatableItem } from "@/components/NavigatableList";
 
 type GenericAccordionRowProps = {
   item: NetworkElement | GroupedTokenElement;
@@ -20,8 +20,6 @@ type GenericAccordionRowProps = {
   toggleContent: (itemName: string) => void;
   openValues?: string[];
   scrollContainerRef: RefObject<HTMLDivElement>;
-  /** Number of visible children (for keyboard navigation) */
-  childCount: number;
 };
 
 type ChildWrapper = {
@@ -40,7 +38,6 @@ export const CollapsibleRow = ({
   searchQuery,
   openValues,
   scrollContainerRef,
-  childCount
 }: GenericAccordionRowProps & { index: number }) => {
   const groupName = item.type === "grouped_token" ? item.symbol : item.route.name;
   const headerId = `${groupName}-header`;
@@ -80,7 +77,6 @@ export const CollapsibleRow = ({
       <AccordionItem value={groupName}>
         <NavigatableItem
           index={index.toString()}
-          childCount={childCount}
           onClick={() => toggleContent(groupName)}
           className={clsx(
             "cursor-pointer rounded-lg relative group/accordion hover:bg-secondary-500",
@@ -169,10 +165,10 @@ const TokenItem = memo<{
   }, [onSelect, route, token]);
 
   return (
-    <NavigatableChild
+    <NavigatableItem
       key={`${groupName}-${childIndex}`}
+      index={childIndex}
       parentIndex={parentIndex.toString()}
-      childIndex={childIndex}
       onClick={handleClick}
       className="token-item pl-2 pr-3 cursor-pointer rounded-xl outline-none disabled:cursor-not-allowed hover:bg-secondary-400"
       focusedClassName="bg-secondary-400"
@@ -183,6 +179,6 @@ const TokenItem = memo<{
         route={route}
         direction={direction}
       />
-    </NavigatableChild>
+    </NavigatableItem>
   );
 });

@@ -10,11 +10,10 @@ import {
     NavigatableRegistrationContextType
 } from './context';
 import NavigatableItemComponent from './NavigatableItem';
-import NavigatableChildComponent from './NavigatableChild';
 
 interface RegisteredItem {
     index: number;
-    childCount: number;
+    children: Set<number>;
 }
 
 interface StoreSnapshot {
@@ -29,25 +28,56 @@ function createAutoDetectionStore() {
 
     const rebuild = () => {
         const sorted = Array.from(registeredItems.values()).sort((a, b) => a.index - b.index);
-        const items = sorted.map(item => ({ childCount: item.childCount }));
+        const items = sorted.map(item => ({ childCount: item.children.size }));
         const indexMap = new Map(sorted.map((item, idx) => [item.index, idx]));
         cachedSnapshot = { items, indexMap };
     };
 
     return {
-        register(indexStr: string, childCount: number) {
+        register(indexStr: string) {
             const index = parseInt(indexStr, 10);
             if (isNaN(index) || index < 0) return;
 
-            const existing = registeredItems.get(index);
-            if (!existing || existing.childCount !== childCount) {
-                registeredItems.set(index, { index, childCount });
+            if (!registeredItems.has(index)) {
+                registeredItems.set(index, { index, children: new Set() });
                 rebuild();
                 listeners.forEach(l => l());
             }
         },
         unregister() {
             // No-op: keeps navigation stable during virtualization scroll
+        },
+        registerChild(parentIndexStr: string, childIndex: number) {
+            const parentIndex = parseInt(parentIndexStr, 10);
+            if (isNaN(parentIndex) || parentIndex < 0) return;
+
+            let parent = registeredItems.get(parentIndex);
+            if (!parent) {
+                // Auto-register parent if it doesn't exist yet
+                parent = { index: parentIndex, children: new Set() };
+                registeredItems.set(parentIndex, parent);
+            }
+
+            if (!parent.children.has(childIndex)) {
+                parent.children.add(childIndex);
+                rebuild();
+                listeners.forEach(l => l());
+            }
+        },
+        unregisterChild(parentIndexStr: string, childIndex: number) {
+            const parentIndex = parseInt(parentIndexStr, 10);
+            if (isNaN(parentIndex) || parentIndex < 0) return;
+
+            const parent = registeredItems.get(parentIndex);
+            if (parent && parent.children.has(childIndex)) {
+                parent.children.delete(childIndex);
+                rebuild();
+                listeners.forEach(l => l());
+            }
+        },
+        getNavigableIndex(indexStr: string): number {
+            const index = parseInt(indexStr, 10);
+            return cachedSnapshot.indexMap.get(index) ?? -1;
         },
         getSnapshot(): StoreSnapshot {
             return cachedSnapshot;
@@ -109,14 +139,14 @@ function NavigatableListRoot({
         handleHover
     }), [handleHover]);
 
+    // Registration context is stable - functions read from store directly
     const registrationValue: NavigatableRegistrationContextType = useMemo(() => ({
         register: store.register,
         unregister: store.unregister,
-        getNavigableIndex: (indexStr: string) => {
-            const index = parseInt(indexStr, 10);
-            return snapshot.indexMap.get(index) ?? -1;
-        }
-    }), [store, snapshot.indexMap]);
+        registerChild: store.registerChild,
+        unregisterChild: store.unregisterChild,
+        getNavigableIndex: store.getNavigableIndex
+    }), [store]);
 
     return (
         <NavigatableRegistrationContext.Provider value={registrationValue}>
@@ -131,8 +161,7 @@ function NavigatableListRoot({
 
 // Compound component pattern - attach sub-components as static properties
 const NavigatableList = Object.assign(NavigatableListRoot, {
-    Item: NavigatableItemComponent,
-    Child: NavigatableChildComponent
+    Item: NavigatableItemComponent
 });
 
 export default NavigatableList;

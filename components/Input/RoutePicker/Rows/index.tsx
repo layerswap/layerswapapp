@@ -37,12 +37,6 @@ export default function Row({
     switch (item.type) {
         case "network":
         case "grouped_token": {
-            const groupName = item.type === "grouped_token" ? item.symbol : item.route.name;
-            const isOpen = openValues.includes(groupName);
-            const childCount = isOpen
-                ? (item.type === 'network' ? item.route.tokens.length : item.items.length)
-                : 0;
-
             return (
                 <CollapsibleRow
                     index={index}
@@ -55,7 +49,6 @@ export default function Row({
                     onSelect={onSelect}
                     openValues={openValues}
                     scrollContainerRef={scrollContainerRef}
-                    childCount={childCount}
                 />
             );
         }

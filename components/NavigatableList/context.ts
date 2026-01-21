@@ -10,8 +10,10 @@ export interface NavigatableListUpdateContextType {
 }
 
 export interface NavigatableRegistrationContextType {
-    register: (id: string, childCount: number) => void;
+    register: (id: string) => void;
     unregister: (id: string) => void;
+    registerChild: (parentId: string, childIndex: number) => void;
+    unregisterChild: (parentId: string, childIndex: number) => void;
     getNavigableIndex: (id: string) => number;
 }
 
