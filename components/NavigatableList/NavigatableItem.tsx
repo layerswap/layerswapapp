@@ -1,4 +1,4 @@
-import React, { forwardRef, ReactNode, useEffect, useContext, useCallback } from 'react';
+import React, { forwardRef, ReactNode, useEffect, useContext, useCallback, memo } from 'react';
 import { useNavigatableListState, NavigatableRegistrationContext } from './context';
 import clsx from 'clsx';
 import { useScrollIntoView, useSpaceKeyClick, useHoverHandler, useMergedRefs } from './hooks';
@@ -24,7 +24,7 @@ export interface NavigatableItemProps {
     tabIndex?: number;
 }
 
-const NavigatableItem = forwardRef<HTMLDivElement, NavigatableItemProps>(({
+const NavigatableItemInner = forwardRef<HTMLDivElement, NavigatableItemProps>(({
     index,
     parentIndex,
     children,
@@ -117,6 +117,10 @@ const NavigatableItem = forwardRef<HTMLDivElement, NavigatableItemProps>(({
     );
 });
 
-NavigatableItem.displayName = 'NavigatableItem';
+NavigatableItemInner.displayName = 'NavigatableItem';
+
+// Memo wrapper to prevent re-renders from parent component updates
+// Note: This doesn't prevent re-renders from context changes, but helps with parent list re-renders
+const NavigatableItem = memo(NavigatableItemInner);
 
 export default NavigatableItem;
