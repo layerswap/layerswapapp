@@ -7,7 +7,7 @@ import { FC } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import { NetworkRoute } from "@/Models/Network";
 import { RefreshCw } from "lucide-react";
-import useSWRGas from "@/lib/gases/useSWRGas";
+import useOutOfGas from "@/lib/gases/useOutOfGas";
 import ReserveGasNote from "@/components/ReserveGasNote";
 
 const Balance = ({ values, direction, minAllowedAmount, maxAllowedAmount }: { values: SwapFormValues, direction: string, minAllowedAmount?: number, maxAllowedAmount?: number }) => {
@@ -19,26 +19,22 @@ const Balance = ({ values, direction, minAllowedAmount, maxAllowedAmount }: { va
     const address = direction === 'from' ? selectedSourceAccount?.address : destination_address
     const { balances, isLoading, mutate } = useBalance(address, network, { refreshInterval: 20000, dedupeInterval: 20000 })
 
-    const { gasData } = useSWRGas(selectedSourceAccount?.address, values.from, values.fromAsset, values.amount)
-    const nativeTokenBalance = balances?.find(b => b.token == values?.from?.token?.symbol)
-
     const tokenBalance = balances?.find(
         b => b?.network === network?.name && b?.token === token?.symbol
     )
     const truncatedBalance = tokenBalance?.amount !== undefined ? truncateDecimals(tokenBalance?.amount, token?.precision) : ''
 
-    const mightBeOutOfGas = !!(nativeTokenBalance?.amount && !!(gasData && nativeTokenBalance?.isNativeCurrency && (Number(values.amount)
-        + gasData.gas) > nativeTokenBalance.amount
-        && minAllowedAmount && maxAllowedAmount && values.amount
-        && values.fromAsset?.symbol === values.from?.token?.symbol
-        && nativeTokenBalance.amount > minAllowedAmount
-        && !(Number(values.amount) > nativeTokenBalance.amount)
-        && !(maxAllowedAmount && (nativeTokenBalance.amount > (maxAllowedAmount + gasData.gas))))
-    )
-    const gasToReserveFormatted = mightBeOutOfGas ? truncateDecimals(gasData.gas, values?.fromAsset?.precision) : ''
+    const { outOfGas } = useOutOfGas({
+        address: selectedSourceAccount?.address,
+        network: values.from,
+        token: values.fromAsset,
+        amount: values.amount,
+        balances,
+        minAllowedAmount,
+        maxAllowedAmount
+    })
 
     const insufficientBalance = Number(tokenBalance?.amount) >= 0 && Number(tokenBalance?.amount) < Number(values.amount) && values.depositMethod === 'wallet' && direction == 'from'
-    const outOfGas = mightBeOutOfGas && gasToReserveFormatted
 
     if (!isLoading && !(network && token && tokenBalance))
         return null;

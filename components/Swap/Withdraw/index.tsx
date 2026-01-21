@@ -12,6 +12,8 @@ import { useSettingsState } from '@/context/settings';
 import { useSelectedAccount } from '@/context/swapAccounts';
 import { ErrorDisplay } from '@/components/validationError/ErrorDisplay';
 import { Partner } from '@/Models/Partner';
+import useOutOfGas from '@/lib/gases/useOutOfGas';
+import { transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 
 const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: () => void, onCancelWithdrawal?: () => void, partner?: Partner }> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal, partner }) => {
     const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading, quoteError } = useSwapDataState()
@@ -39,11 +41,35 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
         && Number(swapBasicData?.requested_amount)
         && Number(walletBalanceAmount) < Number(swapBasicData?.requested_amount)
 
+    const quoteArgs = transformSwapDataToQuoteArgs(swapBasicData, !!refuel);
+    const { minAllowedAmount, maxAllowedAmount } = useQuoteData(quoteArgs);
+    const { outOfGas } = useOutOfGas({
+        address: selectedSourceAccount?.address,
+        network: source_network,
+        token: swapBasicData?.source_token,
+        amount: swapBasicData?.requested_amount,
+        balances,
+        minAllowedAmount,
+        maxAllowedAmount
+    })
+
     if (swapBasicData?.use_deposit_address === false && showInsufficientBalanceWarning) {
         withdraw = {
             footer: <ErrorDisplay errorName='insufficientFunds' refreshBalance={mutate} isBalanceLoading={isLoading} />
         }
-    } else if (swapBasicData?.use_deposit_address === false) {
+    } else if (swapBasicData?.use_deposit_address === false && outOfGas) {
+        withdraw = {
+            footer: <WalletTransferButton
+                swapBasicData={swapBasicData}
+                swapId={swapDetails?.id}
+                refuel={!!refuel}
+                onWalletWithdrawalSuccess={onWalletWithdrawalSuccess}
+                warning={outOfGas ? <ErrorDisplay errorName='outOfGas' onEditAmount={onCancelWithdrawal} /> : null}
+                onCancelWithdrawal={onCancelWithdrawal}
+            />
+        }
+    }
+    else if (swapBasicData?.use_deposit_address === false) {
         withdraw = {
             footer: <WalletTransferButton
                 swapBasicData={swapBasicData}
