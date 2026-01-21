@@ -60,7 +60,7 @@ export default function Row({
 
             return (
                 <NavigatableItem
-                    index={index.toString()}
+                    index={index}
                     onClick={() => onSelect(route, token)}
                     className="cursor-pointer outline-none disabled:cursor-not-allowed rounded-xl hover:bg-secondary-500"
                     focusedClassName="bg-secondary-500"

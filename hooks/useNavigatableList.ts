@@ -1,17 +1,10 @@
 import { useCallback, useState, useEffect, useRef } from 'react';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
+import { FocusedIndex, focusedIndexToString } from '@/components/NavigatableList/context';
 
 export interface NavigableItem {
     childCount: number;
 }
-
-const parseIndex = (index: string): { parent: number; child?: number } => {
-    const parts = index.split('.');
-    return {
-        parent: parseInt(parts[0]),
-        child: parts[1] !== undefined ? parseInt(parts[1]) : undefined
-    };
-};
 
 export interface UseNavigatableListOptions {
     navigableItems: NavigableItem[];
@@ -26,7 +19,7 @@ export const useNavigatableList = ({
     onReset,
     keyboardNavigatingClass = 'keyboard-navigating'
 }: UseNavigatableListOptions) => {
-    const [focusedIndex, setFocusedIndex] = useState<string | null>(null);
+    const [focusedIndex, setFocusedIndex] = useState<FocusedIndex | null>(null);
     const [isKeyboardNavigating, setIsKeyboardNavigating] = useState(false);
     const [isMouseMoving, setIsMouseMoving] = useState(false);
     const hasInitializedRef = useRef(false);
@@ -35,7 +28,7 @@ export const useNavigatableList = ({
     useEffect(() => {
         if (onReset) {
             onReset();
-            setFocusedIndex(navigableItems.length > 0 ? "0" : null);
+            setFocusedIndex(navigableItems.length > 0 ? { parent: 0 } : null);
         }
     }, [onReset]);
 
@@ -43,7 +36,7 @@ export const useNavigatableList = ({
     useEffect(() => {
         if (!hasInitializedRef.current && navigableItems.length > 0) {
             hasInitializedRef.current = true;
-            setFocusedIndex("0");
+            setFocusedIndex({ parent: 0 });
         }
         // Reset initialization flag when all items are removed
         if (navigableItems.length === 0) {
@@ -62,33 +55,34 @@ export const useNavigatableList = ({
 
         if (focusedIndex === null) {
             if (navigableItems.length > 0) {
-                setFocusedIndex("0");
+                setFocusedIndex({ parent: 0 });
             }
             return;
         }
-        const { parent, child } = parseIndex(focusedIndex);
+
+        const { parent, child } = focusedIndex;
         const navItem = navigableItems[parent];
 
         if (!navItem) {
             if (navigableItems.length > 0) {
-                setFocusedIndex("0");
+                setFocusedIndex({ parent: 0 });
             }
             return;
         }
 
         if (child !== undefined) {
             if (child < navItem.childCount - 1) {
-                setFocusedIndex(`${parent}.${child + 1}`);
+                setFocusedIndex({ parent, child: child + 1 });
             } else {
                 if (parent < navigableItems.length - 1) {
-                    setFocusedIndex(`${parent + 1}`);
+                    setFocusedIndex({ parent: parent + 1 });
                 }
             }
         } else {
             if (navItem.childCount > 0) {
-                setFocusedIndex(`${parent}.0`);
+                setFocusedIndex({ parent, child: 0 });
             } else if (parent < navigableItems.length - 1) {
-                setFocusedIndex(`${parent + 1}`);
+                setFocusedIndex({ parent: parent + 1 });
             }
         }
     }, [focusedIndex, navigableItems, isKeyboardNavigating, isMouseMoving]);
@@ -107,29 +101,29 @@ export const useNavigatableList = ({
             return;
         }
 
-        const { parent, child } = parseIndex(focusedIndex);
+        const { parent, child } = focusedIndex;
         const navItem = navigableItems[parent];
 
         if (!navItem) {
             if (navigableItems.length > 0) {
-                setFocusedIndex("0");
+                setFocusedIndex({ parent: 0 });
             }
             return;
         }
 
         if (child !== undefined) {
             if (child > 0) {
-                setFocusedIndex(`${parent}.${child - 1}`);
+                setFocusedIndex({ parent, child: child - 1 });
             } else {
-                setFocusedIndex(`${parent}`);
+                setFocusedIndex({ parent });
             }
         } else {
             if (parent > 0) {
                 const prevNavItem = navigableItems[parent - 1];
                 if (prevNavItem.childCount > 0) {
-                    setFocusedIndex(`${parent - 1}.${prevNavItem.childCount - 1}`);
+                    setFocusedIndex({ parent: parent - 1, child: prevNavItem.childCount - 1 });
                 } else {
-                    setFocusedIndex(`${parent - 1}`);
+                    setFocusedIndex({ parent: parent - 1 });
                 }
             }
             // When at first item (parent === 0), ArrowUp does nothing - stay at first item
@@ -141,7 +135,8 @@ export const useNavigatableList = ({
             return;
         }
         // Find the focused element and trigger its click event
-        const element = document.querySelector(`[data-nav-index="${focusedIndex}"]`) as HTMLElement;
+        const indexStr = focusedIndexToString(focusedIndex);
+        const element = document.querySelector(`[data-nav-index="${indexStr}"]`) as HTMLElement;
 
         if (element) {
             element.click();
@@ -155,7 +150,7 @@ export const useNavigatableList = ({
         enabled
     );
 
-    const handleHover = useCallback((index: string) => {
+    const handleHover = useCallback((index: FocusedIndex) => {
         // Only update on hover if mouse is actively moving (not keyboard navigating)
         if (!isMouseMoving) return;
         setFocusedIndex(index);

@@ -1,20 +1,19 @@
 import React, { forwardRef, ReactNode, useEffect, useContext, useCallback, memo } from 'react';
-import { useNavigatableListState, NavigatableRegistrationContext } from './context';
+import { useNavigatableListState, NavigatableRegistrationContext, FocusedIndex, focusedIndexEquals, focusedIndexToString } from './context';
 import clsx from 'clsx';
 import { useScrollIntoView, useSpaceKeyClick, useHoverHandler, useMergedRefs } from './hooks';
 
 export interface NavigatableItemProps {
     /**
-     * Unique identifier for this item.
-     * For parent items: parsed as number for sorting (e.g., "0", "1", "2")
+     * Unique identifier for this item (as a number).
      * For child items: the child's index within the parent (e.g., 0, 1, 2)
      */
-    index: string | number;
+    index: number;
     /**
      * When provided, this item becomes a child of the parent with this index.
      * The parent's original index (not navigable index) should be passed.
      */
-    parentIndex?: string;
+    parentIndex?: number;
     children: ReactNode | ((props: { isFocused: boolean }) => ReactNode);
     onClick?: () => void;
     onKeyDown?: (e: React.KeyboardEvent) => void;
@@ -39,8 +38,6 @@ const NavigatableItemInner = forwardRef<HTMLDivElement, NavigatableItemProps>(({
     const registrationContext = useContext(NavigatableRegistrationContext);
 
     const isChild = parentIndex !== undefined;
-    const indexStr = String(index);
-    const childIndex = isChild ? (typeof index === 'number' ? index : parseInt(index, 10)) : -1;
 
     // Auto-register this item with the NavigatableList
     useEffect(() => {
@@ -48,44 +45,35 @@ const NavigatableItemInner = forwardRef<HTMLDivElement, NavigatableItemProps>(({
 
         if (isChild) {
             // Register as child
-            registrationContext.registerChild(parentIndex, childIndex);
-            return () => registrationContext.unregisterChild(parentIndex, childIndex);
-        } else if (indexStr !== "-1") {
+            registrationContext.registerChild(parentIndex, index);
+            return () => registrationContext.unregisterChild(parentIndex, index);
+        } else if (index >= 0) {
             // Register as parent
-            registrationContext.register(indexStr);
-            return () => registrationContext.unregister(indexStr);
+            registrationContext.register(index);
+            return () => registrationContext.unregister(index);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [indexStr, parentIndex, childIndex, isChild]);
+    }, [index, parentIndex, isChild]);
 
-    // Compute effective index for navigation
-    let effectiveIndex: string;
-    let isFocused: boolean;
-
+    // Compute effective index for navigation (no memoization - must recalculate on each render
+    // because registrationContext is a stable ref but its internal state changes)
+    let effectiveIndex: FocusedIndex;
     if (isChild) {
-        // Child item: compute full index as "parentNavigableIndex.childIndex"
+        // Child item: get the parent's navigable index
         const parentNavigableIndex = registrationContext?.getNavigableIndex(parentIndex) ?? -1;
-        const effectiveParentIndex = parentNavigableIndex >= 0 ? parentNavigableIndex.toString() : parentIndex;
-        effectiveIndex = `${effectiveParentIndex}.${childIndex}`;
-
-        // Check if this child is focused
-        const focusedParts = focusedIndex?.split('.') || [];
-        const focusedParent = focusedParts[0] ? parseInt(focusedParts[0]) : -1;
-        const focusedChild = focusedParts[1] !== undefined ? parseInt(focusedParts[1]) : undefined;
-
-        isFocused = focusedIndex !== null &&
-                    focusedParent === parseInt(effectiveParentIndex) &&
-                    focusedChild === childIndex;
+        const effectiveParent = parentNavigableIndex >= 0 ? parentNavigableIndex : parentIndex;
+        effectiveIndex = { parent: effectiveParent, child: index };
     } else {
         // Parent item: use navigable index
-        const navigableIndex = registrationContext?.getNavigableIndex(indexStr) ?? -1;
-        effectiveIndex = navigableIndex >= 0 ? navigableIndex.toString() : indexStr;
-
-        // Parent is focused if focusedIndex matches exactly and has no dot (not a child)
-        isFocused = focusedIndex !== null &&
-                    focusedIndex === effectiveIndex &&
-                    effectiveIndex.indexOf('.') === -1;
+        const navigableIndex = registrationContext?.getNavigableIndex(index) ?? -1;
+        effectiveIndex = { parent: navigableIndex >= 0 ? navigableIndex : index };
     }
+
+    // Check if this item is focused using structured comparison
+    const isFocused = focusedIndexEquals(focusedIndex, effectiveIndex);
+
+    // Convert to string only for DOM data-attribute
+    const dataNavIndex = focusedIndexToString(effectiveIndex);
 
     // Use shared hooks
     const itemRef = useScrollIntoView(isFocused);
@@ -102,7 +90,7 @@ const NavigatableItemInner = forwardRef<HTMLDivElement, NavigatableItemProps>(({
     return (
         <div
             ref={setRefs}
-            data-nav-index={effectiveIndex}
+            data-nav-index={dataNavIndex}
             tabIndex={tabIndex}
             onClick={handleClick}
             onKeyDown={handleKeyDownInternal}

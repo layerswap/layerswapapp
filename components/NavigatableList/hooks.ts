@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { useNavigatableListUpdate } from './context';
+import { useNavigatableListUpdate, FocusedIndex } from './context';
 
 /**
  * Hook to handle scrolling element into view when focused
@@ -36,7 +36,7 @@ export function useSpaceKeyClick(onClick?: () => void, onKeyDown?: (e: React.Key
 /**
  * Hook to handle mouse enter with hover index update
  */
-export function useHoverHandler(index: string, onMouseEnter?: () => void) {
+export function useHoverHandler(index: FocusedIndex, onMouseEnter?: () => void) {
     const { handleHover } = useNavigatableListUpdate();
 
     return useCallback(() => {

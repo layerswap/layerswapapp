@@ -137,7 +137,7 @@ const ExchangeNetwork = (props: ExchangeNetworkProps) => {
 
     return (
         <NavigatableItem
-            index={index.toString()}
+            index={index}
             onClick={() => onSelect(route)}
             className="cursor-pointer rounded-xl outline-none disabled:cursor-not-allowed relative"
         >

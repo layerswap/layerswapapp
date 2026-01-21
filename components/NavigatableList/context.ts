@@ -1,20 +1,36 @@
 import React from 'react';
 
+// Structured index type - eliminates string parsing
+export type FocusedIndex = 
+    | { parent: number; child?: undefined }
+    | { parent: number; child: number };
+
+// Helper to check equality between two focused indexes
+export function focusedIndexEquals(a: FocusedIndex | null, b: FocusedIndex | null): boolean {
+    if (a === null || b === null) return a === b;
+    return a.parent === b.parent && a.child === b.child;
+}
+
+// Convert to string for DOM data-attribute (needed for querySelector)
+export function focusedIndexToString(idx: FocusedIndex): string {
+    return idx.child !== undefined ? `${idx.parent}.${idx.child}` : `${idx.parent}`;
+}
+
 export interface NavigatableListStateContextType {
-    focusedIndex: string | null;
+    focusedIndex: FocusedIndex | null;
     isKeyboardNavigating: boolean;
 }
 
 export interface NavigatableListUpdateContextType {
-    handleHover: (index: string) => void;
+    handleHover: (index: FocusedIndex) => void;
 }
 
 export interface NavigatableRegistrationContextType {
-    register: (id: string) => void;
-    unregister: (id: string) => void;
-    registerChild: (parentId: string, childIndex: number) => void;
-    unregisterChild: (parentId: string, childIndex: number) => void;
-    getNavigableIndex: (id: string) => number;
+    register: (id: number) => void;
+    unregister: (id: number) => void;
+    registerChild: (parentId: number, childIndex: number) => void;
+    unregisterChild: (parentId: number, childIndex: number) => void;
+    getNavigableIndex: (id: number) => number;
 }
 
 export const NavigatableListStateContext = React.createContext<NavigatableListStateContextType | null>(null);

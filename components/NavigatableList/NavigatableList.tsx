@@ -34,9 +34,8 @@ function createAutoDetectionStore() {
     };
 
     return {
-        register(indexStr: string) {
-            const index = parseInt(indexStr, 10);
-            if (isNaN(index) || index < 0) return;
+        register(index: number) {
+            if (index < 0) return;
 
             if (!registeredItems.has(index)) {
                 registeredItems.set(index, { index, children: new Set() });
@@ -47,9 +46,8 @@ function createAutoDetectionStore() {
         unregister() {
             // No-op: keeps navigation stable during virtualization scroll
         },
-        registerChild(parentIndexStr: string, childIndex: number) {
-            const parentIndex = parseInt(parentIndexStr, 10);
-            if (isNaN(parentIndex) || parentIndex < 0) return;
+        registerChild(parentIndex: number, childIndex: number) {
+            if (parentIndex < 0) return;
 
             let parent = registeredItems.get(parentIndex);
             if (!parent) {
@@ -64,9 +62,8 @@ function createAutoDetectionStore() {
                 listeners.forEach(l => l());
             }
         },
-        unregisterChild(parentIndexStr: string, childIndex: number) {
-            const parentIndex = parseInt(parentIndexStr, 10);
-            if (isNaN(parentIndex) || parentIndex < 0) return;
+        unregisterChild(parentIndex: number, childIndex: number) {
+            if (parentIndex < 0) return;
 
             const parent = registeredItems.get(parentIndex);
             if (parent && parent.children.has(childIndex)) {
@@ -75,8 +72,7 @@ function createAutoDetectionStore() {
                 listeners.forEach(l => l());
             }
         },
-        getNavigableIndex(indexStr: string): number {
-            const index = parseInt(indexStr, 10);
+        getNavigableIndex(index: number): number {
             return cachedSnapshot.indexMap.get(index) ?? -1;
         },
         getSnapshot(): StoreSnapshot {

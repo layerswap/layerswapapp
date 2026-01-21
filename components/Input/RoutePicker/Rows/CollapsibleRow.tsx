@@ -76,7 +76,7 @@ export const CollapsibleRow = ({
     <motion.div {...(!searchQuery && { layout: "position" })} key={searchQuery ? "search" : "default"}>
       <AccordionItem value={groupName}>
         <NavigatableItem
-          index={index.toString()}
+          index={index}
           onClick={() => toggleContent(groupName)}
           className={clsx(
             "cursor-pointer rounded-lg relative group/accordion hover:bg-secondary-500",
@@ -168,7 +168,7 @@ const TokenItem = memo<{
     <NavigatableItem
       key={`${groupName}-${childIndex}`}
       index={childIndex}
-      parentIndex={parentIndex.toString()}
+      parentIndex={parentIndex}
       onClick={handleClick}
       className="token-item pl-2 pr-3 cursor-pointer rounded-xl outline-none disabled:cursor-not-allowed hover:bg-secondary-400"
       focusedClassName="bg-secondary-400"
