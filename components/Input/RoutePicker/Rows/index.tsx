@@ -58,7 +58,7 @@ export default function Row({
             const isSelected = selectedRoute === route.name && selectedToken === token.symbol;
 
             return (
-                <div className={clsx("group/row cursor-pointer hover:bg-secondary-500 has-[*[data-tooltip-open=true]]:bg-secondary-500 outline-none disabled:cursor-not-allowed rounded-xl")} onClick={() => onSelect(route, token)} >
+                <div className={clsx("group/row cursor-pointer hover:bg-secondary-500 has-[*[data-tooltip-open=true]]:bg-secondary-500 has-[*[data-tooltip-open=true]]:!cursor-pointer outline-none disabled:cursor-not-allowed rounded-xl")} onClick={() => onSelect(route, token)} >
                     <CurrencySelectItemDisplay
                         item={token}
                         selected={isSelected}

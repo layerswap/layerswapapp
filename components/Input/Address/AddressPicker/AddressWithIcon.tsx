@@ -201,7 +201,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, is
                                     </div>
                                 }
                             </TooltipTrigger>
-                            <TooltipContent side="bottom">
+                            <TooltipContent side="bottom" className="pointer-events-none">
                                 <p>{isForCurrency ? "View token details" : "View address details"}</p>
                             </TooltipContent>
                         </Tooltip>

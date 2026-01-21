@@ -31,7 +31,7 @@ export const TokenInfoIcon = ({ item, route, className, iconOnly = false }: { it
                 onPopoverOpenChange={setIsPopoverOpen}
                 onTooltipOpenChange={setIsTooltipOpen}
             >
-                <div className={clsx('flex items-center gap-1 text-secondary-text cursor-pointer hover:text-primary-text data-[popover-open=true]:text-primary-text', !iconOnly && 'text-xs')} data-popover-open={isPopoverOpen}>
+                <div className={clsx('flex items-center gap-1 text-secondary-text cursor-pointer hover:text-primary-text data-[popover-open=true]:text-primary-text data-[tooltip-open=true]:text-primary-text', !iconOnly && 'text-xs')} data-popover-open={isPopoverOpen} data-tooltip-open={isTooltipOpen}>
                     {!iconOnly && (
                         <p className="max-w-[90px] truncate">
                             <span>•</span> <span>{item.display_asset || item.symbol}</span>
