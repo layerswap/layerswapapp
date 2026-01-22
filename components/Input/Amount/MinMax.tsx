@@ -39,16 +39,20 @@ const MinMax = (props: MinMaxProps) => {
 
     const shouldPayGasWithTheToken = (native_currency?.symbol === fromCurrency?.symbol) || !native_currency
 
+    const fallbackAmount = useMemo(() => {
+        return fromCurrency.price_in_usd > 0 ? 0.01 / fromCurrency.price_in_usd : 0.01;
+    }, [fromCurrency.price_in_usd]);
+
     let maxAllowedAmount: number = useMemo(() => {
-        return resolveMaxAllowedAmount({ fromCurrency, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod }) || 0
-    }, [fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod])
+        return resolveMaxAllowedAmount({ fromCurrency, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod, fallbackAmount }) || 0;
+    }, [fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod, fallbackAmount])
 
     const minAmount = useMemo(() => {
         if (walletBalance && walletBalance.amount !== undefined && limitsMinAmount !== undefined) {
             return Number(walletBalance.amount) < limitsMinAmount ? Number(walletBalance.amount) : limitsMinAmount;
         }
-        return limitsMinAmount || (fromCurrency.price_in_usd > 0 ? 0.01 / fromCurrency.price_in_usd : 0.01);
-    }, [walletBalance, limitsMinAmount, fromCurrency.price_in_usd]);
+        return limitsMinAmount || fallbackAmount;
+    }, [walletBalance, limitsMinAmount, fallbackAmount]);
 
     const halfOfBalance = (walletBalance?.amount || maxAllowedAmount) ? (walletBalance?.amount || maxAllowedAmount) / 2 : 0;
 

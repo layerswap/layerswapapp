@@ -3589,8 +3589,8 @@
         "shortName": null
       },
       "mobile": {
-        "native": "rewardwallet://wc",
-        "universal": "https://www.rewardywallet.com/wc"
+        "native": "rewardywallet://",
+        "universal": ""
       },
       "name": "Rewardy Wallet",
       "rdns": "",
@@ -5076,15 +5076,15 @@
     "19177a98252e07ddfc9af2083ba8e07ef627cb6103467ffebb3f8f4205fd7927": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.ledger.live",
-        "browser": null,
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
         "ios": "https://itunes.apple.com/app/id1361671700",
         "linux": "https://www.ledger.com/ledger-live",
         "mac": "https://www.ledger.com/ledger-live",
-        "opera": null,
-        "safari": null,
+        "opera": "",
+        "safari": "",
         "windows": "https://www.ledger.com/ledger-live"
       },
       "app_type": "wallet",
@@ -5092,19 +5092,30 @@
       "chains": [
         "bip122:000000000019d6689c085ae165831e93",
         "bip122:000000000933ea01ad0ee984209779ba",
+        "bip122:12a765e31ffd4059bada1e25190f6e98",
         "eip155:1",
+        "eip155:10",
+        "eip155:11155111",
         "eip155:137",
-        "eip155:4",
+        "eip155:17000",
+        "eip155:30",
+        "eip155:42161",
+        "eip155:421614",
+        "eip155:43114",
         "eip155:56",
         "eip155:80084",
         "eip155:80085",
+        "eip155:8453",
+        "eip155:84532",
+        "solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
-        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+        "xrpl:0"
       ],
       "description": "Web3 Wallet from the company that produced the world's most secure crypto hardware device.",
       "desktop": {
         "native": "ledgerlive://",
-        "universal": null
+        "universal": ""
       },
       "homepage": "https://www.ledger.com/ledger-live",
       "id": "19177a98252e07ddfc9af2083ba8e07ef627cb6103467ffebb3f8f4205fd7927",
@@ -5124,10 +5135,10 @@
       },
       "mobile": {
         "native": "ledgerlive://",
-        "universal": null
+        "universal": ""
       },
       "name": "Ledger Live",
-      "rdns": null,
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2"
@@ -9247,15 +9258,15 @@
     "25f2e87390f32e4a132c27cbbbca95bc0434f5cba32db613defff0ea2bbf6cd3": {
       "app": {
         "android": "",
-        "browser": "",
+        "browser": "https://chain.dolphinode.world/wallet",
         "chrome": "https://chromewebstore.google.com/detail/nodevault-%E2%80%94-web3-wallet/nhihmlanbfomighpjodmmliikbnlmaog?utm_source=item-share-cb",
-        "edge": null,
-        "firefox": null,
+        "edge": "",
+        "firefox": "",
         "ios": "",
         "linux": "",
         "mac": "",
-        "opera": null,
-        "safari": null,
+        "opera": "",
+        "safari": "",
         "windows": ""
       },
       "app_type": "wallet",
@@ -9270,7 +9281,7 @@
       "description": "A Real Name KYC Embeded Wallet",
       "desktop": {
         "native": "",
-        "universal": ""
+        "universal": "https://chain.dolphinode.world/wallet"
       },
       "homepage": "https://chain.dolphinode.world/wallet",
       "id": "25f2e87390f32e4a132c27cbbbca95bc0434f5cba32db613defff0ea2bbf6cd3",
@@ -9295,12 +9306,14 @@
       "name": "NodeVault",
       "rdns": "world.dolphinode.chain",
       "sdks": [
-        "sign_v1"
+        "sign_v1",
+        "sign_v2"
       ],
       "slug": "nodevault",
       "updatedAt": "2026-01-13T11:10:17.071533+00:00",
       "versions": [
-        "1"
+        "1",
+        "2"
       ]
     },
     "26d3d9e7224a1eb49089aa5f03fb9f3b883e04050404594d980d4e1e74e1dbea": {
@@ -11594,11 +11607,11 @@
       },
       "homepage": "https://billionwallet.io/",
       "id": "34af9f895e03259fb008e8ff4ea5ca5d75fcfcb606ec563c332004f39ab47803",
-      "image_id": "b530c52a-1b19-4184-18f9-f0d292b88a00",
+      "image_id": "8fd9b0c5-87a6-4dd5-19d5-9cb133fbd100",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/b530c52a-1b19-4184-18f9-f0d292b88a00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/b530c52a-1b19-4184-18f9-f0d292b88a00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/b530c52a-1b19-4184-18f9-f0d292b88a00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/8fd9b0c5-87a6-4dd5-19d5-9cb133fbd100?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/8fd9b0c5-87a6-4dd5-19d5-9cb133fbd100?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/8fd9b0c5-87a6-4dd5-19d5-9cb133fbd100?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
       "injected": null,
       "metadata": {
@@ -11612,7 +11625,7 @@
         "native": "billionwallet://",
         "universal": "https://w.billionwallet.io"
       },
-      "name": "Billion Wallet",
+      "name": "Billion",
       "rdns": "",
       "sdks": [
         "sign_v1",
@@ -13425,7 +13438,7 @@
         "eip155:8217",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
       ],
-      "description": "Klip for WalletConnect",
+      "description": "No. 1 Personal Crypto Wallet in South Korea",
       "desktop": {
         "native": "",
         "universal": ""
@@ -13450,7 +13463,7 @@
         "native": "klipwallet://",
         "universal": "https://klipwallet.com"
       },
-      "name": "Klip",
+      "name": "klip",
       "rdns": "",
       "sdks": [
         "sign_v1",
@@ -23787,16 +23800,16 @@
     "7819f9cd07e8d7101a483087869f1e57b7d448f3ec5f4ef3eda63c19b926dc17": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.xellar.wallets",
-        "browser": null,
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
+        "browser": "https://passport.xellar.co",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
         "ios": "https://apps.apple.com/us/app/xellar-crypto-wallet/id1671215861",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": "Mobile Wallets",
@@ -23808,12 +23821,13 @@
         "eip155:42161",
         "eip155:43114",
         "eip155:56",
-        "eip155:8453"
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
       ],
       "description": "The worlds most lightweight & secure hard wallet combined with the decentralized banks within one platform",
       "desktop": {
         "native": "",
-        "universal": null
+        "universal": "https://passport.xellar.co"
       },
       "homepage": "https://xellar.co",
       "id": "7819f9cd07e8d7101a483087869f1e57b7d448f3ec5f4ef3eda63c19b926dc17",
@@ -23833,10 +23847,10 @@
       },
       "mobile": {
         "native": "xellar://",
-        "universal": null
+        "universal": ""
       },
       "name": "Xellar",
-      "rdns": null,
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2"

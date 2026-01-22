@@ -74,6 +74,7 @@ export function generateSwapInitialValuesFromSwap(swapResponse: SwapBasicData, r
         source_token,
         destination_token,
         source_exchange,
+        use_deposit_address
     } = swapResponse
 
     const { sourceRoutes, destinationRoutes } = settings || {}
@@ -93,6 +94,7 @@ export function generateSwapInitialValuesFromSwap(swapResponse: SwapBasicData, r
         destination_address,
         refuel: !!refuel,
         fromExchange: type === "exchange" ? source_exchange : undefined,
+        depositMethod: use_deposit_address ? 'deposit_address' : 'wallet',
     }
 
     return result
