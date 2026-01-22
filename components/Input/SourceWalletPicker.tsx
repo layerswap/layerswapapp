@@ -2,7 +2,7 @@ import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { Dispatch, FC, SetStateAction, useCallback, useState } from "react";
 import useWallet from "@/hooks/useWallet";
-import shortenAddress from "@/components/utils/ShortenAddress";
+import { Address } from "@/lib/address";
 import { ChevronDown, CircleHelp, QrCode } from "lucide-react";
 import VaulDrawer, { ModalFooterPortal } from "../modal/vaulModal";
 import { SelectAccountProps, Wallet } from "@/Models/WalletProvider";
@@ -82,7 +82,7 @@ const SourceWalletPicker: FC = () => {
                                     <selectedSourceAccount.icon className="w-4 h-4" />
                                 </div>
                                 <div className="text-secondary-text">
-                                    {shortenAddress(selectedSourceAccount.address)}
+                                    {new Address(selectedSourceAccount.address, values.from).toShortString()}
                                 </div>
                                 <div className="w-4 h-4 items-center flex text-secondary-text">
                                     <ChevronDown className="h-4 w-4" aria-hidden="true" />

@@ -1,6 +1,6 @@
 import { FC } from 'react'
 import { SwapResponse, TransactionType } from '../../lib/apiClients/layerSwapApiClient';
-import shortenAddress from '../utils/ShortenAddress';
+import shortenString from '../utils/ShortenString';
 import CopyButton from '../buttons/copyButton';
 import StatusIcon from './StatusIcons';
 import { ExternalLink } from 'lucide-react';
@@ -21,7 +21,8 @@ type Props = {
 const SwapDetails: FC<Props> = ({ swapResponse }) => {
 
     const { swap } = swapResponse
-    const { source_network, destination_network, requested_amount, destination_address, source_token, destination_token } = swap
+    const { source_token, destination_token, source_network, destination_network, source_exchange, requested_amount, destination_address } = swap
+
     const router = useRouter()
 
     const { setSwapModalOpen, setSwapId } = useSwapDataUpdate()
@@ -61,7 +62,6 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
     const refundTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refund)
 
-
     return (
         <>
             {/* Swap */}
@@ -71,7 +71,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                         <div className="flex justify-between items-center text-sm text-primary-text">
                             <p className="text-left text-secondary-text">Transaction ID</p>
                             <CopyButton toCopy={swap?.id} iconClassName='order-2 ml-1 text-primary-text'>
-                                {shortenAddress(swap?.id)}
+                                {shortenString(swap?.id)}
                             </CopyButton>
                         </div>
                         <div className="flex justify-between items-baseline">
@@ -105,7 +105,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                                 className='flex items-center space-x-1'
                                                 rel="noopener noreferrer"
                                             >
-                                                <span>{shortenAddress(swapInputTransaction.transaction_hash)}</span>
+                                                <span>{shortenString(swapInputTransaction.transaction_hash)}</span>
                                                 <ExternalLink className='h-4' />
                                             </a>
                                             :
@@ -121,7 +121,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                                     refundTransaction?.transaction_hash ?
                                                         (
                                                             (refundTransaction?.transaction_hash && swap?.destination_exchange?.name === KnownInternalNames.Exchanges.Coinbase && (isGuid(refundTransaction?.transaction_hash))) ?
-                                                                <span><CopyButton toCopy={refundTransaction.transaction_hash} iconClassName="text-primary-text order-2">{shortenAddress(refundTransaction.transaction_hash)}</CopyButton></span>
+                                                                <span><CopyButton toCopy={refundTransaction.transaction_hash} iconClassName="text-primary-text order-2">{shortenString(refundTransaction.transaction_hash)}</CopyButton></span>
                                                                 :
                                                                 <a
                                                                     target="_blank"
@@ -129,7 +129,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                                                     className='flex items-center space-x-1'
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    <span>{shortenAddress(refundTransaction.transaction_hash)}</span>
+                                                                    <span>{shortenString(refundTransaction.transaction_hash)}</span>
                                                                     <ExternalLink className='h-4' />
                                                                 </a>
                                                         )
@@ -144,7 +144,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                                     swapOutputTransaction?.transaction_hash ?
                                                         (
                                                             (swapOutputTransaction?.transaction_hash && swap?.destination_exchange?.name === KnownInternalNames.Exchanges.Coinbase && (isGuid(swapOutputTransaction?.transaction_hash))) ?
-                                                                <span><CopyButton toCopy={swapOutputTransaction.transaction_hash} iconClassName="text-primary-text order-2">{shortenAddress(swapOutputTransaction.transaction_hash)}</CopyButton></span>
+                                                                <span><CopyButton toCopy={swapOutputTransaction.transaction_hash} iconClassName="text-primary-text order-2">{shortenString(swapOutputTransaction.transaction_hash)}</CopyButton></span>
                                                                 :
                                                                 <a
                                                                     target="_blank"
@@ -152,7 +152,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                                                     className='flex items-center space-x-1'
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    <span>{shortenAddress(swapOutputTransaction.transaction_hash)}</span>
+                                                                    <span>{shortenString(swapOutputTransaction.transaction_hash)}</span>
                                                                     <ExternalLink className='h-4' />
                                                                 </a>
                                                         )

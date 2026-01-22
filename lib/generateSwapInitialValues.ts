@@ -1,6 +1,6 @@
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { QueryParams } from "../Models/QueryParams";
-import { isValidAddress } from "./address/validator";
+import { Address } from "./address";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
 import { SwapBasicData } from "./apiClients/layerSwapApiClient";
 
@@ -34,7 +34,7 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
         : destinationNetwork?.tokens
 
     let initialAddress =
-        destination_address && initialDestination && isValidAddress(destination_address, destinationNetwork) ? destination_address : "";
+        destination_address && initialDestination && Address.isValid(destination_address, destinationNetwork) ? destination_address : "";
 
     let initialSourceCurrency = filteredSourceCurrencies?.find(c => c.symbol?.toUpperCase() == fromAsset?.toUpperCase())
     if (!initialSourceCurrency && !fromAsset && sourceNetwork) {

@@ -2,10 +2,9 @@ import { useFormikContext } from "formik";
 import { FC, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AddressBookItem } from "@/lib/apiClients/layerSwapApiClient";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
-import { isValidAddress } from "@/lib/address/validator";
 import { Partner } from "@/Models/Partner";
 import useWallet from "@/hooks/useWallet";
-import { addressFormat } from "@/lib/address/formatter";
+import { Address as AddressClass } from "@/lib/address";
 import ManualAddressInput from "./ManualAddressInput";
 import Modal from "@/components/modal/modal";
 import ConnectWalletButton from "@/components/Common/ConnectWalletButton";
@@ -72,7 +71,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const manualAddressFromContext = defaultAccount?.id === 'manually_added' ? defaultAccount.address : undefined
 
     useEffect(() => {
-        if (destination_address && destination && !isValidAddress(destination_address, destination)) {
+        if (destination_address && destination && !AddressClass.isValid(destination_address, destination)) {
             updateDestAddress('');
             setManualAddress('');
         }
@@ -97,10 +96,10 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
     const addressBookAddresses = groupedAddresses?.filter(a => a.group !== AddressGroup.ConnectedWallet)
 
-    const connectedWallet = (destination && destination_address) ? connectedWallets?.find(w => w.addresses?.find(a => addressFormat(a, destination) === addressFormat(destination_address, destination))) : undefined
+    const connectedWallet = (destination && destination_address) ? connectedWallets?.find(w => w.addresses?.some(a => new AddressClass(a, destination).equals(destination_address))) : undefined
 
     const handleSelectAddress = useCallback((address: string) => {
-        const selected = destination && groupedAddresses?.find(a => addressFormat(a.address, destination) === addressFormat(address, destination))
+        const selected = destination && groupedAddresses?.find(a => new AddressClass(a.address, destination).equals(address))
         const formattedAddress = selected?.address
         updateDestAddress(formattedAddress)
         close()
@@ -128,7 +127,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     }, [defaultAccount?.address, destinationAddressItem])
 
     const updateDestAddress = useCallback((address: string | undefined) => {
-        const wallet = destination && connectedWallets?.find(w => w.addresses?.find(a => addressFormat(a, destination) === addressFormat(address || '', destination)))
+        const wallet = destination && connectedWallets?.find(w => w.addresses?.some(a => new AddressClass(a, destination).equals(address || '')))
         setFieldValue('destination_address', address)
 
         if (destination && address && provider) {
@@ -244,7 +243,7 @@ const resolveAddressGroups = ({
 
     if (!destination) return
 
-    const filteredAddressBook = address_book?.filter(a => a.networks?.some(n => destination?.name === n) && isValidAddress(a.address, destination)) || []
+    const filteredAddressBook = address_book?.filter(a => a.networks?.some(n => destination?.name === n) && AddressClass.isValid(a.address, destination)) || []
     const recentlyUsedAddresses = filteredAddressBook.map(ra => ({ address: ra.address, date: ra.date, group: AddressGroup.RecentlyUsed, networkType: destination.type }))
 
     let addresses: AddressItem[] = []
@@ -253,7 +252,7 @@ const resolveAddressGroups = ({
             addresses.push(...(wallet.addresses.map(a => ({ address: a, group: AddressGroup.ConnectedWallet, wallet })) || []))
         }
     })
-    if (addressFromQuery && isValidAddress(addressFromQuery, destination)) {
+    if (addressFromQuery && AddressClass.isValid(addressFromQuery, destination)) {
         addresses.push({ address: addressFromQuery, group: AddressGroup.FromQuery })
     }
 
@@ -262,11 +261,11 @@ const resolveAddressGroups = ({
     }
 
     // Include manually added address from context (shared across all instances)
-    if (manualAddressFromContext && isValidAddress(manualAddressFromContext, destination)) {
+    if (manualAddressFromContext && AddressClass.isValid(manualAddressFromContext, destination)) {
         addresses.push({ address: manualAddressFromContext, group: AddressGroup.ManualAdded })
     }
 
-    const uniqueAddresses = addresses.filter((a, index, self) => self.findIndex(t => addressFormat(t.address, destination) === addressFormat(a.address, destination)) === index)
+    const uniqueAddresses = addresses.filter((a, index, self) => self.findIndex(t => new AddressClass(t.address, destination).equals(a.address)) === index)
 
     return uniqueAddresses
 }
