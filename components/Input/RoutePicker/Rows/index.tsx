@@ -19,7 +19,6 @@ type Props = {
     openValues: string[];
     scrollContainerRef: RefObject<HTMLDivElement>;
     index: number;
-    navigableIndex: number;
 };
 
 export default function Row({
@@ -33,12 +32,11 @@ export default function Row({
     openValues,
     scrollContainerRef,
     index,
-    navigableIndex,
 }: Props) {
 
     switch (item.type) {
         case "network":
-        case "grouped_token":
+        case "grouped_token": {
             return (
                 <CollapsibleRow
                     index={index}
@@ -51,9 +49,9 @@ export default function Row({
                     onSelect={onSelect}
                     openValues={openValues}
                     scrollContainerRef={scrollContainerRef}
-                    navigableIndex={navigableIndex}
                 />
             );
+        }
         case "network_token":
         case "suggested_token": {
             const token = item.route.token;
@@ -62,7 +60,7 @@ export default function Row({
 
             return (
                 <NavigatableItem
-                    index={navigableIndex >= 0 ? navigableIndex.toString() : "-1"}
+                    index={index}
                     onClick={() => onSelect(route, token)}
                     className="cursor-pointer outline-none disabled:cursor-not-allowed rounded-xl hover:bg-secondary-500"
                     focusedClassName="bg-secondary-500"

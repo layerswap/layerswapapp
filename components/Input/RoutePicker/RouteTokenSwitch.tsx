@@ -18,7 +18,7 @@ const RouteTokenSwitch: FC = () => {
     const activeTab = switchValues.find(item => item.value === showTokens)?.id || switchValues[0].id;
 
     return (
-        <div className="flex justify-end">
+        <div tabIndex={-1} className="flex justify-end">
             <div className="relative flex items-center bg-secondary-500 rounded-xl p-1">
                 {
                     switchValues.map((item, index) => (
@@ -26,6 +26,7 @@ const RouteTokenSwitch: FC = () => {
                             <TooltipTrigger
                                 type="button"
                                 onClick={() => { setShowTokens(item.value); }}
+                                tabIndex={-1}
                                 className="navigation-focus-ring-overlay-md z-10 flex items-center justify-center rounded-lg px-4 py-1 relative outline-hidden">
                                 {activeTab === item.id && (
                                     <motion.span

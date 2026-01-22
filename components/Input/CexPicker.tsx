@@ -101,7 +101,6 @@ const CexPickerContent: FC<CexPickerContentProps> = ({
         <div className="overflow-y-auto flex flex-col h-full z-40 openpicker" >
             <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={shouldFocus} />
             <NavigatableList
-                itemCount={exchanges.length}
                 enabled={shouldFocus}
                 onReset={searchQuery ? () => { } : undefined}
             >
@@ -138,7 +137,7 @@ const ExchangeNetwork = (props: ExchangeNetworkProps) => {
 
     return (
         <NavigatableItem
-            index={index.toString()}
+            index={index}
             onClick={() => onSelect(route)}
             className="cursor-pointer rounded-xl outline-none disabled:cursor-not-allowed relative"
         >

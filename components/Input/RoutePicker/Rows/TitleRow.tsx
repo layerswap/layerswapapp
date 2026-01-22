@@ -12,7 +12,7 @@ const TitleRow = ({ item }: Props) => {
     }
 
     return (
-        <div className="text-primary-text-tertiary text-base font-normal leading-5 pl-1 sticky top-0 z-50 flex items-baseline" >
+        <div className="text-primary-text-tertiary text-base font-normal leading-5 pl-1 sticky top-0 z-50 flex items-baseline">
             <p>
                 {item.text}
             </p>

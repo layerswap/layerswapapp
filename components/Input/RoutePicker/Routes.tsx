@@ -108,7 +108,7 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
     const showTokenLogos = hasLoadedBalances && filteredNetworkTokens?.length;
 
     return (
-        <SelectItem className="accordion-item-focused bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative pr-7 py-2">
+        <SelectItem className="accordion-item-focused bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative pr-7 py-2 ring-hidden">
             <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} className="rounded-md" />
             <SelectItem.Title>
                 <>

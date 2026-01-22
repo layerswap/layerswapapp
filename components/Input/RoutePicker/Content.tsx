@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState } from "react";
 import { RowElement } from "@/Models/Route";
 import { SwapDirection } from "@/components/DTOs/SwapFormValues";
 import { useVirtualizer } from "@/lib/virtual";
@@ -52,32 +52,6 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
         )
     }
 
-    const navigableItems = useMemo(() => {
-        return rowElements.reduce<Array<{ rowIndex: number; childCount: number }>>((acc, item, index) => {
-            if (item.type === 'group_title' || item.type === 'sceleton_token') return acc;
-
-            let childCount = 0;
-            if (item.type === 'network' || item.type === 'grouped_token') {
-                const groupName = item.type === "grouped_token" ? item.symbol : item.route.name;
-                const isOpen = openValues.includes(groupName);
-                if (isOpen) {
-                    childCount = item.type === 'network' ? item.route.tokens.length : item.items.length;
-                }
-            }
-            acc.push({ rowIndex: index, childCount });
-            return acc;
-        }, []);
-    }, [rowElements, openValues]);
-
-    const navigableIndexMap = useMemo(() => {
-        const map = new Map<number, number>();
-        navigableItems.forEach((item, index) => {
-            map.set(item.rowIndex, index);
-        });
-        return map;
-    }, [navigableItems]);
-
-
     const virtualizer = useVirtualizer({
         count: rowElements.length,
         estimateSize: (index) => {
@@ -110,7 +84,6 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
     return <div className="overflow-y-auto overflow-x-hidden flex flex-col h-full z-40 openpicker" >
         <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={shouldFocus} />
         <NavigatableList
-            navigableItems={navigableItems}
             enabled={shouldFocus}
             onReset={searchQuery ? () => {} : undefined}
         >
@@ -153,7 +126,6 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
                                         {items.map((virtualRow) => {
                                             const data = rowElements?.[virtualRow.index]
                                             const key = ((data as any)?.route as any)?.name || virtualRow.key;
-                                            const navigableIndex = navigableIndexMap.get(virtualRow.index) ?? -1;
                                             return <div
                                                 className="py-1 box-border w-full overflow-hidden select-none"
                                                 key={key}
@@ -170,7 +142,6 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
                                                     selectedToken={selectedToken}
                                                     searchQuery={searchQuery}
                                                     toggleContent={toggleAccordionItem}
-                                                    navigableIndex={navigableIndex}
                                                 />
                                             </div>
                                         })}
