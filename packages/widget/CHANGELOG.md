@@ -1,5 +1,11 @@
 # @layerswap/widget
 
+## 1.2.2
+
+### Patch Changes
+
+- Minor bug fixes and improvements
+
 ## 1.2.0
 
 ### Minor Changes

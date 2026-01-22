@@ -17,7 +17,7 @@ export type InternalConnector = {
     order?: number,
     type?: 'injected' | 'walletConnect' | 'other' | string,
     isMultiChain?: boolean,
-    providerName?: string,
+    providerName: string,
     installUrl?: string,
     isMobileSupported?: boolean,
     isHidden?: boolean,

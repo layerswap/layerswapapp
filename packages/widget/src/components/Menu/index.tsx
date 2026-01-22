@@ -1,5 +1,5 @@
 import { MenuIcon, ChevronLeft } from "lucide-react";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import IconButton from "../Buttons/iconButton";
 import { FormWizardProvider, useFormWizardaUpdate, useFormWizardState } from "../../context/formWizardProvider";
 import { MenuStep } from "../../Models/Wizard";
@@ -40,6 +40,13 @@ const Comp = () => {
         }
     }
 
+    useEffect(() => {
+        if (isOpen) {
+            goToStep(MenuStep.Menu)
+            onMenuNavigationChange("/")
+        }
+    }, [isOpen, onMenuNavigationChange])
+
     return <>
         <div className="text-secondary-text cursor-pointer relative">
             <div className="sm:-mr-2 mr-0">
@@ -72,7 +79,7 @@ const Comp = () => {
                                     <MenuList goToStep={handleGoToStep} />
                                 </WizardItem>
                                 <WizardItem StepName={MenuStep.Transactions} GoBack={goBackToMenuStep} className="h-full" inModal>
-                                    <HistoryList onNewTransferClick={closeModal} />
+                                    <HistoryList onNewTransferClick={() => { closeModal(); onMenuNavigationChange("/") }} />
                                 </WizardItem>
                                 <WizardItem StepName={MenuStep.Campaigns} GoBack={goBackToMenuStep} className="h-full" inModal>
                                     <CampaignsComponent onCampaignSelect={(campaign) => { handleGoToStep(MenuStep.CampaignDetails); setSelectedCampaign(campaign.name) }} />

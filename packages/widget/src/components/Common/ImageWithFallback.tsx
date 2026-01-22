@@ -1,5 +1,5 @@
 "use client";
-import React, { forwardRef, useEffect, useState } from "react";
+import React, { forwardRef, useCallback, useEffect, useState } from "react";
 import LogoPlaceholder from "../Icons/LogoPlaceholder";
 
 export const ImageWithFallback = forwardRef<HTMLImageElement, React.DetailedHTMLProps<React.ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>>(({ src, ...props }, ref) => {
@@ -11,9 +11,9 @@ export const ImageWithFallback = forwardRef<HTMLImageElement, React.DetailedHTML
         setHasError(false);
     }, [src])
 
-    const handleError = () => {
+    const handleError = useCallback(() => {
         setHasError(true);
-    }
+    }, [setHasError]);
 
     if (hasError) {
         return <LogoPlaceholder {...props} />;

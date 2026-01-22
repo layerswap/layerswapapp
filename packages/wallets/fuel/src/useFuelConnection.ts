@@ -185,7 +185,8 @@ export default function useFuelConnection({ networks }: WalletConnectionProvider
             icon: typeof c.metadata.image === 'string' ? c.metadata.image : (c.metadata.image?.dark.startsWith('data:') ? c.metadata.image.dark : `data:image/svg+xml;base64,${c.metadata.image && btoa(c.metadata.image.dark)}`),
             type: isInstalled ? 'injected' : 'other',
             installUrl: c.metadata.install.link,
-            extensionNotFound: !c.installed
+            extensionNotFound: !c.installed,
+            providerName: name
         }
     })
 

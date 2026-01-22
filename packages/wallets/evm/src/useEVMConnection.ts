@@ -120,8 +120,8 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
                     installUrl: walletConnectWallet?.installUrl,
                     hasBrowserExtension: walletConnectWallet?.hasBrowserExtension,
                     extensionNotFound: walletConnectWallet?.hasBrowserExtension ? (type == 'walletConnect' && !isMobilePlatform) : false,
-                    icon: w.icon || (knownConnector ? convertSvgComponentToBase64(knownConnector.icon) || walletConnectWallet?.icon : undefined)
-
+                    icon: w.icon || (knownConnector ? convertSvgComponentToBase64(knownConnector.icon) || walletConnectWallet?.icon : undefined),
+                    providerName: name
                 }
             })
     }, [allConnectors, walletConnectConnectors])

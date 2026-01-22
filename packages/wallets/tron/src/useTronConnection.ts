@@ -16,9 +16,7 @@ export default function useTronConnection({ networks }: WalletConnectionProvider
     const { wallets, wallet: tronWallet, disconnect, select, signTransaction } = useWallet();
 
     const address = tronWallet?.adapter.address
-    const switchAccount = async (wallet: Wallet, address: string) => {
-        // as we do not have multiple accounts management we will leave the method empty
-    }
+
     const wallet: Wallet | undefined = address ? {
         id: tronWallet.adapter.name,
         addresses: [address],
@@ -68,8 +66,7 @@ export default function useTronConnection({ networks }: WalletConnectionProvider
             return wallet
         }
         catch (e) {
-            //TODO: handle error
-            console.log(e)
+            throw new Error(e.message || e);
         }
     }
 
@@ -93,7 +90,8 @@ export default function useTronConnection({ networks }: WalletConnectionProvider
             icon: wallet.adapter.icon,
             type: isNotInstalled ? 'other' : 'injected',
             installUrl: wallet.adapter?.url,
-            extensionNotFound: isNotInstalled
+            extensionNotFound: isNotInstalled,
+            providerName: name
         }
     }), [wallets])
 
@@ -112,7 +110,6 @@ export default function useTronConnection({ networks }: WalletConnectionProvider
         name,
         id,
         providerIcon: network?.logo,
-        switchAccount,
         ready: wallets.length > 0
     }
 

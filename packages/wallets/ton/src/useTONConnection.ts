@@ -119,7 +119,9 @@ export default function useTONConnection({ networks }: WalletConnectionProviderP
     const availableWalletsForConnect: InternalConnector[] = [{
         id: id,
         name: name,
-        icon: logo
+        icon: logo,
+        extensionNotFound: false,
+        providerName: name
     }]
 
     const provider: WalletConnectionProvider = {

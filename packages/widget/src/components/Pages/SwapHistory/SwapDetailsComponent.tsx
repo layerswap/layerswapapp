@@ -25,10 +25,6 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
     const { source_network, destination_network, source_exchange } = swap
 
     const initialSettings = useInitialSettings()
-    const {
-        hideFrom,
-        account,
-    } = initialSettings
 
     const { setSubmitedFormValues, setSwapModalOpen, setSwapId, createSwap } = useSwapDataUpdate()
     const settings = useSettingsState()
@@ -79,19 +75,6 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
     const refundTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refund)
 
-    let sourceAccountAddress: string | undefined = undefined
-    if (hideFrom && account) {
-        sourceAccountAddress = account;
-    }
-    else if (swapInputTransaction?.from) {
-        sourceAccountAddress = swapInputTransaction?.from;
-    }
-    else if (source_network?.name === KnownInternalNames.Exchanges.Coinbase && swap?.exchange_account_connected) {
-        sourceAccountAddress = shortenEmail(swap?.exchange_account_name, 10);
-    }
-    else if (source_exchange) {
-        sourceAccountAddress = "Exchange"
-    }
 
     return (
         <>
@@ -216,15 +199,13 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                             onClick={handleViewCompleteSwap}
                         >
                             <p>
-                                {swap.status == SwapStatus.LsTransferPending ? "View Swap" : "Complete Swap"}
+                                {swap.status == SwapStatus.LsTransferPending || swapInputTransaction ? "View Swap" : "Complete Swap"}
                             </p>
                         </SubmitButton>
                     }
-
                 </div>
             </section>
         </>
     )
 }
-
 export default SwapDetails;

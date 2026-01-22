@@ -69,7 +69,9 @@ export default function useImtblXConnection({ networks }: WalletConnectionProvid
     const availableWalletsForConnect: InternalConnector[] = [{
         id: id,
         name: name,
-        icon: logo
+        icon: logo,
+        extensionNotFound: false,
+        providerName: name
     }]
 
     const provider: WalletConnectionProvider = {

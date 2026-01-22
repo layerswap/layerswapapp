@@ -99,7 +99,8 @@ export default function useSVMConnection({ networks }: WalletConnectionProviderP
                 type: wallet.readyState === 'Installed' ? 'injected' : 'other',
                 installUrl: wallet.adapter?.url,
                 hasBrowserExtension: hasBrowserExtension,
-                extensionNotFound: !(wallet.readyState === 'Installed' || wallet.readyState === 'Loadable' || wallet.adapter.name == "Coinbase Wallet")
+                extensionNotFound: !(wallet.readyState === 'Installed' || wallet.readyState === 'Loadable' || wallet.adapter.name == "Coinbase Wallet"),
+                providerName: name
             }
             connectors.push(internalConnector)
         }

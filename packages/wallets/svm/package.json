@@ -1,6 +1,6 @@
 {
   "name": "@layerswap/wallet-svm",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Solana Wallet Provider for Layerswap Widget",
   "type": "module",
   "main": "dist/esm/index.js",
