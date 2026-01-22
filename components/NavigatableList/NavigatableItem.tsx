@@ -94,7 +94,7 @@ const NavigatableItemInner = forwardRef<HTMLDivElement, NavigatableItemProps>(({
     const itemRef = useScrollIntoView(isFocused);
     const handleKeyDownInternal = useSpaceKeyClick(onClick, onKeyDown);
     const handleMouseEnterInternal = useHoverHandler(effectiveIndex, onMouseEnter);
-    const handleFocusInternal = useFocusHandler(effectiveIndex);
+    const handleFocusInternal = useFocusHandler();
     const setRefs = useMergedRefs(itemRef, ref);
 
     const handleClick = useCallback(() => {

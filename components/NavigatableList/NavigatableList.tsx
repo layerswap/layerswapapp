@@ -92,6 +92,10 @@ function createAutoDetectionStore() {
             const handler = clickHandlers.get(indexToKey(index));
             if (handler) handler();
         },
+        triggerClickByKey(key: string) {
+            const handler = clickHandlers.get(key);
+            if (handler) handler();
+        },
         getSnapshot(): StoreSnapshot {
             return cachedSnapshot;
         },
@@ -132,7 +136,7 @@ function NavigatableListRoot({
         enabled,
         onReset,
         keyboardNavigatingClass,
-        onEnter: store.triggerClick
+        onEnter: store.triggerClickByKey
     });
 
     const stateValue: NavigatableListStateContextType = useMemo(() => ({

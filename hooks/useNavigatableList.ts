@@ -6,13 +6,40 @@ export interface NavigableItem {
     childCount: number;
 }
 
+/** Parse a nav-index string (e.g., "1" or "2.3") to a FocusedIndex */
+function parseNavIndex(navIndex: string): FocusedIndex | null {
+    const parts = navIndex.split('.');
+    const parent = parseInt(parts[0], 10);
+    if (isNaN(parent)) return null;
+    
+    if (parts.length === 2) {
+        const child = parseInt(parts[1], 10);
+        if (isNaN(child)) return null;
+        return { parent, child };
+    }
+    return { parent };
+}
+
+/** Get the FocusedIndex from the currently focused element, if it's a NavigatableItem */
+function getFocusedElementIndex(): FocusedIndex | null {
+    const activeElement = document.activeElement;
+    const navIndex = activeElement?.getAttribute('data-nav-index');
+    if (!navIndex) return null;
+    return parseNavIndex(navIndex);
+}
+
+/** Convert a FocusedIndex to a nav-index string (e.g., "1" or "2.3") */
+function focusedIndexToString(index: FocusedIndex): string {
+    return index.child !== undefined ? `${index.parent}.${index.child}` : `${index.parent}`;
+}
+
 export interface UseNavigatableListOptions {
     navigableItems: NavigableItem[];
     enabled?: boolean;
     onReset?: () => void;
     keyboardNavigatingClass?: string;
-    /** Callback to trigger click on focused item (replaces DOM querySelector) */
-    onEnter?: (index: FocusedIndex) => void;
+    /** Callback to trigger click on item by nav-index string (e.g., "0" or "1.2") */
+    onEnter?: (navIndex: string) => void;
 }
 
 export const useNavigatableList = ({
@@ -24,7 +51,6 @@ export const useNavigatableList = ({
 }: UseNavigatableListOptions) => {
     const [focusedIndex, setFocusedIndex] = useState<FocusedIndex | null>(null);
     const [isKeyboardNavigating, setIsKeyboardNavigating] = useState(false);
-    const hasInitializedRef = useRef(false);
     
     // Use refs for transient state to keep callbacks stable and avoid unnecessary re-renders
     const isMouseMovingRef = useRef(false);
@@ -39,34 +65,32 @@ export const useNavigatableList = ({
     useEffect(() => {
         if (onReset) {
             onReset();
-            setFocusedIndex(navigableItems.length > 0 ? { parent: 0 } : null);
+            setFocusedIndex(null);
         }
     }, [onReset]);
-
-    // Set initial focus when items first become available
-    useEffect(() => {
-        if (!hasInitializedRef.current && navigableItems.length > 0) {
-            hasInitializedRef.current = true;
-            setFocusedIndex({ parent: 0 });
-        }
-        // Reset initialization flag when all items are removed
-        if (navigableItems.length === 0) {
-            hasInitializedRef.current = false;
-        }
-    }, [navigableItems.length]);
 
     const handleArrowDown = useCallback(() => {
         setIsKeyboardNavigating(true);
         isMouseMovingRef.current = false;
 
-        if (focusedIndex === null) {
-            if (navigableItems.length > 0) {
+        // If no focusedIndex, try to sync from the currently tab-focused element
+        let currentIndex = focusedIndex;
+        if (currentIndex === null) {
+            const elementIndex = getFocusedElementIndex();
+            if (elementIndex) {
+                // Start navigation from the tab-focused element, blur it to remove DOM focus
+                currentIndex = elementIndex;
+                (document.activeElement as HTMLElement)?.blur?.();
+            } else if (navigableItems.length > 0) {
+                // No focused element, start from the beginning
                 setFocusedIndex({ parent: 0 });
+                return;
+            } else {
+                return;
             }
-            return;
         }
 
-        const { parent, child } = focusedIndex;
+        const { parent, child } = currentIndex;
         const navItem = navigableItems[parent];
 
         if (!navItem) {
@@ -97,12 +121,21 @@ export const useNavigatableList = ({
         setIsKeyboardNavigating(true);
         isMouseMovingRef.current = false;
 
-        // If no focus, ArrowUp does nothing
-        if (focusedIndex === null) {
-            return;
+        // If no focusedIndex, try to sync from the currently tab-focused element
+        let currentIndex = focusedIndex;
+        if (currentIndex === null) {
+            const elementIndex = getFocusedElementIndex();
+            if (elementIndex) {
+                // Start navigation from the tab-focused element, blur it to remove DOM focus
+                currentIndex = elementIndex;
+                (document.activeElement as HTMLElement)?.blur?.();
+            } else {
+                // No focused element, ArrowUp does nothing
+                return;
+            }
         }
 
-        const { parent, child } = focusedIndex;
+        const { parent, child } = currentIndex;
         const navItem = navigableItems[parent];
 
         if (!navItem) {
@@ -131,21 +164,25 @@ export const useNavigatableList = ({
         }
     }, [focusedIndex, navigableItems]);
 
-    const handleEnter = useCallback(() => {
-        if (focusedIndex === null) {
+    // Handle Enter key - receives navIndex from DOM focus, or null to use focusedIndex state
+    const handleEnter = useCallback((navIndex: string | null) => {
+        // Use DOM-focused element's navIndex, or fall back to focusedIndex state
+        const indexToUse = navIndex ?? (focusedIndex ? focusedIndexToString(focusedIndex) : null);
+        if (indexToUse === null) {
             return;
         }
-        // Trigger click via callback registry (no DOM manipulation)
+        // Trigger click via callback registry
         if (onEnter) {
-            onEnter(focusedIndex);
+            onEnter(indexToUse);
         }
-    }, [focusedIndex, onEnter]);
+    }, [onEnter, focusedIndex]);
 
     useKeyboardNavigation(
         handleArrowDown,
         handleArrowUp,
         handleEnter,
-        enabled
+        enabled,
+        focusedIndex !== null // hasFocusedIndex - allows Enter to work after arrow navigation
     );
 
     // Stable callback - uses ref to check mouse movement state
@@ -155,10 +192,10 @@ export const useNavigatableList = ({
         setFocusedIndex(index);
     }, []);
 
-    // Handle focus from Tab navigation - always update focusedIndex
-    const handleFocus = useCallback((index: FocusedIndex) => {
-        setFocusedIndex(index);
-        setIsKeyboardNavigating(true);
+    // Handle focus from Tab navigation - reset navigation state
+    const handleFocus = useCallback(() => {
+        setFocusedIndex(null);
+        setIsKeyboardNavigating(false);
         isMouseMovingRef.current = false;
     }, []);
 

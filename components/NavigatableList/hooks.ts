@@ -51,17 +51,17 @@ export function useHoverHandler(index: FocusedIndex, onMouseEnter?: () => void) 
 
 /**
  * Hook to handle focus events (e.g., from Tab navigation)
+ * Resets navigation state when focus changes via Tab
  */
-export function useFocusHandler(index: FocusedIndex, onFocus?: () => void) {
+export function useFocusHandler(onFocus?: () => void) {
     const { handleFocus } = useNavigatableListUpdate();
 
-    // Use primitive values as deps to avoid new callback on every render
     return useCallback(() => {
-        handleFocus(index);
+        handleFocus();
         if (onFocus) {
             onFocus();
         }
-    }, [handleFocus, index.parent, index.child, onFocus]);
+    }, [handleFocus, onFocus]);
 }
 
 /**

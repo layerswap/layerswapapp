@@ -23,7 +23,7 @@ export interface NavigatableListStateContextType {
 
 export interface NavigatableListUpdateContextType {
     handleHover: (index: FocusedIndex) => void;
-    handleFocus: (index: FocusedIndex) => void;
+    handleFocus: () => void;
 }
 
 export interface NavigatableRegistrationContextType {
