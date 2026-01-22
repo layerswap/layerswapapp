@@ -23,7 +23,6 @@ export class Address {
   private readonly _raw: string;
   private readonly _normalized: string;
   private readonly _network: { name: string } | null | undefined;
-  private readonly _prefix: string | null;
   private readonly _providerName: string | undefined;
 
   /**
@@ -81,17 +80,9 @@ export class Address {
    * Get the full address with prefix if present
    */
   get full(): string {
-    return this._prefix
-      ? `${this._prefix}:${this._normalized}`
-      : this._normalized;
+    return this._normalized;
   }
 
-  /**
-   * Get the network prefix (ronin, zksync) or null
-   */
-  get prefix(): string | null {
-    return this._prefix;
-  }
 
   /**
    * Get the associated network
@@ -120,7 +111,7 @@ export class Address {
     }
 
     const shortened = `${addr.substring(0, 5)}...${addr.substring(addr.length - 4)}`;
-    return this._prefix ? `${this._prefix}:${shortened}` : shortened;
+    return shortened;
   }
 
   /**

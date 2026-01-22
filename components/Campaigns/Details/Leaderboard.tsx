@@ -11,6 +11,7 @@ import AddressIcon from "../../AddressIcon";
 import Modal from "../../modal/modal";
 import Link from "next/link";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback"
+import { Network, Token } from "@/Models/Network"
 
 type Props = {
     campaign: Campaign
@@ -103,44 +104,7 @@ const LeaderbordComponent: FC<{
                 <div className="space-y-6">
                     {
                         leaderboard?.leaderboard?.filter(u => (lines !== undefined ? u.position <= lines : true)).map(user => (
-                            <div key={user.position} className="items-center flex justify-between">
-                                <div className="flex items-center">
-                                    <p className="text-xl font-medium text-primary-text w-fit mr-1">{user.position}.</p>
-                                    <div className="cols-start-2 flex items-center space-x-2">
-                                        <AddressIcon address={addressInstance?.full || ''} size={25} />
-                                        <div>
-                                            <div className="text-sm font-bold text-primary-text leading-3">
-                                                {user?.address && network?.account_explorer_template && <Link target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", user?.address)}>
-                                                    {user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : addressInstance?.toShortString() || ''}
-                                                </Link>}
-                                            </div>
-                                            <p className="mt-1 text-sm font-medium text-secondary-text leading-3">{truncateDecimals(user.amount, token?.precision)} {token?.symbol}</p>
-                                        </div>
-                                    </div >
-                                </div >
-                                {
-                                    user.position <= 3 && leaderboard.leaderboard_budget > 0 &&
-                                    <div className="text-right flex items-center space-x-2">
-                                        <ClickTooltip text={
-                                            <div className="flex items-center space-x-1">
-                                                <span>+</span>
-                                                <div className="h-3.5 w-3.5 relative">
-                                                    <ImageWithFallback
-                                                        src={network?.logo || ''}
-                                                        alt="Address Logo"
-                                                        height="40"
-                                                        width="40"
-                                                        loading="eager"
-                                                        className="rounded-full object-contain" />
-                                                </div>
-                                                <p>
-                                                    <span>{leaderboardRewards[user.position - 1]} {token?.symbol}</span>
-                                                </p>
-                                            </div>
-                                        } />
-                                    </div>
-                                }
-                            </div >
+                            <LeaderboardItem key={user.position} user={user} leaderboardRewards={leaderboardRewards} leaderboard={leaderboard} rewards={rewards} network={network} token={token} />
                         ))
                     }
                     {
@@ -171,6 +135,56 @@ const LeaderbordComponent: FC<{
             </div >
         </div >
     );
+}
+
+const LeaderboardItem: FC<{
+    user: Leaderboard['leaderboard'][number],
+    leaderboardRewards: number[],
+    leaderboard: Leaderboard,
+    rewards: Reward | undefined,
+    network: Network,
+    token: Token,
+}> = ({ user, leaderboardRewards, leaderboard, rewards, network, token }) => {
+    const addressInstance = useMemo(() => user.address ? new Address(user.address, network) : null, [user.address, network])
+
+    return <div key={user.position} className="items-center flex justify-between">
+        <div className="flex items-center">
+            <p className="text-xl font-medium text-primary-text w-fit mr-1">{user.position}.</p>
+            <div className="cols-start-2 flex items-center space-x-2">
+                <AddressIcon address={addressInstance?.full || ''} size={25} />
+                <div>
+                    <div className="text-sm font-bold text-primary-text leading-3">
+                        {user?.address && network?.account_explorer_template && <Link target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", user?.address)}>
+                            {user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : addressInstance?.toShortString() || ''}
+                        </Link>}
+                    </div>
+                    <p className="mt-1 text-sm font-medium text-secondary-text leading-3">{truncateDecimals(user.amount, token?.precision)} {token?.symbol}</p>
+                </div>
+            </div >
+        </div >
+        {
+            user.position <= 3 && leaderboard.leaderboard_budget > 0 &&
+            <div className="text-right flex items-center space-x-2">
+                <ClickTooltip text={
+                    <div className="flex items-center space-x-1">
+                        <span>+</span>
+                        <div className="h-3.5 w-3.5 relative">
+                            <ImageWithFallback
+                                src={network?.logo || ''}
+                                alt="Address Logo"
+                                height="40"
+                                width="40"
+                                loading="eager"
+                                className="rounded-full object-contain" />
+                        </div>
+                        <p>
+                            <span>{leaderboardRewards[user.position - 1]} {token?.symbol}</span>
+                        </p>
+                    </div>
+                } />
+            </div>
+        }
+    </div >
 }
 
 export default Component
