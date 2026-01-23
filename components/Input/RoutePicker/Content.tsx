@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { RowElement } from "@/Models/Route";
 import { SwapDirection } from "@/components/DTOs/SwapFormValues";
 import { useVirtualizer } from "@/lib/virtual";
@@ -22,6 +22,7 @@ type ContentProps = {
     selectedToken: string | undefined;
     direction: SwapDirection;
     partialPublished?: boolean;
+    measureRef?: (node: HTMLElement | null) => void;
 }
 
 export const Content: FC<ContentProps> = (props) => {
@@ -29,17 +30,22 @@ export const Content: FC<ContentProps> = (props) => {
 
     return <>
         <RouteSearch searchQuery={props.searchQuery} setSearchQuery={props.setSearchQuery} rowElements={props.rowElements} isItemsScrolling={isItemsScrolling} />
-        <Items {...props} isScrolling={isItemsScrolling} setIsScrolling={setIsItemsScrolling} />
+        <Items {...props} isScrolling={isItemsScrolling} setIsScrolling={setIsItemsScrolling} measureRef={props.measureRef} />
     </>
 }
 
-const Items: FC<ContentProps & { isScrolling: boolean; setIsScrolling: (isScrolling: boolean) => void; }> = ({ searchQuery, setSearchQuery, rowElements, selectedToken, selectedRoute, direction, onSelect, isScrolling, setIsScrolling }) => {
+const Items: FC<ContentProps & { isScrolling: boolean; setIsScrolling: (isScrolling: boolean) => void; }> = ({ searchQuery, setSearchQuery, rowElements, selectedToken, selectedRoute, direction, onSelect, isScrolling, setIsScrolling, measureRef }) => {
     const parentRef = useRef<HTMLDivElement>(null)
     const [openValues, setOpenValues] = useState<string[]>(selectedRoute ? [selectedRoute] : [])
     const { wallets } = useWallet()
     const { shouldFocus } = useSelectorState();
 
     const scrollTimeout = useRef<any>(null);
+
+    const combinedRef = useCallback((node: HTMLDivElement | null) => {
+        (parentRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+        measureRef?.(node);
+    }, [measureRef]);
 
     const handleScroll = () => {
         setIsScrolling(true);
@@ -103,7 +109,7 @@ const Items: FC<ContentProps & { isScrolling: boolean; setIsScrolling: (isScroll
                     "select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden scrollbar:w-1! scrollbar:h-1! pr-0.5 scrollbar-thumb:bg-transparent h-full",
                     { "styled-scroll!": isScrolling }
                 )}
-                ref={parentRef}
+                ref={combinedRef}
             >
                 {
                     wallets.length === 0 && direction === 'from' && !searchQuery &&

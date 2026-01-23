@@ -60,9 +60,13 @@ const RouteSearch: FC<RouteSearchProps> = ({ searchQuery, setSearchQuery, rowEle
         const interval = setInterval(pickRandomRoute, 3000);
 
         return () => clearInterval(interval);
-    }, [rowElements, showExpanded]);
+    }, [rowElements, showExpanded, searchQuery]);
 
-    const randomRouteName = useMemo(() => randomRoute?.route.tokens[Math.floor(Math.random() * randomRoute?.route.tokens?.length)].symbol + " " + (randomRoute?.route?.display_name || randomRoute?.route?.name || ""), [randomRoute?.route.name]);
+    const randomRouteName = useMemo(() => {
+        if (!randomRoute?.route?.tokens?.length) return '';
+        const token = randomRoute.route.tokens[Math.floor(Math.random() * randomRoute.route.tokens.length)];
+        return token.symbol + ' ' + (randomRoute.route.display_name || randomRoute.route.name || '');
+    }, [randomRoute?.route.name]);
 
     return <div>
         <motion.div
