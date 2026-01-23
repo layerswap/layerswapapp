@@ -12,10 +12,7 @@ import { resolveExchangesURLForSelectedToken, resolveRoutesURLForSelectedToken }
 const SWAP_KEY_PATTERN = /^\/swaps\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/
 
 export default function Home({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  // Move side effect to useEffect to avoid mutation during render
-  useEffect(() => {
-    LayerSwapApiClient.apiKey = apiKey
-  }, [apiKey])
+  LayerSwapApiClient.apiKey = apiKey
 
   const sourceRoutesDeafultKey = resolveRoutesURLForSelectedToken({ direction: 'from', network: undefined, token: undefined, includes: { unmatched: true, unavailable: true, swaps: true } })
   const destinationRoutesDefaultKey = resolveRoutesURLForSelectedToken({ direction: 'to', network: undefined, token: undefined, includes: { unmatched: true, unavailable: true, swaps: true } })
