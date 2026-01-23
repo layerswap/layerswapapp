@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import MessageComponent from "./MessageComponent";
-import Navbar from "./navbar";
 import inIframe from "./utils/inIframe";
 import Link from "next/link";
-import { useRouter } from "next/router";
 
 function NoCookies(props) {
     const [embedded, setEmbedded] = useState<boolean>()
@@ -36,7 +34,7 @@ function NoCookies(props) {
                                 </div>
                                 {
                                     embedded &&
-                                    <Link target="_blank" href={window?.location?.href} className="bg-primary text-primary-buttonTextColor py-3 px-3 border border-primary disabled:border-primary-900 shadowed-button items-center space-x-1 disabled:text-primary/40 disabled:bg-primary-900 disabled:cursor-not-allowed relative w-full flex justify-center font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-200 ease-in-out">
+                                    <Link target="_blank" href={window?.location?.href} className="bg-primary text-primary-buttonTextColor py-3 px-3 border border-primary disabled:border-primary-900 items-center space-x-1 disabled:text-primary/40 disabled:bg-primary-900 disabled:cursor-not-allowed relative w-full flex justify-center font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-200 ease-in-out">
                                         Try on Layerswap
                                     </Link>
                                 }
