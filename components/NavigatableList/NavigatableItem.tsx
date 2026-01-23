@@ -62,9 +62,8 @@ const NavigatableItemInner = forwardRef<HTMLDivElement, NavigatableItemProps>(({
             registrationContext.registerChild(parentIndex, index);
             return () => registrationContext.unregisterChild(parentIndex, index);
         } else if (index >= 0) {
-            // Register as parent
+            // Register as parent (no cleanup - unregister is no-op for virtualization stability)
             registrationContext.register(index);
-            return () => registrationContext.unregister(index);
         }
     }, [index, parentIndex, isChild, registrationContext]);
 

@@ -1,6 +1,6 @@
 import { useCallback, useState, useEffect, useRef } from 'react';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
-import { FocusedIndex } from '@/components/NavigatableList/context';
+import { FocusedIndex, focusedIndexToString } from '@/components/NavigatableList/context';
 
 export interface NavigableItem {
     childCount: number;
@@ -26,11 +26,6 @@ function getFocusedElementIndex(): FocusedIndex | null {
     const navIndex = activeElement?.getAttribute('data-nav-index');
     if (!navIndex) return null;
     return parseNavIndex(navIndex);
-}
-
-/** Convert a FocusedIndex to a nav-index string (e.g., "1" or "2.3") */
-function focusedIndexToString(index: FocusedIndex): string {
-    return index.child !== undefined ? `${index.parent}.${index.child}` : `${index.parent}`;
 }
 
 export interface UseNavigatableListOptions {

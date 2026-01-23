@@ -7,23 +7,18 @@ import {
     NavigatableRegistrationContext,
     NavigatableListStateContextType,
     NavigatableListUpdateContextType,
-    NavigatableRegistrationContextType
+    NavigatableRegistrationContextType,
+    focusedIndexToString
 } from './context';
 import NavigatableItemComponent from './NavigatableItem';
 
 interface RegisteredItem {
-    index: number;
     children: Set<number>;
 }
 
 interface StoreSnapshot {
     items: NavigableItem[];
     indexMap: Map<number, number>;
-}
-
-// Convert FocusedIndex to a string key for Map storage
-function indexToKey(index: { parent: number; child?: number }): string {
-    return index.child !== undefined ? `${index.parent}.${index.child}` : `${index.parent}`;
 }
 
 function createAutoDetectionStore() {
@@ -33,18 +28,18 @@ function createAutoDetectionStore() {
     let cachedSnapshot: StoreSnapshot = { items: [], indexMap: new Map() };
 
     const rebuild = () => {
-        const sorted = Array.from(registeredItems.values()).sort((a, b) => a.index - b.index);
-        const items = sorted.map(item => ({ childCount: item.children.size }));
-        const indexMap = new Map(sorted.map((item, idx) => [item.index, idx]));
+        const sorted = Array.from(registeredItems.entries()).sort((a, b) => a[0] - b[0]);
+        const items = sorted.map(([, item]) => ({ childCount: item.children.size }));
+        const indexMap = new Map(sorted.map(([originalIndex], idx) => [originalIndex, idx]));
         cachedSnapshot = { items, indexMap };
     };
 
     return {
         register(index: number) {
             if (index < 0) return;
-
+            console.log('registeredItems', registeredItems);
             if (!registeredItems.has(index)) {
-                registeredItems.set(index, { index, children: new Set() });
+                registeredItems.set(index, { children: new Set() });
                 rebuild();
                 listeners.forEach(l => l());
             }
@@ -58,7 +53,7 @@ function createAutoDetectionStore() {
             let parent = registeredItems.get(parentIndex);
             if (!parent) {
                 // Auto-register parent if it doesn't exist yet
-                parent = { index: parentIndex, children: new Set() };
+                parent = { children: new Set() };
                 registeredItems.set(parentIndex, parent);
             }
 
@@ -83,13 +78,13 @@ function createAutoDetectionStore() {
         },
         // Click handler registry - avoids DOM querySelector
         registerClickHandler(index: { parent: number; child?: number }, handler: () => void) {
-            clickHandlers.set(indexToKey(index), handler);
+            clickHandlers.set(focusedIndexToString(index), handler);
         },
         unregisterClickHandler(index: { parent: number; child?: number }) {
-            clickHandlers.delete(indexToKey(index));
+            clickHandlers.delete(focusedIndexToString(index));
         },
         triggerClick(index: { parent: number; child?: number }) {
-            const handler = clickHandlers.get(indexToKey(index));
+            const handler = clickHandlers.get(focusedIndexToString(index));
             if (handler) handler();
         },
         triggerClickByKey(key: string) {
