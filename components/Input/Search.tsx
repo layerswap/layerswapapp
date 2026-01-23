@@ -42,13 +42,17 @@ export const SearchComponent = ({ searchQuery, setSearchQuery, isOpen, container
             )}
         />
         {searchQuery && (
-            <FilledX
-                className="w-4 h-4 text-primary-text-tertiary cursor-pointer ml-2"
+            <button
+                type="button"
+                className="w-4 h-4 text-primary-text-tertiary cursor-pointer ml-2 flex items-center justify-center"
                 onMouseDown={(e) => {
                     e.preventDefault();
                     setSearchQuery('');
                 }}
-            />
+                aria-label="Clear search"
+            >
+                <FilledX className="w-4 h-4" />
+            </button>
         )}
     </div>
 }

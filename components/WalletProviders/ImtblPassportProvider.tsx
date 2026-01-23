@@ -13,7 +13,7 @@ export const initilizePassport = async (basePath: string) => {
     if (PUBLISHABLE_KEY && CLIENT_ID) {
         passportInstance = new passport.Passport({
             baseConfig: {
-                environment: config.Environment.PRODUCTION,
+                environment: PUBLISHABLE_KEY.includes('pk_imapik-test') ? config.Environment.SANDBOX : config.Environment.PRODUCTION,
                 publishableKey: PUBLISHABLE_KEY,
             },
             clientId: CLIENT_ID,
