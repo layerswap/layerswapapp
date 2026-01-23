@@ -58,10 +58,10 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, quote }) => {
             })}
         >
             <div className="flex justify-between w-full text-secondary-text ">
-                <button className="space-y-1 mt-1 mb-0.5" type="button" onClick={() => onButtonClick()}>
+                <button className="space-y-1 mt-1 mb-0.5 navigation-refuel-button" type="button" onClick={() => onButtonClick()}>
                     <div className="flex items-center text-base space-x-1">
                         <p className="leading-4">Refuel</p>
-                        <div className="p-0.5">
+                        <div className="p-0.5 navigation-refuel-info-icon">
                             <Info className="h-3 w-3 text-secondary-text hover:text-primary-text" aria-hidden="true" strokeWidth={2.5} />
                         </div>
                     </div>
