@@ -6,12 +6,19 @@ export async function getSettings(apiKey: string) {
     LayerSwapApiClient.apiKey = apiKey
 
     try {
-        const { data: networkData } = await apiClient.GetLSNetworksAsync()
-        const { data: sourceExchangesData } = await apiClient.GetSourceExchangesAsync()
-    
-        const { data: sourceRoutes } = await apiClient.GetRoutesAsync('sources')
-        const { data: destinationRoutes } = await apiClient.GetRoutesAsync('destinations')
-    
+        // Fetch all data in parallel for faster page load (async-parallel)
+        const [
+            { data: networkData },
+            { data: sourceExchangesData },
+            { data: sourceRoutes },
+            { data: destinationRoutes },
+        ] = await Promise.all([
+            apiClient.GetLSNetworksAsync(),
+            apiClient.GetSourceExchangesAsync(),
+            apiClient.GetRoutesAsync('sources'),
+            apiClient.GetRoutesAsync('destinations'),
+        ])
+
         if (!networkData) return
     
         const settings = {

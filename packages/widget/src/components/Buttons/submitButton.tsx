@@ -30,7 +30,7 @@ const SubmitButton: FC<SubmitButtonProps> = ({ isDisabled, isSubmitting, icon, c
             type={type}
             onClick={onClick}
             style={style}
-            className={clsx('enabled:active:animate-press-down text-primary focus:outline-none focus:ring-0 items-center space-x-1 disabled:bg-secondary-300 disabled:text-secondary-text/50 disabled:cursor-not-allowed relative w-full flex justify-center font-medium rounded-xl transform hover:brightness-125 transition duration-200 ease-in-out', {
+            className={clsx('navigation-focus-ring-text-bold-lg enabled:active:animate-press-down text-primary focus:outline-none focus:ring-0 items-center space-x-1 disabled:bg-secondary-300 disabled:text-secondary-text/50 disabled:cursor-not-allowed relative w-full flex justify-center font-medium rounded-xl transform hover:brightness-125 transition duration-200 ease-in-out', {
                 className,
                 'text-primary-buttonTextColor bg-primary-500': buttonStyle === 'filled',
                 'text-primary-text bg-secondary-300 hover:bg-secondary-400': buttonStyle === 'secondary',

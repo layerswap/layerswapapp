@@ -11,7 +11,7 @@ export const initilizePassport = async (configs: ImtblPassportConfig | undefined
     if (publishableKey && clientId && redirectUri && logoutRedirectUri) {
         passportInstance = new passport.Passport({
             baseConfig: {
-                environment: config.Environment.PRODUCTION,
+                environment: publishableKey.includes('pk_imapik-test') ? config.Environment.SANDBOX : config.Environment.PRODUCTION,
                 publishableKey: publishableKey,
             },
             clientId: clientId,
