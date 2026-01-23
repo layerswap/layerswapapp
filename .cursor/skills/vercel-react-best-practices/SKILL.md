@@ -30,8 +30,9 @@ Reference these guidelines when:
 | 4 | Client-Side Data Fetching | MEDIUM-HIGH | `client-` |
 | 5 | Re-render Optimization | MEDIUM | `rerender-` |
 | 6 | Rendering Performance | MEDIUM | `rendering-` |
-| 7 | JavaScript Performance | LOW-MEDIUM | `js-` |
-| 8 | Advanced Patterns | LOW | `advanced-` |
+| 7 | Unused Code Detection | MEDIUM | `unused-` |
+| 8 | JavaScript Performance | LOW-MEDIUM | `js-` |
+| 9 | Advanced Patterns | LOW | `advanced-` |
 
 ## Quick Reference
 
@@ -84,7 +85,20 @@ Reference these guidelines when:
 - `rendering-activity` - Use Activity component for show/hide
 - `rendering-conditional-render` - Use ternary, not && for conditionals
 
-### 7. JavaScript Performance (LOW-MEDIUM)
+
+### 7. Unused Code Detection (MEDIUM)
+
+- `unused-dead-exports` - Identify exports with no import references
+- `unused-unreachable-code` - Find code after return/throw statements
+- `unused-variables` - Spot variables assigned but never read
+- `unused-imports` - Remove imports never referenced in file
+- `unused-components` - Find components not rendered anywhere
+- `unused-props` - Detect props defined but never passed
+- `unused-state` - Find useState values never used in render
+- `unused-effects` - Identify useEffect with no observable side effects
+- `unused-commented-code` - Flag commented-out code for removal
+
+### 8. JavaScript Performance (LOW-MEDIUM)
 
 - `js-batch-dom-css` - Group CSS changes via classes or cssText
 - `js-index-maps` - Build Map for repeated lookups
@@ -99,7 +113,7 @@ Reference these guidelines when:
 - `js-set-map-lookups` - Use Set/Map for O(1) lookups
 - `js-tosorted-immutable` - Use toSorted() for immutability
 
-### 8. Advanced Patterns (LOW)
+### 9. Advanced Patterns (LOW)
 
 - `advanced-event-handler-refs` - Store event handlers in refs
 - `advanced-use-latest` - useLatest for stable callback refs
@@ -111,6 +125,7 @@ Read individual rule files for detailed explanations and code examples:
 ```
 rules/async-parallel.md
 rules/bundle-barrel-imports.md
+rules/unused-detection.md
 rules/_sections.md
 ```
 

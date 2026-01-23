@@ -58,7 +58,7 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
             shouldValidate: true,
             setFieldValue
         })
-    }, [currencyFieldName, direction, values])
+    }, [currencyFieldName, direction, setFieldValue])
     const showbalance = !isExchange && (direction === 'to' || values.depositMethod === 'wallet')
 
 

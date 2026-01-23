@@ -1,6 +1,4 @@
 import { FC, useEffect } from 'react';
-import { SwapDataProvider } from '../context/swap';
-import { TimerProvider } from '../context/timerContext';
 import SwapForm from "./Swap/Form"
 import { SWRConfig, mutate } from 'swr';
 import { SwapStatus } from '../Models/SwapStatus';
@@ -9,9 +7,7 @@ const Swap: FC = () => {
   return (
     <div className="text-primary-text">
       <SWRConfig value={{ use: [updatePendingCount] }}>
-        <TimerProvider>
-          <SwapForm />
-        </TimerProvider>
+        <SwapForm />
       </SWRConfig>
     </div >
   )
@@ -35,7 +31,7 @@ function updatePendingCount(useSWRNext) {
       }
     }, [swr.data, key])
 
-    return useSWRNext(key, fetcher, config)
+    return swr
   }
 }
 
