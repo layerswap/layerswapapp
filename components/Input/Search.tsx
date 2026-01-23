@@ -32,16 +32,20 @@ export const SearchComponent = ({ searchQuery, setSearchQuery, isOpen, className
             autoFocus={isDesktop}
             placeholder={placeholder ?? "Search"}
             autoComplete="off"
-            className="placeholder:text-primary-text-tertiary border-0 border-b-0 border-primary-text bg-secondary-500 focus:bg-secondary-300 focus:border-primary-text appearance-none block py-2 px-0 w-full  text-base outline-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
+            className="placeholder:text-primary-text-tertiary border-0 border-b-0 border-primary-text bg-transparent focus:border-primary-text appearance-none block py-2 px-0 w-full  text-base outline-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
         />
         {searchQuery && (
-            <FilledX
-                className="w-4 h-4 text-primary-text-tertiary cursor-pointer ml-2"
+            <button
+                type="button"
+                className="w-4 h-4 text-primary-text-tertiary cursor-pointer ml-2 flex items-center justify-center"
                 onMouseDown={(e) => {
                     e.preventDefault();
                     setSearchQuery('');
                 }}
-            />
+                aria-label="Clear search"
+            >
+                <FilledX className="w-4 h-4" />
+            </button>
         )}
     </div>
 }

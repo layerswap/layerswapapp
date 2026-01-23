@@ -1,7 +1,7 @@
 import { useFormikContext } from "formik";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
-import { Selector, SelectorContent, SelectorTrigger } from "../Select/Selector/Index";
+import { Selector, SelectorContent, SelectorTrigger, useSelectorState } from "../Select/Selector/Index";
 import { Exchange } from "@/Models/Exchange";
 import React from "react";
 import { SelectItem } from "@/components/Select/Selector/SelectItem";
@@ -11,6 +11,9 @@ import { SearchComponent } from "./Search";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { ChevronDown } from "lucide-react";
 import { updateForm } from "@/components/Swap/Form/updateForm";
+import NavigatableList from "@/components/NavigatableList";
+import { NavigatableItem } from "@/components/NavigatableList";
+import clsx from "clsx";
 
 const CexPicker: FC = () => {
     const {
@@ -59,52 +62,95 @@ const CexPicker: FC = () => {
                     <SelectedExchangeDisplay exchange={fromExchange} placeholder="Select Exchange" />
                 </SelectorTrigger>
                 <SelectorContent isLoading={isLoading} searchHint="Search">
-                    {({ closeModal, shouldFocus }) => {
-                        return (
-                            <div className="overflow-y-auto flex flex-col h-full z-40 openpicker" >
-                                <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={shouldFocus} />
-                                <LayoutGroup>
-                                    <motion.div layoutScroll className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll pr-3 h-full">
-                                        <div className="relative">
-                                            {filteredExchanges.map((exchange) => {
-                                                return <div className="py-1 box-border" key={exchange.name}>
-                                                    <ExchangeNetwork
-                                                        route={exchange}
-                                                        direction={direction}
-                                                        onSelect={(n) => {
-                                                            handleSelect(n);
-                                                            closeModal();
-                                                        }}
-                                                    />
-                                                </div>
-                                            })}
-                                        </div>
-                                    </motion.div>
-                                </LayoutGroup>
-                            </div>
-                        )
-                    }}
+                    {({ closeModal }) => (
+                        <CexPickerContent
+                            exchanges={filteredExchanges}
+                            searchQuery={searchQuery}
+                            setSearchQuery={setSearchQuery}
+                            direction={direction}
+                            onSelect={(exchange) => {
+                                handleSelect(exchange);
+                                closeModal();
+                            }}
+                        />
+                    )}
                 </SelectorContent>
             </Selector>
         </div>
     )
 }
 
+type CexPickerContentProps = {
+    exchanges: Exchange[];
+    searchQuery: string;
+    setSearchQuery: (query: string) => void;
+    direction: SwapDirection;
+    onSelect: (exchange: Exchange) => void;
+}
+
+const CexPickerContent: FC<CexPickerContentProps> = ({
+    exchanges,
+    searchQuery,
+    setSearchQuery,
+    direction,
+    onSelect
+}) => {
+    const { shouldFocus } = useSelectorState();
+
+    return (
+        <div className="overflow-y-auto flex flex-col h-full z-40 openpicker" >
+            <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={shouldFocus} />
+            <NavigatableList
+                enabled={shouldFocus}
+                onReset={searchQuery ? () => { } : undefined}
+            >
+                <LayoutGroup>
+                    <motion.div layoutScroll className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll pr-3 h-full">
+                        <div className="relative">
+                            {exchanges.map((exchange, index) => {
+                                return <div className="py-1 box-border" key={exchange.name}>
+                                    <ExchangeNetwork
+                                        route={exchange}
+                                        direction={direction}
+                                        index={index}
+                                        onSelect={onSelect}
+                                    />
+                                </div>
+                            })}
+                        </div>
+                    </motion.div>
+                </LayoutGroup>
+            </NavigatableList>
+        </div>
+    );
+}
+
 type ExchangeNetworkProps = {
     route: Exchange;
     direction: SwapDirection;
+    index: number;
     onSelect: (route: Exchange) => void;
 }
 
 const ExchangeNetwork = (props: ExchangeNetworkProps) => {
-    const { route, onSelect } = props
+    const { route, index, onSelect } = props
 
-    return <div className="bg-secondary-500 cursor-pointer hover:bg-secondary-400 rounded-xl outline-none disabled:cursor-not-allowed relative" onClick={() => onSelect(route)} >
-        <SelectItem>
-            <SelectItem.Logo imgSrc={route.logo} altText={`${route.display_name} logo`} />
-            <SelectItem.Title className="!py-3">{route.display_name}</SelectItem.Title>
-        </SelectItem>
-    </div>
+    return (
+        <NavigatableItem
+            index={index}
+            onClick={() => onSelect(route)}
+            className="cursor-pointer rounded-xl outline-none disabled:cursor-not-allowed relative"
+        >
+            {({ isFocused }) => (
+                <div className={clsx('rounded-xl', isFocused ? "bg-secondary-400" : "bg-secondary-500 hover:bg-secondary-400")}>
+                    <SelectItem>
+                        <SelectItem.Logo imgSrc={route.logo} altText={`${route.display_name} logo`} />
+                        <SelectItem.Title className="py-3!">{route.display_name}</SelectItem.Title>
+                    </SelectItem>
+                </div>
+            )}
+        </NavigatableItem>
+    )
 }
 
 type SelectedNetworkDisplayProps = {
