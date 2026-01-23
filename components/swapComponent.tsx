@@ -31,7 +31,7 @@ function updatePendingCount(useSWRNext) {
       }
     }, [swr.data, key])
 
-    return useSWRNext(key, fetcher, config)
+    return swr
   }
 }
 
