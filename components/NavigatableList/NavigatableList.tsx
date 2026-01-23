@@ -37,7 +37,6 @@ function createAutoDetectionStore() {
     return {
         register(index: number) {
             if (index < 0) return;
-            console.log('registeredItems', registeredItems);
             if (!registeredItems.has(index)) {
                 registeredItems.set(index, { children: new Set() });
                 rebuild();
