@@ -1,0 +1,72 @@
+{
+  "name": "@layerswap/wallet-tron",
+  "version": "1.2.1",
+  "description": "Tron Wallet Provider for Layerswap Widget",
+  "type": "module",
+  "main": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "typings": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/esm/index.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "dist/**/*"
+  ],
+  "scripts": {
+    "build": "pnpm run clean && pnpm run build:esm+types",
+    "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm && tsc-alias -p tsconfig.json --outDir ./dist/types",
+    "check:types": "tsc --noEmit",
+    "clean": "rimraf dist tsconfig.tsbuildinfo actions chains codegen experimental internal query"
+  },
+  "author": "Layerswap",
+  "homepage": "https://github.com/layerswap/layerswapapp",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/layerswap/layerswapapp.git",
+    "directory": "packages/wallets/tron"
+  },
+  "keywords": [
+    "layerswap",
+    "tron",
+    "wallet-provider"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@layerswap/widget": "workspace:^",
+    "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
+    "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc"
+  },
+  "dependencies": {
+    "@tronweb3/tronwallet-adapter-bitkeep": "^1.1.5",
+    "@tronweb3/tronwallet-adapter-bybit": "^1.0.1",
+    "@tronweb3/tronwallet-adapter-foxwallet": "^1.0.1",
+    "@tronweb3/tronwallet-adapter-gatewallet": "^1.0.3",
+    "@tronweb3/tronwallet-adapter-imtoken": "^1.0.2",
+    "@tronweb3/tronwallet-adapter-ledger": "^1.1.11",
+    "@tronweb3/tronwallet-adapter-okxwallet": "^1.0.6",
+    "@tronweb3/tronwallet-adapter-metamask-tron": "^1.0.0",
+    "@tronweb3/tronwallet-adapter-react-hooks": "^1.1.10",
+    "@tronweb3/tronwallet-adapter-tokenpocket": "^1.0.6",
+    "@tronweb3/tronwallet-adapter-tronlink": "^1.1.12",
+    "@tronweb3/tronwallet-adapter-trust": "^1.0.0",
+    "tronweb": "^6.0.4"
+  },
+  "devDependencies": {
+    "@layerswap/widget": "workspace:^",
+    "react": "catalog:"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "bugs": {
+    "url": "https://github.com/layerswap/layerswapapp/issues"
+  }
+}

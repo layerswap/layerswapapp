@@ -1,0 +1,725 @@
+@import 'tailwindcss';
+@config '../../tailwind.config.js';
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: transparent;
+  }
+}
+
+@theme static {
+  /* Primary */
+  --color-primary: rgb(204, 45, 93);
+  --color-primary-100: rgb(255, 148, 176);
+  --color-primary-200: rgb(245, 103, 141);
+  --color-primary-300: rgb(235, 84, 129);
+  --color-primary-400: rgb(229, 64, 114);
+  --color-primary-500: rgb(204, 45, 93);
+  --color-primary-600: rgb(178, 29, 74);
+  --color-primary-700: rgb(143, 23, 59);
+  --color-primary-800: rgb(89, 14, 37);
+  --color-primary-900: rgb(46, 7, 19);
+  --color-primary-text: rgb(225, 227, 230);
+
+  /* Secondary */
+  --color-secondary: rgb(17, 29, 54);
+  --color-secondary-100: rgb(60, 72, 97);
+  --color-secondary-200: rgb(52, 63, 87);
+  --color-secondary-300: rgb(40, 50, 71);
+  --color-secondary-400: rgb(31, 40, 61);
+  --color-secondary-500: rgb(23, 31, 49);
+  --color-secondary-600: rgb(18, 25, 41);
+  --color-secondary-700: rgb(14, 21, 36);
+  --color-secondary-800: rgb(11, 17, 31);
+  --color-secondary-900: rgb(7, 12, 23);
+  --color-secondary-text: rgb(163, 173, 194);
+
+  /* Supporting */
+  --color-tertiary: rgb(118, 128, 147);
+  --color-buttonTextColor: rgb(228, 229, 240);
+  --color-logo: rgb(255, 0, 147);
+
+  /* Semantic */
+  --color-warning-foreground: rgb(255, 201, 74);
+  --color-warning-background: rgb(47, 43, 29);
+
+  --color-error-foreground: rgb(255, 97, 97);
+  --color-error-background: rgb(46, 27, 27);
+
+  --color-success-foreground: rgb(89, 224, 125);
+  --color-success-background: rgb(14, 43, 22);
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@utility styled-scroll {
+  @apply scrollbar:w-1.5! scrollbar:h-1.5! scrollbar:bg-secondary-500 scrollbar:absolute scrollbar-thumb:rounded-sm! scrollbar-thumb:bg-slate-500/50!;
+}
+.styled-scroll::-webkit-scrollbar{
+  position:absolute
+}
+@utility rdxCommandList {
+  max-height: var(--radix-popper-available-height);
+}
+
+@layer utilities {
+
+  /* Chrome, Safari, Edge, Opera */
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Firefox */
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+  
+  .styled-scroll {
+    @apply scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-secondary-500 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-500/50 ;
+  }
+  
+  .rdxCommandList {
+    max-height: var(--radix-popper-available-height);
+  }
+}
+
+@layer base {
+
+  body {
+    @apply bg-secondary-900 sm:bg-gradient-to-b to-secondary-500 from-secondary-900;
+  }
+
+  /* On iOS disabled inputs have default opacitiy */
+  .ntdi {
+    opacity: 1;
+    /* required on iOS */
+  }
+}
+
+iframe body {
+  display: none;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  transition: all 5000s ease-in-out 0s;
+  transition-property: background-color, color;
+
+  /* border: 1px solid #1A2949; */
+  -webkit-text-fill-color: rgb(var(--ls-colors-primary-text));
+  caret-color: rgb(var(--ls-colors-primary-text));
+  -webkit-box-shadow: 0 0 0px 1000px rgb(var(--ls-colors-secondary-700)) inset;
+  box-shadow: 0 0 0px 1000px rgb(var(--ls-colors-secondary-700)) inset;
+
+}
+
+.shadowed-button {
+  transform: translate3d(0, 0, 0);
+}
+
+hr.horizontal-gradient {
+  border: 0;
+  height: 1px;
+  background-image: linear-gradient(to right, hsla(0, 0%, 100%, 0), #1A2949, hsla(0, 0%, 100%, 0));
+}
+
+.strong-highlight {
+  position: relative;
+  opacity: 1;
+  z-index: 1;
+  display: inline-block;
+  margin: 0 3px;
+}
+
+.strong-highlight::after {
+  /* Highlight color */
+  background-color: var(--color-secondary-500);
+  content: "";
+  position: absolute;
+  width: calc(100% + 10px);
+  height: 110%;
+  border-radius: 5px;
+  left: -5px;
+  bottom: -5%;
+  z-index: -1;
+}
+
+.iphone-x {
+  position: relative;
+  margin: 40px auto;
+  width: 320px;
+  height: 780px;
+  background-color: #7371ee;
+  background-image: url(/cnbs1.png);
+  background-size: contain;
+  border-radius: 40px;
+  box-shadow: 0px 0px 0px 11px #1f1f1f, 0px 0px 0px 13px #191919, 0px 0px 0px 20px #111;
+}
+
+.iphone-x:before,
+.iphone-x:after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.iphone-x:after {
+  bottom: 7px;
+  width: 140px;
+  height: 4px;
+  background-color: #f2f2f2;
+  border-radius: 10px;
+}
+
+.iphone-x:before {
+  top: 0px;
+  width: 56%;
+  height: 30px;
+  background-color: #1f1f1f;
+  border-radius: 0px 0px 40px 40px;
+}
+
+.iphone-x i,
+.iphone-x b,
+.iphone-x s,
+.iphone-x span {
+  position: absolute;
+  display: block;
+  color: transparent;
+}
+
+.iphone-x i {
+  top: 0px;
+  left: 50%;
+  transform: translate(-50%, 6px);
+  height: 8px;
+  width: 15%;
+  background-color: #101010;
+  border-radius: 8px;
+  box-shadow: inset 0px -3px 3px 0px rgba(255, 255, 255, 0.2);
+}
+
+.iphone-x b {
+  left: 10%;
+  top: 0px;
+  transform: translate(180px, 4px);
+  width: 12px;
+  height: 12px;
+  background-color: #101010;
+  border-radius: 12px;
+  box-shadow: inset 0px -3px 2px 0px rgba(255, 255, 255, 0.2);
+}
+
+.iphone-x b:after {
+  content: "";
+  position: absolute;
+  background-color: #2d4d76;
+  width: 6px;
+  height: 6px;
+  top: 2px;
+  left: 2px;
+  top: 3px;
+  left: 3px;
+  display: block;
+  border-radius: 4px;
+  box-shadow: inset 0px -2px 2px rgba(0, 0, 0, 0.5);
+}
+
+.iphone-x s {
+  top: 50px;
+  color: #fff;
+  text-align: center;
+  text-decoration: none;
+  width: 100%;
+  font-size: 70px;
+  font-weight: 100;
+  padding-top: 60px;
+}
+
+.iphone-x span {
+  bottom: 50px;
+  width: 40px;
+  height: 40px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  left: 30px;
+}
+
+.iphone-x span+span {
+  left: auto;
+  right: 30px;
+}
+
+
+
+.carousel {
+  overflow: hidden;
+}
+
+.inner {
+  white-space: nowrap;
+  transition: transform 0.3s;
+}
+
+.carousel-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  background-color: green;
+  color: #fff;
+}
+
+.indicators {
+  display: flex;
+  justify-content: center;
+}
+
+.indicators>button {
+  margin: 5px;
+}
+
+.indicators>button.active {
+  background-color: green;
+  color: #fff;
+}
+
+.carousel {
+  display: inline-flex;
+  overflow-x: hidden;
+  /*  scroll snap is a great feature which will center the image on snap on touch screen devices  */
+  scroll-snap-type: x mandatory;
+  /* all below will hide the scrollbar on all browsers.    */
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  /* For Firefox */
+  -ms-overflow-style: none;
+  /* For Internet Explorer and Edge */
+}
+
+tspan {
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+input::-webkit-input-placeholder {
+  line-height: normal !important;
+}
+
+body {
+  overflow: overlay;
+  background-color: rgb(var(--ls-colors-secondary-700));
+}
+
+body::-webkit-scrollbar {
+  --tw-bg-opacity: 1;
+  background-color: rgb(var(--ls-colors-secondary-700));
+}
+
+body::-webkit-scrollbar {
+  width: 0.375rem !important;
+}
+
+body::-webkit-scrollbar {
+  height: 0.375rem !important;
+}
+
+body::-webkit-scrollbar-thumb {
+  background-color: rgb(var(--ls-colors-secondary-text), 0.4) !important;
+}
+
+body::-webkit-scrollbar-thumb {
+  --tw-bg-opacity: 1 !important;
+}
+
+body::-webkit-scrollbar-thumb {
+  border-radius: 0.25rem !important;
+}
+
+input:disabled,
+textarea:disabled,
+input:disabled::placeholder,
+textarea:disabled::placeholder {
+  -webkit-text-fill-color: var(--color-primary-text-tertiary);
+  /* 1. sets text fill to 'primary-text': '#a4afc8' */
+  opacity: 1;
+  /* 2. correct opacity on iOS */
+}
+
+.space-x-reverse {
+  --space-x-reverse: 1
+}
+
+.space-y-reverse {
+  --space-y-reverse: 1
+}
+/* styles.css */
+.AccordionContent {
+	overflow: hidden;
+  transform-origin: top;
+}
+.layout-animating .AccordionContent[data-state="open"],
+.layout-animating .AccordionContent[data-state="closed"] {
+  animation: none !important;
+}
+.AccordionContent[data-state="open"] {
+	animation: slideDown 300ms ease-out;
+}
+.AccordionContent[data-state="closed"] {
+	animation: slideUp 300ms ease-out;
+}
+.AccordionContent.NoAnimation {
+  animation-play-state: paused !important;
+}
+.no-anchor {
+  overflow-anchor: none;
+}
+@keyframes slideDown {
+	from {
+		height: 0;
+	}
+	to {
+		height: var(--radix-accordion-content-height);
+	}
+}
+
+@keyframes slideUp {
+	from {
+		height: var(--radix-accordion-content-height);
+	}
+	to {
+		height: 0;
+	}
+}
+
+.loader, .loader:before, .loader:after {
+  border-radius: 50%;
+  width: 2.5em;
+  height: 2.5em;
+  animation-fill-mode: both;
+  animation: bblFadInOut 1.8s infinite ease-in-out;
+}
+.loader {
+  color: #FFF;
+  font-size: 7px;
+  position: relative;
+  text-indent: -9999em;
+  transform: translateZ(0);
+  animation-delay: -0.16s;
+}
+.loader:before,
+.loader:after {
+  content: '';
+  position: absolute;
+  top: 0;
+}
+.loader:before {
+  left: -3.5em;
+  animation-delay: -0.32s;
+}
+.loader:after {
+  left: 3.5em;
+}
+
+@keyframes bblFadInOut {
+  0%, 80%, 100% { box-shadow: 0 2.5em 0 -1.3em }
+  40% { box-shadow: 0 2.5em 0 0 }
+}
+    
+@layer utilities {
+  @keyframes pulse-strong {
+    50% {
+      opacity: 0.4; 
+    }
+  }
+  .animate-pulse-strong {
+    animation: pulse-strong 1.4s cubic-bezier(0.77, 0, 0.17, 1) infinite;
+  }
+
+  @keyframes pulse-stronger {
+    50% {
+      opacity: 0.15; 
+    }
+  }
+  .animate-pulse-stronger {
+    animation: pulse-stronger 1.4s cubic-bezier(0.77, 0, 0.17, 1) infinite;
+  }
+}
+
+/*Transition*/
+@keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+  
+  .dialog-overlay[data-state='open'],
+  .dialog-content[data-state='open'] {
+    animation: fadeIn 100ms ease-out;
+  }
+  
+  .dialog-overlay[data-state='closed'],
+  .dialog-content[data-state='closed'] {
+    animation: fadeOut 100ms ease-in;
+  }
+
+[data-color-mode*='dark'] .w-color-sketch {
+  --sketch-background: #323232 !important;
+}
+
+[data-color-mode*='dark'] .w-color-swatch {
+  --sketch-swatch-border-top: 1px solid #525252 !important;
+}
+
+[data-color-mode*='dark'] .w-color-block {
+  --block-background-color: #323232 !important;
+  --block-box-shadow: rgb(0 0 0 / 10%) 0 1px !important;
+}
+
+[data-color-mode*='dark'] .w-color-editable-input {
+  --editable-input-label-color: #757575 !important;
+  --editable-input-box-shadow: #616161 0px 0px 0px 1px inset !important;
+  --editable-input-color: #bbb !important;
+}
+
+[data-color-mode*='dark'] .w-color-github {
+  --github-border: 1px solid rgba(0, 0, 0, 0.2) !important;
+  --github-background-color: #323232 !important;
+  --github-box-shadow: rgb(0 0 0 / 15%) 0px 3px 12px !important;
+  --github-arrow-border-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+[data-color-mode*='dark'] .w-color-compact {
+  --compact-background-color: #323232 !important;
+}
+
+[data-color-mode*='dark'] .w-color-material {
+  --material-background-color: #323232 !important;
+  --material-border-bottom-color: #707070 !important;
+}
+
+[data-color-mode*='dark'] .w-color-alpha {
+  --alpha-pointer-background-color: #6a6a6a !important;
+  --alpha-pointer-box-shadow: rgb(0 0 0 / 37%) 0px 1px 4px 0px !important;
+}
+
+.hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 0.5em;
+  background: transparent;
+  color: #d6deeb;
+  font-size: smaller;
+}
+
+/* General Purpose */
+.hljs-keyword {
+  color: #c792ea;
+  font-style: italic;
+}
+
+.hljs-built_in {
+  color: #addb67;
+  font-style: italic;
+}
+
+.hljs-type {
+  color: #82aaff;
+}
+
+.hljs-literal {
+  color: #ff5874;
+}
+
+.hljs-number {
+  color: #F78C6C;
+}
+
+.hljs-regexp {
+  color: #5ca7e4;
+}
+
+.hljs-string {
+  color: #ecc48d;
+}
+
+.hljs-subst {
+  color: #d3423e;
+}
+
+.hljs-symbol {
+  color: #82aaff;
+}
+
+.hljs-class {
+  color: #ffcb8b;
+}
+
+.hljs-function {
+  color: #82AAFF;
+}
+
+.hljs-title {
+  color: #DCDCAA;
+  font-style: italic;
+}
+
+.hljs-params {
+  color: #7fdbca;
+}
+
+/* Meta */
+.hljs-comment {
+  color: #637777;
+  font-style: italic;
+}
+
+.hljs-doctag {
+  color: #7fdbca;
+}
+
+.hljs-meta {
+  color: #82aaff;
+}
+
+.hljs-meta-keyword {
+  color: #82aaff;
+}
+
+.hljs-meta-string {
+  color: #ecc48d;
+}
+
+/* Tags, attributes, config */
+.hljs-section {
+  color: #82b1ff;
+}
+
+.hljs-tag,
+.hljs-name,
+.hljs-builtin-name {
+  color: #7fdbca;
+}
+
+.hljs-attr {
+  color: #7fdbca;
+}
+
+.hljs-attribute {
+  color: #80cbc4;
+}
+
+.hljs-variable {
+  color: #addb67;
+}
+
+/* Markup */
+.hljs-bullet {
+  color: #d9f5dd;
+}
+
+.hljs-code {
+  color: #80CBC4;
+}
+
+.hljs-emphasis {
+  color: #c792ea;
+  font-style: italic;
+}
+
+.hljs-strong {
+  color: #addb67;
+  font-weight: bold;
+}
+
+.hljs-formula {
+  color: #c792ea;
+}
+
+.hljs-link {
+  color: #ff869a;
+}
+
+.hljs-quote {
+  color: #697098;
+  font-style: italic;
+}
+
+/* CSS */
+.hljs-selector-tag {
+  color: #ff6363;
+}
+
+.hljs-selector-id {
+  color: #fad430;
+}
+
+.hljs-selector-class {
+  color: #addb67;
+  font-style: italic;
+}
+
+.hljs-selector-attr,
+.hljs-selector-pseudo {
+  color: #c792ea;
+  font-style: italic;
+}
+
+/* Templates */
+.hljs-template-tag {
+  color: #c792ea;
+}
+
+.hljs-template-variable {
+  color: #addb67;
+}
+
+/* diff */
+.hljs-addition {
+  color: #addb67ff;
+  font-style: italic;
+}
+
+.hljs-deletion {
+  color: #EF535090;
+  font-style: italic;
+}

@@ -1,0 +1,111 @@
+{
+  "name": "@layerswap/widget",
+  "version": "1.2.2",
+  "description": "Streamline your asset transaction experience with Layerswap Widget across 60+ blockchains and 15+ exchanges.",
+  "type": "module",
+  "main": "dist/esm/index.js",
+  "types": "dist/types/exports/index.d.ts",
+  "typings": "dist/types/exports/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/exports/index.d.ts",
+      "default": "./dist/esm/exports/index.js"
+    },
+    "./internal": {
+      "types": "./dist/types/exports/internal.d.ts",
+      "default": "./dist/esm/exports/internal.js"
+    },
+    "./types": {
+      "types": "./dist/types/exports/types.d.ts",
+      "default": "./dist/esm/exports/types.js"
+    },
+    "./index.css": "./dist/index.css"
+  },
+  "style": "dist/index.css",
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "dist/**/*"
+  ],
+  "scripts": {
+    "build": "pnpm clean && pnpm build:esm+types && pnpm build:css",
+    "build:css": "postcss ./src/styles/globals.css -o dist/index.css --config postcss.config.js --env production",
+    "build:esm+types": "tsc --project tsconfig.json --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm && tsc-alias -p tsconfig.json --outDir ./dist/types",
+    "check:types": "tsc --noEmit",
+    "clean": "rimraf dist tsconfig.tsbuildinfo",
+    "dev": "tsc-watch -p tsconfig.json --outDir ./dist/esm --onSuccess \"tsc-alias -p tsconfig.json --outDir ./dist/esm\""
+  },
+  "author": "Layerswap",
+  "homepage": "https://github.com/layerswap/layerswapapp",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/layerswap/layerswapapp.git",
+    "directory": "packages/widget"
+  },
+  "keywords": [
+    "layerswap",
+    "layerswap-widget",
+    "widget",
+    "cross-chain",
+    "bridge"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
+    "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
+    "zustand": "catalog:"
+  },
+  "dependencies": {
+    "@headlessui/react": "^2.1.1",
+    "@number-flow/react": "^0.5.10",
+    "@radix-ui/react-checkbox": "^1.1.5",
+    "@radix-ui/react-context-menu": "^1.0.0",
+    "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-popover": "^1.1.15",
+    "@radix-ui/react-progress": "^1.0.2",
+    "@radix-ui/react-select": "^1.2.1",
+    "@radix-ui/react-slot": "^1.0.2",
+    "@radix-ui/react-tabs": "^1.1.3",
+    "@radix-ui/react-tooltip": "^1.2.8",
+    "@tanstack/react-virtual": "^3.10.8",
+    "@tanstack/virtual-core": "^3.13.12",
+    "@uidotdev/usehooks": "^2.4.1",
+    "axios": "catalog:",
+    "clsx": "^2.1.1",
+    "cmdk": "^0.2.0",
+    "color": "4.2.3",
+    "copy-to-clipboard": "^3.3.3",
+    "formik": "^2.2.9",
+    "framer-motion": "^12.26.2",
+    "lucide-react": "^0.379.0",
+    "qrcode.react": "^3.1.0",
+    "react-error-boundary": "^4.0.11",
+    "react-hot-toast": "^2.2.0",
+    "react-use-intercom": "^2.0.0",
+    "swr": "catalog:",
+    "tailwindcss-animate": "^1.0.5",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.15",
+    "@types/react": "catalog:",
+    "chromatic": "^6.24.1",
+    "esbuild-plugin-path-alias": "^1.0.7",
+    "postcss": "^8.5.3",
+    "postcss-cli": "^11.0.1",
+    "postcss-prefixwrap": "^1.55.0",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "tailwindcss": "^4.0.15",
+    "zustand": "catalog:"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "bugs": {
+    "url": "https://github.com/layerswap/layerswapapp/issues"
+  }
+}

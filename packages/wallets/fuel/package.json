@@ -1,0 +1,74 @@
+{
+  "name": "@layerswap/wallet-fuel",
+  "version": "1.2.1",
+  "description": "Fuel Wallet Provider for Layerswap Widget",
+  "type": "module",
+  "main": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "typings": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/esm/index.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "dist/**/*"
+  ],
+  "scripts": {
+    "build": "pnpm run clean && pnpm run build:esm+types",
+    "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm && tsc-alias -p tsconfig.json --outDir ./dist/types",
+    "check:types": "tsc --noEmit",
+    "clean": "rimraf dist tsconfig.tsbuildinfo actions chains codegen experimental internal query"
+  },
+  "author": "Layerswap",
+  "homepage": "https://github.com/layerswap/layerswapapp",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/layerswap/layerswapapp.git",
+    "directory": "packages/wallets/fuel"
+  },
+  "keywords": [
+    "layerswap",
+    "fuel",
+    "wallet-provider"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
+    "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
+    "@tanstack/react-query": "catalog:",
+    "@layerswap/widget": "workspace:^",
+    "@wagmi/core": "catalog:",
+    "wagmi": "catalog:",
+    "viem": "catalog:"
+  },
+  "dependencies": {
+    "@ethersproject/bytes": "^5.8.0",
+    "@fuel-ts/account": "^0.101.3",
+    "@fuel-ts/address": "^0.101.3",
+    "@fuels/react": "^0.43.2",
+    "bs58": "^6.0.0",
+    "fuels": "^0.101.3",
+    "json-rpc-2.0": "1.7.0",
+    "memoizee": "^0.4.17",
+    "socket.io-client": "^4.8.1",
+    "tweetnacl": "^1.0.3"
+  },
+  "devDependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "@layerswap/widget": "workspace:^"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "bugs": {
+    "url": "https://github.com/layerswap/layerswapapp/issues"
+  }
+}

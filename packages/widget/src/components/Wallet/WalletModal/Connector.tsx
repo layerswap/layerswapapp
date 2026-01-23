@@ -1,0 +1,58 @@
+import { ButtonHTMLAttributes, DetailedHTMLProps, FC } from "react";
+import { WalletModalConnector } from ".";
+import { InternalConnector } from "@/types/wallet";
+import { Loader } from "lucide-react";
+import { resolveWalletConnectorIcon } from "@/lib/wallets/utils/resolveWalletIcon";
+
+type Connector = DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> & {
+    connector: InternalConnector,
+    connectingConnector?: WalletModalConnector
+    isRecent?: boolean
+    onClick: () => void
+    isProviderReady?: boolean
+}
+
+const Connector: FC<Connector> = ({ connector, connectingConnector, onClick, isRecent, isProviderReady = true, ...props }) => {
+    const connectorName = connector?.name
+
+    const Icon = resolveWalletConnectorIcon({ connector: connector, iconUrl: connector.icon })
+    const isLoading = connectingConnector?.name === connectorName
+
+    return (
+        <>
+            <button
+                type="button"
+                disabled={!!connectingConnector || !isProviderReady}
+                className="w-full h-fit flex items-center justify-between bg-secondary-500 hover:bg-secondary-400 transition-colors duration-200 rounded-xl p-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={onClick}
+                {...props}
+            >
+                <div className="flex gap-2.5 items-center font-medium w-full">
+                    <div className="w-11">
+                        <Icon className="w-11 h-auto p-0.5 rounded-[10px] bg-secondary-800" />
+                    </div>
+                    <div className='flex flex-col items-start justify-center col-start-2 col-span-3 min-h-[40px] truncate'>
+
+                        <p className='text-base text-left truncate w-full'>{connectorName}</p>
+                        {
+                            connector.type === 'injected' && !isRecent &&
+                            <p className='text-xs text-secondary-text font-medium'>Installed</p>
+                        }
+                        {
+                            isRecent &&
+                            <p className='text-xs text-primary-buttonTextColor font-semibold bg-primary-700 px-1 py-0.5 rounded-md'>Recent</p>
+                        }
+                    </div>
+                    {
+                        isLoading &&
+                        <div className='absolute right-0 bg-secondary-800 rounded-lg p-1'>
+                            <Loader className='h-4 w-4 animate-spin' />
+                        </div>
+                    }
+                </div>
+            </button>
+        </>
+    )
+}
+
+export default Connector

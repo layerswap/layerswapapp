@@ -15,50 +15,89 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Fetch new walletsData.json
+      - name: Fetch new EVM walletsData.json
         id: fetch_wallets_data
         run: |
-          echo "Fetching new walletsData.json..."
+          echo "Fetching new EVM walletsData.json..."
           curl --fail -s -o new_walletsData.json https://explorer-api.walletconnect.com/v3/wallets?projectId=4b988e37fe730153d49f1ecb64fbbaa7
 
           if [ ! -s new_walletsData.json ]; then
-            echo "❌ Downloaded walletsData.json is empty!"
+            echo "❌ Downloaded EVM walletsData.json is empty!"
             exit 1
           fi
 
           if ! jq empty new_walletsData.json > /dev/null 2>&1; then
-            echo "❌ Downloaded walletsData.json is not valid JSON!"
+            echo "❌ Downloaded EVM walletsData.json is not valid JSON!"
             cat new_walletsData.json
             exit 1
           fi
 
-      - name: Compare with existing walletsData.json
+      - name: Fetch new Solana walletsData.json
+        id: fetch_solana_wallets_data
+        run: |
+          echo "Fetching new Solana walletsData.json..."
+          curl --fail -s -o new_solana_walletsData.json "https://explorer-api.walletconnect.com/v3/wallets?projectId=4b988e37fe730153d49f1ecb64fbbaa7&chains=solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z,solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp,solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+
+          if [ ! -s new_solana_walletsData.json ]; then
+            echo "❌ Downloaded Solana walletsData.json is empty!"
+            exit 1
+          fi
+
+          if ! jq empty new_solana_walletsData.json > /dev/null 2>&1; then
+            echo "❌ Downloaded Solana walletsData.json is not valid JSON!"
+            cat new_solana_walletsData.json
+            exit 1
+          fi
+
+      - name: Compare with existing EVM walletsData.json
         id: compare_wallets_data
         run: |
-          echo "Comparing new walletsData.json with existing one..."
-          jq --sort-keys . public/walletsData.json > old_normalized.json
+          echo "Comparing new EVM walletsData.json with existing one..."
+          jq --sort-keys . packages/wallets/evm/src/jsons/walletsData.json > old_normalized.json
           jq --sort-keys . new_walletsData.json > new_normalized.json
 
           if diff -q old_normalized.json new_normalized.json > /dev/null; then
-            echo "No changes detected in walletsData.json."
+            echo "No changes detected in EVM walletsData.json."
             echo "changed=false" >> $GITHUB_OUTPUT
           else
-            echo "Changes detected in walletsData.json."
-            jq --sort-keys . new_walletsData.json > public/walletsData.json
+            echo "Changes detected in EVM walletsData.json."
+            jq --sort-keys . new_walletsData.json > packages/wallets/evm/src/jsons/walletsData.json
             echo "changed=true" >> $GITHUB_OUTPUT
           fi
 
           # Clean up temporary files
           rm -f old_normalized.json new_normalized.json new_walletsData.json
 
+      - name: Compare with existing Solana walletsData.json
+        id: compare_solana_wallets_data
+        run: |
+          echo "Comparing new Solana walletsData.json with existing one..."
+          jq --sort-keys . packages/wallets/svm/src/jsons/walletsData.json > old_solana_normalized.json
+          jq --sort-keys . new_solana_walletsData.json > new_solana_normalized.json
+
+          if diff -q old_solana_normalized.json new_solana_normalized.json > /dev/null; then
+            echo "No changes detected in Solana walletsData.json."
+            echo "solana_changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "Changes detected in Solana walletsData.json."
+            jq --sort-keys . new_solana_walletsData.json > packages/wallets/svm/src/jsons/walletsData.json
+            echo "solana_changed=true" >> $GITHUB_OUTPUT
+          fi
+
+          # Clean up temporary files
+          rm -f old_solana_normalized.json new_solana_normalized.json new_solana_walletsData.json
+
       - name: Create Pull Request
-        if: steps.compare_wallets_data.outputs.changed == 'true'
+        if: steps.compare_wallets_data.outputs.changed == 'true' || steps.compare_solana_wallets_data.outputs.solana_changed == 'true'
         uses: peter-evans/create-pull-request@v5
         with:
           commit-message: "chore: update walletsData.json"
           title: "chore: update walletsData.json"
           body: |
-            This PR updates `public/walletsData.json` with the latest data.
+            This PR updates wallet data with the latest information from WalletConnect API.
+            
+            - EVM wallets: ${{ steps.compare_wallets_data.outputs.changed == 'true' && 'Updated ✅' || 'No changes' }}
+            - Solana wallets: ${{ steps.compare_solana_wallets_data.outputs.solana_changed == 'true' && 'Updated ✅' || 'No changes' }}
           branch: update-wallets-data
           base: dev
           delete-branch: true

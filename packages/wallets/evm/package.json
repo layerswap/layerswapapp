@@ -1,0 +1,72 @@
+{
+  "name": "@layerswap/wallet-evm",
+  "version": "1.2.1",
+  "description": "EVM Wallet Provider for Layerswap Widget",
+  "type": "module",
+  "main": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "typings": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/esm/index.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "dist/**/*"
+  ],
+  "scripts": {
+    "build": "pnpm run clean && pnpm run build:esm+types",
+    "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm && tsc-alias -p tsconfig.json --outDir ./dist/types",
+    "check:types": "tsc --noEmit",
+    "clean": "rimraf dist tsconfig.tsbuildinfo actions chains codegen experimental internal query",
+    "dev": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types --watch"
+  },
+  "author": "Layerswap",
+  "homepage": "https://github.com/layerswap/layerswapapp",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/layerswap/layerswapapp.git",
+    "directory": "packages/wallets/evm"
+  },
+  "keywords": [
+    "layerswap",
+    "evm",
+    "wallet",
+    "provider"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@layerswap/widget": "workspace:^",
+    "@tanstack/react-query": "catalog:",
+    "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
+    "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
+    "viem": "catalog:",
+    "wagmi": "catalog:"
+  },
+  "dependencies": {
+    "@metamask/sdk": "^0.33.1",
+    "@walletconnect/ethereum-provider": "2.21.8",
+    "ethers": "5.7.2",
+    "js-sha3": "^0.8.0"
+  },
+  "devDependencies": {
+    "@layerswap/widget": "workspace:^",
+    "@tailwindcss/postcss": "^4.0.15",
+    "@types/react": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "tailwindcss": "^4.0.15"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "bugs": {
+    "url": "https://github.com/layerswap/layerswapapp/issues"
+  }
+}

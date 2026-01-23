@@ -1,0 +1,36 @@
+{
+  "name": "nextjs-app-router",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev ",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@bigmi/client": "^0.6.1",
+    "@bigmi/core": "^0.6.1",
+    "@bigmi/react": "^0.6.1",
+    "@layerswap/wallets": "^1.0.0",
+    "@layerswap/widget": "^1.1.0",
+    "@tanstack/react-query": "^5.90.7",
+    "@ton/crypto": "^3.3.0",
+    "next": "^15.3.3",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "viem": "^2.38.6",
+    "wagmi": "^2.19.3",
+    "swr": "^2.2.4",
+    "zustand": "4.5.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.13",
+    "@types/node": "^20.14.8",
+    "@types/react": "19.2.0",
+    "eslint-config-next": "^15.1.7",
+    "tailwindcss": "^4.0.15",
+    "typescript": "5.5.4"
+  },
+  "packageManager": "yarn@1.22.22"
+}
