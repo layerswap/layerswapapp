@@ -12,6 +12,8 @@ import PickerWalletConnect from "./RouterPickerWalletConnect";
 import { swapInProgress } from "@/components/utils/swapUtils";
 import { updateForm } from "@/components/Swap/Form/updateForm";
 import clsx from "clsx";
+import useSuggestionsLimit from "@/hooks/useSuggestionsLimit";
+import useWallet from "@/hooks/useWallet";
 
 const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, className?: string }> = ({ direction, isExchange = false, className }) => {
     const {
@@ -19,7 +21,14 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const [searchQuery, setSearchQuery] = useState("")
-    const { allRoutes, isLoading, routeElements, selectedRoute, selectedToken } = useFormRoutes({ direction, values }, searchQuery)
+    const { wallets } = useWallet()
+    const showsWalletButton = wallets.length === 0 && direction === 'from' && !searchQuery;
+    const { suggestionsLimit, measureRef } = useSuggestionsLimit({
+        hasWallet: wallets.length > 0,
+        showsWalletButton
+    });
+
+    const { allRoutes, isLoading, routeElements, selectedRoute, selectedToken } = useFormRoutes({ direction, values }, searchQuery, suggestionsLimit)
     const currencyFieldName = direction === 'from' ? 'fromAsset' : 'toAsset';
 
     useEffect(() => {
@@ -58,9 +67,9 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
             shouldValidate: true,
             setFieldValue
         })
-    }, [currencyFieldName, direction, setFieldValue])
-    const showbalance = !isExchange && (direction === 'to' || values.depositMethod === 'wallet')
+    }, [currencyFieldName, direction])
 
+    const showBalance = !isExchange && (direction === 'to' || values.depositMethod === 'wallet')
 
     return (
         <div className={clsx("flex flex-col self-end relative items-center", className)}>
@@ -78,12 +87,13 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
                             direction={direction}
                             selectedRoute={selectedRoute?.name}
                             selectedToken={selectedToken?.symbol}
+                            measureRef={measureRef}
                         />
                     )}
                 </SelectorContent>
             </Selector>
             {
-                showbalance &&
+                showBalance &&
                 <Balance values={values} direction={direction} />
             }
         </div>
