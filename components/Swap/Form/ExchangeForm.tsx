@@ -79,10 +79,10 @@ const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
             )} */}
 
             <DepositMethodComponent />
-            <Form className="h-full grow flex flex-col flex-1 justify-between w-full gap-3">
+            <Form className="h-full grow flex flex-col flex-1 justify-between w-full gap-2">
                 <Widget.Content>
                     <div className="w-full flex flex-col justify-between flex-1 relative">
-                        <div className="flex flex-col w-full gap-3">
+                        <div className="flex flex-col w-full gap-2">
                             <div className="space-y-2">
                                 <label htmlFor="From" className="block font-normal text-secondary-text text-base leading-5">
                                     Send from
@@ -101,7 +101,7 @@ const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
                                 <Address partner={partner} >{
                                     ({ addressItem }) => {
                                         const addressProviderIcon = (partner?.is_wallet && addressItem?.group === AddressGroup.FromQuery && partner?.logo) ? partner.logo : undefined
-                                        return <div className="hover:bg-secondary-300 bg-secondary-500 rounded-2xl p-3 h-[52px]">
+                                        return <div className="hover:bg-secondary-300 bg-secondary-500 rounded-2xl p-3 h-13">
                                             {
                                                 addressItem ? <>
                                                     <AddressButton address={addressItem.address} network={destination} wallet={wallet} addressProviderIcon={addressProviderIcon} />
