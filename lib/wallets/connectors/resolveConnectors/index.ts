@@ -19,6 +19,7 @@ export type WalletConnectWallet = {
     };
     rdns?: string;
     hasBrowserExtension?: boolean;
+    extensionNotFound: boolean,
     type: string;
     icon: string;
     projectId: string;
@@ -52,11 +53,11 @@ export const resolveConnector = (name: string) => {
     if (connectorCache.has(name)) {
         return connectorCache.get(name)!
     }
-    
+
     const wallet = wallets.find(w => w.name === name && !walletsToFilter.includes(w.id))
     const params = resolveWallet(wallet)
     const connector = walletConnect(params as any)
-    
+
     // Cache the connector for future use
     connectorCache.set(name, connector)
     return connector
@@ -70,6 +71,7 @@ const resolveWallet = (wallet: any) => {
 
     const isMobileSupported = !!wallet.mobile.universal || !!wallet.mobile.native
     const isWalletConnectSupported = isMobileSupported || !!wallet.desktop?.universal || !!wallet.desktop?.native
+    const type = isWalletConnectSupported ? "walletConnect" : "other"
 
     const w: WalletConnectWallet = {
         id: wallet.slug,
@@ -81,9 +83,12 @@ const resolveWallet = (wallet: any) => {
         showQrModal: false,
         customStoragePrefix: wallet.slug,
         order: resolveWalletConnectorIndex(wallet.slug),
-        type: isWalletConnectSupported ? "walletConnect" : "other",
+        type,
         isMobileSupported: isMobileSupported,
-        hasBrowserExtension: wallet.injected != null
+        hasBrowserExtension: wallet.injected != null,
+        installUrl: wallet.injected != null ? wallet.app.browser ?? wallet.app.chrome : undefined,
+        extensionNotFound: type == 'walletConnect',
+        providerName: wallet.name
     }
 
     return w

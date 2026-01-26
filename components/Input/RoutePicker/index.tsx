@@ -58,14 +58,14 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
             shouldValidate: true,
             setFieldValue
         })
-    }, [currencyFieldName, direction, values])
+    }, [currencyFieldName, direction, setFieldValue])
     const showbalance = !isExchange && (direction === 'to' || values.depositMethod === 'wallet')
 
 
     return (
         <div className={clsx("flex flex-col self-end relative items-center", className)}>
             <Selector>
-                <SelectorTrigger disabled={false} className={"group-[.exchange-picker]:bg-secondary-500 py-1.5 px-2 group-[.exchange-picker]:py-2! group-[.exchange-picker]:px-3! active:animate-press-down group-[.exchange-picker]:active:animate-none"}>
+                <SelectorTrigger data-attr={direction === "from" ? "from-route-picker" : "to-route-picker"} disabled={false} className={"group-[.exchange-picker]:bg-secondary-500 py-1.5 px-2 group-[.exchange-picker]:py-2! group-[.exchange-picker]:px-3! active:animate-press-down group-[.exchange-picker]:active:animate-none"}>
                     <SelectedRouteDisplay route={selectedRoute} token={selectedToken} placeholder="Select token" />
                 </SelectorTrigger>
                 <SelectorContent isLoading={isLoading} searchHint="Search" header={<PickerWalletConnect direction={direction} />}>

@@ -3,19 +3,16 @@ import Layout from '../../components/layout';
 import { InferGetServerSidePropsType } from 'next';
 import React from 'react';
 import { SwapDataProvider } from '../../context/swap';
-import { TimerProvider } from '../../context/timerContext';
 import { getThemeData } from '../../helpers/settingsHelper';
 import SwapWithdrawal from '../../components/SwapWithdrawal'
 
-const SwapDetails = ({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const SwapDetails = ({ settings, themeData, apiKey, swapData }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   LayerSwapApiClient.apiKey = apiKey
 
   return (<>
     <Layout settings={settings || undefined} themeData={themeData}>
-      <SwapDataProvider >
-        <TimerProvider>
-          <SwapWithdrawal />
-        </TimerProvider>
+      <SwapDataProvider initialSwapData={swapData}>
+        <SwapWithdrawal />
       </SwapDataProvider >
     </Layout>
   </>)
@@ -38,6 +35,17 @@ export const getServerSideProps = async (ctx) => {
   const apiClient = new LayerSwapApiClient()
   const { data: networkData } = await apiClient.GetLSNetworksAsync()
 
+  const { data: swapData } = await apiClient.GetSwapAsync(params.swapId)
+
+  if (swapData?.swap.transactions.length == 0) {
+    return {
+      redirect: {
+        destination: `/?from=${swapData?.swap.source_network.name}&to=${swapData?.swap.destination_network.name}&fromAsset=${swapData?.swap.source_token.symbol}&toAsset=${swapData?.swap.destination_token.symbol}&amount=${swapData?.swap.requested_amount}`,
+        permanent: true,
+      }
+    }
+  }
+
   if (!networkData) return
 
   const settings = {
@@ -50,7 +58,8 @@ export const getServerSideProps = async (ctx) => {
     props: {
       settings,
       themeData,
-      apiKey
+      apiKey,
+      swapData: swapData || null
     }
   }
 }

@@ -1,5 +1,5 @@
 import Image, { ImageProps } from "next/image";
-import React, { forwardRef, useEffect, useState } from "react";
+import React, { forwardRef, useCallback, useEffect, useState } from "react";
 import LogoPlaceholder from "../icons/LogoPlaceholder";
 
 export const ImageWithFallback = forwardRef<HTMLImageElement, ImageProps>(({ src, ...props }, ref) => {
@@ -11,9 +11,9 @@ export const ImageWithFallback = forwardRef<HTMLImageElement, ImageProps>(({ src
         setHasError(false);
     }, [src])
 
-    const handleError = () => {
+    const handleError = useCallback(() => {
         setHasError(true);
-    }
+    }, [setHasError]);
 
     if (hasError) {
         return <LogoPlaceholder {...props} />;

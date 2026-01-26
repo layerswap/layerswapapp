@@ -9,19 +9,21 @@ type ResoleMaxAllowedAmountProps = {
     fromCurrency: Token
     native_currency: Token | undefined
     depositMethod: 'wallet' | 'deposit_address' | undefined
+    fallbackAmount: number
 }
 
 export const resolveMaxAllowedAmount = (props: ResoleMaxAllowedAmountProps) => {
-    const { limitsMaxAmount, walletBalance, gasAmount, fromCurrency, native_currency, depositMethod } = props
+    const { limitsMaxAmount, walletBalance, gasAmount, fromCurrency, native_currency, depositMethod, fallbackAmount } = props
 
-    if (!walletBalance || !walletBalance.amount || (limitsMaxAmount && walletBalance.amount > limitsMaxAmount) || depositMethod !== 'wallet')
+    if (!walletBalance || isNaN(Number(walletBalance.amount)) || depositMethod !== 'wallet')
         return limitsMaxAmount
 
-    const shouldPayGasWithTheToken = (native_currency?.symbol === fromCurrency?.symbol) || !native_currency
-    const payableAmount = walletBalance.amount - gasAmount
+    const shouldPayGasWithTheToken = Number(walletBalance.amount) > 0 && (native_currency?.symbol === fromCurrency?.symbol) || !native_currency
+    const payableAmount = Number(walletBalance.amount) - gasAmount
 
     if (!shouldPayGasWithTheToken)
-        return walletBalance.amount
+        return isNaN(Number(walletBalance.amount)) ? 0 : Number(walletBalance.amount)
 
-    return Number(Number(payableAmount).toFixed(fromCurrency?.decimals))
+    const res = Number(Number(payableAmount).toFixed(fromCurrency?.decimals))
+    return res <= 0 ? fallbackAmount : res
 }

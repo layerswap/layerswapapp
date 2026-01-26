@@ -10,7 +10,7 @@ import { Partner } from "@/Models/Partner";
 import RoutePicker from "@/components/Input/RoutePicker";
 import AmountField from "@/components/Input/Amount";
 import Address from "@/components/Input/Address";
-import { ChevronDown, X } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import AddressIcon from "@/components/AddressIcon";
 import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
 import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
@@ -98,30 +98,28 @@ const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
                                 <div className="relative group exchange-picker">
                                     <RoutePicker direction="to" isExchange={true} />
                                 </div>
-                                <div className="hover:bg-secondary-300 bg-secondary-500 rounded-2xl p-3 h-13">
-                                    <Address partner={partner} >{
-                                        ({ addressItem }) => {
-                                            const addressProviderIcon = (partner?.is_wallet && addressItem?.group === AddressGroup.FromQuery && partner?.logo) ? partner.logo : undefined
-                                            return <>
-                                                {
-                                                    addressItem ? <>
-                                                        <AddressButton address={addressItem.address} network={destination} wallet={wallet} addressProviderIcon={addressProviderIcon} />
+                                <Address partner={partner} >{
+                                    ({ addressItem }) => {
+                                        const addressProviderIcon = (partner?.is_wallet && addressItem?.group === AddressGroup.FromQuery && partner?.logo) ? partner.logo : undefined
+                                        return <div className="hover:bg-secondary-300 bg-secondary-500 rounded-2xl p-3 h-13">
+                                            {
+                                                addressItem ? <>
+                                                    <AddressButton address={addressItem.address} network={destination} wallet={wallet} addressProviderIcon={addressProviderIcon} />
+                                                </>
+                                                    : destination_address ? <>
+                                                        <AddressButton address={destination_address} />
                                                     </>
-                                                        : destination_address ? <>
-                                                            <AddressButton address={destination_address} />
-                                                        </>
-                                                            :
-                                                            <span className="flex items-center">
-                                                                <SelectedEchangePlaceholder placeholder='Enter destination address' />
-                                                                <span className="absolute right-0 px-1 pr-5 pointer-events-none text-primary-text">
-                                                                    <ChevronDown className="h-4 w-4 text-secondary-text" aria-hidden="true" />
-                                                                </span>
+                                                        :
+                                                        <span className="flex items-center">
+                                                            <SelectedEchangePlaceholder placeholder='Enter destination address' />
+                                                            <span className="absolute right-0 px-1 pr-5 pointer-events-none text-primary-text">
+                                                                <ChevronDown className="h-4 w-4 text-secondary-text" aria-hidden="true" />
                                                             </span>
-                                                }
-                                            </>
-                                        }
-                                    }</Address>
-                                </div>
+                                                        </span>
+                                            }
+                                        </div>
+                                    }
+                                }</Address>
                             </div>
                             <div className="bg-secondary-500 rounded-2xl p-3 group space-y-2" onClick={setShowQuickActions} ref={parentRef}>
                                 <div className="flex justify-between items-center">

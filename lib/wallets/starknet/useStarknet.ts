@@ -113,7 +113,9 @@ export default function useStarknet(): WalletProvider {
             id: connector.id,
             icon: typeof connector.icon === 'string' ? connector.icon : (connector.icon.light.startsWith('data:') ? connector.icon.light : `data:image/svg+xml;base64,${btoa(connector.icon.light.replaceAll('currentColor', '#FFFFFF'))}`),
             type: connector?.["_wallet"] ? 'injected' : 'other',
-            installUrl: connector?.["_wallet"] ? undefined : connectorsConfigs.find(c => c.id === connector.id)?.installLink,
+            installUrl: connectorsConfigs.find(c => c.id === connector.id)?.installLink,
+            extensionNotFound: !connector?.["_wallet"] && connectorsConfigs.find(c => c.id === connector.id)?.installLink !== undefined,
+            providerName: name
         }
     })
 

@@ -17,7 +17,6 @@ import { Formik, FormikProps } from 'formik';
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import { useArgs } from 'storybook/preview-api';
 import WalletsProviders from '../components/WalletProviders';
-import { TimerProvider } from '@/context/timerContext';
 import { Tabs } from '@/components/Swap/Form/NetworkExchangeTabs';
 
 const Comp: FC<{ settings: any, swapData: SwapContextData, failedSwap?: SwapItem, theme?: "default" | "light", initialValues?: SwapFormValues, timestamp?: string }> = ({ swapData, theme, initialValues }) => {
@@ -42,24 +41,22 @@ const Comp: FC<{ settings: any, swapData: SwapContextData, failedSwap?: SwapItem
         <SettingsStateContext.Provider value={appSettings}>
             <Layout settings={Settings || undefined} themeData={themeData}>
                 <SwapDataProvider >
-                    <TimerProvider>
-                        <WalletsProviders basePath={'/'} themeData={THEME_COLORS['default']} appName={'Layerswap'}>
-                            <SwapDataStateContext.Provider value={swapContextInitialValues}>
-                                <SwapDataUpdateContext.Provider value={SwapMockFunctions}>
-                                    <Formik
-                                        innerRef={formikRef}
-                                        initialValues={initialValues!}
-                                        validateOnMount={true}
-                                        onSubmit={() => { }}
-                                    >
-                                        <Tabs defaultValue="cross-chain">
-                                            <Component initialValues={initialValues} />
-                                        </Tabs>
-                                    </Formik>
-                                </SwapDataUpdateContext.Provider>
-                            </SwapDataStateContext.Provider >
-                        </WalletsProviders>
-                    </TimerProvider>
+                    <WalletsProviders basePath={'/'} themeData={THEME_COLORS['default']} appName={'Layerswap'}>
+                        <SwapDataStateContext.Provider value={swapContextInitialValues}>
+                            <SwapDataUpdateContext.Provider value={SwapMockFunctions}>
+                                <Formik
+                                    innerRef={formikRef}
+                                    initialValues={initialValues!}
+                                    validateOnMount={true}
+                                    onSubmit={() => { }}
+                                >
+                                    <Tabs defaultValue="cross-chain">
+                                        <Component initialValues={initialValues} />
+                                    </Tabs>
+                                </Formik>
+                            </SwapDataUpdateContext.Provider>
+                        </SwapDataStateContext.Provider >
+                    </WalletsProviders>
                 </SwapDataProvider>
             </Layout>
         </SettingsStateContext.Provider>

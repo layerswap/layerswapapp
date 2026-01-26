@@ -70,7 +70,8 @@ export default function useTron(): WalletProvider {
             return wallet
         }
         catch (e) {
-            console.log(e)
+            const error = e
+            throw new Error(e.message || e);
         }
     }
 
@@ -90,7 +91,9 @@ export default function useTron(): WalletProvider {
             name: wallet.adapter.name,
             icon: wallet.adapter.icon,
             type: isNotInstalled ? 'other' : 'injected',
-            installUrl: isNotInstalled ? wallet.adapter?.url : undefined,
+            installUrl: wallet.adapter?.url,
+            extensionNotFound: isNotInstalled,
+            providerName: name
         }
     }), [wallets])
 
