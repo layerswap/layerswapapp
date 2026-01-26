@@ -196,7 +196,8 @@ export default function useFuel(): WalletProvider {
             id: c.name,
             type: isInstalled ? 'injected' : 'other',
             installUrl: c.metadata.install.link,
-            extensionNotFound: !c.installed
+            extensionNotFound: !c.installed,
+            providerName: name
         }
     })
 

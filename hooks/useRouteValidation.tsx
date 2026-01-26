@@ -43,7 +43,7 @@ export function resolveRouteValidation(quoteError?: QuoteError) {
     const value = useMemo(() => ({
         message: validationMessage,
         details: validationDetails
-    }), [validationMessage, validationDetails]);
+    }), [validationMessage]);
 
     return value
 }

@@ -60,6 +60,16 @@ module.exports = (phase, { defaultConfig }) => {
       removeConsole: false,
     },
     reactStrictMode: true,
+    experimental: {
+      optimizePackageImports: [
+        'lucide-react',
+        '@radix-ui/react-checkbox',
+        '@radix-ui/react-popover',
+        '@radix-ui/react-select',
+        '@radix-ui/react-tabs',
+        '@radix-ui/react-tooltip',
+      ],
+    },
     webpack: config => {
       config.resolve.fallback = { fs: false, net: false, tls: false };
       return config;
