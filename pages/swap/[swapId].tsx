@@ -3,7 +3,6 @@ import Layout from '../../components/layout';
 import { InferGetServerSidePropsType } from 'next';
 import React from 'react';
 import { SwapDataProvider } from '../../context/swap';
-import { TimerProvider } from '../../context/timerContext';
 import { getThemeData } from '../../helpers/settingsHelper';
 import SwapWithdrawal from '../../components/SwapWithdrawal'
 
@@ -13,9 +12,7 @@ const SwapDetails = ({ settings, themeData, apiKey, swapData }: InferGetServerSi
   return (<>
     <Layout settings={settings || undefined} themeData={themeData}>
       <SwapDataProvider initialSwapData={swapData}>
-        <TimerProvider>
-          <SwapWithdrawal />
-        </TimerProvider>
+        <SwapWithdrawal />
       </SwapDataProvider >
     </Layout>
   </>)
