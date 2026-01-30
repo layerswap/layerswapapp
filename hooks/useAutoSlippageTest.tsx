@@ -8,9 +8,9 @@ type AutoSlippageTestProps = {
     values: SwapFormValues
     shouldTest: boolean
 }
+const apiClient = new LayerSwapApiClient()
 
 export function useAutoSlippageTest({ values, shouldTest }: AutoSlippageTestProps) {
-    const apiClient = new LayerSwapApiClient()
 
     const autoSlippageTestURL = shouldTest
         ? buildQuoteUrl({
