@@ -8,10 +8,11 @@ import useFormRoutes from "@/hooks/useFormRoutes";
 import Balance from "../Amount/Balance";
 import { Content } from "./Content";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
-import PickerWalletConnect from "./RouterPickerWalletConnect";
+import PickerWalletConnect from "./RoutePickerWalletConnect";
 import { swapInProgress } from "@/components/utils/swapUtils";
 import { updateForm } from "@/components/Swap/Form/updateForm";
 import clsx from "clsx";
+import { useSwapAccountsUpdate } from "@/context/swapAccounts";
 
 const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, className?: string }> = ({ direction, isExchange = false, className }) => {
     const {
@@ -21,6 +22,7 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
     const [searchQuery, setSearchQuery] = useState("")
     const { allRoutes, isLoading, routeElements, selectedRoute, selectedToken } = useFormRoutes({ direction, values }, searchQuery)
     const currencyFieldName = direction === 'from' ? 'fromAsset' : 'toAsset';
+    const { autoSelectSourceForNetwork } = useSwapAccountsUpdate();
 
     useEffect(() => {
         const updateValues = async () => {
@@ -58,7 +60,10 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
             shouldValidate: true,
             setFieldValue
         })
-    }, [currencyFieldName, direction, setFieldValue])
+        if (direction === "from") {
+            autoSelectSourceForNetwork(route.name);
+        }
+    }, [currencyFieldName, direction, setFieldValue, autoSelectSourceForNetwork])
     const showbalance = !isExchange && (direction === 'to' || values.depositMethod === 'wallet')
 
 

@@ -8,7 +8,7 @@ import { useBalance } from "@/lib/balances/useBalance";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { GroupedTokenElement, RowElement } from "@/Models/Route";
 import { getKey, useBalanceStore } from "@/stores/balanceStore";
-import { useSwapAccounts } from "@/context/swapAccounts";
+import { findWalletWithSupportedNetwork, useSwapAccounts } from "@/context/swapAccounts";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
 import { getTotalBalanceInUSD } from "@/helpers/balanceHelper";
 import { useMemo, memo } from "react";
@@ -43,9 +43,9 @@ type NetworkTokenItemProps = {
 }
 
 export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
-    const { item, route, direction, type } = props
+    const { item, route, direction } = props
     const swapAccounts = useSwapAccounts(direction)
-    const selectedAccount = swapAccounts?.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.name));
+    const selectedAccount = findWalletWithSupportedNetwork(swapAccounts, route.name, direction)
 
     const { balances } = useBalance(selectedAccount?.address, route)
 
@@ -93,9 +93,9 @@ type NetworkRouteItemProps = {
 
 export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
     const { item, direction, hideTokenImages } = props
-    const swapAccounts = useSwapAccounts(direction)
 
-    const selectedAccount = swapAccounts?.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(item.name));
+    const swapAccounts = useSwapAccounts(direction)
+    const selectedAccount = findWalletWithSupportedNetwork(swapAccounts, item.name, direction)
     const networkBalances = useBalance(selectedAccount?.address, item)
     const totalInUSD = useMemo(() => networkBalances ? getTotalBalanceInUSD(networkBalances, item) : undefined, [networkBalances.balances, item])
     const tokensWithBalance = networkBalances.balances?.filter(b => b.amount && b.amount > 0)
@@ -182,7 +182,7 @@ export const GroupedTokenHeader = ({
         new Map(
             tokens
                 .map(({ route }) => {
-                    const address = swapAccounts.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.route.name))?.address
+                    const address = findWalletWithSupportedNetwork(swapAccounts, route.route.name, direction)?.address
                     const key = address && route.route ? getKey(address, route.route) : 'unknown'
 
                     const tokenSymbol = route.token.symbol;
@@ -200,7 +200,7 @@ export const GroupedTokenHeader = ({
     );
 
     const tokenBalances = tokens.reduce((acc, { route }) => {
-        const address = swapAccounts.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.route.name))?.address
+        const address = findWalletWithSupportedNetwork(swapAccounts, route.route.name, direction)?.address
         const key = address && route.route ? getKey(address, route.route) : 'unknown'
 
         const tokenSymbol = route.token.symbol;

@@ -14,12 +14,14 @@ type PickerAccountsProviderProps = {
 
 type SwapAccountsContextType = {
     sourceAccounts: AccountIdentityWithSupportedNetworks[];
+    allSourceAccounts: AccountIdentityWithSupportedNetworks[];
     destinationAccounts: (AccountIdentity | AccountIdentityWithSupportedNetworks)[];
 }
 
 type SwapAccountsUpdateContextType = {
     selectDestinationAccount: (account: BaseAccountIdentity) => void;
     selectSourceAccount: (account: BaseAccountIdentity) => void;
+    autoSelectSourceForNetwork: (networkName: string) => void;
 }
 
 type BaseAccountIdentity = {
@@ -46,6 +48,18 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
     const [selectedDestAccounts, setSelectedDestinationAccounts] = useState<BaseAccountIdentity[]>([])
     const [selectedSourceAccounts, setSelectedSourceAccounts] = useState<BaseAccountIdentity[]>([])
     const { providers } = useWallet()
+
+    const allSourceAccounts: AccountIdentityWithSupportedNetworks[] = useMemo(() => {
+        return providers.flatMap(provider => {
+            if (!hasWallet(provider)) return [];
+            const wallets = provider.connectedWallets?.length
+                ? provider.connectedWallets
+                : [provider.activeWallet];
+            return wallets.map(wallet =>
+                ResolveWalletSwapAccount(provider, wallet, wallet.address)
+            );
+        });
+    }, [providers]);
 
     const sourceAccounts: AccountIdentityWithSupportedNetworks[] = useMemo(() => {
         return providers.map(provider => {
@@ -126,15 +140,33 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
         });
     }, [destinationAccounts, sourceAccounts])
 
+    const autoSelectSourceForNetwork = useCallback((networkName: string) => {
+        // Check if current selected account already supports the network
+        const selectedAccount = findWalletWithSupportedNetwork(sourceAccounts, networkName, "from");
+        if (selectedAccount) return; // Already have compatible wallet
+
+        // Find a compatible wallet from all connected wallets
+        const compatibleWallet = findWalletWithSupportedNetwork(allSourceAccounts, networkName, "from");
+        if (compatibleWallet) {
+            selectSourceAccount({
+                id: compatibleWallet.id,
+                address: compatibleWallet.address,
+                providerName: compatibleWallet.providerName
+            });
+        }
+    }, [sourceAccounts, allSourceAccounts, selectSourceAccount])
+
     const stateValues: SwapAccountsContextType = useMemo(() => ({
         sourceAccounts,
+        allSourceAccounts,
         destinationAccounts
-    }), [sourceAccounts, destinationAccounts]);
+    }), [sourceAccounts, allSourceAccounts, destinationAccounts]);
 
     const update: SwapAccountsUpdateContextType = useMemo(() => ({
         selectDestinationAccount,
         selectSourceAccount,
-    }), [sourceAccounts, destinationAccounts, selectSourceAccount, selectDestinationAccount]);
+        autoSelectSourceForNetwork,
+    }), [sourceAccounts, destinationAccounts, selectSourceAccount, selectDestinationAccount, autoSelectSourceForNetwork]);
 
     return (
         <SwapAccountsStateContext.Provider value={stateValues}>
@@ -165,14 +197,7 @@ export function useSelectedAccount(direction: SwapDirection, networkName: string
     if (values === undefined) {
         throw new Error('useSwapAccounts must be used within a SwapAccountsProvider');
     }
-    return direction === "from" ? values.sourceAccounts.find(acc => acc.provider.withdrawalSupportedNetworks?.some(n => n === networkName))
-        :
-        values.destinationAccounts.find(acc => {
-            if ('walletAutofillSupportedNetworks' in acc) {
-                return acc.walletAutofillSupportedNetworks?.some(n => n === networkName)
-            }
-            return acc.provider?.autofillSupportedNetworks?.some(n => n === networkName)
-        });
+    return findWalletWithSupportedNetwork(direction === "from" ? values.sourceAccounts : values.destinationAccounts, networkName, direction);
 }
 
 export function useNetworkBalanceKey(direction: SwapDirection, networkName: string | undefined) {
@@ -194,6 +219,15 @@ export function useSelectSwapAccount(direction: SwapDirection) {
         throw new Error('useSelectSwapAccount must be used within a SwapAccountsUpdateContext');
     }
     return direction === "from" ? values.selectSourceAccount : values.selectDestinationAccount;
+}
+
+export function useSwapAccountsUpdate() {
+    const values = useContext<SwapAccountsUpdateContextType>(SwapAccountsUpdateContext as Context<SwapAccountsUpdateContextType>);
+
+    if (values === undefined) {
+        throw new Error('useSwapAccountsUpdate must be used within a SwapAccountsUpdateContext');
+    }
+    return values;
 }
 
 function hasWallet(
@@ -229,4 +263,20 @@ function ResolveManualSwapAccount(provider: WalletProvider, address: string): Ac
             <AddressIcon className="h-4 w-4 p-0.5" address={address} size={20} {...props} />
         ),
     };
+}
+
+export function findWalletWithSupportedNetwork(accounts: (AccountIdentity | AccountIdentityWithSupportedNetworks)[], networkName: string, direction: SwapDirection) {
+    return direction === "from"
+        ? accounts.find(acc => {
+            if ('walletWithdrawalSupportedNetworks' in acc && acc.walletWithdrawalSupportedNetworks != null) {
+                return acc.walletWithdrawalSupportedNetworks.some(n => n === networkName)
+            }
+            return acc.provider.withdrawalSupportedNetworks?.some(n => n === networkName)
+        })
+        : accounts.find(acc => {
+            if ('walletAutofillSupportedNetworks' in acc) {
+                return acc.walletAutofillSupportedNetworks?.some(n => n === networkName)
+            }
+            return acc.provider?.autofillSupportedNetworks?.some(n => n === networkName)
+        });
 }

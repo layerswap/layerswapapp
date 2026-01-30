@@ -1,6 +1,6 @@
 import { Plus, Unplug } from "lucide-react";
 import AddressIcon from "../AddressIcon";
-import { FC, HTMLAttributes, useCallback } from "react";
+import { FC, useCallback } from "react";
 import { SelectAccountProps, Wallet, WalletProvider } from "../../Models/WalletProvider";
 import { ExtendedAddress } from "../Input/Address/AddressPicker/AddressWithIcon";
 import { clsx } from 'clsx';
@@ -156,7 +156,7 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: wallet, n
                                             onDisconnect={() => hasDisconnect(wallet) && wallet.disconnect()}
                                         />
                                     }
-                                    <p className="text-xs text-secondary-text">
+                                    <p className="text-start text-xs text-secondary-text">
                                         {wallet.displayName}
                                     </p>
                                 </div>
