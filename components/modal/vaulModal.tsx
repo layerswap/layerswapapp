@@ -1,4 +1,4 @@
-import { Dispatch, FC, ReactNode, SetStateAction, useEffect, useMemo, useRef, useState } from 'react';
+import { Dispatch, FC, ReactNode, SetStateAction, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { clsx } from 'clsx';
 import useWindowDimensions from '@/hooks/useWindowDimensions';
@@ -35,10 +35,6 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
 
     const { snapPoints } = useSnapPoints()
     const snapPointsHeight = snapPoints.map((item) => item.height);
-
-    const drawerSnapPoints = useMemo(() => {
-        return snapPointsHeight;
-    }, [snapPointsHeight]);
 
     const isLastSnap = mode === 'snapPoints' ? snapElement?.id === snapPoints[snapPoints.length - 1]?.id : true;
 
@@ -107,7 +103,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
     const container = isMobile ? undefined : document.getElementById('widget');
 
     const snapPointsProps = mode === 'snapPoints' ? {
-        snapPoints: drawerSnapPoints,
+        snapPoints: snapPointsHeight,
         activeSnapPoint: snap,
         setActiveSnapPoint: setSnap,
         fadeFromIndex: 0 as const,
