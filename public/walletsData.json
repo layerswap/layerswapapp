@@ -3502,12 +3502,9 @@
       "category": "Mobile Wallets",
       "chains": [
         "eip155:1",
-        "eip155:10",
         "eip155:137",
-        "eip155:42161",
         "eip155:43114",
-        "eip155:56",
-        "eip155:8453"
+        "eip155:56"
       ],
       "description": "Buy, sell, store, trade, and use cryptocurrency with the Bitcoin.com Wallet, trusted by millions.",
       "desktop": {
@@ -30188,13 +30185,10 @@
         "bip122:000000000019d6689c085ae165831e93",
         "bip122:000000000933ea01ad0ee984209779ba",
         "eip155:1",
-        "eip155:10",
         "eip155:137",
-        "eip155:42161",
         "eip155:43114",
         "eip155:56",
         "eip155:66",
-        "eip155:8453",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
       ],
       "description": "One Web3 portal to rule them all",
@@ -36313,7 +36307,6 @@
       "app_type": "wallet",
       "category": null,
       "chains": [
-        "cip-34:1-764824073",
         "eip155:1",
         "solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
@@ -36342,7 +36335,7 @@
         "shortName": null
       },
       "mobile": {
-        "native": "volsungar://",
+        "native": "volsungar://wc",
         "universal": "https://link.volsungar.com/wc"
       },
       "name": "Volsungar",
@@ -49950,7 +49943,6 @@
         "cosmos:cosmoshub-4",
         "eip155:1",
         "eip155:3",
-        "eip155:42161",
         "flow:testnet",
         "koinos:EiBZK_GGVP0H_fXVAM3j6EAuz3-B-l3e",
         "near:testnet",
@@ -49988,7 +49980,7 @@
         "native": "nova://",
         "universal": ""
       },
-      "name": "Nova",
+      "name": "Nova Wallet",
       "rdns": "",
       "sdks": [
         "sign_v1",
