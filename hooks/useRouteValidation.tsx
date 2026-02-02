@@ -6,8 +6,6 @@ import { useFormikContext } from 'formik';
 import { QuoteError } from './useFee';
 import { useSelectedAccount } from '@/context/swapAccounts';
 import { ICON_CLASSES_WARNING } from '@/components/validationError/constants';
-import { useSlippageStore } from '@/stores/slippageStore';
-import { useAutoSlippageTest } from './useAutoSlippageTest';
 
 interface ValidationDetails {
     title?: string;
@@ -15,21 +13,16 @@ interface ValidationDetails {
     icon?: React.ReactNode;
 }
 
-export function resolveRouteValidation(quoteError?: QuoteError, hasQuote?: boolean, isQuoteLoading?: boolean) {
+export function useRouteValidation(quoteError?: QuoteError, hasQuote?: boolean, _isQuoteLoading?: boolean, autoSlippageWouldWork?: boolean) {
     const { values } = useFormikContext<SwapFormValues>();
-    const { to, from, destination_address, amount } = values;
+    const { to, from, destination_address } = values;
     const selectedSourceAccount = useSelectedAccount("from", from?.name);
     const query = useQueryState();
-    const { autoSlippage } = useSlippageStore();
     const quoteErrorCode = quoteError?.response?.data?.error?.code || quoteError?.code;
     let validationMessage: string = '';
     let validationDetails: ValidationDetails = {};
 
-    const shouldTestAutoSlippage = !autoSlippage && !hasQuote && !!amount && Number(amount) > 0 && !!from && !!to && !quoteErrorCode && !isQuoteLoading;
-
-    const { autoSlippageWouldWork } = useAutoSlippageTest({ values, shouldTest: shouldTestAutoSlippage, });
-
-    if (shouldTestAutoSlippage && autoSlippageWouldWork) {
+    if (!hasQuote && autoSlippageWouldWork) {
         validationDetails = { title: 'Route Unavailable', type: 'warning', icon: <RouteOff className={ICON_CLASSES_WARNING} /> };
         validationMessage = `This might be because of high slippage, try switching the slippage percentage to "Auto"`;
     }
@@ -55,7 +48,7 @@ export function resolveRouteValidation(quoteError?: QuoteError, hasQuote?: boole
     const value = useMemo(() => ({
         message: validationMessage,
         details: validationDetails
-    }), [validationMessage]);
+    }), [validationMessage, validationDetails]);
 
     return value
 }

@@ -159,7 +159,7 @@ const Fees = ({ quote, values }: { quote: SwapQuote | undefined, values: SwapVal
                     </div>
                 )}
             </TooltipTrigger>
-            <TooltipContent className="bg-secondary-300! border-ssecondary-300! text-primart-text!">
+            <TooltipContent className="bg-secondary-300! border-secondary-300! text-primart-text!">
                 <span>{displayLsFee || '-'} </span>
                 <span>{displayLsFee ? currencyName : ''}</span>
             </TooltipContent>

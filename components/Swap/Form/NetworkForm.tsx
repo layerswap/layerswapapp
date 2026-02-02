@@ -30,8 +30,6 @@ import { useSelectedAccount } from "@/context/swapAccounts";
 import posthog from "posthog-js";
 import ContractAddressValidationCache from "@/components/validationError/ContractAddressValidationCache";
 import { Slippage } from "@/components/FeeDetails/Slippage";
-import { useSlippageStore } from "@/stores/slippageStore";
-import { useAutoSlippageTest } from "@/hooks/useAutoSlippageTest";
 
 type Props = {
     partner?: Partner;
@@ -60,15 +58,12 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const toAsset = values.toAsset;
     const fromAsset = values.fromAsset;
-    const { formValidation, routeValidation } = useValidationContext();
+    const { formValidation, routeValidation, autoSlippageWouldWork, isTestingAutoSlippage } = useValidationContext();
     const query = useQueryState();
-    const { autoSlippage } = useSlippageStore();
 
     const isValid = !formValidation.message;
     const error = formValidation.message;
 
-    const shouldTestAutoSlippage = !autoSlippage && !quote && !!values.amount && Number(values.amount) > 0 && !!values.from && !!values.to && !isQuoteLoading;
-    const { autoSlippageWouldWork, isTestingAutoSlippage } = useAutoSlippageTest({ values, shouldTest: shouldTestAutoSlippage, });
     const shouldShowSlippage = autoSlippageWouldWork && !isTestingAutoSlippage;
 
     useEffect(() => {

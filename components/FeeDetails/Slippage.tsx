@@ -13,6 +13,7 @@ type SlippageProps = {
     values: SwapValues
     disableEditingBackground?: boolean
 }
+const HIGH_SLIPPAGE_THRESHOLD_PERCENT = 4.2;
 
 export const Slippage = ({ quoteData, values, disableEditingBackground }: SlippageProps) => {
     const [editingSlippage, setEditingSlippage] = useState(false)
@@ -22,7 +23,7 @@ export const Slippage = ({ quoteData, values, disableEditingBackground }: Slippa
     const [editingCustomSlippage, setEditingCustomSlippage] = useState(false)
 
     const currentSlippagePercent = ((slippage ?? quoteData?.slippage) ?? 0) * 100
-    const isHighSlippage = currentSlippagePercent > 4.2
+    const isHighSlippage = currentSlippagePercent > HIGH_SLIPPAGE_THRESHOLD_PERCENT
 
     useEffect(() => {
         if (!isActive && editingSlippage) {
@@ -41,7 +42,7 @@ export const Slippage = ({ quoteData, values, disableEditingBackground }: Slippa
         }
         setSlippage(undefined)
         setAutoSlippage(!autoSlippage)
-    }, [autoSlippage, setAutoSlippage, setEditingCustomSlippage, setSlippage, inputRef])
+    }, [autoSlippage, setAutoSlippage, setEditingCustomSlippage, setSlippage])
 
     return (
         <div ref={ref} className={clsx("flex items-center w-full justify-between gap-1 text-sm py-1", disableEditingBackground ? "px-3" : "px-2", { "bg-secondary-700 rounded-xl": editingSlippage && !disableEditingBackground })}>
@@ -174,7 +175,7 @@ const SlippageInput = forwardRef<HTMLInputElement, SlippageInputProps>(function 
     }, [valueDecimal])
 
     const invalid = localPercent !== undefined && (localPercent < 0.1 || localPercent > 5)
-    const isHighSlippage = localPercent !== undefined && localPercent > 4.2
+    const isHighSlippage = localPercent !== undefined && localPercent > HIGH_SLIPPAGE_THRESHOLD_PERCENT
 
     useEffect(() => {
         const t = setTimeout(() => {
@@ -183,7 +184,7 @@ const SlippageInput = forwardRef<HTMLInputElement, SlippageInputProps>(function 
             onDebouncedChange(localPercent !== undefined ? Math.round(localPercent * 100) / 10000 : undefined)
         }, 300)
         return () => clearTimeout(t)
-    }, [localPercent, invalid])
+    }, [localPercent, invalid, onDebouncedChange])
 
     return (
         <div className="relative">

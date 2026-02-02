@@ -24,10 +24,23 @@ export function useAutoSlippageTest({ values, shouldTest }: AutoSlippageTestProp
         })
         : null
 
-    const { data, isLoading } = useSWR<ApiResponse<Quote>>(autoSlippageTestURL, apiClient.fetcher, { dedupingInterval: 5000, revalidateOnFocus: false, })
+    const { data, isLoading, error } = useSWR<ApiResponse<Quote>>(
+        autoSlippageTestURL,
+        apiClient.fetcher,
+        {
+            dedupingInterval: 10000,
+            revalidateOnFocus: false,
+            revalidateOnReconnect: false,
+            shouldRetryOnError: false,
+            errorRetryCount: 0,
+            onError: (err) => {
+                console.debug('Auto slippage test failed:', err);
+            }
+        }
+    )
 
     return {
-        autoSlippageWouldWork: !!data?.data,
-        isTestingAutoSlippage: isLoading
+        autoSlippageWouldWork: !error && !!data?.data,
+        isTestingAutoSlippage: isLoading,
     }
 }
