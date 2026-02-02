@@ -1,11 +1,9 @@
-import { FC, SVGProps, useMemo } from 'react'
+import { FC, useMemo } from 'react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../shadcn/tooltip'
 import AverageCompletionTime from '../../Common/AverageCompletionTime'
 import { RateElement } from '../Rate'
-import { Quote, QuoteReward, SwapQuote } from '@/lib/apiClients/layerSwapApiClient'
-import { Wallet } from '@/Models/WalletProvider'
+import { QuoteReward, SwapQuote } from '@/lib/apiClients/layerSwapApiClient'
 import { SwapValues } from '..'
-import { deriveQuoteComputed } from './utils'
 import useWallet from '@/hooks/useWallet'
 import useSWRGas from '@/lib/gases/useSWRGas'
 import { resolveTokenUsdPrice } from '@/helpers/tokenHelper'
@@ -161,7 +159,7 @@ const Fees = ({ quote, values }: { quote: SwapQuote | undefined, values: SwapVal
                     </div>
                 )}
             </TooltipTrigger>
-            <TooltipContent className="bg-secondary-300! border-ssecondary-300! text-primart-text!">
+            <TooltipContent className="bg-secondary-300! border-secondary-300! text-primart-text!">
                 <span>{displayLsFee || '-'} </span>
                 <span>{displayLsFee ? currencyName : ''}</span>
             </TooltipContent>

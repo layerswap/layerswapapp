@@ -13,7 +13,7 @@ interface ValidationDetails {
     icon?: React.ReactNode;
 }
 
-export function resolveRouteValidation(quoteError?: QuoteError) {
+export function useRouteValidation(quoteError?: QuoteError, hasQuote?: boolean, _isQuoteLoading?: boolean, autoSlippageWouldWork?: boolean) {
     const { values } = useFormikContext<SwapFormValues>();
     const { to, from, destination_address } = values;
     const selectedSourceAccount = useSelectedAccount("from", from?.name);
@@ -21,6 +21,11 @@ export function resolveRouteValidation(quoteError?: QuoteError) {
     const quoteErrorCode = quoteError?.response?.data?.error?.code || quoteError?.code;
     let validationMessage: string = '';
     let validationDetails: ValidationDetails = {};
+
+    if (!hasQuote && autoSlippageWouldWork) {
+        validationDetails = { title: 'Route Unavailable', type: 'warning', icon: <RouteOff className={ICON_CLASSES_WARNING} /> };
+        validationMessage = `This might be because of high slippage, try switching the slippage percentage to "Auto"`;
+    }
 
     if (((from?.name && from?.name.toLowerCase() === query.sameAccountNetwork?.toLowerCase()) || (to?.name && to?.name.toLowerCase() === query.sameAccountNetwork?.toLowerCase()))) {
         const network = from?.name.toLowerCase() === query.sameAccountNetwork?.toLowerCase() ? from : to;

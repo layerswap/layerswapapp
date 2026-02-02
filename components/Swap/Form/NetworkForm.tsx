@@ -29,6 +29,7 @@ import RefuelModal from "@/components/FeeDetails/RefuelModal";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import posthog from "posthog-js";
 import ContractAddressValidationCache from "@/components/validationError/ContractAddressValidationCache";
+import { Slippage } from "@/components/FeeDetails/Slippage";
 
 type Props = {
     partner?: Partner;
@@ -57,11 +58,13 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const toAsset = values.toAsset;
     const fromAsset = values.fromAsset;
-    const { formValidation, routeValidation } = useValidationContext();
+    const { formValidation, routeValidation, autoSlippageWouldWork, isTestingAutoSlippage } = useValidationContext();
     const query = useQueryState();
 
     const isValid = !formValidation.message;
     const error = formValidation.message;
+
+    const shouldShowSlippage = autoSlippageWouldWork && !isTestingAutoSlippage;
 
     useEffect(() => {
         if (!source || !toAsset || !toAsset.refuel) {
@@ -89,7 +92,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     return (
         <>
             <DepositMethodComponent />
-            <Form className="h-full grow flex flex-col flex-1 justify-between w-full gap-3">
+            <Form className="h-full grow flex flex-col flex-1 justify-between w-full gap-2">
                 <Widget.Content>
                     <div className="w-full flex flex-col justify-between flex-1">
                         <div className='flex-col relative flex justify-between gap-2 w-full leading-4'>
@@ -134,13 +137,24 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                 />
                             }
                             {
+                                shouldShowSlippage ? (
+                                    <div className="mt-2 bg-secondary-500 rounded-xl">
+                                        <Slippage quoteData={undefined} values={values} disableEditingBackground />
+                                    </div>
+                                ) : null
+                            }
+                            {
                                 routeValidation.message
-                                    ? <div className="mt-3">
+                                    ? <div className="mt-2">
                                         <ValidationError />
                                     </div>
                                     : null
                             }
-                            <QuoteDetails swapValues={values} quote={quote?.quote} reward={quote?.reward} isQuoteLoading={isQuoteLoading} />
+                            {
+                                !autoSlippageWouldWork ? (
+                                    <QuoteDetails swapValues={values} quote={quote?.quote} reward={quote?.reward} isQuoteLoading={isQuoteLoading} />
+                                ) : null
+                            }
                         </div>
                     </div>
                 </Widget.Content>
