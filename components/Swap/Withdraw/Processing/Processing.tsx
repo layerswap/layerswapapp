@@ -27,7 +27,7 @@ type Props = {
 }
 
 const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) => {
-    const { boot, show, update, showNewMessages } = useIntercom();
+    const { boot, show, update } = useIntercom();
     const { setSwapTransaction, swapTransactions } = useSwapTransactionStore();
 
     const {

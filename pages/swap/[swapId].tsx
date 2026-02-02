@@ -3,19 +3,16 @@ import Layout from '../../components/layout';
 import { InferGetServerSidePropsType } from 'next';
 import React from 'react';
 import { SwapDataProvider } from '../../context/swap';
-import { TimerProvider } from '../../context/timerContext';
 import { getThemeData } from '../../helpers/settingsHelper';
 import SwapWithdrawal from '../../components/SwapWithdrawal'
 
-const SwapDetails = ({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const SwapDetails = ({ settings, themeData, apiKey, swapData }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   LayerSwapApiClient.apiKey = apiKey
 
   return (<>
     <Layout settings={settings || undefined} themeData={themeData}>
-      <SwapDataProvider >
-        <TimerProvider>
-          <SwapWithdrawal />
-        </TimerProvider>
+      <SwapDataProvider initialSwapData={swapData}>
+        <SwapWithdrawal />
       </SwapDataProvider >
     </Layout>
   </>)
@@ -61,7 +58,8 @@ export const getServerSideProps = async (ctx) => {
     props: {
       settings,
       themeData,
-      apiKey
+      apiKey,
+      swapData: swapData || null
     }
   }
 }

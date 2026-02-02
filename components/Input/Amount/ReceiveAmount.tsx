@@ -20,7 +20,7 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ destination_token, fee, 
     const receiveAmountPrecision = receive_amount && fee?.quote?.destination_token?.price_in_usd
         ? calculatePrecision(receive_amount, fee.quote.destination_token.price_in_usd, fee.quote.destination_token?.decimals || 2)
         : fee?.quote?.destination_token?.decimals || 2
-        
+
     const fullAmountText = receive_amount && destination_token
         ? `${receive_amount} ${destination_token.symbol}`
         : undefined;
@@ -35,7 +35,7 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ destination_token, fee, 
                             { "animate-pulse-stronger": isFeeLoading },
                             { "text-secondary-text": !receive_amount }
                         )}>
-                            <NumberFlow value={receive_amount || 0} trend={0} format={{ maximumFractionDigits: receiveAmountPrecision }} />
+                            <NumberFlow value={receive_amount || 0} trend={0} format={{ maximumFractionDigits: fee?.quote.destination_token?.decimals || 2 }} />
                         </div>
                     </TooltipTrigger>
                     {fullAmountText && (
