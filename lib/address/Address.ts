@@ -63,21 +63,21 @@ export class Address {
   }
 
   /**
-   * Get the raw, unmodified address string (includes prefix if present)
+   * Get the raw, unmodified address string
    */
   get raw(): string {
     return this._raw;
   }
 
   /**
-   * Get the normalized address (formatted for the network, without prefix)
+   * Get the normalized address (formatted for the network)
    */
   get normalized(): string {
     return this._normalized;
   }
 
   /**
-   * Get the full address with prefix if present
+   * Get the full address
    */
   get full(): string {
     return this._normalized;
@@ -100,8 +100,7 @@ export class Address {
 
   /**
    * Format address as shortened display: first5...last4
-   * Preserves network prefix if present
-   * @returns Shortened address (e.g., "0x123...5678" or "ronin:0x123...5678")
+   * @returns Shortened address (e.g., "0x123...5678")
    */
   toShortString(): string {
     const addr = this._normalized;
@@ -127,7 +126,7 @@ export class Address {
   /**
    * Get address parts for emphasized display (bold first4 and last4)
    * Used for rendering with different styles for start/middle/end
-   * @returns Object with start, middle, end parts (without prefix)
+   * @returns Object with start, middle, end parts
    */
   toEmphasizedParts(): { start: string; middle: string; end: string } {
     const addr = this._normalized;
