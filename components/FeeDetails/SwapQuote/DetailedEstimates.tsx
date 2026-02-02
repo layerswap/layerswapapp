@@ -12,10 +12,9 @@ import { useSelectedAccount } from '@/context/swapAccounts'
 import { Slippage } from '../Slippage'
 import { truncateDecimals } from '@/components/utils/RoundDecimals'
 import { Network, NetworkRouteToken } from '@/Models/Network'
-import shortenAddress from '@/components/utils/ShortenAddress'
-import { isValidAddress } from '@/lib/address/validator'
+import { Address } from "@/lib/address";
 import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
-import { addressFormat } from '@/lib/address/formatter'
+import shortenString from '@/components/utils/ShortenString'
 
 type DetailedEstimatesProps = {
     quote: SwapQuote | undefined,
@@ -204,16 +203,32 @@ const Rate = ({ fromAsset, toAsset, rate }: RateProps) => {
 }
 
 const ExchangeTokenContract = ({ fromAsset, network }: { fromAsset: NetworkRouteToken | undefined, network: Network | undefined }) => {
+    const isValidAddress = useMemo(() => {
+        return fromAsset?.contract && network && Address.isValid(fromAsset.contract, network)
+    }, [fromAsset?.contract, network])
+
+    const shortAddress = useMemo(() => {
+        if (!fromAsset?.contract) return ''
+        if (network) return new Address(fromAsset.contract, network).toShortString()
+        return shortenString(fromAsset.contract)
+    }, [fromAsset?.contract, network])
+
     return <RowWrapper title={`${network?.display_name} - ${fromAsset?.symbol}`}>
         {
-            (fromAsset?.contract && network && (isValidAddress(fromAsset?.contract, network)) ?
+            isValidAddress && fromAsset?.contract && network ? (
                 <div className="text-sm group/addressItem text-secondary-text">
-                    <ExtendedAddress address={addressFormat(fromAsset?.contract, network)} network={network} showDetails={false} shouldShowChevron={false} />
+                    <ExtendedAddress 
+                        address={fromAsset.contract} 
+                        network={network} 
+                        showDetails={false} 
+                        shouldShowChevron={false} 
+                    />
                 </div>
-                :
-                <p className="text-sm text-secondary-text">{fromAsset?.contract ? shortenAddress(fromAsset.contract) : ''}</p>)
+            ) : (
+                <p className="text-sm text-secondary-text">{shortAddress}</p>
+            )
         }
-    </RowWrapper >
+    </RowWrapper>
 }
 
 const LoadingBar = () => (<div className='h-2.5 w-16 inline-flex bg-gray-500 rounded-xs animate-pulse' />);

@@ -100,6 +100,7 @@ const TransferTokenButton: FC<Props> = ({
                     activeAddress={selectedSourceAccount?.address}
                     selectedSourceAddress={selectedSourceAccount?.address}
                     swapError={swapError}
+                    sourceNetwork={swapData.source_network}
                 />
             ) : null
         }

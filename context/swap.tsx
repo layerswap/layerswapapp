@@ -17,7 +17,7 @@ import { QuoteError, transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/
 import { useRecentNetworksStore } from '@/stores/recentRoutesStore';
 import { resolvePersistantQueryParams } from '@/helpers/querryHelper';
 import { useSelectedAccount } from './swapAccounts';
-import { addressFormat } from '@/lib/address/formatter';
+import { Address } from '@/lib/address';
 import { useSlippageStore } from '@/stores/slippageStore';
 import { posthog } from 'posthog-js';
 
@@ -166,7 +166,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
 
     const selectedSourceAccount = useSelectedAccount("from", swapBasicFormData?.source_network?.name);
     const { wallets } = useWallet(swapBasicFormData?.source_network, 'asSource')
-    const selectedWallet = (selectedSourceAccount?.address && swapBasicFormData) && wallets.find(w => addressFormat(w.address, swapBasicFormData?.source_network) === addressFormat(selectedSourceAccount?.address, swapBasicFormData?.source_network))
+    const selectedWallet = (selectedSourceAccount?.address && swapBasicFormData) && wallets.find(w => Address.equals(w.address, selectedSourceAccount.address, swapBasicFormData?.source_network))
 
     const sourceIsSupported = (swapBasicData && selectedWallet) && WalletIsSupportedForSource({
         providers: providers,
