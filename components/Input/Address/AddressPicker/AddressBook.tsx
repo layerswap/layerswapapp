@@ -1,5 +1,5 @@
 import { CommandGroup, CommandList, CommandWrapper } from "@/components/shadcn/command";
-import { addressFormat } from "@/lib/address/formatter";
+import { Address } from "@/lib/address";
 import FilledCheck from "@/components/icons/FilledCheck";
 import { AddressGroup, AddressItem } from ".";
 import { NetworkRoute } from "@/Models/Network";
@@ -34,7 +34,7 @@ const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, desti
                     >
                         <div className="w-full flex flex-col items-stretch max-h-[200px] overflow-y-auto styled-scroll gap-2">
                             {addressBook.sort(sortingByDate).map(item => {
-                                const isSelected = addressFormat(item.address, destination!) === addressFormat(destination_address!, destination!)
+                                const isSelected = Address.equals(item.address, destination_address!, destination!)
                                 return (
                                     <button type="button" key={item.address} onClick={() => onSelectAddress(item.address, item.wallet)} className={`group/addressItem px-3 py-3 rounded-lg hover:bg-secondary-600 w-full transition duration-200 bg-secondary-500 ${isSelected && 'bg-secondary-400'}`}>
                                         <div className={`flex items-center justify-between w-full`}>

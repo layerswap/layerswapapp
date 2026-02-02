@@ -12,6 +12,7 @@ import AmountField from "@/components/Input/Amount";
 import Address from "@/components/Input/Address";
 import { ChevronDown } from "lucide-react";
 import AddressIcon from "@/components/AddressIcon";
+import { Address as AddressClass } from "@/lib/address";
 import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
 import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
 import MinMax from "@/components/Input/Amount/MinMax";
@@ -26,6 +27,7 @@ import { Wallet } from "@/Models/WalletProvider";
 import { AddressGroup } from "@/components/Input/Address/AddressPicker";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { ExchangeReceiveAmount } from "@/components/Input/Amount/ExchangeReceiveAmount";
+import shortenString from "@/components/utils/ShortenString";
 
 type Props = {
     partner?: Partner;
@@ -199,11 +201,19 @@ const AddressButton = ({ address, network, wallet, addressProviderIcon }: { addr
                         width="36"
                         height="36"
                     />) : (
-                        <AddressIcon className="scale-150 h-9 w-9" address={address} size={36} />
+                        <AddressIcon className="scale-150 h-9 w-9" address={network ? new AddressClass(address, network).full : address} size={36} />
                     )
                 }
             </div>
-            <ExtendedAddress address={address} network={network} showDetails={wallet ? true : false} title={wallet?.displayName?.split("-")[0]} description={wallet?.providerName} logo={wallet?.icon} />
+            {
+                network ? (
+                    <ExtendedAddress address={address} network={network} providerName={wallet?.providerName} showDetails={wallet ? true : false} title={wallet?.displayName?.split("-")[0]} description={wallet?.providerName} logo={wallet?.icon} />
+                ) : (
+                    <p className="text-sm block font-medium">
+                        {shortenString(address)}
+                    </p>
+                )
+            }
         </div>
         <span className="justify-self-end right-0 flex items-center pointer-events-none  text-primary-text">
             <span className="absolute right-0 pr-2 pointer-events-none text-primary-text">
