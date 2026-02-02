@@ -66,11 +66,11 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
             to &&
             destination_address &&
             destinationAddressFromQuery &&
-            new Address(destinationAddressFromQuery?.toString(), to).equals(destination_address) &&
+            Address.equals(destinationAddressFromQuery?.toString(), destination_address, to) &&
             !isAddressFromQueryConfirmed
         ) {
             const provider = to && getProvider(to, 'autofill')
-            const isDestAddressConnected = destination_address && provider?.connectedWallets?.some((wallet) => new Address(wallet.address, to).equals(destination_address))
+            const isDestAddressConnected = destination_address && provider?.connectedWallets?.some((wallet) => Address.equals(wallet.address, destination_address, to))
 
             const confirmed = !isDestAddressConnected ? await getConfirmation({
                 content: <UrlAddressNote partner={partner} values={values} />,

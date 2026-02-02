@@ -3,7 +3,7 @@ import { ExternalLink } from "lucide-react"
 import CopyButton from "@/components/buttons/copyButton"
 import Link from "next/link"
 import AddressIcon from "@/components/AddressIcon"
-import { Address } from "@/lib/address"
+import { Address, getExplorerUrl } from "@/lib/address"
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues"
 import { Partner } from "@/Models/Partner"
 
@@ -42,7 +42,7 @@ const UrlAddressNote: FC<Props> = ({ partner, values }) => {
                         </div>
                         <div className="flex items-center gap-4 text-secondary-text">
                             <CopyButton toCopy={address} />
-                            <Link href={destination?.account_explorer_template?.replace('{0}', address) || ''} target="_blank">
+                            <Link href={getExplorerUrl(destination?.account_explorer_template, address)} target="_blank">
                                 <ExternalLink className="h-4 w-4" />
                             </Link>
                         </div>

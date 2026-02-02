@@ -157,7 +157,7 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: wallet, n
                                             onDisconnect={() => hasDisconnect(wallet) && wallet.disconnect()}
                                         />
                                     }
-                                    <p className="text-xs text-secondary-text">
+                                    <p className="text-xs text-secondary-text text-start">
                                         {wallet.displayName}
                                     </p>
                                 </div>

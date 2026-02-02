@@ -66,7 +66,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const defaultAccount = useSelectedAccount("to", values.to?.name);
     const connectedWalletskey = connectedWallets?.map(w => w.addresses.join('')).join('')
     const [manualAddress, setManualAddress] = useState<string>('')
-    
+
     // Get manually added address from context (shared across all AddressPicker instances)
     const manualAddressFromContext = defaultAccount?.id === 'manually_added' ? defaultAccount.address : undefined
 
@@ -96,10 +96,23 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
     const addressBookAddresses = groupedAddresses?.filter(a => a.group !== AddressGroup.ConnectedWallet)
 
-    const connectedWallet = (destination && destination_address) ? connectedWallets?.find(w => w.addresses?.some(a => new AddressClass(a, destination).equals(destination_address))) : undefined
+    const normalizedDestAddress = useMemo(
+        () => destination && destination_address
+            ? new AddressClass(destination_address, destination).normalized
+            : null,
+        [destination_address, destination]
+    );
+
+    const connectedWallet = (destination && normalizedDestAddress)
+        ? connectedWallets?.find(w =>
+            w.addresses?.some(a =>
+                new AddressClass(a, destination).normalized === normalizedDestAddress
+            )
+        )
+        : undefined;
 
     const handleSelectAddress = useCallback((address: string) => {
-        const selected = destination && groupedAddresses?.find(a => new AddressClass(a.address, destination).equals(address))
+        const selected = destination && groupedAddresses?.find(a => AddressClass.equals(a.address, address, destination))
         const formattedAddress = selected?.address
         updateDestAddress(formattedAddress)
         close()
@@ -127,7 +140,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     }, [defaultAccount?.address, destinationAddressItem])
 
     const updateDestAddress = useCallback((address: string | undefined) => {
-        const wallet = destination && connectedWallets?.find(w => w.addresses?.some(a => new AddressClass(a, destination).equals(address || '')))
+        const wallet = destination && connectedWallets?.find(w => w.addresses?.some(a => AddressClass.equals(a, address || '', destination)))
         setFieldValue('destination_address', address)
 
         if (destination && address && provider) {
@@ -265,9 +278,23 @@ const resolveAddressGroups = ({
         addresses.push({ address: manualAddressFromContext, group: AddressGroup.ManualAdded })
     }
 
-    const uniqueAddresses = addresses.filter((a, index, self) => self.findIndex(t => new AddressClass(t.address, destination).equals(a.address)) === index)
+    const uniqueAddresses = getUniqueAddresses(addresses, destination)
 
     return uniqueAddresses
+}
+
+
+const getUniqueAddresses = (addresses: AddressItem[], destination: NetworkRoute) => {
+    const normalizedMap = new Map<string, AddressItem>();
+
+    addresses.forEach((a) => {
+        const normalized = new AddressClass(a.address, destination).normalized;
+        if (!normalizedMap.has(normalized)) {
+            normalizedMap.set(normalized, a);
+        }
+    });
+
+    return Array.from(normalizedMap.values());
 }
 
 export default AddressPicker

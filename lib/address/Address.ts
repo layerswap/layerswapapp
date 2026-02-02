@@ -169,16 +169,27 @@ export class Address {
   }
 
   /**
-   * Check if this address equals another address string
-   * Creates an Address instance with the same network context for proper comparison
-   * @param other - Raw address string to compare
+   * Static method to compare two address strings with network context
+   * More efficient than creating Address instances when you just need comparison
+   * @param addr1 - First address string
+   * @param addr2 - Second address string
+   * @param network - Optional network context for both addresses
+   * @param providerName - Optional provider name for both addresses
+   * @returns true if addresses are equivalent after normalization
    */
-  equals(other: string): boolean {
-    const otherAddr = this._network
-      ? new Address(other, this._network, this._providerName)
-      : new Address(other, null, this._providerName!);
-    return this._normalized === otherAddr.normalized;
+  static equals(
+    addr1: string,
+    addr2: string,
+    network?: { name: string } | null,
+    providerName?: string
+  ): boolean {
+    if (!addr1 || !addr2) return false;
+
+    const norm1 = addressFormat({ address: addr1, network, providerName });
+    const norm2 = addressFormat({ address: addr2, network, providerName });
+    return norm1 === norm2;
   }
+
 }
 
 /**

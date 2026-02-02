@@ -59,7 +59,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
     const { destination_address: destinationAddressFromQuery } = query
 
     const WalletIcon = wallets.find(wallet => wallet.address.toLowerCase() == swapBasicData?.destination_address?.toLowerCase())?.icon;
-    const addressProviderIcon = destinationAddressFromQuery && partner?.is_wallet && new Address(destinationAddressFromQuery, swapBasicData?.destination_network || null).equals(swapBasicData?.destination_address!) && partner?.logo
+    const addressProviderIcon = destinationAddressFromQuery && partner?.is_wallet && Address.equals(destinationAddressFromQuery, swapBasicData?.destination_address!, swapBasicData?.destination_network || null) && partner?.logo
 
     const handleCopy = () => {
         if (depositAddress) {

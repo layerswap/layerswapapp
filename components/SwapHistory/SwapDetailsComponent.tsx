@@ -13,6 +13,7 @@ import { useSwapDataUpdate } from '@/context/swap';
 import SecondaryButton from '../buttons/secondaryButton';
 import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '@/helpers/querryHelper';
+import { getExplorerUrl } from '@/lib/address';
 
 type Props = {
     swapResponse: SwapResponse
@@ -101,7 +102,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                         swapInputTransaction?.transaction_hash ?
                                             <a
                                                 target="_blank"
-                                                href={input_tx_explorer_template?.replace("{0}", swapInputTransaction.transaction_hash)}
+                                                href={getExplorerUrl(input_tx_explorer_template, swapInputTransaction.transaction_hash)}
                                                 className='flex items-center space-x-1'
                                                 rel="noopener noreferrer"
                                             >
@@ -125,7 +126,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                                                 :
                                                                 <a
                                                                     target="_blank"
-                                                                    href={output_tx_explorer_template?.replace("{0}", refundTransaction.transaction_hash)}
+                                                                    href={getExplorerUrl(output_tx_explorer_template, refundTransaction.transaction_hash)}
                                                                     className='flex items-center space-x-1'
                                                                     rel="noopener noreferrer"
                                                                 >
@@ -148,7 +149,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                                                 :
                                                                 <a
                                                                     target="_blank"
-                                                                    href={output_tx_explorer_template?.replace("{0}", swapOutputTransaction.transaction_hash)}
+                                                                    href={getExplorerUrl(output_tx_explorer_template, swapOutputTransaction.transaction_hash)}
                                                                     className='flex items-center space-x-1'
                                                                     rel="noopener noreferrer"
                                                                 >

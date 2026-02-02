@@ -55,7 +55,7 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
         errorMessage = `Enter a valid ${values.to?.display_name} address`
     }
 
-    const addressFromList = destination && addresses?.find(a => new Address(a.address, destination).equals(manualAddress))
+    const addressFromList = destination && addresses?.find(a => Address.equals(a.address, manualAddress, destination))
 
     return (
         <div className="text-left">

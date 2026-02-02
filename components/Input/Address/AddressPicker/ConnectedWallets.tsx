@@ -73,7 +73,7 @@ const ConnectedWallets: FC<Props> = ({ provider, notCompatibleWallets, onClick, 
             notCompatibleWallets.length > 0 &&
             (notCompatibleWallets.length > 1 ? (
                 <ResizablePanel>
-                    <div className="flex flex-col gap-2 pl-2">
+                    <div className="flex flex-col gap-2">
                         <button
                             onClick={() => setShowIncompatibleWallets(!showIncompatibleWallets)}
                             disabled={isLoading}

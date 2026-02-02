@@ -28,7 +28,7 @@ export const SummaryRow: FC<{
     const query = useQueryState()
     const { destination_address: destinationAddressFromQuery } = query
     const { to, destination_address } = values
-    const addressProviderIcon = destinationAddressFromQuery && partner?.is_wallet && new Address(destinationAddressFromQuery, values?.to!).equals(values?.destination_address!) && partner?.logo
+    const addressProviderIcon = destinationAddressFromQuery && partner?.is_wallet && Address.equals(destinationAddressFromQuery, values?.destination_address!, values?.to!) && partner?.logo
     const addressInstance = useMemo(() => (destination_address && to) ? new Address(destination_address, to) : null, [destination_address, to])
 
     return (

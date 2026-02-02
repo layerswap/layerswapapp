@@ -134,7 +134,7 @@ const AccountsList: FC<Props> = (props) => {
     const walletNetwork = network || networkName;
 
     const isAccountDuplicate = selectedAccount && walletNetwork && connectedWallets.some(
-        (w) => w.addresses.some((address) => new Address(address, walletNetwork as Network).equals(selectedAccount.address))
+        (w) => w.addresses.some((address) => Address.equals(address, selectedAccount.address, walletNetwork))
     )
 
     const accounts: (Wallet | AccountIdentity)[] = [

@@ -4,7 +4,7 @@ import { RewardsComponentLeaderboardSceleton } from "../../Sceletons"
 import useSWR from "swr"
 import { ApiResponse } from "../../../Models/ApiResponse"
 import ClickTooltip from "../../Tooltips/ClickTooltip"
-import { Address } from "@/lib/address"
+import { Address, getExplorerUrl } from "@/lib/address"
 import { useAccount } from "wagmi"
 import { truncateDecimals } from "../../utils/RoundDecimals"
 import AddressIcon from "../../AddressIcon";
@@ -120,7 +120,7 @@ const LeaderbordComponent: FC<{
                                         <AddressIcon address={addressInstance?.full || ''} size={25} />
                                         <div>
                                             <div className="text-sm font-bold text-primary-text leading-3">
-                                                {network?.account_explorer_template && <Link target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", address)}>
+                                                {network?.account_explorer_template && <Link target="_blank" className="hover:opacity-80" href={getExplorerUrl(network?.account_explorer_template, address)}>
                                                     <span className="text-primary">You</span>
                                                 </Link>}
                                             </div>
@@ -145,8 +145,10 @@ const LeaderboardItem: FC<{
     network: Network,
     token: Token,
 }> = ({ user, leaderboardRewards, leaderboard, rewards, network, token }) => {
-    const addressInstance = useMemo(() => user.address ? new Address(user.address, network) : null, [user.address, network])
-
+    const addressInstance = useMemo(
+        () => new Address(user.address, network),
+        [user, network]
+    );
     return <div key={user.position} className="items-center flex justify-between">
         <div className="flex items-center">
             <p className="text-xl font-medium text-primary-text w-fit mr-1">{user.position}.</p>
@@ -154,7 +156,7 @@ const LeaderboardItem: FC<{
                 <AddressIcon address={addressInstance?.full || ''} size={25} />
                 <div>
                     <div className="text-sm font-bold text-primary-text leading-3">
-                        {user?.address && network?.account_explorer_template && <Link target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", user?.address)}>
+                        {user?.address && network?.account_explorer_template && <Link target="_blank" className="hover:opacity-80" href={getExplorerUrl(network?.account_explorer_template, user?.address)}>
                             {user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : addressInstance?.toShortString() || ''}
                         </Link>}
                     </div>

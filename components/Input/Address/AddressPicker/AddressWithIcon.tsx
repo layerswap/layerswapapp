@@ -1,7 +1,7 @@
 import { FC, MouseEventHandler, ReactNode, SVGProps, useCallback, useMemo, useState } from "react"
 import { AddressGroup, AddressItem } from ".";
 import AddressIcon from "@/components//AddressIcon";
-import { Address } from "@/lib/address";
+import { Address, getExplorerUrl } from "@/lib/address";
 import { History, Copy, Check, ChevronDown, WalletIcon, Pencil, Link2, SquareArrowOutUpRight, Unplug, Info } from "lucide-react";
 import { Partner } from "@/Models/Partner";
 import { Network } from "@/Models/Network";
@@ -57,6 +57,13 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance }) 
 
     const itemDescription = descriptions.find(d => d.group === addressItem.group)
 
+    const address = useMemo(() => {
+        if (network) {
+            return new Address(addressItem.address, network).full
+        }
+        return addressItem.address
+    }, [addressItem.address, network])
+
     return (
         <div className="w-full flex items-center justify-between">
             <div className="flex bg-secondary-400 text-primary-text items-center justify-center rounded-md h-8 overflow-hidden w-8">
@@ -72,7 +79,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance }) 
                             />
                         )
                     ) : (
-                        <AddressIcon className="scale-150 h-9 w-9" address={network ? new Address(addressItem.address, network).full : addressItem.address} size={36} />
+                        <AddressIcon className="scale-150 h-9 w-9" address={address} size={36} />
                     )
                 }
             </div>
@@ -162,6 +169,14 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, pr
         return new Address(address, null, providerName!)
     }, [address, network, providerName]);
 
+
+    const isAddressValid = useMemo(() => {
+        if (network) {
+            return Address.isValid(addr.full, network)
+        }
+        return false
+    }, [addr.full, network]);
+
     // Resolver for action buttons
     const getActionButtons = useCallback(() => {
         if (isNativeToken) return { buttons: [], showTitles: false };
@@ -172,10 +187,10 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, pr
                 Icon: isCopied ? Check : Copy,
                 onClick: (e: React.MouseEvent<HTMLDivElement>) => { e.stopPropagation(); setCopied(addr.normalized); }
             },
-            ...((network && !isNativeToken) ? [{
+            ...((network && !isNativeToken && isAddressValid) ? [{
                 title: 'View',
                 Icon: SquareArrowOutUpRight,
-                href: network.account_explorer_template?.replace('{0}', addr.full)
+                href: getExplorerUrl(network.account_explorer_template, addr.full)
             }] : []),
             ...(onDisconnect ? [{
                 title: 'Disconnect',
@@ -188,7 +203,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, pr
         const showTitles = buttons.length <= 2;
 
         return { buttons, showTitles };
-    }, [addr.full, network, providerName, isNativeToken, onDisconnect]);
+    }, [addr.full, network, providerName, isNativeToken, isCopied, onDisconnect]);
 
     const { buttons, showTitles } = getActionButtons();
 
