@@ -86,14 +86,11 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance }) 
 
             <div className="flex flex-col items-start grow min-w-0 ml-3 text-sm">
                 <div className="flex w-full min-w-0">
-                    {network ? (
-                        <ExtendedAddress address={addressItem.address} network={network} showDetails={addressItem.wallet ? true : false} title={addressItem.wallet?.displayName?.split("-")[0]} description={addressItem.wallet?.providerName} logo={addressItem.wallet?.icon} />
-                    ) : addressItem.wallet?.providerName ? (
-                        <ExtendedAddress address={addressItem.address} providerName={addressItem.wallet.providerName} showDetails={true} title={addressItem.wallet?.displayName?.split("-")[0]} description={addressItem.wallet?.providerName} logo={addressItem.wallet?.icon} />
+                    {(network || addressItem?.wallet?.providerName) ? (
+                        <ExtendedAddress address={addressItem.address} network={network} providerName={addressItem?.wallet?.providerName} showDetails={addressItem.wallet ? true : false} title={addressItem.wallet?.displayName?.split("-")[0]} description={addressItem.wallet?.providerName} logo={addressItem.wallet?.icon} />
                     ) : <p className="text-sm block font-medium">
                         {shortenString(addressItem.address)}
-                    </p>
-                    }
+                    </p>}
                 </div>
                 <div className="text-secondary-text w-full min-w-0">
                     <div className="flex items-center gap-1 text-xs">
@@ -128,7 +125,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance }) 
     )
 }
 
-type ExtendedAddressBaseProps = {
+type ExtendedAddressProps = {
     address: string;
     isForCurrency?: boolean;
     addressClassNames?: string;
@@ -140,11 +137,9 @@ type ExtendedAddressBaseProps = {
     children?: ReactNode
     shouldShowChevron?: boolean
     isNativeToken?: boolean;
+    network?: Network;
+    providerName?: string;
 }
-
-type ExtendedAddressProps =
-    | (ExtendedAddressBaseProps & { network: Network; providerName?: string })
-    | (ExtendedAddressBaseProps & { network?: undefined; providerName: string })
 
 const calculateMaxWidth = (balance: string | undefined) => {
     const symbolCount = balance?.length || 0;
