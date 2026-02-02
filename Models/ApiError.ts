@@ -23,3 +23,10 @@ export enum LSAPIKnownErrorCode {
     NETWORK_CURRENCY_DAILY_LIMIT_REACHED = "NETWORK_CURRENCY_DAILY_LIMIT_REACHED",
     ROUTE_NOT_FOUND_ERROR = "ROUTE_NOT_FOUND_ERROR"
 }
+
+// Validation errors that should not be posted to PostHog as exceptions
+export enum ValidationErrorCodes {
+    ROUTE_NOT_FOUND_ERROR = "ROUTE_NOT_FOUND_ERROR",
+    GREATER_THAN_MAX_ERROR = "GREATER_THAN_MAX_ERROR",
+    LESS_THAN_MIN_ERROR = "LESS_THAN_MIN_ERROR"
+}
