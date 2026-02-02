@@ -16,7 +16,7 @@ const ToggleButton: FC<ToggleButtonProps> = ({ onChange, value, disabled = false
             disabled={disabled}
             className={classNames(
                 value ? 'bg-primary-500' : 'bg-secondary-800',
-                'relative inline-flex shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-hidden'
+                'navigation-focus-border-text-lg relative inline-flex shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-hidden'
             )}
         >
             <span className="sr-only">Use setting</span>
