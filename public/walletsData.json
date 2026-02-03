@@ -2240,6 +2240,7 @@
         "cosmos:cosmoshub-4",
         "cosmos:kava-4",
         "eip155:1",
+        "eip155:10",
         "eip155:10000",
         "eip155:122",
         "eip155:1313161554",
@@ -2262,6 +2263,7 @@
         "eip155:6",
         "eip155:80084",
         "eip155:80085",
+        "eip155:8453",
         "polkadot:91b171bb158e2d3848fa23a9f1c25182",
         "polkadot:b0a8d493285c2df73290dfb7e61f870f",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
@@ -4487,7 +4489,7 @@
         "auth_v1"
       ],
       "slug": "bybit-wallet",
-      "updatedAt": "2023-07-05T07:36:33.226143+00:00",
+      "updatedAt": "2026-01-30T16:40:29.72+00:00",
       "versions": [
         "1",
         "2"
@@ -8449,7 +8451,8 @@
         "eip155:56",
         "eip155:73799",
         "eip155:80084",
-        "eip155:80085"
+        "eip155:80085",
+        "eip155:8453"
       ],
       "description": "The most trusted platform to manage digital assets.",
       "desktop": {
@@ -13990,8 +13993,10 @@
       "category": "Mobile Wallets",
       "chains": [
         "eip155:1",
+        "eip155:10",
         "eip155:11155111",
         "eip155:137",
+        "eip155:42161",
         "eip155:56",
         "eip155:80094",
         "eip155:8453",
@@ -18898,9 +18903,12 @@
       "category": "Mobile Wallets",
       "chains": [
         "eip155:1",
+        "eip155:10",
         "eip155:137",
         "eip155:2020",
-        "eip155:56"
+        "eip155:42161",
+        "eip155:56",
+        "eip155:8453"
       ],
       "description": "Ronin Wallet is the mobile wallet that allows you to use all decentralized applications running on Ronin.",
       "desktop": {
@@ -21742,7 +21750,9 @@
       "app_type": "wallet",
       "category": null,
       "chains": [
-        "eip155:1"
+        "eip155:1",
+        "ton:-239",
+        "ton:-3"
       ],
       "description": "Sample wallet made with React Native & JS WalletKit\n",
       "desktop": {
@@ -35130,9 +35140,12 @@
       "category": "Mobile Wallets",
       "chains": [
         "eip155:1",
+        "eip155:10",
         "eip155:137",
+        "eip155:42161",
         "eip155:5",
-        "eip155:80001"
+        "eip155:80001",
+        "eip155:8453"
       ],
       "description": "The only wallet app you need to buy, store, swap and spend your crypto.",
       "desktop": {
@@ -37124,9 +37137,7 @@
         "stacks:2147483648",
         "sui:devnet",
         "sui:mainnet",
-        "sui:testnet",
-        "ton:-239",
-        "ton:-3"
+        "sui:testnet"
       ],
       "description": "Flutter Sample Wallet Internal powered with Reown WalletKit",
       "desktop": {
@@ -38675,6 +38686,7 @@
       "chains": [
         "eip155:1",
         "eip155:10",
+        "eip155:137",
         "eip155:42161",
         "eip155:42170",
         "eip155:7777777",
@@ -47074,7 +47086,7 @@
         "auth_v1"
       ],
       "slug": "rakuten-web3-wallet",
-      "updatedAt": "2025-01-02T09:59:44.023027+00:00",
+      "updatedAt": "2026-01-30T16:39:07.518+00:00",
       "versions": [
         "1",
         "2"
@@ -47108,6 +47120,7 @@
         "eip155:256",
         "eip155:338",
         "eip155:420",
+        "eip155:42161",
         "eip155:42220",
         "eip155:43110",
         "eip155:43114",
@@ -47120,6 +47133,7 @@
         "eip155:80084",
         "eip155:80085",
         "eip155:8217",
+        "eip155:8453",
         "eip155:97"
       ],
       "description": "imToken is an easy and secure digital wallet trusted by millions.",
@@ -50055,9 +50069,12 @@
       "category": "Mobile Wallets",
       "chains": [
         "eip155:1",
+        "eip155:10",
         "eip155:137",
+        "eip155:42161",
         "eip155:56",
         "eip155:80001",
+        "eip155:8453",
         "eip155:84531",
         "eip155:97",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
