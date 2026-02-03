@@ -1,11 +1,11 @@
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useRef, useState } from "react";
 import { SearchComponent } from "../Search";
 import { motion } from "framer-motion";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
 import clsx from "clsx";
 import { NetworkElement, RowElement } from "@/Models/Route";
 import { useSelectorState } from "@/components/Select/Selector/Index";
-import { TypingEffect } from "./Rows/SuggestionsHeader";
+import { TypingEffect } from "@/components/Common/TypingEffect";
 
 type RouteSearchProps = {
     searchQuery: string;
@@ -21,6 +21,10 @@ const RouteSearch: FC<RouteSearchProps> = ({ searchQuery, setSearchQuery, rowEle
     const [showExpanded, setShowExpanded] = useState(false);
     const [randomRoute, setRandomRoute] = useState<NetworkElement | null>(null);
     const { windowSize } = useWindowDimensions()
+
+    const hasInitializedRef = useRef(false);
+    const rowElementsRef = useRef(rowElements);
+    rowElementsRef.current = rowElements;
 
     const isDesktop = windowSize?.width && windowSize.width >= 640;
 
@@ -42,11 +46,15 @@ const RouteSearch: FC<RouteSearchProps> = ({ searchQuery, setSearchQuery, rowEle
     }, [isFocused])
 
     useEffect(() => {
-        if (!showExpanded || searchQuery) return;
+        if (!showExpanded || searchQuery) {
+            hasInitializedRef.current = false;
+            return;
+        }
 
         const pickRandomRoute = () => {
-            if (rowElements && rowElements.length > 0) {
-                const networkElements = rowElements.filter((element) => element.type === 'network');
+            const elements = rowElementsRef.current;
+            if (elements && elements.length > 0) {
+                const networkElements = elements.filter((element) => element.type === 'network');
 
                 if (networkElements.length > 0) {
                     const random = networkElements[Math.floor(Math.random() * networkElements.length)];
@@ -55,18 +63,22 @@ const RouteSearch: FC<RouteSearchProps> = ({ searchQuery, setSearchQuery, rowEle
             }
         };
 
-        pickRandomRoute();
+        // Only pick initial route once
+        if (!hasInitializedRef.current) {
+            pickRandomRoute();
+            hasInitializedRef.current = true;
+        }
 
         const interval = setInterval(pickRandomRoute, 3000);
 
         return () => clearInterval(interval);
-    }, [rowElements, showExpanded, searchQuery]);
+    }, [showExpanded, searchQuery]);
 
     const randomRouteName = useMemo(() => {
         if (!randomRoute?.route?.tokens?.length) return '';
         const token = randomRoute.route.tokens[Math.floor(Math.random() * randomRoute.route.tokens.length)];
         return token.symbol + ' ' + (randomRoute.route.display_name || randomRoute.route.name || '');
-    }, [randomRoute?.route.name]);
+    }, [randomRoute]);
 
     return <div>
         <motion.div
@@ -108,7 +120,7 @@ const RouteSearch: FC<RouteSearchProps> = ({ searchQuery, setSearchQuery, rowEle
                 isOpen={shouldFocus}
                 placeholder={showExpanded ? "" : "Search Tokens, Networks or both"}
                 onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
+                onBlur={() => setTimeout(() => setIsFocused(false), 150)}
             />
             {showExpanded && !searchQuery && (
                 <div className="absolute top-3 left-3">
