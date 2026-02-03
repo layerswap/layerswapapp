@@ -13,7 +13,7 @@ import { getWalletClient } from '@wagmi/core'
 import { useConfig } from "wagmi"
 import { switchChain, getChainId } from '@wagmi/core'
 import { useSettingsState } from "../../../context/settings"
-import shortenAddress from "../../../components/utils/ShortenAddress"
+import { Address } from "@/lib/address"
 import sleep from "../utils/sleep"
 import { useActiveParadexAccount } from "@/components/WalletProviders/ActiveParadexAccount"
 
@@ -247,6 +247,7 @@ const resolveWalletsList = ({ provider, paradexAccounts, name, disconnect, netwo
             name,
             paradexAccounts,
             disconnect,
+            networkIcon
         }))).filter(w => w) as Wallet[]
 }
 
@@ -264,7 +265,7 @@ const resolveSingleWallet = ({ provider, walletId, l1Account, name, paradexAccou
     const paradexAddress = paradexAccounts?.[l1Account?.toLowerCase()]
     const wallet = provider.connectedWallets?.find(w => w.id === walletId && w.addresses.some(wa => wa.toLowerCase() === l1Account.toLowerCase()))
     if (!paradexAddress || !wallet) return
-    const displayName = `${wallet.id} (${shortenAddress(l1Account)})`
+    const displayName = `${wallet.id} (${new Address(l1Account, undefined, provider.name).toShortString()})`
     return {
         ...wallet,
         asSourceSupportedNetworks: [KnownInternalNames.Networks.ParadexMainnet, KnownInternalNames.Networks.ParadexTestnet],

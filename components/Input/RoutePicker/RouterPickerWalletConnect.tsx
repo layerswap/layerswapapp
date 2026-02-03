@@ -4,16 +4,14 @@ import { SelectAccountProps, Wallet } from "@/Models/WalletProvider";
 import VaulDrawer from "@/components/modal/vaulModal";
 import { ChevronDown, Plus } from "lucide-react";
 import { WalletItem } from "@/components/Wallet/WalletsList";
-import { Network, Token } from "@/Models/Network";
-import shortenAddress from "@/components/utils/ShortenAddress";
+import { Network, NetworkRoute, Token } from "@/Models/Network";
+import { Address } from "@/lib/address";
 import WalletIcon from "@/components/icons/WalletIcon";
 import ConnectButton from "@/components/buttons/connectButton";
 import { SwapDirection, SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { WalletsIcons } from "@/components/Wallet/ConnectedWallets";
 import { useFormikContext } from "formik";
-import { isValidAddress } from "@/lib/address/validator";
 import { AccountIdentity, useSwapAccounts, useSelectSwapAccount } from "@/context/swapAccounts";
-import { addressFormat } from "@/lib/address/formatter";
 
 const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const [openModal, setOpenModal] = useState<boolean>(false)
@@ -39,7 +37,7 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
 
     const handleSelectAccount = (props: SelectAccountProps) => {
         const { walletId, address, providerName } = props
-        if (direction == 'to' && isValidAddress(address, values.to))
+        if (direction == 'to' && Address.isValid(address, values.to))
             setFieldValue(`destination_address`, address)
         selectSwapAccount({
             id: walletId,
@@ -50,7 +48,7 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
     }
 
     return <>
-        <AccountsPickerButton accounts={swapAccounts} onOpenModalClick={() => setOpenModal(true)} />
+        <AccountsPickerButton accounts={swapAccounts} network={direction === 'from' ? values.from : values.to} onOpenModalClick={() => setOpenModal(true)} />
         <VaulDrawer
             show={openModal}
             setShow={setOpenModal}
@@ -90,7 +88,7 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
     </>
 }
 
-const AccountsPickerButton: FC<{ accounts: AccountIdentity[], onOpenModalClick: () => void }> = ({ accounts, onOpenModalClick }) => {
+const AccountsPickerButton: FC<{ accounts: AccountIdentity[], network: NetworkRoute | undefined, onOpenModalClick: () => void }> = ({ accounts, network, onOpenModalClick }) => {
     const firstWallet = useMemo(() => accounts[0], [accounts])
     if (accounts.length > 0) {
         return <button onClick={onOpenModalClick} type="button" className="p-1.5 max-sm:p-2 justify-self-start text-secondary-text hover:bg-secondary-500 max-sm:bg-secondary-500 hover:text-primary-text focus:outline-hidden inline-flex rounded-lg items-center active:animate-press-down">
@@ -100,7 +98,7 @@ const AccountsPickerButton: FC<{ accounts: AccountIdentity[], onOpenModalClick: 
                         <firstWallet.icon className='h-5 w-5' />
                         {
                             firstWallet.address &&
-                            <p>{shortenAddress(firstWallet.address)}</p>
+                            <p>{new Address(firstWallet.address, null, firstWallet.providerName).toShortString()}</p>
                         }
                         <ChevronDown className="h-5 w-5" />
                     </div>
@@ -136,7 +134,7 @@ const AccountsList: FC<Props> = (props) => {
     const walletNetwork = network || networkName;
 
     const isAccountDuplicate = selectedAccount && walletNetwork && connectedWallets.some(
-        (w) => w.addresses.some((address) => addressFormat(address, walletNetwork) === addressFormat(selectedAccount.address, walletNetwork))
+        (w) => w.addresses.some((address) => Address.equals(address, selectedAccount.address, walletNetwork))
     )
 
     const accounts: (Wallet | AccountIdentity)[] = [
