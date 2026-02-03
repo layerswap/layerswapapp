@@ -1,9 +1,10 @@
 import { Address } from "@ton/core";
 import { KnownInternalNames } from "@layerswap/widget/internal";
 import { AddressUtilsProvider, AddressUtilsProviderProps, Network } from "@layerswap/widget/types";
+import { name } from "./constants";
 
 export class TonAddressUtilsProvider implements AddressUtilsProvider {
-    readonly providerName = 'TON';
+    readonly providerName = name;
 
     supportsNetwork(network: Network): boolean {
         return KnownInternalNames.Networks.TONMainnet.includes(network.name) || KnownInternalNames.Networks.TONTestnet.includes(network.name)

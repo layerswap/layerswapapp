@@ -1,9 +1,10 @@
 import { AddressUtilsProvider, AddressUtilsProviderProps } from '@layerswap/widget/types';
 import { validate, Network } from 'bitcoin-address-validation';
 import { KnownInternalNames } from "@layerswap/widget/internal";
+import { name } from "./constants";
 
 export class BitcoinAddressUtilsProvider implements AddressUtilsProvider {
-    readonly providerName = 'BITCOIN';
+    readonly providerName = name;
 
     supportsNetwork(network: { name: string }): boolean {
         return KnownInternalNames.Networks.BitcoinMainnet.includes(network.name) || KnownInternalNames.Networks.BitcoinTestnet.includes(network.name)

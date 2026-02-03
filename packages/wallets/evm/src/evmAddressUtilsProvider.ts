@@ -1,9 +1,10 @@
 import { KnownInternalNames } from "@layerswap/widget/internal";
 import { Network, NetworkType, AddressUtilsProvider, AddressUtilsProviderProps } from "@layerswap/widget/types";
 import isValidEtherAddress from "./evmUtils/isValidEtherAddress";
+import { name } from "./constants";
 
 export class EVMAddressUtilsProvider implements AddressUtilsProvider {
-    readonly providerName = 'EVM';
+    readonly providerName = name;
 
     supportsNetwork(network: Network): boolean {
         return (network.type === NetworkType.EVM && !!network.token)

@@ -1,4 +1,4 @@
-import { useConnectModal, KnownInternalNames, convertSvgComponentToBase64, JsonRpcClient, walletIconResolver } from "@layerswap/widget/internal"
+import { useConnectModal, KnownInternalNames, convertSvgComponentToBase64, walletIconResolver } from "@layerswap/widget/internal"
 import { InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps, NetworkType, NetworkWithTokens } from "@layerswap/widget/types";
 import { useConnect, useConfig } from '@bigmi/react'
 import { disconnect } from "@bigmi/client"
@@ -8,12 +8,9 @@ import { isBitcoinAddressValid } from "./utils/isValidAddress"
 import { useBitcoinConnectors } from "./BitcoinProvider"
 import { useBitcoinTransfer } from "./transferProvider/useBitcoinTransfer";
 import { useAccount } from "./utils/useAccount"
-
-const bitcoinNames = [KnownInternalNames.Networks.BitcoinMainnet, KnownInternalNames.Networks.BitcoinTestnet]
+import { name, id, bitcoinNames } from "./constants"
 
 export default function useBitcoinConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
-    const name = 'Bitcoin'
-    const id = 'bitcoin'
     const { connectors: resolvedConnectors } = useBitcoinConnectors()
 
     const commonSupportedNetworks = [

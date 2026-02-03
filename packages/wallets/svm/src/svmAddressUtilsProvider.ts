@@ -1,8 +1,9 @@
 import { PublicKey } from '@solana/web3.js'
 import { Network, NetworkType, AddressUtilsProvider, AddressUtilsProviderProps } from "@layerswap/widget/types";
+import { name } from "./constants";
 
 export class SolanaAddressUtilsProvider implements AddressUtilsProvider {
-    readonly providerName = 'SOLANA';
+    readonly providerName = name;
 
     supportsNetwork(network: Network): boolean {
         return network.type === NetworkType.Solana

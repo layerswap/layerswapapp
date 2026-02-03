@@ -1,8 +1,9 @@
 import { Network, AddressUtilsProvider, AddressUtilsProviderProps } from "@layerswap/widget/types";
 import { KnownInternalNames } from "@layerswap/widget/internal";
+import { name } from "./constants";
 
 export class FuelAddressUtilsProvider implements AddressUtilsProvider {
-    readonly providerName = 'FUEL';
+    readonly providerName = name;
 
     supportsNetwork(network: Network): boolean {
         return (KnownInternalNames.Networks.FuelMainnet.includes(network.name) || KnownInternalNames.Networks.FuelTestnet.includes(network.name))

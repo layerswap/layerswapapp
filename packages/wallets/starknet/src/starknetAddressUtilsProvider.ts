@@ -1,9 +1,10 @@
 import { validateAndParseAddress } from "./utils";
 import { Network, AddressUtilsProvider, AddressUtilsProviderProps } from "@layerswap/widget/types";
 import { KnownInternalNames } from "@layerswap/widget/internal";
+import { name } from "./constants";
 
 export class StarknetAddressUtilsProvider implements AddressUtilsProvider {
-    readonly providerName = 'STARKNET';
+    readonly providerName = name;
 
     supportsNetwork(network: Network): boolean {
         return (KnownInternalNames.Networks.StarkNetMainnet.includes(network.name) || KnownInternalNames.Networks.StarkNetSepolia.includes(network.name))
