@@ -4,7 +4,7 @@ import { FC, useState } from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
 import clsx from 'clsx';
 import { ChevronDown } from 'lucide-react';
-import { Quote, QuoteReward, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
+import { QuoteReward, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
 import AverageCompletionTime from '../Common/AverageCompletionTime';
 import useSWRGas from "@/lib/gases/useSWRGas";
 import GasIcon from '../icons/GasIcon';
@@ -49,7 +49,7 @@ export default function QuoteDetails({ swapValues: values, quote, isQuoteLoading
                         <AccordionTrigger
                             data-attr="see-swap-details"
                             className={clsx(
-                                'p-3.5 pr-5 w-full rounded-2xl flex items-center justify-between transition-colors duration-200 hover:bg-secondary-400 mt-3',
+                                'p-3.5 pr-5 w-full rounded-2xl flex items-center justify-between transition-colors duration-200 hover:bg-secondary-400 mt-2',
                                 triggerClassnames,
                                 {
                                     'bg-secondary-500': !isAccordionOpen,
