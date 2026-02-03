@@ -1,6 +1,7 @@
 'use client'
 import Jazzicon from "./jazzicon.mjs";
 import { FC, useEffect, useRef } from "react";
+import { Address } from "@/lib/address/Address";
 
 type Props = {
     address: string;
@@ -14,7 +15,7 @@ const AddressIcon: FC<Props> = ({ address, size, className, rounded }) => {
     useEffect(() => {
         if (address && ref.current) {
             ref.current.innerHTML = "";
-            const iconElement = Jazzicon(size, parseInt(address.slice(2, 10), 16))
+            const iconElement = Jazzicon(size, Address.toIconSeed(address))
             if (iconElement) {
                 iconElement.style.display = 'block'
                 iconElement.style.width = "100%"
@@ -26,5 +27,5 @@ const AddressIcon: FC<Props> = ({ address, size, className, rounded }) => {
     }, [address, size]);
 
     return <div className={className} ref={ref as any} />
-}
+    }
 export default AddressIcon

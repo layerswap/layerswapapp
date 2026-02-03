@@ -1,6 +1,5 @@
 import { FC, useState } from 'react'
 import { SwapResponse, TransactionType } from '@/lib/apiClients/layerSwapApiClient';
-import shortenAddress, { shortenEmail } from '@/components/utils/ShortenAddress';
 import CopyButton from '@/components/Buttons/copyButton';
 import StatusIcon from './StatusIcons';
 import { ExternalLink } from 'lucide-react';
@@ -14,6 +13,8 @@ import { useSettingsState } from '@/context/settings';
 import { generateSwapInitialValuesFromSwap } from '@/lib/generateSwapInitialValues';
 import SubmitButton from '@/components/Buttons/submitButton';
 import SecondaryButton from '@/components/Buttons/secondaryButton';
+import shortenString from '@/components/utils/ShortenString';
+import { getExplorerUrl } from '@/lib/address/explorerUrl';
 
 type Props = {
     swapResponse: SwapResponse
@@ -75,7 +76,6 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
     const refundTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refund)
 
-
     return (
         <>
             {/* Swap */}
@@ -85,7 +85,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                         <div className="flex justify-between items-center text-sm text-primary-text">
                             <p className="text-left text-secondary-text">Transaction ID</p>
                             <CopyButton toCopy={swap?.id} iconClassName='order-2 ml-1 text-primary-text'>
-                                {shortenAddress(swap?.id)}
+                                {shortenString(swap?.id)}
                             </CopyButton>
                         </div>
                         <div className="flex justify-between items-baseline">
@@ -115,11 +115,11 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                         swapInputTransaction?.transaction_hash ?
                                             <a
                                                 target="_blank"
-                                                href={input_tx_explorer_template?.replace("{0}", swapInputTransaction.transaction_hash)}
+                                                href={getExplorerUrl(input_tx_explorer_template, swapInputTransaction.transaction_hash)}
                                                 className='flex items-center space-x-1'
                                                 rel="noopener noreferrer"
                                             >
-                                                <span>{shortenAddress(swapInputTransaction.transaction_hash)}</span>
+                                                <span>{shortenString(swapInputTransaction.transaction_hash)}</span>
                                                 <ExternalLink className='h-4' />
                                             </a>
                                             :
@@ -135,15 +135,15 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                                     refundTransaction?.transaction_hash ?
                                                         (
                                                             (refundTransaction?.transaction_hash && swap?.destination_exchange?.name === KnownInternalNames.Exchanges.Coinbase && (isGuid(refundTransaction?.transaction_hash))) ?
-                                                                <span><CopyButton toCopy={refundTransaction.transaction_hash} iconClassName="text-primary-text order-2">{shortenAddress(refundTransaction.transaction_hash)}</CopyButton></span>
+                                                                <span><CopyButton toCopy={refundTransaction.transaction_hash} iconClassName="text-primary-text order-2">{shortenString(refundTransaction.transaction_hash)}</CopyButton></span>
                                                                 :
                                                                 <a
                                                                     target="_blank"
-                                                                    href={output_tx_explorer_template?.replace("{0}", refundTransaction.transaction_hash)}
+                                                                    href={getExplorerUrl(output_tx_explorer_template, refundTransaction.transaction_hash)}
                                                                     className='flex items-center space-x-1'
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    <span>{shortenAddress(refundTransaction.transaction_hash)}</span>
+                                                                    <span>{shortenString(refundTransaction.transaction_hash)}</span>
                                                                     <ExternalLink className='h-4' />
                                                                 </a>
                                                         )
@@ -158,15 +158,15 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                                     swapOutputTransaction?.transaction_hash ?
                                                         (
                                                             (swapOutputTransaction?.transaction_hash && swap?.destination_exchange?.name === KnownInternalNames.Exchanges.Coinbase && (isGuid(swapOutputTransaction?.transaction_hash))) ?
-                                                                <span><CopyButton toCopy={swapOutputTransaction.transaction_hash} iconClassName="text-primary-text order-2">{shortenAddress(swapOutputTransaction.transaction_hash)}</CopyButton></span>
+                                                                <span><CopyButton toCopy={swapOutputTransaction.transaction_hash} iconClassName="text-primary-text order-2">{shortenString(swapOutputTransaction.transaction_hash)}</CopyButton></span>
                                                                 :
                                                                 <a
                                                                     target="_blank"
-                                                                    href={output_tx_explorer_template?.replace("{0}", swapOutputTransaction.transaction_hash)}
+                                                                    href={getExplorerUrl(output_tx_explorer_template, swapOutputTransaction.transaction_hash)}
                                                                     className='flex items-center space-x-1'
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    <span>{shortenAddress(swapOutputTransaction.transaction_hash)}</span>
+                                                                    <span>{shortenString(swapOutputTransaction.transaction_hash)}</span>
                                                                     <ExternalLink className='h-4' />
                                                                 </a>
                                                         )

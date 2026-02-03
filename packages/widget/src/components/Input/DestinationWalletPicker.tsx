@@ -1,4 +1,4 @@
-import shortenAddress from "@/components/utils/ShortenAddress";
+import { Address } from "@/lib/address/Address";
 import { ChevronDown, PlusIcon } from "lucide-react";
 import { AddressGroup, AddressItem, AddressTriggerProps } from "./Address/AddressPicker";
 import { Partner } from "@/Models/Partner";
@@ -23,10 +23,10 @@ const DestinationWalletPicker = (props: AddressTriggerProps) => {
                 addressItem &&
                 <>
                     <div className="inline-flex items-center relative px-0.5">
-                        <ResolvedIcon addressItem={addressItem} partner={partner} wallet={connectedWallet} />
+                        <ResolvedIcon addressItem={addressItem} partner={partner} wallet={connectedWallet} destination={destination} />
                     </div>
                     <div className="text-secondary-text">
-                        {shortenAddress(addressItem.address)}
+                        {new Address(addressItem.address, destination).toShortString()}
                     </div>
                     <div className="w-4 h-4 items-center flex text-secondary-text">
                         <ChevronDown className="h-4 w-4" aria-hidden="true" />
@@ -55,10 +55,11 @@ const DestinationWalletPicker = (props: AddressTriggerProps) => {
 type AdderssIconprops = {
     addressItem: AddressItem,
     wallet: Wallet | undefined,
-    partner: Partner | undefined
+    partner: Partner | undefined,
+    destination: AddressTriggerProps['destination']
 }
 const ResolvedIcon = (props: AdderssIconprops) => {
-    const { addressItem, wallet, partner } = props
+    const { addressItem, wallet, partner, destination } = props
     if (partner?.is_wallet && addressItem.group === AddressGroup.FromQuery) {
         return <ImageWithFallback
             alt="Partner logo"
@@ -72,7 +73,7 @@ const ResolvedIcon = (props: AdderssIconprops) => {
         return <wallet.icon className="w-4 h-4" />
     }
     else {
-        return <AddressIcon className="h-4 w-4 p-0.5" address={addressItem.address} size={20} />
+        return <AddressIcon className="h-4 w-4 p-0.5" address={destination ? new Address(addressItem.address, destination).full : addressItem.address} size={20} />
     }
 }
 

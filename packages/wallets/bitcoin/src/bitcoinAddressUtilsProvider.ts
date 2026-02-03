@@ -1,13 +1,16 @@
-import { AddressUtilsProvider } from '@layerswap/widget/types';
+import { AddressUtilsProvider, AddressUtilsProviderProps } from '@layerswap/widget/types';
 import { validate, Network } from 'bitcoin-address-validation';
 import { KnownInternalNames } from "@layerswap/widget/internal";
 
 export class BitcoinAddressUtilsProvider implements AddressUtilsProvider {
+    readonly providerName = 'BITCOIN';
+
     supportsNetwork(network: { name: string }): boolean {
         return KnownInternalNames.Networks.BitcoinMainnet.includes(network.name) || KnownInternalNames.Networks.BitcoinTestnet.includes(network.name)
     }
 
-    isValidAddress(address?: string, network?: { name: string } | null) {
+    isValidAddress(props: AddressUtilsProviderProps): boolean {
+        const { address, network } = props;
         if (!address) {
             return false
         }
@@ -15,7 +18,7 @@ export class BitcoinAddressUtilsProvider implements AddressUtilsProvider {
         return validate(address, isTestnet ? Network.testnet : Network.mainnet);
     }
 
-    addressFormat(address: string) {
-        return address;
+    addressFormat(props: AddressUtilsProviderProps): string {
+        return props.address;
     }
 }

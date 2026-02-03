@@ -1,12 +1,12 @@
 import { resolverService } from "@/lib/resolvers/resolverService";
 
-export function isValidAddress(address?: string, network?: { name: string } | null): boolean {
+export function isValidAddress({address, network, providerName}: {address?: string, network?: { name: string } | null, providerName?: string}): boolean {
     if (!address || !network || isBlacklistedAddress(address)) {
         return false
     }
     try {
         const resolver = resolverService.getAddressUtilsResolver();
-        return resolver.isValidAddress(network, address);
+        return resolver.isValidAddress({ network, address });
     } catch (err) {
         return false
     }

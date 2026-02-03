@@ -2,7 +2,7 @@ import { FC } from "react"
 import { useSwapDataState } from "@/context/swap"
 import Summary from "./Summary"
 import { TransactionType } from "@/lib/apiClients/layerSwapApiClient"
-import { shortenEmail } from "@/components/utils/ShortenAddress"
+import { Address } from "@/lib/address/Address"
 import KnownInternalNames from "@/lib/knownIds"
 import { useInitialSettings } from "@/context/settings"
 import { useSelectedAccount } from "@/context/swapAccounts"
@@ -40,8 +40,8 @@ const SwapSummary: FC = () => {
     else if (selectedSourceAccount?.address) {
         sourceAccountAddress = selectedSourceAccount.address;
     }
-    else if (source_network?.name === KnownInternalNames.Exchanges.Coinbase && swapDetails?.exchange_account_connected) {
-        sourceAccountAddress = shortenEmail(swapDetails?.exchange_account_name, 10);
+    else if (source_network?.name === KnownInternalNames.Exchanges.Coinbase && swapDetails?.exchange_account_connected && swapDetails?.exchange_account_name) {
+        sourceAccountAddress = Address.fromEmail(swapDetails.exchange_account_name, 10).toShortString();
     }
     else if (source_exchange) {
         sourceAccountAddress = "Exchange"

@@ -13,7 +13,7 @@ type TokenTitleWithBalanceProps = {
 export const TokenInfoIcon = ({ item, route, className, iconOnly = false }: { item: NetworkRouteToken, route: NetworkRoute, className?: string, iconOnly?: boolean }) => (
     <div className={className}>
         <ExtendedAddress
-            network={item.contract ? route : undefined}
+            network={route}
             isForCurrency
             showDetails
             address={item.contract || `${route.display_name} native coin`}

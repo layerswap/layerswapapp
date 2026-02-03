@@ -43,3 +43,6 @@ storybook-static/*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# PR Review Report
+pr-review-report.md 

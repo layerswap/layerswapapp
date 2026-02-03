@@ -8,10 +8,10 @@ import ConnectButton from "@/components/Buttons/connectButton"
 import React from "react"
 import { useVirtualizer } from '@/lib/virtual'
 import SwapDetails from "./SwapDetailsComponent"
-import { addressFormat } from "@/lib/address/formatter";
 import { useSettingsState } from "@/context/settings";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/shadcn/accordion";
 import { useSwapHistoryData } from "@/hooks/useSwapHistoryData";
+import { Address } from "@/lib/address/Address";
 
 type ListProps = {
     statuses?: string | number;
@@ -30,7 +30,7 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
 
     const addresses = useMemo(() => wallets.map(w => {
         const network = networks.find(n => n.chain_id == w.chainId)
-        return addressFormat(w.address, network || null)
+        return new Address(w.address, network || null, w.providerName).normalized
     }), [wallets, networks])
 
     const { pendingDeposit, completed, isLoadingAny, isValidatingAny } = useSwapHistoryData(addresses)

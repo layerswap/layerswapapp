@@ -185,6 +185,8 @@ const LoopringMultiStepHandler: FC<WithdrawPageProps> = ({ swapBasicData, refuel
                         <ActionMessage
                             error={error}
                             isLoading={loading}
+                            selectedSourceAddress={fromAddress || ''}
+                            sourceNetwork={source_network}
                         />
                     }
                     {

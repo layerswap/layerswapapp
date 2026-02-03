@@ -1,8 +1,9 @@
 import { FC, useEffect } from "react"
 import { ActionMessages, ActionMessageType } from "../../messages/TransactionMessages"
 import { ErrorHandler } from "@/lib/ErrorHandler"
+import { Network } from "@/Models"
 
-export const ActionMessage: FC<{ error: Error | undefined, isLoading: boolean }> = ({ error, isLoading }) => {
+export const ActionMessage: FC<{ error: Error | undefined, isLoading: boolean, selectedSourceAddress: string, sourceNetwork: Network }> = ({ error, isLoading, selectedSourceAddress, sourceNetwork }) => {
 
     useEffect(() => {
         if (error && (error?.name === ActionMessageType.UnexpectedErrorMessage
@@ -31,7 +32,7 @@ export const ActionMessage: FC<{ error: Error | undefined, isLoading: boolean }>
         return <ActionMessages.InsufficientFundsMessage />
     }
     else if (error?.name === ActionMessageType.WaletMismatch) {
-        return <ActionMessages.WaletMismatchMessage address={error?.message} />
+        return <ActionMessages.WaletMismatchMessage address={selectedSourceAddress} network={sourceNetwork} />
     }
     else if (error?.name === ActionMessageType.DifferentAccountsNotAllowedError) {
         return <ActionMessages.DifferentAccountsNotAllowedError network={error?.message} />

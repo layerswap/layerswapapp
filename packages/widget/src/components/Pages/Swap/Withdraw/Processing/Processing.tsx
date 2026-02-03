@@ -19,6 +19,7 @@ import { useIntercom } from 'react-use-intercom';
 import Steps from './StepsComponent';
 import { useCallbacks } from '@/context/callbackProvider';
 import { ErrorHandler } from '@/lib/ErrorHandler';
+import { getExplorerUrl } from '@/lib/address/explorerUrl';
 
 type Props = {
     swapBasicData: SwapBasicData;
@@ -70,7 +71,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             }
             if (Date.now() - (loggedNotDetectedTxAt.current || storedWalletTransaction.timestamp) > 60000) {
                 loggedNotDetectedTxAt.current = Date.now();
-                const error = new Error(`Transaction not detected in ${source_network.name}. Tx hash: \`${transactionHash}\`. Tx status: ${inputTxStatus}. Swap id: \`${swapDetails.id}\`. ${source_network.display_name} explorer: ${source_network?.transaction_explorer_template?.replace("{0}", transactionHash)} . LS explorer: https://layerswap.io/explorer/${storedWalletTransaction?.hash} `);
+                const error = new Error(`Transaction not detected in ${source_network.name}. Tx hash: \`${transactionHash}\`. Tx status: ${inputTxStatus}. Swap id: \`${swapDetails.id}\`. ${source_network.display_name} explorer: ${getExplorerUrl(source_network?.transaction_explorer_template, transactionHash)} . LS explorer: https://layerswap.io/explorer/${storedWalletTransaction?.hash} `);
                 ErrorHandler({
                     type: "TransactionNotDetected",
                     message: error.message,
@@ -146,7 +147,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                     <div className='flex items-center space-x-1'>
                         <LinkWithIcon
                             name={'View in explorer'}
-                            url={input_tx_explorer?.replace("{0}", transactionHash)}
+                            url={getExplorerUrl(input_tx_explorer, transactionHash)}
                         />
                     </div>
                     <div>
@@ -172,7 +173,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                     <span>We’ve received your deposit. </span>
                     <LinkWithIcon
                         name={'View in explorer'}
-                        url={input_tx_explorer?.replace("{0}", transactionHash)}
+                        url={getExplorerUrl(input_tx_explorer, transactionHash)}
                     />
                 </div>
             },
@@ -185,7 +186,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                                 <p>Check the transfer in the explorer</p>
                                 <LinkWithIcon
                                     name={'View in explorer'}
-                                    url={input_tx_explorer?.replace("{0}", transactionHash)}
+                                    url={getExplorerUrl(input_tx_explorer, transactionHash)}
                                 />
                             </div>
                             :
@@ -221,7 +222,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                         <span>Transaction: </span>
                         <LinkWithIcon
                             name={'View in explorer'}
-                            url={output_tx_explorer?.replace("{0}", swapOutputTransaction.transaction_hash)}
+                            url={getExplorerUrl(output_tx_explorer, swapOutputTransaction?.transaction_hash)}
                         />
                     </div>
                 </div> : null,
@@ -269,7 +270,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                     {swapRefuelTransaction &&
                         <LinkWithIcon
                             name={'View in explorer'}
-                            url={output_tx_explorer?.replace("{0}", swapRefuelTransaction.transaction_hash)}
+                            url={getExplorerUrl(output_tx_explorer, swapRefuelTransaction?.transaction_hash)}
                         />
                     }
                 </div>
@@ -298,7 +299,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                         swapRefundTransaction && (
                             <LinkWithIcon
                                 name={'View in explorer'}
-                                url={output_tx_explorer?.replace("{0}", swapRefundTransaction?.transaction_hash || '')}
+                                url={getExplorerUrl(output_tx_explorer, swapRefundTransaction?.transaction_hash || '')}
                             />
                         )}
                 </div>
