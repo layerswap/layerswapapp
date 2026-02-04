@@ -79,11 +79,9 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                             <span className="text-left text-secondary-text">Date & Time</span>
                             <span className='text-primary-text'>{(new Date(swap.created_date)).toLocaleString()} <span className='text-primary-text-tertiary'>{getDateDifferenceString(new Date(swap.created_date))}</span></span>
                         </div>
-                        <div className="flex justify-between p items-baseline">
-                            <span className="text-left text-secondary-text">Status </span>
-                            <span className="rounded-md px-1 inline-flex items-center">
-                                <StatusIcon swap={swap} />
-                            </span>
+                        <div className="flex justify-between items-baseline">
+                            <span className="text-left text-secondary-text">Status</span>
+                            <StatusIcon swap={swap} />
                         </div>
                     </div>
                 </div>
