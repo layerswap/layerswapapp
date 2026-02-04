@@ -47,7 +47,7 @@ const IconComponentWrapper = ({ children, withBg, classNames }: { children: Reac
 
 const GreenComponent = ({ text, withBg, short }: IconComponentProps) => {
   return (
-    <IconComponentWrapper withBg={withBg} classNames="bg-[#54b487]/20 text-[#569735] text-sm">
+    <IconComponentWrapper withBg={withBg} classNames=" text-success-foreground text-sm">
       <CircleCheckIcon />
       {!short && <p>{text}</p>}
     </IconComponentWrapper>

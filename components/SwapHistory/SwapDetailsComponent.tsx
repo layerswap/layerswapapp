@@ -67,10 +67,10 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
         <>
             {/* Swap */}
             <section className='pb-3 space-y-3'>
-                <div className='p-3 bg-secondary-500 rounded-xl'>
+                <div className='py-3 bg-secondary-500 rounded-xl'>
                     <div className='text-sm flex flex-col gap-3'>
                         <div className="flex justify-between items-center text-sm text-primary-text">
-                            <p className="text-left text-secondary-text">Transaction ID</p>
+                            <p className="text-left text-secondary-text">ID</p>
                             <CopyButton toCopy={swap?.id} iconClassName='order-2 ml-1 text-primary-text'>
                                 {shortenString(swap?.id)}
                             </CopyButton>
@@ -81,7 +81,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                         </div>
                         <div className="flex justify-between p items-baseline">
                             <span className="text-left text-secondary-text">Status </span>
-                            <span className="text-primary-text">
+                            <span className="text-primary-text bg-success-background rounded-md px-1 inline-flex items-center">
                                 <StatusIcon swap={swap} />
                             </span>
                         </div>
@@ -94,7 +94,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                     <div className='space-y-3'>
 
                         {/* Source and Destination Transactions */}
-                        <div className='p-3 bg-secondary-500 rounded-xl text-primary-text'>
+                        <div className='py-3 bg-secondary-500 rounded-xl text-primary-text'>
                             <div className='text-sm flex flex-col gap-3'>
                                 <div className="flex justify-between items-baseline">
                                     <p className="text-left text-secondary-text">Source transaction</p>
@@ -172,6 +172,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                             type='button'
                             size='xl'
                             onClick={handleRepeatSwap}
+                            className='bg-secondary-100! rounded-xl'
                         >
                             <p className='text-primary-text'>
                                 Repeat Swap
