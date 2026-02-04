@@ -120,7 +120,6 @@ const RouteSearch: FC<RouteSearchProps> = ({ searchQuery, setSearchQuery, rowEle
                 isOpen={shouldFocus}
                 placeholder={showExpanded ? "" : "Search Tokens, Networks or both"}
                 onFocus={() => setIsFocused(true)}
-                onBlur={() => setTimeout(() => setIsFocused(false), 150)}
             />
             {showExpanded && !searchQuery && (
                 <div className="absolute top-3 left-3">
