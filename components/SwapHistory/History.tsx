@@ -155,7 +155,7 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
                                                         onClick={() => setExpanded(undefined)}
                                                         className="inline-flex items-center gap-1 leading-5 text-sm text-secondary-text hover:text-primary-text transition-colors"
                                                     >
-                                                        Hide details
+                                                        <span>Hide details</span>
                                                         <ChevronUp className="w-4 h-4" />
                                                     </button>
                                                 </div>

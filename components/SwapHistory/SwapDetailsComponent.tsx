@@ -81,7 +81,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                         </div>
                         <div className="flex justify-between p items-baseline">
                             <span className="text-left text-secondary-text">Status </span>
-                            <span className="text-primary-text bg-success-background rounded-md px-1 inline-flex items-center">
+                            <span className="rounded-md px-1 inline-flex items-center">
                                 <StatusIcon swap={swap} />
                             </span>
                         </div>

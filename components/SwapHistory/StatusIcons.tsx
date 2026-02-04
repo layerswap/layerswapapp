@@ -39,7 +39,7 @@ export default function StatusIcon({ swap, withBg, short }: { swap: SwapItem, wi
 
 const IconComponentWrapper = ({ children, withBg, classNames }: { children: React.ReactNode, withBg?: boolean, classNames?: string }) => {
   return (
-    <div className={`inline-flex items-center gap-1 font-bold ${classNames} ${withBg ? 'pt-3.5 py-1.5 w-full justify-center rounded-b-2xl' : 'bg-transparent!'}`}>
+    <div className={`inline-flex items-center gap-1 font-bold ${classNames} ${withBg ? 'pt-3.5 py-1.5 w-full justify-center rounded-b-2xl' : ''}`}>
       {children}
     </div>
   )
@@ -47,7 +47,7 @@ const IconComponentWrapper = ({ children, withBg, classNames }: { children: Reac
 
 const GreenComponent = ({ text, withBg, short }: IconComponentProps) => {
   return (
-    <IconComponentWrapper withBg={withBg} classNames=" text-success-foreground text-sm">
+    <IconComponentWrapper withBg={withBg} classNames="bg-success-background text-success-foreground text-sm">
       <CircleCheckIcon />
       {!short && <p>{text}</p>}
     </IconComponentWrapper>
