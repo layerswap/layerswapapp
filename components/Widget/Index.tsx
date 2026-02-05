@@ -37,7 +37,7 @@ const Widget = ({ children, hideMenu, contextualMenu }: Props) => {
 
    return <div className="relative p-px">
       {!isTransparentTheme && (
-         <div className="invisible sm:visible absolute inset-0 rounded-[25px] bg-gradient-to-t from-secondary-800 to-secondary-300 pointer-events-none" />
+         <div className="invisible sm:visible absolute inset-0 rounded-[25px] bg-linear-to-t from-secondary-800 to-secondary-300 pointer-events-none" />
       )}
       <div
          style={theme?.cardBackgroundStyle}
