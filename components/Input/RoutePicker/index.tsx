@@ -23,7 +23,7 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
     const [searchQuery, setSearchQuery] = useState("")
     const { wallets } = useWallet()
     const showsWalletButton = wallets.length === 0 && direction === 'from' && !searchQuery;
-    const { suggestionsLimit, measureRef } = useSuggestionsLimit({
+    const { suggestionsLimit } = useSuggestionsLimit({
         hasWallet: wallets.length > 0,
         showsWalletButton
     });
@@ -87,7 +87,6 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
                             direction={direction}
                             selectedRoute={selectedRoute?.name}
                             selectedToken={selectedToken?.symbol}
-                            measureRef={measureRef}
                         />
                     )}
                 </SelectorContent>

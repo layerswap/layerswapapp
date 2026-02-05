@@ -28,8 +28,8 @@ const RouteSearch: FC<RouteSearchProps> = ({ searchQuery, setSearchQuery, rowEle
 
     const isDesktop = windowSize?.width && windowSize.width >= 640;
 
-    const width = showExpanded ? 500 : (isDesktop ? 438 : (windowSize?.width ? windowSize.width - 36 : 438));
-    const aspectRatio = showExpanded ? (isDesktop ? 3.5 : 3.3) : (width / 40);
+    const width = useMemo(() => showExpanded ? 500 : (isDesktop ? 438 : (windowSize?.width ? windowSize.width - 36 : 438)), [showExpanded, isDesktop, windowSize]);
+    const aspectRatio = useMemo(() => showExpanded ? (isDesktop ? 3.5 : 3.3) : (width / 40), [showExpanded, isDesktop, width]);
 
     useEffect(() => {
         if (isItemsScrolling && showExpanded) {
@@ -40,7 +40,7 @@ const RouteSearch: FC<RouteSearchProps> = ({ searchQuery, setSearchQuery, rowEle
     useEffect(() => {
         if (isFocused && !showExpanded) {
             setShowExpanded(true);
-        } else if(!isFocused && showExpanded) {
+        } else if (!isFocused && showExpanded) {
             setShowExpanded(false);
         }
     }, [isFocused])

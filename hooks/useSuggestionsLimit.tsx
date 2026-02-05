@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import useWindowDimensions from './useWindowDimensions';
 
 const SUGGESTION_ROW_HEIGHT = 60;
@@ -45,32 +45,19 @@ type Options = {
 
 export default function useSuggestionsLimit({ hasWallet, showsWalletButton }: Options) {
     const { windowSize } = useWindowDimensions();
-    const [containerElement, setContainerElement] = useState<HTMLElement | null>(null);
     const [limit, setLimit] = useState(() => calculateFromViewport(windowSize, hasWallet));
 
-    // Update initial calculation when viewport or wallet status changes
     useEffect(() => {
-        if (!containerElement) {
-            setLimit(calculateFromViewport(windowSize, hasWallet));
-        }
-    }, [windowSize.height, windowSize.width, hasWallet, containerElement]);
-
-    // Ref callback to receive container element from Content
-    const measureRef = useCallback((node: HTMLElement | null) => {
-        setContainerElement(node);
-    }, []);
-
-    // Measure container when available and on resize
-    useEffect(() => {
+        const containerElement = document.getElementById('widget');;
         if (!containerElement) return;
 
         const measure = () => {
             const height = containerElement.clientHeight;
             if (height > 0) {
                 // Subtract wallet button height when it's rendered inside the container
-                const availableHeight = showsWalletButton
+                const availableHeight = (showsWalletButton
                     ? height - CONNECT_WALLET_BUTTON_HEIGHT
-                    : height;
+                    : height) - 100;
                 const count = Math.floor((availableHeight / SUGGESTION_ROW_HEIGHT) - 3);
                 setLimit(Math.max(MIN_SUGGESTIONS, Math.min(MAX_SUGGESTIONS, count)));
             }
@@ -81,7 +68,7 @@ export default function useSuggestionsLimit({ hasWallet, showsWalletButton }: Op
         measure();
 
         return () => observer.disconnect();
-    }, [containerElement, showsWalletButton]);
+    }, [showsWalletButton]);
 
-    return { suggestionsLimit: limit, measureRef };
+    return { suggestionsLimit: limit };
 }
