@@ -17,14 +17,19 @@ type RouteSearchProps = {
 const RouteSearch: FC<RouteSearchProps> = ({ searchQuery, setSearchQuery, rowElements, isItemsScrolling }) => {
     const { shouldFocus } = useSelectorState();
 
-    const [isFocused, setIsFocused] = useState(false);
-    const [showExpanded, setShowExpanded] = useState(false);
+    const [isFocused, setIsFocused] = useState(true);
+    const [showExpanded, setShowExpanded] = useState(true);
     const [randomRoute, setRandomRoute] = useState<NetworkElement | null>(null);
     const { windowSize } = useWindowDimensions()
 
     const hasInitializedRef = useRef(false);
+    const hasRenderedRef = useRef(false);
     const rowElementsRef = useRef(rowElements);
     rowElementsRef.current = rowElements;
+
+    useEffect(() => {
+        hasRenderedRef.current = true;
+    }, []);
 
     const isDesktop = windowSize?.width && windowSize.width >= 640;
 
@@ -38,6 +43,8 @@ const RouteSearch: FC<RouteSearchProps> = ({ searchQuery, setSearchQuery, rowEle
     }, [isItemsScrolling]);
 
     useEffect(() => {
+        if (!hasRenderedRef.current) return; // Skip on initial mount
+
         if (isFocused && !showExpanded) {
             setShowExpanded(true);
         } else if (!isFocused && showExpanded) {
@@ -83,6 +90,7 @@ const RouteSearch: FC<RouteSearchProps> = ({ searchQuery, setSearchQuery, rowEle
     return <div>
         <motion.div
             className="absolute z-0 bg-linear-180 from-secondary-500 from-70% to-secondary-500/0 backdrop-blur-sm -translate-x-1/2 -translate-y-1/2 left-1/2 top-19 sm:top-18 rounded-lg! shadow-lg!"
+            initial={false}
             animate={{
                 width: width,
                 height: width / aspectRatio,
@@ -96,6 +104,7 @@ const RouteSearch: FC<RouteSearchProps> = ({ searchQuery, setSearchQuery, rowEle
 
         <motion.div
             className="relative"
+            initial={false}
             animate={showExpanded ? "open" : "closed"}
             variants={sidebarVariants}
             transition={{
