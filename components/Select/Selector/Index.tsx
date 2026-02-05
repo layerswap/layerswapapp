@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { forwardRef, ReactNode } from "react";
 import { Modal, ModalContent, ModalTrigger, useModalState } from "@/components/modal/modalWithoutAnimation";
 
 export const Selector = ({ children }) => {
@@ -23,18 +23,19 @@ type SelectContentProps = {
     searchHint?: string;
     children: ((props: ContentChildProps) => JSX.Element);
     isLoading: boolean;
-    ref?: React.RefObject<HTMLDivElement>;
 }
 
-export const SelectorContent = (props: SelectContentProps) => {
+export const SelectorContent = forwardRef<HTMLDivElement, SelectContentProps>((props, ref) => {
     const { children, header } = props;
 
     return (
-        <ModalContent header={header} ref={props.ref}>
+        <ModalContent header={header} ref={ref}>
             {children}
         </ModalContent>
     );
-}
+});
+
+SelectorContent.displayName = 'SelectorContent';
 
 type SelectTriggerProps = {
     disabled: boolean;

@@ -1,4 +1,4 @@
-import { createContext, DetailedHTMLProps, HTMLAttributes, ReactNode, SetStateAction, useContext, useEffect, useState } from "react";
+import { createContext, DetailedHTMLProps, forwardRef, HTMLAttributes, ReactNode, SetStateAction, useContext, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
 import IconButton from "@/components/buttons/iconButton";
@@ -43,10 +43,9 @@ type ModalContentProps = {
     children: ((props: ContentChildProps) => JSX.Element) | JSX.Element;
     className?: string;
     showCloseButton?: boolean;
-    ref?: React.RefObject<HTMLDivElement>;
 }
 
-export const ModalContent = (props: ModalContentProps) => {
+export const ModalContent = forwardRef<HTMLDivElement, ModalContentProps>((props, ref) => {
     const { children, header, className = "", showCloseButton = true } = props
     const { isOpen, setIsOpen, setShouldFocus, shouldFocus } = useModalState();
     const closeModal = () => { setIsOpen(false); setShouldFocus(false) };
@@ -69,7 +68,7 @@ export const ModalContent = (props: ModalContentProps) => {
 
     const modalElement = (
         <div
-            ref={props.ref}
+            ref={ref}
             className={clsx("fixed sm:absolute inset-0 z-50 bg-secondary-700 rounded-t-3xl sm:rounded-3xl flex flex-col overscroll-none", className)}>
             {(header || showCloseButton) && (
                 <div className="w-full relative z-20">
@@ -101,7 +100,9 @@ export const ModalContent = (props: ModalContentProps) => {
     }
 
     return createPortal(modalElement, widgetElement);
-}
+});
+
+ModalContent.displayName = 'ModalContent';
 
 type ModalTriggerProps = DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement> & {
     disabled?: boolean;
