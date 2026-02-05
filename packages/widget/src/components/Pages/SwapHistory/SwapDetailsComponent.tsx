@@ -23,7 +23,7 @@ type Props = {
 const SwapDetails: FC<Props> = ({ swapResponse }) => {
 
     const { swap } = swapResponse
-    const { source_network, destination_network, source_exchange } = swap
+    const { source_network, destination_network, source_exchange, destination_exchange } = swap
 
     const initialSettings = useInitialSettings()
 
@@ -38,7 +38,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
         try {
             // Create a new swap based on the current swap data
             // Determine if this is a cross-chain or exchange swap
-            const swapType = (swap.source_exchange || swap.destination_exchange) ? 'exchange' : 'cross-chain'
+            const swapType = (source_exchange || destination_exchange) ? 'exchange' : 'cross-chain'
             const newSwapData = generateSwapInitialValuesFromSwap({
                 ...swap,
                 requested_amount: swap.requested_amount.toString()

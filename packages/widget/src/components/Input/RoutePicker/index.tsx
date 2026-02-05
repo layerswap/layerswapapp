@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { Selector, SelectorContent, SelectorTrigger } from "@/components/Select/Selector/Index";
 import { SelectedRouteDisplay } from "./Routes";
 import useFormRoutes from "@/hooks/useFormRoutes";
@@ -11,6 +11,8 @@ import { swapInProgress } from "@/components/utils/swapUtils";
 import { updateForm } from "@/components/Pages/Swap/Form/updateForm";
 import clsx from "clsx";
 import { SwapDirection, SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
+import useSuggestionsLimit from "@/hooks/useSuggestionsLimit";
+import useWallet from "@/hooks/useWallet";
 
 const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, className?: string }> = ({ direction, isExchange = false, className }) => {
     const {
@@ -19,7 +21,17 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
     } = useFormikContext<SwapFormValues>();
 
     const [searchQuery, setSearchQuery] = useState("")
-    const { allRoutes, isLoading, routeElements, selectedRoute, selectedToken } = useFormRoutes({ direction, values }, searchQuery)
+    const { wallets } = useWallet()
+    const showsWalletButton = wallets.length === 0 && direction === 'from' && !searchQuery;
+
+    const ref = useRef<HTMLDivElement>(null);
+    const { suggestionsLimit } = useSuggestionsLimit({
+        hasWallet: wallets.length > 0,
+        showsWalletButton,
+        containerElement: ref.current
+    });
+
+    const { allRoutes, isLoading, routeElements, selectedRoute, selectedToken } = useFormRoutes({ direction, values }, searchQuery, suggestionsLimit)
     const currencyFieldName = direction === 'from' ? 'fromAsset' : 'toAsset';
 
     useEffect(() => {
@@ -58,9 +70,9 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
             shouldValidate: true,
             setFieldValue
         })
-    }, [currencyFieldName, direction, setFieldValue])
-    const showbalance = !isExchange && (direction === 'to' || values.depositMethod === 'wallet')
+    }, [currencyFieldName, direction])
 
+    const showBalance = !isExchange && (direction === 'to' || values.depositMethod === 'wallet')
 
     return (
         <div className={clsx("flex flex-col self-end relative items-center", className)}>
@@ -68,7 +80,12 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
                 <SelectorTrigger data-attr={direction === "from" ? "from-route-picker" : "to-route-picker"} disabled={false} className={"group-[.exchange-picker]:bg-secondary-500 py-1.5 px-2 group-[.exchange-picker]:py-2! group-[.exchange-picker]:px-3! active:animate-press-down group-[.exchange-picker]:active:animate-none"}>
                     <SelectedRouteDisplay route={selectedRoute} token={selectedToken} placeholder="Select token" />
                 </SelectorTrigger>
-                <SelectorContent isLoading={isLoading} searchHint="Search" header={<PickerWalletConnect direction={direction} />}>
+                <SelectorContent
+                    isLoading={isLoading}
+                    searchHint="Search"
+                    header={<PickerWalletConnect direction={direction} />}
+                    ref={ref}
+                >
                     {({ closeModal }) => (
                         <Content
                             onSelect={(r, t) => { handleSelect(r, t); closeModal(); }}
@@ -83,7 +100,7 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
                 </SelectorContent>
             </Selector>
             {
-                showbalance &&
+                showBalance &&
                 <Balance values={values} direction={direction} />
             }
         </div>

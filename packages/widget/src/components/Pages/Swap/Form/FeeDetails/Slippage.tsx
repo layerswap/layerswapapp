@@ -1,12 +1,11 @@
 import { SwapQuote } from "@/lib/apiClients/layerSwapApiClient"
 import { SwapValues } from "."
 import { Info, Pencil } from "lucide-react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover"
 import { useCallback, useEffect, useRef, useState, forwardRef } from "react"
 import { useClickOutside } from "@/hooks/useClickOutside"
 import clsx from "clsx"
 import { useSlippageStore } from "@/stores/slippageStore"
+import { Popover, PopoverContent, PopoverTrigger, Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn"
 
 type SlippageProps = {
     quoteData: SwapQuote | undefined

@@ -197,7 +197,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, pr
         const showTitles = buttons.length <= 2;
 
         return { buttons, showTitles };
-    }, [addr.full, network, providerName, isNativeToken, isCopied, onDisconnect]);
+    }, [addr.full, network, providerName, isNativeToken, isAddressValid, isCopied, onDisconnect]);
 
     const { buttons, showTitles } = getActionButtons();
 

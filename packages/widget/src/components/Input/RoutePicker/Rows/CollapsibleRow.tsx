@@ -83,7 +83,10 @@ export const CollapsibleRow = ({
   };
 
   return (
-    <motion.div {...(!searchQuery && { layout: "position" })} key={searchQuery ? "search" : "default"}>
+    <motion.div
+      //  {...(!searchQuery && { layout: "position" })} 
+      key={searchQuery ? "search" : "default"}
+    >
       <AccordionItem value={groupName}>
         <NavigatableItem
           index={index}

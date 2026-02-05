@@ -1,7 +1,7 @@
 import { useConnectors, useFuel as useGlobalFuel } from '@fuels/react';
 import { FuelConnector, FuelConnectorEventTypes } from '@fuel-ts/account';
 import { Address } from '@fuel-ts/address';
-import { useWalletStore, sleep, KnownInternalNames } from "@layerswap/widget/internal";
+import { useWalletStore, sleep } from "@layerswap/widget/internal";
 import { useEffect, useMemo } from "react";
 import { BAKO_STATE } from "./connectors/bako-safe/Bako";
 import { InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps } from "@layerswap/widget/types";
