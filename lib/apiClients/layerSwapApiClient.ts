@@ -1,12 +1,13 @@
-import { SwapStatus } from "../../Models/SwapStatus";
+import { SwapStatus } from "@/Models/SwapStatus";
 import AppSettings from "../AppSettings";
 import { InitializeUnauthInstance, InitializeAuthInstance } from "../axiosInterceptor"
 import { v4 as uuidv4 } from 'uuid';
 import { AxiosInstance, Method } from "axios";
 import { AuthRefreshFailedError } from "../Errors/AuthRefreshFailedError";
-import { ApiResponse, EmptyApiResponse } from "../../Models/ApiResponse";
-import { NetworkWithTokens, Network, Token } from "../../Models/Network";
-import { Exchange } from "../../Models/Exchange";
+import { ApiResponse, EmptyApiResponse } from "@/Models/ApiResponse";
+import { NetworkWithTokens, Network, Token } from "@/Models/Network";
+import { Exchange } from "@/Models/Exchange";
+import { ValidationErrorCodes } from "@/Models/ApiError";
 import posthog from "posthog-js";
 
 export default class LayerSwapApiClient {
@@ -70,15 +71,27 @@ export default class LayerSwapApiClient {
                         error = new Error(String(reason));
                         error.name = "APIError";
                     }
-                    posthog.captureException(error, {
-                        $layerswap_exception_type: "API Error",
-                        endpoint: endpoint,
-                        status: reason.response?.status,
-                        statusText: reason.response?.statusText,
-                        responseData: reason.response?.data,
-                        requestUrl: reason.request?.url,
-                        requestMethod: reason.request?.method,
-                    });
+
+                    const errorCode = reason.response?.data?.error?.code;
+                    const isValidationError = errorCode && Object.values(ValidationErrorCodes).includes(errorCode);
+
+                    if (isValidationError) {
+                        console.log('Validation error:', {
+                            code: errorCode,
+                            message: reason.response?.data?.error?.message,
+                            endpoint: endpoint,
+                        });
+                    } else {
+                        posthog.captureException(error, {
+                            $layerswap_exception_type: "API Error",
+                            endpoint: endpoint,
+                            status: reason.response?.status,
+                            statusText: reason.response?.statusText,
+                            responseData: reason.response?.data,
+                            requestUrl: reason.request?.url,
+                            requestMethod: reason.request?.method,
+                        });
+                    }
                     return Promise.reject(reason);
                 }
             });

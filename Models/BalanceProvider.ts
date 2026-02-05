@@ -1,4 +1,3 @@
-import posthog from "posthog-js";
 import { TokenBalance } from "./Balance";
 import { Network, NetworkWithTokens, Token } from "./Network";
 import { extractErrorDetails } from "@/lib/balances/errorUtils";
@@ -9,10 +8,10 @@ export abstract class BalanceProvider {
     abstract fetchBalance: (address: string, network: NetworkWithTokens, options?: { timeoutMs?: number, retryCount?: number }) => Promise<TokenBalance[] | null | undefined>
     protected resolveTokenBalanceFetchError = (err: Error, token: Token, network: Network, isNativeCurrency?: boolean) => {
         console.error("balance_fetch_error", network.name, err)
-        
+
         const errorDetails = extractErrorDetails(err);
         const category = classifyNodeError(err);
-        
+
         const tokenBalance: TokenBalance = {
             network: network.name,
             token: token.symbol,
