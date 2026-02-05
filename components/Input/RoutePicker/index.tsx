@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { SwapDirection, SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { Selector, SelectorContent, SelectorTrigger } from "@/components/Select/Selector/Index";
 import { SelectedRouteDisplay } from "./Routes";
@@ -23,9 +23,12 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
     const [searchQuery, setSearchQuery] = useState("")
     const { wallets } = useWallet()
     const showsWalletButton = wallets.length === 0 && direction === 'from' && !searchQuery;
+
+    const ref = useRef<HTMLDivElement>(null);
     const { suggestionsLimit } = useSuggestionsLimit({
         hasWallet: wallets.length > 0,
-        showsWalletButton
+        showsWalletButton,
+        containerElement: ref.current
     });
 
     const { allRoutes, isLoading, routeElements, selectedRoute, selectedToken } = useFormRoutes({ direction, values }, searchQuery, suggestionsLimit)
@@ -77,7 +80,12 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
                 <SelectorTrigger data-attr={direction === "from" ? "from-route-picker" : "to-route-picker"} disabled={false} className={"group-[.exchange-picker]:bg-secondary-500 py-1.5 px-2 group-[.exchange-picker]:py-2! group-[.exchange-picker]:px-3! active:animate-press-down group-[.exchange-picker]:active:animate-none"}>
                     <SelectedRouteDisplay route={selectedRoute} token={selectedToken} placeholder="Select token" />
                 </SelectorTrigger>
-                <SelectorContent isLoading={isLoading} searchHint="Search" header={<PickerWalletConnect direction={direction} />}>
+                <SelectorContent
+                    isLoading={isLoading}
+                    searchHint="Search"
+                    header={<PickerWalletConnect direction={direction} />}
+                    ref={ref}
+                >
                     {({ closeModal }) => (
                         <Content
                             onSelect={(r, t) => { handleSelect(r, t); closeModal(); }}

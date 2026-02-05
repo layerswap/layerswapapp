@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import useWindowDimensions from './useWindowDimensions';
 
 const SUGGESTION_ROW_HEIGHT = 60;
@@ -41,34 +41,26 @@ function calculateFromViewport(windowSize: WindowSize, hasWallet: boolean): numb
 type Options = {
     hasWallet: boolean;
     showsWalletButton: boolean;
+    containerElement: HTMLElement | null;
 };
 
-export default function useSuggestionsLimit({ hasWallet, showsWalletButton }: Options) {
+export default function useSuggestionsLimit({ hasWallet, showsWalletButton, containerElement }: Options) {
     const { windowSize } = useWindowDimensions();
-    const [limit, setLimit] = useState(() => calculateFromViewport(windowSize, hasWallet));
 
-    useEffect(() => {
-        const containerElement = document.getElementById('widget');;
-        if (!containerElement) return;
+    const limit = useMemo(() => {
+        if (!containerElement) return calculateFromViewport(windowSize, hasWallet);
 
-        const measure = () => {
-            const height = containerElement.clientHeight;
-            if (height > 0) {
-                // Subtract wallet button height when it's rendered inside the container
-                const availableHeight = (showsWalletButton
-                    ? height - CONNECT_WALLET_BUTTON_HEIGHT
-                    : height) - 100;
-                const count = Math.floor((availableHeight / SUGGESTION_ROW_HEIGHT) - 3);
-                setLimit(Math.max(MIN_SUGGESTIONS, Math.min(MAX_SUGGESTIONS, count)));
-            }
-        };
-
-        const observer = new ResizeObserver(measure);
-        observer.observe(containerElement);
-        measure();
-
-        return () => observer.disconnect();
-    }, [showsWalletButton]);
+        const height = containerElement.clientHeight;
+        if (height > 0) {
+            // Subtract wallet button height when it's rendered inside the container
+            const availableHeight = (showsWalletButton
+                ? height - CONNECT_WALLET_BUTTON_HEIGHT
+                : height) - 100;
+            const count = Math.floor((availableHeight / SUGGESTION_ROW_HEIGHT) - 3);
+            return (Math.max(MIN_SUGGESTIONS, Math.min(MAX_SUGGESTIONS, count)));
+        }
+        return MIN_SUGGESTIONS;
+    }, [windowSize, hasWallet, containerElement]);
 
     return { suggestionsLimit: limit };
 }

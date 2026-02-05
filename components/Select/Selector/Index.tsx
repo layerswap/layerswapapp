@@ -23,13 +23,14 @@ type SelectContentProps = {
     searchHint?: string;
     children: ((props: ContentChildProps) => JSX.Element);
     isLoading: boolean;
+    ref?: React.RefObject<HTMLDivElement>;
 }
 
 export const SelectorContent = (props: SelectContentProps) => {
     const { children, header } = props;
 
     return (
-        <ModalContent header={header}>
+        <ModalContent header={header} ref={props.ref}>
             {children}
         </ModalContent>
     );
