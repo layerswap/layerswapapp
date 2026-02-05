@@ -143,7 +143,7 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
                                         className="mb-3 last:mb-0"
                                     >
                                         <AccordionItem value={swapId} className="border-none bg-secondary-500 rounded-3xl">
-                                            <AccordionTrigger className="mb-3 last:mb-0 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5),0_4px_16px_rgba(0,0,0,0.3)]">
+                                            <AccordionTrigger className={`mb-3 last:mb-0 rounded-3xl transition-shadow ${expanded === swapId ? 'shadow-accordion-open' : ''}`}>
                                                 <div className="cursor-pointer">
                                                     <HistorySummary swapResponse={swap} wallets={wallets} />
                                                 </div>
