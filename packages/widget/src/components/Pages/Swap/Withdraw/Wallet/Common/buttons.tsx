@@ -21,7 +21,6 @@ import { ErrorHandler } from "@/lib/ErrorHandler";
 import { TokenBalance, TransferProps, Wallet } from "@/types";
 import { resolvePriceImpactValues } from "@/lib/fees";
 import InfoIcon from "@/components/Icons/InfoIcon";
-import { addressFormat } from "@/lib/address/formatter";
 import { useBalance } from "@/lib/balances/useBalance";
 import KnownInternalNames from "@/lib/knownIds";
 
@@ -186,7 +185,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
     const handleClick = async () => {
         try {
-            const selectedWallet = selectedSourceAccount && wallets.find(w => w.addresses.some(a => addressFormat(a, swapBasicData.source_network) === addressFormat(selectedSourceAccount?.address, swapBasicData.source_network)))
+            const selectedWallet = wallets.find(w => w.id === selectedSourceAccount?.id)
             if (!selectedSourceAccount) {
                 throw new Error('Selected source account is undefined')
             }

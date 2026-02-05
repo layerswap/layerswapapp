@@ -147,6 +147,7 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: wallet, n
                                         <ExtendedAddress
                                             address={wallet.address}
                                             network={network}
+                                            providerName={wallet.providerName}
                                             title={wallet.displayName?.split("-")[0]}
                                             description={wallet.providerName}
                                             logo={wallet.icon}
@@ -155,7 +156,7 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: wallet, n
                                             onDisconnect={() => hasDisconnect(wallet) && wallet.disconnect()}
                                         />
                                     }
-                                    <p className="text-xs text-secondary-text">
+                                    <p className="text-xs text-secondary-text text-start">
                                         {wallet.displayName}
                                     </p>
                                 </div>
@@ -276,6 +277,7 @@ const NestedWalletAddress: FC<NestedWalletAddressProps> = ({ selectable, address
                         <ExtendedAddress
                             address={address}
                             network={network}
+                            providerName={wallet.providerName}
                             addressClassNames="font-normal text-sm"
                             onDisconnect={() => hasDisconnect(wallet) && wallet?.disconnect()}
                         />

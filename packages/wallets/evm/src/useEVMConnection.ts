@@ -10,13 +10,9 @@ import { explicitInjectedProviderDetected } from "./connectors/explicitInjectedP
 import { useEvmConnectors, HIDDEN_WALLETCONNECT_ID } from "./EVMProvider/evmConnectorsContext"
 import { useActiveEvmAccount } from "./EVMProvider/ActiveEvmAccount"
 import { useEVMTransfer } from "./transferProvider/useEVMTransfer"
-
-const ethereumNames = [KnownInternalNames.Networks.EthereumMainnet, KnownInternalNames.Networks.EthereumSepolia]
-const immutableZKEvm = [KnownInternalNames.Networks.ImmutableZkEVM]
+import { name, id, ethereumNames, immutableZKEvm } from "./constants"
 
 export default function useEVMConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
-    const name = 'EVM'
-    const id = 'evm'
     const isMobilePlatform = useMemo(() => isMobile(), []);
 
     const asSourceSupportedNetworks = useMemo(() => [

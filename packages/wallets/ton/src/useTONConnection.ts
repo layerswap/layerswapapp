@@ -1,20 +1,10 @@
 import { ConnectedWallet, useTonConnectUI, useTonWallet } from "@tonconnect/ui-react"
 import { Address } from "@ton/core";
-import { KnownInternalNames, walletIconResolver } from "@layerswap/widget/internal";
+import { walletIconResolver } from "@layerswap/widget/internal";
 import { InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps } from "@layerswap/widget/types";
-import { useTonConfig } from "./index";
 import { useTONTransfer } from "./transferProvider/useTONTransfer";
-
+import { name, id, tonNames } from "./constants"
 export default function useTONConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
-
-    const commonSupportedNetworks = [
-        KnownInternalNames.Networks.TONMainnet,
-        KnownInternalNames.Networks.TONTestnet
-    ]
-
-    const name = 'TON'
-    const id = 'ton'
-    const tonConfig = useTonConfig();
 
     const tonWallet = useTonWallet();
     const [tonConnectUI] = useTonConnectUI();
@@ -31,10 +21,10 @@ export default function useTONConnection({ networks }: WalletConnectionProviderP
         isActive: true,
         icon: walletIconResolver(name, iconUrl),
         disconnect: () => disconnectWallets(),
-        withdrawalSupportedNetworks: commonSupportedNetworks,
-        autofillSupportedNetworks: commonSupportedNetworks,
-        asSourceSupportedNetworks: commonSupportedNetworks,
-        networkIcon: networks.find(n => commonSupportedNetworks.some(name => name === n.name))?.logo
+        withdrawalSupportedNetworks: tonNames,
+        autofillSupportedNetworks: tonNames,
+        asSourceSupportedNetworks: tonNames,
+        networkIcon: networks.find(n => tonNames.some(name => name === n.name))?.logo
     } : undefined
 
     const getWallet = () => {
@@ -86,10 +76,10 @@ export default function useTONConnection({ networks }: WalletConnectionProviderP
                     icon: walletIconResolver(connectedName, connectedAddress),
                     disconnect: () => disconnectWallets(),
                     connect: () => connectWallet(),
-                    withdrawalSupportedNetworks: commonSupportedNetworks,
-                    autofillSupportedNetworks: commonSupportedNetworks,
-                    asSourceSupportedNetworks: commonSupportedNetworks,
-                    networkIcon: networks.find(n => commonSupportedNetworks.some(name => name === n.name))?.logo
+                    withdrawalSupportedNetworks: tonNames,
+                    autofillSupportedNetworks: tonNames,
+                    asSourceSupportedNetworks: tonNames,
+                    networkIcon: networks.find(n => tonNames.some(name => name === n.name))?.logo
                 } : undefined
 
                 return wallet ? wallet : undefined
@@ -133,9 +123,9 @@ export default function useTONConnection({ networks }: WalletConnectionProviderP
         availableWalletsForConnect,
         connectedWallets: getWallet(),
         activeWallet: wallet,
-        withdrawalSupportedNetworks: commonSupportedNetworks,
-        autofillSupportedNetworks: commonSupportedNetworks,
-        asSourceSupportedNetworks: commonSupportedNetworks,
+        withdrawalSupportedNetworks: tonNames,
+        autofillSupportedNetworks: tonNames,
+        asSourceSupportedNetworks: tonNames,
         name,
         id,
         ready: !!tonConnectUI

@@ -211,6 +211,8 @@ const ZkSyncMultiStepHandler: FC<WithdrawPageProps> = ({ swapBasicData, refuel }
                         <ActionMessage
                             error={error}
                             isLoading={loading}
+                            selectedSourceAddress={selectedSourceAccount?.address || ''}
+                            sourceNetwork={source_network}
                         />
                     }
                     {

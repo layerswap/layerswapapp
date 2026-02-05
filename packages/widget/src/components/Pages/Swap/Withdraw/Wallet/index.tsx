@@ -226,6 +226,8 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
             <ActionMessage
                 error={error}
                 isLoading={loading}
+                selectedSourceAddress={selectedSourceAccount?.address || ''}
+                sourceNetwork={swapData.source_network}
             />
         }
         {

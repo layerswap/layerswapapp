@@ -2,7 +2,7 @@ import { WalletIcon } from 'lucide-react';
 import { FC, useCallback, useState } from 'react'
 import { AuthorizeStarknet } from '../../Authorize/Starknet';
 import { SendTransactionButton, KnownInternalNames, useSelectedAccount, useWallet, useSettingsState, ActionMessage, ErrorHandler } from '@layerswap/widget/internal';
-import { TransferProps, ActionMessageType, WithdrawPageProps } from '@layerswap/widget/types';
+import { TransferProps, ActionMessageType, WithdrawPageProps, Network } from '@layerswap/widget/types';
 
 const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
 
@@ -75,6 +75,8 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => 
                 <ActionMessage
                     error={error}
                     isLoading={loading}
+                    selectedSourceAddress={selectedSourceAccount?.address || ''}
+                    sourceNetwork={starknet as Network}
                 />
             }
             <div className="w-full space-y-5 flex flex-col justify-between h-full text-secondary-text">
