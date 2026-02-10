@@ -8599,7 +8599,7 @@
         "shortName": null
       },
       "mobile": {
-        "native": "",
+        "native": "onlybulls://wallet",
         "universal": "https://onlybulls.com"
       },
       "name": "OnlyBulls Wallet",
@@ -11017,15 +11017,15 @@
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.finverselabs.openwallet&pli=1",
         "browser": "",
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
         "ios": "https://apps.apple.com/ee/app/open-wallet-keyless-mastery/id6502636684",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": "MPC-based wallets",
@@ -11067,7 +11067,7 @@
         "universal": ""
       },
       "name": "Open Wallet",
-      "rdns": null,
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2"
@@ -12413,11 +12413,11 @@
       },
       "homepage": "https://www.hashgraph-group.com/products/assetguard",
       "id": "366723874f620ef75a1eae9beedb9bf11ee85b2aaf928d53a42d83b52026bf35",
-      "image_id": "5184b07b-0672-4f39-27bf-cbeebaf87200",
+      "image_id": "bf642761-e040-49b2-a9a8-cbd3fa38be00",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/5184b07b-0672-4f39-27bf-cbeebaf87200?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/5184b07b-0672-4f39-27bf-cbeebaf87200?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/5184b07b-0672-4f39-27bf-cbeebaf87200?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/bf642761-e040-49b2-a9a8-cbd3fa38be00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/bf642761-e040-49b2-a9a8-cbd3fa38be00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/bf642761-e040-49b2-a9a8-cbd3fa38be00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
       "injected": null,
       "metadata": {
@@ -25774,7 +25774,7 @@
         "native": "",
         "universal": ""
       },
-      "homepage": "https://play.google.com/store/apps/details?id=com.kotaiwallet.app.android",
+      "homepage": "kotaiwallet://",
       "id": "7ef48bf6722bd9694ab35f1fa9f8239ef1d44dc721c6950b9afe2468a77aad5a",
       "image_id": "11d87117-f551-451c-42e7-7d0ccc2e8f00",
       "image_url": {
@@ -29337,16 +29337,16 @@
     "953f348baef1a985ba440822202fee7485e7ae0cae3b29a04f17a712c1a9490a": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=org.ai.interlinklabs.interlinkId",
-        "browser": null,
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
         "ios": "https://apps.apple.com/us/app/interlink-network/id6737988220",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": null,
@@ -29851,7 +29851,7 @@
         "universal": "https://interlinklabs.ai/deeplink/wallet"
       },
       "name": "ITLX Wallet",
-      "rdns": null,
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2"
