@@ -137,6 +137,8 @@ type ExtendedAddressProps = {
     children?: ReactNode
     shouldShowChevron?: boolean
     isNativeToken?: boolean;
+    onPopoverOpenChange?: (open: boolean) => void;
+    onTooltipOpenChange?: (open: boolean) => void;
     network?: Network;
     providerName?: string;
 }
@@ -153,9 +155,14 @@ const calculateMaxWidth = (balance: string | undefined) => {
     }
 };
 
-export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, providerName, isForCurrency, children, onDisconnect, showDetails = false, title, description, logo: Logo, shouldShowChevron = true, isNativeToken = false }) => {
+export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, providerName, isForCurrency, children, onDisconnect, showDetails = false, title, description, logo: Logo, onPopoverOpenChange, onTooltipOpenChange, shouldShowChevron = true, isNativeToken = false }) => {
     const [isCopied, setCopied] = useCopyClipboard()
     const [isPopoverOpen, setPopoverOpen] = useState(false)
+
+    const handlePopoverChange = (open: boolean) => {
+        setPopoverOpen(open)
+        onPopoverOpenChange?.(open)
+    }
 
     const addr = useMemo(() => {
         if (network) {
@@ -203,10 +210,10 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, pr
 
     return (
         <div onClick={(e) => e.stopPropagation()}>
-            <Popover open={isPopoverOpen} onOpenChange={() => setPopoverOpen(!isPopoverOpen)} modal={true}>
+            <Popover open={isPopoverOpen} onOpenChange={handlePopoverChange} modal={true}>
                 <PopoverTrigger asChild>
                     <div>
-                        <Tooltip>
+                        <Tooltip onOpenChange={onTooltipOpenChange}>
                             <TooltipTrigger asChild>
                                 {
                                     children ??
@@ -221,7 +228,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, pr
                                     </div>
                                 }
                             </TooltipTrigger>
-                            <TooltipContent side="bottom">
+                            <TooltipContent side="bottom" className="pointer-events-none">
                                 <p>{isForCurrency ? "View token details" : "View address details"}</p>
                             </TooltipContent>
                         </Tooltip>

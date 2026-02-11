@@ -9,6 +9,12 @@ import { NetworkWithTokens, Network, Token } from "../../Models/Network";
 import { Exchange } from "../../Models/Exchange";
 import { ErrorHandler } from "@/lib/ErrorHandler";
 
+const IGNORED_API_ERROR_CODES = [
+    'ROUTE_NOT_FOUND_ERROR',
+    'GREATER_THAN_MAX_ERROR',
+    'LESS_THAN_MIN_ERROR'
+];
+
 export default class LayerSwapApiClient {
     static apiBaseEndpoint?: string = AppSettings.LayerswapApiUri;
     static apiKey: string = AppSettings.LayerswapApiKeys[AppSettings.ApiVersion || 'mainnet'];
@@ -69,19 +75,22 @@ export default class LayerSwapApiClient {
                         error = new Error(String(reason));
                         error.name = "APIError";
                     }
-                    ErrorHandler({
-                        type: 'APIError',
-                        endpoint: endpoint,
-                        status: reason.response?.status,
-                        statusText: reason.response?.statusText,
-                        responseData: reason.response?.data,
-                        requestUrl: reason.request?.url,
-                        requestMethod: reason.request?.method,
-                        message: error.message,
-                        name: error.name,
-                        stack: error.stack,
-                        cause: error.cause
-                    });
+                    const errorCode = reason.response?.data?.error?.code;
+                    if (!IGNORED_API_ERROR_CODES.includes(errorCode)) {
+                        ErrorHandler({
+                            type: 'APIError',
+                            endpoint: endpoint,
+                            status: reason.response?.status,
+                            statusText: reason.response?.statusText,
+                            responseData: reason.response?.data,
+                            requestUrl: reason.request?.url,
+                            requestMethod: reason.request?.method,
+                            message: error.message,
+                            name: error.name,
+                            stack: error.stack,
+                            cause: error.cause
+                        });
+                    }
                     return Promise.reject(reason);
                 }
             });

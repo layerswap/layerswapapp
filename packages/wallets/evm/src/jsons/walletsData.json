@@ -1,5 +1,5 @@
 {
-  "count": 615,
+  "count": 616,
   "listings": {
     "00e39f835988d1bb783b2a0748e18bc6278dec03492d00b0e102a466cd8b3d77": {
       "app": {
@@ -8599,7 +8599,7 @@
         "shortName": null
       },
       "mobile": {
-        "native": "",
+        "native": "onlybulls://wallet",
         "universal": "https://onlybulls.com"
       },
       "name": "OnlyBulls Wallet",
@@ -11017,15 +11017,15 @@
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.finverselabs.openwallet&pli=1",
         "browser": "",
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
         "ios": "https://apps.apple.com/ee/app/open-wallet-keyless-mastery/id6502636684",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": "MPC-based wallets",
@@ -11067,7 +11067,7 @@
         "universal": ""
       },
       "name": "Open Wallet",
-      "rdns": null,
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2"
@@ -12413,11 +12413,11 @@
       },
       "homepage": "https://www.hashgraph-group.com/products/assetguard",
       "id": "366723874f620ef75a1eae9beedb9bf11ee85b2aaf928d53a42d83b52026bf35",
-      "image_id": "5184b07b-0672-4f39-27bf-cbeebaf87200",
+      "image_id": "bf642761-e040-49b2-a9a8-cbd3fa38be00",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/5184b07b-0672-4f39-27bf-cbeebaf87200?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/5184b07b-0672-4f39-27bf-cbeebaf87200?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/5184b07b-0672-4f39-27bf-cbeebaf87200?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/bf642761-e040-49b2-a9a8-cbd3fa38be00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/bf642761-e040-49b2-a9a8-cbd3fa38be00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/bf642761-e040-49b2-a9a8-cbd3fa38be00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
       "injected": null,
       "metadata": {
@@ -25774,7 +25774,7 @@
         "native": "",
         "universal": ""
       },
-      "homepage": "https://play.google.com/store/apps/details?id=com.kotaiwallet.app.android",
+      "homepage": "kotaiwallet://",
       "id": "7ef48bf6722bd9694ab35f1fa9f8239ef1d44dc721c6950b9afe2468a77aad5a",
       "image_id": "11d87117-f551-451c-42e7-7d0ccc2e8f00",
       "image_url": {
@@ -25791,8 +25791,8 @@
         "shortName": null
       },
       "mobile": {
-        "native": "",
-        "universal": "https://play.google.com/store/apps/details?id=com.kotaiwallet.app.android"
+        "native": "kotaiwallet://",
+        "universal": ""
       },
       "name": "Kotai Wallet",
       "rdns": "",
@@ -29337,16 +29337,16 @@
     "953f348baef1a985ba440822202fee7485e7ae0cae3b29a04f17a712c1a9490a": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=org.ai.interlinklabs.interlinkId",
-        "browser": null,
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
         "ios": "https://apps.apple.com/us/app/interlink-network/id6737988220",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": null,
@@ -29851,7 +29851,7 @@
         "universal": "https://interlinklabs.ai/deeplink/wallet"
       },
       "name": "ITLX Wallet",
-      "rdns": null,
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2"
@@ -38090,7 +38090,10 @@
         "eip155:999",
         "solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
-        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+        "tron:0x2b6653dc",
+        "tron:0x94a9059e",
+        "tron:0xcd8690dc"
       ],
       "description": "安全易用，一站式極速交易與資產管理工具。",
       "desktop": {
@@ -38114,7 +38117,7 @@
         "shortName": null
       },
       "mobile": {
-        "native": "abwallet://walletconnect",
+        "native": "abpay://walletconnect",
         "universal": ""
       },
       "name": "AB Pay",
@@ -40704,6 +40707,67 @@
       ],
       "slug": "plasma-wallet",
       "updatedAt": "2022-09-15T16:28:29.043095+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
+    "cc117f2a60ac9d880bb45ad9c1ca01d9f35d81cf8c489ecd0e789f153754064e": {
+      "app": {
+        "android": "",
+        "browser": "https://nfid.one/",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "bip122:000000000019d6689c085ae165831e93",
+        "eip155:1",
+        "eip155:137",
+        "eip155:42161",
+        "eip155:8453"
+      ],
+      "description": "The easiest to use, hardest to lose, and only wallet governed by a DAO.",
+      "desktop": {
+        "native": "",
+        "universal": "https://nfid.one/"
+      },
+      "homepage": "https://nfid.one/",
+      "id": "cc117f2a60ac9d880bb45ad9c1ca01d9f35d81cf8c489ecd0e789f153754064e",
+      "image_id": "bc732ae5-c4e3-48a2-9beb-077f341cc600",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/bc732ae5-c4e3-48a2-9beb-077f341cc600?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/bc732ae5-c4e3-48a2-9beb-077f341cc600?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/bc732ae5-c4e3-48a2-9beb-077f341cc600?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "",
+        "universal": ""
+      },
+      "name": "NFID Wallet",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "nfid-wallet",
+      "updatedAt": "2026-02-10T07:04:34.569559+00:00",
       "versions": [
         "1",
         "2"
@@ -50377,5 +50441,5 @@
       ]
     }
   },
-  "total": 615
+  "total": 616
 }

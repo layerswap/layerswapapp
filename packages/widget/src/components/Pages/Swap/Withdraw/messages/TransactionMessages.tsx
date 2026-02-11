@@ -44,7 +44,7 @@ const TransactionFailedMessage: FC = () => {
         details={`Transfer failed or terminated`} />
 }
 
-const WaletMismatchMessage: FC<{ address: string; network: { name: string } }> = ({ address, network }) => {
+const WalletMismatchMessage: FC<{ address: string; network: { name: string } }> = ({ address, network }) => {
     return <WalletMessage
         status="error"
         header='Account mismatch'
@@ -67,7 +67,7 @@ export const ActionMessages = {
     TransactionInProgressMessage,
     InsufficientFundsMessage,
     TransactionRejectedMessage,
-    WaletMismatchMessage,
+    WalletMismatchMessage,
     TransactionFailedMessage,
     SwapErrorMessage,
     UnexpectedErrorMessage,
