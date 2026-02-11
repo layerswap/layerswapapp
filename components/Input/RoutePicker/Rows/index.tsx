@@ -62,7 +62,7 @@ export default function Row({
                 <NavigatableItem
                     index={index}
                     onClick={() => onSelect(route, token)}
-                    className="cursor-pointer outline-none disabled:cursor-not-allowed rounded-xl hover:bg-secondary-500"
+                    className="group/row cursor-pointer hover:bg-secondary-500 has-[*[data-tooltip-open=true]]:bg-secondary-500 has-[*[data-tooltip-open=true]]:cursor-pointer! outline-none disabled:cursor-not-allowed rounded-xl"
                     focusedClassName="bg-secondary-500"
                 >
                     <CurrencySelectItemDisplay
