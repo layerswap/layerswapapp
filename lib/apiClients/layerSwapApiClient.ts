@@ -12,6 +12,7 @@ import posthog from "posthog-js";
 const IGNORED_API_ERROR_CODES = [
     'ROUTE_NOT_FOUND_ERROR',
     'GREATER_THAN_MAX_ERROR',
+    'LESS_THAN_MIN_ERROR'
 ];
 
 export default class LayerSwapApiClient {
