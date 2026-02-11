@@ -9,6 +9,12 @@ import { NetworkWithTokens, Network, Token } from "../../Models/Network";
 import { Exchange } from "../../Models/Exchange";
 import posthog from "posthog-js";
 
+const IGNORED_API_ERROR_CODES = [
+    'ROUTE_NOT_FOUND_ERROR',
+    'GREATER_THAN_MAX_ERROR',
+    'LESS_THAN_MIN_ERROR'
+];
+
 export default class LayerSwapApiClient {
     static apiBaseEndpoint?: string = AppSettings.LayerswapApiUri;
     static bridgeApiBaseEndpoint?: string = AppSettings.LayerswapBridgeApiUri;
@@ -70,15 +76,18 @@ export default class LayerSwapApiClient {
                         error = new Error(String(reason));
                         error.name = "APIError";
                     }
-                    posthog.captureException(error, {
-                        $layerswap_exception_type: "API Error",
-                        endpoint: endpoint,
-                        status: reason.response?.status,
-                        statusText: reason.response?.statusText,
-                        responseData: reason.response?.data,
-                        requestUrl: reason.request?.url,
-                        requestMethod: reason.request?.method,
-                    });
+                    const errorCode = reason.response?.data?.error?.code;
+                    if (!IGNORED_API_ERROR_CODES.includes(errorCode)) {
+                        posthog.captureException(error, {
+                            $layerswap_exception_type: "API Error",
+                            endpoint: endpoint,
+                            status: reason.response?.status,
+                            statusText: reason.response?.statusText,
+                            responseData: reason.response?.data,
+                            requestUrl: reason.request?.url,
+                            requestMethod: reason.request?.method,
+                        });
+                    }
                     return Promise.reject(reason);
                 }
             });

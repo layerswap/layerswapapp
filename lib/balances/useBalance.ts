@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import { getKey, useBalanceStore } from '../../stores/balanceStore'
 import { NetworkWithTokens } from '../../Models/Network'
+import useIsWindowVisible from '../../hooks/useIsWindowVisible'
 
 export interface Opts {
     refreshInterval?: number
@@ -27,8 +28,8 @@ export function useBalance(
 
     const tick = (interval: number = refreshInterval) => {
         if (!address || !network) return
-        if (refreshWhenHidden && document.hidden) return
-        if (refreshWhenOffline && !navigator.onLine) return
+        if (!refreshWhenHidden && document.hidden) return
+        if (!refreshWhenOffline && navigator.onLine === false) return
         fetchBalance(address, network, { dedupeInterval: interval })
     }
 
