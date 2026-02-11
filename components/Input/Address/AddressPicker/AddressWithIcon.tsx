@@ -87,7 +87,15 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance }) 
             <div className="flex flex-col items-start grow min-w-0 ml-3 text-sm">
                 <div className="flex w-full min-w-0">
                     {(network || addressItem?.wallet?.providerName) ? (
-                        <ExtendedAddress address={addressItem.address} network={network} providerName={addressItem?.wallet?.providerName} showDetails={addressItem.wallet ? true : false} title={addressItem.wallet?.displayName?.split("-")[0]} description={addressItem.wallet?.providerName} logo={addressItem.wallet?.icon} />
+                        <ExtendedAddress
+                            address={addressItem.address}
+                            network={network}
+                            providerName={addressItem?.wallet?.providerName}
+                            showDetails={addressItem.wallet ? true : false}
+                            title={addressItem.wallet?.displayName?.split("-")[0]}
+                            description={addressItem.wallet?.providerName}
+                            logo={addressItem.wallet?.icon}
+                        />
                     ) : <p className="text-sm block font-medium">
                         {shortenString(addressItem.address)}
                     </p>}
@@ -124,8 +132,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance }) 
         </div>
     )
 }
-
-type ExtendedAddressProps = {
+type ExtendedAddressBaseProps = {
     address: string;
     isForCurrency?: boolean;
     addressClassNames?: string;
@@ -136,12 +143,11 @@ type ExtendedAddressProps = {
     logo?: string | ((e: SVGProps<SVGSVGElement>) => ReactNode);
     children?: ReactNode
     shouldShowChevron?: boolean
-    isNativeToken?: boolean;
     onPopoverOpenChange?: (open: boolean) => void;
     onTooltipOpenChange?: (open: boolean) => void;
-    network?: Network;
-    providerName?: string;
 }
+type ExtendedAddressProps = ExtendedAddressBaseProps
+    & { network?: Network, providerName?: string }
 
 const calculateMaxWidth = (balance: string | undefined) => {
     const symbolCount = balance?.length || 0;
@@ -155,7 +161,18 @@ const calculateMaxWidth = (balance: string | undefined) => {
     }
 };
 
-export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, providerName, isForCurrency, children, onDisconnect, showDetails = false, title, description, logo: Logo, onPopoverOpenChange, onTooltipOpenChange, shouldShowChevron = true, isNativeToken = false }) => {
+export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, providerName, isForCurrency, children, onDisconnect, showDetails = false, title, description, logo: Logo, onPopoverOpenChange, onTooltipOpenChange, shouldShowChevron = true }) => {
+    if (!network && !providerName) {
+        return <p className="text-sm block font-medium">
+            {shortenString(address)}
+        </p>
+    }
+    return <AddressDetailsPopover address={address} network={network!} providerName={providerName!} isForCurrency={isForCurrency} onDisconnect={onDisconnect} showDetails={showDetails} title={title} description={description} logo={Logo} onPopoverOpenChange={onPopoverOpenChange} onTooltipOpenChange={onTooltipOpenChange} shouldShowChevron={shouldShowChevron}>{children}</AddressDetailsPopover>
+}
+type AddressDetailsPopoverProps = ExtendedAddressBaseProps
+    & ({ network: Network, providerName?: string } | { network?: Network, providerName: string })
+
+const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, network, providerName, isForCurrency, children, onDisconnect, showDetails = false, title, description, logo: Logo, onPopoverOpenChange, onTooltipOpenChange, shouldShowChevron = true }) => {
     const [isCopied, setCopied] = useCopyClipboard()
     const [isPopoverOpen, setPopoverOpen] = useState(false)
 
@@ -168,7 +185,9 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, pr
         if (network) {
             return new Address(address, network, providerName)
         }
-        return new Address(address, null, providerName!)
+        else {
+            return new Address(address, null, providerName!)
+        }
     }, [address, network, providerName]);
 
 
@@ -181,7 +200,6 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, pr
 
     // Resolver for action buttons
     const getActionButtons = useCallback(() => {
-        if (isNativeToken) return { buttons: [], showTitles: false };
 
         const buttons: ActionButtonProps[] = [
             {
@@ -189,7 +207,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, pr
                 Icon: isCopied ? Check : Copy,
                 onClick: (e: React.MouseEvent<HTMLDivElement>) => { e.stopPropagation(); setCopied(addr.normalized); }
             },
-            ...((network && !isNativeToken && isAddressValid) ? [{
+            ...((network && isAddressValid) ? [{
                 title: 'View',
                 Icon: SquareArrowOutUpRight,
                 href: getExplorerUrl(network.account_explorer_template, addr.full)
@@ -205,9 +223,10 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, pr
         const showTitles = buttons.length <= 2;
 
         return { buttons, showTitles };
-    }, [addr.full, network, providerName, isNativeToken, isAddressValid, isCopied, onDisconnect]);
+    }, [addr.full, network, providerName, isAddressValid, isCopied, onDisconnect]);
 
     const { buttons, showTitles } = getActionButtons();
+    const { start, middle, end } = useMemo(() => addr.toEmphasizedParts(), [addr]);
 
     return (
         <div onClick={(e) => e.stopPropagation()}>
@@ -271,13 +290,8 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, pr
                         </div>
 
                     )}
-                    <p className={`text-secondary-text text-sm leading-5 break-all text-left ${!isNativeToken ? 'font-mono' : ''}`}>
-                        {
-                            isNativeToken ? address : (() => {
-                                const { start, middle, end } = addr.toEmphasizedParts();
-                                return <><span className="text-primary-text font-medium">{start}</span><span>{middle}</span><span className="text-primary-text font-medium">{end}</span></>;
-                            })()
-                        }
+                    <p className="text-secondary-text text-sm leading-5 break-all text-left font-mono">
+                        <><span className="text-primary-text font-medium">{start}</span><span>{middle}</span><span className="text-primary-text font-medium">{end}</span></>
                     </p>
                     {buttons.length > 0 && (
                         <div className="flex gap-3">
@@ -295,6 +309,8 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, pr
         </div>
     )
 }
+
+
 
 type ActionButtonProps = {
     title: string,
