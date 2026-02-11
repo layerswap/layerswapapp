@@ -139,7 +139,7 @@ const NativeTokenTitle = ({ item, route, onTooltipOpenChange, isTooltipOpen }: N
                     </div>
 
                     <p className="text-secondary-text text-sm leading-5 break-all text-left font-mono">
-                        {route.display_name} <span>{item.symbol}</span> native coin
+                        {route.display_name} <span>{item.symbol}</span>{' native coin'}
                     </p>
                 </PopoverContent>
             </Popover>

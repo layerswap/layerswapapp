@@ -167,7 +167,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, pr
             {shortenString(address)}
         </p>
     }
-    return <AddressDetailsPopover address={address} network={network!} providerName={providerName!} isForCurrency={isForCurrency} children={children} onDisconnect={onDisconnect} showDetails={showDetails} title={title} description={description} logo={Logo} onPopoverOpenChange={onPopoverOpenChange} onTooltipOpenChange={onTooltipOpenChange} shouldShowChevron={shouldShowChevron} />
+    return <AddressDetailsPopover address={address} network={network!} providerName={providerName!} isForCurrency={isForCurrency} onDisconnect={onDisconnect} showDetails={showDetails} title={title} description={description} logo={Logo} onPopoverOpenChange={onPopoverOpenChange} onTooltipOpenChange={onTooltipOpenChange} shouldShowChevron={shouldShowChevron}>{children}</AddressDetailsPopover>
 }
 type AddressDetailsPopoverProps = ExtendedAddressBaseProps
     & ({ network: Network, providerName?: string } | { network?: Network, providerName: string })
