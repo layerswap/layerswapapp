@@ -235,18 +235,20 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
                     <div>
                         <Tooltip onOpenChange={onTooltipOpenChange}>
                             <TooltipTrigger asChild>
-                                {
-                                    children ??
-                                    <div className="group-hover/addressItem:underline hover:text-secondary-text transition duration-200 no-underline flex gap-1 items-center cursor-pointer">
-                                        <p className={`${isForCurrency ? "text-xs self-end" : "text-sm"} block font-medium`}>
-                                            {addr.toShortString()}
-                                        </p>
-                                        {shouldShowChevron ?
-                                            <ChevronDown className="invisible group-hover/addressItem:visible h-4 w-4" />
-                                            : null
-                                        }
-                                    </div>
-                                }
+                                <span>
+                                    {
+                                        children ??
+                                        <div className="group-hover/addressItem:underline hover:text-secondary-text transition duration-200 no-underline flex gap-1 items-center cursor-pointer">
+                                            <p className={`${isForCurrency ? "text-xs self-end" : "text-sm"} block font-medium`}>
+                                                {addr.toShortString()}
+                                            </p>
+                                            {shouldShowChevron ?
+                                                <ChevronDown className="invisible group-hover/addressItem:visible h-4 w-4" />
+                                                : null
+                                            }
+                                        </div>
+                                    }
+                                </span>
                             </TooltipTrigger>
                             <TooltipContent side="bottom" className="pointer-events-none">
                                 <p>{isForCurrency ? "View token details" : "View address details"}</p>
