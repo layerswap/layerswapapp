@@ -7,12 +7,10 @@ import {
     NightlyWalletAdapter,
     WalletConnectWalletAdapter,
     PhantomWalletAdapter,
-    CoinbaseWalletAdapter,
     SolflareWalletAdapter,
     BitgetWalletAdapter,
     TrustWalletAdapter,
-    LedgerWalletAdapter,
-    HuobiWalletAdapter
+    LedgerWalletAdapter
 } from "@solana/wallet-adapter-wallets";
 import { ReactNode, useMemo } from "react";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
@@ -22,13 +20,11 @@ const SOLANA_NETWORK = process.env.NEXT_PUBLIC_API_VERSION == 'sandbox' ? Wallet
 
 const adapters = [
     new PhantomWalletAdapter(),
-    new CoinbaseWalletAdapter(),
     new NightlyWalletAdapter(),
     new SolflareWalletAdapter(),
     new BitgetWalletAdapter(),
     new TrustWalletAdapter(),
     new LedgerWalletAdapter(),
-    new HuobiWalletAdapter(),
     new WalletConnectWalletAdapter({
         network: SOLANA_NETWORK,
         options: {

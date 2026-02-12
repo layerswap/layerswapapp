@@ -2,7 +2,7 @@ import AddressIcon from '@/components/AddressIcon'
 import CopyButton from '@/components/buttons/copyButton'
 import { ImageWithFallback } from '@/components/Common/ImageWithFallback'
 import QRIcon from '@/components/icons/QRIcon'
-import shortenAddress from '@/components/utils/ShortenAddress'
+import { Address } from "@/lib/address";
 import useCopyClipboard from '@/hooks/useCopyClipboard'
 import useWallet from '@/hooks/useWallet'
 import { DepositAction, Refuel, SwapBasicData, SwapQuote } from '@/lib/apiClients/layerSwapApiClient'
@@ -23,8 +23,6 @@ import SubmitButton from '@/components/buttons/submitButton'
 import { Widget } from '@/components/Widget/Index'
 import { truncateDecimals } from '@/components/utils/RoundDecimals'
 import { Partner } from '@/Models/Partner'
-import { addressFormat } from '@/lib/address/formatter'
-import { isValidAddress } from '@/lib/address/validator'
 import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
 import QuoteDetails from '@/components/FeeDetails'
 
@@ -61,7 +59,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
     const { destination_address: destinationAddressFromQuery } = query
 
     const WalletIcon = wallets.find(wallet => wallet.address.toLowerCase() == swapBasicData?.destination_address?.toLowerCase())?.icon;
-    const addressProviderIcon = destinationAddressFromQuery && partner?.is_wallet && addressFormat(destinationAddressFromQuery, swapBasicData?.destination_network) === addressFormat(swapBasicData?.destination_address, swapBasicData?.destination_network) && partner?.logo
+    const addressProviderIcon = destinationAddressFromQuery && partner?.is_wallet && Address.equals(destinationAddressFromQuery, swapBasicData?.destination_address!, swapBasicData?.destination_network || null) && partner?.logo
 
     const handleCopy = () => {
         if (depositAddress) {
@@ -234,7 +232,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
                                                 <PopoverTrigger asChild>
                                                     <div className="relative">
                                                         <QRIcon
-                                                            className="bg-secondary-300 p-1 rounded-lg cursor-pointer hover:opacity-80"
+                                                            className="bg-secondary-300 p-1 rounded-lg cursor-pointer hover:opacity-80 fill-primary-text text-primary-text"
                                                         />
                                                     </div>
                                                 </PopoverTrigger>
@@ -261,7 +259,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
                                     <span className="cursor-pointer hover:underline min-h-5 block">
                                         {depositAddress ? (
                                             <span className='flex items-center gap-1'>
-                                                {shortenAddress(depositAddress)}
+                                                {new Address(depositAddress, swapBasicData?.source_network).toShortString()}
                                                 <CopyButton toCopy={depositAddress || ''} className='flex' />
                                             </span>
                                         ) : (
@@ -320,20 +318,20 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
                                                 height="36"
                                             />
                                         ) : (
-                                            <AddressIcon className="h-4 w-4" address={swapBasicData.destination_address} size={36} rounded="4px" />
+                                            <AddressIcon className="h-4 w-4" address={new Address(swapBasicData.destination_address, swapBasicData?.destination_network).full} size={36} rounded="4px" />
                                         )}
                                         {
-                                            ((swapBasicData?.destination_network && isValidAddress(swapBasicData?.destination_address, swapBasicData?.destination_network)) ?
+                                            ((swapBasicData?.destination_network && Address.isValid(swapBasicData?.destination_address, swapBasicData?.destination_network)) ?
                                                 <div className="text-sm group/addressItem text-secondary-text">
-                                                    <ExtendedAddress address={addressFormat(swapBasicData?.destination_address, swapBasicData?.destination_network)} network={swapBasicData?.destination_network} shouldShowChevron={false} />
+                                                    <ExtendedAddress address={swapBasicData?.destination_address} network={swapBasicData?.destination_network} shouldShowChevron={false} />
                                                 </div>
                                                 :
-                                                <p className="text-sm text-secondary-text">{shortenAddress(swapBasicData?.destination_address)}</p>)
+                                                <p className="text-sm text-secondary-text">{new Address(swapBasicData?.destination_address, swapBasicData?.destination_network).toShortString()}</p>)
                                         }
                                     </span>
                                 }
                             />
-                            <QuoteDetails swapValues={swapValues} quote={quote} isQuoteLoading={isQuoteLoading} />
+                            <QuoteDetails swapValues={swapValues} quote={quote} isQuoteLoading={isQuoteLoading} triggerClassnames='mt-0!' />
                         </>
                     )}
                 </div>
@@ -344,7 +342,6 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
                 </SubmitButton>
             </Widget.Footer>
         </>
-
     )
 }
 

@@ -73,7 +73,7 @@ function CampaignDetails() {
                 {
                     !isConnected &&
                     <Widget.Footer>
-                        <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConnect} icon={<WalletIcon className="stroke-2 w-6 h-6" />}>
+                        <SubmitButton data-attr="connect-wallet" isDisabled={false} isSubmitting={false} onClick={handleConnect} icon={<WalletIcon className="stroke-2 w-6 h-6" />}>
                             Connect a wallet
                         </SubmitButton>
                     </Widget.Footer>

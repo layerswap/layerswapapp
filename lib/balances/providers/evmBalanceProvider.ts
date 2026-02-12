@@ -2,11 +2,12 @@
 import { Chain, formatUnits, PublicClient } from "viem"
 import { TokenBalance } from "@/Models/Balance"
 import { Network, NetworkType, NetworkWithTokens, Token } from "@/Models/Network"
-import { http, createConfig } from '@wagmi/core'
+import { createConfig } from '@wagmi/core'
 import { erc20Abi } from 'viem'
 import { multicall } from '@wagmi/core'
 import { getBalance, GetBalanceReturnType } from '@wagmi/core'
 import resolveChain from "@/lib/resolveChain"
+import { resolveFallbackTransport } from "@/lib/resolveTransports"
 import BalanceGetterAbi from "@/lib/abis/BALANCEGETTERABI.json"
 import KnownInternalNames from "@/lib/knownIds"
 import { BalanceProvider } from "@/Models/BalanceProvider"
@@ -35,10 +36,10 @@ export class EVMBalanceProvider extends BalanceProvider {
 
     getBalances = async (address: string, chain: Chain, network: NetworkWithTokens, options?: { timeoutMs?: number, retryCount?: number }): Promise<TokenBalance[] | undefined> => {
         try {
-            const { createPublicClient, http } = await import("viem")
+            const { createPublicClient } = await import("viem")
             const publicClient = createPublicClient({
                 chain,
-                transport: http(network.node_url, { retryCount: options?.retryCount ?? 3, timeout: options?.timeoutMs ?? 60000 })
+                transport: resolveFallbackTransport(network.nodes, { retryCount: options?.retryCount, timeoutMs: options?.timeoutMs })
             })
 
             let erc20Balances: TokenBalance[] = []
@@ -79,11 +80,10 @@ export class EVMBalanceProvider extends BalanceProvider {
     contractGetBalances = async (address: string, chain: Chain, network: NetworkWithTokens, options?: { timeoutMs?: number, retryCount?: number }): Promise<TokenBalance[] | null> => {
         if (!network) throw new Error("Network is required for contract get balances")
 
-
-        const { createPublicClient, http } = await import("viem")
+        const { createPublicClient } = await import("viem")
         const publicClient = createPublicClient({
             chain,
-            transport: http(network.node_url, { retryCount: options?.retryCount ?? 3, timeout: options?.timeoutMs ?? 60000 })
+            transport: resolveFallbackTransport(network.nodes, { retryCount: options?.retryCount, timeoutMs: options?.timeoutMs })
         })
 
         const contract = contracts.find(c => c.networks.includes(network.name))
@@ -100,7 +100,7 @@ export class EVMBalanceProvider extends BalanceProvider {
 
         const resolvedERC20Balances = network.tokens.filter(t => t.contract)?.map((token, index) => {
             const amount = balances[1][index]
-    
+
             if (amount >= 0) {
                 const formattedAmount = formatUnits(BigInt(amount), token.decimals)
                 return {
@@ -223,7 +223,7 @@ export const getErc20Balances = async ({
             const config = createConfig({
                 chains: [chain],
                 transports: {
-                    [chain.id]: http(network.node_url, { retryCount: retryCount ?? 3, timeout: timeoutMs ?? 60000 })
+                    [chain.id]: resolveFallbackTransport(network.nodes, { retryCount, timeoutMs })
                 }
             })
 
@@ -231,6 +231,43 @@ export const getErc20Balances = async ({
                 chainId: chain.id,
                 contracts: contracts
             })
+
+            const failedIndices: number[] = []
+            contractRes.forEach((result, index) => {
+                if (result.status === 'failure') {
+                    failedIndices.push(index)
+                }
+            })
+
+            if (failedIndices.length > 0) {
+                const mutableResults = [...contractRes] as ERC20ContractRes[]
+
+                await Promise.all(failedIndices.map(async (index) => {
+                    const contract = contracts[index]
+                    try {
+                        const balance = await publicClient.readContract({
+                            address: contract.address,
+                            abi: erc20Abi,
+                            functionName: 'balanceOf',
+                            args: [address as `0x${string}`]
+                        })
+                        mutableResults[index] = {
+                            status: 'success',
+                            result: balance,
+                            error: undefined
+                        }
+                    } catch (e) {
+                        mutableResults[index] = {
+                            status: 'failure',
+                            result: null,
+                            error: e instanceof Error ? e : new Error(String(e))
+                        }
+                    }
+                }))
+
+                return mutableResults
+            }
+
             return contractRes
         }
         else {
@@ -281,7 +318,7 @@ export const getTokenBalance = async (address: `0x${string}`, network: Network, 
         const config = createConfig({
             chains: [chain],
             transports: {
-                [chain.id]: http(network.node_url, { retryCount: retryCount ?? 3, timeout: timeoutMs ?? 60000 })
+                [chain.id]: resolveFallbackTransport(network.nodes, { retryCount, timeoutMs })
             }
         })
 

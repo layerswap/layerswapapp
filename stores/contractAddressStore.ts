@@ -2,7 +2,8 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { Network, NetworkType } from '@/Models/Network';
 import resolveChain from '@/lib/resolveChain';
-import { createPublicClient, http } from 'viem';
+import { resolveFallbackTransport } from '@/lib/resolveTransports';
+import { createPublicClient } from 'viem';
 
 interface ContractStatus {
     address: string;
@@ -45,17 +46,17 @@ const isContractAddress = async (address: string, network: Network): Promise<boo
     if (network.type != NetworkType.EVM) {
         return false;
     }
-    
+
     try {
         const chain = resolveChain(network)
         const publicClient = createPublicClient({
             chain,
-            transport: http()
+            transport: resolveFallbackTransport(network.nodes)
         })
         const bytecode = await publicClient.getCode({
             address: address as `0x${string}`
         });
-        if(bytecode && bytecode !== '0x' && !bytecode.startsWith('0xef0100')) {
+        if (bytecode && bytecode !== '0x' && !bytecode.startsWith('0xef0100')) {
             return true;
         } else {
             return false;
@@ -84,11 +85,11 @@ export const useContractAddressStore = create<ContractAddressState>()(
                 }
 
                 const { hasStatus, isContractInNetwork, isContractInAnyNetwork } = get();
-                
+
                 // Check if we already have cached results for both networks
                 const hasSourceStatus = hasStatus(address, sourceNetwork.name);
                 const hasDestStatus = hasStatus(address, destinationNetwork.name);
-                
+
                 if (hasSourceStatus && hasDestStatus) {
                     return {
                         sourceIsContract: isContractInNetwork(address, sourceNetwork.name),
@@ -98,7 +99,7 @@ export const useContractAddressStore = create<ContractAddressState>()(
                 }
 
                 const checkKey = `${address.toLowerCase()}-${sourceNetwork.name}-${destinationNetwork.name}`;
-                
+
                 // If there's already a pending check for these params, return that promise
                 const pendingCheck = get().pendingChecks.get(checkKey);
                 if (pendingCheck) {
@@ -106,7 +107,7 @@ export const useContractAddressStore = create<ContractAddressState>()(
                 }
 
                 set({ isChecking: true });
-                
+
                 const checkPromise = (async () => {
                     try {
                         // Check source network only if not already cached
@@ -117,8 +118,8 @@ export const useContractAddressStore = create<ContractAddressState>()(
                             sourceIsContract = await isContractAddress(address, sourceNetwork);
                             set((state) => {
                                 const existingIndex = state.contractStatuses.findIndex(
-                                    (cs) => cs.address.toLowerCase() === address.toLowerCase() && 
-                                            cs.network === sourceNetwork.name
+                                    (cs) => cs.address.toLowerCase() === address.toLowerCase() &&
+                                        cs.network === sourceNetwork.name
                                 );
                                 if (existingIndex >= 0) {
                                     const updated = [...state.contractStatuses];
@@ -139,8 +140,8 @@ export const useContractAddressStore = create<ContractAddressState>()(
                             destinationIsContract = await isContractAddress(address, destinationNetwork);
                             set((state) => {
                                 const existingIndex = state.contractStatuses.findIndex(
-                                    (cs) => cs.address.toLowerCase() === address.toLowerCase() && 
-                                            cs.network === destinationNetwork.name
+                                    (cs) => cs.address.toLowerCase() === address.toLowerCase() &&
+                                        cs.network === destinationNetwork.name
                                 );
                                 if (existingIndex >= 0) {
                                     const updated = [...state.contractStatuses];
@@ -180,42 +181,42 @@ export const useContractAddressStore = create<ContractAddressState>()(
 
             hasStatus: (address: string, network: string) => {
                 return get().contractStatuses.some(
-                    (cs) => cs.address.toLowerCase() === address.toLowerCase() && 
-                            cs.network === network
+                    (cs) => cs.address.toLowerCase() === address.toLowerCase() &&
+                        cs.network === network
                 );
             },
-            
+
             isContractInNetwork: (address: string, network: string) => {
                 const status = get().contractStatuses.find(
-                    (cs) => cs.address.toLowerCase() === address.toLowerCase() && 
-                            cs.network === network
+                    (cs) => cs.address.toLowerCase() === address.toLowerCase() &&
+                        cs.network === network
                 );
                 return status?.isContract ?? false;
             },
-            
+
             isContractInAnyNetwork: (address: string) => {
                 return get().contractStatuses.some(
-                    (cs) => cs.address.toLowerCase() === address.toLowerCase() && 
-                            cs.isContract === true
+                    (cs) => cs.address.toLowerCase() === address.toLowerCase() &&
+                        cs.isContract === true
                 );
             },
-            
+
             getContractNetworks: (address: string) => {
                 return get().contractStatuses
                     .filter(
-                        (cs) => cs.address.toLowerCase() === address.toLowerCase() && 
-                                cs.isContract === true
+                        (cs) => cs.address.toLowerCase() === address.toLowerCase() &&
+                            cs.isContract === true
                     )
                     .map((cs) => cs.network);
             },
-            
+
             clearContractStatus: (address: string, network?: string) =>
                 set((state) => {
                     if (network) {
                         return {
                             contractStatuses: state.contractStatuses.filter(
-                                (cs) => !(cs.address.toLowerCase() === address.toLowerCase() && 
-                                         cs.network === network)
+                                (cs) => !(cs.address.toLowerCase() === address.toLowerCase() &&
+                                    cs.network === network)
                             )
                         };
                     } else {
@@ -230,14 +231,14 @@ export const useContractAddressStore = create<ContractAddressState>()(
             setConfirmed: (address: string, network: string) =>
                 set((state) => {
                     const exists = state.confirmedAddresses.some(
-                        (ca) => ca.address.toLowerCase() === address.toLowerCase() && 
-                                ca.network === network
+                        (ca) => ca.address.toLowerCase() === address.toLowerCase() &&
+                            ca.network === network
                     );
-                    
+
                     if (exists) {
                         return state;
                     }
-                    
+
                     return {
                         confirmedAddresses: [
                             ...state.confirmedAddresses,
@@ -248,8 +249,8 @@ export const useContractAddressStore = create<ContractAddressState>()(
 
             isConfirmed: (address: string, network: string) => {
                 return get().confirmedAddresses.some(
-                    (ca) => ca.address.toLowerCase() === address.toLowerCase() && 
-                            ca.network === network
+                    (ca) => ca.address.toLowerCase() === address.toLowerCase() &&
+                        ca.network === network
                 );
             },
 
@@ -258,8 +259,8 @@ export const useContractAddressStore = create<ContractAddressState>()(
                     if (network) {
                         return {
                             confirmedAddresses: state.confirmedAddresses.filter(
-                                (ca) => !(ca.address.toLowerCase() === address.toLowerCase() && 
-                                         ca.network === network)
+                                (ca) => !(ca.address.toLowerCase() === address.toLowerCase() &&
+                                    ca.network === network)
                             )
                         };
                     } else {

@@ -4,7 +4,7 @@ import { FC, useState } from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
 import clsx from 'clsx';
 import { ChevronDown } from 'lucide-react';
-import { Quote, QuoteReward, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
+import { QuoteReward, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
 import AverageCompletionTime from '../Common/AverageCompletionTime';
 import useSWRGas from "@/lib/gases/useSWRGas";
 import GasIcon from '../icons/GasIcon';
@@ -33,9 +33,10 @@ export interface QuoteComponentProps {
     destinationAddress?: string;
     reward?: QuoteReward | undefined;
     variant?: 'extended' | 'base';
+    triggerClassnames?: string;
 }
 
-export default function QuoteDetails({ swapValues: values, quote, isQuoteLoading, reward, variant = 'extended' }: QuoteComponentProps) {
+export default function QuoteDetails({ swapValues: values, quote, isQuoteLoading, reward, variant = 'extended', triggerClassnames }: QuoteComponentProps) {
     const { toAsset, fromAsset: fromCurrency, destination_address } = values || {};
     const [isAccordionOpen, setIsAccordionOpen] = useState<boolean>(false);
 
@@ -45,14 +46,17 @@ export default function QuoteDetails({ swapValues: values, quote, isQuoteLoading
                 quote &&
                 <Accordion type='single' collapsible className='w-full' value={isAccordionOpen ? 'quote' : ''} onValueChange={(value) => { setIsAccordionOpen(value === 'quote') }}>
                     <AccordionItem value='quote' className='bg-secondary-500 rounded-2xl'>
-                        <AccordionTrigger className={clsx(
-                            'p-3.5 pr-5 w-full rounded-2xl flex items-center justify-between transition-colors duration-200 hover:bg-secondary-400 mt-3',
-                            {
-                                'bg-secondary-500': !isAccordionOpen,
-                                'bg-secondary-400': isAccordionOpen,
-                                'animate-pulse-strong': isQuoteLoading && !isAccordionOpen
-                            }
-                        )}>
+                        <AccordionTrigger
+                            data-attr="see-swap-details"
+                            className={clsx(
+                                'p-3.5 pr-5 w-full rounded-2xl flex items-center justify-between transition-colors duration-200 hover:bg-secondary-400 mt-2',
+                                triggerClassnames,
+                                {
+                                    'bg-secondary-500': !isAccordionOpen,
+                                    'bg-secondary-400': isAccordionOpen,
+                                    'animate-pulse-strong': isQuoteLoading && !isAccordionOpen
+                                }
+                            )}>
                             {
                                 (isAccordionOpen) ?
                                     <p className='text-sm'>

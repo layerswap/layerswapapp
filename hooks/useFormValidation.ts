@@ -1,5 +1,5 @@
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import { isValidAddress } from '../lib/address/validator';
+import { Address } from '../lib/address';
 import { QuoteError } from './useFee';
 
 interface Params {
@@ -33,7 +33,7 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
     if (!values.toAsset) {
         return { message: 'Select destination asset' };
     }
-    if (!amount) {
+    if (amount === undefined || isNaN(Number(amount))) {
         return { message: 'Enter an amount' };
     }
     if (amount < 0) {
@@ -49,7 +49,7 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
         return { message: 'Invalid amount' };
     }
     if (values.to) {
-        if (values.destination_address && !isValidAddress(values.destination_address, values.to)) {
+        if (values.destination_address && !Address.isValid(values.destination_address, values.to)) {
             return { message: `Enter a valid ${values.to?.display_name} address` };
         }
     }

@@ -1,11 +1,9 @@
-import { FC, SVGProps, useMemo } from 'react'
+import { FC, useMemo } from 'react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../shadcn/tooltip'
 import AverageCompletionTime from '../../Common/AverageCompletionTime'
 import { RateElement } from '../Rate'
-import { Quote, QuoteReward, SwapQuote } from '@/lib/apiClients/layerSwapApiClient'
-import { Wallet } from '@/Models/WalletProvider'
+import { QuoteReward, SwapQuote } from '@/lib/apiClients/layerSwapApiClient'
 import { SwapValues } from '..'
-import { deriveQuoteComputed } from './utils'
 import useWallet from '@/hooks/useWallet'
 import useSWRGas from '@/lib/gases/useSWRGas'
 import { resolveTokenUsdPrice } from '@/helpers/tokenHelper'
@@ -14,10 +12,9 @@ import { useSelectedAccount } from '@/context/swapAccounts'
 import { Slippage } from '../Slippage'
 import { truncateDecimals } from '@/components/utils/RoundDecimals'
 import { Network, NetworkRouteToken } from '@/Models/Network'
-import shortenAddress from '@/components/utils/ShortenAddress'
-import { isValidAddress } from '@/lib/address/validator'
+import { Address } from "@/lib/address";
 import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
-import { addressFormat } from '@/lib/address/formatter'
+import shortenString from '@/components/utils/ShortenString'
 
 type DetailedEstimatesProps = {
     quote: SwapQuote | undefined,
@@ -43,7 +40,7 @@ export const DetailedEstimates: FC<DetailedEstimatesProps> = ({
     return <div className="flex flex-col w-full px-2">
         {variant === "extended" && <GasFee values={values} quote={quote} />}
         <Fees quote={quote} values={values} />
-        {values.depositMethod !== "deposit_address" && <Rate fromAsset={values?.fromAsset} toAsset={values?.toAsset} requestAmount={quote?.requested_amount} receiveAmount={quote?.receive_amount} totalFeeInUsd={quote?.total_fee_in_usd} />}
+        {values.depositMethod !== "deposit_address" && <Rate fromAsset={values?.fromAsset} toAsset={values?.toAsset} rate={quote?.rate} />}
         {values.depositMethod === "deposit_address" && variant === "extended" && values?.fromAsset?.contract && <ExchangeTokenContract fromAsset={values?.fromAsset} network={values?.from} />}
         {variant === "extended" && values.depositMethod === "wallet" && <Slippage quoteData={quote} values={values} />}
         <Estimates quote={quote} />
@@ -161,7 +158,7 @@ const Fees = ({ quote, values }: { quote: SwapQuote | undefined, values: SwapVal
                     </div>
                 )}
             </TooltipTrigger>
-            <TooltipContent className="bg-secondary-300! border-ssecondary-300! text-primart-text!">
+            <TooltipContent className="bg-secondary-300! border-secondary-300! text-primart-text!">
                 <span>{displayLsFee || '-'} </span>
                 <span>{displayLsFee ? currencyName : ''}</span>
             </TooltipContent>
@@ -194,30 +191,44 @@ const Reward = ({ reward }: { reward: QuoteReward }) => {
 type RateProps = {
     fromAsset?: NetworkRouteToken
     toAsset?: NetworkRouteToken
-    requestAmount?: number
-    receiveAmount?: number
-    totalFeeInUsd?: number
+    rate?: number
 }
-const Rate = ({ fromAsset, toAsset, requestAmount, receiveAmount, totalFeeInUsd }: RateProps) => {
-    if (!fromAsset || !toAsset || !requestAmount || !receiveAmount || !totalFeeInUsd) {
+const Rate = ({ fromAsset, toAsset, rate }: RateProps) => {
+    if (!fromAsset || !toAsset || !rate) {
         return null
     }
     return <RowWrapper title="Rate">
-        <RateElement fromAsset={fromAsset} toAsset={toAsset} requestAmount={requestAmount} receiveAmount={receiveAmount} totalFeeInUsd={totalFeeInUsd} />
+        <RateElement fromAsset={fromAsset} toAsset={toAsset} rate={rate} />
     </RowWrapper>
 }
 
 const ExchangeTokenContract = ({ fromAsset, network }: { fromAsset: NetworkRouteToken | undefined, network: Network | undefined }) => {
+    const isValidAddress = useMemo(() => {
+        return fromAsset?.contract && network && Address.isValid(fromAsset.contract, network)
+    }, [fromAsset?.contract, network])
+
+    const shortAddress = useMemo(() => {
+        if (!fromAsset?.contract) return ''
+        if (network) return new Address(fromAsset.contract, network).toShortString()
+        return shortenString(fromAsset.contract)
+    }, [fromAsset?.contract, network])
+
     return <RowWrapper title={`${network?.display_name} - ${fromAsset?.symbol}`}>
         {
-            (fromAsset?.contract && network && (isValidAddress(fromAsset?.contract, network)) ?
+            isValidAddress && fromAsset?.contract && network ? (
                 <div className="text-sm group/addressItem text-secondary-text">
-                    <ExtendedAddress address={addressFormat(fromAsset?.contract, network)} network={network} showDetails={false} shouldShowChevron={false} />
+                    <ExtendedAddress 
+                        address={fromAsset.contract} 
+                        network={network} 
+                        showDetails={false} 
+                        shouldShowChevron={false} 
+                    />
                 </div>
-                :
-                <p className="text-sm text-secondary-text">{fromAsset?.contract ? shortenAddress(fromAsset.contract) : ''}</p>)
+            ) : (
+                <p className="text-sm text-secondary-text">{shortAddress}</p>
+            )
         }
-    </RowWrapper >
+    </RowWrapper>
 }
 
 const LoadingBar = () => (<div className='h-2.5 w-16 inline-flex bg-gray-500 rounded-xs animate-pulse' />);

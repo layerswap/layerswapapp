@@ -1,4 +1,4 @@
-import { Context, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { Context, createContext, useCallback, useContext, useMemo, useState } from 'react'
 import { SwapDirection } from '@/components/DTOs/SwapFormValues';
 import useWallet from '@/hooks/useWallet';
 import { Wallet, WalletProvider } from '@/Models/WalletProvider';

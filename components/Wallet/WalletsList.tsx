@@ -84,7 +84,7 @@ type WalletItemProps = {
     onWalletSelect?: (props: SelectAccountProps) => void;
     isCompatible?: boolean;
 }
-export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = ({ selectable, account: wallet, network, onWalletSelect, token, selectedAddress, isCompatible = true, ...props }) => {
+export const WalletItem: FC<WalletItemProps> = ({ selectable, account: wallet, network, onWalletSelect, token, selectedAddress, isCompatible = true }) => {
     const { networks } = useSettingsState()
     const balanceNetwork = token ? networks.find(n => n.name === network?.name && n.tokens.some(t => t.symbol === token.symbol)) : undefined
 
@@ -99,8 +99,9 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
     const walletBalanceAmount = walletBalance?.amount !== undefined ? truncateDecimals(walletBalance.amount, token?.precision) : ''
 
     return (
-        <div {...props} className="rounded-md outline-hidden text-primary-tex">
-            <div
+        <div className="rounded-md outline-hidden text-primary-tex">
+            <button
+                type="button"
                 onClick={() => (selectable && wallet.addresses.length == 1 && onWalletSelect) && onWalletSelect({
                     providerName: wallet.providerName,
                     walletId: wallet.id,
@@ -147,6 +148,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
                                         <ExtendedAddress
                                             address={wallet.address}
                                             network={network}
+                                            providerName={wallet.providerName}
                                             title={wallet.displayName?.split("-")[0]}
                                             description={wallet.providerName}
                                             logo={wallet.icon}
@@ -155,7 +157,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
                                             onDisconnect={() => hasDisconnect(wallet) && wallet.disconnect()}
                                         />
                                     }
-                                    <p className="text-xs text-secondary-text">
+                                    <p className="text-xs text-secondary-text text-start">
                                         {wallet.displayName}
                                     </p>
                                 </div>
@@ -201,7 +203,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
                         <FilledCheck />
                     </div>
                 }
-            </div>
+            </button>
             {
                 wallet.addresses.length > 1 &&
                 <div className='w-full grow py-1 mt-1 bg-secondary-500 rounded-lg' >
@@ -236,7 +238,7 @@ type NestedWalletAddressProps = {
     isCompatible?: boolean;
 }
 
-const NestedWalletAddress: FC<HTMLAttributes<HTMLDivElement> & NestedWalletAddressProps> = ({ selectable, address, network, onWalletSelect, token, wallet, selectedAddress, isCompatible, ...props }) => {
+const NestedWalletAddress: FC<NestedWalletAddressProps> = ({ selectable, address, network, onWalletSelect, token, wallet, selectedAddress, isCompatible }) => {
     const { networks } = useSettingsState()
     const balanceNetwork = token ? networks.find(n => n.name === network?.name && n.tokens.some(t => t.symbol === token.symbol)) : undefined
     const { balances, isLoading: isBalanceLoading } = useBalance(
@@ -249,8 +251,9 @@ const NestedWalletAddress: FC<HTMLAttributes<HTMLDivElement> & NestedWalletAddre
     const nestedWalletBalanceAmount = nestedWalletBalance?.amount !== undefined ? truncateDecimals(nestedWalletBalance.amount, token?.precision) : ''
 
     return (
-        <div
-            {...props}
+        <button
+            type="button"
+            disabled={!selectable}
             onClick={() => (selectable && onWalletSelect) && onWalletSelect({
                 providerName: wallet.providerName,
                 walletId: wallet.id,
@@ -275,6 +278,7 @@ const NestedWalletAddress: FC<HTMLAttributes<HTMLDivElement> & NestedWalletAddre
                         <ExtendedAddress
                             address={address}
                             network={network}
+                            providerName={wallet.providerName}
                             addressClassNames="font-normal text-sm"
                             onDisconnect={() => hasDisconnect(wallet) && wallet?.disconnect()}
                         />
@@ -306,7 +310,7 @@ const NestedWalletAddress: FC<HTMLAttributes<HTMLDivElement> & NestedWalletAddre
                     </div>
                 }
             </div>
-        </div>
+        </button>
     )
 
 }

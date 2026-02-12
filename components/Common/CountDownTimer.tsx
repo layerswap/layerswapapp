@@ -2,16 +2,18 @@ import { FC, useEffect, useState } from "react";
 import { SwapStatus } from "../../Models/SwapStatus";
 import { SwapDetails, TransactionType } from "../../lib/apiClients/layerSwapApiClient";
 import posthog from "posthog-js";
+import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 
 const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails, onThresholdChange?: (threshold: boolean) => void }> = ({ initialTime, swapDetails, onThresholdChange }) => {
     const [elapsedTimer, setElapsedTimer] = useState<number>(0);
-
+    const { swapTransactions } = useSwapTransactionStore()
     const [thresholdElapsed, setThresholdElapsed] = useState<boolean>(false);
     const swapInputTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Input)
+    const storedWalletTransaction = swapTransactions?.[swapDetails?.id]
 
     useEffect(() => {
         // Start timer immediately when component renders
-        const startTime = swapInputTransaction?.timestamp ? new Date(swapInputTransaction.timestamp).getTime() : Date.now();
+        const startTime = swapInputTransaction?.timestamp ? new Date(swapInputTransaction.timestamp).getTime() : storedWalletTransaction?.timestamp ? new Date(storedWalletTransaction.timestamp).getTime() : Date.now();
 
         const timer = setInterval(() => {
             const currentTime = new Date();

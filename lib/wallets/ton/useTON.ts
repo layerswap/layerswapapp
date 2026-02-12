@@ -27,7 +27,7 @@ export default function useTON(): WalletProvider {
         displayName: `${wallet_id} - Ton`,
         addresses: [address],
         address,
-        providerName: id,
+        providerName: name,
         isActive: true,
         icon: resolveWalletConnectorIcon({ connector: name, address, iconUrl }),
         disconnect: () => disconnectWallets(),
@@ -83,7 +83,7 @@ export default function useTON(): WalletProvider {
                     displayName: `${connectedName} - Ton`,
                     addresses: [connectedAddress],
                     address: connectedAddress,
-                    providerName: id,
+                    providerName: name,
                     isActive: true,
                     icon: resolveWalletConnectorIcon({ connector: connectedName, address: connectedAddress }),
                     disconnect: () => disconnectWallets(),
@@ -119,6 +119,8 @@ export default function useTON(): WalletProvider {
         id: id,
         name: name,
         icon: logo,
+        extensionNotFound: false,
+        providerName: name
     }]
 
     const provider: WalletProvider = {

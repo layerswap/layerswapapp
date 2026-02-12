@@ -24,7 +24,7 @@ export const PriceImpact: FC<PriceImpactProps> = ({
     return (<>
         <Tooltip openOnClick>
             <TooltipTrigger asChild>
-                <span className={clsx("flex text-secondary-text items-center cursor-default hover:text-primary-text",
+                <span data-attr="price-impact" className={clsx("flex text-secondary-text items-center cursor-default hover:text-primary-text",
                     className,
                     { "text-warning-foreground hover:text-warning-foreground/80": priceImpactValues.highMarketPriceImpact }
                 )}>

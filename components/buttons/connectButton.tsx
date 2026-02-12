@@ -16,6 +16,7 @@ const ConnectButton = ({
     return (
         <button
             onClick={async () => { await connect() }}
+            data-attr="connect-wallet"
             type="button"
             aria-label="Connect wallet"
             disabled={filteredProviders.length == 0}

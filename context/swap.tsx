@@ -15,10 +15,9 @@ import { TrackEvent } from "@/pages/_document";
 import { useSettingsState } from './settings';
 import { QuoteError, transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { useRecentNetworksStore } from '@/stores/recentRoutesStore';
-import { parse, ParsedUrlQuery } from 'querystring';
 import { resolvePersistantQueryParams } from '@/helpers/querryHelper';
 import { useSelectedAccount } from './swapAccounts';
-import { addressFormat } from '@/lib/address/formatter';
+import { Address } from '@/lib/address';
 import { useSlippageStore } from '@/stores/slippageStore';
 import { posthog } from 'posthog-js';
 
@@ -76,7 +75,7 @@ export type SwapContextData = {
     setSwapError?: (value: string) => void
 }
 
-export function SwapDataProvider({ children }) {
+export function SwapDataProvider({ children, initialSwapData }: { children: React.ReactNode, initialSwapData?: SwapResponse | null }) {
     const [codeRequested, setCodeRequested] = useState<boolean>(false)
     const [quoteIsLoading, setQuoteLoading] = useState<boolean>(false)
     const [withdrawType, setWithdrawType] = useState<WithdrawType>()
@@ -126,7 +125,7 @@ export function SwapDataProvider({ children }) {
     const layerswapApiClient = new LayerSwapApiClient()
     const swap_details_endpoint = `/swaps/${swapId}?exclude_deposit_actions=true`
     const [interval, setInterval] = useState(0)
-    const { data, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval, dedupingInterval: interval || 1000 })
+    const { data, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval, dedupingInterval: interval || 1000, fallbackData: initialSwapData ? { data: initialSwapData } : undefined })
 
     const swapBasicData = useMemo(() => {
         if (swapId && data?.data) {
@@ -167,7 +166,7 @@ export function SwapDataProvider({ children }) {
 
     const selectedSourceAccount = useSelectedAccount("from", swapBasicFormData?.source_network?.name);
     const { wallets } = useWallet(swapBasicFormData?.source_network, 'asSource')
-    const selectedWallet = (selectedSourceAccount?.address && swapBasicFormData) && wallets.find(w => addressFormat(w.address, swapBasicFormData?.source_network) === addressFormat(selectedSourceAccount?.address, swapBasicFormData?.source_network))
+    const selectedWallet = (selectedSourceAccount?.address && swapBasicFormData) && wallets.find(w => Address.equals(w.address, selectedSourceAccount.address, swapBasicFormData?.source_network))
 
     const sourceIsSupported = (swapBasicData && selectedWallet) && WalletIsSupportedForSource({
         providers: providers,
@@ -330,10 +329,11 @@ export const setSwapPath = (swapId: string, router: NextRouter) => {
     const basePath = router?.basePath || ""
     var swapURL = window.location.protocol + "//"
         + window.location.host + `${basePath}/swap/${swapId}`;
-    const raw = window.location.search.startsWith("?")
-        ? window.location.search.slice(1)
-        : window.location.search;
-    const existing: ParsedUrlQuery = parse(raw);
+    const searchParams = new URLSearchParams(window.location.search);
+    const existing: Record<string, string> = {};
+    searchParams.forEach((value, key) => {
+        existing[key] = value;
+    });
     const params = resolvePersistantQueryParams(existing)
     if (params && Object.keys(params).length) {
         const search = new URLSearchParams(params as any);
@@ -349,10 +349,11 @@ export const removeSwapPath = (router: NextRouter) => {
     let homeURL = window.location.protocol + "//"
         + window.location.host + basePath
 
-    const raw = window.location.search.startsWith("?")
-        ? window.location.search.slice(1)
-        : window.location.search;
-    const existing: ParsedUrlQuery = parse(raw);
+    const searchParams = new URLSearchParams(window.location.search);
+    const existing: Record<string, string> = {};
+    searchParams.forEach((value, key) => {
+        existing[key] = value;
+    });
     const params = resolvePersistantQueryParams(existing)
     if (params && Object.keys(params).length) {
         const search = new URLSearchParams(params as any);

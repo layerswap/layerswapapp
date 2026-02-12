@@ -2,7 +2,7 @@ import { useFormikContext } from "formik";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import useSWRGas from "@/lib/gases/useSWRGas";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
-import React, { useMemo } from "react";
+import React, { FC, useMemo } from "react";
 import { resolveMaxAllowedAmount } from "./helpers";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import { useSelectedAccount } from "@/context/swapAccounts";
@@ -40,9 +40,22 @@ const MinMax = (props: MinMaxProps) => {
 
     const shouldPayGasWithTheToken = (native_currency?.symbol === fromCurrency?.symbol) || !native_currency
 
-    let maxAllowedAmount: number | undefined = useMemo(() => {
-        return resolveMaxAllowedAmount({ fromCurrency, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod })
-    }, [fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod])
+    const fallbackAmount = useMemo(() => {
+        return fromCurrency.price_in_usd > 0 ? 0.01 / fromCurrency.price_in_usd : 0.01;
+    }, [fromCurrency.price_in_usd]);
+
+    let maxAllowedAmount: number = useMemo(() => {
+        return resolveMaxAllowedAmount({ fromCurrency, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod, fallbackAmount }) || 0;
+    }, [fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod, fallbackAmount])
+
+    const minAmount = useMemo(() => {
+        if (walletBalance && walletBalance.amount !== undefined && limitsMinAmount !== undefined) {
+            return Number(walletBalance.amount) < limitsMinAmount ? Number(walletBalance.amount) : limitsMinAmount;
+        }
+        return limitsMinAmount || fallbackAmount;
+    }, [walletBalance, limitsMinAmount, fallbackAmount]);
+
+    const halfOfBalance = (walletBalance?.amount || maxAllowedAmount) ? (walletBalance?.amount || maxAllowedAmount) / 2 : 0;
 
     const handleSetValue = (value: string) => {
         mutateBalances()
@@ -53,41 +66,40 @@ const MinMax = (props: MinMaxProps) => {
     const handleSetMinAmount = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
         e.stopPropagation()
-        if (!limitsMinAmount)
-            throw new Error("Wallet balance is not available");
-        handleSetValue(limitsMinAmount.toString())
+        handleSetValue(minAmount.toString())
     }
+
     const handleSetHalfAmount = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
         e.stopPropagation()
-        if (!walletBalance?.amount)
-            throw new Error("Wallet balance is not available");
-        handleSetValue((walletBalance?.amount / 2).toString())
+        handleSetValue(halfOfBalance.toString())
     }
 
     const handleSetMaxAmount = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
         e.stopPropagation()
-        if (!maxAllowedAmount)
-            throw new Error("Max amount is not available");
         handleSetValue(maxAllowedAmount.toString())
     }
-    const halfOfBalance = (walletBalance?.amount || 0) / 2;
+
     const showMaxTooltip = !!(depositMethod === 'wallet' && walletBalance?.amount && shouldPayGasWithTheToken && (!limitsMaxAmount || walletBalance.amount < limitsMaxAmount))
+
+    if (!from || !fromCurrency)
+        return null;
 
     return (
         <div className="flex gap-1.5 group text-xs leading-4" onMouseLeave={() => onActionHover(undefined)}>
-            {
-                Number(limitsMinAmount) > 0 ?
-                    <ActionButton
-                        label="Min"
-                        onMouseEnter={() => onActionHover(limitsMinAmount)}
-                        onClick={handleSetMinAmount}
-                        disabled={!limitsMinAmount}
-                    />
-                    :
-                    null
-            }
+            <ActionButton
+                data-attr="min-amount"
+                label="Min"
+                onMouseEnter={() => onActionHover(minAmount)}
+                onClick={handleSetMinAmount}
+            />
+            <ActionButton
+                data-attr="half-amount"
+                label="50%"
+                onMouseEnter={() => onActionHover(halfOfBalance)}
+                onClick={handleSetHalfAmount}
+            />
             {
                 (depositMethod === 'wallet' && halfOfBalance > 0 && (halfOfBalance < (maxAllowedAmount || Infinity))) ?
                     <ActionButton
@@ -122,22 +134,23 @@ const MinMax = (props: MinMaxProps) => {
 
 export default MinMax
 
-type ActionButtonProps = {
+type ActionButtonProps = React.DetailedHTMLProps<React.ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> & {
     label: string;
     onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
     onMouseEnter: () => void;
     disabled?: boolean;
 }
 
-const ActionButton = ({ label, onClick, onMouseEnter, disabled }: ActionButtonProps) => {
+const ActionButton: FC<ActionButtonProps> = ({ label, onClick, onMouseEnter, disabled, ...rest }) => {
     return (
         <button
+            {...rest}
             onMouseEnter={onMouseEnter}
             onClick={onClick}
             typeof="button"
             type="button"
             disabled={disabled}
-            className={"px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer enabled:active:animate-press-down"}
+            className="px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer enabled:active:animate-press-down"
         >
             {label}
         </button>

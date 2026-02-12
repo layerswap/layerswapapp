@@ -8,7 +8,7 @@ import { useMemo } from "react"
 import convertSvgComponentToBase64 from "../../../components/utils/convertSvgComponentToBase64"
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon"
 import KnownInternalNames from "../../knownIds"
-import { isValidAddress } from "@/lib/address/validator"
+import { Address } from "@/lib/address"
 import { useBitcoinConnectors } from "@/components/WalletProviders/BitcoinProvider"
 import { Connector, CreateConnectorFn } from "@bigmi/client"
 import { useAccount } from "./useAccount"
@@ -72,7 +72,7 @@ export default function useBitcoin(): WalletProvider {
 
             const address = result.accounts[0]
             const network = networks.find(n => commonSupportedNetworks.includes(n.name))
-            const wrongChanin = !isValidAddress(address, network)
+            const wrongChanin = !Address.isValid(address, network)
 
             if (address && wrongChanin) {
                 await disconnect(config, { connector })

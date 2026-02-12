@@ -56,8 +56,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 return;
             }
             setSelectedConnector(connector)
-            if (connector?.hasBrowserExtension && !connector?.showQrCode && connector.type == 'walletConnect' && !isMobilePlatfrom) return
-            if (connector.installUrl) return
+            if (connector?.hasBrowserExtension !== false && connector.extensionNotFound && !connector?.showQrCode && !isMobilePlatfrom) return
             if (!provider.ready) {
                 setConnectionError("Wallet provider is still initializing. Please wait a moment and try again.")
                 return
@@ -151,7 +150,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         return () => observer.disconnect();
     }, [hasMoreToLoad, isLoadingMore, loadMore, selectedConnector, selectedMultiChainConnector]);
 
-    if (selectedConnector?.hasBrowserExtension && !selectedConnector?.showQrCode && selectedConnector.type == 'walletConnect' && !isMobilePlatfrom) {
+    if (selectedConnector?.hasBrowserExtension !== false && selectedConnector?.extensionNotFound && !selectedConnector?.showQrCode && !isMobilePlatfrom) {
         const provider = featuredProviders.find(p => p.name === selectedConnector?.providerName)
         return <InstalledExtensionNotFound selectedConnector={selectedConnector} onConnect={(connector) => { connect(connector, provider!) }} />
     }
@@ -185,7 +184,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                         searchQuery={searchValue || ""}
                         setSearchQuery={setSearchValue}
                         placeholder={hiddenConnectors.length > 300 ? "Search through 400+ wallets..." : "Search wallet"}
-                        className="w-full mb-0!"
+                        containerClassName="w-full mb-0!"
                     />
                     {
                         (!selectedProvider || selectedProvider?.isSelectedFromFilter) &&

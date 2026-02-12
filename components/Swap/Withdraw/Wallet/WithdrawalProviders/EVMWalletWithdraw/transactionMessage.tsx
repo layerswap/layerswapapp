@@ -11,10 +11,11 @@ type TransactionMessageProps = {
     activeAddress: string | undefined
     selectedSourceAddress: string | undefined
     swapError?: string | null | undefined
+    sourceNetwork: { name: string }
 }
 
 const TransactionMessage: FC<TransactionMessageProps> = ({
-    wait, transaction, applyingTransaction, activeAddress, selectedSourceAddress, swapError
+    wait, transaction, applyingTransaction, activeAddress, selectedSourceAddress, swapError, sourceNetwork
 }) => {
     const transactionResolvedError = resolveError(transaction?.error as BaseError)
     const hasError = transaction?.isError || wait?.isError
@@ -36,7 +37,7 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
     }
     //TODO: this is old we mihght need to remove it, as now the selected account is the active one
     else if (transaction.isError && activeAddress && selectedSourceAddress && (activeAddress?.toLowerCase() !== selectedSourceAddress?.toLowerCase())) {
-        return <ActionMessages.WaletMismatchMessage address={selectedSourceAddress} />
+        return <ActionMessages.WalletMismatchMessage address={selectedSourceAddress} network={sourceNetwork} />
     }
     else if (hasError) {
         const unexpectedError = transaction?.error?.['data']?.message || transaction?.error

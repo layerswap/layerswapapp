@@ -28,13 +28,13 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const { handleChange } = useFormikContext<SwapFormValues>();
         const [field] = useField(name)
 
-        const formattedTempValue = tempValue ? isScientific(tempValue)
+        const formattedTempValue = Number(tempValue) >= 0 ? isScientific(tempValue)
             ? (!isNaN(Number(tempValue))
                 ? Number(tempValue).toFixed(precision ?? 0).replace(/\.?0+$/, '')
                 : '')
             : tempValue?.toString()
             : '';
-
+            
         return <div>
             {label &&
                 <label htmlFor={name} className="block font-semibold text-secondary-text text-sm mb-1.5 w-full">
@@ -43,7 +43,7 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
             }
             <div className="flex relative w-full">
                 {
-                    Number(tempValue) > 0 &&
+                    !isNaN(Number(tempValue)) &&
                     <span className={classNames(
                         'py-2 flex text-secondary-text/45 items-center h-12 leading-4 bg-secondary-700 min-w-0 rounded-lg font-semibold border-0 ',
                         className
@@ -54,7 +54,7 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                     </span>
                 }
                 {
-                    !tempValue &&
+                    isNaN(Number(tempValue)) &&
                     <input
                         {...field}
                         inputMode="decimal"

@@ -5,7 +5,7 @@ import React, { useMemo } from "react";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { WagmiProvider, createConfig, Config } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { Chain, http } from 'viem';
+import { Chain, http, fallback } from 'viem';
 import { useEvmConnectors } from "../../context/evmConnectorsContext";
 import { ActiveEvmAccountProvider } from "./ActiveEvmAccount";
 
@@ -41,9 +41,10 @@ function WagmiComponent({ children }: Props) {
     }, [settings?.networks])
 
     const transports = useMemo(() => {
-        const t: Record<number, ReturnType<typeof http>> = {}
+        const t: Record<number, ReturnType<typeof fallback> | ReturnType<typeof http>> = {}
         settingsChains.forEach(chain => {
-            t[chain.id] = chain.rpcUrls.default.http[0] ? http(chain.rpcUrls.default.http[0]) : http()
+            const urls = chain.rpcUrls.default.http
+            t[chain.id] = urls.length > 0 ? fallback(urls.map(url => http(url))) : http()
         })
         return t
     }, [settingsChains])

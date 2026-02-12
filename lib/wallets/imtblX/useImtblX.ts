@@ -21,7 +21,7 @@ export default function useImtblX(): WalletProvider {
     const wallets = useWalletStore((state) => state.connectedWallets)
     const addWallet = useWalletStore((state) => state.connectWallet)
     const removeWallet = useWalletStore((state) => state.disconnectWallet)
-    const wallet = wallets.find(wallet => wallet.providerName === id)
+    const wallet = wallets.find(wallet => wallet.providerName === name)
 
     const getWallet = () => {
         if (wallet) {
@@ -29,9 +29,7 @@ export default function useImtblX(): WalletProvider {
         }
         return undefined
     }
-    const switchAccount = async (wallet: Wallet, address: string) => {
-        // as we do not have multiple accounts management we will leave the method empty
-    }
+
     const connectWallet = async () => {
         const isMainnet = networks?.some(network => network.name === KnownInternalNames.Networks.ImmutableXMainnet)
         const chain = (isMainnet ? KnownInternalNames.Networks.ImmutableXMainnet : KnownInternalNames.Networks.ImmutableXGoerli)
@@ -47,7 +45,7 @@ export default function useImtblX(): WalletProvider {
                 id: 'immutablex',
                 displayName: name,
                 address: res.address,
-                providerName: id,
+                providerName: name,
                 icon: IMX,
                 disconnect: () => disconnectWallet(),
                 isActive: true,
@@ -75,6 +73,8 @@ export default function useImtblX(): WalletProvider {
         id: id,
         name: name,
         icon: logo,
+        extensionNotFound: false,
+        providerName: name
     }]
 
     const provider: WalletProvider = {
@@ -89,7 +89,6 @@ export default function useImtblX(): WalletProvider {
         id,
         hideFromList: true,
         availableWalletsForConnect,
-        switchAccount,
         ready: true
     }
 

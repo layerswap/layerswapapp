@@ -2,11 +2,12 @@
 import { GasProps } from "../../../Models/Balance"
 import { NetworkType, Network, Token } from "../../../Models/Network"
 import { GasProvider } from "./types"
-import { PublicClient, TransactionSerializedEIP1559, createPublicClient, encodeFunctionData, http, parseEther, serializeTransaction } from "viem";
+import { PublicClient, TransactionSerializedEIP1559, createPublicClient, encodeFunctionData, parseEther, serializeTransaction } from "viem";
 import { erc20Abi } from "viem";
 import { formatUnits } from "viem";
 import { publicActionsL2 } from 'viem/op-stack'
 import resolveChain from "../../resolveChain";
+import { resolveFallbackTransport } from "../../resolveTransports";
 import posthog from "posthog-js";
 
 export class EVMGasProvider implements GasProvider {
@@ -26,11 +27,11 @@ export class EVMGasProvider implements GasProvider {
 
         try {
 
-            const { createPublicClient, http } = await import("viem")
+            const { createPublicClient } = await import("viem")
             const resolveNetworkChain = (await import("../../resolveChain")).default
             const publicClient = createPublicClient({
                 chain: resolveNetworkChain(network),
-                transport: http(),
+                transport: resolveFallbackTransport(network.nodes),
             })
 
             const getGas = network?.metadata?.evm_oracle_contract ? getOptimismGas : getEthereumGas
@@ -107,8 +108,11 @@ abstract class getEVMGas {
 
     protected async resolveFeeData() {
 
-        let gasPrice = await this.getGasPrice();
-        let feesPerGas = await this.estimateFeesPerGas()
+        const [gasPrice, feesPerGas] = await Promise.all([
+            this.getGasPrice(),
+            this.estimateFeesPerGas()
+        ]);
+
         let maxPriorityFeePerGas = feesPerGas?.maxPriorityFeePerGas
         if (!maxPriorityFeePerGas) maxPriorityFeePerGas = await this.estimateMaxPriorityFeePerGas()
 
@@ -147,7 +151,6 @@ abstract class getEVMGas {
     private async estimateMaxPriorityFeePerGas() {
         try {
             return await this.publicClient.estimateMaxPriorityFeePerGas()
-
         } catch (e) {
             const error = new Error(e)
             error.cause = e
@@ -189,21 +192,21 @@ abstract class getEVMGas {
     }
 
     protected constructSweeplessTxData = (txData: string = "0x") => {
-        const hexed_sequence_number = (99999999).toString(16)
+        const hexed_sequence_number = (99999999999999999999999999999999999999999999999999999999999999999999999999999n).toString(16)
         const sequence_number_even = hexed_sequence_number?.length % 2 > 0 ? `0${hexed_sequence_number}` : hexed_sequence_number
         return `${txData}${sequence_number_even}` as `0x${string}`;
     }
 
 }
 
-
 class getEthereumGas extends getEVMGas {
     resolveGas = async () => {
-        const feeData = await this.resolveFeeData()
-
-        const estimatedGasLimit = this.contract_address ?
-            await this.estimateERC20GasLimit()
-            : await this.estimateNativeGasLimit()
+        const [feeData, estimatedGasLimit] = await Promise.all([
+            this.resolveFeeData(),
+            this.contract_address
+                ? this.estimateERC20GasLimit()
+                : this.estimateNativeGasLimit()
+        ])
 
         const multiplier = feeData.maxFeePerGas || feeData.gasPrice
 
@@ -222,10 +225,9 @@ class getEthereumGas extends getEVMGas {
 export default class getOptimismGas extends getEVMGas {
 
     chain = resolveChain(this.from)
-
     client = createPublicClient({
         chain: this.chain,
-        transport: http(),
+        transport: resolveFallbackTransport(this.from.nodes),
     }).extend(publicActionsL2())
 
     resolveGas = async () => {

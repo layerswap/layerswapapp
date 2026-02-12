@@ -26,7 +26,7 @@ const Comp = () => {
     }
 
     useEffect(() => {
-        if(isOpen) {
+        if (isOpen) {
             goToStep(MenuStep.Menu)
             clearMenuPath(router)
         }
@@ -64,7 +64,7 @@ const Comp = () => {
                                     <MenuList goToStep={handleGoToStep} />
                                 </WizardItem>
                                 <WizardItem StepName={MenuStep.Transactions} GoBack={goBackToMenuStep} className="h-full" inModal>
-                                    <HistoryList onNewTransferClick={closeModal} />
+                                    <HistoryList onNewTransferClick={() => { closeModal(); clearMenuPath(router) }} />
                                 </WizardItem>
                             </Wizard>
                         </div>

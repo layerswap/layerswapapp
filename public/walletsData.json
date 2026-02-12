@@ -1,5 +1,5 @@
 {
-  "count": 591,
+  "count": 616,
   "listings": {
     "00e39f835988d1bb783b2a0748e18bc6278dec03492d00b0e102a466cd8b3d77": {
       "app": {
@@ -350,6 +350,72 @@
       ],
       "slug": "dmtoken",
       "updatedAt": "2023-08-23T05:47:20.865939+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
+    "022076fddebdd81c287239a7397ef625ef432db168b884f1b8ed8e148ce23a84": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.outlawgame.android",
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:10",
+        "eip155:3",
+        "eip155:4",
+        "eip155:5",
+        "eip155:6",
+        "eip155:7",
+        "solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+      ],
+      "description": "Outlaw Games – Decentralized Mini-Game Network\n\nOutlaw Games introduces a collection of skill-based, family-friendly mini-games enhanced by optional Web3 features. Enjoy quick, competitive matches",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://www.outlawgames.app",
+      "id": "022076fddebdd81c287239a7397ef625ef432db168b884f1b8ed8e148ce23a84",
+      "image_id": "290467db-2be9-4cfd-9996-742517ff6d00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/290467db-2be9-4cfd-9996-742517ff6d00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/290467db-2be9-4cfd-9996-742517ff6d00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/290467db-2be9-4cfd-9996-742517ff6d00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "outlaw://",
+        "universal": ""
+      },
+      "name": "Outlaw Wallet",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "outlaw-wallet",
+      "updatedAt": "2026-01-08T05:08:11.839175+00:00",
       "versions": [
         "1",
         "2"
@@ -1604,16 +1670,16 @@
     "078d94b4c8706e12fe379e85242ce963380acfd678518e2d8ea73ee532d9bacc": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.me.daffione",
-        "browser": null,
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
-        "ios": null,
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": "Mobile Wallets",
@@ -1622,23 +1688,25 @@
         "algorand:wGHE2Pwdvd7S12BL5FaOP20EGYesN73k",
         "eip155:1",
         "eip155:10",
+        "eip155:100",
         "eip155:137",
         "eip155:25",
         "eip155:250",
-        "eip155:3",
-        "eip155:338",
         "eip155:42161",
+        "eip155:42220",
+        "eip155:43114",
         "eip155:56",
         "eip155:97",
         "polkadot:2ace05e703aa50b48c0ccccfc8b424f7",
-        "polkadot:91b171bb158e2d3848fa23a9f1c25182",
-        "polkadot:b0a8d493285c2df73290dfb7e61f870f",
-        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "stellar:pubnet",
+        "sui:mainnet",
+        "xrpl:0"
       ],
       "description": "Self-custody wallet, with support for various chains",
       "desktop": {
         "native": "",
-        "universal": null
+        "universal": ""
       },
       "homepage": "https://www.daffione.com/",
       "id": "078d94b4c8706e12fe379e85242ce963380acfd678518e2d8ea73ee532d9bacc",
@@ -1658,10 +1726,10 @@
       },
       "mobile": {
         "native": "DaffiOne:// wc://",
-        "universal": null
+        "universal": ""
       },
       "name": "DaffiOne",
-      "rdns": null,
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2"
@@ -2172,6 +2240,7 @@
         "cosmos:cosmoshub-4",
         "cosmos:kava-4",
         "eip155:1",
+        "eip155:10",
         "eip155:10000",
         "eip155:122",
         "eip155:1313161554",
@@ -2194,6 +2263,7 @@
         "eip155:6",
         "eip155:80084",
         "eip155:80085",
+        "eip155:8453",
         "polkadot:91b171bb158e2d3848fa23a9f1c25182",
         "polkadot:b0a8d493285c2df73290dfb7e61f870f",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
@@ -3432,9 +3502,12 @@
       "category": "Mobile Wallets",
       "chains": [
         "eip155:1",
+        "eip155:10",
         "eip155:137",
+        "eip155:42161",
         "eip155:43114",
-        "eip155:56"
+        "eip155:56",
+        "eip155:8453"
       ],
       "description": "Buy, sell, store, trade, and use cryptocurrency with the Bitcoin.com Wallet, trusted by millions.",
       "desktop": {
@@ -3469,6 +3542,129 @@
       ],
       "slug": "bitcoincom-wallet",
       "updatedAt": "2022-06-22T12:21:06.997337+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
+    "10a885156cc07e3a8e424c9dea9eafdb62b5640b77cbf9d2e07295dbd3a334c8": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.chainwith.rewardy",
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "https://apps.apple.com/kr/app/rewardy-wallet-evm-sol-aptos/id6572285114",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:10",
+        "eip155:137",
+        "eip155:42161",
+        "eip155:56",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "description": "Rewardy Wallet is a non-custodial, rewards-driven crypto wallet that makes it easy for everyday users to earn and use digital assets. It offers simple, gas-sponsored transactions and seamless onboarding so users can enjoy DeFi, tipping, and airdrop events without worrying about network fees or complex wallet setups.",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://www.rewardywallet.com",
+      "id": "10a885156cc07e3a8e424c9dea9eafdb62b5640b77cbf9d2e07295dbd3a334c8",
+      "image_id": "236317b7-986d-4936-ef0d-b33d6e98a600",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/236317b7-986d-4936-ef0d-b33d6e98a600?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/236317b7-986d-4936-ef0d-b33d6e98a600?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/236317b7-986d-4936-ef0d-b33d6e98a600?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "rewardywallet://",
+        "universal": "https://www.rewardywallet.com/wc"
+      },
+      "name": "Rewardy Wallet",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "rewardy-wallet",
+      "updatedAt": "2026-01-07T07:39:48.405673+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
+    "115fe6e706e14735934eba7afce46f0a77e64988c3ded093033402ef4ce0a162": {
+      "app": {
+        "android": "",
+        "browser": "https://app.sentrywallet.org",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:11155111",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+      ],
+      "description": "AI Protection Non - Custodial Wallet ",
+      "desktop": {
+        "native": "",
+        "universal": "https://app.sentrywallet.org"
+      },
+      "homepage": "https://app.sentrywallet.org",
+      "id": "115fe6e706e14735934eba7afce46f0a77e64988c3ded093033402ef4ce0a162",
+      "image_id": "1395e51b-6b81-4ad8-60f3-ea7323710a00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/1395e51b-6b81-4ad8-60f3-ea7323710a00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/1395e51b-6b81-4ad8-60f3-ea7323710a00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/1395e51b-6b81-4ad8-60f3-ea7323710a00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "",
+        "universal": ""
+      },
+      "name": "SENTRY",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "sentry",
+      "updatedAt": "2026-01-08T05:39:31.606079+00:00",
       "versions": [
         "1",
         "2"
@@ -4296,7 +4492,7 @@
         "auth_v1"
       ],
       "slug": "bybit-wallet",
-      "updatedAt": "2023-07-05T07:36:33.226143+00:00",
+      "updatedAt": "2026-01-30T16:40:29.72+00:00",
       "versions": [
         "1",
         "2"
@@ -4885,15 +5081,15 @@
     "19177a98252e07ddfc9af2083ba8e07ef627cb6103467ffebb3f8f4205fd7927": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.ledger.live",
-        "browser": null,
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
         "ios": "https://itunes.apple.com/app/id1361671700",
         "linux": "https://www.ledger.com/ledger-live",
         "mac": "https://www.ledger.com/ledger-live",
-        "opera": null,
-        "safari": null,
+        "opera": "",
+        "safari": "",
         "windows": "https://www.ledger.com/ledger-live"
       },
       "app_type": "wallet",
@@ -4901,19 +5097,30 @@
       "chains": [
         "bip122:000000000019d6689c085ae165831e93",
         "bip122:000000000933ea01ad0ee984209779ba",
+        "bip122:12a765e31ffd4059bada1e25190f6e98",
         "eip155:1",
+        "eip155:10",
+        "eip155:11155111",
         "eip155:137",
-        "eip155:4",
+        "eip155:17000",
+        "eip155:30",
+        "eip155:42161",
+        "eip155:421614",
+        "eip155:43114",
         "eip155:56",
         "eip155:80084",
         "eip155:80085",
+        "eip155:8453",
+        "eip155:84532",
+        "solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
-        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+        "xrpl:0"
       ],
       "description": "Web3 Wallet from the company that produced the world's most secure crypto hardware device.",
       "desktop": {
         "native": "ledgerlive://",
-        "universal": null
+        "universal": ""
       },
       "homepage": "https://www.ledger.com/ledger-live",
       "id": "19177a98252e07ddfc9af2083ba8e07ef627cb6103467ffebb3f8f4205fd7927",
@@ -4933,10 +5140,10 @@
       },
       "mobile": {
         "native": "ledgerlive://",
-        "universal": null
+        "universal": ""
       },
       "name": "Ledger Live",
-      "rdns": null,
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2"
@@ -8247,7 +8454,8 @@
         "eip155:56",
         "eip155:73799",
         "eip155:80084",
-        "eip155:80085"
+        "eip155:80085",
+        "eip155:8453"
       ],
       "description": "The most trusted platform to manage digital assets.",
       "desktop": {
@@ -8340,6 +8548,68 @@
       ],
       "slug": "islamiwallet",
       "updatedAt": "2022-11-16T14:08:00.179018+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
+    "22eafea695da55c0a8c3a37c5dd6ecd7ee45927a859b9536ae068e5dba4eeed2": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.askroi.onlybulls",
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "https://apps.apple.com/us/app/onlybulls/id6746166943",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:10",
+        "eip155:137",
+        "eip155:42161",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "description": "The OnlyBulls super app wallet",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://onlybulls.com",
+      "id": "22eafea695da55c0a8c3a37c5dd6ecd7ee45927a859b9536ae068e5dba4eeed2",
+      "image_id": "f51e7b10-7a66-437f-8d13-666c660e8500",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/f51e7b10-7a66-437f-8d13-666c660e8500?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/f51e7b10-7a66-437f-8d13-666c660e8500?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/f51e7b10-7a66-437f-8d13-666c660e8500?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "onlybulls://wallet",
+        "universal": "https://onlybulls.com"
+      },
+      "name": "OnlyBulls Wallet",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "onlybulls-wallet",
+      "updatedAt": "2026-01-13T11:04:40.588881+00:00",
       "versions": [
         "1",
         "2"
@@ -8457,6 +8727,70 @@
       "updatedAt": "2022-05-05T09:10:53.231159+00:00",
       "versions": [
         "1"
+      ]
+    },
+    "24475df43f0272e91e800eca2698f62db94c3a973e7cda4abfd546d995013b77": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.iluminary&hl=en",
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "https://apps.apple.com/ro/app/iluminaryai-wallet/id6463699032",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:10",
+        "eip155:137",
+        "eip155:250",
+        "eip155:42161",
+        "eip155:56",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "description": "iLuminary is a smart Web3 wallet with AI insights, strong security, and lifestyle tools for a seamless crypto experience.",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://iluminary.ai",
+      "id": "24475df43f0272e91e800eca2698f62db94c3a973e7cda4abfd546d995013b77",
+      "image_id": "0ba5381f-8779-4031-a3ac-944fdd087e00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/0ba5381f-8779-4031-a3ac-944fdd087e00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/0ba5381f-8779-4031-a3ac-944fdd087e00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/0ba5381f-8779-4031-a3ac-944fdd087e00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "iluminary://",
+        "universal": "https://ilumi.app.link"
+      },
+      "name": "iLuminaryAi Wallet",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "iluminaryai-wallet",
+      "updatedAt": "2026-01-07T07:02:41.41979+00:00",
+      "versions": [
+        "1",
+        "2"
       ]
     },
     "24fa79ebaafca330af474d828d3d1d4b20b4d7f93f7d2fd4986ddafee5e51b14": {
@@ -8922,6 +9256,67 @@
       ],
       "slug": "panaroma-wallet",
       "updatedAt": "2024-01-08T15:47:00.991542+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
+    "25f2e87390f32e4a132c27cbbbca95bc0434f5cba32db613defff0ea2bbf6cd3": {
+      "app": {
+        "android": "",
+        "browser": "https://chain.dolphinode.world/wallet",
+        "chrome": "https://chromewebstore.google.com/detail/nodevault-%E2%80%94-web3-wallet/nhihmlanbfomighpjodmmliikbnlmaog?utm_source=item-share-cb",
+        "edge": "",
+        "firefox": "",
+        "ios": "",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:10",
+        "eip155:11155111",
+        "eip155:14",
+        "eip155:56288"
+      ],
+      "description": "A Real Name KYC Embeded Wallet",
+      "desktop": {
+        "native": "",
+        "universal": "https://chain.dolphinode.world/wallet"
+      },
+      "homepage": "https://chain.dolphinode.world/wallet",
+      "id": "25f2e87390f32e4a132c27cbbbca95bc0434f5cba32db613defff0ea2bbf6cd3",
+      "image_id": "4e143d7c-27cb-4d7f-a4e0-bf612ef58000",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/4e143d7c-27cb-4d7f-a4e0-bf612ef58000?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/4e143d7c-27cb-4d7f-a4e0-bf612ef58000?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/4e143d7c-27cb-4d7f-a4e0-bf612ef58000?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "",
+        "universal": ""
+      },
+      "name": "NodeVault",
+      "rdns": "world.dolphinode.chain",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "nodevault",
+      "updatedAt": "2026-01-13T11:10:17.071533+00:00",
       "versions": [
         "1",
         "2"
@@ -10428,35 +10823,38 @@
     "2c69b45f625add0acd3354df4ab757067143b7f54b937311966f55be60a89c41": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.gayawalletmobapp&pcampaignid=web_share&pli=1",
-        "browser": null,
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
         "ios": "https://apps.apple.com/pk/app/gaya-wallet/id6741714278",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": null,
       "chains": [
         "eip155:1",
+        "eip155:137",
+        "eip155:42161",
+        "eip155:56",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
       ],
-      "description": "Gaya Wallet is a secure, non-custodial multichain wallet for Solana & Ethereum. Manage assets, swap tokens, and stay in full control.",
+      "description": "Gaya Wallet is a Multichain wallet on Solana, EVM and other chains. Create or import wallets, send, receive and swap assets, bridge across chains, buy and sell crypto, connect to dApps, explore Web3, track tokens and transactions, earn rewards through tasks and referrals, and manage everything under one secure identity.",
       "desktop": {
         "native": "",
-        "universal": null
+        "universal": ""
       },
       "homepage": "https://gayawallet.com",
       "id": "2c69b45f625add0acd3354df4ab757067143b7f54b937311966f55be60a89c41",
-      "image_id": "67e7c918-8cf2-4781-0a10-e7e6f4c48900",
+      "image_id": "40cb8a5d-6118-404d-7156-4ab9bfb18600",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/67e7c918-8cf2-4781-0a10-e7e6f4c48900?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/67e7c918-8cf2-4781-0a10-e7e6f4c48900?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/67e7c918-8cf2-4781-0a10-e7e6f4c48900?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/40cb8a5d-6118-404d-7156-4ab9bfb18600?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/40cb8a5d-6118-404d-7156-4ab9bfb18600?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/40cb8a5d-6118-404d-7156-4ab9bfb18600?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
       "injected": null,
       "metadata": {
@@ -10471,7 +10869,7 @@
         "universal": "https://gayawallet.com"
       },
       "name": "Gaya Wallet",
-      "rdns": null,
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2"
@@ -10619,15 +11017,15 @@
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.finverselabs.openwallet&pli=1",
         "browser": "",
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
         "ios": "https://apps.apple.com/ee/app/open-wallet-keyless-mastery/id6502636684",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": "MPC-based wallets",
@@ -10669,7 +11067,7 @@
         "universal": ""
       },
       "name": "Open Wallet",
-      "rdns": null,
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2"
@@ -11040,17 +11438,17 @@
     },
     "33c036d8075d28c9f3619d4d43075676a6d294047e3658fb103e5b3424337551": {
       "app": {
-        "android": null,
+        "android": "",
         "browser": "https://wallet.nu.fi/wallet_connect/connector/redirect",
         "chrome": "https://chrome.google.com/webstore/detail/nufi/gpnihlnnodeiiaakbikldcihojploeca",
         "edge": null,
         "firefox": null,
-        "ios": null,
-        "linux": null,
-        "mac": null,
+        "ios": "",
+        "linux": "",
+        "mac": "",
         "opera": null,
         "safari": null,
-        "windows": null
+        "windows": ""
       },
       "app_type": "wallet",
       "category": "Web App Wallets",
@@ -11059,18 +11457,18 @@
         "cip-34:1-764824073",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
       ],
-      "description": "A self-custody Web3 wallet to manage crypto, staking, NFTs, trading and Dapps",
+      "description": "A powerful wallet for powerful users. Non-custodial, private and secure.",
       "desktop": {
         "native": "",
         "universal": "https://wallet.nu.fi/wallet_connect/connector/redirect"
       },
       "homepage": "https://nu.fi",
       "id": "33c036d8075d28c9f3619d4d43075676a6d294047e3658fb103e5b3424337551",
-      "image_id": "65e07e9f-183a-4f6c-6ca5-4964eda1ef00",
+      "image_id": "f72540c6-9fdc-43ad-65b7-0c8d869ebc00",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/65e07e9f-183a-4f6c-6ca5-4964eda1ef00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/65e07e9f-183a-4f6c-6ca5-4964eda1ef00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/65e07e9f-183a-4f6c-6ca5-4964eda1ef00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/f72540c6-9fdc-43ad-65b7-0c8d869ebc00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/f72540c6-9fdc-43ad-65b7-0c8d869ebc00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/f72540c6-9fdc-43ad-65b7-0c8d869ebc00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
       "injected": [
         {
@@ -11091,10 +11489,10 @@
       },
       "mobile": {
         "native": "",
-        "universal": null
+        "universal": ""
       },
-      "name": "NuFi",
-      "rdns": null,
+      "name": "NUFI",
+      "rdns": "fi.nu",
       "sdks": [
         "sign_v2"
       ],
@@ -11188,16 +11586,16 @@
     "34af9f895e03259fb008e8ff4ea5ca5d75fcfcb606ec563c332004f39ab47803": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.billionwallet",
-        "browser": null,
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
-        "ios": null,
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "https://apps.apple.com/app/billion-crypto-wallet/id6746122902",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": null,
@@ -11215,11 +11613,11 @@
       },
       "homepage": "https://billionwallet.io/",
       "id": "34af9f895e03259fb008e8ff4ea5ca5d75fcfcb606ec563c332004f39ab47803",
-      "image_id": "b530c52a-1b19-4184-18f9-f0d292b88a00",
+      "image_id": "8fd9b0c5-87a6-4dd5-19d5-9cb133fbd100",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/b530c52a-1b19-4184-18f9-f0d292b88a00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/b530c52a-1b19-4184-18f9-f0d292b88a00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/b530c52a-1b19-4184-18f9-f0d292b88a00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/8fd9b0c5-87a6-4dd5-19d5-9cb133fbd100?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/8fd9b0c5-87a6-4dd5-19d5-9cb133fbd100?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/8fd9b0c5-87a6-4dd5-19d5-9cb133fbd100?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
       "injected": null,
       "metadata": {
@@ -11233,8 +11631,8 @@
         "native": "billionwallet://",
         "universal": "https://w.billionwallet.io"
       },
-      "name": "Billion Wallet",
-      "rdns": null,
+      "name": "Billion",
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2"
@@ -11317,6 +11715,74 @@
       "updatedAt": "2022-06-28T16:11:07.559508+00:00",
       "versions": [
         "1"
+      ]
+    },
+    "34cc55786257a50b0d0446e197cfd0935216192616787022c6b2819d2874d34a": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.paribu.self&hl=en",
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "https://apps.apple.com/us/app/paribu-self-crypto-wallet/id6608980005",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:10",
+        "eip155:42161",
+        "eip155:43113",
+        "eip155:43114",
+        "eip155:534352",
+        "eip155:56",
+        "eip155:59144",
+        "eip155:8453",
+        "eip155:88888",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+      ],
+      "description": "Paribu Self is a mobile crypto wallet that allows you to manage all your crypto assets and NFTs from a single application.\n\nSecure and Flexible Multi-Party Wallet\n\nMeet a brand new crypto wallet experience. With the “Multi-party wallet” developed by Paribu Self with MPC technology, you can assign more than one person as your partner, determine the approval threshold according to your needs, and manage your crypto assets securely with more than one person.",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://www.paribu.com/self/",
+      "id": "34cc55786257a50b0d0446e197cfd0935216192616787022c6b2819d2874d34a",
+      "image_id": "4ed03451-43fd-44dd-1adc-565452d75100",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/4ed03451-43fd-44dd-1adc-565452d75100?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/4ed03451-43fd-44dd-1adc-565452d75100?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/4ed03451-43fd-44dd-1adc-565452d75100?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "self://",
+        "universal": "paribuself.go.link"
+      },
+      "name": "Paribu Self",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "paribu-self",
+      "updatedAt": "2026-01-26T07:09:29.790295+00:00",
+      "versions": [
+        "1",
+        "2"
       ]
     },
     "34fca0f0eaa51af856cc7f205bacc36ede45545fa987fd81274e53db7718a183": {
@@ -11920,6 +12386,62 @@
         "2"
       ]
     },
+    "366723874f620ef75a1eae9beedb9bf11ee85b2aaf928d53a42d83b52026bf35": {
+      "app": {
+        "android": "",
+        "browser": "",
+        "chrome": "https://chromewebstore.google.com/detail/tha-assetguard-wallet-%E2%80%93-h/pepjfofpkjbfkkoalnmbdhhghakebaic?authuser=6&hl=en",
+        "edge": "",
+        "firefox": "",
+        "ios": "",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "hedera:mainnet",
+        "hedera:testnet"
+      ],
+      "description": "THA AssetGuard is a secure, user-friendly digital assets wallet designed specifically for the Hedera network.",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://www.hashgraph-group.com/products/assetguard",
+      "id": "366723874f620ef75a1eae9beedb9bf11ee85b2aaf928d53a42d83b52026bf35",
+      "image_id": "bf642761-e040-49b2-a9a8-cbd3fa38be00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/bf642761-e040-49b2-a9a8-cbd3fa38be00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/bf642761-e040-49b2-a9a8-cbd3fa38be00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/bf642761-e040-49b2-a9a8-cbd3fa38be00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "",
+        "universal": ""
+      },
+      "name": "AssetGuard",
+      "rdns": "org.tha.hashpay",
+      "sdks": [
+        "sign_v1"
+      ],
+      "slug": "assetguard",
+      "updatedAt": "2026-01-28T22:44:16.383737+00:00",
+      "versions": [
+        "1"
+      ]
+    },
     "36d8d9c0c7fe2957149ce8e878f3a01a8611521983362d9b651fb6e508325583": {
       "app": {
         "android": "https://coincircle.com/app",
@@ -12099,40 +12621,107 @@
         "2"
       ]
     },
+    "376cc8495e1b9387084dce611446bc6086780b39b338934ae057ed11c5739735": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.wallet.crypto.btc.eth",
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "https://apps.apple.com/gb/app/ironwallet-sell-buy-crypto/id6451146325",
+        "linux": "https://cdn.ironwallet.io/ironwallet_app.apk",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "bip122:000000000019d6689c085ae165831e93",
+        "eip155:1",
+        "eip155:10",
+        "eip155:137",
+        "eip155:42161",
+        "eip155:43114",
+        "eip155:56",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "description": "IronWallet is a secure, reliable and modern cold crypto wallet that can be used to store a huge variety of cryptocurrencies.",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://ironwallet.io/",
+      "id": "376cc8495e1b9387084dce611446bc6086780b39b338934ae057ed11c5739735",
+      "image_id": "b836d372-457c-4d10-5a1d-6e4b0a369b00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/b836d372-457c-4d10-5a1d-6e4b0a369b00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/b836d372-457c-4d10-5a1d-6e4b0a369b00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/b836d372-457c-4d10-5a1d-6e4b0a369b00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "myApp://app.ironwallet.io",
+        "universal": "https://app.ironwallet.io"
+      },
+      "name": "IronWallet",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "ironwallet",
+      "updatedAt": "2026-01-08T06:14:02.924484+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "37a686ab6223cd42e2886ed6e5477fce100a4fb565dcd57ed4f81f7c12e93053": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.bifrostwallet.app",
-        "browser": null,
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
         "ios": "https://apps.apple.com/us/app/bifrost-wallet/id1577198351",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": "Mobile Wallets",
       "chains": [
         "bip122:000000000019d6689c085ae165831e93",
         "bip122:000000000933ea01ad0ee984209779ba",
+        "bip122:12a765e31ffd4059bada1e25190f6e98",
         "eip155:1",
         "eip155:10",
+        "eip155:11155111",
         "eip155:114",
         "eip155:137",
         "eip155:14",
         "eip155:16",
         "eip155:19",
-        "eip155:250",
-        "eip155:4002",
-        "eip155:420",
         "eip155:42161",
         "eip155:421611",
-        "eip155:5",
+        "eip155:421614",
+        "eip155:50",
+        "eip155:51",
         "eip155:56",
-        "eip155:69",
+        "eip155:80001",
+        "eip155:8453",
+        "eip155:84532",
         "eip155:97",
         "xrpl:0",
         "xrpl:1"
@@ -12140,7 +12729,7 @@
       "description": "A multi-chain wallet for Flare, XRP, Dogecoin, Bitcoin and beyond.",
       "desktop": {
         "native": "",
-        "universal": null
+        "universal": ""
       },
       "homepage": "https://bifrostwallet.com",
       "id": "37a686ab6223cd42e2886ed6e5477fce100a4fb565dcd57ed4f81f7c12e93053",
@@ -12955,16 +13544,16 @@
     "3c2c985c0adff6f46a0d0e466b3924ed8a059043882cd1944ad7f2adf697ed54": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.klipwallet.app",
-        "browser": null,
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
         "ios": "https://apps.apple.com/kr/app/클립-klip/id1627665524",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": "Mobile Wallets",
@@ -12979,7 +13568,7 @@
         "eip155:8217",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
       ],
-      "description": "Klip for WalletConnect",
+      "description": "No. 1 Personal Crypto Wallet in South Korea",
       "desktop": {
         "native": "",
         "universal": ""
@@ -13002,10 +13591,10 @@
       },
       "mobile": {
         "native": "klipwallet://",
-        "universal": ""
+        "universal": "https://klipwallet.com"
       },
-      "name": "Klip",
-      "rdns": null,
+      "name": "klip",
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2",
@@ -13407,8 +13996,10 @@
       "category": "Mobile Wallets",
       "chains": [
         "eip155:1",
+        "eip155:10",
         "eip155:11155111",
         "eip155:137",
+        "eip155:42161",
         "eip155:56",
         "eip155:80094",
         "eip155:8453",
@@ -15926,6 +16517,70 @@
         "2"
       ]
     },
+    "4be461920c1fd1762d71c00cdf554ce5693437e123c4a966faf7e1056d2c6f17": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.paywithcrypto.paywithcrypto&pcampaignid=web_share",
+        "browser": "",
+        "chrome": "https://chromewebstore.google.com/detail/pwc-wallet/offikenkomflpdlapgobkimgfjpakdgm?utm_source=item-share-cb",
+        "edge": "",
+        "firefox": "",
+        "ios": "https://apps.apple.com/us/app/pwc-super-app/id6748593718",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:137",
+        "eip155:204",
+        "eip155:250",
+        "eip155:42161",
+        "eip155:43114",
+        "eip155:56",
+        "eip155:8453"
+      ],
+      "description": "Built for real-world utility and powered by blockchain, PWC makes it easy to spend, save, and earn using your crypto — all from one powerful, secure, and gamified app.\n\nWhether you're a casual user or a crypto native, PWC gives you full control of your finances with a sleek non-custodial wallet, real-time token swaps, and a universe of features that make every action rewarding.\n",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://paywithcrypto.io/",
+      "id": "4be461920c1fd1762d71c00cdf554ce5693437e123c4a966faf7e1056d2c6f17",
+      "image_id": "27403cff-0fcd-4d50-b0bc-40b7a9743c00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/27403cff-0fcd-4d50-b0bc-40b7a9743c00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/27403cff-0fcd-4d50-b0bc-40b7a9743c00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/27403cff-0fcd-4d50-b0bc-40b7a9743c00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "pwc://wallet",
+        "universal": ""
+      },
+      "name": "PWC Super App",
+      "rdns": "today.paywithcrypto.wallet",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "pwc-super-app",
+      "updatedAt": "2025-12-09T12:48:45.894195+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "4c70c9bd85cc4707811ec0912d692855370d465d46188be42530eaeb4a4f3cae": {
       "app": {
         "android": null,
@@ -16956,6 +17611,535 @@
         "2"
       ]
     },
+    "531df9c5bd5343e0c3d9383a25301572699a8ad0ccfc55984b379f400a7a052e": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.nvwallet.wallet",
+        "browser": "https://www.nvxowallet.com",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:10",
+        "eip155:100",
+        "eip155:10000",
+        "eip155:100000",
+        "eip155:1000000003",
+        "eip155:100001",
+        "eip155:100002",
+        "eip155:100003",
+        "eip155:100004",
+        "eip155:100005",
+        "eip155:100006",
+        "eip155:100007",
+        "eip155:100008",
+        "eip155:10001",
+        "eip155:10003",
+        "eip155:1001",
+        "eip155:100501",
+        "eip155:1007",
+        "eip155:10081",
+        "eip155:101",
+        "eip155:1010",
+        "eip155:10101",
+        "eip155:1012",
+        "eip155:10143",
+        "eip155:102",
+        "eip155:1022",
+        "eip155:1023",
+        "eip155:1024",
+        "eip155:10243",
+        "eip155:1026062157",
+        "eip155:1028",
+        "eip155:1030",
+        "eip155:10507",
+        "eip155:10508",
+        "eip155:105105",
+        "eip155:106",
+        "eip155:1073",
+        "eip155:1075",
+        "eip155:108",
+        "eip155:10849",
+        "eip155:10850",
+        "eip155:109",
+        "eip155:11",
+        "eip155:110",
+        "eip155:110000",
+        "eip155:110001",
+        "eip155:110002",
+        "eip155:110003",
+        "eip155:110004",
+        "eip155:110005",
+        "eip155:110006",
+        "eip155:110007",
+        "eip155:110008",
+        "eip155:1101",
+        "eip155:111",
+        "eip155:1111",
+        "eip155:111188",
+        "eip155:11124",
+        "eip155:1115",
+        "eip155:11155111",
+        "eip155:1116",
+        "eip155:1122334455",
+        "eip155:11235",
+        "eip155:11297108099",
+        "eip155:11297108109",
+        "eip155:1139",
+        "eip155:114",
+        "eip155:1140",
+        "eip155:11501",
+        "eip155:11888",
+        "eip155:12",
+        "eip155:12051",
+        "eip155:1213",
+        "eip155:122",
+        "eip155:123420001114",
+        "eip155:123456",
+        "eip155:124",
+        "eip155:1261120",
+        "eip155:127",
+        "eip155:1273227453",
+        "eip155:128",
+        "eip155:1280",
+        "eip155:128123",
+        "eip155:1284",
+        "eip155:1285",
+        "eip155:1286",
+        "eip155:1287",
+        "eip155:1288",
+        "eip155:13",
+        "eip155:1301",
+        "eip155:1313114",
+        "eip155:1313161554",
+        "eip155:1313161555",
+        "eip155:1313161556",
+        "eip155:1313500",
+        "eip155:1329",
+        "eip155:133",
+        "eip155:13371",
+        "eip155:13371337",
+        "eip155:13381",
+        "eip155:13473",
+        "eip155:1350216234",
+        "eip155:1351057110",
+        "eip155:137",
+        "eip155:1380012617",
+        "eip155:13812",
+        "eip155:14",
+        "eip155:142",
+        "eip155:1442",
+        "eip155:148",
+        "eip155:1482601649",
+        "eip155:15",
+        "eip155:15000",
+        "eip155:1517929550",
+        "eip155:15557",
+        "eip155:1564830818",
+        "eip155:16",
+        "eip155:16000",
+        "eip155:16001",
+        "eip155:1618",
+        "eip155:162",
+        "eip155:1620",
+        "eip155:163",
+        "eip155:1657",
+        "eip155:1666600000",
+        "eip155:1666600001",
+        "eip155:1666600002",
+        "eip155:1666600003",
+        "eip155:1666700000",
+        "eip155:1666700001",
+        "eip155:1666700002",
+        "eip155:1666700003",
+        "eip155:167000",
+        "eip155:167009",
+        "eip155:17",
+        "eip155:170",
+        "eip155:17000",
+        "eip155:172",
+        "eip155:1722641160",
+        "eip155:177",
+        "eip155:17777",
+        "eip155:18",
+        "eip155:180",
+        "eip155:1802203764",
+        "eip155:18231",
+        "eip155:18233",
+        "eip155:18289463",
+        "eip155:1856",
+        "eip155:186",
+        "eip155:1868",
+        "eip155:1875",
+        "eip155:1890",
+        "eip155:1891",
+        "eip155:19",
+        "eip155:19011",
+        "eip155:1907",
+        "eip155:1908",
+        "eip155:1918988905",
+        "eip155:1923",
+        "eip155:1924",
+        "eip155:1946",
+        "eip155:1987",
+        "eip155:199",
+        "eip155:1993",
+        "eip155:1995",
+        "eip155:2",
+        "eip155:20",
+        "eip155:200",
+        "eip155:2000",
+        "eip155:20001",
+        "eip155:200625",
+        "eip155:200810",
+        "eip155:200901",
+        "eip155:200910",
+        "eip155:201030",
+        "eip155:2016",
+        "eip155:2017",
+        "eip155:20181205",
+        "eip155:2020",
+        "eip155:2021",
+        "eip155:2022",
+        "eip155:20231",
+        "eip155:2024",
+        "eip155:204",
+        "eip155:2046399126",
+        "eip155:205205",
+        "eip155:21",
+        "eip155:2100",
+        "eip155:2101",
+        "eip155:210309",
+        "eip155:2109095698",
+        "eip155:211",
+        "eip155:2195",
+        "eip155:22",
+        "eip155:222",
+        "eip155:23",
+        "eip155:233",
+        "eip155:2355",
+        "eip155:24484",
+        "eip155:245022926",
+        "eip155:245022934",
+        "eip155:245022940",
+        "eip155:246",
+        "eip155:246529",
+        "eip155:246785",
+        "eip155:247101234",
+        "eip155:247253",
+        "eip155:24734",
+        "eip155:248",
+        "eip155:25",
+        "eip155:250",
+        "eip155:2559",
+        "eip155:256",
+        "eip155:262",
+        "eip155:2625",
+        "eip155:269",
+        "eip155:27",
+        "eip155:2718",
+        "eip155:2730",
+        "eip155:274",
+        "eip155:2741",
+        "eip155:28",
+        "eip155:280",
+        "eip155:2810",
+        "eip155:288",
+        "eip155:2888",
+        "eip155:28945486",
+        "eip155:295",
+        "eip155:29548",
+        "eip155:296",
+        "eip155:297",
+        "eip155:3",
+        "eip155:30",
+        "eip155:303",
+        "eip155:31",
+        "eip155:31102",
+        "eip155:311752642",
+        "eip155:3125659152",
+        "eip155:313",
+        "eip155:31337",
+        "eip155:32",
+        "eip155:321",
+        "eip155:322",
+        "eip155:324",
+        "eip155:325000",
+        "eip155:32659",
+        "eip155:3269",
+        "eip155:3270",
+        "eip155:32769",
+        "eip155:33",
+        "eip155:33101",
+        "eip155:33385",
+        "eip155:333888",
+        "eip155:333999",
+        "eip155:336",
+        "eip155:338",
+        "eip155:34",
+        "eip155:344106930",
+        "eip155:34443",
+        "eip155:35",
+        "eip155:35855456",
+        "eip155:36",
+        "eip155:361",
+        "eip155:363",
+        "eip155:3636",
+        "eip155:364",
+        "eip155:365",
+        "eip155:369",
+        "eip155:3776",
+        "eip155:38",
+        "eip155:385",
+        "eip155:39797",
+        "eip155:39815",
+        "eip155:4",
+        "eip155:40",
+        "eip155:4002",
+        "eip155:4061",
+        "eip155:40875",
+        "eip155:41",
+        "eip155:418",
+        "eip155:42",
+        "eip155:420",
+        "eip155:4201",
+        "eip155:420420420420",
+        "eip155:42069",
+        "eip155:42161",
+        "eip155:421611",
+        "eip155:421613",
+        "eip155:4216137055",
+        "eip155:421614",
+        "eip155:42170",
+        "eip155:42220",
+        "eip155:42420",
+        "eip155:42421",
+        "eip155:42793",
+        "eip155:43",
+        "eip155:43110",
+        "eip155:43113",
+        "eip155:43114",
+        "eip155:432201",
+        "eip155:432204",
+        "eip155:44",
+        "eip155:440017",
+        "eip155:44787",
+        "eip155:45510",
+        "eip155:462",
+        "eip155:463",
+        "eip155:4689",
+        "eip155:4690",
+        "eip155:47279324479",
+        "eip155:4759",
+        "eip155:476158412",
+        "eip155:4777",
+        "eip155:48991",
+        "eip155:49797",
+        "eip155:499",
+        "eip155:4999",
+        "eip155:5",
+        "eip155:50",
+        "eip155:5000",
+        "eip155:5001",
+        "eip155:5031",
+        "eip155:50312",
+        "eip155:503129905",
+        "eip155:51",
+        "eip155:5197",
+        "eip155:52",
+        "eip155:53",
+        "eip155:534351",
+        "eip155:534352",
+        "eip155:534353",
+        "eip155:54170",
+        "eip155:54176",
+        "eip155:541764",
+        "eip155:54211",
+        "eip155:543210",
+        "eip155:55",
+        "eip155:5522",
+        "eip155:558",
+        "eip155:56",
+        "eip155:560048",
+        "eip155:5611",
+        "eip155:56288",
+        "eip155:56789",
+        "eip155:57",
+        "eip155:570",
+        "eip155:5700",
+        "eip155:57000",
+        "eip155:57073",
+        "eip155:58",
+        "eip155:5851",
+        "eip155:5869",
+        "eip155:59",
+        "eip155:59140",
+        "eip155:59144",
+        "eip155:595",
+        "eip155:6",
+        "eip155:60",
+        "eip155:6000",
+        "eip155:60000",
+        "eip155:60001",
+        "eip155:60002",
+        "eip155:6001",
+        "eip155:60103",
+        "eip155:6038361",
+        "eip155:61",
+        "eip155:61717561",
+        "eip155:62",
+        "eip155:62320",
+        "eip155:63",
+        "eip155:64",
+        "eip155:648",
+        "eip155:65",
+        "eip155:66",
+        "eip155:67",
+        "eip155:68",
+        "eip155:686",
+        "eip155:68770",
+        "eip155:68775",
+        "eip155:69",
+        "eip155:7",
+        "eip155:70000",
+        "eip155:70001",
+        "eip155:70002",
+        "eip155:7001",
+        "eip155:70103",
+        "eip155:7027",
+        "eip155:71",
+        "eip155:71393",
+        "eip155:721",
+        "eip155:7225878",
+        "eip155:7233",
+        "eip155:7234",
+        "eip155:73799",
+        "eip155:73927",
+        "eip155:7518",
+        "eip155:7575",
+        "eip155:7576",
+        "eip155:76",
+        "eip155:763373",
+        "eip155:764984",
+        "eip155:767368",
+        "eip155:77",
+        "eip155:7762959",
+        "eip155:777",
+        "eip155:7777777",
+        "eip155:78",
+        "eip155:78110",
+        "eip155:78281",
+        "eip155:787",
+        "eip155:8",
+        "eip155:80",
+        "eip155:80001",
+        "eip155:80002",
+        "eip155:80084",
+        "eip155:80085",
+        "eip155:80094",
+        "eip155:8029",
+        "eip155:803",
+        "eip155:8080",
+        "eip155:8081",
+        "eip155:8082",
+        "eip155:81",
+        "eip155:812397",
+        "eip155:8194",
+        "eip155:82",
+        "eip155:820",
+        "eip155:821",
+        "eip155:8217",
+        "eip155:8285",
+        "eip155:83",
+        "eip155:8333",
+        "eip155:8453",
+        "eip155:84531",
+        "eip155:84532",
+        "eip155:85",
+        "eip155:86",
+        "eip155:8678671",
+        "eip155:8723",
+        "eip155:8724",
+        "eip155:88",
+        "eip155:880",
+        "eip155:8822",
+        "eip155:8866",
+        "eip155:888",
+        "eip155:88811",
+        "eip155:88817",
+        "eip155:88819",
+        "eip155:8888",
+        "eip155:88882",
+        "eip155:88888",
+        "eip155:8995",
+        "eip155:9",
+        "eip155:9000",
+        "eip155:9001",
+        "eip155:90483539238",
+        "eip155:919",
+        "eip155:9372",
+        "eip155:940",
+        "eip155:95",
+        "eip155:955305",
+        "eip155:96970",
+        "eip155:97",
+        "eip155:9728",
+        "eip155:9731",
+        "eip155:9732",
+        "eip155:977",
+        "eip155:99",
+        "eip155:99415706",
+        "eip155:998",
+        "eip155:998899",
+        "eip155:999"
+      ],
+      "description": "NVXO Wallet empowers you to explore Web3 with a secure multi-chain self-custody wallet and built-in browser, trusted by millions worldwide.",
+      "desktop": {
+        "native": "",
+        "universal": "https://www.nvxowallet.com"
+      },
+      "homepage": "https://www.nvxowallet.com",
+      "id": "531df9c5bd5343e0c3d9383a25301572699a8ad0ccfc55984b379f400a7a052e",
+      "image_id": "c5fa455c-3836-49c4-cb66-262a163d1b00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/c5fa455c-3836-49c4-cb66-262a163d1b00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/c5fa455c-3836-49c4-cb66-262a163d1b00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/c5fa455c-3836-49c4-cb66-262a163d1b00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "nvxowallet://wc",
+        "universal": "https://www.nvxowallet.com/wc"
+      },
+      "name": "NVXO Wallet",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "nvxo-wallet",
+      "updatedAt": "2025-12-09T12:39:05.777785+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "53332571a2e1b748add766da51b90dc9d1e9d65d2c301969add5ba3939339513": {
       "app": {
         "android": null,
@@ -17722,9 +18906,12 @@
       "category": "Mobile Wallets",
       "chains": [
         "eip155:1",
+        "eip155:10",
         "eip155:137",
         "eip155:2020",
-        "eip155:56"
+        "eip155:42161",
+        "eip155:56",
+        "eip155:8453"
       ],
       "description": "Ronin Wallet is the mobile wallet that allows you to use all decentralized applications running on Ronin.",
       "desktop": {
@@ -17824,6 +19011,69 @@
       ],
       "slug": "okto",
       "updatedAt": "2023-07-05T12:10:18.632894+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
+    "55f4872b498731cab13f104e8aa0ff987060b1eb7859521afd6627ae87b88491": {
+      "app": {
+        "android": "",
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "https://getcosine.app",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:10",
+        "eip155:137",
+        "eip155:42161",
+        "eip155:43114",
+        "eip155:56",
+        "eip155:8453"
+      ],
+      "description": "Secure your assets with a self-custody wallet. Send, receive, trade, swap, and spend crypto globally.",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://getcosine.app",
+      "id": "55f4872b498731cab13f104e8aa0ff987060b1eb7859521afd6627ae87b88491",
+      "image_id": "886bafb4-351d-40ac-3369-cb51af261900",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/886bafb4-351d-40ac-3369-cb51af261900?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/886bafb4-351d-40ac-3369-cb51af261900?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/886bafb4-351d-40ac-3369-cb51af261900?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "cosine://",
+        "universal": ""
+      },
+      "name": "Cosine Wallet",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "cosine-wallet",
+      "updatedAt": "2026-01-26T07:18:50.359377+00:00",
       "versions": [
         "1",
         "2"
@@ -18453,6 +19703,65 @@
       ],
       "slug": "fireblocks",
       "updatedAt": "2022-01-31T07:16:55.630149+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
+    "594898896007b2e49d4064043871093620867d18cae558ce9782ad1303f371e6": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.cypherchat",
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:56",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "description": "Cryptic is an encrypted messaging and non-custodial crypto wallet application. Send cryptocurrency transactions on the Solana Blockchain, communicate in encrypted chat channels. The application supports direct end to end encrypted messaging, and transactions over the Solana blockchain.",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://play.google.com/store/apps/details?id=com.cypherchat",
+      "id": "594898896007b2e49d4064043871093620867d18cae558ce9782ad1303f371e6",
+      "image_id": "c9645dab-fe5d-4a48-0359-79ebc4229000",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/c9645dab-fe5d-4a48-0359-79ebc4229000?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/c9645dab-fe5d-4a48-0359-79ebc4229000?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/c9645dab-fe5d-4a48-0359-79ebc4229000?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "cypherchat://wc",
+        "universal": ""
+      },
+      "name": "Cryptic",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "cryptic",
+      "updatedAt": "2026-01-29T00:21:52.179871+00:00",
       "versions": [
         "1",
         "2"
@@ -20430,34 +21739,36 @@
     "6880782cf8ff712bf8772b585960346290fd2499c1f1c51df9fe713d9d2e9384": {
       "app": {
         "android": "https://appdistribution.firebase.dev/i/e7711e780547234e",
-        "browser": null,
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
         "ios": "https://testflight.apple.com/join/kdlGVGLo",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": null,
       "chains": [
-        "eip155:1"
+        "eip155:1",
+        "ton:-239",
+        "ton:-3"
       ],
-      "description": "Sample wallet made with React Native & JS WalletKit",
+      "description": "Sample wallet made with React Native & JS WalletKit\n",
       "desktop": {
         "native": "",
-        "universal": null
+        "universal": ""
       },
       "homepage": "https://reown.com/walletkit",
       "id": "6880782cf8ff712bf8772b585960346290fd2499c1f1c51df9fe713d9d2e9384",
-      "image_id": "78bbcc97-c450-4685-5faa-276ef8fc5f00",
+      "image_id": "51331664-fae8-45d5-77d6-b550028b0200",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/78bbcc97-c450-4685-5faa-276ef8fc5f00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/78bbcc97-c450-4685-5faa-276ef8fc5f00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/78bbcc97-c450-4685-5faa-276ef8fc5f00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/51331664-fae8-45d5-77d6-b550028b0200?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/51331664-fae8-45d5-77d6-b550028b0200?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/51331664-fae8-45d5-77d6-b550028b0200?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
       "injected": null,
       "metadata": {
@@ -20472,7 +21783,7 @@
         "universal": "https://appkit-lab.reown.com/rn_walletkit_internal"
       },
       "name": "React Native Sample Wallet",
-      "rdns": null,
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2"
@@ -20688,16 +21999,16 @@
     },
     "6b0182d679b72eb2733dec38d9dee70551cc16a6ce5e7a7f4155ffb6f493c521": {
       "app": {
-        "android": null,
-        "browser": null,
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
-        "ios": null,
+        "android": "https://play.google.com/store/apps/details?id=io.trezor.suite",
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "https://apps.apple.com/us/app/trezor-suite/id1631884497",
         "linux": "https://trezor.io/trezor-suite",
         "mac": "https://trezor.io/trezor-suite",
-        "opera": null,
-        "safari": null,
+        "opera": "",
+        "safari": "",
         "windows": "https://trezor.io/trezor-suite"
       },
       "app_type": "wallet",
@@ -20705,10 +22016,12 @@
       "chains": [
         "bip122:000000000019d6689c085ae165831e93",
         "bip122:000000000933ea01ad0ee984209779ba",
+        "bip122:12a765e31ffd4059bada1e25190f6e98",
         "eip155:1",
         "eip155:10",
         "eip155:137",
         "eip155:42161",
+        "eip155:43114",
         "eip155:56",
         "eip155:8453",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
@@ -20717,7 +22030,7 @@
       "description": "Trezor Suite is the companion app for the Trezor hardware wallet",
       "desktop": {
         "native": "trezorsuite://walletconnect",
-        "universal": null
+        "universal": ""
       },
       "homepage": "https://trezor.io/trezor-suite",
       "id": "6b0182d679b72eb2733dec38d9dee70551cc16a6ce5e7a7f4155ffb6f493c521",
@@ -20737,16 +22050,76 @@
       },
       "mobile": {
         "native": "",
-        "universal": null
+        "universal": "https://connect.trezor.io/9/deeplink/wc"
       },
       "name": "Trezor Suite",
-      "rdns": null,
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2"
       ],
       "slug": "trezor-suite",
       "updatedAt": "2025-08-22T10:57:08.90993+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
+    "6b16d70ace02b208c67e06ad00ed8110f46e91cc075e0fd98c68b825587d4076": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.aktionariat.app",
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "https://apps.apple.com/ch/app/aktionariat/id1518326813",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": "Mobile Wallets",
+      "chains": [
+        "eip155:1",
+        "eip155:10",
+        "eip155:137"
+      ],
+      "description": "Portfolio and mobile wallet app for the Aktionariat tokenized equity platform.",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://aktionariat.com",
+      "id": "6b16d70ace02b208c67e06ad00ed8110f46e91cc075e0fd98c68b825587d4076",
+      "image_id": "cbb984c3-9238-4660-bc9e-bf55355b8e00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/cbb984c3-9238-4660-bc9e-bf55355b8e00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/cbb984c3-9238-4660-bc9e-bf55355b8e00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/cbb984c3-9238-4660-bc9e-bf55355b8e00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": "Aktionariat"
+      },
+      "mobile": {
+        "native": "aktionariat://",
+        "universal": "https://app.aktionariat.com"
+      },
+      "name": "Aktionariat Wallet",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2",
+        "auth_v1"
+      ],
+      "slug": "aktionariat-wallet",
+      "updatedAt": "2026-01-27T10:03:11.86474+00:00",
       "versions": [
         "1",
         "2"
@@ -21024,9 +22397,15 @@
         "cosmos:thorchain-stagenet-v1",
         "cosmos:xstaxy-1",
         "eip155:1",
+        "eip155:1287",
+        "eip155:137",
         "eip155:16",
         "eip155:2000",
+        "eip155:42161",
         "eip155:56288",
+        "eip155:61",
+        "eip155:66",
+        "eip155:8453",
         "polkadot:6fbd74e5e1d0a61d52ccfe9d4adaed16",
         "polkadot:91b171bb158e2d3848fa23a9f1c25182",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
@@ -22740,16 +24119,16 @@
     "7819f9cd07e8d7101a483087869f1e57b7d448f3ec5f4ef3eda63c19b926dc17": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.xellar.wallets",
-        "browser": null,
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
+        "browser": "https://passport.xellar.co",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
         "ios": "https://apps.apple.com/us/app/xellar-crypto-wallet/id1671215861",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": "Mobile Wallets",
@@ -22761,12 +24140,13 @@
         "eip155:42161",
         "eip155:43114",
         "eip155:56",
-        "eip155:8453"
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
       ],
       "description": "The worlds most lightweight & secure hard wallet combined with the decentralized banks within one platform",
       "desktop": {
         "native": "",
-        "universal": null
+        "universal": "https://passport.xellar.co"
       },
       "homepage": "https://xellar.co",
       "id": "7819f9cd07e8d7101a483087869f1e57b7d448f3ec5f4ef3eda63c19b926dc17",
@@ -22786,10 +24166,10 @@
       },
       "mobile": {
         "native": "xellar://",
-        "universal": null
+        "universal": ""
       },
       "name": "Xellar",
-      "rdns": null,
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2"
@@ -22804,16 +24184,16 @@
     "78a926e8758e4464162818353637b11fead41489598dd7f47e4b247eaf8008c3": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.diamante.diamwallet&hl=en_IN",
-        "browser": null,
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
         "ios": "https://apps.apple.com/in/app/diam-wallet/id6450691849",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": null,
@@ -22849,7 +24229,7 @@
         "universal": "https://dwconnect.diamante.io/wc"
       },
       "name": "DIAM Wallet",
-      "rdns": null,
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2"
@@ -23344,12 +24724,12 @@
     },
     "7dcb0e5eb1b4fc6e2e0b143201c489ea6c618259f49527527d4a349d1a95ba7b": {
       "app": {
-        "android": "https://play.google.com/store/apps/details?id=software.concordium.mobilewallet.seedphrase.mainnet&pli=1",
-        "browser": "https://concordium.com/",
-        "chrome": "https://chrome.google.com/webstore/detail/concordium-wallet/mnnkpffndmickbiakofclnpoiajlegmg?hl=en-US",
+        "android": "https://play.google.com/store/apps/details?id=com.pioneeringtechventures.wallet&hl=en&pli=1",
+        "browser": "",
+        "chrome": "https://chromewebstore.google.com/detail/concordium-wallet/mnnkpffndmickbiakofclnpoiajlegmg",
         "edge": null,
         "firefox": null,
-        "ios": "https://apps.apple.com/us/app/concordium-blockchain-wallet/id6444703764",
+        "ios": "https://apps.apple.com/us/app/concordium-wallet/id1593386457",
         "linux": null,
         "mac": "",
         "opera": null,
@@ -23365,7 +24745,7 @@
       "description": "The only Layer-1 with the protocol level ID, science-backed blockchain for building a safer digital world.",
       "desktop": {
         "native": "",
-        "universal": "https://concordium.com/"
+        "universal": ""
       },
       "homepage": "https://concordium.com/",
       "id": "7dcb0e5eb1b4fc6e2e0b143201c489ea6c618259f49527527d4a349d1a95ba7b",
@@ -23393,7 +24773,7 @@
         "universal": "https://wallet.concordium.software"
       },
       "name": "Concordium",
-      "rdns": null,
+      "rdns": "com.concordium.wallet",
       "sdks": [
         "sign_v1",
         "sign_v2"
@@ -23660,7 +25040,7 @@
         "shortName": null
       },
       "mobile": {
-        "native": "‭qiemobilewalletconnect://",
+        "native": "qiemobilewalletconnect://",
         "universal": "https://www.qiewallet.me/"
       },
       "name": "QIE Wallet",
@@ -23794,19 +25174,652 @@
         "2"
       ]
     },
+    "7ef48bf6722bd9694ab35f1fa9f8239ef1d44dc721c6950b9afe2468a77aad5a": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.kotaiwallet.app.android",
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "aleo:3",
+        "alephium:-1_mainnet",
+        "alephium:-1_testnet",
+        "alephium:0_mainnet",
+        "alephium:0_testnet",
+        "alephium:1_mainnet",
+        "alephium:1_testnet",
+        "alephium:2_mainnet",
+        "alephium:2_testnet",
+        "alephium:3_mainnet",
+        "alephium:3_testnet",
+        "algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDe",
+        "algorand:mFgazF-2uRS1tMiL9dsj01hJGySEmPN2",
+        "algorand:wGHE2Pwdvd7S12BL5FaOP20EGYesN73k",
+        "antelope:1064487b3cd1a897ce03ae5b6a865651",
+        "antelope:f16b1833c747c43682f4386fca9cbb32",
+        "bip122:000000000019d6689c085ae165831e93",
+        "bip122:000000000933ea01ad0ee984209779ba",
+        "bip122:12a765e31ffd4059bada1e25190f6e98",
+        "bip122:Bitcoin Cash Chipnet",
+        "bip122:Bitcoin Cash Mainnet",
+        "casper:casper",
+        "casper:casper-test",
+        "ccd:4221332d34e1694168c2a0c0b3fd0f27",
+        "ccd:9dd9ca4d19e9393877d2c44b70f89acb",
+        "cip-34:0-1",
+        "cip-34:0-2",
+        "cip-34:1-764824073",
+        "conflux:cfx",
+        "conflux:cfxtest",
+        "cosmos:aura-testnet-2",
+        "cosmos:band-v3-testnet-1",
+        "cosmos:columbus-4",
+        "cosmos:cosmoshub-4",
+        "cosmos:euphoria-2",
+        "cosmos:harpoon-4",
+        "cosmos:irishub-1",
+        "cosmos:kaiyo-1",
+        "cosmos:kava-4",
+        "cosmos:laozi-mainnet",
+        "cosmos:likecoin-mainnet-2",
+        "cosmos:likecoin-public-testnet-5",
+        "cosmos:mayachain-mainnet-v1",
+        "cosmos:mayachain-stagenet-v1",
+        "cosmos:pio-mainnet-1",
+        "cosmos:pio-testnet-1",
+        "cosmos:serenity-testnet-001",
+        "cosmos:thorchain-mainnet-v1",
+        "cosmos:thorchain-stagenet-v1",
+        "cosmos:xstaxy-1",
+        "eip155:1",
+        "eip155:10",
+        "eip155:100",
+        "eip155:10000",
+        "eip155:100000",
+        "eip155:1000000003",
+        "eip155:100001",
+        "eip155:100002",
+        "eip155:100003",
+        "eip155:100004",
+        "eip155:100005",
+        "eip155:100006",
+        "eip155:100007",
+        "eip155:100008",
+        "eip155:10001",
+        "eip155:10003",
+        "eip155:1001",
+        "eip155:100501",
+        "eip155:1007",
+        "eip155:10081",
+        "eip155:101",
+        "eip155:1010",
+        "eip155:10101",
+        "eip155:1012",
+        "eip155:10143",
+        "eip155:102",
+        "eip155:1022",
+        "eip155:1023",
+        "eip155:1024",
+        "eip155:10243",
+        "eip155:1026062157",
+        "eip155:1028",
+        "eip155:1030",
+        "eip155:10507",
+        "eip155:10508",
+        "eip155:105105",
+        "eip155:106",
+        "eip155:1073",
+        "eip155:1075",
+        "eip155:108",
+        "eip155:10849",
+        "eip155:10850",
+        "eip155:109",
+        "eip155:11",
+        "eip155:110",
+        "eip155:110000",
+        "eip155:110001",
+        "eip155:110002",
+        "eip155:110003",
+        "eip155:110004",
+        "eip155:110005",
+        "eip155:110006",
+        "eip155:110007",
+        "eip155:110008",
+        "eip155:1101",
+        "eip155:111",
+        "eip155:1111",
+        "eip155:111188",
+        "eip155:11124",
+        "eip155:1115",
+        "eip155:11155111",
+        "eip155:1116",
+        "eip155:1122334455",
+        "eip155:11235",
+        "eip155:11297108099",
+        "eip155:11297108109",
+        "eip155:1139",
+        "eip155:114",
+        "eip155:1140",
+        "eip155:11501",
+        "eip155:11888",
+        "eip155:12",
+        "eip155:12051",
+        "eip155:1213",
+        "eip155:122",
+        "eip155:123420001114",
+        "eip155:123456",
+        "eip155:124",
+        "eip155:1261120",
+        "eip155:127",
+        "eip155:1273227453",
+        "eip155:128",
+        "eip155:1280",
+        "eip155:128123",
+        "eip155:1284",
+        "eip155:1285",
+        "eip155:1286",
+        "eip155:1287",
+        "eip155:1288",
+        "eip155:13",
+        "eip155:1301",
+        "eip155:1313114",
+        "eip155:1313161554",
+        "eip155:1313161555",
+        "eip155:1313161556",
+        "eip155:1313500",
+        "eip155:1329",
+        "eip155:133",
+        "eip155:13371",
+        "eip155:13371337",
+        "eip155:13381",
+        "eip155:13473",
+        "eip155:1350216234",
+        "eip155:1351057110",
+        "eip155:137",
+        "eip155:1380012617",
+        "eip155:13812",
+        "eip155:14",
+        "eip155:142",
+        "eip155:143",
+        "eip155:1442",
+        "eip155:148",
+        "eip155:1482601649",
+        "eip155:15",
+        "eip155:15000",
+        "eip155:1517929550",
+        "eip155:15557",
+        "eip155:1564830818",
+        "eip155:16",
+        "eip155:16000",
+        "eip155:16001",
+        "eip155:1618",
+        "eip155:162",
+        "eip155:1620",
+        "eip155:163",
+        "eip155:1657",
+        "eip155:1666600000",
+        "eip155:1666600001",
+        "eip155:1666600002",
+        "eip155:1666600003",
+        "eip155:1666700000",
+        "eip155:1666700001",
+        "eip155:1666700002",
+        "eip155:1666700003",
+        "eip155:167000",
+        "eip155:167009",
+        "eip155:17",
+        "eip155:170",
+        "eip155:17000",
+        "eip155:172",
+        "eip155:1722641160",
+        "eip155:177",
+        "eip155:17777",
+        "eip155:18",
+        "eip155:180",
+        "eip155:1802203764",
+        "eip155:18231",
+        "eip155:18233",
+        "eip155:18289463",
+        "eip155:1856",
+        "eip155:186",
+        "eip155:1868",
+        "eip155:1875",
+        "eip155:1890",
+        "eip155:1891",
+        "eip155:19",
+        "eip155:19011",
+        "eip155:1907",
+        "eip155:1908",
+        "eip155:1918988905",
+        "eip155:1923",
+        "eip155:1924",
+        "eip155:1946",
+        "eip155:1987",
+        "eip155:199",
+        "eip155:1993",
+        "eip155:1995",
+        "eip155:2",
+        "eip155:20",
+        "eip155:200",
+        "eip155:2000",
+        "eip155:20001",
+        "eip155:200625",
+        "eip155:200810",
+        "eip155:200901",
+        "eip155:200910",
+        "eip155:201030",
+        "eip155:2016",
+        "eip155:2017",
+        "eip155:20181205",
+        "eip155:2020",
+        "eip155:2021",
+        "eip155:2022",
+        "eip155:20231",
+        "eip155:2024",
+        "eip155:204",
+        "eip155:2046399126",
+        "eip155:205205",
+        "eip155:21",
+        "eip155:2100",
+        "eip155:2101",
+        "eip155:210309",
+        "eip155:2109095698",
+        "eip155:211",
+        "eip155:2195",
+        "eip155:22",
+        "eip155:222",
+        "eip155:23",
+        "eip155:233",
+        "eip155:2355",
+        "eip155:24484",
+        "eip155:245022926",
+        "eip155:245022934",
+        "eip155:245022940",
+        "eip155:246",
+        "eip155:246529",
+        "eip155:246785",
+        "eip155:247101234",
+        "eip155:247253",
+        "eip155:24734",
+        "eip155:248",
+        "eip155:25",
+        "eip155:250",
+        "eip155:2559",
+        "eip155:256",
+        "eip155:262",
+        "eip155:2625",
+        "eip155:269",
+        "eip155:27",
+        "eip155:2718",
+        "eip155:2730",
+        "eip155:274",
+        "eip155:2741",
+        "eip155:28",
+        "eip155:280",
+        "eip155:2810",
+        "eip155:288",
+        "eip155:2888",
+        "eip155:28945486",
+        "eip155:295",
+        "eip155:29548",
+        "eip155:296",
+        "eip155:297",
+        "eip155:3",
+        "eip155:30",
+        "eip155:303",
+        "eip155:31",
+        "eip155:31102",
+        "eip155:311752642",
+        "eip155:3125659152",
+        "eip155:313",
+        "eip155:31337",
+        "eip155:32",
+        "eip155:321",
+        "eip155:322",
+        "eip155:324",
+        "eip155:325000",
+        "eip155:32659",
+        "eip155:3269",
+        "eip155:3270",
+        "eip155:32769",
+        "eip155:33",
+        "eip155:33101",
+        "eip155:33385",
+        "eip155:333888",
+        "eip155:333999",
+        "eip155:336",
+        "eip155:338",
+        "eip155:34",
+        "eip155:344106930",
+        "eip155:34443",
+        "eip155:35",
+        "eip155:35855456",
+        "eip155:36",
+        "eip155:361",
+        "eip155:363",
+        "eip155:3636",
+        "eip155:364",
+        "eip155:365",
+        "eip155:369",
+        "eip155:3776",
+        "eip155:38",
+        "eip155:385",
+        "eip155:39797",
+        "eip155:39815",
+        "eip155:4",
+        "eip155:40",
+        "eip155:4002",
+        "eip155:4061",
+        "eip155:40875",
+        "eip155:41",
+        "eip155:418",
+        "eip155:42",
+        "eip155:420",
+        "eip155:4201",
+        "eip155:420420420420",
+        "eip155:42069",
+        "eip155:42161",
+        "eip155:421611",
+        "eip155:421613",
+        "eip155:4216137055",
+        "eip155:421614",
+        "eip155:42170",
+        "eip155:42220",
+        "eip155:42420",
+        "eip155:42421",
+        "eip155:42793",
+        "eip155:43",
+        "eip155:43110",
+        "eip155:43113",
+        "eip155:43114",
+        "eip155:432201",
+        "eip155:432204",
+        "eip155:44",
+        "eip155:440017",
+        "eip155:44787",
+        "eip155:45510",
+        "eip155:462",
+        "eip155:463",
+        "eip155:4689",
+        "eip155:4690",
+        "eip155:47279324479",
+        "eip155:4759",
+        "eip155:476158412",
+        "eip155:4777",
+        "eip155:48991",
+        "eip155:49797",
+        "eip155:499",
+        "eip155:4999",
+        "eip155:5",
+        "eip155:50",
+        "eip155:5000",
+        "eip155:5001",
+        "eip155:5031",
+        "eip155:50312",
+        "eip155:503129905",
+        "eip155:51",
+        "eip155:5197",
+        "eip155:52",
+        "eip155:53",
+        "eip155:534351",
+        "eip155:534352",
+        "eip155:534353",
+        "eip155:54170",
+        "eip155:54176",
+        "eip155:541764",
+        "eip155:54211",
+        "eip155:543210",
+        "eip155:55",
+        "eip155:5522",
+        "eip155:558",
+        "eip155:56",
+        "eip155:560048",
+        "eip155:5611",
+        "eip155:56288",
+        "eip155:56789",
+        "eip155:57",
+        "eip155:570",
+        "eip155:5700",
+        "eip155:57000",
+        "eip155:57073",
+        "eip155:58",
+        "eip155:5851",
+        "eip155:5869",
+        "eip155:59",
+        "eip155:59140",
+        "eip155:59144",
+        "eip155:595",
+        "eip155:6",
+        "eip155:60",
+        "eip155:6000",
+        "eip155:60000",
+        "eip155:60001",
+        "eip155:60002",
+        "eip155:6001",
+        "eip155:60103",
+        "eip155:6038361",
+        "eip155:61",
+        "eip155:61717561",
+        "eip155:62",
+        "eip155:62320",
+        "eip155:63",
+        "eip155:64",
+        "eip155:648",
+        "eip155:65",
+        "eip155:66",
+        "eip155:67",
+        "eip155:68",
+        "eip155:686",
+        "eip155:68770",
+        "eip155:68775",
+        "eip155:69",
+        "eip155:7",
+        "eip155:70000",
+        "eip155:70001",
+        "eip155:70002",
+        "eip155:7001",
+        "eip155:70103",
+        "eip155:7027",
+        "eip155:71",
+        "eip155:71393",
+        "eip155:721",
+        "eip155:7225878",
+        "eip155:7233",
+        "eip155:7234",
+        "eip155:73799",
+        "eip155:73927",
+        "eip155:7518",
+        "eip155:7575",
+        "eip155:7576",
+        "eip155:76",
+        "eip155:763373",
+        "eip155:764984",
+        "eip155:767368",
+        "eip155:77",
+        "eip155:7762959",
+        "eip155:777",
+        "eip155:7777777",
+        "eip155:78",
+        "eip155:78110",
+        "eip155:78281",
+        "eip155:787",
+        "eip155:8",
+        "eip155:80",
+        "eip155:80001",
+        "eip155:80002",
+        "eip155:80084",
+        "eip155:80085",
+        "eip155:80094",
+        "eip155:8029",
+        "eip155:803",
+        "eip155:8080",
+        "eip155:8081",
+        "eip155:8082",
+        "eip155:81",
+        "eip155:812397",
+        "eip155:8194",
+        "eip155:82",
+        "eip155:820",
+        "eip155:821",
+        "eip155:8217",
+        "eip155:8285",
+        "eip155:83",
+        "eip155:8333",
+        "eip155:8453",
+        "eip155:84531",
+        "eip155:84532",
+        "eip155:85",
+        "eip155:86",
+        "eip155:8678671",
+        "eip155:8723",
+        "eip155:8724",
+        "eip155:88",
+        "eip155:880",
+        "eip155:8822",
+        "eip155:8866",
+        "eip155:888",
+        "eip155:88811",
+        "eip155:88817",
+        "eip155:88819",
+        "eip155:8888",
+        "eip155:88882",
+        "eip155:88888",
+        "eip155:8995",
+        "eip155:9",
+        "eip155:9000",
+        "eip155:9001",
+        "eip155:90483539238",
+        "eip155:919",
+        "eip155:9372",
+        "eip155:940",
+        "eip155:95",
+        "eip155:955305",
+        "eip155:96970",
+        "eip155:97",
+        "eip155:9728",
+        "eip155:9731",
+        "eip155:9732",
+        "eip155:977",
+        "eip155:99",
+        "eip155:99415706",
+        "eip155:998",
+        "eip155:998899",
+        "eip155:999",
+        "ergo:b0244dfc267baca974a4caee06120321",
+        "ergo:e7553c9a716bb3983ac8b0c21689a1f3",
+        "fil:314",
+        "fil:314159",
+        "fil:f",
+        "fil:t",
+        "flow:mainnet",
+        "flow:testnet",
+        "hedera:mainnet",
+        "hedera:previewnet",
+        "hedera:testnet",
+        "koinos:EiAAKqFi-puoXnuJTdn7qBGGJa8yd-dc",
+        "koinos:EiBZK_GGVP0H_fXVAM3j6EAuz3-B-l3e",
+        "mina:berkeley",
+        "mina:mainnet",
+        "mina:testnet",
+        "mvx:1",
+        "mvx:D",
+        "mvx:T",
+        "near:mainnet",
+        "near:testnet",
+        "neo3:mainnet",
+        "neo3:testnet",
+        "polkadot:1459b0204b92719ffc978c5da3d6a205eip155",
+        "polkadot:2ace05e703aa50b48c0ccccfc8b424f7",
+        "polkadot:6fbd74e5e1d0a61d52ccfe9d4adaed16",
+        "polkadot:91b171bb158e2d3848fa23a9f1c25182",
+        "polkadot:b0a8d493285c2df73290dfb7e61f870f",
+        "polkadot:testnet",
+        "qubic:mainnet",
+        "reef:7834781d38e4798d548e34ec947d19de",
+        "reef:b414a8602b2251fa538d38a932239150",
+        "solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+        "stacks:1",
+        "stacks:2147483648",
+        "stellar:pubnet",
+        "stellar:testnet",
+        "sui:devnet",
+        "sui:mainnet",
+        "sui:testnet",
+        "tezos:ghostnet",
+        "tezos:mainnet",
+        "tvm:42",
+        "vechain:87721b09ed2e15997f466536b20bb127",
+        "vechain:b1ac3413d346d43539627e6be7ec1b4a",
+        "waves:083",
+        "waves:084",
+        "waves:087",
+        "xrpl:0",
+        "xrpl:1",
+        "xrpl:2"
+      ],
+      "description": "KOTAI Wallet é uma carteira multichain com segurança avançada, criada para quem busca controlar e movimentar seus criptoativos com facilidade. Compatível com diversas redes, ela permite enviar, receber e acompanhar ativos de forma rápida, segura e intuitiva, tanto no app mobile quanto na versão web.\nIdeal para usuários que precisam de uma experiência confiável, moderna e totalmente não-custodial.",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "kotaiwallet://",
+      "id": "7ef48bf6722bd9694ab35f1fa9f8239ef1d44dc721c6950b9afe2468a77aad5a",
+      "image_id": "11d87117-f551-451c-42e7-7d0ccc2e8f00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/11d87117-f551-451c-42e7-7d0ccc2e8f00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/11d87117-f551-451c-42e7-7d0ccc2e8f00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/11d87117-f551-451c-42e7-7d0ccc2e8f00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "kotaiwallet://",
+        "universal": ""
+      },
+      "name": "Kotai Wallet",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "kotai-wallet",
+      "updatedAt": "2026-01-22T07:16:39.73883+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "7f3449afd0516845236c4f15f73cf3e106cb5706a349a8d6d7e1490b9c2cb0da": {
       "app": {
         "android": "https://github.com/reown-com/reown-kotlin",
-        "browser": null,
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
-        "ios": null,
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": null,
@@ -23820,15 +25833,15 @@
       "description": "Kotlin Sample Wallet",
       "desktop": {
         "native": "",
-        "universal": null
+        "universal": ""
       },
       "homepage": "https://docs.reown.com/walletkit/android/installation",
       "id": "7f3449afd0516845236c4f15f73cf3e106cb5706a349a8d6d7e1490b9c2cb0da",
-      "image_id": "2e3866ec-a700-48a2-2db8-7c6af6481900",
+      "image_id": "fba7b225-501d-43fe-ed40-60ce238c2b00",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/2e3866ec-a700-48a2-2db8-7c6af6481900?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/2e3866ec-a700-48a2-2db8-7c6af6481900?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/2e3866ec-a700-48a2-2db8-7c6af6481900?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/fba7b225-501d-43fe-ed40-60ce238c2b00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/fba7b225-501d-43fe-ed40-60ce238c2b00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/fba7b225-501d-43fe-ed40-60ce238c2b00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
       "injected": null,
       "metadata": {
@@ -23842,8 +25855,8 @@
         "native": "kotlin-web3wallet://",
         "universal": "https://appkit-lab.reown.com/wallet_internal"
       },
-      "name": "Kotlin Sample Internal Wallet",
-      "rdns": null,
+      "name": "Kotlin Sample Wallet",
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2"
@@ -27014,64 +29027,6 @@
         "2"
       ]
     },
-    "92ebfc08f0ac3bc8015a9bf843f9366750d5139b00a166086ad893aeb701acd4": {
-      "app": {
-        "android": null,
-        "browser": null,
-        "chrome": "https://cloud.walletconnect.com",
-        "edge": null,
-        "firefox": null,
-        "ios": null,
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
-      },
-      "app_type": "wallet",
-      "category": "Injected Wallets",
-      "chains": [
-        "eip155:1"
-      ],
-      "description": "WalletConnect",
-      "desktop": {
-        "native": "",
-        "universal": null
-      },
-      "homepage": "https://walletconnect.com",
-      "id": "92ebfc08f0ac3bc8015a9bf843f9366750d5139b00a166086ad893aeb701acd4",
-      "image_id": "171f0822-acf5-4eba-4392-a2d16db90400",
-      "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/171f0822-acf5-4eba-4392-a2d16db90400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/171f0822-acf5-4eba-4392-a2d16db90400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/171f0822-acf5-4eba-4392-a2d16db90400?projectId=34357d3c125c2bcf2ce2bc3309d98715"
-      },
-      "injected": null,
-      "metadata": {
-        "colors": {
-          "primary": null,
-          "secondary": null
-        },
-        "shortName": "WalletConnect"
-      },
-      "mobile": {
-        "native": "",
-        "universal": null
-      },
-      "name": "Sample",
-      "rdns": "com.walletconnect.com",
-      "sdks": [
-        "sign_v1",
-        "sign_v2",
-        "auth_v1"
-      ],
-      "slug": "walletconnect-1",
-      "updatedAt": "2024-08-02T12:55:41.980916+00:00",
-      "versions": [
-        "1",
-        "2"
-      ]
-    },
     "94135dbd7aaca4908de49c44e49b8920a79c90164a7ce5803ddb33054c7edc57": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=co.altme.alt.me.altme",
@@ -27382,16 +29337,16 @@
     "953f348baef1a985ba440822202fee7485e7ae0cae3b29a04f17a712c1a9490a": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=org.ai.interlinklabs.interlinkId",
-        "browser": null,
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
         "ios": "https://apps.apple.com/us/app/interlink-network/id6737988220",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": null,
@@ -27896,7 +29851,7 @@
         "universal": "https://interlinklabs.ai/deeplink/wallet"
       },
       "name": "ITLX Wallet",
-      "rdns": null,
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2"
@@ -28233,10 +30188,13 @@
         "bip122:000000000019d6689c085ae165831e93",
         "bip122:000000000933ea01ad0ee984209779ba",
         "eip155:1",
+        "eip155:10",
         "eip155:137",
+        "eip155:42161",
         "eip155:43114",
         "eip155:56",
         "eip155:66",
+        "eip155:8453",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
       ],
       "description": "One Web3 portal to rule them all",
@@ -29274,6 +31232,64 @@
         "2"
       ]
     },
+    "9f6fbf4b0a22ef57cf40acf45bc75b83b9b1bd802c8fe2fbc6a380259a05e8f7": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.memecore.wallet",
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "https://apps.apple.com/us/app/meco-wallet/id6749523218",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:4352",
+        "eip155:43521"
+      ],
+      "description": "MeCo wallet: Safe, Fast & Non-Custodial",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://mecowallet.com/",
+      "id": "9f6fbf4b0a22ef57cf40acf45bc75b83b9b1bd802c8fe2fbc6a380259a05e8f7",
+      "image_id": "e95f8d92-32ea-45ad-b163-489def2bd700",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/e95f8d92-32ea-45ad-b163-489def2bd700?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/e95f8d92-32ea-45ad-b163-489def2bd700?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/e95f8d92-32ea-45ad-b163-489def2bd700?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "mecowallet://",
+        "universal": ""
+      },
+      "name": "MeCo Wallet",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "meco",
+      "updatedAt": "2026-01-08T06:50:14.326539+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "a0718f5fb1493e4aaac72cff62d162cb85db40ed68fd8700298f36f1d5c4b73d": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=it.airgap.wallet",
@@ -29523,17 +31539,17 @@
     },
     "a1f3f8956346e2ba29e25bc5252c6dc0b2afa9ee17aa13ecd026abafedaf8696": {
       "app": {
-        "android": null,
+        "android": "",
         "browser": "https://wallet.hero.io/signin",
         "chrome": "https://chromewebstore.google.com/detail/hero-wallet-heroio/eadjllodfjkbljlihgiflhapafcigoee",
-        "edge": null,
-        "firefox": null,
-        "ios": null,
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "edge": "",
+        "firefox": "",
+        "ios": "",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": "Web App Wallets",
@@ -29542,6 +31558,7 @@
         "eip155:1",
         "eip155:10",
         "eip155:1101",
+        "eip155:1329",
         "eip155:137",
         "eip155:2020",
         "eip155:250",
@@ -32853,6 +34870,78 @@
         "2"
       ]
     },
+    "b2c15b288b3c376042be2ea22e2afbfcc3dff1d0644bedeeea3533c2ef170a8c": {
+      "app": {
+        "android": "",
+        "browser": "https://mwallet.yieldcraft.io",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:10",
+        "eip155:1101",
+        "eip155:122",
+        "eip155:137",
+        "eip155:14",
+        "eip155:143",
+        "eip155:25",
+        "eip155:288",
+        "eip155:324",
+        "eip155:42161",
+        "eip155:5000",
+        "eip155:56",
+        "eip155:59144",
+        "eip155:7777777",
+        "eip155:8453"
+      ],
+      "description": "m-Wallet is a non-custodial Web3 wallet designed for clarity, security, and reliable on-chain execution.\nIt enables users to manage assets, swap tokens, and buy crypto directly from their wallet across EVM networks.\n\nm-Wallet integrates WalletConnect to securely connect with external dApps, approve connections, and sign transactions — all while maintaining full control over funds.\nNo accounts, no custody: every interaction happens directly on-chain using the user’s wallet.\n\nBuilt as a lightweigh",
+      "desktop": {
+        "native": "",
+        "universal": "https://mwallet.yieldcraft.io"
+      },
+      "homepage": "https://mwallet.yieldcraft.io",
+      "id": "b2c15b288b3c376042be2ea22e2afbfcc3dff1d0644bedeeea3533c2ef170a8c",
+      "image_id": "1fdca399-c1f9-46e3-0a78-d8394d476f00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/1fdca399-c1f9-46e3-0a78-d8394d476f00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/1fdca399-c1f9-46e3-0a78-d8394d476f00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/1fdca399-c1f9-46e3-0a78-d8394d476f00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "",
+        "universal": ""
+      },
+      "name": "m-Wallet",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "m-wallet",
+      "updatedAt": "2026-01-08T06:06:30.286311+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "b2ce31fb31735fa886270806340de999f72342a7c29484badd8d4d013d77c8b8": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.wirex.wallet",
@@ -32910,6 +34999,66 @@
       ],
       "slug": "wirex-wallet",
       "updatedAt": "2022-11-14T20:32:09.180875+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
+    "b377ed60cd1f72a9c84ba0095cb28eea166389787c6763e590d4a1a651a315a7": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.react.wwallett&hl=en_GB",
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "https://apps.apple.com/us/app/react-crypto-wallet/id6743440808",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:137",
+        "eip155:56",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "description": "React Wallet is a mobile-first, multichain and self-custodial wallet built as a Web3 super-app—an everyday interface for crypto finance. It unifies DeFi wallet control (seed phrase/private key) with optional CeFi-style flows, offers in-app DeFi rails, advanced price alerts, and Tron gas optimization.",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://reactwallet.io/",
+      "id": "b377ed60cd1f72a9c84ba0095cb28eea166389787c6763e590d4a1a651a315a7",
+      "image_id": "ace31e26-236e-4287-16d3-59f28439e400",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/ace31e26-236e-4287-16d3-59f28439e400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/ace31e26-236e-4287-16d3-59f28439e400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/ace31e26-236e-4287-16d3-59f28439e400?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "",
+        "universal": "https://reactwalletback.com/app-link/"
+      },
+      "name": "React Wallet",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "react-wallet",
+      "updatedAt": "2026-01-07T07:37:31.70189+00:00",
       "versions": [
         "1",
         "2"
@@ -32981,30 +35130,33 @@
     },
     "b4678fefcc469583ed4ef58a5bd90ce86208b82803f3c45f2de3e0973d268835": {
       "app": {
-        "android": "https://play.google.com/store/apps/details?id=com.bitpay.wallet",
-        "browser": null,
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
-        "ios": "https://apps.apple.com/us/app/bitpay-bitcoin-wallet-card/id1149581638?platform=iphone",
-        "linux": null,
+        "android": "https://bitpay.onelink.me/Cenw/ejjaw7bs",
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "https://bitpay.onelink.me/Cenw/ejjaw7bs",
+        "linux": "",
         "mac": "https://apps.apple.com/us/app/bitpay-bitcoin-wallet-card/id1149581638?platform=ipad",
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": "Mobile Wallets",
       "chains": [
         "eip155:1",
+        "eip155:10",
         "eip155:137",
+        "eip155:42161",
         "eip155:5",
-        "eip155:80001"
+        "eip155:80001",
+        "eip155:8453"
       ],
       "description": "The only wallet app you need to buy, store, swap and spend your crypto.",
       "desktop": {
         "native": "",
-        "universal": null
+        "universal": ""
       },
       "homepage": "https://bitpay.com/wallet",
       "id": "b4678fefcc469583ed4ef58a5bd90ce86208b82803f3c45f2de3e0973d268835",
@@ -33027,7 +35179,7 @@
         "universal": "https://link.bitpay.com"
       },
       "name": "BitPay Wallet",
-      "rdns": null,
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2"
@@ -33212,6 +35364,68 @@
       ],
       "slug": "suku-wallet",
       "updatedAt": "2023-08-30T14:05:44.428809+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
+    "b56e7a5fe4500d5765726912b6863a92ffc6aee88a7d3a94905e93e1b3e01c2e": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.velas.frostfire",
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:106",
+        "eip155:137",
+        "eip155:43114",
+        "eip155:56",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "description": "FrostFire Wallet\n\nFrostFire is a secure, non-custodial multi-chain crypto wallet built for seamless interaction with decentralized applications via WalletConnect.\n\nThe wallet supports multiple blockchain ecosystems, including EVM-compatible networks, Solana, and Bitcoin, allowing users to manage assets, connect to dApps, and sign transactions across different chains from one interface.\n\nFrostFire also provides native staking support for Velas and Solana, enabling users to earn rewards.",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://frostfirewallet.com",
+      "id": "b56e7a5fe4500d5765726912b6863a92ffc6aee88a7d3a94905e93e1b3e01c2e",
+      "image_id": "3611cc5f-4da4-49ca-dcce-f3bd39cee600",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/3611cc5f-4da4-49ca-dcce-f3bd39cee600?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/3611cc5f-4da4-49ca-dcce-f3bd39cee600?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/3611cc5f-4da4-49ca-dcce-f3bd39cee600?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "frostfire://wc",
+        "universal": ""
+      },
+      "name": "Frostfire",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "frostfire",
+      "updatedAt": "2026-01-27T10:22:09.691144+00:00",
       "versions": [
         "1",
         "2"
@@ -33904,15 +36118,15 @@
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.cryptnox.cryptnoxwallet",
         "browser": "https://cryptnox.com",
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
         "ios": "https://apps.apple.com/app/id1583011693",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": "Mobile Wallets",
@@ -33948,10 +36162,10 @@
       },
       "mobile": {
         "native": "cryptnox://",
-        "universal": null
+        "universal": ""
       },
       "name": "Cryptnox Wallet",
-      "rdns": null,
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2"
@@ -34077,6 +36291,68 @@
       ],
       "slug": "nova-spektr",
       "updatedAt": "2023-11-14T14:54:32.276143+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
+    "bc661d7eabed5234520e4c26f9cc03377898f5add94b8d66f9fc3d795dd16fac": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.volsungar.wallet",
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "https://apps.apple.com/us/app/volsungar/id6757104054",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "cip-34:1-764824073",
+        "eip155:1",
+        "solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+        "xrpl:0"
+      ],
+      "description": "Volsungar is a non-custodial cryptocurrency wallet focused on security and user ownership.\nPrivate keys are generated and stored locally or on user-owned hardware, never on servers.\nThe wallet supports multiple blockchains and connects to decentralized applications via WalletConnect for signing and transaction approval.",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://volsungar.com",
+      "id": "bc661d7eabed5234520e4c26f9cc03377898f5add94b8d66f9fc3d795dd16fac",
+      "image_id": "2c9a67eb-605e-483c-d435-883a6c9ac400",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/2c9a67eb-605e-483c-d435-883a6c9ac400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/2c9a67eb-605e-483c-d435-883a6c9ac400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/2c9a67eb-605e-483c-d435-883a6c9ac400?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "volsungar://",
+        "universal": "https://link.volsungar.com/wc"
+      },
+      "name": "Volsungar",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "volsungar",
+      "updatedAt": "2026-01-29T00:54:22.306171+00:00",
       "versions": [
         "1",
         "2"
@@ -34842,24 +37118,33 @@
     "c16e0e172fe80ebdc26bcdc9d24d962b7a9474b6db8ce9e6b2022e86195728cd": {
       "app": {
         "android": "https://appdistribution.firebase.dev/i/86311d3c1caf8ea9",
-        "browser": null,
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
         "ios": "https://testflight.apple.com/join/ABbjL9Yu",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": "Mobile Wallets",
       "chains": [
         "cosmos:cosmoshub-4",
         "eip155:1",
+        "near:mainnet",
+        "near:testnet",
         "polkadot:91b171bb158e2d3848fa23a9f1c25182",
-        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+        "solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+        "stacks:1",
+        "stacks:2147483648",
+        "sui:devnet",
+        "sui:mainnet",
+        "sui:testnet"
       ],
       "description": "Flutter Sample Wallet Internal powered with Reown WalletKit",
       "desktop": {
@@ -34868,11 +37153,11 @@
       },
       "homepage": "https://appkit-lab.reown.com/flutter_walletkit",
       "id": "c16e0e172fe80ebdc26bcdc9d24d962b7a9474b6db8ce9e6b2022e86195728cd",
-      "image_id": "db10ede4-39c3-48ff-f85b-de9b5f17d000",
+      "image_id": "e2b62f16-4eea-4ebd-1029-ebfc6d07de00",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/db10ede4-39c3-48ff-f85b-de9b5f17d000?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/db10ede4-39c3-48ff-f85b-de9b5f17d000?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/db10ede4-39c3-48ff-f85b-de9b5f17d000?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/e2b62f16-4eea-4ebd-1029-ebfc6d07de00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/e2b62f16-4eea-4ebd-1029-ebfc6d07de00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/e2b62f16-4eea-4ebd-1029-ebfc6d07de00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
       "injected": null,
       "metadata": {
@@ -34887,7 +37172,7 @@
         "universal": "https://appkit-lab.reown.com/flutter_walletkit_internal"
       },
       "name": "Flutter Sample Wallet",
-      "rdns": null,
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2",
@@ -35328,16 +37613,16 @@
     "c36b25db7e48aa7ca19acbae35f79d6486b694f4d12def467592daa78c4cd5b7": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=org.ab.abwallet.android.release",
-        "browser": null,
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
         "ios": "https://apps.apple.com/us/app/ab-wallet/id6745787849",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": null,
@@ -35805,20 +38090,23 @@
         "eip155:999",
         "solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
-        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+        "tron:0x2b6653dc",
+        "tron:0x94a9059e",
+        "tron:0xcd8690dc"
       ],
       "description": "安全易用，一站式極速交易與資產管理工具。",
       "desktop": {
         "native": "",
         "universal": ""
       },
-      "homepage": "https://ab.org/abwallet",
+      "homepage": "https://abpay.cash",
       "id": "c36b25db7e48aa7ca19acbae35f79d6486b694f4d12def467592daa78c4cd5b7",
-      "image_id": "c2cb1d47-305e-45da-cdb8-b55b73ea4300",
+      "image_id": "f635dbaa-dd03-419c-5dce-05aa0f127c00",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/c2cb1d47-305e-45da-cdb8-b55b73ea4300?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/c2cb1d47-305e-45da-cdb8-b55b73ea4300?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/c2cb1d47-305e-45da-cdb8-b55b73ea4300?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/f635dbaa-dd03-419c-5dce-05aa0f127c00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/f635dbaa-dd03-419c-5dce-05aa0f127c00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/f635dbaa-dd03-419c-5dce-05aa0f127c00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
       "injected": null,
       "metadata": {
@@ -35829,11 +38117,11 @@
         "shortName": null
       },
       "mobile": {
-        "native": "abwallet://walletconnect",
+        "native": "abpay://walletconnect",
         "universal": ""
       },
-      "name": "ABWallet",
-      "rdns": null,
+      "name": "AB Pay",
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2"
@@ -36408,6 +38696,7 @@
       "chains": [
         "eip155:1",
         "eip155:10",
+        "eip155:137",
         "eip155:42161",
         "eip155:42170",
         "eip155:7777777",
@@ -37502,6 +39791,535 @@
         "2"
       ]
     },
+    "cb1864a17d4dd1742fb97e95c738543b95f908cea806ff8f090641b6cdebc627": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=jp.co.lunascape.android.ilunascape",
+        "browser": null,
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": "https://apps.apple.com/us/app/lunascape-browser/id380065805",
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": "Mobile Wallets",
+      "chains": [
+        "eip155:1",
+        "eip155:10",
+        "eip155:100",
+        "eip155:10000",
+        "eip155:100000",
+        "eip155:1000000003",
+        "eip155:100001",
+        "eip155:100002",
+        "eip155:100003",
+        "eip155:100004",
+        "eip155:100005",
+        "eip155:100006",
+        "eip155:100007",
+        "eip155:100008",
+        "eip155:10001",
+        "eip155:10003",
+        "eip155:1001",
+        "eip155:100501",
+        "eip155:1007",
+        "eip155:10081",
+        "eip155:101",
+        "eip155:1010",
+        "eip155:10101",
+        "eip155:1012",
+        "eip155:10143",
+        "eip155:102",
+        "eip155:1022",
+        "eip155:1023",
+        "eip155:1024",
+        "eip155:10243",
+        "eip155:1026062157",
+        "eip155:1028",
+        "eip155:1030",
+        "eip155:10507",
+        "eip155:10508",
+        "eip155:105105",
+        "eip155:106",
+        "eip155:1073",
+        "eip155:1075",
+        "eip155:108",
+        "eip155:10849",
+        "eip155:10850",
+        "eip155:109",
+        "eip155:11",
+        "eip155:110",
+        "eip155:110000",
+        "eip155:110001",
+        "eip155:110002",
+        "eip155:110003",
+        "eip155:110004",
+        "eip155:110005",
+        "eip155:110006",
+        "eip155:110007",
+        "eip155:110008",
+        "eip155:1101",
+        "eip155:111",
+        "eip155:1111",
+        "eip155:111188",
+        "eip155:11124",
+        "eip155:1115",
+        "eip155:11155111",
+        "eip155:1116",
+        "eip155:1122334455",
+        "eip155:11235",
+        "eip155:11297108099",
+        "eip155:11297108109",
+        "eip155:1139",
+        "eip155:114",
+        "eip155:1140",
+        "eip155:11501",
+        "eip155:11888",
+        "eip155:12",
+        "eip155:12051",
+        "eip155:1213",
+        "eip155:122",
+        "eip155:123420001114",
+        "eip155:123456",
+        "eip155:124",
+        "eip155:1261120",
+        "eip155:127",
+        "eip155:1273227453",
+        "eip155:128",
+        "eip155:1280",
+        "eip155:128123",
+        "eip155:1284",
+        "eip155:1285",
+        "eip155:1286",
+        "eip155:1287",
+        "eip155:1288",
+        "eip155:13",
+        "eip155:1301",
+        "eip155:1313114",
+        "eip155:1313161554",
+        "eip155:1313161555",
+        "eip155:1313161556",
+        "eip155:1313500",
+        "eip155:1329",
+        "eip155:133",
+        "eip155:13371",
+        "eip155:13371337",
+        "eip155:13381",
+        "eip155:13473",
+        "eip155:1350216234",
+        "eip155:1351057110",
+        "eip155:137",
+        "eip155:1380012617",
+        "eip155:13812",
+        "eip155:14",
+        "eip155:142",
+        "eip155:1442",
+        "eip155:148",
+        "eip155:1482601649",
+        "eip155:15",
+        "eip155:15000",
+        "eip155:1517929550",
+        "eip155:15557",
+        "eip155:1564830818",
+        "eip155:16",
+        "eip155:16000",
+        "eip155:16001",
+        "eip155:1618",
+        "eip155:162",
+        "eip155:1620",
+        "eip155:163",
+        "eip155:1657",
+        "eip155:1666600000",
+        "eip155:1666600001",
+        "eip155:1666600002",
+        "eip155:1666600003",
+        "eip155:1666700000",
+        "eip155:1666700001",
+        "eip155:1666700002",
+        "eip155:1666700003",
+        "eip155:167000",
+        "eip155:167009",
+        "eip155:17",
+        "eip155:170",
+        "eip155:17000",
+        "eip155:172",
+        "eip155:1722641160",
+        "eip155:177",
+        "eip155:17777",
+        "eip155:18",
+        "eip155:180",
+        "eip155:1802203764",
+        "eip155:18231",
+        "eip155:18233",
+        "eip155:18289463",
+        "eip155:1856",
+        "eip155:186",
+        "eip155:1868",
+        "eip155:1875",
+        "eip155:1890",
+        "eip155:1891",
+        "eip155:19",
+        "eip155:19011",
+        "eip155:1907",
+        "eip155:1908",
+        "eip155:1918988905",
+        "eip155:1923",
+        "eip155:1924",
+        "eip155:1946",
+        "eip155:1987",
+        "eip155:199",
+        "eip155:1993",
+        "eip155:1995",
+        "eip155:2",
+        "eip155:20",
+        "eip155:200",
+        "eip155:2000",
+        "eip155:20001",
+        "eip155:200625",
+        "eip155:200810",
+        "eip155:200901",
+        "eip155:200910",
+        "eip155:201030",
+        "eip155:2016",
+        "eip155:2017",
+        "eip155:20181205",
+        "eip155:2020",
+        "eip155:2021",
+        "eip155:2022",
+        "eip155:20231",
+        "eip155:2024",
+        "eip155:204",
+        "eip155:2046399126",
+        "eip155:205205",
+        "eip155:21",
+        "eip155:2100",
+        "eip155:2101",
+        "eip155:210309",
+        "eip155:2109095698",
+        "eip155:211",
+        "eip155:2195",
+        "eip155:22",
+        "eip155:222",
+        "eip155:23",
+        "eip155:233",
+        "eip155:2355",
+        "eip155:24484",
+        "eip155:245022926",
+        "eip155:245022934",
+        "eip155:245022940",
+        "eip155:246",
+        "eip155:246529",
+        "eip155:246785",
+        "eip155:247101234",
+        "eip155:247253",
+        "eip155:24734",
+        "eip155:248",
+        "eip155:25",
+        "eip155:250",
+        "eip155:2559",
+        "eip155:256",
+        "eip155:262",
+        "eip155:2625",
+        "eip155:269",
+        "eip155:27",
+        "eip155:2718",
+        "eip155:2730",
+        "eip155:274",
+        "eip155:2741",
+        "eip155:28",
+        "eip155:280",
+        "eip155:2810",
+        "eip155:288",
+        "eip155:2888",
+        "eip155:28945486",
+        "eip155:295",
+        "eip155:29548",
+        "eip155:296",
+        "eip155:297",
+        "eip155:3",
+        "eip155:30",
+        "eip155:303",
+        "eip155:31",
+        "eip155:31102",
+        "eip155:311752642",
+        "eip155:3125659152",
+        "eip155:313",
+        "eip155:31337",
+        "eip155:32",
+        "eip155:321",
+        "eip155:322",
+        "eip155:324",
+        "eip155:325000",
+        "eip155:32659",
+        "eip155:3269",
+        "eip155:3270",
+        "eip155:32769",
+        "eip155:33",
+        "eip155:33101",
+        "eip155:33385",
+        "eip155:333888",
+        "eip155:333999",
+        "eip155:336",
+        "eip155:338",
+        "eip155:34",
+        "eip155:344106930",
+        "eip155:34443",
+        "eip155:35",
+        "eip155:35855456",
+        "eip155:36",
+        "eip155:361",
+        "eip155:363",
+        "eip155:3636",
+        "eip155:364",
+        "eip155:365",
+        "eip155:369",
+        "eip155:3776",
+        "eip155:38",
+        "eip155:385",
+        "eip155:39797",
+        "eip155:39815",
+        "eip155:4",
+        "eip155:40",
+        "eip155:4002",
+        "eip155:4061",
+        "eip155:40875",
+        "eip155:41",
+        "eip155:418",
+        "eip155:42",
+        "eip155:420",
+        "eip155:4201",
+        "eip155:420420420420",
+        "eip155:42069",
+        "eip155:42161",
+        "eip155:421611",
+        "eip155:421613",
+        "eip155:4216137055",
+        "eip155:421614",
+        "eip155:42170",
+        "eip155:42220",
+        "eip155:42420",
+        "eip155:42421",
+        "eip155:42793",
+        "eip155:43",
+        "eip155:43110",
+        "eip155:43113",
+        "eip155:43114",
+        "eip155:432201",
+        "eip155:432204",
+        "eip155:44",
+        "eip155:440017",
+        "eip155:44787",
+        "eip155:45510",
+        "eip155:462",
+        "eip155:463",
+        "eip155:4689",
+        "eip155:4690",
+        "eip155:47279324479",
+        "eip155:4759",
+        "eip155:476158412",
+        "eip155:4777",
+        "eip155:48991",
+        "eip155:49797",
+        "eip155:499",
+        "eip155:4999",
+        "eip155:5",
+        "eip155:50",
+        "eip155:5000",
+        "eip155:5001",
+        "eip155:5031",
+        "eip155:50312",
+        "eip155:503129905",
+        "eip155:51",
+        "eip155:5197",
+        "eip155:52",
+        "eip155:53",
+        "eip155:534351",
+        "eip155:534352",
+        "eip155:534353",
+        "eip155:54170",
+        "eip155:54176",
+        "eip155:541764",
+        "eip155:54211",
+        "eip155:543210",
+        "eip155:55",
+        "eip155:5522",
+        "eip155:558",
+        "eip155:56",
+        "eip155:560048",
+        "eip155:5611",
+        "eip155:56288",
+        "eip155:56789",
+        "eip155:57",
+        "eip155:570",
+        "eip155:5700",
+        "eip155:57000",
+        "eip155:57073",
+        "eip155:58",
+        "eip155:5851",
+        "eip155:5869",
+        "eip155:59",
+        "eip155:59140",
+        "eip155:59144",
+        "eip155:595",
+        "eip155:6",
+        "eip155:60",
+        "eip155:6000",
+        "eip155:60000",
+        "eip155:60001",
+        "eip155:60002",
+        "eip155:6001",
+        "eip155:60103",
+        "eip155:6038361",
+        "eip155:61",
+        "eip155:61717561",
+        "eip155:62",
+        "eip155:62320",
+        "eip155:63",
+        "eip155:64",
+        "eip155:648",
+        "eip155:65",
+        "eip155:66",
+        "eip155:67",
+        "eip155:68",
+        "eip155:686",
+        "eip155:68770",
+        "eip155:68775",
+        "eip155:69",
+        "eip155:7",
+        "eip155:70000",
+        "eip155:70001",
+        "eip155:70002",
+        "eip155:7001",
+        "eip155:70103",
+        "eip155:7027",
+        "eip155:71",
+        "eip155:71393",
+        "eip155:721",
+        "eip155:7225878",
+        "eip155:7233",
+        "eip155:7234",
+        "eip155:73799",
+        "eip155:73927",
+        "eip155:7518",
+        "eip155:7575",
+        "eip155:7576",
+        "eip155:76",
+        "eip155:763373",
+        "eip155:764984",
+        "eip155:767368",
+        "eip155:77",
+        "eip155:7762959",
+        "eip155:777",
+        "eip155:7777777",
+        "eip155:78",
+        "eip155:78110",
+        "eip155:78281",
+        "eip155:787",
+        "eip155:8",
+        "eip155:80",
+        "eip155:80001",
+        "eip155:80002",
+        "eip155:80084",
+        "eip155:80085",
+        "eip155:80094",
+        "eip155:8029",
+        "eip155:803",
+        "eip155:8080",
+        "eip155:8081",
+        "eip155:8082",
+        "eip155:81",
+        "eip155:812397",
+        "eip155:8194",
+        "eip155:82",
+        "eip155:820",
+        "eip155:821",
+        "eip155:8217",
+        "eip155:8285",
+        "eip155:83",
+        "eip155:8333",
+        "eip155:8453",
+        "eip155:84531",
+        "eip155:84532",
+        "eip155:85",
+        "eip155:86",
+        "eip155:8678671",
+        "eip155:8723",
+        "eip155:8724",
+        "eip155:88",
+        "eip155:880",
+        "eip155:8822",
+        "eip155:8866",
+        "eip155:888",
+        "eip155:88811",
+        "eip155:88817",
+        "eip155:88819",
+        "eip155:8888",
+        "eip155:88882",
+        "eip155:88888",
+        "eip155:8995",
+        "eip155:9",
+        "eip155:9000",
+        "eip155:9001",
+        "eip155:90483539238",
+        "eip155:919",
+        "eip155:9372",
+        "eip155:940",
+        "eip155:95",
+        "eip155:955305",
+        "eip155:96970",
+        "eip155:97",
+        "eip155:9728",
+        "eip155:9731",
+        "eip155:9732",
+        "eip155:977",
+        "eip155:99",
+        "eip155:99415706",
+        "eip155:998",
+        "eip155:998899",
+        "eip155:999"
+      ],
+      "description": "Lunascape is a Japanese-developed web browser for desktop and smartphone platforms, known for its safety, speed, and multifunctionality.",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://www.lunascape.org/browser/mobile",
+      "id": "cb1864a17d4dd1742fb97e95c738543b95f908cea806ff8f090641b6cdebc627",
+      "image_id": "aa7678b9-f508-4d4a-7e3f-4ec0e9cd9900",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/aa7678b9-f508-4d4a-7e3f-4ec0e9cd9900?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/aa7678b9-f508-4d4a-7e3f-4ec0e9cd9900?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/aa7678b9-f508-4d4a-7e3f-4ec0e9cd9900?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": "Lunascape"
+      },
+      "mobile": {
+        "native": "lunascape://",
+        "universal": ""
+      },
+      "name": "Lunascape Browser",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "lunascape-browser",
+      "updatedAt": "2025-12-09T12:35:34.732036+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "cb53ce18c593e8ea5d93c6a55bf848e4b75010c077f83b012b7c4e5f8fce842a": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.beanbag.wallet",
@@ -37894,31 +40712,158 @@
         "2"
       ]
     },
+    "cc117f2a60ac9d880bb45ad9c1ca01d9f35d81cf8c489ecd0e789f153754064e": {
+      "app": {
+        "android": "",
+        "browser": "https://nfid.one/",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "bip122:000000000019d6689c085ae165831e93",
+        "eip155:1",
+        "eip155:137",
+        "eip155:42161",
+        "eip155:8453"
+      ],
+      "description": "The easiest to use, hardest to lose, and only wallet governed by a DAO.",
+      "desktop": {
+        "native": "",
+        "universal": "https://nfid.one/"
+      },
+      "homepage": "https://nfid.one/",
+      "id": "cc117f2a60ac9d880bb45ad9c1ca01d9f35d81cf8c489ecd0e789f153754064e",
+      "image_id": "bc732ae5-c4e3-48a2-9beb-077f341cc600",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/bc732ae5-c4e3-48a2-9beb-077f341cc600?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/bc732ae5-c4e3-48a2-9beb-077f341cc600?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/bc732ae5-c4e3-48a2-9beb-077f341cc600?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "",
+        "universal": ""
+      },
+      "name": "NFID Wallet",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "nfid-wallet",
+      "updatedAt": "2026-02-10T07:04:34.569559+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
+    "cce5ade88eff235ffae06f65c16f371ef8fa885cea6e01070e9e4878edcb05e7": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=prod.walletv.virgo",
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "https://apps.apple.com/us/app/wallet-v-prediction-crypto/id6743709480",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:10",
+        "eip155:137",
+        "eip155:42161",
+        "eip155:43114",
+        "eip155:56",
+        "eip155:8453"
+      ],
+      "description": "Navigate Web3 easily with Wallet V. Swap across EVM, trade 170+ HyperLiquid perps on mobile, explore prediction market, and earn rewards—fast, secure, self-custody.",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://walletv.io/",
+      "id": "cce5ade88eff235ffae06f65c16f371ef8fa885cea6e01070e9e4878edcb05e7",
+      "image_id": "93ebe6e8-475c-46f1-5f0d-c43a7971be00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/93ebe6e8-475c-46f1-5f0d-c43a7971be00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/93ebe6e8-475c-46f1-5f0d-c43a7971be00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/93ebe6e8-475c-46f1-5f0d-c43a7971be00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "virgowallet://",
+        "universal": "dl.walletv.io"
+      },
+      "name": "Wallet V",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "wallet-v",
+      "updatedAt": "2026-01-07T07:48:31.936882+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "ce02f1ae74686234eabfa7d31876c442779b730dfe7924a3ca0e6559a7afa30f": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.creditcoin.mobile",
-        "browser": null,
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
         "ios": "https://apps.apple.com/us/app/apple-store/id6478491272",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": "Mobile Wallets",
       "chains": [
         "eip155:1",
+        "eip155:102030",
+        "eip155:102031",
+        "eip155:102032",
         "eip155:11155111",
         "polkadot:91b171bb158e2d3848fa23a9f1c25182"
       ],
       "description": "The Multichain Credit Protocol Powering Real-World Assets",
       "desktop": {
         "native": "",
-        "universal": null
+        "universal": ""
       },
       "homepage": "https://app.creditcoin.org",
       "id": "ce02f1ae74686234eabfa7d31876c442779b730dfe7924a3ca0e6559a7afa30f",
@@ -37938,10 +40883,10 @@
       },
       "mobile": {
         "native": "creditwallet://",
-        "universal": null
+        "universal": ""
       },
       "name": "Credit Wallet",
-      "rdns": null,
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2",
@@ -40336,6 +43281,64 @@
         "1"
       ]
     },
+    "dd06e3e3f42cf1a2a453a7ef8def008568989f550eacecd91bac97e4c8443f05": {
+      "app": {
+        "android": "",
+        "browser": "",
+        "chrome": null,
+        "edge": null,
+        "firefox": "https://addons.mozilla.org/en-US/firefox/addon/micet/",
+        "ios": "",
+        "linux": "",
+        "mac": "",
+        "opera": null,
+        "safari": null,
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:11155111",
+        "eip155:43113",
+        "eip155:97",
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+      ],
+      "description": "A secure browser wallet designed exclusively for DevNet and testnet environments, enabling developers to safely test smart contracts across multiple blockchains without risking mainnet assets. Features include multi-chain support, transaction signing",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://addons.mozilla.org/en-US/firefox/addon/micet/",
+      "id": "dd06e3e3f42cf1a2a453a7ef8def008568989f550eacecd91bac97e4c8443f05",
+      "image_id": "ae87dc7c-be44-4129-9ac9-d1ad29a23b00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/ae87dc7c-be44-4129-9ac9-d1ad29a23b00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/ae87dc7c-be44-4129-9ac9-d1ad29a23b00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/ae87dc7c-be44-4129-9ac9-d1ad29a23b00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "",
+        "universal": ""
+      },
+      "name": "Micet",
+      "rdns": "com.micet.wallet",
+      "sdks": [
+        "sign_v1"
+      ],
+      "slug": "micet",
+      "updatedAt": "2026-01-08T03:55:39.17736+00:00",
+      "versions": [
+        "1"
+      ]
+    },
     "dd1112ffb1ba02247ac7d22d69a0249c5ec867918c614ce9256c571ba7636882": {
       "app": {
         "android": null,
@@ -40931,16 +43934,16 @@
     "dfa04e5a17584aa9b3a9637f10ce2e95fcd6343fb81e8c634922b21a28cc66a8": {
       "app": {
         "android": "https://lab.web3modal.com/wallet",
-        "browser": null,
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
         "ios": "https://lab.web3modal.com/wallet",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": null,
@@ -40950,18 +43953,18 @@
         "eip155:8453",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
       ],
-      "description": "Reown Swift Sample Wallet",
+      "description": "Swift Sample Wallet",
       "desktop": {
         "native": "",
-        "universal": null
+        "universal": ""
       },
-      "homepage": "https://reown.com",
+      "homepage": "https://walletconnect.com/",
       "id": "dfa04e5a17584aa9b3a9637f10ce2e95fcd6343fb81e8c634922b21a28cc66a8",
-      "image_id": "d4ef1a64-f5e3-4f11-9fe0-035e22ca6200",
+      "image_id": "e9896101-02ce-4b47-162b-be4f1f4cc400",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/d4ef1a64-f5e3-4f11-9fe0-035e22ca6200?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/d4ef1a64-f5e3-4f11-9fe0-035e22ca6200?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/d4ef1a64-f5e3-4f11-9fe0-035e22ca6200?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/e9896101-02ce-4b47-162b-be4f1f4cc400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/e9896101-02ce-4b47-162b-be4f1f4cc400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/e9896101-02ce-4b47-162b-be4f1f4cc400?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
       "injected": null,
       "metadata": {
@@ -40976,7 +43979,7 @@
         "universal": "https://lab.web3modal.com/wallet"
       },
       "name": "Swift Sample Wallet",
-      "rdns": null,
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2"
@@ -41190,16 +44193,16 @@
     "e1882224c4c09a84575c533867d434267c46384f5a365b889605d28b061747c4": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=network.bee.app",
-        "browser": null,
+        "browser": "",
         "chrome": "https://chrome.google.com/webstore/detail/bee-wallet/nankopfjhdflikcokhgohiaoehnjfako",
-        "edge": null,
-        "firefox": null,
+        "edge": "",
+        "firefox": "",
         "ios": "https://apps.apple.com/app/id1529988919",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": "Mobile Wallets",
@@ -41710,7 +44713,7 @@
         "universal": "https://main.apple.bee9527.com"
       },
       "name": "BeeWallet",
-      "rdns": null,
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2",
@@ -42857,16 +45860,16 @@
     "e6a8cb6abe47f88d7511b0698829eab01d76e78bad82b8ccca66004055055d89": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.flowfoundation.wallet",
-        "browser": null,
+        "browser": "",
         "chrome": "https://chrome.google.com/webstore/detail/flow-reference/hpclkefagolihohboafpheddmmgdffjm",
-        "edge": null,
-        "firefox": null,
+        "edge": "",
+        "firefox": "",
         "ios": "https://apps.apple.com/ca/app/flow-wallet-nfts-and-crypto/id6478996750",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": "Mobile Wallets",
@@ -43555,6 +46558,68 @@
         "2"
       ]
     },
+    "e950a56062c9daa38ef430812eb79621e68521879eae05cac4a9862b0592a2ca": {
+      "app": {
+        "android": "",
+        "browser": "https://wallet.haust.app/",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:10",
+        "eip155:137",
+        "eip155:42161",
+        "eip155:56",
+        "eip155:8453"
+      ],
+      "description": "Haust Wallet is a next-generation non-custodial smart wallet designed for simple and secure interaction with Web3 and DeFi.",
+      "desktop": {
+        "native": "",
+        "universal": "https://wallet.haust.app/"
+      },
+      "homepage": "https://wallet.haust.app/",
+      "id": "e950a56062c9daa38ef430812eb79621e68521879eae05cac4a9862b0592a2ca",
+      "image_id": "c32615d1-06fd-4f1e-1130-3dce18cee800",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/c32615d1-06fd-4f1e-1130-3dce18cee800?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/c32615d1-06fd-4f1e-1130-3dce18cee800?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/c32615d1-06fd-4f1e-1130-3dce18cee800?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "",
+        "universal": ""
+      },
+      "name": "Haust wallet",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "haust-wallet",
+      "updatedAt": "2026-01-08T05:23:39.132028+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "e999c2718f3e000c8a2669d0358ae4be974bc45bbabec528ec076742306cb31b": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=pub.dg.wallet&pli=1",
@@ -44092,7 +47157,7 @@
         "auth_v1"
       ],
       "slug": "rakuten-web3-wallet",
-      "updatedAt": "2025-01-02T09:59:44.023027+00:00",
+      "updatedAt": "2026-01-30T16:39:07.518+00:00",
       "versions": [
         "1",
         "2"
@@ -44126,6 +47191,7 @@
         "eip155:256",
         "eip155:338",
         "eip155:420",
+        "eip155:42161",
         "eip155:42220",
         "eip155:43110",
         "eip155:43114",
@@ -44138,6 +47204,7 @@
         "eip155:80084",
         "eip155:80085",
         "eip155:8217",
+        "eip155:8453",
         "eip155:97"
       ],
       "description": "imToken is an easy and secure digital wallet trusted by millions.",
@@ -46926,6 +49993,78 @@
         "2"
       ]
     },
+    "fdfbbd04bb3871bd7853f343081275edab999e5573c63c2c64c0caf73df51d1f": {
+      "app": {
+        "android": "",
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "https://apps.apple.com/us/app/nova-for-solana/id6753857720",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "cip-34:1-764824073",
+        "cosmos:cosmoshub-4",
+        "eip155:1",
+        "eip155:3",
+        "eip155:42161",
+        "flow:testnet",
+        "koinos:EiBZK_GGVP0H_fXVAM3j6EAuz3-B-l3e",
+        "near:testnet",
+        "neo3:mainnet",
+        "polkadot:91b171bb158e2d3848fa23a9f1c25182",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+        "stacks:1",
+        "stellar:pubnet",
+        "waves:087",
+        "xrpl:0"
+      ],
+      "description": "Nova Wallet is a product of Nova Shield. On-chain security powered by real-time threat intelligence.",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://nshield.org",
+      "id": "fdfbbd04bb3871bd7853f343081275edab999e5573c63c2c64c0caf73df51d1f",
+      "image_id": "442e15f5-d596-4ef5-e609-6a1c6348e400",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/442e15f5-d596-4ef5-e609-6a1c6348e400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/442e15f5-d596-4ef5-e609-6a1c6348e400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/442e15f5-d596-4ef5-e609-6a1c6348e400?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "nova://",
+        "universal": ""
+      },
+      "name": "Nova",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "nova-wallet-1",
+      "updatedAt": "2026-01-27T09:41:48.701621+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "fe2535202d208d96607955fe18e98d4564838200c3498c8cd1736b46291355f2": {
       "app": {
         "android": "https://download.safematrix.io/abm/safematrix.apk",
@@ -47002,9 +50141,12 @@
       "category": "Mobile Wallets",
       "chains": [
         "eip155:1",
+        "eip155:10",
         "eip155:137",
+        "eip155:42161",
         "eip155:56",
         "eip155:80001",
+        "eip155:8453",
         "eip155:84531",
         "eip155:97",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
@@ -47299,5 +50441,5 @@
       ]
     }
   },
-  "total": 591
+  "total": 616
 }

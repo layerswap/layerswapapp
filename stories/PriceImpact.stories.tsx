@@ -9,7 +9,6 @@ import Layout from '../components/layout';
 import WalletsProviders from '../components/WalletProviders';
 import { SwapDataProvider } from '../context/swap';
 import { SettingsStateContext } from '../context/settings';
-import { TimerProvider } from '@/context/timerContext';
 import { PriceImpact } from '@/components/Input/Amount/PriceImpact';
 import { SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
 
@@ -33,11 +32,9 @@ const Comp: FC<{ quote: PriceImpactRelevant; theme?: 'default' | 'light' }> = ({
             <SettingsStateContext.Provider value={appSettings}>
                 <Layout settings={Settings || undefined} themeData={themeData}>
                     <SwapDataProvider>
-                        <TimerProvider>
-                            <WalletsProviders basePath="/" themeData={THEME_COLORS['default']} appName="Layerswap">
-                                <PriceImpact quote={quote as SwapQuote} refuel={undefined} />
-                            </WalletsProviders>
-                        </TimerProvider>
+                        <WalletsProviders basePath="/" themeData={THEME_COLORS['default']} appName="Layerswap">
+                            <PriceImpact quote={quote as SwapQuote} refuel={undefined} />
+                        </WalletsProviders>
                     </SwapDataProvider>
                 </Layout>
             </SettingsStateContext.Provider>

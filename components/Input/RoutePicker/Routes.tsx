@@ -11,8 +11,7 @@ import { getKey, useBalanceStore } from "@/stores/balanceStore";
 import { useSwapAccounts } from "@/context/swapAccounts";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
 import { getTotalBalanceInUSD } from "@/helpers/balanceHelper";
-import { useMemo } from "react";
-import { isNewListed, NewBadge } from "@/lib/isNewListed";
+import { useMemo, memo } from "react";
 import { TokenInfoIcon, TokenTitleWithBalance } from "./TokenTitleDetails";
 
 type TokenItemProps = {
@@ -23,7 +22,7 @@ type TokenItemProps = {
     direction: SwapDirection;
 };
 
-export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
+export const CurrencySelectItemDisplay = memo((props: TokenItemProps) => {
     const { item, route, direction, type } = props
 
     return <SelectItem className="group">
@@ -34,7 +33,7 @@ export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
         />
         <NetworkTokenTitle item={item} route={route} direction={direction} type={type} />
     </SelectItem>
-}
+});
 
 type NetworkTokenItemProps = {
     route: NetworkRoute;
@@ -44,7 +43,7 @@ type NetworkTokenItemProps = {
 }
 
 export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
-    const { item, route, direction, type } = props
+    const { item, route, direction } = props
     const swapAccounts = useSwapAccounts(direction)
     const selectedAccount = swapAccounts?.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.name));
 
@@ -55,15 +54,12 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     const formatted_balance_amount = (tokenbalance?.amount || tokenbalance?.amount === 0) ? truncateDecimals(tokenbalance?.amount, item.precision) : ''
     const usdAmount = (tokenbalance?.amount && item?.price_in_usd) ? item?.price_in_usd * tokenbalance?.amount : undefined;
 
-    const isNewlyListed = isNewListed(item?.listing_date);
-
     return <SelectItem.DetailedTitle
         title={<TokenTitleWithBalance
             item={item}
             route={route}
             tokenbalance={tokenbalance}
             usdAmount={usdAmount}
-            isNewlyListed={isNewlyListed}
         />}
         secondaryImageAlt={route.display_name}
         secondary={
@@ -72,7 +68,7 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
                 <TokenInfoIcon
                     item={item}
                     route={route}
-                    className="xs:hidden transition-all duration-300 opacity-0 group-hover:opacity-100 group-hover:delay-400 click-delay-on-hover shrink-0"
+                    className="xs:hidden max-w-0 group-hover:max-w-full data-[popover-open=true]:max-w-full data-[tooltip-open=true]:max-w-full overflow-hidden transition-all duration-300 opacity-0 group-hover:opacity-100 data-[popover-open=true]:opacity-100 data-[tooltip-open=true]:opacity-100 data-[popover-open=true]:delay-0 data-[tooltip-open=true]:delay-0 group-hover:delay-400 click-delay-on-hover shrink-0 pointer-events-none group-hover:pointer-events-auto data-[popover-open=true]:pointer-events-auto data-[tooltip-open=true]:pointer-events-auto"
                 />
             </div>
         }
@@ -111,23 +107,13 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
     const hasLoadedBalances = totalInUSD !== null && Number(totalInUSD) > 0;
     const showTokenLogos = hasLoadedBalances && filteredNetworkTokens?.length;
 
-    const haveNewlyListedTokens = useMemo(() => item.tokens?.some(t => isNewListed(t.listing_date)), [item]);
-
     return (
-        <SelectItem className="bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative pr-7 py-2">
+        <SelectItem className="accordion-item-focused bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative pr-7 py-2 ring-hidden">
             <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} className="rounded-md" />
             <SelectItem.Title>
                 <>
                     <span>
-                        <div className="flex items-center gap-2">
-                            <p>
-                                {item.display_name}
-                            </p>
-                            {
-                                haveNewlyListedTokens &&
-                                <NewBadge />
-                            }
-                        </div>
+                        {item.display_name}
                     </span>
 
                     {hasLoadedBalances ? (
@@ -161,7 +147,7 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
                     ) : <></>}
 
                     <ChevronDown
-                        className="!w-3.5 !h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
+                        className="w-3.5! h-3.5! absolute right-2 top-1/2 -translate-y-1/2 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
                         aria-hidden="true"
                     />
                 </>
@@ -190,8 +176,6 @@ export const GroupedTokenHeader = ({
     const swapAccounts = useSwapAccounts(direction)
 
     const tokens = item.items;
-    const haveNewlyListedTokens = useMemo(() => tokens.some(t => isNewListed(t.route.token.listing_date)), [tokens]);
-
     const balances = useBalanceStore(s => s.balances)
 
     const networksWithBalance: NetworkRoute[] = Array.from(
@@ -236,7 +220,7 @@ export const GroupedTokenHeader = ({
     const showNetworkIcons = hasLoadedBalances && networksWithBalance.length > 0;
 
     return (
-        <SelectItem className="bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative pr-7 py-2">
+        <SelectItem className="accordion-item-focused bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative pr-7 py-2">
             <SelectItem.Logo
                 imgSrc={mainToken.logo}
                 altText={`${mainToken.symbol} logo`}
@@ -244,15 +228,8 @@ export const GroupedTokenHeader = ({
             />
             <SelectItem.Title>
                 <>
-                    <span><div className="flex items-center gap-2">
-                        <p>
-                            {mainToken.symbol}
-                        </p>
-                        {
-                            haveNewlyListedTokens &&
-                            <NewBadge />
-                        }
-                    </div>
+                    <span>
+                        {mainToken.symbol}
                     </span>
                     {hasLoadedBalances ? (
                         <div className={`${showNetworkIcons ? "flex flex-col space-y-0.5" : ""} ${hideTokenImages ? "invisible" : "visible"}`}>
@@ -285,7 +262,7 @@ export const GroupedTokenHeader = ({
                     ) : <></>}
 
                     <ChevronDown
-                        className="!w-3.5 !h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
+                        className="w-3.5! h-3.5! absolute right-2 top-1/2 -translate-y-1/2 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
                         aria-hidden="true"
                     />
                 </>

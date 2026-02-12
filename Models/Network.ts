@@ -18,6 +18,7 @@ export class Network {
     logo: string;
     chain_id: string | null;
     node_url: string;
+    nodes: string[];
     type: NetworkType;
     transaction_explorer_template: string;
     account_explorer_template: string;

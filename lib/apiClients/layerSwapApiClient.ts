@@ -9,6 +9,12 @@ import { NetworkWithTokens, Network, Token } from "../../Models/Network";
 import { Exchange } from "../../Models/Exchange";
 import posthog from "posthog-js";
 
+const IGNORED_API_ERROR_CODES = [
+    'ROUTE_NOT_FOUND_ERROR',
+    'GREATER_THAN_MAX_ERROR',
+    'LESS_THAN_MIN_ERROR'
+];
+
 export default class LayerSwapApiClient {
     static apiBaseEndpoint?: string = AppSettings.LayerswapApiUri;
     static bridgeApiBaseEndpoint?: string = AppSettings.LayerswapBridgeApiUri;
@@ -48,6 +54,10 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/swaps/${swapId}/deposit_speedup`, { transaction_id: tx_id });
     }
 
+    async GetSwapAsync(swapId: string): Promise<ApiResponse<SwapResponse>> {
+        return await this.AuthenticatedRequest<ApiResponse<SwapResponse>>("GET", `/swaps/${swapId}`);
+    }
+
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
         let uri = LayerSwapApiClient.apiBaseEndpoint + "/api/v2" + endpoint;
         return await this._authInterceptor(uri, { method: method, data: data, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })
@@ -66,10 +76,18 @@ export default class LayerSwapApiClient {
                         error = new Error(String(reason));
                         error.name = "APIError";
                     }
-                    
-                    posthog.captureException(error, {
-                        $layerswap_exception_type: "API Error",
-                    });
+                    const errorCode = reason.response?.data?.error?.code;
+                    if (!IGNORED_API_ERROR_CODES.includes(errorCode)) {
+                        posthog.captureException(error, {
+                            $layerswap_exception_type: "API Error",
+                            endpoint: endpoint,
+                            status: reason.response?.status,
+                            statusText: reason.response?.statusText,
+                            responseData: reason.response?.data,
+                            requestUrl: reason.request?.url,
+                            requestMethod: reason.request?.method,
+                        });
+                    }
                     return Promise.reject(reason);
                 }
             });
@@ -247,6 +265,7 @@ export type SwapQuote = {
     avg_completion_time: string,
     refuel_in_source?: number,
     slippage?: number,
+    rate?: number,
 }
 
 export type AddressBookItem = {

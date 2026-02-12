@@ -10,8 +10,9 @@ import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import useWallet from "@/hooks/useWallet";
 import { useSwapDataState } from "@/context/swap";
-import { posthog } from "posthog-js";
 import useSWRGas from "@/lib/gases/useSWRGas";
+import { useWalletRpcHealth } from "@/hooks/useWalletRpcHealth";
+import RPCUnhealthyMessage from "./RPCUnhealthyMessage";
 
 type Props = {
     savedTransactionHash?: string;
@@ -35,7 +36,7 @@ const TransferTokenButton: FC<Props> = ({
     const { wallets } = useWallet(swapData.source_network, 'withdrawal')
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
     const { gasData } = useSWRGas(selectedSourceAccount?.address, swapData?.source_network)
-
+    const { health, suggestRpcForCurrentChain, isSuggestingRpc, checkManually } = useWalletRpcHealth()
     const clickHandler = useCallback(async ({ amount, callData, depositAddress }: TransferProps) => {
         setButtonClicked(true)
         setError(undefined)
@@ -81,6 +82,15 @@ const TransferTokenButton: FC<Props> = ({
         isPending: loading,
     }
 
+    if (health.status === 'unhealthy') {
+        return <RPCUnhealthyMessage
+            network={swapData.source_network}
+            suggestRpcForCurrentChain={suggestRpcForCurrentChain}
+            isSuggestingRpc={isSuggestingRpc}
+            checkManually={checkManually}
+        />
+    }
+
     return <div className="w-full space-y-3 h-fit text-primary-text">
         {
             (buttonClicked || swapError) ? (
@@ -90,6 +100,7 @@ const TransferTokenButton: FC<Props> = ({
                     activeAddress={selectedSourceAccount?.address}
                     selectedSourceAddress={selectedSourceAccount?.address}
                     swapError={swapError}
+                    sourceNetwork={swapData.source_network}
                 />
             ) : null
         }
@@ -102,7 +113,7 @@ const TransferTokenButton: FC<Props> = ({
                 swapData={swapData}
                 refuel={refuel}
             />
-        }        
+        }
     </div>
 }
 
