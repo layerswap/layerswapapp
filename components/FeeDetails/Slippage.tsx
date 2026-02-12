@@ -53,7 +53,9 @@ export const Slippage = ({ quoteData, values, disableEditingBackground }: Slippa
                     </span>
                     <Tooltip openOnClick>
                         <TooltipTrigger asChild>
-                            <Info className={clsx('w-4 h-4', isHighSlippage ? "text-warning-foreground" : "")} />
+                            <span>
+                                <Info className={clsx('w-4 h-4', isHighSlippage ? "text-warning-foreground" : "")} />
+                            </span>
                         </TooltipTrigger>
                         <TooltipContent className="pointer-events-none w-80 grow p-2 border-none! bg-secondary-300! text-xs rounded-xl" side="top" align="start" alignOffset={-30}>
                             <p>Your transaction will be refunded if the price moves more than the slippage percentage.</p>

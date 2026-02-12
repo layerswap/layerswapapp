@@ -28,7 +28,7 @@ export const Content: FC<ContentProps> = (props) => {
     const [isItemsScrolling, setIsItemsScrolling] = useState(false);
 
     return <>
-        <RouteSearch searchQuery={props.searchQuery} setSearchQuery={props.setSearchQuery} rowElements={props.rowElements} isItemsScrolling={isItemsScrolling} />
+        <RouteSearch searchQuery={props.searchQuery} setSearchQuery={props.setSearchQuery} shouldFocus={true} direction={props.direction} />
         <Items {...props} isScrolling={isItemsScrolling} setIsScrolling={setIsItemsScrolling} />
     </>
 }
