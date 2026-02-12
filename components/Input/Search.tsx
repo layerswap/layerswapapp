@@ -61,12 +61,12 @@ export const SearchComponent = ({ searchQuery, setSearchQuery, isOpen, container
             />
             {showAnimatedPlaceholder && (
                 <div className="absolute inset-0 flex items-center pointer-events-none overflow-hidden">
-                    <AnimatePresence mode="popLayout">
+                    <AnimatePresence mode="wait">
                         <motion.span
                             key={currentPlaceholder}
-                            initial={{ y: "100%", opacity: 0, filter: "blur(8px)" }}
+                            initial={currentPlaceholderIndex === 0 ? false : { y: "100%", opacity: 0, filter: "blur(4px)" }}
                             animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
-                            exit={{ y: "-80%", opacity: 0, filter: "blur(8px)" }}
+                            exit={{ y: "-80%", opacity: 0, filter: "blur(4px)" }}
                             transition={{
                                 duration: 0.4,
                                 ease: "easeInOut",
