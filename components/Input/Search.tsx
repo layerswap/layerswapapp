@@ -21,10 +21,10 @@ export const SearchComponent = ({ searchQuery, setSearchQuery, isOpen, container
     const [currentPlaceholderIndex, setCurrentPlaceholderIndex] = useState(0);
 
     useEffect(() => {
-        if (isOpen && inputRef.current) {
+        if (isOpen && isDesktop && inputRef.current) {
             inputRef.current.focus();
         }
-    }, [isOpen]);
+    }, [isOpen, isDesktop]);
 
     useEffect(() => {
         if (!animatedPlaceholders?.length || searchQuery) return;
