@@ -17,7 +17,7 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ destination_token, fee, 
     const quote = fee?.quote
     const { isUsdPrimary } = useSwitchUsdToken()
 
-    const tokenAmount = <NumberFlow value={receive_amount || 0} trend={0} format={{ maximumFractionDigits: fee?.quote.destination_token?.decimals || 2 }} />
+    const tokenAmount = <NumberFlow value={receive_amount || 0} suffix={` ${destination_token?.symbol}`} trend={0} format={{ maximumFractionDigits: fee?.quote.destination_token?.decimals || 2 }} />
 
     const usdAmount = <NumberFlow className="p-0" value={receiveAmountInUsd || 0} prefix="$" format={{ maximumFractionDigits: receiveAmountInUsd ? 2 : 0 }} trend={0} />
 
@@ -37,13 +37,6 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ destination_token, fee, 
                     <span className="text-base leading-5 font-medium text-secondary-text ">
                         {isUsdPrimary ? tokenAmount : usdAmount}
                     </span>
-                    {
-                        isUsdPrimary && (
-                            <span className="text-base leading-5 font-medium text-secondary-text h-5">
-                                {destination_token?.symbol}
-                            </span>
-                        )
-                    }
                 </div>
                 <PriceImpact className="h-5 text-base leading-5" quote={quote} refuel={fee?.refuel} />
             </div>

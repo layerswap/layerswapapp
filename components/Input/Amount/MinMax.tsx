@@ -94,12 +94,6 @@ const MinMax = (props: MinMaxProps) => {
                 onMouseEnter={() => onActionHover(minAmount)}
                 onClick={handleSetMinAmount}
             />
-            <ActionButton
-                data-attr="half-amount"
-                label="50%"
-                onMouseEnter={() => onActionHover(halfOfBalance)}
-                onClick={handleSetHalfAmount}
-            />
             {
                 (depositMethod === 'wallet' && halfOfBalance > 0 && (halfOfBalance < (maxAllowedAmount || Infinity))) ?
                     <ActionButton
@@ -114,12 +108,14 @@ const MinMax = (props: MinMaxProps) => {
                 Number(maxAllowedAmount) > 0 ?
                     <Tooltip disableHoverableContent={true}>
                         <TooltipTrigger asChild>
-                            <ActionButton
-                                label="Max"
-                                onMouseEnter={() => onActionHover(maxAllowedAmount)}
-                                disabled={!maxAllowedAmount}
-                                onClick={handleSetMaxAmount}
-                            />
+                            <span>
+                                <ActionButton
+                                    label="Max"
+                                    onMouseEnter={() => onActionHover(maxAllowedAmount)}
+                                    disabled={!maxAllowedAmount}
+                                    onClick={handleSetMaxAmount}
+                                />
+                            </span>
                         </TooltipTrigger>
                         {showMaxTooltip ? <TooltipContent className="pointer-events-none w-80 grow p-2 border-none! bg-secondary-300! text-xs rounded-xl" side="top" align="start" alignOffset={-10}>
                             <p>Max is calculated based on your balance minus gas fee for the transaction</p>

@@ -177,7 +177,7 @@ const AmountField = forwardRef(function AmountField({ actionValue, fee, classNam
                         type="button"
                         onClick={onToggle}
                         className={clsx(
-                            "text-primary-text bg-secondary-300 hover:bg-secondary-200 p-0.5 rounded-sm transition",
+                            "bg-secondary-300 hover:bg-secondary-200 p-0.5 rounded-sm transition text-secondary-text hover:text-primary-text",
                             {
                                 "hidden": !showQuickActions,
                                 "block": showQuickActions
