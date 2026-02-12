@@ -25,10 +25,11 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
     const showsWalletButton = wallets.length === 0 && direction === 'from' && !searchQuery;
 
     const ref = useRef<HTMLDivElement>(null);
+
+    
     const { suggestionsLimit } = useSuggestionsLimit({
         hasWallet: wallets.length > 0,
-        showsWalletButton,
-        containerElement: ref.current
+        showsWalletButton
     });
 
     const { allRoutes, isLoading, routeElements, selectedRoute, selectedToken } = useFormRoutes({ direction, values }, searchQuery, suggestionsLimit)

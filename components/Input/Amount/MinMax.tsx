@@ -101,12 +101,14 @@ const MinMax = (props: MinMaxProps) => {
             />
             <Tooltip disableHoverableContent={true}>
                 <TooltipTrigger asChild>
-                    <ActionButton
-                        data-attr="max-amount"
-                        label="Max"
-                        onMouseEnter={() => onActionHover(maxAllowedAmount)}
-                        onClick={handleSetMaxAmount}
-                    />
+                    <span>
+                        <ActionButton
+                            data-attr="max-amount"
+                            label="Max"
+                            onMouseEnter={() => onActionHover(maxAllowedAmount)}
+                            onClick={handleSetMaxAmount}
+                        />
+                    </span>
                 </TooltipTrigger>
                 {showMaxTooltip ? <TooltipContent className="pointer-events-none w-80 grow p-2 border-none! bg-secondary-300! text-xs rounded-xl!" side="top" align="start" alignOffset={-10}>
                     <p>Max is calculated based on your balance minus gas fee for the transaction</p>

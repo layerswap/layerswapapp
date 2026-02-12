@@ -68,7 +68,7 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
                 <TokenInfoIcon
                     item={item}
                     route={route}
-                    className="xs:hidden max-w-0 group-hover:max-w-full data-[popover-open=true]:max-w-full data-[tooltip-open=true]:max-w-full overflow-hidden transition-all duration-300 opacity-0 group-hover:opacity-100 data-[popover-open=true]:opacity-100 data-[tooltip-open=true]:opacity-100 data-[popover-open=true]:delay-0 data-[tooltip-open=true]:delay-0 group-hover:delay-400 click-delay-on-hover shrink-0 pointer-events-none group-hover:pointer-events-auto data-[popover-open=true]:pointer-events-auto data-[tooltip-open=true]:pointer-events-auto"
+                    className="xs:hidden max-w-0 group-hover:max-w-full data-[popover-open=true]:max-w-full data-[tooltip-open=true]:max-w-full overflow-hidden transition-all duration-300 opacity-0 group-hover:opacity-100 data-[popover-open=true]:opacity-100 data-[tooltip-open=true]:opacity-100 data-[popover-open=true]:delay-0 data-[tooltip-open=true]:delay-0 group-hover:delay-400 shrink-0 pointer-events-none group-hover:pointer-events-auto data-[popover-open=true]:pointer-events-auto data-[tooltip-open=true]:pointer-events-auto"
                 />
             </div>
         }

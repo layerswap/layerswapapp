@@ -30,7 +30,7 @@ function calculateFromViewport(windowSize: WindowSize, hasWallet: boolean): numb
 
     const fixedHeight = SEARCH_HEIGHT + SUGGESTIONS_TITLE_HEIGHT + CONNECT_WALLET_BUTTON +
         ALL_NETWORKS_TITLE_HEIGHT + ALL_NETWORKS_VISIBLE_ROWS +
-        HEADER_HEIGHT + PADDING + (isDesktop ? 0 : -100);
+        HEADER_HEIGHT + PADDING;
 
     const availableForSuggestions = maxModalHeight - fixedHeight;
     const calculatedCount = Math.floor(availableForSuggestions / SUGGESTION_ROW_HEIGHT);
@@ -41,26 +41,14 @@ function calculateFromViewport(windowSize: WindowSize, hasWallet: boolean): numb
 type Options = {
     hasWallet: boolean;
     showsWalletButton: boolean;
-    containerElement: HTMLElement | null;
 };
 
-export default function useSuggestionsLimit({ hasWallet, showsWalletButton, containerElement }: Options) {
+export default function useSuggestionsLimit({ hasWallet, showsWalletButton }: Options) {
     const { windowSize } = useWindowDimensions();
 
     const limit = useMemo(() => {
-        if (!containerElement) return calculateFromViewport(windowSize, hasWallet);
-
-        const height = containerElement.clientHeight;
-        if (height > 0) {
-            // Subtract wallet button height when it's rendered inside the container
-            const availableHeight = (showsWalletButton
-                ? height - CONNECT_WALLET_BUTTON_HEIGHT
-                : height) - 100;
-            const count = Math.floor((availableHeight / SUGGESTION_ROW_HEIGHT) - 3);
-            return (Math.max(MIN_SUGGESTIONS, Math.min(MAX_SUGGESTIONS, count)));
-        }
-        return MIN_SUGGESTIONS;
-    }, [windowSize, hasWallet, containerElement]);
+        return calculateFromViewport(windowSize, hasWallet);
+    }, [windowSize, hasWallet]);
 
     return { suggestionsLimit: limit };
 }
