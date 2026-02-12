@@ -27,8 +27,8 @@ export function useBalance(
 
     const tick = (interval: number = refreshInterval) => {
         if (!address || !network) return
-        if (refreshWhenHidden && document.hidden) return
-        if (refreshWhenOffline && !navigator.onLine) return
+        if (!refreshWhenHidden && document.hidden) return
+        if (!refreshWhenOffline && navigator.onLine === false) return
         fetchBalance(address, network, { dedupeInterval: interval })
     }
 

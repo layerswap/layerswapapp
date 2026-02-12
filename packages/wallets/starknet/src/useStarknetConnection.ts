@@ -4,21 +4,9 @@ import { KnownInternalNames, walletIconResolver } from "@layerswap/widget/intern
 import { useStarknetStore } from "./starknetWalletStore";
 import { useStarknetTransfer } from "./useStarknetTransfer";
 import { resolveStarknetWalletIcon } from "./utils";
+import { name, id, starknetNames } from "./constants"
 
-const starknetNames = [KnownInternalNames.Networks.StarkNetGoerli, KnownInternalNames.Networks.StarkNetMainnet, KnownInternalNames.Networks.StarkNetSepolia]
 export default function useStarknetConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
-    const commonSupportedNetworks = [
-        KnownInternalNames.Networks.StarkNetMainnet,
-        KnownInternalNames.Networks.StarkNetGoerli,
-        KnownInternalNames.Networks.StarkNetSepolia
-    ]
-
-    const withdrawalSupportedNetworks = [
-        ...commonSupportedNetworks
-    ]
-
-    const name = 'Starknet'
-    const id = 'starknet'
 
     const { connectors } = useConnect();
     const { disconnectAsync } = useDisconnect()
@@ -73,9 +61,9 @@ export default function useStarknetConnection({ networks }: WalletConnectionProv
                     network: starknetNetwork,
                     disconnectWallets: () => disconnectWallets(starknetConnector.id, result?.account),
                     address: result?.account,
-                    withdrawalSupportedNetworks,
-                    autofillSupportedNetworks: commonSupportedNetworks,
-                    asSourceSupportedNetworks: commonSupportedNetworks,
+                    withdrawalSupportedNetworks: starknetNames,
+                    autofillSupportedNetworks: starknetNames,
+                    asSourceSupportedNetworks: starknetNames,
                 });
 
                 addAccount(starknetConnector.id, result.account);
@@ -131,9 +119,9 @@ export default function useStarknetConnection({ networks }: WalletConnectionProv
 
         connectedWallets: starknetWallets,
         activeWallet,
-        withdrawalSupportedNetworks,
-        autofillSupportedNetworks: commonSupportedNetworks,
-        asSourceSupportedNetworks: commonSupportedNetworks,
+        withdrawalSupportedNetworks: starknetNames,
+        autofillSupportedNetworks: starknetNames,
+        asSourceSupportedNetworks: starknetNames,
         availableWalletsForConnect,
         name,
         id,

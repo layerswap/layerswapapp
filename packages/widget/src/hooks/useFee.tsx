@@ -14,6 +14,7 @@ type UseQuoteData = {
     quote?: Quote
     quoteError?: QuoteError
     isQuoteLoading: boolean
+    isDebouncing: boolean
     mutateFee: () => void
     mutateLimits: () => void
     limitsValidating: boolean
@@ -93,7 +94,7 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
     })
 
     const canGetQuote = from && to && depositMethod && toCurrency && fromCurrency && debouncedAmount
-    
+
     const quoteURL = (canGetQuote && !isDebouncing)
         ? buildQuoteUrl({
             sourceNetwork: from!,
@@ -124,14 +125,14 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
                 setLoading(true)
                 await sleep(3500)
             }
-          
-            
+
+
             setKey(url)
             setLoading(false)
             return newData
         }
         catch (error) {
-            if(error.response?.data?.error?.code === "VALIDATION_ERROR"){
+            if (error.response?.data?.error?.code === "VALIDATION_ERROR") {
                 useSlippageStore.getState().clearSlippage()
             }
             setLoading(false)
@@ -151,6 +152,7 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
         maxAllowedAmount: amountRange?.data?.max_amount,
         quote: (quoteError || !canGetQuote) ? undefined : quote?.data,
         isQuoteLoading: isQuoteLoading,
+        isDebouncing,
         quoteError,
         mutateFee,
         mutateLimits,
@@ -183,7 +185,7 @@ export function transformSwapDataToQuoteArgs(swapData: SwapBasicData | undefined
     }
 }
 
-type QuoteUrlArgs = {
+export type QuoteUrlArgs = {
     sourceNetwork: string
     sourceToken: string
     destinationNetwork: string

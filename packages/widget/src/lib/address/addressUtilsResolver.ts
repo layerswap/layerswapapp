@@ -1,4 +1,4 @@
-import { AddressUtilsProvider } from "@/types";
+import { AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
 
 export class AddressUtilsResolver {
     private providers: AddressUtilsProvider[];
@@ -7,17 +7,17 @@ export class AddressUtilsResolver {
         this.providers = providers || [];
     }
 
-    isValidAddress(network: { name: string }, address?: string): boolean {
-        const provider = this.providers.find(p => p.supportsNetwork(network));
+    isValidAddress({ network, providerName, address }: AddressUtilsProviderProps): boolean {
+        const provider = this.providers.find(p => network ? p.supportsNetwork(network) : providerName ? p.providerName === providerName : false);
         if (!provider) return false;
 
-        return provider.isValidAddress(address, network);
+        return provider.isValidAddress({ address, network, providerName });
     }
 
-    addressFormat(address: string, network: { name: string }): string {
-        const provider = this.providers.find(p => p.supportsNetwork(network));
-        if (!provider) return address?.toLowerCase();
+    addressFormat({ address, network, providerName }: AddressUtilsProviderProps): string {
+        const provider = this.providers.find(p => network ? p.supportsNetwork(network) : providerName ? p.providerName === providerName : false);
+        if (!provider) return address;
 
-        return provider.addressFormat ? provider.addressFormat(address, network) : address?.toLowerCase();
+        return provider.addressFormat ? provider.addressFormat({ address, network, providerName }) : address;
     }
 }

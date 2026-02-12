@@ -7,10 +7,11 @@ import { RewardsComponentSceleton } from "@/components/Common/Sceletons"
 import useSWR from "swr"
 import { ApiResponse } from "@/Models/ApiResponse"
 import ClickTooltip from "@/components/Common/ClickTooltip"
-import shortenAddress from "@/components/utils/ShortenAddress"
 import { Progress } from "@/components/shadcn/progressBar";
 import useWallet from "@/hooks/useWallet";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
+import { getExplorerUrl } from "@/lib/address/explorerUrl";
+import shortenString from "@/components/utils/ShortenString";
 
 type Props = {
     campaign: Campaign
@@ -144,7 +145,7 @@ const Rewards: FC<Props> = ({ campaign }) => {
                                     {payouts.map((payout) => (
                                         <tr key={payout.transaction_id}>
                                             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-primary-text sm:pl-6 underline hover:no-underline">
-                                                <a target={"_blank"} href={network?.transaction_explorer_template?.replace("{0}", payout.transaction_id)}>{shortenAddress(payout.transaction_id)}</a>
+                                                <a target={"_blank"} href={getExplorerUrl(network?.transaction_explorer_template, payout.transaction_id)}>{shortenString(payout.transaction_id)}</a>
                                             </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-100">{payout.amount}</td>
                                             <td className="px-3 py-4 text-sm text-gray-100">{new Date(payout.date).toLocaleString()}</td>

@@ -4,11 +4,11 @@ import { Info } from "lucide-react";
 import { useQuoteData } from "@/hooks/useFee";
 import clsx from "clsx";
 import { useBalance } from "@/lib/balances/useBalance";
-import { isValidAddress } from "@/lib/address/validator";
 import { SwapFormValues } from "../SwapFormValues";
 import ToggleButton from "@/components/Buttons/toggleButton";
 import { useValidationContext } from "@/context/validationContext";
 import { FORM_VALIDATION_ERROR_CODES } from "@/hooks/useFormValidation";
+import { Address } from "@/lib/address/Address";
 
 type RefuelProps = {
     onButtonClick: () => void
@@ -25,7 +25,7 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, quote }) => {
     const { balances } = useBalance(destination_address, to)
 
     const destinationNativeBalance = destination_address && balances?.find(b => (b.token === to?.token?.symbol) && (b.network === to.name))
-    const needRefuel = toCurrency && toCurrency.refuel && to && to.token && isValidAddress(destination_address, to) && destinationNativeBalance && destinationNativeBalance?.amount == 0
+    const needRefuel = toCurrency && toCurrency.refuel && to && to.token && destination_address && Address.isValid(destination_address, to) && destinationNativeBalance && destinationNativeBalance?.amount == 0
     const previouslySelectedDestination = useRef(to)
 
     const { formValidation } = useValidationContext()
@@ -53,7 +53,7 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, quote }) => {
     return (
         showRefuel &&
         <div
-            className={clsx("gap-4 flex relative items-center outline-hidden w-full text-primary-text px-4 py-3 bg-secondary-500 border border-transparent transition-colors duration-200 rounded-2xl mt-3", {
+            className={clsx("gap-4 flex relative items-center outline-hidden w-full text-primary-text px-4 py-3 bg-secondary-500 border border-transparent transition-colors duration-200 rounded-2xl mt-2", {
                 "border-primary!": needRefuel && !refuel
             })}
         >

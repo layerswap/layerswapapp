@@ -1,6 +1,6 @@
 import { SwapStatus } from "@/Models/SwapStatus"
+import CircleCheckIcon from "@/components/Icons/CircleCheckIcon";
 import { PublishedSwapTransactions, SwapItem, TransactionType } from "@/lib/apiClients/layerSwapApiClient"
-import CheckIcon from "@/components/Icons/CheckIcon";
 
 export default function StatusIcon({ swap, withBg, short }: { swap: SwapItem, withBg?: boolean, short?: boolean }) {
   const status = swap.status;
@@ -39,7 +39,7 @@ export default function StatusIcon({ swap, withBg, short }: { swap: SwapItem, wi
 
 const IconComponentWrapper = ({ children, withBg, classNames }: { children: React.ReactNode, withBg?: boolean, classNames?: string }) => {
   return (
-    <div className={`inline-flex items-center gap-1 font-bold ${classNames} ${withBg ? 'pt-3.5 py-1.5 w-full justify-center rounded-b-2xl' : 'bg-transparent!'}`}>
+    <div className={`inline-flex items-center gap-1 font-bold ${classNames} ${withBg ? 'pt-3.5 py-1.5 w-full justify-center rounded-b-2xl' : 'rounded-md px-1 py-0.5'}`}>
       {children}
     </div>
   )
@@ -48,7 +48,7 @@ const IconComponentWrapper = ({ children, withBg, classNames }: { children: Reac
 const GreenComponent = ({ text, withBg, short }: IconComponentProps) => {
   return (
     <IconComponentWrapper withBg={withBg} classNames="bg-success-background text-success-foreground text-sm">
-      <CheckIcon className="fill-success-foreground text-success-foreground" />
+      <CircleCheckIcon className="fill-success-foreground text-success-foreground" />
       {!short && <p>{text}</p>}
     </IconComponentWrapper>
   )

@@ -1,12 +1,11 @@
 import { useWallet } from "@solana/wallet-adapter-react"
-import { isMobile, KnownInternalNames } from "@layerswap/widget/internal"
+import { isMobile } from "@layerswap/widget/internal"
 import { InternalConnector, Wallet, WalletConnectionProvider, NetworkType, WalletConnectionProviderProps, WalletModalConnector } from "@layerswap/widget/types"
 import { useMemo, useCallback } from "react"
 import { resolveSolanaWalletConnectorIcon } from "./utils"
 import { useSVMTransfer } from "./transferProvider/useSVMTransfer"
 import { isSolanaAdapterSupported } from "./utils"
-
-const solanaNames = [KnownInternalNames.Networks.SolanaMainnet, KnownInternalNames.Networks.SolanaDevnet, KnownInternalNames.Networks.SolanaTestnet]
+import { name, id, solanaNames } from "./constants"
 
 export default function useSVMConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
     const isMobilePlatform = useMemo(() => isMobile(), []);
@@ -15,8 +14,6 @@ export default function useSVMConnection({ networks }: WalletConnectionProviderP
         ...networks.filter(network => network.type === NetworkType.Solana).map(l => l.name)
     ]
 
-    const name = 'Solana'
-    const id = 'solana'
     const { disconnect, select, wallets, wallet: solanaWallet, signTransaction } = useWallet();
     const connectedWallet = solanaWallet?.adapter.connected === true ? solanaWallet : undefined
     const connectedAddress = connectedWallet?.adapter.publicKey?.toBase58()

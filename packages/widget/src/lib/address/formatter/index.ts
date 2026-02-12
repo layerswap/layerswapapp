@@ -1,12 +1,16 @@
 import { resolverService } from "@/lib/resolvers/resolverService";
 
-export function addressFormat(address: string, network: { name: string } | null): string {
-    if (!address || !network) {
-        return address
-    }
+type AddressFormatProps = {
+    address: string;
+    network?: { name: string } | null;
+    providerName?: string
+}
+
+export function addressFormat(props: AddressFormatProps): string {
+    const { address, network, providerName } = props
     try {
         const resolver = resolverService.getAddressUtilsResolver();
-        return resolver.addressFormat(address, network);
+        return resolver.addressFormat({ address, network, providerName });
     } catch (err) {
         return address
     }
