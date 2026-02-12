@@ -26,7 +26,6 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
 
     const ref = useRef<HTMLDivElement>(null);
 
-    
     const { suggestionsLimit } = useSuggestionsLimit({
         hasWallet: wallets.length > 0,
         showsWalletButton

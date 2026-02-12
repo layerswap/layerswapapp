@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import useWindowDimensions from './useWindowDimensions';
 
 const SUGGESTION_ROW_HEIGHT = 60;
-const CONNECT_WALLET_BUTTON_HEIGHT = 128;
 const MIN_SUGGESTIONS = 4;
 const MAX_SUGGESTIONS = 15;
 
@@ -43,7 +42,7 @@ type Options = {
     showsWalletButton: boolean;
 };
 
-export default function useSuggestionsLimit({ hasWallet, showsWalletButton }: Options) {
+export default function useSuggestionsLimit({ hasWallet }: Options) {
     const { windowSize } = useWindowDimensions();
 
     const limit = useMemo(() => {

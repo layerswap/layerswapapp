@@ -1,5 +1,5 @@
 import useWindowDimensions from "@/hooks/useWindowDimensions";
-import { DetailedHTMLProps, InputHTMLAttributes, useCallback, useEffect, useRef, useState } from "react";
+import { DetailedHTMLProps, InputHTMLAttributes, useEffect, useRef, useState } from "react";
 import FilledX from "@/components/icons/FilledX";
 import SearchIcon from "@/components/icons/SearchIcon";
 import clsx from "clsx";

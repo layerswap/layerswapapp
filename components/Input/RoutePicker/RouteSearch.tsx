@@ -16,12 +16,14 @@ const RouteSearch: FC<RouteSearchProps> = ({ searchQuery, setSearchQuery, should
     const routes = useMemo(() => direction === 'from' ? sourceRoutes : destinationRoutes, [direction, sourceRoutes, destinationRoutes]);
 
     const animatedPlaceholders = useMemo(() => {
-        const shuffled = routes.sort(() => Math.random() - 0.5);
+        const shuffled = [...routes].sort(() => Math.random() - 0.5);
 
-        const routeTexts = shuffled.map((route) => {
-            const token = route.tokens[Math.floor(Math.random() * route.tokens.length)];
-            return `Try "${token.symbol} ${route.display_name || route.name}"`;
-        });
+        const routeTexts = shuffled
+            .filter((route) => route.tokens?.length)
+            .map((route) => {
+                const token = route.tokens[Math.floor(Math.random() * route.tokens.length)];
+                return `Try "${token.symbol} ${route.display_name || route.name}"`;
+            });
         return ["Search by token and network", ...routeTexts];
     }, [routes])
     
