@@ -8,7 +8,6 @@ import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { Form, useFormikContext } from "formik";
 import { Partner } from "@/Models/Partner";
 import RoutePicker from "@/components/Input/RoutePicker";
-import AmountField from "@/components/Input/Amount";
 import Address from "@/components/Input/Address";
 import { ChevronDown } from "lucide-react";
 import AddressIcon from "@/components/AddressIcon";
@@ -27,6 +26,7 @@ import { Wallet } from "@/Models/WalletProvider";
 import { AddressGroup } from "@/components/Input/Address/AddressPicker";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { ExchangeReceiveAmount } from "@/components/Input/Amount/ExchangeReceiveAmount";
+import ExchangeAmountField from "@/components/Input/Amount/ExchangeAmount";
 import shortenString from "@/components/utils/ShortenString";
 
 type Props = {
@@ -141,10 +141,9 @@ const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
                                     }
                                 </div>
                                 <div className="relative group exchange-amount-field">
-                                    <AmountField
+                                    <ExchangeAmountField
                                         className="pb-0! rounded-xl!"
                                         fee={quote}
-                                        usdPosition="right"
                                         actionValue={actionTempValue}
                                     />
                                     {quote &&

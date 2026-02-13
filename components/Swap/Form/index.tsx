@@ -13,6 +13,7 @@ import { ApiResponse } from "@/Models/ApiResponse";
 import { Partner } from "@/Models/Partner";
 import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 import { THEME_COLORS } from "@/Models/Theme";
+import { SwitchUsdTokenProvider } from "@/context/switchUsdToken";
 
 export default function Form() {
     const { from, appName, defaultTab: defaultTabQueryParam, theme: themeName } = useQueryState()
@@ -63,31 +64,35 @@ export default function Form() {
 
         <TabsContent value="cross-chain">
             <SwapDataProvider>
-                <FormWrapper type="cross-chain" partner={partner}>
-                    <Widget contextualMenu={<div className="block sm:hidden">
-                        <NetworkExchangeTabs />
-                    </div>}>
-                        <ValidationProvider>
-                            <NetworkForm partner={partner} />
-                        </ValidationProvider>
-                    </Widget>
-                </FormWrapper>
+                <SwitchUsdTokenProvider>
+                    <FormWrapper type="cross-chain" partner={partner}>
+                        <Widget contextualMenu={<div className="block sm:hidden">
+                            <NetworkExchangeTabs />
+                        </div>}>
+                            <ValidationProvider>
+                                <NetworkForm partner={partner} />
+                            </ValidationProvider>
+                        </Widget>
+                    </FormWrapper>
+                </SwitchUsdTokenProvider>
             </SwapDataProvider>
         </TabsContent>
 
         <TabsContent value="exchange">
             <SwapDataProvider>
-                <FormWrapper type="exchange" partner={partner}>
-                    <Widget contextualMenu={
-                        <div className="block sm:hidden">
-                            <NetworkExchangeTabs />
-                        </div>
-                    }>
-                        <ValidationProvider>
-                            <ExchangeForm partner={partner} showBanner={showBanner} dismissBanner={dismissBanner} />
-                        </ValidationProvider>
-                    </Widget>
-                </FormWrapper>
+                <SwitchUsdTokenProvider>
+                    <FormWrapper type="exchange" partner={partner}>
+                        <Widget contextualMenu={
+                            <div className="block sm:hidden">
+                                <NetworkExchangeTabs />
+                            </div>
+                        }>
+                            <ValidationProvider>
+                                <ExchangeForm partner={partner} showBanner={showBanner} dismissBanner={dismissBanner} />
+                            </ValidationProvider>
+                        </Widget>
+                    </FormWrapper>
+                </SwitchUsdTokenProvider>
             </SwapDataProvider>
         </TabsContent>
 

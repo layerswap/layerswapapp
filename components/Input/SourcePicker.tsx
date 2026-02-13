@@ -8,7 +8,6 @@ import { useQuoteData } from "@/hooks/useFee";
 import clsx from "clsx";
 import { useClickOutside } from "@/hooks/useClickOutside";
 import { useState } from "react";
-
 type Props = {
     minAllowedAmount: ReturnType<typeof useQuoteData>['minAllowedAmount'];
     maxAllowedAmount: ReturnType<typeof useQuoteData>['maxAllowedAmount'];
@@ -49,9 +48,9 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fe
                     <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} onActionHover={handleActionHover} depositMethod={depositMethod} />
                 </div>
             }
-            <div className="grid grid-cols-[1fr_auto] gap-1 w-full max-w-full">
-                <div className="min-w-0 overflow-hidden">
-                    <AmountField fee={fee} actionValue={actiontempValue} />
+            <div className="grid grid-cols-[1fr_auto] gap-2 w-full max-w-full relative isolate">
+                <div className="min-w-0 overflow-hidden relative">
+                    <AmountField fee={fee} actionValue={actiontempValue} showQuickActions={showQuickActions} />
                 </div>
 
                 <div className="justify-self-end self-start">
