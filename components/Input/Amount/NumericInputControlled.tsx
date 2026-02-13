@@ -1,6 +1,7 @@
-import React, { ChangeEvent, FC, forwardRef } from "react";
+import React, { ChangeEvent, forwardRef } from "react";
 import { classNames } from "@/components/utils/classNames";
 import { isScientific } from "@/components/utils/RoundDecimals";
+import { sanitizeNumericInput } from "../numericInputUtils";
 
 type Props = {
     value: string;
@@ -13,11 +14,10 @@ type Props = {
     maxLength?: number;
     precision?: number;
     step?: number;
-    ref?: any;
     className?: string;
 };
 
-const NumericInputControlled: FC<Props> = forwardRef<HTMLInputElement, Props>(
+const NumericInputControlled = forwardRef<HTMLInputElement, Props>(
     function NumericInputControlled({ value, onValueChange, tempValue, disabled, placeholder, minLength, maxLength, precision, step, className }, ref) {
         const formattedTempValue = tempValue ? isScientific(tempValue)
             ? (!isNaN(Number(tempValue))
@@ -27,15 +27,10 @@ const NumericInputControlled: FC<Props> = forwardRef<HTMLInputElement, Props>(
             : '';
 
         const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-            if (!/^[0-9]*[.,]?[0-9]*$/.test(e.target.value)) return;
+            const sanitized = sanitizeNumericInput(e.target.value, precision);
+            if (!/^[0-9]*[.,]?[0-9]*$/.test(sanitized)) return;
 
-            // normalize comma -> dot
-            replaceComma(e);
-
-            // limit decimals
-            limitDecimalPlaces(e, precision);
-
-            onValueChange(e.target.value);
+            onValueChange(sanitized);
         };
 
         // Remove pl-0 from className if it exists to allow pl-4 for $ symbol
@@ -72,26 +67,5 @@ const NumericInputControlled: FC<Props> = forwardRef<HTMLInputElement, Props>(
         );
     }
 );
-
-function limitDecimalPlaces(e: any, count?: number) {
-    if (!count || e.target.value.indexOf(".") === -1) return;
-    if (e.target.value.length - e.target.value.indexOf(".") > count) {
-        e.target.value = ParseFloat(e.target.value, count);
-    }
-}
-
-function ParseFloat(str: string, val: number) {
-    str = str.toString();
-    str = str.slice(0, str.indexOf(".") + val + 1);
-    return Number(str).toString();
-}
-
-function replaceComma(e: any) {
-    let val = e.target.value;
-    if (val.match(/\,/)) {
-        val = val.replace(/\,/g, ".");
-        e.target.value = val;
-    }
-}
 
 export default NumericInputControlled;
