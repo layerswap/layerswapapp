@@ -58,7 +58,7 @@ const CexPicker: FC = () => {
     return (
         <div className="flex w-full flex-col self-end relative ml-auto items-center">
             <Selector>
-                <SelectorTrigger disabled={false} className="bg-secondary-500 p-3!">
+                <SelectorTrigger data-attr="from-cex-picker" disabled={false} className="bg-secondary-500 !p-3">
                     <SelectedExchangeDisplay exchange={fromExchange} placeholder="Select Exchange" />
                 </SelectorTrigger>
                 <SelectorContent isLoading={isLoading} searchHint="Search">
@@ -135,12 +135,22 @@ type ExchangeNetworkProps = {
 const ExchangeNetwork = (props: ExchangeNetworkProps) => {
     const { route, index, onSelect } = props
 
-    return <div className="bg-secondary-500 cursor-pointer hover:bg-secondary-400 rounded-xl outline-none disabled:cursor-not-allowed relative" onClick={() => onSelect(route)} >
-        <SelectItem>
-            <SelectItem.Logo imgSrc={route.logo} altText={`${route.display_name} logo`} />
-            <SelectItem.Title className="py-3!">{route.display_name}</SelectItem.Title>
-        </SelectItem>
-    </div>
+    return (
+        <NavigatableItem
+            index={index}
+            onClick={() => onSelect(route)}
+            className="cursor-pointer rounded-xl outline-none disabled:cursor-not-allowed relative"
+        >
+            {({ isFocused }) => (
+                <div className={clsx('rounded-xl', isFocused ? "bg-secondary-400" : "bg-secondary-500 hover:bg-secondary-400")}>
+                    <SelectItem>
+                        <SelectItem.Logo imgSrc={route.logo} altText={`${route.display_name} logo`} />
+                        <SelectItem.Title className="py-3!">{route.display_name}</SelectItem.Title>
+                    </SelectItem>
+                </div>
+            )}
+        </NavigatableItem>
+    )
 }
 
 type SelectedNetworkDisplayProps = {
