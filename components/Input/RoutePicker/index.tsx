@@ -26,10 +26,7 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
 
     const ref = useRef<HTMLDivElement>(null);
 
-    const { suggestionsLimit } = useSuggestionsLimit({
-        hasWallet: wallets.length > 0,
-        showsWalletButton
-    });
+    const { suggestionsLimit } = useSuggestionsLimit({ hasWallet: wallets.length > 0, });
 
     const { allRoutes, isLoading, routeElements, selectedRoute, selectedToken } = useFormRoutes({ direction, values }, searchQuery, suggestionsLimit)
     const currencyFieldName = direction === 'from' ? 'fromAsset' : 'toAsset';

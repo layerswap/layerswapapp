@@ -39,7 +39,6 @@ function calculateFromViewport(windowSize: WindowSize, hasWallet: boolean): numb
 
 type Options = {
     hasWallet: boolean;
-    showsWalletButton: boolean;
 };
 
 export default function useSuggestionsLimit({ hasWallet }: Options) {
