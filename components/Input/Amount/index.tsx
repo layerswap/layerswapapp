@@ -22,6 +22,8 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
     const name = "amount"
     const amountRef = useRef(ref)
     const suffixRef = useRef<HTMLDivElement>(null);
+    const previousTokenSymbolRef = useRef<string | undefined>(fromCurrency?.symbol);
+    const skipNextUsdSyncRef = useRef(false);
     const { inputMode, setInputMode } = useAmountModeStore();
     const [usdInputValue, setUsdInputValue] = useState<string>("");
 
@@ -125,9 +127,33 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
     }, [amount, requestedAmountInUsd, actionValueForInput, inputMode, usdInputValue]);
 
     useEffect(() => {
-        setInputMode("token");
-        setUsdInputValue("");
-    }, [fromCurrency?.symbol]);
+        const currentSymbol = fromCurrency?.symbol;
+        if (previousTokenSymbolRef.current === currentSymbol)
+            return;
+
+        previousTokenSymbolRef.current = currentSymbol;
+
+        if (inputMode !== "usd")
+            return;
+
+        if (!hasUsdPrice)
+            return;
+
+        const normalized = usdInputValue.replace(/,/g, '.');
+        if (normalized === '' || normalized === '.') {
+            setFieldValue(name, '', true);
+            return;
+        }
+
+        const usdAmount = Number(normalized);
+        if (!Number.isFinite(usdAmount) || usdAmount < 0)
+            return;
+
+        const tokenAmount = usdAmount / Number(sourceCurrencyPriceInUsd);
+        const precision = fromCurrency?.precision ?? 8;
+        skipNextUsdSyncRef.current = true;
+        setFieldValue(name, toFixedTrimmed(tokenAmount, precision), true);
+    }, [fromCurrency?.precision, fromCurrency?.symbol, hasUsdPrice, inputMode, setFieldValue, sourceCurrencyPriceInUsd, usdInputValue]);
 
     useEffect(() => {
         if (hasUsdPrice)
@@ -140,6 +166,11 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
     useEffect(() => {
         if (inputMode !== "usd" || !hasUsdPrice)
             return;
+
+        if (skipNextUsdSyncRef.current) {
+            skipNextUsdSyncRef.current = false;
+            return;
+        }
 
         const price = Number(sourceCurrencyPriceInUsd);
         // Check if current usdInputValue already corresponds to the same token amount.
