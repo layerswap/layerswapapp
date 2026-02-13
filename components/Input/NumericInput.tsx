@@ -6,6 +6,7 @@ import { isScientific } from "@/components/utils/RoundDecimals";
 
 type Input = {
     tempValue?: number;
+    valueOverride?: string;
     label?: JSX.Element | JSX.Element[]
     disabled?: boolean;
     placeholder: string;
@@ -24,7 +25,7 @@ type Input = {
 
 // Use with Formik
 const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
-    function NumericInput({ label, disabled, tempValue, placeholder, minLength, maxLength, precision, step, name, className, children, onChange, onFocus, onBlur }, ref) {
+    function NumericInput({ label, disabled, tempValue, valueOverride, placeholder, minLength, maxLength, precision, step, name, className, children, onChange, onFocus, onBlur }, ref) {
         const { handleChange } = useFormikContext<SwapFormValues>();
         const [field] = useField(name)
 
@@ -57,6 +58,7 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                     isNaN(Number(tempValue)) &&
                     <input
                         {...field}
+                        value={valueOverride ?? field.value ?? ''}
                         inputMode="decimal"
                         autoComplete="off"
                         disabled={disabled}

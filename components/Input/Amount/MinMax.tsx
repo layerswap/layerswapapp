@@ -56,28 +56,31 @@ const MinMax = (props: MinMaxProps) => {
 
     const halfOfBalance = (walletBalance?.amount || maxAllowedAmount) ? (walletBalance?.amount || maxAllowedAmount) / 2 : 0;
 
-    const handleSetValue = (value: string) => {
+    const handleSetValue = (value: number) => {
+        if (!Number.isFinite(value) || value < 0)
+            return;
+
         mutateBalances()
-        setFieldValue('amount', value, true)
+        setFieldValue('amount', value.toString(), true)
         onActionHover(undefined)
     }
 
     const handleSetMinAmount = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
         e.stopPropagation()
-        handleSetValue(minAmount.toString())
+        handleSetValue(minAmount)
     }
 
     const handleSetHalfAmount = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
         e.stopPropagation()
-        handleSetValue(halfOfBalance.toString())
+        handleSetValue(halfOfBalance)
     }
 
     const handleSetMaxAmount = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
         e.stopPropagation()
-        handleSetValue(maxAllowedAmount.toString())
+        handleSetValue(maxAllowedAmount)
     }
 
     const showMaxTooltip = !!(depositMethod === 'wallet' && walletBalance?.amount && shouldPayGasWithTheToken && (!limitsMaxAmount || walletBalance.amount < limitsMaxAmount))
