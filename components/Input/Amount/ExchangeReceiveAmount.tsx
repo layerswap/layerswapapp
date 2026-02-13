@@ -3,7 +3,6 @@ import { Token } from "@/Models/Network";
 import { Quote } from "@/lib/apiClients/layerSwapApiClient";
 import NumberFlow from "@number-flow/react";
 import clsx from "clsx";
-import { useSwitchUsdToken } from "@/context/switchUsdToken";
 
 type ReceiveAmountProps = {
     destination_token: Token | undefined;
@@ -13,11 +12,6 @@ type ReceiveAmountProps = {
 export const ExchangeReceiveAmount: FC<ReceiveAmountProps> = ({ destination_token, fee, isFeeLoading }) => {
     const receive_amount = fee?.quote.receive_amount
     const receiveAmountInUsd = receive_amount && destination_token && fee.quote?.destination_token?.price_in_usd ? (receive_amount * fee.quote.destination_token.price_in_usd).toFixed(2) : undefined
-    const { isUsdPrimary } = useSwitchUsdToken()
-
-    const tokenAmount = <NumberFlow value={receive_amount || 0} trend={0} format={{ maximumFractionDigits: fee?.quote.destination_token?.decimals || 2 }} />
-
-    const usdAmount = <NumberFlow className="p-0" prefix="$" value={receiveAmountInUsd || 0} format={{ maximumFractionDigits: receiveAmountInUsd ? 2 : 0 }} trend={0} />
 
     return (<>
         <div className="w-full flex min-w-0 font-normal border-0 text-xl text-primary-text relative truncate items-baseline flex-row">
@@ -27,20 +21,14 @@ export const ExchangeReceiveAmount: FC<ReceiveAmountProps> = ({ destination_toke
                     { "animate-pulse-stronger": isFeeLoading },
                     { "text-secondary-text": !receive_amount }
                 )}>
-                    {isUsdPrimary ? usdAmount : tokenAmount}
+                    <NumberFlow value={receive_amount || 0} trend={0} format={{ maximumFractionDigits: fee?.quote.destination_token?.decimals || 2 }} />
+                    <span className="ml-1">{destination_token?.symbol}</span>
                 </div>
             </div>
-            <div className="flex items-baseline space-x-1 mt-1.5">
+            <div className="flex items-baseline space-x-2 mt-1.5">
                 <span className="text-sm leading-4 font-medium text-secondary-text h-5">
-                    {isUsdPrimary ? tokenAmount : usdAmount}
+                    <NumberFlow className="p-0" prefix="$" value={receiveAmountInUsd || 0} format={{ maximumFractionDigits: receiveAmountInUsd ? 2 : 0 }} trend={0} />
                 </span>
-                {
-                    isUsdPrimary && (
-                        <span className="text-sm leading-5 font-medium text-secondary-text h-5">
-                            {destination_token?.symbol}
-                        </span>
-                    )
-                }
             </div>
         </div>
     </>)

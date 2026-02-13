@@ -9,7 +9,7 @@ import { Form, useFormikContext } from "formik";
 import { Partner } from "@/Models/Partner";
 import RoutePicker from "@/components/Input/RoutePicker";
 import Address from "@/components/Input/Address";
-import { ArrowUpDown, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import AddressIcon from "@/components/AddressIcon";
 import { Address as AddressClass } from "@/lib/address";
 import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
@@ -27,8 +27,6 @@ import { AddressGroup } from "@/components/Input/Address/AddressPicker";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { ExchangeReceiveAmount } from "@/components/Input/Amount/ExchangeReceiveAmount";
 import ExchangeAmountField from "@/components/Input/Amount/ExchangeAmount";
-import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
-import { useSwitchUsdToken } from "@/context/switchUsdToken";
 import shortenString from "@/components/utils/ShortenString";
 
 type Props = {
@@ -45,7 +43,6 @@ const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
     const { fromAsset: fromCurrency, from, to: destination, destination_address, amount, toAsset: toCurrency } = values || {};
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
     const [actionTempValue, setActionTempValue] = useState<number | undefined>(undefined)
-    const { isUsdPrimary, toggleUsdPrimary } = useSwitchUsdToken()
 
     const { wallets } = useWallet();
     const wallet = wallets.find(wallet => wallet.address.toLowerCase() == destination_address?.toLowerCase());
@@ -62,12 +59,6 @@ const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
     const handleActionHover = (value: number | undefined) => {
         setActionTempValue(value)
     }
-
-    const amountLabel = isUsdPrimary ? "Enter USD amount" : "Enter amount";
-    const tokenUsdPrice = resolveTokenUsdPrice(fromCurrency, quote?.quote)
-    const onToggle = () => {
-        toggleUsdPrimary();
-    };
 
     return (
         <>
@@ -134,30 +125,9 @@ const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
                             </div>
                             <div className="bg-secondary-500 rounded-2xl p-3 group space-y-2" onClick={setShowQuickActions} ref={parentRef}>
                                 <div className="flex justify-between items-center">
-                                    <div className="flex items-center gap-2">
-                                        <label
-                                            htmlFor="From"
-                                            className="block font-normal text-secondary-text text-base ml-2 leading-5"
-                                        >
-                                            {amountLabel}
-                                        </label>
-                                        {from && fromCurrency &&
-                                            <button
-                                                type="button"
-                                                onClick={onToggle}
-                                                className={clsx(
-                                                    "text-primary-text bg-secondary-300 hover:bg-secondary-200 p-0.5 rounded-sm transition",
-                                                    {
-                                                        "hidden": !showQuickActions,
-                                                        "block": showQuickActions
-                                                    },
-                                                    "group-hover:block"
-                                                )}
-                                            >
-                                                <ArrowUpDown className="w-4 h-4" />
-                                            </button>
-                                        }
-                                    </div>
+                                    <label htmlFor="From" className="block font-normal text-secondary-text text-base ml-2 leading-5">
+                                        Enter amount
+                                    </label>
                                     {
                                         from && fromCurrency && minAllowedAmount && maxAmountFromApi &&
                                         <div className={clsx({
@@ -166,7 +136,7 @@ const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
                                         },
                                             "group-hover:block"
                                         )}>
-                                            <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} onActionHover={handleActionHover} depositMethod="deposit_address" tokenUsdPrice={tokenUsdPrice} />
+                                            <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} onActionHover={handleActionHover} depositMethod="deposit_address" />
                                         </div>
                                     }
                                 </div>
