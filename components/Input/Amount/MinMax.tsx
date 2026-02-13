@@ -15,8 +15,7 @@ type MinMaxProps = {
     limitsMaxAmount: number | undefined,
     limitsMinAmount: number | undefined,
     onActionHover: (value: number | undefined) => void,
-    depositMethod: 'wallet' | 'deposit_address' | undefined,
-    tokenUsdPrice?: number;
+    depositMethod: 'wallet' | 'deposit_address' | undefined
 }
 
 const MinMax = (props: MinMaxProps) => {

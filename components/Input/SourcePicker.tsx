@@ -8,8 +8,6 @@ import { useQuoteData } from "@/hooks/useFee";
 import clsx from "clsx";
 import { useClickOutside } from "@/hooks/useClickOutside";
 import { useState } from "react";
-import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
-
 type Props = {
     minAllowedAmount: ReturnType<typeof useQuoteData>['minAllowedAmount'];
     maxAllowedAmount: ReturnType<typeof useQuoteData>['maxAllowedAmount'];
@@ -22,7 +20,6 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fe
     const { fromAsset: fromCurrency, from, depositMethod } = values || {}
     const { ref: parentRef, isActive: showQuickActions, activate: setShowQuickActions } = useClickOutside<HTMLDivElement>(false)
     const [actiontempValue, setActionTempValue] = useState<number | undefined>(undefined)
-    const tokenUsdPrice = resolveTokenUsdPrice(fromCurrency, fee?.quote)
 
     const handleActionHover = (value: number | undefined) => {
         setActionTempValue(value)
@@ -48,7 +45,7 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fe
                     },
                     "group-hover:block"
                 )}>
-                    <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} onActionHover={handleActionHover} depositMethod={depositMethod} tokenUsdPrice={tokenUsdPrice} />
+                    <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} onActionHover={handleActionHover} depositMethod={depositMethod} />
                 </div>
             }
             <div className="grid grid-cols-[1fr_auto] gap-2 w-full max-w-full relative isolate">
