@@ -12,17 +12,20 @@ type ReceiveAmountProps = {
     isFeeLoading: boolean;
 }
 export const ReceiveAmount: FC<ReceiveAmountProps> = ({ destination_token, fee, isFeeLoading }) => {
-    const { isUsdMode } = useUsdModeStore();
+    const isUsdMode = useUsdModeStore(s => s.isUsdMode);
     const receive_amount = fee?.quote.receive_amount
     const receiveAmountInUsd = useMemo(() => {
-        if (!receive_amount || !destination_token || !fee.quote?.destination_token?.price_in_usd) return undefined;
+        if (!receive_amount || !destination_token || !fee.quote?.destination_token?.price_in_usd) {
+            debugger
+            return undefined;
+        }
         return (receive_amount * fee.quote.destination_token.price_in_usd).toFixed(2);
     }, [receive_amount, destination_token, fee?.quote?.destination_token?.price_in_usd]);
     const quote = fee?.quote
     const tokenDecimals = fee?.quote.destination_token?.decimals || 2
 
     const primaryEmpty = isUsdMode ? !receiveAmountInUsd : !receive_amount
-
+    console.log('fee', fee)
     return (
         <div className="flex-col w-full flex min-w-0 font-normal border-0 text-[28px] leading-7 text-primary-text relative truncate">
             <div className="w-full flex items-center justify-start relative">
@@ -38,10 +41,10 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ destination_token, fee, 
                     )}
                 </div>
             </div>
-            <div className="flex items-baseline space-x-2">
+            <div className="flex flex-col items-baseline space-x-2">
                 <span className="text-base leading-5 font-medium text-secondary-text h-5">
                     {isUsdMode ? <>
-                        <NumberFlow className="p-0" suffix={` ${destination_token?.symbol}`} value={receive_amount || 0} trend={0} format={{ maximumFractionDigits: tokenDecimals }} />
+                        <NumberFlow className="p-0" suffix={` ${destination_token?.symbol}`} value={receive_amount || 0} trend={0} format={{ maximumFractionDigits: Math.min(tokenDecimals, 7) }} />
                     </> : (
                         <NumberFlow className="p-0" value={receiveAmountInUsd || 0} prefix="$" format={{ maximumFractionDigits: receiveAmountInUsd ? 2 : 0 }} trend={0} />
                     )}

@@ -55,9 +55,11 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
     const [debouncedAmount, setDebouncedAmount] = useState(amount)
     const [isDebouncing, setIsDebouncing] = useState(false)
     const { slippage } = useSlippageStore()
-
+    console.log('amount', amount)
     useEffect(() => {
-        if (amount === debouncedAmount) return;
+        if (amount === debouncedAmount) {
+            return;
+        }
 
         setIsDebouncing(true)
         const handler = setTimeout(() => {
@@ -94,6 +96,8 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
     })
 
     const canGetQuote = from && to && depositMethod && toCurrency && fromCurrency && debouncedAmount
+    console.log('canGetQuote', canGetQuote)
+    console.log('isDebouncing', isDebouncing)
 
     const quoteURL = (canGetQuote && !isDebouncing)
         ? buildQuoteUrl({
@@ -146,6 +150,11 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
         dedupingInterval: 5000,
         keepPreviousData: true,
     })
+    console.log('quote', quote)
+    console.log('quoteURL', quoteURL)
+
+    console.log('formValues', formValues)
+
 
     return {
         minAllowedAmount: amountRange?.data?.min_amount,
@@ -207,7 +216,7 @@ export function buildQuoteUrl(args: QuoteUrlArgs): string {
         useDepositAddress,
         slippage,
     } = args
-
+    debugger
     const params = new URLSearchParams({
         source_network: sourceNetwork,
         source_token: sourceToken,

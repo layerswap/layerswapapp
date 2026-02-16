@@ -54,10 +54,13 @@ const Summary: FC<SwapInfoProps> = (props) => {
                         route={sourceExchange || source}
                         token={sourceCurrency}
                     />
-                    <div className="flex flex-col col-start-7 col-span-4 items-end">
+                    <div className="flex flex-col col-start-6 col-span-6 items-end min-w-0">
                         {
                             requestedAmount &&
-                            <p className="text-primary-text text-xl leading-6 font-normal whitespace-nowrap">{truncateDecimals(Number(requestedAmount), sourceCurrency.precision)} {sourceCurrency.symbol}</p>
+                            <p className="text-primary-text text-xl leading-6 font-normal flex items-center justify-end min-w-0 w-full">
+                                <span className="truncate min-w-0">{truncateDecimals(Number(requestedAmount), sourceCurrency.precision)}</span>
+                                <span className="shrink-0">{` ${sourceCurrency.symbol}`}</span>
+                            </p>
                         }
                         <p className="text-secondary-text text-sm leading-5 flex font-medium justify-end"><NumberFlow value={requestedAmountInUsd || 0} prefix="$" trend={0} /></p>
                     </div>
@@ -115,7 +118,7 @@ type RouteTokenPairProps = {
 const RouteTokenPair: FC<RouteTokenPairProps> = ({ route, token }) => {
 
     return (
-        <div className="flex grow gap-4 text-left items-center md:text-base relative col-span-6 align-center">
+        <div className="flex grow gap-4 text-left items-center md:text-base relative col-span-5 align-center">
             <div className="inline-flex items-center relative shrink-0 h-8 w-8">
                 <ImageWithFallback
                     src={token.logo}

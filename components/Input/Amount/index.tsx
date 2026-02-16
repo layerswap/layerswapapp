@@ -24,7 +24,10 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
     const amountRef = useRef(ref)
     const suffixRef = useRef<HTMLDivElement>(null);
 
-    const { isUsdMode, usdAmount, setUsdAmount, toggleMode } = useUsdModeStore();
+    const isUsdMode = useUsdModeStore(s => s.isUsdMode);
+    const usdAmount = useUsdModeStore(s => s.usdAmount);
+    const setUsdAmount = useUsdModeStore(s => s.setUsdAmount);
+    const toggleMode = useUsdModeStore(s => s.toggleMode);
     const sourceCurrencyPriceInUsd = resolveTokenUsdPrice(fromCurrency, fee?.quote)
     const prevPriceRef = useRef(sourceCurrencyPriceInUsd);
     const prevTokenSymbolRef = useRef(fromCurrency?.symbol);
@@ -50,7 +53,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
     const actionValueAsUsd = useMemo(() => {
         if (actionValue === undefined || actionValue <= 0 || !sourceCurrencyPriceInUsd)
             return undefined;
-        return (actionValue * sourceCurrencyPriceInUsd).toFixed(2);
+        return (actionValue * sourceCurrencyPriceInUsd).toFixed(2).replace(/\.?0+$/, '');
     }, [actionValue, sourceCurrencyPriceInUsd]);
 
     const actionValueAsToken = useMemo(() => {
@@ -124,7 +127,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
             setUsdAmount('');
             return;
         }
-        setUsdAmount((amountNum * sourceCurrencyPriceInUsd).toFixed(2));
+        setUsdAmount((amountNum * sourceCurrencyPriceInUsd).toFixed(2).replace(/\.?0+$/, ''));
     }, [amount]); // eslint-disable-line react-hooks/exhaustive-deps -- only react to external amount changes
 
     // --- Toggle handler ---
@@ -134,7 +137,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
             // Token → USD: compute USD from current token amount
             const amountNum = Number(amount);
             if (!isNaN(amountNum) && amountNum > 0) {
-                setUsdAmount((amountNum * sourceCurrencyPriceInUsd).toFixed(2));
+                setUsdAmount((amountNum * sourceCurrencyPriceInUsd).toFixed(2).replace(/\.?0+$/, ''));
             } else {
                 setUsdAmount('');
             }
@@ -147,7 +150,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
 
     const handleUsdInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value.replace(',', '.');
-        if (value !== '' && !/^[0-9]*\.?[0-9]{0,2}$/.test(value)) return;
+        if (value !== '' && !/^[0-9]+\.?[0-9]{0,2}$/.test(value) && value !== '0.') return;
         setUsdAmount(value);
         computeAndSetTokenAmount(value);
     }, [setUsdAmount, computeAndSetTokenAmount]);
@@ -208,9 +211,14 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
                         )}
                     />
                 </div>
-                <div className="flex items-center gap-1 text-base leading-5 font-medium text-secondary-text h-5">
-                    <span className={clsx({ "text-secondary-text/45": !!previewToken })}>
-                        {`${previewToken ?? formattedTokenAmount} ${fromCurrency?.symbol || ''}`}
+                <div className="flex items-center gap-1 text-base leading-5 font-medium text-secondary-text h-5 min-w-0">
+                    <span className={clsx("flex items-center min-w-0 space-x-1", { "text-secondary-text/45": !!previewToken })}>
+                        <span className="truncate min-w-0">
+                            {`${previewToken ?? formattedTokenAmount}`}
+                        </span>
+                        <span className="shrink-0">
+                            {` ${fromCurrency?.symbol || ''}`}
+                        </span>
                     </span>
                     {toggleButton}
                 </div>
