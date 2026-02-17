@@ -13,11 +13,12 @@ interface AmountFieldProps {
     usdPosition?: "right" | "bottom";
     fee: ReturnType<typeof useQuoteData>['quote'];
     actionValue?: number;
+    actionValueUsd?: string;
     className?: string;
     showToggle?: boolean;
 }
 
-const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", actionValue, fee, className, showToggle }: AmountFieldProps, ref: any) {
+const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", actionValue, actionValueUsd, fee, className, showToggle }: AmountFieldProps, ref: any) {
     const { values, handleChange, setFieldValue } = useFormikContext<SwapFormValues>();
     const { fromAsset: fromCurrency, amount, toAsset: toCurrency, fromExchange } = values || {};
     const name = "amount"
@@ -60,18 +61,22 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
 
     const actionValueInUsd = useMemo(() => {
         const amountNumber = Number(actionValue);
-        if (isNaN(amountNumber) || amountNumber <= 0 || !sourceCurrencyPriceInUsd)
+        if (isNaN(amountNumber) || amountNumber <= 0)
             return undefined;
+        if (actionValueUsd) return formatUsd(Number(actionValueUsd));
+        if (!sourceCurrencyPriceInUsd) return undefined;
         return formatUsd(sourceCurrencyPriceInUsd * amountNumber)
-    }, [actionValue, sourceCurrencyPriceInUsd]);
+    }, [actionValue, actionValueUsd, sourceCurrencyPriceInUsd]);
 
     // --- USD mode computations ---
 
     const actionValueAsUsd = useMemo(() => {
-        if (actionValue === undefined || actionValue <= 0 || !sourceCurrencyPriceInUsd)
+        if (actionValue === undefined || actionValue <= 0)
             return undefined;
+        if (actionValueUsd) return actionValueUsd;
+        if (!sourceCurrencyPriceInUsd) return undefined;
         return (actionValue * sourceCurrencyPriceInUsd).toFixed(2).replace(/\.?0+$/, '');
-    }, [actionValue, sourceCurrencyPriceInUsd]);
+    }, [actionValue, actionValueUsd, sourceCurrencyPriceInUsd]);
 
     const actionValueAsToken = useMemo(() => {
         if (actionValue === undefined || actionValue <= 0) return undefined;
@@ -92,6 +97,8 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
     // Tracks whether an amount change originated from internal USD logic
     // (USD input, price change effect, token change effect) vs external (quick actions).
     const internalAmountChangeRef = useRef(false);
+    const currentAmountRef = useRef(amount);
+    currentAmountRef.current = amount;
 
     const computeAndSetTokenAmount = useCallback((usdValue: string) => {
         let newAmount: string;
@@ -110,11 +117,11 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
         }
         // Only mark as internal change if the value will actually change,
         // otherwise the sync effect won't fire and the flag stays stuck.
-        if (newAmount !== (amount || '')) {
+        if (newAmount !== (currentAmountRef.current || '')) {
             internalAmountChangeRef.current = true;
         }
         setFieldValue('amount', newAmount, true);
-    }, [sourceCurrencyPriceInUsd, fromCurrency?.precision, setFieldValue, amount]);
+    }, [sourceCurrencyPriceInUsd, fromCurrency?.precision, setFieldValue]);
 
     // Recompute token amount when price changes in USD mode
     useEffect(() => {
@@ -139,11 +146,22 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
     // Sync usdAmount when formik amount changes externally (e.g. quick action buttons).
     // Runs as a passive effect — the ref-based guard ensures only truly external
     // changes (like quick-action clicks) trigger the sync, so there is no visible flash.
+    const prevAmountRef = useRef(amount);
     useEffect(() => {
+        const amountChanged = prevAmountRef.current !== amount;
+        prevAmountRef.current = amount;
+
+        // Always clear flags first, even if amount didn't change,
+        // to prevent stale flags from affecting future syncs.
+        const skipSync = useUsdModeStore.getState().skipNextSync;
+        if (skipSync) useUsdModeStore.setState({ skipNextSync: false });
+
         if (internalAmountChangeRef.current) {
             internalAmountChangeRef.current = false;
             return;
         }
+        if (!amountChanged) return;
+        if (skipSync) return;
         if (!isUsdMode || !sourceCurrencyPriceInUsd) return;
         const amountNum = Number(amount);
         if (isNaN(amountNum) || amountNum <= 0) {
@@ -151,7 +169,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
             return;
         }
         setUsdAmount((amountNum * sourceCurrencyPriceInUsd).toFixed(2).replace(/\.?0+$/, ''));
-    }, [amount]); // eslint-disable-line react-hooks/exhaustive-deps -- only react to external amount changes
+    }, [amount, isUsdMode, sourceCurrencyPriceInUsd, setUsdAmount]);
 
     // --- Toggle handler ---
 
@@ -234,7 +252,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
                         )}
                     />
                 </div>
-                <div className="flex items-center gap-1 text-base leading-5 font-medium text-secondary-text h-5 min-w-0">
+                <div className="flex items-center gap-1 text-xs sm:text-base leading-5 font-medium text-secondary-text h-5 min-w-0">
                     {toggleButton}
                     <span className={clsx("flex items-center min-w-0 space-x-1", { "text-secondary-text/45": !!previewToken })}>
                         <span className="truncate min-w-0">
@@ -273,7 +291,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
                 }}
             />
             <div className={clsx(
-                "usd-suffix text-base leading-5 font-medium text-secondary-text pointer-events-none",
+                "usd-suffix text-xs sm:text-base leading-5 font-medium text-secondary-text pointer-events-none",
                 {
                     "absolute bottom-3 group-[.exchange-amount-field]:bottom-3.5": usdPosition === "right",
                     "h-5 flex items-center gap-1": usdPosition !== "right",

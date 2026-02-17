@@ -9,6 +9,7 @@ import { useSwapDataState } from './swap';
 import { useSelectedAccount } from './swapAccounts';
 import { useSlippageStore } from '@/stores/slippageStore';
 import { useAutoSlippageTest } from '@/hooks/useAutoSlippageTest';
+import { useUsdModeStore } from '@/stores/usdModeStore';
 
 export interface ValidationDetails {
     title?: string;
@@ -55,12 +56,15 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
 
     const routeValidation = useRouteValidation(quoteError, !!quote, isQuoteLoading || isDebouncing, autoSlippageWouldWork);
 
+    const isUsdMode = useUsdModeStore(s => s.isUsdMode);
+
     const formValidation = resolveFormValidation({
         values,
         maxAllowedAmount,
         minAllowedAmount,
         minAllowedAmountInUsd,
         maxAllowedAmountInUsd,
+        isUsdMode,
         sourceAddress: selectedSourceAccount?.address,
         sameAccountNetwork,
         quoteError

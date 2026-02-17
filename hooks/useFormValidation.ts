@@ -1,7 +1,6 @@
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import { Address } from '../lib/address';
 import { QuoteError } from './useFee';
-import { useUsdModeStore } from '@/stores/usdModeStore';
 import { formatUsd } from '@/components/utils/formatUsdAmount';
 
 interface Params {
@@ -10,6 +9,7 @@ interface Params {
     maxAllowedAmount: number | undefined,
     minAllowedAmountInUsd: number | undefined,
     maxAllowedAmountInUsd: number | undefined,
+    isUsdMode: boolean,
     sourceAddress: string | undefined,
     sameAccountNetwork?: string | undefined,
     quoteError?: QuoteError
@@ -22,9 +22,8 @@ export const FORM_VALIDATION_ERROR_CODES = {
 }
 
 
-export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, sourceAddress, sameAccountNetwork, quoteError }: Params) {
+export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isUsdMode, sourceAddress, sameAccountNetwork, quoteError }: Params) {
     let amount = values.amount ? Number(values.amount) : undefined;
-    const isUsdMode = useUsdModeStore.getState().isUsdMode;
 
     if (!values.from && !values.fromExchange) {
         return { message: 'Select source' };

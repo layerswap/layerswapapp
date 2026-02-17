@@ -54,7 +54,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
     const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
-    const { minAllowedAmount, maxAllowedAmount, isQuoteLoading, quote } = useQuoteData(quoteArgs, quoteRefreshInterval);
+    const { minAllowedAmount, maxAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isQuoteLoading, quote } = useQuoteData(quoteArgs, quoteRefreshInterval);
 
     const toAsset = values.toAsset;
     const fromAsset = values.fromAsset;
@@ -100,6 +100,8 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                 !(query?.hideFrom && values?.from) && <SourcePicker
                                     minAllowedAmount={minAllowedAmount}
                                     maxAllowedAmount={maxAllowedAmount}
+                                    minAllowedAmountInUsd={minAllowedAmountInUsd}
+                                    maxAllowedAmountInUsd={maxAllowedAmountInUsd}
                                     fee={quote}
                                 />
                             }

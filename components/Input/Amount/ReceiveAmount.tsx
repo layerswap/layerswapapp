@@ -22,6 +22,7 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ destination_token, fee, 
     }, [receive_amount, destination_token, fee?.quote?.destination_token?.price_in_usd]);
     const quote = fee?.quote
     const tokenDecimals = fee?.quote.destination_token?.decimals || 2
+    const tokenPrecision = fee?.quote.destination_token?.precision || 2
 
     const primaryEmpty = isUsdMode ? !receiveAmountInUsd : !receive_amount
 
@@ -30,13 +31,15 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ destination_token, fee, 
     const numberSpanRef = useRef<HTMLSpanElement>(null);
     const [maxDecimals, setMaxDecimals] = useState(Math.min(tokenDecimals, 7));
 
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
     useEffect(() => {
         const container = containerRef.current;
         const numberSpan = numberSpanRef.current;
         if (!container || !numberSpan || !isUsdMode) return;
 
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
+        if (!canvasRef.current) canvasRef.current = document.createElement('canvas');
+        const ctx = canvasRef.current.getContext('2d');
         if (!ctx) return;
 
         const calculate = () => {
@@ -90,15 +93,15 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ destination_token, fee, 
                 </div>
             </div>
             <div ref={containerRef} className="flex items-baseline space-x-2">
-                <span ref={numberSpanRef} className="text-base leading-5 font-medium text-secondary-text h-5 min-w-0">
+                <span ref={numberSpanRef} className="text-xs sm:text-base leading-5 font-medium text-secondary-text h-5 min-w-0">
                     {isUsdMode ? <>
-                        <NumberFlow className="p-0" suffix={` ${destination_token?.symbol || ''}`} value={receive_amount || 0} trend={0} format={{ maximumFractionDigits: maxDecimals }} />
+                        <NumberFlow className="p-0"  suffix={` ${destination_token?.symbol || ''}`} value={receive_amount || 0} trend={0} format={{ maximumFractionDigits: maxDecimals }} />
                     </> : (
                         <NumberFlow className="p-0" value={receiveAmountInUsd || 0} prefix="$" format={{ maximumFractionDigits: receiveAmountInUsd ? 2 : 0 }} trend={0} />
                     )}
                 </span>
                 <span ref={priceImpactRef} className="shrink-0">
-                    <PriceImpact className="h-5 text-base leading-5" quote={quote} refuel={fee?.refuel} />
+                    <PriceImpact className="h-5 text-xs sm:text-base leading-5" quote={quote} refuel={fee?.refuel} />
                 </span>
             </div>
         </div>
