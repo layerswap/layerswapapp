@@ -22,7 +22,6 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ destination_token, fee, 
     }, [receive_amount, destination_token, fee?.quote?.destination_token?.price_in_usd]);
     const quote = fee?.quote
     const tokenDecimals = fee?.quote.destination_token?.decimals || 2
-    const tokenPrecision = fee?.quote.destination_token?.precision || 2
 
     const primaryEmpty = isUsdMode ? !receiveAmountInUsd : !receive_amount
 

@@ -9,6 +9,7 @@ import { useSelectedAccount } from "@/context/swapAccounts";
 import { useBalance } from "@/lib/balances/useBalance";
 import useWallet from "@/hooks/useWallet";
 import { useUsdModeStore } from "@/stores/usdModeStore";
+import { skipNextUsdSync } from "@/hooks/useUsdTokenSync";
 
 type MinMaxProps = {
     fromCurrency: NetworkRouteToken,
@@ -27,7 +28,6 @@ const MinMax = (props: MinMaxProps) => {
     const { fromCurrency, from, limitsMinAmount, limitsMaxAmount, limitsMinAmountInUsd, limitsMaxAmountInUsd, onActionHover, depositMethod } = props;
     const isUsdMode = useUsdModeStore(s => s.isUsdMode);
     const setUsdAmount = useUsdModeStore(s => s.setUsdAmount);
-    const setUsdAmountDirect = useUsdModeStore(s => s.setUsdAmountDirect);
     const selectedSourceAccount = useSelectedAccount("from", from?.name);
     const { wallets } = useWallet(from, 'withdrawal')
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
@@ -64,20 +64,19 @@ const MinMax = (props: MinMaxProps) => {
     const handleSetValue = (value: string, usdValue?: string) => {
         mutateBalances()
         if (isUsdMode && usdValue) {
-            // Only set skipNextSync if the amount will actually change,
+            // Only skip sync if the amount will actually change,
             // otherwise the sync effect won't fire to clear the flag.
             if (values.amount !== value) {
-                setUsdAmountDirect(usdValue)
-            } else {
-                setUsdAmount(usdValue)
+                skipNextUsdSync();
             }
+            setUsdAmount(usdValue);
         }
         setFieldValue('amount', value, true)
         onActionHover(undefined)
     }
 
-    const minIsFromLimits = limitsMinAmount !== undefined && minAmount === limitsMinAmount;
-    const maxIsFromLimits = limitsMaxAmount !== undefined && maxAllowedAmount === limitsMaxAmount;
+    const minIsFromLimits = limitsMinAmount !== undefined && Math.abs(minAmount - limitsMinAmount) < 1e-10;
+    const maxIsFromLimits = limitsMaxAmount !== undefined && Math.abs(maxAllowedAmount - limitsMaxAmount) < 1e-10;
 
     const minUsdFormatted = minIsFromLimits && limitsMinAmountInUsd != undefined ? ceilUsd(limitsMinAmountInUsd) : undefined;
     const maxUsdFormatted = maxIsFromLimits && limitsMaxAmountInUsd != undefined ? floorUsd(limitsMaxAmountInUsd) : undefined;
@@ -163,12 +162,22 @@ const ActionButton: FC<ActionButtonProps> = ({ label, onClick, onMouseEnter, dis
     );
 }
 
-/** Round down to 2 decimals — keeps max within the limit */
+/** Round down to 2 decimals — keeps max within the limit.
+ *  Uses string-based truncation to avoid floating-point precision issues
+ *  (e.g. 0.62 * 100 = 61.999... would floor to 61 instead of 62). */
 function floorUsd(value: number): string {
-    return (Math.floor(value * 100) / 100).toFixed(2).replace(/\.?0+$/, '');
+    const [int, dec = ''] = value.toFixed(4).split('.');
+    return `${int}.${dec.slice(0, 2)}`.replace(/\.?0+$/, '');
 }
 
-/** Round up to 2 decimals — keeps min above the limit */
+/** Round up to 2 decimals — keeps min above the limit.
+ *  Uses string-based approach to avoid floating-point precision issues. */
 function ceilUsd(value: number): string {
-    return (Math.ceil(value * 100) / 100).toFixed(2).replace(/\.?0+$/, '');
+    const [int, dec = ''] = value.toFixed(4).split('.');
+    const truncated = `${int}.${dec.slice(0, 2)}`;
+    const hasRemainder = parseInt(dec.slice(2), 10) > 0;
+    if (hasRemainder) {
+        return (parseFloat(truncated) + 0.01).toFixed(2).replace(/\.?0+$/, '');
+    }
+    return truncated.replace(/\.?0+$/, '');
 }
