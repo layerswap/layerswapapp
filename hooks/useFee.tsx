@@ -11,6 +11,8 @@ import { useSlippageStore } from '@/stores/slippageStore'
 type UseQuoteData = {
     minAllowedAmount?: number
     maxAllowedAmount?: number
+    minAllowedAmountInUsd?: number
+    maxAllowedAmountInUsd?: number
     quote?: Quote
     quoteError?: QuoteError
     isQuoteLoading: boolean
@@ -55,9 +57,9 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
     const [debouncedAmount, setDebouncedAmount] = useState(amount)
     const [isDebouncing, setIsDebouncing] = useState(false)
     const { slippage } = useSlippageStore()
-    console.log('amount', amount)
     useEffect(() => {
         if (amount === debouncedAmount) {
+            setIsDebouncing(false)
             return;
         }
 
@@ -96,8 +98,6 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
     })
 
     const canGetQuote = from && to && depositMethod && toCurrency && fromCurrency && debouncedAmount
-    console.log('canGetQuote', canGetQuote)
-    console.log('isDebouncing', isDebouncing)
 
     const quoteURL = (canGetQuote && !isDebouncing)
         ? buildQuoteUrl({
@@ -150,15 +150,12 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
         dedupingInterval: 5000,
         keepPreviousData: true,
     })
-    console.log('quote', quote)
-    console.log('quoteURL', quoteURL)
-
-    console.log('formValues', formValues)
-
 
     return {
         minAllowedAmount: amountRange?.data?.min_amount,
         maxAllowedAmount: amountRange?.data?.max_amount,
+        minAllowedAmountInUsd: amountRange?.data?.min_amount_in_usd,
+        maxAllowedAmountInUsd: amountRange?.data?.max_amount_in_usd,
         quote: (quoteError || !canGetQuote) ? undefined : quote?.data,
         isQuoteLoading: isQuoteLoading,
         isDebouncing,
@@ -216,7 +213,7 @@ export function buildQuoteUrl(args: QuoteUrlArgs): string {
         useDepositAddress,
         slippage,
     } = args
-    debugger
+
     const params = new URLSearchParams({
         source_network: sourceNetwork,
         source_token: sourceToken,

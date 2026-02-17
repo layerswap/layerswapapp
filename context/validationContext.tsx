@@ -46,7 +46,7 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
     const selectedSourceAccount = useSelectedAccount("from", values.from?.name);
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
-    const { minAllowedAmount, maxAllowedAmount, quoteError, quote, isQuoteLoading, isDebouncing } = useQuoteData(quoteArgs, quoteRefreshInterval)
+    const { minAllowedAmount, maxAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, quoteError, quote, isQuoteLoading, isDebouncing } = useQuoteData(quoteArgs, quoteRefreshInterval)
 
     const { autoSlippage } = useSlippageStore();
     const quoteErrorCode = quoteError?.response?.data?.error?.code || quoteError?.code;
@@ -59,6 +59,8 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
         values,
         maxAllowedAmount,
         minAllowedAmount,
+        minAllowedAmountInUsd,
+        maxAllowedAmountInUsd,
         sourceAddress: selectedSourceAccount?.address,
         sameAccountNetwork,
         quoteError

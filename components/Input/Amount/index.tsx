@@ -5,7 +5,7 @@ import NumericInput from "../NumericInput";
 import { useQuoteData } from "@/hooks/useFee";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
 import clsx from "clsx";
-import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
+
 import { useUsdModeStore } from "@/stores/usdModeStore";
 import { ArrowUpDown } from "lucide-react";
 
@@ -28,7 +28,24 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
     const usdAmount = useUsdModeStore(s => s.usdAmount);
     const setUsdAmount = useUsdModeStore(s => s.setUsdAmount);
     const toggleMode = useUsdModeStore(s => s.toggleMode);
-    const sourceCurrencyPriceInUsd = resolveTokenUsdPrice(fromCurrency, fee?.quote)
+
+    // Cache the last quote-derived price so we don't fall back to the token's
+    // static price_in_usd when the quote temporarily disappears (re-fetching, error).
+    const lastQuotePriceRef = useRef<{ symbol: string; price: number } | null>(null);
+    const quote = fee?.quote;
+    const quotePriceForSource =
+        (quote?.source_token?.symbol === fromCurrency?.symbol) ? quote?.source_token?.price_in_usd :
+            (quote?.destination_token?.symbol === fromCurrency?.symbol) ? quote?.destination_token?.price_in_usd :
+                undefined;
+
+    if (quotePriceForSource && fromCurrency?.symbol) {
+        lastQuotePriceRef.current = { symbol: fromCurrency.symbol, price: quotePriceForSource };
+    }
+
+    const sourceCurrencyPriceInUsd = quotePriceForSource
+        ?? (lastQuotePriceRef.current?.symbol === fromCurrency?.symbol ? lastQuotePriceRef.current?.price : undefined)
+        ?? fromCurrency?.price_in_usd;
+
     const prevPriceRef = useRef(sourceCurrencyPriceInUsd);
     const prevTokenSymbolRef = useRef(fromCurrency?.symbol);
 
@@ -59,7 +76,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
     const actionValueAsToken = useMemo(() => {
         if (actionValue === undefined || actionValue <= 0) return undefined;
         const precision = fromCurrency?.precision || 6;
-        return Number(actionValue).toFixed(precision).replace(/\.?0+$/, '');
+        return formatTokenAmount(actionValue, precision);
     }, [actionValue, fromCurrency?.precision]);
 
     // Formatted token amount for the secondary line (matches actionValueAsToken precision)
@@ -67,7 +84,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
         const num = Number(amount);
         if (isNaN(num) || num <= 0) return '0';
         const precision = fromCurrency?.precision || 6;
-        return num.toFixed(precision).replace(/\.?0+$/, '');
+        return formatTokenAmount(num, precision);
     }, [amount, fromCurrency?.precision]);
 
     // --- USD ↔ Token conversion ---
@@ -77,21 +94,27 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
     const internalAmountChangeRef = useRef(false);
 
     const computeAndSetTokenAmount = useCallback((usdValue: string) => {
-        internalAmountChangeRef.current = true;
+        let newAmount: string;
         if (!sourceCurrencyPriceInUsd || sourceCurrencyPriceInUsd === 0 || !usdValue) {
-            setFieldValue('amount', '', true);
-            return;
+            newAmount = '';
+        } else {
+            const usdNum = Number(usdValue);
+            if (isNaN(usdNum) || usdNum <= 0) {
+                newAmount = '';
+            } else {
+                const precision = fromCurrency?.precision || 6;
+                const tokenAmount = usdNum / sourceCurrencyPriceInUsd;
+                const truncated = Math.trunc(tokenAmount * Math.pow(10, precision)) / Math.pow(10, precision);
+                newAmount = truncated.toString();
+            }
         }
-        const usdNum = Number(usdValue);
-        if (isNaN(usdNum) || usdNum <= 0) {
-            setFieldValue('amount', '', true);
-            return;
+        // Only mark as internal change if the value will actually change,
+        // otherwise the sync effect won't fire and the flag stays stuck.
+        if (newAmount !== (amount || '')) {
+            internalAmountChangeRef.current = true;
         }
-        const precision = fromCurrency?.precision || 6;
-        const tokenAmount = usdNum / sourceCurrencyPriceInUsd;
-        const truncated = Math.trunc(tokenAmount * Math.pow(10, precision)) / Math.pow(10, precision);
-        setFieldValue('amount', truncated.toString(), true);
-    }, [sourceCurrencyPriceInUsd, fromCurrency?.precision, setFieldValue]);
+        setFieldValue('amount', newAmount, true);
+    }, [sourceCurrencyPriceInUsd, fromCurrency?.precision, setFieldValue, amount]);
 
     // Recompute token amount when price changes in USD mode
     useEffect(() => {
@@ -187,7 +210,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
 
     // --- USD mode render ---
 
-    if (isUsdMode && usdPosition === "bottom" && sourceCurrencyPriceInUsd) {
+    if (isUsdMode && usdPosition === "bottom") {
         const previewUsd = actionValueAsUsd;
         const previewToken = actionValueAsToken;
 
@@ -212,6 +235,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
                     />
                 </div>
                 <div className="flex items-center gap-1 text-base leading-5 font-medium text-secondary-text h-5 min-w-0">
+                    {toggleButton}
                     <span className={clsx("flex items-center min-w-0 space-x-1", { "text-secondary-text/45": !!previewToken })}>
                         <span className="truncate min-w-0">
                             {`${previewToken ?? formattedTokenAmount}`}
@@ -220,7 +244,6 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
                             {` ${fromCurrency?.symbol || ''}`}
                         </span>
                     </span>
-                    {toggleButton}
                 </div>
             </div>
         );
@@ -258,8 +281,8 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
                 },
                 "group-hover:flex"
             )} ref={suffixRef}>
-                <span>{`${actionValueInUsd ?? requestedAmountInUsd ?? '$0'}`}</span>
                 {toggleButton}
+                <span>{`${actionValueInUsd ?? requestedAmountInUsd ?? '$0'}`}</span>
             </div>
         </div>
     </>)
@@ -282,4 +305,11 @@ function getFontFromElement(el: HTMLElement | null): string {
     if (!el) return '28px sans-serif';
     const style = window.getComputedStyle(el);
     return `${style.fontSize} ${style.fontFamily}`;
+}
+
+function formatTokenAmount(value: number, precision: number): string {
+    const fixed = value.toFixed(precision).replace(/\.?0+$/, '');
+    const [intPart, decPart] = fixed.split('.');
+    const formattedInt = Number(intPart).toLocaleString('en-US');
+    return decPart ? `${formattedInt}.${decPart}` : formattedInt;
 }

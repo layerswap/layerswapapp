@@ -1,11 +1,15 @@
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import { Address } from '../lib/address';
 import { QuoteError } from './useFee';
+import { useUsdModeStore } from '@/stores/usdModeStore';
+import { formatUsd } from '@/components/utils/formatUsdAmount';
 
 interface Params {
     values: SwapFormValues;
     minAllowedAmount: number | undefined,
     maxAllowedAmount: number | undefined,
+    minAllowedAmountInUsd: number | undefined,
+    maxAllowedAmountInUsd: number | undefined,
     sourceAddress: string | undefined,
     sameAccountNetwork?: string | undefined,
     quoteError?: QuoteError
@@ -18,8 +22,9 @@ export const FORM_VALIDATION_ERROR_CODES = {
 }
 
 
-export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmount, sourceAddress, sameAccountNetwork, quoteError }: Params) {
+export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, sourceAddress, sameAccountNetwork, quoteError }: Params) {
     let amount = values.amount ? Number(values.amount) : undefined;
+    const isUsdMode = useUsdModeStore.getState().isUsdMode;
 
     if (!values.from && !values.fromExchange) {
         return { message: 'Select source' };
@@ -40,10 +45,12 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
         return { message: "Can't be negative" };
     }
     if (maxAllowedAmount != undefined && amount > maxAllowedAmount) {
-        return { code: FORM_VALIDATION_ERROR_CODES.MAX_AMOUNT_ERROR, message: `Max amount is ${maxAllowedAmount}` };
+        const displayAmount = isUsdMode && maxAllowedAmountInUsd != undefined ? formatUsd(maxAllowedAmountInUsd) : maxAllowedAmount;
+        return { code: FORM_VALIDATION_ERROR_CODES.MAX_AMOUNT_ERROR, message: `Max amount is ${displayAmount}` };
     }
     if (minAllowedAmount != undefined && amount < minAllowedAmount) {
-        return { code: FORM_VALIDATION_ERROR_CODES.MIN_AMOUNT_ERROR, message: `Min amount is ${minAllowedAmount}` };
+        const displayAmount = isUsdMode && minAllowedAmountInUsd != undefined ? formatUsd(minAllowedAmountInUsd) : minAllowedAmount;
+        return { code: FORM_VALIDATION_ERROR_CODES.MIN_AMOUNT_ERROR, message: `Min amount is ${displayAmount}` };
     }
     if (!/^[0-9]*[.,]?[0-9]*$/i.test(amount.toString())) {
         return { message: 'Invalid amount' };
