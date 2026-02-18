@@ -11,6 +11,8 @@ import { useSlippageStore } from '@/stores/slippageStore'
 type UseQuoteData = {
     minAllowedAmount?: number
     maxAllowedAmount?: number
+    minAllowedAmountInUsd?: number
+    maxAllowedAmountInUsd?: number
     quote?: Quote
     quoteError?: QuoteError
     isQuoteLoading: boolean
@@ -55,9 +57,11 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
     const [debouncedAmount, setDebouncedAmount] = useState(amount)
     const [isDebouncing, setIsDebouncing] = useState(false)
     const { slippage } = useSlippageStore()
-
     useEffect(() => {
-        if (amount === debouncedAmount) return;
+        if (amount === debouncedAmount) {
+            setIsDebouncing(false)
+            return;
+        }
 
         setIsDebouncing(true)
         const handler = setTimeout(() => {
@@ -150,6 +154,8 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
     return {
         minAllowedAmount: amountRange?.data?.min_amount,
         maxAllowedAmount: amountRange?.data?.max_amount,
+        minAllowedAmountInUsd: amountRange?.data?.min_amount_in_usd,
+        maxAllowedAmountInUsd: amountRange?.data?.max_amount_in_usd,
         quote: (quoteError || !canGetQuote) ? undefined : quote?.data,
         isQuoteLoading: isQuoteLoading,
         isDebouncing,

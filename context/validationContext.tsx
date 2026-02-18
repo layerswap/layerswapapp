@@ -9,6 +9,7 @@ import { useSwapDataState } from './swap';
 import { useSelectedAccount } from './swapAccounts';
 import { useSlippageStore } from '@/stores/slippageStore';
 import { useAutoSlippageTest } from '@/hooks/useAutoSlippageTest';
+import { useUsdModeStore } from '@/stores/usdModeStore';
 
 export interface ValidationDetails {
     title?: string;
@@ -46,7 +47,7 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
     const selectedSourceAccount = useSelectedAccount("from", values.from?.name);
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
-    const { minAllowedAmount, maxAllowedAmount, quoteError, quote, isQuoteLoading, isDebouncing } = useQuoteData(quoteArgs, quoteRefreshInterval)
+    const { minAllowedAmount, maxAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, quoteError, quote, isQuoteLoading, isDebouncing } = useQuoteData(quoteArgs, quoteRefreshInterval)
 
     const { autoSlippage } = useSlippageStore();
     const quoteErrorCode = quoteError?.response?.data?.error?.code || quoteError?.code;
@@ -55,10 +56,15 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
 
     const routeValidation = useRouteValidation(quoteError, !!quote, isQuoteLoading || isDebouncing, autoSlippageWouldWork);
 
+    const isUsdMode = useUsdModeStore(s => s.isUsdMode);
+
     const formValidation = resolveFormValidation({
         values,
         maxAllowedAmount,
         minAllowedAmount,
+        minAllowedAmountInUsd,
+        maxAllowedAmountInUsd,
+        isUsdMode,
         sourceAddress: selectedSourceAccount?.address,
         sameAccountNetwork,
         quoteError

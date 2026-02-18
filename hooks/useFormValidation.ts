@@ -1,11 +1,15 @@
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import { Address } from '../lib/address';
 import { QuoteError } from './useFee';
+import { ceilUsd, floorUsd } from '@/components/utils/formatUsdAmount';
 
 interface Params {
     values: SwapFormValues;
     minAllowedAmount: number | undefined,
     maxAllowedAmount: number | undefined,
+    minAllowedAmountInUsd: number | undefined,
+    maxAllowedAmountInUsd: number | undefined,
+    isUsdMode: boolean,
     sourceAddress: string | undefined,
     sameAccountNetwork?: string | undefined,
     quoteError?: QuoteError
@@ -18,7 +22,7 @@ export const FORM_VALIDATION_ERROR_CODES = {
 }
 
 
-export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmount, sourceAddress, sameAccountNetwork, quoteError }: Params) {
+export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isUsdMode, sourceAddress, sameAccountNetwork, quoteError }: Params) {
     let amount = values.amount ? Number(values.amount) : undefined;
 
     if (!values.from && !values.fromExchange) {
@@ -40,10 +44,14 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
         return { message: "Can't be negative" };
     }
     if (maxAllowedAmount != undefined && amount > maxAllowedAmount) {
-        return { code: FORM_VALIDATION_ERROR_CODES.MAX_AMOUNT_ERROR, message: `Max amount is ${maxAllowedAmount}` };
+        // In USD mode, floor the USD limit so the displayed max stays within the actual limit
+        const displayAmount = isUsdMode && maxAllowedAmountInUsd != undefined ? `$${floorUsd(maxAllowedAmountInUsd)}` : maxAllowedAmount;
+        return { code: FORM_VALIDATION_ERROR_CODES.MAX_AMOUNT_ERROR, message: `Max amount is ${displayAmount}` };
     }
     if (minAllowedAmount != undefined && amount < minAllowedAmount) {
-        return { code: FORM_VALIDATION_ERROR_CODES.MIN_AMOUNT_ERROR, message: `Min amount is ${minAllowedAmount}` };
+        // In USD mode, ceil the USD limit so the displayed min, when entered, always satisfies the token limit
+        const displayAmount = isUsdMode && minAllowedAmountInUsd != undefined ? `$${ceilUsd(minAllowedAmountInUsd)}` : minAllowedAmount;
+        return { code: FORM_VALIDATION_ERROR_CODES.MIN_AMOUNT_ERROR, message: `Min amount is ${displayAmount}` };
     }
     if (!/^[0-9]*[.,]?[0-9]*$/i.test(amount.toString())) {
         return { message: 'Invalid amount' };

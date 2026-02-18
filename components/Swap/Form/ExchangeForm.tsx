@@ -49,7 +49,7 @@ const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
 
     const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
-    const { isQuoteLoading, quote, minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useQuoteData(quoteArgs, quoteRefreshInterval);
+    const { isQuoteLoading, quote, minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd } = useQuoteData(quoteArgs, quoteRefreshInterval);
     const { routeValidation, formValidation } = useValidationContext();
 
     const isValid = !formValidation.message;
@@ -136,7 +136,7 @@ const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
                                         },
                                             "group-hover:block"
                                         )}>
-                                            <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} onActionHover={handleActionHover} depositMethod="deposit_address" />
+                                            <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} limitsMinAmountInUsd={minAllowedAmountInUsd} limitsMaxAmountInUsd={maxAllowedAmountInUsd} onActionHover={handleActionHover} depositMethod="deposit_address" />
                                         </div>
                                     }
                                 </div>

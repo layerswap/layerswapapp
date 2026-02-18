@@ -10,6 +10,7 @@ import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import NumberFlow from "@number-flow/react";
 import { PriceImpact } from "@/components/Input/Amount/PriceImpact";
 import { Token } from "@/Models/Network";
+import { useUsdModeStore } from "@/stores/usdModeStore";
 
 type SwapInfoProps = Omit<SwapResponse, 'quote' | 'swap'> & {
     swap: SwapBasicData
@@ -34,11 +35,14 @@ const Summary: FC<SwapInfoProps> = (props) => {
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/internal/apps?name=${appName}`, layerswapApiClient.fetcher)
     const partner = partnerData?.data
 
+    const isUsdMode = useUsdModeStore(s => s.isUsdMode);
     const source = (hideFrom && partner && account) ? partner : from
     const destination = (hideTo && partner && account) ? partner : to
 
-    const requestedAmountInUsd = requestedAmount && (sourceCurrency?.price_in_usd * Number(requestedAmount)).toFixed(2)
-    const receiveAmountInUsd = receiveAmount ? (destinationCurrency?.price_in_usd * receiveAmount).toFixed(2) : undefined
+    const sourcePriceInUsd = swapQuote?.source_token?.price_in_usd ?? sourceCurrency?.price_in_usd
+    const destinationPriceInUsd = swapQuote?.destination_token?.price_in_usd ?? destinationCurrency?.price_in_usd
+    const requestedAmountInUsd = requestedAmount && sourcePriceInUsd ? (sourcePriceInUsd * Number(requestedAmount)).toFixed(2) : undefined
+    const receiveAmountInUsd = receiveAmount && destinationPriceInUsd ? (destinationPriceInUsd * receiveAmount).toFixed(2) : undefined
     const nativeCurrency = refuel?.token
 
     const truncatedRefuelAmount = nativeCurrency && !!refuel ?
@@ -54,12 +58,29 @@ const Summary: FC<SwapInfoProps> = (props) => {
                         route={sourceExchange || source}
                         token={sourceCurrency}
                     />
-                    <div className="flex flex-col col-start-7 col-span-4 items-end">
+                    <div className="flex flex-col col-start-6 col-span-6 items-end min-w-0">
                         {
-                            requestedAmount &&
-                            <p className="text-primary-text text-xl leading-6 font-normal whitespace-nowrap">{truncateDecimals(Number(requestedAmount), sourceCurrency.precision)} {sourceCurrency.symbol}</p>
+                            requestedAmount && (isUsdMode ? (
+                                <p className="text-primary-text text-xl leading-6 font-normal flex items-center justify-end min-w-0 w-full">
+                                    <NumberFlow value={requestedAmountInUsd || 0} prefix="$" trend={0} />
+                                </p>
+                            ) : (
+                                <p className="text-primary-text text-xl leading-6 font-normal flex items-center justify-end min-w-0 w-full">
+                                    <span className="truncate min-w-0">{truncateDecimals(Number(requestedAmount), sourceCurrency.precision)}</span>
+                                    <span className="shrink-0">{` ${sourceCurrency.symbol}`}</span>
+                                </p>
+                            ))
                         }
-                        <p className="text-secondary-text text-sm leading-5 flex font-medium justify-end"><NumberFlow value={requestedAmountInUsd || 0} prefix="$" trend={0} /></p>
+                        <p className="text-secondary-text text-sm leading-5 flex font-medium justify-end">
+                            {isUsdMode ? (
+                                <>
+                                    <span className="truncate min-w-0">{truncateDecimals(Number(requestedAmount), sourceCurrency.precision)}</span>
+                                    <span className="shrink-0">{` ${sourceCurrency.symbol}`}</span>
+                                </>
+                            ) : (
+                                <NumberFlow value={requestedAmountInUsd || 0} prefix="$" trend={0} />
+                            )}
+                        </p>
                     </div>
                 </div>
                 <div className="relative text-secondary-text">
@@ -75,11 +96,19 @@ const Summary: FC<SwapInfoProps> = (props) => {
                         receiveAmount && (
                             <div className="flex flex-col justify-end items-end w-full col-start-7 col-span-4 h-[44px]">
                                 <p className="text-primary-text text-xl font-normal text-end">
-                                    <NumberFlow value={receiveAmount} suffix={` ${destinationCurrency.symbol}`} trend={0} format={{ maximumFractionDigits: quote.quote.destination_token?.decimals || 2 }} />
+                                    {isUsdMode ? (
+                                        <NumberFlow value={receiveAmountInUsd || 0} prefix="$" trend={0} />
+                                    ) : (
+                                        <NumberFlow value={receiveAmount} suffix={` ${destinationCurrency.symbol}`} trend={0} format={{ maximumFractionDigits: quote.quote.destination_token?.decimals || 2 }} />
+                                    )}
                                 </p>
                                 <p className="text-secondary-text text-sm flex items-center gap-1 font-medium">
                                     <PriceImpact className="text-sm" quote={swapQuote} refuel={refuel} />
-                                    <NumberFlow value={receiveAmountInUsd || 0} prefix="$" trend={0} />
+                                    {isUsdMode ? (
+                                        <NumberFlow value={receiveAmount} suffix={` ${destinationCurrency.symbol}`} trend={0} format={{ maximumFractionDigits: quote.quote.destination_token?.decimals || 2 }} />
+                                    ) : (
+                                        <NumberFlow value={receiveAmountInUsd || 0} prefix="$" trend={0} />
+                                    )}
                                 </p>
                             </div>
                         )
@@ -115,7 +144,7 @@ type RouteTokenPairProps = {
 const RouteTokenPair: FC<RouteTokenPairProps> = ({ route, token }) => {
 
     return (
-        <div className="flex grow gap-4 text-left items-center md:text-base relative col-span-6 align-center">
+        <div className="flex grow gap-4 text-left items-center md:text-base relative col-span-5 align-center">
             <div className="inline-flex items-center relative shrink-0 h-8 w-8">
                 <ImageWithFallback
                     src={token.logo}
