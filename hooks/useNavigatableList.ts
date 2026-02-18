@@ -56,13 +56,20 @@ export const useNavigatableList = ({
         isKeyboardNavigatingRef.current = isKeyboardNavigating;
     }, [isKeyboardNavigating]);
 
-    // Reset focus only when explicitly requested (e.g., search query changes)
+    // Reset focus when explicitly requested (e.g., search query changes) - default to first item
     useEffect(() => {
         if (onReset) {
             onReset();
-            setFocusedIndex(null);
+            setFocusedIndex(navigableItems.length > 0 ? { parent: 0 } : null);
         }
     }, [onReset]);
+
+    // Default to first item on mount when items become available
+    useEffect(() => {
+        if (focusedIndex === null && navigableItems.length > 0) {
+            setFocusedIndex({ parent: 0 });
+        }
+    }, [navigableItems.length]);
 
     const handleArrowDown = useCallback(() => {
         setIsKeyboardNavigating(true);
