@@ -191,9 +191,14 @@ function sortRoutesByMostUsed(
     const { historyKey } = directionKeys(direction);
     const history = routesHistory[historyKey] || {};
 
+    const usageMap = new Map<string, number>();
+    for (const route of routes) {
+        usageMap.set(route.name, Object.values(history[route.name] || {}).reduce((sum, count) => sum + count, 0));
+    }
+
     return [...routes].sort((a, b) => {
-        const aUsage = Object.values(history[a.name] || {}).reduce((sum, count) => sum + count, 0);
-        const bUsage = Object.values(history[b.name] || {}).reduce((sum, count) => sum + count, 0);
+        const aUsage = usageMap.get(a.name) || 0;
+        const bUsage = usageMap.get(b.name) || 0;
 
         if (bUsage !== aUsage) {
             return bUsage - aUsage;
@@ -344,9 +349,14 @@ function sortGroupedTokens(
         case 'most_used': {
             const { historyKey } = directionKeys(direction);
             const history = routesHistory[historyKey] || {};
+            const historyValues = Object.values(history);
+            const symbolUsageMap = new Map<string, number>();
+            for (const g of groupsWithSortedItems) {
+                symbolUsageMap.set(g.symbol, historyValues.reduce((sum, routes) => sum + (routes[g.symbol] || 0), 0));
+            }
             return groupsWithSortedItems.sort((a, b) => {
-                const aUsage = Object.values(history).reduce((sum, routes) => sum + (routes[a.symbol] || 0), 0);
-                const bUsage = Object.values(history).reduce((sum, routes) => sum + (routes[b.symbol] || 0), 0);
+                const aUsage = symbolUsageMap.get(a.symbol) || 0;
+                const bUsage = symbolUsageMap.get(b.symbol) || 0;
                 return bUsage - aUsage || a.symbol.localeCompare(b.symbol);
             });
         }
@@ -411,16 +421,26 @@ function sortRoutesByRelevance(
     const { historyKey, rankKey } = directionKeys(direction);
     const history = routesHistory[historyKey] || {};
 
+    const balanceMap = new Map<string, number>();
+    if (direction === 'from' && balances) {
+        for (const route of routes) {
+            balanceMap.set(route.name, balances[route.name] ? getTotalBalanceInUSD(balances[route.name], route) || 0 : 0);
+        }
+    }
+
+    const usageMap = new Map<string, number>();
+    for (const route of routes) {
+        usageMap.set(route.name, Object.values(history[route.name] || {}).reduce((sum, count) => sum + count, 0));
+    }
+
     return [...routes].sort((a, b) => {
         if (direction === 'from' && balances) {
-            const aBalance = balances[a.name] ? getTotalBalanceInUSD(balances[a.name], a) || 0 : 0;
-            const bBalance = balances[b.name] ? getTotalBalanceInUSD(balances[b.name], b) || 0 : 0;
-            const balanceDiff = bBalance - aBalance;
+            const balanceDiff = (balanceMap.get(b.name) || 0) - (balanceMap.get(a.name) || 0);
             if (Math.abs(balanceDiff) > BALANCE_EPSILON) return balanceDiff;
         }
 
-        const aUsage = Object.values(history[a.name] || {}).reduce((sum, count) => sum + count, 0);
-        const bUsage = Object.values(history[b.name] || {}).reduce((sum, count) => sum + count, 0);
+        const aUsage = usageMap.get(a.name) || 0;
+        const bUsage = usageMap.get(b.name) || 0;
         if (aUsage !== bUsage) return bUsage - aUsage;
 
         const aRank = a[rankKey] || 999999;
@@ -475,14 +495,20 @@ function sortGroupedTokensByRelevance(
         minRank: g.items.reduce((min, i) => Math.min(min, i.route.token[rankKey] || 999999), 999999),
     }));
 
+    const historyValues = Object.values(history);
+    const symbolUsageMap = new Map<string, number>();
+    for (const g of withMinRank) {
+        symbolUsageMap.set(g.symbol, historyValues.reduce((sum, routes) => sum + (routes[g.symbol] || 0), 0));
+    }
+
     return withMinRank.sort((a, b) => {
         if (direction === 'from') {
             const usdDiff = b.totalUSD - a.totalUSD;
             if (Math.abs(usdDiff) > BALANCE_EPSILON) return usdDiff;
         }
 
-        const aUsage = Object.values(history).reduce((sum, routes) => sum + (routes[a.symbol] || 0), 0);
-        const bUsage = Object.values(history).reduce((sum, routes) => sum + (routes[b.symbol] || 0), 0);
+        const aUsage = symbolUsageMap.get(a.symbol) || 0;
+        const bUsage = symbolUsageMap.get(b.symbol) || 0;
         if (aUsage !== bUsage) return bUsage - aUsage;
 
         if (a.minRank !== b.minRank) return a.minRank - b.minRank;
