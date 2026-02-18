@@ -2,7 +2,7 @@ import { FC, useEffect, useMemo } from "react";
 import KnownInternalNames from "@/lib/knownIds";
 import { NetworkType } from "@/Models/Network";
 import {
-    ImtblxWalletWithdrawStep, BitcoinWalletWithdrawStep, EVMWalletWithdrawal, FuelWalletWithdrawStep, LoopringWalletWithdraw, ParadexWalletWithdraw, SVMWalletWithdrawStep, StarknetWalletWithdrawStep, TonWalletWithdrawStep, TronWalletWithdraw, ZkSyncWalletWithdrawStep
+     BitcoinWalletWithdrawStep, EVMWalletWithdrawal, FuelWalletWithdrawStep, LoopringWalletWithdraw, ParadexWalletWithdraw, SVMWalletWithdrawStep, StarknetWalletWithdrawStep, TonWalletWithdrawStep, TronWalletWithdraw, ZkSyncWalletWithdrawStep
 } from "./WithdrawalProviders";
 import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { WithdrawalProvider } from "@/context/withdrawalContext";
@@ -25,14 +25,6 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
     const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
 
     const WithdrawalPages = useMemo(() => [
-        {
-            supportedNetworks: [
-                KnownInternalNames.Networks.ImmutableXMainnet,
-                KnownInternalNames.Networks.ImmutableXGoerli,
-                KnownInternalNames.Networks.ImmutableXSepolia
-            ],
-            component: ImtblxWalletWithdrawStep
-        },
         {
             supportedNetworks: [
                 KnownInternalNames.Networks.StarkNetMainnet,
