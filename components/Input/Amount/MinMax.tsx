@@ -10,6 +10,7 @@ import { useBalance } from "@/lib/balances/useBalance";
 import useWallet from "@/hooks/useWallet";
 import { useUsdModeStore } from "@/stores/usdModeStore";
 import { skipNextUsdSync } from "@/hooks/useUsdTokenSync";
+import { ceilUsd, floorUsd } from "@/components/utils/formatUsdAmount";
 
 type MinMaxProps = {
     fromCurrency: NetworkRouteToken,
@@ -160,24 +161,4 @@ const ActionButton: FC<ActionButtonProps> = ({ label, onClick, onMouseEnter, dis
             {label}
         </button>
     );
-}
-
-/** Round down to 2 decimals — keeps max within the limit.
- *  Uses string-based truncation to avoid floating-point precision issues
- *  (e.g. 0.62 * 100 = 61.999... would floor to 61 instead of 62). */
-function floorUsd(value: number): string {
-    const [int, dec = ''] = value.toFixed(4).split('.');
-    return `${int}.${dec.slice(0, 2)}`.replace(/\.?0+$/, '');
-}
-
-/** Round up to 2 decimals — keeps min above the limit.
- *  Uses string-based approach to avoid floating-point precision issues. */
-function ceilUsd(value: number): string {
-    const [int, dec = ''] = value.toFixed(4).split('.');
-    const truncated = `${int}.${dec.slice(0, 2)}`;
-    const hasRemainder = parseInt(dec.slice(2), 10) > 0;
-    if (hasRemainder) {
-        return (parseFloat(truncated) + 0.01).toFixed(2).replace(/\.?0+$/, '');
-    }
-    return truncated.replace(/\.?0+$/, '');
 }
