@@ -152,8 +152,8 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             },
             complete: {
                 name: `Deposit confirmed`,
-                description: <div className='flex items-center space-x-1'>
-                    <span>We’ve received your deposit. </span>
+                description: <div className='flex flex-wrap items-center gap-x-1'>
+                    <span>We've received your deposit.</span>
                     <LinkWithIcon
                         name={'View in explorer'}
                         url={getExplorerUrl(input_tx_explorer, transactionHash)}
