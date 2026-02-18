@@ -34,7 +34,7 @@ export const ErrorDisplay: React.FC<Partial<ErrorDisplayProps & { errorName?: st
                 <span className="shrink-0 p-0.5">{details?.icon}</span>
                 <div className="flex flex-col gap-1 flex-1">
                     <p className="text-white font-medium leading-4 text-base mt-0.5">{details?.title}</p>
-                    {message ? <p className="text-secondary-text text-sm leading-[18px]">{message}</p> : null}
+                    {message ? <p className="text-secondary-text text-sm leading-4.5">{message}</p> : null}
                 </div>
             </div>
             {props?.errorName === 'insufficientFunds' && refreshBalance && (

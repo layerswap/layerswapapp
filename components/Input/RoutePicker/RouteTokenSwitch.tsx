@@ -26,19 +26,21 @@ const RouteTokenSwitch: FC = () => {
                             <TooltipTrigger
                                 type="button"
                                 onClick={() => { setShowTokens(item.value); }}
-                                className="z-10 flex items-center justify-center rounded-lg px-4 py-1 relative">
-                                {activeTab === item.id && (
-                                    <motion.span
-                                        layoutId="bubble"
-                                        className="absolute inset-0 z-10 rounded-lg bg-secondary-300 mix-blend-color"
-                                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                className="navigation-focus-ring-overlay-md z-10 flex items-center justify-center rounded-lg px-4 py-1 relative outline-hidden">
+                                <span>
+                                    {activeTab === item.id && (
+                                        <motion.span
+                                            layoutId="bubble"
+                                            className="absolute inset-0 z-10 rounded-lg bg-secondary-300"
+                                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                        />
+                                    )}
+                                    <item.icon
+                                        className={clsx("relative z-20 text-primary-text-tertiary h-5 w-5", {
+                                            "text-primary-text!": activeTab === item.id,
+                                        })}
                                     />
-                                )}
-                                <item.icon
-                                    className={clsx("text-primary-text-tertiary h-5 w-5", {
-                                        "text-primary-text!": activeTab === item.id,
-                                    })}
-                                />
+                                </span>
                             </TooltipTrigger>
                             <TooltipContent>
                                 <p>{item.label}</p>

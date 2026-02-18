@@ -4,13 +4,13 @@ import { BalanceProvider } from "@/Models/BalanceProvider";
 import { NetworkWithTokens } from "@/Models/Network";
 import { classifyNodeError } from "./nodeErrorClassifier";
 import { extractErrorDetails } from "./errorUtils";
+import KnownInternalNames from "../knownIds";
 import {
     BitcoinBalanceProvider,
     EVMBalanceProvider,
     FuelBalanceProvider,
     ImmutableXBalanceProvider,
     LoopringBalanceProvider,
-    ParadexBalanceProvider,
     QueryBalanceProvider,
     SolanaBalanceProvider,
     StarknetBalanceProvider,
@@ -19,6 +19,11 @@ import {
     ZkSyncBalanceProvider,
     HyperliquidBalanceProvider
 } from "./providers";
+
+const SKIP_BALANCE_NETWORKS = [
+    KnownInternalNames.Networks.ParadexMainnet,
+    KnownInternalNames.Networks.ParadexTestnet,
+];
 
 function formatErrorBalances(errorBalances: TokenBalance[]) {
     return errorBalances.map(b => ({
@@ -58,6 +63,10 @@ export class BalanceResolver {
     ];
 
     async getBalance(network: NetworkWithTokens, address?: string, options?: { timeoutMs?: number, retryCount?: number }): Promise<NetworkBalance> {
+        if (SKIP_BALANCE_NETWORKS.includes(network.name)) {
+            return { balances: [] }
+        }
+
         try {
             if (!address)
                 throw new Error(`No address provided for network ${network.name}`)
@@ -74,18 +83,21 @@ export class BalanceResolver {
                     $layerswap_exception_type: "Balance Error",
                     network: network.name,
                     node_url: network.node_url,
+                    nodes: network.nodes,
                     address: address,
                     failed_tokens: formatErrorBalances(errorBalances),
                     error_categories: [...new Set(errorBalances.map(b => b.error?.category).filter(Boolean))],
                     error_codes: [...new Set(errorBalances.map(b => b.error?.code).filter(Boolean))],
                     http_statuses: [...new Set(errorBalances.map(b => b.error?.status).filter(Boolean))]
                 });
+
             }
 
             return { balances };
         }
         catch (e) {
             const errorDetails = extractErrorDetails(e);
+            const errorCategory = classifyNodeError(e);
             const error = new Error(errorDetails.message);
             error.name = "BalanceError";
             error.cause = e;
@@ -93,8 +105,9 @@ export class BalanceResolver {
                 $layerswap_exception_type: "Balance Error",
                 network: network.name,
                 node_url: network.node_url,
+                nodes: network.nodes,
                 address: address,
-                error_category: classifyNodeError(e),
+                error_category: errorCategory,
                 error_code: errorDetails.code,
                 response_status: errorDetails.status,
                 response_status_text: errorDetails.statusText,

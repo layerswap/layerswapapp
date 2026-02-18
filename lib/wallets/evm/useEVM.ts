@@ -158,7 +158,8 @@ export default function useEVM(): WalletProvider {
                     isMobileSupported: isWalletConnectSupported,
                     installUrl: walletConnectWallet?.installUrl,
                     hasBrowserExtension: walletConnectWallet?.hasBrowserExtension,
-                    extensionNotFound: walletConnectWallet?.hasBrowserExtension ? (type == 'walletConnect' && !isMobilePlatform) : false
+                    extensionNotFound: walletConnectWallet?.hasBrowserExtension ? (type == 'walletConnect' && !isMobilePlatform) : false,
+                    providerName: name
                 }
             })
     }, [allConnectors, walletConnectConnectors])

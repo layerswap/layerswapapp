@@ -1,6 +1,6 @@
 import { FC } from "react"
 import WalletMessage, { WalletUnknownError } from "./Message"
-import shortenAddress from "../../../utils/ShortenAddress"
+import { Address } from "@/lib/address"
 
 const ConfirmTransactionMessage: FC = () => {
     return <WalletMessage
@@ -44,11 +44,11 @@ const TransactionFailedMessage: FC = () => {
         details={`Transfer failed or terminated`} />
 }
 
-const WaletMismatchMessage: FC<{ address: string }> = ({ address }) => {
+const WalletMismatchMessage: FC<{ address: string; network: { name: string } }> = ({ address, network }) => {
     return <WalletMessage
         status="error"
         header='Account mismatch'
-        details={`Select ${shortenAddress(address)} in your wallet, then try again`} />
+        details={`Select ${new Address(address, network).toShortString()} in your wallet, then try again`} />
 }
 
 const SwapErrorMessage: FC<{ message: string }> = ({ message }) => {
@@ -67,7 +67,7 @@ const ActionMessages = {
     TransactionInProgressMessage,
     InsufficientFundsMessage,
     TransactionRejectedMessage,
-    WaletMismatchMessage,
+    WalletMismatchMessage,
     TransactionFailedMessage,
     SwapErrorMessage,
     UexpectedErrorMessage,

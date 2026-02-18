@@ -3367,6 +3367,11 @@
     "@metamask/utils" "^8.3.0"
     readable-stream "^3.6.2"
 
+"@metamask/multichain-api-client@^0.10.1":
+  version "0.10.1"
+  resolved "https://registry.yarnpkg.com/@metamask/multichain-api-client/-/multichain-api-client-0.10.1.tgz#b5f891a2c9783b8ebb9f097a04c89939b790545a"
+  integrity sha512-LsqO2SiDcTgOuXyVYEB0zgBaVNhryhP2tYI3L7tLa7PoeDqMkNIreFhDeu8jM5tPWkCimQvMwCkG3DF4P5dD3A==
+
 "@metamask/object-multiplex@^2.0.0":
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/@metamask/object-multiplex/-/object-multiplex-2.1.0.tgz#5e2e908fc46aee581cbba809870eeee0e571cbb6"
@@ -8363,6 +8368,14 @@
     buffer "^6.0.3"
     eventemitter3 "^4.0.0"
     preact "^10.11.3"
+
+"@tronweb3/tronwallet-adapter-metamask-tron@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@tronweb3/tronwallet-adapter-metamask-tron/-/tronwallet-adapter-metamask-tron-1.0.0.tgz#d31dca3c30cbc9ef916b402dcda41a3116efe920"
+  integrity sha512-NmIQjqvyoAnNypXA4Kq00+mnxqQVKzBPhKGdlqhJepa6Z/5Pf/qt/brEM+oLvzTNWJjPxWt8LTKhnfLEEXthmw==
+  dependencies:
+    "@metamask/multichain-api-client" "^0.10.1"
+    "@tronweb3/tronwallet-abstract-adapter" "^1.1.10"
 
 "@tronweb3/tronwallet-adapter-okxwallet@^1.0.6":
   version "1.0.7"

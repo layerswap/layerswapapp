@@ -4,9 +4,9 @@ import { SwapDirection } from "@/components/DTOs/SwapFormValues";
 import { CurrencySelectItemDisplay } from "../Routes";
 import { CollapsibleRow } from "./CollapsibleRow";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
-import clsx from "clsx";
 import { SelectItem } from "@/components/Select/Selector/SelectItem";
 import TitleRow from "./TitleRow";
+import { NavigatableItem } from "@/components/NavigatableList";
 
 type Props = {
     item: RowElement;
@@ -36,7 +36,7 @@ export default function Row({
 
     switch (item.type) {
         case "network":
-        case "grouped_token":
+        case "grouped_token": {
             return (
                 <CollapsibleRow
                     index={index}
@@ -51,6 +51,7 @@ export default function Row({
                     scrollContainerRef={scrollContainerRef}
                 />
             );
+        }
         case "network_token":
         case "suggested_token": {
             const token = item.route.token;
@@ -58,7 +59,12 @@ export default function Row({
             const isSelected = selectedRoute === route.name && selectedToken === token.symbol;
 
             return (
-                <div className={clsx("cursor-pointer hover:bg-secondary-500 outline-none disabled:cursor-not-allowed rounded-xl")} onClick={() => onSelect(route, token)} >
+                <NavigatableItem
+                    index={index}
+                    onClick={() => onSelect(route, token)}
+                    className="group/row cursor-pointer hover:bg-secondary-500 has-[*[data-tooltip-open=true]]:bg-secondary-500 has-[*[data-tooltip-open=true]]:cursor-pointer! outline-none disabled:cursor-not-allowed rounded-xl"
+                    focusedClassName="bg-secondary-500"
+                >
                     <CurrencySelectItemDisplay
                         item={token}
                         selected={isSelected}
@@ -66,7 +72,7 @@ export default function Row({
                         direction={direction}
                         type={item.type}
                     />
-                </div>
+                </NavigatableItem>
             );
         }
         case "group_title":
@@ -78,7 +84,7 @@ export default function Row({
                         altText={`sceleton logo `}
                         className="rounded-full bg-secondary-500"
                     />
-                    <SelectItem.Title className="py-0.5">
+                    <SelectItem.Title>
                         <div className="grid gap-0 leading-5 align-middle space-y-0.5 font-medium">
                             <span className="align-middle h-3.5 my-1 w-12 bg-secondary-500 rounded-sm" />
                             <div className="flex items-center space-x-1 align-middle" >

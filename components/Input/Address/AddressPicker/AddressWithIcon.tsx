@@ -1,7 +1,7 @@
-import { FC, MouseEventHandler, ReactNode, SVGProps, useState } from "react"
+import { FC, MouseEventHandler, ReactNode, SVGProps, useCallback, useMemo, useState } from "react"
 import { AddressGroup, AddressItem } from ".";
 import AddressIcon from "@/components//AddressIcon";
-import shortenAddress from "@/components//utils/ShortenAddress";
+import { Address, getExplorerUrl } from "@/lib/address";
 import { History, Copy, Check, ChevronDown, WalletIcon, Pencil, Link2, SquareArrowOutUpRight, Unplug, Info } from "lucide-react";
 import { Partner } from "@/Models/Partner";
 import { Network } from "@/Models/Network";
@@ -11,6 +11,7 @@ import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components//shadcn/tooltip";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import clsx from "clsx";
+import shortenString from "@/components/utils/ShortenString";
 
 type Props = {
     addressItem: AddressItem;
@@ -20,7 +21,7 @@ type Props = {
     onDisconnect?: ExtendedAddressProps['onDisconnect']
 }
 
-const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, onDisconnect }) => {
+const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance }) => {
 
     const difference_in_days = addressItem?.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(addressItem.date).getTime()) / (1000 * 3600 * 24))) : undefined
     const maxWalletNameWidth = calculateMaxWidth(String(balance?.amount));
@@ -56,6 +57,13 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
 
     const itemDescription = descriptions.find(d => d.group === addressItem.group)
 
+    const address = useMemo(() => {
+        if (network) {
+            return new Address(addressItem.address, network).full
+        }
+        return addressItem.address
+    }, [addressItem.address, network])
+
     return (
         <div className="w-full flex items-center justify-between">
             <div className="flex bg-secondary-400 text-primary-text items-center justify-center rounded-md h-8 overflow-hidden w-8">
@@ -71,14 +79,26 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
                             />
                         )
                     ) : (
-                        <AddressIcon className="scale-150 h-9 w-9" address={addressItem.address} size={36} />
+                        <AddressIcon className="scale-150 h-9 w-9" address={address} size={36} />
                     )
                 }
             </div>
 
             <div className="flex flex-col items-start grow min-w-0 ml-3 text-sm">
                 <div className="flex w-full min-w-0">
-                    <ExtendedAddress address={addressItem.address} network={network} showDetails={addressItem.wallet ? true : false} title={addressItem.wallet?.displayName?.split("-")[0]} description={addressItem.wallet?.providerName} logo={addressItem.wallet?.icon} />
+                    {(network || addressItem?.wallet?.providerName) ? (
+                        <ExtendedAddress
+                            address={addressItem.address}
+                            network={network}
+                            providerName={addressItem?.wallet?.providerName}
+                            showDetails={addressItem.wallet ? true : false}
+                            title={addressItem.wallet?.displayName?.split("-")[0]}
+                            description={addressItem.wallet?.providerName}
+                            logo={addressItem.wallet?.icon}
+                        />
+                    ) : <p className="text-sm block font-medium">
+                        {shortenString(addressItem.address)}
+                    </p>}
                 </div>
                 <div className="text-secondary-text w-full min-w-0">
                     <div className="flex items-center gap-1 text-xs">
@@ -112,10 +132,8 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
         </div>
     )
 }
-
-type ExtendedAddressProps = {
+type ExtendedAddressBaseProps = {
     address: string;
-    network?: Network;
     isForCurrency?: boolean;
     addressClassNames?: string;
     onDisconnect?: () => void;
@@ -125,8 +143,11 @@ type ExtendedAddressProps = {
     logo?: string | ((e: SVGProps<SVGSVGElement>) => ReactNode);
     children?: ReactNode
     shouldShowChevron?: boolean
-    isNativeToken?: boolean;
+    onPopoverOpenChange?: (open: boolean) => void;
+    onTooltipOpenChange?: (open: boolean) => void;
 }
+type ExtendedAddressProps = ExtendedAddressBaseProps
+    & { network?: Network, providerName?: string }
 
 const calculateMaxWidth = (balance: string | undefined) => {
     const symbolCount = balance?.length || 0;
@@ -140,24 +161,56 @@ const calculateMaxWidth = (balance: string | undefined) => {
     }
 };
 
-export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, isForCurrency, children, onDisconnect, showDetails = false, title, description, logo: Logo, shouldShowChevron = true, isNativeToken = false }) => {
+export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, providerName, isForCurrency, children, onDisconnect, showDetails = false, title, description, logo: Logo, onPopoverOpenChange, onTooltipOpenChange, shouldShowChevron = true }) => {
+    if (!network && !providerName) {
+        return <p className="text-sm block font-medium">
+            {shortenString(address)}
+        </p>
+    }
+    return <AddressDetailsPopover address={address} network={network!} providerName={providerName!} isForCurrency={isForCurrency} onDisconnect={onDisconnect} showDetails={showDetails} title={title} description={description} logo={Logo} onPopoverOpenChange={onPopoverOpenChange} onTooltipOpenChange={onTooltipOpenChange} shouldShowChevron={shouldShowChevron}>{children}</AddressDetailsPopover>
+}
+type AddressDetailsPopoverProps = ExtendedAddressBaseProps
+    & ({ network: Network, providerName?: string } | { network?: Network, providerName: string })
+
+const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, network, providerName, isForCurrency, children, onDisconnect, showDetails = false, title, description, logo: Logo, onPopoverOpenChange, onTooltipOpenChange, shouldShowChevron = true }) => {
     const [isCopied, setCopied] = useCopyClipboard()
     const [isPopoverOpen, setPopoverOpen] = useState(false)
 
+    const handlePopoverChange = (open: boolean) => {
+        setPopoverOpen(open)
+        onPopoverOpenChange?.(open)
+    }
+
+    const addr = useMemo(() => {
+        if (network) {
+            return new Address(address, network, providerName)
+        }
+        else {
+            return new Address(address, null, providerName!)
+        }
+    }, [address, network, providerName]);
+
+
+    const isAddressValid = useMemo(() => {
+        if (network) {
+            return Address.isValid(addr.full, network)
+        }
+        return false
+    }, [addr.full, network]);
+
     // Resolver for action buttons
-    const getActionButtons = () => {
-        if (isNativeToken) return { buttons: [], showTitles: false };
+    const getActionButtons = useCallback(() => {
 
         const buttons: ActionButtonProps[] = [
             {
                 title: 'Copy',
                 Icon: isCopied ? Check : Copy,
-                onClick: (e: React.MouseEvent<HTMLDivElement>) => { e.stopPropagation(); setCopied(address); }
+                onClick: (e: React.MouseEvent<HTMLDivElement>) => { e.stopPropagation(); setCopied(addr.normalized); }
             },
-            ...(network ? [{
+            ...((network && isAddressValid) ? [{
                 title: 'View',
                 Icon: SquareArrowOutUpRight,
-                href: network.account_explorer_template?.replace('{0}', address)
+                href: getExplorerUrl(network.account_explorer_template, addr.full)
             }] : []),
             ...(onDisconnect ? [{
                 title: 'Disconnect',
@@ -170,38 +223,41 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, is
         const showTitles = buttons.length <= 2;
 
         return { buttons, showTitles };
-    }
+    }, [addr.full, network, providerName, isAddressValid, isCopied, onDisconnect]);
 
     const { buttons, showTitles } = getActionButtons();
+    const { start, middle, end } = useMemo(() => addr.toEmphasizedParts(), [addr]);
 
     return (
         <div onClick={(e) => e.stopPropagation()}>
-            <Popover open={isPopoverOpen} onOpenChange={() => setPopoverOpen(!isPopoverOpen)} modal={true}>
+            <Popover open={isPopoverOpen} onOpenChange={handlePopoverChange} modal={true}>
                 <PopoverTrigger asChild>
                     <div>
-                        <Tooltip>
+                        <Tooltip onOpenChange={onTooltipOpenChange}>
                             <TooltipTrigger asChild>
-                                {
-                                    children ??
-                                    <div className="group-hover/addressItem:underline hover:text-secondary-text transition duration-200 no-underline flex gap-1 items-center cursor-pointer">
-                                        <p className={`${isForCurrency ? "text-xs self-end" : "text-sm"} block font-medium`}>
-                                            {shortenAddress(address)}
-                                        </p>
-                                        {shouldShowChevron ?
-                                            <ChevronDown className="invisible group-hover/addressItem:visible h-4 w-4" />
-                                            : null
-                                        }
-                                    </div>
-                                }
+                                <span>
+                                    {
+                                        children ??
+                                        <div className="group-hover/addressItem:underline hover:text-secondary-text transition duration-200 no-underline flex gap-1 items-center cursor-pointer">
+                                            <p className={`${isForCurrency ? "text-xs self-end" : "text-sm"} block font-medium`}>
+                                                {addr.toShortString()}
+                                            </p>
+                                            {shouldShowChevron ?
+                                                <ChevronDown className="invisible group-hover/addressItem:visible h-4 w-4" />
+                                                : null
+                                            }
+                                        </div>
+                                    }
+                                </span>
                             </TooltipTrigger>
-                            <TooltipContent side="bottom">
+                            <TooltipContent side="bottom" className="pointer-events-none">
                                 <p>{isForCurrency ? "View token details" : "View address details"}</p>
                             </TooltipContent>
                         </Tooltip>
                     </div>
                 </PopoverTrigger>
                 <PopoverContent
-                    className="w-auto p-3 min-w-72 flex flex-col gap-3 items-stretch !rounded-2xl !bg-secondary-500"
+                    className="w-auto p-3 min-w-72 flex flex-col gap-3 items-stretch rounded-2xl! bg-secondary-500!"
                     side="top"
                     avoidCollisions={true}
                     collisionPadding={8}
@@ -220,12 +276,12 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, is
                                             width="40"
                                             loading="eager"
                                             fetchPriority="high"
-                                            className="rounded-full object-contain flex-shrink-0 h-10 w-10"
+                                            className="rounded-full object-contain shrink-0 h-10 w-10"
                                         />
                                     ) : (
-                                        <Logo className="w-10 h-10 text-secondary-text flex-shrink-0" />
+                                        <Logo className="w-10 h-10 text-secondary-text shrink-0" />
                                     ) : (
-                                        <Info className="w-10 h-10 text-secondary-text flex-shrink-0" />
+                                        <Info className="w-10 h-10 text-secondary-text shrink-0" />
                                     )}
                                 <div className="flex-1 font-medium">
                                     {title && <h3 className="text-base leading-5 text-primary-text">{title}</h3>}
@@ -236,11 +292,8 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, is
                         </div>
 
                     )}
-                    <p className={`text-secondary-text text-sm leading-5 break-all text-left ${!isNativeToken ? 'font-mono' : ''}`}>
-                        {
-                            isNativeToken ? address :
-                                <><span className="text-primary-text font-medium">{address.slice(0, 4)}</span><span>{address.slice(4, -4)}</span><span className="text-primary-text font-medium">{address.slice(-4)}</span></>
-                        }
+                    <p className="text-secondary-text text-sm leading-5 break-all text-left font-mono">
+                        <><span className="text-primary-text font-medium">{start}</span><span>{middle}</span><span className="text-primary-text font-medium">{end}</span></>
                     </p>
                     {buttons.length > 0 && (
                         <div className="flex gap-3">
@@ -258,6 +311,8 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, is
         </div>
     )
 }
+
+
 
 type ActionButtonProps = {
     title: string,

@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
 import { useMeasure } from "@uidotdev/usehooks";
 import { ReactNode, SVGProps } from "react";
-import clsx from "clsx";
 
 const variants = {
     enter: () => {

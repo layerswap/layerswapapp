@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect } from 'react'
+import { FC, useCallback } from 'react'
 import { Widget } from '../Widget/Index';
 import { useSwapDataState } from '../../context/swap';
 import Withdraw from './Withdraw';

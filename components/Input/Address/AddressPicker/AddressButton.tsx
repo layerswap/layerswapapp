@@ -14,8 +14,8 @@ type AddressButtonProps = {
     children: JSX.Element | JSX.Element[];
 }
 
-const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, children }) => {
-    return <button type="button" className="w-full outline-hidden" onClick={openAddressModal} >
+const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, children, destination }) => {
+    return <button type="button" className="navigation-focus-ring-child w-full outline-hidden" onClick={openAddressModal} tabIndex={destination ? 0 : -1}>
         {children}
     </button>
 }

@@ -1,6 +1,6 @@
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { QueryParams } from "../Models/QueryParams";
-import { isValidAddress } from "./address/validator";
+import { Address } from "./address";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
 import { SwapBasicData } from "./apiClients/layerSwapApiClient";
 
@@ -34,7 +34,7 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
         : destinationNetwork?.tokens
 
     let initialAddress =
-        destination_address && initialDestination && isValidAddress(destination_address, destinationNetwork) ? destination_address : "";
+        destination_address && initialDestination && Address.isValid(destination_address, destinationNetwork) ? destination_address : "";
 
     let initialSourceCurrency = filteredSourceCurrencies?.find(c => c.symbol?.toUpperCase() == fromAsset?.toUpperCase())
     if (!initialSourceCurrency && !fromAsset && sourceNetwork) {
@@ -74,6 +74,7 @@ export function generateSwapInitialValuesFromSwap(swapResponse: SwapBasicData, r
         source_token,
         destination_token,
         source_exchange,
+        use_deposit_address
     } = swapResponse
 
     const { sourceRoutes, destinationRoutes } = settings || {}
@@ -93,6 +94,7 @@ export function generateSwapInitialValuesFromSwap(swapResponse: SwapBasicData, r
         destination_address,
         refuel: !!refuel,
         fromExchange: type === "exchange" ? source_exchange : undefined,
+        depositMethod: use_deposit_address ? 'deposit_address' : 'wallet',
     }
 
     return result

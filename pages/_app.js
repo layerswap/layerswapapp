@@ -35,6 +35,20 @@ function App({ Component, pageProps }) {
         api_host: `${router.basePath || ''}/lsph`,
         ui_host: 'https://us.posthog.com',
         defaults: '2025-05-24',
+        before_send: (event) => {
+          if (event?.event === '$exception') {
+            const exceptionList = event.properties?.$exception_list || [];
+            const isResizeObserverError = exceptionList.some(
+              (exception) =>
+                exception.value?.includes('ResizeObserver loop') ||
+                exception.type?.includes('ResizeObserver loop')
+            );
+            if (isResizeObserverError) {
+              return null;
+            }
+          }
+          return event;
+        },
       });
     }
   }, [router.basePath]);

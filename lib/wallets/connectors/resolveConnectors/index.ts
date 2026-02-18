@@ -87,7 +87,8 @@ const resolveWallet = (wallet: any) => {
         isMobileSupported: isMobileSupported,
         hasBrowserExtension: wallet.injected != null,
         installUrl: wallet.injected != null ? wallet.app.browser ?? wallet.app.chrome : undefined,
-        extensionNotFound: type == 'walletConnect'
+        extensionNotFound: type == 'walletConnect',
+        providerName: wallet.name
     }
 
     return w

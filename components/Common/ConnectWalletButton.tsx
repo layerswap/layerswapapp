@@ -31,7 +31,7 @@ const ConnectWalletButton: FC<Props> = ({ provider, onConnect, descriptionText, 
         onClick={handleConnect}
         data-attr="connect-wallet"
         disabled={!isProviderReady || rest.disabled}
-        className={classNames(`py-5 px-6 bg-secondary-500 hover:bg-secondary-400 transition-colors duration-200 rounded-xl ${(isLoading || !isProviderReady) && 'cursor-progress opacity-80'} disabled:opacity-50 disabled:cursor-not-allowed`, rest.className)}
+        className={classNames(`focus-ring-primary-bold py-5 px-6 bg-secondary-500 hover:bg-secondary-400 transition-colors duration-200 rounded-xl ${(isLoading || !isProviderReady) && 'cursor-progress opacity-80'} disabled:opacity-50 disabled:cursor-not-allowed`, rest.className)}
     >
         <div className="flex flex-row justify-between gap-9 items-stretch">
             <ResolveConnectorIcon

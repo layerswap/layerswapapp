@@ -184,7 +184,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                         searchQuery={searchValue || ""}
                         setSearchQuery={setSearchValue}
                         placeholder={hiddenConnectors.length > 300 ? "Search through 400+ wallets..." : "Search wallet"}
-                        className="w-full mb-0!"
+                        containerClassName="w-full mb-0!"
                     />
                     {
                         (!selectedProvider || selectedProvider?.isSelectedFromFilter) &&

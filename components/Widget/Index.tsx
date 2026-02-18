@@ -37,12 +37,12 @@ const Widget = ({ children, hideMenu, contextualMenu }: Props) => {
 
    return <div className="relative p-px">
       {!isTransparentTheme && (
-         <div className="invisible sm:visible absolute inset-0 rounded-[25px] bg-gradient-to-t from-secondary-800 to-secondary-300 pointer-events-none" />
+         <div className="invisible sm:visible absolute inset-0 rounded-[25px] bg-linear-to-t from-secondary-800 to-secondary-300 pointer-events-none" />
       )}
       <div
          style={theme?.cardBackgroundStyle}
          id="widget"
-         className={clsx('md:shadow-lg sm:pb-4 rounded-3xl w-full sm:overflow-hidden relative has-expandContainerHeight:min-h-[675px] max-sm:has-openpicker:min-h-svh max-sm:min-h-[99.8svh] sm:has-openpicker:min-h-[79svh] h-full flex flex-col',
+         className={clsx('md:shadow-lg sm:pb-4 rounded-3xl w-full sm:overflow-hidden relative has-expandContainerHeight:min-h-[675px] max-sm:has-openpicker:min-h-svh max-sm:min-h-[99.8svh] sm:has-openpicker:min-h-[79svh]! h-full flex flex-col',
             {
                "max-sm:min-h-[99svh]!": isEmbedded,
                "bg-secondary-700": !isTransparentTheme

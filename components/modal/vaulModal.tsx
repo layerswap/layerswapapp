@@ -1,4 +1,4 @@
-import { Dispatch, FC, ReactNode, SetStateAction, useEffect, useRef, useState } from 'react';
+import { Dispatch, FC, ReactNode, SetStateAction, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { clsx } from 'clsx';
 import useWindowDimensions from '@/hooks/useWindowDimensions';
@@ -19,51 +19,93 @@ export type VaulDrawerProps = {
     onClose?: () => void;
     onAnimationEnd?: (open: boolean) => void;
     className?: string;
+    mode?: 'snapPoints' | 'fitHeight';
 }
 
-const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose, onAnimationEnd, className, modalId }) => {
+const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose, onAnimationEnd, className, modalId, mode = 'snapPoints' }) => {
     const { isMobile } = useWindowDimensions();
     let [headerRef, { height }] = useMeasure();
     const { setHeaderHeight } = useSnapPoints()
     const expandRef = useRef<HTMLDivElement>(null);
+    const drawerContentRef = useRef<HTMLDivElement>(null);
 
     const [loaded, setLoaded] = useState(false);
     const [snap, setSnap] = useState<number | string | null>(null);
     const [snapElement, setSnapElement] = useState<SnapElement | null>(null);
 
     const { snapPoints } = useSnapPoints()
-    const snapPointsHeight = snapPoints.map((item) => item.height);
+    const snapPointsHeight = useMemo(() => snapPoints.map((item) => item.height), [snapPoints]);
 
-    const isLastSnap = snapElement?.id === snapPoints[snapPoints.length - 1]?.id;
+    const isFitHeightMode = mode === 'fitHeight';
+    const isSnapPointsMode = mode === 'snapPoints';
+    const isLastSnap = isSnapPointsMode ? snapElement?.id === snapPoints[snapPoints.length - 1]?.id : true;
+
+    const snapPointsProps = useMemo(() => {
+        if (!isSnapPointsMode) return {};
+        return {
+            snapPoints: snapPointsHeight,
+            activeSnapPoint: snap,
+            setActiveSnapPoint: setSnap,
+            fadeFromIndex: 0 as const,
+            onDrag: (e: any) => { if (e.movementY < 0 && !expandRef.current?.classList.contains('hidden')) expandRef.current?.classList.add('hidden') }
+        };
+    }, [mode, snapPointsHeight, snap]);
 
     const goToNextSnap = () => {
-        if (!snapElement) return;
+        if (!snapElement || isFitHeightMode) return;
         setSnapElement(snapPoints.find((item) => item.id === snapElement.id + 1) || null);
     }
 
     useEffect(() => {
-        if (show && snapPoints.length > 0) {
-            setSnapElement(snapPoints.find((item) => item.id === snapElement?.id) || snapPoints[0]);
-        }
-    }, [snapPoints, show])
+        if (isFitHeightMode || !show || snapPoints.length === 0) return;
+        setSnapElement(snapPoints.find((item) => item.id === snapElement?.id) || snapPoints[0]);
+    }, [snapPoints, show, mode, snapElement?.id])
 
     useEffect(() => {
-        if (!snapElement || snapElement.height === snap) return;
+        if (isFitHeightMode || !snapElement || snapElement.height === snap) return;
         setSnap(snapElement.height)
-    }, [snapElement])
+    }, [snapElement, mode, snap])
 
     useEffect(() => {
-        if (!snap || snap === snapElement?.height) return
+        if (isFitHeightMode || !snap || snap === snapElement?.height) return
         setSnapElement(snapPoints.find((item) => item.height === snap) || null)
-    }, [snap])
+    }, [snap, mode, snapElement?.height, snapPoints])
 
     useEffect(() => {
         if (!height) return;
         setHeaderHeight(height);
-    }, [height])
+    }, [height, setHeaderHeight])
+
+    useEffect(() => {
+        if (!isFitHeightMode || !show) return;
+
+        let isActive = true;
+        const rafId = requestAnimationFrame(() => {
+            if (!isActive) return;
+            const wrapper = drawerContentRef.current;
+            const drawer = wrapper?.closest('[data-vaul-drawer]') as HTMLElement;
+            if (!drawer || !wrapper) return;
+
+            const maxHeight = isMobile ? window.innerHeight : (document.getElementById('widget')?.offsetHeight ?? window.innerHeight);
+
+            drawer.style.maxHeight = `${maxHeight}px`;
+            wrapper.style.cssText = 'flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden';
+        });
+
+        return () => {
+            isActive = false;
+            cancelAnimationFrame(rafId);
+            const wrapper = drawerContentRef.current;
+            if (wrapper) {
+                const drawer = wrapper.closest('[data-vaul-drawer]') as HTMLElement;
+                drawer?.style.removeProperty('maxHeight');
+                wrapper.style.cssText = '';
+            }
+        };
+    }, [mode, show, isMobile])
 
     const handleOpenChange = (open: boolean) => {
-        setSnap(open ? snapPoints[0].height : null);
+        if (isSnapPointsMode) setSnap(open && snapPoints.length > 0 ? snapPoints[0].height : null);
         setShow(open);
         if (!open) return onClose && onClose()
     }
@@ -81,19 +123,12 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
             open={show}
             onOpenChange={handleOpenChange}
             container={container}
-            snapPoints={snapPointsHeight}
-            activeSnapPoint={snap}
-            setActiveSnapPoint={setSnap}
-            fadeFromIndex={0}
-            onDrag={(e) => {
-                if (e.movementY < 0 && !expandRef.current?.classList.contains('hidden')) expandRef.current?.classList.add('hidden')
-            }}
+            {...snapPointsProps}
             modal={isMobile ? true : false}
             repositionInputs={false}
             onAnimationEnd={(e) => { onAnimationEnd && onAnimationEnd(e) }}
             handleOnly={isMobile}
         >
-
             <Drawer.Portal>
                 {isMobile ? (
                     <Drawer.Close asChild>
@@ -118,13 +153,16 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                 )}
                 <Drawer.Content
                     data-testid="content"
-                    className={clsx('fixed sm:absolute flex flex-col bg-secondary-700 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-4 text-primary-text ring-0! outline-hidden!', className, {
-                        'border-none! rounded-none!': snap === 1,
+                    data-fit-height={isFitHeightMode ? 'true' : undefined}
+                    className={clsx('fixed sm:absolute bg-secondary-700 rounded-t-3xl bottom-0 left-0 right-0 z-50 text-primary-text ring-0! outline-hidden!', className, {
+                        'flex flex-col pb-4 h-full': isSnapPointsMode,
+                        'flex flex-col': isFitHeightMode,
+                        'border-none! rounded-none!': isSnapPointsMode && snap === 1,
                     })}
                 >
                     <div
                         ref={headerRef}
-                        className='w-full relative'>
+                        className={clsx('w-full flex-shrink-0', { 'relative': isSnapPointsMode })}>
                         {
                             isMobile &&
                             <div className="flex justify-center w-full mt-2 mb-[6px]" >
@@ -153,13 +191,17 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         }
                     </div>
                     <div
-                        className='flex flex-col w-full h-full max-h-[90dvh] px-4 styled-scroll overflow-x-hidden relative'
+                        ref={isFitHeightMode ? drawerContentRef : undefined}
+                        className={clsx('w-full px-4 styled-scroll', {
+                            'flex flex-col overflow-x-hidden relative h-full': isSnapPointsMode,
+                            'pb-4': isFitHeightMode
+                        })}
                         id="virtualListContainer"
                     >
                         {children}
                         <AnimatePresence>
                             {
-                                !isLastSnap && snapElement &&
+                                isSnapPointsMode && !isLastSnap && snapElement &&
                                 <motion.div
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
@@ -174,16 +216,16 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                                 </motion.div>
                             }
                         </AnimatePresence>
-                        {isMobile && <VaulFooter snapElement={snapElement} />}
+                        {isMobile && <VaulFooter snapElement={snapElement} mode={mode} />}
                     </div>
-                    {!isMobile && <VaulFooter snapElement={snapElement} />}
+                    {!isMobile && <VaulFooter snapElement={snapElement} mode={mode} />}
                 </Drawer.Content>
             </Drawer.Portal>
-        </Drawer.Root >
+        </Drawer.Root>
     );
 }
 
-const VaulFooter: FC<{ snapElement: SnapElement | null }> = ({ snapElement }) => {
+const VaulFooter: FC<{ snapElement: SnapElement | null; mode?: 'snapPoints' | 'fitHeight' }> = ({ snapElement, mode = 'snapPoints' }) => {
     let [ref, { height }] = useMeasure();
     const { setFooterHeight } = useSnapPoints()
 
@@ -195,8 +237,8 @@ const VaulFooter: FC<{ snapElement: SnapElement | null }> = ({ snapElement }) =>
         ref={ref}
         id='walletModalFooter'
         style={{
-            top: snapElement?.height !== 1 ? `${Number(snapElement?.height?.toString().replace('px', '')) - 50}px` : undefined,
-            bottom: snapElement?.height === 1 ? '12px' : undefined
+            top: mode === 'snapPoints' && snapElement?.height !== 1 ? `${Number(snapElement?.height?.toString().replace('px', '')) - 50}px` : undefined,
+            bottom: mode === 'snapPoints' && snapElement?.height === 1 ? '12px' : undefined
         }}
         className='w-full left-0 z-50'
     />

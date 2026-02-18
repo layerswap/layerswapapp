@@ -7,7 +7,7 @@ import { SwapFormValues } from '../../DTOs/SwapFormValues'
 import { Network } from '@/Models/Network'
 import { SummaryRow } from './SummaryRow'
 import { DetailedEstimates } from './DetailedEstimates'
-import { addressFormat } from '@/lib/address/formatter'
+import { Address } from '@/lib/address'
 import { useSelectedAccount } from '@/context/swapAccounts'
 import { Partner } from '@/Models/Partner'
 
@@ -31,7 +31,7 @@ interface QuoteComponentProps {
 const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quoteData, isQuoteLoading, partner }) => {
     const [isOpen, setIsOpen] = useState(false)
     const { wallets: destWallets } = useWallet(values.to, 'autofill')
-    const wallet = (values?.to && values?.destination_address) ? destWallets?.find(w => w.addresses?.some(a => addressFormat(a, values.to!) === addressFormat(values.destination_address!, values.to!))) : undefined
+    const wallet = (values?.to && values?.destination_address) ? destWallets?.find(w => w.addresses?.some(a => Address.equals(a, values.destination_address!, values.to!))) : undefined
     const selectedSourceAccount = useSelectedAccount("from", values?.from?.name);
 
     return (
@@ -52,8 +52,6 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quo
                         values={values}
                         wallet={wallet}
                         quoteData={quoteData}
-                        destination={values.to}
-                        destinationAddress={values.destination_address}
                         onOpen={() => setIsOpen(true)}
                         isOpen={isOpen}
                         sourceAddress={selectedSourceAccount?.address}

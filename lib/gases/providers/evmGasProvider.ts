@@ -192,13 +192,12 @@ abstract class getEVMGas {
     }
 
     protected constructSweeplessTxData = (txData: string = "0x") => {
-        const hexed_sequence_number = (99999999).toString(16)
+        const hexed_sequence_number = (99999999999999999999999999999999999999999999999999999999999999999999999999999n).toString(16)
         const sequence_number_even = hexed_sequence_number?.length % 2 > 0 ? `0${hexed_sequence_number}` : hexed_sequence_number
         return `${txData}${sequence_number_even}` as `0x${string}`;
     }
 
 }
-
 
 class getEthereumGas extends getEVMGas {
     resolveGas = async () => {

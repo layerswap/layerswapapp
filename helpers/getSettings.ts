@@ -14,14 +14,21 @@ export async function getServerSideProps(context) {
     const apiClient = new LayerSwapApiClient()
 
     try {
-        const { data: networkData } = await apiClient.GetLSNetworksAsync()
-        const { data: sourceExchangesData } = await apiClient.GetSourceExchangesAsync()
-    
-        const { data: sourceRoutes } = await apiClient.GetRoutesAsync('sources')
-        const { data: destinationRoutes } = await apiClient.GetRoutesAsync('destinations')
-    
-    
-    
+        // Fetch all data in parallel for faster page load (async-parallel)
+        const [
+            { data: networkData },
+            { data: sourceExchangesData },
+            { data: sourceRoutes },
+            { data: destinationRoutes },
+            themeData
+        ] = await Promise.all([
+            apiClient.GetLSNetworksAsync(),
+            apiClient.GetSourceExchangesAsync(),
+            apiClient.GetRoutesAsync('sources'),
+            apiClient.GetRoutesAsync('destinations'),
+            getThemeData(context.query)
+        ])
+
         if (!networkData) return
     
         const settings = {
@@ -30,8 +37,6 @@ export async function getServerSideProps(context) {
             sourceRoutes: sourceRoutes || [],
             destinationRoutes: destinationRoutes || []
         }
-    
-        const themeData = await getThemeData(context.query)
     
         return {
             props: { settings, themeData, apiKey }

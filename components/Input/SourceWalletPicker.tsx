@@ -2,7 +2,7 @@ import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { Dispatch, FC, SetStateAction, useCallback, useState } from "react";
 import useWallet from "@/hooks/useWallet";
-import shortenAddress from "@/components/utils/ShortenAddress";
+import { Address } from "@/lib/address";
 import { ChevronDown, CircleHelp, QrCode } from "lucide-react";
 import VaulDrawer, { ModalFooterPortal } from "../modal/vaulModal";
 import { SelectAccountProps, Wallet } from "@/Models/WalletProvider";
@@ -55,43 +55,42 @@ const SourceWalletPicker: FC = () => {
         return <></>
 
     return <>
-        {
-            values.depositMethod === 'deposit_address' ?
-                (
-                    provider
-                        ? <div className="flex items-center space-x-2 text-sm  rounded-lg hover:bg-secondary-400 py-1 pl-2 pr-1">
-                            <div onClick={handleWalletChange} className="flex space-x-1 items-center cursor-pointer">
-                                <div className="text-secondary-text">
-                                    Manual Transfer
+        <span>
+            {
+                values.depositMethod === 'deposit_address' ?
+                    (
+                        provider
+                            ? <button type="button" onClick={handleWalletChange} className="flex items-center space-x-2 text-sm rounded-lg hover:bg-secondary-400 py-1 pl-2 pr-1 outline-hidden">
+                                <div className="flex space-x-1 items-center">
+                                    <div className="text-secondary-text">
+                                        Manual Transfer
+                                    </div>
+                                    <div className="w-5 h-5 items-center flex text-secondary-text">
+                                        <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                                    </div>
                                 </div>
-                                <div className="w-5 h-5 items-center flex text-secondary-text">
-                                    <ChevronDown className="h-4 w-4" aria-hidden="true" />
-                                </div>
+                            </button>
+                            : <div className="text-secondary-text text-sm  rounded-lg hover:bg-secondary-400 py-1 pl-2 pr-1">
+                                Manual Transfer
+                            </div>
+                    )
+                    :
+                    selectedSourceAccount && selectedSourceAccount?.address &&
+                    <button type="button" onClick={handleWalletChange} className="rounded-lg flex items-center space-x-2 text-sm hover:bg-secondary-400 py-1 pl-2 pr-2 outline-hidden">
+                        <div className="rounded-lg flex space-x-1 items-center">
+                            <div className="inline-flex items-center relative px-0.5">
+                                <selectedSourceAccount.icon className="w-4 h-4" />
+                            </div>
+                            <div className="text-secondary-text">
+                                {new Address(selectedSourceAccount.address, values.from).toShortString()}
+                            </div>
+                            <div className="w-4 h-4 items-center flex text-secondary-text">
+                                <ChevronDown className="h-4 w-4" aria-hidden="true" />
                             </div>
                         </div>
-                        : <div className="text-secondary-text text-sm  rounded-lg hover:bg-secondary-400 py-1 pl-2 pr-1">
-                            Manual Transfer
-                        </div>
-                )
-                :
-                <div className="rounded-lg flex items-center space-x-2 text-sm  hover:bg-secondary-400 py-1 pl-2 pr-2">
-                    {
-                        selectedSourceAccount && selectedSourceAccount?.address && <>
-                            <div onClick={handleWalletChange} className="rounded-lg flex space-x-1 items-center cursor-pointer">
-                                <div className="inline-flex items-center relative px-0.5">
-                                    <selectedSourceAccount.icon className="w-4 h-4" />
-                                </div>
-                                <div className="text-secondary-text">
-                                    {shortenAddress(selectedSourceAccount.address)}
-                                </div>
-                                <div className="w-4 h-4 items-center flex text-secondary-text">
-                                    <ChevronDown className="h-4 w-4" aria-hidden="true" />
-                                </div>
-                            </div>
-                        </>
-                    }
-                </div>
-        }
+                    </button>
+            }
+        </span>
         <VaulDrawer
             show={openModal}
             setShow={setOpenModal}
@@ -219,9 +218,9 @@ export const FormSourceWalletButton: FC = () => {
     }
     else if (availableWallets.length > 0 && walletNetwork && values.fromAsset) {
         return <>
-            <div className="w-full" onClick={handleWalletChange}>
+            <button type="button" className="w-full outline-hidden" onClick={handleWalletChange}>
                 <Connect />
-            </div>
+            </button>
             <VaulDrawer
                 show={openModal}
                 setShow={setOpenModal}
@@ -262,7 +261,7 @@ const Connect: FC<{ connectFn?: () => Promise<Wallet | undefined | void>; setMou
     const { connect } = useConnectModal()
     const { providers } = useWallet()
 
-    const isProvidersReady =  providers.every(p => p.ready)
+    const isProvidersReady = providers.every(p => p.ready)
 
     const connectWallet = async () => {
         setMountWalletPortal && setMountWalletPortal(true)
