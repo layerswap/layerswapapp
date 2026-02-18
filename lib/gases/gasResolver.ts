@@ -3,7 +3,6 @@ import { GasProps } from "../../Models/Balance";
 import { BitcoinGasProvider } from "./providers/bitcoinGasProvider";
 import { EVMGasProvider } from "./providers/evmGasProvider";
 import { FuelGasProvider } from "./providers/fuelGasProvider";
-import { ImmutableXGasProvider } from "./providers/immutableXGasProvider";
 import { LoopringGasProvider } from "./providers/loopringGasProvider";
 import { SolanaGasProvider } from "./providers/solanaGasProvider";
 import { StarknetGasProvider } from "./providers/starknetGasProvider";

@@ -8,7 +8,6 @@ import ConnectorsList from "../components/WalletModal/ConnectorsList";
 import { useConnectModal } from "../components/WalletModal";
 import useEVM from "../lib/wallets/evm/useEVM";
 import useStarknet from "../lib/wallets/starknet/useStarknet";
-import useImtblX from "../lib/wallets/imtblX/useImtblX";
 import useTON from "../lib/wallets/ton/useTON";
 import useFuel from "../lib/wallets/fuel/useFuel";
 import useTron from "../lib/wallets/tron/useTron";
@@ -29,7 +28,6 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ chi
     const bitcoin = useBitcoin()
     const evm = useEVM();
     const starknet = useStarknet();
-    const imtblX = useImtblX();
     const svm = useSVM();
     const ton = useTON();
     const fuel = useFuel();
@@ -38,7 +36,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ chi
 
     const providers = useMemo(() => {
         const allProviders: WalletProvider[] = [
-            evm, starknet, svm, bitcoin, ton, fuel, tron, paradex, imtblX
+            evm, starknet, svm, bitcoin, ton, fuel, tron, paradex
         ];
         const filteredProviders = allProviders.filter(provider => isMobilePlatform ? !provider.unsupportedPlatforms?.includes('mobile') : !provider.unsupportedPlatforms?.includes('desktop'));
 
@@ -49,7 +47,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ chi
                 provider.asSourceSupportedNetworks?.includes(net.name)
             )
         );
-    }, [networks, bitcoin, evm, starknet, svm, ton, fuel, tron, paradex, imtblX, isMobilePlatform]);
+    }, [networks, bitcoin, evm, starknet, svm, ton, fuel, tron, paradex, isMobilePlatform]);
 
     return (
         <WalletProvidersContext.Provider value={providers}>
