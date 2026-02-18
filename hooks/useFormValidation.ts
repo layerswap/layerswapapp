@@ -1,7 +1,7 @@
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import { Address } from '../lib/address';
 import { QuoteError } from './useFee';
-import { ceilUsd, floorUsd, formatUsd } from '@/components/utils/formatUsdAmount';
+import { ceilUsd, floorUsd } from '@/components/utils/formatUsdAmount';
 
 interface Params {
     values: SwapFormValues;
