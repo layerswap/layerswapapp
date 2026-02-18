@@ -134,7 +134,12 @@ export function useUsdTokenSync({
         if (skipSync) _skipNextSync = false;
 
         if (internalAmountChangeRef.current) {
-            internalAmountChangeRef.current = false;
+            // Only clear the flag once the formik amount has actually changed.
+            // The flag may be set in the same effect flush (e.g. price/token change effects),
+            // but setFieldValue is async — the amount update arrives on a later render.
+            if (amountChanged) {
+                internalAmountChangeRef.current = false;
+            }
             return;
         }
         if (!amountChanged) return;
