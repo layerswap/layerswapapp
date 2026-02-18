@@ -133,7 +133,6 @@ const ActionButton: FC<ActionButtonProps> = ({ label, onClick, onMouseEnter, dis
             {...rest}
             onMouseEnter={onMouseEnter}
             onClick={onClick}
-            typeof="button"
             type="button"
             disabled={disabled}
             className="px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer enabled:active:animate-press-down"
