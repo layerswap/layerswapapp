@@ -14,6 +14,7 @@ import { ErrorDisplay } from '@/components/validationError/ErrorDisplay';
 import { Partner } from '@/Models/Partner';
 import useOutOfGas from '@/lib/gases/useOutOfGas';
 import { transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
+import { truncateDecimals } from '@/components/utils/RoundDecimals';
 
 const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: () => void, onCancelWithdrawal?: () => void, partner?: Partner }> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal, partner }) => {
     const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading, quoteError } = useSwapDataState()
@@ -34,6 +35,7 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
     let withdraw: {
         content?: JSX.Element | JSX.Element[],
         footer?: JSX.Element | JSX.Element[],
+        footerKey?: string,
     } = {}
 
     const showInsufficientBalanceWarning = swapBasicData?.use_deposit_address === false
@@ -52,13 +54,21 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
         minAllowedAmount,
         maxAllowedAmount
     })
-
+    
     if (swapBasicData?.use_deposit_address === false && showInsufficientBalanceWarning) {
         withdraw = {
-            footer: <ErrorDisplay errorName='insufficientFunds' refreshBalance={mutate} isBalanceLoading={isLoading} />
+            footerKey: 'insufficient',
+            footer: <ErrorDisplay
+                errorName='insufficientFunds'
+                refreshBalance={mutate}
+                isBalanceLoading={isLoading}
+                balanceAmount={walletBalanceAmount !== undefined ? truncateDecimals(walletBalanceAmount, swapBasicData?.source_token?.precision) : undefined}
+                tokenSymbol={swapBasicData?.source_token?.symbol}
+            />
         }
     } else if (swapBasicData?.use_deposit_address === false && outOfGas) {
         withdraw = {
+            footerKey: 'outOfGas',
             footer: <WalletTransferButton
                 swapBasicData={swapBasicData}
                 swapId={swapDetails?.id}
@@ -71,6 +81,7 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
     }
     else if (swapBasicData?.use_deposit_address === false) {
         withdraw = {
+            footerKey: 'transfer',
             footer: <WalletTransferButton
                 swapBasicData={swapBasicData}
                 swapId={swapDetails?.id}
@@ -101,7 +112,9 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
             {
                 withdraw?.footer &&
                 <Widget.Footer sticky={type == 'widget'}>
-                    {withdraw?.footer}
+                    <div key={withdraw.footerKey} className="animate-fade-in">
+                        {withdraw?.footer}
+                    </div>
                 </Widget.Footer>
             }
         </>

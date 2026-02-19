@@ -40,7 +40,7 @@ module.exports = {
         // Button press-down
         'press-down': 'press-down 150ms ease-in-out',
         'shake': 'shake 0.82s cubic-bezier(.36,.07,.19,.97) both',
-        shine: 'shine 2s linear infinite'
+        shine: 'shine 1s linear infinite'
       },
       keyframes: {
         shine: {

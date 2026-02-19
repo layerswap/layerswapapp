@@ -82,9 +82,9 @@ const InsufficientBalance: FC<{ balance: string; onRefresh: () => void }> = ({ b
                     <p className="text-sm text-primary-text font-medium">
                         <span>Insufficient balance</span>
                     </p>
-                    <p className="text-xs text-secondary-text">
+                    <p className="text-xs text-secondary-text space-x-0.5">
                         <span>Tap</span>
-                        <span className="font-bold">Max</span>
+                        <span className="font-bold"> Max </span>
                         <span>to use your available balance, or refresh to check for new funds</span>
                     </p>
                 </div>
