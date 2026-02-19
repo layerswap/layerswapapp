@@ -137,19 +137,14 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         />
                     </Drawer.Close>
                 ) : (
-                    <AnimatePresence>
-                        {show && (
-                            <Drawer.Close asChild key={`backdrop-${modalId}`}>
-                                <motion.div
-                                    className='absolute inset-0 z-50 bg-black/50 block pointer-events-auto'
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    transition={{ duration: 0.3 }}
-                                />
-                            </Drawer.Close>
-                        )}
-                    </AnimatePresence>
+                    <motion.div
+                        className='absolute inset-0 z-40 bg-black/50'
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: show ? 1 : 0 }}
+                        transition={{ duration: 0.1 }}
+                        style={{ pointerEvents: show ? 'auto' : 'none' }}
+                        onClick={() => handleOpenChange(false)}
+                    />
                 )}
                 <Drawer.Content
                     data-testid="content"
