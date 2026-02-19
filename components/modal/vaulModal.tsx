@@ -20,9 +20,10 @@ export type VaulDrawerProps = {
     onAnimationEnd?: (open: boolean) => void;
     className?: string;
     mode?: 'snapPoints' | 'fitHeight';
+    zLevel?: number;
 }
 
-const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose, onAnimationEnd, className, modalId, mode = 'snapPoints' }) => {
+const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose, onAnimationEnd, className, modalId, mode = 'snapPoints', zLevel = 0 }) => {
     const { isMobile } = useWindowDimensions();
     let [headerRef, { height }] = useMeasure();
     const { setHeaderHeight } = useSnapPoints()
@@ -133,28 +134,31 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                 {isMobile ? (
                     <Drawer.Close asChild>
                         <Drawer.Overlay
-                            className='fixed inset-0 z-50 bg-black/50 block'
+                            className='fixed inset-0 bg-black/50 block'
+                            style={{ zIndex: 50 + zLevel * 20 }}
                         />
                     </Drawer.Close>
                 ) : (
                     <AnimatePresence>
                         {show && (
-                            <Drawer.Close asChild key={`backdrop-${modalId}`}>
-                                <motion.div
-                                    className='absolute inset-0 z-50 bg-black/50 block pointer-events-auto'
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    transition={{ duration: 0.3 }}
-                                />
-                            </Drawer.Close>
+                            <motion.div
+                                key="backdrop"
+                                className='absolute inset-0 bg-black/50'
+                                style={{ zIndex: 50 + zLevel * 20 }}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.1 }}
+                                onClick={() => handleOpenChange(false)}
+                            />
                         )}
                     </AnimatePresence>
                 )}
                 <Drawer.Content
                     data-testid="content"
                     data-fit-height={isFitHeightMode ? 'true' : undefined}
-                    className={clsx('fixed sm:absolute bg-secondary-700 rounded-t-3xl bottom-0 left-0 right-0 z-50 text-primary-text ring-0! outline-hidden!', className, {
+                    style={{ zIndex: 51 + zLevel * 20 }}
+                    className={clsx('fixed sm:absolute bg-secondary-700 rounded-t-3xl bottom-0 left-0 right-0 text-primary-text ring-0! outline-hidden!', className, {
                         'flex flex-col pb-4 h-full': isSnapPointsMode,
                         'flex flex-col': isFitHeightMode,
                         'border-none! rounded-none!': isSnapPointsMode && snap === 1,
@@ -208,7 +212,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                                     exit={{ opacity: 0 }}
                                     transition={{ duration: 0.15 }}
                                     ref={expandRef}
-                                    style={{ top: `${Number(snapElement.height?.toString().replace('px', '')) - 88}px` }} className='w-full fixed left-0 z-50'>
+                                    style={{ top: `${Number(snapElement.height?.toString().replace('px', '')) - 88}px`, zIndex: 51 + zLevel * 20 }} className='w-full fixed left-0'>
                                     <button type='button' onClick={goToNextSnap} className="w-full px-4 pt-10 pb-4 justify-center from-secondary-700 bg-linear-to-t items-center gap-2 inline-flex text-secondary-text">
                                         <ChevronUp className="w-6 h-6 relative" />
                                         <div className="text-sm font-medium">Expand</div>

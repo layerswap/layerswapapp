@@ -36,6 +36,7 @@ const WalletsHeaderWalletsList = ({ wallets }: { wallets: Wallet[] }) => {
             setShow={setOpenModal}
             header={`Connected wallets`}
             modalId="connectedWallets"
+            zLevel={1}
         >
             <VaulDrawer.Snap id="item-1">
                 <WalletsList wallets={wallets} />
@@ -126,6 +127,7 @@ const WalletsMenuWalletsList = ({ wallets }: { wallets: Wallet[] }) => {
             setShow={setOpenModal}
             header={`Connected wallets`}
             modalId="connectedWallets"
+            zLevel={1}
         >
             <VaulDrawer.Snap id="item-1">
                 <WalletsList wallets={wallets} />
