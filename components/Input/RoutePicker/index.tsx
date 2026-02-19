@@ -15,7 +15,7 @@ import clsx from "clsx";
 import useSuggestionsLimit from "@/hooks/useSuggestionsLimit";
 import useWallet from "@/hooks/useWallet";
 
-const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, className?: string }> = ({ direction, isExchange = false, className }) => {
+const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, className?: string, minAllowedAmount?: number, maxAllowedAmount?: number }> = ({ direction, isExchange = false, className, minAllowedAmount, maxAllowedAmount }) => {
     const {
         values,
         setFieldValue,
@@ -101,7 +101,7 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
             </Selector>
             {
                 showBalance &&
-                <Balance values={values} direction={direction} />
+                <Balance values={values} direction={direction} minAllowedAmount={minAllowedAmount} maxAllowedAmount={maxAllowedAmount} />
             }
         </div>
     )

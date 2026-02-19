@@ -29,7 +29,7 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, partner, onCa
     const removeStoredTransaction = useCallback(() => {
         useSwapTransactionStore.getState().removeSwapTransaction(swapDetails?.id || '');
     }, [swapDetails?.id, storedWalletTransactions])
-
+    
     if (!swapBasicData) return <>
         <div className="w-full h-[430px]">
             <div className="animate-pulse flex space-x-4">

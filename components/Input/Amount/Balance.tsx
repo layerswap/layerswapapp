@@ -6,19 +6,35 @@ import { useBalance } from "@/lib/balances/useBalance";
 import { FC } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import { NetworkRoute } from "@/Models/Network";
+import { RefreshCw } from "lucide-react";
+import useOutOfGas from "@/lib/gases/useOutOfGas";
+import ReserveGasNote from "@/components/ReserveGasNote";
 
-const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
+const Balance = ({ values, direction, minAllowedAmount, maxAllowedAmount }: { values: SwapFormValues, direction: string, minAllowedAmount?: number, maxAllowedAmount?: number }) => {
 
     const { to, fromAsset: fromCurrency, toAsset: toCurrency, from, destination_address } = values
     const selectedSourceAccount = useSelectedAccount("from", from?.name);
     const token = direction === 'from' ? fromCurrency : toCurrency
     const network = direction === 'from' ? from : to
     const address = direction === 'from' ? selectedSourceAccount?.address : destination_address
-    const { balances, isLoading } = useBalance(address, network, { refreshInterval: 20000, dedupeInterval: 20000 })
+    const { balances, isLoading, mutate } = useBalance(address, network, { refreshInterval: 20000, dedupeInterval: 20000 })
+
     const tokenBalance = balances?.find(
         b => b?.network === network?.name && b?.token === token?.symbol
     )
     const truncatedBalance = tokenBalance?.amount !== undefined ? truncateDecimals(tokenBalance?.amount, token?.precision) : ''
+
+    const { outOfGas } = useOutOfGas({
+        address: selectedSourceAccount?.address,
+        network: values.from,
+        token: values.fromAsset,
+        amount: values.amount,
+        balances,
+        minAllowedAmount,
+        maxAllowedAmount
+    })
+
+    const insufficientBalance = Number(tokenBalance?.amount) >= 0 && Number(tokenBalance?.amount) < Number(values.amount) && values.depositMethod === 'wallet' && direction == 'from'
 
     if (!isLoading && !(network && token && tokenBalance))
         return null;
@@ -30,31 +46,51 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
                 : !truncatedBalance ?
                     <span>-</span>
                     : (network && token && truncatedBalance) ?
-                        ((Number(tokenBalance?.amount) >= 0 && Number(tokenBalance?.amount) < Number(values.amount) && values.depositMethod === 'wallet' && direction == 'from') ?
-                            <InsufficientBalance balance={truncatedBalance} />
-                            :
-                            <span>{truncatedBalance}</span>
-                        )
+                        insufficientBalance ?
+                            <InsufficientBalance balance={truncatedBalance} onRefresh={mutate} />
+                            : outOfGas ?
+                                <ReserveGasNote balance={truncatedBalance} />
+                                : <span>{truncatedBalance}</span>
                         : null
         }
     </div>
 }
 
-const InsufficientBalance: FC<{ balance: string }> = ({ balance }) => {
+const InsufficientBalance: FC<{ balance: string; onRefresh: () => void }> = ({ balance, onRefresh }) => {
     return <Tooltip openOnClick>
         <TooltipTrigger asChild>
-            <div className="flex items-center gap-1 text-warning-foreground justify-center">
-                <InfoIcon className='w-3 h-3' />
+            <div className="flex items-center gap-1 text-warning-foreground justify-center group/insufficient">
+                <InfoIcon className="w-3 h-3 group-hover/insufficient:hidden" />
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onRefresh();
+                    }}
+                    className="hidden group-hover/insufficient:block"
+                >
+                    <RefreshCw className='w-3 h-3 hover:animate-spin' />
+                </button>
                 <p>{balance}</p>
             </div>
         </TooltipTrigger>
-        <TooltipContent className="!bg-secondary-400 !border-0 !p-3 !rounded-xl">
-            <div className="flex items-center gap-2 justify-center">
-                <InfoIcon className='w-4 h-4 text-warning-foreground' />
-                <p className="text-sm">Insufficient balance</p>
+        <TooltipContent showArrow side="top" arrowClasses="fill-secondary-400 [filter:drop-shadow(0px_1px_3px_rgba(0,0,0,0.5))] translate-y-[-1px]" className="shadow-[0px_1px_3px_0px_rgba(0,0,0,0.5)]! bg-secondary-400! border-0! p-3! rounded-xl! max-w-[250px]">
+            <div className="flex items-start gap-2">
+                <InfoIcon className="w-4 h-4 text-warning-foreground shrink-0 mt-0.5" />
+
+                <div className="flex flex-col gap-1">
+                    <p className="text-sm text-primary-text font-medium">
+                        <span>Insufficient balance</span>
+                    </p>
+                    <p className="text-xs text-secondary-text space-x-0.5">
+                        <span>Tap</span>
+                        <span className="font-bold"> Max </span>
+                        <span>to use your available balance, or refresh to check for new funds</span>
+                    </p>
+                </div>
             </div>
         </TooltipContent>
-    </Tooltip>
+    </Tooltip >
 }
 
 export default Balance

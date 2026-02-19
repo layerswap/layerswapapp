@@ -41,7 +41,7 @@ export class LoopringBalanceProvider extends BalanceProvider {
                 return ({
                     network: network.name,
                     token: asset?.symbol,
-                    amount: amount ? Number(formatUnits(BigInt(amount), Number(asset?.decimals))) : 0,
+                    amount: amount ? Number(formatUnits(BigInt(amount), Number(asset?.decimals))) : undefined,
                     request_time: new Date().toJSON(),
                     decimals: Number(asset?.decimals),
                     isNativeCurrency: false,
