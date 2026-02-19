@@ -162,7 +162,7 @@ export const useBalanceStore = create<BalanceStore>()(
       set({ startTimeOfInit: Date.now() })
       set({ partialPublished: false })
 
-      // Active timer - fires at 3 seconds
+      // Active timer - fires at 1.5 seconds
       const timerId = setTimeout(() => {
         const state = get()
         // Only publish if not already published and still loading
@@ -177,7 +177,7 @@ export const useBalanceStore = create<BalanceStore>()(
           set({ balanceKeysForSorting: partial })
           set({ partialPublished: true })
         }
-      }, 3000)
+      }, 1500)
 
       set({ sortingTimerId: timerId })
 
