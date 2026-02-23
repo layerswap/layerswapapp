@@ -105,13 +105,15 @@ export interface NavigatableListProps {
     enabled?: boolean;
     onReset?: () => void;
     keyboardNavigatingClass?: string;
+    navigateToFirstChild?: boolean;
 }
 
 function NavigatableListRoot({
     children,
     enabled = true,
     onReset,
-    keyboardNavigatingClass = 'keyboard-navigating'
+    keyboardNavigatingClass = 'keyboard-navigating',
+    navigateToFirstChild
 }: NavigatableListProps) {
     const storeRef = useRef<ReturnType<typeof createAutoDetectionStore>>();
     if (!storeRef.current) {
@@ -130,7 +132,8 @@ function NavigatableListRoot({
         enabled,
         onReset,
         keyboardNavigatingClass,
-        onEnter: store.triggerClickByKey
+        onEnter: store.triggerClickByKey,
+        navigateToFirstChild
     });
 
     const stateValue: NavigatableListStateContextType = useMemo(() => ({

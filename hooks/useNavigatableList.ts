@@ -35,6 +35,8 @@ export interface UseNavigatableListOptions {
     keyboardNavigatingClass?: string;
     /** Callback to trigger click on item by nav-index string (e.g., "0" or "1.2") */
     onEnter?: (navIndex: string) => void;
+    /** When true, navigate to the first child of the first item instead of the item itself */
+    navigateToFirstChild?: boolean;
 }
 
 export const useNavigatableList = ({
@@ -42,10 +44,12 @@ export const useNavigatableList = ({
     enabled = true,
     onReset,
     keyboardNavigatingClass = 'keyboard-navigating',
-    onEnter
+    onEnter,
+    navigateToFirstChild
 }: UseNavigatableListOptions) => {
     const [focusedIndex, setFocusedIndex] = useState<FocusedIndex | null>(null);
     const [isKeyboardNavigating, setIsKeyboardNavigating] = useState(false);
+    const [pendingFirstChild, setPendingFirstChild] = useState(false);
     
     // Use refs for transient state to keep callbacks stable and avoid unnecessary re-renders
     const isMouseMovingRef = useRef(false);
@@ -60,9 +64,18 @@ export const useNavigatableList = ({
     useEffect(() => {
         if (onReset) {
             onReset();
+            setPendingFirstChild(!!navigateToFirstChild);
             setFocusedIndex(navigableItems.length > 0 ? { parent: 0 } : null);
         }
     }, [onReset]);
+
+    // When pending first child and children are registered, navigate to first child
+    useEffect(() => {
+        if (pendingFirstChild && (navigableItems[0]?.childCount ?? 0) > 0) {
+            setPendingFirstChild(false);
+            setFocusedIndex({ parent: 0, child: 0 });
+        }
+    }, [pendingFirstChild, navigableItems]);
 
     // Default to first item on mount when items become available
     useEffect(() => {
