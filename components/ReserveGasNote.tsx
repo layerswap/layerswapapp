@@ -34,7 +34,7 @@ const BalanceWarningTooltip = ({ balance, title, description, onRefresh }: Balan
                 <p>{balance}</p>
             </div>
         </TooltipTrigger>
-        <TooltipContent showArrow side="top" arrowClasses="fill-secondary-400 [filter:drop-shadow(0px_1px_3px_rgba(0,0,0,0.5))] translate-y-[-1px]" className="shadow-[0px_1px_3px_0px_rgba(0,0,0,0.5)]! bg-secondary-400! border-0! p-3! rounded-xl! max-w-[250px]">
+        <TooltipContent showArrow side="top" arrowClasses="bg-secondary-400! fill-secondary-400!" className="shadow-[0px_1px_3px_0px_rgba(0,0,0,0.5)]! bg-secondary-400! border-0! p-3! rounded-xl! max-w-[250px]">
             <div className="flex items-start gap-2">
                 <InfoIcon className="w-4 h-4 text-warning-foreground shrink-0 mt-0.5" />
                 <div className="flex flex-col gap-1">
