@@ -75,7 +75,7 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
                 swapId={swapDetails?.id}
                 refuel={!!refuel}
                 onWalletWithdrawalSuccess={onWalletWithdrawalSuccess}
-                warning={outOfGas ? <ErrorDisplay errorName='outOfGas' onEditAmount={onCancelWithdrawal} /> : null}
+                warning={<ErrorDisplay errorName='outOfGas' onEditAmount={onCancelWithdrawal} />}
                 onCancelWithdrawal={onCancelWithdrawal}
             />
         }
@@ -110,9 +110,9 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
                     </div>
                 </div>
             </Widget.Content>
-            <Widget.Footer sticky={type == 'widget'}>
-                <AnimatePresence mode="wait">
-                    {withdraw?.footer && (
+            {withdraw?.footer && (
+                <Widget.Footer sticky={type == 'widget'}>
+                    <AnimatePresence mode="wait">
                         <motion.div
                             key={withdraw.footerKey}
                             initial={{ opacity: 0, y: 10 }}
@@ -122,9 +122,9 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
                         >
                             {withdraw.footer}
                         </motion.div>
-                    )}
-                </AnimatePresence>
-            </Widget.Footer>
+                    </AnimatePresence>
+                </Widget.Footer>
+            )}
         </>
     )
 }

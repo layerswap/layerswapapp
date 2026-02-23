@@ -1,6 +1,6 @@
 import { ValidationDetails } from '@/context/validationContext';
 import { ArrowLeft, RefreshCw, RouteOff } from 'lucide-react';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ICON_CLASSES_WARNING } from './constants';
 import InfoIcon from "@/components/icons/InfoIcon";
 
@@ -34,6 +34,10 @@ export const ErrorDisplay: React.FC<Partial<ErrorDisplayProps & { errorName?: st
     const { message, details, refreshBalance, isBalanceLoading, onEditAmount, balanceAmount, tokenSymbol } = { ...defaultErrors[props?.errorName || ''], ...props };
     const [isSpinning, setIsSpinning] = useState(false);
     const timerRef = useRef<ReturnType<typeof setTimeout>>();
+
+    useEffect(() => {
+        return () => clearTimeout(timerRef.current);
+    }, []);
 
     const handleRefresh = useCallback(() => {
         clearTimeout(timerRef.current);
