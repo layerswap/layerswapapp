@@ -15,6 +15,7 @@ import { Partner } from '@/Models/Partner';
 import useOutOfGas from '@/lib/gases/useOutOfGas';
 import { transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { truncateDecimals } from '@/components/utils/RoundDecimals';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: () => void, onCancelWithdrawal?: () => void, partner?: Partner }> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal, partner }) => {
     const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading, quoteError } = useSwapDataState()
@@ -54,7 +55,7 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
         minAllowedAmount,
         maxAllowedAmount
     })
-    
+
     if (swapBasicData?.use_deposit_address === false && showInsufficientBalanceWarning) {
         withdraw = {
             footerKey: 'insufficient',
@@ -109,14 +110,21 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
                     </div>
                 </div>
             </Widget.Content>
-            {
-                withdraw?.footer &&
-                <Widget.Footer sticky={type == 'widget'}>
-                    <div key={withdraw.footerKey} className="animate-fade-in">
-                        {withdraw?.footer}
-                    </div>
-                </Widget.Footer>
-            }
+            <Widget.Footer sticky={type == 'widget'}>
+                <AnimatePresence mode="wait">
+                    {withdraw?.footer && (
+                        <motion.div
+                            key={withdraw.footerKey}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.2 }}
+                        >
+                            {withdraw.footer}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </Widget.Footer>
         </>
     )
 }
