@@ -200,7 +200,8 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.BNBChainMainnet] = {
             AccountExplorerTemplate: 'https://bscscan.com/address/{0}',
-            ChainId: 56
+            ChainId: 56,
+            BaseFeeMultiplier: 1.2,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.StarkNetMainnet] = {
             AccountExplorerTemplate: 'https://starkscan.co/contract/{0}',

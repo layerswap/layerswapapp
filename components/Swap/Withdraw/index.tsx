@@ -1,5 +1,5 @@
-import { FC } from 'react'
-import { useSwapDataState } from '@/context/swap';
+import { FC, useCallback } from 'react'
+import { useSwapDataState, useSwapDataUpdate } from '@/context/swap';
 import KnownInternalNames from '@/lib/knownIds';
 import SwapSummary from '../Summary';
 import External from './External';
@@ -16,9 +16,14 @@ import useOutOfGas from '@/lib/gases/useOutOfGas';
 import { transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { truncateDecimals } from '@/components/utils/RoundDecimals';
 import { AnimatePresence, motion } from 'framer-motion';
+import useSWRGas from '@/lib/gases/useSWRGas';
+import { useFormikContext } from 'formik';
+import { SwapFormValues } from '@/components/DTOs/SwapFormValues';
+import { NetworkRoute } from '@/Models/Network';
 
 const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: () => void, onCancelWithdrawal?: () => void, partner?: Partner }> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal, partner }) => {
     const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading, quoteError } = useSwapDataState()
+    const { setSubmitedFormValues } = useSwapDataUpdate()
 
     const { appName, signature } = useQueryState()
     const sourceIsImmutableX = swapBasicData?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
@@ -32,6 +37,27 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
     const { balances, mutate, isLoading } = useBalance(selectedSourceAccount?.address, source_network)
     const walletBalance = source_network && balances?.find(b => b?.network === source_network?.name && b?.token === swapBasicData?.source_token?.symbol)
     const walletBalanceAmount = walletBalance?.amount
+    const { gasData } = useSWRGas(selectedSourceAccount?.address, source_network, swapBasicData?.source_token, swapBasicData?.requested_amount)
+    const { setFieldValue } = useFormikContext<SwapFormValues>()
+
+    const handleEditAmount = useCallback(() => {
+        if (walletBalanceAmount == null || !gasData?.gas || !swapBasicData) return
+        const maxAmount = walletBalanceAmount - gasData.gas
+        if (maxAmount <= 0) return
+
+        const newAmount = truncateDecimals(maxAmount, swapBasicData.source_token?.precision)
+        setFieldValue('amount', newAmount, true)
+        setSubmitedFormValues({
+            amount: newAmount,
+            from: swapBasicData.source_network as NetworkRoute,
+            to: swapBasicData.destination_network as NetworkRoute,
+            fromAsset: swapBasicData.source_token,
+            toAsset: swapBasicData.destination_token,
+            destination_address: swapBasicData.destination_address,
+            refuel: !!refuel,
+            depositMethod: swapBasicData.use_deposit_address ? 'deposit_address' : 'wallet',
+        })
+    }, [walletBalanceAmount, gasData?.gas, swapBasicData, refuel, setFieldValue, setSubmitedFormValues])
 
     let withdraw: {
         content?: JSX.Element | JSX.Element[],
@@ -75,7 +101,7 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
                 swapId={swapDetails?.id}
                 refuel={!!refuel}
                 onWalletWithdrawalSuccess={onWalletWithdrawalSuccess}
-                warning={<ErrorDisplay errorName='outOfGas' onEditAmount={onCancelWithdrawal} />}
+                warning={<ErrorDisplay errorName='outOfGas' onEditAmount={handleEditAmount} isEditAmountLoading={quoteIsLoading} />}
                 onCancelWithdrawal={onCancelWithdrawal}
             />
         }

@@ -44,6 +44,7 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quo
         >
             <AccordionItem value="quote" className="bg-secondary-500 rounded-2xl">
                 <AccordionTrigger
+                    as="div"
                     onClick={(e) => e.preventDefault()}
                     className="w-full rounded-2xl flex items-center justify-between cursor-auto"
                 >
