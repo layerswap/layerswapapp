@@ -67,7 +67,7 @@ export const useNavigatableList = ({
             setPendingFirstChild(!!navigateToFirstChild);
             setFocusedIndex(navigableItems.length > 0 ? { parent: 0 } : null);
         }
-    }, [onReset]);
+    }, [onReset, navigateToFirstChild]);
 
     // When pending first child and children are registered, navigate to first child
     useEffect(() => {

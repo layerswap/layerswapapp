@@ -59,14 +59,6 @@ const Items: FC<ContentProps & { isScrolling: boolean; setIsScrolling: (isScroll
         }
     }, [isSingleNetwork, rowElements]);
 
-    const prevIsSingleNetworkRef = useRef(false);
-    useEffect(() => {
-        const wasSingle = prevIsSingleNetworkRef.current;
-        prevIsSingleNetworkRef.current = isSingleNetwork;
-        if (wasSingle && !isSingleNetwork) {
-            setOpenValues([]);
-        }
-    }, [isSingleNetwork]);
 
     const isProvidersReady = providers.every(p => p.ready)
 
