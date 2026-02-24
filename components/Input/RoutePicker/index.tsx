@@ -22,7 +22,6 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
     } = useFormikContext<SwapFormValues>();
     const [searchQuery, setSearchQuery] = useState("")
     const { wallets } = useWallet()
-    const showsWalletButton = wallets.length === 0 && direction === 'from' && !searchQuery;
 
     const ref = useRef<HTMLDivElement>(null);
 
