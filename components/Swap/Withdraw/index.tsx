@@ -11,6 +11,10 @@ import { useBalance } from '@/lib/balances/useBalance';
 import { useSettingsState } from '@/context/settings';
 import { useSelectedAccount } from '@/context/swapAccounts';
 import { ErrorDisplay } from '@/components/validationError/ErrorDisplay';
+import { RefreshBalanceButton } from '@/components/validationError/RefreshBalanceButton';
+import { AdjustAmountButton } from '@/components/validationError/AdjustAmountButton';
+import { ICON_CLASSES_WARNING } from '@/components/validationError/constants';
+import InfoIcon from '@/components/icons/InfoIcon';
 import { Partner } from '@/Models/Partner';
 import useOutOfGas from '@/lib/gases/useOutOfGas';
 import { transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
@@ -83,14 +87,22 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
     })
 
     if (swapBasicData?.use_deposit_address === false && showInsufficientBalanceWarning) {
+        const balanceAmount = walletBalanceAmount !== undefined ? truncateDecimals(walletBalanceAmount, swapBasicData?.source_token?.precision) : undefined;
+        const showSpinner = isLoading;
         withdraw = {
             footerKey: 'insufficient',
             footer: <ErrorDisplay
-                errorName='insufficientFunds'
-                refreshBalance={mutate}
-                isBalanceLoading={isLoading}
-                balanceAmount={walletBalanceAmount !== undefined ? truncateDecimals(walletBalanceAmount, swapBasicData?.source_token?.precision) : undefined}
-                tokenSymbol={swapBasicData?.source_token?.symbol}
+                icon={<InfoIcon className={ICON_CLASSES_WARNING} />}
+                title={<>
+                    <span>{"Insufficient balance"}</span>
+                    {balanceAmount && swapBasicData?.source_token?.symbol && (
+                        <span
+                            className={`font-normal text-sm ${showSpinner ? 'animate-shine bg-[linear-gradient(90deg,var(--color-secondary-text)_40%,white_50%,var(--color-secondary-text)_60%)] bg-[length:200%_100%] bg-clip-text text-transparent' : 'text-secondary-text'}`}
+                        > ({balanceAmount} {swapBasicData.source_token.symbol})</span>
+                    )}
+                </>}
+                message="If you recently added funds, refresh the balance or check your connected wallet"
+                footer={<RefreshBalanceButton onRefresh={mutate} isLoading={isLoading} />}
             />
         }
     } else if (swapBasicData?.use_deposit_address === false && outOfGas) {
@@ -101,7 +113,12 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
                 swapId={swapDetails?.id}
                 refuel={!!refuel}
                 onWalletWithdrawalSuccess={onWalletWithdrawalSuccess}
-                warning={<ErrorDisplay errorName='outOfGas' onEditAmount={handleEditAmount} isEditAmountLoading={quoteIsLoading} />}
+                warning={<ErrorDisplay
+                    icon={<InfoIcon className="w-5 h-5 text-secondary-text" />}
+                    title="Insufficient balance for gas"
+                    message="You need a small balance remaining to pay for gas."
+                    action={<AdjustAmountButton onEditAmount={handleEditAmount} isLoading={quoteIsLoading} />}
+                />}
                 onCancelWithdrawal={onCancelWithdrawal}
             />
         }
