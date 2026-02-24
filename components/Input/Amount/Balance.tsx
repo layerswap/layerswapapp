@@ -47,7 +47,8 @@ const Balance = ({ values, direction, minAllowedAmount, maxAllowedAmount }: { va
                             <BalanceWarningTooltip
                                 balance={truncatedBalance}
                                 title="Insufficient balance"
-                                description={<>Tap <span className="font-bold">Max</span> to use your available balance, or refresh to check for new funds</>}
+                                description={<span> <span>Tap</span> <span className="font-bold">Max</span> <span>to use your available balance, or refresh to check for new funds</span> </span>
+                                }
                                 onRefresh={mutate}
                             />
                             : isFromDirection && outOfGas ?
@@ -59,7 +60,7 @@ const Balance = ({ values, direction, minAllowedAmount, maxAllowedAmount }: { va
                                 : <span>{truncatedBalance}</span>
                         : null
         }
-    </div>
+    </div >
 }
 
 export default Balance
