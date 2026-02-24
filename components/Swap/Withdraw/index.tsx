@@ -39,7 +39,7 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
 
     const handleEditAmount = useCallback(() => {
         if (walletBalanceAmount == null || !gasData?.gas || !swapBasicData) return
-        const maxAmount = walletBalanceAmount - gasData.gas
+        const maxAmount = walletBalanceAmount - (gasData.gas * 1.02)
         if (maxAmount <= 0) return
 
         const newAmount = truncateDecimals(maxAmount, swapBasicData.source_token?.precision)
