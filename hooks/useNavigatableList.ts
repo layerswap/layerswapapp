@@ -60,14 +60,17 @@ export const useNavigatableList = ({
         isKeyboardNavigatingRef.current = isKeyboardNavigating;
     }, [isKeyboardNavigating]);
 
+    const navigateToFirstChildRef = useRef(navigateToFirstChild);
+    navigateToFirstChildRef.current = navigateToFirstChild;
+
     // Reset focus when explicitly requested (e.g., search query changes) - default to first item
     useEffect(() => {
         if (onReset) {
             onReset();
-            setPendingFirstChild(!!navigateToFirstChild);
+            setPendingFirstChild(!!navigateToFirstChildRef.current);
             setFocusedIndex(navigableItems.length > 0 ? { parent: 0 } : null);
         }
-    }, [onReset, navigateToFirstChild]);
+    }, [onReset]);
 
     // When pending first child and children are registered, navigate to first child
     useEffect(() => {
