@@ -9,7 +9,6 @@ import { useUsdTokenSync } from "@/hooks/useUsdTokenSync";
 import { ArrowUpDown } from "lucide-react";
 
 interface AmountFieldProps {
-    usdPosition?: "right" | "bottom";
     fee: ReturnType<typeof useQuoteData>['quote'];
     actionValue?: number;
     actionValueUsd?: string;
@@ -17,7 +16,7 @@ interface AmountFieldProps {
     showToggle?: boolean;
 }
 
-const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", actionValue, actionValueUsd, fee, className, showToggle }: AmountFieldProps, ref: any) {
+const AmountField = forwardRef(function AmountField({ actionValue, actionValueUsd, fee, className, showToggle }: AmountFieldProps, ref: any) {
     const { values, handleChange } = useFormikContext<SwapFormValues>();
     const { fromAsset: fromCurrency, amount, toAsset: toCurrency, fromExchange } = values || {};
     const { setFieldValue } = useFormikContext<SwapFormValues>();
@@ -94,7 +93,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
     const placeholder = '0'
     const step = 1 / Math.pow(10, fromCurrency?.precision || 1)
     const disabled = Boolean(fromExchange && !toCurrency)
-    const canToggle = usdPosition === "bottom" && !!sourceCurrencyPriceInUsd;
+    const canToggle = !!sourceCurrencyPriceInUsd;
 
     const toggleButton = canToggle ? (
         <button
@@ -111,7 +110,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
 
     // --- USD mode render ---
 
-    if (isUsdMode && usdPosition === "bottom") {
+    if (isUsdMode) {
         const previewUsd = actionValueAsUsd;
         const previewToken = actionValueAsToken;
 
@@ -153,13 +152,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
     // --- Token mode render (default) ---
 
     return (<>
-        <div className={clsx("flex flex-col bg-secondary-500 space-y-0.5 relative w-full group",
-            className,
-            {
-                'focus-within:[&_.usd-suffix]:invisible': usdPosition === "right"
-            }
-        )}
-        >
+        <div className={clsx("flex flex-col bg-secondary-500 space-y-0.5 relative w-full group", className)}>
             <NumericInput
                 disabled={disabled}
                 placeholder={placeholder}
@@ -174,10 +167,8 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
                 }}
             />
             <div className={clsx(
-                "usd-suffix text-xs sm:text-base leading-5 font-medium text-secondary-text pointer-events-none",
+                "usd-suffix text-xs sm:text-base leading-5 font-medium text-secondary-text pointer-events-none h-5 flex items-center gap-1",
                 {
-                    "absolute bottom-3 group-[.exchange-amount-field]:bottom-3.5": usdPosition === "right",
-                    "h-5 flex items-center gap-1": usdPosition !== "right",
                     "text-secondary-text/45": !!actionValueInUsd
                 },
                 "group-hover:flex"
