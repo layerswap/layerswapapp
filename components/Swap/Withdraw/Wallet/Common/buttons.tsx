@@ -346,8 +346,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
 const resolveTransactionData = (swapDetails: SwapDetails, deposit_actions: DepositAction[], destination_address: string, source_network: Network): TransferProps => {
     const depositAction = deposit_actions?.find(action =>
-        action.type === 'transfer'
-        || ExceptionNetworks.includes(source_network.name) && action.type === 'manual_transfer');
+        action.type === 'transfer');
     if (!depositAction) {
         throw new Error('No deposit action found')
     }
@@ -360,9 +359,3 @@ const resolveTransactionData = (swapDetails: SwapDetails, deposit_actions: Depos
         userDestinationAddress: destination_address
     }
 }
-
-
-const ExceptionNetworks = [
-    KnownInternalNames.Networks.ImmutableXMainnet,
-    KnownInternalNames.Networks.ImmutableXSepolia
-]
