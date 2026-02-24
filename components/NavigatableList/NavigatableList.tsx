@@ -45,6 +45,7 @@ function createAutoDetectionStore() {
             if (existing) {
                 if (existing.version === currentVersion) return;
                 existing.version = currentVersion;
+                existing.children = new Set();
             } else {
                 registeredItems.set(index, { children: new Set(), version: currentVersion });
             }
