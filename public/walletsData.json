@@ -1,5 +1,5 @@
 {
-  "count": 616,
+  "count": 619,
   "listings": {
     "00e39f835988d1bb783b2a0748e18bc6278dec03492d00b0e102a466cd8b3d77": {
       "app": {
@@ -3157,20 +3157,21 @@
     "0e4915107da5b3408b38e248f7a710f4529d54cd30e9d12ff0eb886d45c18e92": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=co.arculus.wallet.android&hl=en_US&gl=US",
-        "browser": null,
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
         "ios": "https://apps.apple.com/us/app/arculus-wallet/id1575425801",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": "Mobile Wallets",
       "chains": [
+        "bip122:000000000019d6689c085ae165831e93",
         "cosmos:cosmoshub-4",
         "cosmos:thorchain-mainnet-v1",
         "eip155:1",
@@ -3186,13 +3187,15 @@
         "polkadot:91b171bb158e2d3848fa23a9f1c25182",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
         "stellar:pubnet",
+        "sui:mainnet",
+        "ton:-239",
         "vechain:b1ac3413d346d43539627e6be7ec1b4a",
         "xrpl:0"
       ],
       "description": "Cold Storage Crypto Wallet",
       "desktop": {
         "native": "",
-        "universal": null
+        "universal": ""
       },
       "homepage": "https://www.arculus.co",
       "id": "0e4915107da5b3408b38e248f7a710f4529d54cd30e9d12ff0eb886d45c18e92",
@@ -3215,7 +3218,7 @@
         "universal": "https://gw.arculus.co/app/wc"
       },
       "name": "Arculus Wallet",
-      "rdns": null,
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2"
@@ -9322,6 +9325,63 @@
         "2"
       ]
     },
+    "26237272f132a7bea0380cc54b25967e84ffa8d78b9d5d68fe65d08f6dece444": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.velgazm_new",
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "https://apps.apple.com/ua/app/velgazm/id6743999332",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:106"
+      ],
+      "description": "Velgazm is a dedicated crypto wallet built exclusively for the Velas blockchain.\n\nThe wallet supports:\n\nVelas EVM chain\n\nVelas Native chain\n\nVLX staking directly inside the wallet\n\nVelgazm is designed specifically for the Velas ecosystem, providing a focused, fast, and secure experience for users who interact with Velas-based dApps, smart contracts, and on-chain staking.\n\nKey features:\n\nFull support for EVM-compatible smart contracts on Velas\n\nNative Velas account support\n\nSeamless VLX staking\n",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://velgazm.com/",
+      "id": "26237272f132a7bea0380cc54b25967e84ffa8d78b9d5d68fe65d08f6dece444",
+      "image_id": "5359630a-a5dd-4106-6482-4135bedce200",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/5359630a-a5dd-4106-6482-4135bedce200?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/5359630a-a5dd-4106-6482-4135bedce200?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/5359630a-a5dd-4106-6482-4135bedce200?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "velgazm://wc",
+        "universal": ""
+      },
+      "name": "Velgazm",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "velgazm",
+      "updatedAt": "2026-02-17T05:34:08.048944+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "26d3d9e7224a1eb49089aa5f03fb9f3b883e04050404594d980d4e1e74e1dbea": {
       "app": {
         "android": null,
@@ -14745,16 +14805,16 @@
     "44ca80bba6838e116e8d0a2c1a1f37041ea322379cc65a71479b6a240b6fcab2": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.cypherd.androidwallet",
-        "browser": null,
-        "chrome": "https://chrome.google.com/webstore/detail/cypher-wallet/niiaamnmgebpeejeemoifgdndgeaekhe",
-        "edge": null,
-        "firefox": null,
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
         "ios": "https://apps.apple.com/us/app/cypherd-wallet/id1604120414",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": "Mobile Wallets",
@@ -14762,19 +14822,19 @@
         "cosmos:cosmoshub-4",
         "eip155:1",
         "eip155:10",
-        "eip155:1101",
         "eip155:137",
-        "eip155:250",
         "eip155:324",
         "eip155:42161",
         "eip155:43114",
         "eip155:56",
-        "eip155:8453"
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "tron:0x2b6653dc"
       ],
-      "description": "Non Custodial Multichain Wallet Mobile , Chrome Extension, Crypto Card, \nEVM + Cosmos Wallet /  Inter-chain Bridge, Swap. ",
+      "description": "Cypher Wallet is the first crypto-native rewards, payments, and protocol platform supporting 15+ blockchains like Ethereum, Solana, Hyperliquid, and Cosmos. It enables users to spend crypto and stablecoins seamlessly in the real world. Users can earn, lock, and vote to boost rewards, while merchants and token holders participate in a shared ecosystem that makes everyday spending truly decentralized and rewarding.",
       "desktop": {
-        "native": "cypherwallet://",
-        "universal": null
+        "native": "",
+        "universal": ""
       },
       "homepage": "https://cypherhq.io",
       "id": "44ca80bba6838e116e8d0a2c1a1f37041ea322379cc65a71479b6a240b6fcab2",
@@ -14799,10 +14859,10 @@
       },
       "mobile": {
         "native": "cypherwallet://",
-        "universal": null
+        "universal": "https://app.cypherhq.io"
       },
       "name": "Cypher Wallet",
-      "rdns": null,
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2"
@@ -33525,6 +33585,66 @@
         "2"
       ]
     },
+    "aae40a00c97aedbfdff4a5798e7a871b916d687e790ff3cf12e9267e6baacc79": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.saucerswap.mobile",
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "https://apps.apple.com/app/saucerswap-hedera-wallet/id6747405489",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:295",
+        "eip155:296",
+        "hedera:mainnet",
+        "hedera:testnet"
+      ],
+      "description": "Built by the team behind SaucerSwap, the leading DEX on Hedera. Whether you're new to Hedera or a DeFi veteran, SaucerSwap Wallet makes web3 simple, secure, and lightning fast.\n",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://www.saucerswap.finance/saucerswap-wallet",
+      "id": "aae40a00c97aedbfdff4a5798e7a871b916d687e790ff3cf12e9267e6baacc79",
+      "image_id": "ed7ae48c-d8d2-43f4-6059-54c8e5c24c00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/ed7ae48c-d8d2-43f4-6059-54c8e5c24c00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/ed7ae48c-d8d2-43f4-6059-54c8e5c24c00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/ed7ae48c-d8d2-43f4-6059-54c8e5c24c00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "",
+        "universal": "https://www.saucerswap.finance/app"
+      },
+      "name": "SaucerSwap Wallet",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "saucerswap-wallet",
+      "updatedAt": "2026-02-17T06:09:36.332615+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "aba1f652e61fd536e8a7a5cd5e0319c9047c435ef8f7e907717361ff33bb3588": {
       "app": {
         "android": "https://www.gate.io/mobileapp",
@@ -34432,15 +34552,15 @@
     "af9a6dfff9e63977bbde28fb23518834f08b696fe8bff6dd6827acad1814c6be": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=im.status.ethereum",
-        "browser": null,
+        "browser": "",
         "chrome": "https://chromewebstore.google.com/detail/kahehnbpamjplefhpkhafinaodkkenpg",
-        "edge": null,
-        "firefox": null,
+        "edge": "",
+        "firefox": "",
         "ios": "https://apps.apple.com/us/app/status-gateway-to-ethereum/id1178893006",
         "linux": "https://status.app/help/getting-started",
         "mac": "https://status.app/help/getting-started",
-        "opera": null,
-        "safari": null,
+        "opera": "",
+        "safari": "",
         "windows": "https://status.app/help/getting-started"
       },
       "app_type": "wallet",
@@ -34454,18 +34574,18 @@
         "eip155:8453",
         "eip155:84532"
       ],
-      "description": "Status is a private messenger, secure crypto wallet, and Ethereum Web3 DApp browser—in short, one powerful communication tool.",
+      "description": "This is the legacy version of the Status app.\n\nStatus Legacy is a private messenger, secure crypto wallet, and Ethereum Web3 DApp browser—in short, one powerful communication tool.",
       "desktop": {
         "native": "status-app://",
-        "universal": null
+        "universal": ""
       },
-      "homepage": "https://status.app/",
+      "homepage": "https://status.app/blog/migrate-from-status-legacy-to-unified-status-mobile-app",
       "id": "af9a6dfff9e63977bbde28fb23518834f08b696fe8bff6dd6827acad1814c6be",
-      "image_id": "1e5fb93a-3a0a-40b9-8a86-b14a775aae00",
+      "image_id": "2fc9a263-56c0-4e00-2fd8-dadb9d9ad400",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/1e5fb93a-3a0a-40b9-8a86-b14a775aae00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/1e5fb93a-3a0a-40b9-8a86-b14a775aae00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/1e5fb93a-3a0a-40b9-8a86-b14a775aae00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/2fc9a263-56c0-4e00-2fd8-dadb9d9ad400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/2fc9a263-56c0-4e00-2fd8-dadb9d9ad400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/2fc9a263-56c0-4e00-2fd8-dadb9d9ad400?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
       "injected": null,
       "metadata": {
@@ -34479,7 +34599,7 @@
         "native": "status-app://",
         "universal": "https://status.app"
       },
-      "name": "Status",
+      "name": "Status Legacy",
       "rdns": "app.status",
       "sdks": [
         "sign_v1",
@@ -37437,6 +37557,65 @@
         "1"
       ]
     },
+    "c2c561ba71ea16a3b9c9003a77d2fad3dc4f597750f0acd385d3e12ddfe55793": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=io.staticbit.wallet",
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "xrpl:0",
+        "xrpl:1",
+        "xrpl:2"
+      ],
+      "description": "StaticBit is building the next-generation crypto wallet — decentralized and seamless",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://staticbit.io",
+      "id": "c2c561ba71ea16a3b9c9003a77d2fad3dc4f597750f0acd385d3e12ddfe55793",
+      "image_id": "e7c58f32-3a5b-40ed-f756-338e915d0d00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/e7c58f32-3a5b-40ed-f756-338e915d0d00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/e7c58f32-3a5b-40ed-f756-338e915d0d00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/e7c58f32-3a5b-40ed-f756-338e915d0d00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "staticbit://",
+        "universal": "https://link.staticbit.io"
+      },
+      "name": "StaticBit",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "staticbit",
+      "updatedAt": "2026-02-19T04:57:31.4672+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "c3309233b29cc49323e2622383539b85dc62db2785874010e13d945d66eab880": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=app.keeper.wallet",
@@ -38380,16 +38559,16 @@
     "c40c24b39500901a330a025938552d70def4890fffe9bd315046bd33a2ece24d": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=wallet.kabila.app&hl=es_419&gl=US",
-        "browser": "https://wallet.kabila.app/",
+        "browser": "",
         "chrome": "https://chromewebstore.google.com/detail/kabila-wallet/cnoepnljjcacmnjnopbhjelpmfokpijm",
         "edge": null,
         "firefox": null,
         "ios": "https://apps.apple.com/es/app/kabila-wallet/id6467106529",
-        "linux": null,
-        "mac": null,
+        "linux": "",
+        "mac": "",
         "opera": null,
         "safari": null,
-        "windows": null
+        "windows": ""
       },
       "app_type": "wallet",
       "category": "Web App Wallets",
@@ -38399,18 +38578,18 @@
         "hedera:mainnet",
         "hedera:testnet"
       ],
-      "description": "Kabila Wallet is a non-custodial account manager based on Hedera network. A clean, fun and easy-to-use Wallet.",
+      "description": "Kabila Wallet  is a non-custodial, simple, and secure wallet for the Hedera network.",
       "desktop": {
         "native": "",
         "universal": "https://wallet.kabila.app"
       },
-      "homepage": "https://kabila.app/",
+      "homepage": "https://kabila.app/docs/kabila-wallet",
       "id": "c40c24b39500901a330a025938552d70def4890fffe9bd315046bd33a2ece24d",
-      "image_id": "e6263e25-7f31-4186-5ad4-75e17312c500",
+      "image_id": "11091aee-191a-4227-9032-75f3b9e63c00",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/e6263e25-7f31-4186-5ad4-75e17312c500?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/e6263e25-7f31-4186-5ad4-75e17312c500?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/e6263e25-7f31-4186-5ad4-75e17312c500?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/11091aee-191a-4227-9032-75f3b9e63c00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/11091aee-191a-4227-9032-75f3b9e63c00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/11091aee-191a-4227-9032-75f3b9e63c00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
       "injected": null,
       "metadata": {
@@ -38425,7 +38604,7 @@
         "universal": "https://wallet.kabila.app"
       },
       "name": "Kabila Wallet",
-      "rdns": null,
+      "rdns": "com.kabila.wallet",
       "sdks": [
         "sign_v1",
         "sign_v2"
@@ -50441,5 +50620,5 @@
       ]
     }
   },
-  "total": 616
+  "total": 619
 }
