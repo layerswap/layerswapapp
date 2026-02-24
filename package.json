@@ -23,7 +23,6 @@
     "@fuel-ts/address": "^0.101.3",
     "@fuels/react": "^0.43.2",
     "@headlessui/react": "^2.1.1",
-    "@imtbl/imx-sdk": "2.1.1",
     "@imtbl/sdk": "1.45.10",
     "@metamask/jazzicon": "^2.0.0",
     "@metamask/sdk": "^0.33.1",

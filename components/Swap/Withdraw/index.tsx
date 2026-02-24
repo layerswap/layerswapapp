@@ -2,8 +2,6 @@ import { FC, useCallback } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '@/context/swap';
 import KnownInternalNames from '@/lib/knownIds';
 import SwapSummary from '../Summary';
-import External from './External';
-import { useQueryState } from '@/context/query';
 import { Widget } from '../../Widget/Index';
 import { SwapQuoteDetails } from './SwapQuoteDetails';
 import WalletTransferButton from './WalletTransferButton';
@@ -28,11 +26,6 @@ import { NetworkRoute } from '@/Models/Network';
 const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: () => void, onCancelWithdrawal?: () => void, partner?: Partner }> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal, partner }) => {
     const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading, quoteError } = useSwapDataState()
     const { setSubmitedFormValues } = useSwapDataUpdate()
-
-    const { appName, signature } = useQueryState()
-    const sourceIsImmutableX = swapBasicData?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
-        || swapBasicData?.source_network.name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
-    const isImtblMarketplace = (signature && appName === "imxMarketplace" && sourceIsImmutableX)
 
     const { networks } = useSettingsState()
     const source_network = swapBasicData?.source_network && networks.find(n => n.name === swapBasicData?.source_network?.name)
@@ -97,7 +90,7 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
                     <span>{"Insufficient balance"}</span>
                     {balanceAmount && swapBasicData?.source_token?.symbol && (
                         <span
-                            className={`font-normal text-sm ${showSpinner ? 'animate-shine bg-[linear-gradient(90deg,var(--color-secondary-text)_40%,white_50%,var(--color-secondary-text)_60%)] bg-[length:200%_100%] bg-clip-text text-transparent' : 'text-secondary-text'}`}
+                            className={`font-normal text-sm ${showSpinner ? 'animate-shine bg-[linear-gradient(90deg,var(--color-secondary-text)_40%,white_50%,var(--color-secondary-text)_60%)] bg-size-[200%_100%] bg-clip-text text-transparent' : 'text-secondary-text'}`}
                         > ({balanceAmount} {swapBasicData.source_token.symbol})</span>
                     )}
                 </>}
@@ -133,12 +126,6 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
                 onWalletWithdrawalSuccess={onWalletWithdrawalSuccess}
                 onCancelWithdrawal={onCancelWithdrawal}
             />
-        }
-    }
-
-    if (isImtblMarketplace) {
-        withdraw = {
-            content: <External />
         }
     }
 
