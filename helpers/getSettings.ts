@@ -1,5 +1,6 @@
 import LayerSwapApiClient from "../lib/apiClients/layerSwapApiClient";
 import { getThemeData } from "./settingsHelper";
+import { encodeSettingsForSSR } from "./settingsCompression";
 
 export async function getServerSideProps(context) {
 
@@ -39,7 +40,7 @@ export async function getServerSideProps(context) {
         }
     
         return {
-            props: { settings, themeData, apiKey }
+            props: { settings: encodeSettingsForSSR(settings), themeData, apiKey }
         }
     }
     catch (error) {

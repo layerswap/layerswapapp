@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useMemo } from "react"
 import Head from "next/head"
 import { useRouter } from "next/router";
 import ThemeWrapper from "./themeWrapper";
@@ -6,7 +6,6 @@ import { ErrorBoundary } from "react-error-boundary";
 import MaintananceContent from "./maintanance/maintanance";
 import { SettingsProvider } from "../context/settings";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
-import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import ErrorFallback from "./ErrorFallback";
 import { SendErrorMessage } from "../lib/telegram";
 import { QueryParams } from "../Models/QueryParams";
@@ -19,11 +18,12 @@ import { AsyncModalProvider } from "../context/asyncModal";
 import WalletsProviders from "./WalletProviders";
 import { SwapAccountsProvider } from "@/context/swapAccounts";
 import posthog from "posthog-js";
+import { inflateSettings, MaybeCompressedSettings } from "../helpers/settingsCompression";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
   hideFooter?: boolean;
-  settings?: LayerSwapSettings;
+  settings?: MaybeCompressedSettings | null;
   themeData?: ThemeData | null
 };
 
@@ -62,12 +62,14 @@ export default function Layout({ children, settings, themeData }: Props) {
     trackPageview()
   }, [])
 
-  if (!settings)
+  const resolvedSettings = useMemo(() => inflateSettings(settings), [settings]);
+
+  if (!resolvedSettings)
     return <ThemeWrapper>
       <MaintananceContent />
     </ThemeWrapper>
 
-  let appSettings = new LayerSwapAppSettings(settings)
+  let appSettings = new LayerSwapAppSettings(resolvedSettings)
 
   const query: QueryParams = {
     ...router.query,

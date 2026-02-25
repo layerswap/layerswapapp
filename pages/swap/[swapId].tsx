@@ -5,6 +5,7 @@ import React from 'react';
 import { SwapDataProvider } from '../../context/swap';
 import { getThemeData } from '../../helpers/settingsHelper';
 import SwapWithdrawal from '../../components/SwapWithdrawal'
+import { encodeSettingsForSSR } from '../../helpers/settingsCompression';
 
 const SwapDetails = ({ settings, themeData, apiKey, swapData }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   LayerSwapApiClient.apiKey = apiKey
@@ -56,7 +57,7 @@ export const getServerSideProps = async (ctx) => {
 
   return {
     props: {
-      settings,
+      settings: encodeSettingsForSSR(settings),
       themeData,
       apiKey,
       swapData: swapData || null
