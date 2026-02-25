@@ -36,11 +36,11 @@ module.exports = (phase, { defaultConfig }) => {
    * @type {import('next').NextConfig}
    */
 
-  const posthogConfigsAreSet = process.env.POSTHOG_ENV_ID && process.env.POSTHOG_API_KEY && process.env.NEXT_PUBLIC_POSTHOG_HOST;
+  const posthogConfigsAreSet = process.env.POSTHOG_PROJECT_ID && process.env.POSTHOG_API_KEY && process.env.NEXT_PUBLIC_POSTHOG_HOST;
 
   const posthogWrapped = posthogConfigsAreSet ? withPostHogConfig({}, {
     personalApiKey: process.env.POSTHOG_API_KEY,
-    projectId: process.env.POSTHOG_ENV_ID,
+    projectId: process.env.POSTHOG_PROJECT_ID,
     host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
     sourcemaps: {
       enabled: true,
