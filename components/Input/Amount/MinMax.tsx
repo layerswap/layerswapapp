@@ -8,21 +8,27 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/too
 import { useSelectedAccount } from "@/context/swapAccounts";
 import { useBalance } from "@/lib/balances/useBalance";
 import useWallet from "@/hooks/useWallet";
+import { useUsdModeStore } from "@/stores/usdModeStore";
+import { skipNextUsdSync } from "@/hooks/useUsdTokenSync";
+import { ceilUsd, floorUsd } from "@/components/utils/formatUsdAmount";
 
 type MinMaxProps = {
     fromCurrency: NetworkRouteToken,
     from: NetworkRoute,
     limitsMaxAmount: number | undefined,
     limitsMinAmount: number | undefined,
-    onActionHover: (value: number | undefined) => void,
+    limitsMinAmountInUsd: number | undefined,
+    limitsMaxAmountInUsd: number | undefined,
+    onActionHover: (value: number | undefined, usdValue?: string) => void,
     depositMethod: 'wallet' | 'deposit_address' | undefined
 }
 
 const MinMax = (props: MinMaxProps) => {
 
     const { setFieldValue, values } = useFormikContext<SwapFormValues>();
-    const { fromCurrency, from, limitsMinAmount, limitsMaxAmount, onActionHover, depositMethod } = props;
-
+    const { fromCurrency, from, limitsMinAmount, limitsMaxAmount, limitsMinAmountInUsd, limitsMaxAmountInUsd, onActionHover, depositMethod } = props;
+    const isUsdMode = useUsdModeStore(s => s.isUsdMode);
+    const setUsdAmount = useUsdModeStore(s => s.setUsdAmount);
     const selectedSourceAccount = useSelectedAccount("from", from?.name);
     const { wallets } = useWallet(from, 'withdrawal')
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
@@ -56,16 +62,30 @@ const MinMax = (props: MinMaxProps) => {
 
     const halfOfBalance = (walletBalance?.amount || maxAllowedAmount) ? (walletBalance?.amount || maxAllowedAmount) / 2 : 0;
 
-    const handleSetValue = (value: string) => {
+    const handleSetValue = (value: string, usdValue?: string) => {
         mutateBalances()
+        if (isUsdMode && usdValue) {
+            // Only skip sync if the amount will actually change,
+            // otherwise the sync effect won't fire to clear the flag.
+            if (values.amount !== value) {
+                skipNextUsdSync();
+            }
+            setUsdAmount(usdValue);
+        }
         setFieldValue('amount', value, true)
         onActionHover(undefined)
     }
 
+    const minIsFromLimits = limitsMinAmount !== undefined && Math.abs(minAmount - limitsMinAmount) < 1e-10;
+    const maxIsFromLimits = limitsMaxAmount !== undefined && Math.abs(maxAllowedAmount - limitsMaxAmount) < 1e-10;
+
+    const minUsdFormatted = minIsFromLimits && limitsMinAmountInUsd != undefined ? ceilUsd(limitsMinAmountInUsd) : undefined;
+    const maxUsdFormatted = maxIsFromLimits && limitsMaxAmountInUsd != undefined ? floorUsd(limitsMaxAmountInUsd) : undefined;
+
     const handleSetMinAmount = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
         e.stopPropagation()
-        handleSetValue(minAmount.toString())
+        handleSetValue(minAmount.toString(), minUsdFormatted)
     }
 
     const handleSetHalfAmount = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -77,7 +97,7 @@ const MinMax = (props: MinMaxProps) => {
     const handleSetMaxAmount = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
         e.stopPropagation()
-        handleSetValue(maxAllowedAmount.toString())
+        handleSetValue(maxAllowedAmount.toString(), maxUsdFormatted)
     }
 
     const showMaxTooltip = !!(depositMethod === 'wallet' && walletBalance?.amount && shouldPayGasWithTheToken && (!limitsMaxAmount || walletBalance.amount < limitsMaxAmount))
@@ -90,7 +110,7 @@ const MinMax = (props: MinMaxProps) => {
             <ActionButton
                 data-attr="min-amount"
                 label="Min"
-                onMouseEnter={() => onActionHover(minAmount)}
+                onMouseEnter={() => onActionHover(minAmount, minUsdFormatted)}
                 onClick={handleSetMinAmount}
             />
             <ActionButton
@@ -105,7 +125,7 @@ const MinMax = (props: MinMaxProps) => {
                         <ActionButton
                             data-attr="max-amount"
                             label="Max"
-                            onMouseEnter={() => onActionHover(maxAllowedAmount)}
+                            onMouseEnter={() => onActionHover(maxAllowedAmount, maxUsdFormatted)}
                             onClick={handleSetMaxAmount}
                         />
                     </span>

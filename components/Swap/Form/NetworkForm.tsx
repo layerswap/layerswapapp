@@ -1,7 +1,7 @@
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { Form, FormikHelpers, useFormikContext } from "formik";
 import { Partner } from "@/Models/Partner";
-import { TokenBalance } from "@/Models/Balance";
+
 import ValidationError from "@/components/validationError";
 import useWallet from "@/hooks/useWallet";
 import SourcePicker from "@/components/Input/SourcePicker";
@@ -24,7 +24,7 @@ import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useValidationContext } from "@/context/validationContext";
 import { useSwapDataState } from "@/context/swap";
 import RefuelToggle from "@/components/FeeDetails/Refuel";
-import ReserveGasNote from "@/components/ReserveGasNote";
+
 import RefuelModal from "@/components/FeeDetails/RefuelModal";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import posthog from "posthog-js";
@@ -54,7 +54,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
     const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
-    const { minAllowedAmount, maxAllowedAmount, isQuoteLoading, quote } = useQuoteData(quoteArgs, quoteRefreshInterval);
+    const { minAllowedAmount, maxAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isQuoteLoading, quote } = useQuoteData(quoteArgs, quoteRefreshInterval);
 
     const toAsset = values.toAsset;
     const fromAsset = values.fromAsset;
@@ -71,11 +71,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
             setFieldValue('refuel', false, true);
         }
     }, [toAsset, destination, source, fromAsset]);
-
-    const handleReserveGas = useCallback((nativeTokenBalance: TokenBalance, networkGas: number) => {
-        if (nativeTokenBalance.amount && networkGas)
-            setFieldValue('amount', (nativeTokenBalance?.amount - networkGas).toString(), true);
-    }, [setFieldValue]);
 
     const shouldConnectWallet = (source && source?.deposit_methods?.includes('wallet') && depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!source && !wallets.length && depositMethod !== 'deposit_address');
 
@@ -100,6 +95,8 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                 !(query?.hideFrom && values?.from) && <SourcePicker
                                     minAllowedAmount={minAllowedAmount}
                                     maxAllowedAmount={maxAllowedAmount}
+                                    minAllowedAmountInUsd={minAllowedAmountInUsd}
+                                    maxAllowedAmountInUsd={maxAllowedAmountInUsd}
                                     fee={quote}
                                 />
                             }
@@ -121,14 +118,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                             }
                         </div>
                         <div>
-                            {
-                                Number(values.amount) > 0 &&
-                                <ReserveGasNote
-                                    maxAllowedAmount={maxAllowedAmount}
-                                    minAllowedAmount={minAllowedAmount}
-                                    onSubmit={handleReserveGas}
-                                />
-                            }
                             {
                                 values.toAsset?.refuel && !query.hideRefuel &&
                                 <RefuelToggle
