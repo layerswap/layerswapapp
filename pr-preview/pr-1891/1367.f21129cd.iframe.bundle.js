@@ -1,4 +1,4 @@
-"use strict";(self.webpackChunklayerswap=self.webpackChunklayerswap||[]).push([[3748],{"./node_modules/@walletconnect/solana-adapter/node_modules/@reown/appkit-ui/dist/esm/src/assets/svg/apple.js":(__unused_webpack_module,__webpack_exports__,__webpack_require__)=>{__webpack_require__.r(__webpack_exports__),__webpack_require__.d(__webpack_exports__,{appleSvg:()=>appleSvg});const appleSvg=__webpack_require__("./node_modules/@walletconnect/solana-adapter/node_modules/lit/index.js").JW`<svg fill="none" viewBox="0 0 40 40">
+"use strict";(self.webpackChunklayerswap=self.webpackChunklayerswap||[]).push([[1367],{"./node_modules/@walletconnect/solana-adapter/node_modules/@reown/appkit-ui/dist/esm/src/assets/svg/apple.js":(__unused_webpack_module,__webpack_exports__,__webpack_require__)=>{__webpack_require__.r(__webpack_exports__),__webpack_require__.d(__webpack_exports__,{appleSvg:()=>appleSvg});const appleSvg=__webpack_require__("./node_modules/@walletconnect/solana-adapter/node_modules/lit/index.js").JW`<svg fill="none" viewBox="0 0 40 40">
   <g clip-path="url(#a)">
     <g clip-path="url(#b)">
       <circle cx="20" cy="19.89" r="20" fill="#000" />
