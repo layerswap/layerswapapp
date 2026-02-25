@@ -6,16 +6,9 @@ import { useStarknetStore } from "../../stores/starknetWalletStore";
 import KnownInternalNames from "../../lib/knownIds";
 import useStarknet, { resolveStarknetWallet } from "../../lib/wallets/starknet/useStarknet";
 import { RpcMessage, RequestFnCall, RpcTypeToMessageMap } from "@starknet-io/types-js";
-//@ts-ignore
-import { ArgentMobileConnector } from "starknetkit/argentMobile"
-// @ts-ignore
-import { InjectedConnector } from "starknetkit/injected"
-// @ts-ignore
-import { WebWalletConnector } from "starknetkit/webwallet"
-// @ts-ignore
-import { ControllerConnector } from "starknetkit/controller"
 
 const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b';
+let getInjectedWalletById: ((id: string) => unknown) | undefined;
 class DiscoveryConnector extends Connector {
     #wallet;
     #store;
@@ -77,6 +70,20 @@ const StarknetProvider: FC<{ children: ReactNode }> = ({ children }) => {
     const [connectors, setConnectors] = useState<any[]>([])
 
     const resolveConnectors = async () => {
+        // @ts-ignore
+        const argentMobileModule = await import("starknetkit/argentMobile");
+        // @ts-ignore
+        const injectedModule = await import("starknetkit/injected");
+        // @ts-ignore
+        const webWalletModule = await import("starknetkit/webwallet");
+        // @ts-ignore
+        const controllerModule = await import("starknetkit/controller");
+
+        const ArgentMobileConnector = (argentMobileModule as any).ArgentMobileConnector;
+        const InjectedConnector = (injectedModule as any).InjectedConnector;
+        const WebWalletConnector = (webWalletModule as any).WebWalletConnector;
+        const ControllerConnector = (controllerModule as any).ControllerConnector;
+        getInjectedWalletById = InjectedConnector?.getInjectedWallet;
 
         const isSafari =
             typeof window !== "undefined"
@@ -171,7 +178,7 @@ const StarknetWalletInitializer = () => {
         const checkConnectorsReady = () => {
             const hasWallet = connectors.some(connector => {
                 try {
-                    const wallet = InjectedConnector.getInjectedWallet(connector.id);
+                    const wallet = getInjectedWalletById?.(connector.id);
                     return wallet !== null && wallet !== undefined;
                 } catch {
                     return false;

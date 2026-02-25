@@ -1,23 +1,10 @@
 import posthog from "posthog-js";
 import { NetworkBalance, TokenBalance } from "@/Models/Balance";
 import { BalanceProvider } from "@/Models/BalanceProvider";
-import { NetworkWithTokens } from "@/Models/Network";
+import { NetworkType, NetworkWithTokens } from "@/Models/Network";
 import { classifyNodeError } from "./nodeErrorClassifier";
 import { extractErrorDetails } from "./errorUtils";
 import KnownInternalNames from "../knownIds";
-import {
-    BitcoinBalanceProvider,
-    EVMBalanceProvider,
-    FuelBalanceProvider,
-    LoopringBalanceProvider,
-    QueryBalanceProvider,
-    SolanaBalanceProvider,
-    StarknetBalanceProvider,
-    TonBalanceProvider,
-    TronBalanceProvider,
-    ZkSyncBalanceProvider,
-    HyperliquidBalanceProvider
-} from "./providers";
 
 const SKIP_BALANCE_NETWORKS = [
     KnownInternalNames.Networks.ParadexMainnet,
@@ -44,21 +31,147 @@ function formatErrorBalances(errorBalances: TokenBalance[]) {
 }
 
 export class BalanceResolver {
+    private providerInstances: Partial<Record<ProviderKind, BalanceProvider>> = {};
 
-    private providers: BalanceProvider[] = [
-        new QueryBalanceProvider(),
-        new StarknetBalanceProvider(),
-        new EVMBalanceProvider(),
-        new FuelBalanceProvider(),
-        new LoopringBalanceProvider(),
-        new SolanaBalanceProvider(),
-        new TonBalanceProvider(),
-        new ZkSyncBalanceProvider(),
-        new TronBalanceProvider(),
-        // new ParadexBalanceProvider(),
-        new BitcoinBalanceProvider(),
-        new HyperliquidBalanceProvider()
-    ];
+    private async getProviderInstance(kind: ProviderKind): Promise<BalanceProvider> {
+        if (this.providerInstances[kind]) {
+            return this.providerInstances[kind]!;
+        }
+
+        switch (kind) {
+            case "query": {
+                const { QueryBalanceProvider } = await import("./providers/queryBalanceProvider");
+                this.providerInstances[kind] = new QueryBalanceProvider();
+                break;
+            }
+            case "starknet": {
+                const { StarknetBalanceProvider } = await import("./providers/starknetBalanceProvider");
+                this.providerInstances[kind] = new StarknetBalanceProvider();
+                break;
+            }
+            case "evm": {
+                const { EVMBalanceProvider } = await import("./providers/evmBalanceProvider");
+                this.providerInstances[kind] = new EVMBalanceProvider();
+                break;
+            }
+            case "fuel": {
+                const { FuelBalanceProvider } = await import("./providers/fuelBalanceProvider");
+                this.providerInstances[kind] = new FuelBalanceProvider();
+                break;
+            }
+            case "loopring": {
+                const { LoopringBalanceProvider } = await import("./providers/loopringBalanceProvider");
+                this.providerInstances[kind] = new LoopringBalanceProvider();
+                break;
+            }
+            case "solana": {
+                const { SolanaBalanceProvider } = await import("./providers/solanaBalanceProvider");
+                this.providerInstances[kind] = new SolanaBalanceProvider();
+                break;
+            }
+            case "ton": {
+                const { TonBalanceProvider } = await import("./providers/tonBalanceProvider");
+                this.providerInstances[kind] = new TonBalanceProvider();
+                break;
+            }
+            case "zksync": {
+                const { ZkSyncBalanceProvider } = await import("./providers/zkSyncBalanceProvider");
+                this.providerInstances[kind] = new ZkSyncBalanceProvider();
+                break;
+            }
+            case "tron": {
+                const { TronBalanceProvider } = await import("./providers/tronBalanceProvider");
+                this.providerInstances[kind] = new TronBalanceProvider();
+                break;
+            }
+            case "bitcoin": {
+                const { BitcoinBalanceProvider } = await import("./providers/bitcoinBalanceProvider");
+                this.providerInstances[kind] = new BitcoinBalanceProvider();
+                break;
+            }
+            case "hyperliquid": {
+                const { HyperliquidBalanceProvider } = await import("./providers/hyperliquidBalanceProvider");
+                this.providerInstances[kind] = new HyperliquidBalanceProvider();
+                break;
+            }
+            default:
+                throw new Error(`Unsupported balance provider kind: ${kind}`);
+        }
+
+        return this.providerInstances[kind]!;
+    }
+
+    private async resolveProvider(network: NetworkWithTokens): Promise<BalanceProvider | undefined> {
+        const prioritizedKinds = this.resolvePrioritizedProviderKinds(network);
+
+        // Try likely providers first (cheap in most cases due caching).
+        for (const kind of prioritizedKinds) {
+            const provider = await this.getProviderInstance(kind);
+            if (provider.supportsNetwork(network)) {
+                return provider;
+            }
+        }
+
+        // Fallback: preserve previous behavior by trying every known provider.
+        const tried = new Set(prioritizedKinds);
+        for (const kind of allProviderKinds) {
+            if (tried.has(kind)) continue;
+            const provider = await this.getProviderInstance(kind);
+            if (provider.supportsNetwork(network)) {
+                return provider;
+            }
+        }
+
+        return undefined;
+    }
+
+    private resolvePrioritizedProviderKinds(network: NetworkWithTokens): ProviderKind[] {
+        const prioritized: ProviderKind[] = ["query"];
+
+        if (network.name === KnownInternalNames.Networks.StarkNetMainnet
+            || network.name === KnownInternalNames.Networks.StarkNetGoerli
+            || network.name === KnownInternalNames.Networks.StarkNetSepolia) {
+            prioritized.push("starknet");
+        }
+        if (network.name === KnownInternalNames.Networks.LoopringMainnet
+            || network.name === KnownInternalNames.Networks.LoopringGoerli
+            || network.name === KnownInternalNames.Networks.LoopringSepolia) {
+            prioritized.push("loopring");
+        }
+        if (network.name === KnownInternalNames.Networks.ZksyncMainnet) {
+            prioritized.push("zksync");
+        }
+        if (network.name === KnownInternalNames.Networks.TONMainnet
+            || network.name === KnownInternalNames.Networks.TONTestnet) {
+            prioritized.push("ton");
+        }
+        if (network.name === KnownInternalNames.Networks.TronMainnet
+            || network.name === KnownInternalNames.Networks.TronTestnet) {
+            prioritized.push("tron");
+        }
+        if (network.name === KnownInternalNames.Networks.BitcoinMainnet
+            || network.name === KnownInternalNames.Networks.BitcoinTestnet) {
+            prioritized.push("bitcoin");
+        }
+        if (network.name === KnownInternalNames.Networks.FuelMainnet
+            || network.name === KnownInternalNames.Networks.FuelTestnet
+            || network.name === KnownInternalNames.Networks.FuelDevnet) {
+            prioritized.push("fuel");
+        }
+        if (network.name === KnownInternalNames.Networks.HyperliquidMainnet
+            || network.name === KnownInternalNames.Networks.HyperliquidTestnet) {
+            prioritized.push("hyperliquid");
+        }
+
+        if (network.type === NetworkType.Solana) {
+            prioritized.push("solana");
+        }
+        if (network.type === NetworkType.EVM) {
+            prioritized.push("evm");
+        }
+
+        return [...new Set(prioritized)];
+    }
 
     async getBalance(network: NetworkWithTokens, address?: string, options?: { timeoutMs?: number, retryCount?: number }): Promise<NetworkBalance> {
         if (SKIP_BALANCE_NETWORKS.includes(network.name)) {
@@ -68,7 +181,7 @@ export class BalanceResolver {
         try {
             if (!address)
                 throw new Error(`No address provided for network ${network.name}`)
-            const provider = this.providers.find(p => p.supportsNetwork(network))
+            const provider = await this.resolveProvider(network)
             //TODO: create interface for balance providers in case of empty state they shoudl throw error 
             //never return undefined as SWR does not set loading state if undefined is returned
             if (!provider) throw new Error(`No balance provider found for network ${network.name}`)
@@ -117,3 +230,30 @@ export class BalanceResolver {
         }
     }
 }
+
+type ProviderKind =
+    | "query"
+    | "starknet"
+    | "evm"
+    | "fuel"
+    | "loopring"
+    | "solana"
+    | "ton"
+    | "zksync"
+    | "tron"
+    | "bitcoin"
+    | "hyperliquid";
+
+const allProviderKinds: ProviderKind[] = [
+    "query",
+    "starknet",
+    "evm",
+    "fuel",
+    "loopring",
+    "solana",
+    "ton",
+    "zksync",
+    "tron",
+    "bitcoin",
+    "hyperliquid",
+];

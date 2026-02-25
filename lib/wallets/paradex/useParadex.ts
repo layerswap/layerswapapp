@@ -6,9 +6,7 @@ import { type ConnectorAlreadyConnectedError } from '@wagmi/core'
 import useEVM from "../evm/useEVM"
 import useStarknet from "../starknet/useStarknet"
 import { useWalletStore } from "../../../stores/walletStore"
-import { AuthorizeStarknet } from "./Authorize/Starknet"
 import { walletClientToSigner } from "../../ethersToViem/ethers"
-import AuhorizeEthereum from "./Authorize/Ethereum"
 import { getWalletClient } from '@wagmi/core'
 import { useConfig } from "wagmi"
 import { switchChain, getChainId } from '@wagmi/core'
@@ -89,7 +87,8 @@ export default function useParadex(): WalletProvider {
                     if (!ethersSigner) {
                         throw Error("Could not initialize ethers signer")
                     }
-                    const paradexAccount = await AuhorizeEthereum(ethersSigner)
+                    const { default: authorizeEthereum } = await import("./Authorize/Ethereum")
+                    const paradexAccount = await authorizeEthereum(ethersSigner)
                     const paradexAddress = paradexAccount.getAddress()
 
                     addParadexAccount({ l1Address: connectionResult.address, paradexAddress: paradexAddress })
@@ -123,6 +122,7 @@ export default function useParadex(): WalletProvider {
                     if (!starknetNetwork?.node_url) {
                         throw Error("Starknet node url not found")
                     }
+                    const { AuthorizeStarknet } = await import("./Authorize/Starknet")
                     const paradexAccount = await AuthorizeStarknet(snAccount as any)
                     const paradexAddress = paradexAccount.getAddress()
 

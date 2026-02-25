@@ -5,7 +5,6 @@ import { NetworkType } from "@/Models/Network"
 import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvider"
 import { useCallback, useMemo } from "react"
 import { useSettingsState } from "@/context/settings"
-import { isSolanaAdapterSupported } from "./utils"
 import { WalletModalConnector } from "@/components/WalletModal"
 import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
 
@@ -92,7 +91,7 @@ export default function useSVM(): WalletProvider {
     const availableWalletsForConnect = useMemo(() => {
         const connectors: InternalConnector[] = [];
         for (const wallet of wallets) {
-            const hasBrowserExtension = isSolanaAdapterSupported(wallet.adapter.name);
+            const hasBrowserExtension = wallet.readyState === 'Installed' || wallet.readyState === 'Loadable' || wallet.adapter.name === "Coinbase Wallet";
             const internalConnector: InternalConnector = {
                 name: wallet.adapter.name.trim(),
                 id: wallet.adapter.name.trim(),

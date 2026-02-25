@@ -4,7 +4,7 @@ import { useSettingsState } from "@/context/settings"
 import KnownInternalNames from "../../knownIds"
 import { resolveWalletConnectorIcon, resolveWalletConnectorIndex } from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
-import { useCallback, useEffect, useMemo, useRef } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { CreateConnectorFn, getAccount, getConnections } from '@wagmi/core'
 import { isMobile } from "../../isMobile"
 import convertSvgComponentToBase64 from "@/components/utils/convertSvgComponentToBase64"
@@ -13,7 +13,7 @@ import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvid
 import { useConnectModal, WalletModalConnector } from "@/components/WalletModal"
 import { explicitInjectedProviderDetected } from "../connectors/explicitInjectedProviderDetected"
 import sleep from "../utils/sleep"
-import { useEvmConnectors, HIDDEN_WALLETCONNECT_ID } from "@/context/evmConnectorsContext"
+import { useEvmConnectors, HIDDEN_WALLETCONNECT_ID, featuredWalletsIds } from "@/context/evmConnectorsContext"
 import { useActiveEvmAccount } from "@/components/WalletProviders/ActiveEvmAccount"
 
 // Storage key for dynamic wallet metadata
@@ -107,8 +107,19 @@ export default function useEVM(): WalletProvider {
     const config = useConfig()
     const { connectAsync } = useConnect();
 
-    const { setSelectedConnector } = useConnectModal()
-    const { walletConnectConnectors, addWalletConnectWallet } = useEvmConnectors()
+    const { setSelectedConnector, isWalletModalOpen } = useConnectModal()
+    const {
+        walletConnectConnectors,
+        addWalletConnectWallet,
+        loadWalletConnectWallets,
+        walletConnectWalletsLoaded
+    } = useEvmConnectors()
+
+    useEffect(() => {
+        if (isWalletModalOpen && !walletConnectWalletsLoaded) {
+            loadWalletConnectWallets().catch((error) => console.warn('Failed to load WalletConnect wallets registry', error))
+        }
+    }, [isWalletModalOpen, walletConnectWalletsLoaded, loadWalletConnectWallets])
 
     const disconnectWallet = useCallback(async (connectorName: string) => {
 
@@ -144,7 +155,7 @@ export default function useEVM(): WalletProvider {
             wallet.id !== HIDDEN_WALLETCONNECT_ID
         )
 
-        return dedupePreferInjected(allConnectors.filter(filterConnectors))
+        const configuredConnectors = dedupePreferInjected(allConnectors.filter(filterConnectors))
             .map(w => {
                 const walletConnectWallet = walletConnectConnectors.find(w2 => w2.name.toLowerCase().includes(w.name.toLowerCase()) || w2.id.toLowerCase() === w.id.toLowerCase())
                 const isWalletConnectSupported = w.type === "walletConnect" || w.name === "WalletConnect"
@@ -160,7 +171,28 @@ export default function useEVM(): WalletProvider {
                     providerName: name
                 }
             })
-    }, [allConnectors, walletConnectConnectors])
+
+        const existingConnectorKeys = new Set(
+            configuredConnectors.flatMap(connector => [connector.id.toLowerCase(), connector.name.toLowerCase()])
+        )
+
+        const featuredDynamicWallets: InternalConnector[] = walletConnectConnectors
+            .filter(wallet => (
+                featuredWalletsIds.includes(wallet.id.toLowerCase())
+                || featuredWalletsIds.some(featuredId => wallet.name.toLowerCase().includes(featuredId))
+            ))
+            .filter(wallet => !existingConnectorKeys.has(wallet.id.toLowerCase()) && !existingConnectorKeys.has(wallet.name.toLowerCase()))
+            .map(wallet => ({
+                ...wallet,
+                order: resolveWalletConnectorIndex(wallet.id),
+                type: 'other',
+                isMobileSupported: true,
+                extensionNotFound: wallet.hasBrowserExtension ? !isMobilePlatform : false,
+                providerName: name
+            }))
+
+        return [...configuredConnectors, ...featuredDynamicWallets]
+    }, [allConnectors, walletConnectConnectors, isMobilePlatform])
 
     const connectWallet = useCallback(async (props: { connector: WalletModalConnector }) => {
         try {
@@ -173,7 +205,11 @@ export default function useEVM(): WalletProvider {
             let actualConnector = connector
 
             if (!connector) {
-                const walletConnectConnector = walletConnectConnectors.find(w => w.id === internalConnector.id)
+                const loadedWalletConnectConnectors = walletConnectConnectors.length > 0
+                    ? walletConnectConnectors
+                    : await loadWalletConnectWallets()
+
+                const walletConnectConnector = loadedWalletConnectConnectors.find(w => w.id === internalConnector.id)
                 if (!walletConnectConnector) throw new Error("Connector not found")
 
                 // Track that this wallet was used (for recent connectors)
@@ -288,7 +324,7 @@ export default function useEVM(): WalletProvider {
                 throw new Error(e.message || e);
             }
         }
-    }, [availableFeaturedWalletsForConnect, disconnectAsync, networks, asSourceSupportedNetworks, autofillSupportedNetworks, withdrawalSupportedNetworks, name, config, walletConnectConnectors, addWalletConnectWallet, allConnectors, connectAsync])
+    }, [availableFeaturedWalletsForConnect, disconnectAsync, networks, asSourceSupportedNetworks, autofillSupportedNetworks, withdrawalSupportedNetworks, name, config, walletConnectConnectors, addWalletConnectWallet, allConnectors, connectAsync, loadWalletConnectWallets])
 
     const connectedWalletsKey = [...config.state.connections.keys()].join('-')
 
