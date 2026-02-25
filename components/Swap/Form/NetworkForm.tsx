@@ -1,7 +1,7 @@
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { Form, FormikHelpers, useFormikContext } from "formik";
 import { Partner } from "@/Models/Partner";
-import { TokenBalance } from "@/Models/Balance";
+
 import ValidationError from "@/components/validationError";
 import useWallet from "@/hooks/useWallet";
 import SourcePicker from "@/components/Input/SourcePicker";
@@ -24,7 +24,7 @@ import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useValidationContext } from "@/context/validationContext";
 import { useSwapDataState } from "@/context/swap";
 import RefuelToggle from "@/components/FeeDetails/Refuel";
-import ReserveGasNote from "@/components/ReserveGasNote";
+
 import RefuelModal from "@/components/FeeDetails/RefuelModal";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import posthog from "posthog-js";
@@ -72,11 +72,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
         }
     }, [toAsset, destination, source, fromAsset]);
 
-    const handleReserveGas = useCallback((nativeTokenBalance: TokenBalance, networkGas: number) => {
-        if (nativeTokenBalance.amount && networkGas)
-            setFieldValue('amount', (nativeTokenBalance?.amount - networkGas).toString(), true);
-    }, [setFieldValue]);
-
     const shouldConnectWallet = (source && source?.deposit_methods?.includes('wallet') && depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!source && !wallets.length && depositMethod !== 'deposit_address');
 
     useEffect(() => {
@@ -121,14 +116,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                             }
                         </div>
                         <div>
-                            {
-                                Number(values.amount) > 0 &&
-                                <ReserveGasNote
-                                    maxAllowedAmount={maxAllowedAmount}
-                                    minAllowedAmount={minAllowedAmount}
-                                    onSubmit={handleReserveGas}
-                                />
-                            }
                             {
                                 values.toAsset?.refuel && !query.hideRefuel &&
                                 <RefuelToggle

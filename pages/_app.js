@@ -10,6 +10,7 @@ import Router from "next/router";
 import posthog from "posthog-js";
 import { PostHogProvider } from '@posthog/react'
 import { useEffect } from 'react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const progress = new ProgressBar({
   size: 2,
@@ -54,18 +55,21 @@ function App({ Component, pageProps }) {
   }, [router.basePath]);
 
   return (
-    <SWRConfig
-      value={{
-        revalidateOnFocus: false,
-        dedupingInterval: 5000,
-      }}
-    >
-      <PostHogProvider client={posthog}>
-        <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
-          <Component key={router.asPath} {...pageProps} />
-        </IntercomProvider>
-      </PostHogProvider>
-    </SWRConfig>)
+    <>
+      <SWRConfig
+        value={{
+          revalidateOnFocus: false,
+          dedupingInterval: 5000,
+        }}
+      >
+        <PostHogProvider client={posthog}>
+          <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
+            <Component key={router.asPath} {...pageProps} />
+          </IntercomProvider>
+        </PostHogProvider>
+      </SWRConfig>
+      <SpeedInsights />
+    </>)
 }
 
 export default App
