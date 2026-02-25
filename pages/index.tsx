@@ -15,7 +15,6 @@ const SWAP_KEY_PATTERN = /^\/swaps\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89
 export default function Home({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   LayerSwapApiClient.apiKey = apiKey
   const resolvedSettings = useMemo(() => inflateSettings(settings), [settings])
-  console.log('resolvedSettings', resolvedSettings)
   const sourceRoutesDeafultKey = resolveRoutesURLForSelectedToken({ direction: 'from', network: undefined, token: undefined, includes: { unmatched: true, unavailable: true, swaps: true } })
   const destinationRoutesDefaultKey = resolveRoutesURLForSelectedToken({ direction: 'to', network: undefined, token: undefined, includes: { unmatched: true, unavailable: true, swaps: true } })
   const sourceExchangesDeafaultkey = resolveExchangesURLForSelectedToken({})
