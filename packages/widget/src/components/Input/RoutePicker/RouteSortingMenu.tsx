@@ -13,29 +13,29 @@ const sortingOptions: Array<{
     showInfo?: boolean;
     infoText?: string;
 }> = [
-    {
-        value: SortingOption.RELEVANCE,
-        label: 'Relevance',
-        showInfo: true,
-        infoText: 'Sorted by balance for "from" direction, by usage history and rank for "to" direction'
-    },
-    {
-        value: SortingOption.MOST_USED,
-        label: 'Most Used'
-    },
-    {
-        value: SortingOption.TRENDING,
-        label: 'Trending'
-    },
-    {
-        value: SortingOption.ALPHABETICAL_ASC,
-        label: 'Alphabetical A-Z'
-    },
-    {
-        value: SortingOption.ALPHABETICAL_DESC,
-        label: 'Alphabetical Z-A'
-    }
-];
+        {
+            value: SortingOption.RELEVANCE,
+            label: 'Relevance',
+            showInfo: true,
+            infoText: 'Sorted by balance for "from" direction, by usage history and rank for "to" direction'
+        },
+        {
+            value: SortingOption.MOST_USED,
+            label: 'Most Used'
+        },
+        {
+            value: SortingOption.TRENDING,
+            label: 'Trending'
+        },
+        {
+            value: SortingOption.ALPHABETICAL_ASC,
+            label: 'Alphabetical A-Z'
+        },
+        {
+            value: SortingOption.ALPHABETICAL_DESC,
+            label: 'Alphabetical Z-A'
+        }
+    ];
 
 const RouteSortingMenu: FC = () => {
     const [open, setOpen] = useState(false);
@@ -87,7 +87,9 @@ const RouteSortingMenu: FC = () => {
                                             }}
                                             className="flex items-center"
                                         >
-                                            <InfoIcon className="w-3.5 h-3.5 text-primary-text-tertiary hover:text-primary-text transition-colors" />
+                                            <span>
+                                                <InfoIcon className="w-3.5 h-3.5 text-primary-text-tertiary hover:text-primary-text transition-colors" />
+                                            </span>
                                         </TooltipTrigger>
                                         <TooltipContent side="right" className="max-w-[240px] text-xs">
                                             <p>{option.infoText}</p>

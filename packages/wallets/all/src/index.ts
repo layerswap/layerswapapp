@@ -8,9 +8,6 @@ import type { EVMProviderConfig, WalletConnectConfig } from "@layerswap/wallet-e
 import { createFuelProvider } from "@layerswap/wallet-fuel";
 import type { FuelProviderConfig } from "@layerswap/wallet-fuel";
 
-import { createImmutableXProvider } from "@layerswap/wallet-imtbl-x";
-import type { ImmutableXProviderConfig } from "@layerswap/wallet-imtbl-x";
-
 import { createImmutablePassportProvider, ImtblRedirect } from "@layerswap/wallet-imtbl-passport";
 import type { ImmutablePassportProviderConfig, ImtblPassportConfig } from "@layerswap/wallet-imtbl-passport";
 
@@ -41,9 +38,6 @@ export type { EVMProviderConfig, WalletConnectConfig };
 
 export { createFuelProvider };
 export type { FuelProviderConfig };
-
-export { createImmutableXProvider };
-export type { ImmutableXProviderConfig };
 
 export { createImmutablePassportProvider, ImtblRedirect };
 export type { ImmutablePassportProviderConfig, ImtblPassportConfig };
@@ -81,11 +75,6 @@ export { EVMProvider } from "@layerswap/wallet-evm";
  * @deprecated Use createFuelProvider() instead. This export will be removed in a future version.
  */
 export { FuelProvider } from "@layerswap/wallet-fuel";
-
-/**
- * @deprecated Use createImmutableXProvider() instead. This export will be removed in a future version.
- */
-export { ImmutableXProvider } from "@layerswap/wallet-imtbl-x";
 
 /**
  * @deprecated Use createImmutablePassportProvider() instead. This export will be removed in a future version.
@@ -192,8 +181,6 @@ export function getDefaultProviders(config: DefaultWalletConfig = {}) {
         createParadexProvider(),
         // Bitcoin
         createBitcoinProvider(),
-        // Immutable X
-        createImmutableXProvider(),
         // TON
         ...(ton ? [createTONProvider({ tonConfigs: ton })] : []),
         // SVM (Solana)

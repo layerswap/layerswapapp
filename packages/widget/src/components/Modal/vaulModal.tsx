@@ -343,9 +343,6 @@ const vaulStyles = `
 [data-vaul-drawer][data-vaul-snap-points='false'][data-vaul-drawer-direction='bottom'][data-state='open'] {
     animation-name: slideFromBottom;
 }
-[data-vaul-drawer][data-vaul-snap-points='false'][data-vaul-drawer-direction='bottom'][data-state='closed'] {
-    animation-name: slideToBottom;
-}
 [data-vaul-drawer][data-vaul-snap-points='true'][data-vaul-drawer-direction='bottom'] {
     transform: translate3d(0, var(--initial-transform, 100%), 0);
 }

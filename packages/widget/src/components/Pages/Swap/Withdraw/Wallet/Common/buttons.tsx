@@ -22,7 +22,6 @@ import { TokenBalance, TransferProps, Wallet } from "@/types";
 import { resolvePriceImpactValues } from "@/lib/fees";
 import InfoIcon from "@/components/Icons/InfoIcon";
 import { useBalance } from "@/lib/balances/useBalance";
-import KnownInternalNames from "@/lib/knownIds";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData } = useSwapDataState()
@@ -361,8 +360,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
 const resolveTransactionData = (swapDetails: SwapDetails, swapBasicData: SwapBasicData, deposit_actions: DepositAction[], balances: TokenBalance[] | null | undefined, selectedWallet: Wallet): TransferProps => {
     const depositAction = deposit_actions?.find(action =>
-        action.type === 'transfer'
-        || ExceptionNetworks.includes(swapBasicData.source_network?.name) && action.type === 'manual_transfer');
+        action.type === 'transfer');
     if (!depositAction) {
         throw new Error('No deposit action found')
     }
@@ -379,8 +377,3 @@ const resolveTransactionData = (swapDetails: SwapDetails, swapBasicData: SwapBas
         selectedWallet: selectedWallet,
     }
 }
-
-const ExceptionNetworks = [
-    KnownInternalNames.Networks.ImmutableXMainnet,
-    KnownInternalNames.Networks.ImmutableXSepolia
-]

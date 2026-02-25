@@ -56,8 +56,8 @@ const updateRecentNetworksHelper = (
         destinationRoutes: {
             ...prev.destinationRoutes,
             [to.network]: {
-                ...prev.sourceRoutes[to.network],
-                [to.token]: (prev.sourceRoutes?.[to.network]?.[to.token] || 0) + 1
+                ...prev.destinationRoutes[to.network],
+                [to.token]: (prev.destinationRoutes?.[to.network]?.[to.token] || 0) + 1
             }
         },
     };

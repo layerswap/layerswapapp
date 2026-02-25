@@ -46,14 +46,14 @@ export const TokenInfoIcon = ({ item, route, className }: { item: NetworkRouteTo
 export const TokenTitleWithBalance = ({ item, route, tokenbalance, usdAmount }: TokenTitleWithBalanceProps) => {
     return (
         <div className="flex items-center gap-2 justify-between w-full">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 py-px">
                 <p>
                     {item.symbol}
                 </p>
                 <TokenInfoIcon
                     item={item}
                     route={route}
-                    className="hidden xs:block transition-all duration-300 opacity-0 group-hover:opacity-100 data-[popover-open=true]:opacity-100 data-[tooltip-open=true]:opacity-100 data-[popover-open=true]:delay-0 data-[tooltip-open=true]:delay-0 group-hover:delay-400 click-delay-on-hover pointer-events-none group-hover:pointer-events-auto data-[popover-open=true]:pointer-events-auto data-[tooltip-open=true]:pointer-events-auto"
+                    className="hidden xs:block transition-all duration-300 opacity-0 group-hover:opacity-100 data-[popover-open=true]:opacity-100 data-[tooltip-open=true]:opacity-100 data-[popover-open=true]:delay-0 data-[tooltip-open=true]:delay-0 group-hover:delay-400 pointer-events-none group-hover:pointer-events-auto data-[popover-open=true]:pointer-events-auto data-[tooltip-open=true]:pointer-events-auto"
                 />
             </div>
             {(tokenbalance && Number(tokenbalance?.amount) > 0 && Number(usdAmount) > 0) && (
@@ -69,12 +69,12 @@ type TokenInfoTriggerProps = {
 }
 const TokenInfoTrigger = ({ item, isPopoverOpen, isTooltipOpen }: TokenInfoTriggerProps) => {
     return (
-        <div className={'flex items-center gap-1 text-secondary-text cursor-pointer hover:text-primary-text data-[popover-open=true]:text-primary-text data-[tooltip-open=true]:text-primary-text text-xs'} data-popover-open={isPopoverOpen} data-tooltip-open={isTooltipOpen}>
-            <p className="max-w-[90px] truncate">
+        <span className="flex items-center gap-1 text-secondary-text cursor-pointer hover:text-primary-text data-[popover-open=true] data-[tooltip-open=true] text-xs pr-2" data-popover-open={isPopoverOpen} data-tooltip-open={isTooltipOpen}>
+            <p className="max-w-[90px]">
                 <span>•</span> <span>{item.display_asset || item.symbol}</span>
             </p>
             <Info className="h-3 w-3" />
-        </div>
+        </span>
     )
 }
 
@@ -100,11 +100,13 @@ const NativeTokenTitle = ({ item, route, onTooltipOpenChange, isTooltipOpen }: N
                     <div>
                         <Tooltip onOpenChange={onTooltipOpenChange}>
                             <TooltipTrigger asChild>
-                                <TokenInfoTrigger
-                                    item={item}
-                                    isPopoverOpen={isPopoverOpen}
-                                    isTooltipOpen={isTooltipOpen}
-                                />
+                                <span>
+                                    <TokenInfoTrigger
+                                        item={item}
+                                        isPopoverOpen={isPopoverOpen}
+                                        isTooltipOpen={isTooltipOpen}
+                                    />
+                                </span>
                             </TooltipTrigger>
                             <TooltipContent side="bottom" className="pointer-events-none">
                                 <p>View token details</p>

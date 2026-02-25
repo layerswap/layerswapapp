@@ -10,7 +10,6 @@ export class EVMAddressUtilsProvider implements AddressUtilsProvider {
         return (network.type === NetworkType.EVM && !!network.token)
             || (KnownInternalNames.Networks.ZksyncMainnet.includes(network.name))
             || (KnownInternalNames.Networks.LoopringMainnet.includes(network.name) || KnownInternalNames.Networks.LoopringSepolia.includes(network.name))
-            || (KnownInternalNames.Networks.ImmutableXMainnet).includes(network.name) || KnownInternalNames.Networks.ImmutableXSepolia.includes(network.name)
             || (KnownInternalNames.Networks.HyperliquidMainnet.includes(network.name) || KnownInternalNames.Networks.HyperliquidTestnet.includes(network.name))
     }
 

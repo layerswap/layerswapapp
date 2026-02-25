@@ -29,8 +29,6 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
 
     const autofillSupportedNetworks = useMemo(() => [
         ...asSourceSupportedNetworks,
-        KnownInternalNames.Networks.ImmutableXMainnet,
-        KnownInternalNames.Networks.ImmutableXSepolia,
         KnownInternalNames.Networks.BrineMainnet,
         KnownInternalNames.Networks.HyperliquidMainnet,
         KnownInternalNames.Networks.HyperliquidTestnet,
@@ -423,9 +421,6 @@ const resolveSupportedNetworks = (supportedNetworks: string[], connectorId: stri
         {
             id: "com.immutable.passport",
             supportedNetworks: [
-                KnownInternalNames.Networks.ImmutableXMainnet,
-                KnownInternalNames.Networks.ImmutableXGoerli,
-                KnownInternalNames.Networks.ImmutableXSepolia,
                 KnownInternalNames.Networks.ImmutableZkEVM,
                 KnownInternalNames.Networks.ImmutableZkTestnet
             ]

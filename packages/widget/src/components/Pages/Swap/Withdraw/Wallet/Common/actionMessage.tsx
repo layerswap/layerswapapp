@@ -32,7 +32,7 @@ export const ActionMessage: FC<{ error: Error | undefined, isLoading: boolean, s
         return <ActionMessages.InsufficientFundsMessage />
     }
     else if (error?.name === ActionMessageType.WaletMismatch) {
-        return <ActionMessages.WaletMismatchMessage address={selectedSourceAddress} network={sourceNetwork} />
+        return <ActionMessages.WalletMismatchMessage address={selectedSourceAddress} network={sourceNetwork} />
     }
     else if (error?.name === ActionMessageType.DifferentAccountsNotAllowedError) {
         return <ActionMessages.DifferentAccountsNotAllowedError network={error?.message} />
