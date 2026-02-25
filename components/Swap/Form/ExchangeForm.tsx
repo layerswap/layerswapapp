@@ -8,7 +8,7 @@ import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { Form, useFormikContext } from "formik";
 import { Partner } from "@/Models/Partner";
 import RoutePicker from "@/components/Input/RoutePicker";
-import AmountField from "@/components/Input/Amount";
+import ExchangeAmountField from "@/components/Input/Amount/ExchangeAmountField";
 import Address from "@/components/Input/Address";
 import { ChevronDown } from "lucide-react";
 import AddressIcon from "@/components/AddressIcon";
@@ -49,7 +49,7 @@ const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
 
     const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
-    const { isQuoteLoading, quote, minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useQuoteData(quoteArgs, quoteRefreshInterval);
+    const { isQuoteLoading, quote, minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd } = useQuoteData(quoteArgs, quoteRefreshInterval);
     const { routeValidation, formValidation } = useValidationContext();
 
     const isValid = !formValidation.message;
@@ -62,24 +62,6 @@ const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
 
     return (
         <>
-            {/* {showBanner && (
-                <div className="mb-3 rounded-2xl border border-secondary-400 bg-secondary-500 p-2.5 text-sm flex items-start justify-between">
-                    <div>
-                        <p className="text-sm text-primary-text mb-0.5">Deposit from CEX</p>
-                        <p className="text-secondary-text text-xs">
-                            Easily move crypto from your exchange account to the network of your choice.
-                        </p>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={dismissBanner}
-                        className="p-1 hover:bg-secondary-400 rounded-md text-secondary-text"
-                    >
-                        <X className="h-4 w-4" />
-                    </button>
-                </div>
-            )} */}
-
             <DepositMethodComponent />
             <Form className="h-full grow flex flex-col flex-1 justify-between w-full gap-2">
                 <Widget.Content>
@@ -136,15 +118,14 @@ const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
                                         },
                                             "group-hover:block"
                                         )}>
-                                            <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} onActionHover={handleActionHover} depositMethod="deposit_address" />
+                                            <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} limitsMinAmountInUsd={minAllowedAmountInUsd} limitsMaxAmountInUsd={maxAllowedAmountInUsd} onActionHover={handleActionHover} depositMethod="deposit_address" />
                                         </div>
                                     }
                                 </div>
                                 <div className="relative group exchange-amount-field">
-                                    <AmountField
+                                    <ExchangeAmountField
                                         className="pb-0! rounded-xl!"
                                         fee={quote}
-                                        usdPosition="right"
                                         actionValue={actionTempValue}
                                     />
                                     {quote &&
