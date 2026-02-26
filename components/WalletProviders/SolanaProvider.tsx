@@ -10,6 +10,7 @@ const SOLANA_NETWORK = process.env.NEXT_PUBLIC_API_VERSION == 'sandbox' ? Wallet
 
 function SolanaProvider({ children }: { children: ReactNode }) {
     const [adapters, setAdapters] = useState<any[]>([]);
+    const [ready, setReady] = useState(false);
     const endpoint = useMemo(() => (
         SOLANA_NETWORK === WalletAdapterNetwork.Devnet
             ? "https://api.devnet.solana.com"
@@ -33,6 +34,7 @@ function SolanaProvider({ children }: { children: ReactNode }) {
 
             if (cancelled) return;
 
+            setReady(true);
             setAdapters([
                 new PhantomWalletAdapter(),
                 new NightlyWalletAdapter(),
@@ -45,7 +47,7 @@ function SolanaProvider({ children }: { children: ReactNode }) {
                     options: {
                         projectId: WALLETCONNECT_PROJECT_ID,
                         metadata: {
-                            name: 'Layerwap',
+                            name: 'Layerswap',
                             description: 'Layerswap App',
                             url: 'https://layerswap.io/app/',
                             icons: ['https://www.layerswap.io/app/symbol.png'],
@@ -67,7 +69,7 @@ function SolanaProvider({ children }: { children: ReactNode }) {
 
     return (
         <ConnectionProvider endpoint={endpoint}>
-            <WalletProvider wallets={adapters} autoConnect={true}>
+            <WalletProvider wallets={adapters} autoConnect={ready}>
                 {children}
             </WalletProvider>
         </ConnectionProvider>

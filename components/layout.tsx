@@ -64,14 +64,12 @@ export default function Layout({ children, settings, themeData }: Props) {
 
   const resolvedSettings = useMemo(() => inflateSettings(settings), [settings]);
 
-  if (!resolvedSettings)
-    return <ThemeWrapper>
-      <MaintananceContent />
-    </ThemeWrapper>
+  const appSettings = useMemo(
+    () => resolvedSettings ? new LayerSwapAppSettings(resolvedSettings) : null,
+    [resolvedSettings]
+  );
 
-  let appSettings = new LayerSwapAppSettings(resolvedSettings)
-
-  const query: QueryParams = {
+  const query = useMemo<QueryParams>(() => ({
     ...router.query,
     lockNetwork: router.query.lockNetwork === 'true',
     lockExchange: router.query.lockExchange === 'true',
@@ -86,7 +84,12 @@ export default function Layout({ children, settings, themeData }: Props) {
     lockToAsset: router.query.lockToAsset === 'true',
     hideLogo: router.query.hideLogo === 'true',
     hideDepositMethod: router.query.hideDepositMethod === 'true'
-  };
+  }), [router.query]);
+
+  if (!appSettings)
+    return <ThemeWrapper>
+      <MaintananceContent />
+    </ThemeWrapper>
 
   function logErrorToService(error, info) {
     const extension_error = IsExtensionError(error)

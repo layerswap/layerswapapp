@@ -47,7 +47,7 @@ export default function useSVM(): WalletProvider {
             }
         }
 
-    }, [connectedAddress, connectedAdapterName])
+    }, [connectedAddress, connectedAdapterName, solanaWallet, disconnect, commonSupportedNetworks, networks])
     const connectWallet = async ({ connector }: { connector: WalletModalConnector }) => {
         const internalConnector = wallets.find(w => w.adapter.name.includes(connector.name))
         const walletConnectConnector = wallets.find(w => w.adapter.name === 'WalletConnect')

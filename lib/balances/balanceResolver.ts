@@ -32,73 +32,78 @@ function formatErrorBalances(errorBalances: TokenBalance[]) {
 
 export class BalanceResolver {
     private providerInstances: Partial<Record<ProviderKind, BalanceProvider>> = {};
+    private pendingLoads: Partial<Record<ProviderKind, Promise<BalanceProvider>>> = {};
 
     private async getProviderInstance(kind: ProviderKind): Promise<BalanceProvider> {
         if (this.providerInstances[kind]) {
             return this.providerInstances[kind]!;
         }
 
+        if (this.pendingLoads[kind]) {
+            return this.pendingLoads[kind]!;
+        }
+
+        const loadPromise = this.loadProvider(kind);
+        this.pendingLoads[kind] = loadPromise;
+
+        try {
+            const provider = await loadPromise;
+            this.providerInstances[kind] = provider;
+            return provider;
+        } finally {
+            delete this.pendingLoads[kind];
+        }
+    }
+
+    private async loadProvider(kind: ProviderKind): Promise<BalanceProvider> {
         switch (kind) {
             case "query": {
                 const { QueryBalanceProvider } = await import("./providers/queryBalanceProvider");
-                this.providerInstances[kind] = new QueryBalanceProvider();
-                break;
+                return new QueryBalanceProvider();
             }
             case "starknet": {
                 const { StarknetBalanceProvider } = await import("./providers/starknetBalanceProvider");
-                this.providerInstances[kind] = new StarknetBalanceProvider();
-                break;
+                return new StarknetBalanceProvider();
             }
             case "evm": {
                 const { EVMBalanceProvider } = await import("./providers/evmBalanceProvider");
-                this.providerInstances[kind] = new EVMBalanceProvider();
-                break;
+                return new EVMBalanceProvider();
             }
             case "fuel": {
                 const { FuelBalanceProvider } = await import("./providers/fuelBalanceProvider");
-                this.providerInstances[kind] = new FuelBalanceProvider();
-                break;
+                return new FuelBalanceProvider();
             }
             case "loopring": {
                 const { LoopringBalanceProvider } = await import("./providers/loopringBalanceProvider");
-                this.providerInstances[kind] = new LoopringBalanceProvider();
-                break;
+                return new LoopringBalanceProvider();
             }
             case "solana": {
                 const { SolanaBalanceProvider } = await import("./providers/solanaBalanceProvider");
-                this.providerInstances[kind] = new SolanaBalanceProvider();
-                break;
+                return new SolanaBalanceProvider();
             }
             case "ton": {
                 const { TonBalanceProvider } = await import("./providers/tonBalanceProvider");
-                this.providerInstances[kind] = new TonBalanceProvider();
-                break;
+                return new TonBalanceProvider();
             }
             case "zksync": {
                 const { ZkSyncBalanceProvider } = await import("./providers/zkSyncBalanceProvider");
-                this.providerInstances[kind] = new ZkSyncBalanceProvider();
-                break;
+                return new ZkSyncBalanceProvider();
             }
             case "tron": {
                 const { TronBalanceProvider } = await import("./providers/tronBalanceProvider");
-                this.providerInstances[kind] = new TronBalanceProvider();
-                break;
+                return new TronBalanceProvider();
             }
             case "bitcoin": {
                 const { BitcoinBalanceProvider } = await import("./providers/bitcoinBalanceProvider");
-                this.providerInstances[kind] = new BitcoinBalanceProvider();
-                break;
+                return new BitcoinBalanceProvider();
             }
             case "hyperliquid": {
                 const { HyperliquidBalanceProvider } = await import("./providers/hyperliquidBalanceProvider");
-                this.providerInstances[kind] = new HyperliquidBalanceProvider();
-                break;
+                return new HyperliquidBalanceProvider();
             }
             default:
                 throw new Error(`Unsupported balance provider kind: ${kind}`);
         }
-
-        return this.providerInstances[kind]!;
     }
 
     private async resolveProvider(network: NetworkWithTokens): Promise<BalanceProvider | undefined> {

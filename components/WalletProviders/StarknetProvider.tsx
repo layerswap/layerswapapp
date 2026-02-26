@@ -140,10 +140,13 @@ const StarknetProvider: FC<{ children: ReactNode }> = ({ children }) => {
     }
 
     useEffect(() => {
-        (async () => {
-            const result = await resolveConnectors()
-            setConnectors(result)
-        })()
+        let cancelled = false;
+        resolveConnectors().then((result) => {
+            if (!cancelled) setConnectors(result)
+        }).catch(() => {
+            if (!cancelled) setConnectors([])
+        });
+        return () => { cancelled = true };
     }, [])
 
     const chains = [mainnet, sepolia]
