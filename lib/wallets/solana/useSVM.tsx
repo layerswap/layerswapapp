@@ -91,15 +91,16 @@ export default function useSVM(): WalletProvider {
     const availableWalletsForConnect = useMemo(() => {
         const connectors: InternalConnector[] = [];
         for (const wallet of wallets) {
-            const hasBrowserExtension = wallet.readyState === 'Installed' || wallet.readyState === 'Loadable' || wallet.adapter.name === "Coinbase Wallet";
+            const isInstalled = wallet.readyState === 'Installed' || wallet.readyState === 'Loadable' || wallet.adapter.name === "Coinbase Wallet";
+            const hasBrowserExtension = wallet.adapter.name !== "WalletConnect";
             const internalConnector: InternalConnector = {
                 name: wallet.adapter.name.trim(),
                 id: wallet.adapter.name.trim(),
                 icon: wallet.adapter.icon,
-                type: wallet.readyState === 'Installed' ? 'injected' : 'other',
+                type: isInstalled ? 'injected' : 'other',
                 installUrl: wallet.adapter?.url,
                 hasBrowserExtension: hasBrowserExtension,
-                extensionNotFound: !(wallet.readyState === 'Installed' || wallet.readyState === 'Loadable' || wallet.adapter.name == "Coinbase Wallet"),
+                extensionNotFound: hasBrowserExtension ? !isInstalled : false,
                 providerName: name
             }
             connectors.push(internalConnector)

@@ -204,7 +204,8 @@ export default function useEVM(): WalletProvider {
             // Keep reference to the actual connector for wagmi calls
             let actualConnector = connector
 
-            if (!connector) {
+            // If the connector was found but is a dynamic wallet (no wagmi methods), treat it as not found
+            if (!connector || typeof connector.disconnect !== 'function') {
                 const loadedWalletConnectConnectors = walletConnectConnectors.length > 0
                     ? walletConnectConnectors
                     : await loadWalletConnectWallets()
@@ -243,8 +244,8 @@ export default function useEVM(): WalletProvider {
             const Icon = connector.icon || resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(connector) })
             const base64Icon = typeof Icon == 'string' ? Icon : convertSvgComponentToBase64(Icon)
             setSelectedConnector({ ...connector, icon: base64Icon })
-            if (actualConnector.id !== "coinbaseWalletSDK") {
-                await actualConnector.disconnect?.()
+            if (actualConnector.id !== "coinbaseWalletSDK" && typeof actualConnector.disconnect === 'function') {
+                await actualConnector.disconnect()
                 await disconnectAsync({ connector: actualConnector })
             }
 
@@ -258,9 +259,10 @@ export default function useEVM(): WalletProvider {
             }
             else if (connector.type !== 'injected' && connector.isMobileSupported && connector.id !== "coinbaseWalletSDK" && connector.id !== "metaMaskSDK") {
                 setSelectedConnector({ ...connector, qr: { state: 'loading', value: undefined }, showQrCode: internalConnector.showQrCode })
-                // Use actualConnector for getProvider, but connector.resolveURI for deep links
-                getWalletConnectUri(actualConnector, connector?.resolveURI, (uri: string) => {
-                    setSelectedConnector({ ...connector, icon: base64Icon, qr: { state: 'fetched', value: uri }, showQrCode: internalConnector.showQrCode })
+                // Raw URI for QR code, deep link for copy/redirect
+                getWalletConnectUri(actualConnector, undefined, (uri: string) => {
+                    const deepLink = connector?.resolveURI ? connector.resolveURI(uri) : undefined
+                    setSelectedConnector({ ...connector, icon: base64Icon, qr: { state: 'fetched', value: uri, deepLink }, showQrCode: internalConnector.showQrCode })
                 })
             }
 
