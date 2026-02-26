@@ -32,6 +32,7 @@ export type BalanceError = ({
     error_codes?: (string | undefined)[];
     http_statuses?: (number | undefined)[];
     failed_tokens?: any[];
+    nodes?: string[];
     request_url?: string;
     response_data?: unknown;
     response_status?: number;

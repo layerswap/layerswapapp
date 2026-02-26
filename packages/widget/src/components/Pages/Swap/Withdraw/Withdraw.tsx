@@ -1,10 +1,7 @@
 import { FC } from 'react'
 import type { JSX } from 'react';
 import { useSwapDataState } from '@/context/swap';
-import KnownInternalNames from '@/lib/knownIds';
 import SwapSummary from './Summary';
-import External from './External';
-import { useInitialSettings } from '@/context/settings';
 import { Widget } from '@/components/Widget/Index';
 import { SwapQuoteDetails } from './SwapQuoteDetails';
 import WalletTransferButton from './WalletTransferButton';
@@ -16,10 +13,6 @@ import { Partner } from '@/Models';
 
 const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: () => void, onCancelWithdrawal?: () => void, partner?: Partner }> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal, partner }) => {
     const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading, quoteError } = useSwapDataState()
-    const { appName, signature } = useInitialSettings()
-    const sourceIsImmutableX = swapBasicData?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
-        || swapBasicData?.source_network.name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
-    const isImtblMarketplace = (signature && appName === "imxMarketplace" && sourceIsImmutableX)
 
     const { networks } = useSettingsState()
     const source_network = swapBasicData?.source_network && networks.find(n => n.name === swapBasicData?.source_network?.name)
@@ -49,12 +42,6 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
                 balanceWarning={showInsufficientBalanceWarning ? <ErrorDisplay errorName='insufficientFunds' /> : null}
                 onCancelWithdrawal={onCancelWithdrawal}
             />
-        }
-    }
-
-    if (isImtblMarketplace) {
-        withdraw = {
-            content: <External />
         }
     }
 

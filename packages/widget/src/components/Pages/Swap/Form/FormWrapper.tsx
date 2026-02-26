@@ -13,7 +13,6 @@ import useWallet from "@/hooks/useWallet";
 import { useAsyncModal } from "@/context/asyncModal";
 import { InitialSettings } from "@/Models/InitialSettings";
 import VaulDrawer from "@/components/Modal/vaulModal";
-import { addressFormat } from "@/lib/address/formatter";
 import { useBalance } from "@/lib/balances/useBalance";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import SwapDetails from "../Withdraw/SwapDetails";
@@ -22,6 +21,7 @@ import { useCallbacks } from "@/context/callbackProvider";
 import ContractAddressNote from "@/components/Input/Address/ContractAddressNote";
 import { useContractAddressStore } from "@/stores/contractAddressStore";
 import UrlAddressNote from "@/components/Input/Address/UrlAddressNote";
+import { Address } from "@/lib/address/Address";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -64,11 +64,11 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
             to &&
             destination_address &&
             destinationAddressFromQuery &&
-            (addressFormat(destinationAddressFromQuery?.toString(), to) === addressFormat(destination_address, to)) &&
+            Address.equals(destinationAddressFromQuery?.toString(), destination_address, to) &&
             !isAddressFromQueryConfirmed
         ) {
             const provider = to && getProvider(to, 'autofill')
-            const isDestAddressConnected = destination_address && provider?.connectedWallets?.some((wallet) => addressFormat(wallet.address, to) === addressFormat(destination_address, to))
+            const isDestAddressConnected = destination_address && provider?.connectedWallets?.some((wallet) => Address.equals(wallet.address, destination_address, to))
 
             const confirmed = !isDestAddressConnected ? await getConfirmation({
                 content: <UrlAddressNote partner={partner} values={values} />,
@@ -173,14 +173,13 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                     </VaulDrawer.Snap>
                 </VaulDrawer>
                 <VaulDrawer
+                    mode="fitHeight"
                     show={swapModalOpen}
                     setShow={handleShowSwapModal}
                     header='Complete the swap'
                     modalId="showSwap"
                     className="expandContainerHeight">
-                    <VaulDrawer.Snap id="item-1">
-                        <SwapDetails type="contained" onWalletWithdrawalSuccess={handleWalletWithdrawalSuccess} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />
-                    </VaulDrawer.Snap>
+                    <SwapDetails type="contained" onWalletWithdrawalSuccess={handleWalletWithdrawalSuccess} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />
                 </VaulDrawer>
                 {children}
             </>

@@ -1,7 +1,7 @@
 import { FC, useState } from 'react'
 import { useAccount } from 'wagmi';
 import { ChangeNetworkButton, ConnectWalletButton, SendTransactionButton, KnownInternalNames, useSelectedAccount, useWallet, useSettingsState, ActionMessage, ErrorHandler } from '@layerswap/widget/internal';
-import { WithdrawPageProps, ActionMessageType, TransferProps } from '@layerswap/widget/types';
+import { WithdrawPageProps, ActionMessageType, TransferProps, Network } from '@layerswap/widget/types';
 import { useEthersSigner } from '../../utils/ethers';
 import AuhorizeEthereum from '../../Authorize/Ethereum';
 import { WalletIcon } from 'lucide-react';
@@ -77,6 +77,8 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refue
                 <ActionMessage
                     error={error}
                     isLoading={loading}
+                    selectedSourceAddress={selectedSourceAccount?.address || ''}
+                    sourceNetwork={l1Network as Network}
                 />
             }
             <SendTransactionButton

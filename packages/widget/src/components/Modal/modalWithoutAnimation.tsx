@@ -1,4 +1,4 @@
-import { createContext, DetailedHTMLProps, HTMLAttributes, ReactNode, SetStateAction, useContext, useEffect, useState } from "react";
+import { createContext, DetailedHTMLProps, forwardRef, HTMLAttributes, ReactNode, SetStateAction, useContext, useEffect, useState } from "react";
 import type { JSX } from 'react';
 import { createPortal } from "react-dom";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
@@ -47,7 +47,7 @@ type ModalContentProps = {
     showCloseButton?: boolean;
 }
 
-export const ModalContent = (props: ModalContentProps) => {
+export const ModalContent = forwardRef<HTMLDivElement, ModalContentProps>((props, ref) => {
     const { children, header, className = "", showCloseButton = true } = props
     const { isOpen, setIsOpen, setShouldFocus, shouldFocus } = useModalState();
     const closeModal = () => { setIsOpen(false); setShouldFocus(false) };
@@ -69,15 +69,17 @@ export const ModalContent = (props: ModalContentProps) => {
     if (!isOpen) return null;
 
     const modalElement = (
-        <div className={clsx("inset-0 z-50 bg-secondary-700 rounded-t-3xl sm:rounded-3xl flex flex-col overscroll-none",
-            className,
-            { 
-                'max-sm:fixed absolute': AppSettings.ThemeData?.enablePortal == true,
-                'absolute': !AppSettings.ThemeData?.enablePortal
-             }
-        )}>
+        <div
+            ref={ref}
+            className={clsx("inset-0 z-50 bg-secondary-700 rounded-t-3xl sm:rounded-3xl flex flex-col overscroll-none",
+                className,
+                {
+                    'max-sm:fixed absolute': AppSettings.ThemeData?.enablePortal == true,
+                    'absolute': !AppSettings.ThemeData?.enablePortal
+                }
+            )}>
             {(header || showCloseButton) && (
-                <div className="w-full relative">
+                <div className="w-full relative z-20">
                     <div className="flex items-center w-full text-left justify-between px-4 pt-2 pb-2 gap-x-2 sm:gap-x-1">
                         <div className="flex-1 text-lg text-secondary-text font-semibold w-full flex justify-end">
                             {header}
@@ -92,7 +94,7 @@ export const ModalContent = (props: ModalContentProps) => {
                 </div>
             )}
 
-            <div className="flex flex-col w-full h-full max-h-[90dvh] px-4 styled-scroll overflow-x-hidden overflow-y-auto relative pb-3">
+            <div className="flex flex-col w-full h-full max-h-[90dvh] px-4 styled-scroll overflow-x-hidden overflow-y-auto pb-3 z-0 openpicker">
                 {typeof children === 'function' ? children({ closeModal, shouldFocus }) : children}
             </div>
         </div>
@@ -106,7 +108,9 @@ export const ModalContent = (props: ModalContentProps) => {
     }
 
     return createPortal(modalElement, widgetElement);
-}
+});
+
+ModalContent.displayName = 'ModalContent';
 
 type ModalTriggerProps = DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement> & {
     disabled?: boolean;

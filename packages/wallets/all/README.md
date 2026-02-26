@@ -108,7 +108,6 @@ All provider factories are exported from `@layerswap/wallets`:
 - Fuel: `createFuelProvider()`
 - Bitcoin: `createBitcoinProvider()`
 - Paradex: `createParadexProvider()`
-- Immutable X: `createImmutableXProvider()`
 - Immutable Passport: `createImmutablePassportProvider()`
 - Loopring (module): `createLoopringModule()` - use with `createEVMProvider()`
 - zkSync (module): `createZkSyncModule()` - use with `createEVMProvider()`
@@ -125,7 +124,6 @@ You can mix and match any subset depending on your app needs.
 - `@layerswap/wallet-fuel`
 - `@layerswap/wallet-bitcoin`
 - `@layerswap/wallet-paradex`
-- `@layerswap/wallet-imtbl-x`
 - `@layerswap/wallet-imtbl-passport`
 
 ## TypeScript

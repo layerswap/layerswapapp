@@ -8,10 +8,10 @@ import ConnectButton from "@/components/Buttons/connectButton"
 import React from "react"
 import { useVirtualizer } from '@/lib/virtual'
 import SwapDetails from "./SwapDetailsComponent"
-import { addressFormat } from "@/lib/address/formatter";
 import { useSettingsState } from "@/context/settings";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/shadcn/accordion";
 import { useSwapHistoryData } from "@/hooks/useSwapHistoryData";
+import { Address } from "@/lib/address/Address";
 
 type ListProps = {
     statuses?: string | number;
@@ -30,7 +30,7 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
 
     const addresses = useMemo(() => wallets.map(w => {
         const network = networks.find(n => n.chain_id == w.chainId)
-        return addressFormat(w.address, network || null)
+        return new Address(w.address, network || null, w.providerName).normalized
     }), [wallets, networks])
 
     const { pendingDeposit, completed, isLoadingAny, isValidatingAny } = useSwapHistoryData(addresses)
@@ -141,27 +141,24 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
                                         ref={rowVirtualizer.measureElement}
                                         className="mb-3 last:mb-0"
                                     >
-                                        <AccordionItem value={swapId} className="border-none bg-secondary-900 rounded-3xl">
-                                            <AccordionTrigger className="relative z-10 mb-3 last:mb-0">
+                                        <AccordionItem value={swapId} className="border-none bg-secondary-500 rounded-3xl">
+                                            <AccordionTrigger className={`mb-3 last:mb-0 rounded-3xl transition-shadow ${expanded === swapId ? 'shadow-accordion-open' : ''}`}>
                                                 <div className="cursor-pointer">
                                                     <HistorySummary swapResponse={swap} wallets={wallets} />
                                                 </div>
                                             </AccordionTrigger>
                                             <AccordionContent className="-mt-3">
-                                                <div className="flex items-center justify-between px-4 pt-5">
-                                                    <span className="text-secondary-text text-sm">
-                                                        Transaction Details
-                                                    </span>
+                                                <div className="flex items-center justify-center px-4 pt-3 pb-2">
                                                     <button
                                                         type="button"
-                                                        aria-label="Close details"
                                                         onClick={() => setExpanded(undefined)}
-                                                        className="inline-flex items-center p-1.5 gap-1 text-secondary-text hover:text-primary-text transition-colors bg-secondary-400 rounded-md"
+                                                        className="inline-flex items-center gap-1 leading-5 text-sm text-secondary-text hover:text-primary-text transition-colors"
                                                     >
-                                                        <ChevronUp className="w-3 h-3" />
+                                                        <span>Hide details</span>
+                                                        <ChevronUp className="w-4 h-4" />
                                                     </button>
                                                 </div>
-                                                <div className="px-4 py-2">
+                                                <div className="px-4 pb-2">
                                                     <SwapDetails swapResponse={swap} />
                                                 </div>
                                             </AccordionContent>

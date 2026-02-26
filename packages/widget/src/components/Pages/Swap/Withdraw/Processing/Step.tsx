@@ -68,7 +68,7 @@ function Step({ step, isLastStep }: { step: StatusStep, isLastStep: boolean }) {
                         </span>
                         {
                             step?.description &&
-                            <span className="text-sm text-secondary-text">{step?.description}</span>
+                            <div className="text-sm text-secondary-text">{step?.description}</div>
                         }
                     </span>
                 </div>

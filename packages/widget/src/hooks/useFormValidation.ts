@@ -1,6 +1,6 @@
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues';
-import { isValidAddress } from '../lib/address/validator';
 import { QuoteError } from './useFee';
+import { Address } from '@/lib/address/Address';
 
 interface Params {
     values: SwapFormValues;
@@ -49,7 +49,7 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
         return { message: 'Invalid amount' };
     }
     if (values.to) {
-        if (values.destination_address && !isValidAddress(values.destination_address, values.to)) {
+        if (values.destination_address && !Address.isValid(values.destination_address, values.to)) {
             return { message: `Enter a valid ${values.to?.display_name} address` };
         }
     }

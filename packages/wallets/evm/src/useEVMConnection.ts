@@ -10,13 +10,9 @@ import { explicitInjectedProviderDetected } from "./connectors/explicitInjectedP
 import { useEvmConnectors, HIDDEN_WALLETCONNECT_ID } from "./EVMProvider/evmConnectorsContext"
 import { useActiveEvmAccount } from "./EVMProvider/ActiveEvmAccount"
 import { useEVMTransfer } from "./transferProvider/useEVMTransfer"
-
-const ethereumNames = [KnownInternalNames.Networks.EthereumMainnet, KnownInternalNames.Networks.EthereumSepolia]
-const immutableZKEvm = [KnownInternalNames.Networks.ImmutableZkEVM]
+import { name, id, ethereumNames, immutableZKEvm } from "./constants"
 
 export default function useEVMConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
-    const name = 'EVM'
-    const id = 'evm'
     const isMobilePlatform = useMemo(() => isMobile(), []);
 
     const asSourceSupportedNetworks = useMemo(() => [
@@ -33,8 +29,6 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
 
     const autofillSupportedNetworks = useMemo(() => [
         ...asSourceSupportedNetworks,
-        KnownInternalNames.Networks.ImmutableXMainnet,
-        KnownInternalNames.Networks.ImmutableXSepolia,
         KnownInternalNames.Networks.BrineMainnet,
         KnownInternalNames.Networks.HyperliquidMainnet,
         KnownInternalNames.Networks.HyperliquidTestnet,
@@ -427,9 +421,6 @@ const resolveSupportedNetworks = (supportedNetworks: string[], connectorId: stri
         {
             id: "com.immutable.passport",
             supportedNetworks: [
-                KnownInternalNames.Networks.ImmutableXMainnet,
-                KnownInternalNames.Networks.ImmutableXGoerli,
-                KnownInternalNames.Networks.ImmutableXSepolia,
                 KnownInternalNames.Networks.ImmutableZkEVM,
                 KnownInternalNames.Networks.ImmutableZkTestnet
             ]
