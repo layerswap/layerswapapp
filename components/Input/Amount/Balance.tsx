@@ -4,11 +4,14 @@ import { useSelectedAccount } from "@/context/swapAccounts";
 import { useBalance } from "@/lib/balances/useBalance";
 import useOutOfGas from "@/lib/gases/useOutOfGas";
 import BalanceWarningTooltip from "@/components/ReserveGasNote";
+import { useUsdModeStore } from "@/stores/usdModeStore";
+import { formatUsd } from "@/components/utils/formatUsdAmount";
 
 const Balance = ({ values, direction, minAllowedAmount, maxAllowedAmount }: { values: SwapFormValues, direction: string, minAllowedAmount?: number, maxAllowedAmount?: number }) => {
 
     const { to, fromAsset: fromCurrency, toAsset: toCurrency, from, destination_address } = values
     const selectedSourceAccount = useSelectedAccount("from", from?.name);
+    const isUsdMode = useUsdModeStore(s => s.isUsdMode);
     const token = direction === 'from' ? fromCurrency : toCurrency
     const network = direction === 'from' ? from : to
     const address = direction === 'from' ? selectedSourceAccount?.address : destination_address
@@ -17,7 +20,13 @@ const Balance = ({ values, direction, minAllowedAmount, maxAllowedAmount }: { va
     const tokenBalance = balances?.find(
         b => b?.network === network?.name && b?.token === token?.symbol
     )
+    const balanceAmount = Number(tokenBalance?.amount)
     const truncatedBalance = tokenBalance?.amount !== undefined ? truncateDecimals(tokenBalance?.amount, token?.precision) : ''
+    const tokenPriceInUsd = token?.price_in_usd
+    const balanceInUsd = isUsdMode && typeof tokenPriceInUsd === 'number' && tokenPriceInUsd > 0 && !isNaN(balanceAmount)
+        ? formatUsd(balanceAmount * tokenPriceInUsd)
+        : undefined
+    const displayedBalance = balanceInUsd ?? truncatedBalance
 
     const isFromDirection = direction === 'from'
 
@@ -31,7 +40,7 @@ const Balance = ({ values, direction, minAllowedAmount, maxAllowedAmount }: { va
         maxAllowedAmount
     })
 
-    const insufficientBalance = Number(tokenBalance?.amount) >= 0 && Number(tokenBalance?.amount) < Number(values.amount) && values.depositMethod === 'wallet' && isFromDirection
+    const insufficientBalance = balanceAmount >= 0 && balanceAmount < Number(values.amount) && values.depositMethod === 'wallet' && isFromDirection
 
     if (!isLoading && !(network && token && tokenBalance))
         return null;
@@ -40,12 +49,12 @@ const Balance = ({ values, direction, minAllowedAmount, maxAllowedAmount }: { va
         {
             isLoading ?
                 <div className='h-[10px] w-fit px-4 inline-flex bg-gray-500 rounded-xs animate-pulse' />
-                : !truncatedBalance ?
+                : !displayedBalance ?
                     <span>-</span>
-                    : (network && token && truncatedBalance) ?
+                    : (network && token && displayedBalance) ?
                         insufficientBalance ?
                             <BalanceWarningTooltip
-                                balance={truncatedBalance}
+                                balance={displayedBalance}
                                 title="Insufficient balance"
                                 description={<span> <span>Tap</span> <span className="font-bold">Max</span> <span>to use your available balance, or refresh to check for new funds</span> </span>
                                 }
@@ -53,11 +62,11 @@ const Balance = ({ values, direction, minAllowedAmount, maxAllowedAmount }: { va
                             />
                             : isFromDirection && outOfGas ?
                                 <BalanceWarningTooltip
-                                    balance={truncatedBalance}
+                                    balance={displayedBalance}
                                     title="Insufficient balance for gas"
                                     description="Your total balance must cover the transfer amount + gas fee. Tap Max to calculate the limit."
                                 />
-                                : <span>{truncatedBalance}</span>
+                                : <span>{displayedBalance}</span>
                         : null
         }
     </div >
