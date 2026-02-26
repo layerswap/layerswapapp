@@ -4,28 +4,7 @@ import { coinbaseWallet, walletConnect, metaMask } from '@wagmi/connectors'
 import { walletConnect as customWalletConnect } from '../lib/wallets/connectors/resolveConnectors/walletConnect';
 import { browserInjected } from '../lib/wallets/connectors/browserInjected';
 import { isMobile } from '../lib/isMobile';
-import { InternalConnector } from '@/Models/WalletProvider';
-
-export type WalletConnectWallet = {
-    id: string;
-    name: string;
-    mobile: {
-        native?: boolean;
-        universal?: boolean;
-    };
-    desktop?: {
-        native?: boolean;
-        universal?: boolean;
-    };
-    rdns?: string;
-    hasBrowserExtension?: boolean;
-    extensionNotFound: boolean;
-    type: string;
-    icon: string;
-    projectId: string;
-    showQrModal: boolean;
-    customStoragePrefix: string;
-} & InternalConnector;
+import { WalletConnectWallet } from '@/Models/WalletConnectWallet';
 
 type ContextType = {
     connectors: CreateConnectorFn[],
