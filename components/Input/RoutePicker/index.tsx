@@ -15,21 +15,17 @@ import clsx from "clsx";
 import useSuggestionsLimit from "@/hooks/useSuggestionsLimit";
 import useWallet from "@/hooks/useWallet";
 
-const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, className?: string }> = ({ direction, isExchange = false, className }) => {
+const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, className?: string, minAllowedAmount?: number, maxAllowedAmount?: number }> = ({ direction, isExchange = false, className, minAllowedAmount, maxAllowedAmount }) => {
     const {
         values,
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const [searchQuery, setSearchQuery] = useState("")
     const { wallets } = useWallet()
-    const showsWalletButton = wallets.length === 0 && direction === 'from' && !searchQuery;
 
     const ref = useRef<HTMLDivElement>(null);
 
-    const { suggestionsLimit } = useSuggestionsLimit({
-        hasWallet: wallets.length > 0,
-        showsWalletButton
-    });
+    const { suggestionsLimit } = useSuggestionsLimit({ hasWallet: wallets.length > 0, });
 
     const { allRoutes, isLoading, routeElements, selectedRoute, selectedToken } = useFormRoutes({ direction, values }, searchQuery, suggestionsLimit)
     const currencyFieldName = direction === 'from' ? 'fromAsset' : 'toAsset';
@@ -101,7 +97,7 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
             </Selector>
             {
                 showBalance &&
-                <Balance values={values} direction={direction} />
+                <Balance values={values} direction={direction} minAllowedAmount={minAllowedAmount} maxAllowedAmount={maxAllowedAmount} />
             }
         </div>
     )

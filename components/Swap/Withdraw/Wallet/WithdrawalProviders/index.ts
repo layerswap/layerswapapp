@@ -1,4 +1,3 @@
-export { ImtblxWalletWithdrawStep } from "./ImtblxWalletWithdrawStep";
 export { StarknetWalletWithdrawStep } from "./StarknetWalletWithdraw";
 export { EVMWalletWithdrawal } from "./EVMWalletWithdraw";
 export { ZkSyncWalletWithdrawStep } from "./ZKsyncWalletWithdraw";

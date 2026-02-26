@@ -22,6 +22,9 @@ import { resolvePriceImpactValues } from "@/lib/fees";
 import InfoIcon from "@/components/icons/InfoIcon";
 import { useGoHome } from "@/hooks/useGoHome";
 import KnownInternalNames from "@/lib/knownIds";
+import { useSettingsState } from "@/context/settings";
+import { useBalance } from "@/lib/balances/useBalance";
+import useSWRGas from "@/lib/gases/useSWRGas";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData } = useSwapDataState()
@@ -171,6 +174,12 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const layerswapApiClient = new LayerSwapApiClient()
     const selectedSourceAccount = useSelectedAccount("from", swapBasicData.source_network?.name);
     const { wallets } = useWallet(swapBasicData.source_network, 'withdrawal')
+    const { networks } = useSettingsState()
+    const source_network = networks.find(n => n.name === swapBasicData.source_network?.name)
+    const { balances } = useBalance(selectedSourceAccount?.address, source_network)
+    const walletBalance = balances?.find(b => b?.network === source_network?.name && b?.token === swapBasicData.source_token?.symbol)
+    const isNativeToken = swapBasicData.source_token?.symbol === source_network?.token?.symbol
+    const { gasData } = useSWRGas(selectedSourceAccount?.address, source_network, swapBasicData.source_token, swapBasicData.requested_amount)
 
     const [actionStateText, setActionStateText] = useState<string | undefined>()
     const [loading, setLoading] = useState(false)
@@ -270,6 +279,22 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 $toAddress: swapBasicData?.destination_address,
             });
 
+            if (isNativeToken && gasData?.gas && walletBalance?.amount != null) {
+                const requestedAmount = Number(swapBasicData.requested_amount)
+                const difference = walletBalance.amount - requestedAmount
+                if (difference >= 0 && difference < 5 * gasData.gas) {
+                    posthog.capture('Possible Gas Fee Miscalculation', {
+                        requestedAmount,
+                        walletBalance: walletBalance.amount,
+                        calculatedGas: gasData.gas,
+                        difference,
+                        network: swapBasicData.source_network?.name,
+                        token: swapBasicData.source_token?.symbol,
+                        errorMessage: (e as Error)?.message,
+                        errorName: (e as Error)?.name,
+                    })
+                }
+            }
         }
         finally {
             setLoading(false)
@@ -346,8 +371,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
 const resolveTransactionData = (swapDetails: SwapDetails, deposit_actions: DepositAction[], destination_address: string, source_network: Network): TransferProps => {
     const depositAction = deposit_actions?.find(action =>
-        action.type === 'transfer'
-        || ExceptionNetworks.includes(source_network.name) && action.type === 'manual_transfer');
+        action.type === 'transfer');
     if (!depositAction) {
         throw new Error('No deposit action found')
     }
@@ -360,9 +384,3 @@ const resolveTransactionData = (swapDetails: SwapDetails, deposit_actions: Depos
         userDestinationAddress: destination_address
     }
 }
-
-
-const ExceptionNetworks = [
-    KnownInternalNames.Networks.ImmutableXMainnet,
-    KnownInternalNames.Networks.ImmutableXSepolia
-]
