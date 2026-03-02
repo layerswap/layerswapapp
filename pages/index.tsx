@@ -17,21 +17,20 @@ export default function Home({ settings, themeData, apiKey }: InferGetServerSide
   LayerSwapApiClient.apiKey = apiKey
   const resolvedSettings = useMemo(() => inflateSettings(settings), [settings])
 
-  if (!resolvedSettings) return <MaintananceContent />
-
   const sourceRoutesDeafultKey = resolveRoutesURLForSelectedToken({ direction: 'from', network: undefined, token: undefined, includes: { unmatched: true, unavailable: true, swaps: true } })
   const destinationRoutesDefaultKey = resolveRoutesURLForSelectedToken({ direction: 'to', network: undefined, token: undefined, includes: { unmatched: true, unavailable: true, swaps: true } })
   const sourceExchangesDeafaultkey = resolveExchangesURLForSelectedToken({})
 
-  // Memoize SWRConfig value to prevent unnecessary re-renders (rerender-memo)
   const swrConfig = useMemo(() => ({
     use: [updatePendingCount],
     fallback: {
-      [sourceRoutesDeafultKey]: { data: resolvedSettings.sourceRoutes, error: null },
-      [destinationRoutesDefaultKey]: { data: resolvedSettings.destinationRoutes, error: null },
-      [sourceExchangesDeafaultkey]: { data: resolvedSettings.sourceExchanges, error: null },
+      [sourceRoutesDeafultKey]: { data: resolvedSettings?.sourceRoutes, error: null },
+      [destinationRoutesDefaultKey]: { data: resolvedSettings?.destinationRoutes, error: null },
+      [sourceExchangesDeafaultkey]: { data: resolvedSettings?.sourceExchanges, error: null },
     }
   }), [sourceRoutesDeafultKey, destinationRoutesDefaultKey, sourceExchangesDeafaultkey, resolvedSettings])
+
+  if (!resolvedSettings) return <MaintananceContent />
 
   return (
     <SWRConfig value={swrConfig}>
