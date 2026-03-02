@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useMemo } from "react"
 import Head from "next/head"
 import { useRouter } from "next/router";
 import ThemeWrapper from "./themeWrapper";
@@ -6,7 +6,6 @@ import { ErrorBoundary } from "react-error-boundary";
 import MaintananceContent from "./maintanance/maintanance";
 import { SettingsProvider } from "../context/settings";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
-import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import ErrorFallback from "./ErrorFallback";
 import { SendErrorMessage } from "../lib/telegram";
 import { QueryParams } from "../Models/QueryParams";
@@ -19,11 +18,12 @@ import { AsyncModalProvider } from "../context/asyncModal";
 import WalletsProviders from "./WalletProviders";
 import { SwapAccountsProvider } from "@/context/swapAccounts";
 import posthog from "posthog-js";
+import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
   hideFooter?: boolean;
-  settings?: LayerSwapSettings;
+  settings: LayerSwapSettings;
   themeData?: ThemeData | null
 };
 
@@ -62,14 +62,12 @@ export default function Layout({ children, settings, themeData }: Props) {
     trackPageview()
   }, [])
 
-  if (!settings)
-    return <ThemeWrapper>
-      <MaintananceContent />
-    </ThemeWrapper>
+  const appSettings = useMemo(
+    () => new LayerSwapAppSettings(settings),
+    [settings]
+  );
 
-  let appSettings = new LayerSwapAppSettings(settings)
-
-  const query: QueryParams = {
+  const query = useMemo<QueryParams>(() => ({
     ...router.query,
     lockNetwork: router.query.lockNetwork === 'true',
     lockExchange: router.query.lockExchange === 'true',
@@ -84,7 +82,7 @@ export default function Layout({ children, settings, themeData }: Props) {
     lockToAsset: router.query.lockToAsset === 'true',
     hideLogo: router.query.hideLogo === 'true',
     hideDepositMethod: router.query.hideDepositMethod === 'true'
-  };
+  }), [router.query]);
 
   function logErrorToService(error, info) {
     const extension_error = IsExtensionError(error)
