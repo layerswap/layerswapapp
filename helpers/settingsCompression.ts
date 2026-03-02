@@ -1,6 +1,6 @@
 import { Exchange } from "../Models/Exchange";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
-import { NetworkRoute, NetworkRouteToken, NetworkWithTokens, NetworkType } from "../Models/Network";
+import { NetworkRoute, NetworkRouteToken, NetworkWithTokens } from "../Models/Network";
 import { gunzipSync, gzipSync, strFromU8, strToU8 } from "fflate";
 
 type CompactRouteToken = {
@@ -34,19 +34,6 @@ export type EncodedLayerSwapSettings = {
 };
 
 export type MaybeCompressedSettings = LayerSwapSettings | CompressedLayerSwapSettings | EncodedLayerSwapSettings;
-
-const DEFAULT_EMPTY_NETWORK = {
-    display_name: "",
-    logo: "",
-    chain_id: null,
-    node_url: "",
-    nodes: [],
-    type: NetworkType.EVM,
-    transaction_explorer_template: "",
-    account_explorer_template: "",
-    deposit_methods: [],
-    tokens: [],
-} as const;
 
 const decodedSettingsCache = new Map<string, LayerSwapSettings | null>();
 
@@ -177,10 +164,14 @@ function inflateRoutes(
     compactRoutes: CompactRoute[],
     networksByName: Map<string, NetworkWithTokens>
 ): NetworkRoute[] {
-    return compactRoutes.map((compactRoute) => {
+    return compactRoutes.reduce<NetworkRoute[]>((routes, compactRoute) => {
         const baseNetwork = networksByName.get(compactRoute.name);
+        if (!baseNetwork) {
+            return routes;
+        }
+
         const baseTokensBySymbol = new Map<string, NetworkRouteToken>(
-            (baseNetwork?.tokens || []).map((token) => [token.symbol, token as NetworkRouteToken])
+            (baseNetwork.tokens || []).map((token) => [token.symbol, token as NetworkRouteToken])
         );
 
         const tokens = (compactRoute.tokens || []).map((compactToken) =>
@@ -188,13 +179,10 @@ function inflateRoutes(
         );
 
         const inflatedRoute: NetworkRoute = {
-            ...(baseNetwork || {
-                ...DEFAULT_EMPTY_NETWORK,
-                name: compactRoute.name,
-            }),
+            ...baseNetwork,
             name: compactRoute.name,
             tokens,
-        } as NetworkRoute;
+        };
 
         if (compactRoute.source_rank !== undefined) {
             inflatedRoute.source_rank = compactRoute.source_rank;
@@ -206,8 +194,9 @@ function inflateRoutes(
             inflatedRoute.deposit_methods = compactRoute.deposit_methods;
         }
 
-        return inflatedRoute;
-    });
+        routes.push(inflatedRoute);
+        return routes;
+    }, []);
 }
 
 export function inflateSettings(settings: MaybeCompressedSettings | null | undefined): LayerSwapSettings | null {
