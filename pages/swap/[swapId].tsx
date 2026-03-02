@@ -1,22 +1,26 @@
 import LayerSwapApiClient from '../../lib/apiClients/layerSwapApiClient';
 import Layout from '../../components/layout';
 import { InferGetServerSidePropsType } from 'next';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { SwapDataProvider } from '../../context/swap';
 import { getThemeData } from '../../helpers/settingsHelper';
 import SwapWithdrawal from '../../components/SwapWithdrawal'
-import { encodeSettingsForSSR } from '../../helpers/settingsCompression';
+import { encodeSettingsForSSR, inflateSettings } from '../../helpers/settingsCompression';
+import MaintananceContent from '../../components/maintanance/maintanance';
 
 const SwapDetails = ({ settings, themeData, apiKey, swapData }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   LayerSwapApiClient.apiKey = apiKey
+  const resolvedSettings = useMemo(() => inflateSettings(settings), [settings])
 
-  return (<>
-    <Layout settings={settings || undefined} themeData={themeData}>
+  if (!resolvedSettings) return <MaintananceContent />
+
+  return (
+    <Layout settings={resolvedSettings} themeData={themeData}>
       <SwapDataProvider initialSwapData={swapData}>
         <SwapWithdrawal />
       </SwapDataProvider >
     </Layout>
-  </>)
+  )
 }
 
 export const getServerSideProps = async (ctx) => {

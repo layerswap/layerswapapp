@@ -18,12 +18,12 @@ import { AsyncModalProvider } from "../context/asyncModal";
 import WalletsProviders from "./WalletProviders";
 import { SwapAccountsProvider } from "@/context/swapAccounts";
 import posthog from "posthog-js";
-import { inflateSettings, MaybeCompressedSettings } from "../helpers/settingsCompression";
+import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
   hideFooter?: boolean;
-  settings?: MaybeCompressedSettings | null;
+  settings: LayerSwapSettings;
   themeData?: ThemeData | null
 };
 
@@ -62,11 +62,9 @@ export default function Layout({ children, settings, themeData }: Props) {
     trackPageview()
   }, [])
 
-  const resolvedSettings = useMemo(() => inflateSettings(settings), [settings]);
-
   const appSettings = useMemo(
-    () => resolvedSettings ? new LayerSwapAppSettings(resolvedSettings) : null,
-    [resolvedSettings]
+    () => new LayerSwapAppSettings(settings),
+    [settings]
   );
 
   const query = useMemo<QueryParams>(() => ({
@@ -85,11 +83,6 @@ export default function Layout({ children, settings, themeData }: Props) {
     hideLogo: router.query.hideLogo === 'true',
     hideDepositMethod: router.query.hideDepositMethod === 'true'
   }), [router.query]);
-
-  if (!appSettings)
-    return <ThemeWrapper>
-      <MaintananceContent />
-    </ThemeWrapper>
 
   function logErrorToService(error, info) {
     const extension_error = IsExtensionError(error)
