@@ -16,6 +16,7 @@ type CompactRoute = {
     source_rank?: number;
     destination_rank?: number;
     tokens: CompactRouteToken[];
+    deposit_methods?: string[];
 };
 
 export type CompressedLayerSwapSettings = {
@@ -87,12 +88,18 @@ function compactRouteToken(token: NetworkRouteToken): CompactRouteToken {
 }
 
 function compactRoute(route: NetworkRoute): CompactRoute {
-    return {
+    const compact: CompactRoute = {
         name: route.name,
         source_rank: route.source_rank,
         destination_rank: route.destination_rank,
         tokens: (route.tokens || []).map(compactRouteToken),
     };
+
+    if (route.deposit_methods && route.deposit_methods.length > 0) {
+        compact.deposit_methods = route.deposit_methods;
+    }
+
+    return compact;
 }
 
 export function compactSettings(settings: LayerSwapSettings | null | undefined): MaybeCompressedSettings | null {
@@ -194,6 +201,9 @@ function inflateRoutes(
         }
         if (compactRoute.destination_rank !== undefined) {
             inflatedRoute.destination_rank = compactRoute.destination_rank;
+        }
+        if (compactRoute.deposit_methods !== undefined) {
+            inflatedRoute.deposit_methods = compactRoute.deposit_methods;
         }
 
         return inflatedRoute;
