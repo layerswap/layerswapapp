@@ -52,7 +52,7 @@ export default function useSVM(): WalletProvider {
         const internalConnector = wallets.find(w => w.adapter.name.includes(connector.name))
         const walletConnectConnector = wallets.find(w => w.adapter.name === 'WalletConnect')
 
-        const solanaConnector = connector.hasBrowserExtension && (connector.showQrCode || isMobilePlatform) ? walletConnectConnector : internalConnector
+        const solanaConnector = connector.hasBrowserExtension && (connector.showQrCode || (isMobilePlatform && connector.extensionNotFound)) ? walletConnectConnector : internalConnector
 
         if (!solanaConnector) throw new Error('Connector not found')
         if (connectedWallet) await solanaConnector.adapter.disconnect()
