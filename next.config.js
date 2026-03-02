@@ -1,5 +1,8 @@
 const { PHASE_PRODUCTION_SERVER } = require('next/constants');
 const { withPostHogConfig } = require('@posthog/nextjs-config');
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
 
 const securityHeaders = [
   {
@@ -107,5 +110,5 @@ module.exports = (phase, { defaultConfig }) => {
   }
   let merged = { ...posthogWrapped, ...nextConfig };
 
-  return merged
+  return withBundleAnalyzer(merged)
 }

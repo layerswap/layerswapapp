@@ -1,178 +1,110 @@
-# CLAUDE.md - Project Instructions for Claude CLI
+# CLAUDE.md
 
-This file provides instructions for Claude CLI users to leverage the project's agent tooling located in `.cursor/`.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
-Layerswap UI - A Next.js web application for cross-chain token transfers.
+Layerswap UI — a Next.js 15 web application (Pages Router) for cross-chain token swaps across 9+ blockchain networks (EVM, Solana, Starknet, TON, TRON, Fuel, Bitcoin, Cosmos, ZkSync).
 
-### Quick Start
+## Commands
 
 ```bash
-yarn
-yarn dev
+yarn              # Install dependencies
+yarn dev          # Start dev server
+yarn build        # Production build
+yarn lint         # ESLint (next/core-web-vitals + custom JSX literal plugin)
+yarn storybook    # Component docs on port 6006
+ANALYZE=true yarn build  # Bundle analysis
 ```
 
-### Environment Variables
+No unit test framework is configured. Storybook is used for component documentation.
 
-```yaml
-NEXT_PUBLIC_LS_API = https://api-dev.layerswap.cloud/
-NEXT_PUBLIC_API_KEY = mainnet  # sandbox for testnets
+## Environment Variables
+
+```bash
+NEXT_PUBLIC_LS_API=https://api-dev.layerswap.cloud/   # API base URL
+NEXT_PUBLIC_API_KEY=mainnet                            # "sandbox" for testnets
 ```
 
----
+Production uses `https://api.layerswap.io` with additional env vars for identity API, Immutable, WalletConnect, and PostHog (see `.env`).
 
-## Agent Tooling
+## Architecture
 
-This project has specialized agent tooling for common workflows. Before performing these tasks, read the relevant instruction files.
+### Data Flow
 
-### PR Review System
+1. **Server-side**: `getServerSideProps` in `helpers/getSettings.ts` fetches networks, exchanges, and routes via `LayerSwapApiClient`, compresses them with `settingsCompression`, and passes as page props
+2. **Client-side**: Settings are inflated and pre-populated into SWR cache as fallback data. SWR handles subsequent client-side data fetching (5s dedup, no revalidation on focus)
+3. **State**: Zustand stores for wallet state, balances, slippage, routes, and transactions. React Context for swap flow, settings, form wizard, validation, and wallet providers
 
-We have a multi-perspective PR review system with 6 specialized reviewers.
+### Key Architectural Patterns
 
-#### Comprehensive Review (Recommended)
+- **Pages Router** (not App Router) — routes are in `pages/`, SSR via `getServerSideProps`
+- **Hybrid state**: Zustand for persistent/global state (10 stores in `stores/`), React Context for component-tree-scoped state (13 contexts in `context/`)
+- **Multi-chain wallet abstraction**: `lib/wallets/` contains adapters for each chain type, unified through `WalletProvider` model and `walletStore`
+- **API client**: `lib/apiClients/layerSwapApiClient.ts` — Axios-based with auth interceptors, retry logic, and PostHog error tracking
+- **SWR fallback pattern**: Server-fetched data is injected into SWR cache at page level, enabling instant renders with background revalidation
+- **Settings compression**: Large settings objects are compressed for SSR transfer (`helpers/settingsCompression.ts`)
+- **Path alias**: `@/*` maps to project root
 
-For thorough, multi-perspective code reviews, read and follow:
+### Network Types
 
-```
-.cursor/agents/pr-review-coordinator.md
-```
+Defined in `Models/Network.ts` as `NetworkType` enum: EVM, Starknet, Solana, Cosmos, StarkEx, ZkSyncLite, TON, Fuel, Bitcoin. Each has chain-specific wallet adapters, balance resolvers, and gas estimators in `lib/`.
 
-This orchestrates 6 specialized reviewers in parallel:
+### Key Entry Points
 
-| Reviewer | File | Focus Area |
-|----------|------|------------|
-| Architecture | `.cursor/agents/pr-reviewer-architecture.md` | SOLID principles, design patterns, modularity |
-| Bugs | `.cursor/agents/pr-reviewer-bugs.md` | Edge cases, null checks, race conditions, cross-file impact |
-| Performance | `.cursor/agents/pr-reviewer-performance.md` | N+1 queries, memory leaks, caching, bundle size |
-| Quality | `.cursor/agents/pr-reviewer-quality.md` | Naming, readability, DRY, maintainability |
-| React | `.cursor/agents/pr-reviewer-react.md` | Hooks, re-renders, state management, a11y, Next.js |
-| Security | `.cursor/agents/pr-reviewer-security.md` | Auth, XSS, injection, secrets, CORS |
+- `pages/_app.js` — Root: SWRConfig, PostHog, Intercom providers
+- `pages/index.tsx` — Home: inflates settings, sets up SWR fallback, renders `<Layout>` + `<Swap>`
+- `components/layout.tsx` — Layout wrapper with settings/query/wallet providers
+- `components/swapComponent.tsx` — Main swap interface orchestrator
 
-#### Quick Review
+## Linting Rules
 
-For a single focused review, read and follow:
-
-```
-.cursor/agents/pr-reviewer.md
-```
-
----
-
-## Commands Reference
-
-These commands mirror the Cursor IDE commands available in `.cursor/commands/`.
-
-### Review Changes
-
-**Cursor command**: `/reviewchanges`
-
-**Claude CLI equivalent**: Ask "review my changes" or "review this PR", then Claude will:
-
-1. Read `.cursor/commands/reviewchanges.md` for the workflow
-2. Follow the instructions to run the appropriate review
-
-**Available review types**:
-- `comprehensive` - Full multi-perspective review (default)
-- `quick` - Single specialist review
-- `explore` - Codebase exploration
-- `general` - General purpose analysis
-
-**Output**: Creates `pr-review-report.md` with:
-- TL;DR section with verdict and action items
-- Effort estimates for each fix
-- Blocking vs non-blocking classification
-- Copy-paste ready code fixes
-
----
-
-## Skills Reference
-
-### React & Next.js Best Practices
-
-When writing, reviewing, or refactoring React/Next.js code, reference:
-
-```
-.cursor/skills/vercel-react-best-practices/SKILL.md
-```
-
-This contains 45+ performance optimization rules organized by priority:
-
-| Priority | Category | Impact | Prefix |
-|----------|----------|--------|--------|
-| 1 | Eliminating Waterfalls | CRITICAL | `async-` |
-| 2 | Bundle Size Optimization | CRITICAL | `bundle-` |
-| 3 | Server-Side Performance | HIGH | `server-` |
-| 4 | Client-Side Data Fetching | MEDIUM-HIGH | `client-` |
-| 5 | Re-render Optimization | MEDIUM | `rerender-` |
-| 6 | Rendering Performance | MEDIUM | `rendering-` |
-| 7 | Unused Code Detection | MEDIUM | `unused-` |
-| 8 | JavaScript Performance | LOW-MEDIUM | `js-` |
-| 9 | Advanced Patterns | LOW | `advanced-` |
-
-Individual rules are in `.cursor/skills/vercel-react-best-practices/rules/`.
-
-**Key rules to check**:
-- `async-parallel.md` - Use Promise.all() for independent operations
-- `bundle-barrel-imports.md` - Import directly, avoid barrel files
-- `bundle-dynamic-imports.md` - Use next/dynamic for heavy components
-- `rerender-memo.md` - Extract expensive work into memoized components
-
----
+- **Custom ESLint plugin** `no-conditional-literals-in-jsx`: prevents conditional literals and unwrapped text in JSX (both set to `error`)
+- `react-hooks/exhaustive-deps` is **disabled**
+- `react/display-name` is **disabled**
 
 ## Project Structure
 
 ```
-components/     # React components (284 .tsx files)
-context/        # React context providers
-hooks/          # Custom React hooks
-lib/            # Utilities and libraries
-Models/         # TypeScript interfaces and types
-pages/          # Next.js pages
-stores/         # State management (Zustand)
-styles/         # CSS styles
+components/     # React components (~284 .tsx files)
+context/        # React context providers (swap, settings, wallet, wizard, validation, etc.)
+hooks/          # Custom React hooks (useWallet, useFee, useFormRoutes, etc.)
+helpers/        # Utility functions (settings, balances, routes, tokens)
+lib/            # API clients, wallet adapters, balance resolvers, gas estimators
+  ├── apiClients/   # LayerSwap API, JSON-RPC, Hyperliquid clients
+  ├── wallets/      # Per-chain wallet integrations
+  ├── balances/     # Per-chain balance fetchers
+  └── gas/          # Per-chain gas estimation
+Models/         # TypeScript interfaces (Network, Token, Route, Exchange, SwapStatus, etc.)
+pages/          # Next.js pages (index, swap/[swapId], transactions, campaigns)
+stores/         # Zustand stores (wallet, balance, slippage, routes, transactions)
+styles/         # Global CSS
+stories/        # Storybook stories
 ```
 
----
+## Key Dependencies
 
-## Common Tasks
+| Category | Libraries |
+|----------|-----------|
+| Framework | Next.js 15, React 18, TypeScript 5 |
+| Styling | Tailwind CSS v4, Framer Motion, Headless UI, Radix UI |
+| State | Zustand, SWR, React Query, Formik |
+| EVM | wagmi, viem, ethers v5 |
+| Solana | @solana/web3.js, wallet-adapter-react |
+| Starknet | starknet v8, @starknet-react/core, starknetkit |
+| Other chains | @ton/ton, @tronweb3/*, @fuel-ts/*, @imtbl/sdk, @paradex/sdk |
+| Analytics | PostHog |
 
-### "Review my changes"
+## PR Review System
 
-1. Read `.cursor/commands/reviewchanges.md`
-2. Follow the comprehensive review workflow
-3. Output findings to `pr-review-report.md`
+This project includes specialized review tooling in `.cursor/agents/`. For comprehensive reviews, read `.cursor/agents/pr-review-coordinator.md` which orchestrates 6 parallel reviewers (architecture, bugs, performance, quality, react, security). For quick single-perspective reviews, use `.cursor/agents/pr-reviewer.md`.
 
-### "Review this PR for [specific concern]"
+Review workflow: read `.cursor/commands/reviewchanges.md`, output findings to `pr-review-report.md`.
 
-Read the relevant specialist file:
-- Security concerns → `.cursor/agents/pr-reviewer-security.md`
-- Performance issues → `.cursor/agents/pr-reviewer-performance.md`
-- React patterns → `.cursor/agents/pr-reviewer-react.md`
-- Bug detection → `.cursor/agents/pr-reviewer-bugs.md`
-- Architecture → `.cursor/agents/pr-reviewer-architecture.md`
-- Code quality → `.cursor/agents/pr-reviewer-quality.md`
+## React Performance Rules
 
-### "Help me optimize this React component"
-
-1. Read `.cursor/skills/vercel-react-best-practices/SKILL.md`
-2. Apply relevant rules from the `rules/` directory
-3. Focus on `rerender-*` and `rendering-*` rules for component optimization
-
-### "Check for performance issues"
-
-1. Read `.cursor/agents/pr-reviewer-performance.md`
-2. Also reference `.cursor/skills/vercel-react-best-practices/rules/` for:
-   - `bundle-*.md` rules
-   - `async-*.md` rules
-   - `js-*.md` rules
-
----
-
-## Guidelines
-
-- Always read the full file context, not just diffs
-- Provide copy-paste ready code fixes
-- Include effort estimates for fixes
-- Distinguish blocking issues from suggestions
-- Follow the output formats specified in agent files
+`.cursor/skills/vercel-react-best-practices/SKILL.md` contains 45+ optimization rules. Key ones:
+- `async-parallel.md` — Use `Promise.all()` for independent operations
+- `bundle-barrel-imports.md` — Import directly, avoid barrel files
+- `bundle-dynamic-imports.md` — Use `next/dynamic` for heavy components
+- `rerender-memo.md` — Extract expensive work into memoized components

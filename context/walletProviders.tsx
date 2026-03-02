@@ -4,7 +4,6 @@ import { useSettingsState } from "../context/settings";
 import VaulDrawer from "../components/modal/vaulModal";
 import IconButton from "../components/buttons/iconButton";
 import { ChevronLeft } from "lucide-react";
-import ConnectorsList from "../components/WalletModal/ConnectorsList";
 import { useConnectModal } from "../components/WalletModal";
 import useEVM from "../lib/wallets/evm/useEVM";
 import useStarknet from "../lib/wallets/starknet/useStarknet";
@@ -16,6 +15,11 @@ import useSVM from "../lib/wallets/solana/useSVM";
 import useBitcoin from "../lib/wallets/bitcoin/useBitcoin";
 import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
+import dynamic from "next/dynamic";
+
+const ConnectorsList = dynamic(() => import("../components/WalletModal/ConnectorsList"), {
+    ssr: false
+});
 
 const WalletProvidersContext = createContext<WalletProvider[]>([]);
 
@@ -72,7 +76,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ chi
                     </div>
                 }>
                 <VaulDrawer.Snap openFullHeight={!isMobileSize} id='item-1' className="pb-4 sm:pb-0! sm:h-full">
-                    <ConnectorsList onFinish={onFinish} />
+                    {open ? <ConnectorsList onFinish={onFinish} /> : null}
                 </VaulDrawer.Snap>
             </VaulDrawer>
         </WalletProvidersContext.Provider>

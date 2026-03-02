@@ -1,13 +1,53 @@
-import { FC, useEffect, useMemo } from "react";
+import { ComponentType, FC, useEffect, useMemo } from "react";
 import KnownInternalNames from "@/lib/knownIds";
 import { NetworkType } from "@/Models/Network";
-import {
-     BitcoinWalletWithdrawStep, EVMWalletWithdrawal, FuelWalletWithdrawStep, LoopringWalletWithdraw, ParadexWalletWithdraw, SVMWalletWithdrawStep, StarknetWalletWithdrawStep, TonWalletWithdrawStep, TronWalletWithdraw, ZkSyncWalletWithdrawStep
-} from "./WithdrawalProviders";
 import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { WithdrawalProvider } from "@/context/withdrawalContext";
 import useWallet from "@/hooks/useWallet";
 import { useSelectedAccount } from "@/context/swapAccounts";
+import dynamic from "next/dynamic";
+import { WithdrawPageProps } from "./Common/sharedTypes";
+
+const StarknetWalletWithdrawStep = dynamic<WithdrawPageProps>(
+    () => import("./WithdrawalProviders/StarknetWalletWithdraw").then((module) => module.StarknetWalletWithdrawStep),
+    { ssr: false }
+);
+const ZkSyncWalletWithdrawStep = dynamic<WithdrawPageProps>(
+    () => import("./WithdrawalProviders/ZKsyncWalletWithdraw").then((module) => module.ZkSyncWalletWithdrawStep),
+    { ssr: false }
+);
+const LoopringWalletWithdraw = dynamic<WithdrawPageProps>(
+    () => import("./WithdrawalProviders/Loopring").then((module) => module.LoopringWalletWithdraw),
+    { ssr: false }
+);
+const TonWalletWithdrawStep = dynamic<WithdrawPageProps>(
+    () => import("./WithdrawalProviders/TonWalletWithdraw").then((module) => module.TonWalletWithdrawStep),
+    { ssr: false }
+);
+const ParadexWalletWithdraw = dynamic<WithdrawPageProps>(
+    () => import("./WithdrawalProviders/paradex").then((module) => module.ParadexWalletWithdraw),
+    { ssr: false }
+);
+const FuelWalletWithdrawStep = dynamic<WithdrawPageProps>(
+    () => import("./WithdrawalProviders/FuelWalletWithdrawal").then((module) => module.FuelWalletWithdrawStep),
+    { ssr: false }
+);
+const TronWalletWithdraw = dynamic<WithdrawPageProps>(
+    () => import("./WithdrawalProviders/TronWalletWithdraw").then((module) => module.TronWalletWithdraw),
+    { ssr: false }
+);
+const BitcoinWalletWithdrawStep = dynamic<WithdrawPageProps>(
+    () => import("./WithdrawalProviders/BitcoinWalletWithdraw").then((module) => module.BitcoinWalletWithdrawStep),
+    { ssr: false }
+);
+const SVMWalletWithdrawStep = dynamic<WithdrawPageProps>(
+    () => import("./WithdrawalProviders/SVMWalletWithdraw").then((module) => module.SVMWalletWithdrawStep),
+    { ssr: false }
+);
+const EVMWalletWithdrawal = dynamic<WithdrawPageProps>(
+    () => import("./WithdrawalProviders/EVMWalletWithdraw").then((module) => module.EVMWalletWithdrawal),
+    { ssr: false }
+);
 
 type Props = {
     swapData: SwapBasicData
@@ -93,7 +133,7 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
             ],
             component: EVMWalletWithdrawal
         }
-    ], [source_network])
+    ] as { supportedNetworks: (string | undefined)[]; component: ComponentType<WithdrawPageProps> }[], [source_network])
 
     const WithdrawalComponent = WithdrawalPages.find(page =>
         page.supportedNetworks.includes(source_network_internal_name)

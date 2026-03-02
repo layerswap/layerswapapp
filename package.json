@@ -75,6 +75,7 @@
     "crypto-js": "^4.1.1",
     "ethers": "5.7.2",
     "formik": "^2.2.9",
+    "fflate": "^0.4.8",
     "framer-motion": "^10.16.15",
     "get-starknet-core": "^3.3.4",
     "js-sha3": "^0.8.0",
