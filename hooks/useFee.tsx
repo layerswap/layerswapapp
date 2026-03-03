@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useState } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues'
-import LayerSwapApiClient, { Quote, SwapBasicData } from '../lib/apiClients/layerSwapApiClient'
+import LayerSwapApiClient, { Quote, SwapBasicData, SwapQuote } from '../lib/apiClients/layerSwapApiClient'
 import { ApiResponse } from '../Models/ApiResponse'
 import { sleep } from 'fuels'
 import { create } from 'zustand';
 import { isDiffByPercent } from '@/components/utils/numbers'
 import { useSlippageStore } from '@/stores/slippageStore'
+
+export type QuoteTokenPrices = Pick<SwapQuote, 'source_token' | 'destination_token'>
 
 type UseQuoteData = {
     minAllowedAmount?: number
@@ -14,6 +16,7 @@ type UseQuoteData = {
     minAllowedAmountInUsd?: number
     maxAllowedAmountInUsd?: number
     quote?: Quote
+    quoteTokenPrices?: QuoteTokenPrices
     quoteError?: QuoteError
     isQuoteLoading: boolean
     isDebouncing: boolean
@@ -97,15 +100,15 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
         dedupingInterval: 5000
     })
 
-    const canGetQuote = from && to && depositMethod && toCurrency && fromCurrency && debouncedAmount
+    const hasQuoteParams = from && to && depositMethod && toCurrency && fromCurrency && debouncedAmount
 
-    const quoteURL = (canGetQuote && !isDebouncing)
+    const quoteURL = (hasQuoteParams && !isDebouncing)
         ? buildQuoteUrl({
             sourceNetwork: from!,
             sourceToken: fromCurrency!,
             destinationNetwork: to!,
             destinationToken: toCurrency!,
-            amount: debouncedAmount!,
+            amount: debouncedAmount || 0,
             refuel: !!refuel,
             useDepositAddress: use_deposit_address,
             slippage,
@@ -151,12 +154,19 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
         keepPreviousData: true,
     })
 
+    const quoteData = quote?.data
+    const hasValidAmount = !!debouncedAmount && Number(debouncedAmount) > 0
+
     return {
         minAllowedAmount: amountRange?.data?.min_amount,
         maxAllowedAmount: amountRange?.data?.max_amount,
         minAllowedAmountInUsd: amountRange?.data?.min_amount_in_usd,
         maxAllowedAmountInUsd: amountRange?.data?.max_amount_in_usd,
-        quote: (quoteError || !canGetQuote) ? undefined : quote?.data,
+        quote: (quoteError || !hasQuoteParams || !hasValidAmount) ? undefined : quoteData,
+        quoteTokenPrices: quoteData?.quote ? {
+            source_token: quoteData.quote.source_token,
+            destination_token: quoteData.quote.destination_token,
+        } : undefined,
         isQuoteLoading: isQuoteLoading,
         isDebouncing,
         quoteError,
