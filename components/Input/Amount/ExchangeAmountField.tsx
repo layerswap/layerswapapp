@@ -2,19 +2,20 @@ import { useFormikContext } from "formik";
 import { forwardRef, useEffect, useMemo, useRef } from "react";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import NumericInput from "../NumericInput";
-import { useQuoteData } from "@/hooks/useFee";
+import { QuoteTokenPrices, useQuoteData } from "@/hooks/useFee";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
 import clsx from "clsx";
 import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
 
 interface ExchangeAmountFieldProps {
     fee: ReturnType<typeof useQuoteData>["quote"];
+    quoteTokenPrices?: QuoteTokenPrices;
     actionValue?: number;
     className?: string;
 }
 
 const ExchangeAmountField = forwardRef(function ExchangeAmountField(
-    { actionValue, fee, className }: ExchangeAmountFieldProps,
+    { actionValue, fee, quoteTokenPrices, className }: ExchangeAmountFieldProps,
     ref: any
 ) {
     const { values, handleChange } = useFormikContext<SwapFormValues>();
@@ -23,7 +24,7 @@ const ExchangeAmountField = forwardRef(function ExchangeAmountField(
     const amountRef = useRef(ref);
     const suffixRef = useRef<HTMLDivElement>(null);
 
-    const sourceCurrencyPriceInUsd = resolveTokenUsdPrice(fromCurrency, fee?.quote);
+    const sourceCurrencyPriceInUsd = resolveTokenUsdPrice(fromCurrency, quoteTokenPrices ?? fee?.quote);
 
     const requestedAmountInUsd = useMemo(() => {
         const amountNumber = Number(amount);

@@ -4,7 +4,7 @@ import AmountField from "./Amount";
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import MinMax from "./Amount/MinMax";
-import { useQuoteData } from "@/hooks/useFee";
+import { QuoteTokenPrices, useQuoteData } from "@/hooks/useFee";
 import clsx from "clsx";
 import { useClickOutside } from "@/hooks/useClickOutside";
 import { useState } from "react";
@@ -15,9 +15,10 @@ type Props = {
     minAllowedAmountInUsd: ReturnType<typeof useQuoteData>['minAllowedAmountInUsd'];
     maxAllowedAmountInUsd: ReturnType<typeof useQuoteData>['maxAllowedAmountInUsd'];
     fee: ReturnType<typeof useQuoteData>['quote'];
+    quoteTokenPrices?: QuoteTokenPrices;
 }
 
-const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd, fee }: Props) => {
+const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd, fee, quoteTokenPrices }: Props) => {
     const { values } = useFormikContext<SwapFormValues>()
 
     const { fromAsset: fromCurrency, from, depositMethod } = values || {}
@@ -55,11 +56,11 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, mi
             }
             <div className="grid grid-cols-[1fr_auto] gap-1 w-full max-w-full">
                 <div className="min-w-0 overflow-hidden">
-                    <AmountField fee={fee} actionValue={actiontempValue} actionValueUsd={actionTempUsdValue} showToggle={showQuickActions} />
+                    <AmountField fee={fee} quoteTokenPrices={quoteTokenPrices} actionValue={actiontempValue} actionValueUsd={actionTempUsdValue} showToggle={showQuickActions} />
                 </div>
 
                 <div className="justify-self-end self-start">
-                    <RoutePicker minAllowedAmount={minAllowedAmount} maxAllowedAmount={maxAmountFromApi} direction="from" />
+                    <RoutePicker minAllowedAmount={minAllowedAmount} maxAllowedAmount={maxAmountFromApi} direction="from" quote={fee?.quote} quoteTokenPrices={quoteTokenPrices} />
                 </div>
             </div>
         </div>
