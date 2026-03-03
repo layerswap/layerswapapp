@@ -75,23 +75,19 @@ export function useUsdTokenSync({
     const currentAmountRef = useRef(amount);
     currentAmountRef.current = amount;
     const prevAmountRef = useRef(amount);
+    const preciseUsdRef = useRef<number>(0);
 
     // --- Core conversion: USD -> token ---
 
-    const computeAndSetTokenAmount = useCallback((usdValue: string) => {
+    const computeAndSetTokenAmount = useCallback((preciseUsd: number) => {
         let newAmount: string;
-        if (!sourceCurrencyPriceInUsd || sourceCurrencyPriceInUsd === 0 || !usdValue) {
+        if (!sourceCurrencyPriceInUsd || sourceCurrencyPriceInUsd === 0 || preciseUsd <= 0) {
             newAmount = '';
         } else {
-            const usdNum = Number(usdValue);
-            if (isNaN(usdNum) || usdNum <= 0) {
-                newAmount = '';
-            } else {
-                const precision = fromCurrency?.precision || 6;
-                const tokenAmount = usdNum / sourceCurrencyPriceInUsd;
-                const truncated = Math.trunc(tokenAmount * Math.pow(10, precision)) / Math.pow(10, precision);
-                newAmount = truncated.toString();
-            }
+            const precision = fromCurrency?.precision || 6;
+            const tokenAmount = preciseUsd / sourceCurrencyPriceInUsd;
+            const truncated = Math.trunc(tokenAmount * Math.pow(10, precision)) / Math.pow(10, precision);
+            newAmount = truncated.toString();
         }
         // Only mark as internal if the value actually changes;
         // otherwise the sync effect won't fire and the flag stays stuck.
@@ -111,7 +107,7 @@ export function useUsdTokenSync({
         }
         if (prevPriceRef.current === sourceCurrencyPriceInUsd) return;
         prevPriceRef.current = sourceCurrencyPriceInUsd;
-        computeAndSetTokenAmount(usdAmount);
+        computeAndSetTokenAmount(preciseUsdRef.current);
     }, [sourceCurrencyPriceInUsd, isUsdMode, usdAmount, computeAndSetTokenAmount]);
 
     // Recompute token amount when source token changes in USD mode
@@ -120,7 +116,7 @@ export function useUsdTokenSync({
         if (prevTokenSymbolRef.current === fromCurrency?.symbol) return;
         prevTokenSymbolRef.current = fromCurrency?.symbol;
         prevPriceRef.current = sourceCurrencyPriceInUsd;
-        computeAndSetTokenAmount(usdAmount);
+        computeAndSetTokenAmount(preciseUsdRef.current);
     }, [fromCurrency?.symbol, isUsdMode, sourceCurrencyPriceInUsd, usdAmount, computeAndSetTokenAmount]);
 
     // Sync usdAmount when formik amount changes externally (e.g. quick action buttons).
@@ -143,7 +139,13 @@ export function useUsdTokenSync({
             return;
         }
         if (!amountChanged) return;
-        if (skipSync) return;
+        if (skipSync) {
+            const amountNum = Number(amount);
+            if (!isNaN(amountNum) && amountNum > 0 && sourceCurrencyPriceInUsd) {
+                preciseUsdRef.current = amountNum * sourceCurrencyPriceInUsd;
+            }
+            return;
+        }
         if (!isUsdMode || !sourceCurrencyPriceInUsd) return;
 
         const amountNum = Number(amount);
@@ -151,7 +153,9 @@ export function useUsdTokenSync({
             setUsdAmount('');
             return;
         }
-        setUsdAmount((amountNum * sourceCurrencyPriceInUsd).toFixed(2).replace(/\.?0+$/, ''));
+        const preciseUsd = amountNum * sourceCurrencyPriceInUsd;
+        preciseUsdRef.current = preciseUsd;
+        setUsdAmount(preciseUsd.toFixed(2).replace(/\.?0+$/, ''));
     }, [amount, isUsdMode, sourceCurrencyPriceInUsd, setUsdAmount]);
 
     // --- Toggle handler ---
@@ -160,8 +164,11 @@ export function useUsdTokenSync({
         if (!isUsdMode && sourceCurrencyPriceInUsd) {
             const amountNum = Number(amount);
             if (!isNaN(amountNum) && amountNum > 0) {
-                setUsdAmount((amountNum * sourceCurrencyPriceInUsd).toFixed(2).replace(/\.?0+$/, ''));
+                const preciseUsd = amountNum * sourceCurrencyPriceInUsd;
+                preciseUsdRef.current = preciseUsd;
+                setUsdAmount(preciseUsd.toFixed(2).replace(/\.?0+$/, ''));
             } else {
+                preciseUsdRef.current = 0;
                 setUsdAmount('');
             }
         }
@@ -174,8 +181,10 @@ export function useUsdTokenSync({
         const value = e.target.value.replace(',', '.');
         // Allow empty, or a valid USD amount: no leading zeros (except "0" itself), up to 2 decimals
         if (value !== '' && !/^(0|[1-9]\d*)\.?\d{0,2}$/.test(value)) return;
+        const numValue = Number(value) || 0;
+        preciseUsdRef.current = numValue;
         setUsdAmount(value);
-        computeAndSetTokenAmount(value);
+        computeAndSetTokenAmount(numValue);
     }, [setUsdAmount, computeAndSetTokenAmount]);
 
     return {
