@@ -1,0 +1,3 @@
+/*! MIT License. Copyright 2015-2022 Richard Moore <me@ricmoo.com>. See LICENSE.txt. */
+
+/*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */
