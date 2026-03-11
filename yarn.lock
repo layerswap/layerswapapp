@@ -3813,13 +3813,13 @@
   resolved "https://registry.yarnpkg.com/@nolyfill/is-core-module/-/is-core-module-1.0.39.tgz#3dc35ba0f1e66b403c00b39344f870298ebb1c8e"
   integrity sha512-nn5ozdjYQpUCZlWGuxcJY/KpxkWQs4DcbMCmKojjyrYDEAGy4Ce19NN4v5MduafTwJlbKc99UA8YhSVqq9yPZA==
 
-"@number-flow/react@^0.5.10":
-  version "0.5.14"
-  resolved "https://registry.yarnpkg.com/@number-flow/react/-/react-0.5.14.tgz#49587c6e95b4de10fd503acaeaeace25dd3101cb"
-  integrity sha512-FGUqjh/P5/ukr0U0ySwb987M0SbRkrnZq70f0wQFncDbXa3SIib4L+FTr5ngvWwGAW8S6b391eTXcfhErZsw4w==
+"@number-flow/react@0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@number-flow/react/-/react-0.6.0.tgz#343c522b3ebe118eaf631524351d2c4a17bd6ad2"
+  integrity sha512-77Yfc9+zkV2UDSP8phhZzxJGuwxi/Tt1TikmipL+1r3e9GFKEYDZ1XwInj67NoSt3OnOB0KLvvcl3lfPZgBHVQ==
   dependencies:
     esm-env "^1.1.4"
-    number-flow "0.5.12"
+    number-flow "0.6.0"
 
 "@opensea/seaport-js@4.0.3":
   version "4.0.3"
@@ -15851,10 +15851,10 @@ nth-check@^2.0.1:
   dependencies:
     boolbase "^1.0.0"
 
-number-flow@0.5.12:
-  version "0.5.12"
-  resolved "https://registry.yarnpkg.com/number-flow/-/number-flow-0.5.12.tgz#6e5245b1351ce9b856dec232b2df0b2a7c97713b"
-  integrity sha512-CIs21h2JkfYG4rfgERaUNAk0Cz+Ef14fNJfSCbGGhgRgconQc9b7rcCQfi9SZ36kNjVXmsl2BrzDbjGtEgumAA==
+number-flow@0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/number-flow/-/number-flow-0.6.0.tgz#449240fac2f2ef250aee529ec6f2ec03307f3aea"
+  integrity sha512-K8flNq2Wqus53vjp/btVo3qXFkagF8dIdYavreBfE7hlvFFG/b1HMGEH6nZL+mlrJ+4lbLP9OmPv3t2rmRkpSQ==
   dependencies:
     esm-env "^1.1.4"
 

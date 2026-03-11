@@ -1,7 +1,7 @@
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 import { Token } from "@/Models/Network";
 import { Quote } from "@/lib/apiClients/layerSwapApiClient";
-import NumberFlow from "@number-flow/react";
+import NumFlowWithFallback from "@/components/Common/NumFlowWithFallback";
 import clsx from "clsx";
 import { PriceImpact } from "./PriceImpact";
 import { useUsdModeStore } from "@/stores/usdModeStore";
@@ -85,18 +85,18 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ destination_token, fee, 
                     { "text-secondary-text": primaryEmpty }
                 )}>
                     {isUsdMode ? <>
-                        <NumberFlow prefix="$" value={Number(receiveAmountInUsd) || 0} trend={0} format={{ minimumFractionDigits: 2, maximumFractionDigits: 2 }} />
+                        <NumFlowWithFallback prefix="$" value={Number(receiveAmountInUsd) || 0} trend={0} format={{ minimumFractionDigits: 2, maximumFractionDigits: 2 }} />
                     </> : (
-                        <NumberFlow value={receive_amount || 0} trend={0} format={{ maximumFractionDigits: tokenDecimals }} />
+                        <NumFlowWithFallback value={receive_amount || 0} trend={0} format={{ maximumFractionDigits: tokenDecimals }} />
                     )}
                 </div>
             </div>
             <div ref={containerRef} className="flex items-baseline space-x-2">
                 <span ref={numberSpanRef} className="text-xs sm:text-base leading-5 font-medium text-secondary-text h-5 min-w-0">
                     {isUsdMode ? <>
-                        <NumberFlow className="p-0"  suffix={` ${destination_token?.symbol || ''}`} value={receive_amount || 0} trend={0} format={{ maximumFractionDigits: maxDecimals }} />
+                        <NumFlowWithFallback className="p-0"  suffix={` ${destination_token?.symbol || ''}`} value={receive_amount || 0} trend={0} format={{ maximumFractionDigits: maxDecimals }} />
                     </> : (
-                        <NumberFlow className="p-0" value={receiveAmountInUsd || 0} prefix="$" format={{ maximumFractionDigits: receiveAmountInUsd ? 2 : 0 }} trend={0} />
+                        <NumFlowWithFallback className="p-0" value={receiveAmountInUsd || 0} prefix="$" format={{ maximumFractionDigits: receiveAmountInUsd ? 2 : 0 }} trend={0} />
                     )}
                 </span>
                 <span ref={priceImpactRef} className="shrink-0">

@@ -7,7 +7,7 @@ import { Partner } from "@/Models/Partner";
 import useSWR from 'swr'
 import { useQueryState } from "@/context/query";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
-import NumberFlow from "@number-flow/react";
+import NumFlowWithFallback from "@/components/Common/NumFlowWithFallback";
 import { PriceImpact } from "@/components/Input/Amount/PriceImpact";
 import { Token } from "@/Models/Network";
 import { useUsdModeStore } from "@/stores/usdModeStore";
@@ -62,7 +62,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                         {
                             requestedAmount && (isUsdMode ? (
                                 <p className="text-primary-text text-xl leading-6 font-normal flex items-center justify-end min-w-0 w-full">
-                                    <NumberFlow value={requestedAmountInUsd || 0} prefix="$" trend={0} />
+                                    <NumFlowWithFallback value={requestedAmountInUsd || 0} prefix="$" trend={0} />
                                 </p>
                             ) : (
                                 <p className="text-primary-text text-xl leading-6 font-normal flex items-center justify-end min-w-0 w-full">
@@ -78,7 +78,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                                     <span className="shrink-0">{` ${sourceCurrency.symbol}`}</span>
                                 </>
                             ) : (
-                                <NumberFlow value={requestedAmountInUsd || 0} prefix="$" trend={0} />
+                                <NumFlowWithFallback value={requestedAmountInUsd || 0} prefix="$" trend={0} />
                             )}
                         </p>
                     </div>
@@ -97,17 +97,17 @@ const Summary: FC<SwapInfoProps> = (props) => {
                             <div className="flex flex-col justify-end items-end w-full col-start-7 col-span-4 h-[44px]">
                                 <p className="text-primary-text text-xl font-normal text-end">
                                     {isUsdMode ? (
-                                        <NumberFlow value={receiveAmountInUsd || 0} prefix="$" trend={0} />
+                                        <NumFlowWithFallback value={receiveAmountInUsd || 0} prefix="$" trend={0} />
                                     ) : (
-                                        <NumberFlow value={receiveAmount} suffix={` ${destinationCurrency.symbol}`} trend={0} format={{ maximumFractionDigits: quote.quote.destination_token?.decimals || 2 }} />
+                                        <NumFlowWithFallback value={receiveAmount} suffix={` ${destinationCurrency.symbol}`} trend={0} format={{ maximumFractionDigits: quote.quote.destination_token?.decimals || 2 }} />
                                     )}
                                 </p>
                                 <p className="text-secondary-text text-sm flex items-center gap-1 font-medium">
                                     <PriceImpact className="text-sm" quote={swapQuote} refuel={refuel} />
                                     {isUsdMode ? (
-                                        <NumberFlow value={receiveAmount} suffix={` ${destinationCurrency.symbol}`} trend={0} format={{ maximumFractionDigits: quote.quote.destination_token?.decimals || 2 }} />
+                                        <NumFlowWithFallback value={receiveAmount} suffix={` ${destinationCurrency.symbol}`} trend={0} format={{ maximumFractionDigits: quote.quote.destination_token?.decimals || 2 }} />
                                     ) : (
-                                        <NumberFlow value={receiveAmountInUsd || 0} prefix="$" trend={0} />
+                                        <NumFlowWithFallback value={receiveAmountInUsd || 0} prefix="$" trend={0} />
                                     )}
                                 </p>
                             </div>
