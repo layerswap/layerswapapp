@@ -15,7 +15,7 @@ import Image from 'next/image'
 import { Network } from '@/Models/Network';
 import ExchangeGasIcon from '../icons/ExchangeGasIcon';
 import useSWRNftBalance from '@/lib/nft/useSWRNftBalance';
-import NumberFlow from '@number-flow/react';
+import NumFlowWithFallback from '@/components/Common/NumFlowWithFallback';
 import { resolveTokenUsdPrice } from '@/helpers/tokenHelper';
 import { useSelectedAccount } from '@/context/swapAccounts';
 import { DetailedEstimates } from './SwapQuote/DetailedEstimates';
@@ -120,7 +120,7 @@ export const DetailsButton: FC<QuoteComponentProps> = ({ quote, reward, isQuoteL
                                 <GasIcon className='h-4 w-4 text-secondary-text' /> : <ExchangeGasIcon className='h-5 w-5 text-secondary-text' />
                             }
                         </div>
-                        <NumberFlow className="text-primary-text text-sm leading-6" value={gasFeeInUsd < 0.01 ? '0.01' : gasFeeInUsd} prefix={gasFeeInUsd < 0.01 ? '<$' : '$'} />
+                        <NumFlowWithFallback className="text-primary-text text-sm leading-6" value={gasFeeInUsd < 0.01 ? '0.01' : gasFeeInUsd} prefix={gasFeeInUsd < 0.01 ? '<$' : '$'} />
 
                     </div>
                     <div className="w-px h-3 bg-primary-text-tertiary rounded-2xl" />
@@ -130,7 +130,7 @@ export const DetailsButton: FC<QuoteComponentProps> = ({ quote, reward, isQuoteL
                 averageCompletionTime &&
                 <>
                     <div className={clsx(
-                        "text-right inline-flex items-center gap-1 text-sm",
+                        "text-right inline-flex items-center gap-1 text-sm pt-px",
                         { "animate-pulse-strong": isQuoteLoading }
                     )}>
                         <div className='p-0.5'>
@@ -149,7 +149,7 @@ export const DetailsButton: FC<QuoteComponentProps> = ({ quote, reward, isQuoteL
                         <div className='p-0.5'>
                             <Image src={rewardCup} alt="Reward" width={16} height={16} />
                         </div>
-                        <NumberFlow value={reward?.amount_in_usd < 0.01 ? '0.01' : reward?.amount_in_usd} prefix={reward?.amount_in_usd < 0.01 ? '<$' : '$'} />
+                        <NumFlowWithFallback value={reward?.amount_in_usd < 0.01 ? '0.01' : reward?.amount_in_usd} prefix={reward?.amount_in_usd < 0.01 ? '<$' : '$'} />
                     </div>
                 </>
             }

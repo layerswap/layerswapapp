@@ -10,7 +10,7 @@ import { Quote } from '@/lib/apiClients/layerSwapApiClient'
 import clsx from 'clsx'
 import { Slippage } from '../Slippage'
 import { GasFee } from './DetailedEstimates'
-import NumberFlow from '@number-flow/react'
+import NumFlowWithFallback from '@/components/Common/NumFlowWithFallback'
 import { Partner } from '@/Models/Partner'
 import { useQueryState } from '@/context/query'
 import { ImageWithFallback } from '@/components/Common/ImageWithFallback'
@@ -71,7 +71,7 @@ export const SummaryRow: FC<{
                 </div>
                 <div className="text-right text-primary-text h-5">
                     {quoteData?.quote?.min_receive_amount !== undefined && !isNaN(quoteData?.quote?.min_receive_amount) && (
-                        <NumberFlow value={quoteData?.quote?.min_receive_amount} trend={0} format={{ maximumFractionDigits: quoteData?.quote.destination_token?.decimals || 2 }} suffix={` ${values?.toAsset?.symbol}`} />
+                        <NumFlowWithFallback value={quoteData?.quote?.min_receive_amount} trend={0} format={{ maximumFractionDigits: quoteData?.quote.destination_token?.decimals || 2 }} suffix={` ${values?.toAsset?.symbol}`} />
                     )}
                 </div>
             </div>
