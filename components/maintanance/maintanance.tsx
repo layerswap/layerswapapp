@@ -1,11 +1,10 @@
 import { useEffect } from "react";
 import { useIntercom } from "react-use-intercom";
 import SubmitButton from "../buttons/submitButton";
-import CardContainer from "../cardContainer";
 import LayerSwapLogo from "../icons/layerSwapLogo";
 import TwitterLogo from "../icons/TwitterLogo";
 
-function MaintananceContent(props) {
+function MaintananceContent() {
     const { boot, update } = useIntercom()
 
     useEffect(() => {
@@ -13,21 +12,40 @@ function MaintananceContent(props) {
         update()
     })
 
-    const twitterLogo = <TwitterLogo className="text-primary-text h-6 w-6" />
+    const twitterLogo = <TwitterLogo className="text-primary-buttonTextColor h-5 w-5" />
     return (
-        <div className="flex items-stretch flex-col">
-            <LayerSwapLogo className="h-8 mt-4 md:hidden w-auto text-primary-logoColor fill-primary-text" />
-            <CardContainer {...props} >
-                <div className="flex flex-col justify-center space-y-12 p-10 text-primary-text md:min-h-fit min-h-[400px]">
-                    <h1 className="text-xl tracking-tight text-gray-200">
-                        <p className="mb-4 text-secondary-text">
-                            We&apos;re upgrading our systems and infrastructure to give you the best experience yet.
-                        </p>
-                        <span className="block font-bold text-2xl xl:inline">We&apos;ll be back soon!</span>
+        <div className="flex items-center justify-center min-h-screen px-4">
+            <div className="flex flex-col items-center text-center max-w-md w-full space-y-8">
+                <LayerSwapLogo className="h-10 w-auto text-primary-logoColor fill-primary-text" />
+
+                <div className="space-y-3">
+                    <div className="inline-flex items-center gap-2 rounded-full bg-secondary-500 px-4 py-1.5">
+                        <span className="relative flex h-2.5 w-2.5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-500 opacity-75" />
+                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary-500" />
+                        </span>
+                        <span className="text-sm font-medium text-secondary-text">{"Maintenance in progress"}</span>
+                    </div>
+
+                    <h1 className="text-3xl font-bold text-primary-text tracking-tight">
+                        {"We'll be back soon!"}
                     </h1>
-                    <SubmitButton onClick={() => window.open('https://twitter.com/layerswap', '_blank')} icon={twitterLogo} isDisabled={false} isSubmitting={false}>Follow for updates</SubmitButton>
+                    <p className="text-secondary-text text-base leading-relaxed">
+                        {"We're upgrading our systems and infrastructure to give you the best experience yet."}
+                    </p>
                 </div>
-            </CardContainer>
+
+                <div className="w-full max-w-xs">
+                    <SubmitButton
+                        onClick={() => window.open('https://twitter.com/layerswap', '_blank')}
+                        icon={twitterLogo}
+                        isDisabled={false}
+                        isSubmitting={false}
+                    >
+                        {"Follow for updates"}
+                    </SubmitButton>
+                </div>
+            </div>
         </div>
     );
 }
