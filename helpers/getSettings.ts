@@ -6,7 +6,7 @@ export async function getServerSideProps(context) {
 
     context.res.setHeader(
         'Cache-Control',
-        's-maxage=60, stale-while-revalidate'
+        's-maxage=60, stale-while-revalidate=300'
     );
 
     const app = context.query?.appName || context.query?.addressSource
