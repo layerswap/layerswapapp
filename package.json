@@ -142,8 +142,5 @@
     "@radix-ui/react-dismissable-layer": "1.1.1",
     "@walletconnect/universal-provider": "2.21.8",
     "@walletconnect/ethereum-provider": "2.21.8"
-  },
-  "engines": {
-    "node": ">=20.9.0"
   }
 }
