@@ -139,7 +139,7 @@ export const ButtonWrapper: FC<SubmitButtonProps> = ({
         buttonStyle='filled'
         size="medium"
         type="button"
-        className="text-primary-text text-base"
+        className="text-primary-text text-base my-1"
         {...props}
     >
         {props.children}
