@@ -1,5 +1,5 @@
 {
-  "count": 626,
+  "count": 627,
   "listings": {
     "00e39f835988d1bb783b2a0748e18bc6278dec03492d00b0e102a466cd8b3d77": {
       "app": {
@@ -12591,11 +12591,11 @@
         "edge": "",
         "firefox": "",
         "ios": "https://apps.apple.com/us/app/tha-assetguard/id6751275677",
-        "linux": "",
-        "mac": "",
+        "linux": "https://tha-assetguard.vercel.app/",
+        "mac": "https://tha-assetguard.vercel.app/",
         "opera": "",
         "safari": "",
-        "windows": ""
+        "windows": "https://tha-assetguard.vercel.app/"
       },
       "app_type": "wallet",
       "category": null,
@@ -12606,7 +12606,7 @@
       "description": "THA AssetGuard is a secure, user-friendly digital assets wallet designed specifically for the Hedera network.",
       "desktop": {
         "native": "",
-        "universal": ""
+        "universal": "https://tha-assetguard.vercel.app"
       },
       "homepage": "https://www.hashgraph-group.com/products/assetguard",
       "id": "366723874f620ef75a1eae9beedb9bf11ee85b2aaf928d53a42d83b52026bf35",
@@ -25358,13 +25358,13 @@
         "android": "https://play.google.com/store/apps/details?id=com.qiewallet",
         "browser": "",
         "chrome": "https://chromewebstore.google.com/detail/qie-wallet-and-web3-domai/oljchdcgmibnjbbopolafbjncfhdacjb?authuser=1&hl=en",
-        "edge": null,
-        "firefox": null,
+        "edge": "",
+        "firefox": "",
         "ios": "https://apps.apple.com/in/app/qie-wallet/id6445826746",
         "linux": "",
         "mac": "",
-        "opera": null,
-        "safari": null,
+        "opera": "",
+        "safari": "",
         "windows": ""
       },
       "app_type": "wallet",
@@ -40950,6 +40950,77 @@
         "2"
       ]
     },
+    "cb47371469a5958b1b0a4ffc80e9ecc9b3ee5d4ff15cac193699626a2a85271f": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.ggp__wallet&pli=1",
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "https://apps.apple.com/us/app/ggp-wallet/id6692627990",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "bip122:000000000019d6689c085ae165831e93",
+        "bip122:00000ffd590b1485b3caadc19b22e637",
+        "bip122:12a765e31ffd4059bada1e25190f6e98",
+        "eip155:1",
+        "eip155:10000",
+        "eip155:137",
+        "eip155:2000",
+        "eip155:42161",
+        "eip155:42170",
+        "eip155:43114",
+        "eip155:56",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "ton:-239",
+        "tron:0x2b6653dc",
+        "xrpl:0"
+      ],
+      "description": "Non-custodial cryptocurrency wallet that allows users to securely store, send, receive, swap, and stake 500+ digital assets, as well as connect to decentralised applications via WalletConnect. The platform provides full user control over private keys and supports NFTs and DEX aggregation.",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://ggp.gg/en",
+      "id": "cb47371469a5958b1b0a4ffc80e9ecc9b3ee5d4ff15cac193699626a2a85271f",
+      "image_id": "471b39f6-efb5-47ae-190d-769a57a3c300",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/471b39f6-efb5-47ae-190d-769a57a3c300?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/471b39f6-efb5-47ae-190d-769a57a3c300?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/471b39f6-efb5-47ae-190d-769a57a3c300?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "",
+        "universal": "promo.ggp.gg/?ref="
+      },
+      "name": "GGP Wallet",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "ggp-wallet",
+      "updatedAt": "2026-03-13T08:38:22.715999+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "cb53ce18c593e8ea5d93c6a55bf848e4b75010c077f83b012b7c4e5f8fce842a": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.beanbag.wallet",
@@ -41893,20 +41964,18 @@
         "shortName": null
       },
       "mobile": {
-        "native": "cbwallet://",
+        "native": "",
         "universal": ""
       },
       "name": "Coinbase Wallet",
-      "rdns": "",
+      "rdns": "com.coinbase.wallet",
       "sdks": [
-        "sign_v1",
-        "sign_v2"
+        "sign_v1"
       ],
       "slug": "coinbase-wallet-1",
       "updatedAt": "2026-03-09T15:18:57.141015+00:00",
       "versions": [
-        "1",
-        "2"
+        "1"
       ]
     },
     "d11e890cc208235fd14e5234b4fc180eb36ade32808c980ee85cc57fe4a08ebb": {
@@ -51134,5 +51203,5 @@
       ]
     }
   },
-  "total": 626
+  "total": 627
 }
