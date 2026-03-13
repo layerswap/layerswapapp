@@ -49,7 +49,7 @@ const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
 
     const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
-    const { isQuoteLoading, quote, minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd } = useQuoteData(quoteArgs, quoteRefreshInterval);
+    const { isQuoteLoading, quote, quoteTokenPrices, minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd } = useQuoteData(quoteArgs, quoteRefreshInterval);
     const { routeValidation, formValidation } = useValidationContext();
 
     const isValid = !formValidation.message;
@@ -126,6 +126,7 @@ const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
                                     <ExchangeAmountField
                                         className="pb-0! rounded-xl!"
                                         fee={quote}
+                                        quoteTokenPrices={quoteTokenPrices}
                                         actionValue={actionTempValue}
                                     />
                                     {quote &&

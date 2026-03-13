@@ -11,6 +11,7 @@ import posthog from "posthog-js";
 import { PostHogProvider } from '@posthog/react'
 import { useEffect } from 'react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Analytics } from '@vercel/analytics/next';
 
 const progress = new ProgressBar({
   size: 2,
@@ -69,6 +70,7 @@ function App({ Component, pageProps }) {
         </PostHogProvider>
       </SWRConfig>
       <SpeedInsights />
+      <Analytics />
     </>)
 }
 

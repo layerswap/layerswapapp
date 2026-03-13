@@ -1,5 +1,5 @@
 {
-  "count": 619,
+  "count": 626,
   "listings": {
     "00e39f835988d1bb783b2a0748e18bc6278dec03492d00b0e102a466cd8b3d77": {
       "app": {
@@ -694,6 +694,83 @@
       ],
       "slug": "obvious",
       "updatedAt": "2023-02-23T10:53:48.332937+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
+    "035ded0f263e4a64bf2c84db06b73e6b4c5115929ea407cc2a3127ee6f392e0e": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=io.web3essentials.app",
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "https://apps.apple.com/us/app/elastos-essentials/id1568931743",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "bip122:000000000019d6689c085ae165831e93",
+        "bip122:000000000933ea01ad0ee984209779ba",
+        "cosmos:kava-4",
+        "eip155:1",
+        "eip155:10",
+        "eip155:137",
+        "eip155:20",
+        "eip155:21",
+        "eip155:22",
+        "eip155:23",
+        "eip155:25",
+        "eip155:250",
+        "eip155:3",
+        "eip155:4",
+        "eip155:40",
+        "eip155:42161",
+        "eip155:43114",
+        "eip155:5",
+        "eip155:56",
+        "eip155:6",
+        "tron:0x2b6653dc"
+      ],
+      "description": "Elastos Essentials is the native wallet and identity manager for the Elastos ecosystem. \n\nWith Elastos Essentials, you get:\n-Native support for all Elastos chains including Mainchain, ESC, and EID\n-Integrated DID (Decentralized Identity) management\n-Secure digital asset management with multi-chain support\n-Built-in DApp browser and credential manager",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://elastos.net/wallet",
+      "id": "035ded0f263e4a64bf2c84db06b73e6b4c5115929ea407cc2a3127ee6f392e0e",
+      "image_id": "a82369e6-f6cc-4364-1b45-d388b3f84400",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/a82369e6-f6cc-4364-1b45-d388b3f84400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/a82369e6-f6cc-4364-1b45-d388b3f84400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/a82369e6-f6cc-4364-1b45-d388b3f84400?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "essentials://",
+        "universal": "https://essentials.web3essentials.io"
+      },
+      "name": "Elastos Essentials",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "elastos-essentials",
+      "updatedAt": "2026-03-05T05:58:36.187125+00:00",
       "versions": [
         "1",
         "2"
@@ -2267,7 +2344,9 @@
         "polkadot:91b171bb158e2d3848fa23a9f1c25182",
         "polkadot:b0a8d493285c2df73290dfb7e61f870f",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
-        "stellar:pubnet"
+        "stellar:pubnet",
+        "ton:-239",
+        "ton:-3"
       ],
       "description": "SafePal is a cryptocurrency wallet that aims to provide a secure and user-friendly crypto management platform for the masses. ",
       "desktop": {
@@ -9271,7 +9350,7 @@
         "chrome": "https://chromewebstore.google.com/detail/nodevault-%E2%80%94-web3-wallet/nhihmlanbfomighpjodmmliikbnlmaog?utm_source=item-share-cb",
         "edge": "",
         "firefox": "",
-        "ios": "",
+        "ios": "https://apps.apple.com/sg/app/nodevault/id6756870326",
         "linux": "",
         "mac": "",
         "opera": "",
@@ -9284,6 +9363,7 @@
         "eip155:1",
         "eip155:10",
         "eip155:11155111",
+        "eip155:137",
         "eip155:14",
         "eip155:56288"
       ],
@@ -9309,8 +9389,8 @@
         "shortName": null
       },
       "mobile": {
-        "native": "",
-        "universal": ""
+        "native": "wc://",
+        "universal": "https://dolphinode.world/wc"
       },
       "name": "NodeVault",
       "rdns": "world.dolphinode.chain",
@@ -11496,6 +11576,63 @@
         "2"
       ]
     },
+    "334493e74c93d58950032b568da450a60a457b3b2e2d86ead6642c955927484b": {
+      "app": {
+        "android": "",
+        "browser": "",
+        "chrome": "https://chromewebstore.google.com/detail/ttchain-wallet/hbcaeldjiijffnglkaegjdkabipajfje?hl=zh-CN&utm_source=ext_sidebar",
+        "edge": "",
+        "firefox": "",
+        "ios": "",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:137",
+        "eip155:56"
+      ],
+      "description": "TTchain Wallet is a blockchain wallet integrating digital identity and asset management, offering a secure, convenient Web3 gateway. It supports one-stop management of multi-chain tokens and NFTs, with real-time asset tracking, cross-chain transactions and NFT circulation. Multiple encryption ensures asset security, while its intuitive interface makes digital asset management as smooth as traditional payments, helping you control on-chain assets and embrace the decentralized future.",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://tt-chain.io/",
+      "id": "334493e74c93d58950032b568da450a60a457b3b2e2d86ead6642c955927484b",
+      "image_id": "41764949-686f-46e6-9bff-e12c05916600",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/41764949-686f-46e6-9bff-e12c05916600?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/41764949-686f-46e6-9bff-e12c05916600?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/41764949-686f-46e6-9bff-e12c05916600?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "",
+        "universal": ""
+      },
+      "name": "TTChain Wallet",
+      "rdns": "com.ttchain",
+      "sdks": [
+        "sign_v1"
+      ],
+      "slug": "ttchain-wallet",
+      "updatedAt": "2026-03-05T06:50:43.370348+00:00",
+      "versions": [
+        "1"
+      ]
+    },
     "33c036d8075d28c9f3619d4d43075676a6d294047e3658fb103e5b3424337551": {
       "app": {
         "android": "",
@@ -12448,12 +12585,12 @@
     },
     "366723874f620ef75a1eae9beedb9bf11ee85b2aaf928d53a42d83b52026bf35": {
       "app": {
-        "android": "",
+        "android": "https://play.google.com/store/apps/details?id=org.tha.hashpay",
         "browser": "",
         "chrome": "https://chromewebstore.google.com/detail/tha-assetguard-wallet-%E2%80%93-h/pepjfofpkjbfkkoalnmbdhhghakebaic?authuser=6&hl=en",
         "edge": "",
         "firefox": "",
-        "ios": "",
+        "ios": "https://apps.apple.com/us/app/tha-assetguard/id6751275677",
         "linux": "",
         "mac": "",
         "opera": "",
@@ -12489,17 +12626,19 @@
       },
       "mobile": {
         "native": "",
-        "universal": ""
+        "universal": "https://tha-assetguard.vercel.app"
       },
       "name": "AssetGuard",
       "rdns": "org.tha.hashpay",
       "sdks": [
-        "sign_v1"
+        "sign_v1",
+        "sign_v2"
       ],
       "slug": "assetguard",
       "updatedAt": "2026-01-28T22:44:16.383737+00:00",
       "versions": [
-        "1"
+        "1",
+        "2"
       ]
     },
     "36d8d9c0c7fe2957149ce8e878f3a01a8611521983362d9b651fb6e508325583": {
@@ -13162,14 +13301,17 @@
       "category": "Mobile Wallets",
       "chains": [
         "eip155:1",
+        "eip155:10",
         "eip155:100",
         "eip155:128",
         "eip155:137",
+        "eip155:42161",
         "eip155:56",
         "eip155:66",
         "eip155:80084",
         "eip155:80085",
         "eip155:8217",
+        "eip155:8453",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
       ],
       "description": "Bitget Wallet",
@@ -15379,6 +15521,7 @@
         "eip155:80084",
         "eip155:80085",
         "eip155:820",
+        "eip155:8453",
         "eip155:88",
         "eip155:9001",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
@@ -20217,16 +20360,16 @@
     "5d9f1395b3a8e848684848dc4147cbd05c8d54bb737eac78fe103901fe6b01a1": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.okx.wallet",
-        "browser": null,
+        "browser": "",
         "chrome": "https://chrome.google.com/webstore/detail/okx-wallet/mcohilncbfahbmgdjkbpemcciiolgcge",
-        "edge": null,
-        "firefox": null,
+        "edge": "",
+        "firefox": "",
         "ios": "https://apps.apple.com/us/app/okx-wallet-portal-to-web3/id6743309484",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": null,
@@ -20234,18 +20377,21 @@
         "bip122:000000000019d6689c085ae165831e93",
         "bip122:000000000933ea01ad0ee984209779ba",
         "eip155:1",
+        "eip155:10",
         "eip155:137",
+        "eip155:42161",
         "eip155:43114",
         "eip155:56",
         "eip155:66",
         "eip155:80084",
         "eip155:80085",
+        "eip155:8453",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
       ],
       "description": "One Web3 portal to rule them all",
       "desktop": {
         "native": "",
-        "universal": null
+        "universal": ""
       },
       "homepage": "https://www.okx.com/download",
       "id": "5d9f1395b3a8e848684848dc4147cbd05c8d54bb737eac78fe103901fe6b01a1",
@@ -20852,6 +20998,159 @@
       ],
       "slug": "id-pocket",
       "updatedAt": "2022-10-28T15:35:22.161186+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
+    "62bc9f93a77fbf6e807ea2a3a4aab0ca2e942f7e5bf28d10dbb158b2f203805e": {
+      "app": {
+        "android": "",
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "https://apps.apple.com/us/app/cornwallet/id6755650881",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "algorand:wGHE2Pwdvd7S12BL5FaOP20EGYesN73k",
+        "bip122:000000000019d6689c085ae165831e93",
+        "bip122:12a765e31ffd4059bada1e25190f6e98",
+        "bip122:Bitcoin Cash Mainnet",
+        "cip-34:1-764824073",
+        "cosmos:cosmoshub-4",
+        "cosmos:thorchain-mainnet-v1",
+        "eip155:1",
+        "eip155:10",
+        "eip155:1329",
+        "eip155:137",
+        "eip155:143",
+        "eip155:2000",
+        "eip155:204",
+        "eip155:250",
+        "eip155:2741",
+        "eip155:324",
+        "eip155:42161",
+        "eip155:42220",
+        "eip155:43114",
+        "eip155:5000",
+        "eip155:56288",
+        "eip155:57073",
+        "eip155:59144",
+        "eip155:80094",
+        "eip155:8453",
+        "near:mainnet",
+        "polkadot:91b171bb158e2d3848fa23a9f1c25182",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "stellar:pubnet",
+        "sui:mainnet",
+        "ton:-239",
+        "tron:0x2b6653dc",
+        "xrpl:0"
+      ],
+      "description": "CornWallet is an innovative multi-chain decentralized wallet that integrates local encryption storage of private keys, cross-chain transfers, perpetual contract trading, and asset detail management. We are committed to providing users with a completely autonomous digital asset management experience. All operations are completed with local encryption, without relying on any centralized servers, ensuring absolute security of assets. \nAs the core entry point of the Corn ecosystem, CornWallet integr",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://www.cornwallet.io/",
+      "id": "62bc9f93a77fbf6e807ea2a3a4aab0ca2e942f7e5bf28d10dbb158b2f203805e",
+      "image_id": "9b7398b3-f96c-4e5e-e189-1b69c9267500",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/9b7398b3-f96c-4e5e-e189-1b69c9267500?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/9b7398b3-f96c-4e5e-e189-1b69c9267500?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/9b7398b3-f96c-4e5e-e189-1b69c9267500?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "",
+        "universal": "https://www.cornwallet.io/"
+      },
+      "name": "CornWallet",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "cornwallet",
+      "updatedAt": "2026-03-05T06:33:14.570522+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
+    "62c919a311e06050620349bf1e0442ba4b5473c4fc47733c53d21a64ace9f07a": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.oxWallet.production",
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:10",
+        "eip155:137",
+        "eip155:42161",
+        "eip155:43114",
+        "eip155:56",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "description": "OXPAY is a secure and scalable non-custodial Web3 wallet built to simplify digital asset management across multiple blockchains.\nIt enables users to safely store, send, receive, and swap cryptocurrencies while maintaining complete control over their private keys.\n\nDesigned with a privacy-first approach, OXPAY integrates WalletConnect to provide seamless access to decentralized applications, DeFi protocols, and Web3 ecosystems. With support for multiple networks and tokens, OXPAY delivers a fast,",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://oxpaywallet.com",
+      "id": "62c919a311e06050620349bf1e0442ba4b5473c4fc47733c53d21a64ace9f07a",
+      "image_id": "243d49a1-0070-438c-68c7-09e85238b900",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/243d49a1-0070-438c-68c7-09e85238b900?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/243d49a1-0070-438c-68c7-09e85238b900?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/243d49a1-0070-438c-68c7-09e85238b900?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "",
+        "universal": "https://oxpaywallet.com/wc"
+      },
+      "name": "OXPAY",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "oxpay",
+      "updatedAt": "2026-03-05T05:43:31.457714+00:00",
       "versions": [
         "1",
         "2"
@@ -28960,6 +29259,66 @@
         "1"
       ]
     },
+    "918b02c222329263fcf7cd555f4a511b55f4211ede0c3aa6b481fc790da0cd2f": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.vkinha.wallet",
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "bip122:000000000019d6689c085ae165831e93",
+        "eip155:1",
+        "eip155:56",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "description": "VKX Wallet is a non-custodial, mobile-first Web3 wallet with full WalletConnect v2 support.\nUsers can automatically create a wallet (12-word recovery phrase) or import an existing one, manage EVM and Solana accounts, and connect seamlessly to dApps via WalletConnect and mobile deep linking.\nThe wallet focuses on secure onboarding and reliable mobile UX.",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://vkinha.com/download",
+      "id": "918b02c222329263fcf7cd555f4a511b55f4211ede0c3aa6b481fc790da0cd2f",
+      "image_id": "1a538476-b48a-4c82-0580-4869de860400",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/1a538476-b48a-4c82-0580-4869de860400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/1a538476-b48a-4c82-0580-4869de860400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/1a538476-b48a-4c82-0580-4869de860400?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "vkxwallet://wc",
+        "universal": "https://vkinha.com/wallet"
+      },
+      "name": "VKX WALLET",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "vkx-wallet",
+      "updatedAt": "2026-02-26T08:07:39.338655+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "91b9a02134bc834b96ebfa333a0bf27ac6372ac56682b5e77bf8577abe0eea78": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.app.plutope&pli=1",
@@ -31599,12 +31958,12 @@
     },
     "a1f3f8956346e2ba29e25bc5252c6dc0b2afa9ee17aa13ecd026abafedaf8696": {
       "app": {
-        "android": "",
-        "browser": "https://wallet.hero.io/signin",
+        "android": "https://play.google.com/store/apps/details?id=io.hero.wallet",
+        "browser": "https://wallet.hero.io/signin/wc?uri=",
         "chrome": "https://chromewebstore.google.com/detail/hero-wallet-heroio/eadjllodfjkbljlihgiflhapafcigoee",
         "edge": "",
         "firefox": "",
-        "ios": "",
+        "ios": "https://apps.apple.com/us/app/hero-wallet-hero-io/id6757118686",
         "linux": "",
         "mac": "",
         "opera": "",
@@ -31630,18 +31989,18 @@
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
         "sui:mainnet"
       ],
-      "description": "Hero wallet is a multichain web3 wallet. ",
+      "description": "Secure decentralized crypto wallet to access your digital assets across multiple networks.",
       "desktop": {
         "native": "",
-        "universal": "https://wallet.hero.io/signin"
+        "universal": "https://wallet.hero.io/signin/wc?uri="
       },
-      "homepage": "https://wallet.hero.io",
+      "homepage": "https://wallet.hero.io/",
       "id": "a1f3f8956346e2ba29e25bc5252c6dc0b2afa9ee17aa13ecd026abafedaf8696",
-      "image_id": "974f0728-7c62-4772-b66b-6b83ced7f200",
+      "image_id": "86a2e74b-7e97-4162-2c26-71bd9ccab000",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/974f0728-7c62-4772-b66b-6b83ced7f200?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/974f0728-7c62-4772-b66b-6b83ced7f200?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/974f0728-7c62-4772-b66b-6b83ced7f200?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/86a2e74b-7e97-4162-2c26-71bd9ccab000?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/86a2e74b-7e97-4162-2c26-71bd9ccab000?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/86a2e74b-7e97-4162-2c26-71bd9ccab000?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
       "injected": [
         {
@@ -31669,8 +32028,8 @@
         "shortName": "HeroWallet"
       },
       "mobile": {
-        "native": "",
-        "universal": ""
+        "native": "herowallet://wc",
+        "universal": "https://wallet.hero.io/signin/wc"
       },
       "name": "Hero Wallet",
       "rdns": "io.hero.wallet",
@@ -37557,6 +37916,98 @@
         "1"
       ]
     },
+    "c2abb16cfd3701f087433a81a0628499e19150b5498664aa73b06df2899d9d20": {
+      "app": {
+        "android": "",
+        "browser": "https://app.dfns.io/",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "bip122:000000000019d6689c085ae165831e93",
+        "bip122:000000000933ea01ad0ee984209779ba",
+        "eip155:1",
+        "eip155:10",
+        "eip155:11155111",
+        "eip155:137",
+        "eip155:14",
+        "eip155:16",
+        "eip155:17000",
+        "eip155:250",
+        "eip155:36900",
+        "eip155:4002",
+        "eip155:42161",
+        "eip155:421614",
+        "eip155:42220",
+        "eip155:42431",
+        "eip155:43113",
+        "eip155:43114",
+        "eip155:44787",
+        "eip155:5042002",
+        "eip155:545",
+        "eip155:56",
+        "eip155:57073",
+        "eip155:61",
+        "eip155:63",
+        "eip155:747",
+        "eip155:763373",
+        "eip155:80002",
+        "eip155:80094",
+        "eip155:8453",
+        "eip155:84532",
+        "eip155:97",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+        "tron:0x2b6653dc",
+        "tron:0x94a9059e"
+      ],
+      "description": "Institutional Grade MPC-Wallet Infrastructure",
+      "desktop": {
+        "native": "",
+        "universal": "https://app.dfns.io/"
+      },
+      "homepage": "https://www.dfns.co/",
+      "id": "c2abb16cfd3701f087433a81a0628499e19150b5498664aa73b06df2899d9d20",
+      "image_id": "f77ddedd-5a2b-47ec-3411-610c45358c00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/f77ddedd-5a2b-47ec-3411-610c45358c00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/f77ddedd-5a2b-47ec-3411-610c45358c00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/f77ddedd-5a2b-47ec-3411-610c45358c00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "",
+        "universal": ""
+      },
+      "name": "Dfns",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "dfns",
+      "updatedAt": "2026-03-02T10:22:09.768417+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "c2c561ba71ea16a3b9c9003a77d2fad3dc4f597750f0acd385d3e12ddfe55793": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=io.staticbit.wallet",
@@ -38600,11 +39051,11 @@
         "shortName": "Kabila"
       },
       "mobile": {
-        "native": "kabila-wallet://request",
-        "universal": "https://kabila.app/wallet/wc"
+        "native": "kabila-wallet://",
+        "universal": "https://wallet.kabila.app"
       },
       "name": "Kabila",
-      "rdns": "com.kabila.wallet",
+      "rdns": "app.kabila.wallet",
       "sdks": [
         "sign_v1",
         "sign_v2"
@@ -41394,6 +41845,65 @@
       ],
       "slug": "solutions-team-test",
       "updatedAt": "2024-10-18T11:33:28.272857+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
+    "d0ca99ff52b99abc48743dad0f7fc891e041be73574f7fac4afe5d4bb83845c8": {
+      "app": {
+        "android": "",
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
+        "ios": "https://apps.apple.com/us/app/base-formerly-coinbase-wallet/id1278383455",
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "description": "Coinbase Wallet is a self-custody crypto wallet that puts you in control and unlocks the entire world of crypto.",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://wallet.coinbase.com/",
+      "id": "d0ca99ff52b99abc48743dad0f7fc891e041be73574f7fac4afe5d4bb83845c8",
+      "image_id": "594627bd-6d35-406a-8d2b-31e0b5f03c00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/594627bd-6d35-406a-8d2b-31e0b5f03c00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/594627bd-6d35-406a-8d2b-31e0b5f03c00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/594627bd-6d35-406a-8d2b-31e0b5f03c00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "cbwallet://",
+        "universal": ""
+      },
+      "name": "Coinbase Wallet",
+      "rdns": "",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "coinbase-wallet-1",
+      "updatedAt": "2026-03-09T15:18:57.141015+00:00",
       "versions": [
         "1",
         "2"
@@ -47794,13 +48304,13 @@
         "android": "https://play.google.com/store/apps/details?id=com.avaxwallet&hl=en_US&gl=US",
         "browser": "https://core.app/?utm_source=referral&utm_medium=website&utm_campaign=walletconnect",
         "chrome": "https://chrome.google.com/webstore/detail/core-crypto-wallet-nft-ex/agoakfejjabomempkjlepdflaleeobhb",
-        "edge": null,
-        "firefox": null,
+        "edge": "",
+        "firefox": "",
         "ios": "https://apps.apple.com/us/app/core-crypto-wallet-nfts/id6443685999",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
         "windows": "https://core.app/?utm_source=referral&utm_medium=website&utm_campaign=walletconnect"
       },
       "app_type": "wallet",
@@ -47813,7 +48323,8 @@
         "eip155:42161",
         "eip155:43113",
         "eip155:43114",
-        "eip155:8453"
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
       ],
       "description": "Bridge, Buy, Swap and Send Crypto Easily with Core.",
       "desktop": {
@@ -48776,24 +49287,27 @@
     "f6488493aa7713ec6f915ebe80070d7a4dd17da9d162d72f53117cc4f230bd75": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.beexo",
-        "browser": null,
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
+        "browser": "",
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
         "ios": "https://apps.apple.com/ar/app/beexo-wallet/id1533311061",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
+        "linux": "",
+        "mac": "",
+        "opera": "",
+        "safari": "",
+        "windows": ""
       },
       "app_type": "wallet",
       "category": "Mobile Wallets",
       "chains": [
+        "bip122:000000000019d6689c085ae165831e93",
         "eip155:1",
         "eip155:137",
         "eip155:30",
         "eip155:324",
+        "eip155:42161",
+        "eip155:42170",
         "eip155:56"
       ],
       "description": "Crypto made simple",
@@ -48801,7 +49315,7 @@
         "native": "",
         "universal": "https://app.beexo.com/"
       },
-      "homepage": "https://beexo.com/",
+      "homepage": "https://bexo.com/",
       "id": "f6488493aa7713ec6f915ebe80070d7a4dd17da9d162d72f53117cc4f230bd75",
       "image_id": "7074bf0c-d0f7-4d86-2dc4-28430d629d00",
       "image_url": {
@@ -48821,8 +49335,8 @@
         "native": "beexo://",
         "universal": ""
       },
-      "name": "Beexo",
-      "rdns": null,
+      "name": "Bexo",
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2"
@@ -50620,5 +51134,5 @@
       ]
     }
   },
-  "total": 619
+  "total": 626
 }

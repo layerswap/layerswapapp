@@ -14,8 +14,9 @@ function usePersistedState<T>(defaultValue: T, key: string, type: storageType = 
   }, [key, value]);
 
   return [value, (newValue) => {
-    checkStorageIsAvailable(type) && window[type]?.setItem(key, JSON.stringify(newValue));
-    setValue(newValue);
+    const resolvedValue = typeof newValue === 'function' ? (newValue as (prev: T) => T)(value) : newValue;
+    checkStorageIsAvailable(type) && window[type]?.setItem(key, JSON.stringify(resolvedValue));
+    setValue(resolvedValue);
   }];
 }
 

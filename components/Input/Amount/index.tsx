@@ -2,7 +2,7 @@ import { useFormikContext } from "formik";
 import { forwardRef, useEffect, useMemo, useRef } from "react";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import NumericInput from "../NumericInput";
-import { useQuoteData } from "@/hooks/useFee";
+import { QuoteTokenPrices, useQuoteData } from "@/hooks/useFee";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
 import clsx from "clsx";
 import { useUsdTokenSync } from "@/hooks/useUsdTokenSync";
@@ -10,13 +10,14 @@ import { ArrowUpDown } from "lucide-react";
 
 interface AmountFieldProps {
     fee: ReturnType<typeof useQuoteData>['quote'];
+    quoteTokenPrices?: QuoteTokenPrices;
     actionValue?: number;
     actionValueUsd?: string;
     className?: string;
     showToggle?: boolean;
 }
 
-const AmountField = forwardRef(function AmountField({ actionValue, actionValueUsd, fee, className, showToggle }: AmountFieldProps, ref: any) {
+const AmountField = forwardRef(function AmountField({ actionValue, actionValueUsd, fee, quoteTokenPrices, className, showToggle }: AmountFieldProps, ref: any) {
     const { values, handleChange } = useFormikContext<SwapFormValues>();
     const { fromAsset: fromCurrency, amount, toAsset: toCurrency, fromExchange } = values || {};
     const { setFieldValue } = useFormikContext<SwapFormValues>();
@@ -31,7 +32,7 @@ const AmountField = forwardRef(function AmountField({ actionValue, actionValueUs
         handleToggle,
         handleUsdInputChange,
     } = useUsdTokenSync({
-        quote: fee?.quote,
+        quote: quoteTokenPrices ?? fee?.quote,
         fromCurrency,
         amount,
         setFieldValue,

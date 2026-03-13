@@ -1,11 +1,12 @@
 import LayerSwapApiClient from "../lib/apiClients/layerSwapApiClient";
 import { getThemeData } from "./settingsHelper";
+import { encodeSettingsForSSR } from "./settingsCompression";
 
 export async function getServerSideProps(context) {
 
     context.res.setHeader(
         'Cache-Control',
-        's-maxage=60, stale-while-revalidate'
+        's-maxage=60, stale-while-revalidate=300'
     );
 
     const app = context.query?.appName || context.query?.addressSource
@@ -13,40 +14,31 @@ export async function getServerSideProps(context) {
     LayerSwapApiClient.apiKey = apiKey
     const apiClient = new LayerSwapApiClient()
 
-    try {
-        // Fetch all data in parallel for faster page load (async-parallel)
-        const [
-            { data: networkData },
-            { data: sourceExchangesData },
-            { data: sourceRoutes },
-            { data: destinationRoutes },
-            themeData
-        ] = await Promise.all([
-            apiClient.GetLSNetworksAsync(),
-            apiClient.GetSourceExchangesAsync(),
-            apiClient.GetRoutesAsync('sources'),
-            apiClient.GetRoutesAsync('destinations'),
-            getThemeData(context.query)
-        ])
+    const [
+        { data: networkData },
+        { data: sourceExchangesData },
+        { data: sourceRoutes },
+        { data: destinationRoutes },
+        themeData
+    ] = await Promise.all([
+        apiClient.GetLSNetworksAsync(),
+        apiClient.GetSourceExchangesAsync(),
+        apiClient.GetRoutesAsync('sources'),
+        apiClient.GetRoutesAsync('destinations'),
+        getThemeData(context.query)
+    ])
 
-        if (!networkData) return
-    
-        const settings = {
-            networks: networkData,
-            sourceExchanges: sourceExchangesData || [],
-            sourceRoutes: sourceRoutes || [],
-            destinationRoutes: destinationRoutes || []
-        }
-    
-        return {
-            props: { settings, themeData, apiKey }
-        }
+    if (!networkData) return
+
+    const settings = {
+        networks: networkData,
+        sourceExchanges: sourceExchangesData || [],
+        sourceRoutes: sourceRoutes || [],
+        destinationRoutes: destinationRoutes || []
     }
-    catch (error) {
-        console.error(error)
-        return {
-            props: { settings: null, themeData: null, apiKey: null }
-        }
+
+    return {
+        props: { settings: encodeSettingsForSSR(settings), themeData, apiKey }
     }
 
 }

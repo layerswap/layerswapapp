@@ -104,6 +104,7 @@ export default class LayerSwapApiClient {
                     return Promise.resolve(new EmptyApiResponse());
                 }
                 else {
+                    console.error("endpoint", reason)
                     return Promise.reject(reason);
                 }
             });

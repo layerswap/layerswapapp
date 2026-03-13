@@ -1,13 +1,16 @@
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
+import { useMemo } from "react";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import { useBalance } from "@/lib/balances/useBalance";
 import useOutOfGas from "@/lib/gases/useOutOfGas";
 import BalanceWarningTooltip from "@/components/ReserveGasNote";
 import { useUsdModeStore } from "@/stores/usdModeStore";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
+import { QuoteTokenPrices } from "@/hooks/useFee";
+import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
 
-const Balance = ({ values, direction, minAllowedAmount, maxAllowedAmount }: { values: SwapFormValues, direction: string, minAllowedAmount?: number, maxAllowedAmount?: number }) => {
+const Balance = ({ values, direction, minAllowedAmount, maxAllowedAmount, quoteTokenPrices }: { values: SwapFormValues, direction: string, minAllowedAmount?: number, maxAllowedAmount?: number, quoteTokenPrices?: QuoteTokenPrices }) => {
 
     const { to, fromAsset: fromCurrency, toAsset: toCurrency, from, destination_address } = values
     const selectedSourceAccount = useSelectedAccount("from", from?.name);
@@ -17,16 +20,24 @@ const Balance = ({ values, direction, minAllowedAmount, maxAllowedAmount }: { va
     const address = direction === 'from' ? selectedSourceAccount?.address : destination_address
     const { balances, isLoading, mutate } = useBalance(address, network, { refreshInterval: 20000, dedupeInterval: 20000 })
 
-    const tokenBalance = balances?.find(
+    const tokenBalance = useMemo(() => balances?.find(
         b => b?.network === network?.name && b?.token === token?.symbol
+    ), [balances, network?.name, token?.symbol])
+    const balanceAmount = useMemo(() => Number(tokenBalance?.amount), [tokenBalance?.amount])
+    const truncatedBalance = useMemo(() =>
+        tokenBalance?.amount !== undefined ? truncateDecimals(tokenBalance?.amount, token?.precision) : '',
+        [tokenBalance?.amount, token?.precision]
     )
-    const balanceAmount = Number(tokenBalance?.amount)
-    const truncatedBalance = tokenBalance?.amount !== undefined ? truncateDecimals(tokenBalance?.amount, token?.precision) : ''
-    const tokenPriceInUsd = token?.price_in_usd
-    const balanceInUsd = isUsdMode && typeof tokenPriceInUsd === 'number' && tokenPriceInUsd > 0 && !isNaN(balanceAmount)
-        ? formatUsd(balanceAmount * tokenPriceInUsd)
-        : undefined
-    const displayedBalance = balanceInUsd ?? truncatedBalance
+    const tokenPriceInUsd = useMemo(() =>
+        quoteTokenPrices ? resolveTokenUsdPrice(token, quoteTokenPrices) : token?.price_in_usd,
+        [token, quoteTokenPrices]
+    )
+    const displayedBalance = useMemo(() => {
+        const balanceInUsd = isUsdMode && typeof tokenPriceInUsd === 'number' && tokenPriceInUsd > 0 && !isNaN(balanceAmount)
+            ? formatUsd(balanceAmount * tokenPriceInUsd)
+            : undefined
+        return balanceInUsd ?? truncatedBalance
+    }, [isUsdMode, tokenPriceInUsd, balanceAmount, truncatedBalance])
 
     const isFromDirection = direction === 'from'
 
