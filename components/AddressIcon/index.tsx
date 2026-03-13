@@ -1,6 +1,6 @@
-import Jazzicon from "@metamask/jazzicon";
+'use client'
+import Jazzicon from "./jazzicon.mjs";
 import { FC, useEffect, useRef } from "react";
-import { Address } from "@/lib/address";
 
 type Props = {
     address: string;
@@ -14,7 +14,7 @@ const AddressIcon: FC<Props> = ({ address, size, className, rounded }) => {
     useEffect(() => {
         if (address && ref.current) {
             ref.current.innerHTML = "";
-            const iconElement = Jazzicon(size, Address.toIconSeed(address))
+            const iconElement = Jazzicon(size, parseInt(address.slice(2, 10), 16))
             if (iconElement) {
                 iconElement.style.display = 'block'
                 iconElement.style.width = "100%"
