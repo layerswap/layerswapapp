@@ -115,7 +115,10 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     }
 
     const filteredProviders = providers.filter(p => !p.hideFromList)
-    const featuredProviders = selectedProviderNames.length > 0 ? filteredProviders.filter(p => selectedProviderNames.includes(p.name)) : (selectedProvider ? [selectedProvider] : filteredProviders)
+    const resolvedSelectedProvider = selectedProvider && !selectedProvider.isSelectedFromFilter
+        ? filteredProviders.find(p => p.name === selectedProvider.name) || selectedProvider
+        : selectedProvider;
+    const featuredProviders = selectedProviderNames.length > 0 ? filteredProviders.filter(p => selectedProviderNames.includes(p.name)) : (resolvedSelectedProvider ? [resolvedSelectedProvider] : filteredProviders)
 
     const {
         featuredConnectors,
