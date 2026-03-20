@@ -65,7 +65,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                                     <NumFlowWithFallback value={requestedAmountInUsd || 0} prefix="$" trend={0} />
                                 </p>
                             ) : (
-                                <p className="text-primary-text text-xl leading-6 font-normal flex items-center justify-end min-w-0 w-full">
+                                <p className="text-primary-text text-xl leading-6 font-normal flex items-center justify-end min-w-0 w-full space-x-1">
                                     <span className="truncate min-w-0">{truncateDecimals(Number(requestedAmount), sourceCurrency.precision)}</span>
                                     <span className="shrink-0">{` ${sourceCurrency.symbol}`}</span>
                                 </p>

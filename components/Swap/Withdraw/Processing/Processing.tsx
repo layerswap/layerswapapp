@@ -351,7 +351,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                                     <Gauge
                                         value={stepsProgressPercentage}
                                         size="small"
-                                        showCheckmark={swapStatus === SwapStatus.Completed}
+                                        showCheckmark={stepsProgressPercentage == 100}
                                     />
                                 )}
                             </div>
@@ -458,7 +458,7 @@ const getProgressStatuses = (swapDetails: SwapDetails, refuel: Refuel | undefine
         subtitle = "View instructions below"
     }
 
-    if (swapStatus == SwapStatus.Completed) {
+    if (swapStatus == SwapStatus.Completed || output_transfer == ProgressStatus.Complete) {
         generalTitle = "Transfer complete"
         subtitle = "Thanks for using Layerswap"
     }
