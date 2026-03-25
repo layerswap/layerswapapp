@@ -202,7 +202,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                 name: `${swapOutputTransaction?.amount && truncateDecimals(swapOutputTransaction?.amount, destination_token.decimals)} ${destination_token.symbol} was sent to your address`,
                 description: swapOutputTransaction?.amount ? <div className="flex flex-col">
                     <div>
-                        <span>Transaction gagooooooooooooooooooooooooooooo: </span>{' '}
+                        <span>Transaction: </span>{' '}
                         <LinkWithIcon
                             name={'View in explorer'}
                             url={getExplorerUrl(output_tx_explorer, swapOutputTransaction?.transaction_hash)}
