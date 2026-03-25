@@ -9,12 +9,12 @@ interface LinkWithIconProps {
 
 const LinkWithIcon: FC<LinkWithIconProps> = ({ name, url }) => {
     return (
-        <div className='underline hover:no-underline flex items-center space-x-1'>
+        <span className='underline hover:no-underline inline-flex items-center gap-x-1'>
             <Link target={"_blank"} href={url} rel="noopener noreferrer">
                 {name}
             </Link>
             <ExternalLink className='h-4' />
-        </div>
+        </span>
     );
 };
 

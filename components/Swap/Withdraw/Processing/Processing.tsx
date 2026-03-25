@@ -127,7 +127,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             current: {
                 name: 'Processing your deposit',
                 description: <div className='flex space-x-1'>
-                    <div className='flex items-center space-x-1'>
+                    <div>
                         <LinkWithIcon
                             name={'View in explorer'}
                             url={getExplorerUrl(input_tx_explorer, transactionHash)}
@@ -152,8 +152,8 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             },
             complete: {
                 name: `Deposit confirmed`,
-                description: <div className='flex flex-wrap items-center gap-x-1'>
-                    <span>We&apos;ve received your deposit.</span>
+                description: <div>
+                    <span>We&apos;ve received your deposit.</span>{' '}
                     <LinkWithIcon
                         name={'View in explorer'}
                         url={getExplorerUrl(input_tx_explorer, transactionHash)}
@@ -201,8 +201,8 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             complete: {
                 name: `${swapOutputTransaction?.amount && truncateDecimals(swapOutputTransaction?.amount, destination_token.decimals)} ${destination_token.symbol} was sent to your address`,
                 description: swapOutputTransaction?.amount ? <div className="flex flex-col">
-                    <div className='flex items-center space-x-1'>
-                        <span>Transaction: </span>
+                    <div>
+                        <span>Transaction gagooooooooooooooooooooooooooooo: </span>{' '}
                         <LinkWithIcon
                             name={'View in explorer'}
                             url={getExplorerUrl(output_tx_explorer, swapOutputTransaction?.transaction_hash)}
@@ -248,8 +248,8 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             },
             complete: {
                 name: `${truncatedRefuelAmount} ${refuel?.token?.symbol} was sent to your address`,
-                description: <div className='flex items-center space-x-1'>
-                    <span>Transaction: </span>
+                description: <div>
+                    <span>Transaction: </span>{' '}
                     {swapRefuelTransaction &&
                         <LinkWithIcon
                             name={'View in explorer'}
@@ -276,8 +276,8 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             },
             complete: {
                 name: 'Refund sent',
-                description: <div className='flex items-center space-x-1 text-secondary-text'>
-                    <span>The full deposit amount has been sent back to your wallet.</span>
+                description: <div className='text-secondary-text'>
+                    <span>The full deposit amount has been sent back to your wallet.</span>{' '}
                     {
                         swapRefundTransaction && (
                             <LinkWithIcon
