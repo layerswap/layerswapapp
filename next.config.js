@@ -58,7 +58,8 @@ module.exports = (phase, { defaultConfig }) => {
       defaultLocale: "en",
     },
     images: {
-      remotePatterns: REMOTE_PATTERNS
+      remotePatterns: REMOTE_PATTERNS,
+      minimumCacheTTL: 3600
     },
     compiler: {
       removeConsole: false,
