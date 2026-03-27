@@ -68,7 +68,7 @@ export const useNavigatableList = ({
         if (onReset) {
             onReset();
             setPendingFirstChild(!!navigateToFirstChildRef.current);
-            setFocusedIndex(navigableItems.length > 0 ? { parent: 0 } : null);
+            setFocusedIndex(null);
         }
     }, [onReset]);
 
