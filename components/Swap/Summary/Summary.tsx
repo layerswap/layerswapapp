@@ -102,7 +102,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                                         <NumFlowWithFallback value={receiveAmount} suffix={` ${destinationCurrency.symbol}`} trend={0} format={{ maximumFractionDigits: quote.quote.destination_token?.decimals || 2 }} />
                                     )}
                                 </p>
-                                <p className="text-secondary-text text-sm flex items-center gap-1 font-medium">
+                                <p className="text-secondary-text text-sm flex items-baseline gap-1 font-medium">
                                     <PriceImpact className="text-sm" quote={swapQuote} refuel={refuel} />
                                     {isUsdMode ? (
                                         <NumFlowWithFallback value={receiveAmount} suffix={` ${destinationCurrency.symbol}`} trend={0} format={{ maximumFractionDigits: quote.quote.destination_token?.decimals || 2 }} />
