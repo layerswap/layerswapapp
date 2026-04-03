@@ -365,7 +365,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                                         {progressStatuses.generalStatus.subTitle}
                                     </span>
                                 }
-                                {swapOutputTransaction?.status != BackendTransactionStatus.Completed && (swapStatus !== SwapStatus.Cancelled && swapStatus !== SwapStatus.Expired && swapStatus !== SwapStatus.Failed && swapStatus !== SwapStatus.PendingRefund && swapStatus !== SwapStatus.Refunded) &&
+                                {!swapOutputTransaction && (swapStatus !== SwapStatus.Cancelled && swapStatus !== SwapStatus.Expired && swapStatus !== SwapStatus.Failed && swapStatus !== SwapStatus.PendingRefund && swapStatus !== SwapStatus.Refunded) &&
                                     <span className='text-sm block space-x-1 text-secondary-text'>
                                         <span>{countDownTimer}</span>
                                     </span>
