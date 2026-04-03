@@ -14,7 +14,7 @@ import AddressButton from "./AddressButton";
 import { useQueryState } from "@/context/query";
 import ConnectedWallets from "./ConnectedWallets";
 import { Wallet } from "@/Models/WalletProvider";
-import { useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts";
+import { useManualDestAddresses, useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts";
 
 export enum AddressGroup {
     ConnectedWallet = "Connected wallet",
@@ -66,9 +66,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const defaultAccount = useSelectedAccount("to", values.to?.name);
     const connectedWalletskey = connectedWallets?.map(w => w.addresses.join('')).join('')
     const [manualAddress, setManualAddress] = useState<string>('')
-
-    // Get manually added address from context (shared across all AddressPicker instances)
-    const manualAddressFromContext = defaultAccount?.id === 'manually_added' ? defaultAccount.address : undefined
+    const manualDestAddresses = useManualDestAddresses()
 
     useEffect(() => {
         if (destination_address && destination && !AddressClass.isValid(destination_address, destination)) {
@@ -84,11 +82,11 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
             address_book,
             destination,
             wallets: connectedWallets,
-            manualAddressFromContext,
+            manualAddresses: manualDestAddresses,
             addressFromQuery: query.destination_address,
             destination_address,
         })
-    }, [address_book, destination, connectedWallets, manualAddressFromContext, query.destination_address, connectedWalletskey, destination_address])
+    }, [address_book, destination, connectedWallets, manualDestAddresses, query.destination_address, connectedWalletskey, destination_address])
 
     const destinationAddressItem = destination && destination_address ?
         groupedAddresses?.find(a => a.address.toLowerCase() === destination_address.toLowerCase())
@@ -242,14 +240,14 @@ const resolveAddressGroups = ({
     address_book,
     destination,
     wallets,
-    manualAddressFromContext,
+    manualAddresses,
     addressFromQuery,
     destination_address,
 }: {
     address_book: AddressBookItem[] | undefined,
     destination: NetworkRoute | undefined,
     wallets: Wallet[] | undefined,
-    manualAddressFromContext: string | undefined,
+    manualAddresses: string[],
     addressFromQuery: string | undefined,
     destination_address: string | undefined,
 }) => {
@@ -273,10 +271,11 @@ const resolveAddressGroups = ({
         addresses = [...addresses, ...recentlyUsedAddresses]
     }
 
-    // Include manually added address from context (shared across all instances)
-    if (manualAddressFromContext && AddressClass.isValid(manualAddressFromContext, destination)) {
-        addresses.push({ address: manualAddressFromContext, group: AddressGroup.ManualAdded })
-    }
+    manualAddresses.forEach(addr => {
+        if (AddressClass.isValid(addr, destination)) {
+            addresses.push({ address: addr, group: AddressGroup.ManualAdded })
+        }
+    })
 
     const uniqueAddresses = getUniqueAddresses(addresses, destination)
 
