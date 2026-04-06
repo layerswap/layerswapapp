@@ -8,7 +8,6 @@ import { useQueryState } from "@/context/query";
 import { WithdrawPageProps } from "../../Common/sharedTypes";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import useWallet from "@/hooks/useWallet";
-
 export const TempoWalletWithdrawal: FC<WithdrawPageProps> = ({
     swapBasicData,
     refuel,
