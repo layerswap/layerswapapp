@@ -5,7 +5,7 @@ import useSWR from "swr"
 import { ApiResponse } from "../../../Models/ApiResponse"
 import ClickTooltip from "../../Tooltips/ClickTooltip"
 import { Address, getExplorerUrl } from "@/lib/address"
-import { useAccount } from "wagmi"
+import { useConnection } from "wagmi"
 import { truncateDecimals } from "../../utils/RoundDecimals"
 import AddressIcon from "../../AddressIcon";
 import Modal from "../../modal/modal";
@@ -18,7 +18,7 @@ type Props = {
 }
 const Component: FC<Props> = ({ campaign }) => {
     const [openTopModal, setOpenTopModal] = useState(false)
-    const { address } = useAccount();
+    const { address } = useConnection();
 
     const handleOpenTopModal = () => {
         setOpenTopModal(true)

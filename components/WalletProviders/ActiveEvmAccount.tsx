@@ -1,5 +1,5 @@
 import { Context, FC, createContext, useCallback, useContext, useMemo, useState } from 'react';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 
 type ActiveAccountState = {
     activeConnection?: {
@@ -16,7 +16,7 @@ type Props = {
 }
 
 export const ActiveEvmAccountProvider: FC<Props> = ({ children }) => {
-    const activeAccount = useAccount()
+    const activeAccount = useConnection()
     const [selectedAddress, setSelectedAddress] = useState<string>()
 
     const activeConnection = useMemo(() => {

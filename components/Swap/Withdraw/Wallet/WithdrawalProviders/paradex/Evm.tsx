@@ -1,6 +1,6 @@
 import { FC, useState } from 'react'
 import { ChangeNetworkButton, ConnectWalletButton, SendTransactionButton } from '../../Common/buttons';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 import { useSettingsState } from '@/context/settings';
 import KnownInternalNames from '@/lib/knownIds';
 import { useEthersSigner } from '@/lib/ethersToViem/ethers';
@@ -19,7 +19,7 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refue
     const l1Network = networks.find(n => n.name === KnownInternalNames.Networks.EthereumMainnet || n.name === KnownInternalNames.Networks.EthereumSepolia);
     const { source_token } = swapBasicData;
 
-    const { chain } = useAccount();
+    const { chain } = useConnection();
 
     const selectedSourceAccount = useSelectedAccount("from", l1Network?.name);
     const { wallets } = useWallet(l1Network, 'withdrawal')
