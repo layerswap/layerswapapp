@@ -8,8 +8,6 @@ import useFormRoutes from "@/hooks/useFormRoutes";
 import Balance from "../Amount/Balance";
 import { Content } from "./Content";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
-import { SwapQuote } from "@/lib/apiClients/layerSwapApiClient";
-import { QuoteTokenPrices } from "@/hooks/useFee";
 import PickerWalletConnect from "./RouterPickerWalletConnect";
 import { swapInProgress } from "@/components/utils/swapUtils";
 import { updateForm } from "@/components/Swap/Form/updateForm";
@@ -17,7 +15,7 @@ import clsx from "clsx";
 import useSuggestionsLimit from "@/hooks/useSuggestionsLimit";
 import useWallet from "@/hooks/useWallet";
 
-const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, className?: string, minAllowedAmount?: number, maxAllowedAmount?: number, quote?: SwapQuote, quoteTokenPrices?: QuoteTokenPrices }> = ({ direction, isExchange = false, className, minAllowedAmount, maxAllowedAmount, quote, quoteTokenPrices }) => {
+const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, className?: string }> = ({ direction, isExchange = false, className }) => {
     const {
         values,
         setFieldValue,
@@ -99,7 +97,7 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
             </Selector>
             {
                 showBalance &&
-                <Balance values={values} direction={direction} minAllowedAmount={minAllowedAmount} maxAllowedAmount={maxAllowedAmount} quoteTokenPrices={quoteTokenPrices ?? quote} />
+                <Balance values={values} direction={direction} />
             }
         </div>
     )

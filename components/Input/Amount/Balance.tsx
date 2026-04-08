@@ -7,10 +7,8 @@ import useOutOfGas from "@/lib/gases/useOutOfGas";
 import BalanceWarningTooltip from "@/components/ReserveGasNote";
 import { useUsdModeStore } from "@/stores/usdModeStore";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
-import { QuoteTokenPrices } from "@/hooks/useFee";
-import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
 
-const Balance = ({ values, direction, minAllowedAmount, maxAllowedAmount, quoteTokenPrices }: { values: SwapFormValues, direction: string, minAllowedAmount?: number, maxAllowedAmount?: number, quoteTokenPrices?: QuoteTokenPrices }) => {
+const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
 
     const { to, fromAsset: fromCurrency, toAsset: toCurrency, from, destination_address } = values
     const selectedSourceAccount = useSelectedAccount("from", from?.name);
@@ -28,10 +26,7 @@ const Balance = ({ values, direction, minAllowedAmount, maxAllowedAmount, quoteT
         tokenBalance?.amount !== undefined ? truncateDecimals(tokenBalance?.amount, token?.precision) : '',
         [tokenBalance?.amount, token?.precision]
     )
-    const tokenPriceInUsd = useMemo(() =>
-        quoteTokenPrices ? resolveTokenUsdPrice(token, quoteTokenPrices) : token?.price_in_usd,
-        [token, quoteTokenPrices]
-    )
+    const tokenPriceInUsd = token?.price_in_usd
     const displayedBalance = useMemo(() => {
         const balanceInUsd = isUsdMode && typeof tokenPriceInUsd === 'number' && tokenPriceInUsd > 0 && !isNaN(balanceAmount)
             ? formatUsd(balanceAmount * tokenPriceInUsd)
@@ -47,8 +42,6 @@ const Balance = ({ values, direction, minAllowedAmount, maxAllowedAmount, quoteT
         token: isFromDirection ? values.fromAsset : undefined,
         amount: isFromDirection ? values.amount : undefined,
         balances: isFromDirection ? balances : undefined,
-        minAllowedAmount,
-        maxAllowedAmount
     })
 
     const insufficientBalance = balanceAmount >= 0 && balanceAmount < Number(values.amount) && values.depositMethod === 'wallet' && isFromDirection

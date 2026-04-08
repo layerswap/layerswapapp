@@ -105,8 +105,12 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     }, [router])
 
     const setSubmitedFormValues = useCallback((values: NonNullable<SwapFormValues>) => {
+        const isDepositAddressFlow = values.depositMethod === 'deposit_address' && !values.fromExchange;
 
-        if (!values.from || !values.to || !values.fromAsset || !values.toAsset || !values.amount! || !values.destination_address)
+        if (!values.from || !values.to || !values.fromAsset || !values.toAsset || !values.destination_address)
+            throw new Error("Form data is missing")
+
+        if (!isDepositAddressFlow && !values.amount)
             throw new Error("Form data is missing")
 
         setSwapBasicFormData({
@@ -114,7 +118,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             destination_network: values.to,
             source_token: values.fromAsset,
             destination_token: values.toAsset,
-            requested_amount: values.amount,
+            requested_amount: values.amount || '',
             destination_address: values.destination_address,
             use_deposit_address: values.depositMethod === 'deposit_address',
             refuel: !!values.refuel,
@@ -203,7 +207,11 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             throw new Error("No swap data")
 
         const { to, fromAsset: fromCurrency, toAsset: toCurrency, from, refuel, fromExchange, depositMethod, amount, destination_address } = values
-        if (!to || !fromCurrency || !toCurrency || !from || !amount || !destination_address || !depositMethod)
+        const isDepositAddressFlow = depositMethod === 'deposit_address' && !fromExchange;
+
+        if (!to || !fromCurrency || !toCurrency || !from || !destination_address || !depositMethod)
+            throw new Error("Form data is missing")
+        if (!isDepositAddressFlow && !amount)
             throw new Error("Form data is missing")
 
         const sourceIsSupported = selectedWallet && WalletIsSupportedForSource({
@@ -213,7 +221,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         })
         const slippage = useSlippageStore.getState().slippage
         const data: CreateSwapParams = {
-            amount: amount,
+            amount: amount || undefined,
             source_network: from.name,
             destination_network: to.name,
             source_token: fromCurrency.symbol,

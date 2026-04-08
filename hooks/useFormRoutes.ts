@@ -41,9 +41,13 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
     }, [isLoading, direction, partialPublished])
     // Apply query-based filtering
     const filteredRoutes = useMemo(() => {
-        const filtered = filterRoutesByQuery(routes, direction, { lockFrom, from, lockTo, to, lockFromAsset, fromAsset, lockToAsset, toAsset });
+        let filtered = filterRoutesByQuery(routes, direction, { lockFrom, from, lockTo, to, lockFromAsset, fromAsset, lockToAsset, toAsset });
+        // In exchange flow (deposit_address), only show source networks that support deposit_address
+        if (direction === 'from' && values.depositMethod === 'deposit_address') {
+            filtered = filtered.filter(r => r.deposit_methods?.includes('deposit_address'));
+        }
         return filtered;
-    }, [routes, direction, lockFrom, from, lockTo, to, lockFromAsset, fromAsset, lockToAsset, toAsset]);
+    }, [routes, direction, lockFrom, from, lockTo, to, lockFromAsset, fromAsset, lockToAsset, toAsset, values.depositMethod]);
 
     const routeElements = useMemo(() =>
         groupRoutes({

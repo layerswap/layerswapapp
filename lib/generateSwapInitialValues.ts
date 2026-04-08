@@ -51,14 +51,14 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
         (lockedDestinationCurrency && amount) || (initialDestinationCurrency ? amount : '')
 
     const result: SwapFormValues = {
-        fromExchange: type === 'exchange' ? initialSourceExchange : undefined,
+        fromExchange: undefined,
         from: type === 'cross-chain' ? initialSource : undefined,
         to: initialDestination,
-        amount: initialAmount,
+        amount: type === 'cross-chain' ? initialAmount : undefined,
         fromAsset: type === 'cross-chain' ? initialSourceCurrency : undefined,
         toAsset: initialDestinationCurrency,
         destination_address: initialAddress ? initialAddress : '',
-        depositMethod: (depositMethod === "wallet" || depositMethod === "deposit_address") ? depositMethod : undefined,
+        depositMethod: type === 'exchange' ? 'deposit_address' : ((depositMethod === "wallet" || depositMethod === "deposit_address") ? depositMethod : undefined),
     }
 
     return result
