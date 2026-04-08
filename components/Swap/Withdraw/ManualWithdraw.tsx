@@ -7,7 +7,7 @@ import { QRCodeSVG } from 'qrcode.react'
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import useExchangeNetworks from '@/hooks/useExchangeNetworks'
 import { Clock, Zap } from 'lucide-react'
-import { Network, NetworkRoute, NetworkRouteToken, Token } from '@/Models/Network'
+import { Network, NetworkRoute, NetworkRouteToken } from '@/Models/Network'
 import SubmitButton from '@/components/buttons/submitButton'
 import { Widget } from '@/components/Widget/Index'
 import { Partner } from '@/Models/Partner'
@@ -19,7 +19,7 @@ import { useSwapDataUpdate } from '@/context/swap'
 import { Selector, SelectorContent, SelectorTrigger } from '@/components/Select/Selector/Index'
 import { SelectedRouteDisplay } from '@/components/Input/RoutePicker/Routes'
 import { Content } from '@/components/Input/RoutePicker/Content'
-import { NetworkTokenElement, RowElement } from '@/Models/Route'
+import { RowElement } from '@/Models/Route'
 
 interface Props {
     swapBasicData: SwapBasicData;
@@ -29,7 +29,6 @@ interface Props {
     type: 'widget' | 'contained',
 }
 
-type NetworkOption = { network: Network; token: Token }
 
 function formatCompletionTime(ms: number): string {
     const seconds = Math.floor(ms / 1000);
@@ -102,7 +101,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, type
             destination_network: swapBasicData.destination_network.name,
             destination_token: swapBasicData.destination_token.symbol,
             include_unmatched: 'false',
-            include_swaps: 'false',
+            include_swaps: 'true',
             include_unavailable: 'false',
         });
         return `/sources?${params.toString()}`;
@@ -114,43 +113,53 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, type
         { dedupingInterval: 10000, keepPreviousData: true }
     );
 
-    // Build flat list of selectable networks
-    const networkOptions = useMemo(() => {
+    // Build available source routes
+    const availableRoutes: NetworkRoute[] = useMemo(() => {
         if (isExchange) {
-            return exchangeWithdrawalNetworks?.map(n => ({ network: n.network, token: n.token })) ?? [];
+            // Group exchange networks into NetworkRoute-like objects
+            const byNetwork = new Map<string, NetworkRoute>()
+            for (const n of exchangeWithdrawalNetworks ?? []) {
+                const existing = byNetwork.get(n.network.name)
+                if (existing) {
+                    existing.tokens.push(n.token as NetworkRouteToken)
+                } else {
+                    byNetwork.set(n.network.name, { ...n.network, tokens: [n.token as NetworkRouteToken] } as NetworkRoute)
+                }
+            }
+            return Array.from(byNetwork.values())
         }
-        const routes = sourceRoutesData?.data;
-        if (!routes) return [];
-        return routes
-            .filter(route => route.deposit_methods?.includes('deposit_address'))
-            .flatMap(route =>
-                route.tokens
-                    ?.filter(t => t.status === 'active')
-                    .map(token => ({ network: route as Network, token: token as Token })) ?? []
-            );
-    }, [isExchange, exchangeWithdrawalNetworks, sourceRoutesData]);
+        const routes = sourceRoutesData?.data
+        if (!routes) return []
+        return routes.map(route => ({
+            ...route,
+            tokens: route.tokens?.filter(t => t.status === 'active') ?? [],
+        })).filter(route => route.tokens.length > 0)
+    }, [isExchange, exchangeWithdrawalNetworks, sourceRoutesData])
 
     const isNetworksLoading = isExchange ? exchangeSourceNetworksLoading : sourceRoutesLoading;
 
     const currentTokenSymbol = swapBasicData?.source_token?.symbol;
 
-    // Track selected network (flat, no grouping)
-    const [selectedNetworkIndex, setSelectedNetworkIndex] = useState(0)
-    const selectedNetwork = networkOptions[selectedNetworkIndex]
+    // Track selected network + token
+    const [selectedRoute, setSelectedRoute] = useState<{ network: NetworkRoute; token: NetworkRouteToken } | null>(null)
 
-    // Reset selection when options change
+    // Default to first available route/token
     useEffect(() => {
-        setSelectedNetworkIndex(0)
-    }, [networkOptions.length])
+        if (availableRoutes.length > 0 && !selectedRoute) {
+            const first = availableRoutes[0]
+            const firstToken = first.tokens[0]
+            if (firstToken) setSelectedRoute({ network: first, token: firstToken })
+        }
+    }, [availableRoutes])
 
     // Create a new swap when the selected source network changes
-    const recreateSwap = useCallback(async (source: NetworkOption) => {
+    const recreateSwap = useCallback(async (network: NetworkRoute, token: NetworkRouteToken) => {
         if (!swapBasicData) return
         setIsCreatingSwap(true)
         try {
             const params: CreateSwapParams = {
-                source_network: source.network.name,
-                source_token: source.token.symbol,
+                source_network: network.name,
+                source_token: token.symbol,
                 destination_network: swapBasicData.destination_network.name,
                 destination_token: swapBasicData.destination_token.symbol,
                 destination_address: swapBasicData.destination_address,
@@ -168,38 +177,23 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, type
         }
     }, [swapBasicData, refuel, apiClient, setSwapId])
 
-    const handleNetworkChange = useCallback((index: number) => {
-        setSelectedNetworkIndex(index)
-        const network = networkOptions[index]
-        if (network) {
-            recreateSwap(network)
-        }
-    }, [networkOptions, recreateSwap])
-
-    // Convert networkOptions to RowElements for the route picker Content
+    // Build RowElements with network groupings for the route picker
     const routeElements: RowElement[] = useMemo(() => {
-        return networkOptions.map((opt): NetworkTokenElement => ({
-            type: 'network_token',
-            route: {
-                token: opt.token as NetworkRouteToken,
-                route: opt.network as NetworkRoute,
-            },
+        return availableRoutes.map((route): RowElement => ({
+            type: 'network',
+            route,
         }))
-    }, [networkOptions])
+    }, [availableRoutes])
 
     const handleRouteSelect = useCallback((route: NetworkRoute, token: NetworkRouteToken) => {
-        const index = networkOptions.findIndex(
-            opt => opt.network.name === route.name && opt.token.symbol === token.symbol
-        )
-        if (index >= 0) {
-            handleNetworkChange(index)
-        }
-    }, [networkOptions, handleNetworkChange])
+        setSelectedRoute({ network: route, token })
+        recreateSwap(route, token)
+    }, [recreateSwap])
 
     // Fetch quote for the selected network
     const { detailedQuotes, isLoading: isQuoteLoading } = useDetailedQuote({
-        sourceNetwork: selectedNetwork?.network.name,
-        sourceToken: selectedNetwork?.token.symbol,
+        sourceNetwork: selectedRoute?.network.name,
+        sourceToken: selectedRoute?.token.symbol,
         destinationNetwork: swapBasicData?.destination_network?.name,
         destinationToken: swapBasicData?.destination_token?.symbol,
         destinationAddress: swapBasicData?.destination_address,
@@ -214,13 +208,13 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, type
 
     const bestQuote = detailedQuotes?.[0]
 
-    const depositAddress = resolveDepositAddress(selectedNetwork?.network, depositActions)
+    const depositAddress = resolveDepositAddress(selectedRoute?.network, depositActions)
 
     const handleCopy = () => {
         if (depositAddress) copy(depositAddress)
     }
 
-    const hasMultipleNetworks = networkOptions.length > 1
+    const hasMultipleOptions = availableRoutes.length > 1 || availableRoutes.some(r => r.tokens.length > 1)
 
     return (
         <>
@@ -267,10 +261,10 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, type
                                 {/* Network & token selector */}
                                 <div className="px-3.5 py-2.5">
                                     <Selector>
-                                        <SelectorTrigger disabled={!hasMultipleNetworks} className="py-1.5 px-2">
+                                        <SelectorTrigger disabled={!hasMultipleOptions} className="py-1.5 px-2">
                                             <SelectedRouteDisplay
-                                                route={selectedNetwork?.network as NetworkRoute}
-                                                token={selectedNetwork?.token as NetworkRouteToken}
+                                                route={selectedRoute?.network}
+                                                token={selectedRoute?.token}
                                                 placeholder="Select network"
                                             />
                                         </SelectorTrigger>
@@ -282,8 +276,8 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, type
                                                     setSearchQuery={setSearchQuery}
                                                     rowElements={routeElements}
                                                     direction="from"
-                                                    selectedRoute={selectedNetwork?.network.name}
-                                                    selectedToken={selectedNetwork?.token.symbol}
+                                                    selectedRoute={selectedRoute?.network.name}
+                                                    selectedToken={selectedRoute?.token.symbol}
                                                 />
                                             )}
                                         </SelectorContent>
@@ -320,7 +314,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, type
                                     ) : (
                                         <>
                                             <span className="text-sm font-mono text-primary-text truncate">
-                                                {new Address(depositAddress, selectedNetwork?.network).toShortString()}
+                                                {new Address(depositAddress, selectedRoute?.network!).toShortString()}
                                             </span>
                                             <CopyButton toCopy={depositAddress} className='flex shrink-0' />
                                         </>
