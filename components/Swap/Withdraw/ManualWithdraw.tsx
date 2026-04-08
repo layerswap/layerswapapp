@@ -6,9 +6,8 @@ import LayerSwapApiClient, { CreateSwapParams, DepositAction, Refuel, SwapBasicD
 import { QRCodeSVG } from 'qrcode.react'
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import useExchangeNetworks from '@/hooks/useExchangeNetworks'
-import { ChevronDown, Clock, Zap } from 'lucide-react'
-import VaulDrawer from '@/components/modal/vaulModal'
-import { Network, NetworkRoute, Token } from '@/Models/Network'
+import { Clock, Zap } from 'lucide-react'
+import { Network, NetworkRoute, NetworkRouteToken, Token } from '@/Models/Network'
 import SubmitButton from '@/components/buttons/submitButton'
 import { Widget } from '@/components/Widget/Index'
 import { Partner } from '@/Models/Partner'
@@ -17,6 +16,10 @@ import useSWR from 'swr'
 import { ApiResponse } from '@/Models/ApiResponse'
 import { DetailedQuoteModel, useDetailedQuote } from '@/hooks/useDetailedQuote'
 import { useSwapDataUpdate } from '@/context/swap'
+import { Selector, SelectorContent, SelectorTrigger } from '@/components/Select/Selector/Index'
+import { SelectedRouteDisplay } from '@/components/Input/RoutePicker/Routes'
+import { Content } from '@/components/Input/RoutePicker/Content'
+import { NetworkTokenElement, RowElement } from '@/Models/Route'
 
 interface Props {
     swapBasicData: SwapBasicData;
@@ -79,7 +82,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, type
     const [copied, copy] = useCopyClipboard()
     const { setSwapId } = useSwapDataUpdate()
     const [isCreatingSwap, setIsCreatingSwap] = useState(false)
-    const [pickerOpen, setPickerOpen] = useState(false)
+    const [searchQuery, setSearchQuery] = useState('')
 
     // For exchange swaps: fetch withdrawal networks from the exchange
     const isExchange = !!swapBasicData?.source_exchange;
@@ -173,6 +176,26 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, type
         }
     }, [networkOptions, recreateSwap])
 
+    // Convert networkOptions to RowElements for the route picker Content
+    const routeElements: RowElement[] = useMemo(() => {
+        return networkOptions.map((opt): NetworkTokenElement => ({
+            type: 'network_token',
+            route: {
+                token: opt.token as NetworkRouteToken,
+                route: opt.network as NetworkRoute,
+            },
+        }))
+    }, [networkOptions])
+
+    const handleRouteSelect = useCallback((route: NetworkRoute, token: NetworkRouteToken) => {
+        const index = networkOptions.findIndex(
+            opt => opt.network.name === route.name && opt.token.symbol === token.symbol
+        )
+        if (index >= 0) {
+            handleNetworkChange(index)
+        }
+    }, [networkOptions, handleNetworkChange])
+
     // Fetch quote for the selected network
     const { detailedQuotes, isLoading: isQuoteLoading } = useDetailedQuote({
         sourceNetwork: selectedNetwork?.network.name,
@@ -241,32 +264,31 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, type
 
                             {/* Network picker + QR + address */}
                             <div className="bg-secondary-500 rounded-xl overflow-hidden mb-3">
-                                {/* Network selector */}
-                                <button
-                                    onClick={() => hasMultipleNetworks && setPickerOpen(true)}
-                                    className={`w-full px-3.5 py-2.5 flex items-center justify-between ${hasMultipleNetworks ? 'hover:bg-secondary-400/30 cursor-pointer' : 'cursor-default'} transition-colors`}
-                                >
-                                    <div className="flex items-center gap-2">
-                                        {selectedNetwork?.network.logo && (
-                                            <div className="h-5 w-5 shrink-0 rounded-md overflow-hidden">
-                                                <ImageWithFallback
-                                                    src={selectedNetwork.network.logo}
-                                                    alt={selectedNetwork.network.display_name}
-                                                    height="20"
-                                                    width="20"
-                                                    loading="eager"
-                                                    className="object-contain"
+                                {/* Network & token selector */}
+                                <div className="px-3.5 py-2.5">
+                                    <Selector>
+                                        <SelectorTrigger disabled={!hasMultipleNetworks} className="py-1.5 px-2">
+                                            <SelectedRouteDisplay
+                                                route={selectedNetwork?.network as NetworkRoute}
+                                                token={selectedNetwork?.token as NetworkRouteToken}
+                                                placeholder="Select network"
+                                            />
+                                        </SelectorTrigger>
+                                        <SelectorContent isLoading={isNetworksLoading}>
+                                            {({ closeModal }) => (
+                                                <Content
+                                                    onSelect={(r, t) => { handleRouteSelect(r, t); closeModal(); }}
+                                                    searchQuery={searchQuery}
+                                                    setSearchQuery={setSearchQuery}
+                                                    rowElements={routeElements}
+                                                    direction="from"
+                                                    selectedRoute={selectedNetwork?.network.name}
+                                                    selectedToken={selectedNetwork?.token.symbol}
                                                 />
-                                            </div>
-                                        )}
-                                        <span className="text-sm font-medium text-primary-text">
-                                            {selectedNetwork?.network.display_name}
-                                        </span>
-                                    </div>
-                                    {hasMultipleNetworks && (
-                                        <ChevronDown className="h-4 w-4 text-secondary-text" />
-                                    )}
-                                </button>
+                                            )}
+                                        </SelectorContent>
+                                    </Selector>
+                                </div>
 
                                 {/* Divider */}
                                 <div className="mx-3.5 border-t border-secondary-400/50" />
@@ -338,55 +360,6 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, type
                 </SubmitButton>
             </Widget.Footer>
 
-            {/* Network picker modal */}
-            <VaulDrawer
-                show={pickerOpen}
-                setShow={setPickerOpen}
-                header="Select network"
-                modalId="network-select"
-                mode="fitHeight"
-            >
-                <div className="space-y-1">
-                    {networkOptions.map((item, i) => {
-                        const isSelected = i === selectedNetworkIndex
-                        return (
-                            <button
-                                key={`${item.network.name}-${item.token.symbol}`}
-                                onClick={() => {
-                                    handleNetworkChange(i)
-                                    setPickerOpen(false)
-                                }}
-                                className={`w-full flex items-center justify-between px-3 py-3 rounded-xl transition-colors ${
-                                    isSelected
-                                        ? 'bg-secondary-500 ring-1 ring-secondary-200'
-                                        : 'hover:bg-secondary-500/50'
-                                }`}
-                            >
-                                <div className="flex items-center gap-2.5">
-                                    <div className="h-8 w-8 shrink-0 rounded-lg overflow-hidden bg-secondary-400">
-                                        {item.network.logo && (
-                                            <ImageWithFallback
-                                                src={item.network.logo}
-                                                alt={item.network.display_name}
-                                                height="32"
-                                                width="32"
-                                                loading="eager"
-                                                className="object-contain"
-                                            />
-                                        )}
-                                    </div>
-                                    <span className="text-sm font-medium text-primary-text">
-                                        {item.network.display_name}
-                                    </span>
-                                </div>
-                                {isSelected && (
-                                    <div className="h-2 w-2 rounded-full bg-primary shrink-0" />
-                                )}
-                            </button>
-                        )
-                    })}
-                </div>
-            </VaulDrawer>
         </>
     )
 }
