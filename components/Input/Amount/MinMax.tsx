@@ -54,11 +54,11 @@ const MinMax = (props: MinMaxProps) => {
     }, [fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod, fallbackAmount])
 
     const minAmount = useMemo(() => {
-        if (walletBalance && walletBalance.amount !== undefined && limitsMinAmount !== undefined) {
+        if (walletBalance && walletBalance.amount !== undefined && limitsMinAmount !== undefined && depositMethod === 'wallet') {
             return Number(walletBalance.amount) < limitsMinAmount ? Number(walletBalance.amount) : limitsMinAmount;
         }
         return limitsMinAmount || fallbackAmount;
-    }, [walletBalance, limitsMinAmount, fallbackAmount]);
+    }, [walletBalance, limitsMinAmount, fallbackAmount, depositMethod]);
 
     const halfOfBalance = (walletBalance?.amount || maxAllowedAmount) ? (walletBalance?.amount || maxAllowedAmount) / 2 : 0;
 

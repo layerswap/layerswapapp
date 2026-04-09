@@ -2,9 +2,10 @@
 import { GasProps } from "../../../Models/Balance"
 import { NetworkType, Network, Token } from "../../../Models/Network"
 import { GasProvider } from "./types"
-import { PublicClient, TransactionSerializedEIP1559, createPublicClient, encodeFunctionData, parseEther, serializeTransaction } from "viem";
+import { PublicClient, TransactionSerializedEIP1559, createPublicClient, encodeFunctionData, parseEther, parseGwei, serializeTransaction } from "viem";
 import { erc20Abi } from "viem";
 import { formatUnits } from "viem";
+import NetworkSettings from "../../NetworkSettings";
 import { publicActionsL2 } from 'viem/op-stack'
 import resolveChain from "../../resolveChain";
 import { resolveFallbackTransport } from "../../resolveTransports";
@@ -116,9 +117,21 @@ abstract class getEVMGas {
         let maxPriorityFeePerGas = feesPerGas?.maxPriorityFeePerGas
         if (!maxPriorityFeePerGas) maxPriorityFeePerGas = await this.estimateMaxPriorityFeePerGas()
 
+        let maxFeePerGas = feesPerGas?.maxFeePerGas
+
+        const minPriorityFeeGwei = NetworkSettings.KnownSettings[this.from.name]?.MinPriorityFeePerGasInGwei
+        if (minPriorityFeeGwei && maxPriorityFeePerGas !== undefined && maxFeePerGas !== undefined) {
+            const minPriorityFee = parseGwei(minPriorityFeeGwei.toString())
+            if (maxPriorityFeePerGas < minPriorityFee) {
+                const diff = minPriorityFee - maxPriorityFeePerGas
+                maxPriorityFeePerGas = minPriorityFee
+                maxFeePerGas = maxFeePerGas + diff
+            }
+        }
+
         return {
             gasPrice,
-            maxFeePerGas: feesPerGas?.maxFeePerGas,
+            maxFeePerGas,
             maxPriorityFeePerGas: maxPriorityFeePerGas
         }
 
