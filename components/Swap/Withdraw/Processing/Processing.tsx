@@ -282,7 +282,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                         swapRefundTransaction && (
                             <LinkWithIcon
                                 name={'View in explorer'}
-                                url={getExplorerUrl(output_tx_explorer, swapRefundTransaction?.transaction_hash || '')}
+                                url={getExplorerUrl(input_tx_explorer, swapRefundTransaction?.transaction_hash || '')}
                             />
                         )}
                 </div>
