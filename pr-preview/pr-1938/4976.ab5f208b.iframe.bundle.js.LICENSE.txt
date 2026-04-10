@@ -1,0 +1,10 @@
+/* chnl v1.2.0 by Vitaliy Potapov @preserve */
+
+/*! Axios v1.15.0 Copyright (c) 2026 Matt Zabriskie and contributors */
+
+/**
+ * @license lucide-react v0.379.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
