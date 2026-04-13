@@ -1,98 +1,47 @@
 import { walletConnect } from "./walletConnect"
 import walletsData from "@/public/walletsData.json"
-import { resolveWalletConnectorIndex } from "../../utils/resolveWalletIcon"
 import { WalletConnectWallet } from "@/Models/WalletConnectWallet"
+import { evmWalletConnectWallets, WALLETS_TO_FILTER } from "../../walletConnect/registry"
+import { decorateForWagmi } from "../../walletConnect/decorateForWagmi"
 
 export type { WalletConnectWallet }
 
-const projectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b'
-const wallets = Object.values(walletsData.listings)
+const rawWallets = Object.values(walletsData.listings)
 
-const walletsToFilter = [
-    "5d9f1395b3a8e848684848dc4147cbd05c8d54bb737eac78fe103901fe6b01a1"
-]
-
-export const resolveWallets: () => WalletConnectWallet[] = () => {
-
-    const resolvedWallets = pickLatestBy(
-        wallets,
-        c => c.slug
-    ).filter(w => (w.mobile.native || w.mobile.universal) && w.name && w.slug && !walletsToFilter.some(wtf => wtf == w.id)).map(wallet => {
-        const w = resolveWallet(wallet)
-        return w
-    })
-
-    return resolvedWallets;
-}
-
+export const walletConnectWallets: WalletConnectWallet[] = evmWalletConnectWallets.map(decorateForWagmi)
 
 // Cache for connector instances to ensure stable references for wagmi reconnection
 const connectorCache = new Map<string, ReturnType<typeof walletConnect>>()
 
 export const resolveConnector = (name: string) => {
-    // Return cached connector if available
     if (connectorCache.has(name)) {
         return connectorCache.get(name)!
     }
 
-    const wallet = wallets.find(w => w.name === name && !walletsToFilter.includes(w.id))
-    const params = resolveWallet(wallet)
-    const connector = walletConnect(params as any)
+    const base = evmWalletConnectWallets.find(w => w.name === name)
+    if (!base) {
+        // Fallback: look up by name in the raw registry (covers the pre-existing ad-hoc
+        // lookup path for wallets that haven't been pre-resolved yet).
+        const raw = rawWallets.find((w: any) => w.name === name && !WALLETS_TO_FILTER.includes(w.id))
+        if (!raw) throw new Error(`Wallet ${name} not found`)
+        const connector = walletConnect(decorateForWagmi({
+            id: raw.slug,
+            name: raw.name,
+            icon: raw.image_url?.sm,
+            rdns: raw.rdns || undefined,
+            mobile: { native: raw.mobile?.native ?? null, universal: raw.mobile?.universal ?? null },
+            desktop: raw.desktop ? { native: raw.desktop.native ?? null, universal: raw.desktop.universal ?? null } : undefined,
+            chains: Array.isArray(raw.chains) ? raw.chains : [],
+            hasBrowserExtension: raw.injected != null,
+            installUrl: raw.injected != null ? (raw.app?.browser ?? raw.app?.chrome ?? undefined) : undefined,
+            isMobileSupported: !!(raw.mobile?.native || raw.mobile?.universal),
+            order: -1,
+        }) as any)
+        connectorCache.set(name, connector)
+        return connector
+    }
 
-    // Cache the connector for future use
+    const connector = walletConnect(decorateForWagmi(base) as any)
     connectorCache.set(name, connector)
     return connector
-}
-
-const resolveWallet = (wallet: any) => {
-
-    if (!wallet) {
-        throw new Error(`Wallet ${wallet.name} not found`)
-    }
-
-    const isMobileSupported = !!wallet.mobile.universal || !!wallet.mobile.native
-    const isWalletConnectSupported = isMobileSupported || !!wallet.desktop?.universal || !!wallet.desktop?.native
-    const type = isWalletConnectSupported ? "walletConnect" : "other"
-
-    const w: WalletConnectWallet = {
-        id: wallet.slug,
-        name: wallet.name,
-        mobile: wallet.mobile,
-        rdns: wallet.rdns ? `${wallet.rdns}.wc` : undefined,
-        icon: wallet.image_url.sm,
-        projectId,
-        showQrModal: false,
-        customStoragePrefix: wallet.slug,
-        order: resolveWalletConnectorIndex(wallet.slug),
-        type,
-        isMobileSupported: isMobileSupported,
-        hasBrowserExtension: wallet.injected != null,
-        installUrl: wallet.injected != null ? wallet.app.browser ?? wallet.app.chrome : undefined,
-        extensionNotFound: type == 'walletConnect',
-        providerName: wallet.name
-    }
-
-    return w
-}
-export const walletConnectWallets = resolveWallets()
-
-function pickLatestBy<T>(
-    connectors: T[],
-    keyFn: (c: T) => string
-): T[] {
-    const map = new Map<string, T>();
-    for (const c of connectors) {
-        const key = keyFn(c);
-        const existing = map.get(key);
-        if (!existing) {
-            map.set(key, c);
-        } else {
-            const a = new Date((existing as any).updatedAt);
-            const b = new Date((c as any).updatedAt);
-            if (b > a) {
-                map.set(key, c);
-            }
-        }
-    }
-    return Array.from(map.values());
 }

@@ -10,6 +10,7 @@ import { WalletProvidersProvider } from "../../context/walletProviders";
 import { WalletModalProvider } from "../WalletModal";
 import FuelProviderWrapper from "./FuelProvider";
 import { EvmConnectorsProvider } from "../../context/evmConnectorsContext";
+import { WalletConnectConnectorsProvider } from "../../lib/wallets/walletConnect/context";
 import { BitcoinProvider } from "./BitcoinProvider";
 import { ActiveParadexAccountProvider } from "./ActiveParadexAccount";
 
@@ -19,23 +20,25 @@ const WalletsProviders: FC<{ children: JSX.Element | JSX.Element[], basePath: st
             <SolanaProvider>
                 <TronProvider>
                     <StarknetProvider>
-                        <EvmConnectorsProvider>
-                            <Wagmi>
-                                <WalletModalProvider>
-                                    <ActiveParadexAccountProvider>
-                                        <FuelProviderWrapper>
-                                            <ImtblPassportProvider>
-                                                <BitcoinProvider>
-                                                    <WalletProvidersProvider>
-                                                        {children}
-                                                    </WalletProvidersProvider>
-                                                </BitcoinProvider>
-                                            </ImtblPassportProvider>
-                                        </FuelProviderWrapper>
-                                    </ActiveParadexAccountProvider>
-                                </WalletModalProvider>
-                            </Wagmi>
-                        </EvmConnectorsProvider>
+                        <WalletConnectConnectorsProvider>
+                            <EvmConnectorsProvider>
+                                <Wagmi>
+                                    <WalletModalProvider>
+                                        <ActiveParadexAccountProvider>
+                                            <FuelProviderWrapper>
+                                                <ImtblPassportProvider>
+                                                    <BitcoinProvider>
+                                                        <WalletProvidersProvider>
+                                                            {children}
+                                                        </WalletProvidersProvider>
+                                                    </BitcoinProvider>
+                                                </ImtblPassportProvider>
+                                            </FuelProviderWrapper>
+                                        </ActiveParadexAccountProvider>
+                                    </WalletModalProvider>
+                                </Wagmi>
+                            </EvmConnectorsProvider>
+                        </WalletConnectConnectorsProvider>
                     </StarknetProvider>
                 </TronProvider>
             </SolanaProvider>

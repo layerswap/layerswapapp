@@ -1,18 +1,28 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useMemo } from 'react'
 import { CreateConnectorFn } from 'wagmi';
 import { coinbaseWallet, walletConnect, metaMask } from '@wagmi/connectors'
 import { walletConnect as customWalletConnect } from '../lib/wallets/connectors/resolveConnectors/walletConnect';
 import { browserInjected } from '../lib/wallets/connectors/browserInjected';
 import { isMobile } from '../lib/isMobile';
 import { WalletConnectWallet } from '@/Models/WalletConnectWallet';
+import { WALLETCONNECT_PROJECT_ID } from '@/lib/wallets/walletConnect/config';
+import { useWalletConnectConnectors } from '@/lib/wallets/walletConnect/context';
+import { decorateForWagmi as decorateBaseForWagmi } from '@/lib/wallets/walletConnect/decorateForWagmi';
+import {
+    type WalletConnectWalletBase,
+    WC_REGISTRY_MARKER,
+    type RegistryAttachedConnector,
+} from '@/lib/wallets/walletConnect/types';
+
+type WalletConnectDecorated = RegistryAttachedConnector<WalletConnectWallet>
 
 type ContextType = {
     connectors: CreateConnectorFn[],
-    walletConnectConnectors: WalletConnectWallet[],
-    addWalletConnectWallet: (connector: WalletConnectWallet) => void,
+    walletConnectConnectors: WalletConnectDecorated[],
+    addWalletConnectWallet: (connector: WalletConnectWalletBase) => void,
     hiddenWalletConnectConnector: CreateConnectorFn,
     walletConnectWalletsLoaded: boolean,
-    loadWalletConnectWallets: () => Promise<WalletConnectWallet[]>
+    loadWalletConnectWallets: () => Promise<WalletConnectDecorated[]>
 }
 
 const EvmConnectorsContext = createContext<ContextType | null>(null);
@@ -25,34 +35,21 @@ export const featuredWalletsIds = [
     'okx-wallet',
 ]
 
-const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b';
 const wltcnnct_inited = walletConnect({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: isMobile(), customStoragePrefix: 'walletConnect' })
 
 // Hidden WalletConnect connector for dynamic wallets - not shown in the list
 // Uses custom walletConnect with unique ID so we can identify it
 export const HIDDEN_WALLETCONNECT_ID = 'hiddenWalletConnect'
-const hiddenWalletConnectConnector = customWalletConnect({ 
+const hiddenWalletConnectConnector = customWalletConnect({
     id: HIDDEN_WALLETCONNECT_ID,
     name: 'Hidden WalletConnect',
     rdns: '',
     type: 'other',
     mobile: { native: '', universal: '' },
     icon: '',
-    projectId: WALLETCONNECT_PROJECT_ID, 
+    projectId: WALLETCONNECT_PROJECT_ID,
     showQrModal: false,
 })
-
-let cachedWalletConnectWallets: WalletConnectWallet[] | null = null
-
-const loadWalletConnectWalletRegistry = async (): Promise<WalletConnectWallet[]> => {
-    if (cachedWalletConnectWallets) {
-        return cachedWalletConnectWallets
-    }
-
-    const module = await import('../lib/wallets/connectors/resolveConnectors')
-    cachedWalletConnectWallets = module.walletConnectWallets
-    return cachedWalletConnectWallets
-}
 
 // Create stable connector instances at module level to ensure wagmi can reconnect properly
 const metaMaskConnector = metaMask({
@@ -70,40 +67,33 @@ const coinbaseWalletConnector = coinbaseWallet({
 
 const browserInjectedConnector = browserInjected()
 
+// Wagmi-specific decoration of a shared-registry wallet. The shared
+// `decorateBaseForWagmi` returns the plain `WalletConnectWallet`; here we
+// additionally attach WC_REGISTRY_MARKER so the connect flow can recover the
+// raw base entry later (for deep-link building, pending metadata, etc.)
+// without threading a parallel list through every caller.
+const decorateForWagmi = (base: WalletConnectWalletBase): WalletConnectDecorated => {
+    const decorated = decorateBaseForWagmi(base)
+    return Object.assign(decorated, { [WC_REGISTRY_MARKER]: base }) as WalletConnectDecorated
+}
+
 export function EvmConnectorsProvider({ children }) {
-    const [walletConnectConnectors, setWalletConnectConnectors] = useState<WalletConnectWallet[]>([])
-    const [walletConnectWalletsLoaded, setWalletConnectWalletsLoaded] = useState(false)
+    const { connectors: baseConnectors, loaded, load, addRecent } = useWalletConnectConnectors('eip155')
 
-    const addWalletConnectWallet = useCallback((connector: WalletConnectWallet): void => {
-        setWalletConnectConnectors((prev) => {
-            if (prev.length === 0) {
-                return [connector]
-            }
+    const walletConnectConnectors: WalletConnectDecorated[] = useMemo(
+        () => baseConnectors.map(decorateForWagmi),
+        [baseConnectors]
+    )
 
-            return [
-                connector,
-                ...prev.filter(v => v.name.toLowerCase() !== connector.name.toLowerCase())
-            ]
-        })
-    }, [])
+    const addWalletConnectWallet = useCallback(
+        (base: WalletConnectWalletBase): void => addRecent(base),
+        [addRecent]
+    )
 
-    const loadWalletConnectWallets = useCallback(async (): Promise<WalletConnectWallet[]> => {
-        const loadedWallets = await loadWalletConnectWalletRegistry()
-
-        setWalletConnectConnectors((prev) => {
-            const existingIds = new Set(prev.map(wallet => wallet.id.toLowerCase()))
-            const nonExistingWallets = loadedWallets.filter(wallet => !existingIds.has(wallet.id.toLowerCase()))
-
-            if (nonExistingWallets.length === 0) {
-                return prev.length > 0 ? prev : loadedWallets
-            }
-
-            return [...prev, ...nonExistingWallets]
-        })
-        setWalletConnectWalletsLoaded(true)
-
-        return loadedWallets
-    }, [])
+    const loadWalletConnectWallets = useCallback(async (): Promise<WalletConnectDecorated[]> => {
+        const loadedBase = await load()
+        return loadedBase.map(decorateForWagmi)
+    }, [load])
 
     const defaultConnectors: CreateConnectorFn[] = useMemo(() => [
         metaMaskConnector,
@@ -113,15 +103,17 @@ export function EvmConnectorsProvider({ children }) {
         hiddenWalletConnectConnector // Hidden connector for dynamic wallets
     ], [])
 
+    const value = useMemo<ContextType>(() => ({
+        connectors: defaultConnectors,
+        walletConnectConnectors,
+        addWalletConnectWallet,
+        hiddenWalletConnectConnector,
+        walletConnectWalletsLoaded: loaded,
+        loadWalletConnectWallets,
+    }), [defaultConnectors, walletConnectConnectors, addWalletConnectWallet, loaded, loadWalletConnectWallets])
+
     return (
-        <EvmConnectorsContext.Provider value={{
-            connectors: defaultConnectors,
-            walletConnectConnectors,
-            addWalletConnectWallet,
-            hiddenWalletConnectConnector,
-            walletConnectWalletsLoaded,
-            loadWalletConnectWallets
-        }}>
+        <EvmConnectorsContext.Provider value={value}>
             {children}
         </EvmConnectorsContext.Provider>
     )
