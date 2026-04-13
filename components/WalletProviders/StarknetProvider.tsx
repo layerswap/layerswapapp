@@ -71,15 +71,12 @@ const StarknetProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
     const resolveConnectors = async () => {
         // @ts-ignore
-        const argentMobileModule = await import("starknetkit/argentMobile");
-        // @ts-ignore
         const injectedModule = await import("starknetkit/injected");
         // @ts-ignore
         const webWalletModule = await import("starknetkit/webwallet");
         // @ts-ignore
         const controllerModule = await import("starknetkit/controller");
 
-        const ArgentMobileConnector = (argentMobileModule as any).ArgentMobileConnector;
         const InjectedConnector = (injectedModule as any).InjectedConnector;
         const WebWalletConnector = (webWalletModule as any).WebWalletConnector;
         const ControllerConnector = (controllerModule as any).ControllerConnector;
@@ -117,18 +114,8 @@ const StarknetProvider: FC<{ children: ReactNode }> = ({ children }) => {
             const discoverWallets = (await starknet.getDiscoveryWallets()).filter(w => {
                 return (isAndroid && w.downloads["android"]) || (isIOS && w.downloads["ios"]);
             })
-
             if (discoverWallets.length) defaultConnectors.push(...discoverWallets.map(w => new DiscoveryConnector(w, isAndroid ? "android" : "ios")))
         }
-
-        defaultConnectors.push(ArgentMobileConnector.init({
-            options: {
-                dappName: 'Layerswap',
-                projectId: WALLETCONNECT_PROJECT_ID,
-                url: 'https://www.layerswap.io/app/',
-                description: 'Move crypto across exchanges, blockchains, and wallets.'
-            }
-        }))
 
         defaultConnectors.push(
             new ControllerConnector(),
