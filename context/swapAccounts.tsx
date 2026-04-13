@@ -103,11 +103,7 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
 
     const selectDestinationAccount = useCallback((account: BaseAccountIdentity) => {
         if (account.id === 'manually_added') {
-            setManualDestAddresses(prev =>
-                prev.some(a => a.toLowerCase() === account.address.toLowerCase())
-                    ? prev
-                    : [...prev, account.address]
-            );
+            setManualDestAddresses(prev => [...prev, account.address]);
         }
         setSelectedDestinationAccounts(prev => {
             const existingAccountIndex = prev.findIndex(acc => acc.providerName === account.providerName);
