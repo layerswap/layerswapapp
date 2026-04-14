@@ -6,7 +6,8 @@ import { resolveEVMWalletConnectorIndex } from "../../evmUtils"
 const wallets = Object.values(walletsData.listings)
 
 const walletsToFilter = [
-    "5d9f1395b3a8e848684848dc4147cbd05c8d54bb737eac78fe103901fe6b01a1"
+    "5d9f1395b3a8e848684848dc4147cbd05c8d54bb737eac78fe103901fe6b01a1",
+    "71aca34c569bda617eea36c774d941e57b3656060bca575fe898d2f8029553ea"
 ]
 
 export const resolveWallets: (projectId: string) => WalletConnectWallet[] = (projectId: string) => {

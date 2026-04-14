@@ -96,14 +96,12 @@ const StarknetProvider: FC<StarknetProviderProps> = ({ children }) => {
         const defaultConnectors: any[] = []
 
         if (!isSafari) {
-            if (!(isAndroid || isIOS)) {
-                defaultConnectors.push(
-                    new InjectedConnector({ options: { id: "argentX" } }),
-                )
-                defaultConnectors.push(
-                    new InjectedConnector({ options: { id: "keplr" } }),
-                )
-            }
+            defaultConnectors.push(
+                new InjectedConnector({ options: { id: "argentX" } }),
+            )
+            defaultConnectors.push(
+                new InjectedConnector({ options: { id: "keplr" } }),
+            )
             defaultConnectors.push(
                 new InjectedConnector({ options: { id: "braavos" } }),
             )

@@ -12,6 +12,11 @@ const nativeBalanceSkip = [
     KnownInternalNames.Networks.TempoTestnet
 ]
 
+const nativeBalanceSkip = [
+    KnownInternalNames.Networks.TempoMainnet,
+    KnownInternalNames.Networks.TempoTestnet
+]
+
 export class EVMBalanceProvider extends BalanceProvider {
     supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
         return network.type === NetworkType.EVM && !!network.token
