@@ -23,8 +23,6 @@
     "@fuel-ts/account": "^0.101.3",
     "@fuel-ts/address": "^0.101.3",
     "@fuels/react": "^0.43.2",
-    "@grafana/faro-react": "^2.3.1",
-    "@grafana/faro-web-sdk": "^2.3.1",
     "@headlessui/react": "^2.1.1",
     "@imtbl/sdk": "1.45.10",
     "@metamask/sdk": "^0.33.1",

@@ -48,6 +48,10 @@ const EVMWalletWithdrawal = dynamic<WithdrawPageProps>(
     () => import("./WithdrawalProviders/EVMWalletWithdraw").then((module) => module.EVMWalletWithdrawal),
     { ssr: false }
 );
+const TempoWalletWithdrawal = dynamic<WithdrawPageProps>(
+    () => import("./WithdrawalProviders/TempoWalletWithdraw").then((module) => module.TempoWalletWithdrawal),
+    { ssr: false }
+);
 
 type Props = {
     swapData: SwapBasicData
@@ -126,6 +130,13 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
                 source_network?.type == NetworkType.Solana ? source_network.name : undefined
             ],
             component: SVMWalletWithdrawStep
+        },
+        {
+            supportedNetworks: [
+                KnownInternalNames.Networks.TempoMainnet,
+                KnownInternalNames.Networks.TempoTestnet
+            ],
+            component: TempoWalletWithdrawal
         },
         {
             supportedNetworks: [
