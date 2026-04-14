@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { Token } from "@/Models/Network";
 import { Quote } from "@/lib/apiClients/layerSwapApiClient";
-import NumberFlow from "@number-flow/react";
+import NumFlowWithFallback from "@/components/Common/NumFlowWithFallback";
 import clsx from "clsx";
 
 type ReceiveAmountProps = {
@@ -21,13 +21,13 @@ export const ExchangeReceiveAmount: FC<ReceiveAmountProps> = ({ destination_toke
                     { "animate-pulse-stronger": isFeeLoading },
                     { "text-secondary-text": !receive_amount }
                 )}>
-                    <NumberFlow value={receive_amount || 0} trend={0} format={{ maximumFractionDigits: fee?.quote.destination_token?.decimals || 2 }} />
+                    <NumFlowWithFallback value={receive_amount || 0} trend={0} format={{ maximumFractionDigits: fee?.quote.destination_token?.decimals || 2 }} />
                     <span className="ml-1">{destination_token?.symbol}</span>
                 </div>
             </div>
             <div className="flex items-baseline space-x-2 mt-1.5">
                 <span className="text-sm leading-4 font-medium text-secondary-text h-5">
-                    <NumberFlow className="p-0" prefix="$" value={Number(receiveAmountInUsd || 0)} format={{ maximumFractionDigits: receiveAmountInUsd ? 2 : 0 }} trend={0} />
+                    <NumFlowWithFallback className="p-0" prefix="$" value={Number(receiveAmountInUsd) || 0} format={{ maximumFractionDigits: receiveAmountInUsd ? 2 : 0 }} trend={0} />
                 </span>
             </div>
         </div>

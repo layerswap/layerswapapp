@@ -144,7 +144,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             current: {
                 name: 'Processing your deposit',
                 description: <div className='flex space-x-1'>
-                    <div className='flex items-center space-x-1'>
+                    <div>
                         <LinkWithIcon
                             name={'View in explorer'}
                             url={getExplorerUrl(input_tx_explorer, transactionHash)}
@@ -169,8 +169,8 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             },
             complete: {
                 name: `Deposit confirmed`,
-                description: <div className='flex flex-wrap items-center gap-x-1'>
-                    <span>We&apos;ve received your deposit.</span>
+                description: <div>
+                    <span>We&apos;ve received your deposit.</span>{' '}
                     <LinkWithIcon
                         name={'View in explorer'}
                         url={getExplorerUrl(input_tx_explorer, transactionHash)}
@@ -218,8 +218,8 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             complete: {
                 name: `${swapOutputTransaction?.amount && truncateDecimals(swapOutputTransaction?.amount, destination_token.decimals)} ${destination_token.symbol} was sent to your address`,
                 description: swapOutputTransaction?.amount ? <div className="flex flex-col">
-                    <div className='flex items-center space-x-1'>
-                        <span>Transaction: </span>
+                    <div>
+                        <span>Transaction: </span>{' '}
                         <LinkWithIcon
                             name={'View in explorer'}
                             url={getExplorerUrl(output_tx_explorer, swapOutputTransaction?.transaction_hash)}
@@ -265,8 +265,8 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             },
             complete: {
                 name: `${truncatedRefuelAmount} ${refuel?.token?.symbol} was sent to your address`,
-                description: <div className='flex items-center space-x-1'>
-                    <span>Transaction: </span>
+                description: <div>
+                    <span>Transaction: </span>{' '}
                     {swapRefuelTransaction &&
                         <LinkWithIcon
                             name={'View in explorer'}
@@ -293,13 +293,13 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             },
             complete: {
                 name: 'Refund sent',
-                description: <div className='flex items-center space-x-1 text-secondary-text'>
-                    <span>The full deposit amount has been sent back to your wallet.</span>
+                description: <div className='text-secondary-text'>
+                    <span>The full deposit amount has been sent back to your wallet.</span>{' '}
                     {
                         swapRefundTransaction && (
                             <LinkWithIcon
                                 name={'View in explorer'}
-                                url={getExplorerUrl(output_tx_explorer, swapRefundTransaction?.transaction_hash || '')}
+                                url={getExplorerUrl(input_tx_explorer, swapRefundTransaction?.transaction_hash || '')}
                             />
                         )}
                 </div>
@@ -368,7 +368,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                                     <Gauge
                                         value={stepsProgressPercentage}
                                         size="small"
-                                        showCheckmark={swapStatus === SwapStatus.Completed}
+                                        showCheckmark={stepsProgressPercentage == 100}
                                     />
                                 )}
                             </div>
@@ -475,7 +475,7 @@ const getProgressStatuses = (swapDetails: SwapDetails, refuel: Refuel | undefine
         subtitle = "View instructions below"
     }
 
-    if (swapStatus == SwapStatus.Completed) {
+    if (swapStatus == SwapStatus.Completed || output_transfer == ProgressStatus.Complete) {
         generalTitle = "Transfer complete"
         subtitle = "Thanks for using Layerswap"
     }

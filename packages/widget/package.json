@@ -75,6 +75,7 @@
     "cmdk": "^0.2.0",
     "color": "4.2.3",
     "copy-to-clipboard": "^3.3.3",
+    "fflate": "^0.8.2",
     "formik": "^2.2.9",
     "framer-motion": "^12.26.2",
     "lucide-react": "^0.379.0",

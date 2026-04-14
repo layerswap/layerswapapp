@@ -4,7 +4,6 @@ import { InternalConnector, Wallet, WalletConnectionProvider, NetworkType, Walle
 import { useMemo, useCallback } from "react"
 import { resolveSolanaWalletConnectorIcon } from "./utils"
 import { useSVMTransfer } from "./transferProvider/useSVMTransfer"
-import { isSolanaAdapterSupported } from "./utils"
 import { name, id, solanaNames } from "./constants"
 
 export default function useSVMConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
@@ -41,12 +40,12 @@ export default function useSVMConnection({ networks }: WalletConnectionProviderP
             }
         }
 
-    }, [connectedAddress, connectedAdapterName])
+    }, [connectedAddress, connectedAdapterName, solanaWallet, disconnect, commonSupportedNetworks, networks])
     const connectWallet = async ({ connector }: { connector: WalletModalConnector }) => {
         const internalConnector = wallets.find(w => w.adapter.name.includes(connector.name))
         const walletConnectConnector = wallets.find(w => w.adapter.name === 'WalletConnect')
 
-        const solanaConnector = connector.hasBrowserExtension && (connector.showQrCode || isMobilePlatform) ? walletConnectConnector : internalConnector
+        const solanaConnector = connector.hasBrowserExtension && (connector.showQrCode || (isMobilePlatform && connector.extensionNotFound)) ? walletConnectConnector : internalConnector
 
         if (!solanaConnector) throw new Error('Connector not found')
         if (connectedWallet) await solanaConnector.adapter.disconnect()
@@ -88,15 +87,16 @@ export default function useSVMConnection({ networks }: WalletConnectionProviderP
     const availableWalletsForConnect = useMemo(() => {
         const connectors: InternalConnector[] = [];
         for (const wallet of wallets) {
-            const hasBrowserExtension = isSolanaAdapterSupported(wallet.adapter.name);
+            const isInstalled = wallet.readyState === 'Installed' || wallet.readyState === 'Loadable' || wallet.adapter.name === "Coinbase Wallet";
+            const hasBrowserExtension = wallet.adapter.name !== "WalletConnect";
             const internalConnector: InternalConnector = {
                 name: wallet.adapter.name.trim(),
                 id: wallet.adapter.name.trim(),
                 icon: wallet.adapter.icon,
-                type: wallet.readyState === 'Installed' ? 'injected' : 'other',
+                type: isInstalled ? 'injected' : 'other',
                 installUrl: wallet.adapter?.url,
                 hasBrowserExtension: hasBrowserExtension,
-                extensionNotFound: !(wallet.readyState === 'Installed' || wallet.readyState === 'Loadable' || wallet.adapter.name == "Coinbase Wallet"),
+                extensionNotFound: hasBrowserExtension ? !isInstalled : false,
                 providerName: name
             }
             connectors.push(internalConnector)

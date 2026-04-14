@@ -34,7 +34,7 @@ const NavigatableItemInner = forwardRef<HTMLDivElement, NavigatableItemProps>(({
     focusedClassName,
     tabIndex = 0
 }, ref) => {
-    const { focusedIndex } = useNavigatableListState();
+    const { focusedIndex, isKeyboardNavigating } = useNavigatableListState();
     const registrationContext = useContext(NavigatableRegistrationContext);
 
     const isChild = parentIndex !== undefined;
@@ -90,7 +90,7 @@ const NavigatableItemInner = forwardRef<HTMLDivElement, NavigatableItemProps>(({
     const dataNavIndex = focusedIndexToString(effectiveIndex);
 
     // Use shared hooks
-    const itemRef = useScrollIntoView(isFocused);
+    const itemRef = useScrollIntoView(isFocused, isKeyboardNavigating);
     const handleKeyDownInternal = useSpaceKeyClick(onClick, onKeyDown);
     const handleMouseEnterInternal = useHoverHandler(effectiveIndex, onMouseEnter);
     const handleFocusInternal = useFocusHandler();

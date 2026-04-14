@@ -4,7 +4,6 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import clsx from 'clsx';
 import { ChevronDown } from 'lucide-react';
 import { QuoteReward, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
-import AverageCompletionTime from '@/components/Common/AverageCompletionTime';
 import useSWRGas from "@/lib/gases/useSWRGas";
 import useWallet from "@/hooks/useWallet";
 import GasIcon from '@/components/Icons/GasIcon';
@@ -12,12 +11,13 @@ import Clock from '@/components/Icons/Clock';
 import { Network } from '@/Models/Network';
 import ExchangeGasIcon from '@/components/Icons/ExchangeGasIcon';
 import useSWRNftBalance from '@/lib/nft/useSWRNftBalance';
-import NumberFlow from '@number-flow/react';
+import NumFlowWithFallback from '@/components/Common/NumFlowWithFallback';
 import { resolveTokenUsdPrice } from '@/helpers/tokenHelper';
 import { useSelectedAccount } from '@/context/swapAccounts';
 import { SwapFormValues } from '../SwapFormValues';
 import { CupIcon } from '@/components/Icons/CupIcon';
 import { DetailedEstimates } from './SwapQuote/DetailedEstimates';
+import AverageCompletionTime from '@/components/Common/AverageCompletionTime';
 
 export interface SwapValues extends Omit<SwapFormValues, 'from' | 'to'> {
     from?: Network;
@@ -119,8 +119,9 @@ export const DetailsButton: FC<QuoteComponentProps> = ({ quote, reward, isQuoteL
                                     <GasIcon className='h-4 w-4 text-secondary-text' /> : <ExchangeGasIcon className='h-5 w-5 text-secondary-text' />
                                 }
                             </div>
-                            <NumberFlow className="text-primary-text text-sm leading-6" value={gasFeeInUsd < 0.01 ? '0.01' : gasFeeInUsd} prefix={gasFeeInUsd < 0.01 ? '<$' : '$'} />
+                            <NumFlowWithFallback className="text-primary-text text-sm leading-6" value={gasFeeInUsd < 0.01 ? '0.01' : gasFeeInUsd} prefix={gasFeeInUsd < 0.01 ? '<$' : '$'} />
                         </div>
+
                         <div className="w-px h-3 bg-primary-text-tertiary rounded-2xl" />
                     </> : null
             }
@@ -128,7 +129,7 @@ export const DetailsButton: FC<QuoteComponentProps> = ({ quote, reward, isQuoteL
                 averageCompletionTime ?
                     <>
                         <div className={clsx(
-                            "text-right inline-flex items-center gap-1 text-sm",
+                            "text-right inline-flex items-center gap-1 text-sm pt-px",
                             { "animate-pulse-strong": isQuoteLoading }
                         )}>
                             <div className='p-0.5'>
@@ -139,16 +140,18 @@ export const DetailsButton: FC<QuoteComponentProps> = ({ quote, reward, isQuoteL
                     </> : null
             }
             {
-                (reward &&
-                    (!shouldCheckNFT || (!isLoading && !error && nftBalance !== undefined && nftBalance > 0))) ?
+                reward &&
+                    (!shouldCheckNFT || (!isLoading && !error && nftBalance !== undefined && nftBalance > 0)) ?
                     <>
                         <div className="w-px h-3 bg-primary-text-tertiary rounded-2xl" />
                         <div className='text-right text-primary-text inline-flex items-center gap-1'>
-                            <CupIcon alt="Reward" width={16} height={16} />
-                            <NumberFlow value={reward?.amount_in_usd < 0.01 ? '0.01' : reward?.amount_in_usd} prefix={reward?.amount_in_usd < 0.01 ? '<$' : '$'} />
+                            <div className='p-0.5'>
+                                <CupIcon alt="Reward" width={16} height={16} />
                             </div>
+                            <NumFlowWithFallback value={reward?.amount_in_usd < 0.01 ? '0.01' : reward?.amount_in_usd} prefix={reward?.amount_in_usd < 0.01 ? '<$' : '$'} />
+                        </div>
                     </> : null
             }
-        </div >
+        </div>
     )
 }

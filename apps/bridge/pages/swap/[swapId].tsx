@@ -1,22 +1,25 @@
 import { InferGetServerSidePropsType } from 'next';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { getThemeData } from '../../helpers/settingsHelper';
-import { SwapWithdrawal } from '@layerswap/widget';
+import { SwapWithdrawal, inflateSettings, encodeSettingsForSSR } from '@layerswap/widget';
 import { LayerswapApiClient } from '@layerswap/widget/internal';
 import Layout from '../../components/layout';
 import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
 import WidgetWrapper from '../../components/WidgetWrapper';
+import MaintananceContent from '../../components/maintanance/maintanance';
 
 
 
 const SwapDetails = ({ settings, themeData, apiKey, swapData }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter()
+  const resolvedSettings = useMemo(() => inflateSettings(settings), [settings])
 
+  if (!resolvedSettings) return <MaintananceContent />
   return (<>
-    <Layout settings={settings || undefined} themeData={themeData}>
+    <Layout themeData={themeData}>
       <WidgetWrapper
-        settings={settings}
+        settings={resolvedSettings}
         themeData={themeData}
         apiKey={apiKey}
         configOverrides={{
@@ -34,7 +37,8 @@ const SwapDetails = ({ settings, themeData, apiKey, swapData }: InferGetServerSi
         <SwapWithdrawal initialSwapData={swapData} />
       </WidgetWrapper>
     </Layout>
-  </>)
+  </>
+  )
 }
 
 export const getServerSideProps = async (ctx) => {
@@ -49,7 +53,7 @@ export const getServerSideProps = async (ctx) => {
     }
   }
   const app = ctx.query?.appName || ctx.query?.addressSource
-  const apiKey = JSON.parse(process.env.API_KEYS || "{}")?.[app] || process.env.NEXT_PUBLIC_API_KEY
+  const apiKey = JSON.parse(process.env.API_KEYS || "{ }")?.[app] || process.env.NEXT_PUBLIC_API_KEY
   LayerswapApiClient.apiKey = apiKey
   const apiClient = new LayerswapApiClient()
   const { data: networkData } = await apiClient.GetLSNetworksAsync()
@@ -75,7 +79,7 @@ export const getServerSideProps = async (ctx) => {
 
   return {
     props: {
-      settings,
+      settings: encodeSettingsForSSR(settings),
       themeData,
       apiKey,
       swapData: swapData || null

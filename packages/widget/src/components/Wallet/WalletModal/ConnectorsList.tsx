@@ -94,10 +94,10 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
             setSelectedConnector(undefined)
         } catch (e) {
             console.log(e)
-            if (e?.message?.toLowerCase().includes('rejected') || e?.details?.toLowerCase().includes('rejected')) {
+            const message = (e?.message || e?.details || '').toLowerCase()
+            if (e?.name === 'WalletWindowClosedError' || message.includes('rejected') || message.includes('denied')) {
                 setConnectionError("You've declined the wallet connection request")
-            }
-            else {
+            } else {
                 setConnectionError(e.message || e.details || 'Something went wrong')
             }
         }
@@ -119,7 +119,10 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     }
 
     const filteredProviders = providers.filter(p => !p.hideFromList)
-    const featuredProviders = selectedProviderNames.length > 0 ? filteredProviders.filter(p => selectedProviderNames.includes(p.name)) : (selectedProvider ? [selectedProvider] : filteredProviders)
+    const resolvedSelectedProvider = selectedProvider && !selectedProvider.isSelectedFromFilter
+        ? filteredProviders.find(p => p.name === selectedProvider.name) || selectedProvider
+        : selectedProvider;
+    const featuredProviders = selectedProviderNames.length > 0 ? filteredProviders.filter(p => selectedProviderNames.includes(p.name)) : (resolvedSelectedProvider ? [resolvedSelectedProvider] : filteredProviders)
 
     const {
         featuredConnectors,
@@ -154,7 +157,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         return () => observer.disconnect();
     }, [hasMoreToLoad, isLoadingMore, loadMore, selectedConnector, selectedMultiChainConnector]);
 
-    if (selectedConnector?.hasBrowserExtension !== false && selectedConnector?.extensionNotFound && !selectedConnector?.showQrCode && !isMobilePlatfrom) {
+    if (selectedConnector?.extensionNotFound && !selectedConnector?.showQrCode && !isMobilePlatfrom) {
         const provider = featuredProviders.find(p => p.name === selectedConnector?.providerName)
         return <InstalledExtensionNotFound selectedConnector={selectedConnector} onConnect={(connector) => { connect(connector, provider!) }} />
     }

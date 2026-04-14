@@ -15,7 +15,7 @@ export const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: Wallet
 
     return (
         <div
-            className={clsx('w-full flex flex-col justify-center items-center font-semibold relative', {
+            className={clsx('w-full flex flex-col justify-between items-center relative', {
                 'h-[60vh]': isMobileSize && AppSettings.ThemeData?.enablePortal,
                 'h-full': !isMobileSize || !AppSettings.ThemeData?.enablePortal,
                 'h-[300px]!': isMobileSize && !AppSettings.ThemeData?.enablePortal,
@@ -24,54 +24,47 @@ export const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: Wallet
             {
                 selectedConnector &&
                 <div className="flex grow items-center">
-                    <div className="flex flex-col gap-3 items-center justify-end row-start-2 row-span-1">
-                        <div className="flex-col flex items-center">
-                            <div className="grid grid-cols-3 items-center gap-2">
-                                <div className="p-3 bg-secondary-700 rounded-lg z-10">
-                                    <LayerSwapLogoSmall className="w-11 h-auto" />
-                                </div>
-                                {
-                                    connectionError ?
-                                        <Link2Off className="w-auto h-auto place-self-center" />
-                                        :
-                                        <div className="loader text-[3px]! place-self-center" />
-                                }
-                                <div className="p-3 bg-secondary-700 rounded-lg z-10">
-                                    <ConnectorIcon className="w-11 h-auto" />
-                                </div>
+                    <div className="flex flex-col gap-4 items-center">
+                        <div className="flex items-center gap-2">
+                            <div className="p-3 bg-secondary-700 rounded-lg">
+                                <LayerSwapLogoSmall className="w-11 h-auto" />
+                            </div>
+                            {
+                                connectionError ?
+                                    <Link2Off className="w-5 h-5 text-secondary-text" />
+                                    :
+                                    <div className="loader text-[3px]!" />
+                            }
+                            <div className="p-3 bg-secondary-700 rounded-lg">
+                                <ConnectorIcon className="w-11 h-auto" />
                             </div>
                         </div>
-                        {
-                            !connectionError &&
-                            <div className="py-1 text-center">
-                                <p className="text-base font-medium">{isMobilePlatform ? 'Approve connection in your wallet' : 'Approve connection in your wallet pop-up'}</p>
-                                <p className="text-sm font-normal text-secondary-text">{isMobilePlatform ? "Don't see the request? Check your wallet app." : "Don't see a pop-up? Check your browser windows."}</p>
-                            </div>
-                        }
+                        <div className="text-center">
+                            {connectionError ? (
+                                <>
+                                    <p className="text-base font-medium text-primary-text">Connection failed</p>
+                                    <p className="text-sm font-normal text-secondary-text mt-1">{connectionError}</p>
+                                </>
+                            ) : (
+                                <>
+                                    <p className="text-base font-medium">{isMobilePlatform ? 'Approve connection in your wallet' : 'Approve connection in your wallet pop-up'}</p>
+                                    <p className="text-sm font-normal text-secondary-text">{isMobilePlatform ? "Don't see the request? Check your wallet app." : "Don't see a pop-up? Check your browser windows."}</p>
+                                </>
+                            )}
+                        </div>
                     </div>
                 </div>
             }
             {
                 connectionError &&
-                <div className={`bg-secondary-500 rounded-lg flex flex-col gap-1.5 items-center p-3 w-full bottom-0`}>
-                    <div className="flex w-full gap-1 text-sm text-secondary-text justify-start">
-                        <CircleX className="w-5 h-5 stroke-primary-500 mr-1 mt-0.5 shrink-0" />
-                        <div className='flex flex-col gap-1'>
-                            <p className='text-base text-primary-text'>Failed to connect</p>
-                            <p className="text-sm font-normal">
-                                {connectionError}
-                            </p>
-                        </div>
-                    </div>
-                    <button
-                        type="button"
-                        className="flex gap-1.5 items-center justify-center bg-secondary-400 w-full text-primary-text p-4 border-none rounded-lg cursor-pointer text-sm font-medium leading-4"
-                        onClick={onRetry}
-                    >
-                        <RotateCw className='h-4 w-4' />
-                        <span>Try again</span>
-                    </button>
-                </div>
+                <button
+                    type="button"
+                    className="flex gap-2 items-center justify-center w-full text-primary-text bg-secondary-300 hover:bg-secondary-400 p-3.5 rounded-xl text-sm font-medium transition duration-200 ease-in-out hover:brightness-125 cursor-pointer"
+                    onClick={onRetry}
+                >
+                    <RotateCw className='h-4 w-4' />
+                    <span>Try again</span>
+                </button>
             }
         </div>
     )

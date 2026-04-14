@@ -1,13 +1,13 @@
 import { useConfig, useConnect, useConnectors, useDisconnect, useSwitchAccount, Connector } from "wagmi"
 import { CreateConnectorFn, getAccount, getConnections } from '@wagmi/core'
-import { useCallback, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { NetworkType, NetworkWithTokens, InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps } from "@layerswap/widget/types"
 import { isMobile, sleep, convertSvgComponentToBase64, useConnectModal, KnownInternalNames } from "@layerswap/widget/internal"
 import { evmConnectorNameResolver, resolveEVMWalletConnectorIcon, resolveEVMWalletConnectorIndex } from "./evmUtils"
 import KnownEVMConnectors from "./evmUtils/KnownEVMConnectors"
 import { LSConnector } from "./connectors/types"
 import { explicitInjectedProviderDetected } from "./connectors/explicitInjectedProviderDetected"
-import { useEvmConnectors, HIDDEN_WALLETCONNECT_ID } from "./EVMProvider/evmConnectorsContext"
+import { useEvmConnectors, HIDDEN_WALLETCONNECT_ID, featuredWalletsIds } from "./EVMProvider/evmConnectorsContext"
 import { useActiveEvmAccount } from "./EVMProvider/ActiveEvmAccount"
 import { useEVMTransfer } from "./transferProvider/useEVMTransfer"
 import { name, id, ethereumNames, immutableZKEvm } from "./constants"
@@ -59,8 +59,19 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
     const config = useConfig()
     const { connectAsync } = useConnect();
 
-    const { setSelectedConnector } = useConnectModal()
-    const { walletConnectConnectors, addToAdditionalWallets } = useEvmConnectors()
+    const { setSelectedConnector, isWalletModalOpen } = useConnectModal()
+    const {
+        walletConnectConnectors,
+        addToAdditionalWallets,
+        loadWalletConnectWallets,
+        walletConnectWalletsLoaded
+    } = useEvmConnectors()
+
+    useEffect(() => {
+        if (isWalletModalOpen && !walletConnectWalletsLoaded) {
+            loadWalletConnectWallets().catch((error) => console.warn('Failed to load WalletConnect wallets registry', error))
+        }
+    }, [isWalletModalOpen, walletConnectWalletsLoaded, loadWalletConnectWallets])
 
     const disconnectWallet = useCallback(async (connectorName: string) => {
 
@@ -98,7 +109,7 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
             wallet.id !== HIDDEN_WALLETCONNECT_ID
         )
 
-        return dedupePreferInjected(allConnectors.filter(filterConnectors))
+        const configuredConnectors = dedupePreferInjected(allConnectors.filter(filterConnectors))
             .map(w => {
                 const walletConnectWallet = walletConnectConnectors.find(w2 => w2.name.toLowerCase().includes(w.name.toLowerCase()) || w2.id.toLowerCase() === w.id.toLowerCase())
                 const isWalletConnectSupported = w.type === "walletConnect" || w.name === "WalletConnect"
@@ -118,7 +129,28 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
                     providerName: name
                 }
             })
-    }, [allConnectors, walletConnectConnectors])
+
+        const existingConnectorKeys = new Set(
+            configuredConnectors.flatMap(connector => [connector.id.toLowerCase(), connector.name.toLowerCase()])
+        )
+
+        const featuredDynamicWallets: InternalConnector[] = walletConnectConnectors
+            .filter(wallet => (
+                featuredWalletsIds.includes(wallet.id.toLowerCase())
+                || featuredWalletsIds.some(featuredId => wallet.name.toLowerCase().includes(featuredId))
+            ))
+            .filter(wallet => !existingConnectorKeys.has(wallet.id.toLowerCase()) && !existingConnectorKeys.has(wallet.name.toLowerCase()))
+            .map(wallet => ({
+                ...wallet,
+                order: resolveEVMWalletConnectorIndex(wallet.id),
+                type: 'other',
+                isMobileSupported: true,
+                extensionNotFound: wallet.hasBrowserExtension ? !isMobilePlatform : false,
+                providerName: name
+            }))
+
+        return [...configuredConnectors, ...featuredDynamicWallets]
+    }, [allConnectors, walletConnectConnectors, isMobilePlatform])
 
     const connectWallet = useCallback(async (props: { connector: InternalConnector & LSConnector & { showQrCode?: boolean } }) => {
         try {
@@ -130,8 +162,13 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
             // Keep reference to the actual connector for wagmi calls
             let actualConnector = connector
 
-            if (!connector) {
-                const walletConnectConnector = walletConnectConnectors.find(w => w.id === internalConnector.id)
+            // If the connector was found but is a dynamic wallet (no wagmi methods), treat it as not found
+            if (!connector || typeof connector.disconnect !== 'function') {
+                const loadedWalletConnectConnectors = walletConnectConnectors.length > 0
+                    ? walletConnectConnectors
+                    : await loadWalletConnectWallets()
+
+                const walletConnectConnector = loadedWalletConnectConnectors.find(w => w.id === internalConnector.id)
                 if (!walletConnectConnector) throw new Error("Connector not found")
 
                 // Track that this wallet was used (for recent connectors)
@@ -165,8 +202,8 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
             const Icon = connector.icon || resolveEVMWalletConnectorIcon({ connector: evmConnectorNameResolver(connector) })
             const base64Icon = typeof Icon == 'string' ? Icon : convertSvgComponentToBase64(Icon)
             setSelectedConnector({ ...connector, icon: base64Icon })
-            if (actualConnector.id !== "coinbaseWalletSDK") {
-                await actualConnector.disconnect?.()
+            if (actualConnector.id !== "coinbaseWalletSDK" && typeof actualConnector.disconnect === 'function') {
+                await actualConnector.disconnect()
                 await disconnectAsync({ connector: actualConnector })
             }
 
@@ -180,19 +217,21 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
             }
             else if (connector.type !== 'injected' && connector.isMobileSupported && connector.id !== "coinbaseWalletSDK" && connector.id !== "metaMaskSDK") {
                 setSelectedConnector({ ...connector, qr: { state: 'loading', value: undefined }, showQrCode: internalConnector.showQrCode })
-                // Use actualConnector for getProvider, but connector.resolveURI for deep links
-                getWalletConnectUri(actualConnector, connector?.resolveURI, (uri: string) => {
-                    setSelectedConnector({ ...connector, icon: base64Icon, qr: { state: 'fetched', value: uri }, showQrCode: internalConnector.showQrCode })
+                // Raw URI for QR code, deep link for copy/redirect
+                getWalletConnectUri(actualConnector, undefined, (uri: string) => {
+                    const deepLink = connector?.resolveURI ? connector.resolveURI(uri) : undefined
+                    setSelectedConnector({ ...connector, icon: base64Icon, qr: { state: 'fetched', value: uri, deepLink }, showQrCode: internalConnector.showQrCode })
                 })
             }
 
             // Set pending metadata BEFORE connectAsync so it's available during re-render
+            const pendingMetadata: DynamicWalletMetadata = {
+                name: connector.name,
+                icon: typeof connector.icon === 'string' ? connector.icon : '',
+                id: connector.id
+            }
             if (actualConnector.id === HIDDEN_WALLETCONNECT_ID) {
-                pendingDynamicWalletMetadata = {
-                    name: connector.name,
-                    icon: typeof connector.icon === 'string' ? connector.icon : '',
-                    id: connector.id
-                }
+                pendingDynamicWalletMetadataMap.set(connector.id, pendingMetadata)
             }
 
             // Use actualConnector for wagmi connect
@@ -202,8 +241,8 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
 
             // If we used the hidden connector, store the wallet metadata for later resolution
             if (actualConnector.id === HIDDEN_WALLETCONNECT_ID && activeAccount.address) {
-                setDynamicWalletMetadata(activeAccount.address, pendingDynamicWalletMetadata!)
-                pendingDynamicWalletMetadata = null // Clear pending after storing
+                setDynamicWalletMetadata(activeAccount.address, pendingMetadata)
+                pendingDynamicWalletMetadataMap.delete(connector.id)
             }
 
             const connections = getConnections(config)
@@ -246,7 +285,7 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
                 throw new Error(e.message || e);
             }
         }
-    }, [availableFeaturedWalletsForConnect, disconnectAsync, networks, asSourceSupportedNetworks, autofillSupportedNetworks, withdrawalSupportedNetworks, name, config, walletConnectConnectors, addToAdditionalWallets, allConnectors, connectAsync])
+    }, [availableFeaturedWalletsForConnect, disconnectAsync, networks, asSourceSupportedNetworks, autofillSupportedNetworks, withdrawalSupportedNetworks, name, config, walletConnectConnectors, addToAdditionalWallets, allConnectors, connectAsync, loadWalletConnectWallets])
 
     const connectedWalletsKey = [...config.state.connections.keys()].join('-')
 
@@ -381,8 +420,9 @@ const ResolveWallet = (props: ResolveWalletProps): Wallet | undefined => {
     // Check if this is a dynamic wallet connected via hidden connector
     const isHiddenConnector = connector.id === HIDDEN_WALLETCONNECT_ID
     // Try address-based lookup first, fallback to pending metadata (for first connection)
+    const pendingMeta = pendingDynamicWalletMetadataMap.size > 0 ? [...pendingDynamicWalletMetadataMap.values()][0] : null
     const dynamicMetadata = isHiddenConnector
-        ? (getDynamicWalletMetadata(address) || pendingDynamicWalletMetadata)
+        ? (getDynamicWalletMetadata(address) || pendingMeta)
         : null
 
     // Use dynamic metadata if available, otherwise use connector info
@@ -499,7 +539,8 @@ type DynamicWalletMetadata = {
 }
 
 // Pending metadata for wallets being connected (before address is known)
-let pendingDynamicWalletMetadata: DynamicWalletMetadata | null = null
+// Map keyed by connector id to avoid race conditions on concurrent connections
+const pendingDynamicWalletMetadataMap = new Map<string, DynamicWalletMetadata>()
 
 // Get stored metadata for dynamic wallets connected via hidden connector
 const getDynamicWalletMetadata = (address: string): DynamicWalletMetadata | null => {

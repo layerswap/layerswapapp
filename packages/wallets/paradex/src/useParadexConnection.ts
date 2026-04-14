@@ -1,8 +1,6 @@
 import { useMemo } from "react"
 import { InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps } from "@layerswap/widget/types"
-import { AuthorizeStarknet } from "./Authorize/Starknet"
 import { walletClientToSigner } from "./utils/ethers"
-import AuhorizeEthereum from "./Authorize/Ethereum"
 import { getWalletClient, switchChain, getChainId, type ConnectorAlreadyConnectedError } from '@wagmi/core'
 import { useConfig } from "wagmi"
 import { sleep, KnownInternalNames, useWalletStore, useConnectModal, Address } from "@layerswap/widget/internal"
@@ -80,7 +78,8 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
                     if (!ethersSigner) {
                         throw Error("Could not initialize ethers signer")
                     }
-                    const paradexAccount = await AuhorizeEthereum(ethersSigner)
+                    const { default: authorizeEthereum } = await import("./Authorize/Ethereum")
+                    const paradexAccount = await authorizeEthereum(ethersSigner)
                     const paradexAddress = paradexAccount.getAddress()
 
                     addParadexAccount({ l1Address: connectionResult.address, paradexAddress: paradexAddress })
@@ -114,6 +113,7 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
                     if (!starknetNetwork?.node_url) {
                         throw Error("Starknet node url not found")
                     }
+                    const { AuthorizeStarknet } = await import("./Authorize/Starknet")
                     const paradexAccount = await AuthorizeStarknet(snAccount as any)
                     const paradexAddress = paradexAccount.getAddress()
 
