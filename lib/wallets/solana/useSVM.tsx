@@ -53,6 +53,10 @@ export default function useSVM(): WalletProvider {
         loaded: walletConnectWalletsLoaded,
         load: loadWalletConnectWallets,
         addRecent: addWalletConnectWallet,
+        loadMore: loadMoreWcWallets,
+        hasMore: hasMoreWcWallets,
+        isLoadingMore: isLoadingMoreWcWallets,
+        search: searchWcWallets,
     } = useWalletConnectConnectors(SOLANA_NS)
 
     useEffect(() => {
@@ -268,6 +272,22 @@ export default function useSVM(): WalletProvider {
         return supportedNetworksByPurpose.length === 0 || !supportedNetworksByPurpose.includes(network)
     }, [commonSupportedNetworks])
 
+    const searchWallets = useCallback(async (query: string): Promise<InternalConnector[]> => {
+        const results = await searchWcWallets(query)
+        return results.map(w => ({
+            id: w.id,
+            name: w.name,
+            icon: w.icon,
+            type: 'walletConnect' as const,
+            order: w.order,
+            isMobileSupported: w.isMobileSupported,
+            hasBrowserExtension: w.hasBrowserExtension,
+            installUrl: w.installUrl,
+            extensionNotFound: w.hasBrowserExtension ? !isMobilePlatform : false,
+            providerName: name,
+        }))
+    }, [searchWcWallets, isMobilePlatform, name])
+
     const provider: WalletProvider = {
         connectedWallets: connectedWallets,
         activeWallet: connectedWallets?.[0],
@@ -281,7 +301,11 @@ export default function useSVM(): WalletProvider {
         name,
         id,
         providerIcon: networks.find(n => solanaNames.some(name => name === n.name))?.logo,
-        ready: wallets.length > 0
+        ready: wallets.length > 0,
+        loadMoreWallets: loadMoreWcWallets,
+        hasMoreWallets: hasMoreWcWallets,
+        isLoadingMoreWallets: isLoadingMoreWcWallets,
+        searchWallets,
     }
 
     return provider

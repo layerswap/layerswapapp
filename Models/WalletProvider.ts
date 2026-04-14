@@ -65,6 +65,10 @@ export type WalletProvider = {
     providerIcon?: string,
     unsupportedPlatforms?: string[],
     ready: boolean,
+    loadMoreWallets?: () => Promise<void>,
+    hasMoreWallets?: boolean,
+    isLoadingMoreWallets?: boolean,
+    searchWallets?: (query: string) => Promise<InternalConnector[]>,
 }
 
 

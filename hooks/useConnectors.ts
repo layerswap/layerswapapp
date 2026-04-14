@@ -8,6 +8,7 @@ type UseConnectorsParams = {
     recentConnectors: { providerName?: string; connectorName?: string }[];
     featuredProviders: WalletProvider[];
     filteredProviders: WalletProvider[];
+    apiSearchResults?: InternalConnector[];
 };
 
 export function useConnectors({
@@ -15,6 +16,7 @@ export function useConnectors({
     filteredProviders,
     searchValue,
     recentConnectors,
+    apiSearchResults,
 }: UseConnectorsParams) {
 
     const featuredConnectors = useMemo(() =>
@@ -46,12 +48,18 @@ export function useConnectors({
 
 
     const initialConnectors: InternalConnector[] = useMemo(() => {
+        const base = [...featuredConnectors, ...hiddenConnectors] as InternalConnector[]
+        // Merge API search results, deduplicating against already-loaded wallets
+        if (apiSearchResults?.length) {
+            const existingNames = new Set(base.map(c => c.name.toLowerCase()))
+            const newResults = apiSearchResults.filter(c => !existingNames.has(c.name.toLowerCase()))
+            base.push(...newResults)
+        }
         return removeDuplicatesWithKey(
-            ([...featuredConnectors, ...hiddenConnectors] as InternalConnector[])
-                .sort((a, b) => sortRecentConnectors(a, b, recentConnectors)),
+            base.sort((a, b) => sortRecentConnectors(a, b, recentConnectors)),
             'name'
         );
-    }, [featuredConnectors, hiddenConnectors, searchValue?.length, recentConnectors]);
+    }, [featuredConnectors, hiddenConnectors, searchValue?.length, recentConnectors, apiSearchResults]);
 
     return {
         featuredConnectors,

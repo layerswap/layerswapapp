@@ -9,7 +9,7 @@ export type WalletConnectDesktop = {
 }
 
 /**
- * Raw WalletConnect wallet shape resolved from `public/walletsData.json`.
+ * Raw WalletConnect wallet shape resolved from the Web3Modal getWallets API.
  * Chain-agnostic — each chain decorates this with chain-specific fields
  * (e.g. wagmi's projectId/showQrModal/customStoragePrefix for EVM).
  */

@@ -22,7 +22,11 @@ type ContextType = {
     addWalletConnectWallet: (connector: WalletConnectWalletBase) => void,
     hiddenWalletConnectConnector: CreateConnectorFn,
     walletConnectWalletsLoaded: boolean,
-    loadWalletConnectWallets: () => Promise<WalletConnectDecorated[]>
+    loadWalletConnectWallets: () => Promise<WalletConnectDecorated[]>,
+    loadMoreWalletConnectWallets: () => Promise<void>,
+    searchWalletConnectWallets: (query: string) => Promise<WalletConnectWalletBase[]>,
+    hasMoreWalletConnectWallets: boolean,
+    isLoadingMoreWalletConnectWallets: boolean,
 }
 
 const EvmConnectorsContext = createContext<ContextType | null>(null);
@@ -78,7 +82,10 @@ const decorateForWagmi = (base: WalletConnectWalletBase): WalletConnectDecorated
 }
 
 export function EvmConnectorsProvider({ children }) {
-    const { connectors: baseConnectors, loaded, load, addRecent } = useWalletConnectConnectors('eip155')
+    const {
+        connectors: baseConnectors, loaded, load, addRecent,
+        loadMore, search: searchWallets, hasMore, isLoadingMore,
+    } = useWalletConnectConnectors('eip155')
 
     const walletConnectConnectors: WalletConnectDecorated[] = useMemo(
         () => baseConnectors.map(decorateForWagmi),
@@ -110,7 +117,11 @@ export function EvmConnectorsProvider({ children }) {
         hiddenWalletConnectConnector,
         walletConnectWalletsLoaded: loaded,
         loadWalletConnectWallets,
-    }), [defaultConnectors, walletConnectConnectors, addWalletConnectWallet, loaded, loadWalletConnectWallets])
+        loadMoreWalletConnectWallets: loadMore,
+        searchWalletConnectWallets: searchWallets,
+        hasMoreWalletConnectWallets: hasMore,
+        isLoadingMoreWalletConnectWallets: isLoadingMore,
+    }), [defaultConnectors, walletConnectConnectors, addWalletConnectWallet, loaded, loadWalletConnectWallets, loadMore, searchWallets, hasMore, isLoadingMore])
 
     return (
         <EvmConnectorsContext.Provider value={value}>

@@ -112,7 +112,11 @@ export default function useEVM(): WalletProvider {
         walletConnectConnectors,
         addWalletConnectWallet,
         loadWalletConnectWallets,
-        walletConnectWalletsLoaded
+        walletConnectWalletsLoaded,
+        loadMoreWalletConnectWallets,
+        searchWalletConnectWallets,
+        hasMoreWalletConnectWallets,
+        isLoadingMoreWalletConnectWallets,
     } = useEvmConnectors()
 
     useEffect(() => {
@@ -378,6 +382,22 @@ export default function useEVM(): WalletProvider {
     const activeWallet = useMemo(() => resolvedConnectors.find(w => w.isActive), [resolvedConnectors])
     const providerIcon = useMemo(() => networks.find(n => ethereumNames.some(name => name === n.name))?.logo, [networks])
 
+    const searchWallets = useCallback(async (query: string): Promise<InternalConnector[]> => {
+        const results = await searchWalletConnectWallets(query)
+        return results.map(w => ({
+            id: w.id,
+            name: w.name,
+            icon: w.icon,
+            type: 'walletConnect' as const,
+            order: w.order,
+            isMobileSupported: w.isMobileSupported,
+            hasBrowserExtension: w.hasBrowserExtension,
+            installUrl: w.installUrl,
+            extensionNotFound: w.hasBrowserExtension ? !isMobilePlatform : false,
+            providerName: name,
+        }))
+    }, [searchWalletConnectWallets, isMobilePlatform, name])
+
     const provider = useMemo(() => {
         return {
             connectWallet,
@@ -395,9 +415,13 @@ export default function useEVM(): WalletProvider {
             name,
             id,
             providerIcon,
-            ready: allConnectors.length > 0
+            ready: allConnectors.length > 0,
+            loadMoreWallets: loadMoreWalletConnectWallets,
+            hasMoreWallets: hasMoreWalletConnectWallets,
+            isLoadingMoreWallets: isLoadingMoreWalletConnectWallets,
+            searchWallets,
         }
-    }, [connectWallet, disconnectWallets, switchAccount, resolvedConnectors, availableFeaturedWalletsForConnect, walletConnectConnectors, autofillSupportedNetworks, withdrawalSupportedNetworks, asSourceSupportedNetworks, name, id, networks, allConnectors.length]);
+    }, [connectWallet, disconnectWallets, switchAccount, resolvedConnectors, availableFeaturedWalletsForConnect, walletConnectConnectors, autofillSupportedNetworks, withdrawalSupportedNetworks, asSourceSupportedNetworks, name, id, networks, allConnectors.length, loadMoreWalletConnectWallets, hasMoreWalletConnectWallets, isLoadingMoreWalletConnectWallets, searchWallets]);
 
     return provider
 }

@@ -22,6 +22,7 @@ type BuildDeepLinkInput = {
 export function buildDeepLink({ id, mobile }: BuildDeepLinkInput, uri: string): string {
     switch (id) {
         case "bitkeep":
+        case "bitget-wallet":
             return isAndroid() ? uri : `bitkeep://wc?uri=${encodeURIComponent(uri)}`
         case "metamask":
             // MetaMask's native scheme is broken on iOS v6.5.0+, so prefer the universal link on iOS
