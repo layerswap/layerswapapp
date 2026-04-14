@@ -6,12 +6,6 @@ import { KnownInternalNames } from "@layerswap/widget/internal";
 import { BalanceProvider, TokenBalance, NetworkType, NetworkWithTokens, Token, Network } from "@layerswap/widget/types"
 import { resolveFallbackTransport } from "../evmUtils/resolveTransports"
 
-
-const nativeBalanceSkip = [
-    KnownInternalNames.Networks.TempoMainnet,
-    KnownInternalNames.Networks.TempoTestnet
-]
-
 const nativeBalanceSkip = [
     KnownInternalNames.Networks.TempoMainnet,
     KnownInternalNames.Networks.TempoTestnet
