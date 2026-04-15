@@ -14,7 +14,7 @@ import AddressButton from "./AddressButton";
 import { useQueryState } from "@/context/query";
 import ConnectedWallets from "./ConnectedWallets";
 import { Wallet } from "@/Models/WalletProvider";
-import { useManualDestAddresses, useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts";
+import { ManualDestAddress, useManualDestAddresses, useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts";
 
 export enum AddressGroup {
     ConnectedWallet = "Connected wallet",
@@ -84,9 +84,8 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
             wallets: connectedWallets,
             manualAddresses: manualDestAddresses,
             addressFromQuery: query.destination_address,
-            destination_address,
         })
-    }, [address_book, destination, connectedWallets, manualDestAddresses, query.destination_address, connectedWalletskey, destination_address])
+    }, [address_book, destination, connectedWallets, manualDestAddresses, query.destination_address, connectedWalletskey])
 
     const destinationAddressItem = destination && destination_address ?
         groupedAddresses?.find(a => a.address.toLowerCase() === destination_address.toLowerCase())
@@ -153,6 +152,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                     address: address || "",
                     id: 'manually_added',
                     providerName: provider.name,
+                    networkType: destination.type,
                 });
         }
     }, [destination, connectedWallets, provider, selectDestinationAccount]);
@@ -242,14 +242,12 @@ const resolveAddressGroups = ({
     wallets,
     manualAddresses,
     addressFromQuery,
-    destination_address,
 }: {
     address_book: AddressBookItem[] | undefined,
     destination: NetworkRoute | undefined,
     wallets: Wallet[] | undefined,
-    manualAddresses: string[],
+    manualAddresses: ManualDestAddress[],
     addressFromQuery: string | undefined,
-    destination_address: string | undefined,
 }) => {
 
     if (!destination) return
@@ -271,9 +269,9 @@ const resolveAddressGroups = ({
         addresses = [...addresses, ...recentlyUsedAddresses]
     }
 
-    manualAddresses.forEach(addr => {
-        if (AddressClass.isValid(addr, destination)) {
-            addresses.push({ address: addr, group: AddressGroup.ManualAdded })
+    manualAddresses.forEach(entry => {
+        if (entry.networkType === destination.type && AddressClass.isValid(entry.address, destination)) {
+            addresses.push({ address: entry.address, group: AddressGroup.ManualAdded })
         }
     })
 

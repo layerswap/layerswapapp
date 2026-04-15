@@ -4,6 +4,7 @@ import useWallet from '@/hooks/useWallet';
 import { Wallet, WalletProvider } from '@/Models/WalletProvider';
 import AddressIcon from '@/components/AddressIcon';
 import { getKey, useBalanceStore } from '@/stores/balanceStore';
+import { Address as AddressClass } from '@/lib/address';
 
 const SwapAccountsStateContext = createContext<SwapAccountsContextType | null>(null);
 const SwapAccountsUpdateContext = createContext<SwapAccountsUpdateContextType | null>(null);
@@ -15,7 +16,7 @@ type PickerAccountsProviderProps = {
 type SwapAccountsContextType = {
     sourceAccounts: AccountIdentityWithSupportedNetworks[];
     destinationAccounts: (AccountIdentity | AccountIdentityWithSupportedNetworks)[];
-    manualDestAddresses: string[];
+    manualDestAddresses: ManualDestAddress[];
 }
 
 type SwapAccountsUpdateContextType = {
@@ -27,6 +28,12 @@ type BaseAccountIdentity = {
     address: string;
     providerName: string;
     id: string;
+    networkType?: string;
+}
+
+export type ManualDestAddress = {
+    address: string;
+    networkType: string;
 }
 
 export type AccountIdentity = BaseAccountIdentity & {
@@ -46,7 +53,7 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
 
     const [selectedDestAccounts, setSelectedDestinationAccounts] = useState<BaseAccountIdentity[]>([])
     const [selectedSourceAccounts, setSelectedSourceAccounts] = useState<BaseAccountIdentity[]>([])
-    const [manualDestAddresses, setManualDestAddresses] = useState<string[]>([])
+    const [manualDestAddresses, setManualDestAddresses] = useState<ManualDestAddress[]>([])
     const { providers } = useWallet()
 
     const sourceAccounts: AccountIdentityWithSupportedNetworks[] = useMemo(() => {
@@ -102,8 +109,9 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
     }, [providers, selectedDestAccounts]);
 
     const selectDestinationAccount = useCallback((account: BaseAccountIdentity) => {
-        if (account.id === 'manually_added') {
-            setManualDestAddresses(prev => [...prev, account.address]);
+        if (account.id === 'manually_added' && account.networkType) {
+            const networkType = account.networkType;
+            setManualDestAddresses(prev => prev.some(e => e.networkType === networkType && AddressClass.equals(e.address, account.address, null, account.providerName)) ? prev : [...prev, { address: account.address, networkType }]);
         }
         setSelectedDestinationAccounts(prev => {
             const existingAccountIndex = prev.findIndex(acc => acc.providerName === account.providerName);
