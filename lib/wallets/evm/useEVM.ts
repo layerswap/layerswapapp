@@ -22,7 +22,7 @@ import {
     getPendingDynamicWcMetadata,
     clearPendingDynamicWcMetadata,
 } from "@/lib/wallets/walletConnect/dynamicMetadata"
-import { DynamicWcMetadata, getRegistryEntry } from "@/lib/wallets/walletConnect/types"
+import { DynamicWcMetadata, WC_REGISTRY_MARKER, getRegistryEntry, type RegistryAttachedConnector } from "@/lib/wallets/walletConnect/types"
 import { buildDeepLink } from "@/lib/wallets/walletConnect/buildDeepLink"
 import { subscribeDisplayUri, type DisplayUriSource } from "@/lib/wallets/walletConnect/subscribeDisplayUri"
 import { mapConnectError } from "@/lib/wallets/walletConnect/mapConnectError"
@@ -384,7 +384,7 @@ export default function useEVM(): WalletProvider {
 
     const searchWallets = useCallback(async (query: string): Promise<InternalConnector[]> => {
         const results = await searchWalletConnectWallets(query)
-        return results.map(w => ({
+        return results.map((w): RegistryAttachedConnector<InternalConnector> => ({
             id: w.id,
             name: w.name,
             icon: w.icon,
@@ -395,6 +395,7 @@ export default function useEVM(): WalletProvider {
             installUrl: w.installUrl,
             extensionNotFound: w.hasBrowserExtension ? !isMobilePlatform : false,
             providerName: name,
+            [WC_REGISTRY_MARKER]: w,
         }))
     }, [searchWalletConnectWallets, isMobilePlatform, name])
 

@@ -33,8 +33,8 @@ export function mapWallet(wallet: Web3ModalWallet): WalletConnectWalletBase {
         icon: walletImageUrl(wallet.image_id),
         rdns: wallet.rdns || undefined,
         mobile: {
-            native: null,
-            universal: wallet.mobile_link || null,
+            native: wallet.link_mode === 'native' ? (wallet.mobile_link || null) : null,
+            universal: wallet.link_mode !== 'native' ? (wallet.mobile_link || null) : null,
         },
         desktop: wallet.desktop_link
             ? { native: null, universal: wallet.desktop_link }

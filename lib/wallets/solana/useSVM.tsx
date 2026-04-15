@@ -274,7 +274,7 @@ export default function useSVM(): WalletProvider {
 
     const searchWallets = useCallback(async (query: string): Promise<InternalConnector[]> => {
         const results = await searchWcWallets(query)
-        return results.map(w => ({
+        return results.map((w): RegistryConnector => ({
             id: w.id,
             name: w.name,
             icon: w.icon,
@@ -285,6 +285,7 @@ export default function useSVM(): WalletProvider {
             installUrl: w.installUrl,
             extensionNotFound: w.hasBrowserExtension ? !isMobilePlatform : false,
             providerName: name,
+            [WC_REGISTRY_MARKER]: w,
         }))
     }, [searchWcWallets, isMobilePlatform, name])
 

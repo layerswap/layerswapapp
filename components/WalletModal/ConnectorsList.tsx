@@ -14,12 +14,6 @@ import { InstalledExtensionNotFound } from "./InstalledExtensionNotFound";
 import { WalletQrCode } from "./WalletQrCode";
 import { LoadingConnect } from "./LoadingConnect";
 import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
-import { removeDuplicatesWithKey } from "./utils";
-
-const LAZY_LOAD_CONFIG = {
-    itemsPerLoad: 20,
-    enabled: true
-};
 
 const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { providers } = useWallet();
@@ -31,8 +25,6 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     const scrollTimeout = useRef<any>(null);
     const isMobilePlatfrom = isMobile();
 
-    const [displayedCount, setDisplayedCount] = useState(LAZY_LOAD_CONFIG.itemsPerLoad);
-    const [isLoadingMore, setIsLoadingMore] = useState(false);
     const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
     const [apiSearchResults, setApiSearchResults] = useState<InternalConnector[]>([]);
     const searchDebounceRef = useRef<any>(null);
@@ -164,38 +156,25 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         apiSearchResults,
     });
 
-    const displayedConnectors = useMemo(() => {
-        if (isFiltered) return initialConnectors.slice(0, displayedCount);
-        return initialConnectors.slice(0, Math.max(0, displayedCount - featuredConnectors.length));
-    }, [isFiltered, initialConnectors, featuredConnectors, displayedCount]);
-
-    const hasMoreClientItems = displayedCount < initialConnectors.length;
-    const hasMoreToLoad = hasMoreClientItems || anyProviderHasMore;
-
-    // Only reset displayedCount on explicit user actions (search/filter change), not when
-    // the wallet list grows from API pagination — that would jump the scroll position back.
-    useEffect(() => setDisplayedCount(prev => {
-        const base = isFiltered ? LAZY_LOAD_CONFIG.itemsPerLoad : featuredConnectors.length + LAZY_LOAD_CONFIG.itemsPerLoad
-        return Math.max(prev, base)
-    }), [isFiltered, featuredConnectors.length]);
-    useEffect(() => setDisplayedCount(LAZY_LOAD_CONFIG.itemsPerLoad), [searchValue, selectedProviderNames]);
+    // Render all loaded items immediately — client-side slicing caused a loading-flash
+    // on every modal open because displayedCount resets on remount.
+    // Only paginate for SERVER fetches (anyProviderHasMore).
+    const displayedConnectors = initialConnectors;
+    const hasMoreToLoad = anyProviderHasMore;
 
     const loadMore = useCallback(() => {
-        if (isLoadingMore || anyProviderLoadingMore) return;
-        if (hasMoreClientItems) {
-            setIsLoadingMore(true);
-            setTimeout(() => { setDisplayedCount(prev => prev + LAZY_LOAD_CONFIG.itemsPerLoad); setIsLoadingMore(false); }, 300);
-        } else if (anyProviderHasMore) {
+        if (anyProviderLoadingMore) return;
+        if (anyProviderHasMore) {
             featuredProvidersRef.current.forEach(p => { if (p.hasMoreWallets && p.loadMoreWallets) p.loadMoreWallets() })
         }
-    }, [hasMoreClientItems, anyProviderHasMore, isLoadingMore, anyProviderLoadingMore]);
+    }, [anyProviderHasMore, anyProviderLoadingMore]);
 
     useEffect(() => {
         if (!loadMoreTriggerRef.current) return;
-        const observer = new IntersectionObserver((e) => e[0].isIntersecting && hasMoreToLoad && !isLoadingMore && loadMore(), { threshold: 0.1, rootMargin: '100px' });
+        const observer = new IntersectionObserver((e) => e[0].isIntersecting && hasMoreToLoad && !anyProviderLoadingMore && loadMore(), { threshold: 0.1, rootMargin: '100px' });
         observer.observe(loadMoreTriggerRef.current);
         return () => observer.disconnect();
-    }, [hasMoreToLoad, isLoadingMore, loadMore, selectedConnector, selectedMultiChainConnector]);
+    }, [hasMoreToLoad, anyProviderLoadingMore, loadMore, selectedConnector, selectedMultiChainConnector]);
 
     if (selectedConnector?.extensionNotFound && !selectedConnector?.showQrCode && !isMobilePlatfrom) {
         const provider = featuredProviders.find(p => p.name === selectedConnector?.providerName)

@@ -141,7 +141,12 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
                 optionalNamespaces: {
                     solana: {
                         chains,
-                        methods: [Methods.signTransaction, Methods.signMessage],
+                        methods: [
+                            Methods.signTransaction,
+                            Methods.signMessage,
+                            Methods.signAndSendTransaction,
+                            Methods.signAllTransactions,
+                        ],
                         events: [],
                     },
                 },
@@ -178,6 +183,9 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
         const provider = this._provider
         if (provider) {
             try { provider.client.off("session_delete", this._onSessionDelete) } catch { /* no-op */ }
+            if (this._internalDisplayUriHandler) {
+                try { provider.off("display_uri", this._internalDisplayUriHandler) } catch { /* no-op */ }
+            }
             try {
                 if (provider.session) await provider.disconnect()
             } catch (error: any) {
@@ -186,6 +194,9 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
         }
         this._publicKey = null
         this._session = undefined
+        this._provider = undefined
+        this._providerInitPromise = undefined
+        this._internalDisplayUriHandler = undefined
         this.emit("disconnect")
     }
 
@@ -208,6 +219,15 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
                 })
                 if (result.transaction) {
                     return this.deserialize(result.transaction, isVersioned) as T
+                }
+                // Legacy WC wallets return only the signature. `Transaction.addSignature` has a
+                // different contract than `VersionedTransaction.addSignature` (and blind-attaching
+                // a single signature to a v0 tx can silently drop required co-signers), so we
+                // refuse the partial result and surface a clear error.
+                if (isVersioned) {
+                    throw new WalletSignTransactionError(
+                        "Wallet returned only a signature for a versioned transaction; full signed transaction required",
+                    )
                 }
                 ;(transaction as Transaction).addSignature(this._publicKey, Buffer.from(base58.decode(result.signature)))
                 return transaction

@@ -2,6 +2,7 @@ import { isAndroid, isIOS, isMobile } from "../connectors/utils/isMobile"
 import type { WalletConnectMobile } from "./types"
 
 const addWc = (url: string): string => {
+    if (url.endsWith("/wc") || url.endsWith("://wc")) return url
     if (url.endsWith("://")) return url + "wc"
     if (url.endsWith("/")) return url + "wc"
     return url + "/wc"

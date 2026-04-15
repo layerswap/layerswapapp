@@ -8,23 +8,37 @@ type Store = Record<string, Record<string, DynamicWcMetadata>>
 // (e.g. between user click and the WC session completing). Keyed by namespace.
 const pendingStore = new Map<string, DynamicWcMetadata>()
 
+// Cache the parsed localStorage payload so repeated reads from render paths
+// (useMemo in useEVM / useSVM) don't hit localStorage synchronously every time.
+let _storeCache: Store | null = null
+
 const readStore = (): Store => {
+    if (_storeCache !== null) return _storeCache
     if (typeof window === 'undefined') return {}
     try {
         const stored = localStorage.getItem(STORAGE_KEY)
-        return stored ? JSON.parse(stored) : {}
+        _storeCache = stored ? JSON.parse(stored) : {}
     } catch {
-        return {}
+        _storeCache = {}
     }
+    return _storeCache as Store
 }
 
 const writeStore = (store: Store): void => {
     if (typeof window === 'undefined') return
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(store))
+        _storeCache = store
     } catch {
         // ignore quota / serialization errors
     }
+}
+
+// Cross-tab invalidation: another tab writing to our key must bust this tab's cache.
+if (typeof window !== 'undefined') {
+    window.addEventListener('storage', (e) => {
+        if (e.key === STORAGE_KEY || e.key === null) _storeCache = null
+    })
 }
 
 const normalizeAddress = (namespace: string, address: string): string => {
