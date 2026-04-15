@@ -148,8 +148,20 @@ export default function useSVM(): WalletProvider {
                     clearPendingDynamicWcMetadata(SOLANA_NS)
                 }
 
-                // Pre-render the QR loading state so the modal switches screens immediately
-                setSelectedConnector({ ...connector, qr: { state: 'loading', value: undefined }, showQrCode: true })
+                // Only pre-render the QR screen when we actually want the user to see it:
+                // - Desktop → QR modal.
+                // - Mobile WITHOUT a resolvable deeplink (e.g. bare WC tile) → QR fallback so
+                //   the user isn't stuck on a spinner.
+                // On mobile WITH a deeplink, leave `qr` unset so ConnectorsList renders the
+                // neutral LoadingConnect screen; `subscribeDisplayUri` will then navigate via
+                // `window.location.href = deepLink` as soon as the URI arrives.
+                const wantsQrModal = !isMobilePlatform || !resolveURI
+
+                if (wantsQrModal) {
+                    setSelectedConnector({ ...connector, qr: { state: 'loading', value: undefined }, showQrCode: true })
+                } else {
+                    setSelectedConnector({ ...connector })
+                }
 
                 unsubscribeDisplayUri = subscribeDisplayUri({
                     source: wcAdapter,
