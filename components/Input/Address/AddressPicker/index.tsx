@@ -84,8 +84,9 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
             wallets: connectedWallets,
             manualAddresses: manualDestAddresses,
             addressFromQuery: query.destination_address,
+            providerName: provider?.name,
         })
-    }, [address_book, destination, connectedWallets, manualDestAddresses, query.destination_address, connectedWalletskey])
+    }, [address_book, destination, connectedWallets, manualDestAddresses, query.destination_address, connectedWalletskey, provider?.name])
 
     const destinationAddressItem = destination && destination_address ?
         groupedAddresses?.find(a => a.address.toLowerCase() === destination_address.toLowerCase())
@@ -152,7 +153,6 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                     address: address || "",
                     id: 'manually_added',
                     providerName: provider.name,
-                    networkType: destination.type,
                 });
         }
     }, [destination, connectedWallets, provider, selectDestinationAccount]);
@@ -242,12 +242,14 @@ const resolveAddressGroups = ({
     wallets,
     manualAddresses,
     addressFromQuery,
+    providerName,
 }: {
     address_book: AddressBookItem[] | undefined,
     destination: NetworkRoute | undefined,
     wallets: Wallet[] | undefined,
     manualAddresses: ManualDestAddress[],
     addressFromQuery: string | undefined,
+    providerName: string | undefined,
 }) => {
 
     if (!destination) return
@@ -270,7 +272,7 @@ const resolveAddressGroups = ({
     }
 
     manualAddresses.forEach(entry => {
-        if (entry.networkType === destination.type && AddressClass.isValid(entry.address, destination)) {
+        if (entry.providerName === providerName && AddressClass.isValid(entry.address, destination)) {
             addresses.push({ address: entry.address, group: AddressGroup.ManualAdded })
         }
     })

@@ -28,13 +28,9 @@ type BaseAccountIdentity = {
     address: string;
     providerName: string;
     id: string;
-    networkType?: string;
 }
 
-export type ManualDestAddress = {
-    address: string;
-    networkType: string;
-}
+export type ManualDestAddress = Pick<BaseAccountIdentity, 'address' | 'providerName'>;
 
 export type AccountIdentity = BaseAccountIdentity & {
     displayName: string,
@@ -109,9 +105,12 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
     }, [providers, selectedDestAccounts]);
 
     const selectDestinationAccount = useCallback((account: BaseAccountIdentity) => {
-        if (account.id === 'manually_added' && account.networkType) {
-            const networkType = account.networkType;
-            setManualDestAddresses(prev => prev.some(e => e.networkType === networkType && AddressClass.equals(e.address, account.address, null, account.providerName)) ? prev : [...prev, { address: account.address, networkType }]);
+        if (account.id === 'manually_added') {
+            setManualDestAddresses(prev =>
+                prev.some(e => e.providerName === account.providerName && AddressClass.equals(e.address, account.address, null, account.providerName))
+                    ? prev
+                    : [...prev, { address: account.address, providerName: account.providerName }]
+            );
         }
         setSelectedDestinationAccounts(prev => {
             const existingAccountIndex = prev.findIndex(acc => acc.providerName === account.providerName);
