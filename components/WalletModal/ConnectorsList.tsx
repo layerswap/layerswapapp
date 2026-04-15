@@ -81,8 +81,14 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                     return next;
                 })
                 onFinish(result)
+                setSelectedConnector(undefined)
+            } else {
+                // `connectWallet` resolved but didn't hand us a wallet (silent failure —
+                // e.g. the WC session was restored but the just-connected adapter wasn't
+                // found in the wallets array yet). Keep the user on the loading screen
+                // with a retry affordance instead of bouncing them back to the list.
+                setConnectionError("Connection didn't complete. Please try again.")
             }
-            setSelectedConnector(undefined)
         } catch (e) {
             console.log(e)
             const message = (e?.message || e?.details || '').toLowerCase()

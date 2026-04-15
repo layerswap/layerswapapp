@@ -92,6 +92,17 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
         return () => this._displayUriListeners.delete(listener)
     }
 
+    /**
+     * Fire-and-forget hint that the user is about to connect — eagerly runs
+     * the `UniversalProvider.init()` so the actual `connect()` doesn't block
+     * on a cold import + init when the user clicks a WC wallet tile.
+     */
+    warmup(): void {
+        if (this._readyState !== WalletReadyState.Loadable) return
+        if (this._provider || this._providerInitPromise) return
+        this.getProvider().catch(() => { /* next connect() will surface the real error */ })
+    }
+
     private async getProvider(): Promise<UniversalProviderType> {
         if (this._provider) return this._provider
         if (!this._providerInitPromise) {
@@ -112,6 +123,23 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
             this._providerInitPromise = initPromise
         }
         return this._providerInitPromise
+    }
+
+    /**
+     * Override the base `autoConnect` so we never start a NEW WC pairing from
+     * wallet-adapter-react's auto-reconnect path. A new pairing requires the
+     * user to scan a QR, which isn't available during auto-reconnect; calling
+     * `provider.connect()` there hangs with `_connecting = true` until the
+     * internal timeout, blocking any subsequent user-initiated connect
+     * (`connect()` early-returns on `this.connecting`). Only resume an
+     * existing session here; a real connect always goes through `connect()`.
+     */
+    async autoConnect(): Promise<void> {
+        if (this._readyState !== WalletReadyState.Loadable) return
+        try {
+            const provider = await this.getProvider()
+            if (provider.session) await this.connect()
+        } catch { /* silent — the user can still connect manually */ }
     }
 
     async connect(): Promise<void> {
@@ -181,22 +209,38 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
 
     async disconnect(): Promise<void> {
         const provider = this._provider
+        let providerDisconnectThrew = false
         if (provider) {
             try { provider.client.off("session_delete", this._onSessionDelete) } catch { /* no-op */ }
-            if (this._internalDisplayUriHandler) {
-                try { provider.off("display_uri", this._internalDisplayUriHandler) } catch { /* no-op */ }
-            }
             try {
                 if (provider.session) await provider.disconnect()
             } catch (error: any) {
+                providerDisconnectThrew = true
                 this.emit("error", new WalletDisconnectionError(error?.message, error))
             }
         }
         this._publicKey = null
         this._session = undefined
-        this._provider = undefined
-        this._providerInitPromise = undefined
-        this._internalDisplayUriHandler = undefined
+
+        // Keep `_provider` warm across the disconnect → reconnect path. UP's
+        // `disconnect()` awaits `cleanup()` which clears `provider.session`, so
+        // the next `connect()` will take the fresh-pairing branch and emit
+        // `display_uri` immediately — no cold `UP.init()` to wait for, which
+        // is what previously made the QR spinner hang on the first reconnect.
+        // Only tear down the provider if its own `disconnect()` threw, because
+        // then `provider.session` may still be set.
+        if (providerDisconnectThrew && provider) {
+            if (this._internalDisplayUriHandler) {
+                try { provider.off("display_uri", this._internalDisplayUriHandler) } catch { /* no-op */ }
+            }
+            this._provider = undefined
+            this._providerInitPromise = undefined
+            this._internalDisplayUriHandler = undefined
+            if (this._readyState === WalletReadyState.Loadable) {
+                this.getProvider().catch(() => { /* next connect() will surface the real error */ })
+            }
+        }
+
         this.emit("disconnect")
     }
 

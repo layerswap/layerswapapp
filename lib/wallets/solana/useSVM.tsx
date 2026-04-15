@@ -63,7 +63,15 @@ export default function useSVM(): WalletProvider {
         if (isWalletModalOpen && !walletConnectWalletsLoaded) {
             loadWalletConnectWallets().catch((error) => console.warn('Failed to load Solana WalletConnect wallets registry', error))
         }
-    }, [isWalletModalOpen, walletConnectWalletsLoaded, loadWalletConnectWallets])
+        // Pre-warm the WC provider so the user's first wallet click doesn't wait
+        // for UP.init() — the cold init is what makes recent-wallet reconnects
+        // after a refresh spin on "QR loading" for several seconds.
+        if (isWalletModalOpen) {
+            const wcAdapterEntry = wallets.find(w => w.adapter.name === SOLANA_WC_ADAPTER_NAME)
+            const wcAdapter = wcAdapterEntry?.adapter as unknown as SolanaWalletConnectAdapter | undefined
+            wcAdapter?.warmup?.()
+        }
+    }, [isWalletModalOpen, walletConnectWalletsLoaded, loadWalletConnectWallets, wallets])
 
     const connectedWallets = useMemo(() => {
 
@@ -162,7 +170,13 @@ export default function useSVM(): WalletProvider {
                 unsubscribeDisplayUri = undefined
             }
 
-            const newConnectedWallet = wallets.find(w => w.adapter.connected === true)
+            // Prefer the adapter we just connected — `wallets.find(connected)` can
+            // return a stale entry (e.g. a previously-connected Phantom that sits
+            // earlier in the array) and yield the wrong address. Fall back to the
+            // scan only if our target somehow isn't reporting connected.
+            const newConnectedWallet = targetAdapterEntry.adapter.connected === true
+                ? targetAdapterEntry
+                : wallets.find(w => w.adapter.connected === true)
             const newAddress = newConnectedWallet?.adapter.publicKey?.toBase58()
 
             // Persist display metadata for reconnects after refresh
