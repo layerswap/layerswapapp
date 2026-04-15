@@ -1,4 +1,4 @@
-import { Formik, FormikProps } from "formik";
+import { Formik } from "formik";
 import { useCallback, useRef, useState } from "react";
 import { useSettingsState } from "@/context/settings";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
@@ -31,7 +31,6 @@ type NetworkToConnect = {
 
 export default function FormWrapper({ children, type, partner }: { children?: React.ReactNode, type: 'cross-chain' | 'exchange', partner?: Partner }) {
 
-    const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
     const [isAddressFromQueryConfirmed, setIsAddressFromQueryConfirmed] = useState(false);
     const dontShowContractWarningRef = useRef(false);
@@ -141,7 +140,6 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
             if (walletWihdrawDone) {
                 mutateBalances()
                 setWalletWihdrawDone(false)
-                formikRef?.current?.setFieldValue('amount', 0, true);
             }
         }
         setSwapModalOpen(value)
@@ -153,7 +151,6 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
 
     return <>
         <Formik
-            innerRef={formikRef}
             initialValues={initialValues}
             validateOnMount={true}
             onSubmit={handleSubmit}
