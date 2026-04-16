@@ -35,6 +35,18 @@ export function subscribeDisplayUri(params: SubscribeDisplayUriParams): () => vo
         const deepLink = resolveURI ? resolveURI(uri) : undefined
 
         if (isMobilePlatform && deepLink) {
+            try {
+                const url = new URL(deepLink)
+                if (url.protocol === 'javascript:' || url.protocol === 'data:') {
+                    console.warn('Blocked navigation to untrusted URL scheme')
+                    onQr({ state: 'fetched', value: uri, deepLink })
+                    return
+                }
+            } catch {
+                console.warn('Blocked navigation to malformed URL')
+                onQr({ state: 'fetched', value: uri, deepLink })
+                return
+            }
             window.location.href = deepLink
             return
         }

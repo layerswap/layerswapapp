@@ -189,7 +189,7 @@ export default function useFuel(): WalletProvider {
         };
     }, [connectors]);
 
-    const availableWalletsForConnect: InternalConnector[] = connectors.map(c => {
+    const avaiableConnectors: InternalConnector[] = connectors.map(c => {
         const isInstalled = c.installed && !c['dAppWindow']
         return {
             name: c.name,
@@ -206,7 +206,7 @@ export default function useFuel(): WalletProvider {
         disconnectWallets,
         switchAccount,
         switchChain,
-        availableWalletsForConnect,
+        avaiableConnectors,
         autofillSupportedNetworks: commonSupportedNetworks,
         withdrawalSupportedNetworks: commonSupportedNetworks,
         asSourceSupportedNetworks: commonSupportedNetworks,

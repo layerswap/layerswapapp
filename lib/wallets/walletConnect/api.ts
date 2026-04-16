@@ -46,6 +46,19 @@ export function chainsForNamespace(namespace: string): string {
     return ''
 }
 
+function isValidWalletUrl(urlStr: string): boolean {
+    try {
+        const url = new URL(urlStr)
+        return ['https:', 'http:'].includes(url.protocol)
+    } catch {
+        return false
+    }
+}
+
+function isValidImageId(id: string): boolean {
+    return /^[a-zA-Z0-9_-]{1,100}$/.test(id)
+}
+
 export function walletImageUrl(imageId: string): string {
     return `https://explorer-api.walletconnect.com/v3/logo/md/${imageId}?projectId=${WALLETCONNECT_PROJECT_ID}`
 }
@@ -66,5 +79,21 @@ export async function fetchWallets(params: FetchWalletsParams): Promise<GetWalle
 
     const res = await fetch(url.toString())
     if (!res.ok) throw new Error(`getWallets failed: ${res.status}`)
-    return res.json()
+    const data: GetWalletsResponse = await res.json()
+
+    if (!Array.isArray(data?.data)) {
+        throw new Error('Invalid response: missing data array')
+    }
+    for (const wallet of data.data) {
+        if (typeof wallet.id !== 'string' || typeof wallet.name !== 'string') {
+            throw new Error('Invalid wallet entry: missing id or name')
+        }
+        // Sanitize URLs: strip dangerous schemes and reject malformed URLs
+        if (wallet.mobile_link && !isValidWalletUrl(wallet.mobile_link)) wallet.mobile_link = null
+        if (wallet.desktop_link && !isValidWalletUrl(wallet.desktop_link)) wallet.desktop_link = null
+        if (wallet.chrome_store && !isValidWalletUrl(wallet.chrome_store)) wallet.chrome_store = null
+        if (typeof wallet.image_id !== 'string' || !isValidImageId(wallet.image_id)) wallet.image_id = ''
+    }
+
+    return data
 }

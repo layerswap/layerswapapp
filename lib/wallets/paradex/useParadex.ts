@@ -1,6 +1,12 @@
 import KnownInternalNames from "../../knownIds"
 import { useMemo } from "react"
-import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
+import {
+    InternalConnector,
+    RequestAdditionalConnectorsParams,
+    RequestAdditionalConnectorsResult,
+    Wallet,
+    WalletProvider,
+} from "../../../Models/WalletProvider"
 import { useConnectModal } from "../../../components/WalletModal"
 import { type ConnectorAlreadyConnectedError } from '@wagmi/core'
 import useEVM from "../evm/useEVM"
@@ -14,6 +20,7 @@ import { useSettingsState } from "../../../context/settings"
 import { Address } from "@/lib/address"
 import sleep from "../utils/sleep"
 import { useActiveParadexAccount } from "@/components/WalletProviders/ActiveParadexAccount"
+import { getRegistryEntry } from "@/lib/wallets/walletConnect/types"
 
 export default function useParadex(): WalletProvider {
     const name = 'Paradex'
@@ -49,8 +56,11 @@ export default function useParadex(): WalletProvider {
 
         try {
             setSelectedConnector(connector)
-            const isEvm = evmProvider.availableWalletsForConnect?.find(w => w.id === connector.id)
-            const isStarknet = starknetProvider.availableWalletsForConnect?.find(w => w.id === connector.id)
+            const isRegistryEvmConnector = !!getRegistryEntry(connector)
+            const isEvm = isRegistryEvmConnector
+                || evmProvider.avaiableConnectors?.find(w => w.id === connector.id)
+                || evmProvider.additionalConnectors?.find(w => w.id === connector.id)
+            const isStarknet = starknetProvider.avaiableConnectors?.find(w => w.id === connector.id)
 
             let accounts: typeof paradexAccounts | undefined
 
@@ -171,18 +181,34 @@ export default function useParadex(): WalletProvider {
         ]
     }, [evmProvider, starknetProvider, paradexAccounts])
 
-    const availableWalletsForConnect = useMemo(() => {
+    const avaiableConnectors = useMemo(() => {
         return [
-            ...(evmProvider.availableWalletsForConnect ? evmProvider.availableWalletsForConnect : []),
-            ...(starknetProvider?.availableWalletsForConnect ? starknetProvider.availableWalletsForConnect : [])
+            ...(evmProvider.avaiableConnectors ? evmProvider.avaiableConnectors : []),
+            ...(starknetProvider?.avaiableConnectors ? starknetProvider.avaiableConnectors : [])
         ]
     }, [evmProvider, starknetProvider])
+
+    const additionalConnectors = useMemo(() => {
+        return evmProvider.additionalConnectors ? evmProvider.additionalConnectors : []
+    }, [evmProvider.additionalConnectors])
+
+    const requestAdditionalConnectors = async (params: RequestAdditionalConnectorsParams = {}): Promise<RequestAdditionalConnectorsResult> => {
+        if (!evmProvider.requestAdditionalConnectors) {
+            return { connectors: [], nextPage: null, totalCount: 0 }
+        }
+
+        const result = await evmProvider.requestAdditionalConnectors(params)
+        return {
+            connectors: result.connectors.map(connector => ({ ...connector, providerName: name })),
+            nextPage: result.nextPage,
+            totalCount: result.totalCount,
+        }
+    }
 
     const switchAccount = async (wallet: Wallet, address: string) => {
 
         const providers = [evmProvider, starknetProvider]
         const paradexProvider = providers.find(p => p?.connectedWallets?.find(w => w.id === wallet.id))
-        const paradexWallet = paradexProvider?.connectedWallets?.find(w => w.id === wallet.id)
 
         if (paradexProvider?.name && wallet.metadata?.l1Address) {
             setActiveAddress({
@@ -220,12 +246,14 @@ export default function useParadex(): WalletProvider {
         withdrawalSupportedNetworks,
         autofillSupportedNetworks,
         asSourceSupportedNetworks,
-        availableWalletsForConnect,
+        avaiableConnectors,
+        additionalConnectors,
         name,
         id,
         providerIcon: icon,
         hideFromList: true,
-        ready: evmProvider.ready && starknetProvider.ready
+        ready: evmProvider.ready && starknetProvider.ready,
+        requestAdditionalConnectors,
     }
     return provider
 }

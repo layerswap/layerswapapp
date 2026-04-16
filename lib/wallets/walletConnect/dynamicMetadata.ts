@@ -35,7 +35,9 @@ const writeStore = (store: Store): void => {
 }
 
 // Cross-tab invalidation: another tab writing to our key must bust this tab's cache.
-if (typeof window !== 'undefined') {
+let _storageListenerRegistered = false
+if (typeof window !== 'undefined' && !_storageListenerRegistered) {
+    _storageListenerRegistered = true
     window.addEventListener('storage', (e) => {
         if (e.key === STORAGE_KEY || e.key === null) _storeCache = null
     })
@@ -79,4 +81,25 @@ export const getPendingDynamicWcMetadata = (namespace: string): DynamicWcMetadat
 
 export const clearPendingDynamicWcMetadata = (namespace: string): void => {
     pendingStore.delete(namespace)
+}
+
+/**
+ * Convenience helper used by both EVM and Solana connect flows to set/clear
+ * pending metadata from a registry entry in a single call.
+ */
+export const setPendingMetadataForRegistry = (
+    namespace: string,
+    registry: { name: string; icon?: string; id: string } | undefined
+): DynamicWcMetadata | undefined => {
+    if (!registry) {
+        clearPendingDynamicWcMetadata(namespace)
+        return undefined
+    }
+    const meta: DynamicWcMetadata = {
+        name: registry.name,
+        icon: registry.icon || '',
+        id: registry.id,
+    }
+    setPendingDynamicWcMetadata(namespace, meta)
+    return meta
 }

@@ -14,7 +14,10 @@ export const decorateForWagmi = (base: WalletConnectWalletBase): WalletConnectWa
     return {
         id: base.id,
         name: base.name,
-        mobile: base.mobile as any,
+        mobile: {
+            native: base.mobile?.native ?? '',
+            universal: base.mobile?.universal ?? '',
+        },
         rdns: base.rdns ? `${base.rdns}.wc` : undefined,
         icon: base.icon,
         projectId: WALLETCONNECT_PROJECT_ID,
