@@ -4,7 +4,6 @@ import { ExtendedAddress } from "../Address/AddressPicker/AddressWithIcon";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
 import { TokenBalance } from "@/Models/Balance";
 import { useState } from "react";
-import clsx from "clsx";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components//shadcn/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components//shadcn/tooltip";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
@@ -37,7 +36,14 @@ export const TokenInfoIcon = ({ item, route, className }: { item: NetworkRouteTo
                     <TokenInfoTrigger item={item} isPopoverOpen={isPopoverOpen} isTooltipOpen={isTooltipOpen} />
                 </ExtendedAddress>
             ) : (
-                <NativeTokenTitle item={item} route={route} isPopoverOpen={isPopoverOpen} isTooltipOpen={isTooltipOpen} />
+                <NativeTokenTitle
+                    item={item}
+                    route={route}
+                    isPopoverOpen={isPopoverOpen}
+                    isTooltipOpen={isTooltipOpen}
+                    onPopoverOpenChange={setIsPopoverOpen}
+                    onTooltipOpenChange={setIsTooltipOpen}
+                />
             )}
         </div>
     );
@@ -82,20 +88,16 @@ type NativeTokenTitleProps = {
     item: NetworkRouteToken;
     route: NetworkRoute;
     onTooltipOpenChange?: (open: boolean) => void;
+    onPopoverOpenChange?: (open: boolean) => void;
     iconOnly?: boolean;
     isPopoverOpen?: boolean;
     isTooltipOpen?: boolean;
 }
 
-const NativeTokenTitle = ({ item, route, onTooltipOpenChange, isTooltipOpen }: NativeTokenTitleProps) => {
-    const [isPopoverOpen, setPopoverOpen] = useState(false)
-    const handlePopoverChange = (open: boolean) => {
-        setPopoverOpen(open)
-    }
-
+const NativeTokenTitle = ({ item, route, onTooltipOpenChange, onPopoverOpenChange, isPopoverOpen, isTooltipOpen }: NativeTokenTitleProps) => {
     return (
         <div onClick={(e) => e.stopPropagation()}>
-            <Popover open={isPopoverOpen} onOpenChange={handlePopoverChange} modal={true}>
+            <Popover open={isPopoverOpen} onOpenChange={onPopoverOpenChange} modal={true}>
                 <PopoverTrigger asChild>
                     <div>
                         <Tooltip onOpenChange={onTooltipOpenChange}>
