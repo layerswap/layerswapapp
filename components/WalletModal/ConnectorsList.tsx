@@ -15,6 +15,57 @@ import { WalletQrCode } from "./WalletQrCode";
 import { LoadingConnect } from "./LoadingConnect";
 import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
 
+type ProviderPaginationState = {
+    loaded: boolean;
+    nextPage: number | null;
+    totalCount: number;
+    pageSize: number;
+    isLoading: boolean;
+}
+
+type RequestCapableWalletProvider = WalletProvider & {
+    requestAdditionalConnectors: NonNullable<WalletProvider["requestAdditionalConnectors"]>;
+}
+
+const DEFAULT_BROWSE_PAGE_SIZE = 40
+const SEARCH_PAGE_SIZE = 100
+
+const upsertPaginationState = (
+    previous: Record<string, ProviderPaginationState>,
+    providerNames: string[],
+    pageSize: number
+) => {
+    const next = { ...previous }
+
+    for (const providerName of providerNames) {
+        next[providerName] = {
+            loaded: previous[providerName]?.loaded ?? false,
+            nextPage: previous[providerName]?.nextPage ?? null,
+            totalCount: previous[providerName]?.totalCount ?? 0,
+            pageSize: previous[providerName]?.pageSize ?? pageSize,
+            isLoading: true,
+        }
+    }
+
+    return next
+}
+
+const withProviderName = (providerName: string, connectors: InternalConnector[]) => {
+    return connectors.map(connector => ({ ...connector, providerName }))
+}
+
+const clearSearchResultsIfNeeded = (previous: InternalConnector[]) => {
+    return previous.length === 0 ? previous : []
+}
+
+const clearPaginationIfNeeded = (previous: Record<string, ProviderPaginationState>) => {
+    return Object.keys(previous).length === 0 ? previous : {}
+}
+
+const canRequestAdditionalConnectors = (provider: WalletProvider): provider is RequestCapableWalletProvider => {
+    return typeof provider.requestAdditionalConnectors === "function"
+}
+
 const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { providers } = useWallet();
     const { setSelectedConnector, selectedProvider, setSelectedProvider, selectedConnector, selectedMultiChainConnector, setSelectedMultiChainConnector } = useConnectModal()
@@ -22,12 +73,40 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     const [connectionError, setConnectionError] = useState<string | undefined>(undefined);
     const [searchValue, setSearchValue] = useState<string | undefined>(undefined)
     const [isScrolling, setIsScrolling] = useState(false);
+    const [searchResults, setSearchResults] = useState<InternalConnector[]>([]);
+    const [browsePaginationByProvider, setBrowsePaginationByProvider] = useState<Record<string, ProviderPaginationState>>({});
+    const [searchPaginationByProvider, setSearchPaginationByProvider] = useState<Record<string, ProviderPaginationState>>({});
     const scrollTimeout = useRef<any>(null);
-    const isMobilePlatfrom = isMobile();
-
-    const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
-    const [apiSearchResults, setApiSearchResults] = useState<InternalConnector[]>([]);
     const searchDebounceRef = useRef<any>(null);
+    const searchRequestSequenceRef = useRef(0);
+    const isMobilePlatfrom = isMobile();
+    const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
+
+    const filteredProviders = providers.filter(p => !p.hideFromList)
+    const [selectedProviderNames, setSelectedProviderNames] = useState<string[]>([])
+
+    const resolvedSelectedProvider = selectedProvider && !selectedProvider.isSelectedFromFilter
+        ? filteredProviders.find(p => p.name === selectedProvider.name) || selectedProvider
+        : selectedProvider;
+    const featuredProviders = selectedProviderNames.length > 0 ? filteredProviders.filter(p => selectedProviderNames.includes(p.name)) : (resolvedSelectedProvider ? [resolvedSelectedProvider] : filteredProviders)
+    const requestCapableFeaturedProviderNamesKey = featuredProviders
+        .filter(canRequestAdditionalConnectors)
+        .map(provider => provider.name)
+        .join("|")
+
+    const featuredProvidersRef = useRef(featuredProviders)
+    const browsePaginationRef = useRef(browsePaginationByProvider)
+    const searchPaginationRef = useRef(searchPaginationByProvider)
+    const currentSearchValue = searchValue?.trim() ?? ""
+    const currentSearchValueRef = useRef(currentSearchValue)
+    const isSearching = currentSearchValue.length >= 2
+
+    const isSearchingRef = useRef(isSearching)
+    featuredProvidersRef.current = featuredProviders
+    browsePaginationRef.current = browsePaginationByProvider
+    searchPaginationRef.current = searchPaginationByProvider
+    currentSearchValueRef.current = currentSearchValue
+    isSearchingRef.current = isSearching
 
     const handleScroll = () => {
         setIsScrolling(true);
@@ -83,10 +162,6 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 onFinish(result)
                 setSelectedConnector(undefined)
             } else {
-                // `connectWallet` resolved but didn't hand us a wallet (silent failure —
-                // e.g. the WC session was restored but the just-connected adapter wasn't
-                // found in the wallets array yet). Keep the user on the loading screen
-                // with a retry affordance instead of bouncing them back to the list.
                 setConnectionError("Connection didn't complete. Please try again.")
             }
         } catch (e) {
@@ -100,8 +175,6 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         }
     }
 
-    const [selectedProviderNames, setSelectedProviderNames] = useState<string[]>([])
-
     const handleSelectProvider = (providerNames: string[]) => {
         setSelectedProviderNames(providerNames)
         if (providerNames.length === 0) {
@@ -114,76 +187,244 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         }
     }
 
-    const filteredProviders = providers.filter(p => !p.hideFromList)
-    const resolvedSelectedProvider = selectedProvider && !selectedProvider.isSelectedFromFilter
-        ? filteredProviders.find(p => p.name === selectedProvider.name) || selectedProvider
-        : selectedProvider;
-    const featuredProviders = selectedProviderNames.length > 0 ? filteredProviders.filter(p => selectedProviderNames.includes(p.name)) : (resolvedSelectedProvider ? [resolvedSelectedProvider] : filteredProviders)
+    useEffect(() => {
+        if (isSearching) return
 
-    const anyProviderHasMore = featuredProviders.some(p => p.hasMoreWallets)
-    const anyProviderLoadingMore = featuredProviders.some(p => p.isLoadingMoreWallets)
+        let cancelled = false
+        const providersToLoad = featuredProvidersRef.current.filter(provider =>
+            provider.requestAdditionalConnectors
+            && !browsePaginationRef.current[provider.name]?.loaded
+            && !browsePaginationRef.current[provider.name]?.isLoading
+        )
 
-    // Keep a ref so the debounced search always reads the latest providers
-    const featuredProvidersRef = useRef(featuredProviders)
-    featuredProvidersRef.current = featuredProviders
+        if (providersToLoad.length === 0) return
 
-    // Debounced API search
+        setBrowsePaginationByProvider(previous => upsertPaginationState(previous, providersToLoad.map(provider => provider.name), DEFAULT_BROWSE_PAGE_SIZE))
+
+        Promise.all(providersToLoad.map(async (provider) => {
+            try {
+                const result = await provider.requestAdditionalConnectors?.({ page: 1, pageSize: DEFAULT_BROWSE_PAGE_SIZE })
+                return { providerName: provider.name, result }
+            } catch {
+                return { providerName: provider.name, result: undefined }
+            }
+        })).then(results => {
+            if (cancelled) return
+
+            setBrowsePaginationByProvider(previous => {
+                const next = { ...previous }
+
+                for (const { providerName, result } of results) {
+                    next[providerName] = {
+                        loaded: true,
+                        nextPage: result?.nextPage ?? null,
+                        totalCount: result?.totalCount ?? 0,
+                        pageSize: previous[providerName]?.pageSize ?? DEFAULT_BROWSE_PAGE_SIZE,
+                        isLoading: false,
+                    }
+                }
+
+                return next
+            })
+        })
+
+        return () => {
+            cancelled = true
+        }
+    }, [isSearching, requestCapableFeaturedProviderNamesKey])
+
     useEffect(() => {
         if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
-        if (!searchValue || searchValue.length < 2) {
-            setApiSearchResults([])
+
+        if (!isSearching) {
+            searchRequestSequenceRef.current += 1
+            setSearchResults(clearSearchResultsIfNeeded)
+            setSearchPaginationByProvider(clearPaginationIfNeeded)
             return
         }
+
+        const requestId = searchRequestSequenceRef.current + 1
+        searchRequestSequenceRef.current = requestId
+        const searchableProviders = featuredProvidersRef.current.filter(canRequestAdditionalConnectors)
+
+        if (searchableProviders.length === 0) {
+            setSearchResults(clearSearchResultsIfNeeded)
+            setSearchPaginationByProvider(clearPaginationIfNeeded)
+            return
+        }
+
+        setSearchPaginationByProvider(previous => upsertPaginationState(previous, searchableProviders.map(provider => provider.name), SEARCH_PAGE_SIZE))
+
         searchDebounceRef.current = setTimeout(async () => {
-            const allResults: InternalConnector[] = []
-            for (const provider of featuredProvidersRef.current) {
-                if (provider.searchWallets) {
-                    try {
-                        const results = await provider.searchWallets(searchValue)
-                        allResults.push(...results)
-                    } catch { /* ignore search errors */ }
+            const query = currentSearchValueRef.current
+            const results = await Promise.all(searchableProviders.map(async (provider) => {
+                try {
+                    const result = await provider.requestAdditionalConnectors({ page: 1, pageSize: SEARCH_PAGE_SIZE, query })
+                    return { providerName: provider.name, result }
+                } catch {
+                    return { providerName: provider.name, result: undefined }
                 }
+            }))
+
+            if (requestId !== searchRequestSequenceRef.current || query !== currentSearchValueRef.current) {
+                return
             }
-            setApiSearchResults(allResults)
+
+            setSearchResults(results.flatMap(({ providerName, result }) => withProviderName(providerName, result?.connectors ?? [])))
+            setSearchPaginationByProvider(previous => {
+                const next = { ...previous }
+
+                for (const { providerName, result } of results) {
+                    next[providerName] = {
+                        loaded: true,
+                        nextPage: result?.nextPage ?? null,
+                        totalCount: result?.totalCount ?? 0,
+                        pageSize: SEARCH_PAGE_SIZE,
+                        isLoading: false,
+                    }
+                }
+
+                return next
+            })
         }, 300)
-        return () => { if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current) }
-    }, [searchValue])
+
+        return () => {
+            if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
+        }
+    }, [currentSearchValue, isSearching, requestCapableFeaturedProviderNamesKey])
 
     const {
         featuredConnectors,
-        hiddenConnectors,
+        additionalConnectors,
         initialConnectors,
     } = useConnectors({
         featuredProviders,
         filteredProviders,
         searchValue,
         recentConnectors,
-        apiSearchResults,
+        searchResults: isSearching ? searchResults : [],
     });
 
-    // Render all loaded items immediately — client-side slicing caused a loading-flash
-    // on every modal open because displayedCount resets on remount.
-    // Only paginate for SERVER fetches (anyProviderHasMore).
-    const displayedConnectors = initialConnectors;
-    const hasMoreToLoad = anyProviderHasMore;
+    const activePaginationByProvider = isSearching ? searchPaginationByProvider : browsePaginationByProvider
+    const anyProviderHasMore = featuredProviders.some(provider => activePaginationByProvider[provider.name]?.nextPage != null)
+    const anyProviderLoadingMore = featuredProviders.some(provider => activePaginationByProvider[provider.name]?.isLoading)
 
-    const loadMore = useCallback(() => {
-        if (anyProviderLoadingMore) return;
-        if (anyProviderHasMore) {
-            featuredProvidersRef.current.forEach(p => { if (p.hasMoreWallets && p.loadMoreWallets) p.loadMoreWallets() })
+    const loadMoreInFlightRef = useRef(false)
+
+    const loadMore = useCallback(async () => {
+        if (loadMoreInFlightRef.current) return
+        loadMoreInFlightRef.current = true
+        try {
+            if (isSearchingRef.current) {
+                const query = currentSearchValueRef.current
+                const requestId = searchRequestSequenceRef.current
+                const providersToLoad = featuredProvidersRef.current.filter(provider => {
+                    const state = searchPaginationRef.current[provider.name]
+                    return provider.requestAdditionalConnectors && state?.nextPage != null && !state.isLoading
+                })
+
+                if (providersToLoad.length === 0) return
+
+                setSearchPaginationByProvider(previous => upsertPaginationState(previous, providersToLoad.map(provider => provider.name), SEARCH_PAGE_SIZE))
+
+                const results = await Promise.all(providersToLoad.map(async (provider) => {
+                    const state = searchPaginationRef.current[provider.name]
+                    try {
+                        const result = await provider.requestAdditionalConnectors?.({
+                            page: state?.nextPage ?? 1,
+                            pageSize: state?.pageSize ?? SEARCH_PAGE_SIZE,
+                            query,
+                        })
+                        return { providerName: provider.name, result }
+                    } catch {
+                        return { providerName: provider.name, result: undefined }
+                    }
+                }))
+
+                if (requestId !== searchRequestSequenceRef.current || query !== currentSearchValueRef.current) {
+                    return
+                }
+
+                setSearchResults(previous => [
+                    ...previous,
+                    ...results.flatMap(({ providerName, result }) => withProviderName(providerName, result?.connectors ?? []))
+                ])
+                setSearchPaginationByProvider(previous => {
+                    const next = { ...previous }
+
+                    for (const { providerName, result } of results) {
+                        next[providerName] = {
+                            loaded: true,
+                            nextPage: result?.nextPage ?? null,
+                            totalCount: result?.totalCount ?? previous[providerName]?.totalCount ?? 0,
+                            pageSize: previous[providerName]?.pageSize ?? SEARCH_PAGE_SIZE,
+                            isLoading: false,
+                        }
+                    }
+
+                    return next
+                })
+
+                return
+            }
+
+            const providersToLoad = featuredProvidersRef.current.filter(provider => {
+                const state = browsePaginationRef.current[provider.name]
+                return provider.requestAdditionalConnectors && state?.nextPage != null && !state.isLoading
+            })
+
+            if (providersToLoad.length === 0) return
+
+            setBrowsePaginationByProvider(previous => upsertPaginationState(previous, providersToLoad.map(provider => provider.name), DEFAULT_BROWSE_PAGE_SIZE))
+
+            const results = await Promise.all(providersToLoad.map(async (provider) => {
+                const state = browsePaginationRef.current[provider.name]
+                try {
+                    const result = await provider.requestAdditionalConnectors?.({
+                        page: state?.nextPage ?? 1,
+                        pageSize: state?.pageSize ?? DEFAULT_BROWSE_PAGE_SIZE,
+                    })
+                    return { providerName: provider.name, result }
+                } catch {
+                    return { providerName: provider.name, result: undefined }
+                }
+            }))
+
+            setBrowsePaginationByProvider(previous => {
+                const next = { ...previous }
+
+                for (const { providerName, result } of results) {
+                    next[providerName] = {
+                        loaded: true,
+                        nextPage: result?.nextPage ?? null,
+                        totalCount: result?.totalCount ?? previous[providerName]?.totalCount ?? 0,
+                        pageSize: previous[providerName]?.pageSize ?? DEFAULT_BROWSE_PAGE_SIZE,
+                        isLoading: false,
+                    }
+                }
+
+                return next
+            })
+        } finally {
+            loadMoreInFlightRef.current = false
         }
-    }, [anyProviderHasMore, anyProviderLoadingMore]);
+    }, [])
 
     useEffect(() => {
         if (!loadMoreTriggerRef.current) return;
-        const observer = new IntersectionObserver((e) => e[0].isIntersecting && hasMoreToLoad && !anyProviderLoadingMore && loadMore(), { threshold: 0.1, rootMargin: '100px' });
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && anyProviderHasMore && !anyProviderLoadingMore) {
+                void loadMore()
+            }
+        }, { threshold: 0.1, rootMargin: '100px' });
         observer.observe(loadMoreTriggerRef.current);
         return () => observer.disconnect();
-    }, [hasMoreToLoad, anyProviderLoadingMore, loadMore, selectedConnector, selectedMultiChainConnector]);
+    }, [anyProviderHasMore, anyProviderLoadingMore, loadMore, selectedConnector, selectedMultiChainConnector]);
 
     if (selectedConnector?.extensionNotFound && !selectedConnector?.showQrCode && !isMobilePlatfrom) {
         const provider = featuredProviders.find(p => p.name === selectedConnector?.providerName)
-        return <InstalledExtensionNotFound selectedConnector={selectedConnector} onConnect={(connector) => { connect(connector, provider!) }} />
+        if (!provider) return null
+        return <InstalledExtensionNotFound selectedConnector={selectedConnector} onConnect={(connector) => { connect(connector, provider) }} />
     }
     if (selectedConnector?.qr?.state && (!selectedConnector?.hasBrowserExtension || selectedConnector?.showQrCode)) {
         return <WalletQrCode selectedConnector={selectedConnector} />
@@ -201,7 +442,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     if (selectedMultiChainConnector) {
         return <MultichainConnectorPicker
             selectedConnector={selectedMultiChainConnector}
-            allConnectors={[...featuredConnectors, ...hiddenConnectors] as InternalConnector[]}
+            allConnectors={[...featuredConnectors, ...additionalConnectors] as InternalConnector[]}
             providers={featuredProviders}
             connect={connect}
         />
@@ -234,14 +475,14 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 >
                     <div className='grid grid-cols-2 gap-2'>
                         {
-                            displayedConnectors.map(item => {
+                            initialConnectors.map(item => {
                                 const provider = featuredProviders.find(p => p.name === item.providerName)
                                 const isRecent = recentConnectors?.some(v => v.connectorName === item.name)
                                 return (
                                     <Connector
                                         key={item.id}
                                         connector={item}
-                                        onClick={() => connect(item, provider!)}
+                                        onClick={() => provider && connect(item, provider)}
                                         connectingConnector={selectedConnector}
                                         isRecent={isRecent}
                                         isProviderReady={provider?.ready}
@@ -250,7 +491,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                             })
                         }
                     </div>
-                    {(hasMoreToLoad || anyProviderLoadingMore) && (
+                    {(anyProviderHasMore || anyProviderLoadingMore) && (
                         <div ref={loadMoreTriggerRef} className="col-span-2 flex justify-center items-center pt-2.5">
                             <CircularLoader className="w-8 h-8 animate-spin" />
                         </div>
