@@ -15,6 +15,7 @@ let _storeCache: Store | null = null
 const readStore = (): Store => {
     if (_storeCache !== null) return _storeCache
     if (typeof window === 'undefined') return {}
+    ensureStorageListener()
     try {
         const stored = localStorage.getItem(STORAGE_KEY)
         _storeCache = stored ? JSON.parse(stored) : {}
@@ -35,8 +36,10 @@ const writeStore = (store: Store): void => {
 }
 
 // Cross-tab invalidation: another tab writing to our key must bust this tab's cache.
+// Lazily registered on first read/write so we never touch `window` at import time (SSR-safe).
 let _storageListenerRegistered = false
-if (typeof window !== 'undefined' && !_storageListenerRegistered) {
+const ensureStorageListener = () => {
+    if (_storageListenerRegistered || typeof window === 'undefined') return
     _storageListenerRegistered = true
     window.addEventListener('storage', (e) => {
         if (e.key === STORAGE_KEY || e.key === null) _storeCache = null

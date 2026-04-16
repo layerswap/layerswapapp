@@ -219,7 +219,7 @@ export default function useEVM(): WalletProvider {
         return splitRegistryConnectors(configuredConnectors, walletConnectConnectors, isMobilePlatform, name)
     }, [configuredConnectors, walletConnectConnectors, isMobilePlatform, name])
 
-    const avaiableConnectors = useMemo(() => {
+    const availableConnectors = useMemo(() => {
         return [...configuredConnectors, ...featuredDynamicConnectors]
     }, [configuredConnectors, featuredDynamicConnectors])
 
@@ -238,7 +238,7 @@ export default function useEVM(): WalletProvider {
         try {
             const internalConnector = props?.connector;
             if (!internalConnector) return;
-            let connector = avaiableConnectors.find(w => w.id === internalConnector.id) as InternalConnector & LSConnector
+            let connector = availableConnectors.find(w => w.id === internalConnector.id) as InternalConnector & LSConnector
             let actualConnector = connector
 
             registryBase = getRegistryEntry(internalConnector) ?? getRegistryEntry(connector)
@@ -352,7 +352,7 @@ export default function useEVM(): WalletProvider {
             unsubscribeDisplayUri?.()
             if (registryBase) clearPendingDynamicWcMetadata(EVM_NS)
         }
-    }, [avaiableConnectors, disconnectAsync, networks, asSourceSupportedNetworks, autofillSupportedNetworks, withdrawalSupportedNetworks, name, config, addWalletConnectWallet, allConnectors, connectAsync, isMobilePlatform, setSelectedConnector, disconnectWallet])
+    }, [availableConnectors, disconnectAsync, networks, asSourceSupportedNetworks, autofillSupportedNetworks, withdrawalSupportedNetworks, name, config, addWalletConnectWallet, allConnectors, connectAsync, isMobilePlatform, setSelectedConnector, disconnectWallet])
 
     const connectedWalletsKey = [...config.state.connections.keys()].join('-')
 
@@ -417,7 +417,7 @@ export default function useEVM(): WalletProvider {
             autofillSupportedNetworks,
             withdrawalSupportedNetworks,
             asSourceSupportedNetworks,
-            avaiableConnectors,
+            availableConnectors,
             additionalConnectors,
             name,
             id,
@@ -425,7 +425,7 @@ export default function useEVM(): WalletProvider {
             ready: allConnectors.length > 0,
             requestAdditionalConnectors,
         }
-    }, [connectWallet, disconnectWallets, switchAccount, switchChain, isNotAvailableCondition, resolvedConnectors, activeWallet, autofillSupportedNetworks, withdrawalSupportedNetworks, asSourceSupportedNetworks, avaiableConnectors, additionalConnectors, name, id, providerIcon, allConnectors.length, requestAdditionalConnectors]);
+    }, [connectWallet, disconnectWallets, switchAccount, switchChain, isNotAvailableCondition, resolvedConnectors, activeWallet, autofillSupportedNetworks, withdrawalSupportedNetworks, asSourceSupportedNetworks, availableConnectors, additionalConnectors, name, id, providerIcon, allConnectors.length, requestAdditionalConnectors]);
 
     return provider
 }

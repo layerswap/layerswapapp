@@ -48,7 +48,7 @@ export function WalletModalProvider({ children }) {
     const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
     const connect = useCallback(async ({ provider, connectCallback }: SharedType) => {
-        const hasConnectorPicker = !!provider?.avaiableConnectors?.length
+        const hasConnectorPicker = !!provider?.availableConnectors?.length
             || !!provider?.additionalConnectors?.length
             || !!provider?.requestAdditionalConnectors
 

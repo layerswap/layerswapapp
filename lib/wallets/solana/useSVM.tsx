@@ -232,7 +232,7 @@ export default function useSVM(): WalletProvider {
         }
     }, [disconnect])
 
-    const { avaiableConnectors, additionalConnectors } = useMemo(() => {
+    const { availableConnectors, additionalConnectors } = useMemo(() => {
         const installed: InternalConnector[] = []
         const registry: InternalConnector[] = []
         const seenIds = new Set<string>()
@@ -263,7 +263,7 @@ export default function useSVM(): WalletProvider {
             registry.push(createRegistryConnector(reg, isMobilePlatform, name))
         }
 
-        return { avaiableConnectors: installed, additionalConnectors: registry }
+        return { availableConnectors: installed, additionalConnectors: registry }
     }, [wallets, walletConnectConnectors, isMobilePlatform])
 
     const isNotAvailableCondition = useCallback((connectorId: string | undefined, network: string | undefined, purpose?: "withdrawal" | "autofill" | "asSource") => {
@@ -280,8 +280,8 @@ export default function useSVM(): WalletProvider {
 
     const requestAdditionalConnectors = useCallback(async (params: RequestAdditionalConnectorsParams = {}): Promise<RequestAdditionalConnectorsResult> => {
         const result = await requestRegistryConnectors(params)
-        const installedConnectorIds = new Set(avaiableConnectors.map(connector => connector.id.toLowerCase()))
-        const installedConnectorNames = new Set(avaiableConnectors.map(connector => connector.name.toLowerCase()))
+        const installedConnectorIds = new Set(availableConnectors.map(connector => connector.id.toLowerCase()))
+        const installedConnectorNames = new Set(availableConnectors.map(connector => connector.name.toLowerCase()))
 
         return {
             connectors: result.connectors
@@ -290,7 +290,7 @@ export default function useSVM(): WalletProvider {
             nextPage: result.nextPage,
             totalCount: result.totalCount,
         }
-    }, [requestRegistryConnectors, avaiableConnectors, isMobilePlatform, name])
+    }, [requestRegistryConnectors, availableConnectors, isMobilePlatform, name])
 
     const providerIcon = useMemo(() => networks.find(n => solanaNames.some(name => name === n.name))?.logo, [networks])
 
@@ -300,7 +300,7 @@ export default function useSVM(): WalletProvider {
         connectWallet,
         disconnectWallets: disconnectWallet,
         isNotAvailableCondition,
-        avaiableConnectors,
+        availableConnectors,
         additionalConnectors,
         withdrawalSupportedNetworks: commonSupportedNetworks,
         autofillSupportedNetworks: commonSupportedNetworks,
@@ -310,7 +310,7 @@ export default function useSVM(): WalletProvider {
         providerIcon,
         ready: wallets.length > 0,
         requestAdditionalConnectors,
-    }), [connectedWallets, connectWallet, disconnectWallet, isNotAvailableCondition, avaiableConnectors, additionalConnectors, commonSupportedNetworks, name, id, providerIcon, wallets.length, requestAdditionalConnectors])
+    }), [connectedWallets, connectWallet, disconnectWallet, isNotAvailableCondition, availableConnectors, additionalConnectors, commonSupportedNetworks, name, id, providerIcon, wallets.length, requestAdditionalConnectors])
 
     return provider
 }

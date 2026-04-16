@@ -101,10 +101,12 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     const currentSearchValueRef = useRef(currentSearchValue)
     const isSearching = currentSearchValue.length >= 2
 
+    const isSearchingRef = useRef(isSearching)
     featuredProvidersRef.current = featuredProviders
     browsePaginationRef.current = browsePaginationByProvider
     searchPaginationRef.current = searchPaginationByProvider
     currentSearchValueRef.current = currentSearchValue
+    isSearchingRef.current = isSearching
 
     const handleScroll = () => {
         setIsScrolling(true);
@@ -313,7 +315,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         if (loadMoreInFlightRef.current) return
         loadMoreInFlightRef.current = true
         try {
-            if (isSearching) {
+            if (isSearchingRef.current) {
                 const query = currentSearchValueRef.current
                 const requestId = searchRequestSequenceRef.current
                 const providersToLoad = featuredProvidersRef.current.filter(provider => {
@@ -406,7 +408,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         } finally {
             loadMoreInFlightRef.current = false
         }
-    }, [isSearching])
+    }, [])
 
     useEffect(() => {
         if (!loadMoreTriggerRef.current) return;

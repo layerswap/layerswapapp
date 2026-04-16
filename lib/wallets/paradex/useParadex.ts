@@ -1,5 +1,5 @@
 import KnownInternalNames from "../../knownIds"
-import { useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import {
     InternalConnector,
     RequestAdditionalConnectorsParams,
@@ -22,25 +22,28 @@ import sleep from "../utils/sleep"
 import { useActiveParadexAccount } from "@/components/WalletProviders/ActiveParadexAccount"
 import { getRegistryEntry } from "@/lib/wallets/walletConnect/types"
 
+const withdrawalSupportedNetworks = [
+    KnownInternalNames.Networks.ParadexMainnet,
+    KnownInternalNames.Networks.ParadexTestnet,
+]
+const autofillSupportedNetworks = [
+    ...withdrawalSupportedNetworks
+]
+const asSourceSupportedNetworks = [
+    ...withdrawalSupportedNetworks
+]
+
+const name = 'Paradex'
+const id = 'prdx'
+
 export default function useParadex(): WalletProvider {
-    const name = 'Paradex'
-    const id = 'prdx'
+
     const { networks } = useSettingsState()
     const { activeConnection, setActiveAddress } = useActiveParadexAccount()
     const paradexAccounts = useWalletStore((state) => state.paradexAccounts)
     const addParadexAccount = useWalletStore((state) => state.addParadexAccount)
     const removeParadexAccount = useWalletStore((state) => state.removeParadexAccount)
     const paradexNetwork = networks.find(n => n.name === KnownInternalNames.Networks.ParadexMainnet || n.name === KnownInternalNames.Networks.ParadexTestnet)
-    const withdrawalSupportedNetworks = [
-        KnownInternalNames.Networks.ParadexMainnet,
-        KnownInternalNames.Networks.ParadexTestnet,
-    ]
-    const autofillSupportedNetworks = [
-        ...withdrawalSupportedNetworks
-    ]
-    const asSourceSupportedNetworks = [
-        ...withdrawalSupportedNetworks
-    ]
 
     const { setSelectedConnector } = useConnectModal()
     const evmProvider = useEVM()
@@ -58,9 +61,9 @@ export default function useParadex(): WalletProvider {
             setSelectedConnector(connector)
             const isRegistryEvmConnector = !!getRegistryEntry(connector)
             const isEvm = isRegistryEvmConnector
-                || evmProvider.avaiableConnectors?.find(w => w.id === connector.id)
+                || evmProvider.availableConnectors?.find(w => w.id === connector.id)
                 || evmProvider.additionalConnectors?.find(w => w.id === connector.id)
-            const isStarknet = starknetProvider.avaiableConnectors?.find(w => w.id === connector.id)
+            const isStarknet = starknetProvider.availableConnectors?.find(w => w.id === connector.id)
 
             let accounts: typeof paradexAccounts | undefined
 
@@ -181,10 +184,10 @@ export default function useParadex(): WalletProvider {
         ]
     }, [evmProvider, starknetProvider, paradexAccounts])
 
-    const avaiableConnectors = useMemo(() => {
+    const availableConnectors = useMemo(() => {
         return [
-            ...(evmProvider.avaiableConnectors ? evmProvider.avaiableConnectors : []),
-            ...(starknetProvider?.avaiableConnectors ? starknetProvider.avaiableConnectors : [])
+            ...(evmProvider.availableConnectors ? evmProvider.availableConnectors : []),
+            ...(starknetProvider?.availableConnectors ? starknetProvider.availableConnectors : [])
         ]
     }, [evmProvider, starknetProvider])
 
@@ -192,7 +195,7 @@ export default function useParadex(): WalletProvider {
         return evmProvider.additionalConnectors ? evmProvider.additionalConnectors : []
     }, [evmProvider.additionalConnectors])
 
-    const requestAdditionalConnectors = async (params: RequestAdditionalConnectorsParams = {}): Promise<RequestAdditionalConnectorsResult> => {
+    const requestAdditionalConnectors = useCallback(async (params: RequestAdditionalConnectorsParams = {}): Promise<RequestAdditionalConnectorsResult> => {
         if (!evmProvider.requestAdditionalConnectors) {
             return { connectors: [], nextPage: null, totalCount: 0 }
         }
@@ -203,7 +206,7 @@ export default function useParadex(): WalletProvider {
             nextPage: result.nextPage,
             totalCount: result.totalCount,
         }
-    }
+    }, [evmProvider.requestAdditionalConnectors, name])
 
     const switchAccount = async (wallet: Wallet, address: string) => {
 
@@ -246,7 +249,7 @@ export default function useParadex(): WalletProvider {
         withdrawalSupportedNetworks,
         autofillSupportedNetworks,
         asSourceSupportedNetworks,
-        avaiableConnectors,
+        availableConnectors,
         additionalConnectors,
         name,
         id,

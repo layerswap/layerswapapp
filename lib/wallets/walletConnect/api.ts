@@ -64,9 +64,8 @@ export function walletImageUrl(imageId: string): string {
 }
 
 // Web3Modal explorer API reference: https://docs.reown.com/cloud/explorer
-// The `st` / `sv` (source type / source version) params that AppKit sends are
-// internal telemetry routing keys — we don't send them so we can't silently
-// break when upstream changes AppKit's versioning scheme.
+// The `st` / `sv` (source type / source version) params are internal AppKit
+// telemetry routing keys required for the API to return results.
 export async function fetchWallets(params: FetchWalletsParams): Promise<GetWalletsResponse> {
     const url = new URL(`${BASE}/getWallets`)
     url.searchParams.set('projectId', WALLETCONNECT_PROJECT_ID)

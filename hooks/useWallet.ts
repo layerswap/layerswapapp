@@ -62,7 +62,7 @@ const resolveProvider = (network: Network | undefined, walletProviders: WalletPr
     }
 
     if (provider?.isNotAvailableCondition && purpose) {
-        const avaiableConnectors = provider.avaiableConnectors?.filter(connector => (provider.isNotAvailableCondition && network?.name) ? !provider.isNotAvailableCondition(connector.id, network?.name, purpose) : true)
+        const availableConnectors = provider.availableConnectors?.filter(connector => (provider.isNotAvailableCondition && network?.name) ? !provider.isNotAvailableCondition(connector.id, network?.name, purpose) : true)
         const additionalConnectors = provider.additionalConnectors?.filter(connector => (provider.isNotAvailableCondition && network?.name) ? !provider.isNotAvailableCondition(connector.id, network?.name, purpose) : true)
         const requestAdditionalConnectors = provider.requestAdditionalConnectors
             ? async (params) => {
@@ -89,7 +89,7 @@ const resolveProvider = (network: Network | undefined, walletProviders: WalletPr
                 ...provider.activeWallet,
                 isNotAvailable: (network?.name) ? provider.isNotAvailableCondition(provider.activeWallet.id, network?.name, purpose) : false,
             } : undefined,
-            avaiableConnectors,
+            availableConnectors: availableConnectors,
             additionalConnectors,
             requestAdditionalConnectors,
         }

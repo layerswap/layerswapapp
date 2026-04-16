@@ -20,9 +20,9 @@ export function useConnectors({
 
     const featuredConnectors = useMemo(() =>
         featuredProviders
-            .filter(g => g.avaiableConnectors && g.avaiableConnectors?.length > 0)
+            .filter(g => g.availableConnectors && g.availableConnectors?.length > 0)
             .map((provider) =>
-                provider.avaiableConnectors
+                provider.availableConnectors
                     ?.filter(v => searchValue ? v.name.toLowerCase().includes(searchValue.toLowerCase()) : true)
                     .map((connector) => ({ ...connector, providerName: provider.name }))
             )
@@ -61,7 +61,7 @@ export function useConnectors({
         }
 
         return removeDuplicatesWithKey(orderedConnectors, 'name');
-    }, [featuredConnectors, additionalConnectors, searchValue, recentConnectors, searchResults]);
+    }, [featuredConnectors, additionalConnectors, recentConnectors, searchResults]);
 
     return {
         featuredConnectors,
