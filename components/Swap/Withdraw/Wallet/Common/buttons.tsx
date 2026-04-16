@@ -25,8 +25,6 @@ import KnownInternalNames from "@/lib/knownIds";
 import { useSettingsState } from "@/context/settings";
 import { useBalance } from "@/lib/balances/useBalance";
 import useSWRGas from "@/lib/gases/useSWRGas";
-import { useFormikContext } from "formik";
-
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData } = useSwapDataState()
     const { source_network } = swapBasicData || {}
@@ -170,9 +168,6 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const { onWalletWithdrawalSuccess: onWalletWithdrawalSuccess, onCancelWithdrawal } = useWalletWithdrawalState();
     const { createSwap, setSwapId, setQuoteLoading } = useSwapDataUpdate()
     const { setSwapTransaction } = useSwapTransactionStore();
-    const { setFieldValue } = useFormikContext<SwapFormValues>();
-
-
     const layerswapApiClient = new LayerSwapApiClient()
     const selectedSourceAccount = useSelectedAccount("from", swapBasicData.source_network?.name);
     const { wallets } = useWallet(swapBasicData.source_network, 'withdrawal')
@@ -257,7 +252,6 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             const hash = await onClick(transferProps)
             if (hash) {
                 onWalletWithdrawalSuccess?.();
-                setFieldValue('amount', 0, true)
                 setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, hash);
                 try {
                     await layerswapApiClient.SwapCatchup(swapData.id, hash);

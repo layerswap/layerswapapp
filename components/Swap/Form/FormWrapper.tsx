@@ -145,9 +145,6 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
         setSwapModalOpen(value)
     }, [router, swapDetails, walletWihdrawDone, mutateBalances])
 
-    const handleWalletWithdrawalSuccess = useCallback(() => {
-        setWalletWihdrawDone(true)
-    }, []);
 
     return <>
         <Formik
@@ -155,30 +152,35 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
             validateOnMount={true}
             onSubmit={handleSubmit}
         >
-            <>
-                <Modal
-                    height="fit"
-                    show={showConnectNetworkModal}
-                    setShow={setShowConnectNetworkModal}
-                    header={`${networkToConnect?.DisplayName} connect`}
-                    modalId="showNetwork"
-                >
-                    {
-                        networkToConnect &&
-                        <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
-                    }
-                </Modal>
-                <VaulDrawer
-                    mode="fitHeight"
-                    show={swapModalOpen}
-                    setShow={handleShowSwapModal}
-                    header='Complete the swap'
-                    modalId="showSwap"
-                    className="expandContainerHeight">
-                    <SwapDetails type="contained" onWalletWithdrawalSuccess={handleWalletWithdrawalSuccess} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />
-                </VaulDrawer>
-                {children}
-            </>
+            {({ setFieldValue }) => (
+                <>
+                    <Modal
+                        height="fit"
+                        show={showConnectNetworkModal}
+                        setShow={setShowConnectNetworkModal}
+                        header={`${networkToConnect?.DisplayName} connect`}
+                        modalId="showNetwork"
+                    >
+                        {
+                            networkToConnect &&
+                            <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
+                        }
+                    </Modal>
+                    <VaulDrawer
+                        mode="fitHeight"
+                        show={swapModalOpen}
+                        setShow={handleShowSwapModal}
+                        header='Complete the swap'
+                        modalId="showSwap"
+                        className="expandContainerHeight">
+                        <SwapDetails type="contained" onWalletWithdrawalSuccess={() => {
+                            setWalletWihdrawDone(true)
+                            setFieldValue('amount', 0)
+                        }} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />
+                    </VaulDrawer>
+                    {children}
+                </>
+            )}
         </Formik>
     </>
 }
