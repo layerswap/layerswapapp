@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { InternalConnector, WalletProvider } from "../Models/WalletProvider";
-import { removeDuplicatesWithKey, sortRecentConnectors } from "../components/WalletModal/utils";
+import { removeDuplicatesWithKey } from "../components/WalletModal/utils";
 import { featuredWalletsIds } from "@/context/evmConnectorsContext";
 
 type UseConnectorsParams = {
@@ -48,17 +48,23 @@ export function useConnectors({
 
 
     const initialConnectors: InternalConnector[] = useMemo(() => {
-        const base = [...featuredConnectors, ...hiddenConnectors] as InternalConnector[]
-        // Merge API search results, deduplicating against already-loaded wallets
+        const all = [...featuredConnectors, ...hiddenConnectors] as InternalConnector[]
         if (apiSearchResults?.length) {
-            const existingNames = new Set(base.map(c => c.name.toLowerCase()))
+            const existingNames = new Set(all.map(c => c.name.toLowerCase()))
             const newResults = apiSearchResults.filter(c => !existingNames.has(c.name.toLowerCase()))
-            base.push(...newResults)
+            all.push(...newResults)
         }
-        return removeDuplicatesWithKey(
-            base.sort((a, b) => sortRecentConnectors(a, b, recentConnectors)),
-            'name'
-        );
+
+        const recentNames = new Set(recentConnectors?.map(r => r.connectorName?.toLowerCase()).filter(Boolean))
+        const isRecent = (c: InternalConnector) => recentNames.has(c.name.toLowerCase())
+        const isInstalled = (c: InternalConnector) => c.type === 'injected'
+
+        // Recent first, then installed (type=injected), then the rest
+        const recent = all.filter(c => isRecent(c))
+        const installed = all.filter(c => !isRecent(c) && isInstalled(c))
+        const rest = all.filter(c => !isRecent(c) && !isInstalled(c))
+
+        return removeDuplicatesWithKey([...recent, ...installed, ...rest], 'name');
     }, [featuredConnectors, hiddenConnectors, searchValue?.length, recentConnectors, apiSearchResults]);
 
     return {

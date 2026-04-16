@@ -237,8 +237,9 @@ export default function useSVM(): WalletProvider {
         }
     }
 
-    const availableWalletsForConnect = useMemo(() => {
-        const connectors: InternalConnector[] = []
+    const { availableWalletsForConnect, availableHiddenWalletsForConnect } = useMemo(() => {
+        const installed: InternalConnector[] = []
+        const registry: InternalConnector[] = []
         const seenIds = new Set<string>()
         const seenNames = new Set<string>()
 
@@ -251,39 +252,36 @@ export default function useSVM(): WalletProvider {
                 icon: wallet.adapter.icon,
                 type: isInstalled ? 'injected' : 'other',
                 installUrl: wallet.adapter?.url,
-                // The bare WalletConnect tile must show our QR (no extension) — installed adapters are extension-backed
                 hasBrowserExtension: !isWcAdapter,
                 extensionNotFound: isWcAdapter ? false : !isInstalled,
                 providerName: name,
                 order: resolveWalletConnectorIndex(wallet.adapter.name.trim().toLowerCase()),
             }
-            connectors.push(internalConnector)
+            installed.push(internalConnector)
             seenIds.add(internalConnector.id.toLowerCase())
             seenNames.add(internalConnector.name.toLowerCase())
         }
 
-        // Append registry-driven WC wallets that aren't already represented as installed adapters.
-        // Each registry connector carries a hidden marker so the connect flow can retrieve the full registry entry.
-        for (const registry of walletConnectConnectors) {
-            if (seenIds.has(registry.id.toLowerCase())) continue
-            if (seenNames.has(registry.name.toLowerCase())) continue
+        for (const reg of walletConnectConnectors) {
+            if (seenIds.has(reg.id.toLowerCase())) continue
+            if (seenNames.has(reg.name.toLowerCase())) continue
             const registryConnector: RegistryConnector = {
-                id: registry.id,
-                name: registry.name,
-                icon: registry.icon,
+                id: reg.id,
+                name: reg.name,
+                icon: reg.icon,
                 type: 'walletConnect',
-                order: registry.order,
-                isMobileSupported: registry.isMobileSupported,
-                hasBrowserExtension: registry.hasBrowserExtension,
-                installUrl: registry.installUrl,
-                extensionNotFound: registry.hasBrowserExtension ? !isMobilePlatform : false,
+                order: reg.order,
+                isMobileSupported: reg.isMobileSupported,
+                hasBrowserExtension: reg.hasBrowserExtension,
+                installUrl: reg.installUrl,
+                extensionNotFound: reg.hasBrowserExtension ? !isMobilePlatform : false,
                 providerName: name,
-                [WC_REGISTRY_MARKER]: registry,
+                [WC_REGISTRY_MARKER]: reg,
             }
-            connectors.push(registryConnector)
+            registry.push(registryConnector)
         }
 
-        return connectors
+        return { availableWalletsForConnect: installed, availableHiddenWalletsForConnect: registry }
     }, [wallets, walletConnectConnectors, isMobilePlatform])
 
     const isNotAvailableCondition = useCallback((connectorId: string | undefined, network: string | undefined, purpose?: "withdrawal" | "autofill" | "asSource") => {
@@ -322,6 +320,7 @@ export default function useSVM(): WalletProvider {
         disconnectWallets: disconnectWallet,
         isNotAvailableCondition,
         availableWalletsForConnect,
+        availableHiddenWalletsForConnect,
         withdrawalSupportedNetworks: commonSupportedNetworks,
         autofillSupportedNetworks: commonSupportedNetworks,
         asSourceSupportedNetworks: commonSupportedNetworks,

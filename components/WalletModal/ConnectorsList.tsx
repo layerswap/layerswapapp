@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useRef, useState } from "react";
 import useWallet from "../../hooks/useWallet";
 import { useConnectModal, WalletModalConnector } from ".";
 import { InternalConnector, Wallet, WalletProvider } from "../../Models/WalletProvider";
@@ -101,7 +101,6 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     }
 
     const [selectedProviderNames, setSelectedProviderNames] = useState<string[]>([])
-    const isFiltered = selectedProviderNames.length > 0 || !!searchValue;
 
     const handleSelectProvider = (providerNames: string[]) => {
         setSelectedProviderNames(providerNames)

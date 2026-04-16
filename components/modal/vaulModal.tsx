@@ -192,7 +192,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                     </div>
                     <div
                         ref={isFitHeightMode ? drawerContentRef : undefined}
-                        className={clsx('w-full px-4 styled-scroll flex-1', {
+                        className={clsx('w-full px-4 styled-scroll', {
                             'flex flex-col overflow-x-hidden relative h-full': isSnapPointsMode,
                             'pb-4': isFitHeightMode
                         })}
