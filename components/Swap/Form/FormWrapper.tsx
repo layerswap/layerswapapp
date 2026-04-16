@@ -176,6 +176,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                         <SwapDetails type="contained" onWalletWithdrawalSuccess={() => {
                             setWalletWihdrawDone(true)
                             setFieldValue('amount', 0)
+                            mutateBalances()
                         }} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />
                     </VaulDrawer>
                     {children}
