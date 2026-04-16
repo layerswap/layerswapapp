@@ -1,9 +1,8 @@
-import { WalletProvider, BaseWalletProviderConfig } from "@layerswap/widget/types";
+import { WalletProvider, BaseWalletProviderConfig, LazyGasProvider, NetworkType } from "@layerswap/widget/types";
 import { AppSettings } from "@layerswap/widget/internal";
 import useSVMConnection from "./useSVMConnection";
 import SVMProviderWrapper from "./SVMProvider";
 import { SolanaBalanceProvider } from "./svmBalanceProvider";
-import { SolanaGasProvider } from "./svmGasProvider";
 import { SolanaAddressUtilsProvider } from "./svmAddressUtilsProvider";
 import React from "react";
 import { useSVMTransfer } from "./transferProvider/useSVMTransfer";
@@ -45,7 +44,12 @@ export function createSVMProvider(config: SVMProviderConfig = {}): WalletProvide
         ? (Array.isArray(balanceProviders) ? balanceProviders : [balanceProviders])
         : defaultBalanceProviders;
 
-    const defaultGasProviders = [new SolanaGasProvider()];
+    const defaultGasProviders = [
+        new LazyGasProvider(
+            (n) => n.type === NetworkType.Solana,
+            () => import("./svmGasProvider").then(m => new m.SolanaGasProvider())
+        )
+    ];
     const finalGasProviders = gasProviders !== undefined
         ? (Array.isArray(gasProviders) ? gasProviders : [gasProviders])
         : defaultGasProviders;
@@ -86,7 +90,12 @@ export const SVMProvider: WalletProvider = {
     },
     walletConnectionProvider: useSVMConnection,
     addressUtilsProvider: [new SolanaAddressUtilsProvider()],
-    gasProvider: [new SolanaGasProvider()],
+    gasProvider: [
+        new LazyGasProvider(
+            (n) => n.type === NetworkType.Solana,
+            () => import("./svmGasProvider").then(m => new m.SolanaGasProvider())
+        )
+    ],
     balanceProvider: [new SolanaBalanceProvider()],
     transferProvider: [useSVMTransfer],
 };

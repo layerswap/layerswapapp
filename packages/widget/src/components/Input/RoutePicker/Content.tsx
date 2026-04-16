@@ -1,5 +1,5 @@
-import { FC, useEffect, useRef, useState } from "react";
-import { RowElement } from "@/Models/Route";
+import { FC, useEffect, useMemo, useRef, useState } from "react";
+import { NetworkElement, RowElement } from "@/Models/Route";
 import { useVirtualizer } from "@/lib/virtual";
 import { Accordion } from "@/components/shadcn/accordion";
 import Row from "./Rows";
@@ -7,7 +7,6 @@ import { LayoutGroup, motion } from "framer-motion";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import useWallet from "@/hooks/useWallet";
 import ConnectWalletButton from "@/components/Common/ConnectWalletButton";
-import { SearchComponent } from "../Search";
 import { SwapDirection } from "@/components/Pages/Swap/Form/SwapFormValues";
 import clsx from "clsx";
 import RouteSearch from "./RouteSearch";
@@ -37,8 +36,31 @@ export const Content: FC<ContentProps> = (props) => {
 const Items: FC<ContentProps & { isScrolling: boolean; setIsScrolling: (isScrolling: boolean) => void; }> = ({ searchQuery, setSearchQuery, rowElements, selectedToken, selectedRoute, direction, onSelect, isScrolling, setIsScrolling }) => {
     const parentRef = useRef<HTMLDivElement>(null)
     const [openValues, setOpenValues] = useState<string[]>(selectedRoute ? [selectedRoute] : [])
-    const { wallets } = useWallet()
+    const { wallets, providers } = useWallet()
     const { shouldFocus } = useSelectorState();
+
+    const isSingleNetwork = useMemo(() => {
+        if (!searchQuery) return false;
+        return rowElements.filter(r => r.type === 'network').length === 1;
+    }, [searchQuery, rowElements]);
+
+    const onReset = useMemo(
+        () => searchQuery ? (() => { }) : undefined,
+        [searchQuery]
+    );
+
+    useEffect(() => {
+        if (!isSingleNetwork) return;
+        const network = rowElements.find(r => r.type === 'network') as NetworkElement;
+        if (network) {
+            setOpenValues(prev =>
+                prev.includes(network.route.name) ? prev : [...prev, network.route.name]
+            );
+        }
+    }, [isSingleNetwork, rowElements]);
+
+
+    const isProvidersReady = providers.every(p => p.ready)
 
     const scrollTimeout = useRef<any>(null);
 
@@ -94,7 +116,8 @@ const Items: FC<ContentProps & { isScrolling: boolean; setIsScrolling: (isScroll
 
     return <NavigatableList
         enabled={shouldFocus}
-        onReset={searchQuery ? () => { } : undefined}
+        onReset={onReset}
+        navigateToFirstChild={isSingleNetwork}
     >
         <LayoutGroup>
             <motion.div
@@ -111,6 +134,7 @@ const Items: FC<ContentProps & { isScrolling: boolean; setIsScrolling: (isScroll
                     <ConnectWalletButton
                         descriptionText="Connect your wallet to browse your assets and choose easier"
                         className="w-full my-2.5"
+                        disabled={!isProvidersReady}
                     />
                 }
                 <div className="relative">

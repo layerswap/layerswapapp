@@ -1,33 +1,13 @@
 import { walletConnect } from "./walletConnect"
 import walletsData from "../../jsons/walletsData.json"
-import { InternalConnector } from "@layerswap/widget/types"
+import { WalletConnectWallet } from "@layerswap/widget/types"
 import { resolveEVMWalletConnectorIndex } from "../../evmUtils"
 
 const wallets = Object.values(walletsData.listings)
 
-export type WalletConnectWallet = {
-    id: string;
-    name: string;
-    mobile: {
-        native?: boolean;
-        universal?: boolean;
-    };
-    desktop?: {
-        native?: boolean;
-        universal?: boolean;
-    };
-    rdns?: string;
-    hasBrowserExtension?: boolean;
-    type: string;
-    icon: string;
-    projectId: string;
-    showQrModal: boolean;
-    customStoragePrefix: string;
-    shortName: string
-} & InternalConnector
-
 const walletsToFilter = [
-    "5d9f1395b3a8e848684848dc4147cbd05c8d54bb737eac78fe103901fe6b01a1"
+    "5d9f1395b3a8e848684848dc4147cbd05c8d54bb737eac78fe103901fe6b01a1",
+    "71aca34c569bda617eea36c774d941e57b3656060bca575fe898d2f8029553ea"
 ]
 
 export const resolveWallets: (projectId: string) => WalletConnectWallet[] = (projectId: string) => {

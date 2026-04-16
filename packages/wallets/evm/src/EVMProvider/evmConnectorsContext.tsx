@@ -1,16 +1,20 @@
-import { createContext, useContext, useMemo, useState } from 'react'
-import { resolveConnector, resolveWallets, WalletConnectWallet } from '../connectors/resolveConnectors';
+import { createContext, useCallback, useContext, useMemo, useState } from 'react'
+import { resolveConnector, resolveWallets } from '../connectors/resolveConnectors';
 import { CreateConnectorFn } from 'wagmi';
 import { coinbaseWallet, walletConnect, metaMask } from '@wagmi/connectors'
 import { walletConnect as customWalletConnect } from '../connectors/resolveConnectors/walletConnect';
 import { browserInjected } from '../connectors/browserInjected';
 import { isMobile, usePersistedState } from '@layerswap/widget/internal';
 import { WalletConnectConfig } from '..';
+import { WalletConnectWallet } from '@layerswap/widget/types';
 
 type ContextType = {
     connectors: CreateConnectorFn[],
     walletConnectConnectors: WalletConnectWallet[],
-    addToAdditionalWallets: (connector: WalletConnectWallet) => void
+    addToAdditionalWallets: (connector: WalletConnectWallet) => void,
+    hiddenWalletConnectConnector: CreateConnectorFn,
+    walletConnectWalletsLoaded: boolean,
+    loadWalletConnectWallets: () => Promise<WalletConnectWallet[]>
 }
 
 const EvmConnectorsContext = createContext<ContextType | null>(null);
@@ -45,6 +49,12 @@ export function EvmConnectorsProvider({ children, walletConnectConfigs }: EvmCon
     }), [WALLETCONNECT_PROJECT_ID])
 
     const { additionalConnectors, allWallets, addToAdditionalWallets, featuredConnectors } = useWalletConnectors(WALLETCONNECT_PROJECT_ID)
+    const [walletConnectWalletsLoaded, setWalletConnectWalletsLoaded] = useState(false)
+
+    const loadWalletConnectWallets = useCallback(async (): Promise<WalletConnectWallet[]> => {
+        setWalletConnectWalletsLoaded(true)
+        return allWallets
+    }, [allWallets])
 
     // Hidden WalletConnect connector for dynamic wallets - not shown in the list
     // Uses custom walletConnect with unique ID so we can identify it
@@ -88,7 +98,10 @@ export function EvmConnectorsProvider({ children, walletConnectConfigs }: EvmCon
         <EvmConnectorsContext.Provider value={{
             connectors,
             walletConnectConnectors: allWallets,
-            addToAdditionalWallets
+            addToAdditionalWallets,
+            hiddenWalletConnectConnector,
+            walletConnectWalletsLoaded,
+            loadWalletConnectWallets
         }}>
             {children}
         </EvmConnectorsContext.Provider>

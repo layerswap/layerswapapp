@@ -1,18 +1,27 @@
 "use client";
 
+import React from "react";
 import { KnownInternalNames } from "@layerswap/widget/internal";
-import { LoopringBalanceProvider } from "./loopringBalanceProvider";
-import { LoopringGasProvider } from "./loopringGasProvider";
-import LoopringMultiStepHandler from "./loopringMultiStepHandler";
-import { WalletProviderModule } from "@layerswap/widget/types";
+import { WalletProviderModule, LazyBalanceProvider, LazyGasProvider } from "@layerswap/widget/types";
+
+const isLoopringNetwork = (name: string) =>
+    KnownInternalNames.Networks.LoopringMainnet.includes(name) ||
+    KnownInternalNames.Networks.LoopringGoerli.includes(name) ||
+    KnownInternalNames.Networks.LoopringSepolia.includes(name);
 
 export function createLoopringModule(): WalletProviderModule {
     return {
-        id: "evm", // ID of the provider that this module depends on
-        gasProvider: new LoopringGasProvider(),
-        balanceProvider: new LoopringBalanceProvider(),
+        id: "evm",
+        gasProvider: new LazyGasProvider(
+            (n) => isLoopringNetwork(n.name),
+            () => import("./loopringGasProvider").then(m => new m.LoopringGasProvider())
+        ),
+        balanceProvider: new LazyBalanceProvider(
+            (n) => isLoopringNetwork(n.name),
+            () => import("./loopringBalanceProvider").then(m => new m.LoopringBalanceProvider())
+        ),
         multiStepHandler: {
-            component: LoopringMultiStepHandler,
+            component: React.lazy(() => import("./loopringMultiStepHandler")),
             supportedNetworks: [
                 KnownInternalNames.Networks.LoopringMainnet,
                 KnownInternalNames.Networks.LoopringGoerli,

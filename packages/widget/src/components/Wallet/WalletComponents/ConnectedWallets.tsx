@@ -58,7 +58,7 @@ export const WalletsIcons = ({ wallets }: WalletsIconsProps) => {
     const secondWallet = uniqueWallets[1]
 
     return (
-        <div className="-space-x-2 flex">
+        <div className="-space-x-2 flex" aria-label="Connected wallets">
             {
                 firstWallet?.displayName &&
                 <firstWallet.icon className="rounded-md border-2 border-secondary-600 bg-secondary-700 shrink-0 h-6 w-6" />

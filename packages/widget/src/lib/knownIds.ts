@@ -256,6 +256,10 @@ export default class KnownInternalNames {
 
         public static readonly MonadMainnet: string = "MONAD_MAINNET";
 
+        public static readonly TempoMainnet: string = "TEMPO_MAINNET"
+
+        public static readonly TempoTestnet: string = "TEMPO_TESTNET"
+
     }
 
     static Currencies = class {

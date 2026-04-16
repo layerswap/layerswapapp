@@ -22,6 +22,7 @@ import { TokenBalance, TransferProps, Wallet } from "@/types";
 import { resolvePriceImpactValues } from "@/lib/fees";
 import InfoIcon from "@/components/Icons/InfoIcon";
 import { useBalance } from "@/lib/balances/useBalance";
+import useSWRGas from "@/lib/gases/useSWRGas";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData } = useSwapDataState()
@@ -136,7 +137,7 @@ export const ButtonWrapper: FC<SubmitButtonProps> = ({
         buttonStyle='filled'
         size="medium"
         type="button"
-        className="text-primary-text text-base"
+        className="text-primary-text text-base my-1"
         {...props}
     >
         {props.children}
@@ -175,6 +176,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const { balances } = useBalance(selectedSourceAccount?.address, networkWithTokens)
 
     const { wallets } = useWallet(swapBasicData.source_network, 'withdrawal')
+    const { gasData } = useSWRGas(selectedSourceAccount?.address, networkWithTokens, swapBasicData.source_token, swapBasicData.requested_amount)
     const [actionStateText, setActionStateText] = useState<string | undefined>()
     const [loading, setLoading] = useState(false)
     const [showCriticalMarketPriceImpactButtons, setShowCriticalMarketPriceImpactButtons] = useState(false)
@@ -284,6 +286,25 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 fromAddress: selectedSourceAccount?.address,
                 toAddress: swapBasicData?.destination_address
             });
+
+            const walletBalance = balances?.find(b => b?.network === swapBasicData.source_network?.name && b?.token === swapBasicData.source_token?.symbol)
+            if (walletBalance?.isNativeCurrency && gasData?.gas && walletBalance?.amount != null) {
+                const requestedAmount = Number(swapBasicData.requested_amount)
+                const difference = walletBalance.amount - requestedAmount
+                if (difference >= 0 && difference < 5 * gasData.gas) {
+                    ErrorHandler({
+                        type: 'GasMiscalculation',
+                        message: (e as Error)?.message,
+                        name: (e as Error)?.name,
+                        requestedAmount,
+                        walletBalance: walletBalance.amount,
+                        calculatedGas: gasData.gas,
+                        difference,
+                        network: swapBasicData.source_network?.name,
+                        token: swapBasicData.source_token?.symbol,
+                    })
+                }
+            }
         }
         finally {
             setLoading(false)

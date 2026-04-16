@@ -1,16 +1,17 @@
 "use client";
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, lazy, useContext, useMemo } from "react";
 import { WalletConnectionProvider, WalletProvider } from "@/types";
 import { useSettingsState } from "./settings";
 import VaulDrawer from "@/components/Modal/vaulModal";
 import IconButton from "@/components/Buttons/iconButton";
 import { ChevronLeft } from "lucide-react";
-import ConnectorsList from "@/components/Wallet/WalletModal/ConnectorsList";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { isMobile } from "@/lib/wallets/utils/isMobile";
 import AppSettings from "@/lib/AppSettings";
 import { filterSourceNetworks } from "@/helpers/filterSourceNetworks";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
+
+const ConnectorsList = lazy(() => import("@/components/Wallet/WalletModal/ConnectorsList"));
 
 const WalletProvidersContext = createContext<WalletConnectionProvider[]>([]);
 
@@ -58,7 +59,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
                     </div>
                 }>
                 <VaulDrawer.Snap openFullHeight={!isMobileSize} id='item-1' className="pb-4 sm:pb-0! sm:h-full">
-                    <ConnectorsList onFinish={onFinish} />
+                    {open ? <ConnectorsList onFinish={onFinish} /> : null}
                 </VaulDrawer.Snap>
             </VaulDrawer>
         </WalletProvidersContext.Provider>

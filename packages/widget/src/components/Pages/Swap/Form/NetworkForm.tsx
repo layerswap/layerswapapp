@@ -1,9 +1,7 @@
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { Form, FormikHelpers, useFormikContext } from "formik";
 import { Partner } from "@/Models/Partner";
-import { TokenBalance } from "@/Models/Balance";
 import ValidationError from "./SecondaryComponents/validationError";
-import ContractAddressValidationCache from "./SecondaryComponents/validationError/ContractAddressValidationCache";
 import useWallet from "@/hooks/useWallet";
 import SourcePicker from "@/components/Input/SourcePicker";
 import DestinationPicker from "@/components/Input/DestinationPicker";
@@ -21,7 +19,6 @@ import { updateFormBulk } from "./updateForm";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useValidationContext } from "@/context/validationContext";
 import { useSwapDataState } from "@/context/swap";
-import ReserveGasNote from "@/components/Pages/Swap/Form/SecondaryComponents/ReserveGasNote";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import QuoteDetails from "./FeeDetails";
 import DepositMethodComponent from "./FeeDetails/DepositMethod";
@@ -30,6 +27,7 @@ import RefuelModal from "./FeeDetails/RefuelModal";
 import { SwapFormValues } from "./SwapFormValues";
 import { useCallbacks } from "@/context/callbackProvider";
 import { Slippage } from "./FeeDetails/Slippage";
+import ContractAddressValidationCache from "./SecondaryComponents/validationError/ContractAddressValidationCache";
 
 type Props = {
     partner?: Partner;
@@ -56,7 +54,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
     const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
-    const { minAllowedAmount, maxAllowedAmount, isQuoteLoading, quote } = useQuoteData(quoteArgs, quoteRefreshInterval);
+    const { minAllowedAmount, maxAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isQuoteLoading, quote, quoteTokenPrices } = useQuoteData(quoteArgs, quoteRefreshInterval);
 
     const toAsset = values.toAsset;
     const fromAsset = values.fromAsset;
@@ -79,11 +77,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
         }
     }, [toAsset, destination, source, fromAsset]);
 
-    const handleReserveGas = useCallback((nativeTokenBalance: TokenBalance, networkGas: number) => {
-        if (nativeTokenBalance.amount && networkGas)
-            setFieldValue('amount', (nativeTokenBalance?.amount - networkGas).toString(), true);
-    }, [setFieldValue]);
-
     const shouldConnectWallet = (source && source?.deposit_methods?.includes('wallet') && depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!source && !wallets.length && depositMethod !== 'deposit_address');
 
     return (
@@ -97,7 +90,10 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                 !(initialSettings?.hideFrom && values?.from) && <SourcePicker
                                     minAllowedAmount={minAllowedAmount}
                                     maxAllowedAmount={maxAllowedAmount}
+                                    minAllowedAmountInUsd={minAllowedAmountInUsd}
+                                    maxAllowedAmountInUsd={maxAllowedAmountInUsd}
                                     fee={quote}
+                                    quoteTokenPrices={quoteTokenPrices}
                                 />
                             }
                             {
@@ -118,14 +114,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                             }
                         </div>
                         <div>
-                            {
-                                Number(values.amount) > 0 &&
-                                <ReserveGasNote
-                                    maxAllowedAmount={maxAllowedAmount}
-                                    minAllowedAmount={minAllowedAmount}
-                                    onSubmit={handleReserveGas}
-                                />
-                            }
                             {
                                 values.toAsset?.refuel && !initialSettings.hideRefuel &&
                                 <RefuelToggle

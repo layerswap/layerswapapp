@@ -1,18 +1,22 @@
 "use client";
 
-import { WalletProviderModule } from "@layerswap/widget/types";
-import { ZkSyncGasProvider } from "./zkSyncGasProvider";
-import { ZkSyncBalanceProvider } from "./zkSyncBalanceProvider";
-import ZkSyncMultiStepHandler from "./ZkSyncMultiStepHandler";
+import React from "react";
+import { WalletProviderModule, LazyBalanceProvider, LazyGasProvider } from "@layerswap/widget/types";
 import { KnownInternalNames } from "@layerswap/widget/internal";
 
 export function createZkSyncModule(): WalletProviderModule {
     return {
-        id: "evm", // ID of the provider that this module depends on
-        gasProvider: new ZkSyncGasProvider(),
-        balanceProvider: new ZkSyncBalanceProvider(),
+        id: "evm",
+        gasProvider: new LazyGasProvider(
+            (n) => KnownInternalNames.Networks.ZksyncMainnet.includes(n.name),
+            () => import("./zkSyncGasProvider").then(m => new m.ZkSyncGasProvider())
+        ),
+        balanceProvider: new LazyBalanceProvider(
+            (n) => KnownInternalNames.Networks.ZksyncMainnet.includes(n.name),
+            () => import("./zkSyncBalanceProvider").then(m => new m.ZkSyncBalanceProvider())
+        ),
         multiStepHandler: {
-            component: ZkSyncMultiStepHandler,
+            component: React.lazy(() => import("./ZkSyncMultiStepHandler")),
             supportedNetworks: [KnownInternalNames.Networks.ZksyncMainnet]
         }
     }

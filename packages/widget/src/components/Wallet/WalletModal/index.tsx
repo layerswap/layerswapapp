@@ -5,10 +5,12 @@ import { InternalConnector, Wallet, WalletConnectionProvider } from '@/types/wal
 export type WalletModalConnector = InternalConnector & {
     qr?: ({
         state: 'loading',
-        value: undefined
+        value: undefined,
+        deepLink?: undefined
     } | {
         state: 'fetched',
-        value: string
+        value: string,
+        deepLink?: string
     });
     showQrCode?: boolean
 }

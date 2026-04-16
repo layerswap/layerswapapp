@@ -29,6 +29,7 @@ import type { TronProviderConfig } from "@layerswap/wallet-tron";
 import { createLoopringModule } from "@layerswap/wallet-module-loopring";
 
 import { createZkSyncModule } from "@layerswap/wallet-module-zksync";
+import { WalletProvider, WalletWrapper } from "@layerswap/widget/types";
 
 export { createBitcoinProvider };
 export type { BitcoinProviderConfig };
@@ -165,16 +166,14 @@ export type DefaultWalletConfig = {
 export function getDefaultProviders(config: DefaultWalletConfig = {}) {
     const { walletConnect, ton, immutablePassport } = config;
 
-    const providers = [
+    const providers: (WalletProvider | WalletWrapper)[] = [
         // EVM with modules
         createEVMProvider({
             walletConnectConfigs: walletConnect,
             walletProviderModules: [createLoopringModule(), createZkSyncModule()]
         }),
         // Starknet
-        createStarknetProvider({
-            walletConnectConfigs: walletConnect
-        }),
+        createStarknetProvider(),
         // Fuel
         createFuelProvider(),
         // Paradex
