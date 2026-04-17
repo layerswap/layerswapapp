@@ -42,11 +42,11 @@ const NetworkForm: FC<Props> = ({ partner }) => {
         setValues, isSubmitting, setFieldValue
     } = useFormikContext<SwapFormValues>();
 
-    const {
-        to: destination,
-        from: source,
-        depositMethod
-    } = values;
+    const source = values.source?.network;
+    const destination = values.destination?.network;
+    const fromAsset = values.source?.token;
+    const toAsset = values.destination?.token;
+    const { depositMethod } = values;
 
     const selectedSourceAccount = useSelectedAccount("from", source?.name);
 
@@ -55,9 +55,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
     const { minAllowedAmount, maxAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isQuoteLoading, quote, quoteTokenPrices } = useQuoteData(quoteArgs, quoteRefreshInterval);
-
-    const toAsset = values.toAsset;
-    const fromAsset = values.fromAsset;
     const { formValidation, routeValidation, autoSlippageWouldWork, isTestingAutoSlippage } = useValidationContext();
     const query = useQueryState();
 
@@ -92,7 +89,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                     <div className="w-full flex flex-col justify-between flex-1">
                         <div className='flex-col relative flex justify-between gap-2 w-full leading-4'>
                             {
-                                !(query?.hideFrom && values?.from) && <SourcePicker
+                                !(query?.hideFrom && values?.source) && <SourcePicker
                                     minAllowedAmount={minAllowedAmount}
                                     maxAllowedAmount={maxAllowedAmount}
                                     minAllowedAmountInUsd={minAllowedAmountInUsd}
@@ -111,7 +108,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                 />
                             }
                             {
-                                !(query?.hideTo && values?.to) && <DestinationPicker
+                                !(query?.hideTo && values?.destination) && <DestinationPicker
                                     isFeeLoading={isQuoteLoading}
                                     fee={quote}
                                     partner={partner}
@@ -120,7 +117,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                         </div>
                         <div>
                             {
-                                values.toAsset?.refuel && !query.hideRefuel &&
+                                values.destination?.token?.refuel && !query.hideRefuel &&
                                 <RefuelToggle
                                     quote={quote}
                                     onButtonClick={() => setOpenRefuelModal(true)}
@@ -186,12 +183,10 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<
         destinationRoutes,
     } = useSettingsState()
 
-    const {
-        to: destination,
-        fromAsset: fromCurrency,
-        toAsset: toCurrency,
-        from: source,
-    } = values
+    const source = values.source?.network;
+    const destination = values.destination?.network;
+    const fromCurrency = values.source?.token;
+    const toCurrency = values.destination?.token;
 
     const selectedSourceAccount = useSelectedAccount("from", source?.name);
 
@@ -228,23 +223,21 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<
 
         const changeDestinationAddress = newTo && (oldDestinationWalletIsNotCompatible || oldSourceWalletIsNotCompatible) && destinationWalletIsAvailable
 
-        const newVales: SwapFormValues = {
+        const newValues: SwapFormValues = {
             ...values,
-            from: newFrom,
-            to: newTo,
-            fromAsset: newFromToken,
-            toAsset: newToToken,
+            source: (newFrom && newFromToken) ? { network: newFrom, token: newFromToken } : undefined,
+            destination: (newTo && newToToken) ? { network: newTo, token: newToToken } : undefined,
             destination_address: values.destination_address,
             depositMethod: undefined
         }
 
         if (changeDestinationAddress) {
-            newVales.destination_address = selectedSourceAccount?.address
+            newValues.destination_address = selectedSourceAccount?.address
         } else {
-            newVales.destination_address = oldDestinationWalletIsNotCompatible ? undefined : values.destination_address
+            newValues.destination_address = oldDestinationWalletIsNotCompatible ? undefined : values.destination_address
         }
 
-        await updateFormBulk(newVales, true, setValues)
+        await updateFormBulk(newValues, true, setValues)
 
         swapInProgress.current = false;
 

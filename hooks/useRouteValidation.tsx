@@ -15,7 +15,9 @@ interface ValidationDetails {
 
 export function useRouteValidation(quoteError?: QuoteError, hasQuote?: boolean, _isQuoteLoading?: boolean, autoSlippageWouldWork?: boolean) {
     const { values } = useFormikContext<SwapFormValues>();
-    const { to, from, destination_address } = values;
+    const from = values.source?.network
+    const to = values.destination?.network
+    const { destination_address } = values;
     const selectedSourceAccount = useSelectedAccount("from", from?.name);
     const query = useQueryState();
     const quoteErrorCode = quoteError?.response?.data?.error?.code || quoteError?.code;

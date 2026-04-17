@@ -12,7 +12,11 @@ import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
 
 const Balance = ({ values, direction, minAllowedAmount, maxAllowedAmount, quoteTokenPrices }: { values: SwapFormValues, direction: string, minAllowedAmount?: number, maxAllowedAmount?: number, quoteTokenPrices?: QuoteTokenPrices }) => {
 
-    const { to, fromAsset: fromCurrency, toAsset: toCurrency, from, destination_address } = values
+    const from = values.source?.network
+    const to = values.destination?.network
+    const fromCurrency = values.source?.token
+    const toCurrency = values.destination?.token
+    const { destination_address } = values
     const selectedSourceAccount = useSelectedAccount("from", from?.name);
     const isUsdMode = useUsdModeStore(s => s.isUsdMode);
     const token = direction === 'from' ? fromCurrency : toCurrency
@@ -43,8 +47,8 @@ const Balance = ({ values, direction, minAllowedAmount, maxAllowedAmount, quoteT
 
     const { outOfGas } = useOutOfGas({
         address: isFromDirection ? selectedSourceAccount?.address : undefined,
-        network: isFromDirection ? values.from : undefined,
-        token: isFromDirection ? values.fromAsset : undefined,
+        network: isFromDirection ? values.source?.network : undefined,
+        token: isFromDirection ? values.source?.token : undefined,
         amount: isFromDirection ? values.amount : undefined,
         balances: isFromDirection ? balances : undefined,
         minAllowedAmount,

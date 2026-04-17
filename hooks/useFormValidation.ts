@@ -25,17 +25,11 @@ export const FORM_VALIDATION_ERROR_CODES = {
 export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isUsdMode, sourceAddress, sameAccountNetwork, quoteError }: Params) {
     let amount = values.amount ? Number(values.amount) : undefined;
 
-    if (!values.from && !values.fromExchange) {
+    if (!values.source && !values.fromExchange) {
         return { message: 'Select source' };
     }
-    if (!values.to) {
+    if (!values.destination) {
         return { message: 'Select destination' };
-    }
-    if (!values.fromAsset) {
-        return { message: 'Select source asset' };
-    }
-    if (!values.toAsset) {
-        return { message: 'Select destination asset' };
     }
     if (amount === undefined || isNaN(Number(amount))) {
         return { message: 'Enter an amount' };
@@ -56,15 +50,15 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
     if (!/^[0-9]*[.,]?[0-9]*$/i.test(amount.toString())) {
         return { message: 'Invalid amount' };
     }
-    if (values.to) {
-        if (values.destination_address && !Address.isValid(values.destination_address, values.to)) {
-            return { message: `Enter a valid ${values.to?.display_name} address` };
+    if (values.destination?.network) {
+        if (values.destination_address && !Address.isValid(values.destination_address, values.destination.network)) {
+            return { message: `Enter a valid ${values.destination.network.display_name} address` };
         }
     }
 
     if (
-        values.from?.name.toLowerCase() === sameAccountNetwork?.toLowerCase() ||
-        values.to?.name.toLowerCase() === sameAccountNetwork?.toLowerCase()
+        values.source?.network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase() ||
+        values.destination?.network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase()
     ) {
         if (
             sourceAddress &&

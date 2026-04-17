@@ -1,4 +1,4 @@
-import { SwapFormValues } from '../DTOs/SwapFormValues';
+import { SwapFormValues, SwapValuesRoute } from '../DTOs/SwapFormValues';
 import ResizablePanel from '../ResizablePanel';
 import { FC, useState } from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
@@ -12,17 +12,22 @@ import Clock from '../icons/Clock';
 import useWallet from '@/hooks/useWallet';
 import rewardCup from '@/public/images/rewardCup.png'
 import Image from 'next/image'
-import { Network } from '@/Models/Network';
+import { Network, Token } from '@/Models/Network';
 import ExchangeGasIcon from '../icons/ExchangeGasIcon';
 import useSWRNftBalance from '@/lib/nft/useSWRNftBalance';
 import NumFlowWithFallback from '@/components/Common/NumFlowWithFallback';
 import { resolveTokenUsdPrice } from '@/helpers/tokenHelper';
 import { useSelectedAccount } from '@/context/swapAccounts';
 import { DetailedEstimates } from './SwapQuote/DetailedEstimates';
-
-export interface SwapValues extends Omit<SwapFormValues, 'from' | 'to'> {
-    from?: Network;
-    to?: Network;
+export interface SwapValues extends Omit<SwapFormValues, 'source' | 'destination'> {
+    source?: {
+        network: Network,
+        token: Token 
+    };
+    destination?: {
+        network: Network,
+        token: Token 
+    };
 }
 
 export interface QuoteComponentProps {
@@ -37,7 +42,9 @@ export interface QuoteComponentProps {
 }
 
 export default function QuoteDetails({ swapValues: values, quote, isQuoteLoading, reward, variant = 'extended', triggerClassnames }: QuoteComponentProps) {
-    const { toAsset, fromAsset: fromCurrency, destination_address } = values || {};
+    const fromCurrency = values?.source?.token;
+    const toAsset = values?.destination?.token;
+    const { destination_address } = values || {};
     const [isAccordionOpen, setIsAccordionOpen] = useState<boolean>(false);
 
     return (
@@ -63,7 +70,7 @@ export default function QuoteDetails({ swapValues: values, quote, isQuoteLoading
                                         Details
                                     </p>
                                     :
-                                    <DetailsButton quote={quote} isQuoteLoading={isQuoteLoading} swapValues={values} destination={values.to} destinationAddress={destination_address} reward={reward} />
+                                    <DetailsButton quote={quote} isQuoteLoading={isQuoteLoading} swapValues={values} destination={values.destination?.network} destinationAddress={destination_address} reward={reward} />
                             }
                             <ChevronDown className='h-3.5 w-3.5 text-secondary-text' />
                         </AccordionTrigger>
@@ -90,11 +97,11 @@ export default function QuoteDetails({ swapValues: values, quote, isQuoteLoading
 
 export const DetailsButton: FC<QuoteComponentProps> = ({ quote, reward, isQuoteLoading, swapValues: values, destination, destinationAddress }) => {
     const isCEX = !!values.fromExchange;
-    const sourceAccountNetwork = !isCEX ? values.from : undefined
+    const sourceAccountNetwork = !isCEX ? values.source?.network : undefined
     const selectedSourceAccount = useSelectedAccount("from", sourceAccountNetwork?.name);
     const { wallets } = useWallet(quote?.source_network, 'withdrawal')
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
-    const { gasData: gasData } = useSWRGas(selectedSourceAccount?.address, values.from, values.fromAsset, values.amount, wallet)
+    const { gasData: gasData } = useSWRGas(selectedSourceAccount?.address, values.source?.network, values.source?.token, values.amount, wallet)
     const gasTokenPriceInUsd = resolveTokenUsdPrice(gasData?.token, quote)
     const gasFeeInUsd = (gasData && gasTokenPriceInUsd) ? gasData.gas * gasTokenPriceInUsd : null;
     const averageCompletionTime = quote?.avg_completion_time;

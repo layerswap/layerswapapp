@@ -19,7 +19,9 @@ const ExchangeAmountField = forwardRef(function ExchangeAmountField(
     ref: any
 ) {
     const { values, handleChange } = useFormikContext<SwapFormValues>();
-    const { fromAsset: fromCurrency, amount, toAsset: toCurrency, fromExchange } = values || {};
+    const fromCurrency = values?.source?.token;
+    const toCurrency = values?.destination?.token;
+    const { amount, fromExchange } = values || {};
 
     const amountRef = useRef(ref);
     const suffixRef = useRef<HTMLDivElement>(null);

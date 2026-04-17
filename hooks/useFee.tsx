@@ -179,11 +179,11 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
 export function transformFormValuesToQuoteArgs(values: SwapFormValues, withDelay?: boolean): Props | undefined {
     return {
         amount: values.amount,
-        from: values.from?.name,
+        from: values.source?.network?.name,
         depositMethod: values.depositMethod,
-        fromCurrency: values.fromAsset?.symbol,
-        to: values.to?.name,
-        toCurrency: values.toAsset?.symbol,
+        fromCurrency: values.source?.token?.symbol,
+        to: values.destination?.network?.name,
+        toCurrency: values.destination?.token?.symbol,
         refuel: values.refuel,
         withDelay
     }

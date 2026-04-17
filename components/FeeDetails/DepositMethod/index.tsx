@@ -28,7 +28,9 @@ const DepositMethodComponent: FC = () => {
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const { depositMethod: defaultDepositMethod, hideDepositMethod } = useQueryState()
-    const { from, depositMethod, fromExchange, fromAsset } = values
+    const from = values.source?.network
+    const fromAsset = values.source?.token
+    const { depositMethod, fromExchange } = values
     const { provider } = useWallet(from, 'withdrawal')
     const name = 'depositMethod'
 

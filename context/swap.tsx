@@ -106,14 +106,14 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
 
     const setSubmitedFormValues = useCallback((values: NonNullable<SwapFormValues>) => {
 
-        if (!values.from || !values.to || !values.fromAsset || !values.toAsset || !values.amount! || !values.destination_address)
+        if (!values.source || !values.destination || !values.amount! || !values.destination_address)
             throw new Error("Form data is missing")
 
         setSwapBasicFormData({
-            source_network: values.from,
-            destination_network: values.to,
-            source_token: values.fromAsset,
-            destination_token: values.toAsset,
+            source_network: values.source.network,
+            destination_network: values.destination.network,
+            source_token: values.source.token,
+            destination_token: values.destination.token,
             requested_amount: values.amount,
             destination_address: values.destination_address,
             use_deposit_address: values.depositMethod === 'deposit_address',
@@ -202,9 +202,14 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         if (!values)
             throw new Error("No swap data")
 
-        const { to, fromAsset: fromCurrency, toAsset: toCurrency, from, refuel, fromExchange, depositMethod, amount, destination_address } = values
-        if (!to || !fromCurrency || !toCurrency || !from || !amount || !destination_address || !depositMethod)
+        const { source, destination, refuel, fromExchange, depositMethod, amount, destination_address } = values
+        if (!source || !destination || !amount || !destination_address || !depositMethod)
             throw new Error("Form data is missing")
+
+        const from = source.network
+        const to = destination.network
+        const fromCurrency = source.token
+        const toCurrency = destination.token
 
         const sourceIsSupported = selectedWallet && WalletIsSupportedForSource({
             providers: providers,
