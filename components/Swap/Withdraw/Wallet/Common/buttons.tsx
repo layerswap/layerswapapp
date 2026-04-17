@@ -138,7 +138,7 @@ export const ButtonWrapper: FC<SubmitButtonProps> = ({
         buttonStyle='filled'
         size="medium"
         type="button"
-        className="text-primary-text text-base my-1"
+        className="text-base my-1"
         {...props}
     >
         {props.children}
@@ -348,7 +348,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 <div className="flex items-start gap-2.5">
                     <span className="shrink-0"><InfoIcon className="w-5 h-5 text-warning-foreground" /></span>
                     <div className="flex flex-col gap-1.5 pr-4">
-                        <p className="text-white font-medium leading-4 text-base mt-0.5">Critical receiving amount</p>
+                        <p className="text-primary-text font-medium leading-4 text-base mt-0.5">Critical receiving amount</p>
                         <p className="text-secondary-text text-sm leading-[18px]"><span>The “receive at least” amount is affected by high price impact. You will receive at least </span><span>{quote.min_receive_amount} {quote.destination_token?.symbol} ($ {priceImpactValues.minReceiveAmountUSD}) </span></p>
                     </div>
                 </div>
