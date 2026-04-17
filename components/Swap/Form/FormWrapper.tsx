@@ -1,4 +1,4 @@
-import { Formik, FormikProps } from "formik";
+import { Formik } from "formik";
 import { useCallback, useRef, useState } from "react";
 import { useSettingsState } from "@/context/settings";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
@@ -31,7 +31,6 @@ type NetworkToConnect = {
 
 export default function FormWrapper({ children, type, partner }: { children?: React.ReactNode, type: 'cross-chain' | 'exchange', partner?: Partner }) {
 
-    const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
     const [isAddressFromQueryConfirmed, setIsAddressFromQueryConfirmed] = useState(false);
     const dontShowContractWarningRef = useRef(false);
@@ -141,47 +140,48 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
             if (walletWihdrawDone) {
                 mutateBalances()
                 setWalletWihdrawDone(false)
-                formikRef?.current?.setFieldValue('amount', 0, true);
             }
         }
         setSwapModalOpen(value)
     }, [router, swapDetails, walletWihdrawDone, mutateBalances])
 
-    const handleWalletWithdrawalSuccess = useCallback(() => {
-        setWalletWihdrawDone(true)
-    }, []);
 
     return <>
         <Formik
-            innerRef={formikRef}
             initialValues={initialValues}
             validateOnMount={true}
             onSubmit={handleSubmit}
         >
-            <>
-                <Modal
-                    height="fit"
-                    show={showConnectNetworkModal}
-                    setShow={setShowConnectNetworkModal}
-                    header={`${networkToConnect?.DisplayName} connect`}
-                    modalId="showNetwork"
-                >
-                    {
-                        networkToConnect &&
-                        <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
-                    }
-                </Modal>
-                <VaulDrawer
-                    mode="fitHeight"
-                    show={swapModalOpen}
-                    setShow={handleShowSwapModal}
-                    header='Complete the swap'
-                    modalId="showSwap"
-                    className="expandContainerHeight">
-                    <SwapDetails type="contained" onWalletWithdrawalSuccess={handleWalletWithdrawalSuccess} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />
-                </VaulDrawer>
-                {children}
-            </>
+            {({ setFieldValue }) => (
+                <>
+                    <Modal
+                        height="fit"
+                        show={showConnectNetworkModal}
+                        setShow={setShowConnectNetworkModal}
+                        header={`${networkToConnect?.DisplayName} connect`}
+                        modalId="showNetwork"
+                    >
+                        {
+                            networkToConnect &&
+                            <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
+                        }
+                    </Modal>
+                    <VaulDrawer
+                        mode="fitHeight"
+                        show={swapModalOpen}
+                        setShow={handleShowSwapModal}
+                        header='Complete the swap'
+                        modalId="showSwap"
+                        className="expandContainerHeight">
+                        <SwapDetails type="contained" onWalletWithdrawalSuccess={() => {
+                            setWalletWihdrawDone(true)
+                            setFieldValue('amount', 0)
+                            mutateBalances()
+                        }} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />
+                    </VaulDrawer>
+                    {children}
+                </>
+            )}
         </Formik>
     </>
 }

@@ -460,7 +460,7 @@ const getProgressStatuses = (swapDetails: SwapDetails, refuel: Refuel | undefine
 
     if (swapStatus == SwapStatus.Completed || output_transfer == ProgressStatus.Complete) {
         generalTitle = "Transfer complete"
-        subtitle = "Thanks for using Layerswap"
+        subtitle = formatElapsedTime(swapInputTransaction, swapOutputTransaction)
     }
     if (swapStatus == SwapStatus.Cancelled) {
         generalTitle = "Transfer cancelled"
@@ -497,6 +497,28 @@ const transactionStatusToProgressStatus = (transactionStatus: BackendTransaction
         default:
             return ProgressStatus.Upcoming;
     }
+}
+
+
+const formatElapsedTime = (inputTx: Transaction | undefined, outputTx: Transaction | undefined): string | null => {
+    const start = inputTx?.timestamp || inputTx?.created_date
+    const end = outputTx?.timestamp || outputTx?.created_date
+    if (!start || !end) return null
+
+    const diffMs = new Date(end).getTime() - new Date(start).getTime()
+    if (!Number.isFinite(diffMs) || diffMs <= 0) return null
+
+    const totalSeconds = Math.round(diffMs / 1000)
+    const hours = Math.floor(totalSeconds / 3600)
+    const minutes = Math.floor((totalSeconds % 3600) / 60)
+    const seconds = totalSeconds % 60
+
+    const parts: string[] = []
+    if (hours) parts.push(`${hours}h`)
+    if (minutes) parts.push(`${minutes}m`)
+    if (!hours && (seconds || !minutes)) parts.push(`${seconds}s`)
+
+    return `Completed in ${parts.join(' ')}`
 }
 
 export default Processing;
