@@ -13,5 +13,5 @@ catalog:
   swr: ^2.2.5
   viem: ^2.21.16
   wagmi: 2.14.11
-  zustand: 4.5.7
+  zustand: ^4.5.7
   starknet: ^8.5.2
