@@ -58,6 +58,10 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<SwapResponse>>("GET", `/swaps/${swapId}`);
     }
 
+    async GetSwapByTransactionHashAsync(transactionHash: string): Promise<ApiResponse<SwapResponse>> {
+        return await this.AuthenticatedRequest<ApiResponse<SwapResponse>>("GET", `/swaps/by_transaction_hash/${encodeURIComponent(transactionHash)}`);
+    }
+
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
         let uri = LayerSwapApiClient.apiBaseEndpoint + "/api/v2" + endpoint;
         return await this._authInterceptor(uri, { method: method, data: data, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })

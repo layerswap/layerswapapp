@@ -58,7 +58,7 @@ export function useSwapHistoryData(addresses?: string[]) {
                 if (localSwapIds.length === 0) {
                     // Clear fetched IDs when local storage is empty
                     fetchedIdsRef.current.clear()
-                    setLocalStorageSwaps([])
+                    setLocalStorageSwaps(prev => prev.length === 0 ? prev : [])
                     return
                 }
 
@@ -108,6 +108,7 @@ export function useSwapHistoryData(addresses?: string[]) {
                     const newSwaps = fetchedSwaps.filter((s): s is SwapResponse =>
                         s !== null && !existingIds.has(s.swap.id)
                     )
+                    if (newSwaps.length === 0) return prev
                     return [...prev, ...newSwaps]
                 })
             } catch (error) {

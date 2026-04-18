@@ -1,0 +1,83 @@
+import { FC, useState } from 'react'
+import { ChevronDown } from 'lucide-react'
+import { Popover, PopoverContent, PopoverTrigger } from '../../shadcn/popover'
+import { SearchComponent } from '../../Input/Search'
+import { ImageWithFallback } from '../../Common/ImageWithFallback'
+import CheckboxRow from './CheckboxRow'
+import { filterChipClasses } from './chipStyles'
+import { FilterNetworkOption } from './types'
+
+type NetworksDropdownProps = {
+    networks: FilterNetworkOption[]
+    selectedNames: string[]
+    toggle: (name: string) => void
+    count: number
+}
+
+const NetworksDropdown: FC<NetworksDropdownProps> = ({ networks, selectedNames, toggle, count }) => {
+    const [open, setOpen] = useState(false)
+    const [query, setQuery] = useState('')
+    const disabled = networks.length === 0
+
+    const q = query.trim().toLowerCase()
+    const filtered = q
+        ? networks.filter(n =>
+            n.display_name.toLowerCase().includes(q) || n.name.toLowerCase().includes(q)
+        )
+        : networks
+    const label = count > 0 ? `Networks (${count})` : 'Networks'
+
+    return (
+        <Popover
+            open={open}
+            onOpenChange={(v) => {
+                setOpen(v)
+                if (!v) setQuery('')
+            }}
+        >
+            <PopoverTrigger asChild>
+                <button type="button" disabled={disabled} className={filterChipClasses(count > 0)}>
+                    <span>{label}</span>
+                    <ChevronDown className="w-4 h-4" />
+                </button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="p-0 w-64">
+                <div className="p-2 pb-1 border-b border-secondary-500">
+                    <SearchComponent
+                        searchQuery={query}
+                        setSearchQuery={setQuery}
+                        placeholder="Search networks"
+                        containerClassName="mb-0 h-9"
+                    />
+                </div>
+                <div className="p-1 max-h-60 overflow-y-auto styled-scroll">
+                    {filtered.length === 0 ? (
+                        <div className="px-3 py-6 text-center text-sm text-secondary-text">
+                            <span>No networks found</span>
+                        </div>
+                    ) : (
+                        filtered.map(n => (
+                            <CheckboxRow
+                                key={n.name}
+                                checked={selectedNames.includes(n.name)}
+                                onToggle={() => toggle(n.name)}
+                                icon={n.logo ? (
+                                    <ImageWithFallback
+                                        src={n.logo}
+                                        alt={n.display_name}
+                                        width={20}
+                                        height={20}
+                                        className="rounded-md"
+                                    />
+                                ) : null}
+                                label={n.display_name}
+                            />
+                        ))
+                    )}
+                </div>
+            </PopoverContent>
+        </Popover>
+    )
+}
+
+export default NetworksDropdown
