@@ -56,6 +56,7 @@ export default class NetworkSettings {
     GasCalculationType?: GasCalculation
     isFeatured?: boolean
     ChainOrder?: number
+    FeeParsingDecimalPlaces?: number
 
     public static KnownSettings: { [network: string]: NetworkSettings } = {};
 
@@ -274,6 +275,12 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.BlastMainnet] = {
             GasCalculationType: GasCalculation.OptimismType,
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.TempoTestnet] = {
+            FeeParsingDecimalPlaces: 18,
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.TempoMainnet] = {
+            FeeParsingDecimalPlaces: 18,
         };
 
         for (var k in NetworkSettings.KnownSettings) {
