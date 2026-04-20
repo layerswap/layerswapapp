@@ -21,24 +21,7 @@ import { Address } from '@/lib/address';
 import { useSlippageStore } from '@/stores/slippageStore';
 import { posthog } from 'posthog-js';
 
-export const SwapDataStateContext = createContext<SwapContextData>({
-    codeRequested: false,
-    depositAddressIsFromAccount: false,
-    withdrawType: undefined,
-    swapTransaction: undefined,
-    depositActionsResponse: undefined,
-    swapApiError: undefined,
-    quote: undefined,
-    quoteError: undefined,
-    quoteIsLoading: false,
-    refuel: undefined,
-    swapBasicData: undefined,
-    swapDetails: undefined,
-    swapId: undefined,
-    swapModalOpen: false,
-    swapError: '',
-    setSwapError: (value: string) => { }
-});
+export const SwapDataStateContext = createContext<SwapContextData | null>(null);
 
 export const SwapDataUpdateContext = createContext<UpdateSwapInterface | null>(null);
 
@@ -303,7 +286,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
 export function useSwapDataState() {
     const data = useContext(SwapDataStateContext);
 
-    if (data === undefined) {
+    if (data === undefined || data === null) {
         throw new Error('swapData must be used within a SwapDataProvider');
     }
     return data;
