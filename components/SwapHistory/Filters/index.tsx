@@ -74,7 +74,3 @@ const Filters: FC<FiltersProps> = ({
 }
 
 export default Filters
-export type { FilterNetworkOption, FilterOpts } from './types'
-export { default as NoMatches } from './NoMatches'
-export { default as SearchResult } from './SearchResult'
-export { matchesFilters, isIncomplete } from './filterSwaps'

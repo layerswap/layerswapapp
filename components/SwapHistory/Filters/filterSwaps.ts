@@ -1,5 +1,6 @@
 import { SwapResponse, TransactionType } from '@/lib/apiClients/layerSwapApiClient'
 import { SwapStatus } from '@/Models/SwapStatus'
+import { Address } from '@/lib/address/Address'
 import type { FilterOpts } from './types'
 
 const INCOMPLETE_STATUSES: string[] = [
@@ -27,15 +28,17 @@ export const matchesFilters = (sr: SwapResponse, opts: FilterOpts): boolean => {
     }
 
     if (opts.walletAddrs) {
-        const dest = swap.destination_address?.toLowerCase?.() ?? ''
-        const inputTx = swap.transactions?.find?.(
+        const dest = swap.destination_address ?? ''
+        const destNet = swap.destination_network
+        const inputTx = swap.transactions?.find(
             (t: { type: TransactionType }) => t.type === TransactionType.Input
         )
-        const src = inputTx?.from?.toLowerCase?.() ?? ''
-        const match = opts.walletAddrs.some(a => {
-            const lower = a.toLowerCase()
-            return lower === dest || (src !== '' && lower === src)
-        })
+        const src = inputTx?.from ?? ''
+        const srcNet = swap.source_network
+        const match = opts.walletAddrs.some(a =>
+            (!!dest && !!destNet && Address.equals(a, dest, destNet)) ||
+            (!!src && !!srcNet && Address.equals(a, src, srcNet))
+        )
         if (!match) return false
     }
 

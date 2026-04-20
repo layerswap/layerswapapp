@@ -15,7 +15,12 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "..
 import { useSwapHistoryData } from "../../hooks/useSwapHistoryData";
 import { useHistoryFilters } from "../../hooks/useHistoryFilters";
 import { useSwapByTransactionHash } from "../../hooks/useSwapByTransactionHash";
-import Filters, { FilterNetworkOption, NoMatches, SearchResult, matchesFilters, isIncomplete } from "./Filters";
+import Filters from "./Filters";
+import NoMatches from "./Filters/NoMatches";
+import SearchResult from "./Filters/SearchResult";
+import { matchesFilters, isIncomplete } from "./Filters/filterSwaps";
+import type { FilterNetworkOption } from "./Filters/types";
+import { SwapResponse } from '@/lib/apiClients/layerSwapApiClient';
 
 type ListProps = {
     statuses?: string | number;
@@ -23,7 +28,7 @@ type ListProps = {
     onNewTransferClick?: () => void
 }
 
-type Swap = any & { type: 'user' | 'explorer' }
+type Swap = SwapResponse & { type: 'user' | 'explorer' }
 
 const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
     const { networks } = useSettingsState()
@@ -39,7 +44,7 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
         hideIncomplete, setHideIncomplete,
         clearFilters,
         filterOpts, filtersActive,
-    } = useHistoryFilters({ wallets, networks })
+    } = useHistoryFilters({ wallets })
 
     const addresses = useMemo(() => wallets.map(w => {
         const network = networks.find(n => n.chain_id == w.chainId)

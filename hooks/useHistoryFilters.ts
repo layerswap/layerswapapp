@@ -1,15 +1,12 @@
 import { useCallback, useMemo, useState } from 'react'
-import { Network } from '@/Models/Network'
 import { Wallet } from '@/Models/WalletProvider'
-import { Address } from '@/lib/address'
-import { FilterOpts } from '@/components/SwapHistory/Filters'
+import { walletIdOf, type FilterOpts } from '@/components/SwapHistory/Filters/types'
 
 type Args = {
     wallets: Wallet[]
-    networks: Network[]
 }
 
-export function useHistoryFilters({ wallets, networks }: Args) {
+export function useHistoryFilters({ wallets }: Args) {
     const [searchQuery, setSearchQuery] = useState('')
     const [walletInternalIds, setWalletInternalIds] = useState<string[]>([])
     const [networkNames, setNetworkNames] = useState<string[]>([])
@@ -38,13 +35,12 @@ export function useHistoryFilters({ wallets, networks }: Args) {
         if (walletInternalIds.length === 0) return null
         const addrs: string[] = []
         for (const id of walletInternalIds) {
-            const w = wallets.find(x => (x.internalId ?? x.address) === id)
+            const w = wallets.find(x => walletIdOf(x) === id)
             if (!w) continue
-            const net = networks.find(n => n.chain_id == w.chainId)
-            addrs.push(new Address(w.address, net || null, w.providerName).normalized)
+            addrs.push(w.address)
         }
         return addrs.length > 0 ? addrs : null
-    }, [walletInternalIds, wallets, networks])
+    }, [walletInternalIds, wallets])
 
     const filterOpts = useMemo<FilterOpts>(() => ({
         walletAddrs: selectedWalletAddrs,

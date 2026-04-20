@@ -5,6 +5,7 @@ import { Wallet } from '@/Models/WalletProvider'
 import { Address } from '@/lib/address'
 import CheckboxRow from './CheckboxRow'
 import { filterChipClasses } from './chipStyles'
+import { walletIdOf } from './types'
 
 type WalletsDropdownProps = {
     wallets: Wallet[]
@@ -12,8 +13,6 @@ type WalletsDropdownProps = {
     toggle: (id: string) => void
     count: number
 }
-
-export const walletIdOf = (w: Wallet) => w.internalId ?? w.address
 
 const WalletsDropdown: FC<WalletsDropdownProps> = ({ wallets, selectedIds, toggle, count }) => {
     const [open, setOpen] = useState(false)

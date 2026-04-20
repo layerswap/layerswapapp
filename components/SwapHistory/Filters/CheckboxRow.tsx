@@ -11,7 +11,8 @@ type CheckboxRowProps = {
 
 const CheckboxRow: FC<CheckboxRowProps> = ({ checked, onToggle, icon, label, sublabel }) => (
     <div
-        role="button"
+        role="checkbox"
+        aria-checked
         tabIndex={0}
         onClick={onToggle}
         onKeyDown={(e) => {
