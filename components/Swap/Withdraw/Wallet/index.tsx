@@ -131,13 +131,13 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
             ],
             component: SVMWalletWithdrawStep
         },
-        {
-            supportedNetworks: [
-                KnownInternalNames.Networks.TempoMainnet,
-                KnownInternalNames.Networks.TempoTestnet
-            ],
-            component: TempoWalletWithdrawal
-        },
+        // {
+        //     supportedNetworks: [
+        //         KnownInternalNames.Networks.TempoMainnet,
+        //         KnownInternalNames.Networks.TempoTestnet
+        //     ],
+        //     component: TempoWalletWithdrawal
+        // },
         {
             supportedNetworks: [
                 source_network?.type == NetworkType.EVM ? source_network.name : undefined
