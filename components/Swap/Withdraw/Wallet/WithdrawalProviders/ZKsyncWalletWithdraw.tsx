@@ -6,7 +6,7 @@ import { utils } from 'ethers';
 import { useEthersSigner } from '@/lib/ethersToViem/ethers';
 import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import { useSettingsState } from '@/context/settings';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 import ClickTooltip from '@/components/Tooltips/ClickTooltip';
 import SignatureIcon from '@/components/icons/SignatureIcon';
 import { formatUnits } from "viem";
@@ -22,7 +22,7 @@ export const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData,
     const [accountIsActivated, setAccountIsActivated] = useState(false);
     const [activationFee, setActivationFee] = useState<({ feeInAsset: number, feeInUsd: number } | undefined)>(undefined);
     const { source_network, source_token } = swapBasicData;
-    const { chain } = useAccount();
+    const { chain } = useConnection();
     const signer = useEthersSigner();
 
     const { networks: layers } = useSettingsState();

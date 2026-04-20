@@ -3,7 +3,7 @@ import {
     useConnectors,
     useFuel as useGlobalFuel,
 } from '@fuels/react';
-import { Connector, useAccount } from "wagmi";
+import { Connector, useConnection } from "wagmi";
 import {
     FuelConnector,
     FuelConnectorEventTypes,
@@ -29,7 +29,7 @@ export default function useFuel(): WalletProvider {
     const name = 'Fuel'
     const id = 'fuel'
 
-    const { address: evmAddress, connector: evmConnector } = useAccount()
+    const { address: evmAddress, connector: evmConnector } = useConnection()
     const { connectors } = useConnectors()
     const { fuel } = useGlobalFuel()
     const { networks } = useSettingsState()

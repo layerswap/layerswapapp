@@ -1,4 +1,4 @@
-import { useAccount } from 'wagmi'
+import { useConnection } from 'wagmi'
 import { useCallback, useEffect, useState } from 'react'
 
 export type WalletRpcHealth =
@@ -23,7 +23,7 @@ type SuggestRpcResult =
   | { success: false; error: string }
 
 export function useWalletRpcHealth() {
-  const { isConnected, connector, chainId } = useAccount()
+  const { isConnected, connector, chainId } = useConnection()
   const [health, setHealth] = useState<WalletRpcHealth>({ status: undefined })
   const [isSuggestingRpc, setIsSuggestingRpc] = useState(false)
 

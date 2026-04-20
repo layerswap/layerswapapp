@@ -1,11 +1,11 @@
 import { FC, useCallback, useState } from "react";
 import { useConfig } from "wagmi";
-import { encodeFunctionData, erc20Abi, numberToHex, parseUnits } from 'viem'
+import { numberToHex, parseUnits } from 'viem'
+import { Actions } from 'wagmi/tempo'
 import { ActionData, TransferProps } from "../../Common/sharedTypes";
 import TransactionMessage from "../EVMWalletWithdraw/transactionMessage";
 import { SendTransactionButton } from "../../Common/buttons";
 import { isMobile } from "@/lib/openLink";
-import { sendTransaction } from '@wagmi/core'
 import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import useWallet from "@/hooks/useWallet";
@@ -38,7 +38,7 @@ const TempoTransferTokenButton: FC<Props> = ({
     const { gasData } = useSWRGas(selectedSourceAccount?.address, swapData?.source_network)
     const { health, suggestRpcForCurrentChain, isSuggestingRpc, checkManually } = useWalletRpcHealth()
 
-    const clickHandler = useCallback(async ({ amount, callData, sequenceNumber, depositAddress }: TransferProps) => {
+    const clickHandler = useCallback(async ({ amount, sequenceNumber, depositAddress }: TransferProps) => {
         setButtonClicked(true)
         setError(undefined)
         setLoading(true)
@@ -55,34 +55,19 @@ const TempoTransferTokenButton: FC<Props> = ({
             if (!tokenContract)
                 throw new Error('Missing token contract for TIP20 transfer')
 
-            let data = encodeFunctionData({
-                abi: erc20Abi,
-                functionName: 'transfer',
-                args: [
-                    depositAddress as `0x${string}`,
-                    parseUnits(amount.toString(), swapData.source_token.decimals)
-                ]
-            })
-
-            if (sequenceNumber != null) {
-                const memo = numberToHex(sequenceNumber, { size: 8 })
-                data = `${data}${memo.slice(2)}` as `0x${string}`
-            }
-
-            const tx = {
-                chainId,
-                to: tokenContract as `0x${string}`,
-                value: 0n,
-                gas: gasData?.gas ? BigInt(gasData.gas) : undefined,
-                data,
-                account: selectedSourceAccount.address as `0x${string}`
-            }
-
             if (isMobile() && wallet?.metadata?.deepLink) {
                 window.location.href = wallet.metadata?.deepLink
                 await new Promise(resolve => setTimeout(resolve, 100))
             }
-            const hash = await sendTransaction(config, tx)
+
+            const hash = await Actions.token.transfer(config, {
+                token: tokenContract as `0x${string}`,
+                to: depositAddress as `0x${string}`,
+                amount: parseUnits(amount.toString(), swapData.source_token.decimals),
+                account: selectedSourceAccount.address as `0x${string}`,
+                ...(sequenceNumber != null ? { memo: numberToHex(sequenceNumber, { size: 8 }) } : {}),
+                ...(gasData?.gas ? { gas: BigInt(gasData.gas) } : {}),
+            })
 
             if (hash) {
                 return hash

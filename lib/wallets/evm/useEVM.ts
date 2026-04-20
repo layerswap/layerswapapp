@@ -1,11 +1,11 @@
-import { useConfig, useConnect, useConnectors, useDisconnect, useSwitchAccount, Connector } from "wagmi"
+import { useConfig, useConnect, useConnectors, useDisconnect, useSwitchConnection, Connector } from "wagmi"
 import { NetworkType, NetworkWithTokens } from "@/Models/Network"
 import { useSettingsState } from "@/context/settings"
 import KnownInternalNames from "../../knownIds"
 import { resolveWalletConnectorIcon, resolveWalletConnectorIndex } from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useCallback, useEffect, useMemo } from "react"
-import { CreateConnectorFn, getAccount, getConnections } from '@wagmi/core'
+import { CreateConnectorFn, getConnection, getConnections } from '@wagmi/core'
 import { isMobile } from "../../isMobile"
 import convertSvgComponentToBase64 from "@/components/utils/convertSvgComponentToBase64"
 import { LSConnector } from "../connectors/types"
@@ -101,12 +101,12 @@ export default function useEVM(): WalletProvider {
         return supportedNetworksByPurpose.length === 0 || !supportedNetworksByPurpose.includes(network)
     }, [withdrawalSupportedNetworks, autofillSupportedNetworks, asSourceSupportedNetworks])
 
-    const { disconnectAsync } = useDisconnect()
-    const { switchAccountAsync } = useSwitchAccount()
+    const { mutateAsync: disconnectAsync } = useDisconnect()
+    const { mutateAsync: switchConnectionAsync } = useSwitchConnection()
     const { activeConnection, setActiveAddress } = useActiveEvmAccount()
     const allConnectors = useConnectors()
     const config = useConfig()
-    const { connectAsync } = useConnect();
+    const { mutateAsync: connectAsync } = useConnect();
 
     const { setSelectedConnector, isWalletModalOpen } = useConnectModal()
     const {
@@ -368,12 +368,12 @@ export default function useEVM(): WalletProvider {
         const connector = resolveWalletConnector(wallet)
         if (!connector)
             throw new Error("Connector not found")
-        const { accounts } = await switchAccountAsync({ connector })
+        const { accounts } = await switchConnectionAsync({ connector })
         const account = accounts.find(a => a.toLowerCase() === address.toLowerCase())
         if (!account)
             throw new Error("Account not found")
         setActiveAddress(account)
-    }, [resolveWalletConnector, switchAccountAsync])
+    }, [config, switchConnectionAsync])
 
     const switchChain = async (wallet: Wallet, chainId: string | number) => {
         const connector = resolveWalletConnector(wallet)
@@ -546,7 +546,7 @@ const resolveSupportedNetworks = (supportedNetworks: string[], connectorId: stri
 
 async function attemptGetAccount(config, maxAttempts = 5) {
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        const account = getAccount(config);
+        const account = getConnection(config);
 
         if (account.address) {
             return account;
@@ -554,7 +554,7 @@ async function attemptGetAccount(config, maxAttempts = 5) {
         await sleep(500);
     }
 
-    return getAccount(config);
+    return getConnection(config);
 }
 function dedupePreferInjected(arr: Connector<CreateConnectorFn>[]) {
     // Helper to strip off any prefix up to the last dot

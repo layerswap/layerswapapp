@@ -56,7 +56,7 @@ const loadWalletConnectWalletRegistry = async (): Promise<WalletConnectWallet[]>
 
 // Create stable connector instances at module level to ensure wagmi can reconnect properly
 const metaMaskConnector = metaMask({
-    dappMetadata: {
+    dapp: {
         name: 'Layerswap',
         url: 'https://layerswap.io/app/',
         iconUrl: 'https://layerswap.io/app/symbol.png'
