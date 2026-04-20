@@ -355,8 +355,17 @@ export default function useEVM(): WalletProvider {
         }).filter(w => w !== undefined)
     }, [activeConnection, config, connectedWalletsKey])
 
+    const resolveWalletConnector = useCallback((wallet: Wallet) => {
+        const connections = getConnections(config)
+        return connections.find(c => c.connector.name === wallet.id)?.connector
+            ?? connections.find(c =>
+                c.connector.id === HIDDEN_WALLETCONNECT_ID
+                && c.accounts.some(a => a.toLowerCase() === wallet.address.toLowerCase())
+            )?.connector
+    }, [config])
+
     const switchAccount = useCallback(async (wallet: Wallet, address: string) => {
-        const connector = getConnections(config).find(c => c.connector.name === wallet.id)?.connector
+        const connector = resolveWalletConnector(wallet)
         if (!connector)
             throw new Error("Connector not found")
         const { accounts } = await switchConnectionAsync({ connector })
@@ -367,7 +376,7 @@ export default function useEVM(): WalletProvider {
     }, [config, switchConnectionAsync])
 
     const switchChain = async (wallet: Wallet, chainId: string | number) => {
-        const connector = getConnections(config).find(c => c.connector.name === wallet.id)?.connector
+        const connector = resolveWalletConnector(wallet)
         if (!connector)
             throw new Error("Connector not found")
 
