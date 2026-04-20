@@ -106,21 +106,24 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
     private async getProvider(): Promise<UniversalProviderType> {
         if (this._provider) return this._provider
         if (!this._providerInitPromise) {
-            const initPromise = (async () => {
-                const { UniversalProvider: UP } = await import("@walletconnect/universal-provider")
-                const provider = await UP.init(this._config.options)
-                this._provider = provider
-                if (!this._internalDisplayUriHandler) {
-                    this._internalDisplayUriHandler = (uri: string) => {
-                        for (const cb of this._displayUriListeners) {
-                            try { cb(uri) } catch (e) { /* swallow listener errors */ }
+            this._providerInitPromise = (async () => {
+                try {
+                    const { UniversalProvider: UP } = await import("@walletconnect/universal-provider")
+                    const provider = await UP.init(this._config.options)
+                    this._provider = provider
+                    if (!this._internalDisplayUriHandler) {
+                        this._internalDisplayUriHandler = (uri: string) => {
+                            for (const cb of this._displayUriListeners) {
+                                try { cb(uri) } catch (e) { /* swallow listener errors */ }
+                            }
                         }
+                        provider.on("display_uri", this._internalDisplayUriHandler)
                     }
-                    provider.on("display_uri", this._internalDisplayUriHandler)
+                    return provider
+                } finally {
+                    this._providerInitPromise = undefined
                 }
-                return provider
             })()
-            this._providerInitPromise = initPromise
         }
         return this._providerInitPromise
     }
@@ -352,11 +355,23 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
                 return this.deserialize(result.transactions[i] ?? "", isVersioned) as T
             })
         } catch (batchError: any) {
-            // Fall back to per-transaction signing when the wallet doesn't support batch.
-            // signTransaction handles its own "error" emission, so we just rethrow here
-            // without re-emitting to avoid firing listeners twice for the same failure.
-            const promises = transactions.map(t => this.signTransaction(t))
-            return await Promise.all(promises)
+            // Only fall back to per-transaction signing when the wallet genuinely
+            // doesn't support the batch method. For user rejections or other
+            // failures, surface the original error — otherwise a declined batch
+            // would re-prompt the user once per transaction.
+            const msg = (batchError?.message ?? '').toLowerCase()
+            const isUnsupported =
+                batchError?.code === 4200 ||
+                msg.includes('not supported') ||
+                msg.includes('method not found') ||
+                msg.includes('unsupported')
+            if (!isUnsupported) {
+                this.emit("error", batchError)
+                throw batchError
+            }
+            // signTransaction handles its own "error" emission, so we don't
+            // re-emit here to avoid firing listeners twice for the same failure.
+            return await Promise.all(transactions.map(t => this.signTransaction(t)))
         }
     }
 

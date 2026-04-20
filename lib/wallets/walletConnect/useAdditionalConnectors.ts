@@ -25,6 +25,7 @@ const inFlightByKey = new Map<string, Promise<PageCacheEntry['result']>>()
 
 const DEFAULT_PAGE_SIZE = 40
 const MAX_CACHED_PAGES_PER_QUERY = 20
+const MAX_CACHED_QUERIES_PER_NAMESPACE = 50
 
 const normalizeQuery = (query?: string) => query?.trim() ?? ''
 
@@ -39,6 +40,17 @@ const getNamespaceCache = (namespace: string): NamespaceCache => {
 const getQueryCache = (namespace: string, query: string) => {
     const namespaceCache = getNamespaceCache(namespace)
     if (!namespaceCache.has(query)) {
+        if (namespaceCache.size >= MAX_CACHED_QUERIES_PER_NAMESPACE) {
+            // Evict the oldest non-browse entry (Map iteration is insertion order).
+            // The browse key ('') backs the default list and stays cached to avoid
+            // a blank wallet list when the user clears their search.
+            for (const existingKey of namespaceCache.keys()) {
+                if (existingKey !== '') {
+                    namespaceCache.delete(existingKey)
+                    break
+                }
+            }
+        }
         namespaceCache.set(query, new Map())
     }
 
