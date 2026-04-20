@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunklayerswap=self.webpackChunklayerswap||[]).push([[7634],{"./node_modules/@metamask/connect-multichain/node_modules/ws/browser.js"(module){module.exports=function(){throw new Error("ws does not work in the browser. Browser clients must use the native WebSocket object")}}}]);
