@@ -227,8 +227,8 @@ class getEthereumGas extends getEVMGas {
             return undefined
 
         const totalGas = multiplier * estimatedGasLimit
-
-        const formattedGas = Number(formatUnits(BigInt(totalGas), this.nativeToken?.decimals))
+        const decimals = NetworkSettings.KnownSettings[this.from.name]?.FeeParsingDecimalPlaces || this.nativeToken?.decimals || 18 
+        const formattedGas = Number(formatUnits(BigInt(totalGas), decimals))
         return formattedGas
     }
 
