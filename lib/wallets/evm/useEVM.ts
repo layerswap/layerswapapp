@@ -379,8 +379,17 @@ export default function useEVM(): WalletProvider {
         }).filter(w => w !== undefined)
     }, [activeConnection, config, connectedWalletsKey, disconnectWallet, networks, asSourceSupportedNetworks, autofillSupportedNetworks, withdrawalSupportedNetworks, name])
 
+    const resolveWalletConnector = useCallback((wallet: Wallet) => {
+        const connections = getConnections(config)
+        return connections.find(c => c.connector.name === wallet.id)?.connector
+            ?? connections.find(c =>
+                c.connector.id === HIDDEN_WALLETCONNECT_ID
+                && c.accounts.some(a => a.toLowerCase() === wallet.address.toLowerCase())
+            )?.connector
+    }, [config])
+
     const switchAccount = useCallback(async (wallet: Wallet, address: string) => {
-        const connector = getConnections(config).find(c => c.connector.name === wallet.id)?.connector
+        const connector = resolveWalletConnector(wallet)
         if (!connector)
             throw new Error("Connector not found")
         const { accounts } = await switchAccountAsync({ connector })
@@ -388,10 +397,10 @@ export default function useEVM(): WalletProvider {
         if (!account)
             throw new Error("Account not found")
         setActiveAddress(account)
-    }, [config, switchAccountAsync])
+    }, [resolveWalletConnector, switchAccountAsync])
 
-    const switchChain = useCallback(async (wallet: Wallet, chainId: string | number) => {
-        const connector = getConnections(config).find(c => c.connector.name === wallet.id)?.connector
+    const switchChain = async (wallet: Wallet, chainId: string | number) => {
+        const connector = resolveWalletConnector(wallet)
         if (!connector)
             throw new Error("Connector not found")
 
@@ -400,7 +409,7 @@ export default function useEVM(): WalletProvider {
         } else {
             throw new Error("Switch chain method is not available on the connector");
         }
-    }, [config])
+    }
 
     const activeWallet = useMemo(() => resolvedConnectors.find(w => w.isActive), [resolvedConnectors])
     const providerIcon = useMemo(() => networks.find(n => ethereumNames.some(name => name === n.name))?.logo, [networks])
