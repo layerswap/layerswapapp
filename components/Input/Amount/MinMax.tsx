@@ -2,7 +2,7 @@ import { useFormikContext } from "formik";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import useSWRGas from "@/lib/gases/useSWRGas";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
-import React, { FC, useMemo } from "react";
+import React, { useMemo } from "react";
 import { resolveMaxAllowedAmount } from "./helpers";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import { useSelectedAccount } from "@/context/swapAccounts";
@@ -54,11 +54,11 @@ const MinMax = (props: MinMaxProps) => {
     }, [fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod, fallbackAmount])
 
     const minAmount = useMemo(() => {
-        if (walletBalance && walletBalance.amount !== undefined && limitsMinAmount !== undefined) {
+        if (walletBalance && walletBalance.amount !== undefined && limitsMinAmount !== undefined && depositMethod === 'wallet') {
             return Number(walletBalance.amount) < limitsMinAmount ? Number(walletBalance.amount) : limitsMinAmount;
         }
         return limitsMinAmount || fallbackAmount;
-    }, [walletBalance, limitsMinAmount, fallbackAmount]);
+    }, [walletBalance, limitsMinAmount, fallbackAmount, depositMethod]);
 
     const halfOfBalance = (walletBalance?.amount || maxAllowedAmount) ? (walletBalance?.amount || maxAllowedAmount) / 2 : 0;
 
@@ -121,14 +121,12 @@ const MinMax = (props: MinMaxProps) => {
             />
             <Tooltip disableHoverableContent={true}>
                 <TooltipTrigger asChild>
-                    <span>
-                        <ActionButton
-                            data-attr="max-amount"
-                            label="Max"
-                            onMouseEnter={() => onActionHover(maxAllowedAmount, maxUsdFormatted)}
-                            onClick={handleSetMaxAmount}
-                        />
-                    </span>
+                    <ActionButton
+                        data-attr="max-amount"
+                        label="Max"
+                        onMouseEnter={() => onActionHover(maxAllowedAmount, maxUsdFormatted)}
+                        onClick={handleSetMaxAmount}
+                    />
                 </TooltipTrigger>
                 {showMaxTooltip ? <TooltipContent className="pointer-events-none w-80 grow p-2 border-none! bg-secondary-300! text-xs rounded-xl!" side="top" align="start" alignOffset={-10}>
                     <p>Max is calculated based on your balance minus gas fee for the transaction</p>
@@ -147,10 +145,11 @@ type ActionButtonProps = React.DetailedHTMLProps<React.ButtonHTMLAttributes<HTML
     disabled?: boolean;
 }
 
-const ActionButton: FC<ActionButtonProps> = ({ label, onClick, onMouseEnter, disabled, ...rest }) => {
+const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProps>(({ label, onClick, onMouseEnter, disabled, ...rest }, ref) => {
     return (
         <button
             {...rest}
+            ref={ref}
             onMouseEnter={onMouseEnter}
             onClick={onClick}
             type="button"
@@ -160,4 +159,4 @@ const ActionButton: FC<ActionButtonProps> = ({ label, onClick, onMouseEnter, dis
             {label}
         </button>
     );
-}
+})

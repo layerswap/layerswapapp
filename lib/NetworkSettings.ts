@@ -48,6 +48,7 @@ const sourceOrder = [
 export default class NetworkSettings {
     ChainId?: number | string;
     BaseFeeMultiplier?: number;
+    MinPriorityFeePerGasInGwei?: number;
     AddressPlaceholder?: string;
     OrderInDestination?: number;
     OrderInSource?: number;
@@ -131,6 +132,7 @@ export default class NetworkSettings {
             AccountExplorerTemplate: 'https://optimistic.etherscan.io/address/{0}',
             GasCalculationType: GasCalculation.OptimismType,
             BaseFeeMultiplier: 1.5,
+            MinPriorityFeePerGasInGwei: 0.0001,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ScrollMainnet] = {
             ChainId: 534352,
@@ -252,7 +254,8 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.AvalancheMainnet] = {
             ChainId: 43114,
-            BaseFeeMultiplier: 1.7
+            BaseFeeMultiplier: 1.7,
+            MinPriorityFeePerGasInGwei: 1.5,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.PolygonZkMainnet] = {
             ChainId: 1101,
