@@ -8,7 +8,6 @@ export type FilterNetworkOption = {
 
 export type FilterOpts = {
     walletAddrs: string[] | null
-    networks: string[] | null
 }
 
 export const walletIdOf = (w: Wallet): string => w.internalId ?? w.address

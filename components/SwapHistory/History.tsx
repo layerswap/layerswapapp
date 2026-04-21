@@ -52,7 +52,7 @@ const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
         return new Address(w.address, network || null, w.providerName).normalized
     }), [wallets, networks])
 
-    const { pendingDeposit, completed, isLoadingAny, isValidatingAny } = useSwapHistoryData(addresses)
+    const { pendingDeposit, completed, isLoadingAny, isValidatingAny } = useSwapHistoryData(addresses, networkNames)
     const search = useSwapByTransactionHash(searchQuery)
 
     const filteredPendingRaw = useMemo(
@@ -155,7 +155,6 @@ const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
         )
     }
 
-    if ((isLoadingAny && !(Number(completed.swaps?.length) > 0))) return <Snippet />
     if (!list.length) {
         return (
             <div className="relative">
@@ -170,137 +169,142 @@ const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
     return (
         <div className="relative">
             {filtersNode}
-            <div ref={parentRef}>
-                <div
-                    style={{
-                        height: rowVirtualizer.getTotalSize(),
-                        width: '100%',
-                        position: 'relative',
-                    }}
-                >
-                    <div
-                        style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            transform: `translateY(${items[0]?.start ? (items[0]?.start - 0) : 0}px)`,
-                        }}
-                    >
-                        <Accordion
-                            type="single"
-                            collapsible
-                            value={expanded}
-                            onValueChange={(v: string | undefined) => setExpanded(v)}
-                            className="w-full"
+            {
+                (isLoadingAny && !(Number(completed.swaps?.length) > 0))
+                    ? <Snippet />
+                    : <div ref={parentRef}>
+                        <div
+                            style={{
+                                height: rowVirtualizer.getTotalSize(),
+                                width: '100%',
+                                position: 'relative',
+                            }}
                         >
-                            {items.map((virtualRow) => {
-                                const data = list?.[virtualRow.index]
+                            <div
+                                style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    width: '100%',
+                                    transform: `translateY(${items[0]?.start ? (items[0]?.start - 0) : 0}px)`,
+                                }}
+                            >
+                                <Accordion
+                                    type="single"
+                                    collapsible
+                                    value={expanded}
+                                    onValueChange={(v: string | undefined) => setExpanded(v)}
+                                    className="w-full"
+                                >
+                                    {items.map((virtualRow) => {
+                                        const data = list?.[virtualRow.index]
 
-                                if (typeof data === 'string') {
-                                    return (
-                                        <div
-                                            key={virtualRow.key}
-                                            data-index={virtualRow.index}
-                                            ref={rowVirtualizer.measureElement}
-                                            className=""
-                                        >
-                                            <div className="w-full pb-3 mt-6 last:mb-0">
-                                                {data !== 'Pending' &&
-                                                    <p className="text-sm text-secondary-text font-normal pl-2">
-                                                        <DaysAgo dateInput={data} />
-                                                    </p>
+                                        if (typeof data === 'string') {
+                                            return (
+                                                <div
+                                                    key={virtualRow.key}
+                                                    data-index={virtualRow.index}
+                                                    ref={rowVirtualizer.measureElement}
+                                                    className=""
+                                                >
+                                                    <div className="w-full pb-3 mt-6 last:mb-0">
+                                                        {data !== 'Pending' &&
+                                                            <p className="text-sm text-secondary-text font-normal pl-2">
+                                                                <DaysAgo dateInput={data} />
+                                                            </p>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            )
+                                        }
+
+                                        const swap = data as Swap | undefined
+
+                                        if (!swap) return <></>
+
+                                        const swapId = String(swap?.swap?.id ?? `${swap?.swap?.created_date}-${virtualRow.index}`)
+
+                                        const pendingSwapsLength = showAll ? pendingSwaps.length : Math.min(1, pendingSwaps.length)
+                                        const endOfPendingSwaps = virtualRow.index === (pendingSwapsLength - 1)
+                                        const shouldShowToggleButton = hiddenPendingCount > 0 && endOfPendingSwaps
+
+                                        return (
+                                            <div
+                                                key={virtualRow.key}
+                                                data-index={virtualRow.index}
+                                                ref={rowVirtualizer.measureElement}
+                                                className="mb-3 last:mb-0"
+                                            >
+                                                <AccordionItem value={swapId} className="border-none bg-secondary-500 rounded-3xl">
+                                                    <AccordionTrigger className={`mb-3 last:mb-0 rounded-3xl transition-shadow ${expanded === swapId ? 'shadow-accordion-open' : ''}`}>
+                                                        <div className="cursor-pointer">
+                                                            <HistorySummary swapResponse={swap} wallets={wallets} />
+                                                        </div>
+                                                    </AccordionTrigger>
+                                                    <AccordionContent className="-mt-3">
+                                                        <div className="flex items-center justify-center px-4 pt-3 pb-2">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setExpanded(undefined)}
+                                                                className="inline-flex items-center gap-1 leading-5 text-sm text-secondary-text hover:text-primary-text transition-colors"
+                                                            >
+                                                                <span>Hide details</span>
+                                                                <ChevronUp className="w-4 h-4" />
+                                                            </button>
+                                                        </div>
+                                                        <div className="px-4 pb-2">
+                                                            <SwapDetails swapResponse={swap} />
+                                                        </div>
+                                                    </AccordionContent>
+                                                </AccordionItem>
+
+                                                {shouldShowToggleButton && (
+                                                    <div className="w-full flex justify-center my-4">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setShowAll(!showAll)}
+                                                            className="flex items-center gap-1 text-sm font-normal text-secondary-text hover:text-primary-text px-3 py-1 rounded-lg bg-secondary-400"
+                                                        >
+                                                            {showAll ? (
+                                                                <ChevronUp className="transition-transform duration-200 w-6 h-6" />
+                                                            ) : (
+                                                                <span className="select-none">+{hiddenPendingCount} more</span>
+                                                            )}
+                                                        </button>
+                                                    </div>
+                                                )}
+
+                                                {pendingHaveMorepages && virtualRow.index === pendingSwaps.length - 1 &&
+                                                    <button
+                                                        disabled={pendingDeposit.isLoading || pendingDeposit.isValidating}
+                                                        type="button"
+                                                        onClick={handleLoadMorePendingSwaps}
+                                                        className="text-primary inline-flex gap-1 items-center justify-center disabled:opacity-80 m-auto w-full"
+                                                    >
+                                                        <RefreshCw className={`w-4 h-4 ${(pendingDeposit.isLoading || pendingDeposit.isValidating) && 'animate-spin'}`} />
+                                                        <span>Load more pending swaps</span>
+                                                    </button>
+                                                }
+                                                {virtualRow.index === list.length - 1 && completed.hasMore &&
+                                                    <button
+                                                        disabled={isLoadingAny || isValidatingAny}
+                                                        type="button"
+                                                        onClick={handleLoadMore}
+                                                        className="text-primary inline-flex gap-1 items-center justify-center disabled:opacity-80 m-auto w-full py-4"
+                                                    >
+                                                        <RefreshCw className={`w-4 h-4 ${(isLoadingAny || isValidatingAny) && 'animate-spin'}`} />
+                                                        <span>Load more</span>
+                                                    </button>
                                                 }
                                             </div>
-                                        </div>
-                                    )
-                                }
-
-                                const swap = data as Swap | undefined
-
-                                if (!swap) return <></>
-
-                                const swapId = String(swap?.swap?.id ?? `${swap?.swap?.created_date}-${virtualRow.index}`)
-
-                                const pendingSwapsLength = showAll ? pendingSwaps.length : Math.min(1, pendingSwaps.length)
-                                const endOfPendingSwaps = virtualRow.index === (pendingSwapsLength - 1)
-                                const shouldShowToggleButton = hiddenPendingCount > 0 && endOfPendingSwaps
-
-                                return (
-                                    <div
-                                        key={virtualRow.key}
-                                        data-index={virtualRow.index}
-                                        ref={rowVirtualizer.measureElement}
-                                        className="mb-3 last:mb-0"
-                                    >
-                                        <AccordionItem value={swapId} className="border-none bg-secondary-500 rounded-3xl">
-                                            <AccordionTrigger className={`mb-3 last:mb-0 rounded-3xl transition-shadow ${expanded === swapId ? 'shadow-accordion-open' : ''}`}>
-                                                <div className="cursor-pointer">
-                                                    <HistorySummary swapResponse={swap} wallets={wallets} />
-                                                </div>
-                                            </AccordionTrigger>
-                                            <AccordionContent className="-mt-3">
-                                                <div className="flex items-center justify-center px-4 pt-3 pb-2">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setExpanded(undefined)}
-                                                        className="inline-flex items-center gap-1 leading-5 text-sm text-secondary-text hover:text-primary-text transition-colors"
-                                                    >
-                                                        <span>Hide details</span>
-                                                        <ChevronUp className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                                <div className="px-4 pb-2">
-                                                    <SwapDetails swapResponse={swap} />
-                                                </div>
-                                            </AccordionContent>
-                                        </AccordionItem>
-
-                                        {shouldShowToggleButton && (
-                                            <div className="w-full flex justify-center my-4">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setShowAll(!showAll)}
-                                                    className="flex items-center gap-1 text-sm font-normal text-secondary-text hover:text-primary-text px-3 py-1 rounded-lg bg-secondary-400"
-                                                >
-                                                    {showAll ? (
-                                                        <ChevronUp className="transition-transform duration-200 w-6 h-6" />
-                                                    ) : (
-                                                        <span className="select-none">+{hiddenPendingCount} more</span>
-                                                    )}
-                                                </button>
-                                            </div>
-                                        )}
-
-                                        {pendingHaveMorepages && virtualRow.index === pendingSwaps.length - 1 &&
-                                            <button
-                                                disabled={pendingDeposit.isLoading || pendingDeposit.isValidating}
-                                                type="button"
-                                                onClick={handleLoadMorePendingSwaps}
-                                                className="text-primary inline-flex gap-1 items-center justify-center disabled:opacity-80 m-auto w-full"
-                                            >
-                                                <RefreshCw className={`w-4 h-4 ${(pendingDeposit.isLoading || pendingDeposit.isValidating) && 'animate-spin'}`} />
-                                                <span>Load more pending swaps</span>
-                                            </button>
-                                        }
-                                        {virtualRow.index === list.length - 1 && completed.hasMore &&
-                                            <button
-                                                disabled={isLoadingAny || isValidatingAny}
-                                                type="button"
-                                                onClick={handleLoadMore}
-                                                className="text-primary inline-flex gap-1 items-center justify-center disabled:opacity-80 m-auto w-full py-4"
-                                            >
-                                                <RefreshCw className={`w-4 h-4 ${(isLoadingAny || isValidatingAny) && 'animate-spin'}`} />
-                                                <span>Load more</span>
-                                            </button>
-                                        }
-                                    </div>
-                                )
-                            })}
-                        </Accordion>
+                                        )
+                                    })}
+                                </Accordion>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
+            }
+
         </div>
     )
 }

@@ -21,12 +21,6 @@ export const matchesFilters = (sr: SwapResponse, opts: FilterOpts): boolean => {
     const { swap } = sr
     if (!swap) return false
 
-    if (opts.networks) {
-        const srcName = swap.source_network?.name
-        const dstName = swap.destination_network?.name
-        if (!opts.networks.some(n => n === srcName || n === dstName)) return false
-    }
-
     if (opts.walletAddrs) {
         const dest = swap.destination_address ?? ''
         const destNet = swap.destination_network

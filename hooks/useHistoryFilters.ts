@@ -44,8 +44,7 @@ export function useHistoryFilters({ wallets }: Args) {
 
     const filterOpts = useMemo<FilterOpts>(() => ({
         walletAddrs: selectedWalletAddrs,
-        networks: networkNames.length > 0 ? networkNames : null,
-    }), [selectedWalletAddrs, networkNames])
+    }), [selectedWalletAddrs])
 
     const filtersActive =
         walletInternalIds.length > 0 ||
