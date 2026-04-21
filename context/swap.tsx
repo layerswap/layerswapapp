@@ -7,7 +7,8 @@ import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
 import { Partner } from '../Models/Partner';
 import { ApiError } from '../Models/ApiError';
-import { ResolvePollingInterval } from '../components/utils/SwapStatus';
+import { resolveSwapPhase } from '../components/utils/resolveSwapPhase';
+import { useSwapTransactionStore } from '../stores/swapTransactionStore';
 import { Wallet, WalletProvider } from '../Models/WalletProvider';
 import useWallet from '../hooks/useWallet';
 import { Network } from '../Models/Network';
@@ -163,15 +164,28 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const { data: depositActions } = useSWR<ApiResponse<DepositAction[]>>(!inputTransfer ? deposit_actions_endpoint : null, layerswapApiClient.fetcher)
 
     const depositActionsResponse = depositActions?.data
-    const swapStatus = data?.data?.swap.status;
+
+    const currentSwap = data?.data?.swap
+    const storedWalletTransaction = useSwapTransactionStore(
+        state => currentSwap?.id ? state.swapTransactions[currentSwap.id] : undefined,
+    )
+    const pollingIntervalMs = useMemo(
+        () => resolveSwapPhase({
+            swapDetails: currentSwap,
+            refuel: data?.data?.refuel,
+            storedWalletTransaction,
+        }).pollingIntervalMs,
+        [currentSwap, data?.data?.refuel, storedWalletTransaction],
+    )
 
     useEffect(() => {
-        if (swapStatus)
-            setInterval(ResolvePollingInterval(swapStatus))
-        return () => {
+        if (!currentSwap?.status) {
             setInterval(0)
+            return () => setInterval(0)
         }
-    }, [swapStatus])
+        setInterval(pollingIntervalMs)
+        return () => setInterval(0)
+    }, [pollingIntervalMs, currentSwap?.status])
 
     useEffect(() => {
         if (!swapId)

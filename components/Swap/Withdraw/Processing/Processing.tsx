@@ -1,16 +1,16 @@
 import LinkWithIcon from '@/components/Common/LinkWithIcon';
-import React, { FC, useCallback, useEffect, useRef } from 'react'
+import React, { FC, useCallback, useEffect, useMemo, useRef } from 'react'
 import { Widget } from '@/components/Widget/Index';
 import Steps from '../../StepsComponent';
 import SwapSummary from '../../Summary';
-import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, Transaction, SwapBasicData, SwapDetails, SwapQuote, Refuel } from '@/lib/apiClients/layerSwapApiClient';
+import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, SwapBasicData, SwapDetails, SwapQuote, Refuel } from '@/lib/apiClients/layerSwapApiClient';
 import { truncateDecimals } from '@/components/utils/RoundDecimals';
 import { SwapStatus } from '@/Models/SwapStatus';
 import { SwapFailReasons } from '@/Models/RangeError';
 import { Gauge } from '@/components/gauge';
 import { CircleCheck, Undo2 } from 'lucide-react';
 import Failed from '../Failed';
-import { Progress, ProgressStates, ProgressStatus, StatusStep } from './types';
+import { ProgressStates, ProgressStatus, StatusStep } from './types';
 import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import CountdownTimer from '@/components/Common/CountDownTimer';
 import useSWR from 'swr';
@@ -19,6 +19,10 @@ import { useIntercom } from 'react-use-intercom';
 import logError from '@/lib/logError';
 import { posthog } from 'posthog-js';
 import { getExplorerUrl } from '@/lib/address';
+import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
+import { SwapPhase } from '@/components/utils/resolveSwapPhase';
+
+const apiClient = new LayerSwapApiClient();
 
 type Props = {
     swapBasicData: SwapBasicData;
@@ -29,7 +33,10 @@ type Props = {
 
 const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) => {
     const { boot, show, update } = useIntercom();
-    const { setSwapTransaction, swapTransactions } = useSwapTransactionStore();
+    const setSwapTransaction = useSwapTransactionStore(state => state.setSwapTransaction);
+    const storedWalletTransaction = useSwapTransactionStore(
+        state => swapDetails?.id ? state.swapTransactions[swapDetails.id] : undefined,
+    );
 
     const {
         source_network,
@@ -38,49 +45,50 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     } = swapBasicData
     const { fail_reason } = swapDetails
 
-    const updateWithProps = () => update({ customAttributes: { swapId: swapDetails.id } });
     const startIntercom = useCallback(() => {
         boot();
         show();
-        updateWithProps();
-    }, [boot, show, updateWithProps]);
+        update({ customAttributes: { swapId: swapDetails.id } });
+    }, [boot, show, update, swapDetails.id]);
 
     const input_tx_explorer = source_network?.transaction_explorer_template
     const output_tx_explorer = destination_network?.transaction_explorer_template
 
     const swapInputTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Input)
-    const storedWalletTransaction = swapTransactions?.[swapDetails?.id]
 
     const transactionHash = swapInputTransaction?.transaction_hash || storedWalletTransaction?.hash
     const swapOutputTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Output)
     const swapRefuelTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Refuel)
     const swapRefundTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Refund)
 
-    const apiClient = new LayerSwapApiClient()
     const { data: inputTxStatusData } = useSWR<ApiResponse<{ status: TransactionStatus }>>((transactionHash && swapInputTransaction?.status !== BackendTransactionStatus.Completed) ? [source_network?.name, transactionHash] : null, ([network, tx_id]) => apiClient.GetTransactionStatus(network, tx_id as any), { dedupingInterval: 6000 })
 
-    const inputTxStatus = swapInputTransaction ? swapInputTransaction.status : inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus
+    const inputTxStatusFromApi = inputTxStatusData?.data?.status?.toLowerCase() as TransactionStatus | undefined
+    const resolved = useResolvedSwapStatus({ inputTxStatusFromApi })
+    const { stepStatuses, generalStatus, phase, swapInputTxStatus, isRefundFlow, hidesSteps, showsFailedPanel, showsEstimatedTime } = resolved
 
     const loggedNotDetectedTxAt = useRef<number | null>(null);
 
     useEffect(() => {
-        if (inputTxStatus === TransactionStatus.Completed || inputTxStatus === TransactionStatus.Pending) {
-            if (swapDetails?.transactions?.find(t => t.type === TransactionType.Input) || !swapDetails) {
+        if (swapInputTxStatus === TransactionStatus.Completed || swapInputTxStatus === TransactionStatus.Pending) {
+            if (!swapDetails || swapDetails.transactions?.find(t => t.type === TransactionType.Input)) {
                 return
             }
-            if (Date.now() - (loggedNotDetectedTxAt.current || storedWalletTransaction.timestamp) > 60000) {
+            const fallback = storedWalletTransaction?.timestamp ?? Date.now();
+            if (Date.now() - (loggedNotDetectedTxAt.current ?? fallback) > 60000) {
                 loggedNotDetectedTxAt.current = Date.now();
-                logError(`Transaction not detected in ${source_network.name}. Tx hash: \`${transactionHash}\`. Tx status: ${inputTxStatus}. Swap id: \`${swapDetails.id}\`. ${source_network.display_name} explorer: ${getExplorerUrl(source_network?.transaction_explorer_template, transactionHash)} . LS explorer: https://layerswap.io/explorer/${storedWalletTransaction?.hash} `);
+                logError(`Transaction not detected in ${source_network.name}. Tx hash: \`${transactionHash}\`. Tx status: ${swapInputTxStatus}. Swap id: \`${swapDetails.id}\`. ${source_network.display_name} explorer: ${getExplorerUrl(source_network?.transaction_explorer_template, transactionHash)} . LS explorer: https://layerswap.io/explorer/${storedWalletTransaction?.hash} `);
             }
         }
-    }, [swapDetails, storedWalletTransaction, source_network]);
+    }, [swapDetails, storedWalletTransaction, source_network, swapInputTxStatus, transactionHash]);
 
     useEffect(() => {
-        if (storedWalletTransaction?.status !== inputTxStatus) setSwapTransaction(swapDetails?.id, inputTxStatus, storedWalletTransaction?.hash)
-    }, [inputTxStatus])
+        if (!swapDetails?.id) return
+        if (storedWalletTransaction?.status !== swapInputTxStatus) setSwapTransaction(swapDetails.id, swapInputTxStatus, storedWalletTransaction?.hash ?? '')
+    }, [swapInputTxStatus, storedWalletTransaction?.hash, storedWalletTransaction?.status, swapDetails?.id, setSwapTransaction])
 
     useEffect(() => {
-        if (inputTxStatus === TransactionStatus.Failed) {
+        if (swapInputTxStatus === TransactionStatus.Failed) {
             const err = new Error("Transaction failed")
             posthog.captureException(err, {
                 $layerswap_exception_type: "Transaction Error",
@@ -90,7 +98,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                 $toAddress: swapBasicData?.destination_address
             });
         }
-    }, [inputTxStatus, transactionHash, swapDetails?.id])
+    }, [swapInputTxStatus, transactionHash, swapDetails?.id, swapInputTransaction?.from, swapBasicData?.destination_address])
 
     useEffect(() => {
         if (
@@ -108,17 +116,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
 
     const truncatedRefuelAmount = refuel && truncateDecimals(refuel.amount, refuel.token?.precision)
 
-    const progressStatuses = getProgressStatuses(swapDetails, refuel, inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus)
-    const stepStatuses = progressStatuses.stepStatuses;
-
-    const countDownTimer = quote?.avg_completion_time && <div className='text-primary-text'>
-        <CountdownTimer
-            initialTime={String(quote?.avg_completion_time)}
-            swapDetails={swapDetails}
-        />
-    </div>
-
-    const progressStates: ProgressStates = {
+    const progressStates = useMemo<ProgressStates>(() => ({
         "input_transfer": {
             upcoming: {
                 name: 'Waiting for your transfer',
@@ -164,7 +162,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                 name: `The transfer failed`,
                 description: <div className='flex space-x-1'>
                     <div className='space-x-1 text-primary-text'>
-                        {inputTxStatus === TransactionStatus.Failed ?
+                        {swapInputTxStatus === TransactionStatus.Failed ?
                             <div className="flex flex-col">
                                 <p>Check the transfer in the explorer</p>
                                 <LinkWithIcon
@@ -294,60 +292,79 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                 </div>
             }
         }
-    }
+    }), [
+        input_tx_explorer,
+        output_tx_explorer,
+        transactionHash,
+        swapInputTransaction,
+        swapOutputTransaction,
+        swapRefuelTransaction,
+        swapRefundTransaction,
+        destination_token.symbol,
+        destination_token.decimals,
+        refuel?.token?.symbol,
+        truncatedRefuelAmount,
+        fail_reason,
+        swapDetails.status,
+        swapInputTxStatus,
+        startIntercom,
+    ]);
 
-    const allSteps: StatusStep[] = [
-        {
-            name: progressStates.input_transfer?.[stepStatuses?.input_transfer]?.name,
-            status: stepStatuses.input_transfer,
-            description: progressStates?.input_transfer?.[stepStatuses?.input_transfer]?.description,
-            index: 1
-        },
-        {
-            name: progressStates.output_transfer?.[stepStatuses?.output_transfer]?.name,
-            status: stepStatuses.output_transfer,
-            description: progressStates?.output_transfer?.[stepStatuses?.output_transfer]?.description,
-            index: 2
-        },
-        {
-            name: progressStates.refuel?.[stepStatuses?.refuel]?.name,
-            status: stepStatuses.refuel,
-            description: progressStates.refuel?.[stepStatuses?.refuel]?.description,
-            index: 3
-        },
-        {
-            name: progressStates.refund?.[stepStatuses?.refund]?.name,
-            status: stepStatuses.refund,
-            description: progressStates.refund?.[stepStatuses?.refund]?.description,
-            index: 4
-        }
-    ]
+    const { currentSteps, stepsProgressPercentage } = useMemo(() => {
+        const allSteps: StatusStep[] = [
+            {
+                name: progressStates.input_transfer?.[stepStatuses.input_transfer]?.name,
+                status: stepStatuses.input_transfer,
+                description: progressStates.input_transfer?.[stepStatuses.input_transfer]?.description,
+                index: 1
+            },
+            {
+                name: progressStates.output_transfer?.[stepStatuses.output_transfer]?.name,
+                status: stepStatuses.output_transfer,
+                description: progressStates.output_transfer?.[stepStatuses.output_transfer]?.description,
+                index: 2
+            },
+            {
+                name: progressStates.refuel?.[stepStatuses.refuel]?.name,
+                status: stepStatuses.refuel,
+                description: progressStates.refuel?.[stepStatuses.refuel]?.description,
+                index: 3
+            },
+            {
+                name: progressStates.refund?.[stepStatuses.refund]?.name,
+                status: stepStatuses.refund,
+                description: progressStates.refund?.[stepStatuses.refund]?.description,
+                index: 4
+            }
+        ];
+        const current = allSteps.filter(s => s.status && s.status !== ProgressStatus.Removed);
+        let completed = 0;
+        for (const s of current) if (s.status === ProgressStatus.Complete) completed++;
+        const percentage = current.length ? (completed / current.length) * 100 : 0;
+        return { currentSteps: current, stepsProgressPercentage: percentage };
+    }, [progressStates, stepStatuses]);
 
-    let currentSteps = allSteps.filter((s) => s.status && s.status != ProgressStatus.Removed);
-    let stepsProgressPercentage = currentSteps.filter(x => x.status == ProgressStatus.Complete).length / currentSteps.length * 100;
-
-    const swapStatus = swapDetails.status;
     return (
         <Widget.Content fitContent>
-            <div className={`w-full min-h-[410px] h-full space-y-3 flex flex-col justify-between text-primary-text`}>
+            <div className={`w-full min-h-102.5 h-full space-y-3 flex flex-col justify-between text-primary-text`}>
                 <SwapSummary />
                 <div className="bg-secondary-500 font-normal px-3 pt-6 pb-3 rounded-2xl space-y-4 flex flex-col w-full relative z-10 divide-y-2 divide-secondary-300 divide-dashed">
                     <div className='pb-4'>
                         <div className='flex flex-col gap-2 items-center'>
                             <div className='flex items-center'>
-                                {swapStatus === SwapStatus.PendingRefund && (
+                                {phase === SwapPhase.PendingRefund && (
                                     <span className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
                                         <Undo2 className="h-7 w-7 text-primary" aria-hidden="true" />
                                     </span>
                                 )}
 
-                                {swapStatus === SwapStatus.Refunded && (
+                                {phase === SwapPhase.Refunded && (
                                     <span className="relative z-10 flex h-10 w-10 items-center justify-center">
                                         <CircleCheck className="h-10 w-10 text-primary" strokeWidth={2} aria-hidden="true" />
                                     </span>
                                 )}
 
-                                {swapStatus !== SwapStatus.PendingRefund && swapStatus !== SwapStatus.Refunded && (
+                                {!isRefundFlow && (
                                     <Gauge
                                         value={stepsProgressPercentage}
                                         size="small"
@@ -355,19 +372,28 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                                     />
                                 )}
                             </div>
-                            <div className="flex-col text-center ">
+                            <div className="flex-col text-center">
                                 <span className="font-medium text-primary-text">
-                                    {progressStatuses.generalStatus.title}
+                                    {generalStatus.title}
                                 </span>
                                 {
-                                    progressStatuses.generalStatus.subTitle &&
+                                    generalStatus.subTitle &&
                                     <span className="text-sm block text-secondary-text">
-                                        {progressStatuses.generalStatus.subTitle}
+                                        {generalStatus.subTitle}
                                     </span>
                                 }
-                                {!swapOutputTransaction && (swapStatus !== SwapStatus.Cancelled && swapStatus !== SwapStatus.Expired && swapStatus !== SwapStatus.Failed && swapStatus !== SwapStatus.PendingRefund && swapStatus !== SwapStatus.Refunded) &&
+                                {showsEstimatedTime &&
                                     <span className='text-sm block space-x-1 text-secondary-text'>
-                                        <span>{countDownTimer}</span>
+                                        <span>
+                                            {
+                                                quote?.avg_completion_time ? <div className='text-primary-text'>
+                                                    <CountdownTimer
+                                                        initialTime={String(quote?.avg_completion_time)}
+                                                        swapDetails={swapDetails}
+                                                    />
+                                                </div> : null
+                                            }
+                                        </span>
                                     </span>
                                 }
                             </div>
@@ -375,13 +401,13 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                     </div>
                     <div className='pt-4'>
                         {
-                            swapStatus != SwapStatus.Cancelled && swapStatus != SwapStatus.Expired && currentSteps.find(x => x.status != null) &&
+                            !hidesSteps && currentSteps.length > 0 &&
                             <div className='flex flex-col justify-center space-y-4'>
                                 <Steps steps={currentSteps} />
                             </div>
                         }
                         {
-                            ([SwapStatus.Expired, SwapStatus.Cancelled, SwapStatus.UserTransferDelayed].includes(swapStatus)) &&
+                            showsFailedPanel &&
                             <Failed />
                         }
                     </div>
@@ -389,136 +415,6 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             </div>
         </Widget.Content>
     )
-}
-
-const resolveSwapInputTxStatus = (swapInputTransaction: Transaction | undefined, inputTxStatusFromApi: TransactionStatus) => {
-    if (swapInputTransaction) {
-        if (swapInputTransaction.status === BackendTransactionStatus.Completed && swapInputTransaction.confirmations < swapInputTransaction.max_confirmations)
-            return TransactionStatus.Pending
-        return swapInputTransaction?.status
-    }
-    if (inputTxStatusFromApi === TransactionStatus.Failed)
-        return inputTxStatusFromApi
-    else
-        ///For cases when transaction is completed but not detected by bridge API
-        return TransactionStatus.Pending
-}
-
-const getProgressStatuses = (swapDetails: SwapDetails, refuel: Refuel | undefined, inputTxStatusFromApi: TransactionStatus): { stepStatuses: { [key in Progress]: ProgressStatus }, generalStatus: { title: string, subTitle: string | null } } => {
-    const swapStatus = swapDetails.status
-    let generalTitle = "Transfer in progress";
-    let subtitle: string | null = "";
-    const swapInputTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Input)
-    const swapInputTxStatus = resolveSwapInputTxStatus(swapInputTransaction, inputTxStatusFromApi)
-
-    const swapOutputTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Output);
-    const swapRefuelTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Refuel);
-
-    let inputIsCompleted = swapInputTransaction && swapInputTransaction.confirmations >= swapInputTransaction.max_confirmations;
-
-    if (!inputIsCompleted) {
-        // Magic case, shows estimated time
-        subtitle = null
-    }
-
-    let input_transfer = transactionStatusToProgressStatus(swapInputTxStatus) || ''
-
-    let output_transfer = (swapOutputTransaction?.transaction_hash && swapOutputTransaction?.amount) ? ProgressStatus.Complete : inputIsCompleted ? ProgressStatus.Current : ProgressStatus.Upcoming;
-
-    let refuel_transfer = (swapRefuelTransaction?.transaction_hash && swapRefuelTransaction?.amount) ? ProgressStatus.Complete : !!refuel ? ProgressStatus.Upcoming : ProgressStatus.Removed;
-
-    let refund_status = ProgressStatus.Removed;
-
-    if (swapStatus === SwapStatus.PendingRefund || swapStatus === SwapStatus.Refunded) {
-        // For refund cases: 1) Deposit Confirmed 2) Processing Failed 3) Refund Pending/Completed
-        input_transfer = ProgressStatus.Complete; // Step 1: Deposit Confirmed
-        output_transfer = ProgressStatus.Failed; // Step 2: Processing Failed
-        refuel_transfer = ProgressStatus.Removed; // Remove refuel step for refunds
-        refund_status = swapStatus === SwapStatus.Refunded ? ProgressStatus.Complete : ProgressStatus.Current;
-        generalTitle = swapStatus === SwapStatus.Refunded ? "Refund complete" : "Processing refund";
-        subtitle = swapStatus === SwapStatus.Refunded ? "We couldn’t complete your transaction. The full amount has been returned to your wallet." : "Your transaction could not be processed. The full amount will be returned to your wallet.";
-    } else if (swapStatus === SwapStatus.Failed) {
-        output_transfer = output_transfer == ProgressStatus.Complete ? ProgressStatus.Complete : ProgressStatus.Failed;
-        refuel_transfer = refuel_transfer !== ProgressStatus.Complete ? ProgressStatus.Removed : refuel_transfer;
-        generalTitle = swapDetails?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? "Transfer on hold" : "Transfer failed";
-        subtitle = "View instructions below"
-    }
-
-    if (swapInputTxStatus == TransactionStatus.Failed) {
-        input_transfer = ProgressStatus.Failed;
-        generalTitle = swapDetails?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? "Transfer on hold" : "Transfer failed";
-        subtitle = "View instructions below"
-    }
-
-    if (swapStatus === SwapStatus.UserTransferDelayed) {
-        input_transfer = ProgressStatus.Removed;
-        output_transfer = ProgressStatus.Removed;
-        refuel_transfer = ProgressStatus.Removed;
-        generalTitle = "Transfer delayed"
-        subtitle = "View instructions below"
-    }
-
-    if (swapStatus == SwapStatus.Completed || output_transfer == ProgressStatus.Complete) {
-        generalTitle = "Transfer complete"
-        subtitle = formatElapsedTime(swapInputTransaction, swapOutputTransaction)
-    }
-    if (swapStatus == SwapStatus.Cancelled) {
-        generalTitle = "Transfer cancelled"
-        subtitle = "..."
-    }
-    if (swapStatus == SwapStatus.Expired) {
-        generalTitle = "Transfer expired"
-        subtitle = "..."
-    }
-    return {
-        stepStatuses: {
-            "input_transfer": input_transfer,
-            "output_transfer": output_transfer,
-            "refuel": refuel_transfer,
-            "refund": refund_status,
-        },
-        generalStatus: {
-            title: generalTitle,
-            subTitle: subtitle
-        }
-    };
-
-}
-
-const transactionStatusToProgressStatus = (transactionStatus: BackendTransactionStatus | TransactionStatus | undefined): ProgressStatus => {
-    switch (transactionStatus) {
-        case BackendTransactionStatus.Completed:
-            return ProgressStatus.Complete;
-        case BackendTransactionStatus.Failed:
-            return ProgressStatus.Failed;
-        case BackendTransactionStatus.Initiated:
-        case BackendTransactionStatus.Pending:
-            return ProgressStatus.Current;
-        default:
-            return ProgressStatus.Upcoming;
-    }
-}
-
-
-const formatElapsedTime = (inputTx: Transaction | undefined, outputTx: Transaction | undefined): string | null => {
-    const start = inputTx?.timestamp || inputTx?.created_date
-    const end = outputTx?.timestamp || outputTx?.created_date
-    if (!start || !end) return null
-
-    const diffMs = new Date(end).getTime() - new Date(start).getTime()
-    if (!Number.isFinite(diffMs) || diffMs <= 0) return null
-
-    const totalSeconds = Math.round(diffMs / 1000)
-    const hours = Math.floor(totalSeconds / 3600)
-    const minutes = Math.floor((totalSeconds % 3600) / 60)
-    const seconds = totalSeconds % 60
-
-    const parts: string[] = []
-    if (hours) parts.push(`${hours}h`)
-    if (minutes) parts.push(`${minutes}m`)
-    if (!hours && (seconds || !minutes)) parts.push(`${seconds}s`)
-
-    return `Completed in ${parts.join(' ')}`
 }
 
 export default Processing;

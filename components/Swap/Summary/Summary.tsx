@@ -71,11 +71,11 @@ const Summary: FC<SwapInfoProps> = (props) => {
                                 </p>
                             ))
                         }
-                        <p className="text-secondary-text text-sm leading-5 flex font-medium justify-end">
+                        <p className="text-secondary-text text-sm leading-5 flex font-medium justify-end gap-1">
                             {isUsdMode ? (
                                 <>
                                     <span className="truncate min-w-0">{truncateDecimals(Number(requestedAmount), sourceCurrency.precision)}</span>
-                                    <span className="shrink-0">{` ${sourceCurrency.symbol}`}</span>
+                                    <span className="shrink-0">{`${sourceCurrency.symbol}`}</span>
                                 </>
                             ) : (
                                 <NumFlowWithFallback value={requestedAmountInUsd || 0} prefix="$" trend={0} />
@@ -85,7 +85,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                 </div>
                 <div className="relative text-secondary-text">
                     <hr className="border border-secondary-400 w-full rounded-full" />
-                    <ArrowDown className="absolute left-1/2 -translate-x-1/2 top-[-10px] h-6 w-6 p-1 bg-secondary-400 rounded-md text-secondary-text" />
+                    <ArrowDown className="absolute left-1/2 -translate-x-1/2 -top-2.5 h-6 w-6 p-1 bg-secondary-400 rounded-md text-secondary-text" />
                 </div>
                 <div className="w-full grid grid-cols-10">
                     <RouteTokenPair
@@ -94,7 +94,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                     />
                     {
                         receiveAmount && (
-                            <div className="flex flex-col justify-end items-end w-full col-start-7 col-span-4 h-[44px]">
+                            <div className="flex flex-col justify-end items-end w-full col-start-7 col-span-4 h-11">
                                 <p className="text-primary-text text-xl font-normal text-end">
                                     {isUsdMode ? (
                                         <NumFlowWithFallback value={receiveAmountInUsd || 0} prefix="$" trend={0} />

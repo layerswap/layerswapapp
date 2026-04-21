@@ -1,18 +1,16 @@
 import { FC, useEffect, useState } from "react";
 import { SwapStatus } from "@/Models/SwapStatus";
 import { SwapDetails, TransactionType } from "@/lib/apiClients/layerSwapApiClient";
-import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 
 const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails, onThresholdChange?: (threshold: boolean) => void }> = ({ initialTime, swapDetails, onThresholdChange }) => {
     const [elapsedTimer, setElapsedTimer] = useState<number>(0);
-    const { swapTransactions } = useSwapTransactionStore()
     const [thresholdElapsed, setThresholdElapsed] = useState<boolean>(false);
     const swapInputTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Input)
-    const storedWalletTransaction = swapTransactions?.[swapDetails?.id]
 
     useEffect(() => {
         // Start timer immediately when component renders
-        const startTime = swapInputTransaction?.timestamp ? new Date(swapInputTransaction.timestamp).getTime() : storedWalletTransaction?.timestamp ? new Date(storedWalletTransaction.timestamp).getTime() : Date.now();
+        const startTime = swapInputTransaction?.timestamp ? new Date(swapInputTransaction.timestamp).getTime() : null;
+        if(!startTime) return;
 
         const timer = setInterval(() => {
             const currentTime = new Date();
@@ -42,22 +40,25 @@ const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails, onThre
     };
     const formatted = formatTime(elapsedTimer);
 
+    if (swapDetails.status === SwapStatus.Completed) return null;
+
+    if (!swapInputTransaction?.timestamp) {
+        return (
+            <div className='flex items-center justify-center space-x-1'>
+                <span className='text-secondary-text'>Transaction is publishing</span>
+            </div>
+        );
+    }
+
     return (
         <div className='flex items-center justify-center space-x-1'>
-            {
-                swapDetails.status === SwapStatus.Completed ? (
-                    ""
-                ) : (
-                    <div className='text-secondary-text flex items-center'>
-                        <span>Elapsed time:</span>
-                        <span className='text-primary-text ml-0.5'>
-                            {formatted}
-                        </span>
-                    </div>
-                )
-            }
+            <div className='text-secondary-text flex items-center'>
+                <span>Elapsed time:</span>
+                <span className='text-primary-text ml-0.5'>
+                    {formatted}
+                </span>
+            </div>
         </div>
-
     );
 };
 
