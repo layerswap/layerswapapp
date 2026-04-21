@@ -46,10 +46,24 @@ export function chainsForNamespace(namespace: string): string {
     return ''
 }
 
-function isValidWalletUrl(urlStr: string): boolean {
+const DANGEROUS_URL_PROTOCOLS = ['javascript:', 'data:', 'vbscript:', 'file:']
+
+function isValidHttpUrl(urlStr: string): boolean {
     try {
         const url = new URL(urlStr)
         return ['https:', 'http:'].includes(url.protocol)
+    } catch {
+        return false
+    }
+}
+
+// mobile_link / desktop_link may be a custom wallet scheme (e.g. `binancewallet://`,
+// `backpack://`) when the wallet registers as a native-only link_mode. Allow any
+// parseable URL except known-dangerous protocols.
+function isValidWalletLink(urlStr: string): boolean {
+    try {
+        const url = new URL(urlStr)
+        return !DANGEROUS_URL_PROTOCOLS.includes(url.protocol.toLowerCase())
     } catch {
         return false
     }
@@ -88,9 +102,9 @@ export async function fetchWallets(params: FetchWalletsParams): Promise<GetWalle
             throw new Error('Invalid wallet entry: missing id or name')
         }
         // Sanitize URLs: strip dangerous schemes and reject malformed URLs
-        if (wallet.mobile_link && !isValidWalletUrl(wallet.mobile_link)) wallet.mobile_link = null
-        if (wallet.desktop_link && !isValidWalletUrl(wallet.desktop_link)) wallet.desktop_link = null
-        if (wallet.chrome_store && !isValidWalletUrl(wallet.chrome_store)) wallet.chrome_store = null
+        if (wallet.mobile_link && !isValidWalletLink(wallet.mobile_link)) wallet.mobile_link = null
+        if (wallet.desktop_link && !isValidWalletLink(wallet.desktop_link)) wallet.desktop_link = null
+        if (wallet.chrome_store && !isValidHttpUrl(wallet.chrome_store)) wallet.chrome_store = null
         if (typeof wallet.image_id !== 'string' || !isValidImageId(wallet.image_id)) wallet.image_id = ''
     }
 
