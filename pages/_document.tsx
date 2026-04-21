@@ -2,9 +2,10 @@ import React from 'react'
 import { Head, Html, Main, NextScript } from 'next/document'
 
 export enum TrackEvent {
-  SignedIn = 'Signed in',
-  SwapFailed = 'Swap failed',
-  SwapInitiated = 'Swap initiated',
+  SignedIn = 'signed_in',
+  SwapFailed = 'swap_failed',
+  SwapInitiated = 'swap_initiated',
+  SwapCompleted = 'swap_completed',
 }
 
 export default function Document() {

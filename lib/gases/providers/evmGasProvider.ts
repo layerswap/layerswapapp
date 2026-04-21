@@ -8,7 +8,7 @@ import { formatUnits } from "viem";
 import { publicActionsL2 } from 'viem/op-stack'
 import resolveChain from "../../resolveChain";
 import { resolveFallbackTransport } from "../../resolveTransports";
-import posthog from "posthog-js";
+import { captureException } from "@/lib/faro";
 
 export class EVMGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {
@@ -131,8 +131,8 @@ abstract class getEVMGas {
         } catch (e) {
             const error = new Error(e)
             error.cause = e
-            posthog.captureException(error, {
-                $layerswap_exception_type: "Gas Price Error"
+            captureException(error, {
+                layerswap_exception_type: "Gas Price Error"
             })
         }
     }
@@ -143,8 +143,8 @@ abstract class getEVMGas {
         } catch (e) {
             const error = new Error(e)
             error.cause = e
-            posthog.captureException(error, {
-                $layerswap_exception_type: "Fees Per Gas Error"
+            captureException(error, {
+                layerswap_exception_type: "Fees Per Gas Error"
             })
         }
     }
@@ -154,8 +154,8 @@ abstract class getEVMGas {
         } catch (e) {
             const error = new Error(e)
             error.cause = e
-            posthog.captureException(error, {
-                $layerswap_exception_type: "Max Priority Fee Per Gas Error"
+            captureException(error, {
+                layerswap_exception_type: "Max Priority Fee Per Gas Error"
             })
         }
     }

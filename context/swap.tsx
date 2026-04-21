@@ -19,7 +19,8 @@ import { resolvePersistantQueryParams } from '@/helpers/querryHelper';
 import { useSelectedAccount } from './swapAccounts';
 import { Address } from '@/lib/address';
 import { useSlippageStore } from '@/stores/slippageStore';
-import { posthog } from 'posthog-js';
+import { captureEvent } from '@/lib/faro';
+import { SwapStatus } from '@/Models/SwapStatus';
 
 export const SwapDataStateContext = createContext<SwapContextData>({
     codeRequested: false,
@@ -185,6 +186,25 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     useEffect(() => {
         if (swapStatus)
             setInterval(ResolvePollingInterval(swapStatus))
+
+        const swap = data?.data?.swap
+        if (swapStatus === SwapStatus.Completed) {
+            captureEvent(TrackEvent.SwapCompleted, {
+                swapId: swapId,
+                status: swapStatus,
+            })
+        } else if (swapStatus === SwapStatus.Failed || swapStatus === SwapStatus.Expired) {
+            captureEvent(TrackEvent.SwapFailed, {
+                swapId: swapId,
+                status: swapStatus,
+                fail_reason: swap?.fail_reason,
+                source_network: swap?.source_network?.name,
+                destination_network: swap?.destination_network?.name,
+                source_token: swap?.source_token?.symbol,
+                destination_token: swap?.destination_token?.symbol,
+            })
+        }
+
         return () => {
             setInterval(0)
         }
@@ -251,11 +271,11 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             to: { network: to.name, token: toCurrency.symbol }
         });
 
-        posthog.capture(TrackEvent.SwapInitiated, {
+        captureEvent(TrackEvent.SwapInitiated, {
             name: TrackEvent.SwapInitiated,
             swapId: swapDetails?.id ?? null,
-            $fromAddress: selectedSourceAccount?.address,
-            $toAddress: destination_address,
+            fromAddress: selectedSourceAccount?.address,
+            toAddress: destination_address,
             path: typeof window !== 'undefined' ? window.location.pathname : undefined,
         });
 

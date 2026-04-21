@@ -27,7 +27,7 @@ import RefuelToggle from "@/components/FeeDetails/Refuel";
 
 import RefuelModal from "@/components/FeeDetails/RefuelModal";
 import { useSelectedAccount } from "@/context/swapAccounts";
-import posthog from "posthog-js";
+import { setUserProperties } from "@/lib/faro";
 import ContractAddressValidationCache from "@/components/validationError/ContractAddressValidationCache";
 import { Slippage } from "@/components/FeeDetails/Slippage";
 
@@ -76,11 +76,13 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     useEffect(() => {
         if (wallets?.length) {
-            const allWalletAddresses = wallets.flatMap(w => w.addresses).filter(Boolean);
-            posthog.setPersonProperties({
-                accounts: allWalletAddresses,
-                wallets: wallets.map(w => ({ wallet: w.id, addresses: w.addresses})),
+            const props: Record<string, unknown> = {};
+            wallets.forEach((w, i) => {
+                props[`wallet_${i}_name`] = w.id;
+                props[`wallet_${i}_address`] = w.addresses?.join(', ');
             });
+            props.wallet_count = String(wallets.length);
+            setUserProperties(props);
         }
     }, [wallets]);
 

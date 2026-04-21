@@ -1,4 +1,3 @@
-import posthog from "posthog-js";
 import { TokenBalance } from "./Balance";
 import { Network, NetworkWithTokens, Token } from "./Network";
 import { extractErrorDetails } from "@/lib/balances/errorUtils";

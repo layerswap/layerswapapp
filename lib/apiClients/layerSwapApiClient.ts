@@ -7,7 +7,7 @@ import { AuthRefreshFailedError } from "../Errors/AuthRefreshFailedError";
 import { ApiResponse, EmptyApiResponse } from "../../Models/ApiResponse";
 import { NetworkWithTokens, Network, Token } from "../../Models/Network";
 import { Exchange } from "../../Models/Exchange";
-import posthog from "posthog-js";
+import { captureException } from "@/lib/faro";
 
 const IGNORED_API_ERROR_CODES = [
     'ROUTE_NOT_FOUND_ERROR',
@@ -78,8 +78,8 @@ export default class LayerSwapApiClient {
                     }
                     const errorCode = reason.response?.data?.error?.code;
                     if (!IGNORED_API_ERROR_CODES.includes(errorCode)) {
-                        posthog.captureException(error, {
-                            $layerswap_exception_type: "API Error",
+                        captureException(error, {
+                            layerswap_exception_type: "API Error",
                             endpoint: endpoint,
                             status: reason.response?.status,
                             statusText: reason.response?.statusText,

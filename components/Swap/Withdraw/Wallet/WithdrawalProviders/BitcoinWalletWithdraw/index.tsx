@@ -10,7 +10,8 @@ import { sendTransaction } from './sendTransaction';
 import { useConnectModal } from '@/components/WalletModal';
 import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
 import ActionMessages from '../../../messages/TransactionMessages';
-import { posthog } from 'posthog-js';
+import { captureException, captureEvent } from '@/lib/faro';
+import { TrackEvent } from '@/pages/_document';
 import { useSelectedAccount } from '@/context/swapAccounts';
 
 export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
@@ -101,10 +102,16 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined, so
 
     useEffect(() => {
         if (error) {
-            posthog.captureException(new Error(error), {
-                $layerswap_exception_type: "Swap Withdrawal Error",
-                $fromAddress: sourceAddress,
-                $toAddress: destAddress
+            captureException(new Error(error), {
+                layerswap_exception_type: "Swap Withdrawal Error",
+                fromAddress: sourceAddress,
+                toAddress: destAddress
+            });
+            captureEvent(TrackEvent.SwapFailed, {
+                status: 'wallet_error',
+                fail_reason: error,
+                fromAddress: sourceAddress,
+                toAddress: destAddress,
             });
         }
     }, [error, sourceAddress, destAddress])

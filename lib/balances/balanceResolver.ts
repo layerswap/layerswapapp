@@ -1,4 +1,4 @@
-import posthog from "posthog-js";
+import { captureException } from "@/lib/faro";
 import { NetworkBalance, TokenBalance } from "@/Models/Balance";
 import { BalanceProvider } from "@/Models/BalanceProvider";
 import { NetworkType, NetworkWithTokens } from "@/Models/Network";
@@ -183,6 +183,11 @@ export class BalanceResolver {
             return { balances: [] }
         }
 
+        // TODO: REMOVE - temporary broken RPC for testing dead node alerts
+        if (network.name === 'ARBITRUM_MAINNET') {
+            network = { ...network, node_url: 'https://broken-rpc-test.invalid', nodes: ['https://broken-rpc-test.invalid'] }
+        }
+
         try {
             if (!address)
                 throw new Error(`No address provided for network ${network.name}`)
@@ -195,8 +200,8 @@ export class BalanceResolver {
             const errorBalances = balances?.filter(b => b.error)
             if (errorBalances?.length) {
                 const balanceError = new Error(`Could not fetch balance for ${errorBalances.map(t => t.token).join(", ")} in ${network.name}`);
-                posthog.captureException(balanceError, {
-                    $layerswap_exception_type: "Balance Error",
+                captureException(balanceError, {
+                    layerswap_exception_type: "Balance Error",
                     network: network.name,
                     node_url: network.node_url,
                     nodes: network.nodes,
@@ -217,8 +222,8 @@ export class BalanceResolver {
             const error = new Error(errorDetails.message);
             error.name = "BalanceError";
             error.cause = e;
-            posthog.captureException(error, {
-                $layerswap_exception_type: "Balance Error",
+            captureException(error, {
+                layerswap_exception_type: "Balance Error",
                 network: network.name,
                 node_url: network.node_url,
                 nodes: network.nodes,

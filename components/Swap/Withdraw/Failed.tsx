@@ -5,7 +5,7 @@ import { SwapStatus } from '../../../Models/SwapStatus';
 import { TrackEvent } from '../../../pages/_document';
 import QuestionIcon from '../../icons/Question';
 import Link from 'next/link';
-import { posthog } from 'posthog-js';
+import { captureEvent } from '@/lib/faro';
 
 const Failed: FC = () => {
     const { swapDetails } = useSwapDataState()
@@ -13,7 +13,7 @@ const Failed: FC = () => {
     const updateWithProps = () => update({ customAttributes: { swapId: swapDetails?.id } })
 
     useEffect(() => {
-        posthog.capture(TrackEvent.SwapFailed, {
+        captureEvent(TrackEvent.SwapFailed, {
             swapId: swapDetails?.id ?? null,
             path: typeof window !== 'undefined' ? window.location.pathname : undefined,
         });

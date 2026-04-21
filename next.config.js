@@ -1,5 +1,4 @@
 const { PHASE_PRODUCTION_SERVER } = require('next/constants');
-const { withPostHogConfig } = require('@posthog/nextjs-config');
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 });
@@ -39,19 +38,6 @@ module.exports = (phase, { defaultConfig }) => {
    * @type {import('next').NextConfig}
    */
 
-  const posthogConfigsAreSet = process.env.POSTHOG_PROJECT_ID && process.env.POSTHOG_API_KEY && process.env.NEXT_PUBLIC_POSTHOG_HOST;
-
-  const posthogWrapped = posthogConfigsAreSet ? withPostHogConfig({}, {
-    personalApiKey: process.env.POSTHOG_API_KEY,
-    projectId: process.env.POSTHOG_PROJECT_ID,
-    host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-    sourcemaps: {
-      enabled: true,
-      project: 'Layerswap',
-      deleteAfterUpload: true,
-    },
-  }) : {};
-
   const nextConfig = {
     i18n: {
       locales: ["en"],
@@ -80,18 +66,6 @@ module.exports = (phase, { defaultConfig }) => {
       return config;
     },
     productionBrowserSourceMaps: true,
-    async rewrites() {
-      return [
-        {
-          source: `/lsph/static/:path*`,
-          destination: "https://us-assets.i.posthog.com/static/:path*",
-        },
-        {
-          source: `/lsph/:path*`,
-          destination: "https://us.i.posthog.com/:path*",
-        },
-      ];
-    },
     skipTrailingSlashRedirect: true,
     transpilePackages: ['@imtbl/sdk', '@fuels/connectors', '@fuels/react', "@radix-ui/react-dismissable-layer", "@solana/web3.js"]
   }
@@ -109,7 +83,6 @@ module.exports = (phase, { defaultConfig }) => {
       ]
     }
   }
-  let merged = { ...posthogWrapped, ...nextConfig };
 
-  return withBundleAnalyzer(merged)
+  return withBundleAnalyzer(nextConfig)
 }

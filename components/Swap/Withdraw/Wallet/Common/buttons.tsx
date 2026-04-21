@@ -15,7 +15,8 @@ import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 import LayerSwapApiClient, { BackendTransactionStatus, DepositAction, SwapBasicData, SwapDetails } from "@/lib/apiClients/layerSwapApiClient";
 import sleep from "@/lib/wallets/utils/sleep";
 import { isDiffByPercent } from "@/components/utils/numbers";
-import posthog from "posthog-js";
+import { captureException, captureEvent } from "@/lib/faro";
+import { TrackEvent } from "@/pages/_document";
 import { useWalletWithdrawalState } from "@/context/withdrawalContext";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import { resolvePriceImpactValues } from "@/lib/fees";
@@ -259,12 +260,12 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 try {
                     await layerswapApiClient.SwapCatchup(swapData.id, hash);
                 } catch (e) {
-                    posthog.captureException(e, {
-                        $layerswap_exception_type: "Swap Catchup Error",
+                    captureException(e, {
+                        layerswap_exception_type: "Swap Catchup Error",
                         swapId: swapData.id,
                         transactionHash: hash,
-                        $fromAddress: selectedSourceAccount?.address,
-                        $toAddress: swapBasicData?.destination_address
+                        fromAddress: selectedSourceAccount?.address,
+                        toAddress: swapBasicData?.destination_address
                     });
                 }
             }
@@ -272,18 +273,28 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         catch (e) {
             setSwapId(undefined)
 
-            posthog.captureException(e, {
-                $layerswap_exception_type: "Swap Withdrawal Error",
+            captureException(e, {
+                layerswap_exception_type: "Swap Withdrawal Error",
                 swapId: swapId,
-                $fromAddress: selectedSourceAccount?.address,
-                $toAddress: swapBasicData?.destination_address,
+                fromAddress: selectedSourceAccount?.address,
+                toAddress: swapBasicData?.destination_address,
+            });
+
+            captureEvent(TrackEvent.SwapFailed, {
+                swapId: swapId,
+                status: 'wallet_error',
+                fail_reason: (e as Error)?.message,
+                source_network: swapBasicData?.source_network?.name,
+                destination_network: swapBasicData?.destination_network?.name,
+                source_token: swapBasicData?.source_token?.symbol,
+                destination_token: swapBasicData?.destination_token?.symbol,
             });
 
             if (isNativeToken && gasData?.gas && walletBalance?.amount != null) {
                 const requestedAmount = Number(swapBasicData.requested_amount)
                 const difference = walletBalance.amount - requestedAmount
                 if (difference >= 0 && difference < 5 * gasData.gas) {
-                    posthog.capture('Possible Gas Fee Miscalculation', {
+                    captureEvent('Possible Gas Fee Miscalculation', {
                         requestedAmount,
                         walletBalance: walletBalance.amount,
                         calculatedGas: gasData.gas,

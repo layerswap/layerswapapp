@@ -3,13 +3,13 @@ import { useCallback, useEffect } from "react"
 import MessageComponent from "../components/MessageComponent"
 import Navbar from "../components/navbar"
 import GoHomeButton from "../components/utils/GoHome"
-import { posthog } from "posthog-js"
+import { captureEvent } from "@/lib/faro"
 import NotFoundIcon from "@/components/icons/NotFoundIcon"
 import { useIntercom } from "react-use-intercom"
 
 export default function Custom404() {
     useEffect(() => {
-        posthog.capture("404", {
+        captureEvent("404", {
             name: "404",
             path: typeof window !== 'undefined' ? window.location.pathname : undefined,
         });

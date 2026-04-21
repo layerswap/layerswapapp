@@ -1,11 +1,11 @@
-import posthog from "posthog-js";
+import { captureException } from "@/lib/faro";
 
 const logError = (message: string) => {
     const error = new Error(message + ` env: ${process.env.NEXT_PUBLIC_API_VERSION ?? 'prod'}`)
     error.name = 'AlertUI';
     error.cause = error;
-    posthog.captureException(error, {
-        $layerswap_exception_type: "Alert UI",
+    captureException(error, {
+        layerswap_exception_type: "Alert UI",
     });
 }
 

@@ -1,7 +1,7 @@
 import { FC, useEffect, useState } from "react";
 import { SwapStatus } from "../../Models/SwapStatus";
 import { SwapDetails, TransactionType } from "../../lib/apiClients/layerSwapApiClient";
-import posthog from "posthog-js";
+
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 
 const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails, onThresholdChange?: (threshold: boolean) => void }> = ({ initialTime, swapDetails, onThresholdChange }) => {

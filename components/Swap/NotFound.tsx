@@ -6,7 +6,7 @@ import { Home } from "lucide-react";
 import { useRouter } from "next/router";
 import NotFoundIcon from "../icons/NotFoundIcon";
 import MessageComponent from "../MessageComponent";
-import { posthog } from "posthog-js";
+import { captureEvent } from "@/lib/faro";
 
 const NotFound: FC = () => {
 
@@ -15,7 +15,7 @@ const NotFound: FC = () => {
     const updateWithProps = () => update({ customAttributes: { swapId: query?.swapId } })
 
     useEffect(() => {
-        posthog.capture(TrackEvent.SwapFailed, {
+        captureEvent(TrackEvent.SwapFailed, {
             swapId: query?.swapId ?? null,
             path: typeof window !== 'undefined' ? window.location.pathname : undefined,
         });

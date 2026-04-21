@@ -17,7 +17,7 @@ import useSWR from 'swr';
 import { ApiResponse } from '@/Models/ApiResponse';
 import { useIntercom } from 'react-use-intercom';
 import logError from '@/lib/logError';
-import { posthog } from 'posthog-js';
+import { captureException } from '@/lib/faro';
 import { getExplorerUrl } from '@/lib/address';
 
 type Props = {
@@ -82,29 +82,16 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     useEffect(() => {
         if (inputTxStatus === TransactionStatus.Failed) {
             const err = new Error("Transaction failed")
-            posthog.captureException(err, {
-                $layerswap_exception_type: "Transaction Error",
-                $fromAddress: swapInputTransaction?.from,
+            captureException(err, {
+                layerswap_exception_type: "Transaction Error",
+                fromAddress: swapInputTransaction?.from,
                 transactionHash: transactionHash,
                 swapId: swapDetails?.id,
-                $toAddress: swapBasicData?.destination_address
+                toAddress: swapBasicData?.destination_address
             });
         }
     }, [inputTxStatus, transactionHash, swapDetails?.id])
 
-    useEffect(() => {
-        if (
-            swapDetails?.status === SwapStatus.Completed ||
-            swapDetails?.status === SwapStatus.Failed ||
-            swapDetails?.status === SwapStatus.Expired ||
-            swapDetails?.status === SwapStatus.LsTransferPending
-        ) {
-            posthog?.capture(`${swapDetails?.status}`, {
-                swap_id: swapDetails?.id,
-                status: swapDetails?.status,
-            })
-        }
-    }, [swapDetails?.status, swapDetails?.id])
 
     const truncatedRefuelAmount = refuel && truncateDecimals(refuel.amount, refuel.token?.precision)
 

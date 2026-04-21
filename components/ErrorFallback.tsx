@@ -7,7 +7,7 @@ import NotFoundIcon from "./icons/NotFoundIcon";
 import GoHomeButton from "./utils/GoHome";
 import SubmitButton from "./buttons/submitButton";
 import Navbar from "./navbar";
-import posthog from "posthog-js";
+import { captureException } from "@/lib/faro";
 
 export default function ErrorFallback({ error, resetErrorBoundary }) {
 
@@ -16,8 +16,8 @@ export default function ErrorFallback({ error, resetErrorBoundary }) {
     const updateWithProps = () => update({ customAttributes: { swapId: query?.swapId } })
 
     useEffect(() => {
-        posthog.captureException(error, {
-            $layerswap_exception_type: "Error Fallback",
+        captureException(error, {
+            layerswap_exception_type: "Error Fallback",
         });
     }, [])
 

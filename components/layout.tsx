@@ -17,7 +17,7 @@ import { IsExtensionError } from "../helpers/errorHelper";
 import { AsyncModalProvider } from "../context/asyncModal";
 import WalletsProviders from "./WalletProviders";
 import { SwapAccountsProvider } from "@/context/swapAccounts";
-import posthog from "posthog-js";
+import { captureEvent } from "@/lib/faro";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 
 type Props = {
@@ -54,7 +54,7 @@ export default function Layout({ children, settings, themeData }: Props) {
         'destAddress'
       ])
 
-      posthog.capture('$pageview', {
+      captureEvent('pageview', {
         custom_url: customUrl,
       })
     }
