@@ -9,7 +9,7 @@ export const InstalledExtensionNotFound: FC<{
     onConnect: (connector: WalletModalConnector) => void
 }> = ({ selectedConnector, onConnect }) => {
     const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector?.name, iconUrl: selectedConnector?.icon });
-    return <div className='w-full h-[60vh] sm:h-full flex flex-col justify-between'>
+    return <div className='w-full h-full flex flex-col justify-between'>
         <div className="flex grow items-center justify-center">
             <div className="flex-col flex items-center gap-4">
                 <div className="flex items-center gap-2">

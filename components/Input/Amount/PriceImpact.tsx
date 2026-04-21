@@ -29,12 +29,12 @@ export const PriceImpact: FC<PriceImpactProps> = ({
                     { "text-warning-foreground hover:text-warning-foreground/80": priceImpactValues.highMarketPriceImpact }
                 )}>
                     <span className="flex items-center gap-0.5">
-                        <span>(</span>
+                        <span className="relative -top-px">(</span>
                         <Triangle className={`w-3 h-3 stroke-1 fill-current transition-transform ${priceImpactValues.priceImpact !== undefined && priceImpactValues.priceImpact < 0 ? "rotate-180" : ""}`} />
                         <span>
                             ${Math.abs(priceImpactValues.priceImpact || 0).toFixed(2)}
                         </span>
-                        <span>)</span>
+                        <span className="relative -top-px">)</span>
                     </span>
                 </span>
             </TooltipTrigger>
