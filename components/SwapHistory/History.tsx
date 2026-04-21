@@ -1,5 +1,5 @@
 import { ChevronUp, Plus, RefreshCw } from 'lucide-react'
-import { FC, useMemo, useState } from "react"
+import { FC, ReactElement, ReactNode, useContext, useMemo, useState } from "react"
 import HistorySummary from "./HistorySummary";
 import useWallet from "../../hooks/useWallet"
 import Link from "next/link"
@@ -21,6 +21,7 @@ import SearchResult from "./Filters/SearchResult";
 import { matchesFilters, isIncomplete } from "./Filters/filterSwaps";
 import type { FilterNetworkOption } from "./Filters/types";
 import { SwapResponse } from '@/lib/apiClients/layerSwapApiClient';
+import { SwapDataProvider, SwapDataStateContext } from '@/context/swap';
 
 type ListProps = {
     statuses?: string | number;
@@ -30,7 +31,7 @@ type ListProps = {
 
 type Swap = SwapResponse & { type: 'user' | 'explorer' }
 
-const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
+const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
     const { networks } = useSettingsState()
     const { wallets } = useWallet()
 
@@ -375,5 +376,26 @@ function DaysAgo({ dateInput }: DaysAgoProps) {
             return dateInput;
     }
 }
+
+const HistoryListWrapper = ({ children }: { children: ReactNode }): ReactElement => {
+    const context = useContext(SwapDataStateContext)
+    if (context) {
+        return <>{children}</>
+    }
+    return (
+        <SwapDataProvider>
+            {children}
+        </SwapDataProvider>
+    )
+}
+
+const HistoryList = (props: ListProps) => {
+    return (
+        <HistoryListWrapper>
+            <Comp {...props} />
+        </HistoryListWrapper>
+    )
+}
+
 
 export default HistoryList
