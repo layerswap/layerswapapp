@@ -63,12 +63,12 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
         />}
         secondaryImageAlt={route.display_name}
         secondary={
-            <div className="flex items-center gap-1">
-                <span className="truncate">{route.display_name}</span>
+            <div className="flex items-center gap-1 min-w-0">
+                <span className="truncate min-w-0">{route.display_name}</span>
                 <TokenInfoIcon
                     item={item}
                     route={route}
-                    className="xs:hidden max-w-0 group-hover:max-w-full data-[popover-open=true]:max-w-full data-[tooltip-open=true]:max-w-full overflow-hidden transition-all duration-300 opacity-0 group-hover:opacity-100 data-[popover-open=true]:opacity-100 data-[tooltip-open=true]:opacity-100 data-[popover-open=true]:delay-0 data-[tooltip-open=true]:delay-0 group-hover:delay-400 shrink-0 pointer-events-none group-hover:pointer-events-auto data-[popover-open=true]:pointer-events-auto data-[tooltip-open=true]:pointer-events-auto"
+                    className="xs:hidden max-w-0 group-hover:max-w-full data-[popover-open=true]:max-w-full data-[tooltip-open=true]:max-w-full overflow-hidden transition-all duration-300 opacity-0 group-hover:opacity-100 data-[popover-open=true]:opacity-100 data-[tooltip-open=true]:opacity-100 data-[popover-open=true]:delay-0 data-[tooltip-open=true]:delay-0 group-hover:delay-400 pointer-events-none group-hover:pointer-events-auto data-[popover-open=true]:pointer-events-auto data-[tooltip-open=true]:pointer-events-auto"
                 />
             </div>
         }
@@ -80,7 +80,7 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
                     {formatted_balance_amount}
                 </div>
             </span>
-        ) : <></>}
+        ) : null}
     </SelectItem.DetailedTitle>
 }
 
