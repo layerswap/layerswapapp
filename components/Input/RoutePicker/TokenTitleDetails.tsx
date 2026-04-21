@@ -76,7 +76,7 @@ type TokenInfoTriggerProps = {
 const TokenInfoTrigger = ({ item, isPopoverOpen, isTooltipOpen }: TokenInfoTriggerProps) => {
     return (
         <span className="flex items-center gap-1 text-secondary-text cursor-pointer hover:text-primary-text data-[popover-open=true] data-[tooltip-open=true] text-xs pr-2" data-popover-open={isPopoverOpen} data-tooltip-open={isTooltipOpen}>
-            <p className="max-w-[90px]">
+            <p className="max-w-[90px] truncate">
                 <span>•</span> <span>{item.display_asset || item.symbol}</span>
             </p>
             <Info className="h-3 w-3" />
