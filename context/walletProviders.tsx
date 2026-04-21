@@ -75,7 +75,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ chi
                         <p>{(selectedMultiChainConnector && !selectedConnector) ? "Select ecosystem" : "Connect wallet"}</p>
                     </div>
                 }>
-                <VaulDrawer.Snap openFullHeight={!isMobileSize} id='item-1' className="pb-4 sm:pb-0! sm:h-full">
+                <VaulDrawer.Snap openFullHeight id='item-1' className="h-full">
                     {open ? <ConnectorsList onFinish={onFinish} /> : null}
                 </VaulDrawer.Snap>
             </VaulDrawer>

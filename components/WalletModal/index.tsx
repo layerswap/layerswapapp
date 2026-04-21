@@ -1,4 +1,4 @@
-import { Context, createContext, useCallback, useContext, useEffect, useState } from 'react'
+import { Context, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { InternalConnector, Wallet, WalletProvider } from '../../Models/WalletProvider';
 
 export type WalletModalConnector = InternalConnector & {
@@ -47,31 +47,35 @@ export function WalletModalProvider({ children }) {
     const [open, setOpen] = useState(false);
     const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
-    const connect = async ({ provider, connectCallback }: SharedType) => {
-        if (!provider?.availableWalletsForConnect) {
+    const connect = useCallback(async ({ provider, connectCallback }: SharedType) => {
+        const hasConnectorPicker = !!provider?.availableConnectors?.length
+            || !!provider?.additionalConnectors?.length
+            || !!provider?.requestAdditionalConnectors
+
+        if (!hasConnectorPicker) {
             await provider?.connectWallet()
         }
         setSelectedProvider(provider);
         setOpen(true)
         setConnectConfig({ provider, connectCallback });
         return;
-    }
+    }, [])
 
-    const cancel = () => {
-        if (connectConfig) {
-            connectConfig.connectCallback(undefined);
-            setConnectConfig(undefined);
-        }
+    const cancel = useCallback(() => {
+        setConnectConfig(prev => {
+            prev?.connectCallback(undefined);
+            return undefined;
+        });
         setOpen(false);
-    }
+    }, [])
 
-    const onFinish = (connectedWallet?: Wallet | undefined) => {
-        if (connectConfig) {
-            connectConfig.connectCallback(connectedWallet);
-            setConnectConfig(undefined);
-        }
+    const onFinish = useCallback((connectedWallet?: Wallet | undefined) => {
+        setConnectConfig(prev => {
+            prev?.connectCallback(connectedWallet);
+            return undefined;
+        });
         setOpen(false);
-    }
+    }, [])
 
     const goBack = useCallback(() => {
         if (selectedConnector) {
@@ -82,7 +86,7 @@ export function WalletModalProvider({ children }) {
             setSelectedMultiChainConnector(undefined)
             return;
         }
-    }, [setSelectedConnector, selectedMultiChainConnector, selectedConnector, selectedMultiChainConnector])
+    }, [selectedConnector, selectedMultiChainConnector])
 
     useEffect(() => {
         if (!open && (selectedConnector || selectedMultiChainConnector)) {
@@ -93,8 +97,16 @@ export function WalletModalProvider({ children }) {
         setIsWalletModalOpen(open)
     }, [open])
 
+    const contextValue = useMemo(() => ({
+        connect, cancel, selectedProvider, setSelectedProvider,
+        selectedConnector, setSelectedConnector,
+        selectedMultiChainConnector, setSelectedMultiChainConnector,
+        isWalletModalOpen, goBack, onFinish, setOpen, open
+    }), [connect, cancel, selectedProvider, selectedConnector,
+        selectedMultiChainConnector, isWalletModalOpen, goBack, onFinish, open])
+
     return (
-        <ConnectModalContext.Provider value={{ connect, cancel, selectedProvider, setSelectedProvider, selectedConnector, setSelectedConnector, selectedMultiChainConnector, setSelectedMultiChainConnector, isWalletModalOpen, goBack, onFinish, setOpen, open }}>
+        <ConnectModalContext.Provider value={contextValue}>
             {children}
         </ConnectModalContext.Provider>
     )
@@ -108,10 +120,13 @@ export const useConnectModal = () => {
         throw new Error('useConnectModal must be used within a ConnectModalProvider');
     }
 
-    const connect: (provider?: WalletProvider) => Promise<Wallet | undefined> = (provider) =>
-        new Promise((res) => {
-            context.connect({ provider, connectCallback: res });
-        });
+    const connect = useCallback(
+        (provider?: WalletProvider): Promise<Wallet | undefined> =>
+            new Promise((res) => {
+                context.connect({ provider, connectCallback: res });
+            }),
+        [context.connect]
+    );
 
-    return { ...context, connect };
+    return useMemo(() => ({ ...context, connect }), [context, connect]);
 };
