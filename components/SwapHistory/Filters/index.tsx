@@ -49,24 +49,26 @@ const Filters: FC<FiltersProps> = ({
                 placeholder="Search by transaction hash"
                 containerClassName="mb-0"
             />
-            <div className="flex items-center gap-2 flex-nowrap overflow-x-auto styled-scroll">
-                <WalletsDropdown
-                    wallets={wallets}
-                    selectedIds={walletInternalIds}
-                    toggle={toggleWalletInternalId}
-                    count={walletInternalIds.length}
-                />
-                <NetworksDropdown
-                    networks={networks}
-                    selectedNames={networkNames}
-                    toggle={toggleNetworkName}
-                    count={networkNames.length}
-                />
-                <IncompleteToggle
-                    hideIncomplete={hideIncomplete}
-                    setHideIncomplete={setHideIncomplete}
-                    showDot={hasPending && !hideIncomplete}
-                />
+            <div className="flex items-center gap-2">
+                <div className="flex-1 min-w-0 flex items-center gap-2 flex-nowrap overflow-x-auto styled-scroll">
+                    <WalletsDropdown
+                        wallets={wallets}
+                        selectedIds={walletInternalIds}
+                        toggle={toggleWalletInternalId}
+                        count={walletInternalIds.length}
+                    />
+                    <NetworksDropdown
+                        networks={networks}
+                        selectedNames={networkNames}
+                        toggle={toggleNetworkName}
+                        count={networkNames.length}
+                    />
+                    <IncompleteToggle
+                        hideIncomplete={hideIncomplete}
+                        setHideIncomplete={setHideIncomplete}
+                        showDot={hasPending && !hideIncomplete}
+                    />
+                </div>
                 {hasAny ? <ClearAllButton onClick={onClearAll} /> : null}
             </div>
         </div>
