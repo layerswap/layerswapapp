@@ -17,22 +17,30 @@ type NetworksDropdownProps = {
 const NetworksDropdown: FC<NetworksDropdownProps> = ({ networks, selectedNames, toggle, count }) => {
     const [open, setOpen] = useState(false)
     const [query, setQuery] = useState('')
+    const [orderedSnapshot, setOrderedSnapshot] = useState<FilterNetworkOption[]>(networks)
     const disabled = networks.length === 0
 
     const q = query.trim().toLowerCase()
     const filtered = q
-        ? networks.filter(n =>
+        ? orderedSnapshot.filter(n =>
             n.display_name.toLowerCase().includes(q) || n.name.toLowerCase().includes(q)
         )
-        : networks
+        : orderedSnapshot
     const label = count > 0 ? `Networks (${count})` : 'Networks'
 
     return (
         <Popover
             open={open}
             onOpenChange={(v) => {
+                if (v) {
+                    const selectedSet = new Set(selectedNames)
+                    const selected = networks.filter(n => selectedSet.has(n.name))
+                    const unselected = networks.filter(n => !selectedSet.has(n.name))
+                    setOrderedSnapshot([...selected, ...unselected])
+                } else {
+                    setQuery('')
+                }
                 setOpen(v)
-                if (!v) setQuery('')
             }}
         >
             <PopoverTrigger asChild>

@@ -1,5 +1,5 @@
 import { ChevronUp, Plus, RefreshCw } from 'lucide-react'
-import { FC, ReactElement, ReactNode, useContext, useMemo, useRef, useState } from "react"
+import { FC, ReactElement, ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react"
 import HistorySummary from "./HistorySummary";
 import useWallet from "../../hooks/useWallet"
 import Link from "next/link"
@@ -188,8 +188,21 @@ const SwapsList: FC<SwapsListProps> = ({
         count: list.length,
         getScrollElement: () => parentRef.current,
         estimateSize: () => 35,
+        getItemKey: (index) => {
+            const item = list[index]
+            if (typeof item === 'string') return `date-${item}`
+            return `swap-${String(item?.swap?.id ?? `${item?.swap?.created_date}-${index}`)}`
+        },
     })
     const items = rowVirtualizer.getVirtualItems()
+
+    useEffect(() => {
+        if (!expanded) return
+        const stillPresent = list.some(item =>
+            typeof item !== 'string' && String(item?.swap?.id) === expanded
+        )
+        if (!stillPresent) setExpanded(undefined)
+    }, [list, expanded])
 
     const handleLoadMore = async () => {
         if (completed.hasMore) await completed.loadMore()
