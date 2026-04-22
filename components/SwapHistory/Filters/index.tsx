@@ -19,6 +19,7 @@ type FiltersProps = {
     wallets: Wallet[]
     networks: FilterNetworkOption[]
     hasPending: boolean
+    hasIncomplete: boolean
     onClearAll: () => void
 }
 
@@ -34,6 +35,7 @@ const Filters: FC<FiltersProps> = ({
     wallets,
     networks,
     hasPending,
+    hasIncomplete,
     onClearAll,
 }) => {
     const hasAny =
@@ -49,26 +51,26 @@ const Filters: FC<FiltersProps> = ({
                 placeholder="Search by transaction hash"
                 containerClassName="mb-0"
             />
-            <div className="flex items-center gap-2">
-                <div className="flex-1 min-w-0 flex items-center gap-2 flex-nowrap overflow-x-auto styled-scroll">
-                    <WalletsDropdown
-                        wallets={wallets}
-                        selectedIds={walletInternalIds}
-                        toggle={toggleWalletInternalId}
-                        count={walletInternalIds.length}
-                    />
-                    <NetworksDropdown
-                        networks={networks}
-                        selectedNames={networkNames}
-                        toggle={toggleNetworkName}
-                        count={networkNames.length}
-                    />
+            <div className="flex flex-wrap items-center gap-2">
+                <WalletsDropdown
+                    wallets={wallets}
+                    selectedIds={walletInternalIds}
+                    toggle={toggleWalletInternalId}
+                    count={walletInternalIds.length}
+                />
+                <NetworksDropdown
+                    networks={networks}
+                    selectedNames={networkNames}
+                    toggle={toggleNetworkName}
+                    count={networkNames.length}
+                />
+                {hasIncomplete ? (
                     <IncompleteToggle
                         hideIncomplete={hideIncomplete}
                         setHideIncomplete={setHideIncomplete}
                         showDot={hasPending && !hideIncomplete}
                     />
-                </div>
+                ) : null}
                 {hasAny ? <ClearAllButton onClick={onClearAll} /> : null}
             </div>
         </div>

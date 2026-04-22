@@ -16,7 +16,7 @@ const IncompleteToggle: FC<IncompleteToggleProps> = ({ hideIncomplete, setHideIn
             className={filterChipClasses(hideIncomplete)}
         >
             {hideIncomplete ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            <span>Incomplete swaps</span>
+            <span>Incomplete</span>
         </button>
         {showDot ? (
             <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-orange-500" />

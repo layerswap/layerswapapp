@@ -17,11 +17,12 @@ import { useSwapByTransactionHash } from "../../hooks/useSwapByTransactionHash";
 import Filters from "./Filters";
 import NoMatches from "./Filters/NoMatches";
 import SearchResult from "./Filters/SearchResult";
-import { matchesFilters, isIncomplete } from "./Filters/filterSwaps";
+import { matchesFilters, isIncomplete, shouldDisplay } from "./Filters/filterSwaps";
 import type { FilterNetworkOption, FilterOpts } from "./Filters/types";
 import { SwapResponse } from '@/lib/apiClients/layerSwapApiClient';
 import { SwapDataProvider, SwapDataStateContext } from '@/context/swap';
 import type { Wallet } from '@/Models/WalletProvider';
+import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
 
 type ListProps = {
     statuses?: string | number;
@@ -32,6 +33,7 @@ type ListProps = {
 const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
     const { networks } = useSettingsState()
     const { wallets } = useWallet()
+    const swapTransactions = useSwapTransactionStore(s => s.swapTransactions)
 
     const {
         searchQuery, setSearchQuery,
@@ -57,7 +59,10 @@ const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
         [networks]
     )
 
-    const hasPending = pendingDeposit.swaps.length > 0
+    const hasPending = pendingDeposit.swaps.some(s => shouldDisplay(s, swapTransactions))
+    const hasIncomplete =
+        pendingDeposit.swaps.some(s => isIncomplete(s, swapTransactions)) ||
+        completed.swaps.some(s => isIncomplete(s, swapTransactions))
 
     const filtersNode = useMemo(() => wallets.length > 0 ? (
         <Filters
@@ -72,10 +77,11 @@ const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
             wallets={wallets}
             networks={networkOptions}
             hasPending={hasPending}
+            hasIncomplete={hasIncomplete}
             onClearAll={clearFilters}
         />
     ) : null, [
-        wallets, networkOptions, hasPending,
+        wallets, networkOptions, hasPending, hasIncomplete, swapTransactions,
         searchQuery, setSearchQuery,
         walletInternalIds, toggleWalletInternalId,
         networkNames, toggleNetworkName,
@@ -137,21 +143,27 @@ const SwapsList: FC<SwapsListProps> = ({
     const [showAll, setShowAll] = useState(false)
     const [expanded, setExpanded] = useState<string | undefined>(undefined)
     const parentRef = useRef<HTMLDivElement>(null)
+    const swapTransactions = useSwapTransactionStore(s => s.swapTransactions)
 
     const filteredPendingRaw = useMemo(
-        () => pendingDeposit.swaps.filter(s => matchesFilters(s, filterOpts)),
-        [pendingDeposit.swaps, filterOpts]
+        () => pendingDeposit.swaps.filter(s =>
+            shouldDisplay(s, swapTransactions) && matchesFilters(s, filterOpts)
+        ),
+        [pendingDeposit.swaps, filterOpts, swapTransactions]
     )
     const pendingSwaps = useMemo(
-        () => hideIncomplete ? [] : filteredPendingRaw,
-        [hideIncomplete, filteredPendingRaw]
+        () => hideIncomplete
+            ? filteredPendingRaw.filter(s => !isIncomplete(s, swapTransactions))
+            : filteredPendingRaw,
+        [hideIncomplete, filteredPendingRaw, swapTransactions]
     )
     const filteredCompleted = useMemo(
         () => completed.swaps.filter(s => {
-            if (hideIncomplete && isIncomplete(s)) return false
+            if (!shouldDisplay(s, swapTransactions)) return false
+            if (hideIncomplete && isIncomplete(s, swapTransactions)) return false
             return matchesFilters(s, filterOpts)
         }),
-        [completed.swaps, filterOpts, hideIncomplete]
+        [completed.swaps, filterOpts, hideIncomplete, swapTransactions]
     )
 
     const grouppedSwaps = useMemo(() => Object
