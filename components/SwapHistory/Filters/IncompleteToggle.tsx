@@ -19,7 +19,7 @@ const IncompleteToggle: FC<IncompleteToggleProps> = ({ hideIncomplete, setHideIn
             <span>Incomplete swaps</span>
         </button>
         {showDot ? (
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-orange-500 ring-2 ring-secondary-700" />
+            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-orange-500" />
         ) : null}
     </div>
 )

@@ -21,7 +21,7 @@ const CheckboxRow: FC<CheckboxRowProps> = ({ checked, onToggle, icon, label, sub
                 onToggle()
             }
         }}
-        className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm hover:bg-secondary-400 text-primary-text cursor-pointer select-none"
+        className="w-full flex items-center gap-3 px-3 py-2 rounded-2xl text-sm hover:bg-secondary-400 text-primary-text cursor-pointer select-none"
     >
         {icon ? <span className="w-5 h-5 flex items-center justify-center shrink-0">{icon}</span> : null}
         <span className="flex-1 min-w-0 text-left">

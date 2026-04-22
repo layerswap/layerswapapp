@@ -27,21 +27,23 @@ const WalletsDropdown: FC<WalletsDropdownProps> = ({ wallets, selectedIds, toggl
                     <ChevronDown className="w-4 h-4" />
                 </button>
             </PopoverTrigger>
-            <PopoverContent align="start" className="p-1 w-64 max-h-72 overflow-y-auto styled-scroll">
-                {wallets.map(w => {
-                    const id = walletIdOf(w)
-                    const short = new Address(w.address, null, w.providerName).toShortString()
-                    return (
-                        <CheckboxRow
-                            key={id}
-                            checked={selectedIds.includes(id)}
-                            onToggle={() => toggle(id)}
-                            icon={w.icon ? <w.icon className="w-5 h-5" /> : null}
-                            label={w.displayName || short}
-                            sublabel={w.displayName ? short : undefined}
-                        />
-                    )
-                })}
+            <PopoverContent align="start" className="p-1 w-64 overflow-hidden">
+                <div className="max-h-72 overflow-y-auto styled-scroll">
+                    {wallets.map(w => {
+                        const id = walletIdOf(w)
+                        const short = new Address(w.address, null, w.providerName).toShortString()
+                        return (
+                            <CheckboxRow
+                                key={id}
+                                checked={selectedIds.includes(id)}
+                                onToggle={() => toggle(id)}
+                                icon={w.icon ? <w.icon className="w-5 h-5" /> : null}
+                                label={w.displayName || short}
+                                sublabel={w.displayName ? short : undefined}
+                            />
+                        )
+                    })}
+                </div>
             </PopoverContent>
         </Popover>
     )

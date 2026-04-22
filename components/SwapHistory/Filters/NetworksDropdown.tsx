@@ -41,7 +41,7 @@ const NetworksDropdown: FC<NetworksDropdownProps> = ({ networks, selectedNames, 
                     <ChevronDown className="w-4 h-4" />
                 </button>
             </PopoverTrigger>
-            <PopoverContent align="start" className="p-0 w-64">
+            <PopoverContent align="start" className="p-0 w-64 overflow-hidden">
                 <div className="p-2 pb-1 border-b border-secondary-500">
                     <SearchComponent
                         searchQuery={query}
@@ -50,7 +50,7 @@ const NetworksDropdown: FC<NetworksDropdownProps> = ({ networks, selectedNames, 
                         containerClassName="mb-0 h-9"
                     />
                 </div>
-                <div className="p-1 max-h-60 overflow-y-auto styled-scroll">
+                <div className="max-h-60 overflow-y-auto styled-scroll p-1">
                     {filtered.length === 0 ? (
                         <div className="px-3 py-6 text-center text-sm text-secondary-text">
                             <span>No networks found</span>

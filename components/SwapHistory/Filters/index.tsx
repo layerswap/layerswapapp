@@ -42,7 +42,7 @@ const Filters: FC<FiltersProps> = ({
         hideIncomplete
 
     return (
-        <div className="space-y-2">
+        <div className="space-y-2 pb-3">
             <SearchComponent
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
