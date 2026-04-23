@@ -53,7 +53,7 @@ export class SolanaBalanceProvider extends BalanceProvider {
                     result = await getTokenBalanceWeb3(connection, associatedTokenFrom)
                 } else {
                     const res = await connection.getBalance(walletPublicKey)
-                    if (res) result = Number(formatUnits(BigInt(Number(res)), token.decimals))
+                    if (res != null && !isNaN(res)) result = Number(formatUnits(BigInt(Number(res)), token.decimals))
                 }
 
                 if (result != null && !isNaN(result)) {

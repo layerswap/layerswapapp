@@ -74,6 +74,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
 
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
+    const refuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
     const refundTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refund)
 
     return (
@@ -174,6 +175,24 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                             </>
                                     }
                                 </div >
+                                {
+                                    refuelTransaction?.transaction_hash
+                                        ? <div className="flex justify-between items-baseline">
+                                            <>
+                                                <p className="text-left text-secondary-text">Refuel transaction</p>
+                                                <a
+                                                    target="_blank"
+                                                    href={getExplorerUrl(output_tx_explorer_template, refuelTransaction.transaction_hash)}
+                                                    className='flex items-center space-x-1'
+                                                    rel="noopener noreferrer"
+                                                >
+                                                    <span>{shortenString(refuelTransaction.transaction_hash)}</span>
+                                                    <ExternalLink className='h-4' />
+                                                </a>
+                                            </>
+                                        </div >
+                                        : null
+                                }
                             </div>
                         </div>
                     </div>

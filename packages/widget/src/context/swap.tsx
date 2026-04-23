@@ -5,7 +5,6 @@ import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '@/Models/ApiResponse';
 import { Partner } from '@/Models/Partner';
 import { ApiError } from '@/Models/ApiError';
-import { ResolvePollingInterval } from '@/components/utils/SwapStatus';
 import { Wallet, WalletConnectionProvider } from '@/types/wallet';
 import useWallet from '@/hooks/useWallet';
 import { Network } from '@/Models/Network';
@@ -18,6 +17,8 @@ import { useInitialSettings } from './settings';
 import { useSlippageStore } from '@/stores/slippageStore';
 import { useCallbacks } from './callbackProvider';
 import { Address } from '@/lib/address/Address';
+import { useSwapTransactionStore } from '@/stores';
+import { resolveSwapPhase } from '@/components/utils/resolveSwapPhase';
 
 export const SwapDataStateContext = createContext<SwapContextData | null>(null);
 
@@ -155,15 +156,28 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const { data: depositActions } = useSWR<ApiResponse<DepositAction[]>>(!inputTransfer ? deposit_actions_endpoint : null, layerswapApiClient.fetcher)
 
     const depositActionsResponse = depositActions?.data
-    const swapStatus = data?.data?.swap.status;
+
+    const currentSwap = data?.data?.swap
+    const storedWalletTransaction = useSwapTransactionStore(
+        state => currentSwap?.id ? state.swapTransactions[currentSwap.id] : undefined,
+    )
+    const pollingIntervalMs = useMemo(
+        () => resolveSwapPhase({
+            swapDetails: currentSwap,
+            refuel: data?.data?.refuel,
+            storedWalletTransaction,
+        }).pollingIntervalMs,
+        [currentSwap, data?.data?.refuel, storedWalletTransaction],
+    )
 
     useEffect(() => {
-        if (swapStatus)
-            setInterval(ResolvePollingInterval(swapStatus))
-        return () => {
+        if (!currentSwap?.status) {
             setInterval(0)
+            return () => setInterval(0)
         }
-    }, [swapStatus])
+        setInterval(pollingIntervalMs)
+        return () => setInterval(0)
+    }, [pollingIntervalMs, currentSwap?.status])
 
     useEffect(() => {
         if (!swapId)
