@@ -26,8 +26,6 @@ import type { TONProviderConfig, TonClientConfig } from "@layerswap/wallet-ton";
 import { createTronProvider } from "@layerswap/wallet-tron";
 import type { TronProviderConfig } from "@layerswap/wallet-tron";
 
-import { createLoopringModule } from "@layerswap/wallet-module-loopring";
-
 import { createZkSyncModule } from "@layerswap/wallet-module-zksync";
 import { WalletProvider, WalletWrapper } from "@layerswap/widget/types";
 
@@ -57,8 +55,6 @@ export type { TONProviderConfig, TonClientConfig };
 
 export { createTronProvider };
 export type { TronProviderConfig };
-
-export { createLoopringModule };
 
 export { createZkSyncModule };
 
@@ -170,7 +166,7 @@ export function getDefaultProviders(config: DefaultWalletConfig = {}) {
         // EVM with modules
         createEVMProvider({
             walletConnectConfigs: walletConnect,
-            walletProviderModules: [createLoopringModule(), createZkSyncModule()]
+            walletProviderModules: [createZkSyncModule()]
         }),
         // Starknet
         createStarknetProvider(),
