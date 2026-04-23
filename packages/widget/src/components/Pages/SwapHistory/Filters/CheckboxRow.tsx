@@ -1,5 +1,5 @@
+import { Checkbox } from '@/components/shadcn/checkbox'
 import { FC, ReactNode } from 'react'
-import { Checkbox } from '../../shadcn/checkbox'
 
 type CheckboxRowProps = {
     checked: boolean

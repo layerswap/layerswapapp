@@ -1,11 +1,11 @@
 import { FC } from 'react'
-import { SearchComponent } from '../../Input/Search'
-import { Wallet } from '@/Models/WalletProvider'
 import WalletsDropdown from './WalletsDropdown'
 import NetworksDropdown from './NetworksDropdown'
 import IncompleteToggle from './IncompleteToggle'
 import ClearAllButton from './ClearAllButton'
 import { FilterNetworkOption } from './types'
+import { SearchComponent } from '@/components/Input/Search'
+import { Wallet } from '@/types/wallet'
 
 type FiltersProps = {
     searchQuery: string

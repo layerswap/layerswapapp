@@ -1,11 +1,11 @@
 import { FC, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
-import { Popover, PopoverContent, PopoverTrigger } from '../../shadcn/popover'
-import { SearchComponent } from '../../Input/Search'
-import { ImageWithFallback } from '../../Common/ImageWithFallback'
 import CheckboxRow from './CheckboxRow'
 import { filterChipClasses } from './chipStyles'
 import { FilterNetworkOption } from './types'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/shadcn'
+import { SearchComponent } from '@/components/Input/Search'
+import { ImageWithFallback } from '@/components/Common/ImageWithFallback'
 
 type NetworksDropdownProps = {
     networks: FilterNetworkOption[]

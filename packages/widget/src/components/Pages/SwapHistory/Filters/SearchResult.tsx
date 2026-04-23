@@ -2,9 +2,9 @@ import { FC } from 'react'
 import { RefreshCw } from 'lucide-react'
 import HistorySummary from '../HistorySummary'
 import SwapDetails from '../SwapDetailsComponent'
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../../shadcn/accordion'
 import { SwapResponse } from '@/lib/apiClients/layerSwapApiClient'
-import { Wallet } from '@/Models/WalletProvider'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/shadcn'
+import { Wallet } from '@/types'
 
 type SearchResultProps = {
     isLoading: boolean

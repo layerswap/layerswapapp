@@ -1,10 +1,10 @@
 import { FC, useMemo, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
-import { Popover, PopoverContent, PopoverTrigger } from '../../shadcn/popover'
-import { Wallet } from '@/Models/WalletProvider'
-import { Address } from '@/lib/address'
 import CheckboxRow from './CheckboxRow'
 import { filterChipClasses } from './chipStyles'
+import { Wallet } from '@/types'
+import { Address } from '@/lib/address/Address'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/shadcn'
 
 type WalletsDropdownProps = {
     wallets: Wallet[]
