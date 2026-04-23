@@ -1,3 +1,4 @@
+import { buildDeepLink } from '@layerswap/widget/internal'
 import {
     ChainNotConfiguredError,
     type Connector,
@@ -18,7 +19,6 @@ import {
     getAddress,
     numberToHex,
 } from 'viem'
-import { buildDeepLink } from '../../walletConnect/buildDeepLink'
 
 type WalletConnectConnector = Connector & {
     onDisplayUri(uri: string): void

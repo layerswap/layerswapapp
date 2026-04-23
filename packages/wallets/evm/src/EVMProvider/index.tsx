@@ -1,17 +1,17 @@
 import { Config, WagmiContext, WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientContext, QueryClientProvider, useQueryClient } from '@tanstack/react-query'
 import { createConfig } from 'wagmi';
-import { EvmConnectorsProvider, useEvmConnectors } from "./evmConnectorsContext";
 import { ActiveEvmAccountProvider } from "./ActiveEvmAccount";
-import { useSettingsState } from "@layerswap/widget/internal";
+import { isMobile, useSettingsState } from "@layerswap/widget/internal";
 import { useContext, useMemo } from 'react';
-import type { JSX } from 'react';
+import type { JSX, ReactNode } from 'react';
 import { useChainConfigs } from '../evmUtils/chainConfigs';
-import { WalletConnectConfig } from '../index';
+import { useWalletConnectConfig } from '../index';
+import { HIDDEN_WALLETCONNECT_ID } from "../constants";
+import { useEVMConnectors } from './Connectors';
 
 type Props = {
-    children: JSX.Element | JSX.Element[]
-    walletConnectConfigs?: WalletConnectConfig
+    children: ReactNode
 }
 
 const queryClient = new QueryClient()
@@ -20,15 +20,23 @@ let cachedConfig: Config | null = null
 
 function WagmiComponent({ children }: Props) {
     const settings = useSettingsState();
+    const walletConnectConfigs = useWalletConnectConfig();
 
-    const { connectors } = useEvmConnectors()
     const { chains, transports } = useChainConfigs(settings?.networks)
+    const _walletConnectConfigs = walletConnectConfigs || {
+        projectId: '6113382c2e587bff00e2b5c3d68531f3',
+        name: 'Layerswap',
+        description: 'Layerswap App',
+        url: 'https://www.layerswap.app',
+        icons: ['https://www.layerswap.app/favicon.ico'],
+    }
+    const defaultConnectors = useEVMConnectors(HIDDEN_WALLETCONNECT_ID, _walletConnectConfigs)
 
     // Create config ONCE - never recreate to preserve connection state
     const config = useMemo(() => {
         if (!cachedConfig) {
             cachedConfig = createConfig({
-                connectors,
+                connectors: [...defaultConnectors],
                 chains: chains,
                 transports: transports,
                 ssr: true
@@ -48,13 +56,11 @@ function WagmiComponent({ children }: Props) {
     )
 }
 
-const EVMProvider = ({ children, walletConnectConfigs }: Props) => {
+const EVMProvider = ({ children }: Props) => {
     return (
-        <EvmConnectorsProvider walletConnectConfigs={walletConnectConfigs}>
-            <WagmiWrapper>
-                {children}
-            </WagmiWrapper>
-        </EvmConnectorsProvider>
+        <WagmiWrapper>
+            {children}
+        </WagmiWrapper>
     )
 }
 

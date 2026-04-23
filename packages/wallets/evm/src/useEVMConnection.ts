@@ -1,8 +1,8 @@
 import { useConfig, useConnect, useConnectors, useDisconnect, useSwitchAccount, Connector } from "wagmi"
 import { CreateConnectorFn, getAccount, getConnections } from '@wagmi/core'
 import { useCallback, useEffect, useMemo } from "react"
-import { NetworkType, NetworkWithTokens, InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps } from "@layerswap/widget/types"
-import { isMobile, sleep, convertSvgComponentToBase64, useConnectModal, KnownInternalNames } from "@layerswap/widget/internal"
+import { NetworkType, NetworkWithTokens, InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps, RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult, WalletModalConnector } from "@layerswap/widget/types"
+import { isMobile, sleep, convertSvgComponentToBase64, useConnectModal, KnownInternalNames, DynamicWcMetadata, buildDeepLink, clearPendingDynamicWcMetadata, createRegistryConnector, DisplayUriSource, getDynamicWcMetadata, getPendingDynamicWcMetadata, getRegistryEntry, mapConnectError, RegistryConnector, setDynamicWcMetadata, setPendingMetadataForRegistry, subscribeDisplayUri, useAdditionalConnectors, WalletConnectWalletBase } from "@layerswap/widget/internal"
 import { evmConnectorNameResolver, resolveEVMWalletConnectorIcon, resolveEVMWalletConnectorIndex } from "./evmUtils"
 import KnownEVMConnectors from "./evmUtils/KnownEVMConnectors"
 import { LSConnector } from "./connectors/types"
@@ -10,10 +10,11 @@ import { explicitInjectedProviderDetected } from "./connectors/explicitInjectedP
 import { useActiveEvmAccount } from "./EVMProvider/ActiveEvmAccount"
 import { useEVMTransfer } from "./transferProvider/useEVMTransfer"
 import { name, id, ethereumNames, immutableZKEvm, featuredWalletsIds, HIDDEN_WALLETCONNECT_ID } from "./constants"
+import { useWalletConnectConfig } from "."
 
 const EVM_NS = 'eip155'
 
-type DynamicWalletMetadata = DynamicWalletMetadata
+type DynamicWalletMetadata = DynamicWcMetadata
 
 const getDynamicWalletMetadata = (address: string) => getDynamicWcMetadata(EVM_NS, address)
 const setDynamicWalletMetadata = (address: string, metadata: DynamicWalletMetadata) =>
@@ -118,12 +119,13 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
     const { connectAsync } = useConnect();
 
     const { setSelectedConnector, isWalletModalOpen } = useConnectModal()
+    const walletConnectConfig = useWalletConnectConfig()
     const {
         browseConnectors: walletConnectConnectors,
         browseMetadata: walletConnectBrowseMetadata,
         requestAdditionalConnectors: requestRegistryConnectors,
         addRecentConnector: addWalletConnectWallet,
-    } = useAdditionalConnectors(EVM_NS)
+    } = useAdditionalConnectors(EVM_NS, walletConnectConfig?.projectId)
 
     useEffect(() => {
         if (isWalletModalOpen && !walletConnectBrowseMetadata.loaded) {

@@ -1,5 +1,3 @@
-import { WALLETCONNECT_PROJECT_ID } from "./config"
-
 const BASE = 'https://api.web3modal.org'
 
 export type Web3ModalWallet = {
@@ -27,7 +25,8 @@ export type FetchWalletsParams = {
     page?: number
     entries?: number
     chains?: string
-    search?: string
+    search?: string;
+    projectId: string;
 }
 
 const EVM_CHAINS = [
@@ -59,8 +58,8 @@ function isValidImageId(id: string): boolean {
     return /^[a-zA-Z0-9_-]{1,100}$/.test(id)
 }
 
-export function walletImageUrl(imageId: string): string {
-    return `https://explorer-api.walletconnect.com/v3/logo/md/${imageId}?projectId=${WALLETCONNECT_PROJECT_ID}`
+export function walletImageUrl(imageId: string, projectId: string): string {
+    return `https://explorer-api.walletconnect.com/v3/logo/md/${imageId}?projectId=${projectId}`
 }
 
 // Web3Modal explorer API reference: https://docs.reown.com/cloud/explorer
@@ -68,7 +67,7 @@ export function walletImageUrl(imageId: string): string {
 // telemetry routing keys required for the API to return results.
 export async function fetchWallets(params: FetchWalletsParams): Promise<GetWalletsResponse> {
     const url = new URL(`${BASE}/getWallets`)
-    url.searchParams.set('projectId', WALLETCONNECT_PROJECT_ID)
+    url.searchParams.set('projectId', params.projectId)
     url.searchParams.set('st', 'appkit')
     url.searchParams.set('sv', 'react-viem')
     url.searchParams.set('page', String(params.page ?? 1))

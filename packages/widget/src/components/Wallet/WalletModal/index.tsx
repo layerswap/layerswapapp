@@ -55,8 +55,6 @@ export function WalletModalProvider({ children }) {
 
         if (!hasConnectorPicker) {
             await provider?.connectWallet()
-            setConnectConfig({ provider, connectCallback });
-            return
         }
         setSelectedProvider(provider);
         setOpen(true)

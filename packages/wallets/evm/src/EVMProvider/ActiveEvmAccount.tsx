@@ -1,5 +1,5 @@
 import { Context, FC, createContext, useCallback, useContext, useMemo, useState } from 'react';
-import type { JSX } from 'react';
+import type { ReactNode } from 'react';
 import { useAccount } from 'wagmi';
 
 type ActiveAccountState = {
@@ -13,7 +13,7 @@ type ActiveAccountState = {
 export const ActiveEvmAccountContext = createContext<ActiveAccountState | undefined>(undefined);
 
 type Props = {
-    children?: JSX.Element | JSX.Element[];
+    children?: ReactNode;
 }
 
 export const ActiveEvmAccountProvider: FC<Props> = ({ children }) => {

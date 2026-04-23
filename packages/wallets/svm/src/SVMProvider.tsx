@@ -5,7 +5,7 @@ import {
 } from "@solana/wallet-adapter-react";
 import { ReactNode, useMemo, useState, useEffect } from "react";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
-import { WalletConnectConfig } from ".";
+import { useWalletConnectConfig, WalletConnectConfig } from ".";
 import { AppSettings } from "@layerswap/widget/internal";
 import type { ReactElement } from "react";
 import { SolanaWalletConnectAdapter } from "./connectors/SolanaWalletConnectAdapter";
@@ -15,11 +15,11 @@ type SolanaProviderProps = {
     walletConnectConfigs?: WalletConnectConfig
 }
 
-function SolanaProvider({ children, walletConnectConfigs }: SolanaProviderProps): ReactElement {
+function SolanaProvider({ children }: SolanaProviderProps): ReactElement {
     const [adapters, setAdapters] = useState<any[]>([]);
     const [ready, setReady] = useState(false);
-    const walletConnectConfig = walletConnectConfigs
-    const WALLETCONNECT_PROJECT_ID = walletConnectConfig?.projectId
+    const walletConnectConfigs = useWalletConnectConfig();
+    const WALLETCONNECT_PROJECT_ID = walletConnectConfigs?.projectId
 
     const solNetwork = AppSettings.ApiVersion == 'sandbox' ? WalletAdapterNetwork.Devnet : WalletAdapterNetwork.Mainnet;;
     const endpoint = useMemo(() => clusterApiUrl(solNetwork), [solNetwork]);

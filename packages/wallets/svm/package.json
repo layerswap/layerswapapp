@@ -46,7 +46,12 @@
     "@solana/wallet-adapter-base": "^0.9.27",
     "@solana/wallet-adapter-react": "^0.15.39",
     "@solana/wallet-adapter-wallets": "^0.19.37",
-    "@solana/web3.js": "^1.98.4"
+    "@solana/web3.js": "^1.98.4",
+    "@walletconnect/ethereum-provider": "catalog:",
+    "@walletconnect/universal-provider": "catalog:",
+    "@walletconnect/types": "catalog:",
+    "@walletconnect/utils": "catalog:",
+    "bs58": "^6.0.0"
   },
   "devDependencies": {
     "@layerswap/widget": "workspace:^",

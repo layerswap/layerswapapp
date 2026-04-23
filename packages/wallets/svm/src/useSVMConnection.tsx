@@ -1,10 +1,12 @@
 import { useWallet } from "@solana/wallet-adapter-react"
-import { isMobile, useConnectModal } from "@layerswap/widget/internal"
-import { InternalConnector, Wallet, WalletConnectionProvider, NetworkType, WalletConnectionProviderProps, WalletModalConnector } from "@layerswap/widget/types"
+import { buildDeepLink, clearPendingDynamicWcMetadata, createRegistryConnector, getDynamicWcMetadata, getPendingDynamicWcMetadata, getRegistryEntry, isMobile, mapConnectError, resolveWalletConnectorIcon, setDynamicWcMetadata, setPendingMetadataForRegistry, subscribeDisplayUri, useAdditionalConnectors, useConnectModal } from "@layerswap/widget/internal"
+import { InternalConnector, Wallet, WalletConnectionProvider, NetworkType, WalletConnectionProviderProps, WalletModalConnector, RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult } from "@layerswap/widget/types"
 import { useMemo, useCallback, useRef, useEffect } from "react"
 import { resolveSolanaWalletConnectorIcon } from "./utils"
 import { useSVMTransfer } from "./transferProvider/useSVMTransfer"
 import { name, id, solanaNames } from "./constants"
+import { SolanaWalletConnectAdapter } from "./connectors/SolanaWalletConnectAdapter"
+import { useWalletConnectConfig } from "."
 
 const SOLANA_WC_ADAPTER_NAME = 'WalletConnect'
 
@@ -23,12 +25,13 @@ export default function useSVMConnection({ networks }: WalletConnectionProviderP
     const connectedAdapterName = connectedWallet?.adapter.name
 
     const { setSelectedConnector, isWalletModalOpen } = useConnectModal()
+    const walletConnectConfig = useWalletConnectConfig()
     const {
         browseConnectors: walletConnectConnectors,
         browseMetadata: walletConnectBrowseMetadata,
         requestAdditionalConnectors: requestRegistryConnectors,
         addRecentConnector: addWalletConnectWallet,
-    } = useAdditionalConnectors(id)
+    } = useAdditionalConnectors(id, walletConnectConfig?.projectId)
 
     useEffect(() => {
         if (isWalletModalOpen && !walletConnectBrowseMetadata.loaded) {
@@ -222,7 +225,6 @@ export default function useSVMConnection({ networks }: WalletConnectionProviderP
                 hasBrowserExtension: !isWcAdapter,
                 extensionNotFound: isWcAdapter ? false : !isInstalled,
                 providerName: name,
-                order: resolveWalletConnectorIndex(wallet.adapter.name.trim().toLowerCase()),
             }
             installed.push(internalConnector)
             seenIds.add(internalConnector.id.toLowerCase())
@@ -280,8 +282,6 @@ export default function useSVMConnection({ networks }: WalletConnectionProviderP
         withdrawalSupportedNetworks: commonSupportedNetworks,
         autofillSupportedNetworks: commonSupportedNetworks,
         asSourceSupportedNetworks: commonSupportedNetworks,
-        connectedWallets: connectedWallets,
-        activeWallet: connectedWallets?.[0],
         name,
         id,
         providerIcon,

@@ -1,4 +1,4 @@
-import type { InternalConnector } from "@/Models/WalletProvider"
+import { InternalConnector } from "@/types/wallet"
 import { WC_REGISTRY_MARKER, type RegistryAttachedConnector, type WalletConnectWalletBase } from "./types"
 
 export type RegistryConnector = RegistryAttachedConnector<InternalConnector>

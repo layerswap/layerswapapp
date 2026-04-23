@@ -1,9 +1,9 @@
 import { useCallback, useMemo } from "react"
-import { InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps } from "@layerswap/widget/types"
+import { InternalConnector, RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult, Wallet, WalletConnectionProvider, WalletConnectionProviderProps } from "@layerswap/widget/types"
 import { walletClientToSigner } from "./utils/ethers"
 import { getWalletClient, switchChain, getChainId, type ConnectorAlreadyConnectedError } from '@wagmi/core'
 import { useConfig } from "wagmi"
-import { sleep, KnownInternalNames, useWalletStore, useConnectModal, Address } from "@layerswap/widget/internal"
+import { sleep, KnownInternalNames, useWalletStore, useConnectModal, Address, getRegistryEntry } from "@layerswap/widget/internal"
 import { useActiveParadexAccount } from "./ActiveParadexAccount"
 import ParadexMultiStepHandler from "./components/ParadexMultiStepHandler"
 

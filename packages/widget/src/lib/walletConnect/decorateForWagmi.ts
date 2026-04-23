@@ -1,5 +1,4 @@
 import { WalletConnectWallet } from "@/Models/WalletConnectWallet"
-import { WALLETCONNECT_PROJECT_ID } from "./config"
 import type { WalletConnectWalletBase } from "./types"
 
 /**
@@ -20,7 +19,7 @@ export const decorateForWagmi = (base: WalletConnectWalletBase): WalletConnectWa
         },
         rdns: base.rdns ? `${base.rdns}.wc` : undefined,
         icon: base.icon,
-        projectId: WALLETCONNECT_PROJECT_ID,
+        projectId: base.walletConnectProjectId,
         showQrModal: false,
         customStoragePrefix: base.id,
         order: base.order,

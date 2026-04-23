@@ -1,4 +1,3 @@
-import { resolveWalletConnectorIndex } from "../utils/resolveWalletIcon"
 import type { Web3ModalWallet } from "./api"
 import { walletImageUrl } from "./api"
 import type { WalletConnectWalletBase } from "./types"
@@ -17,7 +16,7 @@ const SLUG_OVERRIDES: Record<string, string> = {
     'bitget-wallet': 'bitkeep',
 }
 
-export function mapWallet(wallet: Web3ModalWallet): WalletConnectWalletBase {
+export function mapWallet(wallet: Web3ModalWallet, projectId: string): WalletConnectWalletBase {
     let id = slugify(wallet.name)
     if (SLUG_OVERRIDES[id]) id = SLUG_OVERRIDES[id]
 
@@ -25,12 +24,11 @@ export function mapWallet(wallet: Web3ModalWallet): WalletConnectWalletBase {
     const installUrl = hasBrowserExtension ? (wallet.chrome_store ?? undefined) : undefined
     const isMobileSupported = !!wallet.mobile_link
 
-    const knownOrder = resolveWalletConnectorIndex(id)
-
     return {
+        walletConnectProjectId: projectId,
         id,
         name: wallet.name,
-        icon: walletImageUrl(wallet.image_id),
+        icon: walletImageUrl(wallet.image_id, projectId),
         rdns: wallet.rdns || undefined,
         mobile: {
             native: wallet.link_mode === 'native' ? (wallet.mobile_link || null) : null,
@@ -43,6 +41,6 @@ export function mapWallet(wallet: Web3ModalWallet): WalletConnectWalletBase {
         hasBrowserExtension,
         installUrl,
         isMobileSupported,
-        order: knownOrder >= 0 ? knownOrder : wallet.order,
+        order: wallet.order,
     }
 }

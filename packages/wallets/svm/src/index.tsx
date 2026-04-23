@@ -4,7 +4,7 @@ import useSVMConnection from "./useSVMConnection";
 import SVMProviderWrapper from "./SVMProvider";
 import { SolanaBalanceProvider } from "./svmBalanceProvider";
 import { SolanaAddressUtilsProvider } from "./svmAddressUtilsProvider";
-import React from "react";
+import React, { createContext, useContext } from "react";
 import { useSVMTransfer } from "./transferProvider/useSVMTransfer";
 
 export type WalletConnectConfig = {
@@ -19,6 +19,10 @@ export type SVMProviderConfig = BaseWalletProviderConfig & {
     walletConnectConfigs?: WalletConnectConfig
 }
 
+const WalletConnectConfigContext: React.Context<WalletConnectConfig | null> = createContext<WalletConnectConfig | null>(null);
+
+export const useWalletConnectConfig: () => WalletConnectConfig | null = () => useContext(WalletConnectConfigContext);
+
 export function createSVMProvider(config: SVMProviderConfig = {}): WalletProvider {
     const {
         walletConnectConfigs,
@@ -31,9 +35,11 @@ export function createSVMProvider(config: SVMProviderConfig = {}): WalletProvide
 
     const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
         return (
-            <SVMProviderWrapper walletConnectConfigs={walletConnectConfigs}>
-                {children}
-            </SVMProviderWrapper>
+            <WalletConnectConfigContext.Provider value={walletConnectConfigs ?? null}>
+                <SVMProviderWrapper>
+                    {children}
+                </SVMProviderWrapper>
+            </WalletConnectConfigContext.Provider>
         );
     };
 
@@ -83,9 +89,11 @@ export const SVMProvider: WalletProvider = {
     id: "solana",
     wrapper: ({ children }: { children: React.ReactNode }) => {
         return (
-            <SVMProviderWrapper walletConnectConfigs={AppSettings.WalletConnectConfig}>
-                {children}
-            </SVMProviderWrapper>
+            <WalletConnectConfigContext.Provider value={AppSettings.WalletConnectConfig ?? null}>
+                <SVMProviderWrapper walletConnectConfigs={AppSettings.WalletConnectConfig}>
+                    {children}
+                </SVMProviderWrapper>
+            </WalletConnectConfigContext.Provider>
         );
     },
     walletConnectionProvider: useSVMConnection,

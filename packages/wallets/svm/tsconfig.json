@@ -1,8 +1,7 @@
 {
   "extends": "../tsconfig.wallet.json",
   "include": [
-    "src",
-    "src/jsons/*.json"
+    "src"
   ],
   "exclude": [
     "node_modules"

@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
-import type { RequestAdditionalConnectorsParams } from '@/Models/WalletProvider'
 import { resolveWalletConnectWallets } from './registry'
 import type { WalletConnectWalletBase } from './types'
+import { RequestAdditionalConnectorsParams } from '@/types'
 
 type PageCacheEntry = {
     page: number
@@ -71,7 +71,7 @@ const mergeRecents = (recents: WalletConnectWalletBase[], connectors: WalletConn
     return [...recents, ...connectors.filter(connector => !recentIds.has(connector.id.toLowerCase()))]
 }
 
-async function fetchAdditionalConnectorsPage(namespace: string, params: Required<RequestAdditionalConnectorsParams>) {
+async function fetchAdditionalConnectorsPage(namespace: string, params: Required<RequestAdditionalConnectorsParams & { projectId: string }>) {
     const query = normalizeQuery(params.query)
     const pageKey = getPageKey(params.page, params.pageSize)
     const queryCache = getQueryCache(namespace, query)
@@ -94,6 +94,7 @@ async function fetchAdditionalConnectorsPage(namespace: string, params: Required
             page: params.page,
             entries: params.pageSize,
             search: query || undefined,
+            projectId: params.projectId,
         })
 
         if (queryCache.size >= MAX_CACHED_PAGES_PER_QUERY) {
@@ -119,7 +120,7 @@ async function fetchAdditionalConnectorsPage(namespace: string, params: Required
     }
 }
 
-export function useAdditionalConnectors(namespace: string) {
+export function useAdditionalConnectors(namespace: string, projectId?: string) {
     const [recents, setRecents] = useState<WalletConnectWalletBase[]>([])
     const [browseVersion, setBrowseVersion] = useState(0)
 
@@ -128,6 +129,7 @@ export function useAdditionalConnectors(namespace: string) {
             page: params.page ?? 1,
             pageSize: params.pageSize ?? DEFAULT_PAGE_SIZE,
             query: normalizeQuery(params.query),
+            projectId: projectId ?? '6113382c2e587bff00e2b5c3d68531f3',
         }
 
         const result = await fetchAdditionalConnectorsPage(namespace, normalizedParams)
@@ -141,7 +143,7 @@ export function useAdditionalConnectors(namespace: string) {
             nextPage: result.nextPage,
             totalCount: result.totalCount,
         }
-    }, [namespace])
+    }, [namespace, projectId])
 
     const addRecentConnector = useCallback((connector: WalletConnectWalletBase) => {
         setRecents(previous => {

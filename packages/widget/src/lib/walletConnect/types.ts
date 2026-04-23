@@ -14,6 +14,7 @@ export type WalletConnectDesktop = {
  * (e.g. wagmi's projectId/showQrModal/customStoragePrefix for EVM).
  */
 export type WalletConnectWalletBase = {
+    walletConnectProjectId: string
     id: string
     name: string
     icon: string

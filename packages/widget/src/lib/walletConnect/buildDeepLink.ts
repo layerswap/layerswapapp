@@ -1,4 +1,4 @@
-import { isAndroid, isIOS, isMobile } from "../connectors/utils/isMobile"
+import { isAndroid, isIOS, isMobile } from "../wallets/utils/isMobile"
 import type { WalletConnectMobile } from "./types"
 
 const addWc = (url: string): string => {
