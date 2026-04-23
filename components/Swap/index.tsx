@@ -3,12 +3,12 @@ import { Widget } from '../Widget/Index';
 import { useSwapDataState } from '../../context/swap';
 import Withdraw from './Withdraw';
 import Processing from './Withdraw/Processing';
-import { BackendTransactionStatus, TransactionType } from '../../lib/apiClients/layerSwapApiClient';
-import { SwapStatus } from '../../Models/SwapStatus';
+import { BackendTransactionStatus } from '../../lib/apiClients/layerSwapApiClient';
 import { useSwapTransactionStore } from '../../stores/swapTransactionStore';
 import SubmitButton from '../buttons/submitButton';
 import ManualWithdraw from './Withdraw/ManualWithdraw';
 import { Partner } from '@/Models/Partner';
+import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
 
 type Props = {
     type: "widget" | "contained",
@@ -20,15 +20,14 @@ type Props = {
 const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, partner, onCancelWithdrawal }) => {
     const { swapDetails, swapBasicData, refuel, depositActionsResponse, quote, quoteIsLoading } = useSwapDataState()
 
-    const swapStatus = swapDetails?.status || SwapStatus.UserTransferPending;
-    const storedWalletTransactions = useSwapTransactionStore()
-
-    const swapInputTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Input)
-    const storedWalletTransaction = storedWalletTransactions.swapTransactions?.[swapDetails?.id || '']
+    const storedWalletTransaction = useSwapTransactionStore(
+        state => swapDetails?.id ? state.swapTransactions[swapDetails.id] : undefined,
+    )
+    const resolved = useResolvedSwapStatus()
 
     const removeStoredTransaction = useCallback(() => {
         useSwapTransactionStore.getState().removeSwapTransaction(swapDetails?.id || '');
-    }, [swapDetails?.id, storedWalletTransactions])
+    }, [swapDetails?.id])
 
     if (!swapBasicData) return <>
         <div className="w-full h-[430px]">
@@ -45,8 +44,7 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, partner, onCa
     return (
         <Container type={type}>
             {
-                ((swapStatus === SwapStatus.UserTransferPending
-                    && !(swapInputTransaction || storedWalletTransaction))) ?
+                resolved.showWithdrawScreen ?
                     (
                         swapBasicData?.use_deposit_address === true
                             ? <ManualWithdraw swapBasicData={swapBasicData} depositActions={depositActionsResponse} refuel={refuel} partner={partner} type={type} quote={quote} isQuoteLoading={quoteIsLoading} />
