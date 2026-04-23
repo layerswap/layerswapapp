@@ -82,6 +82,8 @@ export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStat
     const swapStatus = swapDetails?.status;
     const inputReady = !!(inputTx && inputTx.confirmations >= inputTx.max_confirmations);
     const outputReady = !!(outputTx?.transaction_hash && outputTx?.amount);
+    const refuelReady = !!(refuelTx?.transaction_hash && refuelTx?.amount);
+    const refuelPending = !!refuel && !refuelReady;
     const swapInputTxStatus = resolveSwapInputTxStatus(inputTx, inputTxStatusFromApi);
 
     const showWithdrawScreen =
@@ -93,6 +95,7 @@ export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStat
         swapInputTxStatus,
         inputReady,
         outputReady,
+        refuelPending,
         hasInputTx: !!inputTx,
         hasStoredWalletTx: !!storedWalletTransaction,
         showWithdrawScreen,
@@ -148,12 +151,13 @@ function resolvePhase(args: {
     swapInputTxStatus: TransactionStatus;
     inputReady: boolean;
     outputReady: boolean;
+    refuelPending: boolean;
     hasInputTx: boolean;
     hasStoredWalletTx: boolean;
     showWithdrawScreen: boolean;
 }): SwapPhase {
     const {
-        swapStatus, swapInputTxStatus, inputReady, outputReady,
+        swapStatus, swapInputTxStatus, inputReady, outputReady, refuelPending,
         hasInputTx, hasStoredWalletTx, showWithdrawScreen,
     } = args;
 
@@ -166,10 +170,10 @@ function resolvePhase(args: {
     if (swapInputTxStatus === TransactionStatus.Failed) return SwapPhase.Failed;
 
     if (swapStatus === SwapStatus.Completed) {
-        return outputReady ? SwapPhase.Completed : SwapPhase.SettlingOutput;
+        return outputReady && !refuelPending ? SwapPhase.Completed : SwapPhase.SettlingOutput;
     }
 
-    if (outputReady) return SwapPhase.Completed;
+    if (outputReady) return refuelPending ? SwapPhase.SettlingOutput : SwapPhase.Completed;
 
     if (showWithdrawScreen) return SwapPhase.AwaitingUserDeposit;
 
@@ -231,7 +235,8 @@ function resolveStepStatuses(args: {
             break;
         case SwapPhase.SettlingOutput:
             input_transfer = ProgressStatus.Complete;
-            output_transfer = ProgressStatus.Current;
+            output_transfer = outputReady ? ProgressStatus.Complete : ProgressStatus.Current;
+            if (outputReady && refuel && !refuelReady) refuel_transfer = ProgressStatus.Current;
             break;
         case SwapPhase.Completed:
             input_transfer = ProgressStatus.Complete;
