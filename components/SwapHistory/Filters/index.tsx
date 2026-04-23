@@ -10,8 +10,8 @@ import { FilterNetworkOption } from './types'
 type FiltersProps = {
     searchQuery: string
     setSearchQuery: (v: string) => void
-    walletInternalIds: string[]
-    toggleWalletInternalId: (id: string) => void
+    walletAddresses: string[]
+    toggleWalletAddress: (address: string) => void
     networkNames: string[]
     toggleNetworkName: (name: string) => void
     hideIncomplete: boolean
@@ -26,8 +26,8 @@ type FiltersProps = {
 const Filters: FC<FiltersProps> = ({
     searchQuery,
     setSearchQuery,
-    walletInternalIds,
-    toggleWalletInternalId,
+    walletAddresses,
+    toggleWalletAddress,
     networkNames,
     toggleNetworkName,
     hideIncomplete,
@@ -39,7 +39,7 @@ const Filters: FC<FiltersProps> = ({
     onClearAll,
 }) => {
     const hasAny =
-        walletInternalIds.length > 0 ||
+        walletAddresses.length > 0 ||
         networkNames.length > 0 ||
         hideIncomplete
 
@@ -54,9 +54,9 @@ const Filters: FC<FiltersProps> = ({
             <div className="flex flex-wrap items-center gap-2">
                 <WalletsDropdown
                     wallets={wallets}
-                    selectedIds={walletInternalIds}
-                    toggle={toggleWalletInternalId}
-                    count={walletInternalIds.length}
+                    selectedAddresses={walletAddresses}
+                    toggle={toggleWalletAddress}
+                    count={walletAddresses.length}
                 />
                 <NetworksDropdown
                     networks={networks}

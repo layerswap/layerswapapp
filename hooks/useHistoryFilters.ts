@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { Wallet } from '@/Models/WalletProvider'
-import { walletIdOf, type FilterOpts } from '@/components/SwapHistory/Filters/types'
+import type { FilterOpts } from '@/components/SwapHistory/Filters/types'
 
 type Args = {
     wallets: Wallet[]
@@ -8,13 +8,13 @@ type Args = {
 
 export function useHistoryFilters({ wallets }: Args) {
     const [searchQuery, setSearchQuery] = useState('')
-    const [walletInternalIds, setWalletInternalIds] = useState<string[]>([])
+    const [walletAddresses, setWalletAddresses] = useState<string[]>([])
     const [networkNames, setNetworkNames] = useState<string[]>([])
     const [hideIncomplete, setHideIncomplete] = useState(false)
 
-    const toggleWalletInternalId = useCallback((id: string) => {
-        setWalletInternalIds(prev =>
-            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    const toggleWalletAddress = useCallback((address: string) => {
+        setWalletAddresses(prev =>
+            prev.includes(address) ? prev.filter(x => x !== address) : [...prev, address]
         )
     }, [])
 
@@ -26,36 +26,36 @@ export function useHistoryFilters({ wallets }: Args) {
 
     const clearFilters = useCallback(() => {
         setSearchQuery('')
-        setWalletInternalIds([])
+        setWalletAddresses([])
         setNetworkNames([])
         setHideIncomplete(false)
     }, [])
 
+    const knownAddresses = useMemo(() => {
+        const s = new Set<string>()
+        for (const w of wallets) for (const a of w.addresses) s.add(a)
+        return s
+    }, [wallets])
+
     const selectedWalletAddrs = useMemo<string[] | null>(() => {
-        if (walletInternalIds.length === 0) return null
-        const addrs: string[] = []
-        for (const id of walletInternalIds) {
-            const w = wallets.find(x => walletIdOf(x) === id)
-            if (!w) continue
-            addrs.push(w.address)
-        }
+        const addrs = walletAddresses.filter(a => knownAddresses.has(a))
         return addrs.length > 0 ? addrs : null
-    }, [walletInternalIds, wallets])
+    }, [walletAddresses, knownAddresses])
 
     const filterOpts = useMemo<FilterOpts>(() => ({
         walletAddrs: selectedWalletAddrs,
     }), [selectedWalletAddrs])
 
     const filtersActive =
-        walletInternalIds.length > 0 ||
+        (selectedWalletAddrs?.length ?? 0) > 0 ||
         networkNames.length > 0 ||
         hideIncomplete
 
     return {
         searchQuery,
         setSearchQuery,
-        walletInternalIds,
-        toggleWalletInternalId,
+        walletAddresses,
+        toggleWalletAddress,
         networkNames,
         toggleNetworkName,
         hideIncomplete,

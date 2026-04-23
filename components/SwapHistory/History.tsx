@@ -37,17 +37,23 @@ const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
 
     const {
         searchQuery, setSearchQuery,
-        walletInternalIds, toggleWalletInternalId,
+        walletAddresses, toggleWalletAddress,
         networkNames, toggleNetworkName,
         hideIncomplete, setHideIncomplete,
         clearFilters,
         filterOpts, filtersActive,
     } = useHistoryFilters({ wallets })
 
-    const addresses = useMemo(() => wallets.map(w => {
-        const network = networks.find(n => n.chain_id == w.chainId)
-        return new Address(w.address, network || null, w.providerName).normalized
-    }), [wallets, networks])
+    const addresses = useMemo(() => {
+        const out = new Set<string>()
+        for (const w of wallets) {
+            const network = networks.find(n => n.chain_id == w.chainId) || null
+            for (const addr of w.addresses) {
+                out.add(new Address(addr, network, w.providerName).normalized)
+            }
+        }
+        return Array.from(out)
+    }, [wallets, networks])
 
     const { pendingDeposit, completed, isLoadingAny, isValidatingAny } = useSwapHistoryData(addresses, networkNames)
     const search = useSwapByTransactionHash(searchQuery)
@@ -68,8 +74,8 @@ const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
         <Filters
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
-            walletInternalIds={walletInternalIds}
-            toggleWalletInternalId={toggleWalletInternalId}
+            walletAddresses={walletAddresses}
+            toggleWalletAddress={toggleWalletAddress}
             networkNames={networkNames}
             toggleNetworkName={toggleNetworkName}
             hideIncomplete={hideIncomplete}
@@ -83,7 +89,7 @@ const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
     ) : null, [
         wallets, networkOptions, hasPending, hasIncomplete, swapTransactions,
         searchQuery, setSearchQuery,
-        walletInternalIds, toggleWalletInternalId,
+        walletAddresses, toggleWalletAddress,
         networkNames, toggleNetworkName,
         hideIncomplete, setHideIncomplete,
         clearFilters,
