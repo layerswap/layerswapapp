@@ -5,12 +5,12 @@ export type WalletConnectWallet = {
     name: string;
     shortName?:string;
     mobile: {
-        native?: boolean;
-        universal?: boolean;
+        native?: string | null;
+        universal?: string | null;
     };
     desktop?: {
-        native?: boolean;
-        universal?: boolean;
+        native?: string | null;
+        universal?: string | null;
     };
     rdns?: string;
     hasBrowserExtension?: boolean;

@@ -1,4 +1,4 @@
-import { CommandGroup, CommandList, CommandWrapper } from "@/components/shadcn/command";
+import { Command, CommandGroup, CommandItem, CommandList } from "@/components/shadcn/command";
 import { Address } from "@/lib/address/Address";
 import FilledCheck from "@/components/Icons/FilledCheck";
 import { AddressGroup, AddressItem } from ".";
@@ -21,7 +21,7 @@ const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, desti
 
     return (
         <div className="text-left mt-1!">
-            <CommandWrapper>
+            <Command>
                 <CommandList>
                     <CommandGroup
                         heading={
@@ -36,7 +36,7 @@ const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, desti
                             {addressBook.sort(sortingByDate).map(item => {
                                 const isSelected = Address.equals(item.address, destination_address!, destination!)
                                 return (
-                                    <button type="button" key={item.address} onClick={() => onSelectAddress(item.address, item.wallet)} className={`group/addressItem px-3 py-3 rounded-lg hover:bg-secondary-600 w-full transition duration-200 bg-secondary-500 ${isSelected && 'bg-secondary-400'}`}>
+                                    <CommandItem key={item.address} onSelect={() => onSelectAddress(item.address, item.wallet)} className={`group/addressItem !px-3 !py-3 rounded-lg hover:bg-secondary-600 w-full transition duration-200 bg-secondary-500 ${isSelected && 'bg-secondary-400'}`}>
                                         <div className={`flex items-center justify-between w-full`}>
                                             <AddressWithIcon addressItem={item} partner={partner} network={destination} />
                                             <div className="flex h-6 items-center px-1">
@@ -46,13 +46,13 @@ const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, desti
                                                 }
                                             </div>
                                         </div>
-                                    </button>
+                                    </CommandItem>
                                 )
                             })}
                         </div>
                     </CommandGroup>
                 </CommandList>
-            </CommandWrapper>
+            </Command>
         </div>
     )
 }

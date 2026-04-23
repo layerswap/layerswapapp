@@ -1,4 +1,4 @@
-import { useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps } from "@layerswap/widget/types"
 import { walletClientToSigner } from "./utils/ethers"
 import { getWalletClient, switchChain, getChainId, type ConnectorAlreadyConnectedError } from '@wagmi/core'
@@ -7,24 +7,27 @@ import { sleep, KnownInternalNames, useWalletStore, useConnectModal, Address } f
 import { useActiveParadexAccount } from "./ActiveParadexAccount"
 import ParadexMultiStepHandler from "./components/ParadexMultiStepHandler"
 
+const withdrawalSupportedNetworks = [
+    KnownInternalNames.Networks.ParadexMainnet,
+    KnownInternalNames.Networks.ParadexTestnet,
+]
+const autofillSupportedNetworks = [
+    ...withdrawalSupportedNetworks
+]
+const asSourceSupportedNetworks = [
+    ...withdrawalSupportedNetworks
+]
+
+const name = 'Paradex'
+const id = 'prdx'
+
 export function useParadexConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
-    const name = 'Paradex'
-    const id = 'prdx'
+
     const { activeConnection, setActiveAddress, evmProvider: evmProviderInstance, starknetProvider: starknetProviderInstance } = useActiveParadexAccount()
     const paradexAccounts = useWalletStore((state) => state.paradexAccounts)
     const addParadexAccount = useWalletStore((state) => state.addParadexAccount)
     const removeParadexAccount = useWalletStore((state) => state.removeParadexAccount)
     const paradexNetwork = networks.find(n => n.name === KnownInternalNames.Networks.ParadexMainnet || n.name === KnownInternalNames.Networks.ParadexTestnet)
-    const withdrawalSupportedNetworks = [
-        KnownInternalNames.Networks.ParadexMainnet,
-        KnownInternalNames.Networks.ParadexTestnet,
-    ]
-    const autofillSupportedNetworks = [
-        ...withdrawalSupportedNetworks
-    ]
-    const asSourceSupportedNetworks = [
-        ...withdrawalSupportedNetworks
-    ]
 
     const { setSelectedConnector } = useConnectModal()
     const evmProvider = evmProviderInstance.walletConnectionProvider({ networks })
@@ -40,8 +43,11 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
 
         try {
             setSelectedConnector(connector)
-            const isEvm = evmProvider.availableWalletsForConnect?.find(w => w.id === connector.id)
-            const isStarknet = starknetProvider.availableWalletsForConnect?.find(w => w.id === connector.id)
+            const isRegistryEvmConnector = !!getRegistryEntry(connector)
+            const isEvm = isRegistryEvmConnector
+                || evmProvider.availableConnectors?.find(w => w.id === connector.id)
+                || evmProvider.additionalConnectors?.find(w => w.id === connector.id)
+            const isStarknet = starknetProvider.availableConnectors?.find(w => w.id === connector.id)
 
             let accounts: typeof paradexAccounts | undefined
 
@@ -162,12 +168,29 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
         ]
     }, [evmProvider, starknetProvider, paradexAccounts])
 
-    const availableWalletsForConnect = useMemo(() => {
+    const availableConnectors = useMemo(() => {
         return [
-            ...(evmProvider.availableWalletsForConnect ? evmProvider.availableWalletsForConnect : []),
-            ...(starknetProvider?.availableWalletsForConnect ? starknetProvider.availableWalletsForConnect : [])
+            ...(evmProvider.availableConnectors ? evmProvider.availableConnectors : []),
+            ...(starknetProvider?.availableConnectors ? starknetProvider.availableConnectors : [])
         ]
     }, [evmProvider, starknetProvider])
+
+    const additionalConnectors = useMemo(() => {
+        return evmProvider.additionalConnectors ? evmProvider.additionalConnectors : []
+    }, [evmProvider.additionalConnectors])
+
+    const requestAdditionalConnectors = useCallback(async (params: RequestAdditionalConnectorsParams = {}): Promise<RequestAdditionalConnectorsResult> => {
+        if (!evmProvider.requestAdditionalConnectors) {
+            return { connectors: [], nextPage: null, totalCount: 0 }
+        }
+
+        const result = await evmProvider.requestAdditionalConnectors(params)
+        return {
+            connectors: result.connectors.map(connector => ({ ...connector, providerName: name })),
+            nextPage: result.nextPage,
+            totalCount: result.totalCount,
+        }
+    }, [evmProvider.requestAdditionalConnectors, name])
 
     const switchAccount = async (wallet: Wallet, address: string) => {
 
@@ -203,12 +226,14 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
     const provider: WalletConnectionProvider = {
         connectWallet,
         switchAccount,
+        requestAdditionalConnectors,
         connectedWallets,
         activeWallet,
         withdrawalSupportedNetworks,
         autofillSupportedNetworks,
         asSourceSupportedNetworks,
-        availableWalletsForConnect,
+        availableConnectors,
+        additionalConnectors,
         name,
         id,
         providerIcon,

@@ -1,5 +1,3 @@
-// import { WalletAccount } from 'starknet';
-// @ts-ignore
 import { TransferProps, TransferProvider } from './transfer';
 import { NetworkWithTokens } from '@/Models/Network';
 import { BalanceProvider } from './balance';
@@ -20,7 +18,6 @@ export type InternalConnector = {
     providerName: string,
     installUrl?: string,
     isMobileSupported?: boolean,
-    isHidden?: boolean,
     hasBrowserExtension?: boolean,
     extensionNotFound?: boolean
 }
@@ -84,6 +81,7 @@ export type WalletConnectionProvider = {
     switchAccount?: (connector: Wallet, address: string) => Promise<void>,
     switchChain?: (connector: Wallet, chainId: string | number) => Promise<void>
     isNotAvailableCondition?: (connector: string, network: string, purpose?: "withdrawal" | "autofill" | "asSource") => boolean,
+    requestAdditionalConnectors?: (params?: RequestAdditionalConnectorsParams) => Promise<RequestAdditionalConnectorsResult>,
 
     /**
      * @deprecated Use TransferResolver from useTransfer() hook instead. This will be removed in a future version.
@@ -91,8 +89,8 @@ export type WalletConnectionProvider = {
      */
     transfer?: (params: TransferProps, wallet?: Wallet) => Promise<string | undefined>,
 
-    availableWalletsForConnect?: InternalConnector[],
-    availableHiddenWalletsForConnect?: InternalConnector[],
+    availableConnectors?: InternalConnector[],
+    additionalConnectors?: InternalConnector[],
     connectedWallets: Wallet[] | undefined,
     activeWallet: Wallet | undefined,
     autofillSupportedNetworks?: string[],
@@ -128,3 +126,15 @@ export type BaseWalletProviderConfig = {
     contractAddressProviders?: ContractAddressCheckerProvider | ContractAddressCheckerProvider[]
     rpcHealthCheckProviders?: RpcHealthCheckProvider | RpcHealthCheckProvider[]
 } 
+
+export type RequestAdditionalConnectorsParams = {
+    page?: number,
+    pageSize?: number,
+    query?: string,
+}
+
+export type RequestAdditionalConnectorsResult = {
+    connectors: InternalConnector[],
+    nextPage: number | null,
+    totalCount: number,
+}

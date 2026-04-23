@@ -8,6 +8,7 @@ import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import { WalletConnectConfig } from ".";
 import { AppSettings } from "@layerswap/widget/internal";
 import type { ReactElement } from "react";
+import { SolanaWalletConnectAdapter } from "./connectors/SolanaWalletConnectAdapter";
 
 type SolanaProviderProps = {
     children: ReactNode
@@ -20,7 +21,6 @@ function SolanaProvider({ children, walletConnectConfigs }: SolanaProviderProps)
     const walletConnectConfig = walletConnectConfigs
     const WALLETCONNECT_PROJECT_ID = walletConnectConfig?.projectId
 
-
     const solNetwork = AppSettings.ApiVersion == 'sandbox' ? WalletAdapterNetwork.Devnet : WalletAdapterNetwork.Mainnet;;
     const endpoint = useMemo(() => clusterApiUrl(solNetwork), [solNetwork]);
     useEffect(() => {
@@ -30,7 +30,6 @@ function SolanaProvider({ children, walletConnectConfigs }: SolanaProviderProps)
             const adaptersModule = await import("@solana/wallet-adapter-wallets");
             const {
                 NightlyWalletAdapter,
-                WalletConnectWalletAdapter,
                 PhantomWalletAdapter,
                 SolflareWalletAdapter,
                 BitgetWalletAdapter,
@@ -48,7 +47,7 @@ function SolanaProvider({ children, walletConnectConfigs }: SolanaProviderProps)
                 new BitgetWalletAdapter(),
                 new TrustWalletAdapter(),
                 new LedgerWalletAdapter(),
-                new WalletConnectWalletAdapter({
+                new SolanaWalletConnectAdapter({
                     network: solNetwork,
                     options: {
                         projectId: WALLETCONNECT_PROJECT_ID,

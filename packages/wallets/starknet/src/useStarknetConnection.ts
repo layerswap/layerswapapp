@@ -90,7 +90,7 @@ export default function useStarknetConnection({ networks }: WalletConnectionProv
         }
     }
 
-    const availableWalletsForConnect: InternalConnector[] = connectors.map(connector => {
+    const availableConnectors: InternalConnector[] = connectors.map(connector => {
 
         const configuredName = connectorsConfigs.find(c => c.id === connector.id)?.name
         const name = configuredName ?? connector.name
@@ -123,7 +123,7 @@ export default function useStarknetConnection({ networks }: WalletConnectionProv
         withdrawalSupportedNetworks: starknetNames,
         autofillSupportedNetworks: starknetNames,
         asSourceSupportedNetworks: starknetNames,
-        availableWalletsForConnect,
+        availableConnectors,
         name,
         id,
         providerIcon: networks.find(n => starknetNames.some(name => name === n.name))?.logo,

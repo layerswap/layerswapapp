@@ -1,26 +1,16 @@
 import { FC } from "react";
 import { WalletModalConnector } from ".";
-import { CircleX, Link2Off, RotateCw } from "lucide-react";
+import { Link2Off, RotateCw } from "lucide-react";
 import { resolveWalletConnectorIcon } from "@/lib/wallets/utils/resolveWalletIcon";
-import clsx from "clsx";
-import useWindowDimensions from "@/hooks/useWindowDimensions";
 import LayerSwapLogoSmall from "@/components/Icons/layerSwapLogoSmall";
 import { isMobile } from "@/lib/wallets/utils/isMobile";
-import AppSettings from "@/lib/AppSettings";
 
 export const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalConnector, connectionError: string | undefined }> = ({ onRetry, selectedConnector, connectionError }) => {
     const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector, iconUrl: selectedConnector.icon });
-    const { isMobile: isMobileSize } = useWindowDimensions()
     const isMobilePlatform = isMobile();
 
     return (
-        <div
-            className={clsx('w-full flex flex-col justify-between items-center relative', {
-                'h-[60vh]': isMobileSize && AppSettings.ThemeData?.enablePortal,
-                'h-full': !isMobileSize || !AppSettings.ThemeData?.enablePortal,
-                'h-[300px]!': isMobileSize && !AppSettings.ThemeData?.enablePortal,
-            })}
-        >
+        <div className='w-full flex flex-col justify-between items-center relative h-full'>
             {
                 selectedConnector &&
                 <div className="flex grow items-center">

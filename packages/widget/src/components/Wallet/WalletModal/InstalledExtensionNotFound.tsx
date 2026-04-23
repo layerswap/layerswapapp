@@ -2,9 +2,6 @@ import { FC } from "react";
 import { WalletModalConnector } from ".";
 import { Download, ScanLine } from "lucide-react";
 import { resolveWalletConnectorIcon } from "@/lib/wallets/utils/resolveWalletIcon";
-import { AppSettings } from "@/exports/internal";
-import clsx from "clsx";
-import useWindowDimensions from "@/hooks/useWindowDimensions";
 import LayerSwapLogoSmall from "@/components/Icons/layerSwapLogoSmall";
 
 export const InstalledExtensionNotFound: FC<{
@@ -12,13 +9,7 @@ export const InstalledExtensionNotFound: FC<{
     onConnect: (connector: WalletModalConnector) => void
 }> = ({ selectedConnector, onConnect }) => {
     const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector, iconUrl: selectedConnector?.icon });
-    const { isMobile: isMobileSize } = useWindowDimensions()
-    return <div
-        className={clsx('w-full flex flex-col justify-between items-center', {
-            'h-[60vh]': isMobileSize && AppSettings.ThemeData?.enablePortal,
-            'h-full': !isMobileSize || !AppSettings.ThemeData?.enablePortal,
-            'h-[300px]!': isMobileSize && !AppSettings.ThemeData?.enablePortal,
-        })}>
+    return <div className='w-full h-full flex flex-col justify-between'>
         <div className="flex grow items-center justify-center">
             <div className="flex-col flex items-center gap-4">
                 <div className="flex items-center gap-2">

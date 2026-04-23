@@ -234,7 +234,7 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
                     <div>
                         <Tooltip onOpenChange={onTooltipOpenChange}>
                             <TooltipTrigger asChild>
-                                <span>
+                                <span className={isForCurrency ? "block w-full min-w-0" : undefined}>
                                     {
                                         children ??
                                         <div className="group-hover/addressItem:underline hover:text-secondary-text transition duration-200 no-underline flex gap-1 items-center cursor-pointer">

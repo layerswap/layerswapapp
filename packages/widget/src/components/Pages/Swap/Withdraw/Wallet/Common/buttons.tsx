@@ -23,7 +23,6 @@ import { resolvePriceImpactValues } from "@/lib/fees";
 import InfoIcon from "@/components/Icons/InfoIcon";
 import { useBalance } from "@/lib/balances/useBalance";
 import useSWRGas from "@/lib/gases/useSWRGas";
-
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData } = useSwapDataState()
     const { source_network } = swapBasicData || {}
@@ -137,7 +136,7 @@ export const ButtonWrapper: FC<SubmitButtonProps> = ({
         buttonStyle='filled'
         size="medium"
         type="button"
-        className="text-primary-text text-base my-1"
+        className="text-base my-1"
         {...props}
     >
         {props.children}
@@ -166,7 +165,6 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const { createSwap, setSwapId, setQuoteLoading } = useSwapDataUpdate()
     const { setSwapTransaction } = useSwapTransactionStore();
     const initialSettings = useInitialSettings()
-
 
     const layerswapApiClient = new LayerSwapApiClient()
     const selectedSourceAccount = useSelectedAccount("from", swapBasicData.source_network?.name);

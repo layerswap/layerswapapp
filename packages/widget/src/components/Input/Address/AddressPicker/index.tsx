@@ -11,11 +11,11 @@ import { Network, NetworkRoute } from "@/Models/Network";
 import AddressBook from "./AddressBook";
 import AddressButton from "./AddressButton";
 import { useInitialSettings } from "@/context/settings";
-import ConnectedWallets from "./ConnectedWallets";
+import ConnectedWallets, { NotCompatibleWallets } from "./ConnectedWallets";
 import { Wallet } from "@/types/wallet";
-import { useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import VaulDrawer from "@/components/Modal/vaulModal";
+import { ManualDestAddress, useManualDestAddresses, useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts";
 
 export enum AddressGroup {
     ConnectedWallet = "Connected wallet",
@@ -67,9 +67,8 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const defaultAccount = useSelectedAccount("to", values.to?.name);
     const connectedWalletskey = connectedWallets?.map(w => w.addresses.join('')).join('')
     const [manualAddress, setManualAddress] = useState<string>('')
-
-    // Get manually added address from context (shared across all AddressPicker instances)
-    const manualAddressFromContext = defaultAccount?.id === 'manually_added' ? defaultAccount.address : undefined
+    const [isConnecting, setIsConnecting] = useState(false)
+    const manualDestAddresses = useManualDestAddresses()
 
     useEffect(() => {
         if (destination_address && destination && !AddressClass.isValid(destination_address, destination)) {
@@ -85,11 +84,11 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
             address_book,
             destination,
             wallets: connectedWallets,
-            manualAddressFromContext,
+            manualAddresses: manualDestAddresses,
             addressFromQuery: initialSettings.destination_address,
-            destination_address
+            providerName: provider?.name,
         })
-    }, [address_book, destination, connectedWallets, manualAddressFromContext, initialSettings.destination_address, connectedWalletskey])
+    }, [address_book, destination, connectedWallets, manualDestAddresses, initialSettings.destination_address, connectedWalletskey, provider?.name])
 
     const destinationAddressItem = destination && destination_address ?
         groupedAddresses?.find(a => a.address.toLowerCase() === destination_address.toLowerCase())
@@ -176,6 +175,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                 destination={destination}
             >{children({ destination, addressItem: destinationAddressItem, connectedWallet: connectedWallet, partner })}</AddressButton>
             <VaulDrawer
+                mode="fitHeight"
                 header='Send To'
                 show={showAddressModal}
                 setShow={setShowAddressModal}
@@ -214,11 +214,12 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                 && !manualAddress &&
                                 <ConnectedWallets
                                     provider={provider}
-                                    notCompatibleWallets={unAvailableWallets}
                                     onClick={(props) => handleSelectAddress(props.address)}
                                     onConnect={onConnect}
                                     destination={destination}
                                     destination_address={destination_address}
+                                    isLoading={isConnecting}
+                                    setIsLoading={setIsConnecting}
                                 />
                             }
 
@@ -230,6 +231,15 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                     destination={destination}
                                     destination_address={destination_address}
                                     partner={partner}
+                                />
+                            }
+
+                            {
+                                destination && provider && !manualAddress && unAvailableWallets.length > 0 &&
+                                <NotCompatibleWallets
+                                    notCompatibleWallets={unAvailableWallets}
+                                    destination={destination}
+                                    isLoading={isConnecting}
                                 />
                             }
                         </div>
@@ -244,16 +254,16 @@ const resolveAddressGroups = ({
     address_book,
     destination,
     wallets,
-    manualAddressFromContext,
+    manualAddresses,
     addressFromQuery,
-    destination_address,
+    providerName,
 }: {
     address_book: AddressBookItem[] | undefined,
     destination: NetworkRoute | undefined,
     wallets: Wallet[] | undefined,
-    manualAddressFromContext: string | undefined,
+    manualAddresses: ManualDestAddress[],
     addressFromQuery: string | undefined,
-    destination_address: string | undefined,
+    providerName: string | undefined,
 }) => {
 
     if (!destination) return
@@ -275,10 +285,11 @@ const resolveAddressGroups = ({
         addresses = [...addresses, ...recentlyUsedAddresses]
     }
 
-    // Include manually added address from context (shared across all instances)
-    if (manualAddressFromContext && AddressClass.isValid(manualAddressFromContext, destination)) {
-        addresses.push({ address: manualAddressFromContext, group: AddressGroup.ManualAdded })
-    }
+    manualAddresses.forEach(entry => {
+        if (entry.providerName === providerName && AddressClass.isValid(entry.address, destination)) {
+            addresses.push({ address: entry.address, group: AddressGroup.ManualAdded })
+        }
+    })
 
     const uniqueAddresses = getUniqueAddresses(addresses, destination)
 
