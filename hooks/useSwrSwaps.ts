@@ -16,9 +16,16 @@ export type UseSwrSwapsArgs = {
 }
 
 const getSwapsKey = (index: number, statuses: string[], addresses?: string[], networks?: string[]) => {
-    const addressesParams = addresses?.map(a => `&address=${a}`).join('') || ''
-    const statusesParams = statuses.map(s => `&statuses=${s}`).join('') || ''
-    const networksParams = networks?.map(n => `&networks=${n}`).join('') || ''
+    const addressesParams = addresses?.length
+        ? [...addresses].sort().map(a => `&address=${encodeURIComponent(a)}`).join('')
+        : ''
+    const networksParams = networks?.length
+        ? [...networks].sort().map(n => `&networks=${encodeURIComponent(n)}`).join('')
+        : ''
+    const statusesParams = networks?.length
+        ? statuses.map(s => `&statuses=${encodeURIComponent(s)}`).join('')
+        : ''
+
     return `/swaps?page=${index + 1}${statusesParams}${addressesParams}${networksParams}`
 }
 
