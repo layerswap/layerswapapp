@@ -5,7 +5,7 @@ import { ApiResponse } from '@/Models/ApiResponse'
 import { SwapStatus } from '@/Models/SwapStatus'
 import { useSwapTransactionStore } from '@/stores/swapTransactionStore'
 
-export function useSwapHistoryData(addresses?: string[]) {
+export function useSwapHistoryData(addresses?: string[], networks?: string[]) {
     const [revalidateAll, setRevalidateAll] = useState(false)
     const [localStorageSwaps, setLocalStorageSwaps] = useState<SwapResponse[]>([])
     const [isLoadingLocalSwaps, setIsLoadingLocalSwaps] = useState(false)
@@ -15,6 +15,7 @@ export function useSwapHistoryData(addresses?: string[]) {
     const pendingDeposit = useSwrSwaps({
         statuses: ['PendingDeposit'],
         addresses,
+        networks,
         refreshInterval: (data?: ApiResponse<SwapResponse[]>[] | undefined) => {
             const hasAny = !!data?.some((p) => (p?.data?.length ?? 0) > 0)
             if (!hasAny) return 30000
@@ -29,6 +30,7 @@ export function useSwapHistoryData(addresses?: string[]) {
     const completed = useSwrSwaps({
         statuses: ['Completed', 'Refunded', 'PendingWithdrawal', 'PendingRefund'],
         addresses,
+        networks,
         refreshInterval: (data) => {
             const hasAnyInProgress = !!data?.some((p) => (p?.data?.some(s => s.swap.status === SwapStatus.PendingRefund || s.swap.status === SwapStatus.LsTransferPending)))
             if (!hasAnyInProgress) return 0
@@ -58,7 +60,7 @@ export function useSwapHistoryData(addresses?: string[]) {
                 if (localSwapIds.length === 0) {
                     // Clear fetched IDs when local storage is empty
                     fetchedIdsRef.current.clear()
-                    setLocalStorageSwaps([])
+                    setLocalStorageSwaps(prev => prev.length === 0 ? prev : [])
                     return
                 }
 
@@ -108,6 +110,7 @@ export function useSwapHistoryData(addresses?: string[]) {
                     const newSwaps = fetchedSwaps.filter((s): s is SwapResponse =>
                         s !== null && !existingIds.has(s.swap.id)
                     )
+                    if (newSwaps.length === 0) return prev
                     return [...prev, ...newSwaps]
                 })
             } catch (error) {
