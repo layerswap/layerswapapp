@@ -22,9 +22,7 @@ const getSwapsKey = (index: number, statuses: string[], addresses?: string[], ne
     const networksParams = networks?.length
         ? [...networks].sort().map(n => `&networks=${encodeURIComponent(n)}`).join('')
         : ''
-    const statusesParams = networks?.length
-        ? statuses.map(s => `&statuses=${encodeURIComponent(s)}`).join('')
-        : ''
+    const statusesParams = statuses.map(s => `&statuses=${encodeURIComponent(s)}`).join('')
 
     return `/swaps?page=${index + 1}${statusesParams}${addressesParams}${networksParams}`
 }
