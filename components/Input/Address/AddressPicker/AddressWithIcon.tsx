@@ -239,7 +239,7 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
 
     return (
         <div onClick={(e) => e.stopPropagation()}>
-            <Popover open={isPopoverOpen} onOpenChange={handlePopoverChange} modal={true}>
+            <Popover open={isPopoverOpen} onOpenChange={handlePopoverChange}>
                 <PopoverTrigger asChild>
                     <div>
                         <Tooltip onOpenChange={onTooltipOpenChange}>
@@ -271,6 +271,12 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
                     avoidCollisions={true}
                     collisionPadding={8}
                     sticky="always"
+                    onInteractOutside={(e) => {
+                        e.detail.originalEvent.stopPropagation()
+                    }}
+                    onPointerDownOutside={(e) => {
+                        e.detail.originalEvent.stopPropagation()
+                    }}
                 >
                     {showDetails && (title || description) && (
                         <div>
