@@ -5,7 +5,6 @@ import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '@/Models/ApiResponse';
 import { Partner } from '@/Models/Partner';
 import { ApiError } from '@/Models/ApiError';
-import { ResolvePollingInterval } from '@/components/utils/SwapStatus';
 import { Wallet, WalletConnectionProvider } from '@/types/wallet';
 import useWallet from '@/hooks/useWallet';
 import { Network } from '@/Models/Network';
@@ -15,27 +14,13 @@ import { useRecentNetworksStore } from '@/stores/recentRoutesStore';
 import { useSelectedAccount } from './swapAccounts';
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues';
 import { useInitialSettings } from './settings';
-import { addressFormat } from '@/lib/address/formatter';
 import { useSlippageStore } from '@/stores/slippageStore';
 import { useCallbacks } from './callbackProvider';
+import { Address } from '@/lib/address/Address';
+import { useSwapTransactionStore } from '@/stores';
+import { resolveSwapPhase } from '@/components/utils/resolveSwapPhase';
 
-export const SwapDataStateContext = createContext<SwapContextData>({
-    depositAddressIsFromAccount: false,
-    withdrawType: undefined,
-    swapTransaction: undefined,
-    depositActionsResponse: undefined,
-    swapApiError: undefined,
-    quote: undefined,
-    quoteError: undefined,
-    quoteIsLoading: false,
-    refuel: undefined,
-    swapBasicData: undefined,
-    swapDetails: undefined,
-    swapId: undefined,
-    swapModalOpen: false,
-    swapError: '',
-    setSwapError: (value: string) => { }
-});
+export const SwapDataStateContext = createContext<SwapContextData | null>(null);
 
 export const SwapDataUpdateContext = createContext<UpdateSwapInterface | null>(null);
 
@@ -157,7 +142,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
 
     const selectedSourceAccount = useSelectedAccount("from", swapBasicFormData?.source_network?.name);
     const { wallets } = useWallet(swapBasicFormData?.source_network, 'asSource')
-    const selectedWallet = (selectedSourceAccount?.address && swapBasicFormData) && wallets.find(w => addressFormat(w.address, swapBasicFormData?.source_network) === addressFormat(selectedSourceAccount?.address, swapBasicFormData?.source_network))
+    const selectedWallet = (selectedSourceAccount?.address && swapBasicFormData) && wallets.find(w => Address.equals(w.address, selectedSourceAccount.address, swapBasicFormData?.source_network))
 
     const sourceIsSupported = (swapBasicData && selectedWallet) && WalletIsSupportedForSource({
         providers: providers,
@@ -171,15 +156,28 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const { data: depositActions } = useSWR<ApiResponse<DepositAction[]>>(!inputTransfer ? deposit_actions_endpoint : null, layerswapApiClient.fetcher)
 
     const depositActionsResponse = depositActions?.data
-    const swapStatus = data?.data?.swap.status;
+
+    const currentSwap = data?.data?.swap
+    const storedWalletTransaction = useSwapTransactionStore(
+        state => currentSwap?.id ? state.swapTransactions[currentSwap.id] : undefined,
+    )
+    const pollingIntervalMs = useMemo(
+        () => resolveSwapPhase({
+            swapDetails: currentSwap,
+            refuel: data?.data?.refuel,
+            storedWalletTransaction,
+        }).pollingIntervalMs,
+        [currentSwap, data?.data?.refuel, storedWalletTransaction],
+    )
 
     useEffect(() => {
-        if (swapStatus)
-            setInterval(ResolvePollingInterval(swapStatus))
-        return () => {
+        if (!currentSwap?.status) {
             setInterval(0)
+            return () => setInterval(0)
         }
-    }, [swapStatus])
+        setInterval(pollingIntervalMs)
+        return () => setInterval(0)
+    }, [pollingIntervalMs, currentSwap?.status])
 
     useEffect(() => {
         if (!swapId)
@@ -289,7 +287,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
 export function useSwapDataState() {
     const data = useContext(SwapDataStateContext);
 
-    if (data === undefined) {
+    if (data === undefined || data === null) {
         throw new Error('swapData must be used within a SwapDataProvider');
     }
     return data;

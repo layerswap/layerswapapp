@@ -48,7 +48,11 @@
   },
   "dependencies": {
     "@metamask/sdk": "^0.33.1",
-    "@walletconnect/ethereum-provider": "2.21.8",
+    "@walletconnect/ethereum-provider": "catalog:",
+    "@walletconnect/universal-provider": "catalog:",
+    "@walletconnect/types": "catalog:",
+    "@walletconnect/utils": "catalog:",
+    "bs58": "^6.0.0",
     "ethers": "5.7.2",
     "js-sha3": "^0.8.0"
   },

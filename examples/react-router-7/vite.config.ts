@@ -20,9 +20,9 @@ export default defineConfig({
     global: "globalThis",
   },
   ssr: {
-    noExternal: ["@layerswap/widget", "@layerswap/wallet-evm", "@layerswap/wallet-svm", "@layerswap/wallet-bitcoin", "@layerswap/wallet-starknet", "js-sha3", "@layerswap/wallets", "@layerswap/wallet-fuel", '@layerswap/wallet-ton', '@layerswap/wallet-paradex', '@layerswap/wallet-imtbl-x', '@layerswap/wallet-imtbl-passport', '@layerswap/wallet-module-zksync', '@layerswap/wallet-module-loopring', '@layerswap/wallet-tron'],
+    noExternal: ["@layerswap/widget", "@layerswap/wallet-evm", "@layerswap/wallet-svm", "@layerswap/wallet-bitcoin", "@layerswap/wallet-starknet", "js-sha3", "@layerswap/wallets", "@layerswap/wallet-fuel", '@layerswap/wallet-ton', '@layerswap/wallet-paradex', '@layerswap/wallet-imtbl-passport', '@layerswap/wallet-module-zksync', '@layerswap/wallet-module-loopring', '@layerswap/wallet-tron'],
   },
   optimizeDeps: {
-    include: ["@layerswap/widget", "@layerswap/wallet-evm", "@layerswap/wallet-svm", "@layerswap/wallet-bitcoin", "@layerswap/wallet-starknet", "js-sha3", "@layerswap/wallets", "@layerswap/wallet-fuel", "@layerswap/wallet-ton", '@layerswap/wallet-paradex', '@layerswap/wallet-imtbl-x', '@layerswap/wallet-imtbl-passport', '@layerswap/wallet-module-zksync', '@layerswap/wallet-module-loopring','@layerswap/wallet-tron'],
+    include: ["@layerswap/widget", "@layerswap/wallet-evm", "@layerswap/wallet-svm", "@layerswap/wallet-bitcoin", "@layerswap/wallet-starknet", "js-sha3", "@layerswap/wallets", "@layerswap/wallet-fuel", "@layerswap/wallet-ton", '@layerswap/wallet-paradex', '@layerswap/wallet-imtbl-passport', '@layerswap/wallet-module-zksync', '@layerswap/wallet-module-loopring','@layerswap/wallet-tron'],
   },
 });

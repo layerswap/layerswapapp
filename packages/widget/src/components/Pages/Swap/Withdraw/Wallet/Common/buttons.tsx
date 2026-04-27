@@ -21,10 +21,8 @@ import { ErrorHandler } from "@/lib/ErrorHandler";
 import { TokenBalance, TransferProps, Wallet } from "@/types";
 import { resolvePriceImpactValues } from "@/lib/fees";
 import InfoIcon from "@/components/Icons/InfoIcon";
-import { addressFormat } from "@/lib/address/formatter";
 import { useBalance } from "@/lib/balances/useBalance";
-import KnownInternalNames from "@/lib/knownIds";
-
+import useSWRGas from "@/lib/gases/useSWRGas";
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData } = useSwapDataState()
     const { source_network } = swapBasicData || {}
@@ -138,7 +136,7 @@ export const ButtonWrapper: FC<SubmitButtonProps> = ({
         buttonStyle='filled'
         size="medium"
         type="button"
-        className="text-primary-text text-base"
+        className="text-base my-1"
         {...props}
     >
         {props.children}
@@ -168,7 +166,6 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const { setSwapTransaction } = useSwapTransactionStore();
     const initialSettings = useInitialSettings()
 
-
     const layerswapApiClient = new LayerSwapApiClient()
     const selectedSourceAccount = useSelectedAccount("from", swapBasicData.source_network?.name);
 
@@ -177,6 +174,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const { balances } = useBalance(selectedSourceAccount?.address, networkWithTokens)
 
     const { wallets } = useWallet(swapBasicData.source_network, 'withdrawal')
+    const { gasData } = useSWRGas(selectedSourceAccount?.address, networkWithTokens, swapBasicData.source_token, swapBasicData.requested_amount)
     const [actionStateText, setActionStateText] = useState<string | undefined>()
     const [loading, setLoading] = useState(false)
     const [showCriticalMarketPriceImpactButtons, setShowCriticalMarketPriceImpactButtons] = useState(false)
@@ -186,7 +184,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
     const handleClick = async () => {
         try {
-            const selectedWallet = selectedSourceAccount && wallets.find(w => w.addresses.some(a => addressFormat(a, swapBasicData.source_network) === addressFormat(selectedSourceAccount?.address, swapBasicData.source_network)))
+            const selectedWallet = wallets.find(w => w.id === selectedSourceAccount?.id)
             if (!selectedSourceAccount) {
                 throw new Error('Selected source account is undefined')
             }
@@ -286,6 +284,25 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 fromAddress: selectedSourceAccount?.address,
                 toAddress: swapBasicData?.destination_address
             });
+
+            const walletBalance = balances?.find(b => b?.network === swapBasicData.source_network?.name && b?.token === swapBasicData.source_token?.symbol)
+            if (walletBalance?.isNativeCurrency && gasData?.gas && walletBalance?.amount != null) {
+                const requestedAmount = Number(swapBasicData.requested_amount)
+                const difference = walletBalance.amount - requestedAmount
+                if (difference >= 0 && difference < 5 * gasData.gas) {
+                    ErrorHandler({
+                        type: 'GasMiscalculation',
+                        message: (e as Error)?.message,
+                        name: (e as Error)?.name,
+                        requestedAmount,
+                        walletBalance: walletBalance.amount,
+                        calculatedGas: gasData.gas,
+                        difference,
+                        network: swapBasicData.source_network?.name,
+                        token: swapBasicData.source_token?.symbol,
+                    })
+                }
+            }
         }
         finally {
             setLoading(false)
@@ -309,8 +326,8 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 <div className="flex items-start gap-2.5">
                     <span className="shrink-0"><InfoIcon className="w-5 h-5 text-warning-foreground" /></span>
                     <div className="flex flex-col gap-1.5 pr-4">
-                        <p className="text-primary-text font-semibold leading-4 text-base mt-0.5">Critical receiving amount</p>
-                        <p className="text-priamry-text text-base font-normal leading-[18px]"><span>By continuing, you agree to receive as low as </span><span className="text-warning-foreground text-nowrap">{quote.min_receive_amount} {quote.destination_token?.symbol} ($ {priceImpactValues.minReceiveAmountUSD})</span></p>
+                        <p className="text-white font-semibold leading-4 text-base mt-0.5">Critical receiving amount</p>
+                        <p className="text-priamry-text text-base font-normal leading-4.5"><span>By continuing, you agree to receive as low as </span><span className="text-warning-foreground text-nowrap">{quote.min_receive_amount} {quote.destination_token?.symbol} ($ {priceImpactValues.minReceiveAmountUSD})</span></p>
                     </div>
                 </div>
             </div>}
@@ -343,7 +360,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     <span className="shrink-0"><InfoIcon className="w-5 h-5 text-warning-foreground" /></span>
                     <div className="flex flex-col gap-1.5 pr-4">
                         <p className="text-primary-text font-medium leading-4 text-base mt-0.5">Critical receiving amount</p>
-                        <p className="text-secondary-text text-sm leading-[18px]"><span>The “receive at least” amount is affected by high price impact. You will receive at least </span><span>{quote.min_receive_amount} {quote.destination_token?.symbol} ($ {priceImpactValues.minReceiveAmountUSD}) </span></p>
+                        <p className="text-secondary-text text-sm leading-4.5"><span>The “receive at least” amount is affected by high price impact. You will receive at least </span><span>{quote.min_receive_amount} {quote.destination_token?.symbol} ($ {priceImpactValues.minReceiveAmountUSD}) </span></p>
                     </div>
                 </div>
             </div>}
@@ -362,8 +379,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
 const resolveTransactionData = (swapDetails: SwapDetails, swapBasicData: SwapBasicData, deposit_actions: DepositAction[], balances: TokenBalance[] | null | undefined, selectedWallet: Wallet): TransferProps => {
     const depositAction = deposit_actions?.find(action =>
-        action.type === 'transfer'
-        || ExceptionNetworks.includes(swapBasicData.source_network?.name) && action.type === 'manual_transfer');
+        action.type === 'transfer');
     if (!depositAction) {
         throw new Error('No deposit action found')
     }
@@ -380,8 +396,3 @@ const resolveTransactionData = (swapDetails: SwapDetails, swapBasicData: SwapBas
         selectedWallet: selectedWallet,
     }
 }
-
-const ExceptionNetworks = [
-    KnownInternalNames.Networks.ImmutableXMainnet,
-    KnownInternalNames.Networks.ImmutableXSepolia
-]

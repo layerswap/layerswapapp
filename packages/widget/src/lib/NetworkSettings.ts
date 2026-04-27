@@ -1,21 +1,8 @@
 import KnownInternalNames from "./knownIds";
 
-export enum DepositType {
-    Manual = 'manual',
-    Wallet = 'wallet'
-}
-
 export enum GasCalculation {
     Classic = 'classic',
     OptimismType = 'optimismType'
-}
-
-type NetworkItemSettings = {
-    [network: string]: {
-        apiUri: string,
-        appUri?: string,
-        linkUri?: string
-    }
 }
 
 const destinationOrder = [
@@ -29,7 +16,6 @@ const destinationOrder = [
     KnownInternalNames.Networks.EthereumMainnet,
     KnownInternalNames.Networks.PolygonMainnet,
     KnownInternalNames.Networks.AvalancheMainnet,
-    KnownInternalNames.Networks.ImmutableXMainnet,
     KnownInternalNames.Networks.LoopringMainnet,
     KnownInternalNames.Networks.BNBChainMainnet,
     KnownInternalNames.Networks.MantleMainnet,
@@ -56,13 +42,13 @@ const sourceOrder = [
     KnownInternalNames.Networks.PolygonZkMainnet,
     KnownInternalNames.Networks.KCCMainnet,
     KnownInternalNames.Networks.LoopringMainnet,
-    KnownInternalNames.Networks.ImmutableXMainnet,
     KnownInternalNames.Networks.BaseMainnet,
 ];
 
 export default class NetworkSettings {
     ChainId?: number | string;
     BaseFeeMultiplier?: number;
+    MinPriorityFeePerGasInGwei?: number;
     AddressPlaceholder?: string;
     OrderInDestination?: number;
     OrderInSource?: number;
@@ -70,10 +56,9 @@ export default class NetworkSettings {
     GasCalculationType?: GasCalculation
     isFeatured?: boolean
     ChainOrder?: number
+    FeeParsingDecimalPlaces?: number
 
     public static KnownSettings: { [network: string]: NetworkSettings } = {};
-
-    public static ImmutableXSettings: NetworkItemSettings
 
     private static _isInitialized = false;
     public static Initialize() {
@@ -148,6 +133,7 @@ export default class NetworkSettings {
             AccountExplorerTemplate: 'https://optimistic.etherscan.io/address/{0}',
             GasCalculationType: GasCalculation.OptimismType,
             BaseFeeMultiplier: 1.5,
+            MinPriorityFeePerGasInGwei: 0.0001,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ScrollMainnet] = {
             ChainId: 534352,
@@ -192,15 +178,10 @@ export default class NetworkSettings {
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.OsmosisMainnet] = {
             AddressPlaceholder: 'osmo123...ab56c',
         };
-        NetworkSettings.KnownSettings[KnownInternalNames.Networks.ImmutableXMainnet] = {
-            AccountExplorerTemplate: 'https://immutascan.io/address/{0}',
-        };
-        NetworkSettings.KnownSettings[KnownInternalNames.Networks.ImmutableXGoerli] = {
-            AccountExplorerTemplate: 'https://immutascan.io/address/{0}',
-        };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.BNBChainMainnet] = {
             AccountExplorerTemplate: 'https://bscscan.com/address/{0}',
-            ChainId: 56
+            ChainId: 56,
+            BaseFeeMultiplier: 1.2,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.StarkNetMainnet] = {
             AccountExplorerTemplate: 'https://starkscan.co/contract/{0}',
@@ -274,7 +255,8 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.AvalancheMainnet] = {
             ChainId: 43114,
-            BaseFeeMultiplier: 1.7
+            BaseFeeMultiplier: 1.7,
+            MinPriorityFeePerGasInGwei: 1.5,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.PolygonZkMainnet] = {
             ChainId: 1101,
@@ -294,20 +276,12 @@ export default class NetworkSettings {
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.BlastMainnet] = {
             GasCalculationType: GasCalculation.OptimismType,
         };
-        NetworkSettings.ImmutableXSettings = {
-            [KnownInternalNames.Networks.ImmutableXMainnet]: {
-                apiUri: "https://api.x.immutable.com/v1",
-                linkUri: "https://link.x.immutable.com",
-            },
-            [KnownInternalNames.Networks.ImmutableXGoerli]: {
-                apiUri: "https://api.sandbox.x.immutable.com/v1",
-                linkUri: "https://link.sandbox.x.immutable.com"
-            },
-            [KnownInternalNames.Networks.ImmutableXSepolia]: {
-                apiUri: "https://api.sandbox.x.immutable.com/v1",
-                linkUri: "https://link.sandbox.x.immutable.com"
-            },
-        }
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.TempoTestnet] = {
+            FeeParsingDecimalPlaces: 18,
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.TempoMainnet] = {
+            FeeParsingDecimalPlaces: 18,
+        };
 
         for (var k in NetworkSettings.KnownSettings) {
             let networkSetting = NetworkSettings.KnownSettings[k];

@@ -4,6 +4,12 @@ import { NetworkWithTokens } from "@/Models/Network";
 import { ErrorHandler } from "@/lib/ErrorHandler";
 import { classifyNodeError } from "./nodeErrorClassifier";
 import { extractErrorDetails } from "./errorUtils";
+import KnownInternalNames from "../knownIds";
+
+const SKIP_BALANCE_NETWORKS = [
+    KnownInternalNames.Networks.ParadexMainnet,
+    KnownInternalNames.Networks.ParadexTestnet,
+];
 
 function formatErrorBalances(errorBalances: TokenBalance[]) {
     return errorBalances.map(b => ({
@@ -33,6 +39,10 @@ export class BalanceResolver {
     }
 
     async getBalance(network: NetworkWithTokens, address?: string, options?: { timeoutMs?: number, retryCount?: number }): Promise<NetworkBalance> {
+        if (SKIP_BALANCE_NETWORKS.includes(network.name)) {
+            return { balances: [] }
+        }
+
         try {
             if (!address)
                 throw new Error(`No address provided for network ${network.name}`)
@@ -54,18 +64,21 @@ export class BalanceResolver {
                     message: balanceError.message,
                     network: network.name,
                     node_url: network.node_url,
+                    nodes: network.nodes,
                     address: address,
                     error_categories: [...new Set(errorBalances.map(b => classifyNodeError(b.error)))],
                     error_codes: [...new Set(errorBalances.map(b => b.error?.code).filter(Boolean))],
                     http_statuses: [...new Set(errorBalances.map(b => b.error?.status).filter(Boolean))],
                     failed_tokens: formatErrorBalances(errorBalances),
                 });
+
             }
 
             return { balances };
         }
         catch (e) {
             const errorDetails = extractErrorDetails(e);
+            const errorCategory = classifyNodeError(e);
             const error = new Error(errorDetails.message);
             error.name = "BalanceError";
             error.cause = e;
@@ -77,8 +90,9 @@ export class BalanceResolver {
                 cause: error.cause,
                 network: network.name,
                 node_url: network.node_url,
+                nodes: network.nodes,
                 address: address,
-                error_category: classifyNodeError(e),
+                error_category: errorCategory,
                 error_code: errorDetails.code,
                 response_status: errorDetails.status,
                 response_status_text: errorDetails.statusText,

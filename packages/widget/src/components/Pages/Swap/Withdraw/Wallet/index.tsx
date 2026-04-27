@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, Suspense, useCallback, useEffect, useState } from "react";
 import { PublishedSwapTransactions, SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { WithdrawalProvider } from "@/context/withdrawalContext";
 import useWallet from "@/hooks/useWallet";
@@ -81,14 +81,16 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
         const MultiStepHandler = provider.multiStepHandlers.find(handler => handler.supportedNetworks.includes(source_network?.name))?.component
 
         if (MultiStepHandler) {
-            return <MultiStepHandler
-                swapId={swapId}
-                swapBasicData={swapBasicData}
-                refuel={refuel}
-                onTransferComplete={(hash: string) => {
-                    setSavedTransactionHash(hash)
-                }}
-            />
+            return <Suspense fallback={null}>
+                <MultiStepHandler
+                    swapId={swapId}
+                    swapBasicData={swapBasicData}
+                    refuel={refuel}
+                    onTransferComplete={(hash: string) => {
+                        setSavedTransactionHash(hash)
+                    }}
+                />
+            </Suspense>
         }
     }
 
@@ -226,6 +228,8 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
             <ActionMessage
                 error={error}
                 isLoading={loading}
+                selectedSourceAddress={selectedSourceAccount?.address || ''}
+                sourceNetwork={swapData.source_network}
             />
         }
         {

@@ -13,3 +13,4 @@ export { resolveWalletConnectorIcon, walletIconResolver } from '../lib/wallets/u
 export { NetworkWithTokens, NetworkType } from '../Models/Network'
 export { default as useWallet } from '../hooks/useWallet'
 export type { SwapFormValues, SwapDirection } from '../components/Pages/Swap/Form/SwapFormValues'
+export { compactSettings, encodeSettingsForSSR, inflateSettings } from '../helpers/settingsCompression'

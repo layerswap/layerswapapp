@@ -5,8 +5,6 @@ import LayerSwapApiClient, { SwapResponse, TransactionType } from "@/lib/apiClie
 import { ApiResponse } from "@/Models/ApiResponse"
 import { useInitialSettings } from "@/context/settings"
 import { Partner } from "@/Models/Partner"
-import { addressEnding, shortenEmail } from "@/components/utils/ShortenAddress"
-import KnownInternalNames from "@/lib/knownIds"
 import { ChevronRightIcon } from 'lucide-react'
 import StatusIcon from "./StatusIcons"
 import { FC } from "react"
@@ -22,16 +20,13 @@ type SwapInfoProps = {
 }
 const HistorySummary: FC<SwapInfoProps> = ({
     swapResponse,
-    wallets,
     className
 }) => {
 
     const {
         hideFrom,
         hideTo,
-        account,
-        appName,
-        hideAddress
+        appName
     } = useInitialSettings()
 
     const layerswapApiClient = new LayerSwapApiClient()
@@ -39,28 +34,13 @@ const HistorySummary: FC<SwapInfoProps> = ({
     const partner = partnerData?.data
     const { swap, quote } = swapResponse
 
-    const { source_network, destination_network, source_token, destination_token, source_exchange, destination_exchange, destination_address, exchange_account_connected, exchange_account_name, requested_amount } = swap || {}
+    const { source_network, destination_network, source_token, destination_token, source_exchange, destination_exchange, requested_amount } = swap || {}
 
     const source = hideFrom ? partner : (source_exchange || source_network)
     const destination = hideTo ? partner : (destination_exchange || destination_network)
 
-    const sourceTransaction = swap.transactions?.find(t => t.type === TransactionType.Input)
     const destinationTransaction = swap.transactions?.find(t => t.type === TransactionType.Output)
-    const sourceAddressFromInput = sourceTransaction?.from;
     const calculatedReceiveAmount = destinationTransaction?.amount ?? quote?.receive_amount
-
-    let sourceAccountAddress: string | undefined = undefined
-    if (source_exchange) {
-        sourceAccountAddress = "Exchange"
-    }
-    else if (sourceAddressFromInput) {
-        sourceAccountAddress = addressEnding(sourceAddressFromInput)
-    }
-    else if (source_network?.name === KnownInternalNames.Exchanges.Coinbase && exchange_account_connected) {
-        sourceAccountAddress = shortenEmail(exchange_account_name, 10);
-    }
-
-    const destAddress = (hideAddress && hideTo && account) ? account : destination_address
 
     return (
         source_token && <>

@@ -27,4 +27,5 @@ const AddressIcon: FC<Props> = ({ address, size, className, rounded }) => {
 
     return <div className={className} ref={ref as any} />
 }
+
 export default AddressIcon

@@ -11,6 +11,7 @@ import SubmitButton from '@/components/Buttons/submitButton';
 import ManualWithdraw from './ManualWithdraw';
 import { Partner } from '@/Models';
 import { useCallbacks } from "@/context/callbackProvider";
+import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
 
 type Props = {
     type: "widget" | "contained",
@@ -22,15 +23,15 @@ type Props = {
 const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal, partner }) => {
     const { swapDetails, swapBasicData, refuel, depositActionsResponse, quote, quoteIsLoading } = useSwapDataState()
     const { onBackClick } = useCallbacks()
-    const swapStatus = swapDetails?.status || SwapStatus.UserTransferPending;
-    const storedWalletTransactions = useSwapTransactionStore()
 
-    const swapInputTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Input)
-    const storedWalletTransaction = storedWalletTransactions.swapTransactions?.[swapDetails?.id || '']
+    const storedWalletTransaction = useSwapTransactionStore(
+        state => swapDetails?.id ? state.swapTransactions[swapDetails.id] : undefined,
+    )
+    const resolved = useResolvedSwapStatus()
 
     const removeStoredTransaction = useCallback(() => {
         useSwapTransactionStore.getState().removeSwapTransaction(swapDetails?.id || '');
-    }, [swapDetails?.id, storedWalletTransactions])
+    }, [swapDetails?.id])
 
     if (!swapBasicData) return <>
         <div className="w-full h-[430px]">
@@ -47,8 +48,7 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, onCancelWithd
     return (
         <Container type={type} goBack={onBackClick}>
             {
-                ((swapStatus === SwapStatus.UserTransferPending
-                    && !(swapInputTransaction || storedWalletTransaction))) ?
+                resolved.showWithdrawScreen ?
                     (
                         swapBasicData?.use_deposit_address === true
                             ? <ManualWithdraw swapBasicData={swapBasicData} depositActions={depositActionsResponse} refuel={refuel} partner={partner} type={type} quote={quote} isQuoteLoading={quoteIsLoading} />

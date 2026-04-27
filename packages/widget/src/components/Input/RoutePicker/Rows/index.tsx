@@ -62,7 +62,7 @@ export default function Row({
                 <NavigatableItem
                     index={index}
                     onClick={() => onSelect(route, token)}
-                    className="cursor-pointer outline-none disabled:cursor-not-allowed rounded-xl hover:bg-secondary-500"
+                    className="group/row cursor-pointer hover:bg-secondary-500 has-[*[data-tooltip-open=true]]:bg-secondary-500 has-[*[data-tooltip-open=true]]:cursor-pointer! outline-none disabled:cursor-not-allowed rounded-xl"
                     focusedClassName="bg-secondary-500"
                 >
                     <CurrencySelectItemDisplay
@@ -84,7 +84,7 @@ export default function Row({
                         altText={`sceleton logo `}
                         className="rounded-full bg-secondary-500"
                     />
-                    <SelectItem.Title className="py-0.5">
+                    <SelectItem.Title>
                         <div className="grid gap-0 leading-5 align-middle space-y-0.5 font-medium">
                             <span className="align-middle h-3.5 my-1 w-12 bg-secondary-500 rounded-sm" />
                             <div className="flex items-center space-x-1 align-middle" >

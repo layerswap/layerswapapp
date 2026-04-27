@@ -6,6 +6,10 @@ import { KnownInternalNames } from "@layerswap/widget/internal";
 import { BalanceProvider, TokenBalance, NetworkType, NetworkWithTokens, Token, Network } from "@layerswap/widget/types"
 import { resolveFallbackTransport } from "../evmUtils/resolveTransports"
 
+const nativeBalanceSkip = [
+    KnownInternalNames.Networks.TempoMainnet,
+    KnownInternalNames.Networks.TempoTestnet
+]
 
 export class EVMBalanceProvider extends BalanceProvider {
     supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
@@ -50,8 +54,11 @@ export class EVMBalanceProvider extends BalanceProvider {
                 retryCount: options?.retryCount
             });
             const nativeToken = network.token
+            const skipNativeBalance = nativeBalanceSkip.includes(network.name)
 
-            const nativePromise = getTokenBalance(address as `0x${string}`, network, undefined, options?.timeoutMs, options?.retryCount)
+            const nativePromise = skipNativeBalance
+                ? Promise.resolve(null)
+                : getTokenBalance(address as `0x${string}`, network, undefined, options?.timeoutMs, options?.retryCount)
 
             const [erc20BalancesContractRes, nativeBalanceData] = await Promise.all([
                 erc20Promise,
@@ -99,7 +106,7 @@ export class EVMBalanceProvider extends BalanceProvider {
             const amount = balances[1][index]
 
             if (amount >= 0) {
-                const formattedAmount = formatUnits(BigInt(amount), token.decimals)
+                const formattedAmount = Number(formatUnits(BigInt(amount), token.decimals))
                 return {
                     network: network.name,
                     token: token.symbol,

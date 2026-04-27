@@ -3,10 +3,13 @@ import { useFormikContext } from 'formik';
 import { useInitialSettings } from './settings';
 import { transformFormValuesToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { resolveFormValidation } from '@/hooks/useFormValidation';
-import { resolveRouteValidation } from '@/hooks/useRouteValidation';
+import { useRouteValidation } from '@/hooks/useRouteValidation';
 import { useSwapDataState } from './swap';
 import { useSelectedAccount } from './swapAccounts';
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues';
+import { useSlippageStore } from '@/stores';
+import { useAutoSlippageTest } from '@/hooks/useAutoSlippageTest';
+import { useUsdModeStore } from '@/stores/usdModeStore';
 
 export interface ValidationDetails {
     title?: string;
@@ -23,11 +26,15 @@ interface ValidationContextType {
         message: string;
         details: ValidationDetails;
     };
+    autoSlippageWouldWork: boolean;
+    isTestingAutoSlippage: boolean;
 }
 
 const defaultContext: ValidationContextType = {
     formValidation: { message: '' },
     routeValidation: { message: '', details: {} },
+    autoSlippageWouldWork: false,
+    isTestingAutoSlippage: false,
 };
 
 const ValidationContext = createContext<ValidationContextType>(defaultContext);
@@ -40,14 +47,24 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
     const selectedSourceAccount = useSelectedAccount("from", values.from?.name);
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
-    const { minAllowedAmount, maxAllowedAmount, quoteError } = useQuoteData(quoteArgs, quoteRefreshInterval)
+    const { minAllowedAmount, maxAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, quoteError, quote, isQuoteLoading, isDebouncing } = useQuoteData(quoteArgs, quoteRefreshInterval)
 
-    const routeValidation = resolveRouteValidation(quoteError);
+    const { autoSlippage } = useSlippageStore();
+    const quoteErrorCode = quoteError?.response?.data?.error?.code || quoteError?.code;
+    const shouldTestAutoSlippage = !autoSlippage && !quote && !!values.amount && Number(values.amount) > 0 && !!values.from && !!values.to && !quoteErrorCode && !(isQuoteLoading || isDebouncing);
+    const { autoSlippageWouldWork, isTestingAutoSlippage } = useAutoSlippageTest({ values, shouldTest: shouldTestAutoSlippage });
+
+    const routeValidation = useRouteValidation(quoteError, !!quote, isQuoteLoading || isDebouncing, autoSlippageWouldWork);
+
+    const isUsdMode = useUsdModeStore(s => s.isUsdMode);
 
     const formValidation = resolveFormValidation({
         values,
         maxAllowedAmount,
         minAllowedAmount,
+        minAllowedAmountInUsd,
+        maxAllowedAmountInUsd,
+        isUsdMode,
         sourceAddress: selectedSourceAccount?.address,
         sameAccountNetwork,
         quoteError
@@ -57,8 +74,10 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
         () => ({
             formValidation,
             routeValidation,
+            autoSlippageWouldWork,
+            isTestingAutoSlippage,
         }),
-        [formValidation, routeValidation]
+        [formValidation, routeValidation, autoSlippageWouldWork, isTestingAutoSlippage]
     );
 
     return <ValidationContext.Provider value={value}>{children}</ValidationContext.Provider>;

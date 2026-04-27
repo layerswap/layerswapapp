@@ -6,10 +6,11 @@ import FormButton from "./SecondaryComponents/FormButton";
 import { Form, useFormikContext } from "formik";
 import { Partner } from "@/Models/Partner";
 import RoutePicker from "@/components/Input/RoutePicker";
-import AmountField from "@/components/Input/Amount";
+import ExchangeAmountField from "@/components/Input/Amount/ExchangeAmountField";
 import Address from "@/components/Input/Address";
 import { ChevronDown } from "lucide-react";
 import AddressIcon from "@/components/Common/AddressIcon";
+import { Address as AddressClass } from "@/lib/address/Address";
 import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
 import MinMax from "@/components/Input/Amount/MinMax";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
@@ -27,6 +28,7 @@ import DepositMethodComponent from "./FeeDetails/DepositMethod";
 import { AddressGroup } from "@/components/Input/Address/AddressPicker";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { ExchangeReceiveAmount } from "@/components/Input/Amount/ExchangeReceiveAmount";
+import shortenString from "@/components/utils/ShortenString";
 
 type Props = {
     partner?: Partner;
@@ -54,7 +56,7 @@ const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
 
     const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
-    const { isQuoteLoading, quote, minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useQuoteData(quoteArgs, quoteRefreshInterval);
+    const { isQuoteLoading, quote, quoteTokenPrices, minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd } = useQuoteData(quoteArgs, quoteRefreshInterval);
     const { routeValidation, formValidation } = useValidationContext();
 
     const isValid = !formValidation.message;
@@ -67,29 +69,11 @@ const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
 
     return (
         <>
-            {/* {showBanner && (
-                <div className="mb-3 rounded-2xl border border-secondary-400 bg-secondary-500 p-2.5 text-sm flex items-start justify-between">
-                    <div>
-                        <p className="text-sm text-primary-text mb-0.5">Deposit from CEX</p>
-                        <p className="text-secondary-text text-xs">
-                            Easily move crypto from your exchange account to the network of your choice.
-                        </p>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={dismissBanner}
-                        className="p-1 hover:bg-secondary-400 rounded-md text-secondary-text"
-                    >
-                        <X className="h-4 w-4" />
-                    </button>
-                </div>
-            )} */}
-
             <DepositMethodComponent />
-            <Form className="h-full grow flex flex-col flex-1 justify-between w-full gap-3">
+            <Form className="h-full grow flex flex-col flex-1 justify-between w-full gap-2">
                 <Widget.Content>
                     <div className="w-full flex flex-col justify-between flex-1 relative">
-                        <div className="flex flex-col w-full gap-3">
+                        <div className="flex flex-col w-full gap-2">
                             <div className="space-y-2">
                                 <label htmlFor="From" className="block font-normal text-secondary-text text-base leading-5">
                                     Send from
@@ -108,7 +92,7 @@ const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
                                 <Address partner={partner} >{
                                     ({ addressItem }) => {
                                         const addressProviderIcon = (partner?.is_wallet && addressItem?.group === AddressGroup.FromQuery && partner?.logo) ? partner.logo : undefined
-                                        return <div className="hover:bg-secondary-300 bg-secondary-500 rounded-2xl p-3 h-[52px]">
+                                        return <div className="hover:bg-secondary-300 bg-secondary-500 rounded-2xl p-3 h-13">
                                             {
                                                 addressItem ? <>
                                                     <AddressButton address={addressItem.address} network={destination} wallet={wallet} addressProviderIcon={addressProviderIcon} />
@@ -141,15 +125,15 @@ const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
                                         },
                                             "group-hover:block"
                                         )}>
-                                            <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} onActionHover={handleActionHover} depositMethod="deposit_address" />
+                                            <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} limitsMinAmountInUsd={minAllowedAmountInUsd} limitsMaxAmountInUsd={maxAllowedAmountInUsd} onActionHover={handleActionHover} depositMethod="deposit_address" />
                                         </div>
                                     }
                                 </div>
                                 <div className="relative group exchange-amount-field">
-                                    <AmountField
+                                    <ExchangeAmountField
                                         className="pb-0! rounded-xl!"
                                         fee={quote}
-                                        usdPosition="right"
+                                        quoteTokenPrices={quoteTokenPrices}
                                         actionValue={actionTempValue}
                                     />
                                     {quote &&
@@ -206,11 +190,19 @@ const AddressButton = ({ address, network, wallet, addressProviderIcon }: { addr
                         width="36"
                         height="36"
                     />) : (
-                        <AddressIcon className="scale-150 h-9 w-9" address={address} size={36} />
+                        <AddressIcon className="scale-150 h-9 w-9" address={network ? new AddressClass(address, network).full : address} size={36} />
                     )
                 }
             </div>
-            <ExtendedAddress address={address} network={network} showDetails={wallet ? true : false} title={wallet?.displayName?.split("-")[0]} description={wallet?.providerName} logo={wallet?.icon} />
+            {
+                network ? (
+                    <ExtendedAddress address={address} network={network} providerName={wallet?.providerName} showDetails={wallet ? true : false} title={wallet?.displayName?.split("-")[0]} description={wallet?.providerName} logo={wallet?.icon} />
+                ) : (
+                    <p className="text-sm block font-medium">
+                        {shortenString(address)}
+                    </p>
+                )
+            }
         </div>
         <span className="justify-self-end right-0 flex items-center pointer-events-none  text-primary-text">
             <span className="absolute right-0 pr-2 pointer-events-none text-primary-text">

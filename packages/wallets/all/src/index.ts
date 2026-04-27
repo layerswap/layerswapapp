@@ -8,9 +8,6 @@ import type { EVMProviderConfig, WalletConnectConfig } from "@layerswap/wallet-e
 import { createFuelProvider } from "@layerswap/wallet-fuel";
 import type { FuelProviderConfig } from "@layerswap/wallet-fuel";
 
-import { createImmutableXProvider } from "@layerswap/wallet-imtbl-x";
-import type { ImmutableXProviderConfig } from "@layerswap/wallet-imtbl-x";
-
 import { createImmutablePassportProvider, ImtblRedirect } from "@layerswap/wallet-imtbl-passport";
 import type { ImmutablePassportProviderConfig, ImtblPassportConfig } from "@layerswap/wallet-imtbl-passport";
 
@@ -29,9 +26,8 @@ import type { TONProviderConfig, TonClientConfig } from "@layerswap/wallet-ton";
 import { createTronProvider } from "@layerswap/wallet-tron";
 import type { TronProviderConfig } from "@layerswap/wallet-tron";
 
-import { createLoopringModule } from "@layerswap/wallet-module-loopring";
-
 import { createZkSyncModule } from "@layerswap/wallet-module-zksync";
+import { WalletProvider, WalletWrapper } from "@layerswap/widget/types";
 
 export { createBitcoinProvider };
 export type { BitcoinProviderConfig };
@@ -41,9 +37,6 @@ export type { EVMProviderConfig, WalletConnectConfig };
 
 export { createFuelProvider };
 export type { FuelProviderConfig };
-
-export { createImmutableXProvider };
-export type { ImmutableXProviderConfig };
 
 export { createImmutablePassportProvider, ImtblRedirect };
 export type { ImmutablePassportProviderConfig, ImtblPassportConfig };
@@ -63,8 +56,6 @@ export type { TONProviderConfig, TonClientConfig };
 export { createTronProvider };
 export type { TronProviderConfig };
 
-export { createLoopringModule };
-
 export { createZkSyncModule };
 
 /**
@@ -81,11 +72,6 @@ export { EVMProvider } from "@layerswap/wallet-evm";
  * @deprecated Use createFuelProvider() instead. This export will be removed in a future version.
  */
 export { FuelProvider } from "@layerswap/wallet-fuel";
-
-/**
- * @deprecated Use createImmutableXProvider() instead. This export will be removed in a future version.
- */
-export { ImmutableXProvider } from "@layerswap/wallet-imtbl-x";
 
 /**
  * @deprecated Use createImmutablePassportProvider() instead. This export will be removed in a future version.
@@ -176,24 +162,20 @@ export type DefaultWalletConfig = {
 export function getDefaultProviders(config: DefaultWalletConfig = {}) {
     const { walletConnect, ton, immutablePassport } = config;
 
-    const providers = [
+    const providers: (WalletProvider | WalletWrapper)[] = [
         // EVM with modules
         createEVMProvider({
             walletConnectConfigs: walletConnect,
-            walletProviderModules: [createLoopringModule(), createZkSyncModule()]
+            walletProviderModules: [createZkSyncModule()]
         }),
         // Starknet
-        createStarknetProvider({
-            walletConnectConfigs: walletConnect
-        }),
+        createStarknetProvider(),
         // Fuel
         createFuelProvider(),
         // Paradex
         createParadexProvider(),
         // Bitcoin
         createBitcoinProvider(),
-        // Immutable X
-        createImmutableXProvider(),
         // TON
         ...(ton ? [createTONProvider({ tonConfigs: ton })] : []),
         // SVM (Solana)

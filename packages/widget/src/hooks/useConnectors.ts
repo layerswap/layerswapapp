@@ -1,25 +1,34 @@
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { InternalConnector, WalletConnectionProvider } from "@/types/wallet";
+import { removeDuplicatesWithKey } from "@/components/Wallet/WalletModal/utils";
 
 type UseConnectorsParams = {
     searchValue?: string;
     recentConnectors: { providerName?: string; connectorName?: string }[];
     featuredProviders: WalletConnectionProvider[];
     filteredProviders: WalletConnectionProvider[];
+    searchResults?: InternalConnector[];
 };
+
+type InitialSnapshot = {
+    key: string;
+    list: InternalConnector[];
+    seen: Set<string>;
+}
 
 export function useConnectors({
     featuredProviders,
     filteredProviders,
     searchValue,
     recentConnectors,
+    searchResults,
 }: UseConnectorsParams) {
 
     const featuredConnectors = useMemo(() =>
         featuredProviders
-            .filter(g => g.availableWalletsForConnect && g.availableWalletsForConnect?.length > 0)
+            .filter(g => g.availableConnectors && g.availableConnectors?.length > 0)
             .map((provider) =>
-                provider.availableWalletsForConnect
+                provider.availableConnectors
                     ?.filter(v => searchValue ? v.name.toLowerCase().includes(searchValue.toLowerCase()) : true)
                     .map((connector) => ({ ...connector, providerName: provider.name }))
             )
@@ -27,87 +36,80 @@ export function useConnectors({
         [featuredProviders, searchValue]
     );
 
-    const hiddenConnectors = useMemo(() =>
+    const additionalConnectors = useMemo(() =>
         featuredProviders
-            .filter(g => g.availableHiddenWalletsForConnect && g.availableHiddenWalletsForConnect?.length > 0)
+            .filter(g => g.additionalConnectors && g.additionalConnectors?.length > 0)
             .map((provider) =>
-                provider.availableHiddenWalletsForConnect
-                    ?.filter(v =>
-                        (searchValue ? v.name.toLowerCase().includes(searchValue.toLowerCase()) : true) &&
-                        !featuredConnectors.some(c => c.id.toLowerCase() === v.id.toLowerCase())
-                    )
-                    .map((connector) => ({ ...connector, providerName: provider.name, isHidden: true }))
+                provider.additionalConnectors
+                    ?.filter(v => searchValue ? v.name.toLowerCase().includes(searchValue.toLowerCase()) : true)
+                    .map((connector) => ({ ...connector, providerName: provider.name }))
             )
             .flat() as InternalConnector[],
         [featuredProviders, searchValue]
     );
 
+    const filterKey = useMemo(() => {
+        const providerKey = featuredProviders.map(p => p.name).join('|')
+        return `${providerKey}::${(searchValue ?? '').toLowerCase()}`
+    }, [featuredProviders, searchValue])
+
+    const initialSortedRef = useRef<InitialSnapshot | null>(null)
+    const appendedRef = useRef<InternalConnector[]>([])
+
     const initialConnectors: InternalConnector[] = useMemo(() => {
-        return removeDuplicatesWithKey(
-            ([...featuredConnectors, ...hiddenConnectors] as InternalConnector[])
-                .sort((a, b) => sortRecentConnectors(a, b, recentConnectors)),
-            'name'
-        );
-    }, [featuredConnectors, hiddenConnectors, searchValue?.length, recentConnectors]);
+        const recentNames = new Set(recentConnectors?.map(r => r.connectorName?.toLowerCase()).filter(Boolean))
+        const isRecent = (c: InternalConnector) => recentNames.has(c.name.toLowerCase())
+        const isInstalled = (c: InternalConnector) => c.type === 'injected'
+
+        if (initialSortedRef.current?.key !== filterKey) {
+            // Filter context changed (providers or search query): resort the current
+            // set once and reset the appended bucket.
+            const recent = featuredConnectors.filter(c => isRecent(c))
+            const installed = featuredConnectors.filter(c => !isRecent(c) && isInstalled(c))
+            const rest = featuredConnectors.filter(c => !isRecent(c) && !isInstalled(c))
+            const sorted = removeDuplicatesWithKey(
+                [...recent, ...installed, ...rest, ...additionalConnectors],
+                'name'
+            ) as InternalConnector[]
+
+            initialSortedRef.current = {
+                key: filterKey,
+                list: sorted,
+                seen: new Set(sorted.map(c => c.name.toLowerCase())),
+            }
+            appendedRef.current = []
+        } else {
+            // Filter unchanged: any connectors arriving via pagination are appended
+            // to a separate bucket in insertion order and never re-sorted, so already
+            // rendered tiles keep their position on scroll.
+            const seen = initialSortedRef.current.seen
+            const appendIfNew = (c: InternalConnector) => {
+                const key = c.name.toLowerCase()
+                if (!seen.has(key)) {
+                    seen.add(key)
+                    appendedRef.current.push(c)
+                }
+            }
+            for (const c of featuredConnectors) appendIfNew(c)
+            for (const c of additionalConnectors) appendIfNew(c)
+        }
+
+        const base = [...initialSortedRef.current.list, ...appendedRef.current]
+
+        if (searchResults?.length) {
+            const existingNames = new Set(base.map(c => c.name.toLowerCase()))
+            const newResults = searchResults.filter(c => !existingNames.has(c.name.toLowerCase()))
+            return [...base, ...newResults]
+        }
+
+        return base
+    }, [featuredConnectors, additionalConnectors, recentConnectors, searchResults, filterKey]);
 
     return {
         featuredConnectors,
-        hiddenConnectors,
+        additionalConnectors,
         initialConnectors,
         featuredProviders,
         filteredProviders,
     };
-}
-
-function removeDuplicatesWithKey(arr: any[], key: string) {
-    const countMap = {};
-    const providerMap = {};
-
-    // First pass: Count occurrences of each unique key and track unique providers.
-    arr.forEach(item => {
-        const identifier = item[key];
-        countMap[identifier] = (countMap[identifier] || 0) + 1;
-
-        // Track unique provider names for this connector
-        if (!providerMap[identifier]) {
-            providerMap[identifier] = new Set();
-        }
-        if (item.providerName) {
-            providerMap[identifier].add(item.providerName);
-        }
-    });
-
-    // Second pass: Create a new array with one instance of each object.
-    const unique: any[] = [];
-    const seen = new Set();
-
-    arr.forEach(item => {
-        const identifier = item[key];
-        if (!seen.has(identifier)) {
-            seen.add(identifier);
-            // Only mark as multichain if there are duplicates across different providers
-            const uniqueProviders = providerMap[identifier]?.size || 0;
-            unique.push({
-                ...item,
-                isMultiChain: countMap[identifier] > 1 && uniqueProviders > 1
-            });
-        }
-    });
-    return unique;
-}
-
-export function sortRecentConnectors(a: { name: string, type?: string }, b: { name: string, type?: string }, recentConnectors: { connectorName?: string }[]) {
-    function getIndex(c: { name: string }) {
-        const idx = recentConnectors?.findIndex(v => v.connectorName === c.name);
-        return idx === -1 ? Infinity : idx;
-    }
-    const indexA = getIndex(a);
-    const indexB = getIndex(b);
-    if (indexA !== indexB) {
-        return indexA - indexB;
-    }
-    if (a.type && b.type) {
-        return a.type.localeCompare(b.type);
-    }
-    return 0;
 }

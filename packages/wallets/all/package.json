@@ -42,8 +42,6 @@
     "@layerswap/wallet-evm": "workspace:^",
     "@layerswap/wallet-fuel": "workspace:^",
     "@layerswap/wallet-imtbl-passport": "workspace:^",
-    "@layerswap/wallet-imtbl-x": "workspace:^",
-    "@layerswap/wallet-module-loopring": "workspace:^",
     "@layerswap/wallet-module-zksync": "workspace:^",
     "@layerswap/wallet-paradex": "workspace:^",
     "@layerswap/wallet-starknet": "workspace:^",

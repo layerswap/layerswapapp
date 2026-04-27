@@ -3,59 +3,78 @@ import {
     ConnectionProvider,
     WalletProvider,
 } from "@solana/wallet-adapter-react";
-import {
-    NightlyWalletAdapter,
-    WalletConnectWalletAdapter,
-    PhantomWalletAdapter,
-    SolflareWalletAdapter,
-    BitgetWalletAdapter,
-    TrustWalletAdapter,
-    LedgerWalletAdapter
-} from "@solana/wallet-adapter-wallets";
-import { ReactNode, useMemo } from "react";
+import { ReactNode, useMemo, useState, useEffect } from "react";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
-import { WalletConnectConfig } from ".";
+import { useWalletConnectConfig, WalletConnectConfig } from ".";
 import { AppSettings } from "@layerswap/widget/internal";
 import type { ReactElement } from "react";
+import { SolanaWalletConnectAdapter } from "./connectors/SolanaWalletConnectAdapter";
 
 type SolanaProviderProps = {
     children: ReactNode
     walletConnectConfigs?: WalletConnectConfig
 }
 
-function SolanaProvider({ children, walletConnectConfigs }: SolanaProviderProps): ReactElement {
-    const walletConnectConfig = walletConnectConfigs
-    const WALLETCONNECT_PROJECT_ID = walletConnectConfig?.projectId
+function SolanaProvider({ children }: SolanaProviderProps): ReactElement {
+    const [adapters, setAdapters] = useState<any[]>([]);
+    const [ready, setReady] = useState(false);
+    const walletConnectConfigs = useWalletConnectConfig();
+    const WALLETCONNECT_PROJECT_ID = walletConnectConfigs?.projectId
 
     const solNetwork = AppSettings.ApiVersion == 'sandbox' ? WalletAdapterNetwork.Devnet : WalletAdapterNetwork.Mainnet;;
     const endpoint = useMemo(() => clusterApiUrl(solNetwork), [solNetwork]);
-    const adapters = useMemo(
-        () => [
-            new PhantomWalletAdapter(),
-            new NightlyWalletAdapter(),
-            new SolflareWalletAdapter(),
-            new BitgetWalletAdapter(),
-            new TrustWalletAdapter(),
-            new LedgerWalletAdapter(),
-            new WalletConnectWalletAdapter({
-                network: solNetwork,
-                options: {
-                    projectId: WALLETCONNECT_PROJECT_ID,
-                    metadata: {
-                        name: 'Layerwap',
-                        description: 'Layerswap App',
-                        url: 'https://layerswap.io/app/',
-                        icons: ['https://www.layerswap.io/app/symbol.png'],
-                    },
-                }
-            })
-        ],
-        [solNetwork, WALLETCONNECT_PROJECT_ID, walletConnectConfig]
-    );
+    useEffect(() => {
+        let cancelled = false;
+
+        const loadAdapters = async () => {
+            const adaptersModule = await import("@solana/wallet-adapter-wallets");
+            const {
+                NightlyWalletAdapter,
+                PhantomWalletAdapter,
+                SolflareWalletAdapter,
+                BitgetWalletAdapter,
+                TrustWalletAdapter,
+                LedgerWalletAdapter
+            } = adaptersModule;
+
+            if (cancelled) return;
+
+            setReady(true);
+            setAdapters([
+                new PhantomWalletAdapter(),
+                new NightlyWalletAdapter(),
+                new SolflareWalletAdapter(),
+                new BitgetWalletAdapter(),
+                new TrustWalletAdapter(),
+                new LedgerWalletAdapter(),
+                new SolanaWalletConnectAdapter({
+                    network: solNetwork,
+                    options: {
+                        projectId: WALLETCONNECT_PROJECT_ID,
+                        metadata: {
+                            name: walletConnectConfigs?.name || 'Layerswap',
+                            description: walletConnectConfigs?.description || 'Layerswap App',
+                            url: walletConnectConfigs?.url || 'https://layerswap.io/app/',
+                            icons: walletConnectConfigs?.icons || ['https://www.layerswap.io/app/symbol.png'],
+                        },
+                    }
+                })
+            ]);
+        };
+
+        loadAdapters().catch(() => {
+            // Keep provider mounted even if adapter loading fails.
+            setAdapters([]);
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
     return (
         <ConnectionProvider endpoint={endpoint}>
-            <WalletProvider wallets={adapters} autoConnect={true}>
+            <WalletProvider wallets={adapters} autoConnect={ready}>
                 {children}
             </WalletProvider>
         </ConnectionProvider>

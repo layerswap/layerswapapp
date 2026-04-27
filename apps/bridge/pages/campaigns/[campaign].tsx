@@ -1,17 +1,22 @@
 import { InferGetServerSidePropsType } from 'next'
 import { getServerSideProps } from '../../helpers/getSettings'
-import { CampaignDetails } from '@layerswap/widget'
+import { CampaignDetails, inflateSettings } from '@layerswap/widget'
 import { useRouter } from 'next/router';
 import Layout from '../../components/layout';
 import WidgetWrapper from '../../components/WidgetWrapper';
+import { useMemo } from 'react';
+import MaintananceContent from '../../components/maintanance/maintanance';
 
 export default function RewardsPage({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     const router = useRouter();
+    const resolvedSettings = useMemo(() => inflateSettings(settings), [settings])
+  
+    if (!resolvedSettings) return <MaintananceContent />
 
-return (<>
-        <Layout settings={settings} themeData={themeData}>
+    return (<>
+        <Layout themeData={themeData}>
             <WidgetWrapper
-                settings={settings}
+                settings={resolvedSettings}
                 themeData={themeData}
                 apiKey={apiKey}
             >

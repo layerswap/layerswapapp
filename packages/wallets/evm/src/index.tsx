@@ -1,12 +1,10 @@
 'use client'
-import { WalletProvider, BaseWalletProviderConfig, WalletProviderModule } from "@layerswap/widget/types";
-import type { JSX } from 'react';
-import { EVMBalanceProvider, HyperliquidBalanceProvider } from "./balanceProviders"
+import { WalletProvider, BaseWalletProviderConfig, WalletProviderModule, LazyBalanceProvider, LazyGasProvider, NetworkType } from "@layerswap/widget/types";
+import { createContext, ReactNode, useContext, type JSX } from 'react';
 import useEVMConnection from "./useEVMConnection"
 import EVMProviderWrapper from "./EVMProvider"
-import { EVMGasProvider } from "./gasProviders"
 import { EVMAddressUtilsProvider } from "./evmAddressUtilsProvider"
-import { AppSettings } from "@layerswap/widget/internal";
+import { AppSettings, KnownInternalNames } from "@layerswap/widget/internal";
 import { useEVMTransfer } from "./transferProvider/useEVMTransfer";
 import { EVMContractAddressProvider } from "./evmContractAddressProvider";
 import { EVMRpcHealthCheckProvider } from "./rpcHealthCheckProvider";
@@ -24,6 +22,10 @@ export type EVMProviderConfig = BaseWalletProviderConfig & {
     walletProviderModules?: WalletProviderModule[]
 }
 
+const WalletConnectConfigContext = createContext<WalletConnectConfig | null>(null);
+
+export const useWalletConnectConfig = () => useContext(WalletConnectConfigContext);
+
 export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvider {
     const {
         walletConnectConfigs,
@@ -37,11 +39,13 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         rpcHealthCheckProviders
     } = config;
 
-    const WrapperComponent = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
+    const WrapperComponent = ({ children }: { children: ReactNode }) => {
         return (
-            <EVMProviderWrapper walletConnectConfigs={walletConnectConfigs}>
-                {children}
-            </EVMProviderWrapper>
+            <WalletConnectConfigContext.Provider value={walletConnectConfigs ?? null}>
+                <EVMProviderWrapper >
+                    {children}
+                </EVMProviderWrapper>
+            </WalletConnectConfigContext.Provider>
         );
     };
 
@@ -71,8 +75,14 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         .filter(p => p !== undefined) || [];
 
     const defaultBalanceProviders = [
-        new EVMBalanceProvider(),
-        new HyperliquidBalanceProvider(),
+        new LazyBalanceProvider(
+            (n) => n.type === NetworkType.EVM && !!n.token,
+            () => import("./balanceProviders/evmBalanceProvider").then(m => new m.EVMBalanceProvider())
+        ),
+        new LazyBalanceProvider(
+            (n) => n.name === KnownInternalNames.Networks.HyperliquidMainnet || n.name === KnownInternalNames.Networks.HyperliquidTestnet,
+            () => import("./balanceProviders/hyperliquidBalanceProvider").then(m => new m.HyperliquidBalanceProvider())
+        ),
         ...moduleBalanceProviders,
     ];
     const finalBalanceProviders = balanceProviders !== undefined
@@ -80,7 +90,10 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         : defaultBalanceProviders;
 
     const defaultGasProviders = [
-        new EVMGasProvider(),
+        new LazyGasProvider(
+            (n) => n.type === NetworkType.EVM && !!n.token,
+            () => import("./gasProviders/evmGasProvider").then(m => new m.EVMGasProvider())
+        ),
         ...moduleGasProviders,
     ];
     const finalGasProviders = gasProviders !== undefined
@@ -131,15 +144,29 @@ export const EVMProvider: WalletProvider = {
     id: "evm",
     wrapper: ({ children }: { children: JSX.Element | JSX.Element[] }) => {
         return (
-            <EVMProviderWrapper walletConnectConfigs={AppSettings.WalletConnectConfig}>
-                {children}
-            </EVMProviderWrapper>
+            <WalletConnectConfigContext.Provider value={AppSettings.WalletConnectConfig ?? null}>
+                <EVMProviderWrapper>
+                    {children}
+                </EVMProviderWrapper>
+            </WalletConnectConfigContext.Provider>
         );
     },
     walletConnectionProvider: useEVMConnection,
     addressUtilsProvider: [new EVMAddressUtilsProvider()],
-    gasProvider: [new EVMGasProvider()],
-    balanceProvider: [new EVMBalanceProvider(), new HyperliquidBalanceProvider()],
+    gasProvider: [new LazyGasProvider(
+        (n) => n.type === NetworkType.EVM && !!n.token,
+        () => import("./gasProviders/evmGasProvider").then(m => new m.EVMGasProvider())
+    )],
+    balanceProvider: [
+        new LazyBalanceProvider(
+            (n) => n.type === NetworkType.EVM && !!n.token,
+            () => import("./balanceProviders/evmBalanceProvider").then(m => new m.EVMBalanceProvider())
+        ),
+        new LazyBalanceProvider(
+            (n) => n.name === KnownInternalNames.Networks.HyperliquidMainnet || n.name === KnownInternalNames.Networks.HyperliquidTestnet,
+            () => import("./balanceProviders/hyperliquidBalanceProvider").then(m => new m.HyperliquidBalanceProvider())
+        ),
+    ],
     transferProvider: [useEVMTransfer],
     contractAddressProvider: [new EVMContractAddressProvider()],
     rpcHealthCheckProvider: [new EVMRpcHealthCheckProvider()],

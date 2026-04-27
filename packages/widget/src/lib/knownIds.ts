@@ -96,12 +96,6 @@ export default class KnownInternalNames {
 
         public static readonly StarkNetSepolia: string = "STARKNET_SEPOLIA";
 
-        public static readonly ImmutableXMainnet: string = "IMMUTABLEX_MAINNET";
-
-        public static readonly ImmutableXGoerli: string = "IMMUTABLEX_GOERLI";
-
-        public static readonly ImmutableXSepolia: string = "IMMUTABLEX_SEPOLIA";
-
         public static readonly ImmutableZkEVM: string = "IMMUTABLEZK_MAINNET";
 
         public static readonly ImmutableZkTestnet: string = "IMMUTABLEZK_TESTNET";
@@ -261,6 +255,10 @@ export default class KnownInternalNames {
         public static readonly HyperliquidTestnet: string = "HYPERLIQUID_TESTNET";
 
         public static readonly MonadMainnet: string = "MONAD_MAINNET";
+
+        public static readonly TempoMainnet: string = "TEMPO_MAINNET"
+
+        public static readonly TempoTestnet: string = "TEMPO_TESTNET"
 
     }
 
