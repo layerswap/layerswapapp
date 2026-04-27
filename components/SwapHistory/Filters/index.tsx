@@ -6,6 +6,7 @@ import NetworksDropdown from './NetworksDropdown'
 import IncompleteToggle from './IncompleteToggle'
 import ClearAllButton from './ClearAllButton'
 import { FilterNetworkOption } from './types'
+import type { ManualDestAddress } from '@/stores/manualDestAddressesStore'
 
 type FiltersProps = {
     searchQuery: string
@@ -17,6 +18,7 @@ type FiltersProps = {
     hideIncomplete: boolean
     setHideIncomplete: (v: boolean) => void
     wallets: Wallet[]
+    manualAddresses: ManualDestAddress[]
     networks: FilterNetworkOption[]
     hasPending: boolean
     hasIncomplete: boolean
@@ -33,6 +35,7 @@ const Filters: FC<FiltersProps> = ({
     hideIncomplete,
     setHideIncomplete,
     wallets,
+    manualAddresses,
     networks,
     hasPending,
     hasIncomplete,
@@ -54,6 +57,7 @@ const Filters: FC<FiltersProps> = ({
             <div className="flex flex-wrap items-center gap-2">
                 <WalletsDropdown
                     wallets={wallets}
+                    manualAddresses={manualAddresses}
                     selectedAddresses={walletAddresses}
                     toggle={toggleWalletAddress}
                     count={walletAddresses.length}

@@ -1,5 +1,6 @@
-import { ChevronUp, Plus, RefreshCw } from 'lucide-react'
-import { FC, ReactElement, ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react"
+import { ChevronUp, Plug, Plus, RefreshCw } from 'lucide-react'
+import { FC, ReactElement, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
+import clsx from "clsx";
 import HistorySummary from "./HistorySummary";
 import useWallet from "../../hooks/useWallet"
 import Link from "next/link"
@@ -17,12 +18,13 @@ import { useSwapByTransactionHash } from "../../hooks/useSwapByTransactionHash";
 import Filters from "./Filters";
 import NoMatches from "./Filters/NoMatches";
 import SearchResult from "./Filters/SearchResult";
-import { matchesFilters, isIncomplete, shouldDisplay } from "./Filters/filterSwaps";
-import type { FilterNetworkOption, FilterOpts } from "./Filters/types";
+import { isIncomplete, shouldDisplay } from "./Filters/filterSwaps";
+import type { FilterNetworkOption } from "./Filters/types";
 import { SwapResponse } from '@/lib/apiClients/layerSwapApiClient';
 import { SwapDataProvider, SwapDataStateContext } from '@/context/swap';
 import type { Wallet } from '@/Models/WalletProvider';
 import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
+import { useManualDestAddressesStore } from '@/stores/manualDestAddressesStore';
 
 type ListProps = {
     statuses?: string | number;
@@ -34,28 +36,44 @@ const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
     const { networks } = useSettingsState()
     const { wallets } = useWallet()
     const swapTransactions = useSwapTransactionStore(s => s.swapTransactions)
+    const manualDestAddresses = useManualDestAddressesStore(s => s.manualDestAddresses)
 
     const {
         searchQuery, setSearchQuery,
-        walletAddresses, toggleWalletAddress,
+        walletAddresses, selectedWalletAddrs, toggleWalletAddress,
         networkNames, toggleNetworkName,
         hideIncomplete, setHideIncomplete,
         clearFilters,
-        filterOpts, filtersActive,
-    } = useHistoryFilters({ wallets })
+        filtersActive,
+    } = useHistoryFilters({ wallets, manualAddresses: manualDestAddresses })
 
-    const addresses = useMemo(() => {
-        const out = new Set<string>()
+    const { allAddresses, normalizedByRaw } = useMemo(() => {
+        const all = new Set<string>()
+        const map = new Map<string, string>()
         for (const w of wallets) {
             const network = networks.find(n => n.chain_id == w.chainId) || null
             for (const addr of w.addresses) {
-                out.add(new Address(addr, network, w.providerName).normalized)
+                const normalized = new Address(addr, network, w.providerName).normalized
+                all.add(normalized)
+                map.set(addr, normalized)
             }
         }
-        return Array.from(out)
-    }, [wallets, networks])
+        for (const m of manualDestAddresses) {
+            const normalized = new Address(m.address, null, m.providerName).normalized
+            all.add(normalized)
+            map.set(m.address, normalized)
+        }
+        return { allAddresses: Array.from(all), normalizedByRaw: map }
+    }, [wallets, networks, manualDestAddresses])
 
-    const { pendingDeposit, completed, isLoadingAny, isValidatingAny } = useSwapHistoryData(addresses, networkNames)
+    const effectiveAddresses = useMemo(() => {
+        if (!selectedWalletAddrs || selectedWalletAddrs.length === 0) return allAddresses
+        const out = new Set<string>()
+        for (const a of selectedWalletAddrs) out.add(normalizedByRaw.get(a) ?? a)
+        return Array.from(out)
+    }, [selectedWalletAddrs, allAddresses, normalizedByRaw])
+
+    const { pendingDeposit, completed, isLoadingAny, isValidatingAny } = useSwapHistoryData(effectiveAddresses, networkNames)
     const search = useSwapByTransactionHash(searchQuery)
 
     const networkOptions = useMemo<FilterNetworkOption[]>(() =>
@@ -70,7 +88,7 @@ const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
         pendingDeposit.swaps.some(s => isIncomplete(s, swapTransactions)) ||
         completed.swaps.some(s => isIncomplete(s, swapTransactions))
 
-    const filtersNode = useMemo(() => wallets.length > 0 ? (
+    const filtersNode = useMemo(() => (
         <Filters
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
@@ -81,13 +99,15 @@ const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
             hideIncomplete={hideIncomplete}
             setHideIncomplete={setHideIncomplete}
             wallets={wallets}
+            manualAddresses={manualDestAddresses}
             networks={networkOptions}
             hasPending={hasPending}
             hasIncomplete={hasIncomplete}
             onClearAll={clearFilters}
         />
-    ) : null, [
-        wallets, networkOptions, hasPending, hasIncomplete, swapTransactions,
+    ), [
+        wallets, manualDestAddresses,
+        networkOptions, hasPending, hasIncomplete, swapTransactions,
         searchQuery, setSearchQuery,
         walletAddresses, toggleWalletAddress,
         networkNames, toggleNetworkName,
@@ -95,24 +115,26 @@ const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
         clearFilters,
     ])
 
-    if (!wallets.length) return <ConnectWalletCard />
+    const noAccounts = wallets.length === 0 && manualDestAddresses.length === 0
 
     return (
-        <div className="relative">
+        <div className="relative flex flex-col h-full min-h-0">
             {filtersNode}
-            <SwapsList
-                search={search}
-                wallets={wallets}
-                pendingDeposit={pendingDeposit}
-                completed={completed}
-                isLoadingAny={isLoadingAny}
-                isValidatingAny={isValidatingAny}
-                filterOpts={filterOpts}
-                hideIncomplete={hideIncomplete}
-                filtersActive={filtersActive}
-                clearFilters={clearFilters}
-                onNewTransferClick={onNewTransferClick}
-            />
+            <div className="flex-1 min-h-0">
+                <SwapsList
+                    search={search}
+                    wallets={wallets}
+                    pendingDeposit={pendingDeposit}
+                    completed={completed}
+                    isLoadingAny={isLoadingAny}
+                    isValidatingAny={isValidatingAny}
+                    hideIncomplete={hideIncomplete}
+                    filtersActive={filtersActive}
+                    clearFilters={clearFilters}
+                    onNewTransferClick={onNewTransferClick}
+                    noAccounts={noAccounts}
+                />
+            </div>
         </div>
     )
 }
@@ -126,11 +148,11 @@ type SwapsListProps = {
     completed: SwapHistoryData['completed']
     isLoadingAny: boolean
     isValidatingAny: boolean
-    filterOpts: FilterOpts
     hideIncomplete: boolean
     filtersActive: boolean
     clearFilters: () => void
     onNewTransferClick?: () => void
+    noAccounts: boolean
 }
 
 const SwapsList: FC<SwapsListProps> = ({
@@ -140,22 +162,34 @@ const SwapsList: FC<SwapsListProps> = ({
     completed,
     isLoadingAny,
     isValidatingAny,
-    filterOpts,
     hideIncomplete,
     filtersActive,
     clearFilters,
     onNewTransferClick,
+    noAccounts,
 }) => {
     const [showAll, setShowAll] = useState(false)
     const [expanded, setExpanded] = useState<string | undefined>(undefined)
+    const [isScrolling, setIsScrolling] = useState(false)
     const parentRef = useRef<HTMLDivElement>(null)
+    const scrollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
     const swapTransactions = useSwapTransactionStore(s => s.swapTransactions)
 
+    const handleScroll = useCallback(() => {
+        if (!isScrolling) setIsScrolling(true)
+        if (scrollTimeout.current) clearTimeout(scrollTimeout.current)
+        scrollTimeout.current = setTimeout(() => setIsScrolling(false), 1000)
+    }, [isScrolling])
+
+    useEffect(() => {
+        return () => {
+            if (scrollTimeout.current) clearTimeout(scrollTimeout.current)
+        }
+    }, [])
+
     const filteredPendingRaw = useMemo(
-        () => pendingDeposit.swaps.filter(s =>
-            shouldDisplay(s, swapTransactions) && matchesFilters(s, filterOpts)
-        ),
-        [pendingDeposit.swaps, filterOpts, swapTransactions]
+        () => pendingDeposit.swaps.filter(s => shouldDisplay(s, swapTransactions)),
+        [pendingDeposit.swaps, swapTransactions]
     )
     const pendingSwaps = useMemo(
         () => hideIncomplete
@@ -167,9 +201,9 @@ const SwapsList: FC<SwapsListProps> = ({
         () => completed.swaps.filter(s => {
             if (!shouldDisplay(s, swapTransactions)) return false
             if (hideIncomplete && isIncomplete(s, swapTransactions)) return false
-            return matchesFilters(s, filterOpts)
+            return true
         }),
-        [completed.swaps, filterOpts, hideIncomplete, swapTransactions]
+        [completed.swaps, hideIncomplete, swapTransactions]
     )
 
     const grouppedSwaps = useMemo(() => Object
@@ -226,13 +260,19 @@ const SwapsList: FC<SwapsListProps> = ({
     }
 
     if (!list.length) {
-        return filtersActive && hasAnySwaps
-            ? <NoMatches onClear={clearFilters} />
-            : <BlankHistory onNewTransferClick={onNewTransferClick} />
+        if (filtersActive && hasAnySwaps) return <NoMatches onClear={clearFilters} />
+        if (noAccounts) return <ConnectWalletCard />
+        return <BlankHistory onNewTransferClick={onNewTransferClick} />
     }
 
     return (
-        <div ref={parentRef}>
+        <div
+            ref={parentRef}
+            onScroll={handleScroll}
+            className={clsx('h-full overflow-y-scroll overflow-x-hidden -mr-4 pr-2 scrollbar:w-1.5! scrollbar:h-1.5! scrollbar-thumb:bg-transparent', {
+                'styled-scroll': isScrolling,
+            })}
+        >
             <div
                 style={{
                     height: rowVirtualizer.getTotalSize(),
@@ -364,54 +404,57 @@ const SwapsList: FC<SwapsListProps> = ({
     )
 }
 
+type HistoryEmptyStateProps = {
+    title: string
+    description: string
+    action?: ReactNode
+}
+
+const HistoryEmptyState: FC<HistoryEmptyStateProps> = ({ title, description, action }) => (
+    <div className="w-full h-full min-h-[inherit] flex flex-col justify-between items-center space-y-10">
+        <div />
+        <div className="w-full h-full flex flex-col justify-center items-center">
+            <HistoryItemSceleton className="scale-[.63] w-full shadow-card mr-7" />
+            <HistoryItemSceleton className="scale-[.63] -mt-12 shadow-card ml-7 w-full" />
+            <div className="mt-2 text-center space-y-2">
+                <h1 className="text-secondary-text text-[28px] font-bold tracking-wide">{title}</h1>
+                <p className="max-w-xs text-center text-primary-text-tertiary text-base font-normal mx-auto">{description}</p>
+            </div>
+            {action ? <div className="mt-10">{action}</div> : null}
+        </div>
+    </div>
+)
+
 type BlankHistoryProps = {
     onNewTransferClick?: () => void,
 }
 
 const BlankHistory = ({ onNewTransferClick }: BlankHistoryProps) => (
-    <div className="w-full h-full min-h-[inherit] flex flex-col justify-between items-center space-y-10">
-        <div />
-        <div className="w-full h-full flex flex-col justify-center items-center ">
-            <HistoryItemSceleton className="scale-[.63] w-full shadow-card mr-7" />
-            <HistoryItemSceleton className="scale-[.63] -mt-12 shadow-card ml-7 w-full" />
-            <div className="mt-2 text-center space-y-2">
-                <h1 className="text-secondary-text text-[28px] font-bold tracking-wide">
-                    No Transfer History
-                </h1>
-                <p className="max-w-xs text-center text-primary-text-tertiary text-base font-normal mx-auto">
-                    Transfers you make with this wallet/account will appear here after excution.
-                </p>
-            </div>
-            <Link onClick={onNewTransferClick} href={"/"} className="mt-10 flex items-center gap-2 text-base text-secondary-text font-normal bg-secondary-500 hover:bg-secondary-400 py-2 px-3 rounded-lg">
+    <HistoryEmptyState
+        title="No Transfer History"
+        description="Transfers you make with this wallet/account will appear here after excution."
+        action={
+            <Link onClick={onNewTransferClick} href={"/"} className="flex items-center gap-2 text-base text-secondary-text font-normal bg-secondary-500 hover:bg-secondary-400 py-2 px-3 rounded-lg">
                 <Plus className="w-4 h-4" />
                 <p>New Transfer</p>
             </Link>
-        </div>
-    </div>
+        }
+    />
 )
 
 const ConnectWalletCard = () => (
-    <div className="w-full h-full flex flex-col justify-between items-center space-y-10">
-        <div className="flex flex-col items-center justify-center text-center w-full h-full">
-            <HistoryItemSceleton className="scale-[.63] w-full shadow-card mr-7" />
-            <HistoryItemSceleton className="scale-[.63] -mt-12 shadow-card ml-7 w-full" />
-            <div className="mt-4 text-center space-y-3">
-                <h1 className="text-secondary-text text-[28px] font-bold tracking-wide">
-                    Connect wallet
-                </h1>
-                <p className="max-w-xs text-center text-primary-text-tertiary text-base font-normal mx-auto">
-                    In order to see your transfer history you need to connect your wallet.
-                </p>
-            </div>
-        </div>
-        <div className="flex flex-col items-center w-full space-y-3">
-            <ConnectButton className="w-full">
-                <div className="w-full py-2.5 px-3 text-xl font-semibold bg-primary-text-tertiary hover:opacity-90 duration-200 active:opacity-80 transition-opacity rounded-lg text-secondary-900">
-                    <div className="text-center text-xl font-semibold">Connect Wallet</div>
+    <HistoryEmptyState
+        title="Connect wallet"
+        description="In order to see your transfer history you need to connect your wallet."
+        action={
+            <ConnectButton>
+                <div className="flex items-center gap-2 text-base text-secondary-text font-normal bg-secondary-500 hover:bg-secondary-400 py-2 px-3 rounded-lg">
+                    <Plug className="w-4 h-4" />
+                    <p>Connect Wallet</p>
                 </div>
             </ConnectButton>
-        </div>
-    </div>
+        }
+    />
 )
 
 type DaysAgoProps = {

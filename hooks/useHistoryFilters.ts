@@ -1,12 +1,13 @@
 import { useCallback, useMemo, useState } from 'react'
 import { Wallet } from '@/Models/WalletProvider'
-import type { FilterOpts } from '@/components/SwapHistory/Filters/types'
+import type { ManualDestAddress } from '@/stores/manualDestAddressesStore'
 
 type Args = {
     wallets: Wallet[]
+    manualAddresses: ManualDestAddress[]
 }
 
-export function useHistoryFilters({ wallets }: Args) {
+export function useHistoryFilters({ wallets, manualAddresses }: Args) {
     const [searchQuery, setSearchQuery] = useState('')
     const [walletAddresses, setWalletAddresses] = useState<string[]>([])
     const [networkNames, setNetworkNames] = useState<string[]>([])
@@ -34,17 +35,14 @@ export function useHistoryFilters({ wallets }: Args) {
     const knownAddresses = useMemo(() => {
         const s = new Set<string>()
         for (const w of wallets) for (const a of w.addresses) s.add(a)
+        for (const m of manualAddresses) s.add(m.address)
         return s
-    }, [wallets])
+    }, [wallets, manualAddresses])
 
     const selectedWalletAddrs = useMemo<string[] | null>(() => {
         const addrs = walletAddresses.filter(a => knownAddresses.has(a))
         return addrs.length > 0 ? addrs : null
     }, [walletAddresses, knownAddresses])
-
-    const filterOpts = useMemo<FilterOpts>(() => ({
-        walletAddrs: selectedWalletAddrs,
-    }), [selectedWalletAddrs])
 
     const filtersActive =
         (selectedWalletAddrs?.length ?? 0) > 0 ||
@@ -55,13 +53,13 @@ export function useHistoryFilters({ wallets }: Args) {
         searchQuery,
         setSearchQuery,
         walletAddresses,
+        selectedWalletAddrs,
         toggleWalletAddress,
         networkNames,
         toggleNetworkName,
         hideIncomplete,
         setHideIncomplete,
         clearFilters,
-        filterOpts,
         filtersActive,
     }
 }
