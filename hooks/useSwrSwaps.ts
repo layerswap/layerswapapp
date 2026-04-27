@@ -31,6 +31,7 @@ export function useSwrSwaps({ statuses, addresses, networks, refreshInterval, au
     const apiClient = new LayerSwapApiClient()
 
     const getKey = (pageIndex: number, previous: ApiResponse<SwapResponse[]> | EmptyApiResponse | null) => {
+        if (addresses && addresses.length === 0) return null
         if (previous instanceof EmptyApiResponse) return null
         if (previous && 'data' in (previous as any) && !((previous as ApiResponse<SwapResponse[]>)?.data?.length)) return null
         return getSwapsKey(pageIndex, statuses, addresses, networks)

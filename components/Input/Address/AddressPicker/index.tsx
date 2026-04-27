@@ -15,6 +15,7 @@ import { useQueryState } from "@/context/query";
 import ConnectedWallets, { NotCompatibleWallets } from "./ConnectedWallets";
 import { Wallet } from "@/Models/WalletProvider";
 import { ManualDestAddress, useManualDestAddresses, useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts";
+import { useManualDestAddressesStore } from "@/stores/manualDestAddressesStore";
 
 export enum AddressGroup {
     ConnectedWallet = "Connected wallet",
@@ -28,6 +29,7 @@ export type AddressItem = {
     group: AddressGroup,
     date?: string,
     wallet?: Wallet,
+    providerName?: string,
 }
 
 export type AddressTriggerProps = {
@@ -68,6 +70,12 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const [manualAddress, setManualAddress] = useState<string>('')
     const [isConnecting, setIsConnecting] = useState(false)
     const manualDestAddresses = useManualDestAddresses()
+    const removeManualDestAddress = useManualDestAddressesStore(s => s.removeManualDestAddress)
+
+    const onRemoveManual = useCallback((address: string) => {
+        if (!provider?.name) return
+        removeManualDestAddress(address, provider.name)
+    }, [provider?.name, removeManualDestAddress])
 
     useEffect(() => {
         if (destination_address && destination && !AddressClass.isValid(destination_address, destination)) {
@@ -230,6 +238,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                     destination={destination}
                                     destination_address={destination_address}
                                     partner={partner}
+                                    onRemoveManual={onRemoveManual}
                                 />
                             }
 
@@ -286,7 +295,7 @@ const resolveAddressGroups = ({
 
     manualAddresses.forEach(entry => {
         if (entry.providerName === providerName && AddressClass.isValid(entry.address, destination)) {
-            addresses.push({ address: entry.address, group: AddressGroup.ManualAdded })
+            addresses.push({ address: entry.address, group: AddressGroup.ManualAdded, providerName: entry.providerName })
         }
     })
 
