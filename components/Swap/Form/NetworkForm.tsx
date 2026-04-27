@@ -14,9 +14,7 @@ import { motion, useCycle } from "framer-motion";
 import { useSettingsState } from "@/context/settings";
 import { swapInProgress } from "@/components/utils/swapUtils";
 import { ArrowUpDown } from "lucide-react";
-import { classNames } from "@/components/utils/classNames";
 import FormButton from "../FormButton";
-import { QueryParams } from "@/Models/QueryParams";
 import { WalletProvider } from "@/Models/WalletProvider";
 import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
 import { updateFormBulk } from "./updateForm";
@@ -107,7 +105,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                     values={values}
                                     setValues={setValues}
                                     providers={providers}
-                                    query={query}
                                 />
                             }
                             {
@@ -173,13 +170,11 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     );
 };
 
-const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<SwapFormValues>['setValues'], providers: WalletProvider[], query: QueryParams }> = ({ values, setValues, providers, query }) => {
+const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<SwapFormValues>['setValues'], providers: WalletProvider[] }> = ({ values, setValues, providers }) => {
     const [animate, cycle] = useCycle(
         { rotateX: 0 },
         { rotateX: 180 }
     );
-
-    let valuesSwapperDisabled = false;
 
     const {
         sourceRoutes,
@@ -194,18 +189,6 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<
     } = values
 
     const selectedSourceAccount = useSelectedAccount("from", source?.name);
-
-    const sourceCanBeSwapped = !source ? true : (destinationRoutes?.some(l => l.name === source?.name && l.tokens.some(t => t.symbol === fromCurrency?.symbol && t.status === 'active')) ?? false)
-    const destinationCanBeSwapped = !destination ? true : (sourceRoutes?.some(l => l.name === destination?.name && l.tokens.some(t => t.symbol === toCurrency?.symbol && t.status === 'active')) ?? false)
-
-    if (query.lockTo || query.lockFrom || query.hideTo || query.hideFrom) {
-        valuesSwapperDisabled = true;
-    }
-    if (!sourceCanBeSwapped || !destinationCanBeSwapped) {
-        valuesSwapperDisabled = true;
-    } else if (!source && !destination) {
-        valuesSwapperDisabled = true;
-    }
 
     const valuesSwapper = useCallback(async () => {
         swapInProgress.current = true;
@@ -248,24 +231,21 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<
 
         swapInProgress.current = false;
 
-    }, [values, sourceRoutes, destinationRoutes, sourceCanBeSwapped, selectedSourceAccount])
+    }, [values, sourceRoutes, destinationRoutes, selectedSourceAccount])
 
     return (
         <button
             type="button"
             aria-label="Reverse the source and destination"
-            disabled={valuesSwapperDisabled}
-            tabIndex={valuesSwapperDisabled ? -1 : 0}
-            onClick={valuesSwapper}
-            className="navigation-focus-border-primary-md hover:text-primary-text text-secondary-text absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none">
+            onClick={() => { cycle(); valuesSwapper(); }}
+            className="navigation-focus-border-primary-md hover:text-primary-text text-secondary-text absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 rounded-lg duration-200 transition">
             <motion.div
                 animate={animate}
                 transition={{ duration: 0.3 }}
-                onTap={() => !valuesSwapperDisabled && cycle()}
                 style={{ pointerEvents: 'none' }}
                 tabIndex={-1}
             >
-                <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-7 h-auto p-1 bg-secondary-300 hover:bg-secondary-200 rounded-lg disabled:opacity-30")} />
+                <ArrowUpDown className="w-7 h-auto p-1 bg-secondary-300 hover:bg-secondary-200 rounded-lg" />
             </motion.div>
         </button>
     )
