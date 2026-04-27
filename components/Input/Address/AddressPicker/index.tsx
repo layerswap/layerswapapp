@@ -58,12 +58,13 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     } = useFormikContext<SwapFormValues>();
 
     const query = useQueryState()
-    const { destination_address, to: destination, toExchange } = values
+    const destination = values.destination?.network
+    const { destination_address, toExchange } = values
     const selectDestinationAccount = useSelectSwapAccount("to");
 
     const { provider, unAvailableWallets } = useWallet(destination, 'autofill')
     const connectedWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
-    const defaultAccount = useSelectedAccount("to", values.to?.name);
+    const defaultAccount = useSelectedAccount("to", destination?.name);
     const connectedWalletskey = connectedWallets?.map(w => w.addresses.join('')).join('')
     const [manualAddress, setManualAddress] = useState<string>('')
     const [isConnecting, setIsConnecting] = useState(false)

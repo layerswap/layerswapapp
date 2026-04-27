@@ -32,7 +32,7 @@ export const DetailedEstimates: FC<DetailedEstimatesProps> = ({
     const shouldCheckNFT = reward?.campaign_type === "for_nft_holders" && reward?.nft_contract_address;
     const { balance: nftBalance, isLoading, error } = useSWRNftBalance(
         values.destination_address || '',
-        values.to,
+        values.destination?.network,
         reward?.nft_contract_address || ''
     );
 
@@ -40,8 +40,8 @@ export const DetailedEstimates: FC<DetailedEstimatesProps> = ({
     return <div className="flex flex-col w-full px-2">
         {variant === "extended" && <GasFee values={values} quote={quote} />}
         <Fees quote={quote} values={values} />
-        {values.depositMethod !== "deposit_address" && <Rate fromAsset={values?.fromAsset} toAsset={values?.toAsset} rate={quote?.rate} />}
-        {values.depositMethod === "deposit_address" && variant === "extended" && values?.fromAsset?.contract && <ExchangeTokenContract fromAsset={values?.fromAsset} network={values?.from} />}
+        {values.depositMethod !== "deposit_address" && <Rate fromAsset={values?.source?.token} toAsset={values?.destination?.token} rate={quote?.rate} />}
+        {values.depositMethod === "deposit_address" && variant === "extended" && values?.source?.token?.contract && <ExchangeTokenContract fromAsset={values?.source?.token} network={values?.source?.network} />}
         {variant === "extended" && values.depositMethod === "wallet" && <Slippage quoteData={quote} values={values} />}
         <Estimates quote={quote} />
         {showReward && <Reward reward={reward} />}
@@ -68,12 +68,12 @@ const RowWrapper = ({ children, title }: RowWrapperProps) => {
 
 export const GasFee = ({ values, quote }: { values: SwapValues, quote: SwapQuote | undefined }) => {
     const isCEX = !!values.fromExchange
-    const { provider } = useWallet(!isCEX ? values.from : undefined, 'withdrawal')
+    const { provider } = useWallet(!isCEX ? values.source?.network : undefined, 'withdrawal')
 
-    const selectedSourceAccount = useSelectedAccount("from", values.from?.name);
+    const selectedSourceAccount = useSelectedAccount("from", values.source?.network?.name);
     const wallet = useMemo(() => provider?.connectedWallets?.find(w => w.id === selectedSourceAccount?.id), [provider?.connectedWallets, selectedSourceAccount])
 
-    const { gasData, isGasLoading } = useSWRGas(wallet?.address, values.from, values.fromAsset)
+    const { gasData, isGasLoading } = useSWRGas(wallet?.address, values.source?.network, values.source?.token)
     const gasTokenPriceInUsd = resolveTokenUsdPrice(gasData?.token, quote)
     const gasFeeInUsd = gasData?.gas && gasTokenPriceInUsd ? gasData.gas * gasTokenPriceInUsd : null
     const displayGasFeeInUsd = gasFeeInUsd != null ? (gasFeeInUsd < 0.01 ? '<$0.01' : `$${gasFeeInUsd.toFixed(2)}`) : null
@@ -116,7 +116,7 @@ const Fees = ({ quote, values }: { quote: SwapQuote | undefined, values: SwapVal
         : originalFee
 
     // Calculate fees in USD
-    const sourceTokenPriceInUsd = resolveTokenUsdPrice(values.fromAsset, quote)
+    const sourceTokenPriceInUsd = resolveTokenUsdPrice(values.source?.token, quote)
     const originalFeeInUsd = originalFee !== undefined && sourceTokenPriceInUsd != null
         ? originalFee * sourceTokenPriceInUsd
         : null
@@ -137,9 +137,9 @@ const Fees = ({ quote, values }: { quote: SwapQuote | undefined, values: SwapVal
             ? (discountedFeeInUsd < 0.01 ? '<$0.01' : `$${discountedFeeInUsd.toFixed(2)}`)
             : null)
 
-    const currencyName = values.fromAsset?.symbol || ''
+    const currencyName = values.source?.token?.symbol || ''
     const displayLsFee = discountedFee !== undefined
-        ? truncateDecimals(discountedFee, values.fromAsset?.decimals)
+        ? truncateDecimals(discountedFee, values.source?.token?.decimals)
         : undefined
 
     return <RowWrapper title="Fees">

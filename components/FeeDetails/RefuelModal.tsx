@@ -18,7 +18,9 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal, fee }) => 
         values,
     } = useFormikContext<SwapFormValues>();
 
-    const { to, toAsset: toCurrency, refuel, destination_address } = values || {};
+    const to = values?.destination?.network
+    const toCurrency = values?.destination?.token
+    const { refuel, destination_address } = values || {};
 
     const nativeAsset = to?.token
     const { balances } = useBalance(destination_address, to)

@@ -25,6 +25,6 @@ export default function useExchangeNetworks({ fromExchange, to, toAsset }: Props
             revalidateIfStale: false
         })
     //As the response does not give the statuses and it does not include not active tokens, we can assume all are active
-    const networks = useMemo(() => (apiResponse?.data?.map(n => ({ ...n, token: { ...n.token, status: "active" as "active" } }))), [apiResponse])
+    const networks: ExchangeNetwork[] | undefined = useMemo(() => (apiResponse?.data?.map(n => ({ ...n, token: { ...n.token, status: "active" as "active" } }))), [apiResponse])
     return { networks, isLoading }
 }

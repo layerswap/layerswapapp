@@ -14,10 +14,8 @@ type Props = {
 
 const UrlAddressNote: FC<Props> = ({ partner, values }) => {
 
-    const {
-        to: destination,
-        destination_address
-    } = values
+    const destination = values.destination?.network
+    const { destination_address } = values
 
     const address = useMemo(() => (destination_address && destination) ? new Address(destination_address, destination).full : undefined, [destination_address, destination])
 

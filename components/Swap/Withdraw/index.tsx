@@ -21,7 +21,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import useSWRGas from '@/lib/gases/useSWRGas';
 import { useFormikContext } from 'formik';
 import { SwapFormValues } from '@/components/DTOs/SwapFormValues';
-import { NetworkRoute } from '@/Models/Network';
+import { NetworkRoute, NetworkRouteToken } from '@/Models/Network';
 
 const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: () => void, onCancelWithdrawal?: () => void, partner?: Partner }> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal, partner }) => {
     const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading, quoteError } = useSwapDataState()
@@ -46,10 +46,8 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
         setFieldValue('amount', newAmount, true)
         setSubmitedFormValues({
             amount: newAmount,
-            from: swapBasicData.source_network as NetworkRoute,
-            to: swapBasicData.destination_network as NetworkRoute,
-            fromAsset: swapBasicData.source_token,
-            toAsset: swapBasicData.destination_token,
+            source: { network: swapBasicData.source_network as NetworkRoute, token: swapBasicData.source_token as NetworkRouteToken },
+            destination: { network: swapBasicData.destination_network as NetworkRoute, token: swapBasicData.destination_token as NetworkRouteToken },
             destination_address: swapBasicData.destination_address,
             refuel: !!refuel,
             depositMethod: swapBasicData.use_deposit_address ? 'deposit_address' : 'wallet',

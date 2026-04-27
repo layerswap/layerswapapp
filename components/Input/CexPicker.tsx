@@ -10,7 +10,7 @@ import { LayoutGroup, motion } from "framer-motion";
 import { SearchComponent } from "./Search";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { ChevronDown } from "lucide-react";
-import { updateForm } from "@/components/Swap/Form/updateForm";
+import { updateExchangeField } from "@/components/Swap/Form/updateForm";
 import NavigatableList from "@/components/NavigatableList";
 import { NavigatableItem } from "@/components/NavigatableList";
 import clsx from "clsx";
@@ -34,12 +34,10 @@ const CexPicker: FC = () => {
         const updateValues = async () => {
             if (!fromExchange) return;
             const sourceRoute = exchangeNetworks?.[0]
-
             const sourceRouteToken = sourceRoute?.token
-            //TODO refactor form types
-            if (sourceRouteToken !== selectedToken) {
-                setFieldValue('from', sourceRoute?.network, true)
-                setFieldValue('fromAsset', sourceRouteToken, true)
+
+            if (sourceRouteToken !== selectedToken && sourceRoute?.network && sourceRouteToken) {
+                setFieldValue('source', { network: sourceRoute.network, token: sourceRouteToken }, true);
             }
         };
 
@@ -47,11 +45,10 @@ const CexPicker: FC = () => {
     }, [selectedRoute, selectedToken, exchangeNetworks, exchanges, values]);
 
     const handleSelect = useCallback(async (exchange: Exchange) => {
-        updateForm({
-            formDataKey: 'fromExchange',
-            formDataValue: exchange,
+        updateExchangeField({
+            value: exchange,
             shouldValidate: true,
-            setFieldValue
+            setFieldValue,
         });
     }, [direction, values])
 

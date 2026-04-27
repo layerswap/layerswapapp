@@ -12,10 +12,8 @@ type Props = {
 const ContractAddressNote: FC<Props> = ({ values, onDontShowAgainChange }) => {
     const [dontShowAgain, setDontShowAgain] = useState(false)
 
-    const {
-        to: destination,
-        destination_address
-    } = values
+    const destination = values.destination?.network
+    const { destination_address } = values
 
     useEffect(() => {
         onDontShowAgainChange?.(dontShowAgain)

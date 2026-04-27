@@ -23,11 +23,11 @@ const SourceWalletPicker: FC = () => {
         setFieldValue
     } = useFormikContext<SwapFormValues>();
 
-    const source_token = values.fromAsset
+    const source_token = values.source?.token
     const selectSourceAccount = useSelectSwapAccount("from");
 
-    const { provider } = useWallet(values.from, "withdrawal")
-    const selectedSourceAccount = useSelectedAccount("from", values.from?.name);
+    const { provider } = useWallet(values.source?.network, "withdrawal")
+    const selectedSourceAccount = useSelectedAccount("from", values.source?.network?.name);
 
     const { selectedConnector } = useConnectModal()
     const availableWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
@@ -51,7 +51,7 @@ const SourceWalletPicker: FC = () => {
         setOpenModal(false)
     }, [provider, setFieldValue, selectSourceAccount])
 
-    if (!values.from || !source_token)
+    if (!values.source?.network || !source_token)
         return <></>
 
     return <>
@@ -82,7 +82,7 @@ const SourceWalletPicker: FC = () => {
                                 <selectedSourceAccount.icon className="w-4 h-4" />
                             </div>
                             <div className="text-secondary-text">
-                                {new Address(selectedSourceAccount.address, values.from).toShortString()}
+                                {new Address(selectedSourceAccount.address, values.source?.network).toShortString()}
                             </div>
                             <div className="w-4 h-4 items-center flex text-secondary-text">
                                 <ChevronDown className="h-4 w-4" aria-hidden="true" />
@@ -111,13 +111,13 @@ const SourceWalletPicker: FC = () => {
                         wallets={availableWallets}
                         onSelect={handleSelectWallet}
                         token={source_token}
-                        network={values.from}
+                        network={values.source?.network}
                         selectedDepositMethod={values.depositMethod}
                         selectable
                     />
                 </div>
                 {
-                    values.from?.deposit_methods?.includes('deposit_address') && !selectedConnector &&
+                    values.source?.network?.deposit_methods?.includes('deposit_address') && !selectedConnector &&
                     <>
                         <div className="flex items-center justify-center gap-2 text-secondary-text order-2">
                             <hr className="border-secondary-400 w-full" />
@@ -162,7 +162,7 @@ export const FormSourceWalletButton: FC = () => {
 
     const [mountWalletPortal, setMounWalletPortal] = useState<boolean>(false)
 
-    const walletNetwork = values.fromExchange ? undefined : values.from
+    const walletNetwork = values.fromExchange ? undefined : values.source?.network
 
     const { provider } = useWallet(walletNetwork, 'withdrawal')
 
@@ -208,7 +208,7 @@ export const FormSourceWalletButton: FC = () => {
         return <>
             <Connect connectFn={handleConnect} />
             {
-                mountWalletPortal && values.from?.deposit_methods?.includes('deposit_address') && values.depositMethod !== 'deposit_address' && !selectedConnector &&
+                mountWalletPortal && values.source?.network?.deposit_methods?.includes('deposit_address') && values.depositMethod !== 'deposit_address' && !selectedConnector &&
                 <ModalFooterPortal isWalletModalOpen={isWalletModalOpen}>
                     <ContinueWithoutWallet onClick={handleSelectWallet} />
                 </ModalFooterPortal>
@@ -216,7 +216,7 @@ export const FormSourceWalletButton: FC = () => {
         </>
 
     }
-    else if (availableWallets.length > 0 && walletNetwork && values.fromAsset) {
+    else if (availableWallets.length > 0 && walletNetwork && values.source?.token) {
         return <>
             <button type="button" className="w-full outline-hidden" onClick={handleWalletChange}>
                 <Connect />
@@ -232,14 +232,14 @@ export const FormSourceWalletButton: FC = () => {
                         provider={provider}
                         wallets={availableWallets}
                         onSelect={handleSelectWallet}
-                        token={values.fromAsset}
+                        token={values.source?.token}
                         network={walletNetwork}
                         selectable
                     />
                 </VaulDrawer.Snap>
             </VaulDrawer >
             {
-                mountWalletPortal && values.from?.deposit_methods?.includes('deposit_address') && values.depositMethod !== 'deposit_address' && !selectedConnector &&
+                mountWalletPortal && values.source?.network?.deposit_methods?.includes('deposit_address') && values.depositMethod !== 'deposit_address' && !selectedConnector &&
                 <ModalFooterPortal isWalletModalOpen={isWalletModalOpen}>
                     <ContinueWithoutWallet onClick={handleSelectWallet} />
                 </ModalFooterPortal>

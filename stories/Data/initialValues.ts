@@ -5,7 +5,8 @@ import { SwapFormValues } from "../../components/DTOs/SwapFormValues";
 export const initialValues: SwapFormValues = {
     "amount": "0.001803",
     "destination_address": "0xf51c208e2c37a99b13dcf01a3434cc71be8b2bdd",
-    "from": {
+    "source": {
+        network: {
         "tokens": [
             {
                 "symbol": "USDC.e",
@@ -64,19 +65,21 @@ export const initialValues: SwapFormValues = {
             "deposit_address",
             "wallet"
         ]
-    },
-    "fromAsset": {
-        "symbol": "ETH",
-        "listing_date": "2023-12-27T16:46:50.617075+00:00",
-        "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
-        "contract": null,
-        "decimals": 18,
-        "price_in_usd": 3234.87,
-        "precision": 6,
-        "display_asset": ""
+        },
+        token: {
+            "symbol": "ETH",
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
+            "contract": null,
+            "decimals": 18,
+            "price_in_usd": 3234.87,
+            "precision": 6,
+            "display_asset": ""
+        },
     },
     fromExchange: undefined,
-    to: {
+    destination: {
+        network: {
         "tokens": [
             {
                 "status": "active",
@@ -128,17 +131,18 @@ export const initialValues: SwapFormValues = {
             "deposit_address",
             "wallet"
         ]
-    },
-    "toAsset": {
-        "status": "active",
-        "symbol": "ETH",
-        "listing_date": "2023-12-27T16:46:50.617075+00:00",
-        "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
-        "contract": null,
-        "decimals": 18,
-        "price_in_usd": 3234.87,
-        "precision": 6,
-        "display_asset": ""
+        },
+        token: {
+            "status": "active",
+            "symbol": "ETH",
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
+            "contract": null,
+            "decimals": 18,
+            "price_in_usd": 3234.87,
+            "precision": 6,
+            "display_asset": ""
+        },
     },
     "toExchange": undefined,
 }
