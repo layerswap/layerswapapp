@@ -1,5 +1,5 @@
 import { MenuIcon, ChevronLeft } from "lucide-react";
-import { FC, useEffect, useState } from "react";
+import { FC } from "react";
 import IconButton from "../buttons/iconButton";
 import { FormWizardProvider, useFormWizardaUpdate, useFormWizardState } from "../../context/formWizardProvider";
 import { MenuStep } from "../../Models/Wizard";
@@ -10,13 +10,20 @@ import { NextRouter, useRouter } from "next/router";
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import HistoryList from "../SwapHistory/History";
 import { Modal, ModalContent } from "@/components/modal/modalWithoutAnimation";
+import { useControllableState } from "../modal/vaul/use-controllable-state";
 
 const Comp = () => {
     const router = useRouter();
-    const [isOpen, setIsOpen] = useState(false)
-
     const { goBack, currentStepName } = useFormWizardState()
     const { goToStep } = useFormWizardaUpdate()
+
+    const [isOpen = false, setIsOpen] = useControllableState<boolean>({
+        onChange: (open) => {
+            if (!open) return
+            goToStep(MenuStep.Menu)
+            clearMenuPath(router)
+        },
+    });
 
     const goBackToMenuStep = () => { goToStep(MenuStep.Menu, "back"); clearMenuPath(router) }
 
@@ -24,13 +31,6 @@ const Comp = () => {
         goToStep(step)
         setMenuPath(path, router)
     }
-
-    useEffect(() => {
-        if (isOpen) {
-            goToStep(MenuStep.Menu)
-            clearMenuPath(router)
-        }
-    }, [isOpen, goToStep, router])
 
     return <>
         <div className="text-secondary-text cursor-pointer relative">

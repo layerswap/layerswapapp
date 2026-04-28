@@ -5,7 +5,6 @@ import WalletsDropdown from './WalletsDropdown'
 import NetworksDropdown from './NetworksDropdown'
 import ClearAllButton from './ClearAllButton'
 import { FilterNetworkOption } from './types'
-import type { ManualDestAddress } from '@/stores/manualDestAddressesStore'
 
 type FiltersProps = {
     searchQuery: string
@@ -15,7 +14,6 @@ type FiltersProps = {
     networkNames: string[]
     toggleNetworkName: (name: string) => void
     wallets: Wallet[]
-    manualAddresses: ManualDestAddress[]
     networks: FilterNetworkOption[]
     onClearAll: () => void
 }
@@ -28,7 +26,6 @@ const Filters: FC<FiltersProps> = ({
     networkNames,
     toggleNetworkName,
     wallets,
-    manualAddresses,
     networks,
     onClearAll,
 }) => {
@@ -47,7 +44,6 @@ const Filters: FC<FiltersProps> = ({
             <div className="flex flex-wrap items-center gap-2">
                 <WalletsDropdown
                     wallets={wallets}
-                    manualAddresses={manualAddresses}
                     selectedAddresses={walletAddresses}
                     toggle={toggleWalletAddress}
                     count={walletAddresses.length}
