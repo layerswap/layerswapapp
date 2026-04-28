@@ -24,7 +24,7 @@ import { SwapResponse } from '@/lib/apiClients/layerSwapApiClient';
 import { SwapDataProvider, SwapDataStateContext } from '@/context/swap';
 import type { Wallet } from '@/Models/WalletProvider';
 import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
-import { useManualDestAddressesStore } from '@/stores/manualDestAddressesStore';
+import AppSettings from '@/lib/AppSettings';
 
 type ListProps = {
     statuses?: string | number;
@@ -35,7 +35,6 @@ type ListProps = {
 const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
     const { networks } = useSettingsState()
     const { wallets } = useWallet()
-    const manualDestAddresses = useManualDestAddressesStore(s => s.manualDestAddresses)
 
     const {
         searchQuery, setSearchQuery,
@@ -43,7 +42,7 @@ const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
         networkNames, toggleNetworkName,
         clearFilters,
         filtersActive,
-    } = useHistoryFilters({ wallets, manualAddresses: manualDestAddresses })
+    } = useHistoryFilters({ wallets })
 
     const { allAddresses, normalizedByRaw } = useMemo(() => {
         const all = new Set<string>()
@@ -56,13 +55,8 @@ const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
                 map.set(addr, normalized)
             }
         }
-        for (const m of manualDestAddresses) {
-            const normalized = new Address(m.address, null, m.providerName).normalized
-            all.add(normalized)
-            map.set(m.address, normalized)
-        }
         return { allAddresses: Array.from(all), normalizedByRaw: map }
-    }, [wallets, networks, manualDestAddresses])
+    }, [wallets, networks])
 
     const effectiveAddresses = useMemo(() => {
         if (!selectedWalletAddrs || selectedWalletAddrs.length === 0) return allAddresses
@@ -90,12 +84,11 @@ const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
             networkNames={networkNames}
             toggleNetworkName={toggleNetworkName}
             wallets={wallets}
-            manualAddresses={manualDestAddresses}
             networks={networkOptions}
             onClearAll={clearFilters}
         />
     ), [
-        wallets, manualDestAddresses,
+        wallets,
         networkOptions,
         searchQuery, setSearchQuery,
         walletAddresses, toggleWalletAddress,
@@ -103,7 +96,7 @@ const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
         clearFilters,
     ])
 
-    const noAccounts = wallets.length === 0 && manualDestAddresses.length === 0
+    const noAccounts = wallets.length === 0
 
     return (
         <div className="relative flex flex-col h-full min-h-0">
@@ -385,7 +378,7 @@ const SwapsList: FC<SwapsListProps> = ({
 
 type HistoryEmptyStateProps = {
     title: string
-    description: string
+    description: ReactNode
     action?: ReactNode
 }
 
@@ -424,7 +417,13 @@ const BlankHistory = ({ onNewTransferClick }: BlankHistoryProps) => (
 const ConnectWalletCard = () => (
     <HistoryEmptyState
         title="Connect wallet"
-        description="In order to see your transfer history you need to connect your wallet."
+        description={
+            <>
+                <span>In order to see your transfer history you need to connect your wallet. You can also see history by address in the </span>
+                <a href={AppSettings.ExplorerURl} target="_blank" rel="noopener noreferrer" aria-label="Open Layerswap explorer (opens in new tab)" className="text-primary hover:underline">explorer</a>
+                <span>.</span>
+            </>
+        }
         action={
             <ConnectButton>
                 <div className="flex items-center gap-2 text-base text-secondary-text font-normal bg-secondary-500 hover:bg-secondary-400 py-2 px-3 rounded-lg">

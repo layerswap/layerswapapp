@@ -1,5 +1,4 @@
 import { create } from 'zustand'
-import { createJSONStorage, persist } from 'zustand/middleware'
 import { Address as AddressClass } from '@/lib/address'
 
 export type ManualDestAddress = {
@@ -13,7 +12,7 @@ interface ManualDestAddressesState {
     removeManualDestAddress: (address: string, providerName: string) => void
 }
 
-export const useManualDestAddressesStore = create<ManualDestAddressesState>()(persist((set) => ({
+export const useManualDestAddressesStore = create<ManualDestAddressesState>()((set) => ({
     manualDestAddresses: [],
     addManualDestAddress: (entry) => set(state => ({
         manualDestAddresses: state.manualDestAddresses.some(
@@ -29,7 +28,4 @@ export const useManualDestAddressesStore = create<ManualDestAddressesState>()(pe
                 && AddressClass.equals(e.address, address, null, providerName))
         )
     })),
-}), {
-    name: 'manualDestAddresses',
-    storage: createJSONStorage(() => localStorage),
 }))

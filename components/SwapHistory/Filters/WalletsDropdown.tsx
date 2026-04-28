@@ -1,17 +1,15 @@
 import { FC, useMemo, useState } from 'react'
-import { ChevronDown, Pencil, Settings2 } from 'lucide-react'
+import { ChevronDown, Settings2 } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '../../shadcn/popover'
 import { Wallet } from '@/Models/WalletProvider'
 import { Address } from '@/lib/address'
 import CheckboxRow from './CheckboxRow'
 import { filterChipClasses } from './chipStyles'
-import type { ManualDestAddress } from '@/stores/manualDestAddressesStore'
 import VaulDrawer from '../../modal/vaulModal'
 import WalletsList from '../../Wallet/WalletsList'
 
 type WalletsDropdownProps = {
     wallets: Wallet[]
-    manualAddresses: ManualDestAddress[]
     selectedAddresses: string[]
     toggle: (address: string) => void
     count: number
@@ -24,10 +22,10 @@ type Row = {
     icon: React.ReactNode
 }
 
-const WalletsDropdown: FC<WalletsDropdownProps> = ({ wallets, manualAddresses, selectedAddresses, toggle, count }) => {
+const WalletsDropdown: FC<WalletsDropdownProps> = ({ wallets, selectedAddresses, toggle, count }) => {
     const [open, setOpen] = useState(false)
     const [manageOpen, setManageOpen] = useState(false)
-    const disabled = wallets.length === 0 && manualAddresses.length === 0
+    const disabled = wallets.length === 0
     const label = count > 0 ? `Wallets (${count})` : 'Wallets'
 
     const rows = useMemo<Row[]>(() => {
@@ -47,19 +45,8 @@ const WalletsDropdown: FC<WalletsDropdownProps> = ({ wallets, manualAddresses, s
                 })
             }
         }
-        for (const m of manualAddresses) {
-            const addr = new Address(m.address, null, m.providerName)
-            if (seen.has(addr.normalized)) continue
-            seen.add(addr.normalized)
-            out.push({
-                address: m.address,
-                label: 'Manually added',
-                short: addr.toShortString(),
-                icon: <Pencil className="w-4 h-4" />,
-            })
-        }
         return out
-    }, [wallets, manualAddresses])
+    }, [wallets])
 
     return (
         <>
