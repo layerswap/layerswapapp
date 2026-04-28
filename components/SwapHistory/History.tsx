@@ -244,6 +244,10 @@ const SwapsList: FC<SwapsListProps> = ({
         if (!stillPresent) setExpanded(undefined)
     }, [list, expanded])
 
+    useEffect(() => {
+        setExpanded(undefined)
+    }, [search.isActive])
+
     const handleLoadMore = async () => {
         if (completed.hasMore) await completed.loadMore()
     }
