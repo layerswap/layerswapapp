@@ -18,7 +18,7 @@ import { useSwapByTransactionHash } from "../../hooks/useSwapByTransactionHash";
 import Filters from "./Filters";
 import NoMatches from "./Filters/NoMatches";
 import SearchResult from "./Filters/SearchResult";
-import { isIncomplete, shouldDisplay } from "./Filters/filterSwaps";
+import { shouldDisplay } from "./Filters/filterSwaps";
 import type { FilterNetworkOption } from "./Filters/types";
 import { SwapResponse } from '@/lib/apiClients/layerSwapApiClient';
 import { SwapDataProvider, SwapDataStateContext } from '@/context/swap';
@@ -35,14 +35,12 @@ type ListProps = {
 const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
     const { networks } = useSettingsState()
     const { wallets } = useWallet()
-    const swapTransactions = useSwapTransactionStore(s => s.swapTransactions)
     const manualDestAddresses = useManualDestAddressesStore(s => s.manualDestAddresses)
 
     const {
         searchQuery, setSearchQuery,
         walletAddresses, selectedWalletAddrs, toggleWalletAddress,
         networkNames, toggleNetworkName,
-        hideIncomplete, setHideIncomplete,
         clearFilters,
         filtersActive,
     } = useHistoryFilters({ wallets, manualAddresses: manualDestAddresses })
@@ -83,11 +81,6 @@ const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
         [networks]
     )
 
-    const hasPending = pendingDeposit.swaps.some(s => shouldDisplay(s, swapTransactions))
-    const hasIncomplete =
-        pendingDeposit.swaps.some(s => isIncomplete(s, swapTransactions)) ||
-        completed.swaps.some(s => isIncomplete(s, swapTransactions))
-
     const filtersNode = useMemo(() => (
         <Filters
             searchQuery={searchQuery}
@@ -96,22 +89,17 @@ const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
             toggleWalletAddress={toggleWalletAddress}
             networkNames={networkNames}
             toggleNetworkName={toggleNetworkName}
-            hideIncomplete={hideIncomplete}
-            setHideIncomplete={setHideIncomplete}
             wallets={wallets}
             manualAddresses={manualDestAddresses}
             networks={networkOptions}
-            hasPending={hasPending}
-            hasIncomplete={hasIncomplete}
             onClearAll={clearFilters}
         />
     ), [
         wallets, manualDestAddresses,
-        networkOptions, hasPending, hasIncomplete, swapTransactions,
+        networkOptions,
         searchQuery, setSearchQuery,
         walletAddresses, toggleWalletAddress,
         networkNames, toggleNetworkName,
-        hideIncomplete, setHideIncomplete,
         clearFilters,
     ])
 
@@ -128,7 +116,6 @@ const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
                     completed={completed}
                     isLoadingAny={isLoadingAny}
                     isValidatingAny={isValidatingAny}
-                    hideIncomplete={hideIncomplete}
                     filtersActive={filtersActive}
                     clearFilters={clearFilters}
                     onNewTransferClick={onNewTransferClick}
@@ -148,7 +135,6 @@ type SwapsListProps = {
     completed: SwapHistoryData['completed']
     isLoadingAny: boolean
     isValidatingAny: boolean
-    hideIncomplete: boolean
     filtersActive: boolean
     clearFilters: () => void
     onNewTransferClick?: () => void
@@ -162,7 +148,6 @@ const SwapsList: FC<SwapsListProps> = ({
     completed,
     isLoadingAny,
     isValidatingAny,
-    hideIncomplete,
     filtersActive,
     clearFilters,
     onNewTransferClick,
@@ -187,23 +172,13 @@ const SwapsList: FC<SwapsListProps> = ({
         }
     }, [])
 
-    const filteredPendingRaw = useMemo(
+    const pendingSwaps = useMemo(
         () => pendingDeposit.swaps.filter(s => shouldDisplay(s, swapTransactions)),
         [pendingDeposit.swaps, swapTransactions]
     )
-    const pendingSwaps = useMemo(
-        () => hideIncomplete
-            ? filteredPendingRaw.filter(s => !isIncomplete(s, swapTransactions))
-            : filteredPendingRaw,
-        [hideIncomplete, filteredPendingRaw, swapTransactions]
-    )
     const filteredCompleted = useMemo(
-        () => completed.swaps.filter(s => {
-            if (!shouldDisplay(s, swapTransactions)) return false
-            if (hideIncomplete && isIncomplete(s, swapTransactions)) return false
-            return true
-        }),
-        [completed.swaps, hideIncomplete, swapTransactions]
+        () => completed.swaps.filter(s => shouldDisplay(s, swapTransactions)),
+        [completed.swaps, swapTransactions]
     )
 
     const grouppedSwaps = useMemo(() => Object
