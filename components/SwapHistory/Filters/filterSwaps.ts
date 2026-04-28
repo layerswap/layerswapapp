@@ -24,15 +24,6 @@ const hasUserActivity = (
     return hasInputTx || hasStoreTx
 }
 
-export const isIncomplete = (
-    sr: SwapResponse,
-    storeTransactions: Record<string, unknown>
-): boolean => {
-    const status = sr.swap?.status as string | undefined
-    if (!status || !INCOMPLETE_STATUSES.includes(status)) return false
-    return hasUserActivity(sr, storeTransactions)
-}
-
 export const shouldDisplay = (
     sr: SwapResponse,
     storeTransactions: Record<string, unknown>

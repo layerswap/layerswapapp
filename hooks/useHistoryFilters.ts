@@ -11,7 +11,6 @@ export function useHistoryFilters({ wallets, manualAddresses }: Args) {
     const [searchQuery, setSearchQuery] = useState('')
     const [walletAddresses, setWalletAddresses] = useState<string[]>([])
     const [networkNames, setNetworkNames] = useState<string[]>([])
-    const [hideIncomplete, setHideIncomplete] = useState(false)
 
     const toggleWalletAddress = useCallback((address: string) => {
         setWalletAddresses(prev =>
@@ -29,7 +28,6 @@ export function useHistoryFilters({ wallets, manualAddresses }: Args) {
         setSearchQuery('')
         setWalletAddresses([])
         setNetworkNames([])
-        setHideIncomplete(false)
     }, [])
 
     const knownAddresses = useMemo(() => {
@@ -46,8 +44,7 @@ export function useHistoryFilters({ wallets, manualAddresses }: Args) {
 
     const filtersActive =
         (selectedWalletAddrs?.length ?? 0) > 0 ||
-        networkNames.length > 0 ||
-        hideIncomplete
+        networkNames.length > 0
 
     return {
         searchQuery,
@@ -57,8 +54,6 @@ export function useHistoryFilters({ wallets, manualAddresses }: Args) {
         toggleWalletAddress,
         networkNames,
         toggleNetworkName,
-        hideIncomplete,
-        setHideIncomplete,
         clearFilters,
         filtersActive,
     }

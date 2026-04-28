@@ -3,7 +3,6 @@ import { SearchComponent } from '../../Input/Search'
 import { Wallet } from '@/Models/WalletProvider'
 import WalletsDropdown from './WalletsDropdown'
 import NetworksDropdown from './NetworksDropdown'
-import IncompleteToggle from './IncompleteToggle'
 import ClearAllButton from './ClearAllButton'
 import { FilterNetworkOption } from './types'
 import type { ManualDestAddress } from '@/stores/manualDestAddressesStore'
@@ -15,13 +14,9 @@ type FiltersProps = {
     toggleWalletAddress: (address: string) => void
     networkNames: string[]
     toggleNetworkName: (name: string) => void
-    hideIncomplete: boolean
-    setHideIncomplete: (v: boolean) => void
     wallets: Wallet[]
     manualAddresses: ManualDestAddress[]
     networks: FilterNetworkOption[]
-    hasPending: boolean
-    hasIncomplete: boolean
     onClearAll: () => void
 }
 
@@ -32,19 +27,14 @@ const Filters: FC<FiltersProps> = ({
     toggleWalletAddress,
     networkNames,
     toggleNetworkName,
-    hideIncomplete,
-    setHideIncomplete,
     wallets,
     manualAddresses,
     networks,
-    hasPending,
-    hasIncomplete,
     onClearAll,
 }) => {
     const hasAny =
         walletAddresses.length > 0 ||
-        networkNames.length > 0 ||
-        hideIncomplete
+        networkNames.length > 0
 
     return (
         <div className="space-y-2 pb-3">
@@ -68,13 +58,6 @@ const Filters: FC<FiltersProps> = ({
                     toggle={toggleNetworkName}
                     count={networkNames.length}
                 />
-                {hasIncomplete ? (
-                    <IncompleteToggle
-                        hideIncomplete={hideIncomplete}
-                        setHideIncomplete={setHideIncomplete}
-                        showDot={hasPending && !hideIncomplete}
-                    />
-                ) : null}
                 {hasAny ? <ClearAllButton onClick={onClearAll} /> : null}
             </div>
         </div>
