@@ -106,7 +106,6 @@
     "wagmi": "2.14.11",
     "web-encoding": "^1.1.5",
     "web3": "1.8.0",
-    "zksync": "0.13.1",
     "zustand": "^4.4.1"
   },
   "devDependencies": {

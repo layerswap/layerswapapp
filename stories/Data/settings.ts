@@ -762,49 +762,6 @@ export const Settings: LayerSwapSettings = {
                     "symbol": "ETH",
                     "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
-                    "contract": "0",
-                    "decimals": 18,
-                    "price_in_usd": 3453.45,
-                    "precision": 6,
-                    display_asset: ""
-                }
-            ],
-            "name": "LOOPRING_GOERLI",
-            "display_name": "Loopring Goerli",
-            "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/loopring_goerli.png",
-            "chain_id": "5",
-            "node_url": 'null',
-            "nodes": [],
-            "type": NetworkType.ZkSyncLite,
-            "transaction_explorer_template": "",
-            "account_explorer_template": "",
-            "token": {
-                "display_asset": "",
-
-                "symbol": "SOL",
-                "logo": "https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/sol.png",
-                "contract": null,
-                "decimals": 9,
-                "price_in_usd": 0,
-                "precision": 8,
-                "listing_date": "2023-09-14T16:44:58.549571+00:00"
-            },
-            "metadata": {
-                "listing_date": "2024-03-05T14:07:36.71174+00:00",
-                "evm_oracle_contract": null,
-                "evm_multicall_contract": ""
-            },
-            "deposit_methods": [
-                "Wallet",
-                "DepositAddress"
-            ]
-        },
-        {
-            "tokens": [
-                {
-                    "symbol": "ETH",
-                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
-                    "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
                     "contract": null,
                     "decimals": 18,
                     "price_in_usd": 3453.45,
