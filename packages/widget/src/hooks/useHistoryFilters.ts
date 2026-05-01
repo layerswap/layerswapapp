@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
 import { Wallet } from '@/types/wallet'
-import { FilterOpts } from '@/components/Pages/SwapHistory/Filters/types'
 
 type Args = {
     wallets: Wallet[]
@@ -10,7 +9,6 @@ export function useHistoryFilters({ wallets }: Args) {
     const [searchQuery, setSearchQuery] = useState('')
     const [walletAddresses, setWalletAddresses] = useState<string[]>([])
     const [networkNames, setNetworkNames] = useState<string[]>([])
-    const [hideIncomplete, setHideIncomplete] = useState(false)
 
     const toggleWalletAddress = useCallback((address: string) => {
         setWalletAddresses(prev =>
@@ -28,7 +26,6 @@ export function useHistoryFilters({ wallets }: Args) {
         setSearchQuery('')
         setWalletAddresses([])
         setNetworkNames([])
-        setHideIncomplete(false)
     }, [])
 
     const knownAddresses = useMemo(() => {
@@ -42,26 +39,19 @@ export function useHistoryFilters({ wallets }: Args) {
         return addrs.length > 0 ? addrs : null
     }, [walletAddresses, knownAddresses])
 
-    const filterOpts = useMemo<FilterOpts>(() => ({
-        walletAddrs: selectedWalletAddrs,
-    }), [selectedWalletAddrs])
-
     const filtersActive =
         (selectedWalletAddrs?.length ?? 0) > 0 ||
-        networkNames.length > 0 ||
-        hideIncomplete
+        networkNames.length > 0
 
     return {
         searchQuery,
         setSearchQuery,
         walletAddresses,
+        selectedWalletAddrs,
         toggleWalletAddress,
         networkNames,
         toggleNetworkName,
-        hideIncomplete,
-        setHideIncomplete,
         clearFilters,
-        filterOpts,
         filtersActive,
     }
 }

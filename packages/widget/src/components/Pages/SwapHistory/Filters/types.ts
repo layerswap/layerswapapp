@@ -3,7 +3,3 @@ export type FilterNetworkOption = {
     display_name: string
     logo: string
 }
-
-export type FilterOpts = {
-    walletAddrs: string[] | null
-}

@@ -134,10 +134,16 @@ export function useSwapHistoryData(addresses?: string[], networks?: string[]) {
         const completedIds = new Set(allCompletedSwaps.map(s => s.swap.id))
         const pendingIds = new Set(pendingDeposit.swaps.map(s => s.swap.id))
 
+        const networkSet = networks && networks.length > 0 ? new Set(networks) : null
+
         for (const swap of localStorageSwaps) {
-            if (!completedIds.has(swap.swap.id) && !pendingIds.has(swap.swap.id)) {
-                allCompletedSwaps.push(swap)
-            }
+            if (completedIds.has(swap.swap.id) || pendingIds.has(swap.swap.id)) continue
+            if (
+                networkSet &&
+                !networkSet.has(swap.swap.source_network.name) &&
+                !networkSet.has(swap.swap.destination_network.name)
+            ) continue
+            allCompletedSwaps.push(swap)
         }
 
         // Sort by created_date descending
@@ -149,7 +155,7 @@ export function useSwapHistoryData(addresses?: string[], networks?: string[]) {
             ...completed,
             swaps: allCompletedSwaps,
         }
-    }, [completed, localStorageSwaps, pendingDeposit.swaps])
+    }, [completed, localStorageSwaps, pendingDeposit.swaps, networks])
 
     return {
         pendingDeposit,

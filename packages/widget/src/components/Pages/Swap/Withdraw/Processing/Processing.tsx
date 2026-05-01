@@ -93,8 +93,11 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
 
     useEffect(() => {
         if (!swapDetails?.id) return
-        if (storedWalletTransaction?.status !== swapInputTxStatus) setSwapTransaction(swapDetails.id, swapInputTxStatus, storedWalletTransaction?.hash ?? '')
-    }, [swapInputTxStatus, storedWalletTransaction?.hash, storedWalletTransaction?.status, swapDetails?.id, setSwapTransaction])
+        if (!storedWalletTransaction) return
+        if (storedWalletTransaction.status !== swapInputTxStatus) {
+            setSwapTransaction(swapDetails.id, swapInputTxStatus, storedWalletTransaction.hash)
+        }
+    }, [swapInputTxStatus, storedWalletTransaction, swapDetails?.id, setSwapTransaction])
 
     useEffect(() => {
         if (swapInputTxStatus === TransactionStatus.Failed) {

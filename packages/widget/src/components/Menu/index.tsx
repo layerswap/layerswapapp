@@ -11,6 +11,7 @@ import { CampaignsComponent } from "../Pages/Campaigns";
 import { CampaignDetailsComponent } from "../Pages/Campaigns/Details";
 import { Modal, ModalContent } from "../Modal/modalWithoutAnimation";
 import { useCallbacks } from "../../context/callbackProvider";
+import { useControllableState } from "../Modal/vaul/use-controllable-state";
 
 const Comp = () => {
 
@@ -18,7 +19,12 @@ const Comp = () => {
     const { goToStep } = useFormWizardaUpdate()
     const { onMenuNavigationChange } = useCallbacks()
 
-    const [isOpen, setIsOpen] = useState(false)
+    const [isOpen = false, setIsOpen] = useControllableState<boolean>({
+        onChange: () => {
+            goToStep(MenuStep.Menu)
+            onMenuNavigationChange('/')
+        },
+    });
     const [selectedCampaign, setSelectedCampaign] = useState<undefined | string>(undefined)
 
     const handleModalOpenStateChange = (value: boolean) => {
@@ -39,13 +45,6 @@ const Comp = () => {
             onMenuNavigationChange(path)
         }
     }
-
-    useEffect(() => {
-        if (isOpen) {
-            goToStep(MenuStep.Menu)
-            onMenuNavigationChange("/")
-        }
-    }, [isOpen, onMenuNavigationChange])
 
     return <>
         <div className="text-secondary-text cursor-pointer relative">
