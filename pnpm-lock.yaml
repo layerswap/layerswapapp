@@ -475,9 +475,6 @@ importers:
       '@layerswap/wallet-imtbl-passport':
         specifier: workspace:^
         version: link:../imtblPassport
-      '@layerswap/wallet-module-zksync':
-        specifier: workspace:^
-        version: link:../zkSync
       '@layerswap/wallet-paradex':
         specifier: workspace:^
         version: link:../paradex
@@ -833,43 +830,6 @@ importers:
       react:
         specifier: 'catalog:'
         version: 19.2.3
-
-  packages/wallets/zkSync:
-    dependencies:
-      ethers:
-        specifier: 5.7.2
-        version: 5.7.2(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      lucide-react:
-        specifier: ^0.379.0
-        version: 0.379.0(react@19.2.3)
-      web-encoding:
-        specifier: ^1.1.5
-        version: 1.1.5
-      zksync:
-        specifier: 0.13.1
-        version: 0.13.1(@ethersproject/logger@5.8.0)(ethers@5.7.2(bufferutil@4.1.0)(utf-8-validate@5.0.10))
-    devDependencies:
-      '@layerswap/widget':
-        specifier: workspace:^
-        version: link:../../widget
-      '@tailwindcss/postcss':
-        specifier: ^4.0.15
-        version: 4.0.15
-      '@tanstack/react-query':
-        specifier: 'catalog:'
-        version: 5.90.11(react@19.2.3)
-      '@types/react':
-        specifier: 'catalog:'
-        version: 19.2.3
-      react:
-        specifier: 'catalog:'
-        version: 19.2.3
-      react-dom:
-        specifier: 'catalog:'
-        version: 19.2.3(react@19.2.3)
-      tailwindcss:
-        specifier: ^4.0.15
-        version: 4.0.15
 
   packages/widget:
     dependencies:
@@ -7565,9 +7525,6 @@ packages:
   '@xtuc/long@4.2.2':
     resolution: {integrity: sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==}
 
-  '@zxing/text-encoding@0.9.0':
-    resolution: {integrity: sha512-U/4aVJ2mxI0aDNI8Uq0wEhMgY+u4CNtEb0om3+y3+niDAsoTCOB33UF0sxpzqzdqXLqmvc+vZyAt4O8pPdfkwA==}
-
   abi-wan-kanabi@2.2.4:
     resolution: {integrity: sha512-0aA81FScmJCPX+8UvkXLki3X1+yPQuWxEkqXBVKltgPAK79J+NB+Lp5DouMXa7L6f+zcRlIA/6XO7BN/q9fnvg==}
     hasBin: true
@@ -7809,9 +7766,6 @@ packages:
 
   axios-proxy-builder@0.1.2:
     resolution: {integrity: sha512-6uBVsBZzkB3tCC8iyx59mCjQckhB8+GQrI9Cop8eC7ybIsvs/KtnNgEBfRMSEa7GqK2VBGUzgjNYMdPIfotyPA==}
-
-  axios@0.21.4:
-    resolution: {integrity: sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==}
 
   axios@0.25.0:
     resolution: {integrity: sha512-cD8FOb0tRH3uuEe6+evtAbgJtfxr7ly3fQjYcMcuPlgkwVS9xboaVIpcDV+cYQe+yGykgwZCs1pzjntcGa6l5g==}
@@ -8149,9 +8103,6 @@ packages:
   check-error@2.1.3:
     resolution: {integrity: sha512-PAJdDJusoxnwm1VwW07VWwUN1sl7smmC3OKggvndJFadxxDRyFJBX/ggnu/KE4kQAB7a3Dp8f/YXC1FlUprWmA==}
     engines: {node: '>= 16'}
-
-  chnl@1.2.0:
-    resolution: {integrity: sha512-g5gJb59edwCliFbX2j7G6sBfY4sX9YLy211yctONI2GRaiX0f2zIbKWmBm+sPqFNEpM7Ljzm7IJX/xrjiEbPrw==}
 
   chokidar@3.6.0:
     resolution: {integrity: sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==}
@@ -11176,14 +11127,6 @@ packages:
     resolution: {integrity: sha512-cdGef/drWFoydD1JsMzuFf8100nZl+GT+yacc2bEced5f9Rjk4z+WtFUTBu9PhOi9j/jfmBPu0mMEY4wIdAF8A==}
     engines: {node: '>= 0.6.0'}
 
-  promise-controller@1.0.0:
-    resolution: {integrity: sha512-goA0zA9L91tuQbUmiMinSYqlyUtEgg4fxJcjYnLYOQnrktb4o4UqciXDNXiRUPiDBPACmsr1k8jDW4r7UDq9Qw==}
-    engines: {node: '>=8'}
-
-  promise.prototype.finally@3.1.8:
-    resolution: {integrity: sha512-aVDtsXOml9iuMJzUco9J1je/UrIT3oMYfWkCTiUhkt+AvZw72q4dUZnR/R/eB3h5GeAagQVXvM1ApoYniJiwoA==}
-    engines: {node: '>= 0.4'}
-
   prop-types@15.8.1:
     resolution: {integrity: sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==}
 
@@ -12798,9 +12741,6 @@ packages:
   wcwidth@1.0.1:
     resolution: {integrity: sha512-XHPEwS0q6TaxcvG85+8EYkbiCux2XtWG2mkc47Ng2A77BQu9+DqIOJldST4HgPkuea7dvKSj5VgX3P1d4rW8Tg==}
 
-  web-encoding@1.1.5:
-    resolution: {integrity: sha512-HYLeVCdJ0+lBYV2FvNZmv3HJ2Nt0QYXqZojk3d9FJOLkwnuhzM9tmamh8d7HPM8QqjKH8DeHkFTx+CFlWpZZDA==}
-
   web-vitals@4.2.4:
     resolution: {integrity: sha512-r4DIlprAGwJ7YM11VZp4R884m0Vmgr6EAKe3P+kO0PPj3Unqyvv59rczf6UiGcb9Z8QxZVcqKNwv/g0WNdWwsw==}
 
@@ -12895,10 +12835,6 @@ packages:
   webrtc-adapter@7.7.1:
     resolution: {integrity: sha512-TbrbBmiQBL9n0/5bvDdORc6ZfRY/Z7JnEj+EYOD1ghseZdpJ+nF2yx14k3LgQKc7JZnG7HAcL+zHnY25So9d7A==}
     engines: {node: '>=6.0.0', npm: '>=3.10.0'}
-
-  websocket-as-promised@1.1.0:
-    resolution: {integrity: sha512-agq8bPsPFKBWinKQkoXwY7LoBYe+2fQ7Gnuxx964+BTIiyAdL130FnB60bXuVQdUCdaS17R/MyRaaO4WIqtl4Q==}
-    engines: {node: '>=6'}
 
   websocket@1.0.35:
     resolution: {integrity: sha512-/REy6amwPZl44DDzvRCkaI1q1bIiQB0mEFQLUrhz3z2EK91cp3n72rAjUlrTP0zV22HJIUOVHQGPxhFRjxjt+Q==}
@@ -13141,15 +13077,6 @@ packages:
 
   yup@1.6.1:
     resolution: {integrity: sha512-JED8pB50qbA4FOkDol0bYF/p60qSEDQqBD0/qeIrUCG1KbPBIQ776fCUNb9ldbPcSTxA69g/47XTo4TqWiuXOA==}
-
-  zksync-crypto@0.6.2:
-    resolution: {integrity: sha512-Ry8c9kixDu3rlGCZDOg1UhzKDYe93iOZ7/Z6N1bkkrVKhmZJTIc7h+1kOjOyyhaSaHwBt8quMeBAaZKjtUeB2Q==}
-
-  zksync@0.13.1:
-    resolution: {integrity: sha512-1WRMommc8qTuwh3qk6/dv34Eb+PnKBmM41sQMaAjkC47aw2Xm4RuqJfvHXPoKnZjtIhBAzXA25rwevxqGukQHw==}
-    peerDependencies:
-      '@ethersproject/logger': ^5.4.0
-      ethers: ^5.4.4
 
   zod@3.22.4:
     resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
@@ -25044,9 +24971,6 @@ snapshots:
 
   '@xtuc/long@4.2.2': {}
 
-  '@zxing/text-encoding@0.9.0':
-    optional: true
-
   abi-wan-kanabi@2.2.4:
     dependencies:
       ansicolors: 0.3.2
@@ -25311,12 +25235,6 @@ snapshots:
   axios-proxy-builder@0.1.2:
     dependencies:
       tunnel: 0.0.6
-
-  axios@0.21.4:
-    dependencies:
-      follow-redirects: 1.15.11
-    transitivePeerDependencies:
-      - debug
 
   axios@0.25.0:
     dependencies:
@@ -25734,8 +25652,6 @@ snapshots:
   chardet@2.1.1: {}
 
   check-error@2.1.3: {}
-
-  chnl@1.2.0: {}
 
   chokidar@3.6.0:
     dependencies:
@@ -29246,16 +29162,6 @@ snapshots:
 
   process@0.11.10: {}
 
-  promise-controller@1.0.0: {}
-
-  promise.prototype.finally@3.1.8:
-    dependencies:
-      call-bind: 1.0.8
-      define-properties: 1.2.1
-      es-abstract: 1.24.1
-      es-errors: 1.3.0
-      set-function-name: 2.0.2
-
   prop-types@15.8.1:
     dependencies:
       loose-envify: 1.4.0
@@ -31262,12 +31168,6 @@ snapshots:
       defaults: 1.0.4
     optional: true
 
-  web-encoding@1.1.5:
-    dependencies:
-      util: 0.12.5
-    optionalDependencies:
-      '@zxing/text-encoding': 0.9.0
-
   web-vitals@4.2.4: {}
 
   web3-core-helpers@1.5.2:
@@ -31434,12 +31334,6 @@ snapshots:
     dependencies:
       rtcpeerconnection-shim: 1.2.15
       sdp: 2.12.0
-
-  websocket-as-promised@1.1.0:
-    dependencies:
-      chnl: 1.2.0
-      promise-controller: 1.0.0
-      promise.prototype.finally: 3.1.8
 
   websocket@1.0.35:
     dependencies:
@@ -31691,20 +31585,6 @@ snapshots:
       tiny-case: 1.0.3
       toposort: 2.0.2
       type-fest: 2.19.0
-
-  zksync-crypto@0.6.2: {}
-
-  zksync@0.13.1(@ethersproject/logger@5.8.0)(ethers@5.7.2(bufferutil@4.1.0)(utf-8-validate@5.0.10)):
-    dependencies:
-      '@ethersproject/logger': 5.8.0
-      axios: 0.21.4
-      ethers: 5.7.2(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      websocket: 1.0.35
-      websocket-as-promised: 1.1.0
-      zksync-crypto: 0.6.2
-    transitivePeerDependencies:
-      - debug
-      - supports-color
 
   zod@3.22.4: {}
 

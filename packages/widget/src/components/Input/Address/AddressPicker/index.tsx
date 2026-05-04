@@ -15,8 +15,8 @@ import ConnectedWallets, { NotCompatibleWallets } from "./ConnectedWallets";
 import { Wallet } from "@/types/wallet";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import VaulDrawer from "@/components/Modal/vaulModal";
-import { ManualDestAddress, useManualDestAddresses, useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts";
-import { useManualDestAddressesStore } from "@/stores/manualDestAddressesStore";
+import { useManualDestAddresses, useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts";
+import { ManualDestAddress, useManualDestAddressesStore } from "@/stores/manualDestAddressesStore";
 
 export enum AddressGroup {
     ConnectedWallet = "Connected wallet",

@@ -26,7 +26,6 @@ import type { TONProviderConfig, TonClientConfig } from "@layerswap/wallet-ton";
 import { createTronProvider } from "@layerswap/wallet-tron";
 import type { TronProviderConfig } from "@layerswap/wallet-tron";
 
-import { createZkSyncModule } from "@layerswap/wallet-module-zksync";
 import { WalletProvider, WalletWrapper } from "@layerswap/widget/types";
 
 export { createBitcoinProvider };
@@ -55,8 +54,6 @@ export type { TONProviderConfig, TonClientConfig };
 
 export { createTronProvider };
 export type { TronProviderConfig };
-
-export { createZkSyncModule };
 
 /**
  * @deprecated Use createBitcoinProvider() instead. This export will be removed in a future version.
@@ -166,7 +163,6 @@ export function getDefaultProviders(config: DefaultWalletConfig = {}) {
         // EVM with modules
         createEVMProvider({
             walletConnectConfigs: walletConnect,
-            walletProviderModules: [createZkSyncModule()]
         }),
         // Starknet
         createStarknetProvider(),

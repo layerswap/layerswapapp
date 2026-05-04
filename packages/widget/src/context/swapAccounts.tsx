@@ -1,10 +1,12 @@
 import { Context, createContext, useCallback, useContext, useMemo, useState } from 'react'
 import useWallet from '@/hooks/useWallet';
-import { Wallet, WalletConnectionProvider } from '@/types/wallet';
-import AddressIcon from '@/components/Common/AddressIcon';
-import { SwapDirection } from '@/components/Pages/Swap/Form/SwapFormValues';
-import { getKey, useBalanceStore, BalanceEntry } from '@/stores/balanceStore';
+import { getKey, useBalanceStore } from '@/stores/balanceStore';
 import { useManualDestAddressesStore } from '@/stores/manualDestAddressesStore';
+import { Wallet, WalletConnectionProvider } from '@/types/wallet';
+import { SwapDirection } from '@/exports';
+import AddressIcon from '@/components/Common/AddressIcon';
+
+export type { ManualDestAddress } from '@/stores/manualDestAddressesStore';
 
 const SwapAccountsStateContext = createContext<SwapAccountsContextType | null>(null);
 const SwapAccountsUpdateContext = createContext<SwapAccountsUpdateContextType | null>(null);
@@ -188,7 +190,7 @@ export function useNetworkBalanceKey(direction: SwapDirection, networkName: stri
     return getKey(account.address, networkName);
 }
 
-export function useNetworkBalance(direction: SwapDirection, networkName: string | undefined): BalanceEntry | undefined {
+export function useNetworkBalance(direction: SwapDirection, networkName: string | undefined) {
     const balanceKey = useNetworkBalanceKey(direction, networkName);
     const balance = useBalanceStore((s) => (s.balances[balanceKey || "unknown"]));
     return balance;
