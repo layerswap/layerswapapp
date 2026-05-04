@@ -18,8 +18,7 @@ const Comp = () => {
     const { goToStep } = useFormWizardaUpdate()
 
     const [isOpen = false, setIsOpen] = useControllableState<boolean>({
-        onChange: (open) => {
-            if (!open) return
+        onChange: () => {
             goToStep(MenuStep.Menu)
             clearMenuPath(router)
         },

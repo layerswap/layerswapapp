@@ -8,7 +8,6 @@ export enum GasCalculation {
 const destinationOrder = [
     KnownInternalNames.Networks.StarkNetMainnet,
     KnownInternalNames.Networks.ZksyncEraMainnet,
-    KnownInternalNames.Networks.ZksyncMainnet,
     KnownInternalNames.Networks.ArbitrumNova,
     KnownInternalNames.Networks.ArbitrumMainnet,
     KnownInternalNames.Networks.OptimismMainnet,
@@ -37,7 +36,6 @@ const sourceOrder = [
     KnownInternalNames.Networks.ZksyncEraMainnet,
     KnownInternalNames.Networks.PolygonMainnet,
     KnownInternalNames.Networks.AvalancheMainnet,
-    KnownInternalNames.Networks.ZksyncMainnet,
     KnownInternalNames.Networks.ArbitrumNova,
     KnownInternalNames.Networks.PolygonZkMainnet,
     KnownInternalNames.Networks.KCCMainnet,
@@ -77,10 +75,6 @@ export default class NetworkSettings {
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.BNBChainMainnet] = {
             ChainId: 56,
         };
-        NetworkSettings.KnownSettings[KnownInternalNames.Networks.ZksyncMainnet] = {
-            ChainId: 25,
-            AccountExplorerTemplate: 'https://zkscan.io/explorer/accounts/{0}',
-        };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ZksyncEraMainnet] = {
             ChainId: 324,
             isFeatured: true,
@@ -117,9 +111,6 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.OptimismKovan] = {
             ChainId: 69,
-        };
-        NetworkSettings.KnownSettings[KnownInternalNames.Networks.EthereumRinkeby] = {
-            ChainId: 4,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.NahmiiMainnet] = {
             ChainId: 5551,
