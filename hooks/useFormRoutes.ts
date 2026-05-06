@@ -605,7 +605,7 @@ const searchInTokens = (routes: NetworkRoute[], search: string): NetworkTokenEle
 };
 // ---------- Route Grouping ----------
 
-type GroupRoutesProps = {
+export type GroupRoutesProps = {
     routes: NetworkRoute[];
     direction: SwapDirection;
     balances: Record<string, NetworkBalance> | null;
@@ -615,10 +615,12 @@ type GroupRoutesProps = {
     search?: string;
     suggestionsLimit?: number;
     sortingOption?: SortingOption;
+    /** When true, show suggestions even without wallet balances (e.g. deposit address flow) */
+    skipBalanceGate?: boolean;
 }
 
-function groupRoutes(
-    { routes, direction, balances, groupBy, recents, balancesLoaded, search, suggestionsLimit = 4, sortingOption = SortingOption.RELEVANCE }: GroupRoutesProps
+export function groupRoutes(
+    { routes, direction, balances, groupBy, recents, balancesLoaded, search, suggestionsLimit = 4, sortingOption = SortingOption.RELEVANCE, skipBalanceGate = false }: GroupRoutesProps
 ): RowElement[] {
 
     if (search) {
@@ -626,7 +628,7 @@ function groupRoutes(
     }
 
     // Suggestions always use relevance-based sorting (unchanged)
-    const suggestedRoutes = getSuggestedRoutes(routes, balances, recents, direction, balancesLoaded, suggestionsLimit)
+    const suggestedRoutes = getSuggestedRoutes(routes, balances, recents, direction, balancesLoaded, suggestionsLimit, skipBalanceGate)
 
     // Apply custom sorting ONLY to "All Networks/All Tokens" section
     if (groupBy === "token") {
@@ -781,11 +783,11 @@ function useExchangeRoutes({ values }: Props) {
     return { exchangesRoutes: res, isLoading }
 }
 
-function getSuggestedRoutes(routes: NetworkRoute[], balances: Record<string, NetworkBalance> | null, routesHistory: RoutesHistory, direction: SwapDirection, balancesLoading: boolean, limit: number = 4): (NetworkTokenElement | TokenSceletonElement)[] {
+function getSuggestedRoutes(routes: NetworkRoute[], balances: Record<string, NetworkBalance> | null, routesHistory: RoutesHistory, direction: SwapDirection, balancesLoading: boolean, limit: number = 4, skipBalanceGate: boolean = false): (NetworkTokenElement | TokenSceletonElement)[] {
     // Ensure minimum of 4 suggestions
     const effectiveLimit = Math.max(4, limit);
 
-    if (direction === "from") {
+    if (direction === "from" && !skipBalanceGate) {
         if (!balancesLoading && !balances)
             return []
         if (balancesLoading && direction === "from")

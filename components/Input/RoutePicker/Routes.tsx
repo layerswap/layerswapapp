@@ -350,7 +350,7 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
             ) : (
                 <SelectedRoutePlaceholder placeholder={placeholder} />
             )}
-            <span className="px-2 pointer-events-none text-primary-text">
+            <span className="ml-auto px-2 pointer-events-none text-primary-text">
                 <ChevronDown className="h-4 w-4 text-secondary-text" aria-hidden="true" />
             </span>
         </span>

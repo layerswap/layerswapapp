@@ -181,7 +181,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                 setShow={setShowAddressModal}
                 modalId="address"
             >
-                <div className='w-full flex flex-col justify-between h-full text-primary-text'>
+                <div className='w-full flex flex-col justify-between h-full text-primary-text openaddresspicker'>
                     <div className='flex flex-col self-center grow w-full space-y-5 h-full'>
 
                         {

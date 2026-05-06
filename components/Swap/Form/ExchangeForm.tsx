@@ -78,9 +78,9 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                                 ) : destination_address ? (
                                                     <AddressButton address={destination_address} />
                                                 ) : (
-                                                    <div className="flex items-center justify-between">
+                                                    <div className="flex items-center">
                                                         <SelectedEchangePlaceholder placeholder='Enter destination address' />
-                                                        <ChevronRight className="h-4 w-4 text-secondary-text shrink-0" aria-hidden="true" />
+                                                        <ChevronRight className="ml-auto h-4 w-4 text-secondary-text shrink-0" aria-hidden="true" />
                                                     </div>
                                                 )
                                             }

@@ -175,7 +175,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                     mode="fitHeight"
                     show={swapModalOpen}
                     setShow={handleShowSwapModal}
-                    header='Complete the swap'
+                    header='Send your deposit'
                     modalId="showSwap"
                     className="expandContainerHeight">
                     <SwapDetails type="contained" onWalletWithdrawalSuccess={handleWalletWithdrawalSuccess} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />
