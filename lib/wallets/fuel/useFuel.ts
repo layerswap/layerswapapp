@@ -19,16 +19,16 @@ import { useSettingsState } from "@/context/settings";
 import { BAKO_STATE } from "./Bako";
 import sleep from "../utils/sleep";
 import { useWalletStore } from "@/stores/walletStore";
+const commonSupportedNetworks = [
+    KnownInternalNames.Networks.FuelTestnet,
+    KnownInternalNames.Networks.FuelDevnet,
+    KnownInternalNames.Networks.FuelMainnet
+]
+
+const name = 'Fuel'
+const id = 'fuel'
 
 export default function useFuel(): WalletProvider {
-    const commonSupportedNetworks = [
-        KnownInternalNames.Networks.FuelTestnet,
-        KnownInternalNames.Networks.FuelDevnet,
-        KnownInternalNames.Networks.FuelMainnet
-    ]
-    const name = 'Fuel'
-    const id = 'fuel'
-
     const { address: evmAddress, connector: evmConnector } = useAccount()
     const { connectors } = useConnectors()
     const { fuel } = useGlobalFuel()
@@ -189,7 +189,7 @@ export default function useFuel(): WalletProvider {
         };
     }, [connectors]);
 
-    const availableWalletsForConnect: InternalConnector[] = connectors.map(c => {
+    const availableConnectors: InternalConnector[] = connectors.map(c => {
         const isInstalled = c.installed && !c['dAppWindow']
         return {
             name: c.name,
@@ -206,7 +206,7 @@ export default function useFuel(): WalletProvider {
         disconnectWallets,
         switchAccount,
         switchChain,
-        availableWalletsForConnect,
+        availableConnectors,
         autofillSupportedNetworks: commonSupportedNetworks,
         withdrawalSupportedNetworks: commonSupportedNetworks,
         asSourceSupportedNetworks: commonSupportedNetworks,

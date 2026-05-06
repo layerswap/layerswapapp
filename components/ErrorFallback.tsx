@@ -67,6 +67,7 @@ export default function ErrorFallback({ error, resetErrorBoundary }) {
                                     <GoHomeButton>
                                         <button
                                             type="button"
+                                            onClick={resetErrorBoundary}
                                             className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-secondary-300 px-5 py-3 text-base font-semibold leading-6 hover:bg-secondary-400 focus:outline-none transition"
                                         >
                                             <Home className="h-5 w-5" aria-hidden="true" />

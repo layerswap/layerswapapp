@@ -6,14 +6,49 @@ import NetworkSettings from "../../lib/NetworkSettings";
 import { WagmiProvider, createConfig, Config } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Chain, http, fallback } from 'viem';
-import { useEvmConnectors } from "../../context/evmConnectorsContext";
 import { ActiveEvmAccountProvider } from "./ActiveEvmAccount";
+import { coinbaseWallet, metaMask, walletConnect } from "@wagmi/connectors";
+import { walletConnect as customWalletConnect } from "../../lib/wallets/connectors/resolveConnectors/walletConnect";
+import { browserInjected } from "../../lib/wallets/connectors/browserInjected";
+import { isMobile } from "../../lib/isMobile";
+import { WALLETCONNECT_PROJECT_ID } from "@/lib/wallets/walletConnect/config";
+import { HIDDEN_WALLETCONNECT_ID } from "@/lib/wallets/evm/constants";
 
 type Props = {
     children: JSX.Element | JSX.Element[]
 }
 
 const queryClient = new QueryClient()
+const walletConnectConnector = walletConnect({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: isMobile(), customStoragePrefix: 'walletConnect' })
+const hiddenWalletConnectConnector = customWalletConnect({
+    id: HIDDEN_WALLETCONNECT_ID,
+    name: 'Hidden WalletConnect',
+    rdns: '',
+    type: 'other',
+    mobile: { native: '', universal: '' },
+    icon: '',
+    projectId: WALLETCONNECT_PROJECT_ID,
+    showQrModal: false,
+})
+const metaMaskConnector = metaMask({
+    dappMetadata: {
+        name: 'Layerswap',
+        url: 'https://layerswap.io/app/',
+        iconUrl: 'https://layerswap.io/app/symbol.png'
+    }
+})
+const coinbaseWalletConnector = coinbaseWallet({
+    appName: 'Layerswap',
+    appLogoUrl: 'https://layerswap.io/app/symbol.png',
+})
+const browserInjectedConnector = browserInjected()
+const defaultConnectors = [
+    metaMaskConnector,
+    coinbaseWalletConnector,
+    walletConnectConnector,
+    browserInjectedConnector,
+    hiddenWalletConnectConnector,
+] as const
 
 const chainsToFilter = [
     70700,
@@ -25,10 +60,9 @@ let cachedConfig: Config | null = null
 
 function WagmiComponent({ children }: Props) {
     const settings = useSettingsState();
-    const { connectors } = useEvmConnectors()
-    
+
     const isChain = (c: Chain | undefined): c is Chain => c != undefined
-    
+
     const settingsChains = useMemo(() => {
         return settings?.networks
             .sort((a, b) => (NetworkSettings.KnownSettings[a.name]?.ChainOrder || Number(a.chain_id)) - (NetworkSettings.KnownSettings[b.name]?.ChainOrder || Number(b.chain_id)))
@@ -53,7 +87,7 @@ function WagmiComponent({ children }: Props) {
     const config = useMemo(() => {
         if (!cachedConfig) {
             cachedConfig = createConfig({
-                connectors,
+                connectors: [...defaultConnectors],
                 chains: settingsChains as [Chain, ...Chain[]],
                 transports: transports,
                 ssr: true

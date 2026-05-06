@@ -253,7 +253,6 @@ const NestedWalletAddress: FC<NestedWalletAddressProps> = ({ selectable, address
     return (
         <button
             type="button"
-            disabled={!selectable}
             onClick={() => (selectable && onWalletSelect) && onWalletSelect({
                 providerName: wallet.providerName,
                 walletId: wallet.id,
