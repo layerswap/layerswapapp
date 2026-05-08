@@ -149,14 +149,36 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, type
         setIsFeesExpanded(false)
     }, [selectedRoute?.network.name, selectedRoute?.token.symbol])
 
-    // Default to first available route/token
+    // Default selection: prefer the swap's actual source, otherwise the lowest-rank
+    // route. Picking `availableRoutes[0]` would let API ordering drive the UI and
+    // can mislabel the swap (showing a different network/token than what the
+    // server-side swap was created with), which is unsafe — the user could send the
+    // wrong asset.
     useEffect(() => {
-        if (availableRoutes.length > 0 && !selectedRoute) {
-            const first = availableRoutes[0]
-            const firstToken = first.tokens[0]
-            if (firstToken) setSelectedRoute({ network: first, token: firstToken })
+        if (availableRoutes.length === 0 || selectedRoute) return
+
+        const swapSourceNetwork = swapBasicData?.source_network?.name
+        const swapSourceToken = swapBasicData?.source_token?.symbol
+        const matchByActualSwap = swapSourceNetwork && swapSourceToken
+            ? availableRoutes.find(r => r.name === swapSourceNetwork)
+            : undefined
+        const tokenForSwap = matchByActualSwap?.tokens.find(t => t.symbol === swapSourceToken)
+
+        if (matchByActualSwap && tokenForSwap) {
+            setSelectedRoute({ network: matchByActualSwap, token: tokenForSwap })
+            return
         }
-    }, [availableRoutes])
+
+        const rank = (r: { source_rank?: number }) => r.source_rank ?? Number.POSITIVE_INFINITY
+        const sorted = [...availableRoutes].sort((a, b) => rank(a) - rank(b))
+        for (const route of sorted) {
+            const token = [...route.tokens].sort((a, b) => rank(a) - rank(b))[0]
+            if (token) {
+                setSelectedRoute({ network: route, token })
+                return
+            }
+        }
+    }, [availableRoutes, swapBasicData?.source_network?.name, swapBasicData?.source_token?.symbol])
 
     // Create a new swap when the selected source network changes
     const recreateSwap = useCallback(async (network: NetworkRoute, token: NetworkRouteToken) => {

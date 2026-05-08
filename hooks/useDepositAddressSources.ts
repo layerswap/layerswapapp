@@ -3,6 +3,7 @@ import useSWR from 'swr'
 import { ApiResponse } from '@/Models/ApiResponse'
 import { NetworkRoute } from '@/Models/Network'
 import LayerSwapApiClient from '@/lib/apiClients/layerSwapApiClient'
+import { resolveRoutesURLForSelectedToken } from '@/helpers/routes'
 
 type Args = {
     destinationNetwork: string | undefined
@@ -12,23 +13,21 @@ type Args = {
 
 /**
  * Fetches source routes available for a deposit-address flow to a given destination.
- * Single SWR key shared by the form auto-selector and the manual-withdraw picker
- * so navigations between the two reuse the cache instead of refetching.
+ * Uses the same URL builder as the form picker so the two share an SWR cache.
  */
 export default function useDepositAddressSources({ destinationNetwork, destinationToken, enabled = true }: Args) {
     const apiClient = useMemo(() => new LayerSwapApiClient(), [])
 
     const url = useMemo(() => {
         if (!enabled || !destinationNetwork || !destinationToken) return null
-        const params = new URLSearchParams({
-            destination_network: destinationNetwork,
-            destination_token: destinationToken,
-            include_unmatched: 'false',
-            include_unavailable: 'false',
-            has_deposit_address: 'true',
-            include_swaps_via_deposit_address: 'true',
+        return resolveRoutesURLForSelectedToken({
+            direction: 'from',
+            network: destinationNetwork,
+            token: destinationToken,
+            includes: { unmatched: false, unavailable: false, swaps: true },
+            hasDepositAddress: true,
+            useDepositAddressSwaps: true,
         })
-        return `/sources?${params.toString()}`
     }, [enabled, destinationNetwork, destinationToken])
 
     const { data, isLoading } = useSWR<ApiResponse<NetworkRoute[]>>(

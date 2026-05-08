@@ -32,17 +32,16 @@ export default function useAutoSourceRoute() {
             if (stillValid) return
         }
 
-        // Sort by source_rank (lower = higher priority), then pick the first with an active token
-        const sorted = [...sourceRoutes].sort((a, b) => {
-            const aRank = a.source_rank || 999999
-            const bRank = b.source_rank || 999999
-            return aRank - bRank
-        })
+        // Lower source_rank = higher priority. Use ?? so rank 0 (the best possible value)
+        // isn't coerced to the sentinel like `|| Infinity` would do.
+        const rank = (r: { source_rank?: number }) => r.source_rank ?? Number.POSITIVE_INFINITY
+
+        const sorted = [...sourceRoutes].sort((a, b) => rank(a) - rank(b))
 
         for (const route of sorted) {
             const activeToken = route.tokens
                 ?.filter(t => t.status === 'active')
-                .sort((a, b) => (a.source_rank || 999999) - (b.source_rank || 999999))[0]
+                .sort((a, b) => rank(a) - rank(b))[0]
             if (activeToken) {
                 setFieldValue('from', route, true)
                 setFieldValue('fromAsset', activeToken, true)

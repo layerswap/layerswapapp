@@ -112,8 +112,8 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
             <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} className="rounded-md" />
             <SelectItem.Title>
                 <>
-                    <span>
-                        {item.display_name}
+                    <span className="flex items-center gap-1.5 min-w-0">
+                        <span className="truncate">{item.display_name}</span>
                     </span>
 
                     {hasLoadedBalances ? (
@@ -228,8 +228,8 @@ export const GroupedTokenHeader = ({
             />
             <SelectItem.Title>
                 <>
-                    <span>
-                        {mainToken.symbol}
+                    <span className="flex items-center gap-1.5 min-w-0">
+                        <span className="truncate">{mainToken.symbol}</span>
                     </span>
                     {hasLoadedBalances ? (
                         <div className={`${showNetworkIcons ? "flex flex-col space-y-0.5" : ""} ${hideTokenImages ? "invisible" : "visible"}`}>

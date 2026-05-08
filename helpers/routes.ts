@@ -53,13 +53,20 @@ export const resolveNetworkRoutesURL = (direction: SwapDirection, values: SwapFo
 
     const unboundDestination = hasDepositAddress && direction === 'to'
 
+    // For source picking in the deposit-address flow we want the API to return
+    // only sources that can actually route to the destination via a deposit-address
+    // swap. `include_swaps` returns the broader set (incl. unreachable ones), which
+    // makes the picker disagree with the auto-picker.
+    const useDepositAddressSwaps = hasDepositAddress && direction === 'from'
+
     return resolveRoutesURLForSelectedToken({
         direction,
         network: isCEX || unboundDestination ? undefined : selectednetwork?.name,
         token: isCEX || unboundDestination ? undefined : selectedToken,
         includes: { unmatched: !hasDepositAddress, unavailable: !hasDepositAddress, swaps: !isCEX },
         networkTypes,
-        hasDepositAddress
+        hasDepositAddress,
+        useDepositAddressSwaps,
     })
 }
 
@@ -74,18 +81,20 @@ type ResolveRoutesURLForSelectedTokenProps = {
     token: string | undefined,
     includes: IncludeOptions,
     networkTypes?: string[],
-    hasDepositAddress?: boolean
+    hasDepositAddress?: boolean,
+    useDepositAddressSwaps?: boolean,
 }
-export const resolveRoutesURLForSelectedToken = ({ direction, network, token, includes, networkTypes, hasDepositAddress }: ResolveRoutesURLForSelectedTokenProps) => {
+export const resolveRoutesURLForSelectedToken = ({ direction, network, token, includes, networkTypes, hasDepositAddress, useDepositAddressSwaps }: ResolveRoutesURLForSelectedTokenProps) => {
 
     const include_unmatched = includes.unmatched ? 'true' : 'false'
-    const include_swaps = includes.swaps ? 'true' : 'false'
     const include_unavailable = includes.unavailable ? 'true' : 'false'
 
     const params = new URLSearchParams({
         include_unmatched,
-        include_swaps,
         include_unavailable,
+        ...(useDepositAddressSwaps
+            ? { include_swaps_via_deposit_address: 'true' }
+            : { include_swaps: includes.swaps ? 'true' : 'false' }),
         ...(networkTypes ? { network_types: networkTypes?.join(',') } : {}),
         ...(hasDepositAddress ? { has_deposit_address: 'true' } : {}),
         ...(network ?
