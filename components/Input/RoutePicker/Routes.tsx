@@ -20,10 +20,11 @@ type TokenItemProps = {
     type?: RowElement['type'];
     selected: boolean;
     direction: SwapDirection;
+    hideBalances?: boolean;
 };
 
 export const CurrencySelectItemDisplay = memo((props: TokenItemProps) => {
-    const { item, route, direction, type } = props
+    const { item, route, direction, type, hideBalances } = props
 
     return <SelectItem className="group">
         <SelectItem.Logo
@@ -31,7 +32,7 @@ export const CurrencySelectItemDisplay = memo((props: TokenItemProps) => {
             altText={`${item.symbol} logo`}
             className="rounded-full"
         />
-        <NetworkTokenTitle item={item} route={route} direction={direction} type={type} />
+        <NetworkTokenTitle item={item} route={route} direction={direction} type={type} hideBalances={hideBalances} />
     </SelectItem>
 });
 
@@ -40,16 +41,17 @@ type NetworkTokenItemProps = {
     item: NetworkRouteToken;
     direction: SwapDirection;
     type?: RowElement['type'];
+    hideBalances?: boolean;
 }
 
 export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
-    const { item, route, direction } = props
+    const { item, route, direction, hideBalances } = props
     const swapAccounts = useSwapAccounts(direction)
     const selectedAccount = swapAccounts?.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.name));
 
-    const { balances } = useBalance(selectedAccount?.address, route)
+    const { balances } = useBalance(hideBalances ? undefined : selectedAccount?.address, route)
 
-    const tokenbalance = balances?.find(b => b.token === item.symbol)
+    const tokenbalance = hideBalances ? undefined : balances?.find(b => b.token === item.symbol)
 
     const formatted_balance_amount = (tokenbalance?.amount || tokenbalance?.amount === 0) ? truncateDecimals(tokenbalance?.amount, item.precision) : ''
     const usdAmount = (tokenbalance?.amount && item?.price_in_usd) ? item?.price_in_usd * tokenbalance?.amount : undefined;
@@ -89,22 +91,23 @@ type NetworkRouteItemProps = {
     selected: boolean;
     direction: SwapDirection;
     hideTokenImages?: boolean;
+    hideBalances?: boolean;
 }
 
 export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
-    const { item, direction, hideTokenImages } = props
+    const { item, direction, hideTokenImages, hideBalances } = props
     const swapAccounts = useSwapAccounts(direction)
 
     const selectedAccount = swapAccounts?.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(item.name));
-    const networkBalances = useBalance(selectedAccount?.address, item)
-    const totalInUSD = useMemo(() => networkBalances ? getTotalBalanceInUSD(networkBalances, item) : undefined, [networkBalances.balances, item])
-    const tokensWithBalance = networkBalances.balances?.filter(b => b.amount && b.amount > 0)
+    const networkBalances = useBalance(hideBalances ? undefined : selectedAccount?.address, item)
+    const totalInUSD = useMemo(() => (hideBalances ? undefined : networkBalances ? getTotalBalanceInUSD(networkBalances, item) : undefined), [networkBalances.balances, item, hideBalances])
+    const tokensWithBalance = hideBalances ? undefined : networkBalances.balances?.filter(b => b.amount && b.amount > 0)
         ?.map(b => b.token);
     const filteredNetworkTokens = item?.tokens?.filter(token =>
         tokensWithBalance?.includes(token.symbol)
     );
 
-    const hasLoadedBalances = totalInUSD !== null && Number(totalInUSD) > 0;
+    const hasLoadedBalances = !hideBalances && totalInUSD !== null && totalInUSD !== undefined && Number(totalInUSD) > 0;
     const showTokenLogos = hasLoadedBalances && filteredNetworkTokens?.length;
 
     return (
@@ -167,18 +170,20 @@ type SelectedCurrencyDisplayProps = {
 export const GroupedTokenHeader = ({
     item,
     direction,
-    hideTokenImages
+    hideTokenImages,
+    hideBalances
 }: {
     item: GroupedTokenElement;
     direction: SwapDirection;
     hideTokenImages?: boolean;
+    hideBalances?: boolean;
 }) => {
     const swapAccounts = useSwapAccounts(direction)
 
     const tokens = item.items;
     const balances = useBalanceStore(s => s.balances)
 
-    const networksWithBalance: NetworkRoute[] = Array.from(
+    const networksWithBalance: NetworkRoute[] = hideBalances ? [] : Array.from(
         new Map(
             tokens
                 .map(({ route }) => {
@@ -199,24 +204,26 @@ export const GroupedTokenHeader = ({
         ).values()
     );
 
-    const tokenBalances = tokens.reduce((acc, { route }) => {
-        const address = swapAccounts.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.route.name))?.address
-        const key = address && route.route ? getKey(address, route.route) : 'unknown'
+    const tokenBalances = hideBalances
+        ? { sum: 0, hasVale: false }
+        : tokens.reduce((acc, { route }) => {
+            const address = swapAccounts.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.route.name))?.address
+            const key = address && route.route ? getKey(address, route.route) : 'unknown'
 
-        const tokenSymbol = route.token.symbol;
-        const price = route.token.price_in_usd;
+            const tokenSymbol = route.token.symbol;
+            const price = route.token.price_in_usd;
 
-        const networkBalances = balances?.[key];
-        const balanceEntry = networkBalances?.data?.balances?.find(
-            (b) => b.token === tokenSymbol
-        );
+            const networkBalances = balances?.[key];
+            const balanceEntry = networkBalances?.data?.balances?.find(
+                (b) => b.token === tokenSymbol
+            );
 
-        if (!balanceEntry?.amount) return acc;
-        return { sum: acc.sum + balanceEntry.amount * price, hasVale: true };
-    }, { sum: 0, hasVale: false });
+            if (!balanceEntry?.amount) return acc;
+            return { sum: acc.sum + balanceEntry.amount * price, hasVale: true };
+        }, { sum: 0, hasVale: false });
 
     const mainToken = tokens[0]?.route.token;
-    const hasLoadedBalances = tokenBalances.hasVale && Number(tokenBalances.sum) >= 0;
+    const hasLoadedBalances = !hideBalances && tokenBalances.hasVale && Number(tokenBalances.sum) >= 0;
     const showNetworkIcons = hasLoadedBalances && networksWithBalance.length > 0;
 
     return (

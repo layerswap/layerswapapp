@@ -617,10 +617,12 @@ export type GroupRoutesProps = {
     sortingOption?: SortingOption;
     /** When true, show suggestions even without wallet balances (e.g. deposit address flow) */
     skipBalanceGate?: boolean;
+    /** When true, do not include the suggestions section at all */
+    hideSuggestions?: boolean;
 }
 
 export function groupRoutes(
-    { routes, direction, balances, groupBy, recents, balancesLoaded, search, suggestionsLimit = 4, sortingOption = SortingOption.RELEVANCE, skipBalanceGate = false }: GroupRoutesProps
+    { routes, direction, balances, groupBy, recents, balancesLoaded, search, suggestionsLimit = 4, sortingOption = SortingOption.RELEVANCE, skipBalanceGate = false, hideSuggestions = false }: GroupRoutesProps
 ): RowElement[] {
 
     if (search) {
@@ -628,7 +630,9 @@ export function groupRoutes(
     }
 
     // Suggestions always use relevance-based sorting (unchanged)
-    const suggestedRoutes = getSuggestedRoutes(routes, balances, recents, direction, balancesLoaded, suggestionsLimit, skipBalanceGate)
+    const suggestedRoutes = hideSuggestions
+        ? []
+        : getSuggestedRoutes(routes, balances, recents, direction, balancesLoaded, suggestionsLimit, skipBalanceGate)
 
     // Apply custom sorting ONLY to "All Networks/All Tokens" section
     if (groupBy === "token") {

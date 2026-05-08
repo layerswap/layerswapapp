@@ -21,7 +21,6 @@ import { Content } from '@/components/Input/RoutePicker/Content'
 import { RowElement } from '@/Models/Route'
 import { groupRoutes } from '@/hooks/useFormRoutes'
 import { useRecentNetworksStore } from '@/stores/recentRoutesStore'
-import { useRouteTokenSwitchStore } from '@/stores/routeTokenSwitchStore'
 import { useRouteSortingStore } from '@/stores/routeSortingStore'
 import useWallet from '@/hooks/useWallet'
 import useSuggestionsLimit from '@/hooks/useSuggestionsLimit'
@@ -93,7 +92,6 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, type
     const [searchQuery, setSearchQuery] = useState('')
     const { wallets } = useWallet()
     const { suggestionsLimit } = useSuggestionsLimit({ hasWallet: wallets.length > 0 })
-    const groupByToken = useRouteTokenSwitchStore((s) => s.showTokens)
     const sortingOption = useRouteSortingStore((s) => s.sortingOption)
     const routesHistory = useRecentNetworksStore(state => state.recentRoutes)
 
@@ -205,21 +203,23 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, type
         }
     }, [swapBasicData, refuel, apiClient, setSwapId])
 
-    // Build RowElements with groupings, search, and suggestions via shared groupRoutes
+    // Build RowElements with groupings, search, and suggestions via shared groupRoutes.
+    // Deposit address flow always groups by token and hides the suggestions section.
     const routeElements: RowElement[] = useMemo(() => {
         return groupRoutes({
             routes: availableRoutes,
             direction: 'from',
             balances: null,
-            groupBy: groupByToken ? 'token' : 'network',
+            groupBy: 'token',
             recents: routesHistory,
             balancesLoaded: false,
             search: searchQuery,
             suggestionsLimit,
             sortingOption,
             skipBalanceGate: true,
+            hideSuggestions: true,
         })
-    }, [availableRoutes, searchQuery, groupByToken, routesHistory, suggestionsLimit, sortingOption])
+    }, [availableRoutes, searchQuery, routesHistory, suggestionsLimit, sortingOption])
 
     const handleRouteSelect = useCallback((route: NetworkRoute, token: NetworkRouteToken) => {
         setSelectedRoute({ network: route, token })
@@ -304,6 +304,8 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, type
                                                 direction="from"
                                                 selectedRoute={selectedRoute?.network.name}
                                                 selectedToken={selectedRoute?.token.symbol}
+                                                hideTokenSwitch
+                                                hideBalances
                                             />
                                         )}
                                     </SelectorContent>
