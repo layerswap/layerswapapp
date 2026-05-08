@@ -4,7 +4,7 @@ import { Address } from "./address";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
 import { SwapBasicData } from "./apiClients/layerSwapApiClient";
 
-export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: QueryParams, type: 'cross-chain' | 'exchange'): SwapFormValues {
+export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: QueryParams, type: 'cross-chain' | 'exchange' | 'deposit-address'): SwapFormValues {
     const { destination_address, amount, fromAsset, toAsset, from, to, lockFromAsset, lockToAsset, depositMethod, fromExchange } = queryParams
     const { sourceExchanges, sourceRoutes, destinationRoutes } = settings || {}
 
@@ -50,22 +50,26 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
     let initialAmount =
         (lockedDestinationCurrency && amount) || (initialDestinationCurrency ? amount : '')
 
+    const isNetworkSourceType = type === 'cross-chain' || type === 'deposit-address'
+
     const result: SwapFormValues = {
         fromExchange: undefined,
-        from: type === 'cross-chain' ? initialSource : undefined,
+        from: isNetworkSourceType ? initialSource : undefined,
         to: initialDestination,
         amount: type === 'cross-chain' ? initialAmount : undefined,
-        fromAsset: type === 'cross-chain' ? initialSourceCurrency : undefined,
+        fromAsset: isNetworkSourceType ? initialSourceCurrency : undefined,
         toAsset: initialDestinationCurrency,
         destination_address: initialAddress ? initialAddress : '',
-        depositMethod: type === 'exchange' ? 'deposit_address' : ((depositMethod === "wallet" || depositMethod === "deposit_address") ? depositMethod : undefined),
+        depositMethod: (type === 'exchange' || type === 'deposit-address')
+            ? 'deposit_address'
+            : ((depositMethod === "wallet" || depositMethod === "deposit_address") ? depositMethod : undefined),
     }
 
     return result
 }
 
 
-export function generateSwapInitialValuesFromSwap(swapResponse: SwapBasicData, refuel: boolean, settings: LayerSwapAppSettings, type: 'cross-chain' | 'exchange'): SwapFormValues {
+export function generateSwapInitialValuesFromSwap(swapResponse: SwapBasicData, refuel: boolean, settings: LayerSwapAppSettings, type: 'cross-chain' | 'exchange' | 'deposit-address'): SwapFormValues {
     const {
         destination_address,
         requested_amount,
