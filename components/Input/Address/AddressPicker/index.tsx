@@ -181,7 +181,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     }, [canFocus])
 
     const pickerBody = (
-        <div className='w-full flex flex-col justify-between h-full text-primary-text min-h-[200px] openaddresspicker'>
+        <div className='w-full flex flex-col justify-between h-full text-primary-text min-h-[200px]'>
             <div className='flex flex-col self-center grow w-full space-y-5 h-full'>
 
                 {
@@ -230,6 +230,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                         destination={destination}
                         destination_address={destination_address}
                         partner={partner}
+                        onRemoveManual={onRemoveManual}
                     />
                 }
 
@@ -266,71 +267,9 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                 modalId="address"
             >
                 <VaulDrawer.Snap id="item-1">
-                    <div className='w-full flex flex-col justify-between h-full text-primary-text min-h-[200px]'>
-                        <div className='flex flex-col self-center grow w-full space-y-5 h-full'>
-
-                            {
-                                destination
-                                && provider
-                                && !connectedWallets.length &&
-                                <ConnectWalletButton
-                                    provider={provider}
-                                    onConnect={onConnect}
-                                />
-                            }
-
-                            <ManualAddressInput
-                                manualAddress={manualAddress}
-                                setManualAddress={setManualAddress}
-                                setNewAddress={(props) => updateDestAddress(props?.address)}
-                                values={values}
-                                partner={partner}
-                                name={name}
-                                inputReference={inputReference}
-                                setFieldValue={setFieldValue}
-                                close={close}
-                                addresses={groupedAddresses}
-                                connectedWallet={connectedWallet}
-                            />
-                            {
-                                destination
-                                && provider
-                                && !manualAddress &&
-                                <ConnectedWallets
-                                    provider={provider}
-                                    onClick={(props) => handleSelectAddress(props.address)}
-                                    onConnect={onConnect}
-                                    destination={destination}
-                                    destination_address={destination_address}
-                                    isLoading={isConnecting}
-                                    setIsLoading={setIsConnecting}
-                                />
-                            }
-
-                            {
-                                addressBookAddresses && addressBookAddresses?.length > 0 && !manualAddress && destination &&
-                                <AddressBook
-                                    addressBook={addressBookAddresses}
-                                    onSelectAddress={handleSelectAddress}
-                                    destination={destination}
-                                    destination_address={destination_address}
-                                    partner={partner}
-                                    onRemoveManual={onRemoveManual}
-                                />
-                            }
-
-                            {
-                                destination && provider && !manualAddress && unAvailableWallets.length > 0 &&
-                                <NotCompatibleWallets
-                                    notCompatibleWallets={unAvailableWallets}
-                                    destination={destination}
-                                    isLoading={isConnecting}
-                                />
-                            }
-                        </div>
-                    </div>
-                </VaulDrawer.Snap>
-            </VaulDrawer>
+                    {pickerBody}
+                </VaulDrawer.Snap >
+            </VaulDrawer >
         </>
     )
 });
