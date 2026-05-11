@@ -4,7 +4,7 @@ import { Widget } from "@/components/Widget/Index";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { Form, useFormikContext } from "formik";
 import { Partner } from "@/Models/Partner";
-import { ChevronDown, ChevronUp, Clock, Copy, Check, Plus} from "lucide-react";
+import { ChevronDown, ChevronUp, Copy, Check, Plus} from "lucide-react";
 import { useValidationContext } from "@/context/validationContext";
 import useWallet from "@/hooks/useWallet";
 import { Network, NetworkRoute, NetworkRouteToken, Token } from "@/Models/Network";
@@ -40,6 +40,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { AnimatePresence, motion } from "framer-motion";
 import { formatPercent } from "@/components/utils/formatPercent";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
+import EasyDepositBanner from "./EasyDepositBanner";
 
 type Props = {
     partner?: Partner;
@@ -79,7 +80,7 @@ const DepositAddressForm: FC<Props> = () => {
     useEffect(() => {
         if (hasWallet) return;
         if (isWalletModalOpenRef.current) return;
-        connect(undefined, { dismissible: false });
+        connect(undefined, { dismissible: false, topContent: <EasyDepositBanner variant="modal" currentStepIndex={0} />, fullHeight: true, hideHeader: true });
         return () => { cancel(); };
     }, [hasWallet, connect, cancel]);
 
@@ -194,6 +195,8 @@ const DepositAddressForm: FC<Props> = () => {
                     <Widget.Content>
                         <div className="w-full flex flex-col justify-between flex-1 relative min-h-[240px]">
                             <div className="flex flex-col w-full gap-3">
+
+                                <EasyDepositBanner />
 
                                 {/* Source (Pay from) */}
                                 <PayFromPicker
@@ -646,23 +649,35 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
         <div className="flex flex-col gap-3">
             {/* Deposit address + QR */}
             <div>
-                <div className="bg-secondary-500 rounded-xl p-3.5">
-                    <div className="flex items-center bg-secondary-300 rounded-lg">
-                        <div className="flex-1 min-w-0 flex justify-center">
-                            {isCreatingSwap || !depositAddress ? (
-                                <span className="inline-block bg-secondary-400 h-6 rounded animate-pulse w-32" />
-                            ) : (
-                                <button
-                                    type="button"
-                                    onClick={handleCopy}
-                                    aria-label={copied ? 'Copied' : 'Copy deposit address'}
-                                    className="group/copy cursor-pointer text-center px-2 max-w-[200px]"
-                                >
-                                    <span
-                                        className={`font-mono text-base break-all leading-snug transition-colors ${copied ? 'text-primary-text' : 'text-secondary-text group-hover/copy:text-primary-text'}`}
-                                    >
-                                        <span className="text-primary-text font-medium">{depositAddressParts.start}</span>
-                                        {depositAddressParts.middle}
+                <div className="flex items-stretch bg-secondary-400 rounded-xl overflow-hidden">
+                    <div className="shrink-0 bg-white p-1.5 flex items-center">
+                        {isCreatingSwap || !depositAddress ? (
+                            <div className="h-[140px] w-[140px] bg-secondary-100 rounded animate-pulse" />
+                        ) : (
+                            <QRCodeSVG
+                                className="rounded"
+                                value={depositAddress}
+                                includeMargin={false}
+                                size={140}
+                                level="H"
+                            />
+                        )}
+                    </div>
+                    <div className="flex-1 min-w-0 p-3.5 flex items-center justify-center">
+                        {isCreatingSwap || !depositAddress ? (
+                            <span className="inline-block bg-secondary-300 h-6 rounded animate-pulse w-32" />
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={handleCopy}
+                                aria-label={copied ? 'Copied' : 'Copy deposit address'}
+                                className="group/copy cursor-pointer text-left"
+                                style={{ maxWidth: `${Math.ceil(depositAddress.length / 3) + 2}ch` }}
+                            >
+                                <span className={`font-mono text-lg leading-snug block break-all transition-colors ${copied ? 'text-primary-text' : 'text-secondary-text group-hover/copy:text-primary-text'}`}>
+                                    <span className="text-primary-text font-medium">{depositAddressParts.start}</span>
+                                    {depositAddressParts.middle}
+                                    <span className="whitespace-nowrap">
                                         <span className="text-primary-text font-medium">{depositAddressParts.end}</span>
                                         <span className="inline-flex items-center align-middle ml-1 w-4 h-4 relative">
                                             <AnimatePresence mode="wait" initial={false}>
@@ -692,34 +707,26 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
                                             </AnimatePresence>
                                         </span>
                                     </span>
-                                </button>
-                            )}
-                        </div>
-                        <div className="shrink-0 bg-white p-1.5 rounded-lg border-4 border-secondary-500">
-                            {isCreatingSwap || !depositAddress ? (
-                                <div className="h-[140px] w-[140px] bg-secondary-100 rounded animate-pulse" />
-                            ) : (
-                                <QRCodeSVG
-                                    className="rounded"
-                                    value={depositAddress}
-                                    includeMargin={false}
-                                    size={140}
-                                    level="H"
-                                />
-                            )}
-                        </div>
+                                </span>
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
 
-            {/* Fee + ETA summary */}
-            <div className="bg-secondary-500 rounded-xl px-3.5 py-3">
-                {isQuoteLoading && !bestQuote ? (
+            {/* Loading skeleton */}
+            {isQuoteLoading && !bestQuote && (
+                <div className="bg-secondary-500 rounded-xl px-3.5 py-3">
                     <div className="flex items-center gap-3 animate-pulse">
                         <div className="h-4 bg-secondary-400 rounded w-24" />
                         <div className="h-4 bg-secondary-400 rounded w-16" />
                     </div>
-                ) : sortedTiers.length === 1 ? (
+                </div>
+            )}
+
+            {/* Min/Max container */}
+            {!(isQuoteLoading && !bestQuote) && (minDepositDisplay || maxDepositDisplay) && (
+                <div className="bg-secondary-500 rounded-xl px-3.5 py-3">
                     <div className="flex flex-col gap-1.5 text-xs text-secondary-text">
                         {minDepositDisplay && (
                             <div className="flex items-center justify-between">
@@ -733,37 +740,17 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
                                 <span className="text-primary-text">{maxDepositDisplay}</span>
                             </div>
                         )}
-                        <div className={`flex items-center gap-3 ${(minDepositDisplay || maxDepositDisplay) ? 'border-t border-secondary-400/40 pt-2 mt-0.5' : ''}`}>
-                            <span className="flex items-center gap-1">
-                                <span>{formatFee(sortedTiers[0].total_percentage_fee, sortedTiers[0].total_fixed_fee_in_usd)}</span>
-                            </span>
-                            {bestQuote && (
-                                <span className="flex items-center gap-1">
-                                    <Clock className="h-3 w-3" />
-                                    <span>{formatCompletionTime(bestQuote.avg_completion_milliseconds)}</span>
-                                </span>
-                            )}
-                        </div>
                     </div>
-                ) : sortedTiers.length > 1 && sourceToken ? (
-                    isFeesExpanded ? (
+                </div>
+            )}
+
+            {/* Fees + Est. time container */}
+            {!(isQuoteLoading && !bestQuote) && sortedTiers.length >= 1 && (
+                <div className="bg-secondary-500 rounded-xl px-3.5 py-3">
+                    {isFeesExpanded && sortedTiers.length > 1 && sourceToken ? (
                         <div className="flex flex-col gap-2 text-xs">
-                            {minDepositDisplay && (
-                                <div className="flex items-center justify-between text-secondary-text">
-                                    <span>Minimum</span>
-                                    <span className="text-primary-text">{minDepositDisplay}</span>
-                                </div>
-                            )}
-                            {maxDepositDisplay && (
-                                <div className="flex items-center justify-between text-secondary-text">
-                                    <span>Maximum</span>
-                                    <span className="text-primary-text">{maxDepositDisplay}</span>
-                                </div>
-                            )}
-                            <div className={`flex items-center justify-between text-secondary-text ${(minDepositDisplay || maxDepositDisplay) ? 'border-t border-secondary-400/40 pt-2' : ''}`}>
-                                <span className="flex items-center gap-1">
-                                    <span>{"Fees by amount"}</span>
-                                </span>
+                            <div className="flex items-center justify-between text-secondary-text">
+                                <span>{"Fees by amount"}</span>
                                 <button
                                     type="button"
                                     onClick={() => setIsFeesExpanded(false)}
@@ -773,7 +760,7 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
                                     <ChevronUp className="h-4 w-4" />
                                 </button>
                             </div>
-                            <div className="flex flex-col gap-0.5 border-t border-secondary-400/40 pt-2 pl-4">
+                            <div className="flex flex-col gap-0.5 border-t border-secondary-400/40 pt-2">
                                 {sortedTiers.map((tier, idx) => {
                                     const range = formatTierRange(
                                         tier,
@@ -800,42 +787,31 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
                             </div>
                         </div>
                     ) : (
-                        <div className="flex flex-col gap-1.5 text-xs text-secondary-text">
-                            {minDepositDisplay && (
-                                <div className="flex items-center justify-between">
-                                    <span>Minimum</span>
-                                    <span className="text-primary-text">{minDepositDisplay}</span>
-                                </div>
-                            )}
-                            {maxDepositDisplay && (
-                                <div className="flex items-center justify-between">
-                                    <span>Maximum</span>
-                                    <span className="text-primary-text">{maxDepositDisplay}</span>
-                                </div>
-                            )}
-                            <div className={`flex items-center gap-3 ${(minDepositDisplay || maxDepositDisplay) ? 'border-t border-secondary-400/40 pt-2 mt-0.5' : ''}`}>
+                        <div className="flex items-start justify-between gap-3 text-xs">
+                            <span className="text-secondary-text shrink-0">Fees</span>
+                            <div className="flex flex-col items-end gap-1 min-w-0">
                                 <span className="flex items-center gap-1 min-w-0">
                                     <span className="text-primary-text">{formatFee(sortedTiers[0].total_percentage_fee, sortedTiers[0].total_fixed_fee_in_usd)}</span>
-                                    <span className="truncate">{`· ${formatTierRange(sortedTiers[0], true, false, sourceToken)}`}</span>
+                                    {sortedTiers.length > 1 && sourceToken && (
+                                        <span className="text-secondary-text truncate">{`· ${formatTierRange(sortedTiers[0], true, false, sourceToken)}`}</span>
+                                    )}
                                 </span>
-                                <span className="flex items-center gap-1 ml-auto shrink-0">
-                                    <Clock className="h-3 w-3" />
-                                    <span>{formatCompletionTime(sortedTiers[0].avg_completion_milliseconds)}</span>
-                                </span>
+                                {sortedTiers.length > 1 && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsFeesExpanded(true)}
+                                        className="flex items-center gap-1 text-secondary-text hover:text-primary-text transition-colors"
+                                        aria-label="Show fee for larger sends"
+                                    >
+                                        <span>{`${formatFee(sortedTiers[1].total_percentage_fee, sortedTiers[1].total_fixed_fee_in_usd)} for larger sends`}</span>
+                                        <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+                                    </button>
+                                )}
                             </div>
-                            <button
-                                type="button"
-                                onClick={() => setIsFeesExpanded(true)}
-                                className="flex items-center justify-between w-full hover:text-primary-text transition-colors border-t border-secondary-400/40 pt-2 mt-0.5 rounded-t-none"
-                                aria-label="Show fee for larger sends"
-                            >
-                                <span>{`${formatFee(sortedTiers[1].total_percentage_fee, sortedTiers[1].total_fixed_fee_in_usd)} for larger sends`}</span>
-                                <ChevronDown className="h-4 w-4 shrink-0" />
-                            </button>
                         </div>
-                    )
-                ) : null}
-            </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 };

@@ -16,6 +16,7 @@ import useBitcoin from "../lib/wallets/bitcoin/useBitcoin";
 import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
 import dynamic from "next/dynamic";
+import clsx from "clsx";
 
 const ConnectorsList = dynamic(() => import("../components/WalletModal/ConnectorsList"), {
     ssr: false
@@ -27,7 +28,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ chi
     const { networks } = useSettingsState();
     const isMobilePlatform = isMobile();
     const { isMobile: isMobileSize } = useWindowDimensions()
-    const { goBack, onFinish, open, setOpen, selectedConnector, selectedMultiChainConnector, dismissible } = useConnectModal()
+    const { goBack, onFinish, open, setOpen, selectedConnector, selectedMultiChainConnector, dismissible, topContent, fullHeight, hideHeader } = useConnectModal()
 
     const bitcoin = useBitcoin()
     const evm = useEVM();
@@ -62,7 +63,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ chi
                 onClose={onFinish}
                 modalId={"connectNewWallet"}
                 dismissible={dismissible}
-                header={
+                header={hideHeader ? undefined : (
                     <div className="flex items-center gap-1">
                         {
                             (selectedConnector || selectedMultiChainConnector) &&
@@ -75,9 +76,16 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ chi
                         }
                         <p>{(selectedMultiChainConnector && !selectedConnector) ? "Select ecosystem" : "Connect wallet"}</p>
                     </div>
-                }>
-                <VaulDrawer.Snap openFullHeight id='item-1' className="h-full max-h-[83svh] sm:max-h-full">
-                    {open ? <ConnectorsList onFinish={onFinish} /> : null}
+                )}>
+                <VaulDrawer.Snap openFullHeight id='item-1' className={clsx("h-full max-h-[83svh] sm:max-h-full", fullHeight && "openpicker", hideHeader && "pt-4")}>
+                    {open ? (
+                        <div className="flex flex-col gap-3 h-full">
+                            {!selectedConnector && !selectedMultiChainConnector ? topContent : null}
+                            <div className="flex-1 min-h-0">
+                                <ConnectorsList onFinish={onFinish} />
+                            </div>
+                        </div>
+                    ) : null}
                 </VaulDrawer.Snap>
             </VaulDrawer>
         </WalletProvidersContext.Provider>
