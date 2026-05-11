@@ -189,21 +189,23 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                             </div>
                         }
 
-                        <div className='flex items-center w-full text-left justify-between px-4 sm:pt-2 pb-2'>
-                            <Drawer.Title className="text-lg text-secondary-text font-semibold w-full">
-                                {header}
-                            </Drawer.Title>
-                            {dismissible && (
-                                <Drawer.Close asChild>
-                                    <div>
-                                        <IconButton className='inline-flex active:animate-press-down' icon={
-                                            <X strokeWidth={3} />
-                                        }>
-                                        </IconButton>
-                                    </div>
-                                </Drawer.Close>
-                            )}
-                        </div>
+                        {(header || dismissible) && (
+                            <div className='flex items-center w-full text-left justify-between px-4 sm:pt-2 pb-2'>
+                                <Drawer.Title className="text-lg text-secondary-text font-semibold w-full">
+                                    {header}
+                                </Drawer.Title>
+                                {dismissible && (
+                                    <Drawer.Close asChild>
+                                        <div>
+                                            <IconButton className='inline-flex active:animate-press-down' icon={
+                                                <X strokeWidth={3} />
+                                            }>
+                                            </IconButton>
+                                        </div>
+                                    </Drawer.Close>
+                                )}
+                            </div>
+                        )}
                         {
                             description &&
                             <Drawer.Description className="text-sm mt-2 text-secondary-text px-4">
