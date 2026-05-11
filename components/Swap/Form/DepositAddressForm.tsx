@@ -4,11 +4,12 @@ import { Widget } from "@/components/Widget/Index";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { Form, useFormikContext } from "formik";
 import { Partner } from "@/Models/Partner";
-import { ChevronDown, ChevronUp, Clock, Copy, Check, Plus, Zap } from "lucide-react";
+import { ChevronDown, ChevronUp, Clock, Copy, Check, Plus} from "lucide-react";
 import { useValidationContext } from "@/context/validationContext";
 import useWallet from "@/hooks/useWallet";
 import { Network, NetworkRoute, NetworkRouteToken, Token } from "@/Models/Network";
 import { SelectAccountProps } from "@/Models/WalletProvider";
+import { SwapStatus } from "@/Models/SwapStatus";
 import AddressIcon from "@/components/AddressIcon";
 import { Address as AddressClass } from "@/lib/address";
 import shortenString from "@/components/utils/ShortenString";
@@ -23,7 +24,8 @@ import { useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts
 import { generateSwapInitialValues } from "@/lib/generateSwapInitialValues";
 import VaulDrawer from "@/components/modal/vaulModal";
 import { WalletItem } from "@/components/Wallet/WalletsList";
-import { DepositAction } from "@/lib/apiClients/layerSwapApiClient";
+import Processing from "@/components/Swap/Withdraw/Processing";
+import { DepositAction, TransactionType } from "@/lib/apiClients/layerSwapApiClient";
 import { useDetailedQuote, DetailedQuoteModel } from "@/hooks/useDetailedQuote";
 import { Selector, SelectorContent, SelectorTrigger } from "@/components/Select/Selector/Index";
 import { SelectedRouteDisplay } from "@/components/Input/RoutePicker/Routes";
@@ -110,7 +112,7 @@ const DepositAddressForm: FC<Props> = () => {
     }, [])
 
     const { routeValidation, formValidation } = useValidationContext();
-    const { swapId, swapBasicData, depositActionsResponse, refuel } = useSwapDataState();
+    const { swapId, swapBasicData, swapDetails, depositActionsResponse, refuel } = useSwapDataState();
     const { setSwapId } = useSwapDataUpdate();
 
     const isValid = !formValidation.message;
@@ -163,58 +165,83 @@ const DepositAddressForm: FC<Props> = () => {
     }, [fieldKey, swapId, isSubmitting, isValid, submitForm, isAutoSourceUpdating]);
 
     const depositAddress = resolveDepositAddress(from, depositActionsResponse);
-    const showDepositInfo = !!swapId && swapMatchesValues;
+
+    // Show the Processing panel once the swap has moved past the
+    // "user-needs-to-send" phase (i.e. any status other than created /
+    // user_transfer_pending). Until then, keep showing the QR + fees.
+    const isPostUserTransferStatus = !!swapDetails?.status
+        && swapDetails.status !== SwapStatus.UserTransferPending
+        && swapDetails.status !== SwapStatus.Created;
+    const isProcessing = !!swapId && swapMatchesValues && isPostUserTransferStatus;
+    // The Processing panel renders "Transfer complete" as soon as an output
+    // transaction exists, even before swapStatus flips to Completed. Mirror
+    // that here so the "Deposit more" button appears at the same time.
+    const hasOutputTx = !!swapDetails?.transactions?.some(t => t.type === TransactionType.Output);
+    const isCompleted = !!swapId && swapMatchesValues && (swapDetails?.status === SwapStatus.Completed || hasOutputTx);
+    const showDepositInfo = !!swapId && swapMatchesValues && !isProcessing;
+
+    // Reset the swap so the auto-submit effect creates a fresh one for the
+    // same form values. `attemptedKeyRef` must be cleared explicitly because
+    // it caches the last (from, fromAsset, to, toAsset, address) we tried.
+    const handleDepositMore = () => {
+        attemptedKeyRef.current = null;
+        setSwapId(undefined);
+    };
 
     return (
         <>
             <Form className="h-full grow flex flex-col flex-1 justify-between w-full gap-2">
-                <Widget.Content>
-                    <div className="w-full flex flex-col justify-between flex-1 relative min-h-[240px]">
-                        <div className="flex flex-col w-full gap-3">
+                {isProcessing ? (
+                    <Processing />
+                ) : (
+                    <Widget.Content>
+                        <div className="w-full flex flex-col justify-between flex-1 relative min-h-[240px]">
+                            <div className="flex flex-col w-full gap-3">
 
-                            {/* Source (Pay from) */}
-                            <PayFromPicker
-                                selectedSource={from && fromAsset ? { network: from as unknown as NetworkRoute, token: fromAsset as NetworkRouteToken } : null}
-                                onSourceChange={(network, token) => {
-                                    setSwapId(undefined);
-                                    setFieldValue('from', network, false);
-                                    setFieldValue('fromAsset', token, true);
-                                }}
-                                destinationNetwork={destination?.name}
-                                destinationToken={toCurrency?.symbol}
-                            />
-
-                            {/* Destination network/token + recipient address share one "Receive" row */}
-                            <ReceivePicker
-                                selectedDestination={destination && toCurrency ? { network: destination as unknown as NetworkRoute, token: toCurrency as NetworkRouteToken } : null}
-                                onDestinationChange={(network, token) => {
-                                    setSwapId(undefined);
-                                    setFieldValue('to', network, false);
-                                    setFieldValue('toAsset', token, true);
-                                }}
-                                destinationAddress={destination_address}
-                                destination={destination}
-                            />
-
-                            {/* Deposit address + QR + fees once everything is ready */}
-                            {showDepositInfo && (
-                                <DepositAddressInfo
-                                    sourceNetwork={from?.name}
-                                    sourceToken={fromAsset?.symbol}
+                                {/* Source (Pay from) */}
+                                <PayFromPicker
+                                    selectedSource={from && fromAsset ? { network: from as unknown as NetworkRoute, token: fromAsset as NetworkRouteToken } : null}
+                                    onSourceChange={(network, token) => {
+                                        setSwapId(undefined);
+                                        setFieldValue('from', network, false);
+                                        setFieldValue('fromAsset', token, true);
+                                    }}
                                     destinationNetwork={destination?.name}
                                     destinationToken={toCurrency?.symbol}
-                                    destinationAddress={destination_address}
-                                    refuel={!!refuel || !!swapBasicData?.refuel}
-                                    depositAddress={depositAddress}
-                                    isCreatingSwap={false}
                                 />
-                            )}
+
+                                {/* Destination network/token + recipient address share one "Receive" row */}
+                                <ReceivePicker
+                                    selectedDestination={destination && toCurrency ? { network: destination as unknown as NetworkRoute, token: toCurrency as NetworkRouteToken } : null}
+                                    onDestinationChange={(network, token) => {
+                                        setSwapId(undefined);
+                                        setFieldValue('to', network, false);
+                                        setFieldValue('toAsset', token, true);
+                                    }}
+                                    destinationAddress={destination_address}
+                                    destination={destination}
+                                />
+
+                                {/* Deposit address + QR + fees once everything is ready */}
+                                {showDepositInfo && (
+                                    <DepositAddressInfo
+                                        sourceNetwork={from?.name}
+                                        sourceToken={fromAsset?.symbol}
+                                        destinationNetwork={destination?.name}
+                                        destinationToken={toCurrency?.symbol}
+                                        destinationAddress={destination_address}
+                                        refuel={!!refuel || !!swapBasicData?.refuel}
+                                        depositAddress={depositAddress}
+                                        isCreatingSwap={false}
+                                    />
+                                )}
+                            </div>
+                            <div>
+                                {routeValidation.message ? <ValidationError /> : null}
+                            </div>
                         </div>
-                        <div>
-                            {routeValidation.message ? <ValidationError /> : null}
-                        </div>
-                    </div>
-                </Widget.Content>
+                    </Widget.Content>
+                )}
                 <Widget.Footer showPoweredBy>
                     <DepositAddressFormButton
                         values={values}
@@ -223,6 +250,9 @@ const DepositAddressForm: FC<Props> = () => {
                         isSubmitting={isSubmitting}
                         showDepositInfo={showDepositInfo}
                         depositAddress={depositAddress}
+                        isProcessing={isProcessing}
+                        isCompleted={isCompleted}
+                        onDepositMore={handleDepositMore}
                     />
                 </Widget.Footer>
             </Form>
@@ -270,7 +300,7 @@ const PayFromPicker: FC<PayFromPickerProps> = ({ selectedSource, onSourceChange,
 
     return (
         <div className="flex items-center gap-3">
-            <span className="w-24 shrink-0 text-xs text-secondary-text uppercase tracking-wide">Send</span>
+            <span className="w-24 shrink-0 text-xs text-secondary-text tracking-wide">Send</span>
             <div className="flex-1 min-w-0">
                 <Selector>
                     <SelectorTrigger disabled={!hasOptions || !hasMultipleOptions} className="bg-secondary-500 hover:bg-secondary-400/70 rounded-xl px-3.5 py-3 transition-colors">
@@ -350,7 +380,7 @@ const ReceivePicker: FC<ReceivePickerProps> = ({
 
     return (
         <div className="flex items-center gap-3">
-            <span className="w-24 shrink-0 text-xs text-secondary-text uppercase tracking-wide">Receive</span>
+            <span className="w-24 shrink-0 text-xs text-secondary-text tracking-wide">Receive</span>
             <div className="flex-1 min-w-0 flex items-center gap-2">
                 <div className="flex-1 min-w-0">
                     <Selector>
@@ -442,6 +472,23 @@ const DestinationWalletPicker: FC<DestinationWalletPickerProps> = ({ address, de
             });
         }
     };
+
+    // When the destination changes to a network with no compatible wallet,
+    // skip the picker drawer (which would only show "Connect new wallet") and
+    // open the connect screen directly, scoped to that network's provider. We
+    // track the destination we last auto-prompted for so dismissing without
+    // connecting doesn't keep re-firing. Skipped when no wallet is connected
+    // at all — the form's non-dismissable connect modal handles that case.
+    const hasAnyWallet = allWallets.length > 0;
+    const lastAutoPromptedForRef = useRef<string | undefined>(undefined);
+    useEffect(() => {
+        if (!hasAnyWallet) return;
+        if (!destination) return;
+        if (account?.address) return;
+        if (lastAutoPromptedForRef.current === destination.name) return;
+        lastAutoPromptedForRef.current = destination.name;
+        handleConnect();
+    }, [hasAnyWallet, destination?.name, account?.address]);
 
     const hasAddress = !!address;
     const WalletIcon = account?.icon;
@@ -574,6 +621,12 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
         return `${formatTokenAmount(min)} ${sourceToken}`;
     }, [sortedTiers, sourceToken]);
 
+    const maxDepositDisplay = useMemo(() => {
+        const max = sortedTiers[sortedTiers.length - 1]?.max_amount;
+        if (!max || !Number.isFinite(max) || !sourceToken) return null;
+        return `${formatTokenAmount(max)} ${sourceToken}`;
+    }, [sortedTiers, sourceToken]);
+
     const handleCopy = () => {
         if (depositAddress) copy(depositAddress);
     };
@@ -594,24 +647,24 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
             {/* Deposit address + QR */}
             <div>
                 <div className="bg-secondary-500 rounded-xl p-3.5">
-                    <div className="flex items-center gap-4 bg-secondary-300 rounded-lg">
-                        <div className="flex-1 min-w-0 pl-2">
+                    <div className="flex items-center bg-secondary-300 rounded-lg">
+                        <div className="flex-1 min-w-0 flex justify-center">
                             {isCreatingSwap || !depositAddress ? (
-                                <span className="inline-block bg-secondary-400 h-5 rounded animate-pulse w-32" />
+                                <span className="inline-block bg-secondary-400 h-6 rounded animate-pulse w-32" />
                             ) : (
                                 <button
                                     type="button"
                                     onClick={handleCopy}
                                     aria-label={copied ? 'Copied' : 'Copy deposit address'}
-                                    className="group/copy max-w-[200px] cursor-pointer text-left"
+                                    className="group/copy cursor-pointer text-center px-2 max-w-[200px]"
                                 >
                                     <span
-                                        className={`font-mono text-sm break-all leading-snug transition-colors ${copied ? 'text-primary-text' : 'text-secondary-text group-hover/copy:text-primary-text'}`}
+                                        className={`font-mono text-base break-all leading-snug transition-colors ${copied ? 'text-primary-text' : 'text-secondary-text group-hover/copy:text-primary-text'}`}
                                     >
                                         <span className="text-primary-text font-medium">{depositAddressParts.start}</span>
                                         {depositAddressParts.middle}
                                         <span className="text-primary-text font-medium">{depositAddressParts.end}</span>
-                                        <span className="inline-flex items-center align-middle ml-1 w-3.5 h-3.5 relative">
+                                        <span className="inline-flex items-center align-middle ml-1 w-4 h-4 relative">
                                             <AnimatePresence mode="wait" initial={false}>
                                                 {copied ? (
                                                     <motion.span
@@ -622,7 +675,7 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
                                                         transition={{ duration: 0.15 }}
                                                         className="absolute inset-0 inline-flex items-center justify-center"
                                                     >
-                                                        <Check className="h-3.5 w-3.5 text-secondary-text group-hover/copy:text-primary-text transition-colors" />
+                                                        <Check className="h-4 w-4 text-secondary-text group-hover/copy:text-primary-text transition-colors" />
                                                     </motion.span>
                                                 ) : (
                                                     <motion.span
@@ -633,7 +686,7 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
                                                         transition={{ duration: 0.15 }}
                                                         className="absolute inset-0 inline-flex items-center justify-center"
                                                     >
-                                                        <Copy className="h-3.5 w-3.5 text-secondary-text group-hover/copy:text-primary-text transition-colors" />
+                                                        <Copy className="h-4 w-4 text-secondary-text group-hover/copy:text-primary-text transition-colors" />
                                                     </motion.span>
                                                 )}
                                             </AnimatePresence>
@@ -674,9 +727,14 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
                                 <span className="text-primary-text">{minDepositDisplay}</span>
                             </div>
                         )}
-                        <div className={`flex items-center gap-3 ${minDepositDisplay ? 'border-t border-secondary-400/40 pt-2 mt-0.5' : ''}`}>
+                        {maxDepositDisplay && (
+                            <div className="flex items-center justify-between">
+                                <span>Maximum</span>
+                                <span className="text-primary-text">{maxDepositDisplay}</span>
+                            </div>
+                        )}
+                        <div className={`flex items-center gap-3 ${(minDepositDisplay || maxDepositDisplay) ? 'border-t border-secondary-400/40 pt-2 mt-0.5' : ''}`}>
                             <span className="flex items-center gap-1">
-                                <Zap className="h-3 w-3" />
                                 <span>{formatFee(sortedTiers[0].total_percentage_fee, sortedTiers[0].total_fixed_fee_in_usd)}</span>
                             </span>
                             {bestQuote && (
@@ -696,9 +754,14 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
                                     <span className="text-primary-text">{minDepositDisplay}</span>
                                 </div>
                             )}
-                            <div className={`flex items-center justify-between text-secondary-text ${minDepositDisplay ? 'border-t border-secondary-400/40 pt-2' : ''}`}>
+                            {maxDepositDisplay && (
+                                <div className="flex items-center justify-between text-secondary-text">
+                                    <span>Maximum</span>
+                                    <span className="text-primary-text">{maxDepositDisplay}</span>
+                                </div>
+                            )}
+                            <div className={`flex items-center justify-between text-secondary-text ${(minDepositDisplay || maxDepositDisplay) ? 'border-t border-secondary-400/40 pt-2' : ''}`}>
                                 <span className="flex items-center gap-1">
-                                    <Zap className="h-3 w-3" />
                                     <span>{"Fees by amount"}</span>
                                 </span>
                                 <button
@@ -744,9 +807,14 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
                                     <span className="text-primary-text">{minDepositDisplay}</span>
                                 </div>
                             )}
-                            <div className={`flex items-center gap-3 ${minDepositDisplay ? 'border-t border-secondary-400/40 pt-2 mt-0.5' : ''}`}>
+                            {maxDepositDisplay && (
+                                <div className="flex items-center justify-between">
+                                    <span>Maximum</span>
+                                    <span className="text-primary-text">{maxDepositDisplay}</span>
+                                </div>
+                            )}
+                            <div className={`flex items-center gap-3 ${(minDepositDisplay || maxDepositDisplay) ? 'border-t border-secondary-400/40 pt-2 mt-0.5' : ''}`}>
                                 <span className="flex items-center gap-1 min-w-0">
-                                    <Zap className="h-3 w-3 shrink-0" />
                                     <span className="text-primary-text">{formatFee(sortedTiers[0].total_percentage_fee, sortedTiers[0].total_fixed_fee_in_usd)}</span>
                                     <span className="truncate">{`· ${formatTierRange(sortedTiers[0], true, false, sourceToken)}`}</span>
                                 </span>
@@ -779,12 +847,27 @@ type DepositAddressFormButtonProps = {
     isSubmitting: boolean;
     showDepositInfo: boolean;
     depositAddress: string | undefined;
+    isProcessing: boolean;
+    isCompleted: boolean;
+    onDepositMore: () => void;
 }
 
 const DepositAddressFormButton: FC<DepositAddressFormButtonProps> = ({
-    values, isValid, error, isSubmitting, showDepositInfo, depositAddress,
+    values, isValid, error, isSubmitting, showDepositInfo, depositAddress, isProcessing, isCompleted, onDepositMore,
 }) => {
     const [copied, copy] = useCopyClipboard();
+
+    if (isCompleted) {
+        return (
+            <SubmitButton type="button" onClick={onDepositMore}>
+                Deposit more
+            </SubmitButton>
+        );
+    }
+
+    if (isProcessing) {
+        return null;
+    }
 
     if (showDepositInfo && depositAddress) {
         return (
