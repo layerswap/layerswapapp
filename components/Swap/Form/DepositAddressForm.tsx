@@ -130,7 +130,7 @@ const DepositAddressForm: FC<Props> = () => {
             swapBasicData.source_token?.symbol === fromAsset?.symbol &&
             swapBasicData.destination_network?.name === destination?.name &&
             swapBasicData.destination_token?.symbol === toCurrency?.symbol &&
-            swapBasicData.destination_address?.toLowerCase() === destination_address?.toLowerCase()
+            AddressClass.equals(swapBasicData.destination_address ?? '', destination_address ?? '', destination)
         );
     }, [swapId, swapBasicData, from, fromAsset, destination, toCurrency, destination_address, allFieldsReady]);
 
