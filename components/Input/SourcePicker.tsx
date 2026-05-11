@@ -60,7 +60,7 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, mi
                 </div>
 
                 <div className="justify-self-end self-start">
-                    <RoutePicker direction="from" />
+                    <RoutePicker minAllowedAmount={minAllowedAmount} maxAllowedAmount={maxAmountFromApi} direction="from" quote={fee?.quote} quoteTokenPrices={quoteTokenPrices} />
                 </div>
             </div>
         </div>

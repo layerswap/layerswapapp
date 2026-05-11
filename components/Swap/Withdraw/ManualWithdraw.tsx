@@ -1,29 +1,30 @@
+import AddressIcon from '@/components/AddressIcon'
 import CopyButton from '@/components/buttons/copyButton'
+import { ImageWithFallback } from '@/components/Common/ImageWithFallback'
+import QRIcon from '@/components/icons/QRIcon'
+import { Address } from "@/lib/address";
 import useCopyClipboard from '@/hooks/useCopyClipboard'
-import LayerSwapApiClient, { CreateSwapParams, DepositAction, Refuel, SwapBasicData } from '@/lib/apiClients/layerSwapApiClient'
+import useWallet from '@/hooks/useWallet'
+import { DepositAction, Refuel, SwapBasicData, SwapQuote } from '@/lib/apiClients/layerSwapApiClient'
 import { QRCodeSVG } from 'qrcode.react'
-import { FC, useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useMemo } from 'react'
+import { FC, ReactNode, useState } from 'react'
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
 import useExchangeNetworks from '@/hooks/useExchangeNetworks'
-import { Check, ChevronDown, ChevronUp, Clock, Copy, Zap } from 'lucide-react'
-import { AnimatePresence, motion } from 'framer-motion'
-import { Network, NetworkRoute, NetworkRouteToken } from '@/Models/Network'
+import { ChevronDown } from 'lucide-react'
+import { CommandItem, CommandList, CommandWrapper } from '@/components/shadcn/command'
+import { Network, NetworkRoute, Token } from '@/Models/Network'
+import { useQueryState } from '@/context/query'
+import { useSwapDataUpdate } from '@/context/swap'
+import { SwapFormValues } from '@/components/DTOs/SwapFormValues'
+import { useAsyncModal } from '@/context/asyncModal'
+import { handleLimitsUpdate } from './QuoteUpdate'
 import SubmitButton from '@/components/buttons/submitButton'
 import { Widget } from '@/components/Widget/Index'
+import { truncateDecimals } from '@/components/utils/RoundDecimals'
 import { Partner } from '@/Models/Partner'
-import { formatUsd } from '@/components/utils/formatUsdAmount'
-import { formatPercent } from '@/components/utils/formatPercent'
-import { DetailedQuoteModel, useDetailedQuote } from '@/hooks/useDetailedQuote'
-import useDepositAddressSources from '@/hooks/useDepositAddressSources'
-import { useSwapDataUpdate } from '@/context/swap'
-import { Selector, SelectorContent, SelectorTrigger } from '@/components/Select/Selector/Index'
-import { SelectedRouteDisplay } from '@/components/Input/RoutePicker/Routes'
-import { Content } from '@/components/Input/RoutePicker/Content'
-import { RowElement } from '@/Models/Route'
-import { groupRoutes } from '@/hooks/useFormRoutes'
-import { useRecentNetworksStore } from '@/stores/recentRoutesStore'
-import { useRouteSortingStore } from '@/stores/routeSortingStore'
-import useWallet from '@/hooks/useWallet'
-import useSuggestionsLimit from '@/hooks/useSuggestionsLimit'
+import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
+import QuoteDetails from '@/components/FeeDetails'
 
 interface Props {
     swapBasicData: SwapBasicData;
@@ -31,448 +32,306 @@ interface Props {
     refuel?: Refuel | undefined
     partner?: Partner;
     type: 'widget' | 'contained',
+    quote?: SwapQuote;
+    isQuoteLoading?: boolean;
 }
 
+const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, partner, type, quote, isQuoteLoading }) => {
+    const { wallets } = useWallet();
+    const { createSwap, setSwapId } = useSwapDataUpdate()
+    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+    const [selectedFrom, setSelectedFrom] = useState<{
+        network: Network | null;
+        token: Token | null;
+    }>({
+        network: swapBasicData?.source_network ?? null,
+        token: swapBasicData?.source_token ?? null,
+    });
 
-function formatCompletionTime(ms: number): string {
-    const seconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    if (hours > 0) return `~${hours}h`;
-    if (minutes > 0) return `~${minutes} min`;
-    return `~${seconds}s`;
-}
+    const [loading, setLoading] = useState(false)
+    const { getConfirmation } = useAsyncModal();
 
-function formatFee(percentageFee: number, fixedFeeUsd: number): string {
-    const parts: string[] = [];
-    const pct = formatPercent(percentageFee);
-    if (pct) parts.push(pct);
-    if (fixedFeeUsd > 0) parts.push(formatUsd(fixedFeeUsd));
-    return parts.join(' + ') || 'Free';
-}
-
-function truncateAddress(addr: string, front = 6, back = 6): string {
-    if (!addr || addr.length <= front + back + 1) return addr;
-    return `${addr.slice(0, front)}…${addr.slice(-back)}`;
-}
-
-function formatTokenAmount(value: number): string {
-    if (!Number.isFinite(value)) return '';
-    if (value === 0) return '0';
-    let maximumFractionDigits: number;
-    if (value >= 1000) maximumFractionDigits = 0;
-    else if (value >= 10) maximumFractionDigits = 2;
-    else if (value >= 1) maximumFractionDigits = 4;
-    else maximumFractionDigits = 6;
-    return value.toLocaleString('en-US', { maximumFractionDigits });
-}
-
-function formatTierRange(tier: DetailedQuoteModel, isFirst: boolean, isLast: boolean, symbol: string): string {
-    const min = formatTokenAmount(tier.min_amount);
-    const max = formatTokenAmount(tier.max_amount);
-    if (isFirst) return `Up to ${max} ${symbol}`;
-    if (isLast) return `Over ${min} ${symbol}`;
-    return `${min} – ${max} ${symbol}`;
-}
-
-/** Resolve deposit address for a given network from deposit actions */
-function resolveDepositAddress(
-    network: Network | undefined,
-    depositActions: DepositAction[] | undefined
-): string | undefined {
-    if (!depositActions || !network) return depositActions?.[0]?.to_address
-    const match = depositActions.find(a => a.network?.type === network.type)
-    return match?.to_address ?? depositActions[0]?.to_address
-}
-
-const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, type }) => {
+    const [showQR, setShowQR] = useState(false)
+    const destinationLogo = swapBasicData?.destination_network?.logo
     const [copied, copy] = useCopyClipboard()
-    const { setSwapId } = useSwapDataUpdate()
-    const [isCreatingSwap, setIsCreatingSwap] = useState(false)
-    const [searchQuery, setSearchQuery] = useState('')
-    const { wallets } = useWallet()
-    const { suggestionsLimit } = useSuggestionsLimit({ hasWallet: wallets.length > 0 })
-    const sortingOption = useRouteSortingStore((s) => s.sortingOption)
-    const routesHistory = useRecentNetworksStore(state => state.recentRoutes)
+    const query = useQueryState()
+    const depositAddress = depositActions?.find(da => true)?.to_address;
+    const { destination_address: destinationAddressFromQuery } = query
 
-    // For exchange swaps: fetch withdrawal networks from the exchange
-    const isExchange = !!swapBasicData?.source_exchange;
+    const WalletIcon = wallets.find(wallet => wallet.address.toLowerCase() == swapBasicData?.destination_address?.toLowerCase())?.icon;
+    const addressProviderIcon = destinationAddressFromQuery && partner?.is_wallet && Address.equals(destinationAddressFromQuery, swapBasicData?.destination_address!, swapBasicData?.destination_network || null) && partner?.logo
+
+    const handleCopy = () => {
+        if (depositAddress) {
+            copy(depositAddress)
+        }
+    }
+
+    const swapValues = useMemo<SwapFormValues>(() => {
+        const fromNetwork = (selectedFrom.network ?? swapBasicData?.source_network) as NetworkRoute | undefined;
+        const fromToken = selectedFrom.token ?? swapBasicData?.source_token;
+
+        return {
+            amount: swapBasicData?.requested_amount?.toString(),
+            from: fromNetwork,
+            to: swapBasicData?.destination_network as NetworkRoute,
+            fromAsset: fromToken,
+            toAsset: swapBasicData?.destination_token,
+            refuel: !!refuel,
+            destination_address: swapBasicData?.destination_address,
+            fromExchange: swapBasicData?.source_exchange,
+            depositMethod: 'deposit_address',
+        };
+    }, [selectedFrom.network, selectedFrom.token, swapBasicData, refuel]);
+
+    const handleClick = async (network: Network, token: Token) => {
+        const nextSwapValues: SwapFormValues = {
+            amount: swapBasicData?.requested_amount?.toString(),
+            from: network as NetworkRoute,
+            to: swapBasicData?.destination_network as NetworkRoute,
+            fromAsset: token,
+            toAsset: swapBasicData?.destination_token,
+            refuel: !!refuel,
+            destination_address: swapBasicData?.destination_address,
+            fromExchange: swapBasicData?.source_exchange,
+            depositMethod: 'deposit_address',
+        };
+
+        try {
+            setLoading(true);
+
+            await handleLimitsUpdate({
+                swapValues: nextSwapValues,
+                network,
+                token,
+                getConfirmation
+            })
+
+            const swapData = await createSwap(nextSwapValues, query);
+            const swapId = swapData?.swap?.id;
+            if (!swapId) throw new Error('Swap ID is undefined');
+
+            setSwapId(swapId);
+            setSelectedFrom({ network, token });
+            setIsPopoverOpen(false);
+        } catch (e) {
+            console.error('Swap creation error:', e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const exchangeNetworkParams = useMemo(() => ({
         fromExchange: swapBasicData?.source_exchange?.name,
         to: swapBasicData?.destination_network?.name,
         toAsset: swapBasicData?.destination_token?.symbol
     }), [swapBasicData]);
 
-    const { networks: exchangeWithdrawalNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeNetworks(exchangeNetworkParams);
+    const { networks: withdrawalNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeNetworks(exchangeNetworkParams);
 
-    // For non-exchange swaps: fetch available source networks
-    const apiClient = useMemo(() => new LayerSwapApiClient(), []);
-    const { data: sourceRoutesData, isLoading: sourceRoutesLoading } = useDepositAddressSources({
-        destinationNetwork: swapBasicData?.destination_network?.name,
-        destinationToken: swapBasicData?.destination_token?.symbol,
-        enabled: !isExchange,
-    });
+    const requestAmount = (
+        <span className='inline-flex items-center gap-1 px-1.5 mx-1 bg-secondary-300 rounded-lg'>
+            <span>{truncateDecimals(Number(swapBasicData?.requested_amount), swapBasicData?.source_token?.precision)}</span> <span>{swapBasicData?.source_token?.symbol}</span>
+            <CopyButton toCopy={swapBasicData?.requested_amount} iconClassName='text-secondary-text' />
+        </span>
+    )
 
-    // Build available source routes
-    const availableRoutes: NetworkRoute[] = useMemo(() => {
-        if (isExchange) {
-            // Group exchange networks into NetworkRoute-like objects
-            const byNetwork = new Map<string, NetworkRoute>()
-            for (const n of exchangeWithdrawalNetworks ?? []) {
-                const existing = byNetwork.get(n.network.name)
-                if (existing) {
-                    existing.tokens.push(n.token as NetworkRouteToken)
-                } else {
-                    byNetwork.set(n.network.name, { ...n.network, tokens: [n.token as NetworkRouteToken] } as NetworkRoute)
-                }
-            }
-            return Array.from(byNetwork.values())
-        }
-        const routes = sourceRoutesData?.data
-        if (!routes) return []
-        return routes.map(route => ({
-            ...route,
-            tokens: route.tokens?.filter(t => t.status === 'active') ?? [],
-        })).filter(route => route.tokens.length > 0)
-    }, [isExchange, exchangeWithdrawalNetworks, sourceRoutesData])
+    const destinationNetwork = (
+        <span className='flex items-center gap-1'>
+            {destinationLogo && <ImageWithFallback
+                src={destinationLogo!}
+                alt="Project Logo"
+                height="16"
+                width="16"
+                loading="eager"
+                className="rounded-md object-contain"
+            />}
+            {swapBasicData?.destination_network?.display_name}
+        </span>
+    )
 
-    const isNetworksLoading = isExchange ? exchangeSourceNetworksLoading : sourceRoutesLoading;
-
-    // Track selected network + token
-    const [selectedRoute, setSelectedRoute] = useState<{ network: NetworkRoute; token: NetworkRouteToken } | null>(null)
-
-    // Collapsed state for tiered-fee disclosure — always starts collapsed, resets on route change
-    const [isFeesExpanded, setIsFeesExpanded] = useState(false)
-    useEffect(() => {
-        setIsFeesExpanded(false)
-    }, [selectedRoute?.network.name, selectedRoute?.token.symbol])
-
-    // Default selection: prefer the swap's actual source, otherwise the lowest-rank
-    // route. Picking `availableRoutes[0]` would let API ordering drive the UI and
-    // can mislabel the swap (showing a different network/token than what the
-    // server-side swap was created with), which is unsafe — the user could send the
-    // wrong asset.
-    useEffect(() => {
-        if (availableRoutes.length === 0 || selectedRoute) return
-
-        const swapSourceNetwork = swapBasicData?.source_network?.name
-        const swapSourceToken = swapBasicData?.source_token?.symbol
-        const matchByActualSwap = swapSourceNetwork && swapSourceToken
-            ? availableRoutes.find(r => r.name === swapSourceNetwork)
-            : undefined
-        const tokenForSwap = matchByActualSwap?.tokens.find(t => t.symbol === swapSourceToken)
-
-        if (matchByActualSwap && tokenForSwap) {
-            setSelectedRoute({ network: matchByActualSwap, token: tokenForSwap })
-            return
-        }
-
-        const rank = (r: { source_rank?: number }) => r.source_rank ?? Number.POSITIVE_INFINITY
-        const sorted = [...availableRoutes].sort((a, b) => rank(a) - rank(b))
-        for (const route of sorted) {
-            const token = [...route.tokens].sort((a, b) => rank(a) - rank(b))[0]
-            if (token) {
-                setSelectedRoute({ network: route, token })
-                return
-            }
-        }
-    }, [availableRoutes, swapBasicData?.source_network?.name, swapBasicData?.source_token?.symbol])
-
-    // Create a new swap when the selected source network changes
-    const recreateSwap = useCallback(async (network: NetworkRoute, token: NetworkRouteToken) => {
-        if (!swapBasicData) return
-        setIsCreatingSwap(true)
-        try {
-            const params: CreateSwapParams = {
-                source_network: network.name,
-                source_token: token.symbol,
-                destination_network: swapBasicData.destination_network.name,
-                destination_token: swapBasicData.destination_token.symbol,
-                destination_address: swapBasicData.destination_address,
-                use_deposit_address: true,
-                refuel: !!refuel,
-                source_exchange: swapBasicData.source_exchange?.name,
-            }
-            const response = await apiClient.CreateSwapAsync(params)
-            const newSwapId = response?.data?.swap?.id
-            if (newSwapId) {
-                setSwapId(newSwapId)
-            }
-        } finally {
-            setIsCreatingSwap(false)
-        }
-    }, [swapBasicData, refuel, apiClient, setSwapId])
-
-    // Build RowElements with groupings, search, and suggestions via shared groupRoutes.
-    // Deposit address flow always groups by token and hides the suggestions section.
-    const routeElements: RowElement[] = useMemo(() => {
-        return groupRoutes({
-            routes: availableRoutes,
-            direction: 'from',
-            balances: null,
-            groupBy: 'token',
-            recents: routesHistory,
-            balancesLoaded: false,
-            search: searchQuery,
-            suggestionsLimit,
-            sortingOption,
-            skipBalanceGate: true,
-            hideSuggestions: true,
-        })
-    }, [availableRoutes, searchQuery, routesHistory, suggestionsLimit, sortingOption])
-
-    const handleRouteSelect = useCallback((route: NetworkRoute, token: NetworkRouteToken) => {
-        setSelectedRoute({ network: route, token })
-        recreateSwap(route, token)
-    }, [recreateSwap])
-
-    // Fetch quote for the selected network
-    const { detailedQuotes, isLoading: isQuoteLoading } = useDetailedQuote({
-        sourceNetwork: selectedRoute?.network.name,
-        sourceToken: selectedRoute?.token.symbol,
-        destinationNetwork: swapBasicData?.destination_network?.name,
-        destinationToken: swapBasicData?.destination_token?.symbol,
-        destinationAddress: swapBasicData?.destination_address,
-        refuel: !!refuel,
-        useDepositAddress: true,
-    })
-
-    const sortedTiers = useMemo(() => {
-        if (!detailedQuotes) return []
-        return [...detailedQuotes].sort((a, b) => a.min_amount - b.min_amount)
-    }, [detailedQuotes])
-
-    const bestQuote = detailedQuotes?.[0]
-
-    const tokenSymbol = selectedRoute?.token.symbol
-
-    const minDepositDisplay = useMemo(() => {
-        const min = sortedTiers[0]?.min_amount
-        if (!min || !tokenSymbol) return null
-        return `${formatTokenAmount(min)} ${tokenSymbol}`
-    }, [sortedTiers, tokenSymbol])
-
-    const depositAddress = resolveDepositAddress(selectedRoute?.network, depositActions)
-
-    const handleCopy = () => {
-        if (depositAddress) copy(depositAddress)
-    }
-
-    const hasMultipleOptions = availableRoutes.length > 1 || availableRoutes.some(r => r.tokens.length > 1)
+    const sourceNetworkPopover = (
+        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+            <PopoverTrigger asChild>
+                <button className="inline-flex items-center gap-1 px-1.5 mx-1 bg-secondary-300 rounded-lg">
+                    <ImageWithFallback
+                        src={selectedFrom.network?.logo ?? swapBasicData?.source_network?.logo}
+                        alt="Project Logo"
+                        height="16"
+                        width="16"
+                        loading="eager"
+                        className="rounded-sm object-contain"
+                    />
+                    <span>{selectedFrom.network?.display_name ?? swapBasicData?.source_network?.display_name}</span>
+                    <span className="pointer-events-none text-shadow-primary-text-tertiary">
+                        <ChevronDown className="h-3.5 w-3.5 text-secondary-text" aria-hidden="true" />
+                    </span>
+                </button>
+            </PopoverTrigger>
+            <PopoverContent side='top' className="bg-secondary-300! space-y-1 p-1! rounded-lg!">
+                <CommandWrapper>
+                    <CommandList>
+                        {withdrawalNetworks?.map((item) => {
+                            return (
+                                <CommandItem
+                                    className='hover:bg-secondary-100 rounded-md p-1! cursor-pointer'
+                                    value={item.network.name}
+                                    key={item.network.name}
+                                    onSelect={() => handleClick(item.network, item.token)}
+                                >
+                                    <div className={`flex items-center justify-between w-full overflow-hidden`}>
+                                        <div className={`gap-2 relative flex items-center w-full space-y-1`}>
+                                            <div className={`h-6 w-6 shrink-0 mb-0!`}>
+                                                {item.network.logo && (
+                                                    <ImageWithFallback
+                                                        src={item.network.logo}
+                                                        alt="Project Logo"
+                                                        height="24"
+                                                        width="24"
+                                                        loading="eager"
+                                                        className="rounded-md object-contain"
+                                                    />
+                                                )}
+                                            </div>
+                                            <div className="flex justify-between w-full items-center">
+                                                <span className="flex items-center pb-0.5 text-sm font-medium text-primary-text pr-20">
+                                                    {item.network.display_name}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </CommandItem>
+                            );
+                        })}
+                    </CommandList>
+                </CommandWrapper>
+            </PopoverContent>
+        </Popover>
+    )
 
     return (
         <>
             <Widget.Content>
-                <div className='flex flex-col flex-1 h-full min-h-0 w-full'>
+                <div className='flex flex-col flex-1 h-full min-h-0 w-full space-y-3'>
 
-                    {isNetworksLoading ? (
-                        <div className="space-y-4 animate-pulse">
-                            <div className="flex flex-col items-center gap-3 py-4">
-                                <div className="h-10 w-10 bg-secondary-400 rounded-full" />
-                                <div className="h-6 bg-secondary-400 rounded w-2/3" />
-                            </div>
-                            <div className="bg-secondary-500 rounded-2xl p-6">
-                                <div className="h-40 bg-secondary-400 rounded-xl" />
-                            </div>
-                            <div className="space-y-2">
-                                <div className="h-4 bg-secondary-400 rounded w-full" />
-                                <div className="h-4 bg-secondary-400 rounded w-3/4" />
-                            </div>
-                        </div>
+                    {(loading || exchangeSourceNetworksLoading) ? (
+                        <>
+                            <SkeletonStep number={1} />
+                            <SkeletonStep number={2} />
+                            <SkeletonStep number={3} />
+                        </>
                     ) : (
                         <>
-                            {/* Network & token selector */}
-                            <div className="mb-1 px-1">
-                                <span className="text-xs text-secondary-text uppercase tracking-wide">Pay from</span>
-                            </div>
-                            <div className="mb-3">
-                                <Selector>
-                                    <SelectorTrigger disabled={!hasMultipleOptions} className="py-1.5 px-2 border border-secondary-400/50">
-                                        <SelectedRouteDisplay
-                                            route={selectedRoute?.network}
-                                            token={selectedRoute?.token}
-                                            placeholder="Select network"
-                                        />
-                                    </SelectorTrigger>
-                                    <SelectorContent isLoading={isNetworksLoading}>
-                                        {({ closeModal }) => (
-                                            <Content
-                                                onSelect={(r, t) => { handleRouteSelect(r, t); closeModal(); }}
-                                                searchQuery={searchQuery}
-                                                setSearchQuery={setSearchQuery}
-                                                rowElements={routeElements}
-                                                direction="from"
-                                                selectedRoute={selectedRoute?.network.name}
-                                                selectedToken={selectedRoute?.token.symbol}
-                                                hideTokenSwitch
-                                                hideBalances
-                                            />
-                                        )}
-                                    </SelectorContent>
-                                </Selector>
-                            </div>
-
-                            {/* Address + QR side-by-side */}
-                            <div className="bg-secondary-500 rounded-xl mb-3 p-3.5">
-                                <div className="flex items-end gap-4 bg-secondary-300 rounded-lg">
-                                    {/* Left: full address (wrapping) + minimum */}
-                                    <div className="flex-1 min-w-0 flex flex-col gap-1.5 pl-2 pb-1">
-                                        {isCreatingSwap || !depositAddress ? (
-                                            <span className="inline-block bg-secondary-400 h-5 rounded animate-pulse w-32" />
-                                        ) : (
-                                            <button
-                                                type="button"
-                                                onClick={handleCopy}
-                                                aria-label={copied ? 'Copied' : 'Copy deposit address'}
-                                                className="group/copy max-w-[170px] cursor-pointer text-left"
-                                            >
-                                                <span
-                                                    className={`font-mono text-xs break-all leading-snug transition-colors ${copied ? 'text-primary-text' : 'text-secondary-text group-hover/copy:text-primary-text'}`}
+                            <Step
+                                number={1}
+                                label={
+                                    <div className="flex items-center justify-between gap-2 relative">
+                                        <span>Copy the deposit address</span>
+                                        <div className="relative">
+                                            <Popover open={showQR} onOpenChange={setShowQR}>
+                                                <PopoverTrigger asChild>
+                                                    <div className="relative">
+                                                        <QRIcon
+                                                            className="bg-secondary-300 p-1 rounded-lg cursor-pointer hover:opacity-80 fill-primary-text text-primary-text"
+                                                        />
+                                                    </div>
+                                                </PopoverTrigger>
+                                                <PopoverContent
+                                                    side="left"
+                                                    align="start"
+                                                    className="bg-secondary-300 p-2 rounded-xl z-50"
                                                 >
-                                                    {depositAddress}
-                                                    <span className="inline-flex items-center align-middle ml-1 w-3.5 h-3.5 relative">
-                                                        <AnimatePresence mode="wait" initial={false}>
-                                                            {copied ? (
-                                                                <motion.span
-                                                                    key="check"
-                                                                    initial={{ scale: 0.6, opacity: 0 }}
-                                                                    animate={{ scale: 1, opacity: 1 }}
-                                                                    exit={{ scale: 0.6, opacity: 0 }}
-                                                                    transition={{ duration: 0.15 }}
-                                                                    className="absolute inset-0 inline-flex items-center justify-center"
-                                                                >
-                                                                    <Check className="h-3.5 w-3.5 text-secondary-text group-hover/copy:text-primary-text transition-colors" />
-                                                                </motion.span>
-                                                            ) : (
-                                                                <motion.span
-                                                                    key="copy"
-                                                                    initial={{ scale: 0.6, opacity: 0 }}
-                                                                    animate={{ scale: 1, opacity: 1 }}
-                                                                    exit={{ scale: 0.6, opacity: 0 }}
-                                                                    transition={{ duration: 0.15 }}
-                                                                    className="absolute inset-0 inline-flex items-center justify-center"
-                                                                >
-                                                                    <Copy className="h-3.5 w-3.5 text-secondary-text group-hover/copy:text-primary-text transition-colors" />
-                                                                </motion.span>
-                                                            )}
-                                                        </AnimatePresence>
-                                                    </span>
-                                                </span>
-                                            </button>
-                                        )}
-                                        {minDepositDisplay && depositAddress && !isCreatingSwap && (
-                                            <span className="text-base text-primary-text ">
-                                                {`Minimum ${minDepositDisplay}`}
+                                                    <div className="bg-white p-2 rounded-xl shadow-lg">
+                                                        <QRCodeSVG
+                                                            className="rounded-lg"
+                                                            value={depositAddress || ''}
+                                                            includeMargin={true}
+                                                            size={160}
+                                                            level="H"
+                                                        />
+                                                    </div>
+                                                </PopoverContent>
+                                            </Popover>
+                                        </div>
+                                    </div>
+                                }
+                                value={
+                                    <span className="cursor-pointer hover:underline min-h-5 block">
+                                        {depositAddress ? (
+                                            <span className='flex items-center gap-1'>
+                                                {new Address(depositAddress, swapBasicData?.source_network).toShortString()}
+                                                <CopyButton toCopy={depositAddress || ''} className='flex' />
                                             </span>
-                                        )}
-                                    </div>
-
-                                    {/* Right: QR */}
-                                    <div className="shrink-0 bg-white p-1.5 rounded-lg border-4 border-secondary-500">
-                                        {isCreatingSwap || !depositAddress ? (
-                                            <div className="h-[140px] w-[140px] bg-secondary-100 rounded animate-pulse" />
                                         ) : (
-                                            <QRCodeSVG
-                                                className="rounded"
-                                                value={depositAddress}
-                                                includeMargin={false}
-                                                size={140}
-                                                level="H"
-                                            />
+                                            <span className="inline-block w-28 bg-secondary-400 h-5 rounded animate-pulse"></span>
                                         )}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Fee + ETA summary — compact for single-tier, expanded table for multi-tier */}
-                            <div className="bg-secondary-500 rounded-xl px-3.5 py-3">
-                                {isQuoteLoading && !bestQuote ? (
-                                    <div className="flex items-center gap-3 animate-pulse">
-                                        <div className="h-4 bg-secondary-400 rounded w-24" />
-                                        <div className="h-4 bg-secondary-400 rounded w-16" />
-                                    </div>
-                                ) : sortedTiers.length === 1 ? (
-                                    <div className="flex items-center gap-3 text-xs text-secondary-text">
-                                        <span className="flex items-center gap-1">
-                                            <Zap className="h-3 w-3" />
-                                            <span>{formatFee(sortedTiers[0].total_percentage_fee, sortedTiers[0].total_fixed_fee_in_usd)}</span>
+                                    </span>
+                                }
+                            />
+                            <Step
+                                number={2}
+                                label={
+                                    <span>
+                                        <span className='inline-flex items-center'>
+                                            <span>Send</span>
+                                            {requestAmount}
                                         </span>
-                                        {bestQuote && (
-                                            <span className="flex items-center gap-1">
-                                                <Clock className="h-3 w-3" />
-                                                <span>{formatCompletionTime(bestQuote.avg_completion_milliseconds)}</span>
+                                        <span>via</span>
+                                        {swapBasicData?.source_exchange ? (
+                                            <span className="inline-flex items-center align-bottom max-sm:mt-1">
+                                                {sourceNetworkPopover}
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center gap-1 mx-1 h-6 align-bottom">
+                                                <ImageWithFallback
+                                                    src={swapBasicData?.source_network?.logo}
+                                                    alt="Project Logo"
+                                                    height="16"
+                                                    width="16"
+                                                    loading="eager"
+                                                    className="rounded-sm object-contain"
+                                                />
+                                                <span>{swapBasicData?.source_network?.display_name}</span>
                                             </span>
                                         )}
-                                    </div>
-                                ) : sortedTiers.length > 1 && tokenSymbol ? (
-                                    isFeesExpanded ? (
-                                        <div className="flex flex-col gap-2 text-xs">
-                                            <div className="flex items-center justify-between text-secondary-text">
-                                                <span className="flex items-center gap-1">
-                                                    <Zap className="h-3 w-3" />
-                                                    <span>{"Fees by amount"}</span>
-                                                </span>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setIsFeesExpanded(false)}
-                                                    className="inline-flex items-center hover:text-primary-text transition-colors"
-                                                    aria-label="Hide fee tiers"
-                                                >
-                                                    <ChevronUp className="h-4 w-4" />
-                                                </button>
-                                            </div>
-                                            <div className="flex flex-col gap-0.5 border-t border-secondary-400/40 pt-2 pl-4">
-                                                {sortedTiers.map((tier, idx) => {
-                                                    const range = formatTierRange(
-                                                        tier,
-                                                        idx === 0,
-                                                        idx === sortedTiers.length - 1,
-                                                        tokenSymbol
-                                                    )
-                                                    const fee = formatFee(tier.total_percentage_fee, tier.total_fixed_fee_in_usd)
-                                                    return (
-                                                        <div
-                                                            key={`${tier.min_amount}-${tier.max_amount}`}
-                                                            className="flex items-center justify-between gap-4 text-xs"
-                                                        >
-                                                            <span className="text-secondary-text">{range}</span>
-                                                            <span className="flex items-center gap-3">
-                                                                <span className="text-primary-text">{fee}</span>
-                                                                <span className="tabular-nums min-w-14 text-right text-secondary-text/80">
-                                                                    {formatCompletionTime(tier.avg_completion_milliseconds)}
-                                                                </span>
-                                                            </span>
-                                                        </div>
-                                                    )
-                                                })}
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="flex flex-col gap-1.5 text-xs text-secondary-text">
-                                            <div className="flex items-center gap-3">
-                                                <span className="flex items-center gap-1 min-w-0">
-                                                    <Zap className="h-3 w-3 shrink-0" />
-                                                    <span className="text-primary-text">{formatFee(sortedTiers[0].total_percentage_fee, sortedTiers[0].total_fixed_fee_in_usd)}</span>
-                                                    <span className="truncate">{`· ${formatTierRange(sortedTiers[0], true, false, tokenSymbol)}`}</span>
-                                                </span>
-                                                <span className="flex items-center gap-1 ml-auto shrink-0">
-                                                    <Clock className="h-3 w-3" />
-                                                    <span>{formatCompletionTime(sortedTiers[0].avg_completion_milliseconds)}</span>
-                                                </span>
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={() => setIsFeesExpanded(true)}
-                                                className="flex items-center justify-between w-full hover:text-primary-text transition-colors border-t border-secondary-400/40 pt-2 mt-0.5 rounded-t-none"
-                                                aria-label="Show fee for larger sends"
-                                            >
-                                                <span>{`${formatFee(sortedTiers[1].total_percentage_fee, sortedTiers[1].total_fixed_fee_in_usd)} for larger sends`}</span>
-                                                <ChevronDown className="h-4 w-4 shrink-0" />
-                                            </button>
-                                        </div>
-                                    )
-                                ) : null}
-                            </div>
+                                        <span>to the deposit address</span>
+                                    </span>
+                                }
+                            />
+                            <Step
+                                number={3}
+                                label={
+                                    <span className='flex items-center gap-1'>
+                                        <span>Receive</span> <span>{truncateDecimals(quote?.receive_amount ?? 0, swapBasicData?.destination_token?.precision)}</span> <span>{swapBasicData?.destination_token?.symbol}</span> <span>at</span> <span>{destinationNetwork}</span>
+                                    </span>
+                                }
+                                value={
+                                    <span className="cursor-pointer hover:underline flex items-center gap-1">
+                                        {WalletIcon ? (
+                                            <WalletIcon className="w-4 h-4 bg-secondary-700 rounded-sm" />
+                                        ) : addressProviderIcon ? (
+                                            <ImageWithFallback
+                                                alt="Partner logo"
+                                                className="h-4 w-4 rounded-md object-contain"
+                                                src={partner.logo}
+                                                width="36"
+                                                height="36"
+                                            />
+                                        ) : (
+                                            <AddressIcon className="h-4 w-4" address={new Address(swapBasicData.destination_address, swapBasicData?.destination_network).full} size={36} rounded="4px" />
+                                        )}
+                                        {
+                                            ((swapBasicData?.destination_network && Address.isValid(swapBasicData?.destination_address, swapBasicData?.destination_network)) ?
+                                                <div className="text-sm group/addressItem text-secondary-text">
+                                                    <ExtendedAddress address={swapBasicData?.destination_address} network={swapBasicData?.destination_network} shouldShowChevron={false} />
+                                                </div>
+                                                :
+                                                <p className="text-sm text-secondary-text">{new Address(swapBasicData?.destination_address, swapBasicData?.destination_network).toShortString()}</p>)
+                                        }
+                                    </span>
+                                }
+                            />
+                            <QuoteDetails swapValues={swapValues} quote={quote} isQuoteLoading={isQuoteLoading} triggerClassnames='mt-0!' />
                         </>
                     )}
                 </div>
@@ -482,9 +341,32 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, type
                     {copied ? 'Copied!' : 'Copy deposit address'}
                 </SubmitButton>
             </Widget.Footer>
-
         </>
     )
 }
+
+const Step = ({ number, label, value }: { number: number, label: ReactNode, value?: ReactNode }) => (
+    <div className="flex items-start space-x-3 bg-secondary-500 p-3 rounded-xl">
+        <div className="w-6 h-6 rounded-md bg-secondary-400 text-primary-text flex items-center justify-center text-base font-normal leading-6">
+            {number}
+        </div>
+        <div className="flex-1">
+            <div className="font-normal text-base leading-6">{label}</div>
+            <div className="text-sm text-secondary-text">{value}</div>
+        </div>
+    </div>
+)
+
+const SkeletonStep = ({ number }: { number: number }) => (
+    <div className="flex items-start space-x-3 bg-secondary-500 p-3 rounded-lg animate-pulse">
+        <div className="w-6 h-6 rounded-md bg-secondary-400 text-primary-text flex items-center justify-center text-base font-normal leading-6">
+            {number}
+        </div>
+        <div className="flex-1 space-y-3">
+            <div className="h-5 bg-secondary-300 rounded w-3/4"></div>
+            <div className="h-4 bg-secondary-300 rounded w-1/2"></div>
+        </div>
+    </div>
+)
 
 export default ManualWithdraw

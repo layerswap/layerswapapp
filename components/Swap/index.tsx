@@ -47,7 +47,7 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, partner, onCa
                 resolved.showWithdrawScreen ?
                     (
                         swapBasicData?.use_deposit_address === true
-                            ? <ManualWithdraw swapBasicData={swapBasicData} depositActions={depositActionsResponse} refuel={refuel} partner={partner} type={type} />
+                            ? <ManualWithdraw swapBasicData={swapBasicData} depositActions={depositActionsResponse} refuel={refuel} partner={partner} type={type} quote={quote} isQuoteLoading={quoteIsLoading} />
                             : <Withdraw type={type} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} onCancelWithdrawal={onCancelWithdrawal} partner={partner} />
                     )
                     :

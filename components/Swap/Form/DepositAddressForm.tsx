@@ -98,12 +98,15 @@ const DepositAddressForm: FC<Props> = () => {
     // Auto-fill `destination_address` from the current default wallet account
     // for the chosen destination. The picker can override this by calling
     // `selectDestinationAccount`, which updates `destinationAccount` and feeds
-    // back through this effect (so the picker's choice wins).
-    const destinationAccount = useSelectedAccount("to", destination?.name);
+    // back through this effect (so the picker's choice wins). Manually-added
+    // addresses (carried over from other flows via `selectedDestAccounts`) are
+    // intentionally ignored here — this flow expects a connected wallet.
+    const rawDestinationAccount = useSelectedAccount("to", destination?.name);
+    const destinationAccount = rawDestinationAccount?.id === 'manually_added' ? undefined : rawDestinationAccount;
     useEffect(() => {
         if (!destination) return;
         const next = destinationAccount?.address ?? '';
-        if (destination_address?.toLowerCase() === next.toLowerCase()) return;
+        if ((destination_address ?? '').toLowerCase() === next.toLowerCase()) return;
         setFieldValue('destination_address', next, true);
     }, [destination?.name, destinationAccount?.address, destination_address, setFieldValue]);
 
@@ -140,22 +143,16 @@ const DepositAddressForm: FC<Props> = () => {
     }, [swapId, swapMatchesValues, setSwapId]);
 
     // Auto-create the swap once form is complete. The ref tracks the last
-    // attempted (from, fromAsset, to, toAsset, address) tuple so we don't loop
-    // when the API call fails — but we clear it on every successful create so
-    // re-entering the same key later (e.g., clear → retype same address) tries
-    // again.
+    // attempted (from, fromAsset, to, toAsset, address) tuple so we don't loop:
+    // if the just-created swap is then dropped by the stale-swap effect (e.g.
+    // because the API echoes the address in a different canonical form), the
+    // same key must not be auto-resubmitted. Cleared only by explicit user
+    // actions like "Deposit more".
     const attemptedKeyRef = useRef<string | null>(null);
     const fieldKey = allFieldsReady
         ? `${from?.name}|${fromAsset?.symbol}|${destination?.name}|${toCurrency?.symbol}|${destination_address?.toLowerCase()}`
         : null;
 
-    useEffect(() => {
-        if (swapId) attemptedKeyRef.current = null;
-    }, [swapId]);
-
-    // Skip the auto-submit only while `useAutoSourceRoute` is actively swapping
-    // the source for a fresh destination. Any other failure (real route problem,
-    // server error, etc.) still flows through to the toast so the user sees it.
     useEffect(() => {
         if (!fieldKey || swapId || isSubmitting || !isValid) return;
         if (isAutoSourceUpdating) return;
@@ -432,7 +429,10 @@ const DestinationWalletPicker: FC<DestinationWalletPickerProps> = ({ address, de
     const { wallets: allWallets, providers } = useWallet();
     const selectDestinationAccount = useSelectSwapAccount("to");
     const { connect } = useConnectModal();
-    const account = useSelectedAccount("to", destination?.name);
+    // Treat manually-added addresses (set in other flows) as no-selection so
+    // the picker prompts for a wallet rather than surfacing a Manual entry.
+    const rawAccount = useSelectedAccount("to", destination?.name);
+    const account = rawAccount?.id === 'manually_added' ? undefined : rawAccount;
 
     // When a destination is set, only show wallets that can autofill that
     // network. When destination is empty, fall back to every connected wallet
