@@ -1,5 +1,5 @@
 import { Formik } from "formik";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useSettingsState } from "@/context/settings";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { removeSwapPath, UpdateSwapInterface, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
@@ -41,6 +41,14 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
     const { swapBasicData, swapDetails, swapModalOpen } = useSwapDataState()
     const sourceNetworkWithTokens = settings.networks.find(n => n.name === swapBasicData?.source_network.name)
     const { getProvider } = useWallet(sourceNetworkWithTokens, "withdrawal")
+    const { wallets: allConnectedWallets } = useWallet()
+    const connectedAutofillNetworks = useMemo(() => {
+        const set = new Set<string>()
+        allConnectedWallets.forEach(w => {
+            w.autofillSupportedNetworks?.forEach(n => set.add(n.toLowerCase()))
+        })
+        return set
+    }, [allConnectedWallets])
     const [walletWihdrawDone, setWalletWihdrawDone] = useState(false);
     const selectedSourceAccount = useSelectedAccount("from", swapBasicData?.source_network?.name);
     const { mutate: mutateBalances } = useBalance(selectedSourceAccount?.address, sourceNetworkWithTokens)
@@ -123,15 +131,16 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                 setShowSwapModal: handleShowSwapModal,
                 setNetworkToConnect,
                 setShowConnectNetworkModal,
+                type,
             })
         }
         catch (error) {
             toast.error(error?.message)
         }
-    }, [createSwap, query, partner, router, swapBasicData, getProvider, settings])
+    }, [createSwap, query, partner, router, swapBasicData, getProvider, settings, type])
 
     const initialValues: SwapFormValues = swapBasicData ? generateSwapInitialValuesFromSwap(swapBasicData, swapBasicData.refuel, settings, type)
-        : generateSwapInitialValues(settings, query, type)
+        : generateSwapInitialValues(settings, query, type, connectedAutofillNetworks)
 
     const handleShowSwapModal = useCallback((value: boolean) => {
         if (!value) {
@@ -197,9 +206,10 @@ type SubmitProps = {
     setShowSwapModal: (value: boolean) => void;
     setNetworkToConnect: (value: NetworkToConnect) => void;
     setShowConnectNetworkModal: (value: boolean) => void;
+    type: 'cross-chain' | 'exchange' | 'deposit-address';
 }
 
-const handleCreateSwap = async ({ query, values, partner, setShowSwapModal, createSwap, setNetworkToConnect, setShowConnectNetworkModal, setSwapId, setSubmitedFormValues }: SubmitProps) => {
+const handleCreateSwap = async ({ query, values, partner, setShowSwapModal, createSwap, setNetworkToConnect, setShowConnectNetworkModal, setSwapId, setSubmitedFormValues, type }: SubmitProps) => {
     setSubmitedFormValues(values)
     if (values.depositMethod == 'wallet') {
         setSwapId(undefined)
@@ -209,7 +219,9 @@ const handleCreateSwap = async ({ query, values, partner, setShowSwapModal, crea
     try {
         const swap = await createSwap(values, query, partner);
         setSwapId(swap.swap.id)
-        setShowSwapModal(true)
+        if (type !== 'deposit-address') {
+            setShowSwapModal(true)
+        }
     }
     catch (error) {
         const data: ApiError = error?.response?.data?.error

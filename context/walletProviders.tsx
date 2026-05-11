@@ -27,7 +27,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ chi
     const { networks } = useSettingsState();
     const isMobilePlatform = isMobile();
     const { isMobile: isMobileSize } = useWindowDimensions()
-    const { goBack, onFinish, open, setOpen, selectedConnector, selectedMultiChainConnector } = useConnectModal()
+    const { goBack, onFinish, open, setOpen, selectedConnector, selectedMultiChainConnector, dismissible } = useConnectModal()
 
     const bitcoin = useBitcoin()
     const evm = useEVM();
@@ -61,6 +61,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ chi
                 setShow={setOpen}
                 onClose={onFinish}
                 modalId={"connectNewWallet"}
+                dismissible={dismissible}
                 header={
                     <div className="flex items-center gap-1">
                         {

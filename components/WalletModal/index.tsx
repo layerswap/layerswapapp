@@ -18,10 +18,10 @@ export type ModalWalletProvider = WalletProvider & {
     isSelectedFromFilter?: boolean;
 }
 
-type SharedType = { provider?: WalletProvider, connectCallback: (value: Wallet | undefined) => void }
+type SharedType = { provider?: WalletProvider, connectCallback: (value: Wallet | undefined) => void, dismissible?: boolean }
 
 type ConnectModalContextType = {
-    connect: ({ provider, connectCallback }: SharedType) => void;
+    connect: ({ provider, connectCallback, dismissible }: SharedType) => void;
     cancel: () => void;
     selectedProvider: ModalWalletProvider | undefined;
     setSelectedProvider: (value: ModalWalletProvider | undefined) => void;
@@ -34,6 +34,7 @@ type ConnectModalContextType = {
     onFinish: (connectedWallet?: Wallet | undefined) => void;
     setOpen: (value: boolean) => void;
     open: boolean;
+    dismissible: boolean;
 };
 
 const ConnectModalContext = createContext<ConnectModalContextType | null>(null);
@@ -46,8 +47,9 @@ export function WalletModalProvider({ children }) {
     const [selectedMultiChainConnector, setSelectedMultiChainConnector] = useState<InternalConnector | undefined>(undefined)
     const [open, setOpen] = useState(false);
     const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+    const [dismissible, setDismissible] = useState(true);
 
-    const connect = useCallback(async ({ provider, connectCallback }: SharedType) => {
+    const connect = useCallback(async ({ provider, connectCallback, dismissible: dismissibleArg = true }: SharedType) => {
         const hasConnectorPicker = !!provider?.availableConnectors?.length
             || !!provider?.additionalConnectors?.length
             || !!provider?.requestAdditionalConnectors
@@ -56,8 +58,9 @@ export function WalletModalProvider({ children }) {
             await provider?.connectWallet()
         }
         setSelectedProvider(provider);
+        setDismissible(dismissibleArg);
         setOpen(true)
-        setConnectConfig({ provider, connectCallback });
+        setConnectConfig({ provider, connectCallback, dismissible: dismissibleArg });
         return;
     }, [])
 
@@ -94,6 +97,7 @@ export function WalletModalProvider({ children }) {
             setSelectedMultiChainConnector(undefined)
             setSelectedProvider(undefined)
         }
+        if (!open) setDismissible(true)
         setIsWalletModalOpen(open)
     }, [open])
 
@@ -101,9 +105,9 @@ export function WalletModalProvider({ children }) {
         connect, cancel, selectedProvider, setSelectedProvider,
         selectedConnector, setSelectedConnector,
         selectedMultiChainConnector, setSelectedMultiChainConnector,
-        isWalletModalOpen, goBack, onFinish, setOpen, open
+        isWalletModalOpen, goBack, onFinish, setOpen, open, dismissible
     }), [connect, cancel, selectedProvider, selectedConnector,
-        selectedMultiChainConnector, isWalletModalOpen, goBack, onFinish, open])
+        selectedMultiChainConnector, isWalletModalOpen, goBack, onFinish, open, dismissible])
 
     return (
         <ConnectModalContext.Provider value={contextValue}>
@@ -121,9 +125,9 @@ export const useConnectModal = () => {
     }
 
     const connect = useCallback(
-        (provider?: WalletProvider): Promise<Wallet | undefined> =>
+        (provider?: WalletProvider, options?: { dismissible?: boolean }): Promise<Wallet | undefined> =>
             new Promise((res) => {
-                context.connect({ provider, connectCallback: res });
+                context.connect({ provider, connectCallback: res, dismissible: options?.dismissible });
             }),
         [context.connect]
     );

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useFormikContext } from 'formik'
 import { SwapFormValues } from '@/components/DTOs/SwapFormValues'
 import useDepositAddressSources from './useDepositAddressSources'
@@ -9,7 +9,9 @@ import useDepositAddressSources from './useDepositAddressSources'
  */
 export default function useAutoSourceRoute() {
     const { values, setFieldValue } = useFormikContext<SwapFormValues>()
-    const { to, toAsset } = values
+    const { to, toAsset, from, fromAsset } = values
+
+    const hasDestination = !!(to?.name && toAsset?.symbol)
 
     const { data, isLoading } = useDepositAddressSources({
         destinationNetwork: to?.name,
@@ -18,19 +20,32 @@ export default function useAutoSourceRoute() {
 
     const sourceRoutes = data?.data?.filter(r => r.deposit_methods?.includes('deposit_address'))
 
+    const isSourceInRoutes = useMemo(() => {
+        if (!sourceRoutes || !from || !fromAsset) return false
+        return sourceRoutes.some(
+            r => r.name === from.name && r.tokens?.some(t => t.symbol === fromAsset.symbol && t.status === 'active')
+        )
+    }, [sourceRoutes, from?.name, fromAsset?.symbol])
+
+    // True only when we have positive evidence that this hook is about to swap
+    // `from`/`fromAsset` to a different value: either the SWR call for the current
+    // destination is still in flight, or it has returned a non-empty source list
+    // that doesn't contain the current selection. Callers (e.g. the deposit-address
+    // auto-submit) gate on this so we don't briefly fire a doomed swap creation.
+    //
+    // Deliberately false when sources fetch failed or returned no sources — those
+    // cases warrant a real server response (and error toast) rather than silent
+    // blocking, since this hook will not be picking a new source.
+    const isAutoSourceUpdating = (
+        hasDestination && isLoading
+    ) || (
+        !!sourceRoutes && sourceRoutes.length > 0 && !isSourceInRoutes
+    )
+
     useEffect(() => {
         if (!sourceRoutes || sourceRoutes.length === 0) return
 
-        const currentFrom = values.from
-        const currentFromAsset = values.fromAsset
-
-        // If current source is still valid for this destination, keep it
-        if (currentFrom && currentFromAsset) {
-            const stillValid = sourceRoutes.some(
-                r => r.name === currentFrom.name && r.tokens?.some(t => t.symbol === currentFromAsset.symbol && t.status === 'active')
-            )
-            if (stillValid) return
-        }
+        if (isSourceInRoutes) return
 
         // Lower source_rank = higher priority. Use ?? so rank 0 (the best possible value)
         // isn't coerced to the sentinel like `|| Infinity` would do.
@@ -48,7 +63,7 @@ export default function useAutoSourceRoute() {
                 return
             }
         }
-    }, [sourceRoutes])
+    }, [sourceRoutes, isSourceInRoutes])
 
-    return { sourceRoutes, isLoading }
+    return { sourceRoutes, isLoading, isAutoSourceUpdating }
 }
