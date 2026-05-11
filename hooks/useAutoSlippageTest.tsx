@@ -14,10 +14,10 @@ export function useAutoSlippageTest({ values, shouldTest }: AutoSlippageTestProp
 
     const autoSlippageTestURL = shouldTest
         ? buildQuoteUrl({
-            sourceNetwork: values.from?.name ?? '',
-            sourceToken: values.fromAsset?.symbol ?? '',
-            destinationNetwork: values.to?.name ?? '',
-            destinationToken: values.toAsset?.symbol ?? '',
+            sourceNetwork: values.source?.network?.name ?? '',
+            sourceToken: values.source?.token?.symbol ?? '',
+            destinationNetwork: values.destination?.network?.name ?? '',
+            destinationToken: values.destination?.token?.symbol ?? '',
             amount: values.amount ?? '',
             refuel: !!values.refuel,
             useDepositAddress: values.depositMethod !== 'wallet',

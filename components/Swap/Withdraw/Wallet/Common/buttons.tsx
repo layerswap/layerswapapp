@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 import WalletMessage from "../../messages/Message";
 import { useConnectModal } from "@/components/WalletModal";
-import { Network, NetworkRoute } from "@/Models/Network";
+import { Network, NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { useQueryState } from "@/context/query";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
@@ -21,7 +21,6 @@ import { useSelectedAccount } from "@/context/swapAccounts";
 import { resolvePriceImpactValues } from "@/lib/fees";
 import InfoIcon from "@/components/icons/InfoIcon";
 import { useGoHome } from "@/hooks/useGoHome";
-import KnownInternalNames from "@/lib/knownIds";
 import { useSettingsState } from "@/context/settings";
 import { useBalance } from "@/lib/balances/useBalance";
 import useSWRGas from "@/lib/gases/useSWRGas";
@@ -206,10 +205,8 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
                 const swapValues: SwapFormValues = {
                     amount: swapBasicData.requested_amount.toString(),
-                    from: swapBasicData.source_network as NetworkRoute,
-                    to: swapBasicData.destination_network as NetworkRoute,
-                    fromAsset: swapBasicData.source_token,
-                    toAsset: swapBasicData.destination_token,
+                    source: { network: swapBasicData.source_network as NetworkRoute, token: swapBasicData.source_token as NetworkRouteToken },
+                    destination: { network: swapBasicData.destination_network as NetworkRoute, token: swapBasicData.destination_token as NetworkRouteToken },
                     refuel: refuel,
                     destination_address: swapBasicData.destination_address,
                     depositMethod: 'wallet',

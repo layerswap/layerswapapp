@@ -3,18 +3,14 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '..
 import { ChevronDown } from 'lucide-react'
 import useWallet from '@/hooks/useWallet'
 import { Quote } from '@/lib/apiClients/layerSwapApiClient'
-import { SwapFormValues } from '../../DTOs/SwapFormValues'
+import { SwapFormValues, SwapValuesRoute } from '../../DTOs/SwapFormValues'
 import { Network } from '@/Models/Network'
 import { SummaryRow } from './SummaryRow'
 import { DetailedEstimates } from './DetailedEstimates'
 import { Address } from '@/lib/address'
 import { useSelectedAccount } from '@/context/swapAccounts'
 import { Partner } from '@/Models/Partner'
-
-interface SwapValues extends Omit<SwapFormValues, 'from' | 'to'> {
-    from?: Network;
-    to?: Network;
-}
+import { SwapValues } from '..'
 
 interface QuoteComponentProps {
     quote: Quote;
@@ -30,9 +26,9 @@ interface QuoteComponentProps {
 
 const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quoteData, isQuoteLoading, partner }) => {
     const [isOpen, setIsOpen] = useState(false)
-    const { wallets: destWallets } = useWallet(values.to, 'autofill')
-    const wallet = (values?.to && values?.destination_address) ? destWallets?.find(w => w.addresses?.some(a => Address.equals(a, values.destination_address!, values.to!))) : undefined
-    const selectedSourceAccount = useSelectedAccount("from", values?.from?.name);
+    const { wallets: destWallets } = useWallet(values.destination?.network, 'autofill')
+    const wallet = (values?.destination?.network && values?.destination_address) ? destWallets?.find(w => w.addresses?.some(a => Address.equals(a, values.destination_address!, values.destination!.network))) : undefined
+    const selectedSourceAccount = useSelectedAccount("from", values?.source?.network?.name);
 
     return (
         <Accordion

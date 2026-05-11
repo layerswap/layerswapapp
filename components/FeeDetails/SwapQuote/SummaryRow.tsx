@@ -27,8 +27,9 @@ export const SummaryRow: FC<{
 }> = ({ quoteData, isQuoteLoading, values, wallet, onOpen, sourceAddress, isOpen, partner }) => {
     const query = useQueryState()
     const { destination_address: destinationAddressFromQuery } = query
-    const { to, destination_address } = values
-    const addressProviderIcon = destinationAddressFromQuery && partner?.is_wallet && Address.equals(destinationAddressFromQuery, values?.destination_address!, values?.to!) && partner?.logo
+    const to = values.destination?.network
+    const { destination_address } = values
+    const addressProviderIcon = destinationAddressFromQuery && partner?.is_wallet && to && Address.equals(destinationAddressFromQuery, values?.destination_address!, to) && partner?.logo
     const addressInstance = useMemo(() => (destination_address && to) ? new Address(destination_address, to) : null, [destination_address, to])
 
     return (
@@ -53,9 +54,9 @@ export const SummaryRow: FC<{
                                 <AddressIcon className="h-4 w-4" address={addressInstance?.full || ''} size={36} rounded="4px" />
                             )}
                             {
-                                ((Address.isValid(values?.destination_address, values?.to) && values?.to) ?
+                                ((to && Address.isValid(values?.destination_address, to)) ?
                                     <div className="text-sm group/addressItem text-secondary-text">
-                                        <ExtendedAddress address={values?.destination_address} network={values?.to} showDetails={wallet ? true : false} title={wallet?.displayName?.split("-")[0]} description={wallet?.providerName} logo={wallet?.icon} shouldShowChevron={false} />
+                                        <ExtendedAddress address={values?.destination_address!} network={to} showDetails={wallet ? true : false} title={wallet?.displayName?.split("-")[0]} description={wallet?.providerName} logo={wallet?.icon} shouldShowChevron={false} />
                                     </div>
                                     :
                                     <p className="text-sm text-secondary-text">{addressInstance?.toShortString() || ''}</p>)
@@ -71,7 +72,7 @@ export const SummaryRow: FC<{
                 </div>
                 <div className="text-right text-primary-text h-5">
                     {quoteData?.quote?.min_receive_amount !== undefined && !isNaN(quoteData?.quote?.min_receive_amount) && (
-                        <NumFlowWithFallback value={quoteData?.quote?.min_receive_amount} trend={0} format={{ maximumFractionDigits: quoteData?.quote.destination_token?.decimals || 2 }} suffix={` ${values?.toAsset?.symbol}`} />
+                        <NumFlowWithFallback value={quoteData?.quote?.min_receive_amount} trend={0} format={{ maximumFractionDigits: quoteData?.quote.destination_token?.decimals || 2 }} suffix={` ${values?.destination?.token?.symbol}`} />
                     )}
                 </div>
             </div>

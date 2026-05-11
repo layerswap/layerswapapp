@@ -37,7 +37,7 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
 
     const handleSelectAccount = (props: SelectAccountProps) => {
         const { walletId, address, providerName } = props
-        if (direction == 'to' && Address.isValid(address, values.to))
+        if (direction == 'to' && values.destination?.network && Address.isValid(address, values.destination.network))
             setFieldValue(`destination_address`, address)
         selectSwapAccount({
             id: walletId,
@@ -48,7 +48,7 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
     }
 
     return <>
-        <AccountsPickerButton accounts={swapAccounts} network={direction === 'from' ? values.from : values.to} onOpenModalClick={() => setOpenModal(true)} />
+        <AccountsPickerButton accounts={swapAccounts} network={direction === 'from' ? values.source?.network : values.destination?.network} onOpenModalClick={() => setOpenModal(true)} />
         <VaulDrawer
             show={openModal}
             setShow={setOpenModal}
@@ -74,7 +74,7 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
                                     </label>
                                 </div>
                                 <AccountsList
-                                    network={direction === 'from' ? values.from : values.to}
+                                    network={direction === 'from' ? values.source?.network : values.destination?.network}
                                     key={index}
                                     onSelect={handleSelectAccount}
                                     selectedAccount={account}

@@ -25,11 +25,11 @@ const FormButton = ({
     const query = useQueryState();
     const actionDisplayName = error || query?.actionButtonText || "Next";
 
-    if (shouldConnectWallet && (!error || !values.to || !values.amount)) {
+    if (shouldConnectWallet && (!error || !values.destination?.network || !values.amount)) {
         return <FormSourceWalletButton />;
     }
 
-    if (values?.to && !values?.destination_address && !error) {
+    if (values?.destination?.network && !values?.destination_address && !error) {
         return (
             <Address partner={partner}>
                 {() => (

@@ -21,7 +21,9 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, quote }) => {
         values,
         setFieldValue
     } = useFormikContext<SwapFormValues>();
-    const { toAsset: toCurrency, to, destination_address, refuel, amount } = values
+    const toCurrency = values.destination?.token
+    const to = values.destination?.network
+    const { destination_address, refuel } = values
     const { balances } = useBalance(destination_address, to)
 
     const destinationNativeBalance = destination_address && balances?.find(b => (b.token === to?.token?.symbol) && (b.network === to.name))

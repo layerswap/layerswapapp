@@ -25,7 +25,7 @@ type AddressInput = {
 }
 
 const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress, setNewAddress, values, name, inputReference, setFieldValue, close, addresses, connectedWallet, partner }) => {
-    const { to: destination } = values || {}
+    const destination = values?.destination?.network
     const [isFocused, setIsFocused] = useState(false);
     const placeholder = "Enter address"
 
@@ -51,8 +51,8 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
     }
 
     let errorMessage = '';
-    if (manualAddress && !Address.isValid(manualAddress, destination) && values.to?.display_name) {
-        errorMessage = `Enter a valid ${values.to?.display_name} address`
+    if (manualAddress && !Address.isValid(manualAddress, destination) && destination?.display_name) {
+        errorMessage = `Enter a valid ${destination.display_name} address`
     }
 
     const addressFromList = destination && addresses?.find(a => Address.equals(a.address, manualAddress, destination))

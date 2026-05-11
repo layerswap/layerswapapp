@@ -19,7 +19,7 @@ type Props = {
 const DestinationPicker = (props: Props) => {
     const { partner } = props
     const { values } = useFormikContext<SwapFormValues>()
-    const { toAsset: toCurrency } = values
+    const toCurrency = values?.destination?.token
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
     const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;

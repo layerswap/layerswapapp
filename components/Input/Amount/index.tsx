@@ -19,7 +19,9 @@ interface AmountFieldProps {
 
 const AmountField = forwardRef(function AmountField({ actionValue, actionValueUsd, fee, quoteTokenPrices, className, showToggle }: AmountFieldProps, ref: any) {
     const { values, handleChange } = useFormikContext<SwapFormValues>();
-    const { fromAsset: fromCurrency, amount, toAsset: toCurrency, fromExchange } = values || {};
+    const fromCurrency = values?.source?.token;
+    const toCurrency = values?.destination?.token;
+    const { amount, fromExchange } = values || {};
     const { setFieldValue } = useFormikContext<SwapFormValues>();
     const name = "amount"
     const amountRef = useRef(ref)

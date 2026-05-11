@@ -13,7 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/pop
 import useExchangeNetworks from '@/hooks/useExchangeNetworks'
 import { ChevronDown } from 'lucide-react'
 import { CommandItem, CommandList, CommandWrapper } from '@/components/shadcn/command'
-import { Network, NetworkRoute, Token } from '@/Models/Network'
+import { Network, NetworkRoute, NetworkRouteToken, Token } from '@/Models/Network'
 import { useQueryState } from '@/context/query'
 import { useSwapDataUpdate } from '@/context/swap'
 import { SwapFormValues } from '@/components/DTOs/SwapFormValues'
@@ -69,14 +69,14 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
 
     const swapValues = useMemo<SwapFormValues>(() => {
         const fromNetwork = (selectedFrom.network ?? swapBasicData?.source_network) as NetworkRoute | undefined;
-        const fromToken = selectedFrom.token ?? swapBasicData?.source_token;
+        const fromToken = (selectedFrom.token ?? swapBasicData?.source_token) as NetworkRouteToken | undefined;
+        const destinationNetwork = swapBasicData?.destination_network as NetworkRoute | undefined;
+        const destinationToken = swapBasicData?.destination_token as NetworkRouteToken | undefined;
 
         return {
             amount: swapBasicData?.requested_amount?.toString(),
-            from: fromNetwork,
-            to: swapBasicData?.destination_network as NetworkRoute,
-            fromAsset: fromToken,
-            toAsset: swapBasicData?.destination_token,
+            source: (fromNetwork && fromToken) ? { network: fromNetwork, token: fromToken } : undefined,
+            destination: (destinationNetwork && destinationToken) ? { network: destinationNetwork, token: destinationToken } : undefined,
             refuel: !!refuel,
             destination_address: swapBasicData?.destination_address,
             fromExchange: swapBasicData?.source_exchange,
@@ -85,12 +85,12 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
     }, [selectedFrom.network, selectedFrom.token, swapBasicData, refuel]);
 
     const handleClick = async (network: Network, token: Token) => {
+        const destinationNetwork = swapBasicData?.destination_network as NetworkRoute | undefined;
+        const destinationToken = swapBasicData?.destination_token as NetworkRouteToken | undefined;
         const nextSwapValues: SwapFormValues = {
             amount: swapBasicData?.requested_amount?.toString(),
-            from: network as NetworkRoute,
-            to: swapBasicData?.destination_network as NetworkRoute,
-            fromAsset: token,
-            toAsset: swapBasicData?.destination_token,
+            source: { network: network as NetworkRoute, token: token as NetworkRouteToken },
+            destination: (destinationNetwork && destinationToken) ? { network: destinationNetwork, token: destinationToken } : undefined,
             refuel: !!refuel,
             destination_address: swapBasicData?.destination_address,
             fromExchange: swapBasicData?.source_exchange,

@@ -6,7 +6,8 @@ export const resolveExchangesURLForSelectedToken = (values: SwapFormValues) => {
     const include_swaps = 'false'
     const include_unavailable = 'true'
 
-    const { from, fromAsset: fromCurrency } = values
+    const from = values.source?.network
+    const fromCurrency = values.source?.token
 
 
     const params = new URLSearchParams({
@@ -43,7 +44,11 @@ export const resolveExchangeHistoricalNetworksURL = (direction: SwapDirection, {
 
 export const resolveNetworkRoutesURL = (direction: SwapDirection, values: SwapFormValues, networkTypes?: string[]) => {
 
-    const { from, to, fromAsset: fromCurrency, toAsset: toCurrency, fromExchange, toExchange } = values
+    const from = values.source?.network
+    const to = values.destination?.network
+    const fromCurrency = values.source?.token
+    const toCurrency = values.destination?.token
+    const { fromExchange, toExchange } = values
 
     const selectednetwork = direction === "from" ? to : from
     const selectedToken = direction === "from" ? toCurrency?.symbol : fromCurrency?.symbol

@@ -1,5 +1,6 @@
 import { FC } from 'react'
 import { SwapValues } from '@/components/FeeDetails';
+import { NetworkRoute, NetworkRouteToken } from '@/Models/Network';
 import { Refuel, SwapBasicData, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
 import SwapQuoteComp from '@/components/FeeDetails/SwapQuote';
 import { QuoteError } from '@/hooks/useFee';
@@ -32,10 +33,8 @@ export const SwapQuoteDetails: FC<Props> = ({ swapBasicData: swapData, quote, re
 
     const values: SwapValues = {
         amount: requested_amount?.toString(),
-        from: source_network,
-        to: destination_network,
-        fromAsset: source_token,
-        toAsset: destination_token,
+        source: (source_network && source_token) ? { network: source_network as NetworkRoute, token: source_token as NetworkRouteToken } : undefined,
+        destination: (destination_network && destination_token) ? { network: destination_network as NetworkRoute, token: destination_token as NetworkRouteToken } : undefined,
         depositMethod: use_deposit_address ? 'deposit_address' : 'wallet',
         destination_address,
     }

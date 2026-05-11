@@ -28,8 +28,8 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
     const { exchangesRoutes, isLoading: exchangesRoutesLoading } = useExchangeRoutes({ direction, values })
     const { networks: withdrawalNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeNetworks({
         fromExchange: values.fromExchange?.name,
-        to: values.to?.name,
-        toAsset: values.toAsset?.symbol
+        to: values.destination?.network?.name,
+        toAsset: values.destination?.token?.symbol
     });
     const { lockFrom, from, lockTo, to, lockFromAsset, fromAsset, lockToAsset, toAsset } = useQueryState()
     const groupByToken = useRouteTokenSwitchStore((s) => s.showTokens)
@@ -746,11 +746,11 @@ function sortNetworkTokens(
 // ---------- Resolvers ----------
 
 function resolveSelectedRoute(values: SwapFormValues, direction: SwapDirection): NetworkRoute | undefined {
-    return direction === 'from' ? values.from : values.to;
+    return direction === 'from' ? values.source?.network : values.destination?.network;
 }
 
 function resolveSelectedToken(values: SwapFormValues, direction: SwapDirection) {
-    return direction === 'from' ? values.fromAsset : values.toAsset;
+    return direction === 'from' ? values.source?.token : values.destination?.token;
 }
 
 // ---------- Exchange ----------

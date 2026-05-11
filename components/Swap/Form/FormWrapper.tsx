@@ -55,7 +55,8 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         setSwapError && setSwapError('')
-        const { destination_address, to } = values
+        const { destination_address } = values
+        const to = values.destination?.network
         setWalletWihdrawDone(false)
         if (!walletWihdrawDone) {
             setWalletWihdrawDone(false)
@@ -85,11 +86,11 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
             }
         }
 
-        if (destination_address && values.from && values.to && values.to.type === 'evm') {
-            const alreadyConfirmed = isConfirmed(destination_address, values.to.name);
+        if (destination_address && values.source?.network && values.destination?.network && values.destination.network.type === 'evm') {
+            const alreadyConfirmed = isConfirmed(destination_address, values.destination.network.name);
 
             if (!alreadyConfirmed) {
-                const { isContractInAnyNetwork, destinationIsContract } = await checkContractStatus(destination_address, values.from, values.to);
+                const { isContractInAnyNetwork, destinationIsContract } = await checkContractStatus(destination_address, values.source.network, values.destination.network);
                 if (isContractInAnyNetwork && !destinationIsContract) {
                     dontShowContractWarningRef.current = false;
 
@@ -103,8 +104,8 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                         dismissText: 'Cancel'
                     });
 
-                    if (confirmed && dontShowContractWarningRef.current) {
-                        setConfirmed(destination_address, values.to.name);
+                    if (confirmed && dontShowContractWarningRef.current && values.destination?.network) {
+                        setConfirmed(destination_address, values.destination.network.name);
                     } else if (!confirmed) {
                         return;
                     }
@@ -217,19 +218,21 @@ const handleCreateSwap = async ({ query, values, partner, setShowSwapModal, crea
             throw new Error("You can't transfer to that address. Please double check.")
         }
         else if (data?.code === LSAPIKnownErrorCode.INVALID_ADDRESS_ERROR) {
-            throw new Error(`Enter a valid ${values.to?.display_name} address`)
+            throw new Error(`Enter a valid ${values.destination?.network?.display_name} address`)
         }
-        else if (data?.code === LSAPIKnownErrorCode.UNACTIVATED_ADDRESS_ERROR && values.to) {
+        else if (data?.code === LSAPIKnownErrorCode.UNACTIVATED_ADDRESS_ERROR && values.destination?.network) {
             setNetworkToConnect({
-                DisplayName: values.to.display_name,
+                DisplayName: values.destination.network.display_name,
                 AppURL: data.metadata.ActivationUrl
             })
             setShowConnectNetworkModal(true);
         } else if (data?.code === LSAPIKnownErrorCode.NETWORK_CURRENCY_DAILY_LIMIT_REACHED) {
+            const sourceTokenSymbol = values.source?.token?.symbol
+            const sourceNetworkName = values.source?.network?.display_name
             if (data.metadata.AvailableTransactionAmount) {
-                throw new Error(`Daily limit of ${values.fromAsset?.symbol} transfers from ${values.from?.display_name} is reached. Please try sending up to ${data.metadata.AvailableTransactionAmount} ${values.fromAsset?.symbol}.`)
+                throw new Error(`Daily limit of ${sourceTokenSymbol} transfers from ${sourceNetworkName} is reached. Please try sending up to ${data.metadata.AvailableTransactionAmount} ${sourceTokenSymbol}.`)
             } else {
-                throw new Error(`Daily limit of ${values.fromAsset?.symbol} transfers from ${values.from?.display_name} is reached.`)
+                throw new Error(`Daily limit of ${sourceTokenSymbol} transfers from ${sourceNetworkName} is reached.`)
             }
         }
         else {

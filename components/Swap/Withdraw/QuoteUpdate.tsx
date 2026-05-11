@@ -53,10 +53,10 @@ export async function handleLimitsUpdate(params: {
     const { swapValues, network, token } = params;
 
     const { minAllowedAmount, maxAllowedAmount } = await getLimits({
-        sourceNetwork: swapValues.from?.name,
-        sourceToken: swapValues.fromAsset?.symbol,
-        destinationNetwork: swapValues.to?.name,
-        destinationToken: swapValues.toAsset?.symbol,
+        sourceNetwork: swapValues.source?.network?.name,
+        sourceToken: swapValues.source?.token?.symbol,
+        destinationNetwork: swapValues.destination?.network?.name,
+        destinationToken: swapValues.destination?.token?.symbol,
         useDepositAddress: swapValues.depositMethod == 'deposit_address',
         refuel: params.swapValues.refuel
     });

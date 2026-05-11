@@ -12,7 +12,7 @@ import { SwapQuote } from "@/lib/apiClients/layerSwapApiClient";
 import { QuoteTokenPrices } from "@/hooks/useFee";
 import PickerWalletConnect from "./RouterPickerWalletConnect";
 import { swapInProgress } from "@/components/utils/swapUtils";
-import { updateForm } from "@/components/Swap/Form/updateForm";
+import { updateRouteField } from "@/components/Swap/Form/updateForm";
 import clsx from "clsx";
 import useSuggestionsLimit from "@/hooks/useSuggestionsLimit";
 import useWallet from "@/hooks/useWallet";
@@ -30,7 +30,7 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
     const { suggestionsLimit } = useSuggestionsLimit({ hasWallet: wallets.length > 0, });
 
     const { allRoutes, isLoading, routeElements, selectedRoute, selectedToken } = useFormRoutes({ direction, values }, searchQuery, suggestionsLimit)
-    const currencyFieldName = direction === 'from' ? 'fromAsset' : 'toAsset';
+    const fieldName: 'source' | 'destination' = direction === 'from' ? 'source' : 'destination';
 
     useEffect(() => {
         const updateValues = async () => {
@@ -42,12 +42,8 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
             if (updatedToken === selectedToken) return;
 
             if (updatedRoute && updatedToken) {
-                await updateForm({
-                    formDataKey: currencyFieldName,
-                    formDataValue: updatedToken,
-                    shouldValidate: true,
-                    setFieldValue
-                })
+                // Reference refresh only — URL is already correct, skip the URL-sync helper.
+                await setFieldValue(fieldName, { network: updatedRoute, token: updatedToken }, true);
             }
         };
 
@@ -56,19 +52,13 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
 
     const handleSelect = useCallback(async (route: NetworkRoute, token: NetworkRouteToken) => {
         swapInProgress.current = false;
-        await updateForm({
-            formDataKey: currencyFieldName,
-            formDataValue: token,
+        await updateRouteField({
+            direction: fieldName,
+            value: { network: route, token },
             shouldValidate: true,
-            setFieldValue
-        })
-        await updateForm({
-            formDataKey: direction,
-            formDataValue: route,
-            shouldValidate: true,
-            setFieldValue
-        })
-    }, [currencyFieldName, direction])
+            setFieldValue,
+        });
+    }, [fieldName])
 
     const showBalance = !isExchange && (direction === 'to' || values.depositMethod === 'wallet')
 

@@ -21,7 +21,9 @@ type Props = {
 const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd, fee, quoteTokenPrices }: Props) => {
     const { values } = useFormikContext<SwapFormValues>()
 
-    const { fromAsset: fromCurrency, from, depositMethod } = values || {}
+    const fromCurrency = values?.source?.token
+    const from = values?.source?.network
+    const { depositMethod } = values || {}
     const { ref: parentRef, isActive: showQuickActions, activate: setShowQuickActions } = useClickOutside<HTMLDivElement>(false)
     const [actiontempValue, setActionTempValue] = useState<number | undefined>(undefined)
     const [actionTempUsdValue, setActionTempUsdValue] = useState<string | undefined>(undefined)

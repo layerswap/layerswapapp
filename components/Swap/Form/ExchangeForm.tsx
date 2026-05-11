@@ -40,7 +40,11 @@ const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
         values, isSubmitting
     } = useFormikContext<SwapFormValues>();
 
-    const { fromAsset: fromCurrency, from, to: destination, destination_address, amount, toAsset: toCurrency } = values || {};
+    const fromCurrency = values?.source?.token
+    const from = values?.source?.network
+    const destination = values?.destination?.network
+    const toCurrency = values?.destination?.token
+    const { destination_address, amount } = values || {};
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
     const [actionTempValue, setActionTempValue] = useState<number | undefined>(undefined)
 

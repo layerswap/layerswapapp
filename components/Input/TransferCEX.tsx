@@ -12,7 +12,9 @@ const TransferCEX: FC<Props> = ({ direction }) => {
         values,
     } = useFormikContext<SwapFormValues>();
 
-    const { from, to, fromExchange, toExchange } = values
+    const from = values.source?.network
+    const to = values.destination?.network
+    const { fromExchange, toExchange } = values
     const exchangeNetwork = (direction === 'from' ? from : to)
 
     const sourceLogo = fromExchange ? fromExchange.logo : from?.logo
