@@ -4,7 +4,9 @@ import useWallet from '@/hooks/useWallet';
 import { Wallet, WalletProvider } from '@/Models/WalletProvider';
 import AddressIcon from '@/components/AddressIcon';
 import { getKey, useBalanceStore } from '@/stores/balanceStore';
-import { Address as AddressClass } from '@/lib/address';
+import { useManualDestAddressesStore } from '@/stores/manualDestAddressesStore';
+
+export type { ManualDestAddress } from '@/stores/manualDestAddressesStore';
 
 const SwapAccountsStateContext = createContext<SwapAccountsContextType | null>(null);
 const SwapAccountsUpdateContext = createContext<SwapAccountsUpdateContextType | null>(null);
@@ -16,7 +18,6 @@ type PickerAccountsProviderProps = {
 type SwapAccountsContextType = {
     sourceAccounts: AccountIdentityWithSupportedNetworks[];
     destinationAccounts: (AccountIdentity | AccountIdentityWithSupportedNetworks)[];
-    manualDestAddresses: ManualDestAddress[];
 }
 
 type SwapAccountsUpdateContextType = {
@@ -29,8 +30,6 @@ type BaseAccountIdentity = {
     providerName: string;
     id: string;
 }
-
-export type ManualDestAddress = Pick<BaseAccountIdentity, 'address' | 'providerName'>;
 
 export type AccountIdentity = BaseAccountIdentity & {
     displayName: string,
@@ -49,7 +48,6 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
 
     const [selectedDestAccounts, setSelectedDestinationAccounts] = useState<BaseAccountIdentity[]>([])
     const [selectedSourceAccounts, setSelectedSourceAccounts] = useState<BaseAccountIdentity[]>([])
-    const [manualDestAddresses, setManualDestAddresses] = useState<ManualDestAddress[]>([])
     const { providers } = useWallet()
 
     const sourceAccounts: AccountIdentityWithSupportedNetworks[] = useMemo(() => {
@@ -106,11 +104,10 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
 
     const selectDestinationAccount = useCallback((account: BaseAccountIdentity) => {
         if (account.id === 'manually_added') {
-            setManualDestAddresses(prev =>
-                prev.some(e => e.providerName === account.providerName && AddressClass.equals(e.address, account.address, null, account.providerName))
-                    ? prev
-                    : [...prev, { address: account.address, providerName: account.providerName }]
-            );
+            useManualDestAddressesStore.getState().addManualDestAddress({
+                address: account.address,
+                providerName: account.providerName,
+            });
         }
         setSelectedDestinationAccounts(prev => {
             const existingAccountIndex = prev.findIndex(acc => acc.providerName === account.providerName);
@@ -141,8 +138,7 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
     const stateValues: SwapAccountsContextType = useMemo(() => ({
         sourceAccounts,
         destinationAccounts,
-        manualDestAddresses
-    }), [sourceAccounts, destinationAccounts, manualDestAddresses]);
+    }), [sourceAccounts, destinationAccounts]);
 
     const update: SwapAccountsUpdateContextType = useMemo(() => ({
         selectDestinationAccount,
@@ -201,11 +197,7 @@ export function useNetworkBalance(direction: SwapDirection, networkName: string 
 }
 
 export function useManualDestAddresses() {
-    const values = useContext<SwapAccountsContextType>(SwapAccountsStateContext as Context<SwapAccountsContextType>);
-    if (values === undefined) {
-        throw new Error('useManualDestAddresses must be used within a SwapAccountsProvider');
-    }
-    return values.manualDestAddresses;
+    return useManualDestAddressesStore(s => s.manualDestAddresses);
 }
 
 export function useSelectSwapAccount(direction: SwapDirection) {

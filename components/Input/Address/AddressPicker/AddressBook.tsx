@@ -15,9 +15,10 @@ type AddressBookProps = {
     destination: NetworkRoute;
     destination_address: string | undefined;
     partner?: Partner;
+    onRemoveManual?: (address: string) => void;
 }
 
-const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, destination, destination_address, partner }) => {
+const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, destination, destination_address, partner, onRemoveManual }) => {
 
     return (
         <div className="text-left mt-1!">
@@ -38,7 +39,12 @@ const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, desti
                                 return (
                                     <CommandItem key={item.address} onSelect={() => onSelectAddress(item.address, item.wallet)} className={`group/addressItem !px-3 !py-3 rounded-lg hover:bg-secondary-600 w-full transition duration-200 bg-secondary-500 ${isSelected && 'bg-secondary-400'}`}>
                                         <div className={`flex items-center justify-between w-full`}>
-                                            <AddressWithIcon addressItem={item} partner={partner} network={destination} />
+                                            <AddressWithIcon
+                                                addressItem={item}
+                                                partner={partner}
+                                                network={destination}
+                                                onRemove={item.group === AddressGroup.ManualAdded && onRemoveManual ? () => onRemoveManual(item.address) : undefined}
+                                            />
                                             <div className="flex h-6 items-center px-1">
                                                 {
                                                     isSelected &&

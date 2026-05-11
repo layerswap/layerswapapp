@@ -53,7 +53,6 @@ const TransferTokenButton: FC<Props> = ({
                 chainId,
                 to: depositAddress as `0x${string}`,
                 value: parseEther(amount?.toString()),
-                gas: gasData?.gas ? BigInt(gasData.gas) : undefined,
                 data: callData as `0x${string}`,
                 account: selectedSourceAccount.address as `0x${string}`
             }

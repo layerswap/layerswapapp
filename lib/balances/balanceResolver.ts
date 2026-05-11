@@ -85,10 +85,6 @@ export class BalanceResolver {
                 const { TonBalanceProvider } = await import("./providers/tonBalanceProvider");
                 return new TonBalanceProvider();
             }
-            case "zksync": {
-                const { ZkSyncBalanceProvider } = await import("./providers/zkSyncBalanceProvider");
-                return new ZkSyncBalanceProvider();
-            }
             case "tron": {
                 const { TronBalanceProvider } = await import("./providers/tronBalanceProvider");
                 return new TronBalanceProvider();
@@ -142,9 +138,6 @@ export class BalanceResolver {
             || network.name === KnownInternalNames.Networks.LoopringGoerli
             || network.name === KnownInternalNames.Networks.LoopringSepolia) {
             prioritized.push("loopring");
-        }
-        if (network.name === KnownInternalNames.Networks.ZksyncMainnet) {
-            prioritized.push("zksync");
         }
         if (network.name === KnownInternalNames.Networks.TONMainnet
             || network.name === KnownInternalNames.Networks.TONTestnet) {
@@ -244,7 +237,6 @@ type ProviderKind =
     | "loopring"
     | "solana"
     | "ton"
-    | "zksync"
     | "tron"
     | "bitcoin"
     | "hyperliquid";
@@ -257,7 +249,6 @@ const allProviderKinds: ProviderKind[] = [
     "loopring",
     "solana",
     "ton",
-    "zksync",
     "tron",
     "bitcoin",
     "hyperliquid",
