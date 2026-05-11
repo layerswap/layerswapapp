@@ -20,9 +20,10 @@ export type VaulDrawerProps = {
     onAnimationEnd?: (open: boolean) => void;
     className?: string;
     mode?: 'snapPoints' | 'fitHeight';
+    dismissible?: boolean;
 }
 
-const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose, onAnimationEnd, className, modalId, mode = 'snapPoints' }) => {
+const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose, onAnimationEnd, className, modalId, mode = 'snapPoints', dismissible = true }) => {
     const { isMobile } = useWindowDimensions();
     let [headerRef, { height }] = useMeasure();
     const { setHeaderHeight } = useSnapPoints()
@@ -128,26 +129,44 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
             repositionInputs={false}
             onAnimationEnd={(e) => { onAnimationEnd && onAnimationEnd(e) }}
             handleOnly={isMobile}
+            dismissible={dismissible}
         >
             <Drawer.Portal>
                 {isMobile ? (
-                    <Drawer.Close asChild>
+                    dismissible ? (
+                        <Drawer.Close asChild>
+                            <Drawer.Overlay
+                                className='fixed inset-0 z-50 bg-black/50 block'
+                            />
+                        </Drawer.Close>
+                    ) : (
                         <Drawer.Overlay
                             className='fixed inset-0 z-50 bg-black/50 block'
                         />
-                    </Drawer.Close>
+                    )
                 ) : (
                     <AnimatePresence>
                         {show && (
-                            <Drawer.Close asChild key={`backdrop-${modalId}`}>
+                            dismissible ? (
+                                <Drawer.Close asChild key={`backdrop-${modalId}`}>
+                                    <motion.div
+                                        className='absolute inset-0 z-50 bg-black/50 block pointer-events-auto'
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        transition={{ duration: 0.3 }}
+                                    />
+                                </Drawer.Close>
+                            ) : (
                                 <motion.div
+                                    key={`backdrop-${modalId}`}
                                     className='absolute inset-0 z-50 bg-black/50 block pointer-events-auto'
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
                                     transition={{ duration: 0.3 }}
                                 />
-                            </Drawer.Close>
+                            )
                         )}
                     </AnimatePresence>
                 )}
@@ -164,25 +183,29 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         ref={headerRef}
                         className={clsx('w-full flex-shrink-0', { 'relative': isSnapPointsMode })}>
                         {
-                            isMobile &&
+                            isMobile && dismissible &&
                             <div className="flex justify-center w-full mt-2 mb-[6px]" >
                                 <Drawer.Handle className='w-12! bg-primary-text-tertiary!' />
                             </div>
                         }
 
-                        <div className='flex items-center w-full text-left justify-between px-4 sm:pt-2 pb-2'>
-                            <Drawer.Title className="text-lg text-secondary-text font-semibold w-full">
-                                {header}
-                            </Drawer.Title>
-                            <Drawer.Close asChild>
-                                <div>
-                                    <IconButton className='inline-flex active:animate-press-down' icon={
-                                        <X strokeWidth={3} />
-                                    }>
-                                    </IconButton>
-                                </div>
-                            </Drawer.Close>
-                        </div>
+                        {(header || dismissible) && (
+                            <div className='flex items-center w-full text-left justify-between px-4 sm:pt-2 pb-2'>
+                                <Drawer.Title className="text-lg text-secondary-text font-semibold w-full">
+                                    {header}
+                                </Drawer.Title>
+                                {dismissible && (
+                                    <Drawer.Close asChild>
+                                        <div>
+                                            <IconButton className='inline-flex active:animate-press-down' icon={
+                                                <X strokeWidth={3} />
+                                            }>
+                                            </IconButton>
+                                        </div>
+                                    </Drawer.Close>
+                                )}
+                            </div>
+                        )}
                         {
                             description &&
                             <Drawer.Description className="text-sm mt-2 text-secondary-text px-4">

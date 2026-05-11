@@ -3,6 +3,7 @@ import React, { useMemo, useState } from "react";
 import { NetworkExchangeTabs, Tabs, TabsContent } from "./NetworkExchangeTabs";
 import NetworkForm from "./NetworkForm";
 import ExchangeForm from "./ExchangeForm";
+import DepositAddressForm from "./DepositAddressForm";
 import FormWrapper from "./FormWrapper";
 import { Widget } from "@/components/Widget/Index";
 import { ValidationProvider } from "@/context/validationContext";
@@ -91,6 +92,22 @@ export default function Form() {
             </SwapDataProvider>
         </TabsContent>
 
+        <TabsContent value="deposit-address">
+            <SwapDataProvider>
+                <FormWrapper type="deposit-address" partner={partner}>
+                    <Widget contextualMenu={
+                        <div className="block sm:hidden">
+                            <NetworkExchangeTabs />
+                        </div>
+                    }>
+                        <ValidationProvider>
+                            <DepositAddressForm partner={partner} />
+                        </ValidationProvider>
+                    </Widget>
+                </FormWrapper>
+            </SwapDataProvider>
+        </TabsContent>
+
     </Tabs>
 }
 
@@ -101,6 +118,9 @@ const defaultTabResolver = ({ from, sourceExchanges, defaultTabQueryParam }: { f
         }
         if (defaultTabQueryParam === "cex") {
             return "exchange";
+        }
+        if (defaultTabQueryParam === "deposit" || defaultTabQueryParam === "easy") {
+            return "deposit-address";
         }
     }
     if (from) {

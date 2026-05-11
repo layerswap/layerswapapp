@@ -131,7 +131,7 @@ export type CreateSwapParams = {
     destination_address: string,
     source_address?: string
     refund_address?: string
-    amount: string,
+    amount?: string,
     reference_id?: string,
     source_exchange?: string
     destination_exchange?: string
