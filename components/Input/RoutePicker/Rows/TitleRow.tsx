@@ -5,8 +5,9 @@ import RouteSortingMenu from "../RouteSortingMenu";
 
 type Props = {
     item: TitleElement
+    hideTokenSwitch?: boolean
 }
-const TitleRow = ({ item }: Props) => {
+const TitleRow = ({ item, hideTokenSwitch }: Props) => {
 
     if (item.text.toLowerCase().includes("suggestions")) {
         return <SuggestionsHeader />
@@ -24,7 +25,7 @@ const TitleRow = ({ item }: Props) => {
                 }
             </div>
             {
-                item.text.toLowerCase().includes("all") &&
+                item.text.toLowerCase().includes("all") && !hideTokenSwitch &&
                 <div className="relative ml-auto flex items-center gap-2">
                     <RouteTokenSwitch />
                 </div>
