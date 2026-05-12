@@ -20,12 +20,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: yarn
-      - run: yarn install --frozen-lockfile --ignore-engines
-      - run: yarn build-storybook
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build-storybook
 
       # Publishes to: https://<owner>.github.io/<repo>/pr-preview/pr-<PR_NUMBER>/
       - name: Deploy PR Preview to Pages

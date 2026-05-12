@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { BackendTransactionStatus, TransactionStatus } from '../lib/apiClients/layerSwapApiClient';
 
-type SwapTransaction = {
+export type SwapTransaction = {
     hash: string;
     status: BackendTransactionStatus | TransactionStatus;
     failReason?: string;

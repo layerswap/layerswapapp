@@ -253,7 +253,6 @@ const NestedWalletAddress: FC<NestedWalletAddressProps> = ({ selectable, address
     return (
         <button
             type="button"
-            disabled={!selectable}
             onClick={() => (selectable && onWalletSelect) && onWalletSelect({
                 providerName: wallet.providerName,
                 walletId: wallet.id,
@@ -281,6 +280,11 @@ const NestedWalletAddress: FC<NestedWalletAddressProps> = ({ selectable, address
                             providerName={wallet.providerName}
                             addressClassNames="font-normal text-sm"
                             onDisconnect={() => hasDisconnect(wallet) && wallet?.disconnect()}
+
+                            title={wallet.displayName?.split("-")[0]}
+                            description={wallet.providerName}
+                            logo={wallet.icon}
+                            showDetails
                         />
                     }
                 </div>

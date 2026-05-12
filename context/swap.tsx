@@ -7,7 +7,8 @@ import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
 import { Partner } from '../Models/Partner';
 import { ApiError } from '../Models/ApiError';
-import { ResolvePollingInterval } from '../components/utils/SwapStatus';
+import { resolveSwapPhase } from '../components/utils/resolveSwapPhase';
+import { useSwapTransactionStore } from '../stores/swapTransactionStore';
 import { Wallet, WalletProvider } from '../Models/WalletProvider';
 import useWallet from '../hooks/useWallet';
 import { Network } from '../Models/Network';
@@ -22,24 +23,7 @@ import { useSlippageStore } from '@/stores/slippageStore';
 import { captureEvent } from '@/lib/faro';
 import { SwapStatus } from '@/Models/SwapStatus';
 
-export const SwapDataStateContext = createContext<SwapContextData>({
-    codeRequested: false,
-    depositAddressIsFromAccount: false,
-    withdrawType: undefined,
-    swapTransaction: undefined,
-    depositActionsResponse: undefined,
-    swapApiError: undefined,
-    quote: undefined,
-    quoteError: undefined,
-    quoteIsLoading: false,
-    refuel: undefined,
-    swapBasicData: undefined,
-    swapDetails: undefined,
-    swapId: undefined,
-    swapModalOpen: false,
-    swapError: '',
-    setSwapError: (value: string) => { }
-});
+export const SwapDataStateContext = createContext<SwapContextData | null>(null);
 
 export const SwapDataUpdateContext = createContext<UpdateSwapInterface | null>(null);
 
@@ -106,8 +90,12 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     }, [router])
 
     const setSubmitedFormValues = useCallback((values: NonNullable<SwapFormValues>) => {
+        const isDepositAddressFlow = values.depositMethod === 'deposit_address' && !values.fromExchange;
 
-        if (!values.from || !values.to || !values.fromAsset || !values.toAsset || !values.amount! || !values.destination_address)
+        if (!values.from || !values.to || !values.fromAsset || !values.toAsset || !values.destination_address)
+            throw new Error("Form data is missing")
+
+        if (!isDepositAddressFlow && !values.amount)
             throw new Error("Form data is missing")
 
         setSwapBasicFormData({
@@ -115,7 +103,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             destination_network: values.to,
             source_token: values.fromAsset,
             destination_token: values.toAsset,
-            requested_amount: values.amount,
+            requested_amount: values.amount || '',
             destination_address: values.destination_address,
             use_deposit_address: values.depositMethod === 'deposit_address',
             refuel: !!values.refuel,
@@ -181,34 +169,28 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const { data: depositActions } = useSWR<ApiResponse<DepositAction[]>>(!inputTransfer ? deposit_actions_endpoint : null, layerswapApiClient.fetcher)
 
     const depositActionsResponse = depositActions?.data
-    const swapStatus = data?.data?.swap.status;
+
+    const currentSwap = data?.data?.swap
+    const storedWalletTransaction = useSwapTransactionStore(
+        state => currentSwap?.id ? state.swapTransactions[currentSwap.id] : undefined,
+    )
+    const pollingIntervalMs = useMemo(
+        () => resolveSwapPhase({
+            swapDetails: currentSwap,
+            refuel: data?.data?.refuel,
+            storedWalletTransaction,
+        }).pollingIntervalMs,
+        [currentSwap, data?.data?.refuel, storedWalletTransaction],
+    )
 
     useEffect(() => {
-        if (swapStatus)
-            setInterval(ResolvePollingInterval(swapStatus))
-
-        const swap = data?.data?.swap
-        if (swapStatus === SwapStatus.Completed) {
-            captureEvent(TrackEvent.SwapCompleted, {
-                swapId: swapId,
-                status: swapStatus,
-            })
-        } else if (swapStatus === SwapStatus.Failed || swapStatus === SwapStatus.Expired) {
-            captureEvent(TrackEvent.SwapFailed, {
-                swapId: swapId,
-                status: swapStatus,
-                fail_reason: swap?.fail_reason,
-                source_network: swap?.source_network?.name,
-                destination_network: swap?.destination_network?.name,
-                source_token: swap?.source_token?.symbol,
-                destination_token: swap?.destination_token?.symbol,
-            })
-        }
-
-        return () => {
+        if (!currentSwap?.status) {
             setInterval(0)
+            return () => setInterval(0)
         }
-    }, [swapStatus])
+        setInterval(pollingIntervalMs)
+        return () => setInterval(0)
+    }, [pollingIntervalMs, currentSwap?.status])
 
     useEffect(() => {
         if (!swapId)
@@ -223,7 +205,11 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             throw new Error("No swap data")
 
         const { to, fromAsset: fromCurrency, toAsset: toCurrency, from, refuel, fromExchange, depositMethod, amount, destination_address } = values
-        if (!to || !fromCurrency || !toCurrency || !from || !amount || !destination_address || !depositMethod)
+        const isDepositAddressFlow = depositMethod === 'deposit_address' && !fromExchange;
+
+        if (!to || !fromCurrency || !toCurrency || !from || !destination_address || !depositMethod)
+            throw new Error("Form data is missing")
+        if (!isDepositAddressFlow && !amount)
             throw new Error("Form data is missing")
 
         const sourceIsSupported = selectedWallet && WalletIsSupportedForSource({
@@ -233,7 +219,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         })
         const slippage = useSlippageStore.getState().slippage
         const data: CreateSwapParams = {
-            amount: amount,
+            amount: amount || undefined,
             source_network: from.name,
             destination_network: to.name,
             source_token: fromCurrency.symbol,
@@ -323,7 +309,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
 export function useSwapDataState() {
     const data = useContext(SwapDataStateContext);
 
-    if (data === undefined) {
+    if (data === undefined || data === null) {
         throw new Error('swapData must be used within a SwapDataProvider');
     }
     return data;

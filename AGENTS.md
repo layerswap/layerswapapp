@@ -9,8 +9,8 @@ Layerswap UI - A Next.js web application for cross-chain token transfers.
 ### Quick Start
 
 ```bash
-yarn
-yarn dev
+pnpm install
+pnpm dev
 ```
 
 ### Environment Variables

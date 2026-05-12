@@ -22,6 +22,8 @@ type ContentProps = {
     selectedToken: string | undefined;
     direction: SwapDirection;
     partialPublished?: boolean;
+    hideTokenSwitch?: boolean;
+    hideBalances?: boolean;
 }
 
 export const Content: FC<ContentProps> = (props) => {
@@ -33,7 +35,7 @@ export const Content: FC<ContentProps> = (props) => {
     </>
 }
 
-const Items: FC<ContentProps & { isScrolling: boolean; setIsScrolling: (isScrolling: boolean) => void; }> = ({ searchQuery, setSearchQuery, rowElements, selectedToken, selectedRoute, direction, onSelect, isScrolling, setIsScrolling }) => {
+const Items: FC<ContentProps & { isScrolling: boolean; setIsScrolling: (isScrolling: boolean) => void; }> = ({ searchQuery, setSearchQuery, rowElements, selectedToken, selectedRoute, direction, onSelect, isScrolling, setIsScrolling, hideTokenSwitch, hideBalances }) => {
     const parentRef = useRef<HTMLDivElement>(null)
     const [openValues, setOpenValues] = useState<string[]>(selectedRoute ? [selectedRoute] : [])
     const { wallets, providers } = useWallet()
@@ -175,6 +177,8 @@ const Items: FC<ContentProps & { isScrolling: boolean; setIsScrolling: (isScroll
                                                 selectedToken={selectedToken}
                                                 searchQuery={searchQuery}
                                                 toggleContent={toggleAccordionItem}
+                                                hideTokenSwitch={hideTokenSwitch}
+                                                hideBalances={hideBalances}
                                             />
                                         </div>
                                     })}

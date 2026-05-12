@@ -6,7 +6,6 @@ export enum NetworkType {
     Solana = "solana",
     Cosmos = "cosmos",
     StarkEx = "starkex",//TODO check this
-    ZkSyncLite = "zksynclite",
     TON = 'ton',
     Fuel = 'fuel',
     Bitcoin = 'bitcoin',

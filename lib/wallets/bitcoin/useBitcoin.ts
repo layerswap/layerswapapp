@@ -138,7 +138,7 @@ export default function useBitcoin(): WalletProvider {
         disconnectWallets,
         connectedWallets: resolvedWallet ? [resolvedWallet] : [],
         activeWallet: resolvedWallet,
-        availableWalletsForConnect: resolvedConnectors,
+        availableConnectors: resolvedConnectors,
         autofillSupportedNetworks: commonSupportedNetworks,
         withdrawalSupportedNetworks: commonSupportedNetworks,
         asSourceSupportedNetworks: commonSupportedNetworks,

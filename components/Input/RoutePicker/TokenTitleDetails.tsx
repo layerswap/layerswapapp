@@ -4,7 +4,6 @@ import { ExtendedAddress } from "../Address/AddressPicker/AddressWithIcon";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
 import { TokenBalance } from "@/Models/Balance";
 import { useState } from "react";
-import clsx from "clsx";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components//shadcn/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components//shadcn/tooltip";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
@@ -37,27 +36,35 @@ export const TokenInfoIcon = ({ item, route, className }: { item: NetworkRouteTo
                     <TokenInfoTrigger item={item} isPopoverOpen={isPopoverOpen} isTooltipOpen={isTooltipOpen} />
                 </ExtendedAddress>
             ) : (
-                <NativeTokenTitle item={item} route={route} isPopoverOpen={isPopoverOpen} isTooltipOpen={isTooltipOpen} />
+                <NativeTokenTitle
+                    item={item}
+                    route={route}
+                    isPopoverOpen={isPopoverOpen}
+                    isTooltipOpen={isTooltipOpen}
+                    onPopoverOpenChange={setIsPopoverOpen}
+                    onTooltipOpenChange={setIsTooltipOpen}
+                />
             )}
         </div>
     );
 };
 
 export const TokenTitleWithBalance = ({ item, route, tokenbalance, usdAmount }: TokenTitleWithBalanceProps) => {
+    const hasAmount = !!(tokenbalance && Number(tokenbalance?.amount) > 0 && Number(usdAmount) > 0);
     return (
-        <div className="flex items-center gap-2 justify-between w-full">
-            <div className="flex items-center gap-2 py-px">
-                <p>
+        <div className="flex items-center gap-2 justify-between w-full min-w-0">
+            <div className="flex items-center gap-2 py-px min-w-0 flex-1 overflow-hidden">
+                <p className="shrink-0">
                     {item.symbol}
                 </p>
                 <TokenInfoIcon
                     item={item}
                     route={route}
-                    className="hidden xs:block transition-all duration-300 opacity-0 group-hover:opacity-100 data-[popover-open=true]:opacity-100 data-[tooltip-open=true]:opacity-100 data-[popover-open=true]:delay-0 data-[tooltip-open=true]:delay-0 group-hover:delay-400 pointer-events-none group-hover:pointer-events-auto data-[popover-open=true]:pointer-events-auto data-[tooltip-open=true]:pointer-events-auto"
+                    className={`hidden xs:block min-w-0 overflow-hidden ${hasAmount ? "max-w-[90px]" : ""} transition-all duration-300 opacity-0 group-hover:opacity-100 data-[popover-open=true]:opacity-100 data-[tooltip-open=true]:opacity-100 data-[popover-open=true]:delay-0 data-[tooltip-open=true]:delay-0 group-hover:delay-400 pointer-events-none group-hover:pointer-events-auto data-[popover-open=true]:pointer-events-auto data-[tooltip-open=true]:pointer-events-auto`}
                 />
             </div>
-            {(tokenbalance && Number(tokenbalance?.amount) > 0 && Number(usdAmount) > 0) && (
-                <div className="text-primary-text text-lg leading-[22px] font-medium">{formatUsd(usdAmount)}</div>
+            {hasAmount && (
+                <div className="text-primary-text text-lg leading-[22px] font-medium shrink-0">{formatUsd(usdAmount)}</div>
             )}
         </div>
     );
@@ -70,10 +77,10 @@ type TokenInfoTriggerProps = {
 const TokenInfoTrigger = ({ item, isPopoverOpen, isTooltipOpen }: TokenInfoTriggerProps) => {
     return (
         <span className="flex items-center gap-1 text-secondary-text cursor-pointer hover:text-primary-text data-[popover-open=true] data-[tooltip-open=true] text-xs pr-2" data-popover-open={isPopoverOpen} data-tooltip-open={isTooltipOpen}>
-            <p className="max-w-[90px]">
+            <p className="truncate min-w-0">
                 <span>•</span> <span>{item.display_asset || item.symbol}</span>
             </p>
-            <Info className="h-3 w-3" />
+            <Info className="h-3 w-3 shrink-0" />
         </span>
     )
 }
@@ -82,20 +89,16 @@ type NativeTokenTitleProps = {
     item: NetworkRouteToken;
     route: NetworkRoute;
     onTooltipOpenChange?: (open: boolean) => void;
+    onPopoverOpenChange?: (open: boolean) => void;
     iconOnly?: boolean;
     isPopoverOpen?: boolean;
     isTooltipOpen?: boolean;
 }
 
-const NativeTokenTitle = ({ item, route, onTooltipOpenChange, isTooltipOpen }: NativeTokenTitleProps) => {
-    const [isPopoverOpen, setPopoverOpen] = useState(false)
-    const handlePopoverChange = (open: boolean) => {
-        setPopoverOpen(open)
-    }
-
+const NativeTokenTitle = ({ item, route, onTooltipOpenChange, onPopoverOpenChange, isPopoverOpen, isTooltipOpen }: NativeTokenTitleProps) => {
     return (
         <div onClick={(e) => e.stopPropagation()}>
-            <Popover open={isPopoverOpen} onOpenChange={handlePopoverChange} modal={true}>
+            <Popover open={isPopoverOpen} onOpenChange={onPopoverOpenChange} modal={true}>
                 <PopoverTrigger asChild>
                     <div>
                         <Tooltip onOpenChange={onTooltipOpenChange}>

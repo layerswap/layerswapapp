@@ -14,7 +14,7 @@ function MaintananceContent() {
 
     const twitterLogo = <TwitterLogo className="text-primary-buttonTextColor h-5 w-5" />
     return (
-        <div className="flex items-center justify-center min-h-screen px-4">
+        <div className="flex items-center justify-center h-[80svh] px-4">
             <div className="flex flex-col items-center text-center max-w-md w-full space-y-8">
                 <LayerSwapLogo className="h-10 w-auto text-primary-logoColor fill-primary-text" />
 

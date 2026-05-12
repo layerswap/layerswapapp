@@ -15,6 +15,7 @@ type StickyHeaderProps = {
     onClick: () => void;
     isSticky: boolean;
     setSticky: React.Dispatch<React.SetStateAction<boolean>>;
+    hideBalances?: boolean;
 };
 
 export function StickyHeader({
@@ -28,6 +29,7 @@ export function StickyHeader({
     onClick,
     isSticky,
     setSticky,
+    hideBalances,
 }: StickyHeaderProps) {
 
     useEffect(() => {
@@ -67,6 +69,7 @@ export function StickyHeader({
                     item={item}
                     direction={direction}
                     hideTokenImages={open}
+                    hideBalances={hideBalances}
                 />
             </div>
         </ReactPortal>

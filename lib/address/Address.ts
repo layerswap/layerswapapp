@@ -135,8 +135,8 @@ export class Address {
     }
 
     return {
-      start: addr.slice(0, 4),
-      middle: addr.slice(4, -4),
+      start: addr.slice(0, 5),
+      middle: addr.slice(5, -4),
       end: addr.slice(-4)
     };
   }

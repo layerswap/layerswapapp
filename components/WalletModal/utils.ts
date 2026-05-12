@@ -45,8 +45,11 @@ export function sortRecentConnectors(a: { name: string, type?: string }, b: { na
     if (indexA !== indexB) {
         return indexA - indexB;
     }
-    if (a.type && b.type) {
-        return a.type.localeCompare(b.type);
-    }
+    // Return 0 for non-recents so the stable sort preserves upstream registry
+    // order. Sorting by `type.localeCompare` here groups wallets by type
+    // alphabetically, which means a new `other`-type wallet arriving on page 2
+    // gets inserted before all already-rendered `walletConnect`-type wallets,
+    // visibly pushing them down. Upstream ordering (installed → featured →
+    // registry) is already what we want.
     return 0;
 }

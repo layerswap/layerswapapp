@@ -6,12 +6,14 @@ type Props = {
     item: GroupedTokenElement | NetworkElement
     direction: SwapDirection;
     hideTokenImages?: boolean;
+    hideBalances?: boolean;
 };
 
 export const CollapsableHeader = ({
     item,
     direction,
     hideTokenImages,
+    hideBalances,
 }: Props) => {
     const groupedByToken = item.type === "grouped_token";
 
@@ -20,6 +22,7 @@ export const CollapsableHeader = ({
             item={item as GroupedTokenElement}
             direction={direction}
             hideTokenImages={hideTokenImages}
+            hideBalances={hideBalances}
         />
     ) : (
         <NetworkRouteSelectItemDisplay
@@ -27,6 +30,7 @@ export const CollapsableHeader = ({
             selected={false}
             direction={direction}
             hideTokenImages={hideTokenImages}
+            hideBalances={hideBalances}
         />
     );
 };

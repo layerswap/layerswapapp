@@ -4,12 +4,12 @@ export type WalletConnectWallet = {
     id: string;
     name: string;
     mobile: {
-        native?: boolean;
-        universal?: boolean;
+        native?: string | null;
+        universal?: string | null;
     };
     desktop?: {
-        native?: boolean;
-        universal?: boolean;
+        native?: string | null;
+        universal?: string | null;
     };
     rdns?: string;
     hasBrowserExtension?: boolean;

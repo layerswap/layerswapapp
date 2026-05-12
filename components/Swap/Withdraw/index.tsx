@@ -1,6 +1,5 @@
 import { FC, useCallback } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '@/context/swap';
-import KnownInternalNames from '@/lib/knownIds';
 import SwapSummary from '../Summary';
 import { Widget } from '../../Widget/Index';
 import { SwapQuoteDetails } from './SwapQuoteDetails';

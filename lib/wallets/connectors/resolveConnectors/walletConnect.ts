@@ -18,7 +18,7 @@ import {
     getAddress,
     numberToHex,
 } from 'viem'
-import { isAndroid, isMobile, isIOS } from '../utils/isMobile'
+import { buildDeepLink } from '../../walletConnect/buildDeepLink'
 
 type WalletConnectConnector = Connector & {
     onDisplayUri(uri: string): void
@@ -183,7 +183,7 @@ export function walletConnect(parameters: Params) {
                 }
 
                 // If session exists and chains are authorized, enable provider for required chain
-                const accounts = (await provider.enable()).map((x) => getAddress(x))
+                const accounts = (await provider.enable()).map((x: string) => getAddress(x))
                 const currentChainId = await this.getChainId()
 
                 if (displayUri) {
@@ -256,7 +256,7 @@ export function walletConnect(parameters: Params) {
         },
         async getAccounts() {
             const provider = await this.getProvider()
-            return provider.accounts.map((x) => getAddress(x))
+            return provider.accounts.map((x: string) => getAddress(x))
         },
         async getProvider({ chainId } = {}) {
             async function initProvider() {
@@ -468,7 +468,7 @@ export function walletConnect(parameters: Params) {
             const namespaceChains = this.getNamespaceChainsIds()
             if (
                 namespaceChains.length &&
-                !namespaceChains.some((id) => connectorChains.includes(id))
+                !namespaceChains.some((id: number) => connectorChains.includes(id))
             )
                 return false
 
@@ -484,18 +484,6 @@ export function walletConnect(parameters: Params) {
     }))
 }
 
-function addWC(url) {
-    if (url?.endsWith("://")) {
-        return url + "wc";
-    }
-    else if (url?.endsWith("/")) {
-        return url + "wc";
-    }
-    else {
-        return url + "/wc";
-    }
-}
-
 function getResolveUri(
     id: string,
     uri: string,
@@ -504,31 +492,5 @@ function getResolveUri(
         universal: string,
     },
 ): string {
-    switch (id) {
-        case 'bitkeep':
-            return isAndroid()
-                ? uri
-                : `bitkeep://wc?uri=${encodeURIComponent(uri)}`;
-        case 'metamask':
-            return isAndroid()
-                ? uri
-                : isIOS()
-                    ? // currently broken in MetaMask v6.5.0 https://github.com/MetaMask/metamask-mobile/issues/6457
-                    `metamask://wc?uri=${encodeURIComponent(uri)}`
-                    : `https://metamask.app.link/wc?uri=${encodeURIComponent(uri)}`;
-        case 'okx-wallet':
-            return isAndroid()
-                ? uri
-                : `okex://main/wc?uri=${encodeURIComponent(uri)}`;
-        case 'rainbow':
-            return isAndroid()
-                ? uri
-                : isIOS()
-                    ? `rainbow://wc?uri=${encodeURIComponent(uri)}&connector=rainbowkit`
-                    : `https://rnbwapp.com/wc?uri=${encodeURIComponent(uri,)}&connector=rainbowkit`;
-        default:
-            return (isAndroid() || !isMobile())
-                ? uri
-                : `${addWC(mobile.native)}?uri=${encodeURIComponent(uri)}`
-    }
+    return buildDeepLink({ id, mobile }, uri)
 }

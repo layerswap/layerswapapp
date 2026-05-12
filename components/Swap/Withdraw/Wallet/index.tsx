@@ -12,10 +12,6 @@ const StarknetWalletWithdrawStep = dynamic<WithdrawPageProps>(
     () => import("./WithdrawalProviders/StarknetWalletWithdraw").then((module) => module.StarknetWalletWithdrawStep),
     { ssr: false }
 );
-const ZkSyncWalletWithdrawStep = dynamic<WithdrawPageProps>(
-    () => import("./WithdrawalProviders/ZKsyncWalletWithdraw").then((module) => module.ZkSyncWalletWithdrawStep),
-    { ssr: false }
-);
 const LoopringWalletWithdraw = dynamic<WithdrawPageProps>(
     () => import("./WithdrawalProviders/Loopring").then((module) => module.LoopringWalletWithdraw),
     { ssr: false }
@@ -48,10 +44,6 @@ const EVMWalletWithdrawal = dynamic<WithdrawPageProps>(
     () => import("./WithdrawalProviders/EVMWalletWithdraw").then((module) => module.EVMWalletWithdrawal),
     { ssr: false }
 );
-const TempoWalletWithdrawal = dynamic<WithdrawPageProps>(
-    () => import("./WithdrawalProviders/TempoWalletWithdraw").then((module) => module.TempoWalletWithdrawal),
-    { ssr: false }
-);
 
 type Props = {
     swapData: SwapBasicData
@@ -76,12 +68,6 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
                 KnownInternalNames.Networks.StarkNetSepolia
             ],
             component: StarknetWalletWithdrawStep
-        },
-        {
-            supportedNetworks: [
-                KnownInternalNames.Networks.ZksyncMainnet,
-            ],
-            component: ZkSyncWalletWithdrawStep
         },
         {
             supportedNetworks: [
@@ -130,13 +116,6 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
                 source_network?.type == NetworkType.Solana ? source_network.name : undefined
             ],
             component: SVMWalletWithdrawStep
-        },
-        {
-            supportedNetworks: [
-                KnownInternalNames.Networks.TempoMainnet,
-                KnownInternalNames.Networks.TempoTestnet
-            ],
-            component: TempoWalletWithdrawal
         },
         {
             supportedNetworks: [

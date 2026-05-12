@@ -7,7 +7,7 @@ import CopyButton from "../buttons/copyButton";
 export const WalletQrCode: FC<{ selectedConnector: WalletModalConnector }> = ({ selectedConnector }) => {
     const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector?.name, iconUrl: selectedConnector.icon });
 
-    return <div className="flex flex-col items-center h-[60vh] sm:h-full justify-between">
+    return <div className="flex flex-col items-center h-full justify-between">
         <div className="flex flex-col items-center gap-3 grow justify-center">
             <div className="flex items-center gap-2">
                 <ConnectorIcon className="w-6 h-6" />
