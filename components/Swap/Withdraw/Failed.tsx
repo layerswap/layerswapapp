@@ -14,7 +14,7 @@ const Failed: FC = () => {
 
     useEffect(() => {
         captureEvent(TrackEvent.SwapFailed, {
-            swapId: swapDetails?.id ?? null,
+            swap_id: swapDetails?.id ?? null,
             path: typeof window !== 'undefined' ? window.location.pathname : undefined,
         });
     }, []);

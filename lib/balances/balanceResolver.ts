@@ -176,11 +176,6 @@ export class BalanceResolver {
             return { balances: [] }
         }
 
-        // TODO: REMOVE - temporary broken RPC for testing dead node alerts
-        if (network.name === 'ARBITRUM_MAINNET') {
-            network = { ...network, node_url: 'https://broken-rpc-test.invalid', nodes: ['https://broken-rpc-test.invalid'] }
-        }
-
         try {
             if (!address)
                 throw new Error(`No address provided for network ${network.name}`)

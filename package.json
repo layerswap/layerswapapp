@@ -24,6 +24,9 @@
     "@fuel-ts/account": "^0.101.3",
     "@fuel-ts/address": "^0.101.3",
     "@fuels/react": "^0.43.2",
+    "@grafana/faro-react": "^2.5.0",
+    "@grafana/faro-web-sdk": "^2.5.0",
+    "@grafana/faro-web-tracing": "^2.5.0",
     "@headlessui/react": "^2.1.1",
     "@imtbl/sdk": "1.45.10",
     "@metamask/sdk": "^0.33.1",
@@ -87,7 +90,6 @@
     "lucide-react": "^0.379.0",
     "memoizee": "^0.4.17",
     "next": "15.5.18",
-    "posthog-js": "^1.272.0",
     "qrcode.react": "^3.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -109,6 +111,7 @@
     "zustand": "^4.4.1"
   },
   "devDependencies": {
+    "@grafana/faro-webpack-plugin": "^0.11.0",
     "@next/bundle-analyzer": "^13.5.4",
     "@storybook/addon-docs": "^9.1.1",
     "@storybook/addon-links": "^9.1.1",

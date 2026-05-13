@@ -6,6 +6,7 @@ export enum TrackEvent {
   SwapFailed = 'swap_failed',
   SwapInitiated = 'swap_initiated',
   SwapCompleted = 'swap_completed',
+  WithdrawalFailed = 'withdrawal_failed',
 }
 
 export default function Document() {

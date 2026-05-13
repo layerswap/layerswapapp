@@ -16,7 +16,7 @@ const NotFound: FC = () => {
 
     useEffect(() => {
         captureEvent(TrackEvent.SwapFailed, {
-            swapId: query?.swapId ?? null,
+            swap_id: query?.swapId ?? null,
             path: typeof window !== 'undefined' ? window.location.pathname : undefined,
         });
     }, []);

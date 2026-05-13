@@ -17,7 +17,8 @@ import useSWR from 'swr';
 import { ApiResponse } from '@/Models/ApiResponse';
 import { useIntercom } from 'react-use-intercom';
 import logError from '@/lib/logError';
-import { captureException } from '@/lib/faro';
+import { captureException, captureEvent } from '@/lib/faro';
+import { TrackEvent } from '@/pages/_document';
 import { getExplorerUrl } from '@/lib/address';
 import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
 import { SwapPhase } from '@/components/utils/resolveSwapPhase';
@@ -95,14 +96,29 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             const err = new Error("Transaction failed")
             captureException(err, {
                 layerswap_exception_type: "Transaction Error",
-                fromAddress: swapInputTransaction?.from,
-                transactionHash: transactionHash,
-                swapId: swapDetails?.id,
-                toAddress: swapBasicData?.destination_address
+                from_address: swapInputTransaction?.from,
+                transaction_hash: transactionHash,
+                swap_id: swapDetails?.id,
+                to_address: swapBasicData?.destination_address
             });
         }
     }, [swapInputTxStatus, transactionHash, swapDetails?.id, swapInputTransaction?.from, swapBasicData?.destination_address])
 
+    useEffect(() => {
+        const status = swapDetails?.status
+        if (!status) return
+        let eventName: string | undefined
+        if (status === SwapStatus.Completed) eventName = TrackEvent.SwapCompleted
+        else if (status === SwapStatus.Failed || status === SwapStatus.Expired) eventName = TrackEvent.SwapFailed
+        else if (status === SwapStatus.LsTransferPending) eventName = 'swap_pending'
+        if (!eventName) return
+        captureEvent(eventName, {
+            swap_id: swapDetails?.id,
+            status,
+            source_network: source_network?.name,
+            destination_network: destination_network?.name,
+        })
+    }, [swapDetails?.status, swapDetails?.id, source_network?.name, destination_network?.name])
 
     const truncatedRefuelAmount = refuel && truncateDecimals(refuel.amount, refuel.token?.precision)
 

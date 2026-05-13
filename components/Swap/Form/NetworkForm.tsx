@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Form, FormikHelpers, useFormikContext } from "formik";
 import { Partner } from "@/Models/Partner";
 
@@ -25,7 +25,7 @@ import RefuelToggle from "@/components/FeeDetails/Refuel";
 
 import RefuelModal from "@/components/FeeDetails/RefuelModal";
 import { useSelectedAccount } from "@/context/swapAccounts";
-import { setUserProperties } from "@/lib/faro";
+import { captureEvent } from "@/lib/faro";
 import ContractAddressValidationCache from "@/components/validationError/ContractAddressValidationCache";
 import { Slippage } from "@/components/FeeDetails/Slippage";
 
@@ -72,15 +72,20 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const shouldConnectWallet = (source && source?.deposit_methods?.includes('wallet') && depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!source && !wallets.length && depositMethod !== 'deposit_address');
 
+    const seenWalletsRef = useRef<Set<string>>(new Set());
     useEffect(() => {
-        if (wallets?.length) {
-            const props: Record<string, unknown> = {};
-            wallets.forEach((w, i) => {
-                props[`wallet_${i}_name`] = w.id;
-                props[`wallet_${i}_address`] = w.addresses?.join(', ');
-            });
-            props.wallet_count = String(wallets.length);
-            setUserProperties(props);
+        if (!wallets?.length) return;
+        for (const w of wallets) {
+            for (const addr of w.addresses ?? []) {
+                const key = `${w.providerName}:${addr}`;
+                if (seenWalletsRef.current.has(key)) continue;
+                seenWalletsRef.current.add(key);
+                captureEvent('wallet_connected', {
+                    provider: w.providerName,
+                    wallet_id: w.id,
+                    address: addr,
+                });
+            }
         }
     }, [wallets]);
 

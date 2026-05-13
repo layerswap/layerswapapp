@@ -2,7 +2,7 @@ import React, { useEffect, useMemo } from "react"
 import Head from "next/head"
 import { useRouter } from "next/router";
 import ThemeWrapper from "./themeWrapper";
-import { ErrorBoundary } from "react-error-boundary";
+import { FaroErrorBoundary } from "@grafana/faro-react";
 import MaintananceContent from "./maintanance/maintanance";
 import { SettingsProvider } from "../context/settings";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
@@ -17,7 +17,7 @@ import { IsExtensionError } from "../helpers/errorHelper";
 import { AsyncModalProvider } from "../context/asyncModal";
 import WalletsProviders from "./WalletProviders";
 import { SwapAccountsProvider } from "@/context/swapAccounts";
-import { captureEvent } from "@/lib/faro";
+import { setView } from "@/lib/faro";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 
 type Props = {
@@ -54,9 +54,7 @@ export default function Layout({ children, settings, themeData }: Props) {
         'destAddress'
       ])
 
-      captureEvent('pageview', {
-        custom_url: customUrl,
-      })
+      setView(customUrl)
     }
 
     trackPageview()
@@ -84,10 +82,10 @@ export default function Layout({ children, settings, themeData }: Props) {
     hideDepositMethod: router.query.hideDepositMethod === 'true'
   }), [router.query]);
 
-  function logErrorToService(error, info) {
+  function logErrorToService(error: Error) {
     const extension_error = IsExtensionError(error)
     if (process.env.NEXT_PUBLIC_VERCEL_ENV && !extension_error) {
-      SendErrorMessage("UI error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: ${error?.message} %0A errorInfo: ${info?.componentStack} %0A stack: ${error?.stack ?? error.stack} %0A`)
+      SendErrorMessage("UI error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: ${error?.message} %0A stack: ${error?.stack} %0A`)
     }
   }
 
@@ -126,7 +124,7 @@ export default function Layout({ children, settings, themeData }: Props) {
     {
       <ColorSchema themeData={themeData} />
     }
-    <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
+    <FaroErrorBoundary fallback={(error, resetError) => <ErrorFallback error={error} resetErrorBoundary={resetError} />} onError={logErrorToService}>
       <TooltipProvider delayDuration={400}>
         <QueryProvider query={query}>
           <SettingsProvider data={appSettings}>
@@ -144,6 +142,6 @@ export default function Layout({ children, settings, themeData }: Props) {
           </SettingsProvider >
         </QueryProvider >
       </TooltipProvider>
-    </ErrorBoundary>
+    </FaroErrorBoundary>
   </>)
 }

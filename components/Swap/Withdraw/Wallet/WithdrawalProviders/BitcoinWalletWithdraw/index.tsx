@@ -104,14 +104,13 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined, so
         if (error) {
             captureException(new Error(error), {
                 layerswap_exception_type: "Swap Withdrawal Error",
-                fromAddress: sourceAddress,
-                toAddress: destAddress
+                from_address: sourceAddress,
+                to_address: destAddress
             });
-            captureEvent(TrackEvent.SwapFailed, {
-                status: 'wallet_error',
+            captureEvent(TrackEvent.WithdrawalFailed, {
                 fail_reason: error,
-                fromAddress: sourceAddress,
-                toAddress: destAddress,
+                from_address: sourceAddress,
+                to_address: destAddress,
             });
         }
     }, [error, sourceAddress, destAddress])

@@ -1,0 +1,1041 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "panels": [],
+      "title": "Overview",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": 0 }, { "color": "yellow", "value": 1 }] },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+      "id": 10,
+      "options": {
+        "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showPercentChange": false, "textMode": "auto", "wideLayout": true
+      },
+      "pluginVersion": "12.4.3",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({source=\"faro\"} | logfmt | app_name=\"$app\" | kind=\"exception\" [$__range]))",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Exceptions",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": 0 }] },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
+      "id": 11,
+      "options": {
+        "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showPercentChange": false, "textMode": "auto", "wideLayout": true
+      },
+      "pluginVersion": "12.4.3",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({source=\"faro\"} |= \"event_name=swap_initiated\" | logfmt | app_name=\"$app\" [$__range]))",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Swaps Initiated",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
+      "id": 12,
+      "options": {
+        "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showPercentChange": false, "textMode": "auto", "wideLayout": true
+      },
+      "pluginVersion": "12.4.3",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({source=\"faro\"} |= \"event_name=swap_completed\" | logfmt | app_name=\"$app\" [$__range]))",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Swaps Completed",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }, { "color": "red", "value": 1 }] },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 1 },
+      "id": 13,
+      "options": {
+        "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showPercentChange": false, "textMode": "auto", "wideLayout": true
+      },
+      "pluginVersion": "12.4.3",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({source=\"faro\"} |= \"event_name=swap_failed\" | logfmt | app_name=\"$app\" [$__range]))",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Swaps Failed",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "max": 1, "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "#EAB839", "value": 0.9 },
+              { "color": "green", "value": 0.95 }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 1 },
+      "id": 14,
+      "options": {
+        "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showPercentChange": false, "textMode": "auto", "wideLayout": true
+      },
+      "pluginVersion": "12.4.3",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({source=\"faro\"} |= \"event_name=swap_completed\" | logfmt | app_name=\"$app\" [$__range])) / (sum(count_over_time({source=\"faro\"} |= \"event_name=swap_completed\" | logfmt | app_name=\"$app\" [$__range])) + sum(count_over_time({source=\"faro\"} |= \"event_name=swap_failed\" | logfmt | app_name=\"$app\" [$__range])))",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Success Rate",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": 0 }] },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 1 },
+      "id": 15,
+      "options": {
+        "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showPercentChange": false, "textMode": "auto", "wideLayout": true
+      },
+      "pluginVersion": "12.4.3",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "editorMode": "code",
+          "expr": "count(sum by (session_id) (count_over_time({source=\"faro\"} | logfmt | app_name=\"$app\" [$__range])))",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Unique Sessions",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "id": 2,
+      "panels": [],
+      "title": "Errors",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisBorderShow": false, "axisCenteredZero": false, "axisColorMode": "text",
+            "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "barWidthFactor": 0.6,
+            "drawStyle": "bars", "fillOpacity": 60, "gradientMode": "none",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "insertNulls": false, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5,
+            "scaleDistribution": { "type": "linear" }, "showPoints": "never", "showValues": false,
+            "spanNulls": false, "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": 0 }] },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "id": 20,
+      "options": {
+        "legend": { "calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": false },
+        "tooltip": { "hideZeros": false, "mode": "single", "sort": "none" }
+      },
+      "pluginVersion": "12.4.3",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({source=\"faro\"} | logfmt | app_name=\"$app\" | kind=\"exception\" [$__interval]))",
+          "legendFormat": "errors",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Exceptions Over Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "custom": { "align": "auto", "cellOptions": { "type": "auto" }, "filterable": true, "footer": { "reducers": [] }, "inspect": false },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Count" },
+            "properties": [
+              { "id": "custom.width", "value": 90 },
+              { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "color-background" } },
+              { "id": "color", "value": { "mode": "continuous-reds" } }
+            ]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "id": 21,
+      "options": { "cellHeight": "sm", "showHeader": true, "sortBy": [{ "desc": true, "displayName": "Count" }] },
+      "pluginVersion": "12.4.3",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "editorMode": "code",
+          "expr": "topk(15, sum by (value) (count_over_time({source=\"faro\"} | logfmt | app_name=\"$app\" | kind=\"exception\" [$__range])))",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Top Errors",
+      "transformations": [
+        { "id": "organize", "options": { "excludeByName": { "Time": true }, "renameByName": { "Value #A": "Count", "value": "Error" } } }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "description": "Recent exceptions with stack traces. Use the Session variable above to filter to a single session.",
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 14 },
+      "id": 22,
+      "options": {
+        "dedupStrategy": "none", "enableInfiniteScrolling": false, "enableLogDetails": true,
+        "showControls": false, "showLabels": true, "showTime": true, "sortOrder": "Descending",
+        "unwrappedColumns": false, "wrapLogMessage": true
+      },
+      "pluginVersion": "12.4.3",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "editorMode": "code",
+          "expr": "{source=\"faro\"} | logfmt | app_name=\"$app\" | kind=\"exception\" | session_id=~\"$session.*\" | line_format \"{{ .value }} | type={{ .context_layerswap_exception_type }} | page={{ .page_url }} | session={{ .session_id }}\"",
+          "refId": "A"
+        }
+      ],
+      "title": "Exception Details (Stack Traces)",
+      "type": "logs"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 24 },
+      "id": 3,
+      "panels": [],
+      "title": "Swap Activity",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisBorderShow": false, "axisCenteredZero": false, "axisColorMode": "text",
+            "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "barWidthFactor": 0.9,
+            "drawStyle": "bars", "fillOpacity": 80, "gradientMode": "none",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "insertNulls": false, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5,
+            "scaleDistribution": { "type": "linear" }, "showPoints": "never", "showValues": false,
+            "spanNulls": false, "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] },
+          "unit": "none"
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "initiated" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "completed" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "failed" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 25 },
+      "id": 30,
+      "options": {
+        "legend": { "calcs": ["sum"], "displayMode": "table", "placement": "right", "showLegend": true },
+        "tooltip": { "hideZeros": false, "mode": "multi", "sort": "desc" }
+      },
+      "pluginVersion": "12.4.3",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({source=\"faro\"} |= \"event_name=swap_initiated\" | logfmt | app_name=\"$app\" [$__interval]))",
+          "legendFormat": "initiated",
+          "queryType": "range",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({source=\"faro\"} |= \"event_name=swap_completed\" | logfmt | app_name=\"$app\" [$__interval]))",
+          "legendFormat": "completed",
+          "queryType": "range",
+          "refId": "B"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({source=\"faro\"} |= \"event_name=swap_failed\" | logfmt | app_name=\"$app\" [$__interval]))",
+          "legendFormat": "failed",
+          "queryType": "range",
+          "refId": "C"
+        }
+      ],
+      "title": "Swap Events Over Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto", "cellOptions": { "type": "auto" }, "filterable": true,
+            "footer": { "reducers": [] }, "inspect": true
+          },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Session" },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "targetBlank": true,
+                    "title": "View full session",
+                    "url": "/d/session-detail/session-detail?orgId=1&var-session=${__value.raw}&from=${__from}&to=${__to}"
+                  }
+                ]
+              },
+              { "id": "custom.width", "value": 120 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Event" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "swap_initiated": { "color": "blue", "index": 0 },
+                      "swap_completed": { "color": "green", "index": 1 },
+                      "swap_failed": { "color": "red", "index": 2 },
+                      "swap_pending": { "color": "yellow", "index": 3 },
+                      "withdrawal_failed": { "color": "orange", "index": 4 }
+                    },
+                    "type": "value"
+                  }
+                ]
+              },
+              { "id": "custom.width", "value": 160 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Fail Reason" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } },
+              { "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } },
+              { "id": "custom.width", "value": 280 }
+            ]
+          },
+          { "matcher": { "id": "byName", "options": "Time" }, "properties": [{ "id": "custom.width", "value": 170 }] }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 33 },
+      "id": 31,
+      "options": {
+        "cellHeight": "sm", "enablePagination": true, "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "Time" }]
+      },
+      "pluginVersion": "12.4.3",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "editorMode": "code",
+          "expr": "{source=\"faro\"} | logfmt | app_name=\"$app\" | kind=\"event\" | session_id=~\"$session.*\" | event_name=~\"swap_(initiated|completed|failed|pending)|withdrawal_failed\" | label_format event=event_name, swap_id=event_data_swap_id, status=event_data_status, fail_reason=event_data_fail_reason, from_addr=event_data_from_address, to_addr=event_data_to_address, src_network=event_data_source_network, dst_network=event_data_destination_network, session=session_id | keep event, swap_id, status, fail_reason, from_addr, to_addr, src_network, dst_network, session | line_format \"{{ .event }}\"",
+          "refId": "A"
+        }
+      ],
+      "title": "Swap Event Log",
+      "transformations": [
+        { "id": "extractFields", "options": { "format": "auto", "source": "labels" } },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": { "Line": true, "id": true, "labelTypes": true, "labels": true, "tsNs": true },
+            "indexByName": { "Time": 0, "event": 1, "swap_id": 2, "status": 3, "fail_reason": 4, "src_network": 5, "dst_network": 6, "from_addr": 7, "to_addr": 8, "session": 9 },
+            "renameByName": {
+              "event": "Event", "swap_id": "Swap ID", "status": "Status", "fail_reason": "Fail Reason",
+              "src_network": "Source", "dst_network": "Dest", "from_addr": "From", "to_addr": "To",
+              "session": "Session"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 43 },
+      "id": 4,
+      "panels": [],
+      "title": "Drill-down (set Address, Swap ID, or Session above)",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "description": "Wallets connected in the time range. Click a row's address to copy it into the Address filter.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto", "cellOptions": { "type": "auto" }, "filterable": true,
+            "footer": { "reducers": [] }, "inspect": false
+          },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Address" },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "targetBlank": false,
+                    "title": "Filter dashboard by this address",
+                    "url": "/d/${__dashboard.uid}?${__url_time_range}&var-app=$app&var-session=$session&var-swap_id=$swap_id&var-address=${__value.raw}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 44 },
+      "id": 40,
+      "options": { "cellHeight": "sm", "showHeader": true, "sortBy": [{ "desc": true, "displayName": "Sessions" }] },
+      "pluginVersion": "12.4.3",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "editorMode": "code",
+          "expr": "count by (event_data_provider, event_data_address) (count by (event_data_provider, event_data_address, session_id) (count_over_time({source=\"faro\"} | logfmt | app_name=\"$app\" | event_name=\"wallet_connected\" [$__range])))",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Wallets Connected",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": { "Time": true },
+            "renameByName": {
+              "Value #A": "Sessions",
+              "event_data_provider": "Provider",
+              "event_data_address": "Address"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "description": "Source/destination network pairs ranked by swap_failed count.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto", "cellOptions": { "type": "auto" }, "filterable": true,
+            "footer": { "reducers": [] }, "inspect": false
+          },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }, { "color": "red", "value": 5 }] }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Failures" },
+            "properties": [
+              { "id": "custom.width", "value": 100 },
+              { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "color-background" } },
+              { "id": "color", "value": { "mode": "continuous-reds" } }
+            ]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 44 },
+      "id": 41,
+      "options": { "cellHeight": "sm", "showHeader": true, "sortBy": [{ "desc": true, "displayName": "Failures" }] },
+      "pluginVersion": "12.4.3",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "editorMode": "code",
+          "expr": "topk(20, sum by (event_data_source_network, event_data_destination_network) (count_over_time({source=\"faro\"} | logfmt | app_name=\"$app\" | event_name=~\"swap_failed|withdrawal_failed\" [$__range])))",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Top Failed Corridors",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": { "Time": true },
+            "renameByName": {
+              "Value #A": "Failures",
+              "event_data_source_network": "Source",
+              "event_data_destination_network": "Destination"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "description": "Every signal touching the wallet address in $address. Empty when no address is set.",
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 52 },
+      "id": 42,
+      "options": {
+        "dedupStrategy": "none", "enableInfiniteScrolling": false, "enableLogDetails": true,
+        "showControls": false, "showLabels": true, "showTime": true, "sortOrder": "Descending",
+        "unwrappedColumns": false, "wrapLogMessage": true
+      },
+      "pluginVersion": "12.4.3",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "editorMode": "code",
+          "expr": "{source=\"faro\"} | logfmt | app_name=\"$app\" | event_data_from_address=\"$address\" or event_data_to_address=\"$address\" or event_data_address=\"$address\" or context_from_address=\"$address\" or context_to_address=\"$address\" | line_format \"[{{ .kind }}] {{ .event_name }}{{ .type }}: {{ .value }}{{ .message }} | swap_id={{ .event_data_swap_id }}{{ .context_swap_id }} | session={{ .session_id }}\"",
+          "refId": "A"
+        }
+      ],
+      "title": "Activity for $address",
+      "type": "logs"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "description": "Full timeline for a specific swap_id. Empty when no swap_id is set.",
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 62 },
+      "id": 43,
+      "options": {
+        "dedupStrategy": "none", "enableInfiniteScrolling": false, "enableLogDetails": true,
+        "showControls": false, "showLabels": true, "showTime": true, "sortOrder": "Ascending",
+        "unwrappedColumns": false, "wrapLogMessage": true
+      },
+      "pluginVersion": "12.4.3",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "editorMode": "code",
+          "expr": "{source=\"faro\"} | logfmt | app_name=\"$app\" | event_data_swap_id=\"$swap_id\" or context_swap_id=\"$swap_id\" | line_format \"[{{ .kind }}] {{ .event_name }}{{ .type }}: {{ .value }}{{ .message }} | from={{ .event_data_from_address }}{{ .context_from_address }} to={{ .event_data_to_address }}{{ .context_to_address }} | session={{ .session_id }}\"",
+          "refId": "A"
+        }
+      ],
+      "title": "Swap Timeline ($swap_id)",
+      "type": "logs"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "description": "Full session timeline (events, exceptions, logs). Set $session above to filter.",
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 72 },
+      "id": 44,
+      "options": {
+        "dedupStrategy": "none", "enableInfiniteScrolling": false, "enableLogDetails": true,
+        "showControls": false, "showLabels": true, "showTime": true, "sortOrder": "Ascending",
+        "unwrappedColumns": false, "wrapLogMessage": true
+      },
+      "pluginVersion": "12.4.3",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "editorMode": "code",
+          "expr": "{source=\"faro\"} | logfmt | app_name=\"$app\" | session_id=~\"$session.*\" | kind=~\"event|exception|log\" | event_name!~\"faro\\\\.performance\\\\.resource\" | line_format \"[{{ .kind }}] {{ .event_name }}{{ .type }}: {{ .value }}{{ .message }} | page={{ .page_url }}\"",
+          "refId": "A"
+        }
+      ],
+      "title": "Session Timeline ($session)",
+      "type": "logs"
+    },
+    {
+      "collapsed": true,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 82 },
+      "id": 5,
+      "panels": [
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": {
+                "axisBorderShow": false, "axisCenteredZero": false, "axisColorMode": "text",
+                "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "barWidthFactor": 0.6,
+                "drawStyle": "bars", "fillOpacity": 60, "gradientMode": "none",
+                "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+                "insertNulls": false, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5,
+                "scaleDistribution": { "type": "linear" }, "showPoints": "never", "showValues": false,
+                "spanNulls": false, "stacking": { "group": "A", "mode": "normal" },
+                "thresholdsStyle": { "mode": "off" }
+              },
+              "mappings": [],
+              "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": 0 }] }
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 83 },
+          "id": 50,
+          "options": {
+            "legend": { "calcs": ["sum"], "displayMode": "table", "placement": "right", "showLegend": true },
+            "tooltip": { "hideZeros": false, "mode": "multi", "sort": "desc" }
+          },
+          "pluginVersion": "12.4.3",
+          "targets": [
+            {
+              "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+              "editorMode": "code",
+              "expr": "sum by (context_network) (count_over_time({source=\"faro\"} | logfmt | kind=\"exception\" | context_layerswap_exception_type=\"Balance Error\" [$__interval]))",
+              "legendFormat": "{{context_network}}",
+              "queryType": "range",
+              "refId": "A"
+            }
+          ],
+          "title": "Balance Errors Over Time",
+          "type": "timeseries"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "fieldConfig": {
+            "defaults": {
+              "custom": { "align": "auto", "cellOptions": { "type": "auto" }, "filterable": true, "footer": { "reducers": [] }, "inspect": false },
+              "mappings": [],
+              "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] }
+            },
+            "overrides": [
+              {
+                "matcher": { "id": "byName", "options": "Errors" },
+                "properties": [
+                  { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "color-background" } },
+                  { "id": "color", "value": { "mode": "continuous-reds" } }
+                ]
+              }
+            ]
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 91 },
+          "id": 51,
+          "options": { "cellHeight": "sm", "showHeader": true, "sortBy": [{ "desc": true, "displayName": "Errors" }] },
+          "pluginVersion": "12.4.3",
+          "targets": [
+            {
+              "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+              "editorMode": "code",
+              "expr": "topk(20, sum by (context_network, context_node_url) (count_over_time({source=\"faro\"} | logfmt | kind=\"exception\" | context_layerswap_exception_type=\"Balance Error\" [$__range])))",
+              "queryType": "instant",
+              "refId": "A"
+            }
+          ],
+          "title": "Balance Errors by Network",
+          "transformations": [
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": { "Time": true },
+                "renameByName": { "Value #A": "Errors", "context_network": "Network", "context_node_url": "Node URL" }
+              }
+            }
+          ],
+          "type": "table"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "fieldConfig": { "defaults": {}, "overrides": [] },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 91 },
+          "id": 52,
+          "options": {
+            "dedupStrategy": "none", "enableInfiniteScrolling": false, "enableLogDetails": true,
+            "showControls": false, "showLabels": false, "showTime": true, "sortOrder": "Descending",
+            "unwrappedColumns": false, "wrapLogMessage": true
+          },
+          "pluginVersion": "12.4.3",
+          "targets": [
+            {
+              "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+              "editorMode": "code",
+              "expr": "{source=\"faro\"} | logfmt | kind=\"exception\" | context_layerswap_exception_type=\"Balance Error\" | line_format \"{{ .context_network }} | {{ .context_node_url }} | {{ .value }}\"",
+              "refId": "A"
+            }
+          ],
+          "title": "Recent Balance Errors",
+          "type": "logs"
+        }
+      ],
+      "title": "Balance & RPC Errors (collapsed)",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 83 },
+      "id": 6,
+      "panels": [
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }, { "color": "red", "value": 600 }] },
+              "unit": "ms"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 4, "w": 6, "x": 0, "y": 84 },
+          "id": 60,
+          "options": {
+            "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto",
+            "percentChangeColorMode": "standard",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+            "showPercentChange": false, "textMode": "auto", "wideLayout": true
+          },
+          "pluginVersion": "12.4.3",
+          "targets": [
+            {
+              "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+              "editorMode": "code",
+              "expr": "avg_over_time({source=\"faro\"} | logfmt | app_name=\"$app\" | kind=\"measurement\" | unwrap ttfb [$__range]) by (app_name)",
+              "queryType": "range",
+              "refId": "A"
+            }
+          ],
+          "title": "TTFB (avg)",
+          "type": "stat"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }, { "color": "#EAB839", "value": 1800 }, { "color": "red", "value": 3000 }] },
+              "unit": "ms"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 4, "w": 6, "x": 6, "y": 84 },
+          "id": 61,
+          "options": {
+            "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto",
+            "percentChangeColorMode": "standard",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+            "showPercentChange": false, "textMode": "auto", "wideLayout": true
+          },
+          "pluginVersion": "12.4.3",
+          "targets": [
+            {
+              "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+              "editorMode": "code",
+              "expr": "avg_over_time({source=\"faro\"} | logfmt | app_name=\"$app\" | kind=\"measurement\" | unwrap fcp [$__range]) by (app_name)",
+              "queryType": "range",
+              "refId": "A"
+            }
+          ],
+          "title": "FCP (avg)",
+          "type": "stat"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }, { "color": "#EAB839", "value": 2500 }, { "color": "red", "value": 4000 }] },
+              "unit": "ms"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 4, "w": 6, "x": 12, "y": 84 },
+          "id": 62,
+          "options": {
+            "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto",
+            "percentChangeColorMode": "standard",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+            "showPercentChange": false, "textMode": "auto", "wideLayout": true
+          },
+          "pluginVersion": "12.4.3",
+          "targets": [
+            {
+              "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+              "editorMode": "code",
+              "expr": "avg_over_time({source=\"faro\"} | logfmt | app_name=\"$app\" | kind=\"measurement\" | unwrap lcp [$__range]) by (app_name)",
+              "queryType": "range",
+              "refId": "A"
+            }
+          ],
+          "title": "LCP (avg)",
+          "type": "stat"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }, { "color": "#EAB839", "value": 0.1 }, { "color": "red", "value": 0.25 }] },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 4, "w": 6, "x": 18, "y": 84 },
+          "id": 63,
+          "options": {
+            "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto",
+            "percentChangeColorMode": "standard",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+            "showPercentChange": false, "textMode": "auto", "wideLayout": true
+          },
+          "pluginVersion": "12.4.3",
+          "targets": [
+            {
+              "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+              "editorMode": "code",
+              "expr": "avg_over_time({source=\"faro\"} | logfmt | app_name=\"$app\" | kind=\"measurement\" | unwrap cls [$__range]) by (app_name)",
+              "queryType": "range",
+              "refId": "A"
+            }
+          ],
+          "title": "CLS (avg)",
+          "type": "stat"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": {
+                "axisBorderShow": false, "axisCenteredZero": false, "axisColorMode": "text",
+                "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "barWidthFactor": 0.6,
+                "drawStyle": "line", "fillOpacity": 0, "gradientMode": "none",
+                "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+                "insertNulls": false, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5,
+                "scaleDistribution": { "type": "linear" }, "showPoints": "auto", "showValues": false,
+                "spanNulls": true, "stacking": { "group": "A", "mode": "none" },
+                "thresholdsStyle": { "mode": "off" }
+              },
+              "mappings": [],
+              "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] },
+              "unit": "ms"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 88 },
+          "id": 64,
+          "options": {
+            "legend": { "calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true },
+            "tooltip": { "hideZeros": false, "mode": "single", "sort": "none" }
+          },
+          "pluginVersion": "12.4.3",
+          "targets": [
+            {
+              "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+              "editorMode": "code",
+              "expr": "quantile_over_time(0.75, {source=\"faro\"} | logfmt | app_name=\"$app\" | kind=\"measurement\" | unwrap ttfb [5m]) by (app_name)",
+              "legendFormat": "TTFB",
+              "queryType": "range",
+              "refId": "A"
+            },
+            {
+              "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+              "editorMode": "code",
+              "expr": "quantile_over_time(0.75, {source=\"faro\"} | logfmt | app_name=\"$app\" | kind=\"measurement\" | unwrap fcp [5m]) by (app_name)",
+              "legendFormat": "FCP",
+              "queryType": "range",
+              "refId": "B"
+            },
+            {
+              "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+              "editorMode": "code",
+              "expr": "quantile_over_time(0.75, {source=\"faro\"} | logfmt | app_name=\"$app\" | kind=\"measurement\" | unwrap lcp [5m]) by (app_name)",
+              "legendFormat": "LCP",
+              "queryType": "range",
+              "refId": "C"
+            }
+          ],
+          "title": "Page Load p75",
+          "type": "timeseries"
+        }
+      ],
+      "title": "Performance / Web Vitals (collapsed)",
+      "type": "row"
+    }
+  ],
+  "preload": false,
+  "refresh": "30s",
+  "schemaVersion": 42,
+  "tags": ["frontend", "faro", "rum"],
+  "templating": {
+    "list": [
+      {
+        "current": { "text": "layerswap-frontend", "value": "layerswap-frontend" },
+        "includeAll": false,
+        "label": "Application",
+        "name": "app",
+        "options": [],
+        "query": "layerswap-frontend",
+        "type": "custom",
+        "valuesFormat": "csv"
+      },
+      {
+        "current": { "text": "", "value": "" },
+        "description": "Filter by Faro session ID",
+        "label": "Session",
+        "name": "session",
+        "options": [{ "selected": true, "text": "", "value": "" }],
+        "query": "",
+        "type": "textbox"
+      },
+      {
+        "current": { "text": "", "value": "" },
+        "description": "Wallet address to focus on. Click an Address in the Wallets Connected table to populate.",
+        "label": "Address",
+        "name": "address",
+        "options": [{ "selected": true, "text": "", "value": "" }],
+        "query": "",
+        "type": "textbox"
+      },
+      {
+        "current": { "text": "", "value": "" },
+        "description": "Filter by a specific swap_id.",
+        "label": "Swap ID",
+        "name": "swap_id",
+        "options": [{ "selected": true, "text": "", "value": "" }],
+        "query": "",
+        "type": "textbox"
+      }
+    ]
+  },
+  "time": { "from": "now-3h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Frontend Observability",
+  "uid": "frontend-faro-rum",
+  "version": 24,
+  "weekStart": ""
+}

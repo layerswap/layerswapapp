@@ -187,6 +187,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const criticalMarketPriceImpact = useMemo(() => priceImpactValues?.criticalMarketPriceImpact, [priceImpactValues]);
 
     const handleClick = async () => {
+        let activeSwapId: string | undefined = swapId
         try {
             const selectedWallet = wallets.find(w => w.id === selectedSourceAccount?.id)
             if (!selectedSourceAccount) {
@@ -204,6 +205,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             if (!swapId || !swapDetails) {
                 setActionStateText("Preparing")
                 setSwapId(undefined)
+                activeSwapId = undefined
 
                 const swapValues: SwapFormValues = {
                     amount: swapBasicData.requested_amount.toString(),
@@ -223,6 +225,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 }
 
                 setSwapId(newSwapId)
+                activeSwapId = newSwapId
 
                 const priceImpactValues = newSwapData.quote ? resolvePriceImpactValues(newSwapData.quote, newSwapData.refuel) : undefined;
 
@@ -259,10 +262,10 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 } catch (e) {
                     captureException(e, {
                         layerswap_exception_type: "Swap Catchup Error",
-                        swapId: swapData.id,
-                        transactionHash: hash,
-                        fromAddress: selectedSourceAccount?.address,
-                        toAddress: swapBasicData?.destination_address
+                        swap_id: swapData.id,
+                        transaction_hash: hash,
+                        from_address: selectedSourceAccount?.address,
+                        to_address: swapBasicData?.destination_address
                     });
                 }
             }
@@ -272,14 +275,13 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
             captureException(e, {
                 layerswap_exception_type: "Swap Withdrawal Error",
-                swapId: swapId,
-                fromAddress: selectedSourceAccount?.address,
-                toAddress: swapBasicData?.destination_address,
+                swap_id: activeSwapId,
+                from_address: selectedSourceAccount?.address,
+                to_address: swapBasicData?.destination_address,
             });
 
-            captureEvent(TrackEvent.SwapFailed, {
-                swapId: swapId,
-                status: 'wallet_error',
+            captureEvent(TrackEvent.WithdrawalFailed, {
+                swap_id: activeSwapId,
                 fail_reason: (e as Error)?.message,
                 source_network: swapBasicData?.source_network?.name,
                 destination_network: swapBasicData?.destination_network?.name,
@@ -291,15 +293,15 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 const requestedAmount = Number(swapBasicData.requested_amount)
                 const difference = walletBalance.amount - requestedAmount
                 if (difference >= 0 && difference < 5 * gasData.gas) {
-                    captureEvent('Possible Gas Fee Miscalculation', {
-                        requestedAmount,
-                        walletBalance: walletBalance.amount,
-                        calculatedGas: gasData.gas,
+                    captureEvent('possible_gas_fee_miscalculation', {
+                        requested_amount: requestedAmount,
+                        wallet_balance: walletBalance.amount,
+                        calculated_gas: gasData.gas,
                         difference,
                         network: swapBasicData.source_network?.name,
                         token: swapBasicData.source_token?.symbol,
-                        errorMessage: (e as Error)?.message,
-                        errorName: (e as Error)?.name,
+                        error_message: (e as Error)?.message,
+                        error_name: (e as Error)?.name,
                     })
                 }
             }

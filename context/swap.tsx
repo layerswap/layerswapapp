@@ -20,7 +20,7 @@ import { resolvePersistantQueryParams } from '@/helpers/querryHelper';
 import { useSelectedAccount } from './swapAccounts';
 import { Address } from '@/lib/address';
 import { useSlippageStore } from '@/stores/slippageStore';
-import { captureEvent } from '@/lib/faro';
+import { captureEvent, setSwapContext } from '@/lib/faro';
 import { SwapStatus } from '@/Models/SwapStatus';
 
 export const SwapDataStateContext = createContext<SwapContextData | null>(null);
@@ -257,11 +257,24 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             to: { network: to.name, token: toCurrency.symbol }
         });
 
+        setSwapContext({
+            swap_id: swap.swap.id,
+            from_address: selectedSourceAccount?.address,
+            to_address: destination_address,
+            source_network: from.name,
+            destination_network: to.name,
+            source_token: fromCurrency.symbol,
+            destination_token: toCurrency.symbol,
+        });
+
         captureEvent(TrackEvent.SwapInitiated, {
-            name: TrackEvent.SwapInitiated,
-            swapId: swapDetails?.id ?? null,
-            fromAddress: selectedSourceAccount?.address,
-            toAddress: destination_address,
+            swap_id: swap.swap.id,
+            from_address: selectedSourceAccount?.address,
+            to_address: destination_address,
+            source_network: from.name,
+            destination_network: to.name,
+            source_token: fromCurrency.symbol,
+            destination_token: toCurrency.symbol,
             path: typeof window !== 'undefined' ? window.location.pathname : undefined,
         });
 

@@ -1,7 +1,8 @@
-const { PHASE_PRODUCTION_SERVER } = require('next/constants');
+const { PHASE_PRODUCTION_SERVER, PHASE_PRODUCTION_BUILD } = require('next/constants');
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 });
+const FaroSourceMapUploaderPlugin = require('@grafana/faro-webpack-plugin');
 
 const securityHeaders = [
   {
@@ -61,8 +62,22 @@ module.exports = (phase, { defaultConfig }) => {
         '@radix-ui/react-tooltip',
       ],
     },
-    webpack: config => {
+    webpack: (config, { isServer }) => {
       config.resolve.fallback = { fs: false, net: false, tls: false };
+      const faroSourcemapEndpoint = process.env.FARO_SOURCEMAP_ENDPOINT;
+      const faroAppId = process.env.FARO_APP_ID;
+      if (!isServer && phase === PHASE_PRODUCTION_BUILD && faroSourcemapEndpoint) {
+        config.plugins.push(
+          new FaroSourceMapUploaderPlugin({
+            appName: 'layerswap-frontend',
+            endpoint: faroSourcemapEndpoint,
+            appId: faroAppId || 'layerswap-frontend',
+            outputFiles: ['*.js'],
+            bundleId: process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA || undefined,
+            gzipContents: true,
+          })
+        );
+      }
       return config;
     },
     productionBrowserSourceMaps: true,
