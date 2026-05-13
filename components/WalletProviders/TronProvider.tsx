@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { WalletProvider } from '@tronweb3/tronwallet-adapter-react-hooks';
+import { TronLinkLocalAdapter } from '@/lib/wallets/tron/TronLinkLocalAdapter';
 
 export default function TronProvider({ children }: { children: React.ReactNode }) {
     const [adapters, setAdapters] = useState<any[]>([]);
@@ -12,14 +13,12 @@ export default function TronProvider({ children }: { children: React.ReactNode }
 
             const [
                 metamaskModule,
-                tronLinkModule,
                 okxModule,
                 bitkeepModule,
                 bybitModule,
                 gateModule
             ] = await Promise.all([
                 import('@tronweb3/tronwallet-adapter-metamask-tron'),
-                import('@tronweb3/tronwallet-adapter-tronlink'),
                 import('@tronweb3/tronwallet-adapter-okxwallet'),
                 import('@tronweb3/tronwallet-adapter-bitkeep'),
                 import('@tronweb3/tronwallet-adapter-bybit'),
@@ -29,7 +28,6 @@ export default function TronProvider({ children }: { children: React.ReactNode }
             if (cancelled) return;
 
             const { MetaMaskAdapter } = metamaskModule;
-            const { TronLinkAdapter } = tronLinkModule;
             const { OkxWalletAdapter } = okxModule;
             const { BitKeepAdapter } = bitkeepModule;
             const { BybitWalletAdapter } = bybitModule;
@@ -37,7 +35,7 @@ export default function TronProvider({ children }: { children: React.ReactNode }
 
             setAdapters([
                 new MetaMaskAdapter(),
-                new TronLinkAdapter(),
+                new TronLinkLocalAdapter(),
                 new OkxWalletAdapter(),
                 new BitKeepAdapter(),
                 new BybitWalletAdapter(),

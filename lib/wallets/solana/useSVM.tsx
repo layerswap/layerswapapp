@@ -249,6 +249,7 @@ export default function useSVM(): WalletProvider {
                 installUrl: wallet.adapter?.url,
                 hasBrowserExtension: !isWcAdapter,
                 extensionNotFound: isWcAdapter ? false : !isInstalled,
+                isLoadable: wallet.readyState === 'Loadable' && wallet.adapter.name !== 'Coinbase Wallet',
                 providerName: name,
                 order: resolveWalletConnectorIndex(wallet.adapter.name.trim().toLowerCase()),
             }

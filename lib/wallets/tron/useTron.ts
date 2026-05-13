@@ -4,6 +4,7 @@ import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvid
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { useSettingsState } from "@/context/settings";
 import { useMemo } from "react";
+import { WindowProvider } from "../connectors/explicitInjectedProviderDetected";
 
 export default function useTron(): WalletProvider {
     const commonSupportedNetworks = [
@@ -85,15 +86,21 @@ export default function useTron(): WalletProvider {
     }
 
     const availableConnectors: InternalConnector[] = useMemo(() => wallets.map(wallet => {
-        const isNotInstalled = wallet.state == 'NotFound'
+        const adapterName = wallet.adapter.name
+        const isLoading = wallet.state === 'Loading'
+
+        const isMetaMaskMissing = adapterName === 'MetaMask' && typeof window !== 'undefined' && !(window as WindowProvider).ethereum?.isMetaMask
+        const isNotInstalled = wallet.state == 'NotFound' || isMetaMaskMissing
+
         return {
-            id: wallet.adapter.name,
-            name: wallet.adapter.name,
+            id: adapterName,
+            name: adapterName,
             icon: wallet.adapter.icon,
             type: isNotInstalled ? 'other' : 'injected',
             installUrl: wallet.adapter?.url,
             extensionNotFound: isNotInstalled,
-            providerName: name
+            isLoadable: isLoading,
+            providerName: name,
         }
     }), [wallets])
 
