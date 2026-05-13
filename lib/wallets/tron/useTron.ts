@@ -4,7 +4,7 @@ import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvid
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { useSettingsState } from "@/context/settings";
 import { useMemo } from "react";
-import { WindowProvider } from "../connectors/explicitInjectedProviderDetected";
+import { useSyncProviders } from "../connectors/useSyncProviders";
 
 export default function useTron(): WalletProvider {
     const commonSupportedNetworks = [
@@ -17,6 +17,8 @@ export default function useTron(): WalletProvider {
     const name = 'Tron'
     const id = 'tron'
     const { wallets, wallet: tronWallet, disconnect, select } = useWallet();
+    const eip6963Providers = useSyncProviders();
+    const isMetaMaskAnnounced = eip6963Providers.some(p => p.info.walletId === 'io.metamask');
 
     const address = tronWallet?.adapter.address
     const switchAccount = async (wallet: Wallet, address: string) => {
@@ -89,7 +91,7 @@ export default function useTron(): WalletProvider {
         const adapterName = wallet.adapter.name
         const isLoading = wallet.state === 'Loading'
 
-        const isMetaMaskMissing = adapterName === 'MetaMask' && typeof window !== 'undefined' && !(window as WindowProvider).ethereum?.isMetaMask
+        const isMetaMaskMissing = adapterName === 'MetaMask' && !isMetaMaskAnnounced
         const isNotInstalled = wallet.state == 'NotFound' || isMetaMaskMissing
 
         return {
