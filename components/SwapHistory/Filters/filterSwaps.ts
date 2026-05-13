@@ -12,6 +12,12 @@ const INCOMPLETE_STATUSES: string[] = [
     SwapStatus.PendingRefund,
 ]
 
+const ACTIONABLE_INCOMPLETE_STATUSES: string[] = [
+    SwapStatus.Created,
+    SwapStatus.UserTransferPending,
+    SwapStatus.UserTransferDelayed,
+]
+
 const hasUserActivity = (
     sr: SwapResponse,
     storeTransactions: Record<string, unknown>
@@ -30,5 +36,7 @@ export const shouldDisplay = (
 ): boolean => {
     const status = sr.swap?.status as string | undefined
     if (!status || !INCOMPLETE_STATUSES.includes(status)) return true
-    return hasUserActivity(sr, storeTransactions)
+    if (hasUserActivity(sr, storeTransactions)) return true
+    if (sr.swap?.use_deposit_address && ACTIONABLE_INCOMPLETE_STATUSES.includes(status)) return true
+    return false
 }
