@@ -11,7 +11,7 @@ type Props = {
     disabled: boolean,
     error: string,
     isSubmitting: boolean,
-    isQuoteLoading: boolean,
+    isQuoteLoading?: boolean,
     partner: Partner | undefined,
 }
 

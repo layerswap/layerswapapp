@@ -40,10 +40,10 @@ const HistorySummary: FC<SwapInfoProps> = ({
     const destination = hideTo ? partner : (destination_exchange || destination_network)
 
     const sourceTransaction = swap.transactions?.find(t => t.type === TransactionType.Input)
-    const calculatedSendAmount = sourceTransaction?.amount ?? requested_amount
+    const sentAmount = sourceTransaction?.amount ?? requested_amount
 
     const destinationTransaction = swap.transactions?.find(t => t.type === TransactionType.Output)
-    const calculatedReceiveAmount = destinationTransaction?.amount ?? quote?.receive_amount
+    const receiveAmount = destinationTransaction?.amount ?? quote?.receive_amount
 
     return (
         source_token && <>
@@ -78,11 +78,11 @@ const HistorySummary: FC<SwapInfoProps> = ({
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <span className="truncate block shrink">
-                                            {truncateDecimals(calculatedSendAmount, source_token.precision)}
+                                            {truncateDecimals(sentAmount, source_token.precision)}
                                         </span>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                        {calculatedSendAmount}
+                                        {sentAmount}
                                     </TooltipContent>
                                 </Tooltip>
 
@@ -107,11 +107,11 @@ const HistorySummary: FC<SwapInfoProps> = ({
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <span className="truncate block shrink">
-                                            {calculatedReceiveAmount.toLocaleString('en-US', { maximumFractionDigits: 20 })}
+                                            {receiveAmount.toLocaleString('en-US', { maximumFractionDigits: 20 })}
                                         </span>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                        {calculatedReceiveAmount}
+                                        {receiveAmount}
                                     </TooltipContent>
                                 </Tooltip>
 
