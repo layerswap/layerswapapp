@@ -182,7 +182,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     }, [canFocus])
 
     const pickerBody = (
-        <div className='w-full flex flex-col justify-between h-full text-primary-text min-h-[200px]'>
+        <div className='w-full flex flex-col justify-between h-full text-primary-text'>
             <div className='flex flex-col self-center grow w-full space-y-5 h-full'>
 
                 {
@@ -261,7 +261,6 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                 destination={destination}
             >{children ? children({ destination, addressItem: destinationAddressItem, connectedWallet: connectedWallet, partner }) : <></>}</AddressButton>
             <VaulDrawer
-                mode="fitHeight"
                 header='Send To'
                 show={showAddressModal}
                 setShow={setShowAddressModal}

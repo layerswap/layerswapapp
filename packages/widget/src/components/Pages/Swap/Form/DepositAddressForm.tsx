@@ -531,7 +531,6 @@ const DestinationWalletPicker: FC<DestinationWalletPickerProps> = ({ address, de
                 setShow={setOpen}
                 header="Receive in"
                 modalId="destinationWallet"
-                mode="fitHeight"
             >
                 <VaulDrawer.Snap id="item-1" className="pb-4 space-y-3">
                     <button
