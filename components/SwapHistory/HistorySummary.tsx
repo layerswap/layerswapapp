@@ -11,6 +11,7 @@ import { SwapStatus } from "@/Models/SwapStatus";
 import { Wallet } from "@/Models/WalletProvider";
 import { ImageWithFallback } from "../Common/ImageWithFallback";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip"
+import { truncateDecimals } from "../utils/RoundDecimals"
 
 type SwapInfoProps = {
     className?: string,
@@ -37,6 +38,9 @@ const HistorySummary: FC<SwapInfoProps> = ({
 
     const source = hideFrom ? partner : (source_exchange || source_network)
     const destination = hideTo ? partner : (destination_exchange || destination_network)
+
+    const sourceTransaction = swap.transactions?.find(t => t.type === TransactionType.Input)
+    const calculatedSendAmount = sourceTransaction?.amount ?? requested_amount
 
     const destinationTransaction = swap.transactions?.find(t => t.type === TransactionType.Output)
     const calculatedReceiveAmount = destinationTransaction?.amount ?? quote?.receive_amount
@@ -74,11 +78,11 @@ const HistorySummary: FC<SwapInfoProps> = ({
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <span className="truncate block shrink">
-                                            {requested_amount.toLocaleString('en-US', { maximumFractionDigits: 20 })}
+                                            {truncateDecimals(calculatedSendAmount, source_token.precision)}
                                         </span>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                        {requested_amount}
+                                        {calculatedSendAmount}
                                     </TooltipContent>
                                 </Tooltip>
 

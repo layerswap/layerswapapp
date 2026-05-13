@@ -29,16 +29,17 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
     const { setSwapModalOpen, setSwapId } = useSwapDataUpdate()
 
     const handleRepeatSwap = async () => {
+        const inputTransactionAmount = swap?.transactions?.find(t => t.type === TransactionType.Input)?.amount
         router.push({
             pathname: `/`,
             query: {
-                amount: requested_amount,
+                ...resolvePersistantQueryParams(router.query),
+                amount: inputTransactionAmount ?? requested_amount,
                 destAddress: destination_address,
                 from: source_network?.name,
                 to: destination_network?.name,
                 fromAsset: source_token.symbol,
                 toAsset: destination_token.symbol,
-                ...resolvePersistantQueryParams(router.query),
             }
         }, undefined, { shallow: false })
     }
