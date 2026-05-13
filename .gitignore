@@ -32,8 +32,9 @@ yarn-error.log*
 .env.production.local
 .vercel
 
-# Moving to yarn
+# lockfiles from other package managers (project uses pnpm)
 package-lock.json
+yarn.lock
 storybook-static/*
 
 # Sentry Config File

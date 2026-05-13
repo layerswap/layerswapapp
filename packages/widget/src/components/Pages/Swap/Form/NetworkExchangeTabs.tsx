@@ -5,6 +5,7 @@ import clsx from 'clsx'
 import useWindowDimensions from '@/hooks/useWindowDimensions'
 import NetworkTabIcon from '@/components/Icons/NetworkTabIcon'
 import ExchangeTabIcon from '@/components/Icons/ExchangeTabIcon'
+import DepositTabIcon from '@/components/Icons/DepositTabIcon'
 import AppSettings from '@/lib/AppSettings'
 
 interface TabsContextType {
@@ -100,5 +101,6 @@ export const NetworkExchangeTabs = () => {
     return <TabsList>
         <TabsTrigger label="Swap" Icon={NetworkTabIcon} value="cross-chain" />
         <TabsTrigger label="Deposit from CEX" Icon={ExchangeTabIcon} value="exchange" />
+        <TabsTrigger label="Easy deposit" Icon={DepositTabIcon} value="deposit-address" />
     </TabsList>
 }

@@ -213,6 +213,7 @@ module.exports = {
       addVariant('focus-peer', '.focus-peer &')
       addVariant('wide-page', '.wide-page &')
       addVariant('has-openpicker', '&:has(.openpicker)')
+      addVariant('has-openaddresspicker', '&:has(.openaddresspicker)')
       addVariant('has-expandContainerHeight', '&:has(.expandContainerHeight):has([data-state="open"])')
     })
   ],

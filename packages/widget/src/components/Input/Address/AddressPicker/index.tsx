@@ -41,7 +41,7 @@ export type AddressTriggerProps = {
 }
 
 interface Input {
-    children: (props: AddressTriggerProps) => JSX.Element;
+    children?: (props: AddressTriggerProps) => JSX.Element;
     showAddressModal: boolean;
     setShowAddressModal: (show: boolean) => void;
     hideLabel?: boolean;
@@ -50,10 +50,17 @@ interface Input {
     partner?: Partner,
     canFocus?: boolean,
     address_book?: AddressBookItem[],
+    /** Render the picker content directly (no trigger button, no drawer). */
+    inline?: boolean,
+    /** When true, skip the effect that syncs destination_address from the
+     *  connected wallet's default account. Used by the inline deposit-address
+     *  flow after the user explicitly clears the chosen address — otherwise
+     *  re-mounting the picker would immediately re-fill it. */
+    disableAutoFill?: boolean,
 }
 
 const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
-    ({ showAddressModal, setShowAddressModal, name, canFocus, close, address_book, partner, children }, ref) {
+    ({ showAddressModal, setShowAddressModal, name, canFocus, close, address_book, partner, children, inline, disableAutoFill }, ref) {
 
     const {
         values,
@@ -137,6 +144,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     }
 
     useEffect(() => {
+        if (disableAutoFill) return
         if (destinationAddressItem && !defaultAccount?.address && destinationAddressItem?.group == AddressGroup.ConnectedWallet) {
             updateDestAddress(undefined)
             return
@@ -145,7 +153,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
             updateDestAddress(defaultAccount?.address)
             setShowAddressModal(false)
         }
-    }, [defaultAccount?.address, destinationAddressItem])
+    }, [defaultAccount?.address, destinationAddressItem, disableAutoFill])
 
     const updateDestAddress = useCallback((address: string | undefined) => {
         const wallet = destination && connectedWallets?.find(w => w.addresses?.some(a => AddressClass.equals(a, address || '', destination)))
@@ -173,6 +181,76 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         }
     }, [canFocus])
 
+    const pickerBody = (
+        <div className='w-full flex flex-col justify-between h-full text-primary-text min-h-[200px]'>
+            <div className='flex flex-col self-center grow w-full space-y-5 h-full'>
+
+                {
+                    destination
+                    && provider
+                    && !connectedWallets.length &&
+                    <ConnectWalletButton
+                        provider={provider}
+                        onConnect={onConnect}
+                    />
+                }
+
+                <ManualAddressInput
+                    manualAddress={manualAddress}
+                    setManualAddress={setManualAddress}
+                    setNewAddress={(props) => updateDestAddress(props?.address)}
+                    values={values}
+                    partner={partner}
+                    name={name}
+                    inputReference={inputReference}
+                    setFieldValue={setFieldValue}
+                    close={close}
+                    addresses={groupedAddresses}
+                    connectedWallet={connectedWallet}
+                />
+                {
+                    destination
+                    && provider
+                    && !manualAddress &&
+                    <ConnectedWallets
+                        provider={provider}
+                        onClick={(props) => handleSelectAddress(props.address)}
+                        onConnect={onConnect}
+                        destination={destination}
+                        destination_address={destination_address}
+                        isLoading={isConnecting}
+                        setIsLoading={setIsConnecting}
+                    />
+                }
+
+                {
+                    addressBookAddresses && addressBookAddresses?.length > 0 && !manualAddress && destination &&
+                    <AddressBook
+                        addressBook={addressBookAddresses}
+                        onSelectAddress={handleSelectAddress}
+                        destination={destination}
+                        destination_address={destination_address}
+                        partner={partner}
+                        onRemoveManual={onRemoveManual}
+                    />
+                }
+
+                {
+                    destination && provider && !manualAddress && unAvailableWallets.length > 0 &&
+                    <NotCompatibleWallets
+                        notCompatibleWallets={unAvailableWallets}
+                        destination={destination}
+                        isLoading={isConnecting}
+                    />
+                }
+            </div>
+        </div>
+    )
+
+    if (inline) {
+        return pickerBody;
+    }
+
     return (
         <>
             <AddressButton
@@ -181,7 +259,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                 connectedWallet={connectedWallet}
                 partner={partner}
                 destination={destination}
-            >{children({ destination, addressItem: destinationAddressItem, connectedWallet: connectedWallet, partner })}</AddressButton>
+            >{children ? children({ destination, addressItem: destinationAddressItem, connectedWallet: connectedWallet, partner }) : <></>}</AddressButton>
             <VaulDrawer
                 mode="fitHeight"
                 header='Send To'
@@ -190,71 +268,9 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                 modalId="address"
             >
                 <VaulDrawer.Snap id="item-1">
-                    <div className='w-full flex flex-col justify-between h-full text-primary-text min-h-[200px]'>
-                        <div className='flex flex-col self-center grow w-full space-y-5 h-full'>
-
-                            {
-                                destination
-                                && provider
-                                && !connectedWallets.length &&
-                                <ConnectWalletButton
-                                    provider={provider}
-                                    onConnect={onConnect}
-                                />
-                            }
-
-                            <ManualAddressInput
-                                manualAddress={manualAddress}
-                                setManualAddress={setManualAddress}
-                                setNewAddress={(props) => updateDestAddress(props?.address)}
-                                values={values}
-                                partner={partner}
-                                name={name}
-                                inputReference={inputReference}
-                                setFieldValue={setFieldValue}
-                                close={close}
-                                addresses={groupedAddresses}
-                                connectedWallet={connectedWallet}
-                            />
-                            {
-                                destination
-                                && provider
-                                && !manualAddress &&
-                                <ConnectedWallets
-                                    provider={provider}
-                                    onClick={(props) => handleSelectAddress(props.address)}
-                                    onConnect={onConnect}
-                                    destination={destination}
-                                    destination_address={destination_address}
-                                    isLoading={isConnecting}
-                                    setIsLoading={setIsConnecting}
-                                />
-                            }
-
-                            {
-                                addressBookAddresses && addressBookAddresses?.length > 0 && !manualAddress && destination &&
-                                <AddressBook
-                                    addressBook={addressBookAddresses}
-                                    onSelectAddress={handleSelectAddress}
-                                    destination={destination}
-                                    destination_address={destination_address}
-                                    partner={partner}
-                                    onRemoveManual={onRemoveManual}
-                                />
-                            }
-
-                            {
-                                destination && provider && !manualAddress && unAvailableWallets.length > 0 &&
-                                <NotCompatibleWallets
-                                    notCompatibleWallets={unAvailableWallets}
-                                    destination={destination}
-                                    isLoading={isConnecting}
-                                />
-                            }
-                        </div>
-                    </div>
-                </VaulDrawer.Snap>
-            </VaulDrawer>
+                    {pickerBody}
+                </VaulDrawer.Snap >
+            </VaulDrawer >
         </>
     )
 });

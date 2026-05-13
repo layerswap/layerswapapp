@@ -19,6 +19,8 @@ type Props = {
     openValues: string[];
     scrollContainerRef: RefObject<HTMLDivElement | null>;
     index: number;
+    hideTokenSwitch?: boolean;
+    hideBalances?: boolean;
 };
 
 export default function Row({
@@ -32,6 +34,8 @@ export default function Row({
     openValues,
     scrollContainerRef,
     index,
+    hideTokenSwitch,
+    hideBalances,
 }: Props) {
 
     switch (item.type) {
@@ -49,6 +53,7 @@ export default function Row({
                     onSelect={onSelect}
                     openValues={openValues}
                     scrollContainerRef={scrollContainerRef}
+                    hideBalances={hideBalances}
                 />
             );
         }
@@ -71,12 +76,13 @@ export default function Row({
                         route={route}
                         direction={direction}
                         type={item.type}
+                        hideBalances={hideBalances}
                     />
                 </NavigatableItem>
             );
         }
         case "group_title":
-            return <TitleRow item={item} />
+            return <TitleRow item={item} hideTokenSwitch={hideTokenSwitch} />
         case "sceleton_token":
             return (
                 <SelectItem className="animate-pulse">

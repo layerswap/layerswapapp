@@ -40,9 +40,13 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
     }, [isLoading, direction, partialPublished])
     // Apply query-based filtering
     const filteredRoutes = useMemo(() => {
-        const filtered = filterRoutesByQuery(routes, direction, { lockFrom, from, lockTo, to, lockFromAsset, fromAsset, lockToAsset, toAsset });
+        let filtered = filterRoutesByQuery(routes, direction, { lockFrom, from, lockTo, to, lockFromAsset, fromAsset, lockToAsset, toAsset });
+        // In exchange flow (deposit_address), only show source networks that support deposit_address
+        if (direction === 'from' && values.depositMethod === 'deposit_address') {
+            filtered = filtered.filter(r => r.deposit_methods?.includes('deposit_address'));
+        }
         return filtered;
-    }, [routes, direction, lockFrom, from, lockTo, to, lockFromAsset, fromAsset, lockToAsset, toAsset]);
+    }, [routes, direction, lockFrom, from, lockTo, to, lockFromAsset, fromAsset, lockToAsset, toAsset, values.depositMethod]);
 
     const routeElements = useMemo(() =>
         groupRoutes({
@@ -600,7 +604,7 @@ const searchInTokens = (routes: NetworkRoute[], search: string): NetworkTokenEle
 };
 // ---------- Route Grouping ----------
 
-type GroupRoutesProps = {
+export type GroupRoutesProps = {
     routes: NetworkRoute[];
     direction: SwapDirection;
     balances: Record<string, NetworkBalance> | null;
@@ -610,10 +614,14 @@ type GroupRoutesProps = {
     search?: string;
     suggestionsLimit?: number;
     sortingOption?: SortingOption;
+    /** When true, show suggestions even without wallet balances (e.g. deposit address flow) */
+    skipBalanceGate?: boolean;
+    /** When true, do not include the suggestions section at all */
+    hideSuggestions?: boolean;
 }
 
-function groupRoutes(
-    { routes, direction, balances, groupBy, recents, balancesLoaded, search, suggestionsLimit = 4, sortingOption = SortingOption.RELEVANCE }: GroupRoutesProps
+export function groupRoutes(
+    { routes, direction, balances, groupBy, recents, balancesLoaded, search, suggestionsLimit = 4, sortingOption = SortingOption.RELEVANCE, skipBalanceGate = false, hideSuggestions = false }: GroupRoutesProps
 ): RowElement[] {
 
     if (search) {
@@ -621,7 +629,9 @@ function groupRoutes(
     }
 
     // Suggestions always use relevance-based sorting (unchanged)
-    const suggestedRoutes = getSuggestedRoutes(routes, balances, recents, direction, balancesLoaded, suggestionsLimit)
+    const suggestedRoutes = hideSuggestions
+        ? []
+        : getSuggestedRoutes(routes, balances, recents, direction, balancesLoaded, suggestionsLimit, skipBalanceGate)
 
     // Apply custom sorting ONLY to "All Networks/All Tokens" section
     if (groupBy === "token") {
@@ -776,11 +786,11 @@ function useExchangeRoutes({ values }: Props) {
     return { exchangesRoutes: res, isLoading }
 }
 
-function getSuggestedRoutes(routes: NetworkRoute[], balances: Record<string, NetworkBalance> | null, routesHistory: RoutesHistory, direction: SwapDirection, balancesLoading: boolean, limit: number = 4): (NetworkTokenElement | TokenSceletonElement)[] {
+function getSuggestedRoutes(routes: NetworkRoute[], balances: Record<string, NetworkBalance> | null, routesHistory: RoutesHistory, direction: SwapDirection, balancesLoading: boolean, limit: number = 4, skipBalanceGate: boolean = false): (NetworkTokenElement | TokenSceletonElement)[] {
     // Ensure minimum of 4 suggestions
     const effectiveLimit = Math.max(4, limit);
 
-    if (direction === "from") {
+    if (direction === "from" && !skipBalanceGate) {
         if (!balancesLoading && !balances)
             return []
         if (balancesLoading && direction === "from")

@@ -30,6 +30,7 @@ type GenericAccordionRowProps = {
   toggleContent: (itemName: string) => void;
   openValues?: string[];
   scrollContainerRef: RefObject<HTMLDivElement | null>;
+  hideBalances?: boolean;
 };
 
 type ChildWrapper = {
@@ -48,6 +49,7 @@ export const CollapsibleRow = ({
   searchQuery,
   openValues,
   scrollContainerRef,
+  hideBalances,
 }: GenericAccordionRowProps & { index: number }) => {
   const groupName = item.type === "grouped_token" ? item.symbol : item.route.name;
   const headerId = `${groupName}-header`;
@@ -103,6 +105,7 @@ export const CollapsibleRow = ({
                 item={item}
                 direction={direction}
                 hideTokenImages={isOpen}
+                hideBalances={hideBalances}
               />
             </AccordionTrigger>
           </div>
@@ -119,6 +122,7 @@ export const CollapsibleRow = ({
           onClick={stickyToggle}
           isSticky={isSticky}
           setSticky={setSticky}
+          hideBalances={hideBalances}
         />
 
         <AccordionContent
@@ -142,6 +146,7 @@ export const CollapsibleRow = ({
                     isSelected={isSelected}
                     direction={direction}
                     onSelect={onSelect}
+                    hideBalances={hideBalances}
                   />
                 );
               })}
@@ -163,6 +168,7 @@ const TokenItem = memo<{
   isSelected: boolean;
   direction: SwapDirection;
   onSelect: (route: NetworkRoute, token: NetworkRouteToken) => void;
+  hideBalances?: boolean;
 }>(({
   token,
   route,
@@ -172,6 +178,7 @@ const TokenItem = memo<{
   isSelected,
   direction,
   onSelect,
+  hideBalances,
 }) => {
   const handleClick = useCallback(() => {
     onSelect(route, token);
@@ -191,6 +198,7 @@ const TokenItem = memo<{
         selected={isSelected}
         route={route}
         direction={direction}
+        hideBalances={hideBalances}
       />
     </NavigatableItem>
   );
