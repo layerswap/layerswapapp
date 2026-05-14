@@ -1,10 +1,10 @@
 import { FuelAddressUtilsProvider } from "./fuelAddressUtilsProvider";
 import { FuelBalanceProvider } from "./fuelBalanceProvider";
 import { FuelGasProvider } from "./fuelGasProvider";
-import FuelProviderWrapper from "./FuelProvider";
 import useFuelConnection from "./useFuelConnection";
 import { WalletProvider, BaseWalletProviderConfig } from "@layerswap/widget/types";
-import React from "react";
+import React, { lazy, Suspense } from "react";
+const FuelProviderWrapper = /*#__PURE__*/ lazy(() => import("./FuelProvider"));
 import { useFuelTransfer } from "./transferProvider/useFuelTransfer";
 
 export type FuelProviderConfig = BaseWalletProviderConfig
@@ -20,9 +20,11 @@ export function createFuelProvider(config: FuelProviderConfig = {}): WalletProvi
 
     const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
         return (
-            <FuelProviderWrapper>
-                {children}
-            </FuelProviderWrapper>
+            <Suspense fallback={null}>
+                <FuelProviderWrapper>
+                    {children}
+                </FuelProviderWrapper>
+            </Suspense>
         );
     };
 
@@ -62,9 +64,15 @@ export function createFuelProvider(config: FuelProviderConfig = {}): WalletProvi
 /**
  * @deprecated Use createFuelProvider() instead. This export will be removed in a future version.
  */
+const FuelProviderLazyWrapper = ({ children }: { children: React.ReactNode }) => (
+    <Suspense fallback={null}>
+        <FuelProviderWrapper>{children}</FuelProviderWrapper>
+    </Suspense>
+);
+
 export const FuelProvider: WalletProvider = {
     id: "fuel",
-    wrapper: FuelProviderWrapper,
+    wrapper: FuelProviderLazyWrapper,
     walletConnectionProvider: useFuelConnection,
     addressUtilsProvider: [new FuelAddressUtilsProvider()],
     gasProvider: [new FuelGasProvider()],
