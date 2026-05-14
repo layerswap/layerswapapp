@@ -18,7 +18,8 @@ export default function useTron(): WalletProvider {
     const id = 'tron'
     const { wallets, wallet: tronWallet, disconnect, select } = useWallet();
     const eip6963Providers = useSyncProviders();
-    const isMetaMaskAnnounced = eip6963Providers.some(p => p.info.walletId === 'io.metamask');
+    const isMetaMaskAnnounced = eip6963Providers.some(p => p.info.rdns === 'io.metamask');
+    const isTronLinkAnnounced = eip6963Providers.some(p => p.info.rdns === 'org.tronlink.www');
 
     const address = tronWallet?.adapter.address
     const switchAccount = async (wallet: Wallet, address: string) => {
@@ -92,7 +93,8 @@ export default function useTron(): WalletProvider {
         const isLoading = wallet.state === 'Loading'
 
         const isMetaMaskMissing = adapterName === 'MetaMask' && !isMetaMaskAnnounced
-        const isNotInstalled = wallet.state == 'NotFound' || isMetaMaskMissing
+        const isTronLinkMissing = adapterName === 'TronLink' && !isTronLinkAnnounced
+        const isNotInstalled = wallet.state == 'NotFound' || isMetaMaskMissing || isTronLinkMissing
 
         return {
             id: adapterName,
