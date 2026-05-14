@@ -1,10 +1,10 @@
 import { WalletProvider, BaseWalletProviderConfig, LazyGasProvider, NetworkType } from "@layerswap/widget/types";
 import { AppSettings } from "@layerswap/widget/internal";
 import useSVMConnection from "./useSVMConnection";
-import SVMProviderWrapper from "./SVMProvider";
 import { SolanaBalanceProvider } from "./svmBalanceProvider";
 import { SolanaAddressUtilsProvider } from "./svmAddressUtilsProvider";
-import React, { createContext, useContext } from "react";
+import React, { createContext, lazy, Suspense, useContext } from "react";
+const SVMProviderWrapper = /*#__PURE__*/ lazy(() => import("./SVMProvider"));
 import { useSVMTransfer } from "./transferProvider/useSVMTransfer";
 
 export type WalletConnectConfig = {
@@ -36,9 +36,11 @@ export function createSVMProvider(config: SVMProviderConfig = {}): WalletProvide
     const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
         return (
             <WalletConnectConfigContext.Provider value={walletConnectConfigs ?? null}>
-                <SVMProviderWrapper>
-                    {children}
-                </SVMProviderWrapper>
+                <Suspense fallback={null}>
+                    <SVMProviderWrapper>
+                        {children}
+                    </SVMProviderWrapper>
+                </Suspense>
             </WalletConnectConfigContext.Provider>
         );
     };
@@ -90,9 +92,11 @@ export const SVMProvider: WalletProvider = {
     wrapper: ({ children }: { children: React.ReactNode }) => {
         return (
             <WalletConnectConfigContext.Provider value={AppSettings.WalletConnectConfig ?? null}>
-                <SVMProviderWrapper walletConnectConfigs={AppSettings.WalletConnectConfig}>
-                    {children}
-                </SVMProviderWrapper>
+                <Suspense fallback={null}>
+                    <SVMProviderWrapper walletConnectConfigs={AppSettings.WalletConnectConfig}>
+                        {children}
+                    </SVMProviderWrapper>
+                </Suspense>
             </WalletConnectConfigContext.Provider>
         );
     },
