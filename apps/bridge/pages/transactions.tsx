@@ -1,6 +1,6 @@
 import { InferGetServerSidePropsType } from 'next'
 import { getServerSideProps } from '../helpers/getSettings'
-import { TransactionsHistory, inflateSettings } from '@layerswap/widget';
+import { TransactionsHistory, inflateSettings } from '@layerswap/widget/transactions';
 import Layout from '../components/layout';
 import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '../helpers/querryHelper';

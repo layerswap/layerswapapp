@@ -67,6 +67,8 @@ module.exports = (phase, { defaultConfig }) => {
         '@radix-ui/react-select',
         '@radix-ui/react-tabs',
         '@radix-ui/react-tooltip',
+        '@layerswap/widget',
+        '@layerswap/wallets',
       ],
     },
     webpack: config => {

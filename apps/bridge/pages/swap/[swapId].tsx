@@ -8,12 +8,26 @@ import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
 import WidgetWrapper from '../../components/WidgetWrapper';
 import MaintananceContent from '../../components/maintanance/maintanance';
+import type { ComponentProps } from 'react';
+import { useState, useEffect } from 'react';
+
+type WidgetWrapperProviders = ComponentProps<typeof WidgetWrapper>["walletProviders"]
 
 
 
 const SwapDetails = ({ settings, themeData, apiKey, swapData }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter()
   const resolvedSettings = useMemo(() => inflateSettings(settings), [settings])
+  const [walletProviders, setWalletProviders] = useState<WidgetWrapperProviders>([])
+
+  useEffect(() => {
+    let cancelled = false
+    import('../../components/defaultWalletProviders').then(mod => {
+      if (cancelled) return
+      setWalletProviders(mod.buildDefaultWalletProviders())
+    })
+    return () => { cancelled = true }
+  }, [])
 
   if (!resolvedSettings) return <MaintananceContent />
   return (<>
@@ -22,6 +36,7 @@ const SwapDetails = ({ settings, themeData, apiKey, swapData }: InferGetServerSi
         settings={resolvedSettings}
         themeData={themeData}
         apiKey={apiKey}
+        walletProviders={walletProviders}
         configOverrides={{
           initialValues: { swapId: router.query.swapId?.toString()! }
         }}
