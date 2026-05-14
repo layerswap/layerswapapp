@@ -14,7 +14,7 @@ type Props = {
     children: ReactNode
 }
 
-const queryClient = new QueryClient()
+const queryClient = /*#__PURE__*/ new QueryClient()
 
 let cachedConfig: Config | null = null
 

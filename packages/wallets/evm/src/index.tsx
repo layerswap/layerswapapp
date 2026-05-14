@@ -1,8 +1,8 @@
 'use client'
 import { WalletProvider, BaseWalletProviderConfig, WalletProviderModule, LazyBalanceProvider, LazyGasProvider, NetworkType } from "@layerswap/widget/types";
-import { createContext, ReactNode, useContext, type JSX } from 'react';
+import { createContext, lazy, ReactNode, Suspense, useContext, type JSX } from 'react';
 import useEVMConnection from "./useEVMConnection"
-import EVMProviderWrapper from "./EVMProvider"
+const EVMProviderWrapper = /*#__PURE__*/ lazy(() => import("./EVMProvider"))
 import { EVMAddressUtilsProvider } from "./evmAddressUtilsProvider"
 import { AppSettings, KnownInternalNames } from "@layerswap/widget/internal";
 import { useEVMTransfer } from "./transferProvider/useEVMTransfer";
@@ -42,9 +42,11 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
     const WrapperComponent = ({ children }: { children: ReactNode }) => {
         return (
             <WalletConnectConfigContext.Provider value={walletConnectConfigs ?? null}>
-                <EVMProviderWrapper >
-                    {children}
-                </EVMProviderWrapper>
+                <Suspense fallback={null}>
+                    <EVMProviderWrapper>
+                        {children}
+                    </EVMProviderWrapper>
+                </Suspense>
             </WalletConnectConfigContext.Provider>
         );
     };
@@ -145,9 +147,11 @@ export const EVMProvider: WalletProvider = {
     wrapper: ({ children }: { children: JSX.Element | JSX.Element[] }) => {
         return (
             <WalletConnectConfigContext.Provider value={AppSettings.WalletConnectConfig ?? null}>
-                <EVMProviderWrapper>
-                    {children}
-                </EVMProviderWrapper>
+                <Suspense fallback={null}>
+                    <EVMProviderWrapper>
+                        {children}
+                    </EVMProviderWrapper>
+                </Suspense>
             </WalletConnectConfigContext.Provider>
         );
     },
