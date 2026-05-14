@@ -1,11 +1,11 @@
-import StarknetProviderWrapper from "./StarknetProvider";
 import useStarknetConnection from "./useStarknetConnection";
 import { StarknetBalanceProvider } from "./starknetBalanceProvider";
 import { WalletProvider, BaseWalletProviderConfig, NftProvider, LazyGasProvider } from "@layerswap/widget/types";
 import { AppSettings, KnownInternalNames } from "@layerswap/widget/internal";
 import { StarknetAddressUtilsProvider } from "./starknetAddressUtilsProvider";
 import { StarknetNftProvider } from "./starknetNftProvider";
-import React from "react";
+import React, { lazy, Suspense } from "react";
+const StarknetProviderWrapper = /*#__PURE__*/ lazy(() => import("./StarknetProvider"));
 import { useStarknetTransfer } from "./useStarknetTransfer";
 
 const isStarknetNetwork = (name: string) =>
@@ -63,9 +63,15 @@ export function createStarknetProvider(config: StarknetProviderConfig = {}): Wal
         ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
         : defaultTransferProviders;
 
+    const WrapperComponent = ({ children }: { children: React.ReactNode }) => (
+        <Suspense fallback={null}>
+            <StarknetProviderWrapper>{children}</StarknetProviderWrapper>
+        </Suspense>
+    );
+
     return {
         id: "starknet",
-        wrapper: StarknetProviderWrapper,
+        wrapper: WrapperComponent,
         walletConnectionProvider,
         addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
@@ -83,9 +89,11 @@ export const StarknetProvider: WalletProvider = {
     id: "starknet",
     wrapper: ({ children }: { children: React.ReactNode }) => {
         return (
-            <StarknetProviderWrapper walletConnectConfigs={AppSettings.WalletConnectConfig}>
-                {children}
-            </StarknetProviderWrapper>
+            <Suspense fallback={null}>
+                <StarknetProviderWrapper walletConnectConfigs={AppSettings.WalletConnectConfig}>
+                    {children}
+                </StarknetProviderWrapper>
+            </Suspense>
         );
     },
     walletConnectionProvider: useStarknetConnection,
