@@ -1,9 +1,9 @@
 import { WalletProvider, BaseWalletProviderConfig, ThemeData, LazyBalanceProvider } from "@layerswap/widget/types";
 import { TonGasProvider } from "./tonGasProvider";
-import TonProviderWrapper from "./TonProvider";
 import useTONConnection from "./useTONConnection";
 import { TonAddressUtilsProvider } from "./tonAddressUtilsProvider";
-import React, { createContext, useContext } from "react";
+import React, { createContext, lazy, Suspense, useContext } from "react";
+const TonProviderWrapper = /*#__PURE__*/ lazy(() => import("./TonProvider"));
 import { AppSettings, KnownInternalNames } from "@layerswap/widget/internal";
 import { useTONTransfer } from "./transferProvider/useTONTransfer";
 
@@ -39,9 +39,11 @@ export function createTONProvider(config: TONProviderConfig = {}): WalletProvide
     const WrapperComponent = ({ children, themeData }: { children: React.ReactNode, themeData?: ThemeData }) => {
         return (
             <TonConfigContext.Provider value={tonConfigs || null}>
-                <TonProviderWrapper tonConfigs={tonConfigs} themeData={themeData}>
-                    {children}
-                </TonProviderWrapper>
+                <Suspense fallback={null}>
+                    <TonProviderWrapper tonConfigs={tonConfigs} themeData={themeData}>
+                        {children}
+                    </TonProviderWrapper>
+                </Suspense>
             </TonConfigContext.Provider>
         );
     };
@@ -95,9 +97,11 @@ export const TONProvider: WalletProvider = {
         console.log('configs', configs)
         return (
             <TonConfigContext.Provider value={configs}>
-                <TonProviderWrapper tonConfigs={configs} themeData={themeData}>
-                    {children}
-                </TonProviderWrapper>
+                <Suspense fallback={null}>
+                    <TonProviderWrapper tonConfigs={configs} themeData={themeData}>
+                        {children}
+                    </TonProviderWrapper>
+                </Suspense>
             </TonConfigContext.Provider>
         );
     },
