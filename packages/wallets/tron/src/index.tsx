@@ -1,9 +1,9 @@
 import { WalletProvider, BaseWalletProviderConfig, LazyBalanceProvider } from "@layerswap/widget/types";
 import { TronGasProvider } from "./tronGasProvider";
-import TronProviderWrapper from "./TronProvider";
 import useTronConnection from "./useTronConnection";
 import { TronAddressUtilsProvider } from "./tronAddressUtilsProvider";
-import React from "react";
+import React, { lazy, Suspense } from "react";
+const TronProviderWrapper = /*#__PURE__*/ lazy(() => import("./TronProvider"));
 import { useTronTransfer } from "./transferProvider/useTronTransfer";
 import { KnownInternalNames } from "@layerswap/widget/internal";
 
@@ -20,9 +20,11 @@ export function createTronProvider(config: TronProviderConfig = {}): WalletProvi
 
     const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
         return (
-            <TronProviderWrapper>
-                {children}
-            </TronProviderWrapper>
+            <Suspense fallback={null}>
+                <TronProviderWrapper>
+                    {children}
+                </TronProviderWrapper>
+            </Suspense>
         );
     };
 
@@ -67,9 +69,15 @@ export function createTronProvider(config: TronProviderConfig = {}): WalletProvi
 /**
  * @deprecated Use createTronProvider() instead. This export will be removed in a future version.
  */
+const TronProviderLazyWrapper = ({ children }: { children: React.ReactNode }) => (
+    <Suspense fallback={null}>
+        <TronProviderWrapper>{children}</TronProviderWrapper>
+    </Suspense>
+);
+
 export const TronProvider: WalletProvider = {
     id: "tron",
-    wrapper: TronProviderWrapper,
+    wrapper: TronProviderLazyWrapper,
     walletConnectionProvider: useTronConnection,
     addressUtilsProvider: [new TronAddressUtilsProvider()],
     gasProvider: [new TronGasProvider()],
