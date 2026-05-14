@@ -1,6 +1,6 @@
-import { getDefaultProviders } from "@layerswap/wallets";
+import { getDefaultProviders, preloadDefaultProviders } from "@layerswap/wallets";
 
-export function buildDefaultWalletProviders() {
+export async function buildDefaultWalletProviders() {
     const imtblPassportConfig = typeof window !== 'undefined' ? {
         clientId: process.env.NEXT_PUBLIC_IMMUTABLE_CLIENT_ID || '',
         publishableKey: process.env.NEXT_PUBLIC_IMMUTABLE_PUBLISHABLE_KEY || '',
@@ -16,7 +16,7 @@ export function buildDefaultWalletProviders() {
         icons: ['https://www.layerswap.io/app/symbol.png'],
     };
 
-    return getDefaultProviders({
+    const providers = getDefaultProviders({
         walletConnect: walletConnectConfigs,
         immutablePassport: imtblPassportConfig,
         ton: {
@@ -24,4 +24,12 @@ export function buildDefaultWalletProviders() {
             manifestUrl: 'https://layerswap.io/app/tonconnect-manifest.json',
         },
     });
+
+    // Wait for every chain's lazy chunk to land before exposing the
+    // providers array. With chunks in the module cache, React.lazy
+    // resolves synchronously when WalletsProviders mounts the chain —
+    // no Suspense fallback flash between empty and populated state.
+    await preloadDefaultProviders();
+
+    return providers;
 }

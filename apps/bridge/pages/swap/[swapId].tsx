@@ -22,10 +22,12 @@ const SwapDetails = ({ settings, themeData, apiKey, swapData }: InferGetServerSi
 
   useEffect(() => {
     let cancelled = false
-    import('../../components/defaultWalletProviders').then(mod => {
-      if (cancelled) return
-      setWalletProviders(mod.buildDefaultWalletProviders())
-    })
+    import('../../components/defaultWalletProviders')
+      .then(mod => mod.buildDefaultWalletProviders())
+      .then(providers => {
+        if (cancelled) return
+        setWalletProviders(providers)
+      })
     return () => { cancelled = true }
   }, [])
 

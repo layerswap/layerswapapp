@@ -11,10 +11,12 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
 
     useEffect(() => {
         let cancelled = false
-        import("../../defaultWalletProviders").then(mod => {
-            if (cancelled) return
-            setWalletProviders(mod.buildDefaultWalletProviders())
-        })
+        import("../../defaultWalletProviders")
+            .then(mod => mod.buildDefaultWalletProviders())
+            .then(providers => {
+                if (cancelled) return
+                setWalletProviders(providers)
+            })
         return () => { cancelled = true }
     }, [])
 
