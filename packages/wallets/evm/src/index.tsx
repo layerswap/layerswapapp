@@ -1,8 +1,29 @@
 'use client'
 import { WalletProvider, BaseWalletProviderConfig, WalletProviderModule, LazyBalanceProvider, LazyGasProvider, NetworkType } from "@layerswap/widget/types";
-import { createContext, lazy, ReactNode, Suspense, useContext, type JSX } from 'react';
+import { ComponentProps, createContext, lazy, ReactNode, Suspense, useContext, type JSX } from 'react';
 import useEVMConnection from "./useEVMConnection"
-const EVMProviderWrapper = /*#__PURE__*/ lazy(() => import("./EVMProvider"))
+let EVMProviderImpl: typeof import("./EVMProvider")["default"] | null = null
+
+const loadEVMProviderModule = async () => {
+    const m = await import("./EVMProvider")
+    EVMProviderImpl = m.default
+}
+
+const EVMProviderWrapperLazy = /*#__PURE__*/ lazy(async () => {
+    const m = await import("./EVMProvider")
+    EVMProviderImpl = m.default
+    return m
+})
+
+const EVMProviderWrapper = (props: ComponentProps<typeof EVMProviderWrapperLazy>) => {
+    if (EVMProviderImpl) {
+        const Impl = EVMProviderImpl
+        return <Impl {...props} />
+    }
+    return <EVMProviderWrapperLazy {...props} />
+}
+
+export const preloadEVMProvider = loadEVMProviderModule
 import { EVMAddressUtilsProvider } from "./evmAddressUtilsProvider"
 import { AppSettings, KnownInternalNames } from "@layerswap/widget/internal";
 import { useEVMTransfer } from "./transferProvider/useEVMTransfer";

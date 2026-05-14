@@ -3,8 +3,29 @@ import { WalletProvider, BaseWalletProviderConfig } from "@layerswap/widget/type
 import { BitcoinGasProvider } from "./bitcoinGasProvider";
 import { BitcoinBalanceProvider } from "./bitcoinBalanceProvider";
 import { BitcoinAddressUtilsProvider } from "./bitcoinAddressUtilsProvider";
-import React, { lazy, Suspense } from "react";
-const BitcoinProviderWrapper = /*#__PURE__*/ lazy(() => import("./BitcoinProvider").then(m => ({ default: m.BitcoinProvider })));
+import React, { ComponentProps, lazy, Suspense } from "react";
+let BitcoinProviderImpl: typeof import("./BitcoinProvider")["BitcoinProvider"] | null = null
+
+const loadBitcoinProviderModule = async () => {
+    const m = await import("./BitcoinProvider")
+    BitcoinProviderImpl = m.BitcoinProvider
+}
+
+const BitcoinProviderWrapperLazy = /*#__PURE__*/ lazy(async () => {
+    const m = await import("./BitcoinProvider")
+    BitcoinProviderImpl = m.BitcoinProvider
+    return { default: m.BitcoinProvider }
+});
+
+const BitcoinProviderWrapper = (props: ComponentProps<typeof BitcoinProviderWrapperLazy>) => {
+    if (BitcoinProviderImpl) {
+        const Impl = BitcoinProviderImpl
+        return <Impl {...props} />
+    }
+    return <BitcoinProviderWrapperLazy {...props} />
+}
+
+export const preloadBitcoinProvider = loadBitcoinProviderModule
 import { useBitcoinTransfer } from "./transferProvider/useBitcoinTransfer";
 
 export type BitcoinProviderConfig = BaseWalletProviderConfig

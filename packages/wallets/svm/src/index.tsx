@@ -3,8 +3,29 @@ import { AppSettings } from "@layerswap/widget/internal";
 import useSVMConnection from "./useSVMConnection";
 import { SolanaBalanceProvider } from "./svmBalanceProvider";
 import { SolanaAddressUtilsProvider } from "./svmAddressUtilsProvider";
-import React, { createContext, lazy, Suspense, useContext } from "react";
-const SVMProviderWrapper = /*#__PURE__*/ lazy(() => import("./SVMProvider"));
+import React, { ComponentProps, createContext, lazy, Suspense, useContext } from "react";
+let SVMProviderImpl: typeof import("./SVMProvider")["default"] | null = null
+
+const loadSVMProviderModule = async () => {
+    const m = await import("./SVMProvider")
+    SVMProviderImpl = m.default
+}
+
+const SVMProviderWrapperLazy = /*#__PURE__*/ lazy(async () => {
+    const m = await import("./SVMProvider")
+    SVMProviderImpl = m.default
+    return m
+});
+
+const SVMProviderWrapper = (props: ComponentProps<typeof SVMProviderWrapperLazy>) => {
+    if (SVMProviderImpl) {
+        const Impl = SVMProviderImpl
+        return <Impl {...props} />
+    }
+    return <SVMProviderWrapperLazy {...props} />
+}
+
+export const preloadSVMProvider = loadSVMProviderModule
 import { useSVMTransfer } from "./transferProvider/useSVMTransfer";
 
 export type WalletConnectConfig = {

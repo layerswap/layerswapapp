@@ -2,8 +2,29 @@ import { WalletProvider, BaseWalletProviderConfig, ThemeData, LazyBalanceProvide
 import { TonGasProvider } from "./tonGasProvider";
 import useTONConnection from "./useTONConnection";
 import { TonAddressUtilsProvider } from "./tonAddressUtilsProvider";
-import React, { createContext, lazy, Suspense, useContext } from "react";
-const TonProviderWrapper = /*#__PURE__*/ lazy(() => import("./TonProvider"));
+import React, { ComponentProps, createContext, lazy, Suspense, useContext } from "react";
+let TonProviderImpl: typeof import("./TonProvider")["default"] | null = null
+
+const loadTonProviderModule = async () => {
+    const m = await import("./TonProvider")
+    TonProviderImpl = m.default
+}
+
+const TonProviderWrapperLazy = /*#__PURE__*/ lazy(async () => {
+    const m = await import("./TonProvider")
+    TonProviderImpl = m.default
+    return m
+});
+
+const TonProviderWrapper = (props: ComponentProps<typeof TonProviderWrapperLazy>) => {
+    if (TonProviderImpl) {
+        const Impl = TonProviderImpl
+        return <Impl {...props} />
+    }
+    return <TonProviderWrapperLazy {...props} />
+}
+
+export const preloadTONProvider = loadTonProviderModule
 import { AppSettings, KnownInternalNames } from "@layerswap/widget/internal";
 import { useTONTransfer } from "./transferProvider/useTONTransfer";
 

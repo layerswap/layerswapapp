@@ -2,8 +2,29 @@ import { WalletProvider, BaseWalletProviderConfig, LazyBalanceProvider } from "@
 import { TronGasProvider } from "./tronGasProvider";
 import useTronConnection from "./useTronConnection";
 import { TronAddressUtilsProvider } from "./tronAddressUtilsProvider";
-import React, { lazy, Suspense } from "react";
-const TronProviderWrapper = /*#__PURE__*/ lazy(() => import("./TronProvider"));
+import React, { ComponentProps, lazy, Suspense } from "react";
+let TronProviderImpl: typeof import("./TronProvider")["default"] | null = null
+
+const loadTronProviderModule = async () => {
+    const m = await import("./TronProvider")
+    TronProviderImpl = m.default
+}
+
+const TronProviderWrapperLazy = /*#__PURE__*/ lazy(async () => {
+    const m = await import("./TronProvider")
+    TronProviderImpl = m.default
+    return m
+});
+
+const TronProviderWrapper = (props: ComponentProps<typeof TronProviderWrapperLazy>) => {
+    if (TronProviderImpl) {
+        const Impl = TronProviderImpl
+        return <Impl {...props} />
+    }
+    return <TronProviderWrapperLazy {...props} />
+}
+
+export const preloadTronProvider = loadTronProviderModule
 import { useTronTransfer } from "./transferProvider/useTronTransfer";
 import { KnownInternalNames } from "@layerswap/widget/internal";
 

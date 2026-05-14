@@ -4,8 +4,29 @@ import { WalletProvider, BaseWalletProviderConfig, NftProvider, LazyGasProvider 
 import { AppSettings, KnownInternalNames } from "@layerswap/widget/internal";
 import { StarknetAddressUtilsProvider } from "./starknetAddressUtilsProvider";
 import { StarknetNftProvider } from "./starknetNftProvider";
-import React, { lazy, Suspense } from "react";
-const StarknetProviderWrapper = /*#__PURE__*/ lazy(() => import("./StarknetProvider"));
+import React, { ComponentProps, lazy, Suspense } from "react";
+let StarknetProviderImpl: typeof import("./StarknetProvider")["default"] | null = null
+
+const loadStarknetProviderModule = async () => {
+    const m = await import("./StarknetProvider")
+    StarknetProviderImpl = m.default
+}
+
+const StarknetProviderWrapperLazy = /*#__PURE__*/ lazy(async () => {
+    const m = await import("./StarknetProvider")
+    StarknetProviderImpl = m.default
+    return m
+});
+
+const StarknetProviderWrapper = (props: ComponentProps<typeof StarknetProviderWrapperLazy>) => {
+    if (StarknetProviderImpl) {
+        const Impl = StarknetProviderImpl
+        return <Impl {...props} />
+    }
+    return <StarknetProviderWrapperLazy {...props} />
+}
+
+export const preloadStarknetProvider = loadStarknetProviderModule
 import { useStarknetTransfer } from "./useStarknetTransfer";
 
 const isStarknetNetwork = (name: string) =>
