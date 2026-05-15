@@ -1,6 +1,6 @@
 "use client";
-import React, { createContext, lazy, useContext, useMemo } from "react";
-import { WalletConnectionProvider, WalletProvider } from "@/types";
+import React, { createContext, lazy, useContext, useEffect, useMemo } from "react";
+import { WalletConnectionProvider } from "@/types";
 import { useSettingsState } from "./settings";
 import VaulDrawer from "@/components/Modal/vaulModal";
 import IconButton from "@/components/Buttons/iconButton";
@@ -9,19 +9,25 @@ import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { isMobile } from "@/lib/wallets/utils/isMobile";
 import AppSettings from "@/lib/AppSettings";
 import { filterSourceNetworks } from "@/helpers/filterSourceNetworks";
+import { useWalletConnectionProviders } from "./walletConnectionRegistry";
 import clsx from "clsx";
 
 const ConnectorsList = lazy(() => import("@/components/Wallet/WalletModal/ConnectorsList"));
 
 const WalletProvidersContext = createContext<WalletConnectionProvider[]>([]);
 
-export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walletProviders: WalletProvider[] }> = ({ children, walletProviders }) => {
+export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
     const { networks } = useSettingsState();
     const settings = useSettingsState();
     const isMobilePlatform = isMobile();
     const { goBack, onFinish, open, setOpen, selectedConnector, selectedMultiChainConnector, dismissible, topContent, fullHeight, hideHeader } = useConnectModal()
 
-    const allProviders = walletProviders.map(provider => provider.walletConnectionProvider ? provider.walletConnectionProvider({ networks }) : undefined).filter(provider => provider !== undefined) as WalletConnectionProvider[];
+    // Connection providers come from the wallet-connection-registry, which
+    // each chain shell's registrar writes into from an effect. Registry
+    // ordering is by `order` field assigned in defineWalletProvider, so
+    // resolution priority (first match wins in `useWallet`) is stable
+    // regardless of which lazy chunk happens to land first.
+    const allProviders = useWalletConnectionProviders()
 
     const providers = useMemo(() => {
         const filteredProviders = allProviders.filter(provider => (isMobilePlatform ? !provider.unsupportedPlatforms?.includes('mobile') : !provider.unsupportedPlatforms?.includes('desktop')) &&
@@ -31,9 +37,17 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
                 provider.asSourceSupportedNetworks?.includes(net.name)
             )
         );
-        AppSettings.AvailableSourceNetworkTypes = filterSourceNetworks(settings, filteredProviders)
         return filteredProviders
     }, [networks, isMobilePlatform, allProviders]);
+
+    // AppSettings is a module-level singleton; writing to it during render
+    // would cause non-deterministic SSR output, so we update it after
+    // commit. Consumers that read it (e.g. NetworkSelect filtering)
+    // already tolerate a one-render delay because they re-derive from
+    // their own state after mount.
+    useEffect(() => {
+        AppSettings.AvailableSourceNetworkTypes = filterSourceNetworks(settings, providers)
+    }, [settings, providers])
 
     return (
         <WalletProvidersContext.Provider value={providers}>

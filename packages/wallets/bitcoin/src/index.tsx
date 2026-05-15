@@ -101,3 +101,21 @@ export const BitcoinProvider: WalletProvider = {
     balanceProvider: [new BitcoinBalanceProvider()],
     transferProvider: [useBitcoinTransfer],
 };
+import { defineWalletProvider, type WalletProviderShell } from "@layerswap/widget/internal";
+
+export function createBitcoinShell(config: BitcoinProviderConfig & { order?: number } = {}): WalletProviderShell {
+    const { order = 500, ...rest } = config
+    const provider = createBitcoinProvider(rest)
+    return defineWalletProvider({
+        id: provider.id,
+        order,
+        wrapper: provider.wrapper as React.ComponentType<{ children: React.ReactNode }>,
+        walletConnectionProvider: provider.walletConnectionProvider,
+        transferProvider: provider.transferProvider,
+        balanceProvider: provider.balanceProvider,
+        gasProvider: provider.gasProvider,
+        addressUtilsProvider: provider.addressUtilsProvider,
+        contractAddressProvider: provider.contractAddressProvider,
+        rpcHealthCheckProvider: provider.rpcHealthCheckProvider,
+    })
+}

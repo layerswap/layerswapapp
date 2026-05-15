@@ -49,3 +49,16 @@ export const ImtblPassportProvider: WalletWrapper = {
         );
     }
 };
+// Wrapper-only — Immutable Passport contributes an auth context that EVM's
+// connector consumes; no wallets of its own, so no walletConnectionProvider.
+import { defineWalletProvider, type WalletProviderShell } from "@layerswap/widget/internal";
+
+export function createImmutablePassportShell(config: ImmutablePassportProviderConfig & { order?: number } = {}): WalletProviderShell {
+    const { order = 900, ...rest } = config
+    const wrapperOnly = createImmutablePassportProvider(rest)
+    return defineWalletProvider({
+        id: wrapperOnly.id,
+        order,
+        wrapper: wrapperOnly.wrapper as React.ComponentType<{ children: React.ReactNode }>,
+    })
+}

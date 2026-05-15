@@ -100,3 +100,21 @@ export const FuelProvider: WalletProvider = {
     balanceProvider: [new FuelBalanceProvider()],
     transferProvider: [useFuelTransfer],
 };
+import { defineWalletProvider, type WalletProviderShell } from "@layerswap/widget/internal";
+
+export function createFuelShell(config: FuelProviderConfig & { order?: number } = {}): WalletProviderShell {
+    const { order = 300, ...rest } = config
+    const provider = createFuelProvider(rest)
+    return defineWalletProvider({
+        id: provider.id,
+        order,
+        wrapper: provider.wrapper as React.ComponentType<{ children: React.ReactNode }>,
+        walletConnectionProvider: provider.walletConnectionProvider,
+        transferProvider: provider.transferProvider,
+        balanceProvider: provider.balanceProvider,
+        gasProvider: provider.gasProvider,
+        addressUtilsProvider: provider.addressUtilsProvider,
+        contractAddressProvider: provider.contractAddressProvider,
+        rpcHealthCheckProvider: provider.rpcHealthCheckProvider,
+    })
+}

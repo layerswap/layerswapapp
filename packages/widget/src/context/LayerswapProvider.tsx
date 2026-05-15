@@ -18,7 +18,6 @@ import WalletsProviders from "@/components/Wallet/WalletProviders";
 import { CallbackProvider, CallbacksContextType } from "./callbackProvider";
 import { InitialSettings } from "@/Models/InitialSettings";
 import { SwapAccountsProvider } from "./swapAccounts";
-import { WalletProvider } from "@/types";
 import { ResolverProviders } from "./resolverContext";
 import { ErrorProvider } from "./ErrorProvider";
 
@@ -28,25 +27,27 @@ export type LayerswapWidgetConfig = {
     settings?: LayerSwapSettings;
     theme?: ThemeData | null,
     initialValues?: InitialSettings,
-} & WalletsConfigs
+}
 
 export type LayerswapContextProps = {
     children?: ReactNode;
     callbacks?: CallbacksContextType
     config?: LayerswapWidgetConfig
-    walletProviders?: WalletProvider[]
 }
 
 const INTERCOM_APP_ID = 'h5zisg78'
-const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callbacks, config, walletProviders = [] }) => {
-    let { apiKey, version, settings: _settings, theme: themeData, initialValues, imtblPassport, tonConfigs, walletConnect } = config || {}
+
+// Wallet providers are no longer accepted as a prop. Apps compose chain
+// shells (e.g. <EVMShell><StarknetShell>...) as JSX children of
+// LayerswapProvider; each shell's registrar writes its resolved provider
+// into the connection registry. See packages/widget/src/lib/defineWalletProvider.tsx
+// and the per-chain shell exports for the model.
+const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callbacks, config }) => {
+    let { apiKey, version, settings: _settings, theme: themeData, initialValues } = config || {}
     const [fetchedSettings, setFetchedSettings] = useState<LayerSwapSettings | null>(null)
     themeData = { ...THEME_COLORS['default'], ...config?.theme }
 
     AppSettings.ApiVersion = version || AppSettings.ApiVersion
-    AppSettings.ImtblPassportConfig = imtblPassport
-    AppSettings.TonClientConfig = tonConfigs || AppSettings.TonClientConfig
-    AppSettings.WalletConnectConfig = walletConnect || AppSettings.WalletConnectConfig
     AppSettings.ThemeData = themeData
     if (apiKey) LayerSwapApiClient.apiKey = apiKey
 
@@ -75,9 +76,8 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
                                 <WalletsProviders
                                     appName={initialValues?.appName}
                                     themeData={themeData}
-                                    walletProviders={walletProviders}
                                 >
-                                    <ResolverProviders walletProviders={walletProviders}>
+                                    <ResolverProviders>
                                         <SwapAccountsProvider>
                                             <AsyncModalProvider>
                                                 {children}
@@ -108,26 +108,4 @@ export const LayerswapProvider: typeof LayerswapProviderComponent = (props) => {
         </>
 
     )
-}
-
-/**
- * @deprecated Pass wallet configurations directly to the wallet provider factories instead.
- * - For walletConnect: use `createEVMProvider({ walletConnectConfigs })`, `createSVMProvider({ walletConnectConfigs })`, etc.
- * - For imtblPassport: use `createImmutablePassportProvider({ imtblPassportConfig })`
- * - For tonConfigs: use `createTONProvider({ tonConfigs })`
- * This type will be removed in a future version.
- */
-type WalletsConfigs = {
-    /**
-     * @deprecated Pass `walletConnectConfigs` directly to wallet provider factories
-     */
-    walletConnect?: typeof AppSettings.WalletConnectConfig
-    /**
-     * @deprecated Pass `imtblPassportConfig` to `createImmutablePassportProvider({ imtblPassportConfig })`
-     */
-    imtblPassport?: typeof AppSettings.ImtblPassportConfig
-    /**
-     * @deprecated Pass `tonConfigs` to `createTONProvider({ tonConfigs })`
-     */
-    tonConfigs?: typeof AppSettings.TonClientConfig
 }

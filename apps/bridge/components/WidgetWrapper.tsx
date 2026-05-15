@@ -15,11 +15,14 @@ type WidgetWrapperProps<T extends Record<string, unknown> = Record<string, never
     apiKey?: string;
     initialValues?: QueryParams;
     callbacks?: LayerswapProviderComponentProps['callbacks'];
-    walletProviders?: LayerswapProviderComponentProps['walletProviders'];
     configOverrides?: Partial<LayerswapProviderComponentProps['config']>;
     enableSwapCallbacks?: boolean;
 };
 
+// WidgetWrapper no longer manages wallet providers — chain shells are
+// composed as JSX children by the caller (see DefaultChainShells.tsx and
+// the swap pages). LayerswapProvider's children include the shell tree
+// and the page content.
 const WidgetWrapper = <T extends Record<string, unknown>>({
     children,
     settings,
@@ -27,13 +30,10 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
     apiKey,
     initialValues,
     callbacks,
-    walletProviders,
     configOverrides,
     enableSwapCallbacks = false,
 }: WidgetWrapperProps<T>) => {
     const router = useRouter()
-
-    const resolvedWalletProviders = walletProviders ?? []
 
     const themeOverrides: Partial<ThemeData> = {
         borderRadius: 'default',
@@ -85,7 +85,6 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
     return <LayerswapProvider
         config={mergedConfig}
         callbacks={resolvedCallbacks}
-        walletProviders={resolvedWalletProviders}
     >
         {children}
     </LayerswapProvider>

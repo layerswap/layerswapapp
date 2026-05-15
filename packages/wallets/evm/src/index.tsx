@@ -1,5 +1,6 @@
 'use client'
 import { WalletProvider, BaseWalletProviderConfig, WalletProviderModule, LazyBalanceProvider, LazyGasProvider, NetworkType } from "@layerswap/widget/types";
+import { defineWalletProvider, type WalletProviderShell } from "@layerswap/widget/internal";
 import { ComponentProps, createContext, lazy, ReactNode, Suspense, useContext, type JSX } from 'react';
 import useEVMConnection from "./useEVMConnection"
 let EVMProviderImpl: typeof import("./EVMProvider")["default"] | null = null
@@ -158,6 +159,26 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
 
 export { default as useEVMConnection } from "./useEVMConnection";
 export { useChainConfigs } from "./evmUtils/chainConfigs";
+
+// Default order: 100. Earlier chains (smaller numbers) win when multiple
+// providers support the same network — mirrors the legacy array-order
+// resolution in useWallet.resolveProvider. Consumers can override.
+export function createEVMShell(config: EVMProviderConfig & { order?: number } = {}): WalletProviderShell {
+    const { order = 100, ...rest } = config
+    const provider = createEVMProvider(rest)
+    return defineWalletProvider({
+        id: provider.id,
+        order,
+        wrapper: provider.wrapper as React.ComponentType<{ children: React.ReactNode }>,
+        walletConnectionProvider: provider.walletConnectionProvider,
+        transferProvider: provider.transferProvider,
+        balanceProvider: provider.balanceProvider,
+        gasProvider: provider.gasProvider,
+        addressUtilsProvider: provider.addressUtilsProvider,
+        contractAddressProvider: provider.contractAddressProvider,
+        rpcHealthCheckProvider: provider.rpcHealthCheckProvider,
+    })
+}
 
 /**
  * @deprecated Use createEVMProvider() instead. This export will be removed in a future version.

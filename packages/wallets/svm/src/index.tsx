@@ -132,3 +132,21 @@ export const SVMProvider: WalletProvider = {
     balanceProvider: [new SolanaBalanceProvider()],
     transferProvider: [useSVMTransfer],
 };
+import { defineWalletProvider, type WalletProviderShell } from "@layerswap/widget/internal";
+
+export function createSVMShell(config: SVMProviderConfig & { order?: number } = {}): WalletProviderShell {
+    const { order = 700, ...rest } = config
+    const provider = createSVMProvider(rest)
+    return defineWalletProvider({
+        id: provider.id,
+        order,
+        wrapper: provider.wrapper as React.ComponentType<{ children: React.ReactNode }>,
+        walletConnectionProvider: provider.walletConnectionProvider,
+        transferProvider: provider.transferProvider,
+        balanceProvider: provider.balanceProvider,
+        gasProvider: provider.gasProvider,
+        addressUtilsProvider: provider.addressUtilsProvider,
+        contractAddressProvider: provider.contractAddressProvider,
+        rpcHealthCheckProvider: provider.rpcHealthCheckProvider,
+    })
+}

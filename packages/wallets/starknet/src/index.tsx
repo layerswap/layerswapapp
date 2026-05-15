@@ -129,3 +129,26 @@ export const StarknetProvider: WalletProvider = {
     nftProvider: [new StarknetNftProvider()],
     transferProvider: [useStarknetTransfer],
 };
+// Shell entry — see defineWalletProvider docs in @layerswap/widget. The
+// inner provider definition is unchanged; the shell just wraps it so the
+// chain composes as JSX (<StarknetShell>…</StarknetShell>) rather than via
+// a runtime-built walletProviders array.
+import { defineWalletProvider, type WalletProviderShell } from "@layerswap/widget/internal";
+
+export function createStarknetShell(config: StarknetProviderConfig & { order?: number } = {}): WalletProviderShell {
+    const { order = 200, ...rest } = config
+    const provider = createStarknetProvider(rest)
+    return defineWalletProvider({
+        id: provider.id,
+        order,
+        wrapper: provider.wrapper as React.ComponentType<{ children: React.ReactNode }>,
+        walletConnectionProvider: provider.walletConnectionProvider,
+        transferProvider: provider.transferProvider,
+        balanceProvider: provider.balanceProvider,
+        gasProvider: provider.gasProvider,
+        addressUtilsProvider: provider.addressUtilsProvider,
+        nftProvider: provider.nftProvider,
+        contractAddressProvider: provider.contractAddressProvider,
+        rpcHealthCheckProvider: provider.rpcHealthCheckProvider,
+    })
+}

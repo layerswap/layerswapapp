@@ -1,35 +1,25 @@
 import { LayerSwapSettings, Swap, ThemeData } from "@layerswap/widget"
-import { FC, useEffect, useState } from "react"
+import { FC } from "react"
 import WidgetWrapper from "../../WidgetWrapper"
+import DefaultChainShells from "../../DefaultChainShells"
 import { QueryParams } from "../../../helpers/querryHelper"
-import type { ComponentProps } from "react"
 
-type WidgetWrapperProviders = ComponentProps<typeof WidgetWrapper>["walletProviders"]
-
+// Chain shells are composed in DefaultChainShells (JSX children of
+// LayerswapProvider) — no more async setState of a walletProviders array.
+// The shell tree mounts once and stays stable for the lifetime of the
+// page, so there is no [] → populated transition to remount the swap UI.
 const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, apiKey: string, initialValues: QueryParams }> = ({ settings, themeData, apiKey, initialValues }) => {
-    const [walletProviders, setWalletProviders] = useState<WidgetWrapperProviders>([])
-
-    useEffect(() => {
-        let cancelled = false
-        import("../../defaultWalletProviders")
-            .then(mod => mod.buildDefaultWalletProviders())
-            .then(providers => {
-                if (cancelled) return
-                setWalletProviders(providers)
-            })
-        return () => { cancelled = true }
-    }, [])
-
     return (
         <WidgetWrapper
             settings={settings}
             themeData={themeData}
             apiKey={apiKey}
             initialValues={initialValues}
-            walletProviders={walletProviders}
             enableSwapCallbacks
         >
-            <Swap />
+            <DefaultChainShells>
+                <Swap />
+            </DefaultChainShells>
         </WidgetWrapper>
     )
 }

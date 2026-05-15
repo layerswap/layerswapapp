@@ -8,6 +8,12 @@ export { LayerSwapSettings } from '../Models/LayerSwapSettings'
 export { type ThemeData, THEME_COLORS, type ThemeColor } from '../Models/Theme'
 export { getSettings, useSettings } from '../helpers/getSettings'
 export { LayerswapProvider, type LayerswapWidgetConfig } from '../context/LayerswapProvider';
+export { defineWalletProvider, type WalletProviderDefinition, type WalletProviderShell } from '../lib/defineWalletProvider';
+export {
+    useWalletConnectionProviders,
+    useWalletConnectionProviderById,
+    useRegisteredWalletProviders,
+} from '../context/walletConnectionRegistry';
 export { useSettingsState } from '../context/settings'
 export { resolveWalletConnectorIcon, walletIconResolver } from '../lib/wallets/utils/resolveWalletIcon'
 export { NetworkWithTokens, NetworkType } from '../Models/Network'

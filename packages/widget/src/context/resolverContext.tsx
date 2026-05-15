@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useMemo } from "react";
-import { WalletProvider, NftProvider, BalanceProvider, GasProvider, AddressUtilsProvider, TransferProvider, ContractAddressCheckerProvider, RpcHealthCheckProvider } from "@/types";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { resolverService } from "@/lib/resolvers/resolverService";
+import { useRegisteredWalletProviders } from "./walletConnectionRegistry";
 
 type ResolverContextType = {
     isInitialized: boolean;
@@ -8,55 +8,37 @@ type ResolverContextType = {
 
 const ResolverContext = createContext<ResolverContextType | null>(null);
 
-export const ResolverProviders: React.FC<React.PropsWithChildren<{ walletProviders: WalletProvider[] }>> = ({
-    children,
-    walletProviders
-}) => {
+// Pre-shell migration this component called every chain's transferProvider
+// hook from a `.map` over a runtime-variable array — same conditional-hook
+// landmine that lived in WalletProvidersProvider. The fix is symmetric:
+// each chain's shell registrar already called its transfer hook(s) inside
+// its own (fixed-shape) component and stashed the resolved `TransferProvider`
+// objects on the RegisteredWalletProvider entry. Here we just collect the
+// already-resolved arrays — no hooks called over arbitrary-length arrays.
+export const ResolverProviders: React.FC<React.PropsWithChildren> = ({ children }) => {
+    const registered = useRegisteredWalletProviders()
+    const [isInitialized, setIsInitialized] = useState(false)
 
-    const transferProviders = walletProviders
-        .map(provider => provider.transferProvider)
-        .flat()
-        .filter((provider): provider is (() => TransferProvider) => Boolean(provider))
-        .map(provider => provider())
+    useEffect(() => {
+        const transferProviders = registered.flatMap(p => p.transferProviders)
+        const balanceProviders = registered.flatMap(p => p.balanceProviders)
+        const gasProviders = registered.flatMap(p => p.gasProviders)
+        const addressUtilsProviders = registered.flatMap(p => p.addressUtilsProviders)
+        const nftProviders = registered.flatMap(p => p.nftProviders)
+        const contractAddressProviders = registered.flatMap(p => p.contractAddressProviders)
+        const rpcHealthCheckProviders = registered.flatMap(p => p.rpcHealthCheckProviders)
 
-    const contractAddressProviders: ContractAddressCheckerProvider[] = walletProviders
-        .map(provider => provider.contractAddressProvider)
-        .flat()
-        .filter((provider): provider is ContractAddressCheckerProvider => Boolean(provider));
-
-    const rpcHealthCheckProviders: RpcHealthCheckProvider[] = walletProviders
-        .map(provider => provider.rpcHealthCheckProvider)
-        .flat()
-        .filter((provider): provider is RpcHealthCheckProvider => Boolean(provider));
-
-    const isInitialized = useMemo(() => {
-        // Extract balance providers from wallet providers
-        const balanceProviders: BalanceProvider[] = walletProviders
-            .map(provider => provider.balanceProvider)
-            .flat()
-            .filter((provider): provider is BalanceProvider => Boolean(provider));
-
-        // Extract gas providers from wallet providers
-        const gasProviders: GasProvider[] = walletProviders
-            .map(provider => provider.gasProvider)
-            .flat()
-            .filter((provider): provider is GasProvider => Boolean(provider));
-
-        // Extract address utils providers from wallet providers
-        const addressUtilsProviders: AddressUtilsProvider[] = walletProviders
-            .map(provider => provider.addressUtilsProvider)
-            .flat()
-            .filter((provider): provider is AddressUtilsProvider => Boolean(provider));
-
-        const nftProviders: NftProvider[] = walletProviders
-            .map(provider => provider.nftProvider)
-            .flat()
-            .filter((provider): provider is NftProvider => Boolean(provider));
-
-        resolverService.setProviders(balanceProviders, gasProviders, addressUtilsProviders, nftProviders, transferProviders, contractAddressProviders, rpcHealthCheckProviders)
-
-        return true;
-    }, [walletProviders, transferProviders, contractAddressProviders, rpcHealthCheckProviders]);
+        resolverService.setProviders(
+            balanceProviders,
+            gasProviders,
+            addressUtilsProviders,
+            nftProviders,
+            transferProviders,
+            contractAddressProviders,
+            rpcHealthCheckProviders,
+        )
+        setIsInitialized(true)
+    }, [registered])
 
     return (
         <ResolverContext.Provider value={{ isInitialized }}>
