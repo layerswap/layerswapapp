@@ -22,7 +22,7 @@ export async function getServerSideProps(context) {
         themeData
     ] = await Promise.all([
         apiClient.GetLSNetworksAsync(),
-        apiClient.GetSourceExchangesAsync(),
+        apiClient.GetSourceExchangesAsync().catch(() => ({ data: [] })),
         apiClient.GetRoutesAsync('sources'),
         apiClient.GetRoutesAsync('destinations'),
         getThemeData(context.query)

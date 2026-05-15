@@ -9,12 +9,12 @@ Layerswap UI — a Next.js 15 web application (Pages Router) for cross-chain tok
 ## Commands
 
 ```bash
-yarn              # Install dependencies
-yarn dev          # Start dev server
-yarn build        # Production build
-yarn lint         # ESLint (next/core-web-vitals + custom JSX literal plugin)
-yarn storybook    # Component docs on port 6006
-ANALYZE=true yarn build  # Bundle analysis
+pnpm install      # Install dependencies
+pnpm dev          # Start dev server
+pnpm build        # Production build
+pnpm lint         # ESLint (next/core-web-vitals + custom JSX literal plugin)
+pnpm storybook    # Component docs on port 6006
+ANALYZE=true pnpm build  # Bundle analysis
 ```
 
 No unit test framework is configured. Storybook is used for component documentation.
