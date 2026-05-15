@@ -135,7 +135,7 @@ export default function Layout({ children, settings, themeData }: Props) {
                 <ThemeWrapper>
                   <AsyncModalProvider>
                     {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
-                      <MaintananceContent />
+                      <MaintananceContent withThemeWrapper={false} />
                       : children}
                   </AsyncModalProvider>
                 </ThemeWrapper>

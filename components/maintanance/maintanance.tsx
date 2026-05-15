@@ -3,8 +3,9 @@ import { useIntercom } from "react-use-intercom";
 import SubmitButton from "../buttons/submitButton";
 import LayerSwapLogo from "../icons/layerSwapLogo";
 import TwitterLogo from "../icons/TwitterLogo";
+import ThemeWrapper from "../themeWrapper";
 
-function MaintananceContent() {
+function Comp() {
     const { boot, update } = useIntercom()
 
     useEffect(() => {
@@ -48,6 +49,17 @@ function MaintananceContent() {
             </div>
         </div>
     );
+}
+
+const MaintananceContent = ({ withThemeWrapper = true }: { withThemeWrapper?: boolean }) => {
+
+    if (withThemeWrapper) {
+        return <ThemeWrapper>
+            <Comp />
+        </ThemeWrapper>
+    }
+
+    return <Comp />
 }
 
 export default MaintananceContent;
