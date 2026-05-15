@@ -1,59 +1,90 @@
 // Import all wallet provider factories and types
-import { createBitcoinProvider } from "@layerswap/wallet-bitcoin";
+import { createBitcoinProvider, createBitcoinShell, preloadBitcoinProvider } from "@layerswap/wallet-bitcoin";
 import type { BitcoinProviderConfig } from "@layerswap/wallet-bitcoin";
 
-import { createEVMProvider, useChainConfigs } from "@layerswap/wallet-evm";
+import { createEVMProvider, createEVMShell, preloadEVMProvider, useChainConfigs } from "@layerswap/wallet-evm";
 import type { EVMProviderConfig, WalletConnectConfig } from "@layerswap/wallet-evm";
 
-import { createFuelProvider } from "@layerswap/wallet-fuel";
+import { createFuelProvider, createFuelShell, preloadFuelProvider } from "@layerswap/wallet-fuel";
 import type { FuelProviderConfig } from "@layerswap/wallet-fuel";
 
-import { createImmutablePassportProvider, ImtblRedirect } from "@layerswap/wallet-imtbl-passport";
+import { createImmutablePassportProvider, createImmutablePassportShell, ImtblRedirect } from "@layerswap/wallet-imtbl-passport";
 import type { ImmutablePassportProviderConfig, ImtblPassportConfig } from "@layerswap/wallet-imtbl-passport";
 
-import { createParadexProvider } from "@layerswap/wallet-paradex";
+import { createParadexProvider, createParadexShell } from "@layerswap/wallet-paradex";
 import type { ParadexProviderConfig } from "@layerswap/wallet-paradex";
 
-import { createStarknetProvider } from "@layerswap/wallet-starknet";
+import { createStarknetProvider, createStarknetShell, preloadStarknetProvider } from "@layerswap/wallet-starknet";
 import type { StarknetProviderConfig } from "@layerswap/wallet-starknet";
 
-import { createSVMProvider } from "@layerswap/wallet-svm";
+import { createSVMProvider, createSVMShell, preloadSVMProvider } from "@layerswap/wallet-svm";
 import type { SVMProviderConfig } from "@layerswap/wallet-svm";
 
-import { createTONProvider } from "@layerswap/wallet-ton";
+import { createTONProvider, createTONShell, preloadTONProvider } from "@layerswap/wallet-ton";
 import type { TONProviderConfig, TonClientConfig } from "@layerswap/wallet-ton";
 
-import { createTronProvider } from "@layerswap/wallet-tron";
+import { createTronProvider, createTronShell, preloadTronProvider } from "@layerswap/wallet-tron";
 import type { TronProviderConfig } from "@layerswap/wallet-tron";
 
 import { WalletProvider, WalletWrapper } from "@layerswap/widget/types";
+import type { WalletProviderShell } from "@layerswap/widget/internal";
 
-export { createBitcoinProvider };
+export { createBitcoinProvider, createBitcoinShell };
 export type { BitcoinProviderConfig };
 
-export { createEVMProvider, useChainConfigs };
+export { createEVMProvider, createEVMShell, useChainConfigs };
 export type { EVMProviderConfig, WalletConnectConfig };
 
-export { createFuelProvider };
+export { createFuelProvider, createFuelShell };
 export type { FuelProviderConfig };
 
-export { createImmutablePassportProvider, ImtblRedirect };
+export { createImmutablePassportProvider, createImmutablePassportShell, ImtblRedirect };
 export type { ImmutablePassportProviderConfig, ImtblPassportConfig };
 
-export { createParadexProvider };
+export { createParadexProvider, createParadexShell };
 export type { ParadexProviderConfig };
 
-export { createStarknetProvider };
+export { createStarknetProvider, createStarknetShell };
 export type { StarknetProviderConfig };
 
-export { createSVMProvider };
+export { createSVMProvider, createSVMShell };
 export type { SVMProviderConfig };
 
-export { createTONProvider };
+export { createTONProvider, createTONShell };
 export type { TONProviderConfig, TonClientConfig };
 
-export { createTronProvider };
+export { createTronProvider, createTronShell };
 export type { TronProviderConfig };
+
+export type { WalletProviderShell };
+
+export {
+    preloadBitcoinProvider,
+    preloadEVMProvider,
+    preloadFuelProvider,
+    preloadStarknetProvider,
+    preloadSVMProvider,
+    preloadTONProvider,
+    preloadTronProvider,
+};
+
+/**
+ * Preloads all lazy chain provider chunks in parallel so that React.lazy
+ * resolves synchronously when WalletsProviders mounts them. Tolerates
+ * individual chunk load failures (a failed chain still falls back to the
+ * existing Suspense path on render).
+ */
+export async function preloadDefaultProviders(): Promise<void> {
+    await Promise.all([
+        preloadEVMProvider(),
+        preloadStarknetProvider(),
+        preloadFuelProvider(),
+        preloadBitcoinProvider(),
+        preloadTONProvider(),
+        preloadSVMProvider(),
+        preloadTronProvider(),
+    ].map(p => p.catch(() => undefined)));
+}
 
 /**
  * @deprecated Use createBitcoinProvider() instead. This export will be removed in a future version.

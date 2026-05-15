@@ -1,8 +1,30 @@
 'use client'
 import { WalletProvider, BaseWalletProviderConfig, WalletProviderModule, LazyBalanceProvider, LazyGasProvider, NetworkType } from "@layerswap/widget/types";
-import { createContext, ReactNode, useContext, type JSX } from 'react';
+import { defineWalletProvider, type WalletProviderShell } from "@layerswap/widget/internal";
+import { ComponentProps, createContext, lazy, ReactNode, Suspense, useContext, type JSX } from 'react';
 import useEVMConnection from "./useEVMConnection"
-import EVMProviderWrapper from "./EVMProvider"
+let EVMProviderImpl: typeof import("./EVMProvider")["default"] | null = null
+
+const loadEVMProviderModule = async () => {
+    const m = await import("./EVMProvider")
+    EVMProviderImpl = m.default
+}
+
+const EVMProviderWrapperLazy = /*#__PURE__*/ lazy(async () => {
+    const m = await import("./EVMProvider")
+    EVMProviderImpl = m.default
+    return m
+})
+
+const EVMProviderWrapper = (props: ComponentProps<typeof EVMProviderWrapperLazy>) => {
+    if (EVMProviderImpl) {
+        const Impl = EVMProviderImpl
+        return <Impl {...props} />
+    }
+    return <EVMProviderWrapperLazy {...props} />
+}
+
+export const preloadEVMProvider = loadEVMProviderModule
 import { EVMAddressUtilsProvider } from "./evmAddressUtilsProvider"
 import { AppSettings, KnownInternalNames } from "@layerswap/widget/internal";
 import { useEVMTransfer } from "./transferProvider/useEVMTransfer";
@@ -42,9 +64,11 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
     const WrapperComponent = ({ children }: { children: ReactNode }) => {
         return (
             <WalletConnectConfigContext.Provider value={walletConnectConfigs ?? null}>
-                <EVMProviderWrapper >
-                    {children}
-                </EVMProviderWrapper>
+                <Suspense fallback={null}>
+                    <EVMProviderWrapper>
+                        {children}
+                    </EVMProviderWrapper>
+                </Suspense>
             </WalletConnectConfigContext.Provider>
         );
     };
@@ -136,6 +160,26 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
 export { default as useEVMConnection } from "./useEVMConnection";
 export { useChainConfigs } from "./evmUtils/chainConfigs";
 
+// Default order: 100. Earlier chains (smaller numbers) win when multiple
+// providers support the same network — mirrors the legacy array-order
+// resolution in useWallet.resolveProvider. Consumers can override.
+export function createEVMShell(config: EVMProviderConfig & { order?: number } = {}): WalletProviderShell {
+    const { order = 100, ...rest } = config
+    const provider = createEVMProvider(rest)
+    return defineWalletProvider({
+        id: provider.id,
+        order,
+        wrapper: provider.wrapper as React.ComponentType<{ children: React.ReactNode }>,
+        walletConnectionProvider: provider.walletConnectionProvider,
+        transferProvider: provider.transferProvider,
+        balanceProvider: provider.balanceProvider,
+        gasProvider: provider.gasProvider,
+        addressUtilsProvider: provider.addressUtilsProvider,
+        contractAddressProvider: provider.contractAddressProvider,
+        rpcHealthCheckProvider: provider.rpcHealthCheckProvider,
+    })
+}
+
 /**
  * @deprecated Use createEVMProvider() instead. This export will be removed in a future version.
  * Note: This uses default WalletConnect configuration provided to LayerswapProvider.
@@ -145,9 +189,11 @@ export const EVMProvider: WalletProvider = {
     wrapper: ({ children }: { children: JSX.Element | JSX.Element[] }) => {
         return (
             <WalletConnectConfigContext.Provider value={AppSettings.WalletConnectConfig ?? null}>
-                <EVMProviderWrapper>
-                    {children}
-                </EVMProviderWrapper>
+                <Suspense fallback={null}>
+                    <EVMProviderWrapper>
+                        {children}
+                    </EVMProviderWrapper>
+                </Suspense>
             </WalletConnectConfigContext.Provider>
         );
     },

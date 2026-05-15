@@ -1,10 +1,31 @@
 import useBitcoinConnection from "./useBitcoinConnection";
 import { WalletProvider, BaseWalletProviderConfig } from "@layerswap/widget/types";
-import { BitcoinProvider as BitcoinProviderWrapper } from "./BitcoinProvider";
 import { BitcoinGasProvider } from "./bitcoinGasProvider";
 import { BitcoinBalanceProvider } from "./bitcoinBalanceProvider";
 import { BitcoinAddressUtilsProvider } from "./bitcoinAddressUtilsProvider";
-import React from "react";
+import React, { ComponentProps, lazy, Suspense } from "react";
+let BitcoinProviderImpl: typeof import("./BitcoinProvider")["BitcoinProvider"] | null = null
+
+const loadBitcoinProviderModule = async () => {
+    const m = await import("./BitcoinProvider")
+    BitcoinProviderImpl = m.BitcoinProvider
+}
+
+const BitcoinProviderWrapperLazy = /*#__PURE__*/ lazy(async () => {
+    const m = await import("./BitcoinProvider")
+    BitcoinProviderImpl = m.BitcoinProvider
+    return { default: m.BitcoinProvider }
+});
+
+const BitcoinProviderWrapper = (props: ComponentProps<typeof BitcoinProviderWrapperLazy>) => {
+    if (BitcoinProviderImpl) {
+        const Impl = BitcoinProviderImpl
+        return <Impl {...props} />
+    }
+    return <BitcoinProviderWrapperLazy {...props} />
+}
+
+export const preloadBitcoinProvider = loadBitcoinProviderModule
 import { useBitcoinTransfer } from "./transferProvider/useBitcoinTransfer";
 
 export type BitcoinProviderConfig = BaseWalletProviderConfig
@@ -20,9 +41,11 @@ export function createBitcoinProvider(config: BitcoinProviderConfig = {}): Walle
 
     const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
         return (
-            <BitcoinProviderWrapper>
-                {children}
-            </BitcoinProviderWrapper>
+            <Suspense fallback={null}>
+                <BitcoinProviderWrapper>
+                    {children}
+                </BitcoinProviderWrapper>
+            </Suspense>
         );
     };
 
@@ -63,12 +86,36 @@ export function createBitcoinProvider(config: BitcoinProviderConfig = {}): Walle
 /**
  * @deprecated Use createBitcoinProvider() instead. This export will be removed in a future version.
  */
+const BitcoinProviderLazyWrapper = ({ children }: { children: React.ReactNode }) => (
+    <Suspense fallback={null}>
+        <BitcoinProviderWrapper>{children}</BitcoinProviderWrapper>
+    </Suspense>
+);
+
 export const BitcoinProvider: WalletProvider = {
     id: "bitcoin",
-    wrapper: BitcoinProviderWrapper,
+    wrapper: BitcoinProviderLazyWrapper,
     walletConnectionProvider: useBitcoinConnection,
     addressUtilsProvider: [new BitcoinAddressUtilsProvider()],
     gasProvider: [new BitcoinGasProvider()],
     balanceProvider: [new BitcoinBalanceProvider()],
     transferProvider: [useBitcoinTransfer],
 };
+import { defineWalletProvider, type WalletProviderShell } from "@layerswap/widget/internal";
+
+export function createBitcoinShell(config: BitcoinProviderConfig & { order?: number } = {}): WalletProviderShell {
+    const { order = 500, ...rest } = config
+    const provider = createBitcoinProvider(rest)
+    return defineWalletProvider({
+        id: provider.id,
+        order,
+        wrapper: provider.wrapper as React.ComponentType<{ children: React.ReactNode }>,
+        walletConnectionProvider: provider.walletConnectionProvider,
+        transferProvider: provider.transferProvider,
+        balanceProvider: provider.balanceProvider,
+        gasProvider: provider.gasProvider,
+        addressUtilsProvider: provider.addressUtilsProvider,
+        contractAddressProvider: provider.contractAddressProvider,
+        rpcHealthCheckProvider: provider.rpcHealthCheckProvider,
+    })
+}

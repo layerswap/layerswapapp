@@ -1,9 +1,30 @@
 import { WalletProvider, BaseWalletProviderConfig, LazyBalanceProvider } from "@layerswap/widget/types";
 import { TronGasProvider } from "./tronGasProvider";
-import TronProviderWrapper from "./TronProvider";
 import useTronConnection from "./useTronConnection";
 import { TronAddressUtilsProvider } from "./tronAddressUtilsProvider";
-import React from "react";
+import React, { ComponentProps, lazy, Suspense } from "react";
+let TronProviderImpl: typeof import("./TronProvider")["default"] | null = null
+
+const loadTronProviderModule = async () => {
+    const m = await import("./TronProvider")
+    TronProviderImpl = m.default
+}
+
+const TronProviderWrapperLazy = /*#__PURE__*/ lazy(async () => {
+    const m = await import("./TronProvider")
+    TronProviderImpl = m.default
+    return m
+});
+
+const TronProviderWrapper = (props: ComponentProps<typeof TronProviderWrapperLazy>) => {
+    if (TronProviderImpl) {
+        const Impl = TronProviderImpl
+        return <Impl {...props} />
+    }
+    return <TronProviderWrapperLazy {...props} />
+}
+
+export const preloadTronProvider = loadTronProviderModule
 import { useTronTransfer } from "./transferProvider/useTronTransfer";
 import { KnownInternalNames } from "@layerswap/widget/internal";
 
@@ -20,9 +41,11 @@ export function createTronProvider(config: TronProviderConfig = {}): WalletProvi
 
     const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
         return (
-            <TronProviderWrapper>
-                {children}
-            </TronProviderWrapper>
+            <Suspense fallback={null}>
+                <TronProviderWrapper>
+                    {children}
+                </TronProviderWrapper>
+            </Suspense>
         );
     };
 
@@ -67,9 +90,15 @@ export function createTronProvider(config: TronProviderConfig = {}): WalletProvi
 /**
  * @deprecated Use createTronProvider() instead. This export will be removed in a future version.
  */
+const TronProviderLazyWrapper = ({ children }: { children: React.ReactNode }) => (
+    <Suspense fallback={null}>
+        <TronProviderWrapper>{children}</TronProviderWrapper>
+    </Suspense>
+);
+
 export const TronProvider: WalletProvider = {
     id: "tron",
-    wrapper: TronProviderWrapper,
+    wrapper: TronProviderLazyWrapper,
     walletConnectionProvider: useTronConnection,
     addressUtilsProvider: [new TronAddressUtilsProvider()],
     gasProvider: [new TronGasProvider()],
@@ -81,3 +110,21 @@ export const TronProvider: WalletProvider = {
     ],
     transferProvider: [useTronTransfer],
 };
+import { defineWalletProvider, type WalletProviderShell } from "@layerswap/widget/internal";
+
+export function createTronShell(config: TronProviderConfig & { order?: number } = {}): WalletProviderShell {
+    const { order = 800, ...rest } = config
+    const provider = createTronProvider(rest)
+    return defineWalletProvider({
+        id: provider.id,
+        order,
+        wrapper: provider.wrapper as React.ComponentType<{ children: React.ReactNode }>,
+        walletConnectionProvider: provider.walletConnectionProvider,
+        transferProvider: provider.transferProvider,
+        balanceProvider: provider.balanceProvider,
+        gasProvider: provider.gasProvider,
+        addressUtilsProvider: provider.addressUtilsProvider,
+        contractAddressProvider: provider.contractAddressProvider,
+        rpcHealthCheckProvider: provider.rpcHealthCheckProvider,
+    })
+}

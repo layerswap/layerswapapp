@@ -24,7 +24,7 @@ export const BitcoinProvider = ({ children }: { children: ReactNode }): ReactEle
     )
 }
 
-const queryClient = new QueryClient()
+const queryClient = /*#__PURE__*/ new QueryClient()
 
 const QueryWrapper = ({ children }: { children: ReactNode }): ReactElement => {
     const context = useContext(QueryClientContext)

@@ -7,6 +7,7 @@ import Layout from '../../components/layout';
 import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
 import WidgetWrapper from '../../components/WidgetWrapper';
+import DefaultChainShells from '../../components/DefaultChainShells';
 import MaintananceContent from '../../components/maintanance/maintanance';
 
 
@@ -34,7 +35,9 @@ const SwapDetails = ({ settings, themeData, apiKey, swapData }: InferGetServerSi
           }
         }}
       >
-        <SwapWithdrawal initialSwapData={swapData} />
+        <DefaultChainShells>
+          <SwapWithdrawal initialSwapData={swapData} />
+        </DefaultChainShells>
       </WidgetWrapper>
     </Layout>
   </>

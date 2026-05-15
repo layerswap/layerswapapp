@@ -23,15 +23,19 @@ const id = 'prdx'
 
 export function useParadexConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
 
-    const { activeConnection, setActiveAddress, evmProvider: evmProviderInstance, starknetProvider: starknetProviderInstance } = useActiveParadexAccount()
+    const { activeConnection, setActiveAddress, evmProvider, starknetProvider } = useActiveParadexAccount()
     const paradexAccounts = useWalletStore((state) => state.paradexAccounts)
     const addParadexAccount = useWalletStore((state) => state.addParadexAccount)
     const removeParadexAccount = useWalletStore((state) => state.removeParadexAccount)
     const paradexNetwork = networks.find(n => n.name === KnownInternalNames.Networks.ParadexMainnet || n.name === KnownInternalNames.Networks.ParadexTestnet)
 
     const { setSelectedConnector } = useConnectModal()
-    const evmProvider = evmProviderInstance.walletConnectionProvider({ networks })
-    const starknetProvider = starknetProviderInstance.walletConnectionProvider({ networks })
+    // evmProvider / starknetProvider come pre-resolved from the registry
+    // via useActiveParadexAccount(). They may be undefined during the
+    // brief first-render gap before EVM/Starknet shells register; the
+    // connectWallet branches below guard on that and abort instead of
+    // crashing — same end-user effect as today, where wagmi reconnect
+    // takes time and Paradex shows no wallet until it lands.
 
     const config = useConfig()
     const starknetNetwork = networks.find(n => n.name === KnownInternalNames.Networks.StarkNetMainnet || n.name === KnownInternalNames.Networks.StarkNetGoerli || n.name === KnownInternalNames.Networks.StarkNetSepolia)
@@ -39,6 +43,9 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
         const { connector } = props || {};
         if (!connector) {
             throw new Error("Connector is required");
+        }
+        if (!evmProvider || !starknetProvider) {
+            throw new Error("EVM or Starknet provider not yet ready");
         }
 
         try {
@@ -162,6 +169,7 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
 
     const connectedWallets = useMemo(() => {
         if (!paradexAccounts) return []
+        if (!evmProvider || !starknetProvider) return []
         return [
             ...resolveWalletsList({ provider: evmProvider, paradexAccounts, name, disconnect: removeParadexAccount, networkIcon: paradexNetwork?.logo }),
             ...resolveWalletsList({ provider: starknetProvider, paradexAccounts, name, disconnect: removeParadexAccount, networkIcon: paradexNetwork?.logo })
@@ -170,17 +178,17 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
 
     const availableConnectors = useMemo(() => {
         return [
-            ...(evmProvider.availableConnectors ? evmProvider.availableConnectors : []),
-            ...(starknetProvider?.availableConnectors ? starknetProvider.availableConnectors : [])
+            ...(evmProvider?.availableConnectors ?? []),
+            ...(starknetProvider?.availableConnectors ?? [])
         ]
     }, [evmProvider, starknetProvider])
 
     const additionalConnectors = useMemo(() => {
-        return evmProvider.additionalConnectors ? evmProvider.additionalConnectors : []
-    }, [evmProvider.additionalConnectors])
+        return evmProvider?.additionalConnectors ?? []
+    }, [evmProvider?.additionalConnectors])
 
     const requestAdditionalConnectors = useCallback(async (params: RequestAdditionalConnectorsParams = {}): Promise<RequestAdditionalConnectorsResult> => {
-        if (!evmProvider.requestAdditionalConnectors) {
+        if (!evmProvider?.requestAdditionalConnectors) {
             return { connectors: [], nextPage: null, totalCount: 0 }
         }
 
@@ -190,11 +198,11 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
             nextPage: result.nextPage,
             totalCount: result.totalCount,
         }
-    }, [evmProvider.requestAdditionalConnectors, name])
+    }, [evmProvider?.requestAdditionalConnectors, name])
 
     const switchAccount = async (wallet: Wallet, address: string) => {
 
-        const providers = [evmProvider, starknetProvider]
+        const providers = [evmProvider, starknetProvider].filter((p): p is WalletConnectionProvider => p !== undefined)
         const paradexProvider = providers.find(p => p?.connectedWallets?.find(w => w.id === wallet.id))
 
         if (paradexProvider?.name && wallet.metadata?.l1Address) {
@@ -209,6 +217,7 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
 
     const activeWallet = useMemo(() => {
         if (!activeConnection || !paradexAccounts) return undefined
+        if (!evmProvider || !starknetProvider) return undefined
         const provider = activeConnection?.providerName === starknetProvider.name ? starknetProvider : evmProvider
         return resolveSingleWallet({
             provider,
@@ -219,7 +228,7 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
             disconnect: removeParadexAccount,
             networkIcon: paradexNetwork?.logo
         })
-    }, [evmProvider.activeWallet, starknetProvider.activeWallet, activeConnection, paradexAccounts])
+    }, [evmProvider?.activeWallet, starknetProvider?.activeWallet, activeConnection, paradexAccounts])
 
     const providerIcon = useMemo(() => paradexNetwork?.logo, [paradexNetwork])
 
@@ -238,7 +247,9 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
         id,
         providerIcon,
         hideFromList: true,
-        ready: (typeof evmProvider.ready === 'boolean' ? evmProvider.ready : true) && (typeof starknetProvider.ready === 'boolean' ? starknetProvider.ready : true),
+        ready: !!evmProvider && !!starknetProvider
+            && (typeof evmProvider.ready === 'boolean' ? evmProvider.ready : true)
+            && (typeof starknetProvider.ready === 'boolean' ? starknetProvider.ready : true),
         multiStepHandlers: [
             {
                 component: ParadexMultiStepHandler,

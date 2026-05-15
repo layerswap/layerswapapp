@@ -1,5 +1,5 @@
-import { WalletProvider, BaseWalletProviderConfig } from "@layerswap/widget/types"
-import { ParadexBalanceProvider } from "./paradexBalanceProvider"
+import { WalletProvider, BaseWalletProviderConfig, LazyBalanceProvider } from "@layerswap/widget/types"
+import { KnownInternalNames } from "@layerswap/widget/internal"
 import { useParadexConnection } from "./useParadexConnection"
 import { ActiveParadexAccountProvider } from "./ActiveParadexAccount"
 
@@ -15,7 +15,12 @@ export function createParadexProvider(config: ParadexProviderConfig = {}): Walle
 
     const walletConnectionProvider = customHook || useParadexConnection;
 
-    const defaultBalanceProviders = [new ParadexBalanceProvider()];
+    const defaultBalanceProviders = [
+        new LazyBalanceProvider(
+            (n) => KnownInternalNames.Networks.ParadexMainnet.includes(n.name) || KnownInternalNames.Networks.ParadexTestnet.includes(n.name),
+            () => import("./paradexBalanceProvider").then(m => new m.ParadexBalanceProvider())
+        )
+    ];
     const finalBalanceProviders = balanceProviders !== undefined
         ? (Array.isArray(balanceProviders) ? balanceProviders : [balanceProviders])
         : defaultBalanceProviders;
@@ -47,5 +52,23 @@ export const ParadexProvider: WalletProvider = {
     id: "paradex",
     wrapper: ActiveParadexAccountProvider,
     walletConnectionProvider: useParadexConnection,
-    // balanceProvider: [new ParadexBalanceProvider()]
+    // balanceProvider: [new LazyBalanceProvider(...)] // see createParadexProvider for lazy variant
 };
+import { defineWalletProvider, type WalletProviderShell } from "@layerswap/widget/internal";
+
+export function createParadexShell(config: ParadexProviderConfig & { order?: number } = {}): WalletProviderShell {
+    const { order = 400, ...rest } = config
+    const provider = createParadexProvider(rest)
+    return defineWalletProvider({
+        id: provider.id,
+        order,
+        wrapper: provider.wrapper as React.ComponentType<{ children: React.ReactNode }>,
+        walletConnectionProvider: provider.walletConnectionProvider,
+        transferProvider: provider.transferProvider,
+        balanceProvider: provider.balanceProvider,
+        gasProvider: provider.gasProvider,
+        addressUtilsProvider: provider.addressUtilsProvider,
+        contractAddressProvider: provider.contractAddressProvider,
+        rpcHealthCheckProvider: provider.rpcHealthCheckProvider,
+    })
+}

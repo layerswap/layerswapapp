@@ -1,9 +1,8 @@
-import { LayerswapProvider, LayerSwapSettings, ThemeData } from "@layerswap/widget"
+import { LayerswapProvider, LayerSwapSettings, ThemeData } from "@layerswap/widget/transactions"
 import { useRouter } from "next/router"
 import { ComponentProps, ReactNode } from "react"
 import { updateFormBulk } from "./utils/updateForm"
 import { removeSwapPath, setMenuPath, setSwapPath } from "./utils/updatePath"
-import { getDefaultProviders } from "@layerswap/wallets";
 import { QueryParams } from "../helpers/querryHelper"
 import { logError } from "./utils/logError"
 
@@ -16,11 +15,14 @@ type WidgetWrapperProps<T extends Record<string, unknown> = Record<string, never
     apiKey?: string;
     initialValues?: QueryParams;
     callbacks?: LayerswapProviderComponentProps['callbacks'];
-    walletProviders?: LayerswapProviderComponentProps['walletProviders'];
     configOverrides?: Partial<LayerswapProviderComponentProps['config']>;
     enableSwapCallbacks?: boolean;
 };
 
+// WidgetWrapper no longer manages wallet providers — chain shells are
+// composed as JSX children by the caller (see DefaultChainShells.tsx and
+// the swap pages). LayerswapProvider's children include the shell tree
+// and the page content.
 const WidgetWrapper = <T extends Record<string, unknown>>({
     children,
     settings,
@@ -28,37 +30,10 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
     apiKey,
     initialValues,
     callbacks,
-    walletProviders,
     configOverrides,
     enableSwapCallbacks = false,
 }: WidgetWrapperProps<T>) => {
     const router = useRouter()
-
-    const imtblPassportConfig = typeof window !== 'undefined' ? {
-        clientId: process.env.NEXT_PUBLIC_IMMUTABLE_CLIENT_ID || '',
-        publishableKey: process.env.NEXT_PUBLIC_IMMUTABLE_PUBLISHABLE_KEY || '',
-        redirectUri: router.basePath ? `${window.location.origin}${router.basePath}/imtblRedirect` : `${window.location.origin}/imtblRedirect`,
-        logoutRedirectUri: router.basePath ? `${window.location.origin}${router.basePath}/` : `${window.location.origin}/`
-    } : undefined
-
-    const walletConnectConfigs = {
-        projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '',
-        name: 'Layerswap',
-        description: 'Layerswap App',
-        url: 'https://layerswap.io/app/',
-        icons: ['https://www.layerswap.io/app/symbol.png']
-    }
-
-    const defaultWalletProviders = getDefaultProviders({
-        walletConnect: walletConnectConfigs,
-        immutablePassport: imtblPassportConfig,
-        ton: {
-            tonApiKey: process.env.NEXT_PUBLIC_TON_API_KEY || '',
-            manifestUrl: 'https://layerswap.io/app/tonconnect-manifest.json'
-        }
-    })
-
-    const resolvedWalletProviders = walletProviders ?? defaultWalletProviders
 
     const themeOverrides: Partial<ThemeData> = {
         borderRadius: 'default',
@@ -110,7 +85,6 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
     return <LayerswapProvider
         config={mergedConfig}
         callbacks={resolvedCallbacks}
-        walletProviders={resolvedWalletProviders}
     >
         {children}
     </LayerswapProvider>

@@ -9,7 +9,7 @@ import { createConfig, http, WagmiProvider } from 'wagmi';
 import { QueryClient, QueryClientProvider, } from '@tanstack/react-query';
 import { mainnet } from 'viem/chains';
 import useCustomEvm from '@/hooks/useCustomEvm';
-import { createEVMProvider } from '@layerswap/wallets'
+import { createEVMShell } from '@layerswap/wallets'
 
 const wagmiConfig = createConfig({
     chains: [mainnet],
@@ -25,7 +25,7 @@ const LayerswapWidgetCustomEvm: FC = () => {
     const { widgetRenderKey, showLoading, config } = useWidgetContext();
     const settings = useSettingsState();
 
-    const evmProvider = createEVMProvider({
+    const EVMShell = createEVMShell({
         customHook: useCustomEvm,
     })
 
@@ -49,15 +49,14 @@ const LayerswapWidgetCustomEvm: FC = () => {
                                     version: process.env.NEXT_PUBLIC_API_VERSION as 'mainnet' | 'testnet',
                                     settings
                                 }}
-                                walletProviders={[evmProvider]}
                             >
-
-                                {
-                                    showLoading
-                                        ? <WidgetLoading />
-                                        : <Swap />
-                                }
-
+                                <EVMShell>
+                                    {
+                                        showLoading
+                                            ? <WidgetLoading />
+                                            : <Swap />
+                                    }
+                                </EVMShell>
                             </LayerswapProvider>
                         </div>
                     </div>

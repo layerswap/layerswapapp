@@ -1,10 +1,31 @@
 import { FuelAddressUtilsProvider } from "./fuelAddressUtilsProvider";
 import { FuelBalanceProvider } from "./fuelBalanceProvider";
 import { FuelGasProvider } from "./fuelGasProvider";
-import FuelProviderWrapper from "./FuelProvider";
 import useFuelConnection from "./useFuelConnection";
 import { WalletProvider, BaseWalletProviderConfig } from "@layerswap/widget/types";
-import React from "react";
+import React, { ComponentProps, lazy, Suspense } from "react";
+let FuelProviderImpl: typeof import("./FuelProvider")["default"] | null = null
+
+const loadFuelProviderModule = async () => {
+    const m = await import("./FuelProvider")
+    FuelProviderImpl = m.default
+}
+
+const FuelProviderWrapperLazy = /*#__PURE__*/ lazy(async () => {
+    const m = await import("./FuelProvider")
+    FuelProviderImpl = m.default
+    return m
+});
+
+const FuelProviderWrapper = (props: ComponentProps<typeof FuelProviderWrapperLazy>) => {
+    if (FuelProviderImpl) {
+        const Impl = FuelProviderImpl
+        return <Impl {...props} />
+    }
+    return <FuelProviderWrapperLazy {...props} />
+}
+
+export const preloadFuelProvider = loadFuelProviderModule
 import { useFuelTransfer } from "./transferProvider/useFuelTransfer";
 
 export type FuelProviderConfig = BaseWalletProviderConfig
@@ -20,9 +41,11 @@ export function createFuelProvider(config: FuelProviderConfig = {}): WalletProvi
 
     const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
         return (
-            <FuelProviderWrapper>
-                {children}
-            </FuelProviderWrapper>
+            <Suspense fallback={null}>
+                <FuelProviderWrapper>
+                    {children}
+                </FuelProviderWrapper>
+            </Suspense>
         );
     };
 
@@ -62,12 +85,36 @@ export function createFuelProvider(config: FuelProviderConfig = {}): WalletProvi
 /**
  * @deprecated Use createFuelProvider() instead. This export will be removed in a future version.
  */
+const FuelProviderLazyWrapper = ({ children }: { children: React.ReactNode }) => (
+    <Suspense fallback={null}>
+        <FuelProviderWrapper>{children}</FuelProviderWrapper>
+    </Suspense>
+);
+
 export const FuelProvider: WalletProvider = {
     id: "fuel",
-    wrapper: FuelProviderWrapper,
+    wrapper: FuelProviderLazyWrapper,
     walletConnectionProvider: useFuelConnection,
     addressUtilsProvider: [new FuelAddressUtilsProvider()],
     gasProvider: [new FuelGasProvider()],
     balanceProvider: [new FuelBalanceProvider()],
     transferProvider: [useFuelTransfer],
 };
+import { defineWalletProvider, type WalletProviderShell } from "@layerswap/widget/internal";
+
+export function createFuelShell(config: FuelProviderConfig & { order?: number } = {}): WalletProviderShell {
+    const { order = 300, ...rest } = config
+    const provider = createFuelProvider(rest)
+    return defineWalletProvider({
+        id: provider.id,
+        order,
+        wrapper: provider.wrapper as React.ComponentType<{ children: React.ReactNode }>,
+        walletConnectionProvider: provider.walletConnectionProvider,
+        transferProvider: provider.transferProvider,
+        balanceProvider: provider.balanceProvider,
+        gasProvider: provider.gasProvider,
+        addressUtilsProvider: provider.addressUtilsProvider,
+        contractAddressProvider: provider.contractAddressProvider,
+        rpcHealthCheckProvider: provider.rpcHealthCheckProvider,
+    })
+}

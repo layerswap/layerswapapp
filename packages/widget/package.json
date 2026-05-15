@@ -19,6 +19,10 @@
       "types": "./dist/types/exports/types.d.ts",
       "default": "./dist/esm/exports/types.js"
     },
+    "./transactions": {
+      "types": "./dist/types/exports/transactions.d.ts",
+      "default": "./dist/esm/exports/transactions.js"
+    },
     "./index.css": "./dist/index.css"
   },
   "style": "dist/index.css",
@@ -82,7 +86,7 @@
     "copy-to-clipboard": "^3.3.3",
     "fflate": "^0.8.2",
     "formik": "^2.2.9",
-    "framer-motion": "^12.26.2",
+    "framer-motion": "catalog:",
     "lucide-react": "^0.379.0",
     "qrcode.react": "^3.1.0",
     "react-error-boundary": "^4.0.11",

@@ -39,7 +39,7 @@ const Comp = ({
     );
 };
 
-const queryClient = new QueryClient()
+const queryClient = /*#__PURE__*/ new QueryClient()
 
 const FuelProviderWrapper = ({
     children

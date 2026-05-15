@@ -1,9 +1,30 @@
 import { WalletProvider, BaseWalletProviderConfig, ThemeData, LazyBalanceProvider } from "@layerswap/widget/types";
 import { TonGasProvider } from "./tonGasProvider";
-import TonProviderWrapper from "./TonProvider";
 import useTONConnection from "./useTONConnection";
 import { TonAddressUtilsProvider } from "./tonAddressUtilsProvider";
-import React, { createContext, useContext } from "react";
+import React, { ComponentProps, createContext, lazy, Suspense, useContext } from "react";
+let TonProviderImpl: typeof import("./TonProvider")["default"] | null = null
+
+const loadTonProviderModule = async () => {
+    const m = await import("./TonProvider")
+    TonProviderImpl = m.default
+}
+
+const TonProviderWrapperLazy = /*#__PURE__*/ lazy(async () => {
+    const m = await import("./TonProvider")
+    TonProviderImpl = m.default
+    return m
+});
+
+const TonProviderWrapper = (props: ComponentProps<typeof TonProviderWrapperLazy>) => {
+    if (TonProviderImpl) {
+        const Impl = TonProviderImpl
+        return <Impl {...props} />
+    }
+    return <TonProviderWrapperLazy {...props} />
+}
+
+export const preloadTONProvider = loadTonProviderModule
 import { AppSettings, KnownInternalNames } from "@layerswap/widget/internal";
 import { useTONTransfer } from "./transferProvider/useTONTransfer";
 
@@ -39,9 +60,11 @@ export function createTONProvider(config: TONProviderConfig = {}): WalletProvide
     const WrapperComponent = ({ children, themeData }: { children: React.ReactNode, themeData?: ThemeData }) => {
         return (
             <TonConfigContext.Provider value={tonConfigs || null}>
-                <TonProviderWrapper tonConfigs={tonConfigs} themeData={themeData}>
-                    {children}
-                </TonProviderWrapper>
+                <Suspense fallback={null}>
+                    <TonProviderWrapper tonConfigs={tonConfigs} themeData={themeData}>
+                        {children}
+                    </TonProviderWrapper>
+                </Suspense>
             </TonConfigContext.Provider>
         );
     };
@@ -95,9 +118,11 @@ export const TONProvider: WalletProvider = {
         console.log('configs', configs)
         return (
             <TonConfigContext.Provider value={configs}>
-                <TonProviderWrapper tonConfigs={configs} themeData={themeData}>
-                    {children}
-                </TonProviderWrapper>
+                <Suspense fallback={null}>
+                    <TonProviderWrapper tonConfigs={configs} themeData={themeData}>
+                        {children}
+                    </TonProviderWrapper>
+                </Suspense>
             </TonConfigContext.Provider>
         );
     },
@@ -112,3 +137,21 @@ export const TONProvider: WalletProvider = {
     ],
     transferProvider: [useTONTransfer],
 };
+import { defineWalletProvider, type WalletProviderShell } from "@layerswap/widget/internal";
+
+export function createTONShell(config: TONProviderConfig & { order?: number } = {}): WalletProviderShell {
+    const { order = 600, ...rest } = config
+    const provider = createTONProvider(rest)
+    return defineWalletProvider({
+        id: provider.id,
+        order,
+        wrapper: provider.wrapper as React.ComponentType<{ children: React.ReactNode }>,
+        walletConnectionProvider: provider.walletConnectionProvider,
+        transferProvider: provider.transferProvider,
+        balanceProvider: provider.balanceProvider,
+        gasProvider: provider.gasProvider,
+        addressUtilsProvider: provider.addressUtilsProvider,
+        contractAddressProvider: provider.contractAddressProvider,
+        rpcHealthCheckProvider: provider.rpcHealthCheckProvider,
+    })
+}

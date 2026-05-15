@@ -1,10 +1,31 @@
 import { WalletProvider, BaseWalletProviderConfig, LazyGasProvider, NetworkType } from "@layerswap/widget/types";
 import { AppSettings } from "@layerswap/widget/internal";
 import useSVMConnection from "./useSVMConnection";
-import SVMProviderWrapper from "./SVMProvider";
 import { SolanaBalanceProvider } from "./svmBalanceProvider";
 import { SolanaAddressUtilsProvider } from "./svmAddressUtilsProvider";
-import React, { createContext, useContext } from "react";
+import React, { ComponentProps, createContext, lazy, Suspense, useContext } from "react";
+let SVMProviderImpl: typeof import("./SVMProvider")["default"] | null = null
+
+const loadSVMProviderModule = async () => {
+    const m = await import("./SVMProvider")
+    SVMProviderImpl = m.default
+}
+
+const SVMProviderWrapperLazy = /*#__PURE__*/ lazy(async () => {
+    const m = await import("./SVMProvider")
+    SVMProviderImpl = m.default
+    return m
+});
+
+const SVMProviderWrapper = (props: ComponentProps<typeof SVMProviderWrapperLazy>) => {
+    if (SVMProviderImpl) {
+        const Impl = SVMProviderImpl
+        return <Impl {...props} />
+    }
+    return <SVMProviderWrapperLazy {...props} />
+}
+
+export const preloadSVMProvider = loadSVMProviderModule
 import { useSVMTransfer } from "./transferProvider/useSVMTransfer";
 
 export type WalletConnectConfig = {
@@ -36,9 +57,11 @@ export function createSVMProvider(config: SVMProviderConfig = {}): WalletProvide
     const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
         return (
             <WalletConnectConfigContext.Provider value={walletConnectConfigs ?? null}>
-                <SVMProviderWrapper>
-                    {children}
-                </SVMProviderWrapper>
+                <Suspense fallback={null}>
+                    <SVMProviderWrapper>
+                        {children}
+                    </SVMProviderWrapper>
+                </Suspense>
             </WalletConnectConfigContext.Provider>
         );
     };
@@ -90,9 +113,11 @@ export const SVMProvider: WalletProvider = {
     wrapper: ({ children }: { children: React.ReactNode }) => {
         return (
             <WalletConnectConfigContext.Provider value={AppSettings.WalletConnectConfig ?? null}>
-                <SVMProviderWrapper walletConnectConfigs={AppSettings.WalletConnectConfig}>
-                    {children}
-                </SVMProviderWrapper>
+                <Suspense fallback={null}>
+                    <SVMProviderWrapper walletConnectConfigs={AppSettings.WalletConnectConfig}>
+                        {children}
+                    </SVMProviderWrapper>
+                </Suspense>
             </WalletConnectConfigContext.Provider>
         );
     },
@@ -107,3 +132,21 @@ export const SVMProvider: WalletProvider = {
     balanceProvider: [new SolanaBalanceProvider()],
     transferProvider: [useSVMTransfer],
 };
+import { defineWalletProvider, type WalletProviderShell } from "@layerswap/widget/internal";
+
+export function createSVMShell(config: SVMProviderConfig & { order?: number } = {}): WalletProviderShell {
+    const { order = 700, ...rest } = config
+    const provider = createSVMProvider(rest)
+    return defineWalletProvider({
+        id: provider.id,
+        order,
+        wrapper: provider.wrapper as React.ComponentType<{ children: React.ReactNode }>,
+        walletConnectionProvider: provider.walletConnectionProvider,
+        transferProvider: provider.transferProvider,
+        balanceProvider: provider.balanceProvider,
+        gasProvider: provider.gasProvider,
+        addressUtilsProvider: provider.addressUtilsProvider,
+        contractAddressProvider: provider.contractAddressProvider,
+        rpcHealthCheckProvider: provider.rpcHealthCheckProvider,
+    })
+}
