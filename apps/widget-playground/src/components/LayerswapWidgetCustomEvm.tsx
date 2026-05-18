@@ -1,6 +1,6 @@
 "use client";
 import { FC } from 'react';
-import { LayerswapProvider, Swap, WidgetLoading } from '@layerswap/widget';
+import { LayerswapProvider, Swap, WidgetLoading, defineWalletProvider } from '@layerswap/widget';
 import { useWidgetContext } from '@/context/ConfigContext';
 import { useSettingsState } from '@/context/settings';
 import { DynamicContextProvider } from "@dynamic-labs/sdk-react-core";
@@ -9,7 +9,7 @@ import { createConfig, http, WagmiProvider } from 'wagmi';
 import { QueryClient, QueryClientProvider, } from '@tanstack/react-query';
 import { mainnet } from 'viem/chains';
 import useCustomEvm from '@/hooks/useCustomEvm';
-import { createEVMShell } from '@layerswap/wallets'
+import { createEVMProvider } from '@layerswap/wallets'
 
 const wagmiConfig = createConfig({
     chains: [mainnet],
@@ -21,13 +21,28 @@ const wagmiConfig = createConfig({
 
 const queryClient = new QueryClient();
 
+// Custom EVM demo. Uses the legacy createEVMProvider factory + manually
+// composes a shell via defineWalletProvider. The legacy factory statically
+// imports wagmi/viem so importing this file pulls those into the playground
+// bundle — acceptable for a demo. Production apps use createEVMShell, which
+// routes the heavy code through a lazy chunk.
+const evmProviderDefinition = createEVMProvider({ customHook: useCustomEvm })
+const CustomEVMShell = defineWalletProvider({
+    id: evmProviderDefinition.id,
+    order: 100,
+    wrapper: evmProviderDefinition.wrapper as React.ComponentType<{ children: React.ReactNode }>,
+    walletConnectionProvider: evmProviderDefinition.walletConnectionProvider,
+    transferProvider: evmProviderDefinition.transferProvider,
+    balanceProvider: evmProviderDefinition.balanceProvider,
+    gasProvider: evmProviderDefinition.gasProvider,
+    addressUtilsProvider: evmProviderDefinition.addressUtilsProvider,
+    contractAddressProvider: evmProviderDefinition.contractAddressProvider,
+    rpcHealthCheckProvider: evmProviderDefinition.rpcHealthCheckProvider,
+})
+
 const LayerswapWidgetCustomEvm: FC = () => {
     const { widgetRenderKey, showLoading, config } = useWidgetContext();
     const settings = useSettingsState();
-
-    const EVMShell = createEVMShell({
-        customHook: useCustomEvm,
-    })
 
     return (
         <DynamicContextProvider
@@ -50,13 +65,13 @@ const LayerswapWidgetCustomEvm: FC = () => {
                                     settings
                                 }}
                             >
-                                <EVMShell>
+                                <CustomEVMShell>
                                     {
                                         showLoading
                                             ? <WidgetLoading />
                                             : <Swap />
                                     }
-                                </EVMShell>
+                                </CustomEVMShell>
                             </LayerswapProvider>
                         </div>
                     </div>
