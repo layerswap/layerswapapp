@@ -1,5 +1,5 @@
 'use client'
-import React, { FC, ReactNode, useMemo } from 'react'
+import React, { ComponentType, FC, ReactNode, Suspense, lazy, useMemo } from 'react'
 import { useSettingsState } from '@/context/settings'
 import {
     RegisteredWalletProvider,
@@ -16,6 +16,23 @@ import type {
     NftProvider,
 } from '@/types'
 import type { TransferProvider } from '@/types/transfer'
+
+// Static-context bundle a lazy connection registrar receives via props.
+// Everything in here is plain data — no hooks, no React.lazy refs —
+// because it's captured at definition time and copied into the registry
+// entry by the registrar.
+export type LazyConnectionRegistrarStatic = Pick<
+    RegisteredWalletProvider,
+    'id' | 'order' | 'balanceProviders' | 'gasProviders' | 'addressUtilsProviders' | 'nftProviders'
+>
+
+export type LazyConnectionRegistrarProps = {
+    staticDefinition: LazyConnectionRegistrarStatic
+}
+
+export type LazyConnectionRegistrarLoader = () => Promise<{
+    default: ComponentType<LazyConnectionRegistrarProps>
+}>
 
 // The author surface. Fields match the legacy `WalletProvider` shape so
 // migration is a rename + a call-site reshuffle, not a redesign. Difference
@@ -40,6 +57,26 @@ export type WalletProviderDefinition = {
     nftProvider?: NftProvider | NftProvider[]
     contractAddressProvider?: ContractAddressCheckerProvider | ContractAddressCheckerProvider[]
     rpcHealthCheckProvider?: RpcHealthCheckProvider | RpcHealthCheckProvider[]
+    // Optional alternative to `walletConnectionProvider` + `transferProvider`:
+    // a dynamic import returning a component that handles its own hook
+    // calls + registry write. Used to keep heavy connection-layer
+    // dependencies (e.g. wagmi for EVM) off the static bundle of the
+    // chain package. When provided, the shell renders the lazy component
+    // inside a Suspense boundary as a *sibling* of children — so children
+    // are never hidden by the registrar's loading state. Mutually
+    // exclusive with `walletConnectionProvider`; if both are set the lazy
+    // path wins.
+    connectionRegistrar?: LazyConnectionRegistrarLoader
+    // Controls whether the wrapper renders as an ancestor of `children`
+    // or only of the registrar. Default `true` preserves the historical
+    // behavior (wrapper wraps both registrar and children). Set to
+    // `false` when the wrapper provides a chain-SDK context (WagmiProvider,
+    // StarknetConfig, etc.) that NO consumer in `children` reads from
+    // directly — i.e., children only access the connection through the
+    // registry. With `false`, a lazy wrapper's Suspense boundary cannot
+    // hide `children` while the chain SDK chunk loads, eliminating the
+    // multi-stage flicker that nested lazy wrappers otherwise cause.
+    wrapperHostsChildren?: boolean
 }
 
 export type WalletProviderShell = FC<{ children: ReactNode }> & {
@@ -73,6 +110,8 @@ export function defineWalletProvider(def: WalletProviderDefinition): WalletProvi
         nftProvider,
         contractAddressProvider,
         rpcHealthCheckProvider,
+        connectionRegistrar,
+        wrapperHostsChildren = true,
     } = def
 
     // Fixed-length arrays captured at definition time. `transferHooks` is
@@ -85,68 +124,120 @@ export function defineWalletProvider(def: WalletProviderDefinition): WalletProvi
     const staticContractAddressProviders = toArray(contractAddressProvider)
     const staticRpcHealthCheckProviders = toArray(rpcHealthCheckProvider)
 
-    // Wrapper-only shells (e.g. Immutable Passport) skip the registrar
-    // — there's no connection hook to call and no entry to register.
-    const Registrar: FC | null = useConnection
-        ? (() => {
-            const Component: FC = () => {
-                const { networks } = useSettingsState()
-                const connection = useConnection({ networks })
-                // Calling each transfer hook here is safe: `transferHooks`
-                // is the array captured above and never changes length at
-                // runtime, so the hook count is constant for this
-                // component instance. This is the crucial difference from
-                // `ResolverProviders.tsx:16-20`, which mapped hooks over a
-                // runtime-variable array.
-                const transferResults = transferHooks.map((hook) => hook())
+    // Three registrar modes, in priority order:
+    //   1. Lazy: `connectionRegistrar` provided → wagmi-touching code
+    //      lives in a separate chunk loaded on demand.
+    //   2. Inline: `walletConnectionProvider` provided → today's path,
+    //      hook is called by an inline registrar component.
+    //   3. None: wrapper-only chains (Immutable Passport).
+    let renderRegistrar: (() => ReactNode) | null = null
 
-                const registered = useMemo<RegisteredWalletProvider>(
-                    () => ({
-                        id,
-                        order,
-                        connection,
-                        transferProviders: transferResults,
-                        balanceProviders: staticBalanceProviders,
-                        gasProviders: staticGasProviders,
-                        addressUtilsProviders: staticAddressUtilsProviders,
-                        nftProviders: staticNftProviders,
-                        contractAddressProviders: staticContractAddressProviders,
-                        rpcHealthCheckProviders: staticRpcHealthCheckProviders,
-                    }),
-                    // Transfer results are referentially stable when each
-                    // transfer hook returns a memoised object — same
-                    // expectation we hold of the connection hook. If a
-                    // chain's transfer hook produces a fresh object every
-                    // render we will re-register every render, which is
-                    // correctness-preserving but a perf smell to fix in
-                    // the chain itself, not here.
-                    [connection, ...transferResults],
-                )
+    if (connectionRegistrar) {
+        // Capture the lazy ref once per definition so React.lazy's
+        // internal cache keys this single loader, not a new one per
+        // render.
+        const LazyRegistrar = lazy(connectionRegistrar)
+        const staticDefinition: LazyConnectionRegistrarStatic = {
+            id,
+            order,
+            balanceProviders: staticBalanceProviders,
+            gasProviders: staticGasProviders,
+            addressUtilsProviders: staticAddressUtilsProviders,
+            nftProviders: staticNftProviders,
+        }
+        renderRegistrar = () => (
+            // fallback={null} keeps the registrar invisible while its
+            // chunk loads. The lazy registrar is rendered as a *sibling*
+            // of children (not wrapping them), so this Suspense never
+            // hides downstream UI — only the registrar itself.
+            <Suspense fallback={null}>
+                <LazyRegistrar staticDefinition={staticDefinition} />
+            </Suspense>
+        )
+    } else if (useConnection) {
+        const InlineRegistrar: FC = () => {
+            const { networks } = useSettingsState()
+            const connection = useConnection({ networks })
+            // Calling each transfer hook here is safe: `transferHooks`
+            // is the array captured above and never changes length at
+            // runtime, so the hook count is constant for this
+            // component instance. This is the crucial difference from
+            // `ResolverProviders.tsx:16-20`, which mapped hooks over a
+            // runtime-variable array.
+            const transferResults = transferHooks.map((hook) => hook())
 
-                useRegisterWalletConnectionProvider(registered)
-                return null
-            }
-            Component.displayName = `WalletProviderRegistrar(${id})`
-            return Component
-        })()
-        : null
+            const registered = useMemo<RegisteredWalletProvider>(
+                () => ({
+                    id,
+                    order,
+                    connection,
+                    transferProviders: transferResults,
+                    balanceProviders: staticBalanceProviders,
+                    gasProviders: staticGasProviders,
+                    addressUtilsProviders: staticAddressUtilsProviders,
+                    nftProviders: staticNftProviders,
+                    contractAddressProviders: staticContractAddressProviders,
+                    rpcHealthCheckProviders: staticRpcHealthCheckProviders,
+                }),
+                // Transfer results are referentially stable when each
+                // transfer hook returns a memoised object — same
+                // expectation we hold of the connection hook. If a
+                // chain's transfer hook produces a fresh object every
+                // render we will re-register every render, which is
+                // correctness-preserving but a perf smell to fix in
+                // the chain itself, not here.
+                [connection, ...transferResults],
+            )
 
-    // The shell renders the chain's context wrapper (if any) around the
-    // registrar + downstream children. The registrar is a *sibling* of
-    // children inside the wrapper so both run within the wrapper's
-    // contexts (e.g. WagmiProvider, StarknetReact, etc.). For wrapper-
-    // only chains (Registrar === null) the inner just renders children.
+            useRegisterWalletConnectionProvider(registered)
+            return null
+        }
+        InlineRegistrar.displayName = `WalletProviderRegistrar(${id})`
+        renderRegistrar = () => <InlineRegistrar />
+    }
+
+    // The shell renders the chain's context wrapper (if any) and the
+    // registrar in one of two arrangements, controlled by
+    // `wrapperHostsChildren`:
+    //
+    // - `wrapperHostsChildren = true` (default): the wrapper wraps both
+    //   the registrar and `children`. Use this when something in
+    //   `children` reads a context provided by the wrapper.
+    //
+    // - `wrapperHostsChildren = false`: the wrapper wraps only the
+    //   registrar; `children` render as a sibling, outside any Suspense
+    //   boundary the wrapper may contain. Use this for chains whose
+    //   wrapper provides an SDK context (WagmiProvider etc.) that is
+    //   accessed only by the registrar — the registry pattern means
+    //   children call into those SDKs through registry-captured closures,
+    //   not via direct hooks, so no React context is needed in `children`.
+    //   Critically, this prevents a lazy chain-SDK chunk from hiding the
+    //   form while it loads.
     const ShellComponent: FC<{ children: ReactNode }> = ({ children }) => {
-        const inner = Registrar ? (
+        if (wrapperHostsChildren) {
+            const inner = renderRegistrar ? (
+                <>
+                    {renderRegistrar()}
+                    {children}
+                </>
+            ) : <>{children}</>
+            if (UserWrapper) {
+                return <UserWrapper>{inner}</UserWrapper>
+            }
+            return inner
+        }
+
+        // Wrapper hosts only the registrar; children render as a sibling.
+        const registrarHost = renderRegistrar ? renderRegistrar() : null
+        const wrappedRegistrar = UserWrapper
+            ? (registrarHost ? <UserWrapper>{registrarHost}</UserWrapper> : null)
+            : registrarHost
+        return (
             <>
-                <Registrar />
+                {wrappedRegistrar}
                 {children}
             </>
-        ) : <>{children}</>
-        if (UserWrapper) {
-            return <UserWrapper>{inner}</UserWrapper>
-        }
-        return inner
+        )
     }
     ShellComponent.displayName = `WalletProviderShell(${id})`
 

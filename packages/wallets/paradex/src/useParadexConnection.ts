@@ -2,7 +2,7 @@ import { useCallback, useMemo } from "react"
 import { InternalConnector, RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult, Wallet, WalletConnectionProvider, WalletConnectionProviderProps } from "@layerswap/widget/types"
 import { walletClientToSigner } from "./utils/ethers"
 import { getWalletClient, switchChain, getChainId, type ConnectorAlreadyConnectedError } from '@wagmi/core'
-import { useConfig } from "wagmi"
+import { getEVMWagmiConfig } from "@layerswap/wallet-evm"
 import { sleep, KnownInternalNames, useWalletStore, useConnectModal, Address, getRegistryEntry } from "@layerswap/widget/internal"
 import { useActiveParadexAccount } from "./ActiveParadexAccount"
 import ParadexMultiStepHandler from "./components/ParadexMultiStepHandler"
@@ -36,8 +36,13 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
     // connectWallet branches below guard on that and abort instead of
     // crashing — same end-user effect as today, where wagmi reconnect
     // takes time and Paradex shows no wallet until it lands.
+    //
+    // wagmi Config is read from the EVM-package side store at call time
+    // (see getEVMWagmiConfig). This avoids the useConfig() hook so this
+    // registrar can render *outside* WagmiProvider — which lets EVM use
+    // wrapperHostsChildren: false in its shell, so the wagmi chunk
+    // loading no longer hides the form.
 
-    const config = useConfig()
     const starknetNetwork = networks.find(n => n.name === KnownInternalNames.Networks.StarkNetMainnet || n.name === KnownInternalNames.Networks.StarkNetGoerli || n.name === KnownInternalNames.Networks.StarkNetSepolia)
     const connectWallet = async (props?: { connector: InternalConnector }) => {
         const { connector } = props || {};
@@ -66,6 +71,10 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
                     const l1ChainId = Number(l1Network?.chain_id)
                     if (!Number(l1ChainId)) {
                         throw Error("Could not find ethereum network")
+                    }
+                    const config = getEVMWagmiConfig()
+                    if (!config) {
+                        throw new Error("EVM wagmi config not ready — the EVM shell has not finished mounting yet.")
                     }
                     let client = await getWalletClient(config)
                     const chainId = await client.getChainId()

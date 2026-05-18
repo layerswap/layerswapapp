@@ -34,7 +34,14 @@ export {
     useRegisterWalletConnectionProvider,
     type RegisteredWalletProvider,
 } from "../context/walletConnectionRegistry"
-export { defineWalletProvider, type WalletProviderDefinition, type WalletProviderShell } from "../lib/defineWalletProvider"
+export {
+    defineWalletProvider,
+    type WalletProviderDefinition,
+    type WalletProviderShell,
+    type LazyConnectionRegistrarStatic,
+    type LazyConnectionRegistrarProps,
+    type LazyConnectionRegistrarLoader,
+} from "../lib/defineWalletProvider"
 export { ErrorHandler } from '../lib/ErrorHandler';
 export type { ErrorEventType } from '../types/logEvents';
 export { useRpcHealth } from "../context/rpcHealthContext";

@@ -1,4 +1,4 @@
-import { FC, ReactNode, useMemo } from "react"
+import { FC, ReactNode, useEffect, useMemo } from "react"
 import {
     createEVMShell,
     createStarknetShell,
@@ -9,6 +9,7 @@ import {
     createSVMShell,
     createTronShell,
     createImmutablePassportShell,
+    preloadDefaultProviders,
     type WalletProviderShell,
 } from "@layerswap/wallets"
 import { useRouter } from "next/router"
@@ -25,6 +26,16 @@ import { useRouter } from "next/router"
 
 const DefaultChainShells: FC<{ children: ReactNode }> = ({ children }) => {
     const router = useRouter()
+
+    // Warm every chain's wrapper + connection-registrar chunk as soon as
+    // the shells mount. The chunks load in parallel with hydration, so
+    // by the time React first commits the chain Suspense boundaries the
+    // lazy modules are usually already in React.lazy's cache — no flicker.
+    // Errors are swallowed inside preloadDefaultProviders (a failed
+    // chain falls back to the on-demand Suspense path).
+    useEffect(() => {
+        preloadDefaultProviders()
+    }, [])
 
     const shells = useMemo(() => {
         const imtblPassportConfig = typeof window !== 'undefined' ? {

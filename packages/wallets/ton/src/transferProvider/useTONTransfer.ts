@@ -1,7 +1,7 @@
 import { TransferProvider, TransferProps, Network, ActionMessageType, Wallet } from "@layerswap/widget/types"
 import { useTonConnectUI } from "@tonconnect/ui-react"
 import { transactionBuilder } from "./transactionBuilder"
-import { useTonConfig } from "../index"
+import { useTonConfig } from "../shellInternals"
 import { waitForTransaction } from "./waitForTransaction"
 import { createTonClient } from "../client"
 

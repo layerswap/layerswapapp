@@ -11,7 +11,7 @@ import type { FuelProviderConfig } from "@layerswap/wallet-fuel";
 import { createImmutablePassportProvider, createImmutablePassportShell, ImtblRedirect } from "@layerswap/wallet-imtbl-passport";
 import type { ImmutablePassportProviderConfig, ImtblPassportConfig } from "@layerswap/wallet-imtbl-passport";
 
-import { createParadexProvider, createParadexShell } from "@layerswap/wallet-paradex";
+import { createParadexProvider, createParadexShell, preloadParadexProvider } from "@layerswap/wallet-paradex";
 import type { ParadexProviderConfig } from "@layerswap/wallet-paradex";
 
 import { createStarknetProvider, createStarknetShell, preloadStarknetProvider } from "@layerswap/wallet-starknet";
@@ -66,6 +66,7 @@ export {
     preloadSVMProvider,
     preloadTONProvider,
     preloadTronProvider,
+    preloadParadexProvider,
 };
 
 /**
@@ -83,6 +84,7 @@ export async function preloadDefaultProviders(): Promise<void> {
         preloadTONProvider(),
         preloadSVMProvider(),
         preloadTronProvider(),
+        preloadParadexProvider(),
     ].map(p => p.catch(() => undefined)));
 }
 

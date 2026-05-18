@@ -1,130 +1,59 @@
-import { WalletProvider, BaseWalletProviderConfig, LazyBalanceProvider } from "@layerswap/widget/types";
-import { TronGasProvider } from "./tronGasProvider";
-import useTronConnection from "./useTronConnection";
-import { TronAddressUtilsProvider } from "./tronAddressUtilsProvider";
-import React, { ComponentProps, lazy, Suspense } from "react";
-let TronProviderImpl: typeof import("./TronProvider")["default"] | null = null
+'use client'
+// Thin static surface of @layerswap/wallet-tron. Importing this file —
+// what `createTronShell` callers do — must NOT statically pull in
+// @tronweb3/tronwallet-adapter-react-hooks, tronweb, or the connection/
+// transfer hooks. Those live in TronConnectionRegistrar.tsx (lazy chunk
+// loaded by defineWalletProvider's connectionRegistrar option).
 
-const loadTronProviderModule = async () => {
-    const m = await import("./TronProvider")
-    TronProviderImpl = m.default
-}
-
-const TronProviderWrapperLazy = /*#__PURE__*/ lazy(async () => {
-    const m = await import("./TronProvider")
-    TronProviderImpl = m.default
-    return m
-});
-
-const TronProviderWrapper = (props: ComponentProps<typeof TronProviderWrapperLazy>) => {
-    if (TronProviderImpl) {
-        const Impl = TronProviderImpl
-        return <Impl {...props} />
-    }
-    return <TronProviderWrapperLazy {...props} />
-}
-
-export const preloadTronProvider = loadTronProviderModule
-import { useTronTransfer } from "./transferProvider/useTronTransfer";
-import { KnownInternalNames } from "@layerswap/widget/internal";
+import React, { ReactNode, Suspense } from "react"
+import { defineWalletProvider, type WalletProviderShell } from "@layerswap/widget/internal"
+import type { BaseWalletProviderConfig, WalletProvider } from "@layerswap/widget/types"
+import { LazyBalanceProvider } from "@layerswap/widget/types"
+import { KnownInternalNames } from "@layerswap/widget/internal"
+import { TronAddressUtilsProvider } from "./tronAddressUtilsProvider"
+import { TronGasProvider } from "./tronGasProvider"
+import { TronProviderWrapper } from "./shellInternals"
 
 export type TronProviderConfig = BaseWalletProviderConfig
 
-export function createTronProvider(config: TronProviderConfig = {}): WalletProvider {
-    const {
-        customHook,
-        balanceProviders,
-        gasProviders,
-        addressUtilsProviders,
-        transferProviders
-    } = config;
+import { preloadTronProvider as preloadTronProviderWrapper } from "./shellInternals"
 
-    const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
-        return (
-            <Suspense fallback={null}>
-                <TronProviderWrapper>
-                    {children}
-                </TronProviderWrapper>
-            </Suspense>
-        );
-    };
+export const preloadTronProvider = (): Promise<unknown> =>
+    Promise.all([preloadTronProviderWrapper(), import("./TronConnectionRegistrar")])
+export { createTronProvider, TronProvider } from "./legacy"
 
-    const walletConnectionProvider = customHook || useTronConnection;
+// Default order: 800. Earlier chains (smaller numbers) win when multiple
+// providers support the same network — mirrors the legacy array-order
+// resolution in useWallet.resolveProvider.
+export function createTronShell(
+    config: TronProviderConfig & { order?: number } = {},
+): WalletProviderShell {
+    const { order = 800 } = config
 
-    const defaultBalanceProviders = [
-        new LazyBalanceProvider(
-            (n) => KnownInternalNames.Networks.TronMainnet.includes(n.name),
-            () => import("./tronBalanceProvider").then(m => new m.TronBalanceProvider())
-        )
-    ];
-    const finalBalanceProviders = balanceProviders !== undefined
-        ? (Array.isArray(balanceProviders) ? balanceProviders : [balanceProviders])
-        : defaultBalanceProviders;
+    const Wrapper = ({ children }: { children: ReactNode }) => (
+        <Suspense fallback={null}>
+            <TronProviderWrapper>
+                {children}
+            </TronProviderWrapper>
+        </Suspense>
+    )
 
-    const defaultGasProviders = [new TronGasProvider()];
-    const finalGasProviders = gasProviders !== undefined
-        ? (Array.isArray(gasProviders) ? gasProviders : [gasProviders])
-        : defaultGasProviders;
-
-    const defaultAddressUtilsProviders = [new TronAddressUtilsProvider()];
-    const finalAddressUtilsProviders = addressUtilsProviders !== undefined
-        ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
-        : defaultAddressUtilsProviders;
-
-    const defaultTransferProviders = [useTronTransfer];
-    const finalTransferProviders = transferProviders !== undefined
-        ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
-        : defaultTransferProviders;
-
-    return {
-        id: "tron",
-        wrapper: WrapperComponent,
-        walletConnectionProvider,
-        addressUtilsProvider: finalAddressUtilsProviders,
-        gasProvider: finalGasProviders,
-        balanceProvider: finalBalanceProviders,
-        transferProvider: finalTransferProviders,
-    };
-}
-
-/**
- * @deprecated Use createTronProvider() instead. This export will be removed in a future version.
- */
-const TronProviderLazyWrapper = ({ children }: { children: React.ReactNode }) => (
-    <Suspense fallback={null}>
-        <TronProviderWrapper>{children}</TronProviderWrapper>
-    </Suspense>
-);
-
-export const TronProvider: WalletProvider = {
-    id: "tron",
-    wrapper: TronProviderLazyWrapper,
-    walletConnectionProvider: useTronConnection,
-    addressUtilsProvider: [new TronAddressUtilsProvider()],
-    gasProvider: [new TronGasProvider()],
-    balanceProvider: [
-        new LazyBalanceProvider(
-            (n) => KnownInternalNames.Networks.TronMainnet.includes(n.name),
-            () => import("./tronBalanceProvider").then(m => new m.TronBalanceProvider())
-        )
-    ],
-    transferProvider: [useTronTransfer],
-};
-import { defineWalletProvider, type WalletProviderShell } from "@layerswap/widget/internal";
-
-export function createTronShell(config: TronProviderConfig & { order?: number } = {}): WalletProviderShell {
-    const { order = 800, ...rest } = config
-    const provider = createTronProvider(rest)
     return defineWalletProvider({
-        id: provider.id,
+        id: "tron",
         order,
-        wrapper: provider.wrapper as React.ComponentType<{ children: React.ReactNode }>,
-        walletConnectionProvider: provider.walletConnectionProvider,
-        transferProvider: provider.transferProvider,
-        balanceProvider: provider.balanceProvider,
-        gasProvider: provider.gasProvider,
-        addressUtilsProvider: provider.addressUtilsProvider,
-        contractAddressProvider: provider.contractAddressProvider,
-        rpcHealthCheckProvider: provider.rpcHealthCheckProvider,
+        wrapper: Wrapper,
+        wrapperHostsChildren: false,
+        // Lazy connection registrar: the chunk at ./TronConnectionRegistrar
+        // imports useTronConnection, useTronTransfer — neither reachable
+        // from this static file's import graph.
+        connectionRegistrar: () => import("./TronConnectionRegistrar"),
+        balanceProvider: [
+            new LazyBalanceProvider(
+                (n) => KnownInternalNames.Networks.TronMainnet.includes(n.name),
+                () => import("./tronBalanceProvider").then(m => new m.TronBalanceProvider()),
+            ),
+        ],
+        gasProvider: [new TronGasProvider()],
+        addressUtilsProvider: [new TronAddressUtilsProvider()],
     })
 }

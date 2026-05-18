@@ -1,74 +1,59 @@
-import { WalletProvider, BaseWalletProviderConfig, LazyBalanceProvider } from "@layerswap/widget/types"
+'use client'
+// Thin static surface of @layerswap/wallet-paradex. Importing this file —
+// what `createParadexShell` callers do — must NOT statically pull in
+// wagmi, @wagmi/core, ethers, or useParadexConnection. Those live in
+// ParadexConnectionRegistrar.tsx (lazy chunk loaded by
+// defineWalletProvider's connectionRegistrar option).
+//
+// The wrapper (`ActiveParadexAccountProvider`) is lightweight — it only
+// reads from the wallet-connection registry via widget internals — so
+// it's safe to import statically. The ParadexMultiStepHandler re-export
+// is also light (its body imports only widget internals); tree-shaking
+// keeps it out of the bundle when unused.
+
+import React, { ReactNode } from "react"
+import { defineWalletProvider, type WalletProviderShell } from "@layerswap/widget/internal"
+import type { BaseWalletProviderConfig, WalletProvider } from "@layerswap/widget/types"
+import { LazyBalanceProvider } from "@layerswap/widget/types"
 import { KnownInternalNames } from "@layerswap/widget/internal"
-import { useParadexConnection } from "./useParadexConnection"
 import { ActiveParadexAccountProvider } from "./ActiveParadexAccount"
 
 export type ParadexProviderConfig = BaseWalletProviderConfig
 
-export function createParadexProvider(config: ParadexProviderConfig = {}): WalletProvider {
-    const {
-        customHook,
-        balanceProviders,
-        gasProviders,
-        addressUtilsProviders
-    } = config;
-
-    const walletConnectionProvider = customHook || useParadexConnection;
-
-    const defaultBalanceProviders = [
-        new LazyBalanceProvider(
-            (n) => KnownInternalNames.Networks.ParadexMainnet.includes(n.name) || KnownInternalNames.Networks.ParadexTestnet.includes(n.name),
-            () => import("./paradexBalanceProvider").then(m => new m.ParadexBalanceProvider())
-        )
-    ];
-    const finalBalanceProviders = balanceProviders !== undefined
-        ? (Array.isArray(balanceProviders) ? balanceProviders : [balanceProviders])
-        : defaultBalanceProviders;
-
-    const finalGasProviders = gasProviders !== undefined
-        ? (Array.isArray(gasProviders) ? gasProviders : [gasProviders])
-        : undefined;
-
-    const finalAddressUtilsProviders = addressUtilsProviders !== undefined
-        ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
-        : undefined;
-
-    return {
-        id: "paradex",
-        wrapper: ActiveParadexAccountProvider,
-        walletConnectionProvider,
-        addressUtilsProvider: finalAddressUtilsProviders,
-        gasProvider: finalGasProviders,
-        // balanceProvider: finalBalanceProviders,
-    };
-}
-
+export { createParadexProvider, ParadexProvider } from "./legacy"
 export { default as ParadexMultiStepHandler } from "./components/ParadexMultiStepHandler"
 
-/**
- * @deprecated Use createParadexProvider() instead. This export will be removed in a future version.
- */
-export const ParadexProvider: WalletProvider = {
-    id: "paradex",
-    wrapper: ActiveParadexAccountProvider,
-    walletConnectionProvider: useParadexConnection,
-    // balanceProvider: [new LazyBalanceProvider(...)] // see createParadexProvider for lazy variant
-};
-import { defineWalletProvider, type WalletProviderShell } from "@layerswap/widget/internal";
+// Paradex's wrapper (ActiveParadexAccountProvider) is light and already
+// statically imported. Only the connection-registrar chunk benefits from
+// preloading.
+export const preloadParadexProvider = (): Promise<unknown> =>
+    import("./ParadexConnectionRegistrar")
 
-export function createParadexShell(config: ParadexProviderConfig & { order?: number } = {}): WalletProviderShell {
-    const { order = 400, ...rest } = config
-    const provider = createParadexProvider(rest)
+// Default order: 400. Earlier chains (smaller numbers) win when multiple
+// providers support the same network — mirrors the legacy array-order
+// resolution in useWallet.resolveProvider.
+export function createParadexShell(
+    config: ParadexProviderConfig & { order?: number } = {},
+): WalletProviderShell {
+    const { order = 400 } = config
+
+    const Wrapper = ({ children }: { children: ReactNode }) => (
+        <ActiveParadexAccountProvider>{children}</ActiveParadexAccountProvider>
+    )
+
     return defineWalletProvider({
-        id: provider.id,
+        id: "paradex",
         order,
-        wrapper: provider.wrapper as React.ComponentType<{ children: React.ReactNode }>,
-        walletConnectionProvider: provider.walletConnectionProvider,
-        transferProvider: provider.transferProvider,
-        balanceProvider: provider.balanceProvider,
-        gasProvider: provider.gasProvider,
-        addressUtilsProvider: provider.addressUtilsProvider,
-        contractAddressProvider: provider.contractAddressProvider,
-        rpcHealthCheckProvider: provider.rpcHealthCheckProvider,
+        wrapper: Wrapper,
+        // Lazy connection registrar: the chunk at ./ParadexConnectionRegistrar
+        // imports useParadexConnection (wagmi + ethers + multi-step handler)
+        // — none of which are reachable from this static file's import graph.
+        connectionRegistrar: () => import("./ParadexConnectionRegistrar"),
+        balanceProvider: [
+            new LazyBalanceProvider(
+                (n) => KnownInternalNames.Networks.ParadexMainnet.includes(n.name) || KnownInternalNames.Networks.ParadexTestnet.includes(n.name),
+                () => import("./paradexBalanceProvider").then(m => new m.ParadexBalanceProvider()),
+            ),
+        ],
     })
 }

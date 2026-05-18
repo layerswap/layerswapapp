@@ -1,121 +1,55 @@
-import useBitcoinConnection from "./useBitcoinConnection";
-import { WalletProvider, BaseWalletProviderConfig } from "@layerswap/widget/types";
-import { BitcoinGasProvider } from "./bitcoinGasProvider";
-import { BitcoinBalanceProvider } from "./bitcoinBalanceProvider";
-import { BitcoinAddressUtilsProvider } from "./bitcoinAddressUtilsProvider";
-import React, { ComponentProps, lazy, Suspense } from "react";
-let BitcoinProviderImpl: typeof import("./BitcoinProvider")["BitcoinProvider"] | null = null
+'use client'
+// Thin static surface of @layerswap/wallet-bitcoin. Importing this file —
+// what `createBitcoinShell` callers do — must NOT statically pull in
+// @bigmi/react, @bigmi/client, bitcoinjs-lib, or the connection/transfer
+// hooks. Those live in BitcoinConnectionRegistrar.tsx (lazy chunk loaded
+// by defineWalletProvider's connectionRegistrar option).
 
-const loadBitcoinProviderModule = async () => {
-    const m = await import("./BitcoinProvider")
-    BitcoinProviderImpl = m.BitcoinProvider
-}
-
-const BitcoinProviderWrapperLazy = /*#__PURE__*/ lazy(async () => {
-    const m = await import("./BitcoinProvider")
-    BitcoinProviderImpl = m.BitcoinProvider
-    return { default: m.BitcoinProvider }
-});
-
-const BitcoinProviderWrapper = (props: ComponentProps<typeof BitcoinProviderWrapperLazy>) => {
-    if (BitcoinProviderImpl) {
-        const Impl = BitcoinProviderImpl
-        return <Impl {...props} />
-    }
-    return <BitcoinProviderWrapperLazy {...props} />
-}
-
-export const preloadBitcoinProvider = loadBitcoinProviderModule
-import { useBitcoinTransfer } from "./transferProvider/useBitcoinTransfer";
+import React, { ReactNode, Suspense } from "react"
+import { defineWalletProvider, type WalletProviderShell } from "@layerswap/widget/internal"
+import type { BaseWalletProviderConfig, WalletProvider } from "@layerswap/widget/types"
+import { BitcoinAddressUtilsProvider } from "./bitcoinAddressUtilsProvider"
+import { BitcoinBalanceProvider } from "./bitcoinBalanceProvider"
+import { BitcoinProviderWrapper } from "./shellInternals"
 
 export type BitcoinProviderConfig = BaseWalletProviderConfig
 
-export function createBitcoinProvider(config: BitcoinProviderConfig = {}): WalletProvider {
-    const {
-        customHook,
-        balanceProviders,
-        gasProviders,
-        addressUtilsProviders,
-        transferProviders
-    } = config;
+import { preloadBitcoinProvider as preloadBitcoinProviderWrapper } from "./shellInternals"
 
-    const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
-        return (
-            <Suspense fallback={null}>
-                <BitcoinProviderWrapper>
-                    {children}
-                </BitcoinProviderWrapper>
-            </Suspense>
-        );
-    };
+export const preloadBitcoinProvider = (): Promise<unknown> =>
+    Promise.all([preloadBitcoinProviderWrapper(), import("./BitcoinConnectionRegistrar")])
+export { createBitcoinProvider, BitcoinProvider } from "./legacy"
 
-    const walletConnectionProvider = customHook || useBitcoinConnection;
+// Default order: 500. Earlier chains (smaller numbers) win when multiple
+// providers support the same network — mirrors the legacy array-order
+// resolution in useWallet.resolveProvider.
+export function createBitcoinShell(
+    config: BitcoinProviderConfig & { order?: number } = {},
+): WalletProviderShell {
+    const { order = 500 } = config
 
-    const defaultBalanceProviders = [new BitcoinBalanceProvider()];
-    const finalBalanceProviders = balanceProviders !== undefined
-        ? (Array.isArray(balanceProviders) ? balanceProviders : [balanceProviders])
-        : defaultBalanceProviders;
+    const Wrapper = ({ children }: { children: ReactNode }) => (
+        <Suspense fallback={null}>
+            <BitcoinProviderWrapper>
+                {children}
+            </BitcoinProviderWrapper>
+        </Suspense>
+    )
 
-    const defaultGasProviders = [new BitcoinGasProvider()];
-    const finalGasProviders = gasProviders !== undefined
-        ? (Array.isArray(gasProviders) ? gasProviders : [gasProviders])
-        : defaultGasProviders;
-
-    const defaultAddressUtilsProviders = [new BitcoinAddressUtilsProvider()];
-    const finalAddressUtilsProviders = addressUtilsProviders !== undefined
-        ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
-        : defaultAddressUtilsProviders;
-
-
-    const defaultTransferProviders = [useBitcoinTransfer];
-    const finalTransferProviders = transferProviders !== undefined
-        ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
-        : defaultTransferProviders;
-
-    return {
-        id: "bitcoin",
-        wrapper: WrapperComponent,
-        walletConnectionProvider,
-        addressUtilsProvider: finalAddressUtilsProviders,
-        gasProvider: finalGasProviders,
-        balanceProvider: finalBalanceProviders,
-        transferProvider: finalTransferProviders,
-    };
-}
-
-/**
- * @deprecated Use createBitcoinProvider() instead. This export will be removed in a future version.
- */
-const BitcoinProviderLazyWrapper = ({ children }: { children: React.ReactNode }) => (
-    <Suspense fallback={null}>
-        <BitcoinProviderWrapper>{children}</BitcoinProviderWrapper>
-    </Suspense>
-);
-
-export const BitcoinProvider: WalletProvider = {
-    id: "bitcoin",
-    wrapper: BitcoinProviderLazyWrapper,
-    walletConnectionProvider: useBitcoinConnection,
-    addressUtilsProvider: [new BitcoinAddressUtilsProvider()],
-    gasProvider: [new BitcoinGasProvider()],
-    balanceProvider: [new BitcoinBalanceProvider()],
-    transferProvider: [useBitcoinTransfer],
-};
-import { defineWalletProvider, type WalletProviderShell } from "@layerswap/widget/internal";
-
-export function createBitcoinShell(config: BitcoinProviderConfig & { order?: number } = {}): WalletProviderShell {
-    const { order = 500, ...rest } = config
-    const provider = createBitcoinProvider(rest)
     return defineWalletProvider({
-        id: provider.id,
+        id: "bitcoin",
         order,
-        wrapper: provider.wrapper as React.ComponentType<{ children: React.ReactNode }>,
-        walletConnectionProvider: provider.walletConnectionProvider,
-        transferProvider: provider.transferProvider,
-        balanceProvider: provider.balanceProvider,
-        gasProvider: provider.gasProvider,
-        addressUtilsProvider: provider.addressUtilsProvider,
-        contractAddressProvider: provider.contractAddressProvider,
-        rpcHealthCheckProvider: provider.rpcHealthCheckProvider,
+        wrapper: Wrapper,
+        wrapperHostsChildren: false,
+        // Lazy connection registrar: the chunk at ./BitcoinConnectionRegistrar
+        // imports useBitcoinConnection, useBitcoinTransfer, BitcoinGasProvider —
+        // none of which are reachable from this static file's import graph.
+        connectionRegistrar: () => import("./BitcoinConnectionRegistrar"),
+        balanceProvider: [new BitcoinBalanceProvider()],
+        addressUtilsProvider: [new BitcoinAddressUtilsProvider()],
+        // gasProvider intentionally omitted — BitcoinGasProvider transitively
+        // imports bitcoinjs-lib via the PSBT builder. The registrar
+        // constructs it inside the lazy chunk and merges it into the
+        // registered provider.
     })
 }

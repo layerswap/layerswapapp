@@ -1,157 +1,67 @@
-import { WalletProvider, BaseWalletProviderConfig, ThemeData, LazyBalanceProvider } from "@layerswap/widget/types";
-import { TonGasProvider } from "./tonGasProvider";
-import useTONConnection from "./useTONConnection";
-import { TonAddressUtilsProvider } from "./tonAddressUtilsProvider";
-import React, { ComponentProps, createContext, lazy, Suspense, useContext } from "react";
-let TonProviderImpl: typeof import("./TonProvider")["default"] | null = null
+'use client'
+// Thin static surface of @layerswap/wallet-ton. Importing this file —
+// what `createTONShell` callers do — must NOT statically pull in
+// @tonconnect/ui-react, @ton/core, or the connection/transfer hooks.
+// Those live in TONConnectionRegistrar.tsx (lazy chunk loaded by
+// defineWalletProvider's connectionRegistrar option).
 
-const loadTonProviderModule = async () => {
-    const m = await import("./TonProvider")
-    TonProviderImpl = m.default
-}
+import React, { ReactNode, Suspense } from "react"
+import { defineWalletProvider, type WalletProviderShell } from "@layerswap/widget/internal"
+import type { BaseWalletProviderConfig, WalletProvider } from "@layerswap/widget/types"
+import { LazyBalanceProvider } from "@layerswap/widget/types"
+import { KnownInternalNames } from "@layerswap/widget/internal"
+import { TonGasProvider } from "./tonGasProvider"
+import { TonConfigContext, TonProviderWrapper, type TonClientConfig } from "./shellInternals"
 
-const TonProviderWrapperLazy = /*#__PURE__*/ lazy(async () => {
-    const m = await import("./TonProvider")
-    TonProviderImpl = m.default
-    return m
-});
-
-const TonProviderWrapper = (props: ComponentProps<typeof TonProviderWrapperLazy>) => {
-    if (TonProviderImpl) {
-        const Impl = TonProviderImpl
-        return <Impl {...props} />
-    }
-    return <TonProviderWrapperLazy {...props} />
-}
-
-export const preloadTONProvider = loadTonProviderModule
-import { AppSettings, KnownInternalNames } from "@layerswap/widget/internal";
-import { useTONTransfer } from "./transferProvider/useTONTransfer";
-
-export type TonClientConfig = {
-    tonApiKey: string
-    manifestUrl: string
-}
-
+export type { TonClientConfig }
 export type TONProviderConfig = BaseWalletProviderConfig & {
     tonConfigs?: TonClientConfig
 }
 
-const TonConfigContext = createContext<TonClientConfig | null>(null);
+export { useTonConfig } from "./shellInternals"
 
-export const useTonConfig = () => {
-    const context = useContext(TonConfigContext);
-    if (!context) {
-        return null;
-    }
-    return context;
-};
+import { preloadTONProvider as preloadTONProviderWrapper } from "./shellInternals"
 
-export function createTONProvider(config: TONProviderConfig = {}): WalletProvider {
-    const {
-        tonConfigs,
-        customHook,
-        balanceProviders,
-        gasProviders,
-        addressUtilsProviders,
-        transferProviders
-    } = config;
+export const preloadTONProvider = (): Promise<unknown> =>
+    Promise.all([preloadTONProviderWrapper(), import("./TONConnectionRegistrar")])
+export { createTONProvider, TONProvider } from "./legacy"
 
-    const WrapperComponent = ({ children, themeData }: { children: React.ReactNode, themeData?: ThemeData }) => {
-        return (
-            <TonConfigContext.Provider value={tonConfigs || null}>
-                <Suspense fallback={null}>
-                    <TonProviderWrapper tonConfigs={tonConfigs} themeData={themeData}>
-                        {children}
-                    </TonProviderWrapper>
-                </Suspense>
-            </TonConfigContext.Provider>
-        );
-    };
+// Default order: 600. Earlier chains (smaller numbers) win when multiple
+// providers support the same network — mirrors the legacy array-order
+// resolution in useWallet.resolveProvider.
+export function createTONShell(
+    config: Pick<TONProviderConfig, 'tonConfigs'> & { order?: number } = {},
+): WalletProviderShell {
+    const { tonConfigs, order = 600 } = config
 
-    const walletConnectionProvider = customHook || useTONConnection;
+    const Wrapper = ({ children }: { children: ReactNode }) => (
+        <TonConfigContext.Provider value={tonConfigs || null}>
+            <Suspense fallback={null}>
+                <TonProviderWrapper tonConfigs={tonConfigs}>
+                    {children}
+                </TonProviderWrapper>
+            </Suspense>
+        </TonConfigContext.Provider>
+    )
 
-    const defaultBalanceProviders = [
-        new LazyBalanceProvider(
-            (n) => KnownInternalNames.Networks.TONMainnet.includes(n.name),
-            () => import("./tonBalanceProvider").then(m => new m.TonBalanceProvider(tonConfigs?.tonApiKey))
-        )
-    ];
-    const finalBalanceProviders = balanceProviders !== undefined
-        ? (Array.isArray(balanceProviders) ? balanceProviders : [balanceProviders])
-        : defaultBalanceProviders;
-
-    const defaultGasProviders = [new TonGasProvider()];
-    const finalGasProviders = gasProviders !== undefined
-        ? (Array.isArray(gasProviders) ? gasProviders : [gasProviders])
-        : defaultGasProviders;
-
-    const defaultAddressUtilsProviders = [new TonAddressUtilsProvider()];
-    const finalAddressUtilsProviders = addressUtilsProviders !== undefined
-        ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
-        : defaultAddressUtilsProviders;
-
-    const defaultTransferProviders = [useTONTransfer];
-    const finalTransferProviders = transferProviders !== undefined
-        ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
-        : defaultTransferProviders;
-
-    return {
-        id: "ton",
-        wrapper: WrapperComponent,
-        walletConnectionProvider,
-        addressUtilsProvider: finalAddressUtilsProviders,
-        gasProvider: finalGasProviders,
-        balanceProvider: finalBalanceProviders,
-        transferProvider: finalTransferProviders,
-    };
-}
-
-/**
- * @deprecated Use createTONProvider() instead. This export will be removed in a future version.
- * Note: This uses default TON configuration from AppSettings.
- */
-export const TONProvider: WalletProvider = {
-    id: "ton",
-    wrapper: ({ children, themeData }: { children: React.ReactNode, themeData?: ThemeData }) => {
-        const configs = AppSettings.TonClientConfig;
-        console.log('configs', configs)
-        return (
-            <TonConfigContext.Provider value={configs}>
-                <Suspense fallback={null}>
-                    <TonProviderWrapper tonConfigs={configs} themeData={themeData}>
-                        {children}
-                    </TonProviderWrapper>
-                </Suspense>
-            </TonConfigContext.Provider>
-        );
-    },
-    walletConnectionProvider: useTONConnection,
-    addressUtilsProvider: [new TonAddressUtilsProvider()],
-    gasProvider: [new TonGasProvider()],
-    balanceProvider: [
-        new LazyBalanceProvider(
-            (n) => KnownInternalNames.Networks.TONMainnet.includes(n.name),
-            () => import("./tonBalanceProvider").then(m => new m.TonBalanceProvider())
-        )
-    ],
-    transferProvider: [useTONTransfer],
-};
-import { defineWalletProvider, type WalletProviderShell } from "@layerswap/widget/internal";
-
-export function createTONShell(config: TONProviderConfig & { order?: number } = {}): WalletProviderShell {
-    const { order = 600, ...rest } = config
-    const provider = createTONProvider(rest)
     return defineWalletProvider({
-        id: provider.id,
+        id: "ton",
         order,
-        wrapper: provider.wrapper as React.ComponentType<{ children: React.ReactNode }>,
-        walletConnectionProvider: provider.walletConnectionProvider,
-        transferProvider: provider.transferProvider,
-        balanceProvider: provider.balanceProvider,
-        gasProvider: provider.gasProvider,
-        addressUtilsProvider: provider.addressUtilsProvider,
-        contractAddressProvider: provider.contractAddressProvider,
-        rpcHealthCheckProvider: provider.rpcHealthCheckProvider,
+        wrapper: Wrapper,
+        wrapperHostsChildren: false,
+        // Lazy connection registrar: the chunk at ./TONConnectionRegistrar
+        // imports useTONConnection, useTONTransfer, TonAddressUtilsProvider —
+        // none of which are reachable from this static file's import graph.
+        connectionRegistrar: () => import("./TONConnectionRegistrar"),
+        balanceProvider: [
+            new LazyBalanceProvider(
+                (n) => KnownInternalNames.Networks.TONMainnet.includes(n.name),
+                () => import("./tonBalanceProvider").then(m => new m.TonBalanceProvider(tonConfigs?.tonApiKey)),
+            ),
+        ],
+        gasProvider: [new TonGasProvider()],
+        // addressUtilsProvider intentionally omitted — TonAddressUtilsProvider
+        // pulls @ton/core at module scope. The registrar constructs it inside
+        // the lazy chunk and merges it into the registered provider.
     })
 }
