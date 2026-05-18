@@ -1,5 +1,6 @@
 'use client'
-import { FC, useMemo } from 'react'
+import { FC, useEffect, useMemo } from 'react'
+import { useConfig } from 'wagmi'
 import {
     useRegisterWalletConnectionProvider,
     useSettingsState,
@@ -10,6 +11,7 @@ import useEVMConnection from './useEVMConnection'
 import { useEVMTransfer } from './transferProvider/useEVMTransfer'
 import { EVMContractAddressProvider } from './evmContractAddressProvider'
 import { EVMRpcHealthCheckProvider } from './rpcHealthCheckProvider'
+import { setEVMWagmiConfig } from './wagmiConfigStore'
 
 // Lazy chunk for EVM. The static surface of @layerswap/wallet-evm
 // references this module only via `import()` (see createEVMShell in
@@ -26,6 +28,16 @@ const EVMConnectionRegistrar: FC<LazyConnectionRegistrarProps> = ({ staticDefini
     const { networks } = useSettingsState()
     const connection = useEVMConnection({ networks })
     const transferProvider = useEVMTransfer()
+
+    // Publish the wagmi Config into a side store so packages that need it
+    // (Paradex, currently) can read it without being inside WagmiProvider.
+    // This breaks the cross-package React-context dependency that
+    // previously forced EVM's wrapper to wrap every other shell.
+    const wagmiConfig = useConfig()
+    useEffect(() => {
+        setEVMWagmiConfig(wagmiConfig)
+        return () => setEVMWagmiConfig(null)
+    }, [wagmiConfig])
 
     // The two heavy-import provider classes live here so their modules
     // join *this* chunk rather than the shell's static bundle. They have

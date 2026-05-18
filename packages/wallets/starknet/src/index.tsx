@@ -1,154 +1,74 @@
-import useStarknetConnection from "./useStarknetConnection";
-import { StarknetBalanceProvider } from "./starknetBalanceProvider";
-import { WalletProvider, BaseWalletProviderConfig, NftProvider, LazyGasProvider } from "@layerswap/widget/types";
-import { AppSettings, KnownInternalNames } from "@layerswap/widget/internal";
-import { StarknetAddressUtilsProvider } from "./starknetAddressUtilsProvider";
-import { StarknetNftProvider } from "./starknetNftProvider";
-import React, { ComponentProps, lazy, Suspense } from "react";
-let StarknetProviderImpl: typeof import("./StarknetProvider")["default"] | null = null
+'use client'
+// Thin static surface of @layerswap/wallet-starknet. Importing this file —
+// what `createStarknetShell` callers do — must NOT statically pull in
+// @starknet-react/core, the starknet SDK, or the connection/transfer
+// hooks. Those live in StarknetConnectionRegistrar.tsx (lazy chunk loaded
+// by defineWalletProvider's connectionRegistrar option).
+//
+// The legacy `createStarknetProvider` / `StarknetProvider` exports live
+// in ./legacy.tsx; they statically import the heavy modules so anyone
+// using them pays that cost. createStarknetShell does not import legacy.tsx.
 
-const loadStarknetProviderModule = async () => {
-    const m = await import("./StarknetProvider")
-    StarknetProviderImpl = m.default
-}
-
-const StarknetProviderWrapperLazy = /*#__PURE__*/ lazy(async () => {
-    const m = await import("./StarknetProvider")
-    StarknetProviderImpl = m.default
-    return m
-});
-
-const StarknetProviderWrapper = (props: ComponentProps<typeof StarknetProviderWrapperLazy>) => {
-    if (StarknetProviderImpl) {
-        const Impl = StarknetProviderImpl
-        return <Impl {...props} />
-    }
-    return <StarknetProviderWrapperLazy {...props} />
-}
-
-export const preloadStarknetProvider = loadStarknetProviderModule
-import { useStarknetTransfer } from "./useStarknetTransfer";
-
-const isStarknetNetwork = (name: string) =>
-    KnownInternalNames.Networks.StarkNetMainnet.includes(name) ||
-    KnownInternalNames.Networks.StarkNetGoerli.includes(name) ||
-    KnownInternalNames.Networks.StarkNetSepolia.includes(name);
+import React, { ReactNode, Suspense } from "react"
+import { defineWalletProvider, type WalletProviderShell } from "@layerswap/widget/internal"
+import type { BaseWalletProviderConfig, NftProvider, WalletProvider } from "@layerswap/widget/types"
+import { LazyGasProvider } from "@layerswap/widget/types"
+import { KnownInternalNames } from "@layerswap/widget/internal"
+import { StarknetBalanceProvider } from "./starknetBalanceProvider"
+import { StarknetAddressUtilsProvider } from "./starknetAddressUtilsProvider"
+import { StarknetProviderWrapper } from "./shellInternals"
 
 export type StarknetProviderConfig = BaseWalletProviderConfig & {
     nftProviders?: NftProvider | NftProvider[]
 }
 
-export { default as useStarknetConnection } from "./useStarknetConnection";
+import { preloadStarknetProvider as preloadStarknetProviderWrapper } from "./shellInternals"
 
-export function createStarknetProvider(config: StarknetProviderConfig = {}): WalletProvider {
-    const {
-        customHook,
-        balanceProviders,
-        gasProviders,
-        addressUtilsProviders,
-        nftProviders,
-        transferProviders
-    } = config;
+// Warms both the @starknet-react/core wrapper chunk and the
+// connection-registrar chunk. See EVM's preloadEVMProvider for rationale.
+export const preloadStarknetProvider = (): Promise<unknown> =>
+    Promise.all([preloadStarknetProviderWrapper(), import("./StarknetConnectionRegistrar")])
+export { createStarknetProvider, StarknetProvider } from "./legacy"
+export { default as useStarknetConnection } from "./useStarknetConnection"
 
-    // Use custom hook if provided, otherwise use default
-    const walletConnectionProvider = customHook || useStarknetConnection;
+const isStarknetNetwork = (name: string) =>
+    KnownInternalNames.Networks.StarkNetMainnet.includes(name) ||
+    KnownInternalNames.Networks.StarkNetGoerli.includes(name) ||
+    KnownInternalNames.Networks.StarkNetSepolia.includes(name)
 
-    // Use custom providers if provided, otherwise use defaults
-    const defaultBalanceProviders = [new StarknetBalanceProvider()];
-    const finalBalanceProviders = balanceProviders !== undefined
-        ? (Array.isArray(balanceProviders) ? balanceProviders : [balanceProviders])
-        : defaultBalanceProviders;
+// Default order: 200. Earlier chains (smaller numbers) win when multiple
+// providers support the same network — mirrors the legacy array-order
+// resolution in useWallet.resolveProvider.
+export function createStarknetShell(
+    config: StarknetProviderConfig & { order?: number } = {},
+): WalletProviderShell {
+    const { order = 200 } = config
 
-    const defaultGasProviders = [
-        new LazyGasProvider(
-            (n) => isStarknetNetwork(n.name),
-            () => import("./starknetGasProvider").then(m => new m.StarknetGasProvider())
-        )
-    ];
-    const finalGasProviders = gasProviders !== undefined
-        ? (Array.isArray(gasProviders) ? gasProviders : [gasProviders])
-        : defaultGasProviders;
-
-    const defaultAddressUtilsProviders = [new StarknetAddressUtilsProvider()];
-    const finalAddressUtilsProviders = addressUtilsProviders !== undefined
-        ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
-        : defaultAddressUtilsProviders;
-
-    const defaultNftProviders = [new StarknetNftProvider()];
-    const finalNftProviders = nftProviders !== undefined
-        ? (Array.isArray(nftProviders) ? nftProviders : [nftProviders])
-        : defaultNftProviders;
-
-    const defaultTransferProviders = [useStarknetTransfer];
-    const finalTransferProviders = transferProviders !== undefined
-        ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
-        : defaultTransferProviders;
-
-    const WrapperComponent = ({ children }: { children: React.ReactNode }) => (
+    const Wrapper = ({ children }: { children: ReactNode }) => (
         <Suspense fallback={null}>
             <StarknetProviderWrapper>{children}</StarknetProviderWrapper>
         </Suspense>
-    );
+    )
 
-    return {
-        id: "starknet",
-        wrapper: WrapperComponent,
-        walletConnectionProvider,
-        addressUtilsProvider: finalAddressUtilsProviders,
-        gasProvider: finalGasProviders,
-        balanceProvider: finalBalanceProviders,
-        nftProvider: finalNftProviders,
-        transferProvider: finalTransferProviders,
-    };
-}
-
-/**
- * @deprecated Use createStarknetProvider() instead. This export will be removed in a future version.
- * Note: This uses default WalletConnect configuration provided to LayerswapProvider.
- */
-export const StarknetProvider: WalletProvider = {
-    id: "starknet",
-    wrapper: ({ children }: { children: React.ReactNode }) => {
-        return (
-            <Suspense fallback={null}>
-                <StarknetProviderWrapper walletConnectConfigs={AppSettings.WalletConnectConfig}>
-                    {children}
-                </StarknetProviderWrapper>
-            </Suspense>
-        );
-    },
-    walletConnectionProvider: useStarknetConnection,
-    addressUtilsProvider: [new StarknetAddressUtilsProvider()],
-    gasProvider: [
-        new LazyGasProvider(
-            (n) => isStarknetNetwork(n.name),
-            () => import("./starknetGasProvider").then(m => new m.StarknetGasProvider())
-        )
-    ],
-    balanceProvider: [new StarknetBalanceProvider()],
-    nftProvider: [new StarknetNftProvider()],
-    transferProvider: [useStarknetTransfer],
-};
-// Shell entry — see defineWalletProvider docs in @layerswap/widget. The
-// inner provider definition is unchanged; the shell just wraps it so the
-// chain composes as JSX (<StarknetShell>…</StarknetShell>) rather than via
-// a runtime-built walletProviders array.
-import { defineWalletProvider, type WalletProviderShell } from "@layerswap/widget/internal";
-
-export function createStarknetShell(config: StarknetProviderConfig & { order?: number } = {}): WalletProviderShell {
-    const { order = 200, ...rest } = config
-    const provider = createStarknetProvider(rest)
     return defineWalletProvider({
-        id: provider.id,
+        id: "starknet",
         order,
-        wrapper: provider.wrapper as React.ComponentType<{ children: React.ReactNode }>,
-        walletConnectionProvider: provider.walletConnectionProvider,
-        transferProvider: provider.transferProvider,
-        balanceProvider: provider.balanceProvider,
-        gasProvider: provider.gasProvider,
-        addressUtilsProvider: provider.addressUtilsProvider,
-        nftProvider: provider.nftProvider,
-        contractAddressProvider: provider.contractAddressProvider,
-        rpcHealthCheckProvider: provider.rpcHealthCheckProvider,
+        wrapper: Wrapper,
+        // StarknetConfig context is consumed only inside this package
+        // (the registrar). Render children as a sibling so they aren't
+        // hidden by the lazy chain-SDK Suspense boundary.
+        wrapperHostsChildren: false,
+        // Lazy connection registrar: the chunk at ./StarknetConnectionRegistrar
+        // imports useStarknetConnection, useStarknetTransfer, StarknetNftProvider —
+        // none of which are reachable from this static file's import graph.
+        connectionRegistrar: () => import("./StarknetConnectionRegistrar"),
+        balanceProvider: [new StarknetBalanceProvider()],
+        gasProvider: [
+            new LazyGasProvider(
+                (n) => isStarknetNetwork(n.name),
+                () => import("./starknetGasProvider").then(m => new m.StarknetGasProvider()),
+            ),
+        ],
+        addressUtilsProvider: [new StarknetAddressUtilsProvider()],
     })
 }

@@ -22,7 +22,16 @@ import {
 } from "./shellInternals"
 
 export type { EVMProviderConfig, WalletConnectConfig }
-export { useWalletConnectConfig, preloadEVMProvider } from "./shellInternals"
+export { useWalletConnectConfig } from "./shellInternals"
+
+import { preloadEVMProvider as preloadEVMProviderWrapper } from "./shellInternals"
+
+// Warms both the WagmiProvider wrapper chunk and the connection-registrar
+// chunk. Callers (e.g. bridge's DefaultChainShells useEffect) fire this
+// on mount so the chunks are usually in React.lazy's cache before the
+// Suspense boundary first renders — no flicker on chunks landing late.
+export const preloadEVMProvider = (): Promise<unknown> =>
+    Promise.all([preloadEVMProviderWrapper(), import("./EVMConnectionRegistrar")])
 export { useChainConfigs } from "./evmUtils/chainConfigs"
 
 // Re-exports from legacy.tsx — only pull legacy.tsx (with its heavy
@@ -35,6 +44,12 @@ export { createEVMProvider, EVMProvider } from "./legacy"
 // today; that's why the lazy split routes through the registrar chunk
 // instead of this static export.
 export { default as useEVMConnection } from "./useEVMConnection"
+
+// Cross-package wagmi-config sharing — used by Paradex to call
+// @wagmi/core APIs (getWalletClient, switchChain, getChainId) without
+// being inside WagmiProvider. The store is a plain TS module with no
+// React/wagmi runtime dep at import time.
+export { getEVMWagmiConfig, subscribeEVMWagmiConfig } from "./wagmiConfigStore"
 
 // Lazy-loaded chain registrar — wraps the slim createEVMShell so a
 // static `import { createEVMShell } from '@layerswap/wallet-evm'`
@@ -64,6 +79,14 @@ export function createEVMShell(
         id: "evm",
         order,
         wrapper: Wrapper,
+        // WagmiProvider is consumed only inside this package's registrar.
+        // The wagmi Config is published into a side store
+        // (./wagmiConfigStore) so cross-package consumers (Paradex) can
+        // call @wagmi/core imperatively without React context. Children
+        // therefore don't need WagmiProvider as an ancestor — render
+        // them as a sibling of the wrapper so the wagmi chunk's lazy
+        // load no longer hides the form.
+        wrapperHostsChildren: false,
         // Lazy connection registrar: the chunk at ./EVMConnectionRegistrar
         // imports useEVMConnection, useEVMTransfer, EVMContractAddressProvider,
         // EVMRpcHealthCheckProvider — none of which are reachable from this

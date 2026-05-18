@@ -1,120 +1,53 @@
-import { FuelAddressUtilsProvider } from "./fuelAddressUtilsProvider";
-import { FuelBalanceProvider } from "./fuelBalanceProvider";
-import { FuelGasProvider } from "./fuelGasProvider";
-import useFuelConnection from "./useFuelConnection";
-import { WalletProvider, BaseWalletProviderConfig } from "@layerswap/widget/types";
-import React, { ComponentProps, lazy, Suspense } from "react";
-let FuelProviderImpl: typeof import("./FuelProvider")["default"] | null = null
+'use client'
+// Thin static surface of @layerswap/wallet-fuel. Importing this file —
+// what `createFuelShell` callers do — must NOT statically pull in
+// @fuels/react, @fuel-ts/account, @fuel-ts/address, or the connection/
+// transfer hooks. Those live in FuelConnectionRegistrar.tsx (lazy chunk
+// loaded by defineWalletProvider's connectionRegistrar option).
 
-const loadFuelProviderModule = async () => {
-    const m = await import("./FuelProvider")
-    FuelProviderImpl = m.default
-}
-
-const FuelProviderWrapperLazy = /*#__PURE__*/ lazy(async () => {
-    const m = await import("./FuelProvider")
-    FuelProviderImpl = m.default
-    return m
-});
-
-const FuelProviderWrapper = (props: ComponentProps<typeof FuelProviderWrapperLazy>) => {
-    if (FuelProviderImpl) {
-        const Impl = FuelProviderImpl
-        return <Impl {...props} />
-    }
-    return <FuelProviderWrapperLazy {...props} />
-}
-
-export const preloadFuelProvider = loadFuelProviderModule
-import { useFuelTransfer } from "./transferProvider/useFuelTransfer";
+import React, { ReactNode, Suspense } from "react"
+import { defineWalletProvider, type WalletProviderShell } from "@layerswap/widget/internal"
+import type { BaseWalletProviderConfig, WalletProvider } from "@layerswap/widget/types"
+import { FuelAddressUtilsProvider } from "./fuelAddressUtilsProvider"
+import { FuelBalanceProvider } from "./fuelBalanceProvider"
+import { FuelGasProvider } from "./fuelGasProvider"
+import { FuelProviderWrapper } from "./shellInternals"
 
 export type FuelProviderConfig = BaseWalletProviderConfig
 
-export function createFuelProvider(config: FuelProviderConfig = {}): WalletProvider {
-    const {
-        customHook,
-        balanceProviders,
-        gasProviders,
-        addressUtilsProviders,
-        transferProviders
-    } = config;
+import { preloadFuelProvider as preloadFuelProviderWrapper } from "./shellInternals"
 
-    const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
-        return (
-            <Suspense fallback={null}>
-                <FuelProviderWrapper>
-                    {children}
-                </FuelProviderWrapper>
-            </Suspense>
-        );
-    };
+export const preloadFuelProvider = (): Promise<unknown> =>
+    Promise.all([preloadFuelProviderWrapper(), import("./FuelConnectionRegistrar")])
+export { createFuelProvider, FuelProvider } from "./legacy"
 
-    const walletConnectionProvider = customHook || useFuelConnection;
+// Default order: 300. Earlier chains (smaller numbers) win when multiple
+// providers support the same network — mirrors the legacy array-order
+// resolution in useWallet.resolveProvider.
+export function createFuelShell(
+    config: FuelProviderConfig & { order?: number } = {},
+): WalletProviderShell {
+    const { order = 300 } = config
 
-    const defaultBalanceProviders = [new FuelBalanceProvider()];
-    const finalBalanceProviders = balanceProviders !== undefined
-        ? (Array.isArray(balanceProviders) ? balanceProviders : [balanceProviders])
-        : defaultBalanceProviders;
+    const Wrapper = ({ children }: { children: ReactNode }) => (
+        <Suspense fallback={null}>
+            <FuelProviderWrapper>
+                {children}
+            </FuelProviderWrapper>
+        </Suspense>
+    )
 
-    const defaultGasProviders = [new FuelGasProvider()];
-    const finalGasProviders = gasProviders !== undefined
-        ? (Array.isArray(gasProviders) ? gasProviders : [gasProviders])
-        : defaultGasProviders;
-
-    const defaultAddressUtilsProviders = [new FuelAddressUtilsProvider()];
-    const finalAddressUtilsProviders = addressUtilsProviders !== undefined
-        ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
-        : defaultAddressUtilsProviders;
-
-    const defaultTransferProviders = [useFuelTransfer];
-    const finalTransferProviders = transferProviders !== undefined
-        ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
-        : defaultTransferProviders;
-
-    return {
-        id: "fuel",
-        wrapper: WrapperComponent,
-        walletConnectionProvider,
-        addressUtilsProvider: finalAddressUtilsProviders,
-        gasProvider: finalGasProviders,
-        balanceProvider: finalBalanceProviders,
-        transferProvider: finalTransferProviders,
-    };
-}
-
-/**
- * @deprecated Use createFuelProvider() instead. This export will be removed in a future version.
- */
-const FuelProviderLazyWrapper = ({ children }: { children: React.ReactNode }) => (
-    <Suspense fallback={null}>
-        <FuelProviderWrapper>{children}</FuelProviderWrapper>
-    </Suspense>
-);
-
-export const FuelProvider: WalletProvider = {
-    id: "fuel",
-    wrapper: FuelProviderLazyWrapper,
-    walletConnectionProvider: useFuelConnection,
-    addressUtilsProvider: [new FuelAddressUtilsProvider()],
-    gasProvider: [new FuelGasProvider()],
-    balanceProvider: [new FuelBalanceProvider()],
-    transferProvider: [useFuelTransfer],
-};
-import { defineWalletProvider, type WalletProviderShell } from "@layerswap/widget/internal";
-
-export function createFuelShell(config: FuelProviderConfig & { order?: number } = {}): WalletProviderShell {
-    const { order = 300, ...rest } = config
-    const provider = createFuelProvider(rest)
     return defineWalletProvider({
-        id: provider.id,
+        id: "fuel",
         order,
-        wrapper: provider.wrapper as React.ComponentType<{ children: React.ReactNode }>,
-        walletConnectionProvider: provider.walletConnectionProvider,
-        transferProvider: provider.transferProvider,
-        balanceProvider: provider.balanceProvider,
-        gasProvider: provider.gasProvider,
-        addressUtilsProvider: provider.addressUtilsProvider,
-        contractAddressProvider: provider.contractAddressProvider,
-        rpcHealthCheckProvider: provider.rpcHealthCheckProvider,
+        wrapper: Wrapper,
+        wrapperHostsChildren: false,
+        // Lazy connection registrar: the chunk at ./FuelConnectionRegistrar
+        // imports useFuelConnection, useFuelTransfer — neither reachable
+        // from this static file's import graph.
+        connectionRegistrar: () => import("./FuelConnectionRegistrar"),
+        balanceProvider: [new FuelBalanceProvider()],
+        gasProvider: [new FuelGasProvider()],
+        addressUtilsProvider: [new FuelAddressUtilsProvider()],
     })
 }

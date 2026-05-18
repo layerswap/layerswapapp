@@ -67,6 +67,16 @@ export type WalletProviderDefinition = {
     // exclusive with `walletConnectionProvider`; if both are set the lazy
     // path wins.
     connectionRegistrar?: LazyConnectionRegistrarLoader
+    // Controls whether the wrapper renders as an ancestor of `children`
+    // or only of the registrar. Default `true` preserves the historical
+    // behavior (wrapper wraps both registrar and children). Set to
+    // `false` when the wrapper provides a chain-SDK context (WagmiProvider,
+    // StarknetConfig, etc.) that NO consumer in `children` reads from
+    // directly — i.e., children only access the connection through the
+    // registry. With `false`, a lazy wrapper's Suspense boundary cannot
+    // hide `children` while the chain SDK chunk loads, eliminating the
+    // multi-stage flicker that nested lazy wrappers otherwise cause.
+    wrapperHostsChildren?: boolean
 }
 
 export type WalletProviderShell = FC<{ children: ReactNode }> & {
@@ -101,6 +111,7 @@ export function defineWalletProvider(def: WalletProviderDefinition): WalletProvi
         contractAddressProvider,
         rpcHealthCheckProvider,
         connectionRegistrar,
+        wrapperHostsChildren = true,
     } = def
 
     // Fixed-length arrays captured at definition time. `transferHooks` is
@@ -185,23 +196,48 @@ export function defineWalletProvider(def: WalletProviderDefinition): WalletProvi
         renderRegistrar = () => <InlineRegistrar />
     }
 
-    // The shell renders the chain's context wrapper (if any) around the
-    // registrar + downstream children. The registrar is a *sibling* of
-    // children inside the wrapper so both run within the wrapper's
-    // contexts (e.g. WagmiProvider, StarknetReact, etc.). For wrapper-
-    // only chains (renderRegistrar === null) the inner just renders
-    // children.
+    // The shell renders the chain's context wrapper (if any) and the
+    // registrar in one of two arrangements, controlled by
+    // `wrapperHostsChildren`:
+    //
+    // - `wrapperHostsChildren = true` (default): the wrapper wraps both
+    //   the registrar and `children`. Use this when something in
+    //   `children` reads a context provided by the wrapper.
+    //
+    // - `wrapperHostsChildren = false`: the wrapper wraps only the
+    //   registrar; `children` render as a sibling, outside any Suspense
+    //   boundary the wrapper may contain. Use this for chains whose
+    //   wrapper provides an SDK context (WagmiProvider etc.) that is
+    //   accessed only by the registrar — the registry pattern means
+    //   children call into those SDKs through registry-captured closures,
+    //   not via direct hooks, so no React context is needed in `children`.
+    //   Critically, this prevents a lazy chain-SDK chunk from hiding the
+    //   form while it loads.
     const ShellComponent: FC<{ children: ReactNode }> = ({ children }) => {
-        const inner = renderRegistrar ? (
+        if (wrapperHostsChildren) {
+            const inner = renderRegistrar ? (
+                <>
+                    {renderRegistrar()}
+                    {children}
+                </>
+            ) : <>{children}</>
+            if (UserWrapper) {
+                return <UserWrapper>{inner}</UserWrapper>
+            }
+            return inner
+        }
+
+        // Wrapper hosts only the registrar; children render as a sibling.
+        const registrarHost = renderRegistrar ? renderRegistrar() : null
+        const wrappedRegistrar = UserWrapper
+            ? (registrarHost ? <UserWrapper>{registrarHost}</UserWrapper> : null)
+            : registrarHost
+        return (
             <>
-                {renderRegistrar()}
+                {wrappedRegistrar}
                 {children}
             </>
-        ) : <>{children}</>
-        if (UserWrapper) {
-            return <UserWrapper>{inner}</UserWrapper>
-        }
-        return inner
+        )
     }
     ShellComponent.displayName = `WalletProviderShell(${id})`
 
