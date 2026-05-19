@@ -59,7 +59,7 @@ export function useConnectors({
     const initialConnectors: InternalConnector[] = useMemo(() => {
         const recentNames = new Set(recentConnectors?.map(r => r.connectorName?.toLowerCase()).filter(Boolean))
         const isRecent = (c: InternalConnector) => recentNames.has(c.name.toLowerCase())
-        const isInstalled = (c: InternalConnector) => c.type === 'injected'
+        const isInstalled = (c: InternalConnector) => c.type === 'injected' && !c.isLoadable
 
         if (initialSortedRef.current?.key !== filterKey) {
             // Filter context changed (providers or search query): resort the current

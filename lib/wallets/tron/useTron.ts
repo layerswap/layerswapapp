@@ -4,6 +4,7 @@ import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvid
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { useSettingsState } from "@/context/settings";
 import { useMemo } from "react";
+import { useSyncProviders } from "../connectors/useSyncProviders";
 
 export default function useTron(): WalletProvider {
     const commonSupportedNetworks = [
@@ -16,6 +17,9 @@ export default function useTron(): WalletProvider {
     const name = 'Tron'
     const id = 'tron'
     const { wallets, wallet: tronWallet, disconnect, select } = useWallet();
+    const eip6963Providers = useSyncProviders();
+    const isMetaMaskAnnounced = eip6963Providers.some(p => p.info.rdns === 'io.metamask');
+    const isTronLinkAnnounced = eip6963Providers.some(p => p.info.rdns === 'org.tronlink.www');
 
     const address = tronWallet?.adapter.address
     const switchAccount = async (wallet: Wallet, address: string) => {
@@ -85,15 +89,22 @@ export default function useTron(): WalletProvider {
     }
 
     const availableConnectors: InternalConnector[] = useMemo(() => wallets.map(wallet => {
-        const isNotInstalled = wallet.state == 'NotFound'
+        const adapterName = wallet.adapter.name
+        const isLoading = wallet.state === 'Loading'
+
+        const isMetaMaskMissing = adapterName === 'MetaMask' && !isMetaMaskAnnounced
+        const isTronLinkMissing = adapterName === 'TronLink' && !isTronLinkAnnounced
+        const isNotInstalled = wallet.state == 'NotFound' || isMetaMaskMissing || isTronLinkMissing
+
         return {
-            id: wallet.adapter.name,
-            name: wallet.adapter.name,
+            id: adapterName,
+            name: adapterName,
             icon: wallet.adapter.icon,
             type: isNotInstalled ? 'other' : 'injected',
             installUrl: wallet.adapter?.url,
             extensionNotFound: isNotInstalled,
-            providerName: name
+            isLoadable: isLoading,
+            providerName: name,
         }
     }), [wallets])
 

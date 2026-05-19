@@ -13,6 +13,7 @@ export type InternalConnector = {
     isMobileSupported?: boolean,
     hasBrowserExtension?: boolean,
     extensionNotFound: boolean,
+    isLoadable?: boolean,
 }
 
 export type Wallet = {

@@ -2,7 +2,7 @@
 
 // Interface for provider information following EIP-6963.
 interface EIP6963ProviderInfo {
-    walletId: string; // Unique identifier for the wallet e.g io.metamask, io.metamask.flask 
+    rdns: string; // Reverse-DNS wallet identifier per EIP-6963 (e.g. io.metamask, org.tronlink.www)
     uuid: string; // Globally unique ID to differentiate between provider sessions for the lifetime of the page
     name: string; // Human-readable name of the wallet
     icon: string; // URL to the wallet's icon
