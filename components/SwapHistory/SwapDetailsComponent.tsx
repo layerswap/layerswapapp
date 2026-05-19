@@ -32,13 +32,12 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
         router.push({
             pathname: `/`,
             query: {
-                amount: requested_amount,
+                ...resolvePersistantQueryParams(router.query),
                 destAddress: destination_address,
                 from: source_network?.name,
                 to: destination_network?.name,
                 fromAsset: source_token.symbol,
                 toAsset: destination_token.symbol,
-                ...resolvePersistantQueryParams(router.query),
             }
         }, undefined, { shallow: false })
     }
