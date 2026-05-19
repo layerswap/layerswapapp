@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues'
 import LayerSwapApiClient, { Quote, SwapBasicData, SwapQuote } from '../lib/apiClients/layerSwapApiClient'
@@ -148,7 +148,7 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
         }
     }, [cache])
 
-    const { data: quote, mutate: mutateFee, error: quoteError } = useSWR<ApiResponse<Quote>>(quoteURL, quoteFetchWrapper, {
+    const { data: quote, mutate: mutateFee, error: quoteError, isLoading: swrIsLoading } = useSWR<ApiResponse<Quote>>(quoteURL, quoteFetchWrapper, {
         refreshInterval: (refreshInterval || refreshInterval == 0) ? refreshInterval : 42000,
         dedupingInterval: 5000,
         keepPreviousData: true,
@@ -157,13 +157,24 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
     const quoteData = quote?.data
     const hasValidAmount = !!debouncedAmount && Number(debouncedAmount) > 0
 
+    // after a route errors editing the amount briefly flashes. track the last error to suppress it.
+    const lastFetchErroredRef = useRef(false)
+    useEffect(() => {
+        if (quoteError) lastFetchErroredRef.current = true
+        else if (quoteURL && !swrIsLoading && cache.get(quoteURL)?.data) {
+            lastFetchErroredRef.current = false
+        }
+    }, [quote, quoteError, swrIsLoading, quoteURL, cache])
+
+    const suppressStaleAfterError = lastFetchErroredRef.current && (swrIsLoading || isDebouncing)
+
     return {
         minAllowedAmount: amountRange?.data?.min_amount,
         maxAllowedAmount: amountRange?.data?.max_amount,
         minAllowedAmountInUsd: amountRange?.data?.min_amount_in_usd,
         maxAllowedAmountInUsd: amountRange?.data?.max_amount_in_usd,
-        quote: (quoteError || !hasQuoteParams || !hasValidAmount) ? undefined : quoteData,
-        quoteTokenPrices: quoteData?.quote ? {
+        quote: (quoteError || !hasQuoteParams || !hasValidAmount || suppressStaleAfterError) ? undefined : quoteData,
+        quoteTokenPrices: (quoteData?.quote && !suppressStaleAfterError) ? {
             source_token: quoteData.quote.source_token,
             destination_token: quoteData.quote.destination_token,
         } : undefined,
