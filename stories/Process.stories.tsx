@@ -17,7 +17,7 @@ import { Formik, FormikProps } from 'formik';
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import { useArgs } from 'storybook/preview-api';
 import WalletsProviders from '../components/WalletProviders';
-import { Tabs } from '@/components/Swap/Form/NetworkExchangeTabs';
+import { Tabs } from '@/components/Swap/Form/Tabs';
 
 const Comp: FC<{ settings: any, swapData: SwapContextData, failedSwap?: SwapItem, theme?: "default" | "light", initialValues?: SwapFormValues, timestamp?: string }> = ({ swapData, theme, initialValues }) => {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
