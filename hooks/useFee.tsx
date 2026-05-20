@@ -100,7 +100,7 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
         dedupingInterval: 5000
     })
 
-    const hasQuoteParams = from && to && depositMethod && toCurrency && fromCurrency && debouncedAmount
+    const hasQuoteParams = from && to && depositMethod && toCurrency && fromCurrency && Number(debouncedAmount) > 0
 
     const quoteURL = (hasQuoteParams && !isDebouncing)
         ? buildQuoteUrl({
@@ -155,7 +155,6 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
     })
 
     const quoteData = quote?.data
-    const hasValidAmount = !!debouncedAmount && Number(debouncedAmount) > 0
 
     // after a route errors editing the amount briefly flashes. track the last error to suppress it.
     const lastFetchErroredRef = useRef(false)
@@ -173,7 +172,7 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
         maxAllowedAmount: amountRange?.data?.max_amount,
         minAllowedAmountInUsd: amountRange?.data?.min_amount_in_usd,
         maxAllowedAmountInUsd: amountRange?.data?.max_amount_in_usd,
-        quote: (quoteError || !hasQuoteParams || !hasValidAmount || suppressStaleAfterError) ? undefined : quoteData,
+        quote: (quoteError || !hasQuoteParams || suppressStaleAfterError) ? undefined : quoteData,
         quoteTokenPrices: (quoteData?.quote && !suppressStaleAfterError) ? {
             source_token: quoteData.quote.source_token,
             destination_token: quoteData.quote.destination_token,
