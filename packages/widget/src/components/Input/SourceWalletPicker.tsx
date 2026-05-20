@@ -153,7 +153,7 @@ const SourceWalletPicker: FC = () => {
     </>
 }
 
-export const FormSourceWalletButton: FC = () => {
+export const FormSourceWalletButton: FC<{ isDisabled?: boolean }> = ({ isDisabled }) => {
     const [openModal, setOpenModal] = useState<boolean>(false)
     const {
         values,
@@ -206,7 +206,7 @@ export const FormSourceWalletButton: FC = () => {
 
     if (!availableWallets.length && walletNetwork) {
         return <>
-            <Connect connectFn={handleConnect} />
+            <Connect connectFn={handleConnect} isDisabled={isDisabled} />
             {
                 mountWalletPortal && values.from?.deposit_methods?.includes('deposit_address') && values.depositMethod !== 'deposit_address' && !selectedConnector &&
                 <ModalFooterPortal isWalletModalOpen={isWalletModalOpen}>
@@ -218,8 +218,8 @@ export const FormSourceWalletButton: FC = () => {
     }
     else if (availableWallets.length > 0 && walletNetwork && values.fromAsset) {
         return <>
-            <button type="button" className="w-full outline-hidden" onClick={handleWalletChange}>
-                <Connect />
+            <button type="button" className="w-full outline-hidden" onClick={handleWalletChange} disabled={isDisabled}>
+                <Connect isDisabled={isDisabled} />
             </button>
             <VaulDrawer
                 show={openModal}
@@ -247,7 +247,7 @@ export const FormSourceWalletButton: FC = () => {
         </>
     }
     return <>
-        <Connect setMountWalletPortal={setMounWalletPortal} />
+        <Connect setMountWalletPortal={setMounWalletPortal} isDisabled={isDisabled} />
         {
             mountWalletPortal && !selectedConnector &&
             <ModalFooterPortal isWalletModalOpen={isWalletModalOpen}>
@@ -257,7 +257,7 @@ export const FormSourceWalletButton: FC = () => {
     </>
 }
 
-const Connect: FC<{ connectFn?: () => Promise<Wallet | undefined | void>; setMountWalletPortal?: Dispatch<SetStateAction<boolean>> }> = ({ connectFn, setMountWalletPortal }) => {
+const Connect: FC<{ connectFn?: () => Promise<Wallet | undefined | void>; setMountWalletPortal?: Dispatch<SetStateAction<boolean>>; isDisabled?: boolean }> = ({ connectFn, setMountWalletPortal, isDisabled }) => {
     const { connect } = useConnectModal()
     const { providers } = useWallet()
 
@@ -274,7 +274,7 @@ const Connect: FC<{ connectFn?: () => Promise<Wallet | undefined | void>; setMou
         type="button"
         data-attr="connect-wallet"
         icon={<WalletIcon className="h-6 w-6" strokeWidth={2} />}
-        isDisabled={!isProvidersReady}
+        isDisabled={isDisabled || !isProvidersReady}
     >
         Connect a wallet
     </SubmitButton>

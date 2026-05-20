@@ -147,6 +147,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                         disabled={!isValid || isSubmitting || !quote || isQuoteLoading}
                         error={error}
                         isSubmitting={isSubmitting}
+                        isQuoteLoading={isQuoteLoading}
                         partner={partner}
                     />
                 </Widget.Footer >

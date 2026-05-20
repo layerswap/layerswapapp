@@ -79,15 +79,22 @@ export default function useTronConnection({ networks }: WalletConnectionProvider
     const { executeTransfer: transfer } = useTronTransfer()
 
     const availableConnectors: InternalConnector[] = useMemo(() => wallets.map(wallet => {
-        const isNotInstalled = wallet.state == 'NotFound'
+        const adapterName = wallet.adapter.name
+        const isLoading = wallet.state === 'Loading'
+
+        // const isMetaMaskMissing = adapterName === 'MetaMask' && !isMetaMaskAnnounced
+        // const isTronLinkMissing = adapterName === 'TronLink' && !isTronLinkAnnounced
+        const isNotInstalled = wallet.state == 'NotFound' //|| isMetaMaskMissing || isTronLinkMissing
+
         return {
-            id: wallet.adapter.name,
-            name: wallet.adapter.name,
+            id: adapterName,
+            name: adapterName,
             icon: wallet.adapter.icon,
             type: isNotInstalled ? 'other' : 'injected',
             installUrl: wallet.adapter?.url,
             extensionNotFound: isNotInstalled,
-            providerName: name
+            isLoadable: isLoading,
+            providerName: name,
         }
     }), [wallets])
 
