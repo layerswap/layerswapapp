@@ -46,7 +46,7 @@ module.exports = {
         // Button press-down
         'press-down': 'press-down 150ms ease-in-out',
         'shake': 'shake 0.82s cubic-bezier(.36,.07,.19,.97) both',
-        shine: 'shine 2s linear infinite'
+        shine: 'shine 1s linear infinite'
       },
       keyframes: {
         shine: {
@@ -158,6 +158,7 @@ module.exports = {
       boxShadow: {
         'widget-footer': '-1px -28px 21px -6px var(--ls-colors-secondary-700, #0C1527)',
         'card': '5px 5px 40px rgba(0, 0, 0, 0.2), 0px 0px 20px rgba(0, 0, 0, 0.43)',
+        'accordion-open': '0 8px 32px rgba(0, 0, 0, 0.5), 0 4px 16px rgba(0, 0, 0, 0.3)',
       },
       typography: (/** @type {(arg0: string) => any} */ theme) => ({
         DEFAULT: {
@@ -212,6 +213,7 @@ module.exports = {
       addVariant('focus-peer', '.focus-peer &')
       addVariant('wide-page', '.wide-page &')
       addVariant('has-openpicker', '&:has(.openpicker)')
+      addVariant('has-openaddresspicker', '&:has(.openaddresspicker)')
       addVariant('has-expandContainerHeight', '&:has(.expandContainerHeight):has([data-state="open"])')
     })
   ],

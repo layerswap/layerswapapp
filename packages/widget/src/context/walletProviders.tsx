@@ -1,16 +1,17 @@
 "use client";
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, lazy, useContext, useMemo } from "react";
 import { WalletConnectionProvider, WalletProvider } from "@/types";
 import { useSettingsState } from "./settings";
 import VaulDrawer from "@/components/Modal/vaulModal";
 import IconButton from "@/components/Buttons/iconButton";
 import { ChevronLeft } from "lucide-react";
-import ConnectorsList from "@/components/Wallet/WalletModal/ConnectorsList";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { isMobile } from "@/lib/wallets/utils/isMobile";
 import AppSettings from "@/lib/AppSettings";
 import { filterSourceNetworks } from "@/helpers/filterSourceNetworks";
-import useWindowDimensions from "@/hooks/useWindowDimensions";
+import clsx from "clsx";
+
+const ConnectorsList = lazy(() => import("@/components/Wallet/WalletModal/ConnectorsList"));
 
 const WalletProvidersContext = createContext<WalletConnectionProvider[]>([]);
 
@@ -18,8 +19,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
     const { networks } = useSettingsState();
     const settings = useSettingsState();
     const isMobilePlatform = isMobile();
-    const { isMobile: isMobileSize } = useWindowDimensions()
-    const { goBack, onFinish, open, setOpen, selectedConnector, selectedMultiChainConnector } = useConnectModal()
+    const { goBack, onFinish, open, setOpen, selectedConnector, selectedMultiChainConnector, dismissible, topContent, fullHeight, hideHeader } = useConnectModal()
 
     const allProviders = walletProviders.map(provider => provider.walletConnectionProvider ? provider.walletConnectionProvider({ networks }) : undefined).filter(provider => provider !== undefined) as WalletConnectionProvider[];
 
@@ -43,7 +43,8 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
                 setShow={setOpen}
                 onClose={onFinish}
                 modalId={"connectNewWallet"}
-                header={
+                dismissible={dismissible}
+                header={hideHeader ? undefined : (
                     <div className="flex items-center gap-1">
                         {
                             (selectedConnector || selectedMultiChainConnector) &&
@@ -56,9 +57,16 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
                         }
                         <p>{(selectedMultiChainConnector && !selectedConnector) ? "Select ecosystem" : "Connect wallet"}</p>
                     </div>
-                }>
-                <VaulDrawer.Snap openFullHeight={!isMobileSize} id='item-1' className="pb-4 sm:pb-0! sm:h-full">
-                    <ConnectorsList onFinish={onFinish} />
+                )}>
+                <VaulDrawer.Snap openFullHeight id='item-1' className={clsx("h-full max-h-[83svh] sm:max-h-full", fullHeight && "openpicker", hideHeader && "pt-4")}>
+                    {open ? (
+                        <div className="flex flex-col gap-3 h-full">
+                            {!selectedConnector && !selectedMultiChainConnector ? topContent : null}
+                            <div className="flex-1 min-h-0">
+                                <ConnectorsList onFinish={onFinish} />
+                            </div>
+                        </div>
+                    ) : null}
                 </VaulDrawer.Snap>
             </VaulDrawer>
         </WalletProvidersContext.Provider>

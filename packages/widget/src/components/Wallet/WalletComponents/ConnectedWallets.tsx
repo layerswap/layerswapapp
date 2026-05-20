@@ -1,11 +1,11 @@
 import WalletIcon from "@/components/Icons/WalletIcon"
-import shortenAddress from "@/components/utils/ShortenAddress"
 import useWallet from "@/hooks/useWallet"
 import ConnectButton from "@/components/Buttons/connectButton"
 import { useState } from "react"
 import WalletsList from "./WalletsList"
 import VaulDrawer from "@/components/Modal/vaulModal"
 import { Wallet } from "@/types/wallet"
+import { Address } from "@/lib/address/Address"
 
 export const WalletsHeader = () => {
     const { wallets } = useWallet()
@@ -58,7 +58,7 @@ export const WalletsIcons = ({ wallets }: WalletsIconsProps) => {
     const secondWallet = uniqueWallets[1]
 
     return (
-        <div className="-space-x-2 flex">
+        <div className="-space-x-2 flex" aria-label="Connected wallets">
             {
                 firstWallet?.displayName &&
                 <firstWallet.icon className="rounded-md border-2 border-secondary-600 bg-secondary-700 shrink-0 h-6 w-6" />
@@ -108,7 +108,7 @@ const WalletsMenuWalletsList = ({ wallets }: { wallets: Wallet[] }) => {
                 wallets.length === 1 ?
                     <div className="flex gap-4 items-start text-primary-text">
                         <wallet.icon className='h-5 w-5' />
-                        {!wallet.isLoading && wallet.address && <p>{shortenAddress(wallet.address)}</p>}
+                        {!wallet.isLoading && wallet.address && <p>{new Address(wallet.address, null, wallet.providerName).toShortString()}</p>}
                     </div>
                     :
                     <>

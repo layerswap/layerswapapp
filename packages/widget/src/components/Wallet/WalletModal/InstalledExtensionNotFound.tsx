@@ -1,63 +1,57 @@
 import { FC } from "react";
 import { WalletModalConnector } from ".";
-import { ScanLine } from "lucide-react";
+import { Download, ScanLine } from "lucide-react";
 import { resolveWalletConnectorIcon } from "@/lib/wallets/utils/resolveWalletIcon";
-import SubmitButton from "@/components/Buttons/submitButton";
-import { AppSettings } from "@/exports/internal";
-import clsx from "clsx";
-import useWindowDimensions from "@/hooks/useWindowDimensions";
+import LayerSwapLogoSmall from "@/components/Icons/layerSwapLogoSmall";
 
 export const InstalledExtensionNotFound: FC<{
     selectedConnector: WalletModalConnector | undefined,
     onConnect: (connector: WalletModalConnector) => void
 }> = ({ selectedConnector, onConnect }) => {
     const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector, iconUrl: selectedConnector?.icon });
-    const { isMobile: isMobileSize } = useWindowDimensions()
-    return <div
-        className={clsx('w-full flex flex-col justify-center items-center font-semibold', {
-            'h-[60vh]': isMobileSize && AppSettings.ThemeData?.enablePortal,
-            'h-full': !isMobileSize || !AppSettings.ThemeData?.enablePortal,
-            'h-[300px]!': isMobileSize && !AppSettings.ThemeData?.enablePortal,
-        })}>
+    return <div className='w-full h-full flex flex-col justify-between'>
         <div className="flex grow items-center justify-center">
-            <div className="flex-col flex items-center gap-1">
-                <ConnectorIcon className="w-11 h-auto p-0.5 rounded-md bg-secondary-800" />
-                {selectedConnector?.hasBrowserExtension ? (
-                    <div className="py-1 text-center text-base font-medium">
-                        <p>Wallet not found on your browser,</p>
-                        <p>make sure you have the wallet installed</p>
+            <div className="flex-col flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                    <div className="p-3 bg-secondary-700 rounded-lg">
+                        <LayerSwapLogoSmall className="w-11 h-auto" />
                     </div>
-                ) : (<p className='text-base font-semibold'>
-                    <span>{selectedConnector?.name}</span> <span>is not installed</span>
-                </p>)
-                }
+                    <div className="w-8 border-t border-dashed border-secondary-400" />
+                    <div className="p-3 bg-secondary-700 rounded-lg">
+                        <ConnectorIcon className="w-11 h-auto" />
+                    </div>
+                </div>
+                <div className="text-center">
+                    <p className="text-base font-medium text-primary-text">{selectedConnector?.name} not detected</p>
+                    <p className="text-sm font-normal text-secondary-text mt-1">
+                        Install the extension or connect with your phone
+                    </p>
+                </div>
             </div>
         </div>
         <div className="flex flex-col gap-2 w-full">
-            <SubmitButton
-                onClick={() => {
-                    if (!selectedConnector?.installUrl) return;
-                    window.open(selectedConnector.installUrl, '_blank', 'noopener,noreferrer');
-                }}
-                buttonStyle="secondary"
-                className="w-full"
-            >
-                <span className="flex items-center justify-center gap-2">
-                    <span>Install</span>
-                </span>
-            </SubmitButton>
-            {(selectedConnector && selectedConnector.hasBrowserExtension) ? <SubmitButton
-                onClick={() => { onConnect({ ...selectedConnector, showQrCode: true }) }}
-                buttonStyle="secondary"
-                className="w-full"
-            >
-                <span className="flex items-center justify-center gap-2">
-                    <ScanLine className="w-5 h-5" />
+            {selectedConnector && selectedConnector.hasBrowserExtension && (
+                <button
+                    type="button"
+                    onClick={() => { onConnect({ ...selectedConnector, showQrCode: true }) }}
+                    className="flex items-center justify-center gap-2 w-full text-primary-text bg-secondary-300 hover:bg-secondary-400 p-3.5 rounded-xl text-sm font-medium transition duration-200 ease-in-out hover:brightness-125 cursor-pointer"
+                >
+                    <ScanLine className="w-4 h-4" />
                     <span>Connect with your phone</span>
-                </span>
-            </SubmitButton>
-                : null
-            }
+                </button>
+            )}
+            {selectedConnector?.installUrl && (
+                <button
+                    type="button"
+                    onClick={() => {
+                        window.open(selectedConnector.installUrl, '_blank', 'noopener,noreferrer');
+                    }}
+                    className="flex items-center justify-center gap-2 w-full text-secondary-text hover:text-primary-text p-3.5 rounded-xl text-sm font-medium transition duration-200 ease-in-out cursor-pointer"
+                >
+                    <Download className="w-4 h-4" />
+                    <span>Install {selectedConnector?.name}</span>
+                </button>
+            )}
         </div>
     </div>
 }

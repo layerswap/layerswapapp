@@ -1,5 +1,5 @@
-import { CommandGroup, CommandList, CommandWrapper } from "@/components/shadcn/command";
-import { addressFormat } from "@/lib/address/formatter";
+import { Command, CommandGroup, CommandItem, CommandList } from "@/components/shadcn/command";
+import { Address } from "@/lib/address/Address";
 import FilledCheck from "@/components/Icons/FilledCheck";
 import { AddressGroup, AddressItem } from ".";
 import { NetworkRoute } from "@/Models/Network";
@@ -15,13 +15,14 @@ type AddressBookProps = {
     destination: NetworkRoute;
     destination_address: string | undefined;
     partner?: Partner;
+    onRemoveManual?: (address: string) => void;
 }
 
-const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, destination, destination_address, partner }) => {
+const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, destination, destination_address, partner, onRemoveManual }) => {
 
     return (
         <div className="text-left mt-1!">
-            <CommandWrapper>
+            <Command>
                 <CommandList>
                     <CommandGroup
                         heading={
@@ -34,11 +35,16 @@ const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, desti
                     >
                         <div className="w-full flex flex-col items-stretch max-h-[200px] overflow-y-auto styled-scroll gap-2">
                             {addressBook.sort(sortingByDate).map(item => {
-                                const isSelected = addressFormat(item.address, destination!) === addressFormat(destination_address!, destination!)
+                                const isSelected = Address.equals(item.address, destination_address!, destination!)
                                 return (
-                                    <button type="button" key={item.address} onClick={() => onSelectAddress(item.address, item.wallet)} className={`group/addressItem px-3 py-3 rounded-lg hover:bg-secondary-600 w-full transition duration-200 bg-secondary-500 ${isSelected && 'bg-secondary-400'}`}>
+                                    <CommandItem key={item.address} onSelect={() => onSelectAddress(item.address, item.wallet)} className={`group/addressItem !px-3 !py-3 rounded-lg hover:bg-secondary-600 w-full transition duration-200 bg-secondary-500 ${isSelected && 'bg-secondary-400'}`}>
                                         <div className={`flex items-center justify-between w-full`}>
-                                            <AddressWithIcon addressItem={item} partner={partner} network={destination} />
+                                            <AddressWithIcon
+                                                addressItem={item}
+                                                partner={partner}
+                                                network={destination}
+                                                onRemove={item.group === AddressGroup.ManualAdded && onRemoveManual ? () => onRemoveManual(item.address) : undefined}
+                                            />
                                             <div className="flex h-6 items-center px-1">
                                                 {
                                                     isSelected &&
@@ -46,13 +52,13 @@ const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, desti
                                                 }
                                             </div>
                                         </div>
-                                    </button>
+                                    </CommandItem>
                                 )
                             })}
                         </div>
                     </CommandGroup>
                 </CommandList>
-            </CommandWrapper>
+            </Command>
         </div>
     )
 }

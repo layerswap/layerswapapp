@@ -1,11 +1,10 @@
 import { ChangeEvent, FC, useCallback, useState } from "react";
 import { Pencil } from "lucide-react";
-import { isValidAddress } from "@/lib/address/validator";
 import { Partner } from "@/Models/Partner";
 import { NetworkType } from "@/Models/Network";
 import FilledX from "@/components/Icons/FilledX";
 import { AddressGroup, AddressItem } from ".";
-import { addressFormat } from "@/lib/address/formatter";
+import { Address } from "@/lib/address/Address";
 import AddressWithIcon from "./AddressWithIcon";
 import { Wallet } from "@/types/wallet";
 import { FormikHelpers } from "formik";
@@ -39,7 +38,7 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
     }, [])
 
     const handleSaveNewAddress = () => {
-        if (isValidAddress(manualAddress, destination) && destination) {
+        if (Address.isValid(manualAddress, destination) && destination) {
             if (destination) {
                 setNewAddress({ address: manualAddress, networkType: destination.type })
             }
@@ -52,11 +51,11 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
     }
 
     let errorMessage = '';
-    if (manualAddress && !isValidAddress(manualAddress, destination) && values.to?.display_name) {
+    if (manualAddress && !Address.isValid(manualAddress, destination) && values.to?.display_name) {
         errorMessage = `Enter a valid ${values.to?.display_name} address`
     }
 
-    const addressFromList = destination && addresses?.find(a => addressFormat(a.address, destination) === addressFormat(manualAddress, destination))
+    const addressFromList = destination && addresses?.find(a => Address.equals(a.address, manualAddress, destination))
 
     return (
         <div className="text-left">

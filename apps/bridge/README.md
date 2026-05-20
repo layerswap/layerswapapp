@@ -12,8 +12,8 @@ This repository contains implementation of Layerswap UI
 
 
   ```sh
-  yarn
-  yarn dev 
+  pnpm install
+  pnpm dev
   ```
 
  

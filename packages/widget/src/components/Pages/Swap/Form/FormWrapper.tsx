@@ -1,5 +1,5 @@
-import { Formik, FormikProps } from "formik";
-import { useCallback, useRef, useState } from "react";
+import { Formik } from "formik";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useSettingsState } from "@/context/settings";
 import { UpdateSwapInterface, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import React from "react";
@@ -13,7 +13,6 @@ import useWallet from "@/hooks/useWallet";
 import { useAsyncModal } from "@/context/asyncModal";
 import { InitialSettings } from "@/Models/InitialSettings";
 import VaulDrawer from "@/components/Modal/vaulModal";
-import { addressFormat } from "@/lib/address/formatter";
 import { useBalance } from "@/lib/balances/useBalance";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import SwapDetails from "../Withdraw/SwapDetails";
@@ -22,15 +21,15 @@ import { useCallbacks } from "@/context/callbackProvider";
 import ContractAddressNote from "@/components/Input/Address/ContractAddressNote";
 import { useContractAddressStore } from "@/stores/contractAddressStore";
 import UrlAddressNote from "@/components/Input/Address/UrlAddressNote";
+import { Address } from "@/lib/address/Address";
 
 type NetworkToConnect = {
     DisplayName: string;
     AppURL: string;
 }
 
-export default function FormWrapper({ children, type, partner }: { children?: React.ReactNode, type: 'cross-chain' | 'exchange', partner?: Partner }) {
+export default function FormWrapper({ children, type, partner }: { children?: React.ReactNode, type: 'cross-chain' | 'exchange' | 'deposit-address', partner?: Partner }) {
 
-    const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
     const [isAddressFromQueryConfirmed, setIsAddressFromQueryConfirmed] = useState(false);
     const dontShowContractWarningRef = useRef(false);
@@ -40,6 +39,14 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
     const { swapBasicData, swapDetails, swapModalOpen } = useSwapDataState()
     const sourceNetworkWithTokens = settings.networks.find(n => n.name === swapBasicData?.source_network.name)
     const { getProvider } = useWallet(sourceNetworkWithTokens, "withdrawal")
+    const { wallets: allConnectedWallets } = useWallet()
+    const connectedAutofillNetworks = useMemo(() => {
+        const set = new Set<string>()
+        allConnectedWallets.forEach(w => {
+            w.autofillSupportedNetworks?.forEach(n => set.add(n.toLowerCase()))
+        })
+        return set
+    }, [allConnectedWallets])
     const [walletWihdrawDone, setWalletWihdrawDone] = useState(false);
     const selectedSourceAccount = useSelectedAccount("from", swapBasicData?.source_network?.name);
     const { mutate: mutateBalances } = useBalance(selectedSourceAccount?.address, sourceNetworkWithTokens)
@@ -64,11 +71,11 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
             to &&
             destination_address &&
             destinationAddressFromQuery &&
-            (addressFormat(destinationAddressFromQuery?.toString(), to) === addressFormat(destination_address, to)) &&
+            Address.equals(destinationAddressFromQuery?.toString(), destination_address, to) &&
             !isAddressFromQueryConfirmed
         ) {
             const provider = to && getProvider(to, 'autofill')
-            const isDestAddressConnected = destination_address && provider?.connectedWallets?.some((wallet) => addressFormat(wallet.address, to) === addressFormat(destination_address, to))
+            const isDestAddressConnected = destination_address && provider?.connectedWallets?.some((wallet) => Address.equals(wallet.address, destination_address, to))
 
             const confirmed = !isDestAddressConnected ? await getConfirmation({
                 content: <UrlAddressNote partner={partner} values={values} />,
@@ -125,15 +132,16 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                 setShowSwapModal: handleShowSwapModal,
                 setNetworkToConnect,
                 setShowConnectNetworkModal,
+                type,
             })
         }
         catch (error) {
             toast.error(error?.message)
         }
-    }, [createSwap, initialSettings, partner, swapBasicData, getProvider, settings])
+    }, [createSwap, initialSettings, partner, swapBasicData, getProvider, settings, type])
 
     const initialValues: SwapFormValues = swapBasicData ? generateSwapInitialValuesFromSwap(swapBasicData, swapBasicData.refuel, settings, type)
-        : generateSwapInitialValues(settings, initialSettings, type)
+        : generateSwapInitialValues(settings, initialSettings, type, connectedAutofillNetworks)
 
     const handleShowSwapModal = useCallback((value: boolean) => {
         setSwapModalOpen(value)
@@ -142,48 +150,49 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
             if (walletWihdrawDone) {
                 mutateBalances()
                 setWalletWihdrawDone(false)
-                formikRef?.current?.setFieldValue('amount', 0, true);
             }
         }
     }, [swapDetails, walletWihdrawDone, mutateBalances])
 
-    const handleWalletWithdrawalSuccess = useCallback(() => {
-        setWalletWihdrawDone(true)
-    }, []);
 
     return <>
         <Formik
-            innerRef={formikRef}
             initialValues={initialValues}
             validateOnMount={true}
             onSubmit={handleSubmit}
         >
-            <>
-                <VaulDrawer
-                    show={showConnectNetworkModal}
-                    setShow={setShowConnectNetworkModal}
-                    header={`${networkToConnect?.DisplayName} connect`}
-                    modalId="showNetwork"
-                >
-                    <VaulDrawer.Snap id="item-1">
-                        {
-                            networkToConnect &&
-                            <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
-                        }
-                    </VaulDrawer.Snap>
-                </VaulDrawer>
-                <VaulDrawer
-                    show={swapModalOpen}
-                    setShow={handleShowSwapModal}
-                    header='Complete the swap'
-                    modalId="showSwap"
-                    className="expandContainerHeight">
-                    <VaulDrawer.Snap id="item-1">
-                        <SwapDetails type="contained" onWalletWithdrawalSuccess={handleWalletWithdrawalSuccess} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />
-                    </VaulDrawer.Snap>
-                </VaulDrawer>
-                {children}
-            </>
+            {({ setFieldValue }) => (
+
+                <>
+                    <VaulDrawer
+                        show={showConnectNetworkModal}
+                        setShow={setShowConnectNetworkModal}
+                        header={`${networkToConnect?.DisplayName} connect`}
+                        modalId="showNetwork"
+                    >
+                        <VaulDrawer.Snap id="item-1">
+                            {
+                                networkToConnect &&
+                                <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
+                            }
+                        </VaulDrawer.Snap>
+                    </VaulDrawer>
+                    <VaulDrawer
+                        mode="fitHeight"
+                        show={swapModalOpen}
+                        setShow={handleShowSwapModal}
+                        header='Complete the swap'
+                        modalId="showSwap"
+                        className="expandContainerHeight">
+                        <SwapDetails type="contained" onWalletWithdrawalSuccess={() => {
+                            setWalletWihdrawDone(true)
+                            setFieldValue('amount', 0)
+                            mutateBalances()
+                        }} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />
+                    </VaulDrawer>
+                    {children}
+                </>
+            )}
         </Formik>
     </>
 }
@@ -199,9 +208,10 @@ type SubmitProps = {
     setShowSwapModal: (value: boolean) => void;
     setNetworkToConnect: (value: NetworkToConnect) => void;
     setShowConnectNetworkModal: (value: boolean) => void;
+    type: 'cross-chain' | 'exchange' | 'deposit-address';
 }
 
-const handleCreateSwap = async ({ query, values, partner, setShowSwapModal, createSwap, setNetworkToConnect, setShowConnectNetworkModal, setSwapId, setSubmitedFormValues }: SubmitProps) => {
+const handleCreateSwap = async ({ query, values, partner, setShowSwapModal, createSwap, setNetworkToConnect, setShowConnectNetworkModal, setSwapId, setSubmitedFormValues, type }: SubmitProps) => {
     setSubmitedFormValues(values)
     if (values.depositMethod == 'wallet') {
         setSwapId(undefined)
@@ -211,7 +221,9 @@ const handleCreateSwap = async ({ query, values, partner, setShowSwapModal, crea
     try {
         const swap = await createSwap(values, query, partner);
         setSwapId(swap.swap.id)
-        setShowSwapModal(true)
+        if (type !== 'deposit-address') {
+            setShowSwapModal(true)
+        }
     }
     catch (error) {
         const data: ApiError = error?.response?.data?.error

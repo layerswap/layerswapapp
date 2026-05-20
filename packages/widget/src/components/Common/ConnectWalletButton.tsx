@@ -55,7 +55,7 @@ const ConnectWalletButton: FC<Props> = ({ provider, onConnect, descriptionText, 
                                     <span className="ml-1">Connecting...</span>
                                 </div>
                                 :
-                                <>Connect Now</>
+                                <span>Connect Now</span>
                     }
                 </div>
             </div>

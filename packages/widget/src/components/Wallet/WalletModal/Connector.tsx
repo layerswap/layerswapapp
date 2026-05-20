@@ -35,7 +35,7 @@ const Connector: FC<Connector> = ({ connector, connectingConnector, onClick, isR
 
                         <p className='text-base text-left truncate w-full'>{connectorName}</p>
                         {
-                            connector.type === 'injected' && !isRecent &&
+                            connector.type === 'injected' && !connector.isLoadable && !isRecent &&
                             <p className='text-xs text-secondary-text font-medium'>Installed</p>
                         }
                         {

@@ -1,24 +1,19 @@
 import StarknetProviderWrapper from "./StarknetProvider";
 import useStarknetConnection from "./useStarknetConnection";
 import { StarknetBalanceProvider } from "./starknetBalanceProvider";
-import { StarknetGasProvider } from "./starknetGasProvider";
-import { WalletProvider, BaseWalletProviderConfig, NftProvider } from "@layerswap/widget/types";
-import { AppSettings } from "@layerswap/widget/internal";
+import { WalletProvider, BaseWalletProviderConfig, NftProvider, LazyGasProvider } from "@layerswap/widget/types";
+import { AppSettings, KnownInternalNames } from "@layerswap/widget/internal";
 import { StarknetAddressUtilsProvider } from "./starknetAddressUtilsProvider";
 import { StarknetNftProvider } from "./starknetNftProvider";
 import React from "react";
 import { useStarknetTransfer } from "./useStarknetTransfer";
 
-export type WalletConnectConfig = {
-    projectId: string
-    name: string
-    description: string
-    url: string
-    icons: string[]
-}
+const isStarknetNetwork = (name: string) =>
+    KnownInternalNames.Networks.StarkNetMainnet.includes(name) ||
+    KnownInternalNames.Networks.StarkNetGoerli.includes(name) ||
+    KnownInternalNames.Networks.StarkNetSepolia.includes(name);
 
 export type StarknetProviderConfig = BaseWalletProviderConfig & {
-    walletConnectConfigs?: WalletConnectConfig
     nftProviders?: NftProvider | NftProvider[]
 }
 
@@ -26,7 +21,6 @@ export { default as useStarknetConnection } from "./useStarknetConnection";
 
 export function createStarknetProvider(config: StarknetProviderConfig = {}): WalletProvider {
     const {
-        walletConnectConfigs,
         customHook,
         balanceProviders,
         gasProviders,
@@ -34,15 +28,6 @@ export function createStarknetProvider(config: StarknetProviderConfig = {}): Wal
         nftProviders,
         transferProviders
     } = config;
-
-    // Create wrapper component with config bound
-    const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
-        return (
-            <StarknetProviderWrapper walletConnectConfigs={walletConnectConfigs}>
-                {children}
-            </StarknetProviderWrapper>
-        );
-    };
 
     // Use custom hook if provided, otherwise use default
     const walletConnectionProvider = customHook || useStarknetConnection;
@@ -53,7 +38,12 @@ export function createStarknetProvider(config: StarknetProviderConfig = {}): Wal
         ? (Array.isArray(balanceProviders) ? balanceProviders : [balanceProviders])
         : defaultBalanceProviders;
 
-    const defaultGasProviders = [new StarknetGasProvider()];
+    const defaultGasProviders = [
+        new LazyGasProvider(
+            (n) => isStarknetNetwork(n.name),
+            () => import("./starknetGasProvider").then(m => new m.StarknetGasProvider())
+        )
+    ];
     const finalGasProviders = gasProviders !== undefined
         ? (Array.isArray(gasProviders) ? gasProviders : [gasProviders])
         : defaultGasProviders;
@@ -75,7 +65,7 @@ export function createStarknetProvider(config: StarknetProviderConfig = {}): Wal
 
     return {
         id: "starknet",
-        wrapper: WrapperComponent,
+        wrapper: StarknetProviderWrapper,
         walletConnectionProvider,
         addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
@@ -100,7 +90,12 @@ export const StarknetProvider: WalletProvider = {
     },
     walletConnectionProvider: useStarknetConnection,
     addressUtilsProvider: [new StarknetAddressUtilsProvider()],
-    gasProvider: [new StarknetGasProvider()],
+    gasProvider: [
+        new LazyGasProvider(
+            (n) => isStarknetNetwork(n.name),
+            () => import("./starknetGasProvider").then(m => new m.StarknetGasProvider())
+        )
+    ],
     balanceProvider: [new StarknetBalanceProvider()],
     nftProvider: [new StarknetNftProvider()],
     transferProvider: [useStarknetTransfer],

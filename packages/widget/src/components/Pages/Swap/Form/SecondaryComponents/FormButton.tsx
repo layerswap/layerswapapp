@@ -11,6 +11,7 @@ type Props = {
     disabled: boolean,
     error: string,
     isSubmitting: boolean,
+    isQuoteLoading?: boolean,
     partner: Partner | undefined,
 }
 
@@ -20,19 +21,22 @@ const FormButton = ({
     disabled,
     error,
     isSubmitting,
+    isQuoteLoading,
     partner,
 }: Props) => {
     const initialSettings = useInitialSettings();
     const actionDisplayName = error || initialSettings?.actionButtonText || "Next";
+    const preSubmitDisabled = isSubmitting || isQuoteLoading;
+
     if (shouldConnectWallet && (!error || !values.to || !values.amount)) {
-        return <FormSourceWalletButton />;
+        return <FormSourceWalletButton isDisabled={preSubmitDisabled} />;
     }
 
     if (values?.to && !values?.destination_address && !error) {
         return (
             <Address partner={partner}>
                 {() => (
-                    <SubmitButton type="button" className="w-full">
+                    <SubmitButton type="button" className="w-full" isDisabled={preSubmitDisabled}>
                         <span className="grow text-center">Enter destination address</span>
                     </SubmitButton>
                 )}

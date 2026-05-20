@@ -5,6 +5,7 @@ import clsx from 'clsx'
 import useWindowDimensions from '@/hooks/useWindowDimensions'
 import NetworkTabIcon from '@/components/Icons/NetworkTabIcon'
 import ExchangeTabIcon from '@/components/Icons/ExchangeTabIcon'
+import DepositTabIcon from '@/components/Icons/DepositTabIcon'
 import AppSettings from '@/lib/AppSettings'
 
 interface TabsContextType {
@@ -66,12 +67,13 @@ export const TabsTrigger: FC<TabsTriggerProps> = ({ value, isHovered, label, Ico
     return (
         <button
             type="button"
+            aria-label={label}
             onClick={() => ctx.setActiveId(value)}
             className={clsx(
-                'w-full flex items-center justify-start max-sm:!p-1 sm:p-1 hover:bg-secondary-100 text-secondary-text hover:text-primary-text overflow-hidden rounded-md max-sm:justify-center max-sm:px-0 gap-1.5',
+                'w-full flex items-center justify-start p-1! hover:bg-secondary-100 text-secondary-text hover:text-primary-text overflow-hidden rounded-md max-sm:justify-center max-sm:px-0 gap-1.5',
                 {
                     'bg-secondary-300 !text-primary-text': isActive,
-                    'sm:!p-0.5': AppSettings.ThemeData?.enableWideVersion == false
+                    'sm:p-0.5!': AppSettings.ThemeData?.enableWideVersion == false
                 }
             )}
         >
@@ -99,5 +101,6 @@ export const NetworkExchangeTabs = () => {
     return <TabsList>
         <TabsTrigger label="Swap" Icon={NetworkTabIcon} value="cross-chain" />
         <TabsTrigger label="Deposit from CEX" Icon={ExchangeTabIcon} value="exchange" />
+        <TabsTrigger label="Easy deposit" Icon={DepositTabIcon} value="deposit-address" />
     </TabsList>
 }

@@ -1,21 +1,15 @@
 import { useConnectors, useFuel as useGlobalFuel } from '@fuels/react';
 import { FuelConnector, FuelConnectorEventTypes } from '@fuel-ts/account';
 import { Address } from '@fuel-ts/address';
-import { useWalletStore, sleep, KnownInternalNames } from "@layerswap/widget/internal";
+import { useWalletStore, sleep } from "@layerswap/widget/internal";
 import { useEffect, useMemo } from "react";
 import { BAKO_STATE } from "./connectors/bako-safe/Bako";
 import { InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps } from "@layerswap/widget/types";
 import { resolveFuelWalletConnectorIcon } from './utils';
 import { useFuelTransfer } from './transferProvider/useFuelTransfer';
+import { name, id, commonSupportedNetworks } from "./constants"
 
 export default function useFuelConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
-    const commonSupportedNetworks = [
-        KnownInternalNames.Networks.FuelTestnet,
-        KnownInternalNames.Networks.FuelDevnet,
-        KnownInternalNames.Networks.FuelMainnet
-    ]
-    const name = 'Fuel'
-    const id = 'fuel'
 
     const { connectors } = useConnectors()
     const { fuel } = useGlobalFuel()
@@ -177,7 +171,7 @@ export default function useFuelConnection({ networks }: WalletConnectionProvider
         };
     }, [connectors]);
 
-    const availableWalletsForConnect: InternalConnector[] = connectors.map(c => {
+    const availableConnectors: InternalConnector[] = connectors.map(c => {
         const isInstalled = c.installed && !c['dAppWindow']
         return {
             name: c.name,
@@ -198,7 +192,7 @@ export default function useFuelConnection({ networks }: WalletConnectionProvider
 
         transfer,
 
-        availableWalletsForConnect,
+        availableConnectors,
         autofillSupportedNetworks: commonSupportedNetworks,
         withdrawalSupportedNetworks: commonSupportedNetworks,
         asSourceSupportedNetworks: commonSupportedNetworks,

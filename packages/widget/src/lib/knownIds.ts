@@ -64,15 +64,9 @@ export default class KnownInternalNames {
 
         public static readonly BobaRinkeby: string = "BOBA_RINKEBY";
 
-        public static readonly ZksyncMainnet: string = "ZKSYNC_MAINNET";
-
         public static readonly ZksyncEraMainnet: string = "ZKSYNCERA_MAINNET";
 
         public static readonly ZkspaceMainnet: string = "ZKSPACE_MAINNET";
-
-        public static readonly ZksyncRinkeby: string = "ZKSYNC_RINKEBY";
-
-        public static readonly EthereumRinkeby: string = "ETHEREUM_RINKEBY";
 
         public static readonly EthereumMainnet: string = "ETHEREUM_MAINNET";
 
@@ -95,12 +89,6 @@ export default class KnownInternalNames {
         public static readonly StarkNetMainnet: string = "STARKNET_MAINNET";
 
         public static readonly StarkNetSepolia: string = "STARKNET_SEPOLIA";
-
-        public static readonly ImmutableXMainnet: string = "IMMUTABLEX_MAINNET";
-
-        public static readonly ImmutableXGoerli: string = "IMMUTABLEX_GOERLI";
-
-        public static readonly ImmutableXSepolia: string = "IMMUTABLEX_SEPOLIA";
 
         public static readonly ImmutableZkEVM: string = "IMMUTABLEZK_MAINNET";
 
@@ -261,6 +249,10 @@ export default class KnownInternalNames {
         public static readonly HyperliquidTestnet: string = "HYPERLIQUID_TESTNET";
 
         public static readonly MonadMainnet: string = "MONAD_MAINNET";
+
+        public static readonly TempoMainnet: string = "TEMPO_MAINNET"
+
+        public static readonly TempoTestnet: string = "TEMPO_TESTNET"
 
     }
 

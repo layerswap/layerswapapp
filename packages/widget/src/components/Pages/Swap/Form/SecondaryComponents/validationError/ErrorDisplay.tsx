@@ -1,34 +1,31 @@
-import { ValidationDetails } from '@/context/validationContext';
-import { RouteOff } from 'lucide-react';
 import React from 'react';
-import { ICON_CLASSES_WARNING } from './constants';
-import InfoIcon from "@/components/Icons/InfoIcon";
 
 interface ErrorDisplayProps {
+    icon: React.ReactNode;
+    title: React.ReactNode;
     message?: string;
-    details: ValidationDetails;
+    action?: React.ReactNode;
+    footer?: React.ReactNode;
 }
 
-export const defaultErrors: { [errorName: string]: ErrorDisplayProps } = {
-    "insufficientFunds": {
-        details: { title: "Insufficient Balance", type: 'warning', icon: <InfoIcon className={ICON_CLASSES_WARNING} /> }
-    },
-    "quoteError": {
-        message: "Unable to retrieve quote",
-        details: { title: "Unable to retrieve quote", type: 'warning', icon: <RouteOff className={ICON_CLASSES_WARNING} /> }
-    }
-}
-export const ErrorDisplay: React.FC<Partial<ErrorDisplayProps & { errorName?: string }>> = (props) => {
-    const { message, details } = { ...defaultErrors[props?.errorName || ''], ...props };
+export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({ icon, title, message, action, footer }) => {
     return (
-        <div className="px-2 py-3 rounded-2xl bg-secondary-400">
+        <div className="flex flex-col p-3 rounded-2xl bg-secondary-400">
             <div className="flex items-start gap-2">
-                <span className="shrink-0 p-0.5">{details?.icon}</span>
-                <div className="flex flex-col gap-1">
-                    <p className="text-primary-text font-medium leading-4 text-base mt-0.5">{details?.title}</p>
-                    {message ? <p className="text-secondary-text text-sm leading-[18px]">{message}</p> : null}
+                <span className="shrink-0 p-0.5">{icon}</span>
+                <div className="flex flex-col gap-1 flex-1">
+                    <p className="text-white font-medium leading-4 text-base mt-0.5">
+                        {title}
+                    </p>
+                    {message && (
+                        <div className="flex items-center justify-between gap-2">
+                            <p className="text-secondary-text text-sm leading-4.5">{message}</p>
+                            {action}
+                        </div>
+                    )}
                 </div>
             </div>
+            {footer}
         </div>
     );
 };

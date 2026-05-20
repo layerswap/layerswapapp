@@ -1,8 +1,8 @@
 import { GasProvider, GasProps, Network, Token, NetworkType } from "@layerswap/widget/types"
-import { PublicClient, TransactionSerializedEIP1559, createPublicClient, encodeFunctionData, serializeTransaction, formatUnits, erc20Abi } from "viem";
+import { PublicClient, TransactionSerializedEIP1559, createPublicClient, encodeFunctionData, serializeTransaction, formatUnits, erc20Abi, parseGwei } from "viem";
 import { publicActionsL2 } from 'viem/op-stack'
 import resolveChain from "../evmUtils/resolveChain";
-import { ErrorHandler } from "@layerswap/widget/internal";
+import { ErrorHandler, NetworkSettings } from "@layerswap/widget/internal";
 import { resolveFallbackTransport } from "../evmUtils/resolveTransports";
 
 export class EVMGasProvider implements GasProvider {
@@ -116,9 +116,21 @@ abstract class getEVMGas {
         let maxPriorityFeePerGas = feesPerGas?.maxPriorityFeePerGas
         if (!maxPriorityFeePerGas) maxPriorityFeePerGas = await this.estimateMaxPriorityFeePerGas()
 
+        let maxFeePerGas = feesPerGas?.maxFeePerGas
+
+        const minPriorityFeeGwei = NetworkSettings.KnownSettings[this.from.name]?.MinPriorityFeePerGasInGwei
+        if (minPriorityFeeGwei && maxPriorityFeePerGas !== undefined && maxFeePerGas !== undefined) {
+            const minPriorityFee = parseGwei(minPriorityFeeGwei.toString())
+            if (maxPriorityFeePerGas < minPriorityFee) {
+                const diff = minPriorityFee - maxPriorityFeePerGas
+                maxPriorityFeePerGas = minPriorityFee
+                maxFeePerGas = maxFeePerGas + diff
+            }
+        }
+
         return {
             gasPrice,
-            maxFeePerGas: feesPerGas?.maxFeePerGas,
+            maxFeePerGas,
             maxPriorityFeePerGas: maxPriorityFeePerGas
         }
 
@@ -227,7 +239,8 @@ class getEthereumGas extends getEVMGas {
 
         const totalGas = multiplier * estimatedGasLimit
 
-        const formattedGas = Number(formatUnits(BigInt(totalGas), this.nativeToken?.decimals))
+        const decimals = NetworkSettings.KnownSettings[this.from.name]?.FeeParsingDecimalPlaces || this.nativeToken?.decimals
+        const formattedGas = Number(formatUnits(BigInt(totalGas), decimals))
         return formattedGas
     }
 

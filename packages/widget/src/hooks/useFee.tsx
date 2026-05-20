@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
-import LayerSwapApiClient, { Quote, SwapBasicData } from '../lib/apiClients/layerSwapApiClient'
+import LayerSwapApiClient, { Quote, SwapBasicData, SwapQuote } from '../lib/apiClients/layerSwapApiClient'
 import { ApiResponse } from '../Models/ApiResponse'
 import { create } from 'zustand';
 import { isDiffByPercent } from '@/components/utils/numbers'
@@ -8,12 +8,18 @@ import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
 import { useSlippageStore } from '@/stores/slippageStore'
 import { sleep } from '@/lib/wallets/utils';
 
+export type QuoteTokenPrices = Pick<SwapQuote, 'source_token' | 'destination_token'>
+
 type UseQuoteData = {
     minAllowedAmount?: number
     maxAllowedAmount?: number
+    minAllowedAmountInUsd?: number
+    maxAllowedAmountInUsd?: number
     quote?: Quote
+    quoteTokenPrices?: QuoteTokenPrices
     quoteError?: QuoteError
     isQuoteLoading: boolean
+    isDebouncing: boolean
     mutateFee: () => void
     mutateLimits: () => void
     limitsValidating: boolean
@@ -54,9 +60,11 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
     const [debouncedAmount, setDebouncedAmount] = useState(amount)
     const [isDebouncing, setIsDebouncing] = useState(false)
     const { slippage } = useSlippageStore()
-
     useEffect(() => {
-        if (amount === debouncedAmount) return;
+        if (amount === debouncedAmount) {
+            setIsDebouncing(false)
+            return;
+        }
 
         setIsDebouncing(true)
         const handler = setTimeout(() => {
@@ -92,15 +100,15 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
         dedupingInterval: 5000
     })
 
-    const canGetQuote = from && to && depositMethod && toCurrency && fromCurrency && debouncedAmount
-    
-    const quoteURL = (canGetQuote && !isDebouncing)
+    const hasQuoteParams = from && to && depositMethod && toCurrency && fromCurrency && debouncedAmount
+
+    const quoteURL = (hasQuoteParams && !isDebouncing)
         ? buildQuoteUrl({
             sourceNetwork: from!,
             sourceToken: fromCurrency!,
             destinationNetwork: to!,
             destinationToken: toCurrency!,
-            amount: debouncedAmount!,
+            amount: debouncedAmount || 0,
             refuel: !!refuel,
             useDepositAddress: use_deposit_address,
             slippage,
@@ -124,14 +132,14 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
                 setLoading(true)
                 await sleep(3500)
             }
-          
-            
+
+
             setKey(url)
             setLoading(false)
             return newData
         }
         catch (error) {
-            if(error.response?.data?.error?.code === "VALIDATION_ERROR"){
+            if (error.response?.data?.error?.code === "VALIDATION_ERROR") {
                 useSlippageStore.getState().clearSlippage()
             }
             setLoading(false)
@@ -146,11 +154,21 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
         keepPreviousData: true,
     })
 
+    const quoteData = quote?.data
+    const hasValidAmount = !!debouncedAmount && Number(debouncedAmount) > 0
+
     return {
         minAllowedAmount: amountRange?.data?.min_amount,
         maxAllowedAmount: amountRange?.data?.max_amount,
-        quote: (quoteError || !canGetQuote) ? undefined : quote?.data,
+        minAllowedAmountInUsd: amountRange?.data?.min_amount_in_usd,
+        maxAllowedAmountInUsd: amountRange?.data?.max_amount_in_usd,
+        quote: (quoteError || !hasQuoteParams || !hasValidAmount) ? undefined : quoteData,
+        quoteTokenPrices: quoteData?.quote ? {
+            source_token: quoteData.quote.source_token,
+            destination_token: quoteData.quote.destination_token,
+        } : undefined,
         isQuoteLoading: isQuoteLoading,
+        isDebouncing,
         quoteError,
         mutateFee,
         mutateLimits,
@@ -183,7 +201,7 @@ export function transformSwapDataToQuoteArgs(swapData: SwapBasicData | undefined
     }
 }
 
-type QuoteUrlArgs = {
+export type QuoteUrlArgs = {
     sourceNetwork: string
     sourceToken: string
     destinationNetwork: string

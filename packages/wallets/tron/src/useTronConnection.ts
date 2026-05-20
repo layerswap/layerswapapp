@@ -3,16 +3,12 @@ import { KnownInternalNames, walletIconResolver } from "@layerswap/widget/intern
 import { WalletConnectionProviderProps, InternalConnector, Wallet, WalletConnectionProvider } from "@layerswap/widget/types";
 import { useMemo } from "react";
 import { useTronTransfer } from './transferProvider/useTronTransfer';
+import { name, id, tronNames } from "./constants"
 
 export default function useTronConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
-    const commonSupportedNetworks = [
-        KnownInternalNames.Networks.TronMainnet,
-        KnownInternalNames.Networks.TronTestnet
-    ]
 
     const network = networks.find(n => n.name === KnownInternalNames.Networks.TronMainnet || n.name === KnownInternalNames.Networks.TronTestnet)
-    const name = 'Tron'
-    const id = 'tron'
+
     const { wallets, wallet: tronWallet, disconnect, select, signTransaction } = useWallet();
 
     const address = tronWallet?.adapter.address
@@ -27,9 +23,9 @@ export default function useTronConnection({ networks }: WalletConnectionProvider
         isActive: true,
         icon: walletIconResolver(address, tronWallet.adapter.icon),
         disconnect: () => disconnectWallet(),
-        autofillSupportedNetworks: commonSupportedNetworks,
-        withdrawalSupportedNetworks: commonSupportedNetworks,
-        asSourceSupportedNetworks: commonSupportedNetworks,
+        autofillSupportedNetworks: tronNames,
+        withdrawalSupportedNetworks: tronNames,
+        asSourceSupportedNetworks: tronNames,
     } : undefined
 
     const getWallet = () => {
@@ -59,9 +55,9 @@ export default function useTronConnection({ networks }: WalletConnectionProvider
                 disconnect,
                 isActive: true,
                 addresses: [connectedAddress],
-                autofillSupportedNetworks: commonSupportedNetworks,
-                withdrawalSupportedNetworks: commonSupportedNetworks,
-                asSourceSupportedNetworks: commonSupportedNetworks,
+                autofillSupportedNetworks: tronNames,
+                withdrawalSupportedNetworks: tronNames,
+                asSourceSupportedNetworks: tronNames,
             } : undefined
             return wallet
         }
@@ -82,16 +78,23 @@ export default function useTronConnection({ networks }: WalletConnectionProvider
 
     const { executeTransfer: transfer } = useTronTransfer()
 
-    const availableWalletsForConnect: InternalConnector[] = useMemo(() => wallets.map(wallet => {
-        const isNotInstalled = wallet.state == 'NotFound'
+    const availableConnectors: InternalConnector[] = useMemo(() => wallets.map(wallet => {
+        const adapterName = wallet.adapter.name
+        const isLoading = wallet.state === 'Loading'
+
+        // const isMetaMaskMissing = adapterName === 'MetaMask' && !isMetaMaskAnnounced
+        // const isTronLinkMissing = adapterName === 'TronLink' && !isTronLinkAnnounced
+        const isNotInstalled = wallet.state == 'NotFound' //|| isMetaMaskMissing || isTronLinkMissing
+
         return {
-            id: wallet.adapter.name,
-            name: wallet.adapter.name,
+            id: adapterName,
+            name: adapterName,
             icon: wallet.adapter.icon,
             type: isNotInstalled ? 'other' : 'injected',
             installUrl: wallet.adapter?.url,
             extensionNotFound: isNotInstalled,
-            providerName: name
+            isLoadable: isLoading,
+            providerName: name,
         }
     }), [wallets])
 
@@ -101,12 +104,12 @@ export default function useTronConnection({ networks }: WalletConnectionProvider
 
         transfer,
 
-        availableWalletsForConnect,
+        availableConnectors,
         connectedWallets: getWallet(),
         activeWallet: wallet,
-        autofillSupportedNetworks: commonSupportedNetworks,
-        withdrawalSupportedNetworks: commonSupportedNetworks,
-        asSourceSupportedNetworks: commonSupportedNetworks,
+        autofillSupportedNetworks: tronNames,
+        withdrawalSupportedNetworks: tronNames,
+        asSourceSupportedNetworks: tronNames,
         name,
         id,
         providerIcon: network?.logo,

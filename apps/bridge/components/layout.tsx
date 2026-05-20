@@ -1,4 +1,4 @@
-import { LayerSwapSettings, THEME_COLORS, ThemeData } from "@layerswap/widget";
+import { THEME_COLORS, ThemeData } from "@layerswap/widget";
 import { useRouter } from 'next/router';
 import Head from "next/head";
 import AppWrapper from "./AppWrapper";
@@ -8,7 +8,6 @@ import type { JSX } from 'react';
 
 type Props = {
   children: JSX.Element | JSX.Element[];
-  settings?: LayerSwapSettings;
   themeData?: ThemeData | null
 };
 

@@ -1,5 +1,5 @@
 import { ExternalLink } from 'lucide-react';
-import React, { FC } from 'react';
+import { FC } from 'react';
 
 interface LinkWithIconProps {
     name: string;
@@ -8,12 +8,12 @@ interface LinkWithIconProps {
 
 const LinkWithIcon: FC<LinkWithIconProps> = ({ name, url }) => {
     return (
-        <div className='underline hover:no-underline flex items-center space-x-1'>
+        <span className='underline hover:no-underline inline-flex items-center gap-x-1'>
             <a target={"_blank"} href={url} rel="noopener noreferrer">
                 {name}
             </a>
             <ExternalLink className='h-4' />
-        </div>
+        </span>
     );
 };
 

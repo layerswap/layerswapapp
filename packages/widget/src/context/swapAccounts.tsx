@@ -1,9 +1,12 @@
 import { Context, createContext, useCallback, useContext, useMemo, useState } from 'react'
 import useWallet from '@/hooks/useWallet';
+import { getKey, useBalanceStore } from '@/stores/balanceStore';
+import { useManualDestAddressesStore } from '@/stores/manualDestAddressesStore';
 import { Wallet, WalletConnectionProvider } from '@/types/wallet';
+import { SwapDirection } from '@/exports';
 import AddressIcon from '@/components/Common/AddressIcon';
-import { SwapDirection } from '@/components/Pages/Swap/Form/SwapFormValues';
-import { getKey, useBalanceStore, BalanceEntry } from '@/stores/balanceStore';
+
+export type { ManualDestAddress } from '@/stores/manualDestAddressesStore';
 
 const SwapAccountsStateContext = createContext<SwapAccountsContextType | null>(null);
 const SwapAccountsUpdateContext = createContext<SwapAccountsUpdateContextType | null>(null);
@@ -100,6 +103,12 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
     }, [providers, selectedDestAccounts]);
 
     const selectDestinationAccount = useCallback((account: BaseAccountIdentity) => {
+        if (account.id === 'manually_added') {
+            useManualDestAddressesStore.getState().addManualDestAddress({
+                address: account.address,
+                providerName: account.providerName,
+            });
+        }
         setSelectedDestinationAccounts(prev => {
             const existingAccountIndex = prev.findIndex(acc => acc.providerName === account.providerName);
             if (existingAccountIndex !== -1) {
@@ -128,7 +137,7 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
 
     const stateValues: SwapAccountsContextType = useMemo(() => ({
         sourceAccounts,
-        destinationAccounts
+        destinationAccounts,
     }), [sourceAccounts, destinationAccounts]);
 
     const update: SwapAccountsUpdateContextType = useMemo(() => ({
@@ -181,10 +190,14 @@ export function useNetworkBalanceKey(direction: SwapDirection, networkName: stri
     return getKey(account.address, networkName);
 }
 
-export function useNetworkBalance(direction: SwapDirection, networkName: string | undefined): BalanceEntry | undefined {
+export function useNetworkBalance(direction: SwapDirection, networkName: string | undefined) {
     const balanceKey = useNetworkBalanceKey(direction, networkName);
     const balance = useBalanceStore((s) => (s.balances[balanceKey || "unknown"]));
     return balance;
+}
+
+export function useManualDestAddresses() {
+    return useManualDestAddressesStore(s => s.manualDestAddresses);
 }
 
 export function useSelectSwapAccount(direction: SwapDirection) {
