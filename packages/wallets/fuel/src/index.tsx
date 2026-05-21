@@ -2,7 +2,7 @@ import { FuelAddressUtilsProvider } from "./fuelAddressUtilsProvider";
 import { FuelBalanceProvider } from "./fuelBalanceProvider";
 import { FuelGasProvider } from "./fuelGasProvider";
 import FuelProviderWrapper from "./FuelProvider";
-import useFuelConnection from "./useFuelConnection";
+import { useFuelConnection } from "./service/useFuelConnection";
 import { WalletProvider, BaseWalletProviderConfig } from "@layerswap/widget/types";
 import React from "react";
 import { useFuelTransfer } from "./transferProvider/useFuelTransfer";

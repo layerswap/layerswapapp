@@ -43,7 +43,8 @@
     "@layerswap/widget": "workspace:^",
     "@wagmi/core": "catalog:",
     "wagmi": "catalog:",
-    "viem": "catalog:"
+    "viem": "catalog:",
+    "zustand": "catalog:"
   },
   "dependencies": {
     "@ethersproject/bytes": "^5.8.0",
@@ -60,7 +61,8 @@
   "devDependencies": {
     "react": "catalog:",
     "react-dom": "catalog:",
-    "@layerswap/widget": "workspace:^"
+    "@layerswap/widget": "workspace:^",
+    "zustand": "catalog:"
   },
   "engines": {
     "node": ">=22"

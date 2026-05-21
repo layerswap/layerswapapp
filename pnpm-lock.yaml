@@ -626,6 +626,9 @@ importers:
       react-dom:
         specifier: 'catalog:'
         version: 19.2.3(react@19.2.3)
+      zustand:
+        specifier: 'catalog:'
+        version: 4.5.7(@types/react@18.3.27)(react@19.2.3)
 
   packages/wallets/imtblPassport:
     dependencies:
@@ -31603,6 +31606,13 @@ snapshots:
   zod@3.25.76: {}
 
   zod@4.0.5: {}
+
+  zustand@4.5.7(@types/react@18.3.27)(react@19.2.3):
+    dependencies:
+      use-sync-external-store: 1.6.0(react@19.2.3)
+    optionalDependencies:
+      '@types/react': 18.3.27
+      react: 19.2.3
 
   zustand@4.5.7(@types/react@19.2.3)(react@19.2.3):
     dependencies:
