@@ -614,9 +614,6 @@ importers:
       '@imtbl/sdk':
         specifier: 1.45.10
         version: 1.45.10(@types/react@19.2.3)(bufferutil@4.1.0)(framer-motion@12.26.2(@emotion/is-prop-valid@0.8.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3)(utf-8-validate@5.0.10)
-      axios:
-        specifier: 'catalog:'
-        version: 1.12.2
     devDependencies:
       '@layerswap/widget':
         specifier: workspace:^

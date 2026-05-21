@@ -43,8 +43,7 @@
     "zustand": "catalog:"
   },
   "dependencies": {
-    "@imtbl/sdk": "1.45.10",
-    "axios": "catalog:"
+    "@imtbl/sdk": "1.45.10"
   },
   "devDependencies": {
     "@layerswap/widget": "workspace:^",
