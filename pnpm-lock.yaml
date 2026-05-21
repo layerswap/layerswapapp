@@ -657,6 +657,9 @@ importers:
       react-dom:
         specifier: 'catalog:'
         version: 19.2.3(react@19.2.3)
+      zustand:
+        specifier: 'catalog:'
+        version: 4.5.7(@types/react@19.2.3)(react@19.2.3)
 
   packages/wallets/paradex:
     dependencies:

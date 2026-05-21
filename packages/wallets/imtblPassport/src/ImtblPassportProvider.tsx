@@ -1,30 +1,13 @@
-import { useEffect, ReactNode } from "react"
-import { ImtblPassportConfig } from "./index";
+import { useEffect, type ReactNode } from "react"
+import { ImtblPassportConfig } from "./index"
+import { imtblPassportService } from "./service/ImtblPassportService"
 
-export const initilizePassport = async (configs: ImtblPassportConfig | undefined) => {
-
-    const { publishableKey, clientId, redirectUri, logoutRedirectUri } = configs || {};
-
-    const passport = (await import('@imtbl/sdk')).passport
-    const config = (await import('@imtbl/sdk')).config
-
-    if (publishableKey && clientId && redirectUri && logoutRedirectUri) {
-        passportInstance = new passport.Passport({
-            baseConfig: {
-                environment: publishableKey.includes('pk_imapik-test') ? config.Environment.SANDBOX : config.Environment.PRODUCTION,
-                publishableKey: publishableKey,
-            },
-            clientId: clientId,
-            audience: 'platform_api',
-            scope: 'openid offline_access email transact',
-            redirectUri,
-            logoutRedirectUri,
-            logoutMode: 'silent',
-        });
-    }
+/**
+ * @deprecated Prefer `imtblPassportService.initialize(config)` for non-React entry points.
+ */
+export const initilizePassport = async (configs: ImtblPassportConfig | undefined): Promise<void> => {
+    await imtblPassportService.initialize(configs)
 }
-
-export var passportInstance: any = undefined
 
 type ImtblPassportProviderWrapperProps = {
     children: ReactNode
@@ -32,35 +15,23 @@ type ImtblPassportProviderWrapperProps = {
 }
 
 export function ImtblPassportProviderWrapper({ children, imtblPassportConfig }: ImtblPassportProviderWrapperProps) {
-
     useEffect(() => {
-        if (!passportInstance) {
-            (async () => {
-                await initilizePassport(imtblPassportConfig)
-                passportInstance.connectEvm() // EIP-6963
-            })()
-        }
-    }, [passportInstance, imtblPassportConfig])
+        imtblPassportService.setConfig(imtblPassportConfig)
+        imtblPassportService.ensureEvmConnected().catch(() => { /* swallow */ })
+    }, [imtblPassportConfig])
 
-    return (
-        <>
-            {children}
-        </>
-    )
+    return <>{children}</>
 }
 
 export const ImtblRedirect = ({ imtblPassportConfig }: { imtblPassportConfig?: ImtblPassportConfig }) => {
-
     useEffect(() => {
-        (async () => {
-            if (!passportInstance) await initilizePassport(imtblPassportConfig)
-            passportInstance.loginCallback();
-        })()
-    }, [passportInstance, imtblPassportConfig])
+        imtblPassportService.setConfig(imtblPassportConfig)
+        imtblPassportService.loginCallback().catch(() => { /* swallow */ })
+    }, [imtblPassportConfig])
 
     return (
         <div>
             <h1>Redirecting...</h1>
         </div>
-    );
+    )
 }
