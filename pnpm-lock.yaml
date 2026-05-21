@@ -124,9 +124,6 @@ importers:
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.90.11(react@19.2.3)
-      '@uidotdev/usehooks':
-        specifier: ^2.4.1
-        version: 2.4.1(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@vercel/analytics':
         specifier: ^1.6.1
         version: 1.6.1(next@15.5.9(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)
@@ -212,18 +209,12 @@ importers:
       '@tailwindcss/typography':
         specifier: ^0.5.2
         version: 0.5.19(tailwindcss@4.0.15)
-      '@types/bn.js':
-        specifier: ^5.1.0
-        version: 5.2.0
       '@types/crypto-js':
         specifier: ^4.1.1
         version: 4.2.2
       '@types/react':
         specifier: 'catalog:'
         version: 19.2.3
-      '@web3-react/types':
-        specifier: ^6.0.7
-        version: 6.0.7
       chromatic:
         specifier: ^6.24.1
         version: 6.24.1
@@ -752,10 +743,13 @@ importers:
     dependencies:
       '@ton/core':
         specifier: ^0.62.0
-        version: 0.62.1
+        version: 0.62.1(@ton/crypto@3.3.0)
+      '@ton/crypto':
+        specifier: ^3.3.0
+        version: 3.3.0
       '@ton/ton':
         specifier: ^15.4.0
-        version: 15.4.0(@ton/core@0.62.1)
+        version: 15.4.0(@ton/core@0.62.1(@ton/crypto@3.3.0))(@ton/crypto@3.3.0)
       '@tonconnect/ui-react':
         specifier: ^2.3.1
         version: 2.3.1(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -6438,6 +6432,12 @@ packages:
     peerDependencies:
       '@ton/crypto': '>=3.2.0'
 
+  '@ton/crypto-primitives@2.1.0':
+    resolution: {integrity: sha512-PQesoyPgqyI6vzYtCXw4/ZzevePc4VGcJtFwf08v10OevVJHVfW238KBdpj1kEDQkxWLeuNHEpTECNFKnP6tow==}
+
+  '@ton/crypto@3.3.0':
+    resolution: {integrity: sha512-/A6CYGgA/H36OZ9BbTaGerKtzWp50rg67ZCH2oIjV1NcrBaCK9Z343M+CxedvM7Haf3f/Ee9EhxyeTp0GKMUpA==}
+
   '@ton/ton@15.4.0':
     resolution: {integrity: sha512-f19y2Rez88KZK+lv3CT3ghXi07LcToJtJhlgRSfK+3GzjdIcoW/wbmXG1ffi6fkc8W2LO5z6Q3gZaIEvNGnz6w==}
     peerDependencies:
@@ -7407,9 +7407,6 @@ packages:
 
   '@walletconnect/window-metadata@1.0.1':
     resolution: {integrity: sha512-9koTqyGrM2cqFRW517BPY/iEtUDx2r1+Pwwu5m7sJ7ka79wi3EyqhqcICk/yDmv6jAS1rjKgTKXlEhanYjijcA==}
-
-  '@web3-react/types@6.0.7':
-    resolution: {integrity: sha512-ofGmfDhxmNT1/P/MgVa8IKSkCStFiyvXe+U5tyZurKdrtTDFU+wJ/LxClPDtFerWpczNFPUSrKcuhfPX1sI6+A==}
 
   '@webassemblyjs/ast@1.14.1':
     resolution: {integrity: sha512-nuBEDgQfm1ccRp/8bCQrx1frohyufl4JlbMMZ4P1wpeOfDhF6FQkxZJ1b/e+PLwr6X1Nhw6OLme5usuBWYBvuQ==}
@@ -9903,6 +9900,9 @@ packages:
 
   jsqr@1.4.0:
     resolution: {integrity: sha512-dxLob7q65Xg2DvstYkRpkYtmKm2sPJ9oFhrhmudT1dZvNFFTlroai3AWSpLey/w5vMcLBXRgOJsbXpdN9HzU/A==}
+
+  jssha@3.2.0:
+    resolution: {integrity: sha512-QuruyBENDWdN4tZwJbQq7/eAK85FqrI4oDbXjy5IBhYD+2pTJyBUWZe8ctWaCkrV0gy6AaelgOZZBMeswEa/6Q==}
 
   jsx-ast-utils@3.3.5:
     resolution: {integrity: sha512-ZZow9HBI5O6EPgSJLUb8n2NKgmVWTwCvHGwFuJlMjvLFqlGG6pjirPhtdsseaLZjSibD8eegzmYpUZwoIlj2cQ==}
@@ -22317,11 +22317,24 @@ snapshots:
 
   '@thumbmarkjs/thumbmarkjs@0.16.0': {}
 
-  '@ton/core@0.62.1': {}
-
-  '@ton/ton@15.4.0(@ton/core@0.62.1)':
+  '@ton/core@0.62.1(@ton/crypto@3.3.0)':
     dependencies:
-      '@ton/core': 0.62.1
+      '@ton/crypto': 3.3.0
+
+  '@ton/crypto-primitives@2.1.0':
+    dependencies:
+      jssha: 3.2.0
+
+  '@ton/crypto@3.3.0':
+    dependencies:
+      '@ton/crypto-primitives': 2.1.0
+      jssha: 3.2.0
+      tweetnacl: 1.0.3
+
+  '@ton/ton@15.4.0(@ton/core@0.62.1(@ton/crypto@3.3.0))(@ton/crypto@3.3.0)':
+    dependencies:
+      '@ton/core': 0.62.1(@ton/crypto@3.3.0)
+      '@ton/crypto': 3.3.0
       axios: 1.13.2
       dataloader: 2.2.3
       symbol.inspect: 1.0.1
@@ -24963,8 +24976,6 @@ snapshots:
     dependencies:
       '@walletconnect/window-getters': 1.0.1
       tslib: 1.14.1
-
-  '@web3-react/types@6.0.7': {}
 
   '@webassemblyjs/ast@1.14.1':
     dependencies:
@@ -28082,6 +28093,8 @@ snapshots:
   jsonify@0.0.1: {}
 
   jsqr@1.4.0: {}
+
+  jssha@3.2.0: {}
 
   jsx-ast-utils@3.3.5:
     dependencies:
