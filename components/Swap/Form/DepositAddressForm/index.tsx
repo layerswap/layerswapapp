@@ -130,15 +130,20 @@ const DepositAddressForm: FC<Props> = () => {
     // attempted (from, fromAsset, to, toAsset, address) tuple so we don't loop:
     // if the just-created swap is then dropped by the stale-swap effect (e.g.
     // because the API echoes the address in a different canonical form), the
-    // same key must not be auto-resubmitted. Cleared only by explicit user
-    // actions like "Deposit more".
+    // same key must not be auto-resubmitted. Cleared by explicit user actions
+    // like "Deposit more", and whenever the form drops to incomplete (e.g.
+    // wallet disconnects) so reconnecting the same wallet re-creates the swap.
     const attemptedKeyRef = useRef<string | null>(null);
     const fieldKey = allFieldsReady
         ? `${from?.name}|${fromAsset?.symbol}|${destination?.name}|${toCurrency?.symbol}|${destination_address?.toLowerCase()}`
         : null;
 
     useEffect(() => {
-        if (!fieldKey || swapId || isSubmitting || !isValid) return;
+        if (!fieldKey) {
+            attemptedKeyRef.current = null;
+            return;
+        }
+        if (swapId || isSubmitting || !isValid) return;
         if (isAutoSourceUpdating) return;
         if (attemptedKeyRef.current === fieldKey) return;
         attemptedKeyRef.current = fieldKey;
