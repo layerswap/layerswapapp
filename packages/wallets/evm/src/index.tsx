@@ -1,6 +1,7 @@
 'use client'
 import { WalletProvider, BaseWalletProviderConfig, WalletProviderModule, LazyBalanceProvider, LazyGasProvider, NetworkType } from "@layerswap/widget/types";
 import { createContext, ReactNode, useContext, type JSX } from 'react';
+import type { Config } from '@wagmi/core';
 import useEVMConnection from "./useEVMConnection"
 import { useEvmConnection } from "./service/useEvmConnection"
 import EVMProviderWrapper from "./EVMProvider"
@@ -21,6 +22,15 @@ export type WalletConnectConfig = {
 export type EVMProviderConfig = BaseWalletProviderConfig & {
     walletConnectConfigs?: WalletConnectConfig
     walletProviderModules?: WalletProviderModule[]
+    /**
+     * Optional externally-created wagmi Config. When set, the EVM package
+     * adopts it instead of creating its own. Connectors, chains, transports,
+     * and reconnect lifecycle become the host's responsibility.
+     *
+     * If unset, the EVM package will also implicitly adopt any ambient
+     * <WagmiProvider> it finds in the React tree.
+     */
+    wagmiConfig?: Config
 }
 
 const WalletConnectConfigContext = createContext<WalletConnectConfig | null>(null);
@@ -37,13 +47,14 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         addressUtilsProviders,
         transferProviders,
         contractAddressProviders,
-        rpcHealthCheckProviders
+        rpcHealthCheckProviders,
+        wagmiConfig,
     } = config;
 
     const WrapperComponent = ({ children }: { children: ReactNode }) => {
         return (
             <WalletConnectConfigContext.Provider value={walletConnectConfigs ?? null}>
-                <EVMProviderWrapper >
+                <EVMProviderWrapper wagmiConfig={wagmiConfig ?? null}>
                     {children}
                 </EVMProviderWrapper>
             </WalletConnectConfigContext.Provider>
@@ -136,7 +147,12 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
 
 export { default as useEVMConnection } from "./useEVMConnection";
 export { useChainConfigs } from "./evmUtils/chainConfigs";
-export { getEvmConfig, hasEvmConfig } from "./service/getEvmConfig";
+export {
+    getEvmConfig,
+    hasEvmConfig,
+    isExternalEvmConfig,
+    provideExternalEvmConfig,
+} from "./service/getEvmConfig";
 export { useEvmStore } from "./service/evmStore";
 
 /**
