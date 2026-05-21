@@ -2,10 +2,11 @@
 import { WalletProvider, BaseWalletProviderConfig, WalletProviderModule, LazyBalanceProvider, LazyGasProvider, NetworkType } from "@layerswap/widget/types";
 import { createContext, ReactNode, useContext, type JSX } from 'react';
 import useEVMConnection from "./useEVMConnection"
+import { useEvmConnection } from "./service/useEvmConnection"
 import EVMProviderWrapper from "./EVMProvider"
 import { EVMAddressUtilsProvider } from "./evmAddressUtilsProvider"
 import { AppSettings, KnownInternalNames } from "@layerswap/widget/internal";
-import { useEVMTransfer } from "./transferProvider/useEVMTransfer";
+import { createEvmTransfer } from "./transferProvider/createEvmTransfer";
 import { EVMContractAddressProvider } from "./evmContractAddressProvider";
 import { EVMRpcHealthCheckProvider } from "./rpcHealthCheckProvider";
 
@@ -49,7 +50,7 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         );
     };
 
-    const baseWalletConnectionProvider = customHook || useEVMConnection;
+    const baseWalletConnectionProvider = customHook || useEvmConnection;
 
     const moduleMultiStepHandlers = walletProviderModules
         ?.map(m => m.multiStepHandler)
@@ -110,7 +111,7 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         ? (Array.isArray(contractAddressProviders) ? contractAddressProviders : [contractAddressProviders])
         : defaultContractAddressProviders;
 
-    const defaultTransferProviders = [useEVMTransfer];
+    const defaultTransferProviders = [createEvmTransfer];
     const finalTransferProviders = transferProviders !== undefined
         ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
         : defaultTransferProviders;
@@ -135,6 +136,8 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
 
 export { default as useEVMConnection } from "./useEVMConnection";
 export { useChainConfigs } from "./evmUtils/chainConfigs";
+export { getEvmConfig, hasEvmConfig } from "./service/getEvmConfig";
+export { useEvmStore } from "./service/evmStore";
 
 /**
  * @deprecated Use createEVMProvider() instead. This export will be removed in a future version.
@@ -167,7 +170,7 @@ export const EVMProvider: WalletProvider = {
             () => import("./balanceProviders/hyperliquidBalanceProvider").then(m => new m.HyperliquidBalanceProvider())
         ),
     ],
-    transferProvider: [useEVMTransfer],
+    transferProvider: [createEvmTransfer],
     contractAddressProvider: [new EVMContractAddressProvider()],
     rpcHealthCheckProvider: [new EVMRpcHealthCheckProvider()],
 };

@@ -1,9 +1,10 @@
-import {
-    useWalletClient
-} from 'wagmi'
+import { useEffect, useMemo, useState } from 'react'
+import { shallow } from 'zustand/shallow'
+import { getWalletClient } from '@wagmi/core'
 import { providers } from 'ethers'
-import { WalletClient } from 'viem'
-import { useMemo } from 'react'
+import type { WalletClient } from 'viem'
+import { getEvmConfig, hasEvmConfig } from '../service/getEvmConfig'
+import { useEvmStore } from '../service/evmStore'
 
 export function walletClientToSigner(walletClient: WalletClient) {
     const { account, chain, transport } = walletClient
@@ -26,7 +27,25 @@ export function walletClientToSigner(walletClient: WalletClient) {
 
 /** Hook to convert a viem Wallet Client to an ethers.js Signer. */
 export function useEthersSigner({ chainId }: { chainId?: number } = {}) {
-    const { data: walletClient } = useWalletClient({ chainId })
+    const { address, storeChainId } = useEvmStore(
+        s => ({ address: s.wagmiAccount.address, storeChainId: s.wagmiAccount.chainId }),
+        shallow,
+    )
+
+    const [walletClient, setWalletClient] = useState<WalletClient | undefined>(undefined)
+
+    useEffect(() => {
+        if (!address || !hasEvmConfig()) {
+            setWalletClient(undefined)
+            return
+        }
+        let cancelled = false
+        getWalletClient(getEvmConfig(), { chainId })
+            .then(client => { if (!cancelled) setWalletClient(client as WalletClient) })
+            .catch(() => { if (!cancelled) setWalletClient(undefined) })
+        return () => { cancelled = true }
+    }, [address, chainId, storeChainId])
+
     return useMemo(
         () => (walletClient ? walletClientToSigner(walletClient) : undefined),
         [walletClient],

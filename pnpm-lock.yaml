@@ -577,6 +577,9 @@ importers:
       tailwindcss:
         specifier: ^4.0.15
         version: 4.0.15
+      zustand:
+        specifier: 'catalog:'
+        version: 4.5.7(@types/react@19.2.3)(react@19.2.3)
 
   packages/wallets/fuel:
     dependencies:

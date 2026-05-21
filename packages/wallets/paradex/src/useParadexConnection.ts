@@ -2,7 +2,7 @@ import { useCallback, useMemo } from "react"
 import { InternalConnector, RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult, Wallet, WalletConnectionProvider, WalletConnectionProviderProps } from "@layerswap/widget/types"
 import { walletClientToSigner } from "./utils/ethers"
 import { getWalletClient, switchChain, getChainId, type ConnectorAlreadyConnectedError } from '@wagmi/core'
-import { useConfig } from "wagmi"
+import { getEvmConfig } from "@layerswap/wallet-evm"
 import { sleep, KnownInternalNames, useWalletStore, useConnectModal, Address, getRegistryEntry } from "@layerswap/widget/internal"
 import { useActiveParadexAccount } from "./ActiveParadexAccount"
 import ParadexMultiStepHandler from "./components/ParadexMultiStepHandler"
@@ -33,7 +33,7 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
     const evmProvider = evmProviderInstance.walletConnectionProvider({ networks })
     const starknetProvider = starknetProviderInstance.walletConnectionProvider({ networks })
 
-    const config = useConfig()
+    const config = getEvmConfig()
     const starknetNetwork = networks.find(n => n.name === KnownInternalNames.Networks.StarkNetMainnet || n.name === KnownInternalNames.Networks.StarkNetGoerli || n.name === KnownInternalNames.Networks.StarkNetSepolia)
     const connectWallet = async (props?: { connector: InternalConnector }) => {
         const { connector } = props || {};

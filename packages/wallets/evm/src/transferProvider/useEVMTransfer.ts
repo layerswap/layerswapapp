@@ -1,14 +1,4 @@
-import { TransferProvider, NetworkType } from "@layerswap/widget/types"
-import { useConfig } from "wagmi"
-import { transactionBuilder } from "./transactionBuilder"
-import { createEVMTransferProvider } from "./createEVMTransferProvider"
-
-export function useEVMTransfer(): TransferProvider {
-    const config = useConfig()
-
-    return createEVMTransferProvider(
-        config,
-        (network) => network.type === NetworkType.EVM && !!network.token,
-        transactionBuilder
-    )
-}
+// Deprecated: kept as a re-export shim for backward compatibility. The function
+// no longer relies on the wagmi React context — it reads the config from the
+// module-level singleton instead. Prefer importing `createEvmTransfer` directly.
+export { createEvmTransfer as useEVMTransfer } from './createEvmTransfer'
