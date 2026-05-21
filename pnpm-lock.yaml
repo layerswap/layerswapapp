@@ -509,9 +509,6 @@ importers:
       bitcoinjs-lib:
         specifier: ^7.0.0
         version: 7.0.1(typescript@5.9.3)
-      use-sync-external-store:
-        specifier: ^1.6.0
-        version: 1.6.0(react@19.2.3)
     devDependencies:
       '@bigmi/client':
         specifier: ^0.6.4

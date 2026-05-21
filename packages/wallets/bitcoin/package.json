@@ -50,8 +50,7 @@
     "@bitcoinerlab/secp256k1": "^1.2.0",
     "axios": "catalog:",
     "bitcoin-address-validation": "^3.0.0",
-    "bitcoinjs-lib": "^7.0.0",
-    "use-sync-external-store": "^1.6.0"
+    "bitcoinjs-lib": "^7.0.0"
   },
   "devDependencies": {
     "@bigmi/client": "^0.6.4",
