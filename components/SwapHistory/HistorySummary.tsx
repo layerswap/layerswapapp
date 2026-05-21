@@ -107,7 +107,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <span className="truncate block shrink">
-                                            {receiveAmount.toLocaleString('en-US', { maximumFractionDigits: 20 })}
+                                            {truncateDecimals(receiveAmount, destination_token.precision)}
                                         </span>
                                     </TooltipTrigger>
                                     <TooltipContent>

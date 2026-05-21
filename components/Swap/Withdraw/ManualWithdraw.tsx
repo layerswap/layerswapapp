@@ -22,6 +22,7 @@ import { handleLimitsUpdate } from './QuoteUpdate'
 import SubmitButton from '@/components/buttons/submitButton'
 import { Widget } from '@/components/Widget/Index'
 import { truncateDecimals } from '@/components/utils/RoundDecimals'
+import { resolveDepositAddress } from '@/helpers/depositActions'
 import { Partner } from '@/Models/Partner'
 import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
 import QuoteDetails from '@/components/FeeDetails'
@@ -55,7 +56,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
     const destinationLogo = swapBasicData?.destination_network?.logo
     const [copied, copy] = useCopyClipboard()
     const query = useQueryState()
-    const depositAddress = depositActions?.find(da => true)?.to_address;
+    const depositAddress = resolveDepositAddress(swapBasicData?.source_network, depositActions);
     const { destination_address: destinationAddressFromQuery } = query
 
     const WalletIcon = wallets.find(wallet => wallet.address.toLowerCase() == swapBasicData?.destination_address?.toLowerCase())?.icon;
