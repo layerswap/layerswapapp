@@ -23,7 +23,7 @@ import PayFromPicker from "./PayFromPicker";
 import ReceivePicker from "./ReceivePicker";
 import DepositAddressInfo from "./DepositAddressInfo";
 import DepositAddressFormButton from "./DepositAddressFormButton";
-import { resolveDepositAddress } from "./helpers";
+import { resolveDepositAddress } from "@/helpers/depositActions";
 
 type Props = {
     partner?: Partner;

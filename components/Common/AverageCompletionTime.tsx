@@ -1,4 +1,5 @@
 import { FC } from "react";
+import { formatVerboseHms, parseHmsString } from "@/components/utils/formatTime";
 
 type AverageCompletionTimeProps = {
     avgCompletionTime: string | undefined
@@ -6,15 +7,10 @@ type AverageCompletionTimeProps = {
 }
 
 const AverageCompletionTime: FC<AverageCompletionTimeProps> = ({ avgCompletionTime, className }) => {
+    const parts = parseHmsString(avgCompletionTime);
+    if (!parts) return;
 
-    if (!avgCompletionTime) return
-
-    const time = avgCompletionTime?.split(':');
-    const hours = Number(time[0])
-    const minutes = Number(time[1])
-    const seconds = Number(time[2])
-
-    return <p className={className}><span>{hours > 0 ? `${hours.toFixed()} ${(hours > 1 ? 'hours' : 'hour')}` : ''}</span> <span>{minutes > 0 ? `${minutes.toFixed()} ${(minutes > 1 ? 'minutes' : 'minute')}` : ''}</span> <span>{(seconds > 0 && minutes == 0 && hours == 0) ? `${seconds.toFixed()} secs` : ''}</span></p>
+    return <p className={className}>{formatVerboseHms(parts)}</p>
 }
 
 export default AverageCompletionTime

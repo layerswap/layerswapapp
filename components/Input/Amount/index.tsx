@@ -4,6 +4,7 @@ import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import NumericInput from "../NumericInput";
 import { QuoteTokenPrices, useQuoteData } from "@/hooks/useFee";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
+import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import clsx from "clsx";
 import { useUsdTokenSync } from "@/hooks/useUsdTokenSync";
 import { ArrowUpDown } from "lucide-react";
@@ -69,14 +70,14 @@ const AmountField = forwardRef(function AmountField({ actionValue, actionValueUs
     const actionValueAsToken = useMemo(() => {
         if (actionValue === undefined || actionValue <= 0) return undefined;
         const precision = fromCurrency?.precision || 6;
-        return formatTokenAmount(actionValue, precision);
+        return truncateDecimals(actionValue, precision);
     }, [actionValue, fromCurrency?.precision]);
 
     const formattedTokenAmount = useMemo(() => {
         const num = Number(amount);
         if (isNaN(num) || num <= 0) return '0';
         const precision = fromCurrency?.precision || 6;
-        return formatTokenAmount(num, precision);
+        return truncateDecimals(num, precision);
     }, [amount, fromCurrency?.precision]);
 
     // --- Suffix positioning for token mode ---
@@ -200,9 +201,3 @@ function getFontFromElement(el: HTMLElement | null): string {
     return `${style.fontSize} ${style.fontFamily}`;
 }
 
-function formatTokenAmount(value: number, precision: number): string {
-    const fixed = value.toFixed(precision).replace(/\.?0+$/, '');
-    const [intPart, decPart] = fixed.split('.');
-    const formattedInt = Number(intPart).toLocaleString('en-US');
-    return decPart ? `${formattedInt}.${decPart}` : formattedInt;
-}

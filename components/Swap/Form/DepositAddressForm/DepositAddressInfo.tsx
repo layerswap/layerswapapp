@@ -4,7 +4,9 @@ import { QRCodeSVG } from "qrcode.react";
 import { AnimatePresence, motion } from "framer-motion";
 import useCopyClipboard from "@/hooks/useCopyClipboard";
 import { useDetailedQuote } from "@/hooks/useDetailedQuote";
-import { formatCompletionTime, formatFee, formatTierRange, formatTokenAmount } from "./helpers";
+import { formatFee, formatTierRange } from "./helpers";
+import { formatTokenAmount } from "@/components/utils/formatTokenAmount";
+import { formatEtaFromMs } from "@/components/utils/formatTime";
 
 type DepositAddressInfoProps = {
     sourceNetwork: string | undefined;
@@ -211,7 +213,7 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
                                             <span className="flex items-center gap-3">
                                                 <span className="text-primary-text">{fee}</span>
                                                 <span className="tabular-nums min-w-14 text-right text-secondary-text/80">
-                                                    {formatCompletionTime(tier.avg_completion_milliseconds)}
+                                                    {formatEtaFromMs(tier.avg_completion_milliseconds)}
                                                 </span>
                                             </span>
                                         </div>
