@@ -574,9 +574,6 @@ importers:
 
   packages/wallets/fuel:
     dependencies:
-      '@ethersproject/bytes':
-        specifier: ^5.8.0
-        version: 5.8.0
       '@fuel-ts/account':
         specifier: ^0.101.3
         version: 0.101.3
@@ -586,24 +583,15 @@ importers:
       '@fuels/react':
         specifier: ^0.43.2
         version: 0.43.2(@tanstack/react-query@5.90.16(react@19.2.3))(@types/react-dom@18.3.7(@types/react@19.2.3))(@types/react@19.2.3)(fuels@0.101.3)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      bs58:
-        specifier: ^6.0.0
-        version: 6.0.0
       fuels:
         specifier: ^0.101.3
         version: 0.101.3
       json-rpc-2.0:
         specifier: 1.7.0
         version: 1.7.0
-      memoizee:
-        specifier: ^0.4.17
-        version: 0.4.17
       socket.io-client:
         specifier: ^4.8.1
         version: 4.8.3(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      tweetnacl:
-        specifier: ^1.0.3
-        version: 1.0.3
     devDependencies:
       '@layerswap/widget':
         specifier: workspace:^
@@ -8774,9 +8762,6 @@ packages:
     resolution: {integrity: sha512-U9bFFjX8tFiATgtkJ1zg25+KviIXpgRvRHS8sau3GfhVzThRQrOeksPeT0BWW2MNZs1OEWJ1DPXOQMn0KKRkvg==}
     engines: {node: '>=0.12'}
 
-  es6-weak-map@2.0.3:
-    resolution: {integrity: sha512-p5um32HOTO1kP+w7PRnB+5lQ43Z6muuMuIMffvDN8ZB4GcnjLBV6zGStpbASIMk4DCAvEaamhe2zhyCb/QXXsA==}
-
   esbuild-plugin-path-alias@1.0.7:
     resolution: {integrity: sha512-0Be2FjvykTNc8kWrpNmZEopdbGLG+K1jKRwQ9HtBZCQb004C3P7p5HcYxciet+VXtblpeIWL7UFyogz/iMq/cw==}
     peerDependencies:
@@ -9743,9 +9728,6 @@ packages:
     resolution: {integrity: sha512-YWnfyRwxL/+SsrWYfOpUtz5b3YD+nyfkHvjbcanzk8zgyO4ASD67uVMRt8k5bM4lLMDnXfriRhOpemw+NfT1eA==}
     engines: {node: '>=8'}
 
-  is-promise@2.2.2:
-    resolution: {integrity: sha512-+lP4/6lKUBfQjZ2pdxThZvLUAafmZb8OAxFb8XXtiQmS35INgr85hdOGoEs124ez1FCnZJt6jau/T+alh58QFQ==}
-
   is-promise@4.0.0:
     resolution: {integrity: sha512-hvpoI6korhJMnej285dSg6nu1+e6uxs7zG3BYAm5byqDsgJNWwxzM6z6iZiAgQR4TJ30JmBTOwqZUw3WlyH3AQ==}
 
@@ -10222,9 +10204,6 @@ packages:
   lru-memorise@0.3.0:
     resolution: {integrity: sha512-48k33CDv0WrPGlZhDFElmOiPnfRcGODsOglYQfYr/rKqT8iD/OcfdFpTMKyKeerqM/DDXUKD1sWFfylXyBYu+g==}
 
-  lru-queue@0.1.0:
-    resolution: {integrity: sha512-BpdYkt9EvGl8OfWHDQPISVpcl5xZthb+XPsbELj5AQXxIC8IriDZIQYjBJPEm5rS420sjZ0TLEzRcq5KdBhYrQ==}
-
   lucide-react@0.379.0:
     resolution: {integrity: sha512-KcdeVPqmhRldldAAgptb8FjIunM2x2Zy26ZBh1RsEUcdLIvsEmbcw7KpzFYUy5BbpGeWhPu9Z9J5YXfStiXwhg==}
     peerDependencies:
@@ -10260,10 +10239,6 @@ packages:
   memfs@3.5.3:
     resolution: {integrity: sha512-UERzLsxzllchadvbPs5aolHh65ISpKpM+ccLbOJ8/vvpBKmAWf+la7dXFy7Mr0ySHbdHrFv5kGFCUHHe6GFEmw==}
     engines: {node: '>= 4.0.0'}
-
-  memoizee@0.4.17:
-    resolution: {integrity: sha512-DGqD7Hjpi/1or4F/aYAspXKNm5Yili0QDAFAY4QYvpqpgiY6+1jOfqpmByzjxbWd/T9mChbCArXAbDAsTm5oXA==}
-    engines: {node: '>=0.12'}
 
   merge-options@3.0.4:
     resolution: {integrity: sha512-2Sug1+knBjkaMsMgf1ctR1Ujx+Ayku4EdJN4Z+C2+JzoeF7A3OZ9KM2GY0CpQS51NR61LTurMJrRKPhSs3ZRTQ==}
@@ -12187,10 +12162,6 @@ packages:
   timers-browserify@2.0.12:
     resolution: {integrity: sha512-9phl76Cqm6FhSX9Xe1ZUAMLtm1BLkKj2Qd5ApyWkXzsMRaA7dgr81kf4wJmQf/hAvg8EEyJxDo3du/0KlhPiKQ==}
     engines: {node: '>=0.6.0'}
-
-  timers-ext@0.1.8:
-    resolution: {integrity: sha512-wFH7+SEAcKfJpfLPkrgMPvvwnEtj8W4IurvEyrKsDleXnKLCDw71w8jltvfLa8Rm4qQxxT4jmDBYbJG/z7qoww==}
-    engines: {node: '>=0.12'}
 
   tiny-case@1.0.3:
     resolution: {integrity: sha512-Eet/eeMhkO6TX8mnUteS9zgPbUMQa4I6Kkp5ORiBD5476/m+PIRiumP5tmh5ioJpH7k51Kehawy2UDfsnxxY8Q==}
@@ -26701,13 +26672,6 @@ snapshots:
       d: 1.0.2
       ext: 1.7.0
 
-  es6-weak-map@2.0.3:
-    dependencies:
-      d: 1.0.2
-      es5-ext: 0.10.64
-      es6-iterator: 2.0.3
-      es6-symbol: 3.1.4
-
   esbuild-plugin-path-alias@1.0.7(esbuild@0.25.12):
     dependencies:
       esbuild: 0.25.12
@@ -27989,8 +27953,6 @@ snapshots:
   is-plain-obj@2.1.0:
     optional: true
 
-  is-promise@2.2.2: {}
-
   is-promise@4.0.0: {}
 
   is-regex@1.2.1:
@@ -28506,10 +28468,6 @@ snapshots:
     dependencies:
       tiny-lru: 11.4.5
 
-  lru-queue@0.1.0:
-    dependencies:
-      es5-ext: 0.10.64
-
   lucide-react@0.379.0(react@19.2.3):
     dependencies:
       react: 19.2.3
@@ -28550,17 +28508,6 @@ snapshots:
   memfs@3.5.3:
     dependencies:
       fs-monkey: 1.1.0
-
-  memoizee@0.4.17:
-    dependencies:
-      d: 1.0.2
-      es5-ext: 0.10.64
-      es6-weak-map: 2.0.3
-      event-emitter: 0.3.5
-      is-promise: 2.2.2
-      lru-queue: 0.1.0
-      next-tick: 1.1.0
-      timers-ext: 0.1.8
 
   merge-options@3.0.4:
     dependencies:
@@ -30779,11 +30726,6 @@ snapshots:
   timers-browserify@2.0.12:
     dependencies:
       setimmediate: 1.0.5
-
-  timers-ext@0.1.8:
-    dependencies:
-      es5-ext: 0.10.64
-      next-tick: 1.1.0
 
   tiny-case@1.0.3: {}
 
