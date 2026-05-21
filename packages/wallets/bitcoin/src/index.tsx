@@ -1,4 +1,4 @@
-import useBitcoinConnection from "./useBitcoinConnection";
+import { useBitcoinConnection } from "./service/useBitcoinConnection";
 import { WalletProvider, BaseWalletProviderConfig } from "@layerswap/widget/types";
 import { BitcoinProvider as BitcoinProviderWrapper } from "./BitcoinProvider";
 import { BitcoinGasProvider } from "./bitcoinGasProvider";
