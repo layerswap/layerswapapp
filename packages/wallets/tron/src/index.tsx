@@ -1,7 +1,7 @@
 import { WalletProvider, BaseWalletProviderConfig, LazyBalanceProvider } from "@layerswap/widget/types";
 import { TronGasProvider } from "./tronGasProvider";
 import TronProviderWrapper from "./TronProvider";
-import useTronConnection from "./useTronConnection";
+import { useTronConnection } from "./service/useTronConnection";
 import { TronAddressUtilsProvider } from "./tronAddressUtilsProvider";
 import React from "react";
 import { useTronTransfer } from "./transferProvider/useTronTransfer";

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { WalletProvider } from '@tronweb3/tronwallet-adapter-react-hooks';
+import { TronSync } from './service/syncTron';
 
 export default function TronProvider({ children }: { children: React.ReactNode }) {
     const [adapters, setAdapters] = useState<any[]>([]);
@@ -57,6 +58,7 @@ export default function TronProvider({ children }: { children: React.ReactNode }
 
     return (
         <WalletProvider adapters={adapters} disableAutoConnectOnLoad={true} autoConnect={false}>
+            <TronSync />
             {children}
         </WalletProvider>
     );
