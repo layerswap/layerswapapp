@@ -1,7 +1,7 @@
 import { WalletProvider, BaseWalletProviderConfig, ThemeData, LazyBalanceProvider } from "@layerswap/widget/types";
 import { TonGasProvider } from "./tonGasProvider";
 import TonProviderWrapper from "./TonProvider";
-import useTONConnection from "./useTONConnection";
+import { useTonConnection } from "./service/useTonConnection";
 import { TonAddressUtilsProvider } from "./tonAddressUtilsProvider";
 import React, { createContext, useContext } from "react";
 import { AppSettings, KnownInternalNames } from "@layerswap/widget/internal";
@@ -46,7 +46,7 @@ export function createTONProvider(config: TONProviderConfig = {}): WalletProvide
         );
     };
 
-    const walletConnectionProvider = customHook || useTONConnection;
+    const walletConnectionProvider = customHook || useTonConnection;
 
     const defaultBalanceProviders = [
         new LazyBalanceProvider(
@@ -101,7 +101,7 @@ export const TONProvider: WalletProvider = {
             </TonConfigContext.Provider>
         );
     },
-    walletConnectionProvider: useTONConnection,
+    walletConnectionProvider: useTonConnection,
     addressUtilsProvider: [new TonAddressUtilsProvider()],
     gasProvider: [new TonGasProvider()],
     balanceProvider: [

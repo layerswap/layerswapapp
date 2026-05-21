@@ -784,6 +784,9 @@ importers:
       ton:
         specifier: ^13.9.0
         version: 13.9.0
+      zustand:
+        specifier: 'catalog:'
+        version: 4.5.7(@types/react@19.2.3)(react@19.2.3)
 
   packages/wallets/tron:
     dependencies:
