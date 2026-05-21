@@ -9,6 +9,7 @@ import { useWalletConnectConfig, WalletConnectConfig } from ".";
 import { AppSettings } from "@layerswap/widget/internal";
 import type { ReactElement } from "react";
 import { SolanaWalletConnectAdapter } from "./connectors/SolanaWalletConnectAdapter";
+import { SvmSync } from "./service/syncSvm";
 
 type SolanaProviderProps = {
     children: ReactNode
@@ -75,6 +76,7 @@ function SolanaProvider({ children }: SolanaProviderProps): ReactElement {
     return (
         <ConnectionProvider endpoint={endpoint}>
             <WalletProvider wallets={adapters} autoConnect={ready}>
+                <SvmSync />
                 {children}
             </WalletProvider>
         </ConnectionProvider>

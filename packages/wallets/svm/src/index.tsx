@@ -1,6 +1,6 @@
 import { WalletProvider, BaseWalletProviderConfig, LazyGasProvider, NetworkType } from "@layerswap/widget/types";
 import { AppSettings } from "@layerswap/widget/internal";
-import useSVMConnection from "./useSVMConnection";
+import { useSvmConnection as useSVMConnection } from "./service/useSvmConnection";
 import SVMProviderWrapper from "./SVMProvider";
 import { SolanaBalanceProvider } from "./svmBalanceProvider";
 import { SolanaAddressUtilsProvider } from "./svmAddressUtilsProvider";

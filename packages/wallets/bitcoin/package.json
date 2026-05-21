@@ -58,6 +58,7 @@
     "@bigmi/core": "^0.6.4",
     "@bigmi/react": "^0.6.4",
     "@layerswap/widget": "workspace:^",
+    "@types/react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "zustand": "catalog:"

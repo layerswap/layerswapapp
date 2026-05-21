@@ -59,9 +59,10 @@
     "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
+    "@layerswap/widget": "workspace:^",
+    "@types/react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "@layerswap/widget": "workspace:^",
     "zustand": "catalog:"
   },
   "engines": {

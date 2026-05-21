@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactElement } from 'react';
 import { WalletProvider } from '@tronweb3/tronwallet-adapter-react-hooks';
 import { TronSync } from './service/syncTron';
 
-export default function TronProvider({ children }: { children: React.ReactNode }) {
+export default function TronProvider({ children }: { children: React.ReactNode }): ReactElement {
     const [adapters, setAdapters] = useState<any[]>([]);
 
     useEffect(() => {

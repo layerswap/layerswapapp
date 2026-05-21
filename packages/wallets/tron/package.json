@@ -59,6 +59,7 @@
   },
   "devDependencies": {
     "@layerswap/widget": "workspace:^",
+    "@types/react": "catalog:",
     "react": "catalog:",
     "zustand": "catalog:"
   },
