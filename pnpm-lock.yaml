@@ -688,6 +688,9 @@ importers:
       '@layerswap/widget':
         specifier: workspace:^
         version: link:../../widget
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.3
       react:
         specifier: 'catalog:'
         version: 19.2.3

@@ -58,6 +58,7 @@
     "@layerswap/wallet-evm": "workspace:^",
     "@layerswap/wallet-starknet": "workspace:^",
     "@layerswap/widget": "workspace:^",
+    "@types/react": "catalog:",
     "react": "catalog:"
   },
   "engines": {

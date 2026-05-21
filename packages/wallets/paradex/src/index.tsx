@@ -1,6 +1,6 @@
 import { WalletProvider, BaseWalletProviderConfig } from "@layerswap/widget/types"
 import { ParadexBalanceProvider } from "./paradexBalanceProvider"
-import { useParadexConnection } from "./useParadexConnection"
+import { useParadexConnection } from "./service/useParadexConnection"
 import { ActiveParadexAccountProvider } from "./ActiveParadexAccount"
 
 export type ParadexProviderConfig = BaseWalletProviderConfig
