@@ -14,7 +14,6 @@ import useParadex from "../lib/wallets/paradex/useParadex";
 import useSVM from "../lib/wallets/solana/useSVM";
 import useBitcoin from "../lib/wallets/bitcoin/useBitcoin";
 import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
-import useWindowDimensions from "@/hooks/useWindowDimensions";
 import dynamic from "next/dynamic";
 import clsx from "clsx";
 
@@ -27,7 +26,6 @@ const WalletProvidersContext = createContext<WalletProvider[]>([]);
 export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
     const { networks } = useSettingsState();
     const isMobilePlatform = isMobile();
-    const { isMobile: isMobileSize } = useWindowDimensions()
     const { goBack, onFinish, open, setOpen, selectedConnector, selectedMultiChainConnector, dismissible, topContent, fullHeight, hideHeader } = useConnectModal()
 
     const bitcoin = useBitcoin()
@@ -63,21 +61,22 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ chi
                 onClose={onFinish}
                 modalId={"connectNewWallet"}
                 dismissible={dismissible}
-                header={hideHeader ? undefined : (
+                header={
                     <div className="flex items-center gap-1">
                         {
-                            (selectedConnector || selectedMultiChainConnector) &&
-                            <div className="sm:-ml-2 ml-0">
-                                <IconButton onClick={goBack} icon={
-                                    <ChevronLeft className="h-6 w-6" />
-                                }>
-                                </IconButton>
-                            </div>
+                            (selectedConnector || selectedMultiChainConnector) ?
+                                <div className="sm:-ml-2 ml-0">
+                                    <IconButton onClick={goBack} icon={
+                                        <ChevronLeft className="h-6 w-6" />
+                                    }>
+                                    </IconButton>
+                                </div>
+                                : null
                         }
-                        <p>{(selectedMultiChainConnector && !selectedConnector) ? "Select ecosystem" : "Connect wallet"}</p>
+                        {hideHeader ? undefined : <p>{(selectedMultiChainConnector && !selectedConnector) ? "Select ecosystem" : "Connect wallet"}</p>}
                     </div>
-                )}>
-                <VaulDrawer.Snap openFullHeight id='item-1' className={clsx("h-full max-h-[83svh] sm:max-h-full", fullHeight && "openpicker", hideHeader && "pt-4")}>
+                }>
+                <VaulDrawer.Snap openFullHeight id='item-1' className={clsx("h-full max-h-[83svh] sm:max-h-full", fullHeight && "openpicker")}>
                     {open ? (
                         <div className="flex flex-col gap-3 h-full">
                             {!selectedConnector && !selectedMultiChainConnector ? topContent : null}
