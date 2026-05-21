@@ -1,9 +1,9 @@
 import { LayerswapProvider, LayerSwapSettings, ThemeData } from "@layerswap/widget"
 import { useRouter } from "next/router"
-import { ComponentProps, ReactNode } from "react"
+import { ComponentProps, ReactNode, useMemo } from "react"
 import { updateFormBulk } from "./utils/updateForm"
 import { removeSwapPath, setMenuPath, setSwapPath } from "./utils/updatePath"
-import { createEVMProvider } from "@layerswap/wallets";
+import { getDefaultProviders } from "@layerswap/wallets";
 import { QueryParams } from "../helpers/querryHelper"
 import { logError } from "./utils/logError"
 
@@ -42,11 +42,36 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
         icons: ['https://www.layerswap.io/app/symbol.png']
     }
 
-    const defaultWalletProviders = [
-        createEVMProvider({
-            walletConnectConfigs,
-        }),
-    ]
+    const immutablePassportConfig = useMemo(() => {
+        const clientId = process.env.NEXT_PUBLIC_IMMUTABLE_CLIENT_ID
+        const publishableKey = process.env.NEXT_PUBLIC_IMMUTABLE_PUBLISHABLE_KEY
+        if (!clientId || !publishableKey) return undefined
+        if (typeof window === 'undefined') return undefined
+        const basePath = router.basePath
+        const origin = window.location.origin
+        return {
+            clientId,
+            publishableKey,
+            redirectUri: `${origin}${basePath}/imtblRedirect`,
+            logoutRedirectUri: `${origin}${basePath}/`,
+        }
+    }, [router.basePath])
+
+    const tonConfig = useMemo(() => {
+        const tonApiKey = process.env.NEXT_PUBLIC_TON_API_KEY
+        if (typeof window === 'undefined') return undefined
+        const manifestUrl = `${window.location.origin}${router.basePath}/tonconnect-manifest.json`
+        return {
+            tonApiKey: tonApiKey || '',
+            manifestUrl,
+        }
+    }, [router.basePath])
+
+    const defaultWalletProviders = useMemo(() => getDefaultProviders({
+        walletConnect: walletConnectConfigs,
+        ton: tonConfig,
+        immutablePassport: immutablePassportConfig,
+    }), [tonConfig, immutablePassportConfig])
 
     const resolvedWalletProviders = walletProviders ?? defaultWalletProviders
 
