@@ -639,12 +639,6 @@ importers:
       '@paradex/sdk':
         specifier: 0.8.1
         version: 0.8.1
-      '@starkware-industries/starkware-crypto-utils':
-        specifier: ^0.2.1
-        version: 0.2.1
-      bignumber.js:
-        specifier: ^9.3.1
-        version: 9.3.1
       ethers:
         specifier: 5.7.2
         version: 5.7.2(bufferutil@4.1.0)(utf-8-validate@5.0.10)
