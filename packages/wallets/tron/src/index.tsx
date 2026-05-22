@@ -1,32 +1,21 @@
 import { WalletProvider, BaseWalletProviderConfig, LazyBalanceProvider } from "@layerswap/widget/types";
 import { TronGasProvider } from "./tronGasProvider";
 import TronProviderWrapper from "./TronProvider";
-import { useTronConnection } from "./service/useTronConnection";
 import { TronAddressUtilsProvider } from "./tronAddressUtilsProvider";
-import React from "react";
 import { useTronTransfer } from "./transferProvider/useTronTransfer";
 import { KnownInternalNames } from "@layerswap/widget/internal";
+import { tronConnectionAdapter } from "./service/tronConnectionAdapter";
 
 export type TronProviderConfig = BaseWalletProviderConfig
 
 export function createTronProvider(config: TronProviderConfig = {}): WalletProvider {
     const {
-        customHook,
+        customConnection,
         balanceProviders,
         gasProviders,
         addressUtilsProviders,
-        transferProviders
+        transferProviders,
     } = config;
-
-    const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
-        return (
-            <TronProviderWrapper>
-                {children}
-            </TronProviderWrapper>
-        );
-    };
-
-    const walletConnectionProvider = customHook || useTronConnection;
 
     const defaultBalanceProviders = [
         new LazyBalanceProvider(
@@ -55,29 +44,11 @@ export function createTronProvider(config: TronProviderConfig = {}): WalletProvi
 
     return {
         id: "tron",
-        wrapper: WrapperComponent,
-        walletConnectionProvider,
+        wrapper: TronProviderWrapper,
+        createConnection: customConnection ?? tronConnectionAdapter.createConnection,
         addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
         transferProvider: finalTransferProviders,
     };
 }
-
-/**
- * @deprecated Use createTronProvider() instead. This export will be removed in a future version.
- */
-export const TronProvider: WalletProvider = {
-    id: "tron",
-    wrapper: TronProviderWrapper,
-    walletConnectionProvider: useTronConnection,
-    addressUtilsProvider: [new TronAddressUtilsProvider()],
-    gasProvider: [new TronGasProvider()],
-    balanceProvider: [
-        new LazyBalanceProvider(
-            (n) => KnownInternalNames.Networks.TronMainnet.includes(n.name),
-            () => import("./tronBalanceProvider").then(m => new m.TronBalanceProvider())
-        )
-    ],
-    transferProvider: [useTronTransfer],
-};

@@ -6,7 +6,6 @@ import type {
 } from '@layerswap/widget/types'
 import {
     KnownInternalNames,
-    convertSvgComponentToBase64,
     walletIconResolver,
 } from '@layerswap/widget/internal'
 import {
@@ -123,9 +122,8 @@ export class BitcoinConnectionService {
             const connector = getConnectors(config).find(w => w.id === internalConnector.id)
             if (!connector) throw new Error('Connector not found')
 
-            const Icon = connector.icon
-            const base64Icon = typeof Icon === 'string' ? Icon : convertSvgComponentToBase64(Icon)
-            setSelectedConnector?.({ ...internalConnector, icon: base64Icon })
+            const iconString = typeof connector.icon === 'string' ? connector.icon : undefined
+            setSelectedConnector?.({ ...internalConnector, icon: iconString })
 
             if (getAccount(config).account) {
                 await disconnect(config, { connector })

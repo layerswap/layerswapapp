@@ -18,7 +18,6 @@ import {
 import {
     buildDeepLink,
     clearPendingDynamicWcMetadata,
-    convertSvgComponentToBase64,
     getRegistryEntry,
     mapConnectError,
     setDynamicWcMetadata,
@@ -271,9 +270,9 @@ export class EvmConnectionService {
                 throw new Error('Connector not found')
             }
 
-            const Icon = connector.icon || resolveEVMWalletConnectorIcon({ connector: evmConnectorNameResolver(connector as unknown as Connector) })
-            const base64Icon = typeof Icon == 'string' ? Icon : convertSvgComponentToBase64(Icon)
-            setSelectedConnector?.({ ...connector, icon: base64Icon })
+            const iconString = (typeof connector.icon === 'string' ? connector.icon : undefined)
+                || resolveEVMWalletConnectorIcon({ connector: evmConnectorNameResolver(connector as unknown as Connector) })
+            setSelectedConnector?.({ ...connector, icon: iconString })
 
             if (actualConnector.id !== 'coinbaseWalletSDK' && typeof (actualConnector as LSConnector).disconnect === 'function') {
                 await (actualConnector as LSConnector).disconnect!()
@@ -290,7 +289,7 @@ export class EvmConnectionService {
                 && connector.id !== 'metaMaskSDK'
 
             if (wantsQrModal) {
-                setSelectedConnector?.({ ...connector, icon: base64Icon, qr: { state: 'loading', value: undefined }, showQrCode })
+                setSelectedConnector?.({ ...connector, icon: iconString, qr: { state: 'loading', value: undefined }, showQrCode })
             }
 
             if (wantsMobileRedirect || wantsQrModal) {
@@ -298,7 +297,7 @@ export class EvmConnectionService {
                     source: wagmiDisplayUriSource(actualConnector as unknown as Connector),
                     resolveURI,
                     isMobilePlatform,
-                    onQr: (qr) => setSelectedConnector?.({ ...connector, icon: base64Icon, qr, showQrCode }),
+                    onQr: (qr) => setSelectedConnector?.({ ...connector, icon: iconString, qr, showQrCode }),
                 })
             }
 

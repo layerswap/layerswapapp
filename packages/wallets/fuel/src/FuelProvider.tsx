@@ -9,6 +9,7 @@ import { NetworkType } from '@layerswap/widget/types';
 import { useMemo, useContext } from 'react';
 import type { ReactElement } from 'react';
 import { QueryClient, QueryClientContext, QueryClientProvider } from '@tanstack/react-query';
+import { fuelConnectionAdapter } from './service/fuelConnectionAdapter';
 
 const HOST_URL = 'https://api.bako.global';
 
@@ -34,6 +35,7 @@ const Comp = ({
 
     return (
         <FuelProvider uiConfig={{ suggestBridge: false }} theme={'dark'} fuelConfig={fuelConfig} networks={fuelNetworks}>
+            <fuelConnectionAdapter.Hydrator networks={networks} />
             {children}
         </FuelProvider>
     );

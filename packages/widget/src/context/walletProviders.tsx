@@ -1,6 +1,6 @@
 "use client";
-import React, { createContext, lazy, useContext, useMemo } from "react";
-import { WalletConnectionProvider, WalletProvider } from "@/types";
+import React, { createContext, lazy, useContext, useEffect, useMemo, useState } from "react";
+import { WalletConnectionProvider, WalletConnectionStore, WalletProvider } from "@/types";
 import { useSettingsState } from "./settings";
 import VaulDrawer from "@/components/Modal/vaulModal";
 import IconButton from "@/components/Buttons/iconButton";
@@ -21,10 +21,34 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
     const isMobilePlatform = isMobile();
     const { goBack, onFinish, open, setOpen, selectedConnector, selectedMultiChainConnector, dismissible, topContent, fullHeight, hideHeader } = useConnectModal()
 
-    const allProviders = walletProviders.map(provider => provider.walletConnectionProvider ? provider.walletConnectionProvider({ networks }) : undefined).filter(provider => provider !== undefined) as WalletConnectionProvider[];
+    // Build stores once per provider list. Stores own their lifecycle —
+    // creating a fresh one per render would leak subscriptions.
+    const stores = useMemo<WalletConnectionStore[]>(
+        () => walletProviders
+            .map(p => p.createConnection?.({ networks }))
+            .filter((s): s is WalletConnectionStore => !!s),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [walletProviders],
+    )
+
+    useEffect(() => {
+        stores.forEach(s => s.updateProps?.({ networks }))
+    }, [stores, networks])
+
+    const [snapshots, setSnapshots] = useState<WalletConnectionProvider[]>(() => stores.map(s => s.getSnapshot()))
+    useEffect(() => {
+        const recompute = () => setSnapshots(stores.map(s => s.getSnapshot()))
+        recompute()
+        const unsubs = stores.map(s => s.subscribe(recompute))
+        // The subscribe cleanup is enough — stores ref-count their internal
+        // subscriptions so they re-attach on next mount. We deliberately do
+        // NOT call store.destroy() here; that would be a hard tear-down and
+        // strict mode's double-mount would briefly leak listeners.
+        return () => unsubs.forEach(u => u())
+    }, [stores])
 
     const providers = useMemo(() => {
-        const filteredProviders = allProviders.filter(provider => (isMobilePlatform ? !provider.unsupportedPlatforms?.includes('mobile') : !provider.unsupportedPlatforms?.includes('desktop')) &&
+        const filteredProviders = snapshots.filter(provider => (isMobilePlatform ? !provider.unsupportedPlatforms?.includes('mobile') : !provider.unsupportedPlatforms?.includes('desktop')) &&
             networks.some(net =>
                 provider.autofillSupportedNetworks?.includes(net.name) ||
                 provider.withdrawalSupportedNetworks?.includes(net.name) ||
@@ -33,7 +57,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
         );
         AppSettings.AvailableSourceNetworkTypes = filterSourceNetworks(settings, filteredProviders)
         return filteredProviders
-    }, [networks, isMobilePlatform, allProviders]);
+    }, [snapshots, networks, isMobilePlatform]);
 
     return (
         <WalletProvidersContext.Provider value={providers}>

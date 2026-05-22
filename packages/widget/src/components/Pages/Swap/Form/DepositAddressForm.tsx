@@ -8,6 +8,7 @@ import useWallet from "@/hooks/useWallet";
 import { Network, NetworkRoute, NetworkRouteToken, Token } from "@/Models/Network";
 import { SwapStatus } from "@/Models/SwapStatus";
 import shortenString from "@/components/utils/ShortenString";
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import useAutoSourceRoute from "@/hooks/useAutoSourceRoute";
 import useDepositAddressSources from "@/hooks/useDepositAddressSources";
 import useDepositAddressDestinations from "@/hooks/useDepositAddressDestinations";
@@ -493,7 +494,7 @@ const DestinationWalletPicker: FC<DestinationWalletPickerProps> = ({ address, de
     }, [hasAnyWallet, destination?.name, account?.address]);
 
     const hasAddress = !!address;
-    const WalletIcon = account?.icon;
+    const walletIconSrc = account?.icon;
     const walletName = account?.displayName?.split('-')[0] || 'Connected wallet';
 
     return (
@@ -504,8 +505,14 @@ const DestinationWalletPicker: FC<DestinationWalletPickerProps> = ({ address, de
                 className="w-full bg-secondary-500 hover:bg-secondary-400/70 rounded-xl px-3.5 py-3 transition-colors flex items-center outline-hidden"
             >
                 <div className="inline-flex items-center justify-center rounded-lg h-7 w-7 overflow-hidden shrink-0 bg-secondary-400 text-primary-text">
-                    {hasAddress && WalletIcon ? (
-                        <WalletIcon className="h-7 w-7 object-contain" />
+                    {hasAddress && walletIconSrc ? (
+                        <ImageWithFallback
+                            src={walletIconSrc}
+                            alt={walletName}
+                            width="28"
+                            height="28"
+                            className="h-7 w-7 object-contain"
+                        />
                     ) : hasAddress && destination ? (
                         <AddressIcon
                             className="scale-150 h-7 w-7"

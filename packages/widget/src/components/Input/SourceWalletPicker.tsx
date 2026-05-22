@@ -6,6 +6,7 @@ import { ChevronDown, CircleHelp, QrCode } from "lucide-react";
 import VaulDrawer, { ModalFooterPortal } from "@/components/Modal/vaulModal";
 import { SelectAccountProps, Wallet } from "@/types/wallet";
 import WalletIcon from "@/components/Icons/WalletIcon";
+import WalletIconView from "@/components/Wallet/WalletIconView";
 import SubmitButton from "@/components/Buttons/submitButton";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import WalletsList from "@/components/Wallet/WalletComponents/WalletsList";
@@ -79,7 +80,7 @@ const SourceWalletPicker: FC = () => {
                     <button type="button" onClick={handleWalletChange} className="rounded-lg flex items-center space-x-2 text-sm hover:bg-secondary-400 py-1 pl-2 pr-2 outline-hidden">
                         <div className="rounded-lg flex space-x-1 items-center">
                             <div className="inline-flex items-center relative px-0.5">
-                                <selectedSourceAccount.icon className="w-4 h-4" />
+                                <WalletIconView wallet={selectedSourceAccount} className="w-4 h-4" size={16} />
                             </div>
                             <div className="text-secondary-text">
                                 {new Address(selectedSourceAccount.address, values.from).toShortString()}

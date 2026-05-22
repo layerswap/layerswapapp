@@ -1,4 +1,5 @@
 import WalletIcon from "@/components/Icons/WalletIcon"
+import WalletIconView from "@/components/Wallet/WalletIconView"
 import useWallet from "@/hooks/useWallet"
 import ConnectButton from "@/components/Buttons/connectButton"
 import { useState } from "react"
@@ -47,7 +48,8 @@ type WalletsIconsProps = {
     wallets: {
         id: string;
         displayName?: string;
-        icon: (props: any) => React.JSX.Element;
+        icon?: string;
+        address?: string;
     }[]
 }
 export const WalletsIcons = ({ wallets }: WalletsIconsProps) => {
@@ -61,11 +63,11 @@ export const WalletsIcons = ({ wallets }: WalletsIconsProps) => {
         <div className="-space-x-2 flex" aria-label="Connected wallets">
             {
                 firstWallet?.displayName &&
-                <firstWallet.icon className="rounded-md border-2 border-secondary-600 bg-secondary-700 shrink-0 h-6 w-6" />
+                <WalletIconView wallet={firstWallet as Wallet} className="rounded-md border-2 border-secondary-600 bg-secondary-700 shrink-0 h-6 w-6" size={24} />
             }
             {
                 secondWallet?.displayName &&
-                <secondWallet.icon className="rounded-md border-2 border-secondary-600 bg-secondary-700 shrink-0 h-6 w-6" />
+                <WalletIconView wallet={secondWallet as Wallet} className="rounded-md border-2 border-secondary-600 bg-secondary-700 shrink-0 h-6 w-6" size={24} />
             }
             {
                 uniqueWallets.length > 2 &&
@@ -107,7 +109,7 @@ const WalletsMenuWalletsList = ({ wallets }: { wallets: Wallet[] }) => {
             {
                 wallets.length === 1 ?
                     <div className="flex gap-4 items-start text-primary-text">
-                        <wallet.icon className='h-5 w-5' />
+                        <WalletIconView wallet={wallet} className='h-5 w-5' size={20} />
                         {!wallet.isLoading && wallet.address && <p>{new Address(wallet.address, null, wallet.providerName).toShortString()}</p>}
                     </div>
                     :

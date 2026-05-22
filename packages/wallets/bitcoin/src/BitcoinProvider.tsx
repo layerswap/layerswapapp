@@ -7,6 +7,12 @@ import { QueryClient, QueryClientContext, QueryClientProvider } from '@tanstack/
 import { ensureBitcoinConfig, getBitcoinConfig, hasBitcoinConfig } from './service/getBitcoinConfig'
 import { attachBitcoinSync } from './service/syncBitcoin'
 import { useBitcoinStore } from './service/bitcoinStore'
+import { bitcoinConnectionAdapter } from './service/bitcoinConnectionAdapter'
+
+const BitcoinHydrator = () => {
+    const { networks } = useSettingsState()
+    return <bitcoinConnectionAdapter.Hydrator networks={networks} />
+}
 
 export const BitcoinProvider = ({ children }: { children: ReactNode }): ReactElement => {
     const { networks } = useSettingsState()
@@ -21,6 +27,7 @@ export const BitcoinProvider = ({ children }: { children: ReactNode }): ReactEle
     return (
         <BigmiProvider config={config} reconnectOnMount={true}>
             <QueryWrapper>
+                <BitcoinHydrator />
                 {children}
             </QueryWrapper>
         </BigmiProvider>

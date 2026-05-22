@@ -2,21 +2,21 @@ import type { Connector } from 'wagmi'
 import type { CreateConnectorFn, Config } from '@wagmi/core'
 import { getAccount } from '@wagmi/core'
 import {
-    convertSvgComponentToBase64,
     createRegistryConnector,
     DisplayUriSource,
+    getKnownConnectorIconBase64,
     sleep,
     type RegistryConnector,
     type WalletConnectWalletBase,
 } from '@layerswap/widget/internal'
 import type { InternalConnector } from '@layerswap/widget/types'
-import {
-    evmConnectorNameResolver,
-    resolveEVMWalletConnectorIndex,
-} from '../evmUtils'
-import KnownEVMConnectors from '../evmUtils/KnownEVMConnectors'
+import { evmConnectorNameResolver } from '../evmUtils'
+import KnownEVMConnectorIds from '../evmUtils/knownConnectorIds'
 import { explicitInjectedProviderDetected } from '../connectors/explicitInjectedProviderDetected'
 import { featuredWalletsIds, HIDDEN_WALLETCONNECT_ID, name as PROVIDER_NAME } from '../constants'
+
+const resolveEVMConnectorOrder = (id: string) =>
+    KnownEVMConnectorIds.findIndex(known => known.toLowerCase() === id?.toLowerCase())
 
 // Adapts a wagmi `Connector` to the shared `DisplayUriSource` contract.
 // Subscribes synchronously to the connector's emitter — wagmi connectors
@@ -114,17 +114,17 @@ export function computeConfiguredConnectors({
                 ? w.type
                 : 'other'
             const resolvedConnectorName = evmConnectorNameResolver(w)
-            const knownConnector = KnownEVMConnectors.find(c => c.id.toLowerCase() === resolvedConnectorName.toLowerCase())
+            const knownIconBase64 = getKnownConnectorIconBase64(resolvedConnectorName)
 
             return {
                 ...w,
-                order: resolveEVMWalletConnectorIndex(w.id),
+                order: resolveEVMConnectorOrder(w.id),
                 type,
                 isMobileSupported: isWalletConnectSupported,
                 installUrl: walletConnectWallet?.installUrl,
                 hasBrowserExtension: walletConnectWallet?.hasBrowserExtension,
                 extensionNotFound: walletConnectWallet?.hasBrowserExtension ? (type == 'walletConnect' && !isMobilePlatform) : false,
-                icon: w.icon || (knownConnector ? convertSvgComponentToBase64(knownConnector.icon) || walletConnectWallet?.icon : undefined),
+                icon: w.icon || knownIconBase64 || walletConnectWallet?.icon,
                 providerName: PROVIDER_NAME,
             }
         })

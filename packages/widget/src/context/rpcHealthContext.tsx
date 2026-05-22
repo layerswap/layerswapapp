@@ -1,6 +1,7 @@
 'use client'
+import { useEffect, useMemo, useSyncExternalStore } from 'react'
 import { Network } from '@/Models/Network'
-import type { RpcHealthCheckResult } from '@/types/rpcHealth'
+import type { RpcHealthCheckResult, RpcHealthCheckStore } from '@/types/rpcHealth'
 import { resolverService } from '@/lib/resolvers/resolverService'
 
 /**
@@ -13,11 +14,29 @@ export function useRpcHealth(network: Network): RpcHealthCheckResult | null {
     const resolver = resolverService.getRpcHealthCheckResolver()
     const provider = resolver?.getProviderForNetwork(network)
 
-    // If no provider for this network, return null
-    if (!provider) {
-        return null
-    }
+    const store: RpcHealthCheckStore | null = useMemo(
+        () => provider?.createStore() ?? null,
+        [provider],
+    )
 
-    // Call the hook from the provider
-    return provider.useRpcHealthCheck()
+    useEffect(() => () => store?.destroy?.(), [store])
+
+    const snapshot = useSyncExternalStore(
+        store?.subscribe ?? noopSubscribe,
+        store?.getSnapshot ?? getEmptySnapshot,
+        store?.getSnapshot ?? getEmptySnapshot,
+    )
+
+    if (!store) return null
+
+    return {
+        ...snapshot,
+        checkManually: store.checkManually,
+        suggestRpc: store.suggestRpc,
+        suggestRpcForCurrentChain: store.suggestRpcForCurrentChain,
+    }
 }
+
+const noopSubscribe = () => () => {}
+const EMPTY_SNAPSHOT = { health: { status: undefined }, isSuggestingRpc: false } as const
+const getEmptySnapshot = () => EMPTY_SNAPSHOT as { health: { status: undefined }, isSuggestingRpc: boolean }

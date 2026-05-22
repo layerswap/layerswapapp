@@ -1,6 +1,13 @@
 import { useEffect, useState, type ReactElement } from 'react';
 import { WalletProvider } from '@tronweb3/tronwallet-adapter-react-hooks';
+import { useSettingsState } from '@layerswap/widget/internal';
 import { TronSync } from './service/syncTron';
+import { tronConnectionAdapter } from './service/tronConnectionAdapter';
+
+const TronHydrator = () => {
+    const { networks } = useSettingsState()
+    return <tronConnectionAdapter.Hydrator networks={networks} />
+}
 
 export default function TronProvider({ children }: { children: React.ReactNode }): ReactElement {
     const [adapters, setAdapters] = useState<any[]>([]);
@@ -59,6 +66,7 @@ export default function TronProvider({ children }: { children: React.ReactNode }
     return (
         <WalletProvider adapters={adapters} disableAutoConnectOnLoad={true} autoConnect={false}>
             <TronSync />
+            <TronHydrator />
             {children}
         </WalletProvider>
     );

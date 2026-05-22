@@ -15,17 +15,27 @@ import {
     withdrawalSupportedNetworks,
 } from './ParadexConnectionService'
 
+const EMPTY_PROVIDER: WalletConnectionProvider = {
+    connectWallet: () => undefined,
+    connectedWallets: undefined,
+    activeWallet: undefined,
+    withdrawalSupportedNetworks: [],
+    name: '',
+    id: '',
+    ready: false,
+}
+
 export function useParadexConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
     paradexConnectionService.setNetworks(networks)
 
-    const { activeConnection, setActiveAddress, evmProvider: evmProviderInstance, starknetProvider: starknetProviderInstance } = useActiveParadexAccount()
+    const { activeConnection, setActiveAddress, evmConnectionProvider, starknetConnectionProvider } = useActiveParadexAccount()
     const paradexAccounts = useWalletStore((state) => state.paradexAccounts)
     const addParadexAccount = useWalletStore((state) => state.addParadexAccount)
     const removeParadexAccount = useWalletStore((state) => state.removeParadexAccount)
     const { setSelectedConnector } = useConnectModal()
 
-    const evmProvider = evmProviderInstance.walletConnectionProvider({ networks })
-    const starknetProvider = starknetProviderInstance.walletConnectionProvider({ networks })
+    const evmProvider = evmConnectionProvider ?? EMPTY_PROVIDER
+    const starknetProvider = starknetConnectionProvider ?? EMPTY_PROVIDER
 
     paradexConnectionService.configure({
         evmProvider,

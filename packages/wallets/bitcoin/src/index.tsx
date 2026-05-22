@@ -1,32 +1,21 @@
-import { useBitcoinConnection } from "./service/useBitcoinConnection";
 import { WalletProvider, BaseWalletProviderConfig } from "@layerswap/widget/types";
 import { BitcoinProvider as BitcoinProviderWrapper } from "./BitcoinProvider";
 import { BitcoinGasProvider } from "./bitcoinGasProvider";
 import { BitcoinBalanceProvider } from "./bitcoinBalanceProvider";
 import { BitcoinAddressUtilsProvider } from "./bitcoinAddressUtilsProvider";
-import React from "react";
 import { useBitcoinTransfer } from "./transferProvider/useBitcoinTransfer";
+import { bitcoinConnectionAdapter } from "./service/bitcoinConnectionAdapter";
 
 export type BitcoinProviderConfig = BaseWalletProviderConfig
 
 export function createBitcoinProvider(config: BitcoinProviderConfig = {}): WalletProvider {
     const {
-        customHook,
+        customConnection,
         balanceProviders,
         gasProviders,
         addressUtilsProviders,
-        transferProviders
+        transferProviders,
     } = config;
-
-    const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
-        return (
-            <BitcoinProviderWrapper>
-                {children}
-            </BitcoinProviderWrapper>
-        );
-    };
-
-    const walletConnectionProvider = customHook || useBitcoinConnection;
 
     const defaultBalanceProviders = [new BitcoinBalanceProvider()];
     const finalBalanceProviders = balanceProviders !== undefined
@@ -43,7 +32,6 @@ export function createBitcoinProvider(config: BitcoinProviderConfig = {}): Walle
         ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
         : defaultAddressUtilsProviders;
 
-
     const defaultTransferProviders = [useBitcoinTransfer];
     const finalTransferProviders = transferProviders !== undefined
         ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
@@ -51,24 +39,11 @@ export function createBitcoinProvider(config: BitcoinProviderConfig = {}): Walle
 
     return {
         id: "bitcoin",
-        wrapper: WrapperComponent,
-        walletConnectionProvider,
+        wrapper: BitcoinProviderWrapper,
+        createConnection: customConnection ?? bitcoinConnectionAdapter.createConnection,
         addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
         transferProvider: finalTransferProviders,
     };
 }
-
-/**
- * @deprecated Use createBitcoinProvider() instead. This export will be removed in a future version.
- */
-export const BitcoinProvider: WalletProvider = {
-    id: "bitcoin",
-    wrapper: BitcoinProviderWrapper,
-    walletConnectionProvider: useBitcoinConnection,
-    addressUtilsProvider: [new BitcoinAddressUtilsProvider()],
-    gasProvider: [new BitcoinGasProvider()],
-    balanceProvider: [new BitcoinBalanceProvider()],
-    transferProvider: [useBitcoinTransfer],
-};

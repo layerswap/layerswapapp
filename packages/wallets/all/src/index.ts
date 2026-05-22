@@ -2,7 +2,7 @@
 import { createBitcoinProvider } from "@layerswap/wallet-bitcoin";
 import type { BitcoinProviderConfig } from "@layerswap/wallet-bitcoin";
 
-import { createEVMProvider, useChainConfigs } from "@layerswap/wallet-evm";
+import { createEVMProvider } from "@layerswap/wallet-evm";
 import type { EVMProviderConfig, WalletConnectConfig } from "@layerswap/wallet-evm";
 
 import { createFuelProvider } from "@layerswap/wallet-fuel";
@@ -31,7 +31,7 @@ import { WalletProvider, WalletWrapper } from "@layerswap/widget/types";
 export { createBitcoinProvider };
 export type { BitcoinProviderConfig };
 
-export { createEVMProvider, useChainConfigs };
+export { createEVMProvider };
 export type { EVMProviderConfig, WalletConnectConfig };
 
 export { createFuelProvider };
@@ -56,51 +56,6 @@ export { createTronProvider };
 export type { TronProviderConfig };
 
 /**
- * @deprecated Use createBitcoinProvider() instead. This export will be removed in a future version.
- */
-export { BitcoinProvider } from "@layerswap/wallet-bitcoin";
-
-/**
- * @deprecated Use createEVMProvider() instead. This export will be removed in a future version.
- */
-export { EVMProvider } from "@layerswap/wallet-evm";
-
-/**
- * @deprecated Use createFuelProvider() instead. This export will be removed in a future version.
- */
-export { FuelProvider } from "@layerswap/wallet-fuel";
-
-/**
- * @deprecated Use createImmutablePassportProvider() instead. This export will be removed in a future version.
- */
-export { ImtblPassportProvider } from "@layerswap/wallet-imtbl-passport";
-
-/**
- * @deprecated Use createParadexProvider() instead. This export will be removed in a future version.
- */
-export { ParadexProvider } from "@layerswap/wallet-paradex";
-
-/**
- * @deprecated Use createStarknetProvider() instead. This export will be removed in a future version.
- */
-export { StarknetProvider } from "@layerswap/wallet-starknet";
-
-/**
- * @deprecated Use createSVMProvider() instead. This export will be removed in a future version.
- */
-export { SVMProvider } from "@layerswap/wallet-svm";
-
-/**
- * @deprecated Use createTONProvider() instead. This export will be removed in a future version.
- */
-export { TONProvider } from "@layerswap/wallet-ton";
-
-/**
- * @deprecated Use createTronProvider() instead. This export will be removed in a future version.
- */
-export { TronProvider } from "@layerswap/wallet-tron";
-
-/**
  * Configuration options for getDefaultProviders function
  */
 export type DefaultWalletConfig = {
@@ -112,20 +67,7 @@ export type DefaultWalletConfig = {
 /**
  * Creates and returns a default configuration of all wallet providers.
  *
- * This function provides a convenient way to instantiate all supported wallet providers
- * with a single function call. Providers are configured based on the options provided:
- *
- * - **EVM, Starknet, SVM**: Use WalletConnect configuration if provided, with fallback to undefined
- * - **TON**: Always included, uses provided configuration or undefined as fallback
- * - **Immutable Passport**: Included only if Immutable Passport configuration is provided
- * - **Bitcoin, Fuel, Tron, Paradex, ImmutableX**: Always included (no configuration required)
- * - **EVM**: Includes zkSync and Loopring modules by default
- *
  * @param config - Configuration options for the wallet providers
- * @param config.walletConnect - Optional WalletConnect configuration (projectId, name, description, url, icons)
- * @param config.ton - Optional TON client configuration (tonApiKey, manifestUrl)
- * @param config.immutablePassport - Optional Immutable Passport configuration (publishableKey, clientId, redirectUri, logoutRedirectUri)
- *
  * @returns Array of configured wallet providers ready to be passed to LayerswapProvider
  *
  * @example

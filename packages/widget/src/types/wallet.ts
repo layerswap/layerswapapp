@@ -6,6 +6,7 @@ import { AddressUtilsProvider } from './addressUtils';
 import { NftProvider } from './nft';
 import { ContractAddressCheckerProvider } from './contract';
 import { RpcHealthCheckProvider } from './rpcHealth';
+import type { ThemeData } from '@/Models/Theme';
 export { type WalletModalConnector } from '@/components/Wallet/WalletModal'
 
 export type InternalConnector = {
@@ -31,7 +32,8 @@ export type Wallet = {
     address: string | `0x${string}`;
     addresses: string[];
     providerName: string
-    icon: (props: any) => React.JSX.Element;
+    /** Icon as a URL or data: URI. When undefined, the UI falls back to a generic wallet icon. */
+    icon?: string;
     metadata?: {
         starknetAccount?: any,
         wallet?: any,
@@ -49,8 +51,27 @@ export type Wallet = {
     networkIcon?: string,
 }
 
+/**
+ * External store contract for a wallet's connection state. Replaces the old
+ * `walletConnectionProvider` hook. Implementations expose a vanilla
+ * subscribe/getSnapshot pair the widget bridges via `useSyncExternalStore`.
+ */
+export type WalletConnectionStore = {
+    subscribe(listener: () => void): () => void
+    getSnapshot(): WalletConnectionProvider
+    /** Called when host inputs change (e.g. settings refreshed and networks shifted). */
+    updateProps?(props: WalletConnectionProviderProps): void
+    /** Called when the store is no longer needed. */
+    destroy?(): void
+}
+
 export type WalletProvider = WalletWrapper & {
-    walletConnectionProvider: (props: WalletConnectionProviderProps) => WalletConnectionProvider,
+    /**
+     * Vanilla external-store factory for connection state. Replaces the old
+     * `walletConnectionProvider` hook field. Called once per provider, NOT
+     * during render.
+     */
+    createConnection: (props: WalletConnectionProviderProps) => WalletConnectionStore,
     addressUtilsProvider?: AddressUtilsProvider | AddressUtilsProvider[],
     nftProvider?: NftProvider | NftProvider[],
     gasProvider?: GasProvider | GasProvider[],
@@ -60,9 +81,33 @@ export type WalletProvider = WalletWrapper & {
     rpcHealthCheckProvider?: RpcHealthCheckProvider | RpcHealthCheckProvider[],
 }
 
+export type WalletWrapperProps = {
+    children?: import('react').ReactNode
+    themeData?: ThemeData
+    appName?: string
+}
+
+export type WalletInitContext = {
+    themeData?: ThemeData
+    appName?: string
+}
+
 export type WalletWrapper = {
     id: string,
-    wrapper?: React.ComponentType<any>,
+    /**
+     * Optional React-tree wrapper. Use this only when the wallet integrates
+     * with an upstream React-only library that needs to live in the tree
+     * (e.g. `<TonConnectUIProvider>`, `<StarknetConfig>`). Packages with no
+     * such dependency should use `init` instead.
+     */
+    wrapper?: React.ComponentType<WalletWrapperProps>,
+    /**
+     * Optional one-shot lifecycle. Called once when LayerswapProvider mounts.
+     * Return a dispose function to run on unmount. Use this in place of
+     * `wrapper` whenever the package does not need to inject React context
+     * for its children.
+     */
+    init?: (ctx: WalletInitContext) => (() => void) | void,
 }
 
 export type WalletProviderModule = {
@@ -119,7 +164,12 @@ export type SelectAccountProps = {
 }
 
 export type BaseWalletProviderConfig = {
-    customHook?: (props: WalletConnectionProviderProps) => WalletConnectionProvider
+    /**
+     * Optional custom connection-store factory. Replaces the previous
+     * hook-shaped `customHook` field. Implementations build their own
+     * external store (typically via `createConnectionStore` from the widget).
+     */
+    customConnection?: (props: WalletConnectionProviderProps) => WalletConnectionStore
     balanceProviders?: BalanceProvider | BalanceProvider[]
     gasProviders?: GasProvider | GasProvider[]
     addressUtilsProviders?: AddressUtilsProvider | AddressUtilsProvider[]

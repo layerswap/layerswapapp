@@ -1,36 +1,40 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { shallow } from 'zustand/shallow'
 import type {
     AddEthereumChainParams,
     Network,
     RpcHealth,
     RpcHealthCheckProvider,
-    RpcHealthCheckResult,
+    RpcHealthCheckSnapshot,
+    RpcHealthCheckStore,
     SuggestRpcResult,
 } from '@layerswap/widget/types'
 import { NetworkType } from '@layerswap/widget/types'
 import { useEvmStore } from './service/evmStore'
 
-function useEVMRpcHealthCheckHook(): RpcHealthCheckResult {
-    const { connectorId, chainId, isConnected, allConnectors } = useEvmStore(
-        s => ({
-            connectorId: s.wagmiAccount.connectorId,
-            chainId: s.wagmiAccount.chainId,
-            isConnected: !!s.wagmiAccount.address,
-            allConnectors: s.allConnectors,
-        }),
-        shallow,
-    )
+const INITIAL_SNAPSHOT: RpcHealthCheckSnapshot = Object.freeze({
+    health: { status: undefined } as RpcHealth,
+    isSuggestingRpc: false,
+})
 
-    const connector = useMemo(
-        () => allConnectors.find(c => c.id === connectorId),
-        [allConnectors, connectorId],
-    )
+function createStore(): RpcHealthCheckStore {
+    let snapshot: RpcHealthCheckSnapshot = INITIAL_SNAPSHOT
+    const listeners = new Set<() => void>()
+    let lastConnectorId: string | undefined
+    let lastIsConnected = false
 
-    const [health, setHealth] = useState<RpcHealth>({ status: undefined })
-    const [isSuggestingRpc, setIsSuggestingRpc] = useState(false)
+    const setSnapshot = (next: Partial<RpcHealthCheckSnapshot>) => {
+        snapshot = { ...snapshot, ...next }
+        listeners.forEach(l => l())
+    }
 
-    const check = useCallback(async () => {
+    const getActiveConnector = () => {
+        const state = useEvmStore.getState()
+        const isConnected = !!state.wagmiAccount.address
+        const connector = state.allConnectors.find(c => c.id === state.wagmiAccount.connectorId)
+        return { connector, isConnected, chainId: state.wagmiAccount.chainId }
+    }
+
+    const check = async () => {
+        const { connector, isConnected } = getActiveConnector()
         if (!connector || !isConnected) return
 
         try {
@@ -38,14 +42,10 @@ function useEVMRpcHealthCheckHook(): RpcHealthCheckResult {
             if (!provider || typeof provider.request !== 'function') return
 
             const start = performance.now()
-
-            const [latestBlock] = await Promise.all([
-                provider.request({
-                    method: 'eth_getBlockByNumber',
-                    params: ['latest', false],
-                }),
-            ])
-
+            const latestBlock = await provider.request({
+                method: 'eth_getBlockByNumber',
+                params: ['latest', false],
+            })
             const latencyMs = performance.now() - start
 
             const tsHex = latestBlock?.timestamp
@@ -60,87 +60,91 @@ function useEVMRpcHealthCheckHook(): RpcHealthCheckResult {
                 let reason = ''
                 if (tooSlow) reason += `Wallet RPC is slow (${latencyMs.toFixed(0)}ms). `
                 if (tooStale) reason += `Latest block is stale (${blockAgeSec.toFixed(0)}s old).`
-                setHealth({ status: 'unhealthy', reason: reason.trim() })
+                setSnapshot({ health: { status: 'unhealthy', reason: reason.trim() } satisfies RpcHealth })
                 return
             }
-            setHealth({ status: 'healthy', latencyMs, blockAgeSec })
+            setSnapshot({ health: { status: 'healthy', latencyMs, blockAgeSec } satisfies RpcHealth })
         } catch (e: any) {
             const msg = e?.message || 'Unknown error from wallet RPC'
-            setHealth({ status: 'unhealthy', reason: msg })
+            setSnapshot({ health: { status: 'unhealthy', reason: msg } satisfies RpcHealth })
         }
-    }, [connector, isConnected])
+    }
 
-    const suggestRpc = useCallback(
-        async (params: AddEthereumChainParams): Promise<SuggestRpcResult> => {
-            if (!connector || !isConnected) {
-                return { success: false, error: 'Wallet not connected' }
+    const suggestRpc = async (params: AddEthereumChainParams): Promise<SuggestRpcResult> => {
+        const { connector, isConnected } = getActiveConnector()
+        if (!connector || !isConnected) {
+            return { success: false, error: 'Wallet not connected' }
+        }
+
+        setSnapshot({ isSuggestingRpc: true })
+        try {
+            const provider: any = await connector.getProvider()
+            if (!provider || typeof provider.request !== 'function') {
+                return { success: false, error: 'No wallet provider available' }
             }
-
-            setIsSuggestingRpc(true)
-
-            try {
-                const provider: any = await connector.getProvider()
-                if (!provider || typeof provider.request !== 'function') {
-                    return { success: false, error: 'No wallet provider available' }
-                }
-
-                await provider.request({
-                    method: 'wallet_addEthereumChain',
-                    params: [params],
-                })
-
-                await check()
-
-                return { success: true }
-            } catch (e: any) {
-                const error = e?.message || 'Failed to update wallet RPC'
-                return { success: false, error }
-            } finally {
-                setIsSuggestingRpc(false)
-            }
-        },
-        [connector, isConnected, check],
-    )
-
-    const suggestRpcForCurrentChain = useCallback(
-        async (
-            rpcUrl: string,
-            chainDetails: Omit<AddEthereumChainParams, 'chainId' | 'rpcUrls'>,
-        ): Promise<SuggestRpcResult> => {
-            if (!chainId) {
-                return { success: false, error: 'No chain connected' }
-            }
-
-            return suggestRpc({
-                chainId: `0x${chainId.toString(16)}`,
-                rpcUrls: [rpcUrl],
-                ...chainDetails,
+            await provider.request({
+                method: 'wallet_addEthereumChain',
+                params: [params],
             })
-        },
-        [chainId, suggestRpc],
-    )
-
-    useEffect(() => {
-        if (connector && isConnected) {
-            check()
+            await check()
+            return { success: true }
+        } catch (e: any) {
+            return { success: false, error: e?.message || 'Failed to update wallet RPC' }
+        } finally {
+            setSnapshot({ isSuggestingRpc: false })
         }
-    }, [connector, isConnected, check])
+    }
+
+    const suggestRpcForCurrentChain = async (
+        rpcUrl: string,
+        chainDetails: Omit<AddEthereumChainParams, 'chainId' | 'rpcUrls'>,
+    ): Promise<SuggestRpcResult> => {
+        const { chainId } = getActiveConnector()
+        if (!chainId) return { success: false, error: 'No chain connected' }
+        return suggestRpc({
+            chainId: `0x${chainId.toString(16)}`,
+            rpcUrls: [rpcUrl],
+            ...chainDetails,
+        })
+    }
+
+    // Auto-check when the active connector or connectedness changes.
+    const unsubEvm = useEvmStore.subscribe(() => {
+        const { connector, isConnected } = getActiveConnector()
+        const connectorId = connector?.id
+        if (connectorId === lastConnectorId && isConnected === lastIsConnected) return
+        lastConnectorId = connectorId
+        lastIsConnected = isConnected
+        if (connector && isConnected) void check()
+    })
 
     return {
-        health,
+        subscribe(listener) {
+            listeners.add(listener)
+            return () => listeners.delete(listener)
+        },
+        getSnapshot() {
+            return snapshot
+        },
         checkManually: check,
         suggestRpc,
         suggestRpcForCurrentChain,
-        isSuggestingRpc,
+        destroy() {
+            unsubEvm()
+            listeners.clear()
+        },
     }
 }
 
 export class EVMRpcHealthCheckProvider implements RpcHealthCheckProvider {
+    private _store: RpcHealthCheckStore | null = null
+
     supportsNetwork(network: Network): boolean {
         return network.type === NetworkType.EVM
     }
 
-    useRpcHealthCheck(): RpcHealthCheckResult {
-        return useEVMRpcHealthCheckHook()
+    createStore(): RpcHealthCheckStore {
+        if (!this._store) this._store = createStore()
+        return this._store
     }
 }

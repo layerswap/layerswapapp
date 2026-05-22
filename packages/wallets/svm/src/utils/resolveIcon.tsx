@@ -1,11 +1,5 @@
-import { walletIconResolver } from "@layerswap/widget/internal"
-import KnownSolanaConnectors from "./KnownSolanaConnectors"
+import { resolveWalletIconString } from "@layerswap/widget/internal"
 
-export const resolveSolanaWalletConnectorIcon = ({ connector, address, iconUrl }: { connector?: string, address?: string, iconUrl?: string }) => {
-    const knownConnector = KnownSolanaConnectors.find(c => c.id.toLowerCase() === connector?.toLowerCase())
-
-    if (knownConnector && knownConnector.icon)
-        return knownConnector.icon
-    else
-        return walletIconResolver(address, iconUrl)
+export const resolveSolanaWalletConnectorIcon = ({ connector, iconUrl }: { connector?: string, address?: string, iconUrl?: string }): string | undefined => {
+    return resolveWalletIconString({ id: connector, iconUrl })
 }

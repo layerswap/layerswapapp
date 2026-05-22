@@ -1,19 +1,17 @@
 import { WalletProvider, BaseWalletProviderConfig } from "@layerswap/widget/types"
 import { ParadexBalanceProvider } from "./paradexBalanceProvider"
-import { useParadexConnection } from "./service/useParadexConnection"
 import { ActiveParadexAccountProvider } from "./ActiveParadexAccount"
+import { paradexConnectionAdapter } from "./service/paradexConnectionAdapter"
 
 export type ParadexProviderConfig = BaseWalletProviderConfig
 
 export function createParadexProvider(config: ParadexProviderConfig = {}): WalletProvider {
     const {
-        customHook,
+        customConnection,
         balanceProviders,
         gasProviders,
-        addressUtilsProviders
+        addressUtilsProviders,
     } = config;
-
-    const walletConnectionProvider = customHook || useParadexConnection;
 
     const defaultBalanceProviders = [new ParadexBalanceProvider()];
     const finalBalanceProviders = balanceProviders !== undefined
@@ -31,7 +29,7 @@ export function createParadexProvider(config: ParadexProviderConfig = {}): Walle
     return {
         id: "paradex",
         wrapper: ActiveParadexAccountProvider,
-        walletConnectionProvider,
+        createConnection: customConnection ?? paradexConnectionAdapter.createConnection,
         addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
         // balanceProvider: finalBalanceProviders,
@@ -39,13 +37,3 @@ export function createParadexProvider(config: ParadexProviderConfig = {}): Walle
 }
 
 export { default as ParadexMultiStepHandler } from "./components/ParadexMultiStepHandler"
-
-/**
- * @deprecated Use createParadexProvider() instead. This export will be removed in a future version.
- */
-export const ParadexProvider: WalletProvider = {
-    id: "paradex",
-    wrapper: ActiveParadexAccountProvider,
-    walletConnectionProvider: useParadexConnection,
-    // balanceProvider: [new ParadexBalanceProvider()]
-};

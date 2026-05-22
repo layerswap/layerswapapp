@@ -1,13 +1,14 @@
 'use client'
-import { WalletProvider } from '@layerswap/widget/types';
-import { useSettingsState, useWalletStore, useWalletProvidersList } from '@layerswap/widget/internal';
+import { WalletConnectionProvider } from '@layerswap/widget/types';
+import { useWalletStore, useWalletProviders, useSettingsState } from '@layerswap/widget/internal';
 import { Context, FC, createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { paradexConnectionAdapter } from './service/paradexConnectionAdapter';
 
 type ActiveAccountState = {
     activeConnection?: Account
     setActiveAddress: (account: Account) => void
-    evmProvider: WalletProvider
-    starknetProvider: WalletProvider
+    evmConnectionProvider: WalletConnectionProvider | undefined
+    starknetConnectionProvider: WalletConnectionProvider | undefined
 }
 
 export const ActiveParadexAccountContext = createContext<ActiveAccountState | undefined>(undefined);
@@ -24,13 +25,10 @@ type Props = {
 
 export const ActiveParadexAccountProvider: FC<Props> = ({ children }) => {
     const [selectedAccount, setSelectedAccount] = useState<Account>()
-    const { networks } = useSettingsState()
 
-    const walletProviders = useWalletProvidersList()
-    const evmProvider = walletProviders.find(provider => provider.id === 'evm')
-    const starknetProvider = walletProviders.find(provider => provider.id === 'starknet')
-    const evmConnectionProvider = evmProvider.walletConnectionProvider({ networks })
-    const starknetConnectionProvider = starknetProvider.walletConnectionProvider({ networks })
+    const walletProviders = useWalletProviders()
+    const evmConnectionProvider = walletProviders.find(p => p.id === 'evm')
+    const starknetConnectionProvider = walletProviders.find(p => p.id === 'starknet')
     const paradexAccounts = useWalletStore((state) => state.paradexAccounts)
     const activeConnection: Account | undefined = useMemo(() => {
         if (!paradexAccounts) return undefined
@@ -41,8 +39,8 @@ export const ActiveParadexAccountProvider: FC<Props> = ({ children }) => {
             return selectedAccount;
         }
         else {
-            const evmWallet = evmConnectionProvider.connectedWallets?.find(w => w.addresses.some(wa => l1Addresses.some(pa => pa.toLowerCase() === wa.toLowerCase())))
-            const starknetWallet = starknetConnectionProvider.connectedWallets?.find(w => w.addresses.some(wa => l1Addresses.some(pa => pa.toLowerCase() === wa.toLowerCase())))
+            const evmWallet = evmConnectionProvider?.connectedWallets?.find(w => w.addresses.some(wa => l1Addresses.some(pa => pa.toLowerCase() === wa.toLowerCase())))
+            const starknetWallet = starknetConnectionProvider?.connectedWallets?.find(w => w.addresses.some(wa => l1Addresses.some(pa => pa.toLowerCase() === wa.toLowerCase())))
             const defaultWallet = evmWallet || starknetWallet
             if (!defaultWallet) return undefined
             return {
@@ -57,8 +55,11 @@ export const ActiveParadexAccountProvider: FC<Props> = ({ children }) => {
         setSelectedAccount(account)
     }, [])
 
+    const { networks } = useSettingsState()
+
     return (
-        <ActiveParadexAccountContext.Provider value={{ activeConnection, setActiveAddress, evmProvider, starknetProvider }}>
+        <ActiveParadexAccountContext.Provider value={{ activeConnection, setActiveAddress, evmConnectionProvider, starknetConnectionProvider }}>
+            <paradexConnectionAdapter.Hydrator networks={networks} />
             {children}
         </ActiveParadexAccountContext.Provider>
     )

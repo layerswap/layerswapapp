@@ -1,6 +1,7 @@
 "use client";
 import { Context, createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { InternalConnector, Wallet, WalletConnectionProvider } from '@/types/wallet';
+import { connectModalStore } from '@/lib/walletConnect/connectModalStore';
 
 export type WalletModalConnector = InternalConnector & {
     qr?: ({
@@ -114,7 +115,18 @@ export function WalletModalProvider({ children }) {
             setHideHeader(false)
         }
         setIsWalletModalOpen(open)
+        connectModalStore._syncOpen(open)
     }, [open])
+
+    useEffect(() => {
+        connectModalStore._syncSelectedConnector(selectedConnector)
+    }, [selectedConnector])
+
+    useEffect(() => {
+        return connectModalStore._registerWriter((connector) => {
+            setSelectedConnector(connector as WalletModalConnector | undefined)
+        })
+    }, [setSelectedConnector])
 
     const contextValue = useMemo(() => ({
         connect, cancel, selectedProvider, setSelectedProvider,

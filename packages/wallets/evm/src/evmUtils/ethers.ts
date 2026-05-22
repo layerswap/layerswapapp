@@ -1,10 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
-import { shallow } from 'zustand/shallow'
 import { getWalletClient } from '@wagmi/core'
 import { providers } from 'ethers'
 import type { WalletClient } from 'viem'
 import { getEvmConfig, hasEvmConfig } from '../service/getEvmConfig'
-import { useEvmStore } from '../service/evmStore'
 
 export function walletClientToSigner(walletClient: WalletClient) {
     const { account, chain, transport } = walletClient
@@ -25,29 +22,17 @@ export function walletClientToSigner(walletClient: WalletClient) {
     return signer
 }
 
-/** Hook to convert a viem Wallet Client to an ethers.js Signer. */
-export function useEthersSigner({ chainId }: { chainId?: number } = {}) {
-    const { address, storeChainId } = useEvmStore(
-        s => ({ address: s.wagmiAccount.address, storeChainId: s.wagmiAccount.chainId }),
-        shallow,
-    )
-
-    const [walletClient, setWalletClient] = useState<WalletClient | undefined>(undefined)
-
-    useEffect(() => {
-        if (!address || !hasEvmConfig()) {
-            setWalletClient(undefined)
-            return
-        }
-        let cancelled = false
-        getWalletClient(getEvmConfig(), { chainId })
-            .then(client => { if (!cancelled) setWalletClient(client as WalletClient) })
-            .catch(() => { if (!cancelled) setWalletClient(undefined) })
-        return () => { cancelled = true }
-    }, [address, chainId, storeChainId])
-
-    return useMemo(
-        () => (walletClient ? walletClientToSigner(walletClient) : undefined),
-        [walletClient],
-    )
+/**
+ * Imperative replacement for `useEthersSigner`. Resolves to an ethers v5
+ * Signer for the active EVM wallet on the requested chain, or `undefined`
+ * if no wallet is connected.
+ */
+export async function getEthersSigner({ chainId }: { chainId?: number } = {}) {
+    if (!hasEvmConfig()) return undefined
+    try {
+        const client = await getWalletClient(getEvmConfig(), { chainId })
+        return client ? walletClientToSigner(client as WalletClient) : undefined
+    } catch {
+        return undefined
+    }
 }

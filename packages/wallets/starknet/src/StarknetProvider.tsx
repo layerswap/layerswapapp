@@ -2,7 +2,14 @@ import { FC, ReactNode, useEffect, useState } from "react";
 import { mainnet, sepolia } from "@starknet-react/chains"
 import { Connector, ConnectorNotConnectedError, UserNotConnectedError, StarknetConfig, publicProvider } from '@starknet-react/core';
 import { RpcMessage, RequestFnCall, RpcTypeToMessageMap } from "@starknet-io/types-js";
+import { useSettingsState } from "@layerswap/widget/internal";
 import { StarknetSync } from "./service/syncStarknet";
+import { starknetConnectionAdapter } from "./service/starknetConnectionAdapter";
+
+const StarknetHydrator = () => {
+    const { networks } = useSettingsState()
+    return <starknetConnectionAdapter.Hydrator networks={networks} />
+}
 
 type StarknetProviderProps = {
     children: ReactNode
@@ -145,6 +152,7 @@ const StarknetProvider: FC<StarknetProviderProps> = ({ children }) => {
             connectors={connectors}
         >
             <StarknetSync />
+            <StarknetHydrator />
             {children}
         </StarknetConfig>
     )

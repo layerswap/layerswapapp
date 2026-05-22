@@ -6,10 +6,16 @@ import {
 import { ReactNode, useMemo, useState, useEffect } from "react";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import { useWalletConnectConfig, WalletConnectConfig } from ".";
-import { AppSettings } from "@layerswap/widget/internal";
+import { AppSettings, useSettingsState } from "@layerswap/widget/internal";
 import type { ReactElement } from "react";
 import { SolanaWalletConnectAdapter } from "./connectors/SolanaWalletConnectAdapter";
 import { SvmSync } from "./service/syncSvm";
+import { svmConnectionAdapter } from "./service/svmConnectionAdapter";
+
+const SvmHydrator = () => {
+    const { networks } = useSettingsState()
+    return <svmConnectionAdapter.Hydrator networks={networks} />
+}
 
 type SolanaProviderProps = {
     children: ReactNode
@@ -77,6 +83,7 @@ function SolanaProvider({ children }: SolanaProviderProps): ReactElement {
         <ConnectionProvider endpoint={endpoint}>
             <WalletProvider wallets={adapters} autoConnect={ready}>
                 <SvmSync />
+                <SvmHydrator />
                 {children}
             </WalletProvider>
         </ConnectionProvider>

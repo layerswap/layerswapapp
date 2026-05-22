@@ -5,6 +5,7 @@ import { FC, useState } from "react";
 import ResizablePanel from "@/components/Common/ResizablePanel";
 import { SelectAccountProps, Wallet, WalletConnectionProvider } from "@/types/wallet";
 import WalletIcon from "@/components/Icons/WalletIcon";
+import WalletIconView from "@/components/Wallet/WalletIconView";
 import { WalletItem } from "@/components/Wallet/WalletComponents/WalletsList";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 
@@ -102,7 +103,7 @@ export const NotCompatibleWallets: FC<NotCompatibleWalletsProps> = ({ notCompati
                             <div className="space-x-1 flex">
                                 {notCompatibleWallets?.map((wallet) => (
                                     <div key={wallet.address} className="inline-flex items-center relative">
-                                        <wallet.icon className="w-4 h-4 rounded-xs bg-secondary-800" />
+                                        <WalletIconView wallet={wallet} className="w-4 h-4 rounded-xs bg-secondary-800" size={16} />
                                     </div>
                                 ))}
                                 <ChevronDown

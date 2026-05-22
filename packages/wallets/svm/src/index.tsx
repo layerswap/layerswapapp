@@ -1,11 +1,10 @@
 import { WalletProvider, BaseWalletProviderConfig, LazyGasProvider, NetworkType } from "@layerswap/widget/types";
-import { AppSettings } from "@layerswap/widget/internal";
-import { useSvmConnection as useSVMConnection } from "./service/useSvmConnection";
 import SVMProviderWrapper from "./SVMProvider";
 import { SolanaBalanceProvider } from "./svmBalanceProvider";
 import { SolanaAddressUtilsProvider } from "./svmAddressUtilsProvider";
 import React, { createContext, useContext } from "react";
 import { useSVMTransfer } from "./transferProvider/useSVMTransfer";
+import { svmConnectionAdapter } from "./service/svmConnectionAdapter";
 
 export type WalletConnectConfig = {
     projectId: string
@@ -26,11 +25,11 @@ export const useWalletConnectConfig: () => WalletConnectConfig | null = () => us
 export function createSVMProvider(config: SVMProviderConfig = {}): WalletProvider {
     const {
         walletConnectConfigs,
-        customHook,
+        customConnection,
         balanceProviders,
         gasProviders,
         addressUtilsProviders,
-        transferProviders
+        transferProviders,
     } = config;
 
     const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
@@ -42,8 +41,6 @@ export function createSVMProvider(config: SVMProviderConfig = {}): WalletProvide
             </WalletConnectConfigContext.Provider>
         );
     };
-
-    const walletConnectionProvider = customHook || useSVMConnection;
 
     const defaultBalanceProviders = [new SolanaBalanceProvider()];
     const finalBalanceProviders = balanceProviders !== undefined
@@ -73,37 +70,10 @@ export function createSVMProvider(config: SVMProviderConfig = {}): WalletProvide
     return {
         id: "solana",
         wrapper: WrapperComponent,
-        walletConnectionProvider,
+        createConnection: customConnection ?? svmConnectionAdapter.createConnection,
         addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
         transferProvider: finalTransferProviders,
     };
 }
-
-/**
- * @deprecated Use createSVMProvider() instead. This export will be removed in a future version.
- * Note: This uses default WalletConnect configuration provided to LayerswapProvider.
- */
-export const SVMProvider: WalletProvider = {
-    id: "solana",
-    wrapper: ({ children }: { children: React.ReactNode }) => {
-        return (
-            <WalletConnectConfigContext.Provider value={AppSettings.WalletConnectConfig ?? null}>
-                <SVMProviderWrapper walletConnectConfigs={AppSettings.WalletConnectConfig}>
-                    {children}
-                </SVMProviderWrapper>
-            </WalletConnectConfigContext.Provider>
-        );
-    },
-    walletConnectionProvider: useSVMConnection,
-    addressUtilsProvider: [new SolanaAddressUtilsProvider()],
-    gasProvider: [
-        new LazyGasProvider(
-            (n) => n.type === NetworkType.Solana,
-            () => import("./svmGasProvider").then(m => new m.SolanaGasProvider())
-        )
-    ],
-    balanceProvider: [new SolanaBalanceProvider()],
-    transferProvider: [useSVMTransfer],
-};

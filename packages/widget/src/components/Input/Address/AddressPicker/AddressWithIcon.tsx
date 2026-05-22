@@ -47,7 +47,8 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
         {
             group: AddressGroup.ConnectedWallet,
             text: <p className={`${maxWalletNameWidth} text-ellipsis sm:max-w-full text-nowrap overflow-hidden text-[10px]`}>{addressItem.wallet?.displayName || 'Connected wallet'}</p>,
-            icon: addressItem.wallet?.icon || WalletIcon
+            icon: WalletIcon,
+            walletIcon: addressItem.wallet?.icon,
         },
         {
             group: AddressGroup.FromQuery,
@@ -104,9 +105,17 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
                 </div>
                 <div className="text-secondary-text w-full min-w-0">
                     <div className="flex items-center gap-1 text-xs">
-                        {itemDescription?.icon && (
+                        {('walletIcon' in (itemDescription ?? {}) && (itemDescription as { walletIcon?: string }).walletIcon) ? (
+                            <ImageWithFallback
+                                src={(itemDescription as { walletIcon: string }).walletIcon}
+                                alt=""
+                                width="14"
+                                height="14"
+                                className="rounded-sm shrink-0 h-3.5 w-3.5 object-contain"
+                            />
+                        ) : itemDescription?.icon ? (
                             <itemDescription.icon className="rounded-sm shrink-0 h-3.5 w-3.5" />
-                        )}
+                        ) : null}
                         {itemDescription?.text}
                     </div>
                 </div>
@@ -143,7 +152,7 @@ type ExtendedAddressBaseProps = {
     showDetails?: boolean;
     title?: string;
     description?: string;
-    logo?: string | ((e: SVGProps<SVGSVGElement>) => ReactNode);
+    logo?: string;
     children?: ReactNode
     shouldShowChevron?: boolean
     onPopoverOpenChange?: (open: boolean) => void;
@@ -280,23 +289,19 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
                     {showDetails && (title || description) && (
                         <div>
                             <div className="flex items-center gap-3">
-                                {Logo ?
-
-                                    typeof Logo == 'string' ? (
-                                        <ImageWithFallback
-                                            src={Logo}
-                                            alt={title || "Token logo"}
-                                            height="40"
-                                            width="40"
-                                            loading="eager"
-                                            fetchPriority="high"
-                                            className="rounded-full object-contain shrink-0 h-10 w-10"
-                                        />
-                                    ) : (
-                                        <Logo className="w-10 h-10 text-secondary-text shrink-0" />
-                                    ) : (
-                                        <Info className="w-10 h-10 text-secondary-text shrink-0" />
-                                    )}
+                                {Logo ? (
+                                    <ImageWithFallback
+                                        src={Logo}
+                                        alt={title || "Token logo"}
+                                        height="40"
+                                        width="40"
+                                        loading="eager"
+                                        fetchPriority="high"
+                                        className="rounded-full object-contain shrink-0 h-10 w-10"
+                                    />
+                                ) : (
+                                    <Info className="w-10 h-10 text-secondary-text shrink-0" />
+                                )}
                                 <div className="flex-1 font-medium">
                                     {title && <h3 className="text-base leading-5 text-primary-text">{title}</h3>}
                                     {description && <p className="text-sm leading-4.5 text-secondary-text">{description}</p>}

@@ -1,16 +1,28 @@
 import { FC } from "react";
 import { WalletModalConnector } from ".";
-import { resolveWalletConnectorIcon } from "@/lib/wallets/utils/resolveWalletIcon";
 import { QRCodeSVG } from "qrcode.react";
 import CopyButton from "@/components/Buttons/copyButton";
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
+import WalletIcon from "@/components/Icons/WalletIcon";
 
 export const WalletQrCode: FC<{ selectedConnector: WalletModalConnector }> = ({ selectedConnector }) => {
-    const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector, iconUrl: selectedConnector.icon });
+    const connectorIconSrc = selectedConnector.icon
+
+    const ConnectorImg = ({ className, size }: { className?: string, size: number }) =>
+        connectorIconSrc ? (
+            <ImageWithFallback
+                src={connectorIconSrc}
+                alt={selectedConnector?.name}
+                width={size}
+                height={size}
+                className={className}
+            />
+        ) : <WalletIcon className={className} />
 
     return <div className="flex flex-col items-center h-full justify-between">
         <div className="flex flex-col items-center gap-3 grow justify-center">
             <div className="flex items-center gap-2">
-                <ConnectorIcon className="w-6 h-6" />
+                <ConnectorImg className="w-6 h-6" size={24} />
                 <p className="text-sm font-medium text-primary-text">{selectedConnector?.name}</p>
             </div>
             <div className="bg-white p-3 rounded-2xl">
@@ -36,7 +48,7 @@ export const WalletQrCode: FC<{ selectedConnector: WalletModalConnector }> = ({ 
                         :
                         <div className="w-[220px] h-[220px] relative">
                             <div className="w-full h-full bg-secondary-300 animate-pulse rounded-lg" />
-                            <ConnectorIcon className='h-10 w-10 absolute top-[calc(50%-20px)] left-[calc(50%-20px)]' />
+                            <ConnectorImg className='h-10 w-10 absolute top-[calc(50%-20px)] left-[calc(50%-20px)]' size={40} />
                         </div>
                 }
             </div>

@@ -4,7 +4,6 @@ import { getKey, useBalanceStore } from '@/stores/balanceStore';
 import { useManualDestAddressesStore } from '@/stores/manualDestAddressesStore';
 import { Wallet, WalletConnectionProvider } from '@/types/wallet';
 import { SwapDirection } from '@/exports';
-import AddressIcon from '@/components/Common/AddressIcon';
 
 export type { ManualDestAddress } from '@/stores/manualDestAddressesStore';
 
@@ -35,7 +34,7 @@ export type AccountIdentity = BaseAccountIdentity & {
     displayName: string,
     addresses: string[],
     provider: WalletConnectionProvider;
-    icon: (props: any) => React.JSX.Element;
+    icon?: string;
 }
 
 
@@ -226,7 +225,7 @@ function ResolveWalletSwapAccount(provider: WalletConnectionProvider, wallet: Wa
         walletAsSourceSupportedNetworks: wallet.asSourceSupportedNetworks,
         displayName: wallet.displayName || provider.name,
         addresses: wallet.addresses || [address],
-        icon: wallet.icon || ((props) => <AddressIcon address={address} size={24} {...props} />),
+        icon: wallet.icon,
     }
 }
 
@@ -238,8 +237,6 @@ function ResolveManualSwapAccount(provider: WalletConnectionProvider, address: s
         id: 'manually_added',
         displayName: "Manual",
         addresses: [address],
-        icon: (props: any) => (
-            <AddressIcon className="h-4 w-4 p-0.5" address={address} size={20} {...props} />
-        ),
+        icon: undefined,
     };
 }

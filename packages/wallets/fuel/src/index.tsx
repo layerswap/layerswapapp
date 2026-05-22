@@ -2,31 +2,20 @@ import { FuelAddressUtilsProvider } from "./fuelAddressUtilsProvider";
 import { FuelBalanceProvider } from "./fuelBalanceProvider";
 import { FuelGasProvider } from "./fuelGasProvider";
 import FuelProviderWrapper from "./FuelProvider";
-import { useFuelConnection } from "./service/useFuelConnection";
 import { WalletProvider, BaseWalletProviderConfig } from "@layerswap/widget/types";
-import React from "react";
 import { useFuelTransfer } from "./transferProvider/useFuelTransfer";
+import { fuelConnectionAdapter } from "./service/fuelConnectionAdapter";
 
 export type FuelProviderConfig = BaseWalletProviderConfig
 
 export function createFuelProvider(config: FuelProviderConfig = {}): WalletProvider {
     const {
-        customHook,
+        customConnection,
         balanceProviders,
         gasProviders,
         addressUtilsProviders,
-        transferProviders
+        transferProviders,
     } = config;
-
-    const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
-        return (
-            <FuelProviderWrapper>
-                {children}
-            </FuelProviderWrapper>
-        );
-    };
-
-    const walletConnectionProvider = customHook || useFuelConnection;
 
     const defaultBalanceProviders = [new FuelBalanceProvider()];
     const finalBalanceProviders = balanceProviders !== undefined
@@ -50,24 +39,11 @@ export function createFuelProvider(config: FuelProviderConfig = {}): WalletProvi
 
     return {
         id: "fuel",
-        wrapper: WrapperComponent,
-        walletConnectionProvider,
+        wrapper: FuelProviderWrapper,
+        createConnection: customConnection ?? fuelConnectionAdapter.createConnection,
         addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
         transferProvider: finalTransferProviders,
     };
 }
-
-/**
- * @deprecated Use createFuelProvider() instead. This export will be removed in a future version.
- */
-export const FuelProvider: WalletProvider = {
-    id: "fuel",
-    wrapper: FuelProviderWrapper,
-    walletConnectionProvider: useFuelConnection,
-    addressUtilsProvider: [new FuelAddressUtilsProvider()],
-    gasProvider: [new FuelGasProvider()],
-    balanceProvider: [new FuelBalanceProvider()],
-    transferProvider: [useFuelTransfer],
-};

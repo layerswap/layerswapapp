@@ -5,6 +5,7 @@ import { Partner } from "@/Models/Partner";
 import AddressIcon from "@/components/Common/AddressIcon";
 import { Wallet } from "@/types/wallet";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
+import WalletIconView from "@/components/Wallet/WalletIconView";
 import clsx from 'clsx';
 
 const DestinationWalletPicker = (props: AddressTriggerProps) => {
@@ -70,7 +71,7 @@ const ResolvedIcon = (props: AdderssIconprops) => {
         />
     }
     else if (addressItem.group === AddressGroup.ConnectedWallet && wallet) {
-        return <wallet.icon className="w-4 h-4" />
+        return <WalletIconView wallet={wallet} className="w-4 h-4" size={16} />
     }
     else {
         return <AddressIcon className="h-4 w-4 p-0.5" address={destination ? new Address(addressItem.address, destination).full : addressItem.address} size={20} />

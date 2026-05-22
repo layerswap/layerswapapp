@@ -58,7 +58,7 @@ export function resolveWallet(props: ResolveWalletProps): Wallet | undefined {
         addresses: addresses || [address],
         displayName: walletDisplayName,
         providerName,
-        icon: resolveEVMWalletConnectorIcon({ connector: evmConnectorNameResolver(connector), address, iconUrl: walletIcon }),
+        icon: resolveEVMWalletConnectorIcon({ connector: evmConnectorNameResolver(connector), iconUrl: walletIcon }),
         disconnect: () => disconnect(connector.name),
         asSourceSupportedNetworks: resolveSupportedNetworks(supportedNetworks.asSource, walletId),
         autofillSupportedNetworks: resolveSupportedNetworks(supportedNetworks.autofill, walletId),

@@ -1,11 +1,11 @@
 import { WalletProvider, BaseWalletProviderConfig, ThemeData, LazyBalanceProvider } from "@layerswap/widget/types";
 import { TonGasProvider } from "./tonGasProvider";
 import TonProviderWrapper from "./TonProvider";
-import { useTonConnection } from "./service/useTonConnection";
 import { TonAddressUtilsProvider } from "./tonAddressUtilsProvider";
 import React, { createContext, useContext } from "react";
-import { AppSettings, KnownInternalNames } from "@layerswap/widget/internal";
+import { KnownInternalNames } from "@layerswap/widget/internal";
 import { useTONTransfer } from "./transferProvider/useTONTransfer";
+import { tonConnectionAdapter } from "./service/tonConnectionAdapter";
 
 export type TonClientConfig = {
     tonApiKey: string
@@ -29,14 +29,14 @@ export const useTonConfig = () => {
 export function createTONProvider(config: TONProviderConfig = {}): WalletProvider {
     const {
         tonConfigs,
-        customHook,
+        customConnection,
         balanceProviders,
         gasProviders,
         addressUtilsProviders,
-        transferProviders
+        transferProviders,
     } = config;
 
-    const WrapperComponent = ({ children, themeData }: { children: React.ReactNode, themeData?: ThemeData }) => {
+    const WrapperComponent = ({ children, themeData }: { children?: React.ReactNode, themeData?: ThemeData }) => {
         return (
             <TonConfigContext.Provider value={tonConfigs || null}>
                 <TonProviderWrapper tonConfigs={tonConfigs} themeData={themeData}>
@@ -45,8 +45,6 @@ export function createTONProvider(config: TONProviderConfig = {}): WalletProvide
             </TonConfigContext.Provider>
         );
     };
-
-    const walletConnectionProvider = customHook || useTonConnection;
 
     const defaultBalanceProviders = [
         new LazyBalanceProvider(
@@ -76,39 +74,10 @@ export function createTONProvider(config: TONProviderConfig = {}): WalletProvide
     return {
         id: "ton",
         wrapper: WrapperComponent,
-        walletConnectionProvider,
+        createConnection: customConnection ?? tonConnectionAdapter.createConnection,
         addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
         transferProvider: finalTransferProviders,
     };
 }
-
-/**
- * @deprecated Use createTONProvider() instead. This export will be removed in a future version.
- * Note: This uses default TON configuration from AppSettings.
- */
-export const TONProvider: WalletProvider = {
-    id: "ton",
-    wrapper: ({ children, themeData }: { children: React.ReactNode, themeData?: ThemeData }) => {
-        const configs = AppSettings.TonClientConfig;
-        console.log('configs', configs)
-        return (
-            <TonConfigContext.Provider value={configs}>
-                <TonProviderWrapper tonConfigs={configs} themeData={themeData}>
-                    {children}
-                </TonProviderWrapper>
-            </TonConfigContext.Provider>
-        );
-    },
-    walletConnectionProvider: useTonConnection,
-    addressUtilsProvider: [new TonAddressUtilsProvider()],
-    gasProvider: [new TonGasProvider()],
-    balanceProvider: [
-        new LazyBalanceProvider(
-            (n) => KnownInternalNames.Networks.TONMainnet.includes(n.name),
-            () => import("./tonBalanceProvider").then(m => new m.TonBalanceProvider())
-        )
-    ],
-    transferProvider: [useTONTransfer],
-};

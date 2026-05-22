@@ -1,5 +1,6 @@
 import { Plus, Unplug } from "lucide-react";
 import AddressIcon from "@/components/Common/AddressIcon";
+import WalletIconView from "@/components/Wallet/WalletIconView";
 import { SelectAccountProps, Wallet, WalletConnectionProvider } from "@/types/wallet";
 import { FC, HTMLAttributes, useCallback } from "react";
 import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
@@ -115,7 +116,9 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: wallet, n
                     {
                         wallet &&
                         <div className="inline-flex items-center relative">
-                            <wallet.icon
+                            <WalletIconView
+                                wallet={wallet}
+                                size={36}
                                 className={clsx('w-9 h-9 p-0.5 rounded-md bg-secondary-800', {
                                     'w-6! h-6!': wallet.addresses.length > 1,
                                 })}

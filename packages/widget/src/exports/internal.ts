@@ -28,6 +28,7 @@ export { Address } from "../lib/address/Address"
 export { getExplorerUrl } from "../lib/address/explorerUrl"
 export * from "../context/swap"
 export { useWalletProvidersList } from "../components/Wallet/WalletProviders"
+export { useWalletProviders } from "../context/walletProviders"
 export { ErrorHandler } from '../lib/ErrorHandler';
 export type { ErrorEventType } from '../types/logEvents';
 export { useRpcHealth } from "../context/rpcHealthContext";

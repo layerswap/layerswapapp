@@ -2,8 +2,10 @@ import { THEME, TonConnectUIProvider, useTonConnectUI } from "@tonconnect/ui-rea
 import { ThemeData } from "@layerswap/widget/types";
 import { TonClientConfig } from "./index";
 import { useMemo, type ReactElement, type ReactNode } from "react";
+import { useSettingsState } from "@layerswap/widget/internal";
 import { setTonConnectUI } from "./service/getTonConnectUI";
 import { attachTonSync } from "./service/syncTon";
+import { tonConnectionAdapter } from "./service/tonConnectionAdapter";
 
 type TonConnectProviderProps = {
     children: ReactNode
@@ -13,6 +15,7 @@ type TonConnectProviderProps = {
 
 function TonHydrator({ children }: { children: ReactNode }): ReactElement {
     const [tonConnectUI] = useTonConnectUI()
+    const { networks } = useSettingsState()
 
     useMemo(() => {
         if (!tonConnectUI) return
@@ -20,7 +23,12 @@ function TonHydrator({ children }: { children: ReactNode }): ReactElement {
         attachTonSync(tonConnectUI)
     }, [tonConnectUI])
 
-    return <>{children}</>
+    return (
+        <>
+            <tonConnectionAdapter.Hydrator networks={networks} />
+            {children}
+        </>
+    )
 }
 
 const TonConnectProvider = ({ children, themeData, tonConfigs }: TonConnectProviderProps): ReactElement => {

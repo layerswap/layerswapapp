@@ -8,7 +8,7 @@ import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
 import { createConfig, http, WagmiProvider } from 'wagmi';
 import { QueryClient, QueryClientProvider, } from '@tanstack/react-query';
 import { mainnet } from 'viem/chains';
-import useCustomEvm from '@/hooks/useCustomEvm';
+import { customEvmAdapter } from '@/hooks/useCustomEvm';
 import { createEVMProvider } from '@layerswap/wallets'
 
 const wagmiConfig = createConfig({
@@ -21,12 +21,17 @@ const wagmiConfig = createConfig({
 
 const queryClient = new QueryClient();
 
+const CustomEvmHydrator: FC = () => {
+    const settings = useSettingsState()
+    return <customEvmAdapter.Hydrator networks={settings.networks ?? []} />
+}
+
 const LayerswapWidgetCustomEvm: FC = () => {
     const { widgetRenderKey, showLoading, config } = useWidgetContext();
     const settings = useSettingsState();
 
     const evmProvider = createEVMProvider({
-        customHook: useCustomEvm,
+        customConnection: customEvmAdapter.createConnection,
     })
 
     return (
@@ -38,6 +43,7 @@ const LayerswapWidgetCustomEvm: FC = () => {
         >
             <WagmiProvider config={wagmiConfig}>
                 <QueryClientProvider client={queryClient}>
+                    <CustomEvmHydrator />
                     <div
                         key={widgetRenderKey}
                         className="flex items-center justify-center min-h-screen w-full place-self-center">

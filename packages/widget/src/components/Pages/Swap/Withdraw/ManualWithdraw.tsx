@@ -58,7 +58,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
     const depositAddress = depositActions?.find(da => true)?.to_address;
     const { destination_address: destinationAddressFromQuery } = initialSettings
 
-    const WalletIcon = wallets.find(wallet => wallet.address.toLowerCase() == swapBasicData?.destination_address?.toLowerCase())?.icon;
+    const walletIconSrc = wallets.find(wallet => wallet.address.toLowerCase() == swapBasicData?.destination_address?.toLowerCase())?.icon;
     const addressProviderIcon = destinationAddressFromQuery && partner?.is_wallet && Address.equals(destinationAddressFromQuery, swapBasicData?.destination_address!, swapBasicData?.destination_network || null) && partner?.logo
 
     const handleCopy = () => {
@@ -307,8 +307,14 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
                                 }
                                 value={
                                     <span className="cursor-pointer hover:underline flex items-center gap-1">
-                                        {WalletIcon ? (
-                                            <WalletIcon className="w-4 h-4 bg-secondary-700 rounded-sm" />
+                                        {walletIconSrc ? (
+                                            <ImageWithFallback
+                                                src={walletIconSrc}
+                                                alt="Wallet icon"
+                                                className="w-4 h-4 bg-secondary-700 rounded-sm object-contain"
+                                                width="16"
+                                                height="16"
+                                            />
                                         ) : addressProviderIcon ? (
                                             <ImageWithFallback
                                                 alt="Partner logo"
