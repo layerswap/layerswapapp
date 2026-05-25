@@ -187,7 +187,7 @@ const DepositAddressForm: FC<Props> = () => {
 
                                 {/* Source (Pay from) */}
                                 <PayFromPicker
-                                    selectedSource={from && fromAsset ? { network: from as unknown as NetworkRoute, token: fromAsset as NetworkRouteToken } : null}
+                                    selectedSource={from && fromAsset ? { network: from, token: fromAsset } : null}
                                     onSourceChange={(network, token) => {
                                         setSwapId(undefined);
                                         setFieldValue('from', network, false);
@@ -199,7 +199,7 @@ const DepositAddressForm: FC<Props> = () => {
 
                                 {/* Destination network/token + recipient address share one "Receive" row */}
                                 <ReceivePicker
-                                    selectedDestination={destination && toCurrency ? { network: destination as unknown as NetworkRoute, token: toCurrency as NetworkRouteToken } : null}
+                                    selectedDestination={destination && toCurrency ? { network: destination, token: toCurrency } : null}
                                     onDestinationChange={(network, token) => {
                                         setSwapId(undefined);
                                         setFieldValue('to', network, false);
