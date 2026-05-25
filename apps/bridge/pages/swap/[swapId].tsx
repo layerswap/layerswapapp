@@ -61,9 +61,20 @@ export const getServerSideProps = async (ctx) => {
   const { data: swapData } = await apiClient.GetSwapAsync(params.swapId)
 
   if (swapData?.swap.transactions.length == 0) {
+    const redirectParams = new URLSearchParams({
+      from: swapData.swap.source_network.name,
+      to: swapData.swap.destination_network.name,
+      fromAsset: swapData.swap.source_token.symbol,
+      toAsset: swapData.swap.destination_token.symbol,
+      amount: String(swapData.swap.requested_amount),
+    })
+    const defaultTab = ctx.query?.defaultTab
+    if (typeof defaultTab === 'string' && defaultTab) {
+      redirectParams.set('defaultTab', defaultTab)
+    }
     return {
       redirect: {
-        destination: `/?from=${swapData?.swap.source_network.name}&to=${swapData?.swap.destination_network.name}&fromAsset=${swapData?.swap.source_token.symbol}&toAsset=${swapData?.swap.destination_token.symbol}&amount=${swapData?.swap.requested_amount}`,
+        destination: `/?${redirectParams.toString()}`,
         permanent: true,
       }
     }
