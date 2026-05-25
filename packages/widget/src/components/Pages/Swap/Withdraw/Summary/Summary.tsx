@@ -51,7 +51,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
     const refuelAmountInUsd = nativeCurrency && ((nativeCurrency?.price_in_usd || 1) * (Number(truncatedRefuelAmount) || 0)).toFixed(2)
 
     return (
-        <div className="bg-secondary-500 rounded-2xl px-3 py-4 w-full relative z-10 space-y-4">
+        <div className="bg-secondary-500 rounded-2xl px-3 py-4 w-full relative z-10">
 
             <div className="font-normal flex flex-col w-full relative z-10 space-y-3">
                 <div className="w-full grid grid-cols-10">

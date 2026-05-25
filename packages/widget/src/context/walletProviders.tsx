@@ -44,21 +44,22 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
                 onClose={onFinish}
                 modalId={"connectNewWallet"}
                 dismissible={dismissible}
-                header={hideHeader ? undefined : (
+                header={
                     <div className="flex items-center gap-1">
                         {
-                            (selectedConnector || selectedMultiChainConnector) &&
-                            <div className="sm:-ml-2 ml-0">
-                                <IconButton onClick={goBack} icon={
-                                    <ChevronLeft className="h-6 w-6" />
-                                }>
-                                </IconButton>
-                            </div>
+                            (selectedConnector || selectedMultiChainConnector) ?
+                                <div className="sm:-ml-2 ml-0">
+                                    <IconButton onClick={goBack} icon={
+                                        <ChevronLeft className="h-6 w-6" />
+                                    }>
+                                    </IconButton>
+                                </div>
+                                : null
                         }
-                        <p>{(selectedMultiChainConnector && !selectedConnector) ? "Select ecosystem" : "Connect wallet"}</p>
+                        {hideHeader ? undefined : <p>{(selectedMultiChainConnector && !selectedConnector) ? "Select ecosystem" : "Connect wallet"}</p>}
                     </div>
-                )}>
-                <VaulDrawer.Snap openFullHeight id='item-1' className={clsx("h-full max-h-[83svh] sm:max-h-full", fullHeight && "openpicker", hideHeader && "pt-4")}>
+                }>
+                <VaulDrawer.Snap openFullHeight id='item-1' className={clsx("h-full max-h-[83svh] sm:max-h-full", fullHeight && "openpicker")}>
                     {open ? (
                         <div className="flex flex-col gap-3 h-full">
                             {!selectedConnector && !selectedMultiChainConnector ? topContent : null}

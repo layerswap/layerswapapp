@@ -1,7 +1,7 @@
 'use client'
 import { SwapDataProvider } from "@/context/swap";
 import React, { useMemo, useState } from "react";
-import { NetworkExchangeTabs, Tabs, TabsContent } from "./NetworkExchangeTabs";
+import { NetworkExchangeTabs, Tabs, TabsContent } from "./Tabs";
 import NetworkForm from "./NetworkForm";
 import ExchangeForm from "./ExchangeForm";
 import DepositAddressForm from "./DepositAddressForm";
@@ -23,35 +23,6 @@ export default function Form() {
     const defaultTab = useMemo(() => {
         return defaultTabResolver({ from, sourceExchanges, defaultTabQueryParam })
     }, [from, sourceExchanges])
-    const [showBanner, setShowBanner] = useState(false);
-
-    // useEffect(() => {
-    //     if (typeof window === "undefined") return;
-
-    //     const sessionCountKey = "exchange_banner_session_count";
-    //     const closedKey = "exchange_banner_closed";
-    //     const seenKey = "exchange_banner_seen";
-
-    //     if (sessionStorage.getItem(closedKey) === "1") return;
-
-    //     if (!sessionStorage.getItem(seenKey)) {
-    //         sessionStorage.setItem(seenKey, "1");
-    //         const next =
-    //             (parseInt(localStorage.getItem(sessionCountKey) || "0") || 0) + 1;
-    //         localStorage.setItem(sessionCountKey, String(next));
-    //         if (next <= 3) setShowBanner(true);
-    //     } else {
-    //         const count = parseInt(localStorage.getItem(sessionCountKey) || "0") || 0;
-    //         if (count <= 3) setShowBanner(true);
-    //     }
-    // }, []);
-
-    const dismissBanner = () => {
-        setShowBanner(false);
-        if (typeof window !== "undefined") {
-            sessionStorage.setItem("exchange_banner_closed", "1");
-        }
-    };
 
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/internal/apps?name=${appName}`, layerswapApiClient.fetcher)
@@ -87,7 +58,7 @@ export default function Form() {
                         </div>
                     }>
                         <ValidationProvider>
-                            <ExchangeForm partner={partner} showBanner={showBanner} dismissBanner={dismissBanner} />
+                            <ExchangeForm partner={partner} />
                         </ValidationProvider>
                     </Widget>
                 </FormWrapper>
