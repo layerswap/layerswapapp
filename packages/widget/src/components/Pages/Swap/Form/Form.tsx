@@ -69,7 +69,7 @@ export default function Form() {
             <SwapDataProvider>
                 <FormWrapper type="deposit-address" partner={partner}>
                     <Widget contextualMenu={
-                        <div className="block sm:hidden">
+                        <div className={clsx("block w-full", { 'sm:hidden': AppSettings.ThemeData?.enableWideVersion == true })}>
                             <NetworkExchangeTabs />
                         </div>
                     }>
