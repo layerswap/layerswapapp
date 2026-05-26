@@ -92,7 +92,7 @@ const defaultTabResolver = ({ from, sourceExchanges, defaultTabQueryParam }: { f
         if (defaultTabQueryParam === "cex") {
             return "exchange";
         }
-        if (defaultTabQueryParam === "deposit" || defaultTabQueryParam === "easy") {
+        if (defaultTabQueryParam === "deposit") {
             return "deposit-address";
         }
     }
