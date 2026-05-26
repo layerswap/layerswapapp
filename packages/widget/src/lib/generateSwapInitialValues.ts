@@ -1,10 +1,10 @@
 import { InitialSettings } from "../Models/InitialSettings";
-import { isValidAddress } from "./address/validator";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
+import { Address } from "./address/Address";
 import { SwapBasicData } from "./apiClients/layerSwapApiClient";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 
-export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: InitialSettings, type: 'cross-chain' | 'exchange'): SwapFormValues {
+export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: InitialSettings, type: 'cross-chain' | 'exchange' | 'deposit-address', connectedAutofillNetworks?: Set<string>): SwapFormValues {
     const { destination_address, amount, fromAsset, toAsset, from, to, lockFromAsset, lockToAsset, depositMethod, fromExchange } = queryParams
     const { sourceExchanges, sourceRoutes, destinationRoutes } = settings || {}
 
@@ -18,9 +18,30 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
         : undefined
 
     const sourceNetwork = sourceRoutes.find(l => l.name.toUpperCase() === from?.toUpperCase())
-    const destinationNetwork = destinationRoutes.find(l => l.name.toUpperCase() === to?.toUpperCase())
+    let destinationNetwork = destinationRoutes.find(l => l.name.toUpperCase() === to?.toUpperCase())
 
     const initialSourceExchange = sourceExchanges.find(e => e.name.toLowerCase() === from?.toLowerCase())
+
+    // Deposit-address flow defaults to the top-ranked destination so the user
+    // lands on a populated form — but only when a wallet is already connected.
+    // Without a wallet there's no way to autofill the destination address, so
+    // landing on a pre-picked destination would force the user to manually
+    // enter an address before doing anything useful. We'd rather start blank
+    // and prompt for a wallet connection first; `DepositAddressForm` applies
+    // these defaults once the wallet connects.
+    const hasAutofillWallet = !!connectedAutofillNetworks && connectedAutofillNetworks.size > 0
+    if (!destinationNetwork && type === 'deposit-address' && hasAutofillWallet) {
+        const rank = (r: { destination_rank?: number }) => r.destination_rank ?? Number.POSITIVE_INFINITY;
+        const hasWallet = (r: { name: string }) =>
+            !!connectedAutofillNetworks?.has(r.name.toLowerCase());
+        destinationNetwork = [...destinationRoutes]
+            .filter(r => r.tokens?.some(t => t.status === 'active'))
+            .sort((a, b) => {
+                const walletDiff = Number(hasWallet(b)) - Number(hasWallet(a));
+                if (walletDiff !== 0) return walletDiff;
+                return rank(a) - rank(b);
+            })[0];
+    }
 
     const initialSource = sourceNetwork ?? undefined
     const initialDestination = destinationNetwork ?? undefined
@@ -34,7 +55,7 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
         : destinationNetwork?.tokens
 
     let initialAddress =
-        destination_address && initialDestination && isValidAddress(destination_address, destinationNetwork) ? destination_address : "";
+        destination_address && initialDestination && Address.isValid(destination_address, destinationNetwork) ? destination_address : "";
 
     let initialSourceCurrency = filteredSourceCurrencies?.find(c => c.symbol?.toUpperCase() == fromAsset?.toUpperCase())
     if (!initialSourceCurrency && !fromAsset && sourceNetwork) {
@@ -43,29 +64,40 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
 
     let initialDestinationCurrency = filteredDestinationCurrencies?.find(c => c.symbol?.toUpperCase() == toAsset?.toUpperCase())
     if (!initialDestinationCurrency && !toAsset && destinationNetwork) {
-        initialDestinationCurrency = filteredDestinationCurrencies?.sort((a, b) => a.symbol.localeCompare(b.symbol))?.find(c => c.status === "active")
+        if (type === 'deposit-address') {
+            const rank = (t: { destination_rank?: number }) => t.destination_rank ?? Number.POSITIVE_INFINITY;
+            initialDestinationCurrency = filteredDestinationCurrencies
+                ?.filter(c => c.status === "active")
+                ?.sort((a, b) => rank(a) - rank(b))[0];
+        } else {
+            initialDestinationCurrency = filteredDestinationCurrencies?.sort((a, b) => a.symbol.localeCompare(b.symbol))?.find(c => c.status === "active")
+        }
     }
 
     //TODO this looks wrong
     let initialAmount =
         (lockedDestinationCurrency && amount) || (initialDestinationCurrency ? amount : '')
 
+    const isNetworkSourceType = type === 'cross-chain' || type === 'deposit-address'
+
     const result: SwapFormValues = {
-        fromExchange: type === 'exchange' ? initialSourceExchange : undefined,
-        from: type === 'cross-chain' ? initialSource : undefined,
+        fromExchange: undefined,
+        from: isNetworkSourceType ? initialSource : undefined,
         to: initialDestination,
-        amount: initialAmount,
-        fromAsset: type === 'cross-chain' ? initialSourceCurrency : undefined,
+        amount: type === 'cross-chain' ? initialAmount : undefined,
+        fromAsset: isNetworkSourceType ? initialSourceCurrency : undefined,
         toAsset: initialDestinationCurrency,
         destination_address: initialAddress ? initialAddress : '',
-        depositMethod: (depositMethod === "wallet" || depositMethod === "deposit_address") ? depositMethod : undefined,
+        depositMethod: (type === 'exchange' || type === 'deposit-address')
+            ? 'deposit_address'
+            : ((depositMethod === "wallet" || depositMethod === "deposit_address") ? depositMethod : undefined),
     }
 
     return result
 }
 
 
-export function generateSwapInitialValuesFromSwap(swapResponse: SwapBasicData, refuel: boolean, settings: LayerSwapAppSettings, type: 'cross-chain' | 'exchange'): SwapFormValues {
+export function generateSwapInitialValuesFromSwap(swapResponse: SwapBasicData, refuel: boolean, settings: LayerSwapAppSettings, type: 'cross-chain' | 'exchange' | 'deposit-address'): SwapFormValues {
     const {
         destination_address,
         requested_amount,

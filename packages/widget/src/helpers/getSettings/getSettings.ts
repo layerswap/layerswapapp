@@ -33,5 +33,4 @@ export async function getSettings(apiKey: string) {
     catch (error) {
         return null
     }
-
 }

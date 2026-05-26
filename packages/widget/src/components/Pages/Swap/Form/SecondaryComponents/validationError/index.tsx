@@ -7,7 +7,13 @@ const ValidationError: React.FC = () => {
 
     if (!routeValidation.message) return null;
 
-    return (<ErrorDisplay {...routeValidation} />);
+    return (
+        <ErrorDisplay
+            icon={routeValidation.details.icon}
+            title={routeValidation.details.title}
+            message={routeValidation.message}
+        />
+    );
 };
 
 export default ValidationError;

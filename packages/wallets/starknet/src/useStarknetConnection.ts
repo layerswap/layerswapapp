@@ -4,21 +4,9 @@ import { KnownInternalNames, walletIconResolver } from "@layerswap/widget/intern
 import { useStarknetStore } from "./starknetWalletStore";
 import { useStarknetTransfer } from "./useStarknetTransfer";
 import { resolveStarknetWalletIcon } from "./utils";
+import { name, id, starknetNames } from "./constants"
 
-const starknetNames = [KnownInternalNames.Networks.StarkNetGoerli, KnownInternalNames.Networks.StarkNetMainnet, KnownInternalNames.Networks.StarkNetSepolia]
 export default function useStarknetConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
-    const commonSupportedNetworks = [
-        KnownInternalNames.Networks.StarkNetMainnet,
-        KnownInternalNames.Networks.StarkNetGoerli,
-        KnownInternalNames.Networks.StarkNetSepolia
-    ]
-
-    const withdrawalSupportedNetworks = [
-        ...commonSupportedNetworks
-    ]
-
-    const name = 'Starknet'
-    const id = 'starknet'
 
     const { connectors } = useConnect();
     const { disconnectAsync } = useDisconnect()
@@ -73,9 +61,9 @@ export default function useStarknetConnection({ networks }: WalletConnectionProv
                     network: starknetNetwork,
                     disconnectWallets: () => disconnectWallets(starknetConnector.id, result?.account),
                     address: result?.account,
-                    withdrawalSupportedNetworks,
-                    autofillSupportedNetworks: commonSupportedNetworks,
-                    asSourceSupportedNetworks: commonSupportedNetworks,
+                    withdrawalSupportedNetworks: starknetNames,
+                    autofillSupportedNetworks: starknetNames,
+                    asSourceSupportedNetworks: starknetNames,
                 });
 
                 addAccount(starknetConnector.id, result.account);
@@ -102,9 +90,10 @@ export default function useStarknetConnection({ networks }: WalletConnectionProv
         }
     }
 
-    const availableWalletsForConnect: InternalConnector[] = connectors.map(connector => {
+    const availableConnectors: InternalConnector[] = connectors.map(connector => {
 
-        const name = (!connectorsConfigs.some(c => c.id === connector.id) || connector?.["_wallet"]) ? connector.name : `${connectorsConfigs.find(c => c.id === connector.id)?.name}`
+        const configuredName = connectorsConfigs.find(c => c.id === connector.id)?.name
+        const name = configuredName ?? connector.name
 
         return {
             name: name,
@@ -131,10 +120,10 @@ export default function useStarknetConnection({ networks }: WalletConnectionProv
 
         connectedWallets: starknetWallets,
         activeWallet,
-        withdrawalSupportedNetworks,
-        autofillSupportedNetworks: commonSupportedNetworks,
-        asSourceSupportedNetworks: commonSupportedNetworks,
-        availableWalletsForConnect,
+        withdrawalSupportedNetworks: starknetNames,
+        autofillSupportedNetworks: starknetNames,
+        asSourceSupportedNetworks: starknetNames,
+        availableConnectors,
         name,
         id,
         providerIcon: networks.find(n => starknetNames.some(name => name === n.name))?.logo,
@@ -166,9 +155,12 @@ export async function resolveStarknetWallet(props: ResolveStarknetWalletProps): 
         const accounts = await walletAccount.requestAccounts(true)
         const account = accounts?.[0];
 
+        const configuredName = connectorsConfigs.find(c => c.id === connector.id)?.name
+        const connectorName = configuredName ?? connector.name
+
         const wallet: Wallet = {
-            id: connector.name,
-            displayName: `${connector.name} - Starknet`,
+            id: connectorName,
+            displayName: `${connectorName} - Starknet`,
             address: account,
             addresses: [account],
             chainId: walletChain || '',
@@ -200,7 +192,7 @@ const connectorsConfigs = [
     },
     {
         id: "argentX",
-        name: 'Argent X',
+        name: 'Ready X',
         installLink: "https://chromewebstore.google.com/detail/argent-x-starknet-wallet/dlcobpjiigpikoobohmabehhmhfoodbb"
     },
     {

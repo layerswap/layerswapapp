@@ -32,6 +32,7 @@ export type BalanceError = ({
     error_codes?: (string | undefined)[];
     http_statuses?: (number | undefined)[];
     failed_tokens?: any[];
+    nodes?: string[];
     request_url?: string;
     response_data?: unknown;
     response_status?: number;
@@ -49,6 +50,16 @@ export type WalletWithdrawalError = ({
     toAddress?: string;
 } & BaseErrorProps)
 
+export type GasMiscalculationError = ({
+    type: 'GasMiscalculation'
+    requestedAmount: number;
+    walletBalance: number;
+    calculatedGas: number;
+    difference: number;
+    network?: string;
+    token?: string;
+} & BaseErrorProps)
+
 
 export type TransactionNotDetectedError = ({ type: 'TransactionNotDetected' } & BaseErrorProps)
 
@@ -59,7 +70,7 @@ export type TransferError = ({ type: 'TransferError' } & BaseErrorProps)
 export type WalletError = ({ type: 'WalletError' } & BaseErrorProps)
 
 
-export type ErrorEventType = WidgetError | APIError | BalanceError | GasFeeError | WalletWithdrawalError | AlertUIEvent | TransactionNotDetectedError | ChainError | TransferError | WalletError;
+export type ErrorEventType = WidgetError | APIError | BalanceError | GasFeeError | WalletWithdrawalError | GasMiscalculationError | AlertUIEvent | TransactionNotDetectedError | ChainError | TransferError | WalletError;
 
 export type SwapStatusEvent = {
     type: SwapStatus;

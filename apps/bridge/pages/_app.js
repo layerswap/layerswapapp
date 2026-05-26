@@ -8,6 +8,8 @@ import Router from "next/router";
 import posthog from "posthog-js";
 import { PostHogProvider } from '@posthog/react'
 import { useEffect } from 'react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Analytics } from '@vercel/analytics/next';
 
 const progress = new ProgressBar({
   size: 2,
@@ -33,23 +35,41 @@ function App({ Component, pageProps }) {
         api_host: `${router.basePath || ''}/lsph`,
         ui_host: 'https://us.posthog.com',
         defaults: '2025-05-24',
+        before_send: (event) => {
+          if (event?.event === '$exception') {
+            const exceptionList = event.properties?.$exception_list || [];
+            const isResizeObserverError = exceptionList.some(
+              (exception) =>
+                exception.value?.includes('ResizeObserver loop') ||
+                exception.type?.includes('ResizeObserver loop')
+            );
+            if (isResizeObserverError) {
+              return null;
+            }
+          }
+          return event;
+        },
       });
     }
   }, [router.basePath]);
 
   return (
-    <SWRConfig
-      value={{
-        revalidateOnFocus: false,
-        dedupingInterval: 5000,
-      }}
-    >
-      <PostHogProvider client={posthog}>
-        <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
-          <Component key={router.asPath} {...pageProps} />
-        </IntercomProvider>
-      </PostHogProvider>
-    </SWRConfig>)
+    <>
+      <SWRConfig
+        value={{
+          revalidateOnFocus: false,
+          dedupingInterval: 5000,
+        }}
+      >
+        <PostHogProvider client={posthog}>
+          <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
+            <Component key={router.asPath} {...pageProps} />
+          </IntercomProvider>
+        </PostHogProvider>
+      </SWRConfig>
+      <SpeedInsights />
+      <Analytics />
+    </>)
 }
 
 export default App

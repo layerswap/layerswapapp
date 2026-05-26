@@ -1,11 +1,10 @@
-import { WalletProvider, BaseWalletProviderConfig, ThemeData } from "@layerswap/widget/types";
-import { TonBalanceProvider } from "./tonBalanceProvider";
+import { WalletProvider, BaseWalletProviderConfig, ThemeData, LazyBalanceProvider } from "@layerswap/widget/types";
 import { TonGasProvider } from "./tonGasProvider";
 import TonProviderWrapper from "./TonProvider";
 import useTONConnection from "./useTONConnection";
 import { TonAddressUtilsProvider } from "./tonAddressUtilsProvider";
 import React, { createContext, useContext } from "react";
-import { AppSettings } from "@layerswap/widget/internal";
+import { AppSettings, KnownInternalNames } from "@layerswap/widget/internal";
 import { useTONTransfer } from "./transferProvider/useTONTransfer";
 
 export type TonClientConfig = {
@@ -49,7 +48,12 @@ export function createTONProvider(config: TONProviderConfig = {}): WalletProvide
 
     const walletConnectionProvider = customHook || useTONConnection;
 
-    const defaultBalanceProviders = [new TonBalanceProvider(tonConfigs?.tonApiKey)];
+    const defaultBalanceProviders = [
+        new LazyBalanceProvider(
+            (n) => KnownInternalNames.Networks.TONMainnet.includes(n.name),
+            () => import("./tonBalanceProvider").then(m => new m.TonBalanceProvider(tonConfigs?.tonApiKey))
+        )
+    ];
     const finalBalanceProviders = balanceProviders !== undefined
         ? (Array.isArray(balanceProviders) ? balanceProviders : [balanceProviders])
         : defaultBalanceProviders;
@@ -100,6 +104,11 @@ export const TONProvider: WalletProvider = {
     walletConnectionProvider: useTONConnection,
     addressUtilsProvider: [new TonAddressUtilsProvider()],
     gasProvider: [new TonGasProvider()],
-    balanceProvider: [new TonBalanceProvider()],
+    balanceProvider: [
+        new LazyBalanceProvider(
+            (n) => KnownInternalNames.Networks.TONMainnet.includes(n.name),
+            () => import("./tonBalanceProvider").then(m => new m.TonBalanceProvider())
+        )
+    ],
     transferProvider: [useTONTransfer],
 };

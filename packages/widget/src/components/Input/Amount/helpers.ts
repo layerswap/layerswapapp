@@ -19,7 +19,7 @@ export const resolveMaxAllowedAmount = (props: ResoleMaxAllowedAmountProps) => {
         return limitsMaxAmount
 
     const shouldPayGasWithTheToken = Number(walletBalance.amount) > 0 && (native_currency?.symbol === fromCurrency?.symbol) || !native_currency
-    const payableAmount = Number(walletBalance.amount) - gasAmount
+    const payableAmount = Number(walletBalance.amount) - (gasAmount * 1.02)
 
     if (!shouldPayGasWithTheToken)
         return isNaN(Number(walletBalance.amount)) ? 0 : Number(walletBalance.amount)

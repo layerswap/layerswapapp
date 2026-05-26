@@ -1,14 +1,16 @@
 "use client";
-import { Context, createContext, useCallback, useContext, useEffect, useState } from 'react'
+import { Context, createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { InternalConnector, Wallet, WalletConnectionProvider } from '@/types/wallet';
 
 export type WalletModalConnector = InternalConnector & {
     qr?: ({
         state: 'loading',
-        value: undefined
+        value: undefined,
+        deepLink?: undefined
     } | {
         state: 'fetched',
-        value: string
+        value: string,
+        deepLink?: string
     });
     showQrCode?: boolean
 }
@@ -17,10 +19,10 @@ export type ModalWalletProvider = WalletConnectionProvider & {
     isSelectedFromFilter?: boolean;
 }
 
-type SharedType = { provider?: WalletConnectionProvider, connectCallback: (value: Wallet | undefined) => void }
+type SharedType = { provider?: WalletConnectionProvider, connectCallback: (value: Wallet | undefined) => void, dismissible?: boolean, topContent?: ReactNode, fullHeight?: boolean, hideHeader?: boolean }
 
 type ConnectModalContextType = {
-    connect: ({ provider, connectCallback }: SharedType) => void;
+    connect: ({ provider, connectCallback, dismissible, topContent, fullHeight, hideHeader }: SharedType) => void;
     cancel: () => void;
     selectedProvider: ModalWalletProvider | undefined;
     setSelectedProvider: (value: ModalWalletProvider | undefined) => void;
@@ -33,6 +35,10 @@ type ConnectModalContextType = {
     onFinish: (connectedWallet?: Wallet | undefined) => void;
     setOpen: (value: boolean) => void;
     open: boolean;
+    dismissible: boolean;
+    topContent: ReactNode;
+    fullHeight: boolean;
+    hideHeader: boolean;
 };
 
 const ConnectModalContext = createContext<ConnectModalContextType | null>(null);
@@ -45,34 +51,44 @@ export function WalletModalProvider({ children }) {
     const [selectedMultiChainConnector, setSelectedMultiChainConnector] = useState<InternalConnector | undefined>(undefined)
     const [open, setOpen] = useState(false);
     const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+    const [dismissible, setDismissible] = useState(true);
+    const [topContent, setTopContent] = useState<ReactNode>(null);
+    const [fullHeight, setFullHeight] = useState(false);
+    const [hideHeader, setHideHeader] = useState(false);
 
-    const connect = async ({ provider, connectCallback }: SharedType) => {
-        if (provider && (!provider?.availableWalletsForConnect || provider?.availableWalletsForConnect?.length == 1)) {
+    const connect = useCallback(async ({ provider, connectCallback, dismissible: dismissibleArg = true, topContent: topContentArg = null, fullHeight: fullHeightArg = false, hideHeader: hideHeaderArg = false }: SharedType) => {
+        const hasConnectorPicker = !!provider?.availableConnectors?.length
+            || !!provider?.additionalConnectors?.length
+            || !!provider?.requestAdditionalConnectors
+
+        if (!hasConnectorPicker) {
             await provider?.connectWallet()
-            setConnectConfig({ provider, connectCallback });
-            return
         }
         setSelectedProvider(provider);
+        setDismissible(dismissibleArg);
+        setTopContent(topContentArg);
+        setFullHeight(fullHeightArg);
+        setHideHeader(hideHeaderArg);
         setOpen(true)
-        setConnectConfig({ provider, connectCallback });
+        setConnectConfig({ provider, connectCallback, dismissible: dismissibleArg, topContent: topContentArg, fullHeight: fullHeightArg, hideHeader: hideHeaderArg });
         return;
-    }
+    }, [])
 
-    const cancel = () => {
-        if (connectConfig) {
-            connectConfig.connectCallback(undefined);
-            setConnectConfig(undefined);
-        }
+    const cancel = useCallback(() => {
+        setConnectConfig(prev => {
+            prev?.connectCallback(undefined);
+            return undefined;
+        });
         setOpen(false);
-    }
+    }, [])
 
-    const onFinish = (connectedWallet?: Wallet | undefined) => {
-        if (connectConfig) {
-            connectConfig.connectCallback(connectedWallet);
-            setConnectConfig(undefined);
-        }
+    const onFinish = useCallback((connectedWallet?: Wallet | undefined) => {
+        setConnectConfig(prev => {
+            prev?.connectCallback(connectedWallet);
+            return undefined;
+        });
         setOpen(false);
-    }
+    }, [])
 
     const goBack = useCallback(() => {
         if (selectedConnector) {
@@ -83,7 +99,7 @@ export function WalletModalProvider({ children }) {
             setSelectedMultiChainConnector(undefined)
             return;
         }
-    }, [setSelectedConnector, selectedMultiChainConnector, selectedConnector, selectedMultiChainConnector])
+    }, [selectedConnector, selectedMultiChainConnector])
 
     useEffect(() => {
         if (!open && (selectedConnector || selectedMultiChainConnector)) {
@@ -91,11 +107,25 @@ export function WalletModalProvider({ children }) {
             setSelectedMultiChainConnector(undefined)
             setSelectedProvider(undefined)
         }
+        if (!open) {
+            setDismissible(true)
+            setTopContent(null)
+            setFullHeight(false)
+            setHideHeader(false)
+        }
         setIsWalletModalOpen(open)
     }, [open])
 
+    const contextValue = useMemo(() => ({
+        connect, cancel, selectedProvider, setSelectedProvider,
+        selectedConnector, setSelectedConnector,
+        selectedMultiChainConnector, setSelectedMultiChainConnector,
+        isWalletModalOpen, goBack, onFinish, setOpen, open, dismissible, topContent, fullHeight, hideHeader
+    }), [connect, cancel, selectedProvider, selectedConnector,
+        selectedMultiChainConnector, isWalletModalOpen, goBack, onFinish, open, dismissible, topContent, fullHeight, hideHeader])
+
     return (
-        <ConnectModalContext.Provider value={{ connect, cancel, selectedProvider, setSelectedProvider, selectedConnector, setSelectedConnector, selectedMultiChainConnector, setSelectedMultiChainConnector, isWalletModalOpen, goBack, onFinish, setOpen, open }}>
+        <ConnectModalContext.Provider value={contextValue}>
             {children}
         </ConnectModalContext.Provider>
     )
@@ -109,10 +139,13 @@ export const useConnectModal = () => {
         throw new Error('useConnectModal must be used within a ConnectModalProvider');
     }
 
-    const connect: (provider?: WalletConnectionProvider) => Promise<Wallet | undefined> = (provider) =>
-        new Promise((res) => {
-            context.connect({ provider, connectCallback: res });
-        });
+    const connect = useCallback(
+        (provider?: WalletConnectionProvider, options?: { dismissible?: boolean, topContent?: ReactNode, fullHeight?: boolean, hideHeader?: boolean }): Promise<Wallet | undefined> =>
+            new Promise((res) => {
+                context.connect({ provider, connectCallback: res, dismissible: options?.dismissible, topContent: options?.topContent, fullHeight: options?.fullHeight, hideHeader: options?.hideHeader });
+            }),
+        [context.connect]
+    );
 
-    return { ...context, connect };
+    return useMemo(() => ({ ...context, connect }), [context, connect]);
 };

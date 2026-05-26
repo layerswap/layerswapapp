@@ -1,5 +1,5 @@
 import { getThemeData } from "./settingsHelper";
-import { getSettings } from "@layerswap/widget";
+import { encodeSettingsForSSR, getSettings } from "@layerswap/widget";
 import { resolvePersistantQueryParams } from "./querryHelper";
 
 export async function getServerSideProps(context) {
@@ -13,11 +13,12 @@ export async function getServerSideProps(context) {
     const app = context.query?.appName || context.query?.addressSource
     const apiKey = JSON.parse(process.env.API_KEYS || "{}")?.[app] || process.env.NEXT_PUBLIC_API_KEY
     const settings = await getSettings(apiKey)
+    const compressedSettings = encodeSettingsForSSR(settings)
 
     // Extract persistent query params to pass to widget as initial values
     const initialValues = resolvePersistantQueryParams(context.query) || {}
 
     return {
-        props: { settings, themeData, apiKey, initialValues }
+        props: { settings: compressedSettings, themeData, apiKey, initialValues }
     }
 }

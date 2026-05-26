@@ -64,9 +64,9 @@ const AccordionItem = React.forwardRef<
 AccordionItem.displayName = "AccordionItem"
 
 const AccordionTrigger = React.forwardRef<
-    HTMLButtonElement,
-    React.ButtonHTMLAttributes<HTMLButtonElement>
->(({ className, children, ...props }, ref) => {
+    HTMLElement,
+    React.HTMLAttributes<HTMLElement> & { as?: 'button' | 'div' }
+>(({ className, children, as: Component = 'button', ...props }, ref) => {
     const context = React.useContext(AccordionContext)
     if (!context) throw new Error("AccordionTrigger must be used within Accordion")
 
@@ -101,16 +101,16 @@ const AccordionTrigger = React.forwardRef<
     }
 
     return (
-        <button
-            type="button"
-            ref={ref}
+        <Component
+            {...(Component === 'button' ? { type: 'button' } : { role: 'button' })}
+            ref={ref as any}
             className={classNames("w-full grow", className)}
             onClick={handleClick}
             aria-expanded={isOpen}
             {...props}
         >
             {children}
-        </button>
+        </Component>
     )
 })
 AccordionTrigger.displayName = "AccordionTrigger"

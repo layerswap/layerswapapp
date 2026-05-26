@@ -35,7 +35,6 @@ export enum SwapWithdrawalStep {
     Error = "Error",
     Delay = "Delay",
     OffRampWithdrawal = "OffRampWithdrawal",
-    WithdrawFromImtblx = "WithdrawFromImtblx",
     WithdrawFromStarknet = "WithdrawFromStarknet",
     SelectWithdrawalType = "SelectWithdrawalType",
     CoinbaseInternalWithdrawal = "CoinbaseInternalWithdrawal",

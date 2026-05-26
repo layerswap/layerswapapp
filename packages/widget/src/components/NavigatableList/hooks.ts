@@ -4,14 +4,14 @@ import { useNavigatableListUpdate, FocusedIndex } from './context';
 /**
  * Hook to handle scrolling element into view when focused
  */
-export function useScrollIntoView(isFocused: boolean) {
+export function useScrollIntoView(isFocused: boolean, isKeyboardNavigating: boolean) {
     const elementRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
-        if (isFocused && elementRef.current) {
+        if (isFocused && isKeyboardNavigating && elementRef.current) {
             elementRef.current.scrollIntoView({ block: 'nearest', behavior: 'auto' });
         }
-    }, [isFocused]);
+    }, [isFocused, isKeyboardNavigating]);
 
     return elementRef;
 }

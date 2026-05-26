@@ -1,11 +1,11 @@
-import { WalletProvider, BaseWalletProviderConfig } from "@layerswap/widget/types";
+import { WalletProvider, BaseWalletProviderConfig, LazyBalanceProvider } from "@layerswap/widget/types";
 import { TronGasProvider } from "./tronGasProvider";
 import TronProviderWrapper from "./TronProvider";
 import useTronConnection from "./useTronConnection";
-import { TronBalanceProvider } from "./tronBalanceProvider";
 import { TronAddressUtilsProvider } from "./tronAddressUtilsProvider";
 import React from "react";
 import { useTronTransfer } from "./transferProvider/useTronTransfer";
+import { KnownInternalNames } from "@layerswap/widget/internal";
 
 export type TronProviderConfig = BaseWalletProviderConfig
 
@@ -28,7 +28,12 @@ export function createTronProvider(config: TronProviderConfig = {}): WalletProvi
 
     const walletConnectionProvider = customHook || useTronConnection;
 
-    const defaultBalanceProviders = [new TronBalanceProvider()];
+    const defaultBalanceProviders = [
+        new LazyBalanceProvider(
+            (n) => KnownInternalNames.Networks.TronMainnet.includes(n.name),
+            () => import("./tronBalanceProvider").then(m => new m.TronBalanceProvider())
+        )
+    ];
     const finalBalanceProviders = balanceProviders !== undefined
         ? (Array.isArray(balanceProviders) ? balanceProviders : [balanceProviders])
         : defaultBalanceProviders;
@@ -68,6 +73,11 @@ export const TronProvider: WalletProvider = {
     walletConnectionProvider: useTronConnection,
     addressUtilsProvider: [new TronAddressUtilsProvider()],
     gasProvider: [new TronGasProvider()],
-    balanceProvider: [new TronBalanceProvider()],
+    balanceProvider: [
+        new LazyBalanceProvider(
+            (n) => KnownInternalNames.Networks.TronMainnet.includes(n.name),
+            () => import("./tronBalanceProvider").then(m => new m.TronBalanceProvider())
+        )
+    ],
     transferProvider: [useTronTransfer],
 };

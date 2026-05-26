@@ -5,8 +5,6 @@ import LayerSwapApiClient, { SwapResponse, TransactionType } from "@/lib/apiClie
 import { ApiResponse } from "@/Models/ApiResponse"
 import { useInitialSettings } from "@/context/settings"
 import { Partner } from "@/Models/Partner"
-import { addressEnding, shortenEmail } from "@/components/utils/ShortenAddress"
-import KnownInternalNames from "@/lib/knownIds"
 import { ChevronRightIcon } from 'lucide-react'
 import StatusIcon from "./StatusIcons"
 import { FC } from "react"
@@ -14,6 +12,7 @@ import { SwapStatus } from "@/Models/SwapStatus";
 import { Wallet } from "@/types/wallet";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip"
+import { truncateDecimals } from "@/components/utils/RoundDecimals"
 
 type SwapInfoProps = {
     className?: string,
@@ -22,16 +21,13 @@ type SwapInfoProps = {
 }
 const HistorySummary: FC<SwapInfoProps> = ({
     swapResponse,
-    wallets,
     className
 }) => {
 
     const {
         hideFrom,
         hideTo,
-        account,
-        appName,
-        hideAddress
+        appName
     } = useInitialSettings()
 
     const layerswapApiClient = new LayerSwapApiClient()
@@ -39,28 +35,16 @@ const HistorySummary: FC<SwapInfoProps> = ({
     const partner = partnerData?.data
     const { swap, quote } = swapResponse
 
-    const { source_network, destination_network, source_token, destination_token, source_exchange, destination_exchange, destination_address, exchange_account_connected, exchange_account_name, requested_amount } = swap || {}
+    const { source_network, destination_network, source_token, destination_token, source_exchange, destination_exchange, requested_amount } = swap || {}
 
     const source = hideFrom ? partner : (source_exchange || source_network)
     const destination = hideTo ? partner : (destination_exchange || destination_network)
 
     const sourceTransaction = swap.transactions?.find(t => t.type === TransactionType.Input)
+    const sentAmount = sourceTransaction?.amount ?? requested_amount
+
     const destinationTransaction = swap.transactions?.find(t => t.type === TransactionType.Output)
-    const sourceAddressFromInput = sourceTransaction?.from;
-    const calculatedReceiveAmount = destinationTransaction?.amount ?? quote?.receive_amount
-
-    let sourceAccountAddress: string | undefined = undefined
-    if (source_exchange) {
-        sourceAccountAddress = "Exchange"
-    }
-    else if (sourceAddressFromInput) {
-        sourceAccountAddress = addressEnding(sourceAddressFromInput)
-    }
-    else if (source_network?.name === KnownInternalNames.Exchanges.Coinbase && exchange_account_connected) {
-        sourceAccountAddress = shortenEmail(exchange_account_name, 10);
-    }
-
-    const destAddress = (hideAddress && hideTo && account) ? account : destination_address
+    const receiveAmount = destinationTransaction?.amount ?? quote?.receive_amount
 
     return (
         source_token && <>
@@ -95,11 +79,11 @@ const HistorySummary: FC<SwapInfoProps> = ({
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <span className="truncate block shrink">
-                                            {requested_amount.toLocaleString('en-US', { maximumFractionDigits: 20 })}
+                                            {truncateDecimals(sentAmount, source_token.precision)}
                                         </span>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                        {requested_amount}
+                                        {sentAmount}
                                     </TooltipContent>
                                 </Tooltip>
 
@@ -124,11 +108,11 @@ const HistorySummary: FC<SwapInfoProps> = ({
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <span className="truncate block shrink">
-                                            {calculatedReceiveAmount.toLocaleString('en-US', { maximumFractionDigits: 20 })}
+                                            {truncateDecimals(receiveAmount, destination_token.precision)}
                                         </span>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                        {calculatedReceiveAmount}
+                                        {receiveAmount}
                                     </TooltipContent>
                                 </Tooltip>
 

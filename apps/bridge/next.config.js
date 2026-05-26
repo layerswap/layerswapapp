@@ -1,5 +1,8 @@
 const { PHASE_PRODUCTION_SERVER } = require('next/constants');
 const { withPostHogConfig } = require('@posthog/nextjs-config');
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
 
 const securityHeaders = [
   { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
@@ -30,17 +33,18 @@ module.exports = (phase, { defaultConfig }) => {
    * @type {import('next').NextConfig}
    */
 
-  const posthogWrapped = withPostHogConfig({}, {
+  const posthogConfigsAreSet = process.env.POSTHOG_PROJECT_ID && process.env.POSTHOG_API_KEY && process.env.NEXT_PUBLIC_POSTHOG_HOST;
+
+  const posthogWrapped = posthogConfigsAreSet ? withPostHogConfig({}, {
     personalApiKey: process.env.POSTHOG_API_KEY,
-    envId: process.env.POSTHOG_ENV_ID,
+    projectId: process.env.POSTHOG_PROJECT_ID,
     host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
     sourcemaps: {
       enabled: true,
       project: 'Layerswap',
-      version: process.env.VERCEL_GIT_COMMIT_SHA,
       deleteAfterUpload: true,
     },
-  });
+  }) : {};
 
   const nextConfig = {
     i18n: {
@@ -48,7 +52,8 @@ module.exports = (phase, { defaultConfig }) => {
       defaultLocale: "en",
     },
     images: {
-      remotePatterns: REMOTE_PATTERNS
+      remotePatterns: REMOTE_PATTERNS,
+      minimumCacheTTL: 3600
     },
     compiler: {
       removeConsole: false,
@@ -108,5 +113,5 @@ module.exports = (phase, { defaultConfig }) => {
   }
   let merged = { ...posthogWrapped, ...nextConfig };
 
-  return merged
+  return withBundleAnalyzer(merged)
 }

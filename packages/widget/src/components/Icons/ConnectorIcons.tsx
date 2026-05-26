@@ -104,7 +104,7 @@ export const ResolveConnectorIcon = ({
 };
 
 const IconsWrapper = ({ children, className }: { children: React.ReactNode, className?: string }) => {
-    return <div className={className ?? "-space-x-2 flex"}>{children}</div>;
+    return <div className={className ?? "-space-x-2 flex"} aria-label="Wallet type">{children}</div>;
 }
 
 const KnownConnectors = {

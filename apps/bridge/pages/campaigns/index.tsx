@@ -1,19 +1,24 @@
 import { InferGetServerSidePropsType } from 'next'
 import { getServerSideProps } from '../../helpers/getSettings'
-import { Campaigns } from '@layerswap/widget'
+import { Campaigns, inflateSettings } from '@layerswap/widget'
 import Layout from '../../components/layout';
 import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
 import WidgetWrapper from '../../components/WidgetWrapper';
+import { useMemo } from 'react';
+import MaintananceContent from '../../components/maintanance/maintanance';
 
 
 export default function CampaignsPage({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     const router = useRouter()
-
+    const resolvedSettings = useMemo(() => inflateSettings(settings), [settings])
+  
+    if (!resolvedSettings) return <MaintananceContent />
+    
     return (<>
-        <Layout settings={settings} themeData={themeData}>
+        <Layout themeData={themeData}>
             <WidgetWrapper
-                settings={settings}
+                settings={resolvedSettings}
                 themeData={themeData}
                 apiKey={apiKey}
             >

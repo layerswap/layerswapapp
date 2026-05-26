@@ -62,7 +62,21 @@ const resolveProvider = (network: Network | undefined, walletProviders: WalletCo
     }
 
     if (provider?.isNotAvailableCondition && purpose) {
-        const availableWalletsForConnect = provider.availableWalletsForConnect?.filter(connector => (provider.isNotAvailableCondition && network?.name) ? !provider.isNotAvailableCondition(connector.id, network?.name, purpose) : true)
+        const availableConnectors = provider.availableConnectors?.filter(connector => (provider.isNotAvailableCondition && network?.name) ? !provider.isNotAvailableCondition(connector.id, network?.name, purpose) : true)
+        const additionalConnectors = provider.additionalConnectors?.filter(connector => (provider.isNotAvailableCondition && network?.name) ? !provider.isNotAvailableCondition(connector.id, network?.name, purpose) : true)
+        const requestAdditionalConnectors = provider.requestAdditionalConnectors
+            ? async (params) => {
+                const result = await provider.requestAdditionalConnectors?.(params)
+                if (!result) {
+                    return { connectors: [], nextPage: null, totalCount: 0 }
+                }
+
+                return {
+                    ...result,
+                    connectors: result.connectors.filter(connector => (provider.isNotAvailableCondition && network?.name) ? !provider.isNotAvailableCondition(connector.id, network?.name, purpose) : true)
+                }
+            }
+            : undefined
         const resolvedProvider = {
             ...provider,
             connectedWallets: provider.connectedWallets?.map(wallet => {
@@ -75,7 +89,9 @@ const resolveProvider = (network: Network | undefined, walletProviders: WalletCo
                 ...provider.activeWallet,
                 isNotAvailable: (network?.name) ? provider.isNotAvailableCondition(provider.activeWallet.id, network?.name, purpose) : false,
             } : undefined,
-            availableWalletsForConnect
+            availableConnectors: availableConnectors,
+            additionalConnectors,
+            requestAdditionalConnectors,
         }
         return resolvedProvider
     }

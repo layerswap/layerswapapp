@@ -2,6 +2,7 @@ import { FC, ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
 import FailIcon from "../../../../Icons/FailIcon";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/shadcn/accordion";
+import { motion } from "framer-motion";
 
 export type WalletMessageProps = {
     header: string;
@@ -10,7 +11,11 @@ export type WalletMessageProps = {
 }
 const WalletMessage: FC<WalletMessageProps> = ({ header, details, status }) => {
     return <>
-        <div className="px-2 py-3 rounded-2xl bg-secondary-400">
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.2 }}
+            className="px-2 py-2 rounded-2xl bg-secondary-400">
             <div className="flex items-start gap-2 relative">
                 <span className="shrink-0 p-0.5">
                     {
@@ -29,7 +34,7 @@ const WalletMessage: FC<WalletMessageProps> = ({ header, details, status }) => {
                     {details ? <p className="text-secondary-text text-sm leading-[18px]">{details}</p> : null}
                 </div>
             </div>
-        </div>
+        </motion.div>
     </>
 }
 

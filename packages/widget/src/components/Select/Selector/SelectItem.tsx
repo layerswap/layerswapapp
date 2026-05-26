@@ -60,7 +60,7 @@ const DetailedTitle = ({ children, className, title, secondary, secondaryImageAl
         <div className="col-span-9 flex flex-col gap-1 leading-5 align-middle font-medium">
             <div className="align-middle leading-5 text-base flex items-center justify-between w-full min-w-0">{title}</div>
         </div>
-        <div className="col-span-5 sm:col-span-6 flex items-center gap-1 min-w-0 overflow-hidden pr-2">
+        <div className={clsx("flex items-center gap-1 min-w-0 overflow-hidden pr-2", children ? "col-span-5 sm:col-span-6" : "col-span-9")}>
             {secondaryLogoSrc && <ImageWithFallback
                 src={secondaryLogoSrc}
                 alt={secondaryImageAlt}
@@ -69,7 +69,7 @@ const DetailedTitle = ({ children, className, title, secondary, secondaryImageAl
                 loading="eager"
                 className={clsx("h-4 w-4 object-contain rounded shrink-0", logoClassName)}
             />}
-            <div className="text-secondary-text text-xs min-w-0 whitespace-nowrap">
+            <div className="text-secondary-text text-xs min-w-0 flex-1 whitespace-nowrap">
                 {secondary}
             </div>
         </div>
