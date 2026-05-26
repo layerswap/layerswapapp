@@ -26,9 +26,17 @@ import ValidationError from "../SecondaryComponents/validationError";
 
 type Props = {
     partner?: Partner;
+    /** When true, do not open the wallet-connect modal on mount if no wallet
+     * is connected. Used when the caller has already gated the entry on a
+     * connected wallet (e.g. the Deposit widget's method picker). */
+    disableAutoConnect?: boolean;
+    /** When true, do not render the destination picker. Caller is responsible
+     * for setting `to` / `toAsset` Formik values before mount (e.g. via
+     * `lockTo`/`lockToAsset` initial settings or its own picker UI). */
+    hideDestinationPicker?: boolean;
 };
 
-const DepositAddressForm: FC<Props> = () => {
+const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPicker }) => {
     const {
         values, isSubmitting, setFieldValue, submitForm
     } = useFormikContext<SwapFormValues>();
@@ -67,12 +75,12 @@ const DepositAddressForm: FC<Props> = () => {
     const isWalletModalOpenRef = useRef(isWalletModalOpen);
     useEffect(() => { isWalletModalOpenRef.current = isWalletModalOpen; });
     useEffect(() => {
-        if (!providersReady) return;
+        if (disableAutoConnect) return;
         if (hasWallet) return;
         if (isWalletModalOpenRef.current) return;
         connect(undefined, { dismissible: false, topContent: <EasyDepositBanner variant="modal" currentStepIndex={0} />, fullHeight: true, hideHeader: true });
         return () => { cancel(); };
-    }, [providersReady, hasWallet, connect, cancel]);
+    }, [hasWallet, connect, cancel, disableAutoConnect]);
 
     // Apply default destination/source when a wallet is present and the form
     // is still blank. `generateSwapInitialValues` is the same helper used by
@@ -213,31 +221,33 @@ const DepositAddressForm: FC<Props> = () => {
                                         />
 
                                         {/* Destination network/token + recipient address share one "Receive" row */}
-                                        <ReceivePicker
-                                            selectedDestination={destination && toCurrency ? { network: destination, token: toCurrency } : null}
-                                            onDestinationChange={(network, token) => {
-                                                setSwapId(undefined);
-                                                setFieldValue('to', network, false);
-                                                setFieldValue('toAsset', token, true);
-                                            }}
-                                            destinationAddress={destination_address}
-                                            destination={destination}
-                                        />
-                                    </>
-                                )}
+                                        {!hideDestinationPicker && (
+                                            <ReceivePicker
+                                                selectedDestination={destination && toCurrency ? { network: destination, token: toCurrency } : null}
+                                                onDestinationChange={(network, token) => {
+                                                    setSwapId(undefined);
+                                                    setFieldValue('to', network, false);
+                                                    setFieldValue('toAsset', token, true);
+                                                }}
+                                                destinationAddress={destination_address}
+                                                destination={destination}
+                                            />
+                                        )}
 
-                                {/* Deposit address + QR + fees once everything is ready */}
-                                {showDepositInfo && (
-                                    <DepositAddressInfo
-                                        sourceNetwork={from?.name}
-                                        sourceToken={fromAsset?.symbol}
-                                        destinationNetwork={destination?.name}
-                                        destinationToken={toCurrency?.symbol}
-                                        destinationAddress={destination_address}
-                                        refuel={!!refuel || !!swapBasicData?.refuel}
-                                        depositAddress={depositAddress}
-                                        isCreatingSwap={false}
-                                    />
+                                        {/* Deposit address + QR + fees once everything is ready */}
+                                        {showDepositInfo && (
+                                            <DepositAddressInfo
+                                                sourceNetwork={from?.name}
+                                                sourceToken={fromAsset?.symbol}
+                                                destinationNetwork={destination?.name}
+                                                destinationToken={toCurrency?.symbol}
+                                                destinationAddress={destination_address}
+                                                refuel={!!refuel || !!swapBasicData?.refuel}
+                                                depositAddress={depositAddress}
+                                                isCreatingSwap={false}
+                                            />
+                                        )}
+                                    </>
                                 )}
                             </div>
                             <div>

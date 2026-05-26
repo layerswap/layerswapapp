@@ -1,0 +1,30 @@
+import { FC } from "react";
+import SwapDetails from "@/components/Pages/Swap/Withdraw/SwapDetails";
+import { Partner } from "@/Models/Partner";
+import { useDepositStep } from "../depositStepContext";
+
+type Props = {
+    partner?: Partner;
+};
+
+/**
+ * Renders the existing wallet-withdraw + processing-timeline pipeline inline
+ * (rather than inside the Vaul modal used by the Swap form's FormWrapper).
+ * SwapDetails reads its data from the SwapDataProvider populated by the
+ * Review step's `setSubmitedFormValues` call.
+ */
+const ProcessingStep: FC<Props> = ({ partner }) => {
+    const { reset } = useDepositStep();
+
+    return (
+        <div className="w-full">
+            <SwapDetails
+                type="contained"
+                partner={partner}
+                onCancelWithdrawal={reset}
+            />
+        </div>
+    );
+};
+
+export default ProcessingStep;

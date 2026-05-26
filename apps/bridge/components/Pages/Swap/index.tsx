@@ -1,4 +1,4 @@
-import { LayerSwapSettings, Swap, ThemeData } from "@layerswap/widget"
+import { LayerSwapSettings, Swap, ThemeData, Deposit } from "@layerswap/widget"
 import { FC } from "react"
 import WidgetWrapper from "../../WidgetWrapper"
 import { QueryParams } from "../../../helpers/querryHelper"
@@ -12,7 +12,8 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
             initialValues={initialValues}
             enableSwapCallbacks
         >
-            <Swap />
+            {/* <Swap /> */}
+            <Deposit/>
         </WidgetWrapper>
     )
 }

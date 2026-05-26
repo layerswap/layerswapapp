@@ -1,5 +1,6 @@
 export { Swap } from '../components/Pages/Swap/Form';
 export { SwapWithdrawal } from '../components/Pages/Swap/Withdraw';
+export { Deposit, type DepositProps } from '../components/Pages/Deposit';
 export { TransactionsHistory } from '../components/Pages/SwapHistory';
 export { Campaigns } from '../components/Pages/Campaigns';
 export { CampaignDetails } from '../components/Pages/Campaigns/Details';
