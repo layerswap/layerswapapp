@@ -48,7 +48,7 @@ const Widget = ({ children, hideMenu, goBack, contextualMenu }: Props) => {
          }
 
          <div className="relative flex-col px-4 h-full min-h-0 flex flex-1">
-            <div className="flex flex-col flex-1 items-start h-full min-h-0 w-full gap-3" ref={wrapper}>
+            <div className="flex flex-col flex-1 items-start h-full min-h-0 w-full gap-2" ref={wrapper}>
                {children}
             </div>
          </div>

@@ -1,23 +1,17 @@
-import { FC, useMemo, useState } from "react";
+import { FC, useState } from "react";
 import { useFormikContext } from "formik";
+import { AlertTriangle } from "lucide-react";
 import SubmitButton from "@/components/Buttons/submitButton";
 import AmountField from "@/components/Input/Amount";
 import MinMax from "@/components/Input/Amount/MinMax";
-import { Selector, SelectorContent, SelectorTrigger } from "@/components/Select/Selector/Index";
-import { Content } from "@/components/Input/RoutePicker/Content";
-import { SelectedRouteDisplay } from "@/components/Input/RoutePicker/Routes";
-import { groupRoutes } from "@/hooks/useFormRoutes";
-import useDepositAddressAvailableRoutes from "@/hooks/useDepositAddressAvailableRoutes";
-import useAllWithdrawalBalances from "@/hooks/useAllWithdrawalBalances";
-import { useRecentNetworksStore } from "@/stores/recentRoutesStore";
-import { useRouteSortingStore } from "@/stores/routeSortingStore";
+import RoutePicker from "@/components/Input/RoutePicker";
 import { useQuoteData } from "@/hooks/useFee";
 import { useSwapDataState, useSwapDataUpdate } from "@/context/swap";
-import { formatTokenAmount } from "@/components/utils/formatTokenAmount";
-import { formatUsd } from "@/components/utils/formatUsdAmount";
+import { ErrorDisplay } from "@/components/Pages/Swap/Form/SecondaryComponents/validationError/ErrorDisplay";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { useDepositStep } from "../depositStepContext";
+import QuoteSummary from "../_shared/QuoteSummary";
 
 const AmountStep: FC = () => {
     const { values, setFieldValue } = useFormikContext<SwapFormValues>();
@@ -30,27 +24,8 @@ const AmountStep: FC = () => {
     const to = values?.to as NetworkRoute | undefined;
     const toAsset = values?.toAsset as NetworkRouteToken | undefined;
 
-    // Reuse the existing route-picker UI for source selection so we inherit
-    // search, grouping, recent routes and balance display for free.
-    const [searchQuery, setSearchQuery] = useState("");
-    const sortingOption = useRouteSortingStore((s) => s.sortingOption);
-    const routesHistory = useRecentNetworksStore((s) => s.recentRoutes);
-    const { availableRoutes } = useDepositAddressAvailableRoutes(to?.name, toAsset?.symbol);
-    const { balances } = useAllWithdrawalBalances();
-    const routeElements = useMemo(() => groupRoutes({
-        routes: availableRoutes,
-        direction: "from",
-        balances,
-        groupBy: "token",
-        recents: routesHistory,
-        balancesLoaded: !!balances,
-        search: searchQuery,
-        suggestionsLimit: 4,
-        sortingOption,
-    }), [availableRoutes, balances, searchQuery, routesHistory, sortingOption]);
-
-    // Quote + limits — drives AmountField's preview, MinMax bounds, and the
-    // Continue button's disabled state. Same hook the Swap form uses.
+    // Quote + limits — same hook the Swap form uses. Drives AmountField's
+    // preview, MinMax bounds, and the Continue button's disabled state.
     const {
         quote: fee,
         minAllowedAmount,
@@ -83,10 +58,13 @@ const AmountStep: FC = () => {
 
     const amountNum = Number(values?.amount);
     const hasAmount = Number.isFinite(amountNum) && amountNum > 0;
-    const canContinue = !!from && !!fromAsset && !!to && !!toAsset && hasAmount && !quoteError && !isQuoteLoading;
+    const canContinue = !!from && !!fromAsset && !!to && !!toAsset && !!values?.destination_address && hasAmount && !quoteError && !isQuoteLoading;
 
     const handleContinue = () => {
         if (!canContinue) return;
+        // Belt+suspenders: SwapDataProvider.setSubmitedFormValues throws
+        // "Form data is missing" if amount is empty on the wallet flow.
+        if (!values?.amount) return;
         // Hand off to the existing wallet-withdraw + processing machinery.
         // `setSubmitedFormValues` populates `swapBasicData` in the SwapDataProvider
         // so `<SwapDetails type="contained" />` can render Withdraw + Processing
@@ -100,44 +78,22 @@ const AmountStep: FC = () => {
     };
 
     const receiveAmount = fee?.quote?.receive_amount;
+    const showReceiveSummary = (!!fee?.quote && !quoteError) || isQuoteLoading;
 
     return (
-        <div className="flex flex-col gap-4 w-full">
-            {/* Source picker — same Selector + Content used by PayFromPicker */}
+        <div className="flex flex-col gap-2 w-full">
+            {/* Source picker — reuses the same RoutePicker the Swap form uses,
+                so suggestions, balances, search and loading are inherited. */}
             <div className="flex items-center gap-2">
                 <span className="w-20 shrink-0 text-sm text-secondary-text tracking-wide">Send from</span>
                 <div className="flex-1 min-w-0">
-                    <Selector>
-                        <SelectorTrigger
-                            disabled={availableRoutes.length === 0}
-                            className="bg-secondary-500 hover:bg-secondary-400/70 rounded-xl px-3.5 py-3 transition-colors"
-                        >
-                            <SelectedRouteDisplay
-                                route={from}
-                                token={fromAsset}
-                                placeholder="Select source token"
-                            />
-                        </SelectorTrigger>
-                        <SelectorContent isLoading={false}>
-                            {({ closeModal }) => (
-                                <Content
-                                    onSelect={(r, t) => {
-                                        setFieldValue("from", r, false);
-                                        setFieldValue("fromAsset", t, true);
-                                        setFieldValue("amount", "", true);
-                                        closeModal();
-                                    }}
-                                    searchQuery={searchQuery}
-                                    setSearchQuery={setSearchQuery}
-                                    rowElements={routeElements}
-                                    direction="from"
-                                    selectedRoute={from?.name}
-                                    selectedToken={fromAsset?.symbol}
-                                    hideTokenSwitch
-                                />
-                            )}
-                        </SelectorContent>
-                    </Selector>
+                    <RoutePicker
+                        direction="from"
+                        minAllowedAmount={minAllowedAmount}
+                        maxAllowedAmount={maxAllowedAmount}
+                        quote={fee?.quote}
+                        hideBalance
+                    />
                 </div>
             </div>
 
@@ -165,18 +121,23 @@ const AmountStep: FC = () => {
             </div>
 
             {quoteError?.message && (
-                <div className="text-center text-sm text-warning-foreground">{quoteError.message}</div>
+                <div role="alert">
+                    <ErrorDisplay
+                        icon={<AlertTriangle className="h-5 w-5 text-warning-foreground" />}
+                        title="Quote unavailable"
+                        message={quoteError.message}
+                    />
+                </div>
             )}
 
-            {receiveAmount != null && toAsset && !quoteError && (
-                <div className="text-center text-secondary-text text-sm">
-                    You will receive ~{formatTokenAmount(Number(receiveAmount))} {toAsset.symbol}
-                    {minAllowedAmountInUsd != null && (
-                        <span className="text-secondary-text/60 ml-1">
-                            · min {formatUsd(minAllowedAmountInUsd)}
-                        </span>
-                    )}
-                </div>
+            {showReceiveSummary && (
+                <QuoteSummary
+                    receiveAmount={receiveAmount != null ? Number(receiveAmount) : undefined}
+                    tokenSymbol={toAsset?.symbol}
+                    minUsd={minAllowedAmountInUsd ?? undefined}
+                    maxUsd={maxAllowedAmountInUsd ?? undefined}
+                    isLoading={isQuoteLoading}
+                />
             )}
 
             <SubmitButton isDisabled={!canContinue} onClick={handleContinue}>

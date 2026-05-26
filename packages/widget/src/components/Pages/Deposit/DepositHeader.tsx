@@ -6,6 +6,7 @@ import { useDepositStep } from "./depositStepContext";
 import { useInitialSettings } from "@/context/settings";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { NetworkRouteToken } from "@/Models/Network";
+import IconButton from "@/components/Buttons/iconButton";
 
 const stepTitles: Record<string, (token?: string) => string> = {
     "method-picker": (token) => token ? `Deposit ${token}` : "Deposit",
@@ -30,17 +31,13 @@ const DepositHeader: FC = () => {
 
     return (
         <div className="flex items-center justify-between gap-3 w-full">
-            <div className="flex items-center gap-2 min-w-0">
+            <div className="flex items-center gap-1 min-w-0">
                 {canGoBack && (
-                    <button
-                        type="button"
-                        onClick={back}
-                        aria-label="Back"
-                        className="shrink-0 inline-flex items-center justify-center h-8 w-8 rounded-lg text-secondary-text hover:text-primary-text hover:bg-secondary-500/60 transition-colors"
-                    >
+                    <IconButton onClick={back} icon={
                         <ChevronLeft className="h-5 w-5" />
-                    </button>
+                    } aria-label="Back" className="" />
                 )}
+
                 <h2 className="text-primary-text text-base font-semibold truncate">{title}</h2>
             </div>
             {showSelectorInHeader && (

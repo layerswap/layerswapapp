@@ -30,7 +30,7 @@ const StepRouter: FC<DepositProps> = ({ partner }) => {
 const DepositForm: FC<DepositProps> = ({ partner }) => {
     useDestinationAddressAutofill();
     return (
-        <Form className="flex flex-col gap-4 w-full">
+        <Form className="flex flex-col gap-2 w-full">
             <DepositHeader />
             <StepRouter partner={partner} />
         </Form>

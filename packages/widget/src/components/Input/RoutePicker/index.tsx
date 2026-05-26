@@ -16,7 +16,7 @@ import { SwapDirection, SwapFormValues } from "@/components/Pages/Swap/Form/Swap
 import useSuggestionsLimit from "@/hooks/useSuggestionsLimit";
 import useWallet from "@/hooks/useWallet";
 
-const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, className?: string, minAllowedAmount?: number, maxAllowedAmount?: number, quote?: SwapQuote, quoteTokenPrices?: QuoteTokenPrices }> = ({ direction, isExchange = false, className, minAllowedAmount, maxAllowedAmount, quote, quoteTokenPrices }) => {
+const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, className?: string, minAllowedAmount?: number, maxAllowedAmount?: number, quote?: SwapQuote, quoteTokenPrices?: QuoteTokenPrices, hideBalance?: boolean }> = ({ direction, isExchange = false, className, minAllowedAmount, maxAllowedAmount, quote, quoteTokenPrices, hideBalance = false }) => {
     const {
         values,
         setFieldValue,
@@ -70,7 +70,7 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
         })
     }, [currencyFieldName, direction])
 
-    const showBalance = !isExchange && (direction === 'to' || values.depositMethod === 'wallet')
+    const showBalance = !hideBalance && !isExchange && (direction === 'to' || values.depositMethod === 'wallet')
 
     return (
         <div className={clsx("flex flex-col self-end relative items-center", className)}>

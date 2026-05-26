@@ -222,7 +222,7 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
         />
     }
 
-    return <div className="w-full space-y-3 flex flex-col justify-between h-full text-primary-text">
+    return <div className="w-full space-y-2 flex flex-col justify-between h-full text-primary-text">
         {
             buttonClicked &&
             <ActionMessage

@@ -26,6 +26,7 @@ const DestinationSelector: FC<Props> = ({ locked }) => {
     const routesHistory = useRecentNetworksStore((state) => state.recentRoutes);
 
     const { data: destinationRoutesData } = useDepositAddressDestinations({ enabled: !locked });
+    const isLoading = !locked && destinationRoutesData === undefined;
 
     const availableRoutes = useMemo<NetworkRoute[]>(() => {
         const routes = destinationRoutesData?.data;
@@ -34,6 +35,8 @@ const DestinationSelector: FC<Props> = ({ locked }) => {
             .map((route) => ({ ...route, tokens: route.tokens?.filter((t) => t.status === "active") ?? [] }))
             .filter((route) => route.tokens.length > 0);
     }, [destinationRoutesData]);
+
+    const isEmpty = !locked && !isLoading && availableRoutes.length === 0;
 
     const routeElements = useMemo(() => {
         return groupRoutes({
@@ -69,7 +72,12 @@ const DestinationSelector: FC<Props> = ({ locked }) => {
 
     if (locked) {
         return (
-            <div className="flex items-center bg-secondary-500/60 rounded-xl px-3 py-2 min-w-0">
+            <div
+                role="group"
+                aria-disabled="true"
+                title="Destination set by integrator"
+                className="flex items-center bg-secondary-500 rounded-xl px-3 py-2 min-w-0"
+            >
                 <SelectedRouteDisplay
                     route={to as NetworkRoute | undefined}
                     token={toAsset as NetworkRouteToken | undefined}
@@ -79,16 +87,20 @@ const DestinationSelector: FC<Props> = ({ locked }) => {
         );
     }
 
+    if (isLoading) {
+        return <div className="h-10 rounded-xl bg-secondary-500 animate-pulse" aria-hidden="true" />;
+    }
+
     return (
         <Selector>
             <SelectorTrigger
                 disabled={availableRoutes.length === 0}
-                className="bg-secondary-500 hover:bg-secondary-400/70 rounded-xl px-3 py-2 transition-colors"
+                className="bg-secondary-500 hover:bg-secondary-400/70 rounded-xl px-3 py-2 transition-colors focus-visible:ring-2 focus-visible:ring-primary-500/60 focus-visible:outline-none"
             >
                 <SelectedRouteDisplay
                     route={to as NetworkRoute | undefined}
                     token={toAsset as NetworkRouteToken | undefined}
-                    placeholder="Select destination"
+                    placeholder={isEmpty ? "No destinations available" : "Select destination"}
                 />
             </SelectorTrigger>
             <SelectorContent isLoading={false}>

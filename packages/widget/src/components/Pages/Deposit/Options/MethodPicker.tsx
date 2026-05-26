@@ -45,14 +45,14 @@ const MethodPicker: FC = () => {
     };
 
     return (
-        <div className="flex flex-col gap-4 w-full">
+        <div className="flex flex-col gap-2 w-full">
             {/* Wallet card */}
             <button
                 type="button"
                 onClick={handleWalletClick}
-                className="group/card flex items-center gap-3 w-full text-left bg-secondary-500/60 hover:bg-secondary-400/60 rounded-xl px-4 py-3 transition-colors"
+                className="group/card flex items-center gap-3 w-full text-left bg-secondary-500 hover:bg-secondary-400/70 rounded-xl px-4 py-3 transition-colors focus-visible:ring-2 focus-visible:ring-primary-500/60 focus-visible:outline-none"
             >
-                <div className="shrink-0 h-10 w-10 rounded-lg bg-secondary-400 flex items-center justify-center">
+                <div className="shrink-0 h-10 w-10 rounded-lg bg-secondary-400 ring-1 ring-inset ring-secondary-300/40 flex items-center justify-center">
                     <WalletIcon className="h-5 w-5 text-primary-text" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -60,7 +60,7 @@ const MethodPicker: FC = () => {
                         {hasWallet ? `Wallet (${shortAddress(primaryWallet?.address)})` : "Wallet"}
                     </div>
                     <div className="text-secondary-text text-xs">
-                        {hasWallet ? "Instant" : "Connect to deposit from a connected wallet"}
+                        {hasWallet ? "Instant" : "Connect a wallet"}
                     </div>
                 </div>
                 <ChevronRight className="h-4 w-4 text-secondary-text shrink-0" />
@@ -71,20 +71,21 @@ const MethodPicker: FC = () => {
                 type="button"
                 onClick={handleTransferCryptoClick}
                 disabled={!destination || !destinationToken}
+                title={!destination || !destinationToken ? "Pick a destination first" : undefined}
                 className={clsx(
-                    "group/card flex items-center gap-3 w-full text-left rounded-xl px-4 py-3 transition-colors",
-                    "bg-secondary-500/60 hover:bg-secondary-400/60",
-                    "disabled:opacity-50 disabled:hover:bg-secondary-500/60 disabled:cursor-not-allowed"
+                    "group/card flex items-center gap-3 w-full text-left rounded-xl px-4 py-3 transition-colors focus-visible:ring-2 focus-visible:ring-primary-500/60 focus-visible:outline-none",
+                    "bg-secondary-500 hover:bg-secondary-400/70",
+                    "disabled:opacity-50 disabled:hover:bg-secondary-500 disabled:cursor-not-allowed"
                 )}
             >
-                <div className="shrink-0 h-10 w-10 rounded-lg bg-secondary-400 flex items-center justify-center">
+                <div className="shrink-0 h-10 w-10 rounded-lg bg-secondary-400 ring-1 ring-inset ring-secondary-300/40 flex items-center justify-center">
                     <QrCode className="h-5 w-5 text-primary-text" />
                 </div>
                 <div className="flex-1 min-w-0">
                     <div className="text-primary-text text-sm font-medium">Transfer Crypto</div>
                     <div className="text-secondary-text text-xs">No limit · ~2 min</div>
                 </div>
-                <div className="hidden sm:flex -space-x-2 shrink-0">
+                <div className="flex -space-x-2 shrink-0 [&>*:nth-child(n+4)]:hidden sm:[&>*:nth-child(n+4)]:flex sm:[&>*:nth-child(n+6)]:hidden">
                     {sampleNetworks.map((n) => (
                         <div
                             key={n.name}
