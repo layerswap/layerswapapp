@@ -1,5 +1,6 @@
 import { FC, useEffect, useMemo, useRef } from "react";
 import { Form, useFormikContext } from "formik";
+import { Loader2 } from "lucide-react";
 import ValidationError from "@/components/validationError";
 import { Widget } from "@/components/Widget/Index";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
@@ -38,8 +39,15 @@ const DepositAddressForm: FC<Props> = () => {
 
     const { isAutoSourceUpdating } = useAutoSourceRoute();
 
-    const { wallets } = useWallet();
+    const { wallets, providers } = useWallet();
     const hasWallet = wallets.length > 0;
+    // Each provider exposes a `ready` flag that flips true once its connectors
+    // have hydrated (e.g. wagmi finishes auto-reconnect, starknet enumerates
+    // injected wallets, solana wallet-adapter populates). Until every provider
+    // is ready, `wallets` may be empty even though a persisted wallet is about
+    // to appear — opening the connect modal in that window would just slide it
+    // back out a moment later.
+    const providersReady = providers.every(p => p.ready);
     const { connect, isWalletModalOpen, cancel } = useConnectModal();
     const settings = useSettingsState();
     const query = useQueryState();
@@ -61,11 +69,12 @@ const DepositAddressForm: FC<Props> = () => {
     const isWalletModalOpenRef = useRef(isWalletModalOpen);
     useEffect(() => { isWalletModalOpenRef.current = isWalletModalOpen; });
     useEffect(() => {
+        if (!providersReady) return;
         if (hasWallet) return;
         if (isWalletModalOpenRef.current) return;
         connect(undefined, { dismissible: false, topContent: <EasyDepositBanner variant="modal" currentStepIndex={0} />, fullHeight: true, hideHeader: true });
         return () => { cancel(); };
-    }, [hasWallet, connect, cancel]);
+    }, [providersReady, hasWallet, connect, cancel]);
 
     // Apply default destination/source when a wallet is present and the form
     // is still blank. `generateSwapInitialValues` is the same helper used by
@@ -181,34 +190,43 @@ const DepositAddressForm: FC<Props> = () => {
                     <Processing />
                 ) : (
                     <Widget.Content>
-                        <div className="w-full flex flex-col justify-between flex-1 relative min-h-[240px]">
+                        <div className="w-full flex flex-col justify-between flex-1 relative min-h-60">
                             <div className="flex flex-col w-full gap-2">
 
                                 <EasyDepositBanner />
 
-                                {/* Source (Pay from) */}
-                                <PayFromPicker
-                                    selectedSource={from && fromAsset ? { network: from as unknown as NetworkRoute, token: fromAsset as NetworkRouteToken } : null}
-                                    onSourceChange={(network, token) => {
-                                        setSwapId(undefined);
-                                        setFieldValue('from', network, false);
-                                        setFieldValue('fromAsset', token, true);
-                                    }}
-                                    destinationNetwork={destination?.name}
-                                    destinationToken={toCurrency?.symbol}
-                                />
+                                {!providersReady && !hasWallet ? (
+                                    <div className="flex items-center justify-center gap-2 py-12 text-sm text-secondary-text">
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        <span>Loading wallets…</span>
+                                    </div>
+                                ) : (
+                                    <>
+                                        {/* Source (Pay from) */}
+                                        <PayFromPicker
+                                            selectedSource={from && fromAsset ? { network: from, token: fromAsset } : null}
+                                            onSourceChange={(network, token) => {
+                                                setSwapId(undefined);
+                                                setFieldValue('from', network, false);
+                                                setFieldValue('fromAsset', token, true);
+                                            }}
+                                            destinationNetwork={destination?.name}
+                                            destinationToken={toCurrency?.symbol}
+                                        />
 
-                                {/* Destination network/token + recipient address share one "Receive" row */}
-                                <ReceivePicker
-                                    selectedDestination={destination && toCurrency ? { network: destination as unknown as NetworkRoute, token: toCurrency as NetworkRouteToken } : null}
-                                    onDestinationChange={(network, token) => {
-                                        setSwapId(undefined);
-                                        setFieldValue('to', network, false);
-                                        setFieldValue('toAsset', token, true);
-                                    }}
-                                    destinationAddress={destination_address}
-                                    destination={destination}
-                                />
+                                        {/* Destination network/token + recipient address share one "Receive" row */}
+                                        <ReceivePicker
+                                            selectedDestination={destination && toCurrency ? { network: destination, token: toCurrency } : null}
+                                            onDestinationChange={(network, token) => {
+                                                setSwapId(undefined);
+                                                setFieldValue('to', network, false);
+                                                setFieldValue('toAsset', token, true);
+                                            }}
+                                            destinationAddress={destination_address}
+                                            destination={destination}
+                                        />
+                                    </>
+                                )}
 
                                 {/* Deposit address + QR + fees once everything is ready */}
                                 {showDepositInfo && (
