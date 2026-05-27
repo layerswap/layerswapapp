@@ -1,9 +1,9 @@
 import { keccak256 } from "js-sha3";
 import KnownInternalNames from "../../knownIds";
 import { validateAndParseAddress } from "./starkNetAddressValidator";
-import { PublicKey } from '@solana/web3.js'
 import { Address } from "@ton/core";
 import { validate, Network } from 'bitcoin-address-validation';
+import bs58 from 'bs58';
 
 export function isValidAddress(address?: string, network?: { name: string } | null): boolean {
     if (!address || isBlacklistedAddress(address)) {
@@ -37,11 +37,10 @@ export function isValidAddress(address?: string, network?: { name: string } | nu
     }
     else if (network?.name.toLowerCase().startsWith("solana") || network?.name.toLowerCase().startsWith("eclipse") || network?.name.toLowerCase().startsWith("soon")) {
         try {
-            let pubkey = new PublicKey(address)
-            let isSolana = PublicKey.isOnCurve(pubkey.toBuffer())
-            return isSolana
-        } catch (error) {
-            return false
+            const decoded = bs58.decode(address);
+            return decoded.length === 32;
+        } catch {
+            return false;
         }
     }
     else if (network?.name === KnownInternalNames.Networks.SorareStage) {
