@@ -58,7 +58,7 @@ export const useTronStore = create<TronStoreState>()((set) => ({
     activeAddress: undefined,
     ready: false,
 
-    _setWallets: (wallets) => set({ wallets, ready: wallets.length > 0 }),
+    _setWallets: (wallets) => set({ wallets, ready: true }),
     _setActive: (name, address) => set({ activeWalletName: name, activeAddress: address }),
 }))
 

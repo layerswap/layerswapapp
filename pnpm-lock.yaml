@@ -588,9 +588,6 @@ importers:
       ethers:
         specifier: 5.7.2
         version: 5.7.2(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      lucide-react:
-        specifier: ^0.379.0
-        version: 0.379.0(react@19.2.3)
       starknet:
         specifier: 'catalog:'
         version: 8.9.2
@@ -604,12 +601,9 @@ importers:
       '@layerswap/widget':
         specifier: workspace:^
         version: link:../../widget
-      '@types/react':
+      zustand:
         specifier: 'catalog:'
-        version: 19.2.3
-      react:
-        specifier: 'catalog:'
-        version: 19.2.3
+        version: 4.5.7(@types/react@19.2.3)(react@19.2.3)
 
   packages/wallets/starknet:
     dependencies:

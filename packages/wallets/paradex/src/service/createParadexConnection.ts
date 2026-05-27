@@ -10,7 +10,6 @@ import {
     walletProvidersRegistry,
 } from '@layerswap/widget/internal'
 import { createStore } from 'zustand/vanilla'
-import ParadexMultiStepHandler from '../components/ParadexMultiStepHandler'
 import {
     asSourceSupportedNetworks,
     autofillSupportedNetworks,
@@ -86,12 +85,6 @@ export function createParadexConnection(
             providerIcon: paradexConnectionService.getProviderIcon(),
             hideFromList: true,
             ready: paradexConnectionService.isReady(),
-            multiStepHandlers: [
-                {
-                    component: ParadexMultiStepHandler,
-                    supportedNetworks: withdrawalSupportedNetworks,
-                },
-            ],
         }
 
         lastInputs = inputs

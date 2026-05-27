@@ -155,4 +155,3 @@ function resolveWallet(props: {
 
 export default useStarknet
 export const customStarknetAdapter = createReactHookConnectionAdapter(useStarknet)
-

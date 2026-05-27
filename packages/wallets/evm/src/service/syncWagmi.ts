@@ -11,39 +11,52 @@ import { snapshotFromAccount, useEvmStore } from './evmStore'
 
 let _attached = false
 let _dispose: (() => void) | null = null
+let _config: Config | null = null
 
 export function attachWagmiSync(config: Config): () => void {
-    if (_attached) return _dispose ?? (() => { })
-    _attached = true
+    if (_config === config && _dispose) return _dispose
+    _dispose?.()
 
     const store = useEvmStore
-    store.getState()._setWagmiAccount(snapshotFromAccount(getAccount(config)))
-    store.getState()._setConnections(getConnections(config))
-    store.getState()._setConnectors(getConnectors(config))
+    const unwatchers: Array<() => void> = []
+    try {
+        store.getState()._setWagmiAccount(snapshotFromAccount(getAccount(config)))
+        store.getState()._setConnections(getConnections(config))
+        store.getState()._setConnectors(getConnectors(config))
 
-    const unwatchAccount = watchAccount(config, {
-        onChange: (account) => {
-            useEvmStore.getState()._setWagmiAccount(snapshotFromAccount(account))
-        },
-    })
-    const unwatchConnections = watchConnections(config, {
-        onChange: (connections) => {
-            useEvmStore.getState()._setConnections(connections)
-        },
-    })
-    const unwatchConnectors = watchConnectors(config, {
-        onChange: (connectors) => {
-            useEvmStore.getState()._setConnectors(connectors)
-        },
-    })
+        unwatchers.push(watchAccount(config, {
+            onChange: (account) => {
+                useEvmStore.getState()._setWagmiAccount(snapshotFromAccount(account))
+            },
+        }))
+        unwatchers.push(watchConnections(config, {
+            onChange: (connections) => {
+                useEvmStore.getState()._setConnections(connections)
+            },
+        }))
+        unwatchers.push(watchConnectors(config, {
+            onChange: (connectors) => {
+                useEvmStore.getState()._setConnectors(connectors)
+            },
+        }))
+    } catch (error) {
+        unwatchers.forEach(unwatch => unwatch())
+        throw error
+    }
 
-    _dispose = () => {
-        unwatchAccount()
-        unwatchConnections()
-        unwatchConnectors()
+    let disposed = false
+    const dispose = () => {
+        if (disposed) return
+        disposed = true
+        unwatchers.forEach(unwatch => unwatch())
+        if (_dispose !== dispose) return
         _attached = false
         _dispose = null
+        _config = null
     }
+    _attached = true
+    _config = config
+    _dispose = dispose
     return _dispose
 }
 

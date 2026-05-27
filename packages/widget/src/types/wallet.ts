@@ -39,6 +39,8 @@ export type Wallet = {
         starknetAccount?: any,
         wallet?: any,
         l1Address?: string,
+        l1ProviderName?: string,
+        l1ChainId?: string | number,
         deepLink?: string
     }
     chainId?: string | number,

@@ -58,6 +58,25 @@ const evmProvider = createEVMProvider({
 });
 ```
 
+### Existing Wagmi Provider
+
+When your application already owns a Wagmi config, pass the same config to
+Layerswap so the host UI and widget share connections:
+
+```tsx
+const evmProvider = createEVMProvider({
+  wagmiConfig: config,
+});
+
+return (
+  <WagmiProvider config={config}>
+    <LayerswapProvider walletProviders={[evmProvider]}>
+      <Swap />
+    </LayerswapProvider>
+  </WagmiProvider>
+);
+```
+
 ### Supported Wallets
 
 - MetaMask
@@ -93,7 +112,9 @@ For detailed setup instructions, configuration options, and usage examples, see 
 ## Exports
 
 - `createEVMProvider()` - Factory function for creating EVM providers
-- `useChainConfigs` - Hook for accessing chain configurations
+- `getEvmChainsConfig()` - Creates chain and transport configuration from widget networks
+- `getEvmConfig()` - Returns the active internal or externally provided Wagmi config
+- `getEthersSigner()` - Resolves an ethers signer for the active EVM wallet
 
 ## TypeScript
 
@@ -106,4 +127,3 @@ MIT
 ## Repository
 
 [GitHub](https://github.com/layerswap/layerswapapp/tree/main/packages/wallets/evm)
-

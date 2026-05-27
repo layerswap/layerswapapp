@@ -1,5 +1,5 @@
 "use client";
-import React, { lazy, useEffect, useMemo } from "react";
+import React, { lazy, useEffect, useRef } from "react";
 import { WalletConnectionStore, WalletProvider } from "@/types";
 import { useSettingsState } from "./settings";
 import VaulDrawer from "@/components/Modal/vaulModal";
@@ -22,29 +22,28 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
     const isMobilePlatform = isMobile();
     const { goBack, onFinish, open, setOpen, selectedConnector, selectedMultiChainConnector, dismissible, topContent, fullHeight, hideHeader } = useConnectModal()
 
-    // Build per-provider connections once per provider list. Each connection
-    // owns its own zustand store; the widget publishes them to a vanilla
-    // registry so React consumers (useWallet) and non-React peers (Paradex)
-    // can subscribe directly.
-    const connections = useMemo<Connection[]>(
-        () => walletProviders
+    const connectionsRef = useRef<Connection[]>([])
+
+    useEffect(() => {
+        // Factories create subscriptions and may initialize SDKs, so they
+        // must only run after React commits this provider tree.
+        const connections = walletProviders
             .map(p => ({ id: p.id, conn: p.createConnection?.({ networks }) }))
-            .filter((c): c is Connection => !!c.conn),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [walletProviders],
-    )
-
-    useEffect(() => {
-        connections.forEach(c => c.conn.updateProps?.({ networks }))
-    }, [connections, networks])
-
-    useEffect(() => {
+            .filter((c): c is Connection => !!c.conn)
+        connectionsRef.current = connections
         walletProvidersRegistry.setEntries(connections.map(c => ({ id: c.id, store: c.conn.store })))
         return () => {
             connections.forEach(c => c.conn.destroy?.())
+            connectionsRef.current = []
             walletProvidersRegistry.setEntries([])
         }
-    }, [connections])
+        // Network changes update committed stores in the effect below.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [walletProviders])
+
+    useEffect(() => {
+        connectionsRef.current.forEach(c => c.conn.updateProps?.({ networks }))
+    }, [networks])
 
     // `AvailableSourceNetworkTypes` is read by `helpers/routes.ts` to decide
     // which source-network types are reachable. It depends on each provider's

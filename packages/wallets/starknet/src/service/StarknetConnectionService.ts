@@ -121,9 +121,14 @@ export class StarknetConnectionService {
             const config = connectorsConfigs.find(c => c.id === connector.id)
             const displayName = config?.name ?? connector.name
             const realConnector = starknetConnectorManager.getConnector(connector.id)
-            const isInjectedAndAvailable = !!config
-                && typeof (realConnector as any)?.available === 'function'
-                && (realConnector as any).available()
+            let isInjectedAndAvailable = false
+            try {
+                isInjectedAndAvailable = !!config
+                    && typeof (realConnector as any)?.available === 'function'
+                    && (realConnector as any).available()
+            } catch {
+                isInjectedAndAvailable = false
+            }
             return {
                 name: displayName,
                 id: connector.id,

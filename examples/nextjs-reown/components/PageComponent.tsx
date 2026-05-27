@@ -47,7 +47,7 @@ const PageComponent: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
 
 const Comp: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
     const { address } = useAccount()
-    const walletProviders = [createEVMProvider({ walletConnectConfigs: walletConnect })]
+    const walletProviders = [createEVMProvider({ walletConnectConfigs: walletConnect, wagmiConfig: wagmiAdapter.wagmiConfig })]
 
     return <div className="h-screen flex flex-col items-center justify-center gap-4">
         <h1 className="text-2xl font-bold text-white text-center">Layerswap Widget with Reown Example</h1>

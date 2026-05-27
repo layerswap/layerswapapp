@@ -4,10 +4,11 @@ import { useFuelStore } from './fuelStore'
 
 let _attached = false
 let _dispose: (() => void) | null = null
+let _fuel: Fuel | null = null
 
 export function attachFuelSync(fuel: Fuel): () => void {
-    if (_attached) return _dispose ?? (() => { })
-    _attached = true
+    if (_fuel === fuel && _dispose) return _dispose
+    _dispose?.()
 
     useFuelStore.getState()._setFuel(fuel)
 
@@ -29,13 +30,6 @@ export function attachFuelSync(fuel: Fuel): () => void {
         fuelConnectionService.resolveConnectedWallets().catch(() => { /* swallow */ })
     }
 
-    fuel.on(FuelConnectorEventTypes.connectors, refreshConnectors)
-    fuel.on(FuelConnectorEventTypes.connection, onConnection)
-    fuel.on(FuelConnectorEventTypes.currentConnector, onCurrentConnector)
-
-    // Initial population
-    refreshConnectors().catch(() => { /* swallow */ })
-
     let perConnectorDisposers: Array<() => void> = []
     function attachConnectorNetworkListeners(connectors: readonly any[]) {
         // Detach previous listeners
@@ -51,15 +45,36 @@ export function attachFuelSync(fuel: Fuel): () => void {
         }
     }
 
-    _dispose = () => {
+    let disposed = false
+    const dispose = () => {
+        if (disposed) return
+        disposed = true
         fuel.off(FuelConnectorEventTypes.connectors, refreshConnectors)
         fuel.off(FuelConnectorEventTypes.connection, onConnection)
         fuel.off(FuelConnectorEventTypes.currentConnector, onCurrentConnector)
         perConnectorDisposers.forEach(fn => fn())
         perConnectorDisposers = []
+        if (_dispose !== dispose) return
         _attached = false
         _dispose = null
+        _fuel = null
     }
+    try {
+        fuel.on(FuelConnectorEventTypes.connectors, refreshConnectors)
+        fuel.on(FuelConnectorEventTypes.connection, onConnection)
+        fuel.on(FuelConnectorEventTypes.currentConnector, onCurrentConnector)
+    } catch (error) {
+        dispose()
+        throw error
+    }
+
+    _attached = true
+    _fuel = fuel
+    _dispose = dispose
+
+    // Initial population
+    refreshConnectors().catch(() => { /* swallow */ })
+
     return _dispose
 }
 

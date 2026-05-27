@@ -14,14 +14,13 @@ import {
     useWalletStore,
     walletProvidersRegistry,
 } from '@layerswap/widget/internal'
-import { getEvmConfig } from '@layerswap/wallet-evm'
+import { getEvmConfig, walletClientToSigner } from '@layerswap/wallet-evm'
 import {
     getChainId,
     getWalletClient,
     switchChain,
     type ConnectorAlreadyConnectedError,
 } from '@wagmi/core'
-import { walletClientToSigner } from '../utils/ethers'
 import { useParadexActiveStore, type ParadexAccount } from './paradexActiveStore'
 
 export const name = 'Paradex'
@@ -159,6 +158,13 @@ export class ParadexConnectionService {
         )
     }
 
+    getEvmNetwork(): NetworkWithTokens | undefined {
+        return this._networks.find(n =>
+            n.name === KnownInternalNames.Networks.EthereumMainnet
+            || n.name === KnownInternalNames.Networks.EthereumSepolia,
+        )
+    }
+
     getProviderIcon(): string | undefined {
         return this.getParadexNetwork()?.logo
     }
@@ -199,12 +205,17 @@ export class ParadexConnectionService {
         const displayName = `${wallet.id} (${new Address(l1Account, undefined, provider.name).toShortString()})`
         return {
             ...wallet,
+            // Paradex transactions execute on a derived account, not directly
+            // on the backing L1 wallet's connected chain.
+            chainId: undefined,
             asSourceSupportedNetworks,
             withdrawalSupportedNetworks,
             autofillSupportedNetworks,
             metadata: {
                 ...wallet.metadata,
                 l1Address: l1Account,
+                l1ProviderName: provider.name,
+                l1ChainId: provider.name === 'EVM' ? this.getEvmNetwork()?.chain_id ?? undefined : undefined,
             },
             providerName: name,
             displayName,
@@ -286,10 +297,7 @@ export class ParadexConnectionService {
                 const connectionResult = evmProvider.connectWallet && await evmProvider.connectWallet({ connector })
                 if (!connectionResult) return
                 if (!existingAccounts?.[connectionResult.address?.toLowerCase()]) {
-                    const l1Network = this._networks.find(n =>
-                        n.name === KnownInternalNames.Networks.EthereumMainnet
-                        || n.name === KnownInternalNames.Networks.EthereumSepolia,
-                    )
+                    const l1Network = this.getEvmNetwork()
                     const l1ChainId = Number(l1Network?.chain_id)
                     if (!Number(l1ChainId)) throw Error('Could not find ethereum network')
 
