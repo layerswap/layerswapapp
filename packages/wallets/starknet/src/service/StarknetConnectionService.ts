@@ -8,7 +8,7 @@ import { KnownInternalNames, walletIconResolver } from '@layerswap/widget/intern
 import type { Connector } from '@starknet-react/core'
 import { name as PROVIDER_NAME, id as PROVIDER_ID, starknetNames } from '../constants'
 import { resolveStarknetWalletIcon } from '../utils'
-import { getStarknetAdapterApi } from './getStarknetAdapter'
+import { starknetConnectorManager } from './starknetConnectorManager'
 import { useStarknetStore } from './starknetStore'
 
 const connectorsConfigs = [
@@ -132,10 +132,9 @@ export class StarknetConnectionService {
         })
     }
 
-    async disconnectWallets(connectorName?: string, address?: string): Promise<void> {
+    async disconnectWallets(_connectorName?: string, address?: string): Promise<void> {
         try {
-            const api = getStarknetAdapterApi()
-            await api.disconnectAsync()
+            await starknetConnectorManager.disconnectAll()
             if (address) useStarknetStore.getState().removeAccount(address)
         } catch (e) {
             // TODO: handle error
@@ -144,8 +143,7 @@ export class StarknetConnectionService {
     }
 
     async connectWallet({ connector }: { connector: InternalConnector }): Promise<Wallet | undefined> {
-        const api = getStarknetAdapterApi()
-        const starknetConnector = api.getConnectors().find(c => c.id === connector.id)
+        const starknetConnector = starknetConnectorManager.getConnector(connector.id)
         if (!starknetConnector) throw new Error('Connector not found')
 
         let result = await starknetConnector.connect({})
@@ -209,9 +207,8 @@ export class StarknetConnectionService {
         const starknetAccounts = store.starknetAccounts || {}
         if (Object.keys(starknetAccounts).length === 0) return
 
-        const api = getStarknetAdapterApi()
         const starknetNetwork = this.getStarknetNetwork()
-        const connectors = api.getConnectors()
+        const connectors = starknetConnectorManager.getConnectors()
 
         for (const connector of connectors) {
             const address = starknetAccounts[connector.id]
@@ -220,7 +217,7 @@ export class StarknetConnectionService {
                 name: PROVIDER_NAME,
                 connector,
                 network: starknetNetwork,
-                disconnectWallets: () => api.disconnectAsync().then(() => useStarknetStore.getState().removeAccount(address)),
+                disconnectWallets: () => starknetConnectorManager.disconnectAll().then(() => useStarknetStore.getState().removeAccount(address)),
                 withdrawalSupportedNetworks: starknetNames,
                 autofillSupportedNetworks: starknetNames,
                 asSourceSupportedNetworks: starknetNames,

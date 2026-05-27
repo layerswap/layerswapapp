@@ -4,6 +4,7 @@ import { QRCodeSVG } from "qrcode.react";
 import CopyButton from "@/components/Buttons/copyButton";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import WalletIcon from "@/components/Icons/WalletIcon";
+import { ExternalLink } from "lucide-react";
 
 export const WalletQrCode: FC<{ selectedConnector: WalletModalConnector }> = ({ selectedConnector }) => {
     const connectorIconSrc = selectedConnector.icon
@@ -54,8 +55,21 @@ export const WalletQrCode: FC<{ selectedConnector: WalletModalConnector }> = ({ 
             </div>
             <p className="text-xs text-secondary-text">Scan with your phone to connect</p>
         </div>
-        <div className='bg-secondary-300 hover:bg-secondary-400 text-secondary-text w-full px-3 py-3 rounded-xl flex justify-center items-center text-sm font-medium transition duration-200 ease-in-out cursor-pointer'>
-            <CopyButton disabled={!selectedConnector?.qr?.value} toCopy={selectedConnector?.qr?.deepLink || selectedConnector?.qr?.value || ''}>Copy link</CopyButton>
+        <div className="w-full flex flex-col gap-2">
+            {selectedConnector?.qr?.deepLink && (
+                <a
+                    href={selectedConnector.qr.deepLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className='bg-primary-500 hover:brightness-110 text-primary-buttonTextColor w-full px-3 py-3 rounded-xl flex justify-center items-center gap-2 text-sm font-medium transition duration-200 ease-in-out cursor-pointer'
+                >
+                    <ExternalLink className="h-4 w-4" />
+                    Open in {selectedConnector?.name || 'wallet'}
+                </a>
+            )}
+            <div className='bg-secondary-300 hover:bg-secondary-400 text-secondary-text w-full px-3 py-3 rounded-xl flex justify-center items-center text-sm font-medium transition duration-200 ease-in-out cursor-pointer'>
+                <CopyButton disabled={!selectedConnector?.qr?.value} toCopy={selectedConnector?.qr?.deepLink || selectedConnector?.qr?.value || ''}>Copy link</CopyButton>
+            </div>
         </div>
     </div>
 }

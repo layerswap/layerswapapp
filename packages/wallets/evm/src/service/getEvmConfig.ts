@@ -1,4 +1,4 @@
-import { createConfig, reconnect, type Config, type CreateConnectorFn, type Transport } from '@wagmi/core'
+import { createConfig, hydrate, type Config, type CreateConnectorFn, type Transport } from '@wagmi/core'
 import type { Chain } from 'viem'
 
 export type EvmConfigInitParams = {
@@ -46,11 +46,15 @@ export function getEvmConfig(): Config {
         connectors: _initParams.connectors,
         ssr: _initParams.ssr ?? true,
     })
-    // Mirrors the old <WagmiProvider reconnectOnMount={true}> behavior so
-    // connections restore on page load. Skipped for external configs — the host
-    // owns the reconnect lifecycle for those.
+    // Mirrors the old <WagmiProvider reconnectOnMount={true}> behavior. With
+    // `ssr: true`, wagmi defers persist rehydration AND gates EIP-6963 connector
+    // discovery on `hasHydrated()` — both seeded initial providers and the mipd
+    // subscriber early-return until rehydrate runs. `hydrate(...).onMount()`
+    // rehydrates persistence, appends `mipd.getProviders()` into the connector
+    // store, and then calls `reconnect(config)`. Skipped for external configs —
+    // the host owns this lifecycle for those.
     if (!_external && typeof window !== 'undefined') {
-        reconnect(_config).catch(() => { /* swallow */ })
+        hydrate(_config, { reconnectOnMount: true }).onMount().catch(() => { /* swallow */ })
     }
     return _config
 }

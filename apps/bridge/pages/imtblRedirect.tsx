@@ -2,7 +2,7 @@ import { THEME_COLORS } from "@layerswap/widget";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { useState } from "react";
-import { createEVMProvider, createImmutablePassportProvider, ImtblRedirect } from "@layerswap/wallets";
+import { createEVMProvider, createImmutablePassportProvider, imtblPassportLoginCallback } from "@layerswap/wallets";
 import WidgetWrapper from "../components/WidgetWrapper";
 
 const ImtblRedirectPage = () => {
@@ -12,6 +12,11 @@ const ImtblRedirectPage = () => {
     useEffect(() => {
         setLoaded(true)
     }, [])
+
+    useEffect(() => {
+        if (!loaded) return
+        imtblPassportLoginCallback().catch(() => { /* swallow */ })
+    }, [loaded])
 
     if (!loaded) return <div>Loading...</div>
     const themeData = THEME_COLORS['default']
@@ -41,7 +46,9 @@ const ImtblRedirectPage = () => {
             themeData={themeData}
             walletProviders={walletProviders}
         >
-            <ImtblRedirect />
+            <div>
+                <h1>Redirecting...</h1>
+            </div>
         </WidgetWrapper>
     );
 }

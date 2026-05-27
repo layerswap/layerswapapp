@@ -10,6 +10,7 @@ import {
     getAdditionalConnectorsStore,
     isMobile,
 } from '@layerswap/widget/internal'
+import { createStore } from 'zustand/vanilla'
 import { ethereumNames, id as PROVIDER_ID, name as PROVIDER_NAME } from '../constants'
 import { createEvmTransfer } from '../transferProvider/createEvmTransfer'
 import { evmConnectionService } from './EvmConnectionService'
@@ -50,8 +51,6 @@ export function createEvmConnection(
 
     const transferProvider = createEvmTransfer()
     const transfer = transferProvider.executeTransfer
-
-    const listeners = new Set<() => void>()
 
     type SnapshotInputs = {
         connections: unknown
@@ -142,61 +141,36 @@ export function createEvmConnection(
         return snapshot
     }
 
-    const emit = () => listeners.forEach(l => l())
+    const store = createStore<WalletConnectionProvider>(() => computeSnapshot())
 
-    type InternalUnsubs = {
-        evm: () => void
-        additional: () => void
-        modalFetch: () => void
-    }
-    let internal: InternalUnsubs | null = null
-
-    const attachInternal = () => {
-        if (internal) return
-        internal = {
-            evm: useEvmStore.subscribe(emit),
-            additional: additionalConnectorsStore.subscribe(emit),
-            modalFetch: connectModalStore.subscribe(() => {
-                const modal = connectModalStore.getSnapshot()
-                if (modal.isWalletModalOpen && !additionalConnectorsStore.getSnapshot().browseMetadata.loaded) {
-                    additionalConnectorsStore
-                        .requestAdditionalConnectors({ page: 1, pageSize: 40 })
-                        .catch(error => console.warn('Failed to load WalletConnect wallets registry', error))
-                }
-            }),
-        }
+    const sync = () => {
+        const next = computeSnapshot()
+        if (store.getState() === next) return
+        store.setState(next, true)
     }
 
-    const detachInternal = () => {
-        if (!internal) return
-        internal.evm()
-        internal.additional()
-        internal.modalFetch()
-        internal = null
-    }
+    const unsubs: (() => void)[] = [
+        useEvmStore.subscribe(sync),
+        additionalConnectorsStore.subscribe(sync),
+        connectModalStore.subscribe(() => {
+            const modal = connectModalStore.getSnapshot()
+            if (modal.isWalletModalOpen && !additionalConnectorsStore.getSnapshot().browseMetadata.loaded) {
+                additionalConnectorsStore
+                    .requestAdditionalConnectors({ page: 1, pageSize: 40 })
+                    .catch(error => console.warn('Failed to load WalletConnect wallets registry', error))
+            }
+        }),
+    ]
 
     return {
-        getSnapshot: computeSnapshot,
-        subscribe(listener) {
-            // Ref-counted internal subscription: only attach to upstream
-            // stores while at least one listener is observing. This makes the
-            // store safe to "destroy" and re-subscribe across strict-mode
-            // double-mount cycles without leaking zustand listeners.
-            if (listeners.size === 0) attachInternal()
-            listeners.add(listener)
-            return () => {
-                listeners.delete(listener)
-                if (listeners.size === 0) detachInternal()
-            }
-        },
+        store,
         updateProps(nextProps) {
             networks = nextProps.networks
             evmConnectionService.setNetworks(networks)
-            emit()
+            sync()
         },
         destroy() {
-            detachInternal()
-            listeners.clear()
+            unsubs.forEach(u => u())
         },
     }
 }

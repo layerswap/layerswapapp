@@ -1,7 +1,37 @@
 import { create } from 'zustand'
-import type { Wallet as TronWallet } from '@tronweb3/tronwallet-adapter-react-hooks'
 
 export type TronWalletState = 'NotFound' | 'Disconnect' | 'Connected' | 'Loading' | string
+
+/**
+ * Local duck-typed shape for a Tron wallet adapter. We deliberately avoid
+ * importing `Adapter` from `@tronweb3/tronwallet-abstract-adapter`, since each
+ * concrete adapter package (tronlink, okxwallet, bybit, …) ships its own
+ * version with subtly incompatible declarations of optional members like
+ * `multiSign`. This interface captures only what the manager actually uses.
+ */
+export type TronTransaction = any
+export type TronSignedTransaction = any
+export interface TronAdapter {
+    name: string
+    icon: string
+    url: string
+    state: TronWalletState
+    address: string | null
+    connected: boolean
+    connect(options?: Record<string, unknown>): Promise<void>
+    disconnect(): Promise<void>
+    signTransaction(transaction: TronTransaction): Promise<TronSignedTransaction>
+    on(event: 'connect', listener: (address: string) => void): unknown
+    on(event: 'disconnect', listener: () => void): unknown
+    on(event: 'accountsChanged', listener: (address: string) => void): unknown
+    on(event: 'stateChanged', listener: (state: TronWalletState) => void): unknown
+    on(event: 'readyStateChanged', listener: (state: string) => void): unknown
+    off(event: 'connect', listener: (address: string) => void): unknown
+    off(event: 'disconnect', listener: () => void): unknown
+    off(event: 'accountsChanged', listener: (address: string) => void): unknown
+    off(event: 'stateChanged', listener: (state: TronWalletState) => void): unknown
+    off(event: 'readyStateChanged', listener: (state: string) => void): unknown
+}
 
 export type TronWalletSnapshot = {
     name: string
@@ -32,11 +62,11 @@ export const useTronStore = create<TronStoreState>()((set) => ({
     _setActive: (name, address) => set({ activeWalletName: name, activeAddress: address }),
 }))
 
-export const snapshotFromTronWallet = (wallet: TronWallet): TronWalletSnapshot => ({
-    name: wallet.adapter.name,
-    icon: wallet.adapter.icon,
-    url: wallet.adapter.url,
-    state: wallet.state,
-    connected: wallet.adapter.connected,
-    address: wallet.adapter.address || undefined,
+export const snapshotFromTronAdapter = (adapter: TronAdapter): TronWalletSnapshot => ({
+    name: adapter.name,
+    icon: adapter.icon,
+    url: adapter.url,
+    state: adapter.state,
+    connected: adapter.connected,
+    address: adapter.address || undefined,
 })

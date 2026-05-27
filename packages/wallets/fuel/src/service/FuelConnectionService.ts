@@ -4,7 +4,7 @@ import type {
     Wallet,
     WalletConnectionProvider,
 } from '@layerswap/widget/types'
-import { sleep } from '@layerswap/widget/internal'
+import { sleep, useWalletStore } from '@layerswap/widget/internal'
 import type { FuelConnector } from '@fuel-ts/account'
 import { Address } from '@fuel-ts/address'
 import { name as PROVIDER_NAME, id as PROVIDER_ID, commonSupportedNetworks } from '../constants'
@@ -12,18 +12,9 @@ import { BAKO_STATE } from '../connectors/bako-safe/Bako'
 import { resolveFuelWalletConnectorIcon } from '../utils'
 import { useFuelStore } from './fuelStore'
 
-type AddWalletFn = (wallet: Wallet) => void
-type RemoveWalletFn = (providerName: string, connectorName?: string) => void
-
-type RuntimeDeps = {
-    addWallet?: AddWalletFn
-    removeWallet?: RemoveWalletFn
-}
-
 export class FuelConnectionService {
     private _networks: NetworkWithTokens[] = []
     private _networksKey = ''
-    private _deps: RuntimeDeps = {}
 
     setNetworks(networks: NetworkWithTokens[]): void {
         const key = networks.map(n => n.name).join('|')
@@ -32,8 +23,16 @@ export class FuelConnectionService {
         this._networksKey = key
     }
 
-    configure(deps: RuntimeDeps): void {
-        this._deps = { ...this._deps, ...deps }
+    private addWallet(wallet: Wallet): void {
+        useWalletStore.getState().connectWallet(wallet)
+    }
+
+    private removeWallet(providerName: string, connectorName?: string): void {
+        useWalletStore.getState().disconnectWallet(providerName, connectorName)
+    }
+
+    private getConnectedFromGlobalStore(): Wallet[] {
+        return useWalletStore.getState().connectedWallets.filter(w => w.providerName === PROVIDER_NAME)
     }
 
     getNetworkIcon(): string | undefined {
@@ -99,7 +98,7 @@ export class FuelConnectionService {
                 if (!addresses || !fuelConnector) return undefined
 
                 const result = await this.resolveFuelWallet(fuelConnector, addresses[0], addresses)
-                this._deps.addWallet?.(result)
+                this.addWallet(result)
                 await this.switchAccount(result)
                 return result
             } catch (e) {
@@ -123,7 +122,7 @@ export class FuelConnectionService {
             // TODO: handle error
             console.log(e)
         } finally {
-            this._deps.removeWallet?.(PROVIDER_NAME, connectorName)
+            this.removeWallet(PROVIDER_NAME, connectorName)
         }
     }
 
@@ -134,7 +133,7 @@ export class FuelConnectionService {
             const connectors = useFuelStore.getState().connectors
             for (const connector of connectors.filter(c => c.connected)) {
                 await connector.disconnect()
-                this._deps.removeWallet?.(PROVIDER_NAME)
+                this.removeWallet(PROVIDER_NAME)
             }
         } catch (e) {
             // TODO: handle error
@@ -174,7 +173,7 @@ export class FuelConnectionService {
                 const addresses = (await connector.accounts()).map(a => Address.fromAddressOrString(a).toB256())
                 if (connector.connected && addresses.length > 0) {
                     const w = await this.resolveFuelWallet(connector, addresses[0], addresses)
-                    this._deps.addWallet?.(w)
+                    this.addWallet(w)
                     wallets.push(w)
                 }
             } catch (e) {
@@ -185,7 +184,8 @@ export class FuelConnectionService {
         return wallets
     }
 
-    buildProvider(connectedWallets: Wallet[]): WalletConnectionProvider {
+    buildProvider(): WalletConnectionProvider {
+        const connectedWallets = this.getConnectedFromGlobalStore()
         return {
             connectWallet: this.connectWallet.bind(this),
             disconnectWallets: this.disconnectWallets.bind(this),

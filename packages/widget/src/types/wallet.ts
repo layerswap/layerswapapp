@@ -7,6 +7,7 @@ import { NftProvider } from './nft';
 import { ContractAddressCheckerProvider } from './contract';
 import { RpcHealthCheckProvider } from './rpcHealth';
 import type { ThemeData } from '@/Models/Theme';
+import type { StoreApi } from 'zustand/vanilla';
 export { type WalletModalConnector } from '@/components/Wallet/WalletModal'
 
 export type InternalConnector = {
@@ -52,13 +53,12 @@ export type Wallet = {
 }
 
 /**
- * External store contract for a wallet's connection state. Replaces the old
- * `walletConnectionProvider` hook. Implementations expose a vanilla
- * subscribe/getSnapshot pair the widget bridges via `useSyncExternalStore`.
+ * External store contract for a wallet's connection state. Each package
+ * exposes a vanilla zustand store (`store`); React consumers subscribe via
+ * `useStore(store, selector)`, non-React peers read `store.getState()`.
  */
 export type WalletConnectionStore = {
-    subscribe(listener: () => void): () => void
-    getSnapshot(): WalletConnectionProvider
+    store: StoreApi<WalletConnectionProvider>
     /** Called when host inputs change (e.g. settings refreshed and networks shifted). */
     updateProps?(props: WalletConnectionProviderProps): void
     /** Called when the store is no longer needed. */

@@ -18,7 +18,7 @@ import {
 import { NetworkType } from '@layerswap/widget/types'
 import { name as PROVIDER_NAME, id as PROVIDER_ID, bitcoinNames } from '../constants'
 import { isBitcoinAddressValid } from '../utils/isValidAddress'
-import { getBitcoinConfig } from './getBitcoinConfig'
+import { getBitcoinConfig, hasBitcoinConfig } from './getBitcoinConfig'
 import { useBitcoinStore } from './bitcoinStore'
 
 type ConnectorSelection = { selectedConnector: unknown }
@@ -84,9 +84,10 @@ export class BitcoinConnectionService {
     }
 
     getConnectedWallets(): Wallet[] {
-        const config = getBitcoinConfig()
+        if (!hasBitcoinConfig()) return []
         const account = useBitcoinStore.getState().account
         if (!account.address || !account.connectorId) return []
+        const config = getBitcoinConfig()
         const connector = getConnectors(config).find(c => c.id === account.connectorId)
         const wallet = this.resolveWallet(connector, account.address)
         return wallet ? [wallet] : []

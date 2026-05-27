@@ -3,25 +3,42 @@ import type {
     NetworkWithTokens,
     Wallet,
     WalletConnectionProvider,
+    WalletModalConnector,
 } from '@layerswap/widget/types'
 import { walletIconResolver } from '@layerswap/widget/internal'
-import type { ConnectedWallet } from '@tonconnect/ui-react'
-import { name as PROVIDER_NAME, id as PROVIDER_ID, tonNames } from '../constants'
+import {
+    isWalletInfoCurrentlyInjected,
+    isWalletInfoInjectable,
+    isWalletInfoRemote,
+    type Wallet as TonWallet,
+    type WalletInfo,
+    type WalletInfoInjectable,
+    type WalletInfoRemote,
+} from '@tonconnect/sdk'
 import { Address } from '@ton/core'
-import { getTonConnectUI } from './getTonConnectUI'
+import { name as PROVIDER_NAME, id as PROVIDER_ID, tonNames } from '../constants'
+import { getTonConnect } from './getTonConnect'
 import { snapshotFromTonWallet, type TonWalletSnapshot, useTonStore } from './tonStore'
 
-const TON_LOGO = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAALSSURBVHgB7ZoxUxNBGIa/YEhITJRRG61ig40wjlJpExttsbWCX0DyC5L8AqCzQxpbMmNlFxtoYIYRGipS6YwjMxkxxkRE7r0Z7vYWyIXdb8NsZp8qN3N3e+++u9+7t7kEvfv+n0aYMRpxnEDbcQJtxwm0HSfQdpxA23ECbWfkBSZJk8l0gp7cSVIhf4M4aR79o8a3v6SLlsC5QppWizlPpJmBAJHljTbVm11SRfnJivfHaf31LWPiAEYF2kBbqig/3dLzHA2LyuxNUkVpiE6mvHl3L7y0ftCl8uavvtesv7odXNP42qOFxlHf80vTGVqczvq/iw/GPTfHvCF7QldFTaA0LD97xSCu8VYvuvUTd76KmItQGqKY/K1u+ACLXm+jmnKCe4btnSgLVp6DK3ud4DeKQelxhrjAnBNjZ22/Q6ooC1z+0om6OJNlcRHC5qfSwTGcW967BoGYU+XNdnCMwlN5ql7tzqg8y0bcq223vY5U37rVCrH3+3+8ihiuNkozGa0Vje/eo4ngGO6hDR20Uxo9LLJazJMqcE/k5ccW6aItEA6uCb2MzFJZecwVUhH34ByqtS4s66zq9u9IwVFZecgro5p3Tw5YBKKnxdiAi/NTEwNfj3MjhWWrzeIeYFspIzbEMF56kRs4Niqz4dzDPapM7gE2gX5sbITrS8TGIOEvh7pctHRhfdepN3uR2IgLfznUdw6PtWNBhv1lTnQgzkU51N98+kncsAuEgyu74Ry6zEU51LliQcbI63h1K4yNy1wUQx2FpcZYWESMCETBEWPDdzEVuljIJyPuwXET7oGEyY8QDt7e9d/E+wH3Hn44JFMY3RddaMQXDe5YkDEqEAVHjA0ZFBbuWJAxvrPdb3PJVGERMS7QX6funhdiKhZkhvLfhBgbwGQsyAxFIGIDQ3Xnx7HvGorPMNwDCfetmuU4gbbjBNqOE2g7TqDtOIG2cwq0XR5LWK5AWAAAAABJRU5ErkJggg=='
+type RuntimeDeps = {
+    setSelectedConnector?: (connector: unknown) => void
+    isMobilePlatform?: boolean
+}
 
 export class TonConnectionService {
     private _networks: NetworkWithTokens[] = []
     private _networksKey = ''
+    private _deps: RuntimeDeps = {}
 
     setNetworks(networks: NetworkWithTokens[]): void {
         const key = networks.map(n => n.name).join('|')
         if (this._networksKey === key) return
         this._networks = networks
         this._networksKey = key
+    }
+
+    configure(deps: RuntimeDeps): void {
+        this._deps = { ...this._deps, ...deps }
     }
 
     getNetworkIcon(): string | undefined {
@@ -33,13 +50,8 @@ export class TonConnectionService {
     }
 
     getAvailableConnectors(): InternalConnector[] {
-        return [{
-            id: PROVIDER_ID,
-            name: PROVIDER_NAME,
-            icon: TON_LOGO,
-            extensionNotFound: false,
-            providerName: PROVIDER_NAME,
-        }]
+        const wallets = useTonStore.getState().wallets
+        return dedupeTonWallets(wallets).map(walletInfoToInternalConnector)
     }
 
     resolveWallet(snapshot: TonWalletSnapshot | undefined): Wallet | undefined {
@@ -71,58 +83,107 @@ export class TonConnectionService {
 
     async disconnectWallets(): Promise<void> {
         try {
-            const tonConnectUI = getTonConnectUI()
-            await tonConnectUI.disconnect()
+            const tonConnect = getTonConnect()
+            if (tonConnect.connected) {
+                await tonConnect.disconnect()
+            }
         } catch (e) {
             // TODO: handle error
             console.log(e)
         }
     }
 
-    async connectWallet(): Promise<Wallet | undefined> {
-        const tonConnectUI = getTonConnectUI()
+    async connectWallet({ connector }: { connector: WalletModalConnector }): Promise<Wallet | undefined> {
+        const tonConnect = getTonConnect()
+        const setSelectedConnector = this._deps.setSelectedConnector
+        const isMobilePlatform = this._deps.isMobilePlatform ?? false
 
-        if (useTonStore.getState().tonWallet) {
+        if (tonConnect.connected) {
             await this.disconnectWallets()
         }
 
-        const status = await new Promise<ConnectedWallet>((resolve, reject) => {
-            let unsubscribeModal: (() => void) | undefined
-            let unsubscribeStatus: (() => void) | undefined
+        const walletInfo = useTonStore.getState().wallets.find(w => w.appName === connector.id)
+        if (!walletInfo) throw new Error('TON wallet not found')
+
+        // Set up the status-change promise first so we don't miss an instant
+        // injected connect that resolves before we set the listener.
+        const connectionResultPromise = new Promise<TonWallet>((resolve, reject) => {
             const cleanup = () => {
-                unsubscribeModal?.()
-                unsubscribeStatus?.()
+                unsubscribe()
             }
-            try {
-                tonConnectUI.openModal()
-
-                unsubscribeModal = tonConnectUI.onModalStateChange((state) => {
-                    if (state.status === 'closed' && state.closeReason === 'action-cancelled') {
+            const unsubscribe = tonConnect.onStatusChange(
+                (wallet) => {
+                    if (wallet) {
                         cleanup()
-                        reject(new Error("You've declined the wallet connection request"))
+                        resolve(wallet)
                     }
-                })
-
-                unsubscribeStatus = tonConnectUI.onStatusChange((s) => {
-                    if (s) {
-                        cleanup()
-                        resolve(s)
-                    }
-                })
-            } catch (error) {
-                cleanup()
-                console.error('Error connecting:', error)
-                reject(error as Error)
-            }
+                },
+                (err) => {
+                    cleanup()
+                    reject(err)
+                },
+            )
         })
 
-        const snapshot = snapshotFromTonWallet(status)
-        return this.resolveWallet(snapshot)
+        try {
+            if (isWalletInfoCurrentlyInjected(walletInfo) || (isWalletInfoInjectable(walletInfo) && walletInfo.injected)) {
+                const injectable = walletInfo as WalletInfoInjectable
+                tonConnect.connect({ jsBridgeKey: injectable.jsBridgeKey })
+            } else if (isWalletInfoRemote(walletInfo)) {
+                const remote = walletInfo as WalletInfoRemote
+                // Loading state for the QR view while the bridge handshakes.
+                setSelectedConnector?.({ ...connector, qr: { state: 'loading', value: undefined }, showQrCode: true })
+
+                const universalLink = tonConnect.connect({
+                    universalLink: remote.universalLink,
+                    bridgeUrl: remote.bridgeUrl,
+                }) as string
+
+                // Prefer the wallet's native scheme (e.g. `tonkeeper-tc://`) for the
+                // open-in-app button — it launches the desktop wallet directly. Falls
+                // back to the universal link (e.g. https://t.me/wallet?...) when the
+                // wallet doesn't publish a native scheme (Telegram Wallet, Tonhub).
+                const nativeDeepLink = remote.deepLink
+                    ? appendTonConnectParamsToDeepLink(remote.deepLink, universalLink)
+                    : universalLink
+
+                if (isMobilePlatform) {
+                    try {
+                        window.location.href = nativeDeepLink
+                    } catch {
+                        setSelectedConnector?.({ ...connector, qr: { state: 'fetched', value: universalLink, deepLink: nativeDeepLink }, showQrCode: true })
+                    }
+                } else {
+                    setSelectedConnector?.({ ...connector, qr: { state: 'fetched', value: universalLink, deepLink: nativeDeepLink }, showQrCode: true })
+                }
+            } else if (isWalletInfoInjectable(walletInfo)) {
+                // Injectable but not currently injected → tell the UI the extension is missing.
+                setSelectedConnector?.({ ...connector, extensionNotFound: true })
+                throw new Error(`${walletInfo.name} extension is not installed`)
+            } else {
+                throw new Error('Unsupported TON wallet connection source')
+            }
+
+            const tonWallet = await connectionResultPromise
+            const snapshot = snapshotFromTonWallet(tonWallet)
+            return this.resolveWallet(snapshot)
+        } catch (e) {
+            if (e instanceof Error) throw e
+            throw new Error(String(e))
+        }
     }
 
     buildProvider(snapshot: TonWalletSnapshot | undefined): WalletConnectionProvider {
         const connectedWallets = this.getConnectedWallets(snapshot)
         const activeWallet = connectedWallets[0]
+        const ready = useTonStore.getState().ready
+
+        // While the wallet-list fetch is in flight (SSR + first client paint),
+        // expose empty supported-network lists so the widget's provider filter
+        // drops TON out of `isProvidersReady`. Once `ready` flips to true, the
+        // store emits and the snapshot recomputes with the real network list,
+        // exactly like the previous hook-bridge adapter behaved.
+        const supportedNetworks = ready ? tonNames : []
 
         return {
             connectWallet: this.connectWallet.bind(this),
@@ -131,15 +192,79 @@ export class TonConnectionService {
             availableConnectors: this.getAvailableConnectors(),
             connectedWallets,
             activeWallet,
-            withdrawalSupportedNetworks: tonNames,
-            autofillSupportedNetworks: tonNames,
-            asSourceSupportedNetworks: tonNames,
+            withdrawalSupportedNetworks: supportedNetworks,
+            autofillSupportedNetworks: supportedNetworks,
+            asSourceSupportedNetworks: supportedNetworks,
             name: PROVIDER_NAME,
             id: PROVIDER_ID,
             providerIcon: this.getProviderIcon(),
-            ready: useTonStore.getState().ready,
+            ready,
         }
     }
 }
 
 export const tonConnectionService = new TonConnectionService()
+
+/**
+ * Display-name overrides for wallets where the TonConnect registry's `name`
+ * field is ambiguous (e.g. Telegram's bot wallet is published as just "Wallet").
+ * Mirrors how `@tonconnect/ui-react`'s modal labels them.
+ */
+const TON_WALLET_DISPLAY_NAMES: Record<string, string> = {
+    'telegram-wallet': 'Wallet in Telegram',
+}
+
+/**
+ * The TonConnect registry sometimes contains multiple entries that resolve to
+ * the same wallet — most notably OKX, which publishes both `okxWallet` and
+ * `okxTonWallet` with the same `jsBridgeKey: "okxTonWallet"`. Collapse to the
+ * first entry we encounter per jsBridgeKey so the user only sees one tile.
+ */
+function dedupeTonWallets(wallets: readonly WalletInfo[]): WalletInfo[] {
+    const seenBridgeKeys = new Set<string>()
+    const result: WalletInfo[] = []
+    for (const wallet of wallets) {
+        const key = isWalletInfoInjectable(wallet) ? wallet.jsBridgeKey : undefined
+        if (key) {
+            if (seenBridgeKeys.has(key)) continue
+            seenBridgeKeys.add(key)
+        }
+        result.push(wallet)
+    }
+    return result
+}
+
+function walletInfoToInternalConnector(info: WalletInfo): InternalConnector {
+    const isInjectable = isWalletInfoInjectable(info)
+    const isInjected = isWalletInfoCurrentlyInjected(info)
+    const hasBrowserExtension = isInjectable
+    const isMobileSupported = isWalletInfoRemote(info)
+    const displayName = TON_WALLET_DISPLAY_NAMES[info.appName] ?? info.name
+
+    return {
+        id: info.appName,
+        name: displayName,
+        icon: info.imageUrl,
+        type: isInjected ? 'injected' : 'other',
+        hasBrowserExtension,
+        extensionNotFound: isInjectable && !isInjected,
+        isMobileSupported,
+        installUrl: info.aboutUrl,
+        providerName: PROVIDER_NAME,
+    }
+}
+
+/**
+ * TonConnect's `connect({ universalLink, bridgeUrl })` returns a `tc://`-style
+ * universal link. For wallets that publish a native deep-link (e.g. tonkeeper://),
+ * we splice the TonConnect query params onto the wallet's own deep-link so
+ * mobile redirects open the wallet directly.
+ */
+function appendTonConnectParamsToDeepLink(deepLink: string, universalLink: string): string {
+    const qIdx = universalLink.indexOf('?')
+    if (qIdx === -1) return deepLink
+    const params = universalLink.slice(qIdx)
+    return deepLink.includes('?')
+        ? `${deepLink}&${params.slice(1)}`
+        : `${deepLink}${params}`
+}

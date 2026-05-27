@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, type FC } from 'react'
+import { createStore } from 'zustand/vanilla'
 import type {
     WalletConnectionProvider,
     WalletConnectionProviderProps,
@@ -39,29 +40,19 @@ export type ReactHookConnectionAdapter = {
 export function createReactHookConnectionAdapter(
     useConnection: (props: WalletConnectionProviderProps) => WalletConnectionProvider,
 ): ReactHookConnectionAdapter {
-    let snapshot: WalletConnectionProvider = EMPTY_PROVIDER
-    const listeners = new Set<() => void>()
-
-    const setSnapshot = (next: WalletConnectionProvider) => {
-        if (next === snapshot) return
-        snapshot = next
-        listeners.forEach(l => l())
-    }
+    const store = createStore<WalletConnectionProvider>(() => EMPTY_PROVIDER)
 
     const Hydrator: FC<WalletConnectionProviderProps> = (props) => {
         const value = useConnection(props)
         useEffect(() => {
-            setSnapshot(value)
+            if (store.getState() === value) return
+            store.setState(value, true)
         })
         return null
     }
 
     const createConnection = (_props: WalletConnectionProviderProps): WalletConnectionStore => ({
-        getSnapshot: () => snapshot,
-        subscribe(listener) {
-            listeners.add(listener)
-            return () => listeners.delete(listener)
-        },
+        store,
         updateProps() {
             // Networks propagate via the Hydrator's props. No-op here.
         },

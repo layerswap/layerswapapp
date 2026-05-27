@@ -7,7 +7,7 @@ import type {
 } from '@layerswap/widget/types'
 import { walletIconResolver } from '@layerswap/widget/internal'
 import { name as PROVIDER_NAME, id as PROVIDER_ID, tronNames } from '../constants'
-import { getTronAdapterApi } from './getTronAdapter'
+import { tronAdapterManager } from './tronAdapterManager'
 import { type TronWalletSnapshot, useTronStore } from './tronStore'
 
 export class TronConnectionService {
@@ -80,10 +80,9 @@ export class TronConnectionService {
         const target = wallets.find(w => w.name === connector.name)
         if (!target) throw new Error('Connector not found')
 
-        const api = getTronAdapterApi()
         try {
-            api.select(target.name)
-            await api.connect()
+            tronAdapterManager.select(target.name)
+            await tronAdapterManager.connect()
 
             const { wallets: updatedWallets, activeWalletName, activeAddress } = useTronStore.getState()
             const snapshot = updatedWallets.find(w => w.name === activeWalletName) ?? target
@@ -95,8 +94,7 @@ export class TronConnectionService {
 
     async disconnectWallets(): Promise<void> {
         try {
-            const api = getTronAdapterApi()
-            await api.disconnect()
+            await tronAdapterManager.disconnect()
         } catch (e) {
             // TODO: handle error
             console.log(e)

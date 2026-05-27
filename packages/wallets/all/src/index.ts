@@ -8,7 +8,7 @@ import type { EVMProviderConfig, WalletConnectConfig } from "@layerswap/wallet-e
 import { createFuelProvider } from "@layerswap/wallet-fuel";
 import type { FuelProviderConfig } from "@layerswap/wallet-fuel";
 
-import { createImmutablePassportProvider, ImtblRedirect } from "@layerswap/wallet-imtbl-passport";
+import { createImmutablePassportProvider, imtblPassportLoginCallback } from "@layerswap/wallet-imtbl-passport";
 import type { ImmutablePassportProviderConfig, ImtblPassportConfig } from "@layerswap/wallet-imtbl-passport";
 
 import { createParadexProvider } from "@layerswap/wallet-paradex";
@@ -37,7 +37,7 @@ export type { EVMProviderConfig, WalletConnectConfig };
 export { createFuelProvider };
 export type { FuelProviderConfig };
 
-export { createImmutablePassportProvider, ImtblRedirect };
+export { createImmutablePassportProvider, imtblPassportLoginCallback };
 export type { ImmutablePassportProviderConfig, ImtblPassportConfig };
 
 export { createParadexProvider };

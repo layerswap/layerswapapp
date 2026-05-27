@@ -69,7 +69,7 @@ importers:
         version: 10.4.23(postcss@8.5.6)
       node:
         specifier: runtime:^24.5.1
-        version: runtime:24.14.1
+        version: runtime:24.16.0
       postcss:
         specifier: ^8.5.3
         version: 8.5.6
@@ -547,15 +547,6 @@ importers:
       '@tailwindcss/postcss':
         specifier: ^4.0.15
         version: 4.0.15
-      '@types/react':
-        specifier: 'catalog:'
-        version: 19.2.3
-      react:
-        specifier: 'catalog:'
-        version: 19.2.3
-      react-dom:
-        specifier: 'catalog:'
-        version: 19.2.3(react@19.2.3)
       tailwindcss:
         specifier: ^4.0.15
         version: 4.0.15
@@ -750,25 +741,22 @@ importers:
       '@ton/ton':
         specifier: ^15.4.0
         version: 15.4.0(@ton/core@0.62.1(@ton/crypto@3.3.0))(@ton/crypto@3.3.0)
-      '@tonconnect/ui-react':
-        specifier: ^2.3.1
-        version: 2.3.1(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@tonconnect/sdk':
+        specifier: ^3.4.1
+        version: 3.4.1
     devDependencies:
       '@layerswap/widget':
         specifier: workspace:^
         version: link:../../widget
-      '@types/react':
-        specifier: 'catalog:'
-        version: 19.2.3
-      react:
-        specifier: 'catalog:'
-        version: 19.2.3
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(react@19.2.3)
 
   packages/wallets/tron:
     dependencies:
+      '@tronweb3/tronwallet-abstract-adapter':
+        specifier: ^1.1.13
+        version: 1.1.13(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@tronweb3/tronwallet-adapter-bitkeep':
         specifier: ^1.1.5
         version: 1.1.7(bufferutil@4.1.0)(utf-8-validate@5.0.10)
@@ -784,9 +772,6 @@ importers:
       '@tronweb3/tronwallet-adapter-okxwallet':
         specifier: ^1.0.6
         version: 1.0.7(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      '@tronweb3/tronwallet-adapter-react-hooks':
-        specifier: ^1.1.10
-        version: 1.1.11(bufferutil@4.1.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(utf-8-validate@5.0.10)
       '@tronweb3/tronwallet-adapter-tronlink':
         specifier: ^1.1.12
         version: 1.1.13(bufferutil@4.1.0)(utf-8-validate@5.0.10)
@@ -797,12 +782,6 @@ importers:
       '@layerswap/widget':
         specifier: workspace:^
         version: link:../../widget
-      '@types/react':
-        specifier: 'catalog:'
-        version: 19.2.3
-      react:
-        specifier: 'catalog:'
-        version: 19.2.3
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(react@19.2.3)
@@ -4948,6 +4927,7 @@ packages:
   '@safe-global/safe-gateway-typescript-sdk@3.23.1':
     resolution: {integrity: sha512-6ORQfwtEJYpalCeVO21L4XXGSdbEMfyp2hEv6cP82afKXSwvse6d3sdelgaPWUxHIsFRkWvHDdzh8IyyKHZKxw==}
     engines: {node: '>=16'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   '@scure/base@1.1.9':
     resolution: {integrity: sha512-8YKhl8GHiNI/pU2VMaofa2Tor7PJRAjwQLBBuilkJ9L5+13yVbC7JO/wS7piioAvPSwR3JKM1IJ/u4xQzbcXKg==}
@@ -6450,20 +6430,11 @@ packages:
   '@tonconnect/isomorphic-fetch@0.0.3':
     resolution: {integrity: sha512-jIg5nTrDwnite4fXao3dD83eCpTvInTjZon/rZZrIftIegh4XxyVb5G2mpMqXrVGk1e8SVXm3Kj5OtfMplQs0w==}
 
-  '@tonconnect/protocol@2.3.0':
-    resolution: {integrity: sha512-OxrmcXF/EsSdGeASP9VpTRojuMtTV87DKYFLRq4ZJvF/Hirfm2cgcxzzj2uksEGm5IIR010UWo6b38RuokNwFQ==}
+  '@tonconnect/protocol@2.4.0':
+    resolution: {integrity: sha512-3xg6sMWIrSgW7/f7iPgOb2BI3LaMScjDMqfu20fcEMbOVvNFk3TGAUKK5cJ3pfvUINsyLgPoylcIbPap37jXiA==}
 
-  '@tonconnect/sdk@3.3.1':
-    resolution: {integrity: sha512-lhXJu95VvbD36u5mMPg2sg+w4GQwkrYnHeJ8rVveu2N7UPwt0jvrEqKlvf7Ss1gh5RDtzs35SS3GbJlaIOAJNA==}
-
-  '@tonconnect/ui-react@2.3.1':
-    resolution: {integrity: sha512-dAMqNG5X8Llh1m3eIOvIQlXgMazrZrmnQGefJmlmyghwwGydR0O9NGpW7I7s2CN24usAaRGX8mVJPemsa2oHSQ==}
-    peerDependencies:
-      react: '>=17.0.0'
-      react-dom: '>=17.0.0'
-
-  '@tonconnect/ui@2.3.1':
-    resolution: {integrity: sha512-G1hKn5TrqFYztbR94EG8YuhGUpp7wY8PjC1Fu7/d8rFg7XnPGlUcGmuqH8+2lYrb9Ms0M7v6+5U6S4q4+yCQtQ==}
+  '@tonconnect/sdk@3.4.1':
+    resolution: {integrity: sha512-eVH8erAFout89gXYHXua/es+mmLPiW1r7ng9hgHKYQv85HLq8/zzQEkbJpbTlnIuQ6CJ/QKchjMsIgYz3BYCUQ==}
 
   '@toruslabs/base-controllers@5.11.0':
     resolution: {integrity: sha512-5AsGOlpf3DRIsd6PzEemBoRq+o2OhgSFXj5LZD6gXcBlfe0OpF+ydJb7Q8rIt5wwpQLNJCs8psBUbqIv7ukD2w==}
@@ -6624,8 +6595,8 @@ packages:
     peerDependencies:
       tslib: ^2.6.2
 
-  '@tronweb3/tronwallet-abstract-adapter@1.1.10':
-    resolution: {integrity: sha512-gZExaEZwPfI9oI7qSi56p/5Zl/DEzo1JlcD3lQzz1cuz0rZmEFpIqDS2mhY4r/IwEPwilIU7lg7T8/RQDVk9gA==}
+  '@tronweb3/tronwallet-abstract-adapter@1.1.13':
+    resolution: {integrity: sha512-Sv1FUo5A1fNgc2oZ2LMJ7SmA5TpW5MSWTNjnWJ8t6Z+aRfLbc/s8nkPPLqm0YfR+Sa80sLhMfqJsJzYf73ynMg==}
     engines: {node: '>=16', pnpm: '>=7'}
 
   '@tronweb3/tronwallet-adapter-bitkeep@1.1.7':
@@ -6647,13 +6618,6 @@ packages:
   '@tronweb3/tronwallet-adapter-okxwallet@1.0.7':
     resolution: {integrity: sha512-XXPZfS/FZ4a48RCDuxXOGdfkvJyO1j72J1zHJ48326r1YubiHVKWSp6liAhedF2nEXVAQOYCSUtGzuOgbXrNYw==}
     engines: {node: '>=16', pnpm: '>=7'}
-
-  '@tronweb3/tronwallet-adapter-react-hooks@1.1.11':
-    resolution: {integrity: sha512-ED2zs3TCTA3wPAcfkt7cHXENwLH5ob41MRstJh8N4iqwSaB5Z7paadGwGxl1qkjvb5V4rbMRWdRBi17cnaqnVQ==}
-    engines: {node: '>=16', pnpm: '>=7'}
-    peerDependencies:
-      react: '*'
-      react-dom: '*'
 
   '@tronweb3/tronwallet-adapter-tronlink@1.1.13':
     resolution: {integrity: sha512-Oq5L0FyBM+g49DCr0DYdSx8xuhiqIlKoBTPNVmCTSDoWnoZpIh0XE33Axm/4OUMO2NHFpQMvP3pFo7QIllOZ/w==}
@@ -7714,6 +7678,9 @@ packages:
   axios@1.13.2:
     resolution: {integrity: sha512-VPk9ebNqPcy5lRGuSlKx752IlDatOjT9paPlm8A7yOuW2Fbvp4X3JznJtT4f0GzGLLiWE9W8onz51SqLYwzGaA==}
 
+  axios@1.13.5:
+    resolution: {integrity: sha512-cz4ur7Vb0xS4/KUN0tPWe44eqxrIu31me+fbang3ijiNscE129POzipJJA6zniq2C/Z6sJCjMimjS8Lc/GAs8Q==}
+
   axios@1.9.0:
     resolution: {integrity: sha512-re4CqKTJaURpzbLHtIi6XpDv20/CnpXOtjRY5/CU32L8gU8ek9UIivcfvSWvmKEngmVbrUtPpdDwWDWL7DNHvg==}
 
@@ -8071,9 +8038,6 @@ packages:
 
   class-variance-authority@0.7.1:
     resolution: {integrity: sha512-Ka+9Trutv7G8M6WT6SeiRWz792K5qEqIGEGzXKhAE6xOWAY6pPH8U+9IY3oCMv6kqTmLsv7Xh/2w2RigkePMsg==}
-
-  classnames@2.5.1:
-    resolution: {integrity: sha512-saHYOzhIQs6wy2sVxTM6bUDsQO4F50V9RQ22qBpEdCW+I+/Wmke2HOl6lS6dTpdxVhb88/I6+Hs+438c3lfUow==}
 
   clean-css@5.3.3:
     resolution: {integrity: sha512-D5J+kHaVb/wKSFcyyV75uCn8fiY4sV38XJoe4CUyGQ+mOU/fMVYUdH1hJC+CJQ5uY3EnW27SbJYS4X8BiLrAFg==}
@@ -10405,94 +10369,94 @@ packages:
   node-releases@2.0.27:
     resolution: {integrity: sha512-nmh3lCkYZ3grZvqcCH+fjmQ7X+H0OeZgP40OierEaAptX4XofMh5kwNbWh7lBduUzCcV/8kZ+NDLCwm2iorIlA==}
 
-  node@runtime:24.14.1:
+  node@runtime:24.16.0:
     resolution:
       type: variations
       variants:
         - resolution:
             archive: tarball
             bin: bin/node
-            integrity: sha256-VvbBjF6XvrAFlMJOs8+jxwtyR8QDsAyn6udbujC4XOU=
+            integrity: sha256-MN/Y5EMiwnEoE/JeFjwlPK1TvkPgmJB7i1NIvxdKSWg=
             type: binary
-            url: https://nodejs.org/download/release/v24.14.1/node-v24.14.1-aix-ppc64.tar.gz
+            url: https://nodejs.org/download/release/v24.16.0/node-v24.16.0-aix-ppc64.tar.gz
           targets:
             - cpu: ppc64
               os: aix
         - resolution:
             archive: tarball
             bin: bin/node
-            integrity: sha256-JUlf+FvYni2KJNiFZtfi+CfGsNPYcrLOv3U3H5P8sf4=
+            integrity: sha256-ORidq07rFXBsQkrwrAijBEyeSPfbEqfXf2t6r8fdXfY=
             type: binary
-            url: https://nodejs.org/download/release/v24.14.1/node-v24.14.1-darwin-arm64.tar.gz
+            url: https://nodejs.org/download/release/v24.16.0/node-v24.16.0-darwin-arm64.tar.gz
           targets:
             - cpu: arm64
               os: darwin
         - resolution:
             archive: tarball
             bin: bin/node
-            integrity: sha256-JSYjCtfZIr6C1P2x5+4ehDA+Ez47Sw7Ewol6sx3gJT0=
+            integrity: sha256-KYtMezy4B2XIcD5CuQMkpOzjtmNJR7iedpw8mAq1UYU=
             type: binary
-            url: https://nodejs.org/download/release/v24.14.1/node-v24.14.1-darwin-x64.tar.gz
+            url: https://nodejs.org/download/release/v24.16.0/node-v24.16.0-darwin-x64.tar.gz
           targets:
             - cpu: x64
               os: darwin
         - resolution:
             archive: tarball
             bin: bin/node
-            integrity: sha256-c0/wT6f47S6KeNQMrPWsP8RRXawoWHV8urMT60g7qKI=
+            integrity: sha256-WJ9bbdT8/uTf2nMBOQPJZquqir2T28nUNlRORytPDnQ=
             type: binary
-            url: https://nodejs.org/download/release/v24.14.1/node-v24.14.1-linux-arm64.tar.gz
+            url: https://nodejs.org/download/release/v24.16.0/node-v24.16.0-linux-arm64.tar.gz
           targets:
             - cpu: arm64
               os: linux
         - resolution:
             archive: tarball
             bin: bin/node
-            integrity: sha256-BoJCkui0C39lpvmXPz1g88wAAakWgjS8PW4wqhNkn9I=
+            integrity: sha256-JStYIFNNwDBKKFQcmkRDfPpyAufyAiXSjUk5MsWOl6o=
             type: binary
-            url: https://nodejs.org/download/release/v24.14.1/node-v24.14.1-linux-ppc64le.tar.gz
+            url: https://nodejs.org/download/release/v24.16.0/node-v24.16.0-linux-ppc64le.tar.gz
           targets:
             - cpu: ppc64le
               os: linux
         - resolution:
             archive: tarball
             bin: bin/node
-            integrity: sha256-OuVz9DyT2v2v7cgIY/oqBAv+qhXmq4PBqOAQHwmVLcQ=
+            integrity: sha256-Vnrwl1s0BVFrmx3cZEKaI+yMWi+mzwE5EmGkzHdOPt0=
             type: binary
-            url: https://nodejs.org/download/release/v24.14.1/node-v24.14.1-linux-s390x.tar.gz
+            url: https://nodejs.org/download/release/v24.16.0/node-v24.16.0-linux-s390x.tar.gz
           targets:
             - cpu: s390x
               os: linux
         - resolution:
             archive: tarball
             bin: bin/node
-            integrity: sha256-rOn6EEmS7QgpZCYpxGynvX/W52J4y5bJWMSzh9KWWOo=
+            integrity: sha256-L69qOH6bYriI4hxU8BJJ+ydTf/7PGELyn0yRnQpZoP8=
             type: binary
-            url: https://nodejs.org/download/release/v24.14.1/node-v24.14.1-linux-x64.tar.gz
+            url: https://nodejs.org/download/release/v24.16.0/node-v24.16.0-linux-x64.tar.gz
           targets:
             - cpu: x64
               os: linux
         - resolution:
             archive: zip
             bin: node.exe
-            integrity: sha256-p7fGhJDkqM3hkh/loM+zAB1T+cg55BaQPk8o5ye2L2A=
-            prefix: node-v24.14.1-win-arm64
+            integrity: sha256-FINGEdTGs8BgVOcAdzK5BHTBbgsy85XgW1Wlce9xxtI=
+            prefix: node-v24.16.0-win-arm64
             type: binary
-            url: https://nodejs.org/download/release/v24.14.1/node-v24.14.1-win-arm64.zip
+            url: https://nodejs.org/download/release/v24.16.0/node-v24.16.0-win-arm64.zip
           targets:
             - cpu: arm64
               os: win32
         - resolution:
             archive: zip
             bin: node.exe
-            integrity: sha256-blDOVJjAzrwg/TmrP/Xfg27S+KMaoJPOythJfP8SbXA=
-            prefix: node-v24.14.1-win-x64
+            integrity: sha256-7aypvVjsjpIDfaxOh31S9rj0MLgcGLV+JktOL7ERzVY=
+            prefix: node-v24.16.0-win-x64
             type: binary
-            url: https://nodejs.org/download/release/v24.14.1/node-v24.14.1-win-x64.zip
+            url: https://nodejs.org/download/release/v24.16.0/node-v24.16.0-win-x64.zip
           targets:
             - cpu: x64
               os: win32
-    version: 24.14.1
+    version: 24.16.0
     hasBin: true
 
   nofilter@3.1.0:
@@ -12169,6 +12133,9 @@ packages:
   tronweb@6.1.1:
     resolution: {integrity: sha512-9i2N+cTkRY7Y1B/V0+ZVwCYZFhdFDalh8sbI8Tpj5O65hMURvjFnaP1u/dTwVnVw07d9M143/19KarxeAzK6pg==}
 
+  tronweb@6.2.2:
+    resolution: {integrity: sha512-jRBf4+7fJ0HUVzveBi0tE21r3EygCNtbYE92T38Sxlwr/x320W2vz+dvGLOIpp4kW/CvJ4HLvtnb6U30A0V2eA==}
+
   trpc-browser@1.4.4:
     resolution: {integrity: sha512-5ZH/LqSoF008W8KU+4tfQ+g3F4Yl6BywDUnSlx5jT6fKa87mm8PkIXfhjGN1k6LoxjpMjy82bxvQzNLkJ3vUvw==}
     peerDependencies:
@@ -12301,10 +12268,6 @@ packages:
 
   ua-is-frozen@0.1.2:
     resolution: {integrity: sha512-RwKDW2p3iyWn4UbaxpP2+VxwqXh0jpvdxsYpZ5j/MLLiQOfbsV5shpgQiw93+KMYQPcteeMQ289MaAFzs3G9pw==}
-
-  ua-parser-js@1.0.41:
-    resolution: {integrity: sha512-LbBDqdIC5s8iROCUjMbW1f5dJQTEFB1+KO9ogbvlb3nm9n4YHa5p4KTvFPWvh2Hs8gZMBuiB1/8+pdfe/tDPug==}
-    hasBin: true
 
   ua-parser-js@2.0.7:
     resolution: {integrity: sha512-CFdHVHr+6YfbktNZegH3qbYvYgC7nRNEUm2tk7nSFXSODUu4tDBpaFpP1jdXBUOKKwapVlWRfTtS8bCPzsQ47w==}
@@ -12549,10 +12512,12 @@ packages:
 
   uuid@8.3.2:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   uuid@9.0.1:
     resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   uuidv4@6.2.13:
@@ -16861,7 +16826,7 @@ snapshots:
 
   '@opensea/seaport-js@4.0.3(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
-      ethers: 6.11.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      ethers: 6.16.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       merkletreejs: 0.3.11
     transitivePeerDependencies:
       - bufferutil
@@ -22353,34 +22318,16 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  '@tonconnect/protocol@2.3.0':
+  '@tonconnect/protocol@2.4.0':
     dependencies:
       tweetnacl: 1.0.3
       tweetnacl-util: 0.15.1
 
-  '@tonconnect/sdk@3.3.1':
+  '@tonconnect/sdk@3.4.1':
     dependencies:
       '@tonconnect/isomorphic-eventsource': 0.0.2
       '@tonconnect/isomorphic-fetch': 0.0.3
-      '@tonconnect/protocol': 2.3.0
-    transitivePeerDependencies:
-      - encoding
-
-  '@tonconnect/ui-react@2.3.1(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
-    dependencies:
-      '@tonconnect/ui': 2.3.1
-      react: 19.2.3
-      react-dom: 19.2.3(react@19.2.3)
-    transitivePeerDependencies:
-      - encoding
-
-  '@tonconnect/ui@2.3.1':
-    dependencies:
-      '@tonconnect/sdk': 3.3.1
-      classnames: 2.5.1
-      csstype: 3.2.3
-      deepmerge: 4.3.1
-      ua-parser-js: 1.0.41
+      '@tonconnect/protocol': 2.4.0
     transitivePeerDependencies:
       - encoding
 
@@ -22725,10 +22672,10 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@tronweb3/tronwallet-abstract-adapter@1.1.10(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
+  '@tronweb3/tronwallet-abstract-adapter@1.1.13(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
       eventemitter3: 4.0.7
-      tronweb: 6.1.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      tronweb: 6.2.2(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - bufferutil
       - debug
@@ -22736,7 +22683,7 @@ snapshots:
 
   '@tronweb3/tronwallet-adapter-bitkeep@1.1.7(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
-      '@tronweb3/tronwallet-abstract-adapter': 1.1.10(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      '@tronweb3/tronwallet-abstract-adapter': 1.1.13(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@tronweb3/tronwallet-adapter-tronlink': 1.1.13(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - bufferutil
@@ -22745,7 +22692,7 @@ snapshots:
 
   '@tronweb3/tronwallet-adapter-bybit@1.0.2(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
-      '@tronweb3/tronwallet-abstract-adapter': 1.1.10(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      '@tronweb3/tronwallet-abstract-adapter': 1.1.13(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@tronweb3/tronwallet-adapter-tronlink': 1.1.13(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - bufferutil
@@ -22754,7 +22701,7 @@ snapshots:
 
   '@tronweb3/tronwallet-adapter-gatewallet@1.0.4(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
-      '@tronweb3/tronwallet-abstract-adapter': 1.1.10(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      '@tronweb3/tronwallet-abstract-adapter': 1.1.13(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@tronweb3/tronwallet-adapter-tronlink': 1.1.13(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - bufferutil
@@ -22764,7 +22711,7 @@ snapshots:
   '@tronweb3/tronwallet-adapter-metamask-tron@1.0.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
       '@metamask/multichain-api-client': 0.10.1
-      '@tronweb3/tronwallet-abstract-adapter': 1.1.10(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      '@tronweb3/tronwallet-abstract-adapter': 1.1.13(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - bufferutil
       - debug
@@ -22772,19 +22719,8 @@ snapshots:
 
   '@tronweb3/tronwallet-adapter-okxwallet@1.0.7(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
-      '@tronweb3/tronwallet-abstract-adapter': 1.1.10(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      '@tronweb3/tronwallet-abstract-adapter': 1.1.13(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@tronweb3/tronwallet-adapter-tronlink': 1.1.13(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-    transitivePeerDependencies:
-      - bufferutil
-      - debug
-      - utf-8-validate
-
-  '@tronweb3/tronwallet-adapter-react-hooks@1.1.11(bufferutil@4.1.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(utf-8-validate@5.0.10)':
-    dependencies:
-      '@tronweb3/tronwallet-abstract-adapter': 1.1.10(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      '@tronweb3/tronwallet-adapter-tronlink': 1.1.13(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      react: 19.2.3
-      react-dom: 19.2.3(react@19.2.3)
     transitivePeerDependencies:
       - bufferutil
       - debug
@@ -22792,7 +22728,7 @@ snapshots:
 
   '@tronweb3/tronwallet-adapter-tronlink@1.1.13(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
-      '@tronweb3/tronwallet-abstract-adapter': 1.1.10(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      '@tronweb3/tronwallet-abstract-adapter': 1.1.13(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - bufferutil
       - debug
@@ -25355,6 +25291,14 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
+  axios@1.13.5:
+    dependencies:
+      follow-redirects: 1.15.11
+      form-data: 4.0.5
+      proxy-from-env: 1.1.0
+    transitivePeerDependencies:
+      - debug
+
   axios@1.9.0:
     dependencies:
       follow-redirects: 1.15.11
@@ -25783,8 +25727,6 @@ snapshots:
   class-variance-authority@0.7.1:
     dependencies:
       clsx: 2.1.1
-
-  classnames@2.5.1: {}
 
   clean-css@5.3.3:
     dependencies:
@@ -28570,7 +28512,7 @@ snapshots:
 
   node-releases@2.0.27: {}
 
-  node@runtime:24.14.1: {}
+  node@runtime:24.16.0: {}
 
   nofilter@3.1.0: {}
 
@@ -30642,6 +30584,22 @@ snapshots:
       - debug
       - utf-8-validate
 
+  tronweb@6.2.2(bufferutil@4.1.0)(utf-8-validate@5.0.10):
+    dependencies:
+      '@babel/runtime': 7.26.10
+      axios: 1.13.5
+      bignumber.js: 9.1.2
+      ethereum-cryptography: 2.2.1
+      ethers: 6.13.5(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      eventemitter3: 5.0.1
+      google-protobuf: 3.21.4
+      semver: 7.7.1
+      validator: 13.15.23
+    transitivePeerDependencies:
+      - bufferutil
+      - debug
+      - utf-8-validate
+
   trpc-browser@1.4.4(@trpc/client@10.45.4(@trpc/server@10.45.4))(@trpc/server@10.45.4):
     dependencies:
       '@trpc/client': 10.45.4(@trpc/server@10.45.4)
@@ -30774,8 +30732,6 @@ snapshots:
   typescript@5.9.3: {}
 
   ua-is-frozen@0.1.2: {}
-
-  ua-parser-js@1.0.41: {}
 
   ua-parser-js@2.0.7:
     dependencies:

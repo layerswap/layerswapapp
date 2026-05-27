@@ -25,8 +25,8 @@ import {
 import { name as PROVIDER_NAME, id as PROVIDER_ID, solanaNames } from '../constants'
 import { resolveSolanaWalletConnectorIcon } from '../utils'
 import { SolanaWalletConnectAdapter } from '../connectors/SolanaWalletConnectAdapter'
-import { getSvmAdapterApi } from './getSvmAdapter'
-import { type SvmWalletSnapshot, useSvmStore } from './svmStore'
+import { svmAdapterManager } from './svmAdapterManager'
+import { useSvmStore } from './svmStore'
 
 const SOLANA_WC_ADAPTER_NAME = 'WalletConnect'
 const SVM_NS = PROVIDER_ID
@@ -42,6 +42,7 @@ type RuntimeDeps = {
     addRecentConnector?: (wallet: WalletConnectWalletBase) => void
     requestRegistryConnectors?: RegistryRequestFn
     isMobilePlatform?: boolean
+    registryConnectors?: readonly WalletConnectWalletBase[]
 }
 
 const networkSupport: Record<string, string[]> = {
@@ -121,7 +122,7 @@ export class SvmConnectionService {
         const seenNames = new Set(installed.map(c => c.name.toLowerCase()))
         const registry: InternalConnector[] = []
         const isMobilePlatform = this._deps.isMobilePlatform ?? false
-        for (const reg of useSvmStore.getState().registryConnectors) {
+        for (const reg of this._deps.registryConnectors ?? []) {
             if (seenIds.has(reg.id.toLowerCase())) continue
             if (seenNames.has(reg.name.toLowerCase())) continue
             registry.push(createRegistryConnector(reg, isMobilePlatform, PROVIDER_NAME))
@@ -172,8 +173,7 @@ export class SvmConnectionService {
 
     async disconnectWallet(): Promise<void> {
         try {
-            const api = getSvmAdapterApi()
-            await api.disconnect()
+            await svmAdapterManager.disconnect()
         } catch (e) {
             // TODO: handle error
             console.log(e)
@@ -200,9 +200,7 @@ export class SvmConnectionService {
 
     warmUpWalletConnect(): void {
         try {
-            const api = getSvmAdapterApi()
-            const wcAdapterEntry = api.getWallets().find(w => w.adapter.name === SOLANA_WC_ADAPTER_NAME)
-            const wcAdapter = wcAdapterEntry?.adapter as unknown as SolanaWalletConnectAdapter | undefined
+            const wcAdapter = svmAdapterManager.getAdapter(SOLANA_WC_ADAPTER_NAME) as unknown as SolanaWalletConnectAdapter | undefined
             wcAdapter?.warmup?.()
         } catch { /* ignore */ }
     }
@@ -210,7 +208,6 @@ export class SvmConnectionService {
     async connectWallet({ connector }: { connector: WalletModalConnector }): Promise<Wallet | undefined> {
         let unsubscribeDisplayUri: (() => void) | undefined
         const registry = getRegistryEntry(connector)
-        const api = getSvmAdapterApi()
         const isMobilePlatform = this._deps.isMobilePlatform ?? false
         const setSelectedConnector = this._deps.setSelectedConnector
         const addRecentConnector = this._deps.addRecentConnector
@@ -218,19 +215,19 @@ export class SvmConnectionService {
         try {
             const isRegistryWallet = !!registry
             const isBareWcTile = connector.name === SOLANA_WC_ADAPTER_NAME
-            const currentWallets = api.getWallets()
-            const installedAdapter = currentWallets.find(w => w.adapter.name === connector.name)
-                || currentWallets.find(w => w.adapter.name.includes(connector.name))
-            const walletConnectAdapter = currentWallets.find(w => w.adapter.name === SOLANA_WC_ADAPTER_NAME)
+
+            const installedAdapter = svmAdapterManager.getAdapter(connector.name)
+                || svmAdapterManager.getAdapters().find(a => a.name.includes(connector.name))
+            const walletConnectAdapter = svmAdapterManager.getAdapter(SOLANA_WC_ADAPTER_NAME)
 
             const useWalletConnect = isRegistryWallet || isBareWcTile
                 || (connector.hasBrowserExtension && (connector.showQrCode || (isMobilePlatform && connector.extensionNotFound)))
 
-            const targetAdapterEntry = useWalletConnect ? walletConnectAdapter : installedAdapter
-            if (!targetAdapterEntry) throw new Error('Connector not found')
+            const targetAdapter = useWalletConnect ? walletConnectAdapter : installedAdapter
+            if (!targetAdapter) throw new Error('Connector not found')
 
             if (useSvmStore.getState().activeAddress) {
-                try { await targetAdapterEntry.adapter.disconnect() } catch { /* noop */ }
+                try { await targetAdapter.disconnect() } catch { /* noop */ }
             }
 
             const resolveURI = registry
@@ -238,7 +235,7 @@ export class SvmConnectionService {
                 : undefined
 
             if (useWalletConnect && walletConnectAdapter) {
-                const wcAdapter = walletConnectAdapter.adapter as unknown as SolanaWalletConnectAdapter
+                const wcAdapter = walletConnectAdapter as unknown as SolanaWalletConnectAdapter
 
                 setPendingMetadataForRegistry(SVM_NS, registry)
 
@@ -260,17 +257,17 @@ export class SvmConnectionService {
             }
 
             try {
-                api.select(targetAdapterEntry.adapter.name)
-                await targetAdapterEntry.adapter.connect()
+                svmAdapterManager.select(targetAdapter.name)
+                await targetAdapter.connect()
             } finally {
                 unsubscribeDisplayUri?.()
                 unsubscribeDisplayUri = undefined
             }
 
-            const newConnectedWallet = targetAdapterEntry.adapter.connected === true
-                ? targetAdapterEntry
-                : api.getWallets().find(w => w.adapter.connected === true)
-            const newAddress = newConnectedWallet?.adapter.publicKey?.toBase58()
+            const connectedAdapter = targetAdapter.connected
+                ? targetAdapter
+                : svmAdapterManager.getAdapters().find(a => a.connected)
+            const newAddress = connectedAdapter?.publicKey?.toBase58()
 
             if (newAddress && useWalletConnect && registry) {
                 setDynamicWcMetadata(SVM_NS, newAddress, {
@@ -280,11 +277,11 @@ export class SvmConnectionService {
                 })
             }
 
-            const displayId = registry?.id || (newConnectedWallet?.adapter.name ? String(newConnectedWallet.adapter.name) : undefined)
-            const displayName = registry?.name || newConnectedWallet?.adapter.name
-            const displayIconRaw = registry?.icon || newConnectedWallet?.adapter.icon
+            const displayId = registry?.id || (connectedAdapter?.name ? String(connectedAdapter.name) : undefined)
+            const displayName = registry?.name || connectedAdapter?.name
+            const displayIconRaw = registry?.icon || connectedAdapter?.icon
 
-            if (!newAddress || !newConnectedWallet || !displayId) return undefined
+            if (!newAddress || !connectedAdapter || !displayId) return undefined
 
             const supported = resolveSupportedNetworks(this._supported, displayId)
             const wallet: Wallet = {

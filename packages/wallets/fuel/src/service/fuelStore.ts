@@ -1,13 +1,13 @@
 import { create } from 'zustand'
-import type { FuelConnector } from '@fuel-ts/account'
+import type { Fuel, FuelConnector } from '@fuel-ts/account'
 
 export type FuelStoreState = {
     connectors: readonly FuelConnector[]
-    fuel: { selectConnector: (id: string) => Promise<boolean> } | undefined
+    fuel: Fuel | undefined
     ready: boolean
 
     _setConnectors: (connectors: readonly FuelConnector[]) => void
-    _setFuel: (fuel: FuelStoreState['fuel']) => void
+    _setFuel: (fuel: Fuel | undefined) => void
 }
 
 export const useFuelStore = create<FuelStoreState>()((set) => ({

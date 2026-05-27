@@ -2,7 +2,7 @@ import { FC } from 'react'
 import Evm from './Evm';
 import Starknet from './Starknet';
 import { WalletIcon } from 'lucide-react';
-import { useActiveParadexAccount } from '../../ActiveParadexAccount';
+import { useActiveParadexAccount } from '../../useActiveParadexAccount';
 import { useWallet, KnownInternalNames, SubmitButton, useSettingsState, useSwapDataState, useSelectedAccount, useSelectSwapAccount, useConnectModal, } from "@layerswap/widget/internal"
 import { WithdrawPageProps } from "@layerswap/widget/types"
 

@@ -1,12 +1,55 @@
 import { Network } from "@/Models/Network"
 import { Wallet, WalletConnectionProvider } from "@/types/wallet";
-import { useCallback, useMemo } from "react";
-import { useWalletProviders } from "@/context/walletProviders";
+import { useCallback, useMemo, useRef, useSyncExternalStore } from "react";
+import { isMobile } from "@/lib/wallets/utils/isMobile";
+import { useSettingsState } from "@/context/settings";
+import { walletProvidersRegistry } from "@/lib/walletConnect/walletProvidersRegistry";
 
 export type WalletPurpose = "autofill" | "withdrawal" | "asSource"
 
+// Stable reference for SSR — `useSyncExternalStore` requires `getServerSnapshot`
+// to return the same value across calls, otherwise it triggers infinite renders.
+// Wallet providers aren't populated on the server, so an empty list is correct.
+const SSR_SNAPSHOT: WalletConnectionProvider[] = []
+const getServerSnapshot = () => SSR_SNAPSHOT
+
+/**
+ * Subscribes to the registry plus every contained store via a single
+ * `useSyncExternalStore` call. The registry already fans-out inner store
+ * notifications, so one subscribe is enough. The cached array keeps the
+ * snapshot reference stable when nothing changed, so downstream `useMemo`s
+ * stay cache-effective.
+ */
+function useAllProviderSnapshots(): WalletConnectionProvider[] {
+    const cache = useRef<WalletConnectionProvider[]>([])
+
+    const getSnapshot = useCallback(() => {
+        const entries = walletProvidersRegistry.getEntries()
+        const current = entries.map(e => e.store.getState())
+        const prev = cache.current
+        if (prev.length === current.length && prev.every((v, i) => v === current[i])) {
+            return prev
+        }
+        cache.current = current
+        return current
+    }, [])
+
+    return useSyncExternalStore(walletProvidersRegistry.subscribe, getSnapshot, getServerSnapshot)
+}
+
 export default function useWallet(network?: Network | undefined, purpose?: WalletPurpose) {
-    const walletProviders = useWalletProviders()
+    const allSnapshots = useAllProviderSnapshots()
+    const { networks } = useSettingsState()
+    const isMobilePlatform = isMobile()
+
+    const walletProviders = useMemo(() => allSnapshots.filter(provider =>
+        (isMobilePlatform ? !provider.unsupportedPlatforms?.includes('mobile') : !provider.unsupportedPlatforms?.includes('desktop')) &&
+        networks.some(net =>
+            provider.autofillSupportedNetworks?.includes(net.name) ||
+            provider.withdrawalSupportedNetworks?.includes(net.name) ||
+            provider.asSourceSupportedNetworks?.includes(net.name)
+        )
+    ), [allSnapshots, networks, isMobilePlatform])
 
     const provider = useMemo(() => network && resolveProvider(network, walletProviders, purpose), [network, purpose, walletProviders])
 
@@ -32,7 +75,7 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
 
     const getProvider = useCallback((network: Network, purpose: WalletPurpose) => {
         return network && resolveProvider(network, walletProviders, purpose)
-    }, [walletProviders, purpose]);
+    }, [walletProviders]);
 
     const res = useMemo(() => ({
         wallets: availableWallets,
@@ -40,7 +83,7 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
         provider,
         providers: walletProviders,
         getProvider
-    }), [wallets, provider, walletProviders, getProvider])
+    }), [availableWallets, unAvailableWallets, provider, walletProviders, getProvider])
 
     return res
 }

@@ -1,20 +1,29 @@
-import type { TonConnectUI } from '@tonconnect/ui-react'
+import type { TonConnect } from '@tonconnect/sdk'
 import { snapshotFromTonWallet, useTonStore } from './tonStore'
 
 let _attached = false
 let _dispose: (() => void) | null = null
 
-export function attachTonSync(tonConnectUI: TonConnectUI): () => void {
+export function attachTonSync(tonConnect: TonConnect): () => void {
     if (_attached) return _dispose ?? (() => { })
     _attached = true
 
-    const store = useTonStore.getState()
-    store._setTonWallet(snapshotFromTonWallet(tonConnectUI.wallet))
-    store._setReady(true)
+    useTonStore.getState()._setTonWallet(snapshotFromTonWallet(tonConnect.wallet))
 
-    const unsubscribeStatus = tonConnectUI.onStatusChange((wallet) => {
+    const unsubscribeStatus = tonConnect.onStatusChange((wallet) => {
         useTonStore.getState()._setTonWallet(snapshotFromTonWallet(wallet))
     })
+
+    // Discover the wallet registry (TonConnect's hosted list) and mirror it
+    // into the store so getAvailableConnectors() can read synchronously.
+    tonConnect.getWallets()
+        .then((wallets) => {
+            useTonStore.getState()._setWallets(wallets)
+            useTonStore.getState()._setReady(true)
+        })
+        .catch(() => {
+            useTonStore.getState()._setReady(true)
+        })
 
     _dispose = () => {
         unsubscribeStatus()

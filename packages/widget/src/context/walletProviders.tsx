@@ -1,6 +1,6 @@
 "use client";
-import React, { createContext, lazy, useContext, useEffect, useMemo, useState } from "react";
-import { WalletConnectionProvider, WalletConnectionStore, WalletProvider } from "@/types";
+import React, { lazy, useEffect, useMemo } from "react";
+import { WalletConnectionStore, WalletProvider } from "@/types";
 import { useSettingsState } from "./settings";
 import VaulDrawer from "@/components/Modal/vaulModal";
 import IconButton from "@/components/Buttons/iconButton";
@@ -9,11 +9,12 @@ import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { isMobile } from "@/lib/wallets/utils/isMobile";
 import AppSettings from "@/lib/AppSettings";
 import { filterSourceNetworks } from "@/helpers/filterSourceNetworks";
+import { walletProvidersRegistry } from "@/lib/walletConnect/walletProvidersRegistry";
 import clsx from "clsx";
 
 const ConnectorsList = lazy(() => import("@/components/Wallet/WalletModal/ConnectorsList"));
 
-const WalletProvidersContext = createContext<WalletConnectionProvider[]>([]);
+type Connection = { id: string; conn: WalletConnectionStore }
 
 export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walletProviders: WalletProvider[] }> = ({ children, walletProviders }) => {
     const { networks } = useSettingsState();
@@ -21,46 +22,53 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
     const isMobilePlatform = isMobile();
     const { goBack, onFinish, open, setOpen, selectedConnector, selectedMultiChainConnector, dismissible, topContent, fullHeight, hideHeader } = useConnectModal()
 
-    // Build stores once per provider list. Stores own their lifecycle —
-    // creating a fresh one per render would leak subscriptions.
-    const stores = useMemo<WalletConnectionStore[]>(
+    // Build per-provider connections once per provider list. Each connection
+    // owns its own zustand store; the widget publishes them to a vanilla
+    // registry so React consumers (useWallet) and non-React peers (Paradex)
+    // can subscribe directly.
+    const connections = useMemo<Connection[]>(
         () => walletProviders
-            .map(p => p.createConnection?.({ networks }))
-            .filter((s): s is WalletConnectionStore => !!s),
+            .map(p => ({ id: p.id, conn: p.createConnection?.({ networks }) }))
+            .filter((c): c is Connection => !!c.conn),
         // eslint-disable-next-line react-hooks/exhaustive-deps
         [walletProviders],
     )
 
     useEffect(() => {
-        stores.forEach(s => s.updateProps?.({ networks }))
-    }, [stores, networks])
+        connections.forEach(c => c.conn.updateProps?.({ networks }))
+    }, [connections, networks])
 
-    const [snapshots, setSnapshots] = useState<WalletConnectionProvider[]>(() => stores.map(s => s.getSnapshot()))
     useEffect(() => {
-        const recompute = () => setSnapshots(stores.map(s => s.getSnapshot()))
-        recompute()
-        const unsubs = stores.map(s => s.subscribe(recompute))
-        // The subscribe cleanup is enough — stores ref-count their internal
-        // subscriptions so they re-attach on next mount. We deliberately do
-        // NOT call store.destroy() here; that would be a hard tear-down and
-        // strict mode's double-mount would briefly leak listeners.
-        return () => unsubs.forEach(u => u())
-    }, [stores])
+        walletProvidersRegistry.setEntries(connections.map(c => ({ id: c.id, store: c.conn.store })))
+        return () => {
+            connections.forEach(c => c.conn.destroy?.())
+            walletProvidersRegistry.setEntries([])
+        }
+    }, [connections])
 
-    const providers = useMemo(() => {
-        const filteredProviders = snapshots.filter(provider => (isMobilePlatform ? !provider.unsupportedPlatforms?.includes('mobile') : !provider.unsupportedPlatforms?.includes('desktop')) &&
-            networks.some(net =>
-                provider.autofillSupportedNetworks?.includes(net.name) ||
-                provider.withdrawalSupportedNetworks?.includes(net.name) ||
-                provider.asSourceSupportedNetworks?.includes(net.name)
+    // `AvailableSourceNetworkTypes` is read by `helpers/routes.ts` to decide
+    // which source-network types are reachable. It depends on each provider's
+    // current `withdrawalSupportedNetworks` plus the connected wallets, so it
+    // must be refreshed whenever any provider's state moves.
+    useEffect(() => {
+        const recompute = () => {
+            const snapshots = walletProvidersRegistry.getEntries().map(e => e.store.getState())
+            const filtered = snapshots.filter(provider =>
+                (isMobilePlatform ? !provider.unsupportedPlatforms?.includes('mobile') : !provider.unsupportedPlatforms?.includes('desktop')) &&
+                networks.some(net =>
+                    provider.autofillSupportedNetworks?.includes(net.name) ||
+                    provider.withdrawalSupportedNetworks?.includes(net.name) ||
+                    provider.asSourceSupportedNetworks?.includes(net.name)
+                )
             )
-        );
-        AppSettings.AvailableSourceNetworkTypes = filterSourceNetworks(settings, filteredProviders)
-        return filteredProviders
-    }, [snapshots, networks, isMobilePlatform]);
+            AppSettings.AvailableSourceNetworkTypes = filterSourceNetworks(settings, filtered)
+        }
+        recompute()
+        return walletProvidersRegistry.subscribe(recompute)
+    }, [settings, networks, isMobilePlatform])
 
     return (
-        <WalletProvidersContext.Provider value={providers}>
+        <>
             {children}
             <VaulDrawer
                 show={open}
@@ -93,8 +101,6 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
                     ) : null}
                 </VaulDrawer.Snap>
             </VaulDrawer>
-        </WalletProvidersContext.Provider>
+        </>
     );
 };
-
-export const useWalletProviders = () => useContext(WalletProvidersContext);
