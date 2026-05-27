@@ -94,6 +94,8 @@ export class StarknetConnectionService {
     private _networks: NetworkWithTokens[] = []
     private _networksKey = ''
     private _deps: RuntimeDeps = {}
+    private _restoreTimer: number | undefined
+    private _restoringStoredWallets = false
 
     setNetworks(networks: NetworkWithTokens[]): void {
         const key = networks.map(n => n.name).join('|')
@@ -101,6 +103,7 @@ export class StarknetConnectionService {
         this._networks = networks
         this._deps.isMainnet = networks?.some(network => network.name === KnownInternalNames.Networks.StarkNetMainnet)
         this._networksKey = key
+        this.requestStoredWalletHydration()
     }
 
     getStarknetNetwork(): NetworkWithTokens | undefined {
@@ -113,6 +116,59 @@ export class StarknetConnectionService {
 
     getProviderIcon(): string | undefined {
         return this._networks.find(n => starknetNames.some(name => name === n.name))?.logo
+    }
+
+    private connectorIsAvailable(connector: Connector): boolean {
+        try {
+            return typeof (connector as any).available !== 'function'
+                || Boolean((connector as any).available())
+        } catch {
+            return false
+        }
+    }
+
+    private hasPendingStoredWallets(): boolean {
+        const state = useStarknetStore.getState()
+        const connectedAddresses = new Set(state.connectedWallets.map(wallet => wallet.address.toLowerCase()))
+        return Object.values(state.starknetAccounts || {}).some(address =>
+            !connectedAddresses.has(address.toLowerCase()),
+        )
+    }
+
+    requestStoredWalletHydration(): void {
+        if (typeof window === 'undefined' || this._restoreTimer || this._restoringStoredWallets) return
+
+        const attemptHydration = async (): Promise<void> => {
+            this._restoreTimer = undefined
+            if (!this.hasPendingStoredWallets()) return
+
+            if (this.getStarknetNetwork()) {
+                this._restoringStoredWallets = true
+                try {
+                    await this.hydrateStoredWallets()
+                } finally {
+                    this._restoringStoredWallets = false
+                }
+            }
+
+            if (this.hasPendingStoredWallets()) {
+                this._restoreTimer = window.setTimeout(() => {
+                    void attemptHydration()
+                }, 500)
+            }
+        }
+
+        this._restoreTimer = window.setTimeout(() => {
+            void attemptHydration()
+        }, 0)
+    }
+
+    dispose(): void {
+        if (this._restoreTimer) {
+            window.clearTimeout(this._restoreTimer)
+            this._restoreTimer = undefined
+        }
+        this._restoringStoredWallets = false
     }
 
     getAvailableConnectors(): InternalConnector[] {
@@ -162,6 +218,7 @@ export class StarknetConnectionService {
         const isMainnet = this._deps.isMainnet ?? false
         const wrongChain = isWalletOnMainnet !== isMainnet
         const starknetNetwork = this.getStarknetNetwork()
+        if (!starknetNetwork) throw new Error('Starknet network not found')
 
         if (result?.account && wrongChain) {
             const wallet = (starknetConnector as any)?._wallet || (starknetConnector as any)?.wallet
@@ -217,11 +274,12 @@ export class StarknetConnectionService {
         if (Object.keys(starknetAccounts).length === 0) return
 
         const starknetNetwork = this.getStarknetNetwork()
+        if (!starknetNetwork) return
         const connectors = starknetConnectorManager.getConnectors()
 
         for (const connector of connectors) {
             const address = starknetAccounts[connector.id]
-            if (!address) continue
+            if (!address || !this.connectorIsAvailable(connector)) continue
             const wallet = await resolveStarknetWallet({
                 name: PROVIDER_NAME,
                 connector,

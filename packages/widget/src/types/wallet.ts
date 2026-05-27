@@ -67,6 +67,11 @@ export type WalletConnectionStore = {
     destroy?(): void
 }
 
+export type WalletProviderStoreRegistry = {
+    getById(id: string): WalletConnectionProvider | undefined
+    subscribe(listener: () => void): () => void
+}
+
 export type WalletProvider = WalletWrapper & {
     /**
      * Vanilla external-store factory for connection state. Replaces the old
@@ -121,6 +126,8 @@ export type WalletProviderModule = {
 
 export type WalletConnectionProviderProps = {
     networks: NetworkWithTokens[]
+    /** Access to peer wallet providers scoped to the current widget instance. */
+    walletProvidersRegistry?: WalletProviderStoreRegistry
 }
 
 export type WalletConnectionProvider = {

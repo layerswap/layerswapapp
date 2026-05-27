@@ -1,5 +1,5 @@
 "use client";
-import React, { lazy, useEffect, useRef } from "react";
+import React, { createContext, lazy, useContext, useEffect, useMemo, useRef } from "react";
 import { WalletConnectionStore, WalletProvider } from "@/types";
 import { useSettingsState } from "./settings";
 import VaulDrawer from "@/components/Modal/vaulModal";
@@ -9,12 +9,20 @@ import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { isMobile } from "@/lib/wallets/utils/isMobile";
 import AppSettings from "@/lib/AppSettings";
 import { filterSourceNetworks } from "@/helpers/filterSourceNetworks";
-import { walletProvidersRegistry } from "@/lib/walletConnect/walletProvidersRegistry";
+import { createWalletProvidersRegistry, type WalletProvidersRegistry } from "@/lib/walletConnect/walletProvidersRegistry";
 import clsx from "clsx";
 
 const ConnectorsList = lazy(() => import("@/components/Wallet/WalletModal/ConnectorsList"));
 
 type Connection = { id: string; conn: WalletConnectionStore }
+
+const WalletProvidersRegistryContext = createContext<WalletProvidersRegistry | null>(null)
+
+export function useWalletProvidersRegistry(): WalletProvidersRegistry {
+    const registry = useContext(WalletProvidersRegistryContext)
+    if (!registry) throw new Error('useWalletProvidersRegistry must be used within WalletProvidersProvider')
+    return registry
+}
 
 export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walletProviders: WalletProvider[] }> = ({ children, walletProviders }) => {
     const { networks } = useSettingsState();
@@ -22,13 +30,14 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
     const isMobilePlatform = isMobile();
     const { goBack, onFinish, open, setOpen, selectedConnector, selectedMultiChainConnector, dismissible, topContent, fullHeight, hideHeader } = useConnectModal()
 
+    const walletProvidersRegistry = useMemo(() => createWalletProvidersRegistry(), [])
     const connectionsRef = useRef<Connection[]>([])
 
     useEffect(() => {
         // Factories create subscriptions and may initialize SDKs, so they
         // must only run after React commits this provider tree.
         const connections = walletProviders
-            .map(p => ({ id: p.id, conn: p.createConnection?.({ networks }) }))
+            .map(p => ({ id: p.id, conn: p.createConnection?.({ networks, walletProvidersRegistry }) }))
             .filter((c): c is Connection => !!c.conn)
         connectionsRef.current = connections
         walletProvidersRegistry.setEntries(connections.map(c => ({ id: c.id, store: c.conn.store })))
@@ -39,11 +48,11 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
         }
         // Network changes update committed stores in the effect below.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [walletProviders])
+    }, [walletProviders, walletProvidersRegistry])
 
     useEffect(() => {
-        connectionsRef.current.forEach(c => c.conn.updateProps?.({ networks }))
-    }, [networks])
+        connectionsRef.current.forEach(c => c.conn.updateProps?.({ networks, walletProvidersRegistry }))
+    }, [networks, walletProvidersRegistry])
 
     // `AvailableSourceNetworkTypes` is read by `helpers/routes.ts` to decide
     // which source-network types are reachable. It depends on each provider's
@@ -64,10 +73,10 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
         }
         recompute()
         return walletProvidersRegistry.subscribe(recompute)
-    }, [settings, networks, isMobilePlatform])
+    }, [settings, networks, isMobilePlatform, walletProvidersRegistry])
 
     return (
-        <>
+        <WalletProvidersRegistryContext.Provider value={walletProvidersRegistry}>
             {children}
             <VaulDrawer
                 show={open}
@@ -100,6 +109,6 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
                     ) : null}
                 </VaulDrawer.Snap>
             </VaulDrawer>
-        </>
+        </WalletProvidersRegistryContext.Provider>
     );
 };

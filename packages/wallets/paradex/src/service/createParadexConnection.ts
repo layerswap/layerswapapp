@@ -7,7 +7,6 @@ import type {
 import {
     connectModalStore,
     useWalletStore,
-    walletProvidersRegistry,
 } from '@layerswap/widget/internal'
 import { createStore } from 'zustand/vanilla'
 import {
@@ -15,7 +14,7 @@ import {
     autofillSupportedNetworks,
     id,
     name,
-    paradexConnectionService,
+    ParadexConnectionService,
     withdrawalSupportedNetworks,
 } from './ParadexConnectionService'
 import { useParadexActiveStore } from './paradexActiveStore'
@@ -28,9 +27,12 @@ export function createParadexConnection(
     initialProps: WalletConnectionProviderProps,
 ): WalletConnectionStore {
     let networks: NetworkWithTokens[] = initialProps.networks
+    const peerProviders = initialProps.walletProvidersRegistry
+    const paradexConnectionService = new ParadexConnectionService()
     paradexConnectionService.setNetworks(networks)
     paradexConnectionService.configure({
         setSelectedConnector: connectModalStore.setSelectedConnector,
+        getProviderById: id => peerProviders?.getById(id),
     })
 
     type SnapshotInputs = {
@@ -44,8 +46,8 @@ export function createParadexConnection(
     let lastSnapshot: WalletConnectionProvider | null = null
 
     const computeSnapshot = (): WalletConnectionProvider => {
-        const evmSnapshot = walletProvidersRegistry.getById('evm')
-        const starknetSnapshot = walletProvidersRegistry.getById('starknet')
+        const evmSnapshot = peerProviders?.getById('evm')
+        const starknetSnapshot = peerProviders?.getById('starknet')
         const paradexAccounts = useWalletStore.getState().paradexAccounts
         const selectedAccount = useParadexActiveStore.getState().selectedAccount
 
@@ -102,9 +104,11 @@ export function createParadexConnection(
 
     const unsubs: (() => void)[] = [
         useWalletStore.subscribe(sync),
-        walletProvidersRegistry.subscribe(sync),
         useParadexActiveStore.subscribe(sync),
     ]
+    if (peerProviders) {
+        unsubs.push(peerProviders.subscribe(sync))
+    }
 
     return {
         store,

@@ -12,7 +12,6 @@ import {
     sleep,
     getRegistryEntry,
     useWalletStore,
-    walletProvidersRegistry,
 } from '@layerswap/widget/internal'
 import { getEvmConfig, walletClientToSigner } from '@layerswap/wallet-evm'
 import {
@@ -39,6 +38,7 @@ type ParadexAccountMap = { [key: string]: string }
 
 type RuntimeDeps = {
     setSelectedConnector?: (connector: unknown) => void
+    getProviderById?: (id: string) => WalletConnectionProvider | undefined
 }
 
 const EMPTY_PROVIDER: WalletConnectionProvider = {
@@ -82,11 +82,11 @@ export class ParadexConnectionService {
     }
 
     private getEvmProvider(): WalletConnectionProvider {
-        return walletProvidersRegistry.getById('evm') ?? EMPTY_PROVIDER
+        return this._deps.getProviderById?.('evm') ?? EMPTY_PROVIDER
     }
 
     private getStarknetProvider(): WalletConnectionProvider {
-        return walletProvidersRegistry.getById('starknet') ?? EMPTY_PROVIDER
+        return this._deps.getProviderById?.('starknet') ?? EMPTY_PROVIDER
     }
 
     private getParadexAccounts(): ParadexAccountMap {
@@ -413,5 +413,3 @@ export class ParadexConnectionService {
         }
     }
 }
-
-export const paradexConnectionService = new ParadexConnectionService()

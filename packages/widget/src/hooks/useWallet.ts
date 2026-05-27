@@ -3,7 +3,7 @@ import { Wallet, WalletConnectionProvider } from "@/types/wallet";
 import { useCallback, useMemo, useRef, useSyncExternalStore } from "react";
 import { isMobile } from "@/lib/wallets/utils/isMobile";
 import { useSettingsState } from "@/context/settings";
-import { walletProvidersRegistry } from "@/lib/walletConnect/walletProvidersRegistry";
+import { useWalletProvidersRegistry } from "@/context/walletProviders";
 
 export type WalletPurpose = "autofill" | "withdrawal" | "asSource"
 
@@ -21,6 +21,7 @@ const getServerSnapshot = () => SSR_SNAPSHOT
  * stay cache-effective.
  */
 function useAllProviderSnapshots(): WalletConnectionProvider[] {
+    const walletProvidersRegistry = useWalletProvidersRegistry()
     const cache = useRef<WalletConnectionProvider[]>([])
 
     const getSnapshot = useCallback(() => {
@@ -32,7 +33,7 @@ function useAllProviderSnapshots(): WalletConnectionProvider[] {
         }
         cache.current = current
         return current
-    }, [])
+    }, [walletProvidersRegistry])
 
     return useSyncExternalStore(walletProvidersRegistry.subscribe, getSnapshot, getServerSnapshot)
 }
