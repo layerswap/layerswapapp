@@ -118,15 +118,19 @@ export class StarknetConnectionService {
     getAvailableConnectors(): InternalConnector[] {
         const connectors = useStarknetStore.getState().connectors
         return connectors.map(connector => {
-            const configuredName = connectorsConfigs.find(c => c.id === connector.id)?.name
-            const displayName = configuredName ?? connector.name
+            const config = connectorsConfigs.find(c => c.id === connector.id)
+            const displayName = config?.name ?? connector.name
+            const realConnector = starknetConnectorManager.getConnector(connector.id)
+            const isInjectedAndAvailable = !!config
+                && typeof (realConnector as any)?.available === 'function'
+                && (realConnector as any).available()
             return {
                 name: displayName,
                 id: connector.id,
                 icon: resolveStarknetWalletIcon({ icon: connector.icon }),
-                type: 'injected',
-                installUrl: connectorsConfigs.find(c => c.id === connector.id)?.installLink,
-                extensionNotFound: connectorsConfigs.find(c => c.id === connector.id)?.installLink !== undefined,
+                type: isInjectedAndAvailable ? 'injected' : 'other',
+                installUrl: config?.installLink,
+                extensionNotFound: !!config?.installLink && !isInjectedAndAvailable,
                 providerName: displayName,
             }
         })
