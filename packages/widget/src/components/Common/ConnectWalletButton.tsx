@@ -1,8 +1,9 @@
 import { RefreshCw } from "lucide-react";
 import { ResolveConnectorIcon } from "../Icons/ConnectorIcons";
-import { FC, useState } from "react";
+import { FC, useCallback, useRef, useState } from "react";
 import { Wallet, WalletConnectionProvider } from "@/types/wallet";
 import { useConnectModal } from "../Wallet/WalletModal";
+import { useWalletDescriptorLoader } from "@/lib/walletConnect/walletDescriptorLoader";
 import { classNames } from "@/components/utils/classNames";
 
 interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -15,7 +16,20 @@ const ConnectWalletButton: FC<Props> = ({ provider, onConnect, descriptionText, 
 
     const [isLoading, setIsLoading] = useState(false)
     const { connect } = useConnectModal()
+    const { loadAll } = useWalletDescriptorLoader()
     const isProviderReady = typeof provider?.ready === 'boolean' ? provider.ready : true
+
+    // Kick off the descriptor SDK download as soon as the user shows
+    // intent (mouse-enter or keyboard-focus) on the button. The await on
+    // click will then resolve against an already-in-flight (or completed)
+    // import instead of starting one cold. `loadAll` itself dedupes
+    // in-flight loads, so we can fire it cheaply on every hover.
+    const prefetchedRef = useRef(false)
+    const prefetchDescriptors = useCallback(() => {
+        if (prefetchedRef.current) return
+        prefetchedRef.current = true
+        void loadAll()
+    }, [loadAll])
 
     const handleConnect = async () => {
         if (!isProviderReady) return
@@ -29,6 +43,9 @@ const ConnectWalletButton: FC<Props> = ({ provider, onConnect, descriptionText, 
         {...rest}
         type="button"
         onClick={handleConnect}
+        onMouseEnter={prefetchDescriptors}
+        onFocus={prefetchDescriptors}
+        onTouchStart={prefetchDescriptors}
         data-attr="connect-wallet"
         disabled={!isProviderReady || rest.disabled}
         className={classNames(`focus-ring-primary-bold py-5 px-6 bg-secondary-500 hover:bg-secondary-400 transition-colors duration-200 rounded-xl ${(isLoading || !isProviderReady) && 'cursor-progress opacity-80'} disabled:opacity-50 disabled:cursor-not-allowed`, rest.className)}

@@ -40,7 +40,13 @@ import AddressIcon from "@/components/Common/AddressIcon";
 import VaulDrawer from "@/components/Modal/vaulModal";
 import { WalletItem } from "@/components/Wallet/WalletComponents/WalletsList";
 import { SubmitButton } from "@/components/Buttons";
-import Processing from "../Withdraw/Processing";
+import { Suspense, lazy } from "react";
+// `Processing` is the post-deposit progress UI. It only renders when the
+// user has already submitted a swap and is mid-flow — on first paint of
+// `/` it is always inactive. Lazy-loading keeps the Withdraw component
+// graph (transferProcessing, multi-step wallet UI, etc.) out of the home
+// page's entry chunks.
+const Processing = lazy(() => import("../Withdraw/Processing"))
 
 type Props = {
     partner?: Partner;
@@ -190,7 +196,9 @@ const DepositAddressForm: FC<Props> = () => {
         <>
             <Form className="h-full grow flex flex-col flex-1 justify-between w-full gap-2">
                 {isProcessing ? (
-                    <Processing />
+                    <Suspense fallback={null}>
+                        <Processing />
+                    </Suspense>
                 ) : (
                     <Widget.Content>
                         <div className="w-full flex flex-col justify-between flex-1 relative min-h-[240px]">

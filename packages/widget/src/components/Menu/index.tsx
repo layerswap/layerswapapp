@@ -1,17 +1,28 @@
 import { MenuIcon, ChevronLeft } from "lucide-react";
-import { FC, useEffect, useState } from "react";
+import { FC, Suspense, lazy, useEffect, useState } from "react";
 import IconButton from "../Buttons/iconButton";
 import { FormWizardProvider, useFormWizardaUpdate, useFormWizardState } from "../../context/formWizardProvider";
 import { MenuStep } from "../../Models/Wizard";
 import MenuList from "./MenuList";
 import Wizard from "../Wizard/Wizard";
 import WizardItem from "../Wizard/WizardItem";
-import HistoryList from "../Pages/SwapHistory/History";
-import { CampaignsComponent } from "../Pages/Campaigns";
-import { CampaignDetailsComponent } from "../Pages/Campaigns/Details";
 import { Modal, ModalContent } from "../Modal/modalWithoutAnimation";
 import { useCallbacks } from "../../context/callbackProvider";
 import { useControllableState } from "../Modal/vaul/use-controllable-state";
+
+// History and Campaigns are only rendered after the user opens this menu
+// and navigates to a sub-step. Lazy-loading keeps their components — plus
+// the per-row UI they pull in transitively — out of every page's entry
+// chunks (they leaked onto `/` because the menu is always mounted in the
+// header). Wizard renders only the active StepName, so the suspense
+// fallback never shows while the user is on the Menu step.
+const HistoryList = lazy(() => import("../Pages/SwapHistory/History"))
+const CampaignsComponent = lazy(() =>
+    import("../Pages/Campaigns").then(m => ({ default: m.CampaignsComponent }))
+)
+const CampaignDetailsComponent = lazy(() =>
+    import("../Pages/Campaigns/Details").then(m => ({ default: m.CampaignDetailsComponent }))
+)
 
 const Comp = () => {
 
@@ -78,13 +89,19 @@ const Comp = () => {
                                     <MenuList goToStep={handleGoToStep} />
                                 </WizardItem>
                                 <WizardItem StepName={MenuStep.Transactions} GoBack={goBackToMenuStep} className="h-full" inModal>
-                                    <HistoryList onNewTransferClick={() => { closeModal(); onMenuNavigationChange("/") }} />
+                                    <Suspense fallback={null}>
+                                        <HistoryList onNewTransferClick={() => { closeModal(); onMenuNavigationChange("/") }} />
+                                    </Suspense>
                                 </WizardItem>
                                 <WizardItem StepName={MenuStep.Campaigns} GoBack={goBackToMenuStep} className="h-full" inModal>
-                                    <CampaignsComponent onCampaignSelect={(campaign) => { handleGoToStep(MenuStep.CampaignDetails); setSelectedCampaign(campaign.name) }} />
+                                    <Suspense fallback={null}>
+                                        <CampaignsComponent onCampaignSelect={(campaign) => { handleGoToStep(MenuStep.CampaignDetails); setSelectedCampaign(campaign.name) }} />
+                                    </Suspense>
                                 </WizardItem>
                                 <WizardItem StepName={MenuStep.CampaignDetails} GoBack={() => { goToStep(MenuStep.Campaigns, "back"); onMenuNavigationChange("/campaigns") }} className="h-full" inModal>
-                                    <CampaignDetailsComponent campaignName={selectedCampaign} />
+                                    <Suspense fallback={null}>
+                                        <CampaignDetailsComponent campaignName={selectedCampaign} />
+                                    </Suspense>
                                 </WizardItem>
                             </Wizard>
                         </div>
