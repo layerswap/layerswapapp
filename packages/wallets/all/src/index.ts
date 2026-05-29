@@ -17,8 +17,19 @@ import type { EVMProviderConfig, WalletConnectConfig } from "@layerswap/wallet-e
 import type { FuelProviderConfig } from "@layerswap/wallet-fuel";
 import { createFuelDescriptor } from "./descriptors/fuel";
 
+// `createImmutablePassportProvider` is intentionally NOT statically imported
+// here for the default-providers code path. Calling it pulls
+// `ImtblPassportService`, which in turn dynamic-imports `@imtbl/sdk` and
+// related chunks (~993 KB Brotli on the bridge) — the network waterfall on
+// the deploy showed all of that hitting the home page even though Passport
+// is only needed at the connect-modal level. `imtblRedirect.tsx` still
+// needs the eager imports for the OAuth callback, so we keep the named
+// re-exports below pointing at the chain package; that page's own chunk
+// will include them, the home page's chunk no longer will because nothing
+// eager references them.
 import { createImmutablePassportProvider, imtblPassportLoginCallback } from "@layerswap/wallet-imtbl-passport";
 import type { ImmutablePassportProviderConfig, ImtblPassportConfig } from "@layerswap/wallet-imtbl-passport";
+import { createImmutablePassportDescriptor } from "./descriptors/imtblPassport";
 
 import type { ParadexProviderConfig } from "@layerswap/wallet-paradex";
 import { createParadexDescriptor } from "./descriptors/paradex";
@@ -46,7 +57,7 @@ export type { EVMProviderConfig, WalletConnectConfig };
 export { createFuelDescriptor };
 export type { FuelProviderConfig };
 
-export { createImmutablePassportProvider, imtblPassportLoginCallback };
+export { createImmutablePassportProvider, imtblPassportLoginCallback, createImmutablePassportDescriptor };
 export type { ImmutablePassportProviderConfig, ImtblPassportConfig };
 
 export { createParadexDescriptor };
@@ -137,10 +148,12 @@ export function getDefaultProviders(config: DefaultWalletConfig = {}) {
         createSVMDescriptor(walletConnect),
         // Tron — lazy. Pulls tronweb + its transitive validator/bignumber/protobuf.
         createTronDescriptor(),
-        // Immutable Passport — eager and conditional (its login callback
-        // path is tied to the redirect page, so the SDK does need to be
-        // present when the page renders).
-        ...(immutablePassport ? [createImmutablePassportProvider({ imtblPassportConfig: immutablePassport })] : [])
+        // Immutable Passport — lazy and conditional. The SDK + service
+        // init chain pulls ~993 KB Brotli; deferring it to first
+        // connect-modal open removes that from the home page waterfall.
+        // The OAuth redirect page (`/imtblRedirect`) imports the
+        // eager factory + login callback directly so it still works.
+        ...(immutablePassport ? [createImmutablePassportDescriptor(immutablePassport)] : [])
     ];
 
     return providers;
