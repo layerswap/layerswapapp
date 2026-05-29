@@ -27,9 +27,9 @@ const Comp = () => {
 
     const goBackToMenuStep = () => { goToStep(MenuStep.Menu, "back"); clearMenuPath(router) }
 
-    const handleGoToStep = (step: MenuStep, path: string) => {
+    const handleGoToStep = (step: MenuStep, path?: string) => {
         goToStep(step)
-        setMenuPath(path, router)
+        if (path) setMenuPath(path, router)
     }
 
     return <>

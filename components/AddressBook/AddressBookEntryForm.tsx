@@ -1,11 +1,9 @@
 import { FC, ReactNode, useMemo, useState } from 'react'
 import clsx from 'clsx'
-import { useAddressBookStore } from '@/stores/addressBookStore'
+import { useAddressBookStore, NAME_MAX, COUNTER_SHOW_AT } from '@/stores/addressBookStore'
 import { useSettingsState } from '@/context/settings'
 import { Address as AddressClass } from '@/lib/address'
 
-export const NAME_MAX = 15
-export const COUNTER_SHOW_AT = 10
 export type AddressBookEntryFormProps = {
     initial?: {
         name?: string
@@ -77,7 +75,7 @@ const AddressBookEntryForm: FC<AddressBookEntryFormProps> = ({ initial, onClose 
                         autoCorrect="off"
                         autoComplete="off"
                         spellCheck={false}
-                        className="w-full h-14 bg-transparent border-0 outline-none text-primary-text placeholder:text-secondary-text font-mono text-[22px] leading-7 focus:ring-0 p-0"
+                        className="w-full h-14 bg-transparent border-0 outline-none text-primary-text placeholder:text-secondary-text text-[22px] leading-7 focus:ring-0 p-0"
                     />
                 </Field>
             </div>

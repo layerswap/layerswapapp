@@ -1,6 +1,6 @@
 import { FC, MouseEventHandler, ReactNode, SVGProps, useCallback, useMemo, useState } from "react"
 import { AddressGroup, AddressItem } from ".";
-import AddressIcon from "@/components//AddressIcon";
+import AddressIcon from "@/components/AddressIcon";
 import { Address, getExplorerUrl } from "@/lib/address";
 import { Copy, Check, ChevronDown, WalletIcon, Pencil, Link2, SquareArrowOutUpRight, Unplug, Info, Trash2 } from "lucide-react";
 import { Partner } from "@/Models/Partner";
@@ -71,7 +71,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
                             />
                         )
                     ) : (
-                        <AddressIcon className="scale-150 h-9 w-9" address={address} size={36} />
+                        <AddressIcon className="h-9 w-9" address={address} name={resolvedDisplayName} size={32} rounded="6px" />
                     )
                 }
             </div>
@@ -174,7 +174,7 @@ type AddressDetailsPopoverProps = ExtendedAddressBaseProps
     & ({ network: Network, providerName?: string } | { network?: Network, providerName: string })
 
 const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, network, providerName, isForCurrency, children, onDisconnect, onRemove, showDetails = false, title, description, logo: Logo, onPopoverOpenChange, onTooltipOpenChange, shouldShowChevron = true, displayName: displayNameProp }) => {
-    const bookName = useAddressName(address, network)
+    const bookName = useAddressName(displayNameProp !== undefined ? undefined : address, network)
     const displayName = displayNameProp ?? bookName
     const [isCopied, setCopied] = useCopyClipboard()
     const [isPopoverOpen, setPopoverOpen] = useState(false)

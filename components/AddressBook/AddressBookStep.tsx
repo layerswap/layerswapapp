@@ -3,6 +3,8 @@ import { useAddressBookStore, SavedAddress } from '@/stores/addressBookStore'
 import { MoreVertical, Pencil, Plus, Trash2 } from 'lucide-react'
 import AddressIcon from '@/components/AddressIcon'
 import { Address as AddressClass } from '@/lib/address'
+import shortenString from '@/components/utils/ShortenString'
+import { useSettingsState } from '@/context/settings'
 import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
 import AddressBookEntryForm, { AddressBookEntryFormProps } from './AddressBookEntryForm'
 import { ErrorDisplay } from '@/components/validationError/ErrorDisplay'
@@ -18,6 +20,7 @@ type EditingState =
     | { kind: 'edit', entry: SavedAddress }
 
 const AddressBookStep: FC = () => {
+    const { networks } = useSettingsState()
     const savedAddresses = useAddressBookStore(s => s.savedAddresses)
     const removeAddress = useAddressBookStore(s => s.removeAddress)
     const clearAll = useAddressBookStore(s => s.clearAll)
@@ -122,17 +125,18 @@ const AddressBookStep: FC = () => {
                 )}
                 {filteredAddresses.map(entry => {
                     const raw = entry.address.raw
+                    const network = networks ? AddressClass.resolveNetwork(raw, networks) : undefined
                     return (
                         <div key={raw} className="flex items-center justify-between gap-2 p-3 rounded-xl bg-secondary-500">
                             <div className="flex items-center gap-3 min-w-0">
-                                <div className="bg-secondary-400 rounded-md h-8 w-8 flex items-center justify-center overflow-hidden">
-                                    <AddressIcon className="scale-150 h-9 w-9" address={raw} size={36} />
+                                <div className="rounded-md h-8 w-8 overflow-hidden">
+                                    <AddressIcon className="h-8 w-8" address={raw} name={entry.name} size={32} rounded="6px" />
                                 </div>
                                 <div className="min-w-0">
                                     <p className="text-sm font-medium text-primary-text truncate">{entry.name}</p>
-                                    <ExtendedAddress address={raw} providerName="address-book" shouldShowChevron={false} displayName="">
-                                        <p className="text-xs text-secondary-text truncate font-mono cursor-pointer hover:text-primary-text hover:underline transition w-fit">
-                                            {entry.address.toShortString()}
+                                    <ExtendedAddress address={raw} network={network} providerName={network ? undefined : 'address-book'} shouldShowChevron={false} displayName="">
+                                        <p className="text-xs text-secondary-text truncate cursor-pointer hover:text-primary-text hover:underline transition w-fit">
+                                            {shortenString(raw)}
                                         </p>
                                     </ExtendedAddress>
                                 </div>

@@ -8,10 +8,10 @@ import FilledX from "@/components/icons/FilledX";
 import { AddressGroup, AddressItem } from ".";
 import { Address } from "@/lib/address";
 import AddressWithIcon from "./AddressWithIcon";
+import SecondaryButton from "@/components/buttons/secondaryButton";
 import { Wallet } from "@/Models/WalletProvider";
 import { FormikHelpers } from "formik";
-import { useAddressBookStore, useAddressName } from "@/stores/addressBookStore";
-import { NAME_MAX, COUNTER_SHOW_AT } from "@/components/AddressBook/AddressBookEntryForm";
+import { useAddressBookStore, useAddressName, NAME_MAX, COUNTER_SHOW_AT } from "@/stores/addressBookStore";
 
 type AddressInput = {
     manualAddress: string,
@@ -116,7 +116,7 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
                         <AddressWithIcon addressItem={addressFromList || { address: manualAddress, group: AddressGroup.ManualAdded }} partner={partner} network={destination} />
                     </div>
                 }
-                {canSaveToAddressBook && <SaveToBookEditor address={manualAddress} />}
+                {canSaveToAddressBook && <SaveToBookEditor key={manualAddress} address={manualAddress} />}
             </div>
         </div>
     )
@@ -131,10 +131,12 @@ const SaveToBookEditor: FC<{ address: string }> = ({ address }) => {
 
     if (!editing) {
         return (
-            <button type="button" onClick={() => setEditing(true)} className="mt-2 inline-flex items-center gap-1 text-xs text-secondary-text hover:text-primary-text transition">
-                <BookmarkPlus className="h-3.5 w-3.5" />
-                <span>Save to address book</span>
-            </button>
+            <SecondaryButton onClick={() => setEditing(true)} size="lg" className="mt-2 w-full">
+                <span className="flex items-center justify-center gap-2">
+                    <BookmarkPlus className="h-4 w-4" />
+                    <span>Save to address book</span>
+                </span>
+            </SecondaryButton>
         )
     }
 

@@ -99,20 +99,30 @@ export class Address {
   }
 
   /**
-   * Check if this address is valid for any network in the list.
+   * Return the first network in the list that `address` is valid for, or undefined.
    * Dedupes probes by NetworkType so we only validate once per chain family.
+   */
+  static resolveNetwork<T extends { name: string; type: string }>(
+    address: string,
+    networks: T[]
+  ): T | undefined {
+    if (!address) return undefined;
+    const seen = new Set<string>();
+    return networks.find(n => {
+      if (seen.has(n.type)) return false;
+      seen.add(n.type);
+      return Address.isValid(address, n);
+    });
+  }
+
+  /**
+   * Check if this address is valid for any network in the list.
    */
   static isValidForAnyNetwork(
     address: string,
     networks: { name: string; type: string }[]
   ): boolean {
-    if (!address) return false;
-    const seen = new Set<string>();
-    return networks.some(n => {
-      if (seen.has(n.type)) return false;
-      seen.add(n.type);
-      return Address.isValid(address, n);
-    });
+    return !!Address.resolveNetwork(address, networks);
   }
 
   /**

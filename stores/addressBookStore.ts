@@ -3,6 +3,9 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import { Address } from '@/lib/address'
 
+export const NAME_MAX = 15
+export const COUNTER_SHOW_AT = 10
+
 export type SavedAddress = {
     address: Address
     name: string
@@ -24,7 +27,7 @@ export const useAddressBookStore = create<AddressBookState>()(persist<AddressBoo
         addAddress: (entry) => set(state => {
             const address = wrap(entry.address)
             const name = entry.name?.trim()
-            if (!address.raw || !name) return state
+            if (!address.raw || !name || name.length > NAME_MAX) return state
             const idx = state.savedAddresses.findIndex(e => Address.equals(e.address.raw, address.raw, null, 'address-book'))
             if (idx === -1) return { savedAddresses: [...state.savedAddresses, { address, name }] }
             const updated = [...state.savedAddresses]
@@ -38,7 +41,7 @@ export const useAddressBookStore = create<AddressBookState>()(persist<AddressBoo
         editAddress: (oldAddress, entry) => set(state => {
             const address = wrap(entry.address)
             const name = entry.name?.trim()
-            if (!address.raw || !name) return state
+            if (!address.raw || !name || name.length > NAME_MAX) return state
             const oldKey = wrap(oldAddress).raw
             const next: SavedAddress[] = []
             let replaced = false

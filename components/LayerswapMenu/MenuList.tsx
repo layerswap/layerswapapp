@@ -20,7 +20,7 @@ const WalletsMenu = dynamic(() => import("../Wallet/ConnectedWallets").then((com
     loading: () => <></>
 })
 
-const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ goToStep }) => {
+const MenuList: FC<{ goToStep: (step: MenuStep, path?: string) => void }> = ({ goToStep }) => {
     const router = useRouter();
     const { boot, show, update } = useIntercom()
     const [openFeedbackModal, setOpenFeedbackModal] = useState(false);
@@ -51,7 +51,7 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
                         </Menu.Item>
                     }
                 </>
-                <Menu.Item onClick={() => goToStep(MenuStep.AddressBook, "/address-book")} icon={<BookUser className="h-5 w-5" />}>
+                <Menu.Item onClick={() => goToStep(MenuStep.AddressBook)} icon={<BookUser className="h-5 w-5" />}>
                     Address Book
                 </Menu.Item>
                 <>
