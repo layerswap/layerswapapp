@@ -5,6 +5,8 @@ import AddressIcon from '@/components/AddressIcon'
 import { Address as AddressClass } from '@/lib/address'
 import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
 import AddressBookEntryForm, { AddressBookEntryFormProps } from './AddressBookEntryForm'
+import { ErrorDisplay } from '@/components/validationError/ErrorDisplay'
+import { AlertTriangle } from 'lucide-react'
 import { HistoryItemSceleton } from '@/components/SwapHistory/Snippet'
 import { SearchComponent } from '@/components/Input/Search'
 import { filterChipClasses } from '@/components/SwapHistory/Filters/chipStyles'
@@ -93,16 +95,22 @@ const AddressBookStep: FC = () => {
                 </div>
             </div>
             {pendingClearAll && (
-                <div className="mb-3 flex items-center justify-between p-3 rounded-lg bg-secondary-600 border border-primary/30">
-                    <p className="text-sm text-primary-text">Delete all saved addresses?</p>
-                    <div className="flex gap-2">
-                        <button type="button" onClick={() => setPendingClearAll(false)} className="px-3 py-1 text-xs rounded-md bg-secondary-500 hover:bg-secondary-400 text-primary-text transition">
-                            Cancel
-                        </button>
-                        <button type="button" onClick={() => { clearAll(); setPendingClearAll(false) }} className="px-3 py-1 text-xs rounded-md bg-primary hover:bg-primary/90 text-primary-buttonTextColor transition">
-                            Delete all
-                        </button>
-                    </div>
+                <div className="mb-3">
+                    <ErrorDisplay
+                        icon={<AlertTriangle className="h-5 w-5 text-warning-foreground" />}
+                        title="Delete all saved addresses?"
+                        message="This removes every saved name from your address book. It can't be undone."
+                        footer={
+                            <div className="flex gap-2 mt-3">
+                                <button type="button" onClick={() => setPendingClearAll(false)} className="flex-1 h-10 rounded-md text-sm font-medium bg-secondary-500 hover:bg-secondary-300 text-primary-text transition">
+                                    Cancel
+                                </button>
+                                <button type="button" onClick={() => { clearAll(); setPendingClearAll(false) }} className="flex-1 h-10 rounded-md text-sm font-medium bg-error-background text-error-foreground hover:brightness-110 transition">
+                                    Delete all
+                                </button>
+                            </div>
+                        }
+                    />
                 </div>
             )}
             <div className="flex flex-col gap-2">
