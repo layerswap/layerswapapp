@@ -42,7 +42,7 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
     } : undefined
 
     const walletConnectConfigs = {
-        projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '',
+        projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
         name: 'Layerswap',
         description: 'Layerswap App',
         url: 'https://layerswap.io/app/',

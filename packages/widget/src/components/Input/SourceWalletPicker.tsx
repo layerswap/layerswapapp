@@ -15,7 +15,11 @@ import clsx from "clsx";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts";
 
-const SourceWalletPicker: FC = () => {
+type SourceWalletPickerProps = {
+    hideManualTransfer?: boolean;
+}
+
+const SourceWalletPicker: FC<SourceWalletPickerProps> = ({ hideManualTransfer }) => {
     const [openModal, setOpenModal] = useState<boolean>(false)
 
     const {
@@ -117,7 +121,7 @@ const SourceWalletPicker: FC = () => {
                     />
                 </div>
                 {
-                    values.from?.deposit_methods?.includes('deposit_address') && !selectedConnector &&
+                    !hideManualTransfer && values.from?.deposit_methods?.includes('deposit_address') && !selectedConnector &&
                     <>
                         <div className="flex items-center justify-center gap-2 text-secondary-text order-2">
                             <hr className="border-secondary-400 w-full" />

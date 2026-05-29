@@ -61,7 +61,7 @@ const MethodPicker: FC = () => {
 
     const handleWalletClick = async () => {
         if (!hasWallet) {
-            await connect(undefined, { dismissible: true });
+            await connect(undefined, { dismissible: true, fullHeight: true });
             return;
         }
         if (!destinationReady) return;

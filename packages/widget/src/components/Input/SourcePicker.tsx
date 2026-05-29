@@ -16,9 +16,10 @@ type Props = {
     maxAllowedAmountInUsd: ReturnType<typeof useQuoteData>['maxAllowedAmountInUsd'];
     fee: ReturnType<typeof useQuoteData>['quote'];
     quoteTokenPrices?: QuoteTokenPrices;
+    hideManualTransfer?: boolean;
 }
 
-const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd, fee, quoteTokenPrices }: Props) => {
+const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd, fee, quoteTokenPrices, hideManualTransfer }: Props) => {
     const { values } = useFormikContext<SwapFormValues>()
 
     const { fromAsset: fromCurrency, from, depositMethod } = values || {}
@@ -37,7 +38,7 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, mi
                 Send from
             </label>
             <div className="col-span-4 justify-self-end">
-                <SourceWalletPicker />
+                <SourceWalletPicker hideManualTransfer={hideManualTransfer} />
             </div>
         </div>
         <div className="relative">

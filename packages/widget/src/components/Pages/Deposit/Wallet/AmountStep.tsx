@@ -72,6 +72,7 @@ const AmountStep: FC = () => {
                 maxAllowedAmountInUsd={maxAllowedAmountInUsd}
                 fee={fee}
                 quoteTokenPrices={quoteTokenPrices}
+                hideManualTransfer
             />
 
             {quoteError?.message && (
