@@ -1,5 +1,4 @@
 import { BalanceError, GasFeeError, WalletWithdrawalError, WidgetError } from "@layerswap/widget/types"
-import posthog from "posthog-js"
 
 export const logError = (e: WidgetError | BalanceError | GasFeeError | WalletWithdrawalError) => {
     console.log("got error message", e.message)
@@ -8,10 +7,4 @@ export const logError = (e: WidgetError | BalanceError | GasFeeError | WalletWit
     console.log("got error name", e.name)
     console.log("got error type", e.type)
     console.log("got error", e)
-    // posthog.capture(e.type, {
-    //     name: e.name,
-    //     message: e.message,
-    //     stack: e.stack,
-    //     cause: e.cause
-    // })
 }

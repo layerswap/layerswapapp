@@ -1,5 +1,6 @@
 'use client'
 import { FC, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useDeferredIntercomInit } from "@/hooks/useDeferredIntercomInit"
 import ThemeWrapper from "@/components/themeWrapper";
 import { ErrorBoundary } from "react-error-boundary";
 import { SettingsProvider } from "./settings";
@@ -48,6 +49,11 @@ const INTERCOM_APP_ID = 'h5zisg78'
 const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callbacks, config, walletProviders = [] }) => {
     let { apiKey, version, settings: _settings, theme: themeData, initialValues, imtblPassport, tonConfigs, walletConnect } = config || {}
     const [fetchedSettings, setFetchedSettings] = useState<LayerSwapSettings | null>(null)
+    // Defer Intercom script injection until the browser is idle. The provider
+    // stays mounted so its context is always available (no remount of any
+    // subtree); only the network/parse cost of the third-party widget is
+    // pushed past first paint.
+    const intercomReady = useDeferredIntercomInit()
     themeData = { ...THEME_COLORS['default'], ...config?.theme }
 
     AppSettings.ApiVersion = version || AppSettings.ApiVersion
@@ -73,7 +79,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
     let appSettings = new LayerSwapAppSettings(settings)
 
     return (
-        <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
+        <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500} shouldInitialize={intercomReady}>
             <SettingsProvider initialLayerswapData={appSettings} initialSettings={config?.initialValues}>
                 <CallbackProvider callbacks={callbacks}>
                     <ErrorProvider>
