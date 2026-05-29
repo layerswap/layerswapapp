@@ -2,6 +2,7 @@ import { Context, createContext, useCallback, useContext, useMemo, useState } fr
 import { SwapDirection } from '@/components/DTOs/SwapFormValues';
 import useWallet from '@/hooks/useWallet';
 import { Wallet, WalletProvider } from '@/Models/WalletProvider';
+import { Address } from '@/lib/address';
 import AddressIcon from '@/components/AddressIcon';
 import { getKey, useBalanceStore } from '@/stores/balanceStore';
 import { useManualDestAddressesStore } from '@/stores/manualDestAddressesStore';
@@ -49,13 +50,14 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
     const [selectedDestAccounts, setSelectedDestinationAccounts] = useState<BaseAccountIdentity[]>([])
     const [selectedSourceAccounts, setSelectedSourceAccounts] = useState<BaseAccountIdentity[]>([])
     const { providers } = useWallet()
+    const addManualDestAddress = useManualDestAddressesStore(s => s.addManualDestAddress)
 
     const sourceAccounts: AccountIdentityWithSupportedNetworks[] = useMemo(() => {
         return providers.map(provider => {
             if (!hasWallet(provider)) return null;
 
             const selectedWallet = provider.connectedWallets?.find(wallet => wallet.id === selectedSourceAccounts.find(acc =>
-                acc.providerName === provider.name && wallet.addresses.some(a => a === acc.address))?.id && wallet.addresses)
+                acc.providerName === provider.name && wallet.addresses.some(a => Address.equals(a, acc.address, null, provider.name)))?.id && wallet.addresses)
 
             const wallet = selectedWallet || provider.activeWallet;
             const selectedAccountAddress = selectedWallet ? selectedSourceAccounts.find(acc => acc.providerName === provider.name && acc.id === selectedWallet.id)?.address : undefined
@@ -92,7 +94,7 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
             if (!hasWallet(provider)) return null;
 
             const selectedWallet = provider.connectedWallets?.find(wallet => wallet.id === selectedDestAccounts.find(acc =>
-                acc.providerName === provider.name && wallet.addresses.some(a => a === acc.address))?.id && wallet.addresses)
+                acc.providerName === provider.name && wallet.addresses.some(a => Address.equals(a, acc.address, null, provider.name)))?.id && wallet.addresses)
 
             const wallet = selectedWallet || provider.activeWallet;
             const selectedAccountAddress = selectedWallet ? selectedDestAccounts.find(acc => acc.providerName === provider.name && acc.id === selectedWallet.id)?.address : undefined
@@ -103,11 +105,8 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
     }, [providers, selectedDestAccounts]);
 
     const selectDestinationAccount = useCallback((account: BaseAccountIdentity) => {
-        if (account.id === 'manually_added') {
-            useManualDestAddressesStore.getState().addManualDestAddress({
-                address: account.address,
-                providerName: account.providerName,
-            });
+        if (account.id === 'manually_added' && account.address && account.providerName) {
+            addManualDestAddress({ address: account.address, providerName: account.providerName });
         }
         setSelectedDestinationAccounts(prev => {
             const existingAccountIndex = prev.findIndex(acc => acc.providerName === account.providerName);

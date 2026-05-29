@@ -1,6 +1,7 @@
 import { ChangeEvent, FC, useCallback, useState } from "react";
+import clsx from "clsx";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
-import { Pencil } from "lucide-react";
+import { BookmarkPlus, Pencil } from "lucide-react";
 import { Partner } from "@/Models/Partner";
 import { NetworkType } from "@/Models/Network";
 import FilledX from "@/components/icons/FilledX";
@@ -9,6 +10,8 @@ import { Address } from "@/lib/address";
 import AddressWithIcon from "./AddressWithIcon";
 import { Wallet } from "@/Models/WalletProvider";
 import { FormikHelpers } from "formik";
+import { useAddressBookStore, useAddressName } from "@/stores/addressBookStore";
+import { NAME_MAX, COUNTER_SHOW_AT } from "@/components/AddressBook/AddressBookEntryForm";
 
 type AddressInput = {
     manualAddress: string,
@@ -24,7 +27,7 @@ type AddressInput = {
     connectedWallet: Wallet | undefined
 }
 
-const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress, setNewAddress, values, name, inputReference, setFieldValue, close, addresses, connectedWallet, partner }) => {
+const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress, setNewAddress, values, name, inputReference, setFieldValue, close, addresses, partner }) => {
     const { to: destination } = values || {}
     const [isFocused, setIsFocused] = useState(false);
     const placeholder = "Enter address"
@@ -56,6 +59,9 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
     }
 
     const addressFromList = destination && addresses?.find(a => Address.equals(a.address, manualAddress, destination))
+    const isAddressValid = Boolean(manualAddress && destination && Address.isValid(manualAddress, destination))
+    const existingBookName = useAddressName(isAddressValid ? manualAddress : undefined, destination)
+    const canSaveToAddressBook = isAddressValid && !existingBookName
 
     return (
         <div className="text-left">
@@ -88,7 +94,7 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
                         manualAddress &&
                         <button
                             type="button"
-                            className="absolute top-[calc(50%-10px)] right-4 hover:bg-secondary-400"
+                            className="absolute top-1/2 -translate-y-1/2 right-3 text-secondary-text hover:text-primary-text transition"
                             onClick={handleRemoveNewDepositeAddress}
                         >
                             <FilledX className="h-5 w-5" />
@@ -110,9 +116,70 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
                         <AddressWithIcon addressItem={addressFromList || { address: manualAddress, group: AddressGroup.ManualAdded }} partner={partner} network={destination} />
                     </div>
                 }
+                {canSaveToAddressBook && <SaveToBookEditor address={manualAddress} />}
             </div>
         </div>
     )
 }
 
 export default ManualAddressInput
+
+const SaveToBookEditor: FC<{ address: string }> = ({ address }) => {
+    const addAddress = useAddressBookStore(s => s.addAddress)
+    const [editing, setEditing] = useState(false)
+    const [name, setName] = useState('')
+
+    if (!editing) {
+        return (
+            <button type="button" onClick={() => setEditing(true)} className="mt-2 inline-flex items-center gap-1 text-xs text-secondary-text hover:text-primary-text transition">
+                <BookmarkPlus className="h-3.5 w-3.5" />
+                <span>Save to address book</span>
+            </button>
+        )
+    }
+
+    const trimmed = name.trim()
+    const len = trimmed.length
+    const isOver = len > NAME_MAX
+    const isValid = len > 0 && !isOver
+
+    const close = () => { setEditing(false); setName('') }
+    const confirm = () => {
+        if (!isValid) return
+        addAddress({ name: trimmed, address })
+        close()
+    }
+
+    return (
+        <div className="mt-2 w-full space-y-2">
+            <div className="relative w-full">
+                <input
+                    type="text"
+                    autoFocus
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    onKeyDown={e => {
+                        if (e.key === 'Enter') { e.preventDefault(); confirm() }
+                        if (e.key === 'Escape') close()
+                    }}
+                    placeholder="Name this address"
+                    autoComplete="off"
+                    className="pr-20 h-12 w-full border border-secondary-800 focus:border-primary leading-4 placeholder:text-primary-text-tertiary/80 placeholder:font-normal font-semibold !bg-secondary-500 rounded-lg truncate hover:overflow-x-scroll focus:ring-0 focus:outline-hidden"
+                />
+                <div className="absolute top-1/2 -translate-y-1/2 right-3 flex items-center gap-2">
+                    {len > COUNTER_SHOW_AT && (
+                        <span className={clsx('text-xs tabular-nums', isOver ? 'text-error-foreground' : 'text-secondary-text')}>
+                            {len} / {NAME_MAX}
+                        </span>
+                    )}
+                    <button type="button" onClick={close} aria-label="Cancel" className="text-secondary-text hover:text-primary-text transition">
+                        <FilledX className="h-5 w-5" />
+                    </button>
+                </div>
+            </div>
+            <button type="button" onClick={confirm} disabled={!isValid} className="w-full h-12 rounded-lg bg-primary text-primary-buttonTextColor text-base font-semibold hover:brightness-110 disabled:bg-secondary-500 disabled:text-secondary-text disabled:cursor-not-allowed transition">
+                Save
+            </button>
+        </div>
+    )
+}

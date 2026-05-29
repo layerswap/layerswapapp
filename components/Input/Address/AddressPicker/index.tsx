@@ -1,6 +1,5 @@
 import { useFormikContext } from "formik";
 import { FC, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AddressBookItem } from "@/lib/apiClients/layerSwapApiClient";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { Partner } from "@/Models/Partner";
 import useWallet from "@/hooks/useWallet";
@@ -15,21 +14,21 @@ import { useQueryState } from "@/context/query";
 import ConnectedWallets, { NotCompatibleWallets } from "./ConnectedWallets";
 import { Wallet } from "@/Models/WalletProvider";
 import { ManualDestAddress, useManualDestAddresses, useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts";
+import { SavedAddress, useAddressBookStore } from "@/stores/addressBookStore";
 import { useManualDestAddressesStore } from "@/stores/manualDestAddressesStore";
 
 export enum AddressGroup {
     ConnectedWallet = "Connected wallet",
     ManualAdded = "Added Manually",
-    RecentlyUsed = "Recently used",
     FromQuery = "Partner",
 }
 
 export type AddressItem = {
     address: string,
     group: AddressGroup,
-    date?: string,
     wallet?: Wallet,
     providerName?: string,
+    name?: string,
 }
 
 export type AddressTriggerProps = {
@@ -48,7 +47,6 @@ interface Input {
     close: () => void,
     partner?: Partner,
     canFocus?: boolean,
-    address_book?: AddressBookItem[],
     /** Render the picker content directly (no trigger button, no drawer). */
     inline?: boolean,
     /** When true, skip the effect that syncs destination_address from the
@@ -59,7 +57,7 @@ interface Input {
 }
 
 const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
-    ({ showAddressModal, setShowAddressModal, name, canFocus, close, address_book, partner, children, inline, disableAutoFill }, ref) {
+    ({ showAddressModal, setShowAddressModal, name, canFocus, close, partner, children, inline, disableAutoFill }, ref) {
 
     const {
         values,
@@ -76,13 +74,24 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const connectedWalletskey = connectedWallets?.map(w => w.addresses.join('')).join('')
     const [manualAddress, setManualAddress] = useState<string>('')
     const [isConnecting, setIsConnecting] = useState(false)
+    const savedAddresses = useAddressBookStore(s => s.savedAddresses)
+    const savedAddressesForDestination = useMemo(
+        () => destination ? savedAddresses.filter(e => AddressClass.isValid(e.address.raw, destination)) : [],
+        [savedAddresses, destination]
+    )
+
     const manualDestAddresses = useManualDestAddresses()
     const removeManualDestAddress = useManualDestAddressesStore(s => s.removeManualDestAddress)
+    const removeAddressFromBook = useAddressBookStore(s => s.removeAddress)
 
-    const onRemoveManual = useCallback((address: string) => {
+    const onRemoveAddress = useCallback((address: string, isBookEntry: boolean) => {
+        if (isBookEntry) {
+            removeAddressFromBook(address)
+            return
+        }
         if (!provider?.name) return
         removeManualDestAddress(address, provider.name)
-    }, [provider?.name, removeManualDestAddress])
+    }, [removeAddressFromBook, provider?.name, removeManualDestAddress])
 
     useEffect(() => {
         if (destination_address && destination && !AddressClass.isValid(destination_address, destination)) {
@@ -95,14 +104,14 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
     const groupedAddresses = useMemo(() => {
         return resolveAddressGroups({
-            address_book,
             destination,
             wallets: connectedWallets,
+            savedAddresses: savedAddressesForDestination,
             manualAddresses: manualDestAddresses,
             addressFromQuery: query.destination_address,
             providerName: provider?.name,
         })
-    }, [address_book, destination, connectedWallets, manualDestAddresses, query.destination_address, connectedWalletskey, provider?.name])
+    }, [destination, connectedWallets, savedAddressesForDestination, manualDestAddresses, query.destination_address, connectedWalletskey, provider?.name])
 
     const destinationAddressItem = destination && destination_address ?
         groupedAddresses?.find(a => a.address.toLowerCase() === destination_address.toLowerCase())
@@ -230,7 +239,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                         destination={destination}
                         destination_address={destination_address}
                         partner={partner}
-                        onRemoveManual={onRemoveManual}
+                        onRemove={onRemoveAddress}
                     />
                 }
 
@@ -275,16 +284,16 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 });
 
 const resolveAddressGroups = ({
-    address_book,
     destination,
     wallets,
+    savedAddresses,
     manualAddresses,
     addressFromQuery,
     providerName,
 }: {
-    address_book: AddressBookItem[] | undefined,
     destination: NetworkRoute | undefined,
     wallets: Wallet[] | undefined,
+    savedAddresses: SavedAddress[],
     manualAddresses: ManualDestAddress[],
     addressFromQuery: string | undefined,
     providerName: string | undefined,
@@ -292,10 +301,7 @@ const resolveAddressGroups = ({
 
     if (!destination) return
 
-    const filteredAddressBook = address_book?.filter(a => a.networks?.some(n => destination?.name === n) && AddressClass.isValid(a.address, destination)) || []
-    const recentlyUsedAddresses = filteredAddressBook.map(ra => ({ address: ra.address, date: ra.date, group: AddressGroup.RecentlyUsed, networkType: destination.type }))
-
-    let addresses: AddressItem[] = []
+    const addresses: AddressItem[] = []
     wallets?.forEach(wallet => {
         if (wallet?.addresses?.length) {
             addresses.push(...(wallet.addresses.map(a => ({ address: a, group: AddressGroup.ConnectedWallet, wallet })) || []))
@@ -305,13 +311,23 @@ const resolveAddressGroups = ({
         addresses.push({ address: addressFromQuery, group: AddressGroup.FromQuery })
     }
 
-    if (recentlyUsedAddresses.length > 0) {
-        addresses = [...addresses, ...recentlyUsedAddresses]
-    }
-
     manualAddresses.forEach(entry => {
         if (entry.providerName === providerName && AddressClass.isValid(entry.address, destination)) {
-            addresses.push({ address: entry.address, group: AddressGroup.ManualAdded, providerName: entry.providerName })
+            addresses.push({
+                address: entry.address,
+                group: AddressGroup.ManualAdded,
+                providerName: entry.providerName,
+            })
+        }
+    })
+    savedAddresses.forEach(entry => {
+        if (AddressClass.isValid(entry.address.raw, destination)) {
+            addresses.push({
+                address: entry.address.raw,
+                group: AddressGroup.ManualAdded,
+                providerName,
+                name: entry.name,
+            })
         }
     })
 
@@ -328,6 +344,9 @@ const getUniqueAddresses = (addresses: AddressItem[], destination: NetworkRoute)
         const normalized = new AddressClass(a.address, destination).normalized;
         if (!normalizedMap.has(normalized)) {
             normalizedMap.set(normalized, a);
+        } else if (a.name && !normalizedMap.get(normalized)!.name) {
+            const existing = normalizedMap.get(normalized)!
+            normalizedMap.set(normalized, { ...existing, name: a.name })
         }
     });
 

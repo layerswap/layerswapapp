@@ -86,10 +86,10 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                         return <div className="hover:bg-secondary-300 bg-secondary-500 rounded-2xl p-3 h-13">
                                             {
                                                 addressItem ? <>
-                                                    <AddressButton address={addressItem.address} network={destination} wallet={wallet} addressProviderIcon={addressProviderIcon} />
+                                                    <AddressButton address={addressItem.address} network={destination} wallet={wallet} addressProviderIcon={addressProviderIcon} displayName={addressItem.name} />
                                                 </>
                                                     : destination_address ? <>
-                                                        <AddressButton address={destination_address} />
+                                                        <AddressButton address={destination_address} network={destination} />
                                                     </>
                                                         :
                                                         <span className="flex items-center">
@@ -167,7 +167,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
 
 export default ExchangeForm;
 
-const AddressButton = ({ address, network, wallet, addressProviderIcon }: { address: string, network?: Network, wallet?: Wallet, addressProviderIcon?: string | undefined }) => {
+const AddressButton = ({ address, network, wallet, addressProviderIcon, displayName }: { address: string, network?: Network, wallet?: Wallet, addressProviderIcon?: string | undefined, displayName?: string }) => {
     return <div className="justify-between w-full items-center flex font-light space-x-2 mx-auto rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative">
         <div className="flex items-center gap-2">
             <div className="flex bg-secondary-400 text-primary-text items-center justify-center rounded-md h-7 w-7 overflow-hidden">
@@ -187,10 +187,10 @@ const AddressButton = ({ address, network, wallet, addressProviderIcon }: { addr
             </div>
             {
                 network ? (
-                    <ExtendedAddress address={address} network={network} providerName={wallet?.providerName} showDetails={wallet ? true : false} title={wallet?.displayName?.split("-")[0]} description={wallet?.providerName} logo={wallet?.icon} />
+                    <ExtendedAddress address={address} network={network} providerName={wallet?.providerName} showDetails={wallet ? true : false} title={wallet?.displayName?.split("-")[0]} description={wallet?.providerName} logo={wallet?.icon} displayName={displayName} />
                 ) : (
                     <p className="text-sm block font-medium">
-                        {shortenString(address)}
+                        {displayName ? `${displayName} (${shortenString(address)})` : shortenString(address)}
                     </p>
                 )
             }

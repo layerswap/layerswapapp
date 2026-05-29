@@ -99,6 +99,23 @@ export class Address {
   }
 
   /**
+   * Check if this address is valid for any network in the list.
+   * Dedupes probes by NetworkType so we only validate once per chain family.
+   */
+  static isValidForAnyNetwork(
+    address: string,
+    networks: { name: string; type: string }[]
+  ): boolean {
+    if (!address) return false;
+    const seen = new Set<string>();
+    return networks.some(n => {
+      if (seen.has(n.type)) return false;
+      seen.add(n.type);
+      return Address.isValid(address, n);
+    });
+  }
+
+  /**
    * Format address as shortened display: first5...last4
    * @returns Shortened address (e.g., "0x123...5678")
    */
