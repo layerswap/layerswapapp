@@ -7,11 +7,7 @@ import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { useDepositStep } from "../depositStepContext";
-
-const shortAddress = (addr?: string) => {
-    if (!addr || addr.length <= 8) return addr ?? "";
-    return `${addr.slice(0, 4)}…${addr.slice(-4)}`;
-};
+import { Address } from "@/lib/address/Address";
 
 type MethodCardProps = {
     icon: React.ReactNode;
@@ -83,7 +79,7 @@ const MethodPicker: FC = () => {
     // connect modal still opens) but block forward navigation until ready.
     const walletDisabled = hasWallet && !destinationReady;
     const walletSubtitle = hasWallet
-        ? `${shortAddress(primaryWallet?.address)} · Instant`
+        ? new Address(primaryWallet?.address, null, primaryWallet.providerName).toShortString()
         : "Connect a wallet";
 
     return (
@@ -101,7 +97,7 @@ const MethodPicker: FC = () => {
                 <MethodCard
                     icon={<QrCode className="h-5 w-5 text-primary-text" />}
                     title="Deposit address"
-                    subtitle="No limit · ~2 min"
+                    subtitle="Generate a deposit address and transfer from any wallet"
                     onClick={handleTransferCryptoClick}
                     disabled={!destinationReady}
                     disabledReason="Pick a destination first"
