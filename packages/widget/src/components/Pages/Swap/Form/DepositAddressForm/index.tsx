@@ -34,9 +34,13 @@ type Props = {
      * for setting `to` / `toAsset` Formik values before mount (e.g. via
      * `lockTo`/`lockToAsset` initial settings or its own picker UI). */
     hideDestinationPicker?: boolean;
+    /** When true, skip the wallet → destination_address autofill. The caller
+     * owns Formik's `destination_address` and any autofill from the connected
+     * wallet would just stomp on it. */
+    lockDestinationAddress?: boolean;
 };
 
-const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPicker }) => {
+const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPicker, lockDestinationAddress }) => {
     const {
         values, isSubmitting, setFieldValue, submitForm
     } = useFormikContext<SwapFormValues>();
@@ -103,11 +107,12 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
     const rawDestinationAccount = useSelectedAccount("to", destination?.name);
     const destinationAccount = rawDestinationAccount?.id === 'manually_added' ? undefined : rawDestinationAccount;
     useEffect(() => {
+        if (lockDestinationAddress) return;
         if (!destination) return;
         const next = destinationAccount?.address ?? '';
         if ((destination_address ?? '').toLowerCase() === next.toLowerCase()) return;
         setFieldValue('destination_address', next, true);
-    }, [destination?.name, destinationAccount?.address, destination_address, setFieldValue]);
+    }, [lockDestinationAddress, destination?.name, destinationAccount?.address, destination_address, setFieldValue]);
 
     useEffect(() => {
         setFieldValue('depositMethod', 'deposit_address', true)

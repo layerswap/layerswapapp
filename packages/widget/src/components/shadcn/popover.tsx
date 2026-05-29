@@ -22,7 +22,14 @@ function PopoverContent({
   sideOffset = 4,
   ...props
 }: React.ComponentProps<typeof PopoverPrimitive.Content>) {
-  const container = document.getElementById('widget');
+  // Resolve the portal container on mount so SSR doesn't trip on `document`.
+  // First render portals to body (Radix default); after mount we re-render
+  // into the `#widget` container so the popover sits inside the same stacking
+  // context as the widget root.
+  const [container, setContainer] = React.useState<HTMLElement | null>(null);
+  React.useEffect(() => {
+    setContainer(document.getElementById('widget'));
+  }, []);
 
   return (
     <PopoverPrimitive.Portal container={container}>

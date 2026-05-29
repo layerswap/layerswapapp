@@ -14,16 +14,26 @@ import DepositHeader from "./DepositHeader";
 import MethodPicker from "./Options/MethodPicker";
 import WalletFlow from "./Wallet";
 import TransferCrypto from "./TransferCrypto";
-import useDestinationAddressAutofill from "./useDestinationAddressAutofill";
+import { SupportedDestination, useResolvedDestinations } from "./DestinationTokenPicker";
 
 export type DepositProps = {
     partner?: Partner;
+    /** Allowed destination network/token pairs. The user picks from this list
+     * via the token dropdown; the network is determined by the chosen token. */
+    destinations: SupportedDestination[];
+    /** Recipient address on the destination network. Required — the deposit
+     * widget never asks the end user for this. */
+    destinationAddress: string;
 };
 
-const StepRouter: FC<{ step: DepositStep; partner?: Partner }> = ({ step, partner }) => {
+const StepRouter: FC<{ step: DepositStep; partner?: Partner; destinationAddress: string }> = ({
+    step,
+    partner,
+    destinationAddress,
+}) => {
     switch (step) {
         case "method-picker": return <MethodPicker />;
-        case "transfer-crypto": return <TransferCrypto partner={partner} />;
+        case "transfer-crypto": return <TransferCrypto partner={partner} destinationAddress={destinationAddress} />;
         case "wallet-amount":
         case "wallet-processing": return <WalletFlow partner={partner} />;
         default: {
@@ -33,25 +43,23 @@ const StepRouter: FC<{ step: DepositStep; partner?: Partner }> = ({ step, partne
     }
 };
 
-const DepositForm: FC<DepositProps> = ({ partner }) => {
+const DepositForm: FC<DepositProps> = ({ partner, destinations, destinationAddress }) => {
     const { step } = useDepositStep();
-    // DepositAddressForm has its own destination_address autofill, so we skip
-    // ours on the transfer-crypto step to avoid running the same effect twice.
-    useDestinationAddressAutofill({ enabled: step !== "transfer-crypto" });
     return (
         <div className="flex flex-col gap-2 w-full">
-            <DepositHeader />
-            <StepRouter step={step} partner={partner} />
+            <DepositHeader destinations={destinations} />
+            <StepRouter step={step} partner={partner} destinationAddress={destinationAddress} />
         </div>
     );
 };
 
-const DepositInner: FC<DepositProps> = ({ partner }) => {
+const DepositInner: FC<DepositProps> = ({ partner, destinations, destinationAddress }) => {
     const settings = useSettingsState();
     const initialSettings = useInitialSettings();
     const { wallets } = useWallet();
     const { createSwap, setSwapId, setSubmitedFormValues } = useSwapDataUpdate();
     const { setSwapError } = useSwapDataState();
+    const resolvedDestinations = useResolvedDestinations(destinations);
 
     const connectedAutofillNetworks = useMemo(() => {
         const set = new Set<string>();
@@ -61,10 +69,16 @@ const DepositInner: FC<DepositProps> = ({ partner }) => {
         return set;
     }, [wallets]);
 
-    const initialValues: SwapFormValues = useMemo(
-        () => generateSwapInitialValues(settings, initialSettings, "deposit-address", connectedAutofillNetworks),
-        [],
-    );
+    const initialValues: SwapFormValues = useMemo(() => {
+        const base = generateSwapInitialValues(settings, initialSettings, "deposit-address", connectedAutofillNetworks);
+        const firstDestination = resolvedDestinations[0];
+        return {
+            ...base,
+            to: firstDestination?.network ?? base.to,
+            toAsset: firstDestination?.token ?? base.toAsset,
+            destination_address: destinationAddress,
+        };
+    }, []);
 
     const handleSubmit = useCallback(
         async (values: SwapFormValues) => {
@@ -96,20 +110,20 @@ const DepositInner: FC<DepositProps> = ({ partner }) => {
     return (
         <Formik initialValues={initialValues} validateOnMount onSubmit={handleSubmit}>
             <DepositStepProvider>
-                <DepositForm partner={partner} />
+                <DepositForm partner={partner} destinations={destinations} destinationAddress={destinationAddress} />
             </DepositStepProvider>
         </Formik>
     );
 };
 
-export const Deposit: FC<DepositProps> = ({ partner }) => {
+export const Deposit: FC<DepositProps> = ({ partner, destinations, destinationAddress }) => {
     // `id="widget"` is required because the shared route-picker modal
     // (components/Modal/modalWithoutAnimation.tsx) portals into the element
     // with that id. Without it the picker silently no-ops.
     return (
         <div id="widget" className="relative w-full flex flex-col gap-4 p-4 sm:p-5 bg-secondary-700 rounded-2xl overflow-hidden has-openpicker:min-h-[675px]">
             <SwapDataProvider>
-                <DepositInner partner={partner} />
+                <DepositInner partner={partner} destinations={destinations} destinationAddress={destinationAddress} />
             </SwapDataProvider>
         </div>
     );

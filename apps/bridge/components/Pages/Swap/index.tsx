@@ -13,7 +13,14 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
             enableSwapCallbacks
         >
             {/* <Swap /> */}
-            <Deposit/>
+            <Deposit
+                destinations={[
+                    { network: "BASE_MAINNET", token: "USDC" },
+                    { network: "ARBITRUM_MAINNET", token: "USDC" },
+                    { network: "ETHEREUM_MAINNET", token: "USDC" },
+                ]}
+                destinationAddress=""
+            />
         </WidgetWrapper>
     )
 }
