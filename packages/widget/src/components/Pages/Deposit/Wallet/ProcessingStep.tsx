@@ -14,14 +14,16 @@ type Props = {
  * Review step's `setSubmitedFormValues` call.
  */
 const ProcessingStep: FC<Props> = ({ partner }) => {
-    const { reset } = useDepositStep();
+    // Step back to wallet-amount on cancel so the user can adjust the amount
+    // and retry without re-picking the method.
+    const { back } = useDepositStep();
 
     return (
         <div className="w-full">
             <SwapDetails
                 type="contained"
                 partner={partner}
-                onCancelWithdrawal={reset}
+                onCancelWithdrawal={back}
             />
         </div>
     );

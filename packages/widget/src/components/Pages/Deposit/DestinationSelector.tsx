@@ -8,7 +8,7 @@ import { useRecentNetworksStore } from "@/stores/recentRoutesStore";
 import { useRouteSortingStore } from "@/stores/routeSortingStore";
 import useDepositAddressDestinations from "@/hooks/useDepositAddressDestinations";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
-import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
+import { NetworkRoute } from "@/Models/Network";
 
 type Props = {
     /** When true, render a static (non-interactive) badge — the destination is
@@ -79,8 +79,8 @@ const DestinationSelector: FC<Props> = ({ locked }) => {
                 className="flex items-center bg-secondary-500 rounded-xl px-3 py-2 min-w-0"
             >
                 <SelectedRouteDisplay
-                    route={to as NetworkRoute | undefined}
-                    token={toAsset as NetworkRouteToken | undefined}
+                    route={to}
+                    token={toAsset}
                     placeholder="Select destination"
                 />
             </div>
@@ -98,8 +98,8 @@ const DestinationSelector: FC<Props> = ({ locked }) => {
                 className="bg-secondary-500 hover:bg-secondary-400/70 rounded-xl px-3 py-2 transition-colors focus-visible:ring-2 focus-visible:ring-primary-500/60 focus-visible:outline-none"
             >
                 <SelectedRouteDisplay
-                    route={to as NetworkRoute | undefined}
-                    token={toAsset as NetworkRouteToken | undefined}
+                    route={to}
+                    token={toAsset}
                     placeholder={isEmpty ? "No destinations available" : "Select destination"}
                 />
             </SelectorTrigger>
@@ -115,8 +115,8 @@ const DestinationSelector: FC<Props> = ({ locked }) => {
                         setSearchQuery={setSearchQuery}
                         rowElements={routeElements}
                         direction="to"
-                        selectedRoute={(to as NetworkRoute)?.name}
-                        selectedToken={(toAsset as NetworkRouteToken)?.symbol}
+                        selectedRoute={to?.name}
+                        selectedToken={toAsset?.symbol}
                         hideTokenSwitch
                         hideBalances
                     />

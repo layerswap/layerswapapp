@@ -1,6 +1,6 @@
 "use client";
 import { FC, useCallback, useMemo } from "react";
-import { Form, Formik } from "formik";
+import { Formik } from "formik";
 import toast from "react-hot-toast";
 import { SwapDataProvider, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
@@ -9,7 +9,7 @@ import { ApiError, LSAPIKnownErrorCode } from "@/Models/ApiError";
 import { Partner } from "@/Models/Partner";
 import useWallet from "@/hooks/useWallet";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
-import { DepositStepProvider, useDepositStep } from "./depositStepContext";
+import { DepositStep, DepositStepProvider, useDepositStep } from "./depositStepContext";
 import DepositHeader from "./DepositHeader";
 import MethodPicker from "./Options/MethodPicker";
 import WalletFlow from "./Wallet";
@@ -20,20 +20,29 @@ export type DepositProps = {
     partner?: Partner;
 };
 
-const StepRouter: FC<DepositProps> = ({ partner }) => {
-    const { step } = useDepositStep();
-    if (step === "method-picker") return <MethodPicker />;
-    if (step === "transfer-crypto") return <TransferCrypto partner={partner} />;
-    return <WalletFlow partner={partner} />;
+const StepRouter: FC<{ step: DepositStep; partner?: Partner }> = ({ step, partner }) => {
+    switch (step) {
+        case "method-picker": return <MethodPicker />;
+        case "transfer-crypto": return <TransferCrypto partner={partner} />;
+        case "wallet-amount":
+        case "wallet-processing": return <WalletFlow partner={partner} />;
+        default: {
+            const _exhaustive: never = step;
+            return null;
+        }
+    }
 };
 
 const DepositForm: FC<DepositProps> = ({ partner }) => {
-    useDestinationAddressAutofill();
+    const { step } = useDepositStep();
+    // DepositAddressForm has its own destination_address autofill, so we skip
+    // ours on the transfer-crypto step to avoid running the same effect twice.
+    useDestinationAddressAutofill({ enabled: step !== "transfer-crypto" });
     return (
-        <Form className="flex flex-col gap-2 w-full">
+        <div className="flex flex-col gap-2 w-full">
             <DepositHeader />
-            <StepRouter partner={partner} />
-        </Form>
+            <StepRouter step={step} partner={partner} />
+        </div>
     );
 };
 
@@ -54,7 +63,6 @@ const DepositInner: FC<DepositProps> = ({ partner }) => {
 
     const initialValues: SwapFormValues = useMemo(
         () => generateSwapInitialValues(settings, initialSettings, "deposit-address", connectedAutofillNetworks),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
         [],
     );
 

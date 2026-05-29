@@ -2,13 +2,12 @@ import { FC } from "react";
 import { ChevronLeft } from "lucide-react";
 import { useFormikContext } from "formik";
 import DestinationSelector from "./DestinationSelector";
-import { useDepositStep } from "./depositStepContext";
+import { DepositStep, useDepositStep } from "./depositStepContext";
 import { useInitialSettings } from "@/context/settings";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
-import { NetworkRouteToken } from "@/Models/Network";
 import IconButton from "@/components/Buttons/iconButton";
 
-const stepTitles: Record<string, (token?: string) => string> = {
+const stepTitles: Record<DepositStep, (token?: string) => string> = {
     "method-picker": (token) => token ? `Deposit ${token}` : "Deposit",
     "wallet-amount": (token) => token ? `Deposit ${token}` : "Deposit",
     "wallet-processing": () => "Processing",
@@ -21,8 +20,7 @@ const DepositHeader: FC = () => {
     const initialSettings = useInitialSettings();
     const isLocked = !!initialSettings.lockTo && !!initialSettings.lockToAsset;
 
-    const titleFn = stepTitles[step] ?? (() => "Deposit");
-    const title = titleFn((values?.toAsset as NetworkRouteToken | undefined)?.symbol);
+    const title = stepTitles[step](values.toAsset?.symbol);
 
     // On the method-picker step, show the destination selector inline. On
     // sub-steps the selector is moved to the body or hidden — the header just
@@ -33,12 +31,14 @@ const DepositHeader: FC = () => {
         <div className="flex items-center justify-between gap-3 w-full">
             <div className="flex items-center gap-1 min-w-0">
                 {canGoBack && (
-                    <IconButton onClick={back} icon={
-                        <ChevronLeft className="h-5 w-5" />
-                    } aria-label="Back" className="" />
+                    <IconButton
+                        onClick={back}
+                        icon={<ChevronLeft className="h-5 w-5" />}
+                        aria-label="Back"
+                    />
                 )}
 
-                <h2 className="text-primary-text text-base font-semibold truncate">{title}</h2>
+                <h2 className="text-primary-text text-2xl font-semibold truncate">{title}</h2>
             </div>
             {showSelectorInHeader && (
                 <div className="shrink-0 min-w-0 max-w-[60%]">
