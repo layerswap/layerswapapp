@@ -15,7 +15,15 @@ import NumFlowWithFallback from '@/components/Common/NumFlowWithFallback';
 import { resolveTokenUsdPrice } from '@/helpers/tokenHelper';
 import { useSelectedAccount } from '@/context/swapAccounts';
 import { SwapFormValues } from '../SwapFormValues';
-import { CupIcon } from '@/components/Icons/CupIcon';
+import { Suspense, lazy } from 'react';
+// CupIcon is a 19 KB inline base64 PNG that previously rode along on every
+// initial render of FeeDetails. It only renders when a reward is active
+// (and an NFT balance condition holds), so lazy-loading it removes the
+// ~19 KB string literal from /'s eager chunks. Fallback is empty —
+// the reward row degrades gracefully without the trophy icon.
+const CupIcon = lazy(() =>
+    import('@/components/Icons/CupIcon').then(m => ({ default: m.CupIcon }))
+);
 import { DetailedEstimates } from './SwapQuote/DetailedEstimates';
 import AverageCompletionTime from '@/components/Common/AverageCompletionTime';
 
@@ -146,7 +154,9 @@ export const DetailsButton: FC<QuoteComponentProps> = ({ quote, reward, isQuoteL
                         <div className="w-px h-3 bg-primary-text-tertiary rounded-2xl" />
                         <div className='text-right text-primary-text inline-flex items-center gap-1'>
                             <div className='p-0.5'>
-                                <CupIcon alt="Reward" width={16} height={16} />
+                                <Suspense fallback={null}>
+                                    <CupIcon alt="Reward" width={16} height={16} />
+                                </Suspense>
                             </div>
                             <NumFlowWithFallback value={reward?.amount_in_usd < 0.01 ? '0.01' : reward?.amount_in_usd} prefix={reward?.amount_in_usd < 0.01 ? '<$' : '$'} />
                         </div>

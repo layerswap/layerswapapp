@@ -15,7 +15,13 @@ import { InitialSettings } from "@/Models/InitialSettings";
 import VaulDrawer from "@/components/Modal/vaulModal";
 import { useBalance } from "@/lib/balances/useBalance";
 import { useSelectedAccount } from "@/context/swapAccounts";
-import SwapDetails from "../Withdraw/SwapDetails";
+// SwapDetails is the post-submit modal content. It transitively imports every
+// Withdraw component (Withdraw, Processing, ManualWithdraw, Summary, Wallet
+// button common, ...) which was the root of the ~100 KB Withdraw leak onto
+// /. Wrapping in React.lazy moves that whole graph into its own chunk that
+// only downloads when the user actually submits a swap and the drawer opens.
+import { Suspense, lazy } from "react"
+const SwapDetails = lazy(() => import("../Withdraw/SwapDetails"))
 import { SwapFormValues } from "./SwapFormValues";
 import { useCallbacks } from "@/context/callbackProvider";
 import ContractAddressNote from "@/components/Input/Address/ContractAddressNote";
@@ -184,11 +190,15 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                         header='Complete the swap'
                         modalId="showSwap"
                         className="expandContainerHeight">
-                        <SwapDetails type="contained" onWalletWithdrawalSuccess={() => {
-                            setWalletWihdrawDone(true)
-                            setFieldValue('amount', 0)
-                            mutateBalances()
-                        }} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />
+                        {swapModalOpen ? (
+                            <Suspense fallback={null}>
+                                <SwapDetails type="contained" onWalletWithdrawalSuccess={() => {
+                                    setWalletWihdrawDone(true)
+                                    setFieldValue('amount', 0)
+                                    mutateBalances()
+                                }} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />
+                            </Suspense>
+                        ) : null}
                     </VaulDrawer>
                     {children}
                 </>

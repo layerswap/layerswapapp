@@ -46,7 +46,7 @@ import { Suspense, lazy } from "react";
 // `/` it is always inactive. Lazy-loading keeps the Withdraw component
 // graph (transferProcessing, multi-step wallet UI, etc.) out of the home
 // page's entry chunks.
-const Processing = lazy(() => import("../Withdraw/Processing"))
+const Processing = lazy(() => import(/* webpackChunkName: "swap-processing" */ "../Withdraw/Processing"))
 
 type Props = {
     partner?: Partner;
