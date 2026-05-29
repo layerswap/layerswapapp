@@ -1,6 +1,7 @@
 "use client";
 import React, { createContext, lazy, useContext, useEffect, useMemo, useRef } from "react";
-import { WalletConnectionStore, WalletProvider } from "@/types";
+import type { StoreApi } from "zustand/vanilla";
+import { WalletConnectionProvider, WalletConnectionStore, WalletProvider, WalletProviderDescriptor, WalletWrapper, isWalletProviderDescriptor } from "@/types";
 import { useSettingsState } from "./settings";
 import VaulDrawer from "@/components/Modal/vaulModal";
 import IconButton from "@/components/Buttons/iconButton";
@@ -10,11 +11,13 @@ import { isMobile } from "@/lib/wallets/utils/isMobile";
 import AppSettings from "@/lib/AppSettings";
 import { filterSourceNetworks } from "@/helpers/filterSourceNetworks";
 import { createWalletProvidersRegistry, type WalletProvidersRegistry } from "@/lib/walletConnect/walletProvidersRegistry";
+import { createDescriptorStubStore } from "@/lib/walletConnect/descriptorStubStore";
+import { useWalletDescriptorLoader } from "@/lib/walletConnect/walletDescriptorLoader";
 import clsx from "clsx";
 
 const ConnectorsList = lazy(() => import("@/components/Wallet/WalletModal/ConnectorsList"));
 
-type Connection = { id: string; conn: WalletConnectionStore }
+type RegistryEntry = { id: string; store: StoreApi<WalletConnectionProvider> }
 
 const WalletProvidersRegistryContext = createContext<WalletProvidersRegistry | null>(null)
 
@@ -24,34 +27,76 @@ export function useWalletProvidersRegistry(): WalletProvidersRegistry {
     return registry
 }
 
-export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walletProviders: WalletProvider[] }> = ({ children, walletProviders }) => {
+type ProviderEntry = WalletProvider | WalletWrapper | WalletProviderDescriptor
+
+export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walletProviders: ProviderEntry[] }> = ({ children, walletProviders }) => {
     const { networks } = useSettingsState();
     const settings = useSettingsState();
     const isMobilePlatform = isMobile();
     const { goBack, onFinish, open, setOpen, selectedConnector, selectedMultiChainConnector, dismissible, topContent, fullHeight, hideHeader } = useConnectModal()
 
     const walletProvidersRegistry = useMemo(() => createWalletProvidersRegistry(), [])
-    const connectionsRef = useRef<Connection[]>([])
+    const { loadAll } = useWalletDescriptorLoader()
+
+    // Per-id caches: keep real connections alive across re-renders so that
+    // a descriptor finishing its load doesn't tear down peer providers.
+    const connectionsRef = useRef<Map<string, WalletConnectionStore>>(new Map())
+    const stubsRef = useRef<Map<string, StoreApi<WalletConnectionProvider>>>(new Map())
 
     useEffect(() => {
-        // Factories create subscriptions and may initialize SDKs, so they
-        // must only run after React commits this provider tree.
-        const connections = walletProviders
-            .map(p => ({ id: p.id, conn: p.createConnection?.({ networks, walletProvidersRegistry }) }))
-            .filter((c): c is Connection => !!c.conn)
-        connectionsRef.current = connections
-        walletProvidersRegistry.setEntries(connections.map(c => ({ id: c.id, store: c.conn.store })))
-        return () => {
-            connections.forEach(c => c.conn.destroy?.())
-            connectionsRef.current = []
-            walletProvidersRegistry.setEntries([])
+        const seenIds = new Set<string>()
+        const entries: RegistryEntry[] = []
+
+        for (const p of walletProviders) {
+            seenIds.add(p.id)
+            if (isWalletProviderDescriptor(p)) {
+                // Descriptor still pending: serve a static-metadata stub so
+                // route filtering and the registry see the provider exists.
+                let stub = stubsRef.current.get(p.id)
+                if (!stub) {
+                    stub = createDescriptorStubStore(p)
+                    stubsRef.current.set(p.id, stub)
+                }
+                entries.push({ id: p.id, store: stub })
+                continue
+            }
+            // Real provider: drop any prior stub for this id, then init
+            // a connection if we don't already have one.
+            stubsRef.current.delete(p.id)
+            let conn = connectionsRef.current.get(p.id)
+            if (!conn && (p as WalletProvider).createConnection) {
+                conn = (p as WalletProvider).createConnection({ networks, walletProvidersRegistry })
+                connectionsRef.current.set(p.id, conn)
+            }
+            if (conn) entries.push({ id: p.id, store: conn.store })
         }
+
+        // Tear down anything that disappeared from the input.
+        for (const [id, conn] of connectionsRef.current) {
+            if (!seenIds.has(id)) {
+                conn.destroy?.()
+                connectionsRef.current.delete(id)
+            }
+        }
+        for (const id of Array.from(stubsRef.current.keys())) {
+            if (!seenIds.has(id)) stubsRef.current.delete(id)
+        }
+
+        walletProvidersRegistry.setEntries(entries)
         // Network changes update committed stores in the effect below.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [walletProviders, walletProvidersRegistry])
 
+    useEffect(() => () => {
+        // On unmount, dispose every still-live connection.
+        for (const conn of connectionsRef.current.values()) conn.destroy?.()
+        connectionsRef.current.clear()
+        stubsRef.current.clear()
+        walletProvidersRegistry.setEntries([])
+    }, [walletProvidersRegistry])
+
     useEffect(() => {
-        connectionsRef.current.forEach(c => c.conn.updateProps?.({ networks, walletProvidersRegistry }))
+        connectionsRef.current.forEach(c => c.updateProps?.({ networks, walletProvidersRegistry }))
     }, [networks, walletProvidersRegistry])
 
     // `AvailableSourceNetworkTypes` is read by `helpers/routes.ts` to decide
@@ -74,6 +119,13 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
         recompute()
         return walletProvidersRegistry.subscribe(recompute)
     }, [settings, networks, isMobilePlatform, walletProvidersRegistry])
+
+    // Phase-1 trigger: hydrate every pending descriptor the first time the
+    // connect modal opens. Later phases can add finer-grained triggers
+    // (idle prefetch of connected families, swap-page hydration, etc.).
+    useEffect(() => {
+        if (open) void loadAll()
+    }, [open, loadAll])
 
     return (
         <WalletProvidersRegistryContext.Provider value={walletProvidersRegistry}>

@@ -88,6 +88,34 @@ export type WalletProvider = WalletWrapper & {
     rpcHealthCheckProvider?: RpcHealthCheckProvider | RpcHealthCheckProvider[],
 }
 
+/**
+ * Lightweight, statically-importable stand-in for a `WalletProvider`. Carries
+ * only the metadata the host needs to render route gating and a wallet chip
+ * before the chain SDK is loaded. The real provider is fetched on demand via
+ * `loadProvider()` (typically when the user opens the connect modal).
+ *
+ * Descriptors MUST be tree-shake-safe: their module graph must not statically
+ * reference the chain SDK. Use `import type` for any type references and a
+ * dynamic `import()` inside `loadProvider`.
+ */
+export type WalletProviderDescriptor = {
+    id: string,
+    name?: string,
+    providerIcon?: string,
+    autofillSupportedNetworks?: string[],
+    withdrawalSupportedNetworks?: string[],
+    asSourceSupportedNetworks?: string[],
+    unsupportedPlatforms?: string[],
+    hideFromList?: boolean,
+    loadProvider: () => Promise<WalletProvider | WalletWrapper>,
+}
+
+export function isWalletProviderDescriptor(
+    p: WalletProvider | WalletWrapper | WalletProviderDescriptor
+): p is WalletProviderDescriptor {
+    return typeof (p as WalletProviderDescriptor).loadProvider === 'function'
+}
+
 export type WalletWrapperProps = {
     children?: import('react').ReactNode
     themeData?: ThemeData

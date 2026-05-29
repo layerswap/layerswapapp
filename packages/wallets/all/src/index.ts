@@ -1,58 +1,67 @@
 // Import all wallet provider factories and types
-import { createBitcoinProvider } from "@layerswap/wallet-bitcoin";
+//
+// IMPORTANT: only `createEVMProvider`, `createImmutablePassportProvider`, and
+// `imtblPassportLoginCallback` are value-imported eagerly from the chain
+// packages. Every other chain is wired via a descriptor (see
+// ./descriptors/*) so the chain SDK stays out of the host's entry chunk
+// until the user actually opens the connect modal. Direct consumers can
+// still `import { create<X>Provider } from "@layerswap/wallet-<chain>"`
+// themselves if they want the eager path.
+
 import type { BitcoinProviderConfig } from "@layerswap/wallet-bitcoin";
+import { createBitcoinDescriptor } from "./descriptors/bitcoin";
 
 import { createEVMProvider } from "@layerswap/wallet-evm";
 import type { EVMProviderConfig, WalletConnectConfig } from "@layerswap/wallet-evm";
 
-import { createFuelProvider } from "@layerswap/wallet-fuel";
 import type { FuelProviderConfig } from "@layerswap/wallet-fuel";
+import { createFuelDescriptor } from "./descriptors/fuel";
 
 import { createImmutablePassportProvider, imtblPassportLoginCallback } from "@layerswap/wallet-imtbl-passport";
 import type { ImmutablePassportProviderConfig, ImtblPassportConfig } from "@layerswap/wallet-imtbl-passport";
 
-import { createParadexProvider } from "@layerswap/wallet-paradex";
 import type { ParadexProviderConfig } from "@layerswap/wallet-paradex";
+import { createParadexDescriptor } from "./descriptors/paradex";
 
-import { createStarknetProvider } from "@layerswap/wallet-starknet";
 import type { StarknetProviderConfig } from "@layerswap/wallet-starknet";
+import { createStarknetDescriptor } from "./descriptors/starknet";
 
-import { createSVMProvider } from "@layerswap/wallet-svm";
 import type { SVMProviderConfig } from "@layerswap/wallet-svm";
+import { createSVMDescriptor } from "./descriptors/svm";
 
-import { createTONProvider } from "@layerswap/wallet-ton";
 import type { TONProviderConfig, TonClientConfig } from "@layerswap/wallet-ton";
+import { createTONDescriptor } from "./descriptors/ton";
 
-import { createTronProvider } from "@layerswap/wallet-tron";
 import type { TronProviderConfig } from "@layerswap/wallet-tron";
+import { createTronDescriptor } from "./descriptors/tron";
 
-import { WalletProvider, WalletWrapper } from "@layerswap/widget/types";
+import { WalletProvider, WalletProviderDescriptor, WalletWrapper } from "@layerswap/widget/types";
 
-export { createBitcoinProvider };
+export { createBitcoinDescriptor };
 export type { BitcoinProviderConfig };
 
 export { createEVMProvider };
 export type { EVMProviderConfig, WalletConnectConfig };
 
-export { createFuelProvider };
+export { createFuelDescriptor };
 export type { FuelProviderConfig };
 
 export { createImmutablePassportProvider, imtblPassportLoginCallback };
 export type { ImmutablePassportProviderConfig, ImtblPassportConfig };
 
-export { createParadexProvider };
+export { createParadexDescriptor };
 export type { ParadexProviderConfig };
 
-export { createStarknetProvider };
+export { createStarknetDescriptor };
 export type { StarknetProviderConfig };
 
-export { createSVMProvider };
+export { createSVMDescriptor };
 export type { SVMProviderConfig };
 
-export { createTONProvider };
+export { createTONDescriptor };
 export type { TONProviderConfig, TonClientConfig };
 
-export { createTronProvider };
+export { createTronDescriptor };
 export type { TronProviderConfig };
 
 /**
@@ -66,6 +75,13 @@ export type DefaultWalletConfig = {
 
 /**
  * Creates and returns a default configuration of all wallet providers.
+ *
+ * Only EVM (and Immutable Passport, when configured) is wired eagerly. Every
+ * other chain ships as a `WalletProviderDescriptor` — the real SDK is
+ * dynamic-imported on first connect-modal open. This keeps starknet,
+ * @paradex/sdk, @ton/*, @tonconnect/sdk, @fuel-ts/*, @solana/web3.js,
+ * tronweb (+ its transitive `validator`/`bignumber.js`), bitcoinjs-lib,
+ * @bigmi, and the connector adapters out of the host's entry chunk.
  *
  * @param config - Configuration options for the wallet providers
  * @returns Array of configured wallet providers ready to be passed to LayerswapProvider
@@ -101,28 +117,29 @@ export type DefaultWalletConfig = {
 export function getDefaultProviders(config: DefaultWalletConfig = {}) {
     const { walletConnect, ton, immutablePassport } = config;
 
-    const providers: (WalletProvider | WalletWrapper)[] = [
-        // EVM with modules
+    const providers: (WalletProvider | WalletWrapper | WalletProviderDescriptor)[] = [
+        // EVM — eager (common case, kept on the initial bundle).
         createEVMProvider({
             walletConnectConfigs: walletConnect,
         }),
-        // Starknet
-        createStarknetProvider(),
-        // Fuel
-        createFuelProvider(),
-        // Paradex
-        createParadexProvider(),
-        // Bitcoin
-        createBitcoinProvider(),
-        // TON
-        ...(ton ? [createTONProvider({ tonConfigs: ton })] : []),
-        // SVM (Solana)
-        createSVMProvider({
-            walletConnectConfigs: walletConnect
-        }),
-        // Tron
-        createTronProvider(),
-        // Immutable Passport (conditional)
+        // Starknet — lazy. Pulls starknet/starkware-crypto on connect.
+        createStarknetDescriptor(),
+        // Fuel — lazy. Pulls @fuel-ts/* + @fuels/vm-asm on connect.
+        createFuelDescriptor(),
+        // Paradex — lazy. Drags @paradex/sdk → starknet → starkware-crypto.
+        createParadexDescriptor(),
+        // Bitcoin — lazy. Pulls bitcoinjs-lib + @bigmi + bn.js + tweetnacl.
+        createBitcoinDescriptor(),
+        // TON — lazy and conditional (only included when tonConfigs supplied,
+        // matching the prior eager behaviour).
+        ...(ton ? [createTONDescriptor(ton)] : []),
+        // SVM (Solana) — lazy. Pulls @solana/web3.js + SolanaWalletConnectAdapter.
+        createSVMDescriptor(walletConnect),
+        // Tron — lazy. Pulls tronweb + its transitive validator/bignumber/protobuf.
+        createTronDescriptor(),
+        // Immutable Passport — eager and conditional (its login callback
+        // path is tied to the redirect page, so the SDK does need to be
+        // present when the page renders).
         ...(immutablePassport ? [createImmutablePassportProvider({ imtblPassportConfig: immutablePassport })] : [])
     ];
 

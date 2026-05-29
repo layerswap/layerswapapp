@@ -1,5 +1,5 @@
 'use client'
-import { FC, ReactNode, useEffect, useState } from "react"
+import { FC, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import ThemeWrapper from "@/components/themeWrapper";
 import { ErrorBoundary } from "react-error-boundary";
 import { SettingsProvider } from "./settings";
@@ -18,9 +18,10 @@ import WalletsProviders from "@/components/Wallet/WalletProviders";
 import { CallbackProvider, CallbacksContextType } from "./callbackProvider";
 import { InitialSettings } from "@/Models/InitialSettings";
 import { SwapAccountsProvider } from "./swapAccounts";
-import { WalletProvider } from "@/types";
+import { WalletProvider, WalletProviderDescriptor, WalletWrapper, isWalletProviderDescriptor } from "@/types";
 import { ResolverProviders } from "./resolverContext";
 import { ErrorProvider } from "./ErrorProvider";
+import { WalletDescriptorLoaderContext } from "@/lib/walletConnect/walletDescriptorLoader";
 
 export type LayerswapWidgetConfig = {
     apiKey?: string;
@@ -34,7 +35,13 @@ export type LayerswapContextProps = {
     children?: ReactNode;
     callbacks?: CallbacksContextType
     config?: LayerswapWidgetConfig
-    walletProviders?: WalletProvider[]
+    /**
+     * Accepts a mix of eager `WalletProvider`/`WalletWrapper` instances and
+     * lightweight `WalletProviderDescriptor`s. Descriptors carry only static
+     * capability metadata and a `loadProvider()` thunk that lazy-imports the
+     * real provider on demand (typically when the connect modal opens).
+     */
+    walletProviders?: (WalletProvider | WalletWrapper | WalletProviderDescriptor)[]
 }
 
 const INTERCOM_APP_ID = 'h5zisg78'
@@ -72,25 +79,88 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
                     <ErrorProvider>
                         <ErrorBoundary FallbackComponent={ErrorFallback} >
                             <ThemeWrapper>
-                                <WalletsProviders
-                                    appName={initialValues?.appName}
-                                    themeData={themeData}
-                                    walletProviders={walletProviders}
-                                >
-                                    <ResolverProviders walletProviders={walletProviders}>
-                                        <SwapAccountsProvider>
-                                            <AsyncModalProvider>
-                                                {children}
-                                            </AsyncModalProvider>
-                                        </SwapAccountsProvider>
-                                    </ResolverProviders>
-                                </WalletsProviders>
+                                <DescriptorHydrationBoundary walletProviders={walletProviders}>
+                                    {(resolvedProviders) => (
+                                        <WalletsProviders
+                                            appName={initialValues?.appName}
+                                            themeData={themeData}
+                                            walletProviders={resolvedProviders}
+                                        >
+                                            <ResolverProviders walletProviders={resolvedProviders}>
+                                                <SwapAccountsProvider>
+                                                    <AsyncModalProvider>
+                                                        {children}
+                                                    </AsyncModalProvider>
+                                                </SwapAccountsProvider>
+                                            </ResolverProviders>
+                                        </WalletsProviders>
+                                    )}
+                                </DescriptorHydrationBoundary>
                             </ThemeWrapper>
                         </ErrorBoundary>
                     </ErrorProvider>
                 </CallbackProvider>
             </SettingsProvider >
         </IntercomProvider>
+    )
+}
+
+/**
+ * Owns the descriptor → real-provider transition. Starts with the input
+ * array as given; when `loadById` is invoked (by the connect modal or any
+ * other consumer of `useWalletDescriptorLoader`), runs the descriptor's
+ * lazy import and swaps the resolved provider into the list. Both
+ * `WalletsProviders` and `ResolverProviders` re-render with the new list.
+ */
+const DescriptorHydrationBoundary: FC<{
+    walletProviders: (WalletProvider | WalletWrapper | WalletProviderDescriptor)[]
+    children: (resolved: (WalletProvider | WalletWrapper | WalletProviderDescriptor)[]) => ReactNode
+}> = ({ walletProviders, children }) => {
+    const [loadedById, setLoadedById] = useState<ReadonlyMap<string, WalletProvider | WalletWrapper>>(new Map())
+    // In-flight loads, deduplicated by id, so concurrent triggers don't double-import the SDK.
+    const inflightRef = useRef<Map<string, Promise<void>>>(new Map())
+
+    const resolvedProviders = useMemo(() => {
+        return walletProviders.map(p => {
+            if (!isWalletProviderDescriptor(p)) return p
+            const loaded = loadedById.get(p.id)
+            return loaded ?? p
+        })
+    }, [walletProviders, loadedById])
+
+    const loadById = useCallback<(id: string) => Promise<void>>(async (id) => {
+        if (loadedById.has(id)) return
+        const existing = inflightRef.current.get(id)
+        if (existing) return existing
+        const descriptor = walletProviders.find(p => isWalletProviderDescriptor(p) && p.id === id) as WalletProviderDescriptor | undefined
+        if (!descriptor) return
+        const p = descriptor.loadProvider().then(real => {
+            setLoadedById(prev => {
+                if (prev.has(id)) return prev
+                const next = new Map(prev)
+                next.set(id, real)
+                return next
+            })
+        }).finally(() => {
+            inflightRef.current.delete(id)
+        })
+        inflightRef.current.set(id, p)
+        return p
+    }, [loadedById, walletProviders])
+
+    const loadAll = useCallback(async () => {
+        const pending = walletProviders
+            .filter((p): p is WalletProviderDescriptor => isWalletProviderDescriptor(p) && !loadedById.has(p.id))
+            .map(p => loadById(p.id))
+        await Promise.all(pending)
+    }, [walletProviders, loadById, loadedById])
+
+    const loaderValue = useMemo(() => ({ loadById, loadAll }), [loadById, loadAll])
+
+    return (
+        <WalletDescriptorLoaderContext.Provider value={loaderValue}>
+            {children(resolvedProviders)}
+        </WalletDescriptorLoaderContext.Provider>
     )
 }
 
