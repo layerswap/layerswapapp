@@ -2,7 +2,7 @@ import { FC, MouseEventHandler, ReactNode, SVGProps, useCallback, useMemo, useSt
 import { AddressGroup, AddressItem } from ".";
 import AddressIcon from "@/components/AddressIcon";
 import { Address, getExplorerUrl } from "@/lib/address";
-import { Copy, Check, ChevronDown, WalletIcon, Pencil, Link2, SquareArrowOutUpRight, Unplug, Info, Trash2 } from "lucide-react";
+import { Copy, Check, ChevronDown, WalletIcon, Pencil, Link2, SquareArrowOutUpRight, Unplug, Info, Trash2, BookmarkPlus } from "lucide-react";
 import { Partner } from "@/Models/Partner";
 import { Network } from "@/Models/Network";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components//shadcn/popover";
@@ -13,6 +13,8 @@ import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import clsx from "clsx";
 import shortenString from "@/components/utils/ShortenString";
 import { useAddressName } from "@/stores/addressBookStore";
+import { useSettingsState } from "@/context/settings";
+import { SaveToBookNameForm } from "@/components/AddressBook/SaveToBookInline";
 
 type Props = {
     addressItem: AddressItem;
@@ -174,13 +176,18 @@ type AddressDetailsPopoverProps = ExtendedAddressBaseProps
     & ({ network: Network, providerName?: string } | { network?: Network, providerName: string })
 
 const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, network, providerName, isForCurrency, children, onDisconnect, onRemove, showDetails = false, title, description, logo: Logo, onPopoverOpenChange, onTooltipOpenChange, shouldShowChevron = true, displayName: displayNameProp }) => {
-    const bookName = useAddressName(displayNameProp !== undefined ? undefined : address, network)
-    const displayName = displayNameProp ?? bookName
+    const savedName = useAddressName(address, network)
+    const displayName = displayNameProp ?? savedName
+    const { networks } = useSettingsState()
+    const saveNetwork = Address.resolveNetwork(address, networks ?? [])
+    const canSave = !isForCurrency && !savedName && !!saveNetwork
     const [isCopied, setCopied] = useCopyClipboard()
     const [isPopoverOpen, setPopoverOpen] = useState(false)
+    const [saving, setSaving] = useState(false)
 
     const handlePopoverChange = (open: boolean) => {
         setPopoverOpen(open)
+        if (!open) setSaving(false)
         onPopoverOpenChange?.(open)
     }
 
@@ -215,6 +222,11 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
                 Icon: SquareArrowOutUpRight,
                 href: getExplorerUrl(network.account_explorer_template, addr.full)
             }] : []),
+            ...(canSave && !saving ? [{
+                title: 'Save',
+                Icon: BookmarkPlus,
+                onClick: (e: React.MouseEvent<HTMLDivElement>) => { e.stopPropagation(); setSaving(true); }
+            }] : []),
             ...(onDisconnect ? [{
                 title: 'Disconnect',
                 Icon: Unplug,
@@ -232,7 +244,7 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
         const showTitles = buttons.length <= 2;
 
         return { buttons, showTitles };
-    }, [addr.full, network, providerName, isAddressValid, isCopied, onDisconnect, onRemove]);
+    }, [addr.full, network, providerName, isAddressValid, isCopied, onDisconnect, onRemove, canSave, saving]);
 
     const { buttons, showTitles } = getActionButtons();
     const { start, middle, end } = useMemo(() => addr.toEmphasizedParts(), [addr]);
@@ -327,6 +339,7 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
                             ))}
                         </div>
                     )}
+                    {saving && <SaveToBookNameForm address={address} onDone={() => setSaving(false)} compact />}
                 </PopoverContent>
             </Popover>
         </div>

@@ -1,17 +1,16 @@
 import { ChangeEvent, FC, useCallback, useState } from "react";
-import clsx from "clsx";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
-import { BookmarkPlus, Pencil } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { Partner } from "@/Models/Partner";
 import { NetworkType } from "@/Models/Network";
 import FilledX from "@/components/icons/FilledX";
 import { AddressGroup, AddressItem } from ".";
 import { Address } from "@/lib/address";
 import AddressWithIcon from "./AddressWithIcon";
-import SecondaryButton from "@/components/buttons/secondaryButton";
+import SaveToBookInline from "@/components/AddressBook/SaveToBookInline";
 import { Wallet } from "@/Models/WalletProvider";
 import { FormikHelpers } from "formik";
-import { useAddressBookStore, useAddressName, NAME_MAX, COUNTER_SHOW_AT } from "@/stores/addressBookStore";
+import { useAddressName } from "@/stores/addressBookStore";
 
 type AddressInput = {
     manualAddress: string,
@@ -116,72 +115,10 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
                         <AddressWithIcon addressItem={addressFromList || { address: manualAddress, group: AddressGroup.ManualAdded }} partner={partner} network={destination} />
                     </div>
                 }
-                {canSaveToAddressBook && <SaveToBookEditor key={manualAddress} address={manualAddress} />}
+                {canSaveToAddressBook && <SaveToBookInline key={manualAddress} address={manualAddress} />}
             </div>
         </div>
     )
 }
 
 export default ManualAddressInput
-
-const SaveToBookEditor: FC<{ address: string }> = ({ address }) => {
-    const addAddress = useAddressBookStore(s => s.addAddress)
-    const [editing, setEditing] = useState(false)
-    const [name, setName] = useState('')
-
-    if (!editing) {
-        return (
-            <SecondaryButton onClick={() => setEditing(true)} size="lg" className="mt-2 w-full">
-                <span className="flex items-center justify-center gap-2">
-                    <BookmarkPlus className="h-4 w-4" />
-                    <span>Save to address book</span>
-                </span>
-            </SecondaryButton>
-        )
-    }
-
-    const trimmed = name.trim()
-    const len = trimmed.length
-    const isOver = len > NAME_MAX
-    const isValid = len > 0 && !isOver
-
-    const close = () => { setEditing(false); setName('') }
-    const confirm = () => {
-        if (!isValid) return
-        addAddress({ name: trimmed, address })
-        close()
-    }
-
-    return (
-        <div className="mt-2 w-full space-y-2">
-            <div className="relative w-full">
-                <input
-                    type="text"
-                    autoFocus
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                    onKeyDown={e => {
-                        if (e.key === 'Enter') { e.preventDefault(); confirm() }
-                        if (e.key === 'Escape') close()
-                    }}
-                    placeholder="Name this address"
-                    autoComplete="off"
-                    className="pr-20 h-12 w-full border border-secondary-800 focus:border-primary leading-4 placeholder:text-primary-text-tertiary/80 placeholder:font-normal font-semibold !bg-secondary-500 rounded-lg truncate hover:overflow-x-scroll focus:ring-0 focus:outline-hidden"
-                />
-                <div className="absolute top-1/2 -translate-y-1/2 right-3 flex items-center gap-2">
-                    {len > COUNTER_SHOW_AT && (
-                        <span className={clsx('text-xs tabular-nums', isOver ? 'text-error-foreground' : 'text-secondary-text')}>
-                            {len} / {NAME_MAX}
-                        </span>
-                    )}
-                    <button type="button" onClick={close} aria-label="Cancel" className="text-secondary-text hover:text-primary-text transition">
-                        <FilledX className="h-5 w-5" />
-                    </button>
-                </div>
-            </div>
-            <button type="button" onClick={confirm} disabled={!isValid} className="w-full h-12 rounded-lg bg-primary text-primary-buttonTextColor text-base font-semibold hover:brightness-110 disabled:bg-secondary-500 disabled:text-secondary-text disabled:cursor-not-allowed transition">
-                Save
-            </button>
-        </div>
-    )
-}

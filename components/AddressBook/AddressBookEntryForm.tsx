@@ -79,7 +79,7 @@ const AddressBookEntryForm: FC<AddressBookEntryFormProps> = ({ initial, onClose 
                     />
                 </Field>
             </div>
-            <button type="submit" disabled={!canSubmit} className="mt-auto w-full h-12 rounded-xl text-base font-medium bg-primary text-primary-buttonTextColor hover:brightness-110 disabled:bg-secondary-300 disabled:text-secondary-text disabled:cursor-not-allowed transition">
+            <button type="submit" disabled={!canSubmit} className="mt-2 w-full h-12 rounded-xl text-base font-medium bg-primary text-primary-buttonTextColor hover:brightness-110 disabled:bg-secondary-300 disabled:text-secondary-text disabled:cursor-not-allowed transition">
                 Save
             </button>
         </form>

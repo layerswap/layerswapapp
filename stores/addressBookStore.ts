@@ -3,8 +3,8 @@ import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import { Address } from '@/lib/address'
 
-export const NAME_MAX = 15
-export const COUNTER_SHOW_AT = 10
+export const NAME_MAX = 20
+export const COUNTER_SHOW_AT = 15
 
 export type SavedAddress = {
     address: Address
