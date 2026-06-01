@@ -44,15 +44,24 @@ export class FuelConnectionService {
         return this._networks.find(n => commonSupportedNetworks.some(name => name === n.name))?.logo
     }
 
+    // Connector icons come either as a URL string or as a { dark, light } pair
+    // of raw SVG markup; the latter is wrapped as a base64 data URL unless it
+    // already is one. Shared by getAvailableConnectors and resolveFuelWallet.
+    private resolveConnectorImageIcon(
+        image: string | { dark: string; light: string } | undefined
+    ): string | undefined {
+        if (!image) return undefined
+        if (typeof image === 'string') return image
+        return image.dark.startsWith('data:')
+            ? image.dark
+            : `data:image/svg+xml;base64,${btoa(image.dark)}`
+    }
+
     getAvailableConnectors(): InternalConnector[] {
         const connectors = useFuelStore.getState().connectors
         return connectors.map(c => {
             const isInstalled = c.installed && !(c as any).dAppWindow
-            const icon = typeof c.metadata.image === 'string'
-                ? c.metadata.image
-                : (c.metadata.image?.dark.startsWith('data:')
-                    ? c.metadata.image.dark
-                    : `data:image/svg+xml;base64,${c.metadata.image && btoa(c.metadata.image.dark)}`)
+            const icon = this.resolveConnectorImageIcon(c.metadata.image)
             return {
                 name: c.name,
                 id: c.name,
@@ -68,11 +77,7 @@ export class FuelConnectionService {
     async resolveFuelWallet(connector: FuelConnector, address: string, addresses: string[]): Promise<Wallet> {
         const network = await connector.currentNetwork()
         const chainId = network.chainId ?? (network.url.toLowerCase().includes('testnet') ? 0 : 9889)
-        const icon = typeof connector.metadata.image === 'string'
-            ? connector.metadata.image
-            : (connector.metadata.image?.dark.startsWith('data:')
-                ? connector.metadata.image.dark
-                : `data:image/svg+xml;base64,${connector.metadata.image && btoa(connector.metadata.image.dark)}`)
+        const icon = this.resolveConnectorImageIcon(connector.metadata.image)
 
         return {
             id: connector.name,

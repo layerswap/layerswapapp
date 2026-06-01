@@ -30,12 +30,15 @@ const ConnectWalletButton: FC<Props> = ({ provider, onConnect, descriptionText, 
     // click will then resolve against an already-in-flight (or completed)
     // import instead of starting one cold. `loadAll` itself dedupes
     // in-flight loads, so we can fire it cheaply on every hover.
-    const prefetchedRef = useRef(false)
+    // Keyed by provider id so a stub → real provider transition re-arms the
+    // prefetch for the new provider instead of staying latched on the stub.
+    const prefetchedRef = useRef<string | null>(null)
     const prefetchDescriptors = useCallback(() => {
-        if (prefetchedRef.current) return
-        prefetchedRef.current = true
+        const key = provider?.id ?? '__no_provider__'
+        if (prefetchedRef.current === key) return
+        prefetchedRef.current = key
         void loadAll()
-    }, [loadAll])
+    }, [loadAll, provider?.id])
 
     const handleConnect = async () => {
         if (isStub) {

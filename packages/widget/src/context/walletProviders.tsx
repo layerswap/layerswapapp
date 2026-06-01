@@ -38,8 +38,8 @@ export function useWalletProvidersRegistry(): WalletProvidersRegistry {
 type ProviderEntry = WalletProvider | WalletWrapper | WalletProviderDescriptor
 
 export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walletProviders: ProviderEntry[] }> = ({ children, walletProviders }) => {
-    const { networks } = useSettingsState();
     const settings = useSettingsState();
+    const { networks } = settings;
     const isMobilePlatform = isMobile();
     const { goBack, onFinish, open, setOpen, selectedConnector, selectedMultiChainConnector, dismissible, topContent, fullHeight, hideHeader } = useConnectModal()
 
