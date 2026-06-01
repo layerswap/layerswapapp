@@ -14,20 +14,20 @@ export async function getSettings(apiKey: string) {
             { data: destinationRoutes },
         ] = await Promise.all([
             apiClient.GetLSNetworksAsync(),
-            apiClient.GetSourceExchangesAsync(),
+            apiClient.GetSourceExchangesAsync().catch(() => ({ data: [] })),
             apiClient.GetRoutesAsync('sources'),
             apiClient.GetRoutesAsync('destinations'),
         ])
 
         if (!networkData) return
-    
+
         const settings = {
             networks: networkData,
             sourceExchanges: sourceExchangesData || [],
             sourceRoutes: sourceRoutes || [],
             destinationRoutes: destinationRoutes || []
         }
-    
+
         return settings
     }
     catch (error) {
