@@ -6,7 +6,6 @@ import { UserRound } from "lucide-react";
 type Props = {
     address: string;
     size: number;
-    name?: string;
     className?: string;
     rounded?: string;
 }

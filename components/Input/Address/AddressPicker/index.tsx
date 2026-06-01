@@ -76,7 +76,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const [isConnecting, setIsConnecting] = useState(false)
     const savedAddresses = useAddressBookStore(s => s.savedAddresses)
     const savedAddressesForDestination = useMemo(
-        () => destination ? savedAddresses.filter(e => AddressClass.isValid(e.address.raw, destination)) : [],
+        () => destination ? savedAddresses.filter(e => (!e.networkType || e.networkType === destination.type) && AddressClass.isValid(e.address, destination)) : [],
         [savedAddresses, destination]
     )
 
@@ -321,9 +321,9 @@ const resolveAddressGroups = ({
         }
     })
     savedAddresses.forEach(entry => {
-        if (AddressClass.isValid(entry.address.raw, destination)) {
+        if ((!entry.networkType || entry.networkType === destination.type) && AddressClass.isValid(entry.address, destination)) {
             addresses.push({
-                address: entry.address.raw,
+                address: entry.address,
                 group: AddressGroup.ManualAdded,
                 providerName,
                 name: entry.name,

@@ -1,20 +1,19 @@
-import { FC, ReactNode, useMemo, useState } from 'react'
+import { FC, ReactNode, useState } from 'react'
 import clsx from 'clsx'
 import { useAddressBookStore, NAME_MAX, COUNTER_SHOW_AT } from '@/stores/addressBookStore'
-import { useSettingsState } from '@/context/settings'
-import { Address as AddressClass } from '@/lib/address'
+import { NetworkType } from '@/Models/Network'
 
 export type AddressBookEntryFormProps = {
     initial?: {
         name?: string
         address?: string
         editingOriginalAddress?: string
+        networkType?: NetworkType
     }
     onClose: () => void
 }
 
 const AddressBookEntryForm: FC<AddressBookEntryFormProps> = ({ initial, onClose }) => {
-    const { networks } = useSettingsState()
     const addAddress = useAddressBookStore(s => s.addAddress)
     const editAddress = useAddressBookStore(s => s.editAddress)
 
@@ -23,20 +22,16 @@ const AddressBookEntryForm: FC<AddressBookEntryFormProps> = ({ initial, onClose 
 
     const trimmedName = name.trim()
     const trimmedAddress = address.trim()
-    const isAddressValid = useMemo(
-        () => AddressClass.isValidForAnyNetwork(trimmedAddress, networks),
-        [trimmedAddress, networks]
-    )
-    const canSubmit = !!trimmedName && !!trimmedAddress && !(trimmedName.length > NAME_MAX) && isAddressValid
+    const canSubmit = !!trimmedName && !!trimmedAddress && !(trimmedName.length > NAME_MAX)
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault()
         if (!canSubmit) return
         const original = initial?.editingOriginalAddress
         if (original) {
-            editAddress(original, { name: trimmedName, address: trimmedAddress })
+            editAddress(original, { name: trimmedName, address: trimmedAddress, networkType: initial?.networkType })
         } else {
-            addAddress({ name: trimmedName, address: trimmedAddress })
+            addAddress({ name: trimmedName, address: trimmedAddress, networkType: initial?.networkType })
         }
         onClose()
     }
@@ -61,12 +56,7 @@ const AddressBookEntryForm: FC<AddressBookEntryFormProps> = ({ initial, onClose 
                         className="w-full h-14 bg-transparent border-0 outline-none text-primary-text placeholder:text-secondary-text text-[22px] font-normal leading-7 focus:ring-0 p-0"
                     />
                 </Field>
-                <Field
-                    label="Address"
-                    hint={trimmedAddress && !isAddressValid && (
-                        <span className="text-xs text-error-foreground">Unrecognized address format</span>
-                    )}
-                >
+                <Field label="Address">
                     <input
                         type="text"
                         value={address}

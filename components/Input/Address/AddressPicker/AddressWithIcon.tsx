@@ -13,7 +13,6 @@ import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import clsx from "clsx";
 import shortenString from "@/components/utils/ShortenString";
 import { useAddressName } from "@/stores/addressBookStore";
-import { useSettingsState } from "@/context/settings";
 import { SaveToBookNameForm } from "@/components/AddressBook/SaveToBookInline";
 
 type Props = {
@@ -73,7 +72,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
                             />
                         )
                     ) : (
-                        <AddressIcon className="h-9 w-9" address={address} name={resolvedDisplayName} size={32} rounded="6px" />
+                        <AddressIcon className="h-9 w-9" address={address} size={32} rounded="6px" />
                     )
                 }
             </div>
@@ -178,9 +177,6 @@ type AddressDetailsPopoverProps = ExtendedAddressBaseProps
 const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, network, providerName, isForCurrency, children, onDisconnect, onRemove, showDetails = false, title, description, logo: Logo, onPopoverOpenChange, onTooltipOpenChange, shouldShowChevron = true, displayName: displayNameProp }) => {
     const savedName = useAddressName(address, network)
     const displayName = displayNameProp ?? savedName
-    const { networks } = useSettingsState()
-    const saveNetwork = Address.resolveNetwork(address, networks ?? [])
-    const canSave = !isForCurrency && !savedName && !!saveNetwork
     const [isCopied, setCopied] = useCopyClipboard()
     const [isPopoverOpen, setPopoverOpen] = useState(false)
     const [saving, setSaving] = useState(false)
@@ -207,6 +203,8 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
         }
         return false
     }, [addr.full, network]);
+
+    const canSave = !isForCurrency && !savedName && !!network && isAddressValid
 
     // Resolver for action buttons
     const getActionButtons = useCallback(() => {
@@ -261,7 +259,7 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
                                         children ??
                                         <div className="hover:text-secondary-text transition duration-200 flex gap-1 items-center cursor-pointer min-w-0">
                                             <p className={`${isForCurrency ? "text-xs self-end" : "text-sm"} block font-medium group-hover/addressItem:underline ${displayName ? 'min-w-0 max-w-[260px] truncate' : ''}`}>
-                                                {displayName ? `${displayName} (${addr.toShortString()})` : addr.toShortString()}
+                                                {addr.labeled(displayName)}
                                             </p>
                                             {shouldShowChevron ?
                                                 <ChevronDown className="invisible group-hover/addressItem:visible h-4 w-4 shrink-0" />
@@ -339,7 +337,7 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
                             ))}
                         </div>
                     )}
-                    {saving && <SaveToBookNameForm address={address} onDone={() => setSaving(false)} compact />}
+                    {saving && network && <SaveToBookNameForm address={address} networkType={network.type} onDone={() => setSaving(false)} compact />}
                 </PopoverContent>
             </Popover>
         </div>

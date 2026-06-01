@@ -2,9 +2,7 @@ import { FC, useMemo, useState } from 'react'
 import { useAddressBookStore, SavedAddress } from '@/stores/addressBookStore'
 import { MoreVertical, Pencil, Plus, Trash2 } from 'lucide-react'
 import AddressIcon from '@/components/AddressIcon'
-import { Address as AddressClass } from '@/lib/address'
 import shortenString from '@/components/utils/ShortenString'
-import { useSettingsState } from '@/context/settings'
 import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
 import AddressBookEntryForm, { AddressBookEntryFormProps } from './AddressBookEntryForm'
 import { ErrorDisplay } from '@/components/validationError/ErrorDisplay'
@@ -20,7 +18,6 @@ type EditingState =
     | { kind: 'edit', entry: SavedAddress }
 
 const AddressBookStep: FC = () => {
-    const { networks } = useSettingsState()
     const savedAddresses = useAddressBookStore(s => s.savedAddresses)
     const removeAddress = useAddressBookStore(s => s.removeAddress)
     const clearAll = useAddressBookStore(s => s.clearAll)
@@ -32,12 +29,12 @@ const AddressBookStep: FC = () => {
     const closeForm = () => setEditing({ kind: 'closed' })
 
     const filteredAddresses = useMemo(() => {
-        const q = query.trim()
-        if (!q) return savedAddresses
-        const lower = q.toLowerCase()
+        const lower = query.trim().toLowerCase()
+        if (!lower) return savedAddresses
+        // Substring search over name + raw address, not a normalized address match.
         return savedAddresses.filter(e =>
             e.name.toLowerCase().includes(lower) ||
-            AddressClass.equals(e.address.raw, q, null, 'address-book')
+            e.address.toLowerCase().includes(lower)
         )
     }, [savedAddresses, query])
 
@@ -49,8 +46,9 @@ const AddressBookStep: FC = () => {
             <AddressBookEntryForm
                 initial={{
                     name: editing.entry.name,
-                    address: editing.entry.address.raw,
-                    editingOriginalAddress: editing.entry.address.raw,
+                    address: editing.entry.address,
+                    editingOriginalAddress: editing.entry.address,
+                    networkType: editing.entry.networkType,
                 }}
                 onClose={closeForm}
             />
@@ -124,17 +122,16 @@ const AddressBookStep: FC = () => {
                     </div>
                 )}
                 {filteredAddresses.map(entry => {
-                    const raw = entry.address.raw
-                    const network = networks ? AddressClass.resolveNetwork(raw, networks) : undefined
+                    const raw = entry.address
                     return (
                         <div key={raw} className="flex items-center justify-between gap-2 p-3 rounded-xl bg-secondary-500">
                             <div className="flex items-center gap-3 min-w-0">
                                 <div className="rounded-md h-8 w-8 overflow-hidden">
-                                    <AddressIcon className="h-8 w-8" address={raw} name={entry.name} size={32} rounded="6px" />
+                                    <AddressIcon className="h-8 w-8" address={raw} size={32} rounded="6px" />
                                 </div>
                                 <div className="min-w-0">
                                     <p className="text-sm font-medium text-primary-text truncate">{entry.name}</p>
-                                    <ExtendedAddress address={raw} network={network} providerName={network ? undefined : 'address-book'} shouldShowChevron={false} displayName="">
+                                    <ExtendedAddress address={raw} providerName={entry.networkType} shouldShowChevron={false} displayName="">
                                         <p className="text-xs text-secondary-text truncate cursor-pointer hover:text-primary-text hover:underline transition w-fit">
                                             {shortenString(raw)}
                                         </p>

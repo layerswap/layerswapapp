@@ -115,7 +115,7 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
                         <AddressWithIcon addressItem={addressFromList || { address: manualAddress, group: AddressGroup.ManualAdded }} partner={partner} network={destination} />
                     </div>
                 }
-                {canSaveToAddressBook && <SaveToBookInline key={manualAddress} address={manualAddress} />}
+                {canSaveToAddressBook && <SaveToBookInline key={manualAddress} address={manualAddress} networkType={destination!.type} />}
             </div>
         </div>
     )

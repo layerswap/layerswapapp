@@ -116,16 +116,6 @@ export class Address {
   }
 
   /**
-   * Check if this address is valid for any network in the list.
-   */
-  static isValidForAnyNetwork(
-    address: string,
-    networks: { name: string; type: string }[]
-  ): boolean {
-    return !!Address.resolveNetwork(address, networks);
-  }
-
-  /**
    * Format address as shortened display: first5...last4
    * @returns Shortened address (e.g., "0x123...5678")
    */
@@ -138,6 +128,14 @@ export class Address {
 
     const shortened = `${addr.substring(0, 5)}...${addr.substring(addr.length - 4)}`;
     return shortened;
+  }
+
+  /**
+   * Format as "name (0x123...5678)", falling back to the short address when there's no name
+   * @param name - Optional saved/display name for this address
+   */
+  labeled(name?: string | null): string {
+    return name ? `${name} (${this.toShortString()})` : this.toShortString();
   }
 
   /**

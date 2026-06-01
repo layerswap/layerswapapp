@@ -4,8 +4,9 @@ import { BookmarkPlus } from 'lucide-react'
 import FilledX from '@/components/icons/FilledX'
 import SecondaryButton from '@/components/buttons/secondaryButton'
 import { useAddressBookStore, NAME_MAX, COUNTER_SHOW_AT } from '@/stores/addressBookStore'
+import { NetworkType } from '@/Models/Network'
 
-export const SaveToBookNameForm: FC<{ address: string, onDone: () => void, compact?: boolean }> = ({ address, onDone, compact }) => {
+export const SaveToBookNameForm: FC<{ address: string, networkType: NetworkType, onDone: () => void, compact?: boolean }> = ({ address, networkType, onDone, compact }) => {
     const addAddress = useAddressBookStore(s => s.addAddress)
     const [name, setName] = useState('')
 
@@ -15,7 +16,7 @@ export const SaveToBookNameForm: FC<{ address: string, onDone: () => void, compa
 
     const confirm = () => {
         if (!isValid) return
-        addAddress({ name: trimmed, address })
+        addAddress({ name: trimmed, address, networkType })
         onDone()
     }
 
@@ -68,7 +69,7 @@ export const SaveToBookNameForm: FC<{ address: string, onDone: () => void, compa
     )
 }
 
-const SaveToBookInline: FC<{ address: string }> = ({ address }) => {
+const SaveToBookInline: FC<{ address: string, networkType: NetworkType }> = ({ address, networkType }) => {
     const [editing, setEditing] = useState(false)
 
     if (!editing) {
@@ -82,7 +83,7 @@ const SaveToBookInline: FC<{ address: string }> = ({ address }) => {
         )
     }
 
-    return <SaveToBookNameForm address={address} onDone={() => setEditing(false)} />
+    return <SaveToBookNameForm address={address} networkType={networkType} onDone={() => setEditing(false)} />
 }
 
 export default SaveToBookInline
