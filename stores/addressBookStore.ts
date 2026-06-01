@@ -94,9 +94,15 @@ export const findSavedAddress = (savedAddresses: SavedAddress[], address: string
     return savedAddresses.find(e => Address.equals(e.address, address, network, providerName))
 }
 
-/** Reactive saved name, or undefined when the address isn't in the book. */
-export const useAddressName = (address: string | undefined | null, network?: { name: string } | null, providerName?: string) => {
-    return useAddressBookStore(s => findSavedAddress(s.savedAddresses, address, network, providerName)?.name)
+/**
+ * Reactive saved name, or undefined when the address isn't in the book.
+ * With `labeled`, falls back to the short address instead of undefined — the
+ * reactive form of `Address.displayName()`, for labels that must live-update.
+ */
+export const useAddressName = (address: string | undefined | null, network?: { name: string } | null, providerName?: string, labeled = false) => {
+    const name = useAddressBookStore(s => findSavedAddress(s.savedAddresses, address, network, providerName)?.name)
+    if (!labeled || name || !address) return name
+    return new Address(address, network ?? null, providerName!).toShortString()
 }
 
 /** Reactive: name-resolving finder bound to the current book snapshot. Use inside loops/memos. */
