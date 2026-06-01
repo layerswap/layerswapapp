@@ -9,6 +9,7 @@ import WizardItem from "../Wizard/WizardItem";
 import { NextRouter, useRouter } from "next/router";
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import HistoryList from "../SwapHistory/History";
+import AddressBookStep from "../AddressBook/AddressBookStep";
 import { Modal, ModalContent } from "@/components/modal/modalWithoutAnimation";
 import { useControllableState } from "../modal/vaul/use-controllable-state";
 
@@ -26,9 +27,9 @@ const Comp = () => {
 
     const goBackToMenuStep = () => { goToStep(MenuStep.Menu, "back"); clearMenuPath(router) }
 
-    const handleGoToStep = (step: MenuStep, path: string) => {
+    const handleGoToStep = (step: MenuStep, path?: string) => {
         goToStep(step)
-        setMenuPath(path, router)
+        if (path) setMenuPath(path, router)
     }
 
     return <>
@@ -64,6 +65,9 @@ const Comp = () => {
                                 </WizardItem>
                                 <WizardItem StepName={MenuStep.Transactions} GoBack={goBackToMenuStep} className="h-full" inModal>
                                     <HistoryList onNewTransferClick={() => { closeModal(); clearMenuPath(router) }} />
+                                </WizardItem>
+                                <WizardItem StepName={MenuStep.AddressBook} GoBack={goBackToMenuStep} inModal>
+                                    <AddressBookStep />
                                 </WizardItem>
                             </Wizard>
                         </div>

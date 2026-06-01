@@ -1,11 +1,11 @@
-import WalletIcon from "../icons/WalletIcon"
+import WalletIcon from "@/components/icons/WalletIcon"
 import { Address } from "@/lib/address"
-import useWallet from "../../hooks/useWallet"
-import ConnectButton from "../buttons/connectButton"
+import useWallet from "@/hooks/useWallet"
+import ConnectButton from "@/components/buttons/connectButton"
 import { useState } from "react"
 import WalletsList from "./WalletsList"
-import VaulDrawer from "../modal/vaulModal"
-import { Wallet } from "../../Models/WalletProvider"
+import VaulDrawer from "@/components/modal/vaulModal"
+import { Wallet } from "@/Models/WalletProvider"
 
 export const WalletsHeader = () => {
     const { wallets } = useWallet()
@@ -101,6 +101,7 @@ export const WalletsMenu = () => {
 const WalletsMenuWalletsList = ({ wallets }: { wallets: Wallet[] }) => {
     const wallet = wallets[0]
     const [openModal, setOpenModal] = useState<boolean>(false)
+    const resolved = wallet?.address ? new Address(wallet.address, null, wallet.providerName) : undefined
 
     return <>
         <button onClick={() => setOpenModal(true)} type="button" className="py-3 px-4 bg-secondary-500 flex items-center w-full rounded-xl space-x-1 disabled:text-secondary-text/40 disabled:bg-primary-900 disabled:cursor-not-allowed relative font-semibold transform border border-secondary-500 hover:bg-secondary-400 transition duration-200 ease-in-out outline-hidden">
@@ -108,7 +109,9 @@ const WalletsMenuWalletsList = ({ wallets }: { wallets: Wallet[] }) => {
                 wallets.length === 1 ?
                     <div className="flex gap-4 items-start text-primary-text">
                         <wallet.icon className='h-5 w-5' />
-                        {!wallet.isLoading && wallet.address && <p>{new Address(wallet.address, null, wallet.providerName).toShortString()}</p>}
+                        {!wallet.isLoading && wallet.address && resolved && (
+                            <p className="truncate min-w-0 max-w-[220px]">{resolved.labeledAddress()}</p>
+                        )}
                     </div>
                     :
                     <>

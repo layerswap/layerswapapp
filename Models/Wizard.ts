@@ -43,7 +43,8 @@ export enum SwapWithdrawalStep {
 export enum MenuStep {
     Menu = "Menu",
     Transactions = "Transactions",
-    TransactionDetails = "Transaction Details"
+    TransactionDetails = "Transaction Details",
+    AddressBook = "Address Book"
 }
 
 export type Steps = SwapWithdrawalStep | SwapCreateStep | MenuStep

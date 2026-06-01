@@ -8,6 +8,7 @@ import AddressWithIcon from "./AddressWithIcon";
 import { Partner } from "@/Models/Partner";
 import { Wallet } from "@/Models/WalletProvider";
 import { BookOpen } from "lucide-react";
+import { useAddressNameFinder } from "@/stores/addressBookStore";
 
 type AddressBookProps = {
     addressBook: AddressItem[];
@@ -15,10 +16,11 @@ type AddressBookProps = {
     destination: NetworkRoute;
     destination_address: string | undefined;
     partner?: Partner;
-    onRemoveManual?: (address: string) => void;
+    onRemove?: (address: string, isBookEntry: boolean) => void;
 }
 
-const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, destination, destination_address, partner, onRemoveManual }) => {
+const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, destination, destination_address, partner, onRemove }) => {
+    const resolveName = useAddressNameFinder()
 
     return (
         <div className="text-left mt-1!">
@@ -31,11 +33,13 @@ const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, desti
                                 <p className="text-sm text-secondary-text">Address Book</p>
                             </div>
                         }
-                        className="[&_[cmdk-group-heading]]:pb-1! [&_[cmdk-group-heading]]:px-0! py-0! px-0!"
+                        className="[&_[cmdk-group-heading]]:pb-1! [&_[cmdk-group-heading]]:px-0! py-0! px-0! [&_.bg-secondary-800]:bg-transparent!"
                     >
-                        <div className="w-full flex flex-col items-stretch max-h-[200px] overflow-y-auto styled-scroll gap-2">
-                            {addressBook.sort(sortingByDate).map(item => {
+                        <div className="w-full flex flex-col items-stretch gap-2">
+                            {addressBook.map(item => {
                                 const isSelected = Address.equals(item.address, destination_address!, destination!)
+                                const isBookEntry = !!resolveName(item.address, destination)
+                                const handleRemove = onRemove && item.group === AddressGroup.ManualAdded ? () => onRemove(item.address, isBookEntry) : undefined
                                 return (
                                     <CommandItem key={item.address} onSelect={() => onSelectAddress(item.address, item.wallet)} className={`group/addressItem !px-3 !py-3 rounded-lg hover:bg-secondary-600 w-full transition duration-200 bg-secondary-500 ${isSelected && 'bg-secondary-400'}`}>
                                         <div className={`flex items-center justify-between w-full`}>
@@ -43,7 +47,7 @@ const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, desti
                                                 addressItem={item}
                                                 partner={partner}
                                                 network={destination}
-                                                onRemove={item.group === AddressGroup.ManualAdded && onRemoveManual ? () => onRemoveManual(item.address) : undefined}
+                                                onRemove={handleRemove}
                                             />
                                             <div className="flex h-6 items-center px-1">
                                                 {
@@ -61,12 +65,6 @@ const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, desti
             </Command>
         </div>
     )
-}
-
-const sortingByDate = (a: AddressItem, b: AddressItem) => {
-    return (a.group === AddressGroup.RecentlyUsed && b.group === AddressGroup.ManualAdded) ? 0 : -1 +
-        (a.date ? Math.abs(((new Date()).getTime() - new Date(a.date).getTime())) : 0)
-        - (b.date ? Math.abs(((new Date()).getTime() - new Date(b.date).getTime())) : 0)
 }
 
 export default AddressBook;

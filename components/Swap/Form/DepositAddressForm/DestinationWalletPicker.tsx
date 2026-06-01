@@ -9,7 +9,7 @@ import { useConnectModal } from "@/components/WalletModal";
 import { useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts";
 import AddressIcon from "@/components/AddressIcon";
 import { Address as AddressClass } from "@/lib/address";
-import shortenString from "@/components/utils/ShortenString";
+import { useAddressName } from "@/stores/addressBookStore";
 import VaulDrawer from "@/components/modal/vaulModal";
 import { WalletItem } from "@/components/Wallet/WalletsList";
 
@@ -89,6 +89,9 @@ const DestinationWalletPicker: FC<DestinationWalletPickerProps> = ({ address, de
     const hasAddress = !!address;
     const WalletIcon = account?.icon;
     const walletName = account?.displayName?.split('-')[0] || 'Connected wallet';
+    const addr = hasAddress && destination ? new AddressClass(address!, destination) : undefined;
+    const savedName = useAddressName(address, destination);
+    const shortAddress = addr?.toShortString();
 
     return (
         <>
@@ -102,9 +105,10 @@ const DestinationWalletPicker: FC<DestinationWalletPickerProps> = ({ address, de
                         <WalletIcon className="h-7 w-7 object-contain" />
                     ) : hasAddress && destination ? (
                         <AddressIcon
-                            className="scale-150 h-7 w-7"
+                            className="h-7 w-7"
                             address={new AddressClass(address!, destination as unknown as Network).full}
                             size={28}
+                            rounded="6px"
                         />
                     ) : (
                         <Wallet className="h-4 w-4 text-secondary-text"/>
@@ -112,10 +116,10 @@ const DestinationWalletPicker: FC<DestinationWalletPickerProps> = ({ address, de
                 </div>
                 <div className="ml-2 flex flex-col grow overflow-hidden min-w-0 text-left">
                     <p className={`text-base leading-5 font-medium truncate ${hasAddress ? 'text-primary-text' : 'text-secondary-text'}`}>
-                        {hasAddress ? shortenString(address!) : 'Select wallet'}
+                        {hasAddress ? (savedName ?? shortAddress) : 'Select wallet'}
                     </p>
                     <p className="text-secondary-text text-sm font-normal leading-4 truncate whitespace-nowrap">
-                        {hasAddress ? walletName : 'Pick destination wallet'}
+                        {hasAddress ? (savedName ? shortAddress : walletName) : 'Pick destination wallet'}
                     </p>
                 </div>
                 <span className="ml-auto px-2 pointer-events-none text-primary-text shrink-0">
