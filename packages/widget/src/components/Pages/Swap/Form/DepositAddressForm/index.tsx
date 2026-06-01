@@ -239,8 +239,11 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
                                             />
                                         )}
 
-                                        {/* Deposit address + QR + fees once everything is ready */}
-                                        {showDepositInfo && (
+                                        {/* Deposit address + QR + fees. When the destination
+                                            address is integrator-locked, render this in skeleton
+                                            mode while the swap is being created so the user sees
+                                            the eventual layout instead of a blank gap. */}
+                                        {(showDepositInfo || lockDestinationAddress) && (
                                             <DepositAddressInfo
                                                 sourceNetwork={from?.name}
                                                 sourceToken={fromAsset?.symbol}
@@ -249,7 +252,7 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
                                                 destinationAddress={destination_address}
                                                 refuel={!!refuel || !!swapBasicData?.refuel}
                                                 depositAddress={depositAddress}
-                                                isCreatingSwap={false}
+                                                isCreatingSwap={!showDepositInfo}
                                             />
                                         )}
                                     </>

@@ -19,7 +19,7 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
                     { network: "ARBITRUM_MAINNET", token: "USDC" },
                     { network: "ETHEREUM_MAINNET", token: "USDC" },
                 ]}
-                destinationAddress=""
+                destinationAddress="0xB2029bbd8C1cBCC43c3A7b7fE3d118b0C57D7C31"
             />
         </WidgetWrapper>
     )

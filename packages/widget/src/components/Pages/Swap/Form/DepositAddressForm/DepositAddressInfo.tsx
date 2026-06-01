@@ -80,6 +80,8 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
         };
     }, [depositAddress]);
 
+    const showQuoteSkeleton = (isCreatingSwap || isQuoteLoading) && !bestQuote;
+
     return (
         <div className="flex flex-col gap-2">
             {/* Deposit address + QR */}
@@ -149,18 +151,35 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
                 </div>
             </div>
 
-            {/* Loading skeleton */}
-            {isQuoteLoading && !bestQuote && (
-                <div className="bg-secondary-500 rounded-xl px-3.5 py-3">
-                    <div className="flex items-center gap-3 animate-pulse">
-                        <div className="h-4 bg-secondary-400 rounded w-24" />
-                        <div className="h-4 bg-secondary-400 rounded w-16" />
+            {/* Loading skeleton — mimics Min/Max + Fees boxes */}
+            {showQuoteSkeleton && (
+                <>
+                    <div className="bg-secondary-500 rounded-xl px-3.5 py-3">
+                        <div className="flex flex-col gap-3.5 animate-pulse">
+                            <div className="flex items-center justify-between">
+                                <span className="h-3 bg-secondary-400 rounded w-16" />
+                                <span className="h-3 bg-secondary-400 rounded w-24" />
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <span className="h-3 bg-secondary-400 rounded w-16" />
+                                <span className="h-3 bg-secondary-400 rounded w-24" />
+                            </div>
+                        </div>
                     </div>
-                </div>
+                    <div className="bg-secondary-500 rounded-xl px-3.5 py-3">
+                        <div className="flex items-start justify-between gap-3 animate-pulse">
+                            <span className="h-3 bg-secondary-400 rounded w-10" />
+                            <div className="flex flex-col items-end gap-3">
+                                <span className="h-3 bg-secondary-400 rounded w-44" />
+                                <span className="h-3 bg-secondary-400 rounded w-36" />
+                            </div>
+                        </div>
+                    </div>
+                </>
             )}
 
             {/* Min/Max container */}
-            {!(isQuoteLoading && !bestQuote) && (minDepositDisplay || maxDepositDisplay) && (
+            {!showQuoteSkeleton && (minDepositDisplay || maxDepositDisplay) && (
                 <div className="bg-secondary-500 rounded-xl px-3.5 py-3">
                     <div className="flex flex-col gap-1.5 text-xs text-secondary-text">
                         {minDepositDisplay && (
@@ -180,7 +199,7 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
             )}
 
             {/* Fees + Est. time container */}
-            {!(isQuoteLoading && !bestQuote) && sortedTiers.length >= 1 && (
+            {!showQuoteSkeleton && sortedTiers.length >= 1 && (
                 <div className="bg-secondary-500 rounded-xl px-3.5 py-3">
                     {isFeesExpanded && sortedTiers.length > 1 && sourceToken ? (
                         <div className="flex flex-col gap-2 text-xs">

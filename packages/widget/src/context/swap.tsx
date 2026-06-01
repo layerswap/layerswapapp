@@ -209,8 +209,13 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             sourceWallet: selectedWallet
         })
         const slippage = useSlippageStore.getState().slippage
+        // In the deposit-address flow the user hasn't committed to an amount
+        // yet — they'll send whatever they want to the QR address. Sending a
+        // value here (especially "0", which falls through the `||` because
+        // it's a truthy string) makes the API reject the swap.
+        const numericAmount = amount ? Number(amount) : 0;
         const data: CreateSwapParams = {
-            amount: amount || undefined,
+            amount: isDepositAddressFlow || !numericAmount ? undefined : amount,
             source_network: from.name,
             destination_network: to.name,
             source_token: fromCurrency.symbol,

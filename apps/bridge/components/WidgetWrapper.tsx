@@ -91,14 +91,14 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
         onFormChange(formData) {
             updateFormBulk(formData);
         },
-        onSwapCreate(swapData) {
-            setSwapPath(swapData.swap.id, router)
-        },
-        onSwapModalStateChange(open) {
-            if (!open) {
-                removeSwapPath(router)
-            }
-        },
+        // onSwapCreate(swapData) {
+        //     setSwapPath(swapData.swap.id, router)
+        // },
+        // onSwapModalStateChange(open) {
+        //     if (!open) {
+        //         removeSwapPath(router)
+        //     }
+        // },
         onMenuNavigationChange(path) {
             setMenuPath(path, router)
         },

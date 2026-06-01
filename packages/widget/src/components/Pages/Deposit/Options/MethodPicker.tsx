@@ -61,8 +61,8 @@ const MethodPicker: FC = () => {
 
     const handleWalletClick = async () => {
         if (!hasWallet) {
-            await connect(undefined, { dismissible: true, fullHeight: true });
-            return;
+            const connectedWallet = await connect(undefined, { dismissible: true, fullHeight: true });
+            if (!connectedWallet) return;
         }
         if (!destinationReady) return;
         setFieldValue("depositMethod", "wallet", false);
@@ -82,12 +82,17 @@ const MethodPicker: FC = () => {
         ? new Address(primaryWallet?.address, null, primaryWallet.providerName).toShortString()
         : "Connect a wallet";
 
+    const WalletProviderIcon = primaryWallet?.icon;
+    const walletCardIcon = hasWallet && WalletProviderIcon
+        ? <WalletProviderIcon className="h-5 w-5" />
+        : <WalletIcon className="h-5 w-5 text-primary-text" />;
+
     return (
         <div className="flex flex-col gap-2 w-full">
             <p className="text-secondary-text text-xs">Choose method</p>
             <div className="flex flex-col gap-2 w-full">
                 <MethodCard
-                    icon={<WalletIcon className="h-5 w-5 text-primary-text" />}
+                    icon={walletCardIcon}
                     title="Wallet transfer"
                     subtitle={walletSubtitle}
                     onClick={handleWalletClick}
