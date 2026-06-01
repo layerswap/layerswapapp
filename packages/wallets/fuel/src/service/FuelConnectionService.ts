@@ -67,7 +67,7 @@ export class FuelConnectionService {
 
     async resolveFuelWallet(connector: FuelConnector, address: string, addresses: string[]): Promise<Wallet> {
         const network = await connector.currentNetwork()
-        const chainId = network.chainId || network.url.toLowerCase().includes('testnet') ? 0 : 9889
+        const chainId = network.chainId ?? (network.url.toLowerCase().includes('testnet') ? 0 : 9889)
         const icon = typeof connector.metadata.image === 'string'
             ? connector.metadata.image
             : (connector.metadata.image?.dark.startsWith('data:')
@@ -122,7 +122,7 @@ export class FuelConnectionService {
                     await sleep(1000)
                     return await attemptConnection(true)
                 }
-                throw new Error(e as string)
+                throw e instanceof Error ? e : new Error(typeof e === 'string' ? e : JSON.stringify(e))
             }
         }
         return attemptConnection()

@@ -135,7 +135,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
             }
             setSelectedConnector(connector)
             if (connector?.hasBrowserExtension !== false && connector.extensionNotFound && !connector?.showQrCode && !isMobilePlatfrom) return
-            if (!provider.ready) {
+            if (!provider.isStub && !provider.ready) {
                 setConnectionError("Wallet provider is still initializing. Please wait a moment and try again.")
                 return
             }
@@ -490,7 +490,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                                         onClick={() => provider && connect(item, provider)}
                                         connectingConnector={selectedConnector}
                                         isRecent={isRecent}
-                                        isProviderReady={typeof provider?.ready === 'boolean' ? provider.ready : true}
+                                        isProviderReady={provider?.isStub || (typeof provider?.ready === 'boolean' ? provider.ready : true)}
                                     />
                                 )
                             })
