@@ -1,7 +1,7 @@
 import { FC, useEffect, useState } from "react";
 import { SwapStatus } from "../../Models/SwapStatus";
 import { SwapDetails, TransactionType } from "../../lib/apiClients/layerSwapApiClient";
-import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
+import { formatHmsClock, msToParts } from "@/components/utils/formatTime";
 
 const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails, onThresholdChange?: (threshold: boolean) => void }> = ({ initialTime, swapDetails, onThresholdChange }) => {
     const [elapsedTimer, setElapsedTimer] = useState<number>(0);
@@ -28,18 +28,7 @@ const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails, onThre
         return () => clearInterval(timer);
     }, [initialTime, swapDetails.status, swapInputTransaction?.timestamp]);
 
-    const formatTime = (milliseconds: number): string => {
-        const totalSeconds = Math.floor(milliseconds / 1000);
-        const hours = Math.floor(totalSeconds / 3600);
-        const minutes = Math.floor((totalSeconds % 3600) / 60);
-        const seconds = totalSeconds % 60;
-        const formattedHours = hours > 0 ? String(hours).padStart(2, '0') + ":" : ''
-        const formattedMinutes = String(minutes).padStart(2, '0')
-        const formattedSeconds = String(seconds).padStart(2, '0')
-
-        return `${formattedHours}${formattedMinutes}:${formattedSeconds}`;
-    };
-    const formatted = formatTime(elapsedTimer);
+    const formatted = formatHmsClock(msToParts(elapsedTimer));
 
     if (swapDetails.status === SwapStatus.Completed) return null;
 
@@ -65,7 +54,7 @@ const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails, onThre
 
 export default CountdownTimer;
 
-function timeStringToMilliseconds(timeString) {
+function timeStringToMilliseconds(timeString: string) {
     const parts = timeString.split('.');
     const time = parts[0];
     const [hours, minutes, seconds] = time.split(':').map(parseFloat);

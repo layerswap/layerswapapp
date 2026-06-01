@@ -32,11 +32,9 @@ import shortenString from "@/components/utils/ShortenString";
 
 type Props = {
     partner?: Partner;
-    showBanner: boolean;
-    dismissBanner: () => void;
 };
 
-const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
+const ExchangeForm: FC<Props> = ({ partner }) => {
     const {
         values, isSubmitting
     } = useFormikContext<SwapFormValues>();

@@ -319,7 +319,7 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
     const showContent = token && route;
 
     return (
-        <span className="flex grow text-left items-center text-xs md:text-base relative">
+        <span className="flex grow text-left items-center text-xs md:text-base relative min-w-0">
             {showContent ? (
                 <>
                     <div className="inline-flex items-center relative shrink-0 h-7 w-7">
@@ -370,7 +370,7 @@ export const SelectedRoutePlaceholder = ({ placeholder }: { placeholder: string 
             <RoutePickerIcon className="w-7 h-7" />
         </div>
         <span className="flex text-secondary-text text-base font-normal leading-5 flex-auto items-center max-w-3/4 group-[.exchange-picker]:max-w-full">
-            <span className="ml-2 text-sm sm:text-base sm:leading-5 whitespace-nowrap">{placeholder}</span>
+            <span className="ml-2 text-sm sm:text-base sm:leading-4 ">{placeholder}</span>
         </span>
     </>
 )

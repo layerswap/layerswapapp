@@ -10,6 +10,7 @@ import { SwapStatus } from '../../Models/SwapStatus';
 import { SwapFailReasons } from '../../Models/RangeError';
 import type { SwapTransaction as StoredWalletTransaction } from '../../stores/swapTransactionStore';
 import { Progress, ProgressStatus } from '../Pages/Swap/Withdraw/Processing/types';
+import { formatElapsedHms, msToParts } from './formatTime';
 
 export enum SwapPhase {
     AwaitingUserDeposit = 'awaiting_user_deposit',
@@ -341,15 +342,5 @@ function formatElapsedTime(inputTx: Transaction | undefined, outputTx: Transacti
     const diffMs = new Date(end).getTime() - new Date(start).getTime();
     if (!Number.isFinite(diffMs) || diffMs <= 0) return null;
 
-    const totalSeconds = Math.round(diffMs / 1000);
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-
-    const parts: string[] = [];
-    if (hours) parts.push(`${hours}h`);
-    if (minutes) parts.push(`${minutes}m`);
-    if (!hours && (seconds || !minutes)) parts.push(`${seconds}s`);
-
-    return `Completed in ${parts.join(' ')}`;
+    return `Completed in ${formatElapsedHms(msToParts(diffMs))}`;
 }
