@@ -1,4 +1,4 @@
-import { BookOpen, Gift, Map, Home, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus } from "lucide-react";
+import { BookOpen, BookUser, Gift, Map, Home, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus } from "lucide-react";
 import { useRouter } from "next/router";
 import { FC, useState } from "react";
 import { useIntercom } from "react-use-intercom";
@@ -20,7 +20,7 @@ const WalletsMenu = dynamic(() => import("../Wallet/ConnectedWallets").then((com
     loading: () => <></>
 })
 
-const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ goToStep }) => {
+const MenuList: FC<{ goToStep: (step: MenuStep, path?: string) => void }> = ({ goToStep }) => {
     const router = useRouter();
     const { boot, show, update } = useIntercom()
     const [openFeedbackModal, setOpenFeedbackModal] = useState(false);
@@ -51,6 +51,9 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
                         </Menu.Item>
                     }
                 </>
+                <Menu.Item onClick={() => goToStep(MenuStep.AddressBook)} icon={<BookUser className="h-5 w-5" />}>
+                    Address Book
+                </Menu.Item>
                 <>
                     {!isEmbedded && router.pathname != '/campaigns' &&
                         <Menu.Item pathname='/campaigns' icon={<Gift className="h-5 w-5" />} >

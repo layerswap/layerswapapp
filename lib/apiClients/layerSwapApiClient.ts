@@ -269,13 +269,6 @@ export type SwapQuote = {
     rate?: number,
 }
 
-export type AddressBookItem = {
-    address: string,
-    date: string,
-    networks: string[],
-    exchanges: string[]
-}
-
 export type Transaction = {
     type: TransactionType,
     from: string,

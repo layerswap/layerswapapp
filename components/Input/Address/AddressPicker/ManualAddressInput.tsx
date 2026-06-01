@@ -7,8 +7,10 @@ import FilledX from "@/components/icons/FilledX";
 import { AddressGroup, AddressItem } from ".";
 import { Address } from "@/lib/address";
 import AddressWithIcon from "./AddressWithIcon";
+import SaveToBookInline from "@/components/AddressBook/SaveToBookInline";
 import { Wallet } from "@/Models/WalletProvider";
 import { FormikHelpers } from "formik";
+import { useAddressName } from "@/stores/addressBookStore";
 
 type AddressInput = {
     manualAddress: string,
@@ -24,7 +26,7 @@ type AddressInput = {
     connectedWallet: Wallet | undefined
 }
 
-const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress, setNewAddress, values, name, inputReference, setFieldValue, close, addresses, connectedWallet, partner }) => {
+const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress, setNewAddress, values, name, inputReference, setFieldValue, close, addresses, partner }) => {
     const { to: destination } = values || {}
     const [isFocused, setIsFocused] = useState(false);
     const placeholder = "Enter address"
@@ -56,6 +58,9 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
     }
 
     const addressFromList = destination && addresses?.find(a => Address.equals(a.address, manualAddress, destination))
+    const isAddressValid = Boolean(manualAddress && destination && Address.isValid(manualAddress, destination))
+    const existingBookName = useAddressName(isAddressValid ? manualAddress : undefined, destination)
+    const canSaveToAddressBook = isAddressValid && !existingBookName
 
     return (
         <div className="text-left">
@@ -88,7 +93,7 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
                         manualAddress &&
                         <button
                             type="button"
-                            className="absolute top-[calc(50%-10px)] right-4 hover:bg-secondary-400"
+                            className="absolute top-1/2 -translate-y-1/2 right-3 text-secondary-text hover:text-primary-text transition"
                             onClick={handleRemoveNewDepositeAddress}
                         >
                             <FilledX className="h-5 w-5" />
@@ -110,6 +115,7 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
                         <AddressWithIcon addressItem={addressFromList || { address: manualAddress, group: AddressGroup.ManualAdded }} partner={partner} network={destination} />
                     </div>
                 }
+                {canSaveToAddressBook && <SaveToBookInline key={manualAddress} address={manualAddress} networkType={destination!.type} />}
             </div>
         </div>
     )

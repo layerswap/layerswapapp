@@ -1,5 +1,6 @@
 import { isValidAddress } from '@/lib/address/validator';
 import { addressFormat } from '@/lib/address/formatter';
+import { findSavedAddress, useAddressBookStore } from '@/stores/addressBookStore';
 
 export type AddressDisplayFormat = 'short' | 'ending' | 'full' | 'emphasized';
 
@@ -99,6 +100,23 @@ export class Address {
   }
 
   /**
+   * Return the first network in the list that `address` is valid for, or undefined.
+   * Dedupes probes by NetworkType so we only validate once per chain family.
+   */
+  static resolveNetwork<T extends { name: string; type: string }>(
+    address: string,
+    networks: T[]
+  ): T | undefined {
+    if (!address) return undefined;
+    const seen = new Set<string>();
+    return networks.find(n => {
+      if (seen.has(n.type)) return false;
+      seen.add(n.type);
+      return Address.isValid(address, n);
+    });
+  }
+
+  /**
    * Format address as shortened display: first5...last4
    * @returns Shortened address (e.g., "0x123...5678")
    */
@@ -111,6 +129,34 @@ export class Address {
 
     const shortened = `${addr.substring(0, 5)}...${addr.substring(addr.length - 4)}`;
     return shortened;
+  }
+
+  /**
+   * The book name, or the short address when there's none. Use it to show "name or address".
+   */
+  displayName(): string {
+    const name = findSavedAddress(
+      useAddressBookStore.getState().savedAddresses,
+      this._raw,
+      this._network,
+      this._providerName
+    )?.name;
+    return name ?? this.toShortString();
+  }
+
+  /**
+   * "name (short address)" when the address is saved, otherwise just the short address.
+   * Use it for a single-line label that pairs the name with its address.
+   */
+  labeledAddress(): string {
+    const name = findSavedAddress(
+      useAddressBookStore.getState().savedAddresses,
+      this._raw,
+      this._network,
+      this._providerName
+    )?.name;
+    const short = this.toShortString();
+    return name ? `${name} (${short})` : short;
   }
 
   /**

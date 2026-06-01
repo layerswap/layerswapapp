@@ -7,6 +7,7 @@ import CheckboxRow from './CheckboxRow'
 import { filterChipClasses } from './chipStyles'
 import VaulDrawer from '../../modal/vaulModal'
 import WalletsList from '../../Wallet/WalletsList'
+import { useAddressNameFinder } from '@/stores/addressBookStore'
 
 type WalletsDropdownProps = {
     wallets: Wallet[]
@@ -27,6 +28,7 @@ const WalletsDropdown: FC<WalletsDropdownProps> = ({ wallets, selectedAddresses,
     const [manageOpen, setManageOpen] = useState(false)
     const disabled = wallets.length === 0
     const label = count > 0 ? `Wallets (${count})` : 'Wallets'
+    const findName = useAddressNameFinder()
 
     const rows = useMemo<Row[]>(() => {
         const seen = new Set<string>()
@@ -39,14 +41,14 @@ const WalletsDropdown: FC<WalletsDropdownProps> = ({ wallets, selectedAddresses,
                 const Icon = w.icon
                 out.push({
                     address,
-                    label: w.displayName || w.providerName,
+                    label: findName(address, null, w.providerName) || w.displayName || w.providerName,
                     short: addr.toShortString(),
                     icon: Icon ? <Icon className="w-5 h-5" /> : null,
                 })
             }
         }
         return out
-    }, [wallets])
+    }, [wallets, findName])
 
     return (
         <>

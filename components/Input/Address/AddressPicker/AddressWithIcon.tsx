@@ -1,10 +1,10 @@
 import { FC, MouseEventHandler, ReactNode, SVGProps, useCallback, useMemo, useState } from "react"
 import { AddressGroup, AddressItem } from ".";
-import AddressIcon from "@/components//AddressIcon";
+import AddressIcon from "@/components/AddressIcon";
 import { Address, getExplorerUrl } from "@/lib/address";
-import { History, Copy, Check, ChevronDown, WalletIcon, Pencil, Link2, SquareArrowOutUpRight, Unplug, Info, Trash2 } from "lucide-react";
+import { Copy, Check, ChevronDown, WalletIcon, Pencil, Link2, SquareArrowOutUpRight, Unplug, Info, Trash2, BookmarkPlus } from "lucide-react";
 import { Partner } from "@/Models/Partner";
-import { Network } from "@/Models/Network";
+import { Network, NetworkType } from "@/Models/Network";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components//shadcn/popover";
 import useCopyClipboard from "@/hooks/useCopyClipboard";
 import Link from "next/link";
@@ -12,6 +12,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components//shadcn/to
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import clsx from "clsx";
 import shortenString from "@/components/utils/ShortenString";
+import { useAddressName } from "@/stores/addressBookStore";
+import { SaveToBookNameForm } from "@/components/AddressBook/SaveToBookInline";
+import useWindowDimensions from "@/hooks/useWindowDimensions";
 
 type Props = {
     addressItem: AddressItem;
@@ -24,21 +27,10 @@ type Props = {
 
 const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, onRemove }) => {
 
-    const difference_in_days = addressItem?.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(addressItem.date).getTime()) / (1000 * 3600 * 24))) : undefined
     const maxWalletNameWidth = calculateMaxWidth(String(balance?.amount));
+    const resolvedDisplayName = useAddressName(addressItem.address, network)
 
     const descriptions = [
-        {
-            group: AddressGroup.RecentlyUsed,
-            text: (difference_in_days === 0 ?
-                <p>Used today</p>
-                :
-                (difference_in_days && difference_in_days > 1 ?
-                    <p><span>Used</span> {difference_in_days} <span>days ago</span></p>
-                    : <p>Used yesterday</p>))
-            ,
-            icon: History
-        },
         {
             group: AddressGroup.ManualAdded,
             text: <p>Added Manually</p>,
@@ -80,7 +72,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
                             />
                         )
                     ) : (
-                        <AddressIcon className="scale-150 h-9 w-9" address={address} size={36} />
+                        <AddressIcon className="h-9 w-9" address={address} size={32} rounded="6px" />
                     )
                 }
             </div>
@@ -98,9 +90,14 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
                             logo={addressItem.wallet?.icon}
                             onRemove={addressItem.group === AddressGroup.ManualAdded ? onRemove : undefined}
                         />
-                    ) : <p className="text-sm block font-medium">
-                        {shortenString(addressItem.address)}
-                    </p>}
+                    ) : (
+                        resolvedDisplayName
+                            ? <p className="text-sm font-medium flex items-baseline gap-1 min-w-0 max-w-[260px]">
+                                <span className="truncate max-w-[100px]">{resolvedDisplayName}</span>
+                                <span className="shrink-0 truncate">({shortenString(addressItem.address)})</span>
+                            </p>
+                            : <p className="text-sm block font-medium">{shortenString(addressItem.address)}</p>
+                    )}
                 </div>
                 <div className="text-secondary-text w-full min-w-0">
                     <div className="flex items-center gap-1 text-xs">
@@ -165,9 +162,11 @@ const calculateMaxWidth = (balance: string | undefined) => {
 };
 
 export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, providerName, isForCurrency, children, onDisconnect, onRemove, showDetails = false, title, description, logo: Logo, onPopoverOpenChange, onTooltipOpenChange, shouldShowChevron = true }) => {
+    const savedName = useAddressName(address, network, providerName)
     if (!network && !providerName) {
+        const short = shortenString(address)
         return <p className="text-sm block font-medium">
-            {shortenString(address)}
+            {savedName ? `${savedName} (${short})` : short}
         </p>
     }
     return <AddressDetailsPopover address={address} network={network!} providerName={providerName!} isForCurrency={isForCurrency} onDisconnect={onDisconnect} onRemove={onRemove} showDetails={showDetails} title={title} description={description} logo={Logo} onPopoverOpenChange={onPopoverOpenChange} onTooltipOpenChange={onTooltipOpenChange} shouldShowChevron={shouldShowChevron}>{children}</AddressDetailsPopover>
@@ -178,21 +177,21 @@ type AddressDetailsPopoverProps = ExtendedAddressBaseProps
 const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, network, providerName, isForCurrency, children, onDisconnect, onRemove, showDetails = false, title, description, logo: Logo, onPopoverOpenChange, onTooltipOpenChange, shouldShowChevron = true }) => {
     const [isCopied, setCopied] = useCopyClipboard()
     const [isPopoverOpen, setPopoverOpen] = useState(false)
+    const [saving, setSaving] = useState(false)
+    const { isMobile } = useWindowDimensions()
 
     const handlePopoverChange = (open: boolean) => {
         setPopoverOpen(open)
+        if (!open) setSaving(false)
         onPopoverOpenChange?.(open)
     }
 
-    const addr = useMemo(() => {
-        if (network) {
-            return new Address(address, network, providerName)
-        }
-        else {
-            return new Address(address, null, providerName!)
-        }
-    }, [address, network, providerName]);
+    const addr = useMemo(() =>
+        new Address(address, network ?? null, providerName!),
+        [address, network, providerName]
+    );
 
+    const displayName = useAddressName(address, network, providerName)
 
     const isAddressValid = useMemo(() => {
         if (network) {
@@ -200,6 +199,9 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
         }
         return false
     }, [addr.full, network]);
+
+    const saveNetworkType = network?.type ?? (providerName ? providerName.toLowerCase() as NetworkType : undefined)
+    const canSave = !isForCurrency && !displayName && !!saveNetworkType
 
     // Resolver for action buttons
     const getActionButtons = useCallback(() => {
@@ -214,6 +216,11 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
                 title: 'View',
                 Icon: SquareArrowOutUpRight,
                 href: getExplorerUrl(network.account_explorer_template, addr.full)
+            }] : []),
+            ...(canSave && !saving ? [{
+                title: 'Save',
+                Icon: BookmarkPlus,
+                onClick: (e: React.MouseEvent<HTMLDivElement>) => { e.stopPropagation(); setSaving(true); }
             }] : []),
             ...(onDisconnect ? [{
                 title: 'Disconnect',
@@ -232,7 +239,7 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
         const showTitles = buttons.length <= 2;
 
         return { buttons, showTitles };
-    }, [addr.full, network, providerName, isAddressValid, isCopied, onDisconnect, onRemove]);
+    }, [addr.full, network, providerName, isAddressValid, isCopied, onDisconnect, onRemove, canSave, saving]);
 
     const { buttons, showTitles } = getActionButtons();
     const { start, middle, end } = useMemo(() => addr.toEmphasizedParts(), [addr]);
@@ -247,12 +254,12 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
                                 <span className={isForCurrency ? "block w-full min-w-0" : undefined}>
                                     {
                                         children ??
-                                        <div className="group-hover/addressItem:underline hover:text-secondary-text transition duration-200 no-underline flex gap-1 items-center cursor-pointer">
-                                            <p className={`${isForCurrency ? "text-xs self-end" : "text-sm"} block font-medium`}>
-                                                {addr.toShortString()}
+                                        <div className="hover:text-secondary-text transition duration-200 flex gap-1 items-center cursor-pointer min-w-0">
+                                            <p className={`${isForCurrency ? "text-xs self-end" : "text-sm"} block font-medium group-hover/addressItem:underline ${displayName ? 'min-w-0 max-w-[260px] truncate' : ''}`}>
+                                                {addr.labeledAddress()}
                                             </p>
                                             {shouldShowChevron ?
-                                                <ChevronDown className="invisible group-hover/addressItem:visible h-4 w-4" />
+                                                <ChevronDown className="invisible group-hover/addressItem:visible h-4 w-4 shrink-0" />
                                                 : null
                                             }
                                         </div>
@@ -266,6 +273,7 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
                     </div>
                 </PopoverTrigger>
                 <PopoverContent
+                    container={isMobile ? (document.querySelector("[data-vaul-drawer]") as HTMLElement | null) : undefined}
                     className="w-auto p-3 min-w-72 flex flex-col gap-3 items-stretch rounded-2xl! bg-secondary-500!"
                     side="top"
                     avoidCollisions={true}
@@ -307,6 +315,12 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
                         </div>
 
                     )}
+                    {displayName && displayName !== title && (
+                        <div className="flex flex-wrap items-baseline justify-between gap-x-2 text-left">
+                            <span className="text-xs text-secondary-text shrink-0">Saved as:</span>
+                            <span className="text-primary-text text-sm font-medium break-words min-w-0">{displayName}</span>
+                        </div>
+                    )}
                     <p className="text-secondary-text text-sm leading-5 break-all text-left font-mono">
                         <><span className="text-primary-text font-medium">{start}</span><span>{middle}</span><span className="text-primary-text font-medium">{end}</span></>
                     </p>
@@ -321,6 +335,7 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
                             ))}
                         </div>
                     )}
+                    {saving && saveNetworkType && <SaveToBookNameForm address={address} networkType={saveNetworkType} onDone={() => setSaving(false)} compact />}
                 </PopoverContent>
             </Popover>
         </div>
