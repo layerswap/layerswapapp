@@ -87,10 +87,10 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const onRemoveAddress = useCallback((address: string, isBookEntry: boolean) => {
         if (isBookEntry) {
             removeAddressFromBook(address)
-            return
         }
-        if (!provider?.name) return
-        removeManualDestAddress(address, provider.name)
+        if (provider?.name) {
+            removeManualDestAddress(address, provider.name)
+        }
     }, [removeAddressFromBook, provider?.name, removeManualDestAddress])
 
     useEffect(() => {

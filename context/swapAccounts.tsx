@@ -51,6 +51,7 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
     const [selectedSourceAccounts, setSelectedSourceAccounts] = useState<BaseAccountIdentity[]>([])
     const { providers } = useWallet()
     const addManualDestAddress = useManualDestAddressesStore(s => s.addManualDestAddress)
+    const manualDestAddresses = useManualDestAddressesStore(s => s.manualDestAddresses)
 
     const sourceAccounts: AccountIdentityWithSupportedNetworks[] = useMemo(() => {
         return providers.map(provider => {
@@ -87,7 +88,11 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
                 acc => acc.providerName === provider.name && acc.id === 'manually_added'
             );
 
-            if (manuallyAdded) {
+            const manualStillExists = manuallyAdded && manualDestAddresses.some(
+                m => m.providerName === provider.name && Address.equals(m.address, manuallyAdded.address, null, provider.name)
+            );
+
+            if (manuallyAdded && manualStillExists) {
                 return ResolveManualSwapAccount(provider, manuallyAdded.address);
             }
 
@@ -102,7 +107,7 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
 
             return ResolveWalletSwapAccount(provider, wallet, address);
         }).filter(Boolean) as AccountIdentity[];
-    }, [providers, selectedDestAccounts]);
+    }, [providers, selectedDestAccounts, manualDestAddresses]);
 
     const selectDestinationAccount = useCallback((account: BaseAccountIdentity) => {
         if (account.id === 'manually_added' && account.address && account.providerName) {

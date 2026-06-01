@@ -14,6 +14,7 @@ import clsx from "clsx";
 import shortenString from "@/components/utils/ShortenString";
 import { useAddressName } from "@/stores/addressBookStore";
 import { SaveToBookNameForm } from "@/components/AddressBook/SaveToBookInline";
+import useWindowDimensions from "@/hooks/useWindowDimensions";
 
 type Props = {
     addressItem: AddressItem;
@@ -178,6 +179,7 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
     const [isCopied, setCopied] = useCopyClipboard()
     const [isPopoverOpen, setPopoverOpen] = useState(false)
     const [saving, setSaving] = useState(false)
+    const { isMobile } = useWindowDimensions()
 
     const handlePopoverChange = (open: boolean) => {
         setPopoverOpen(open)
@@ -272,6 +274,7 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
                     </div>
                 </PopoverTrigger>
                 <PopoverContent
+                    container={isMobile ? (document.querySelector("[data-vaul-drawer]") as HTMLElement | null) : undefined}
                     className="w-auto p-3 min-w-72 flex flex-col gap-3 items-stretch rounded-2xl! bg-secondary-500!"
                     side="top"
                     avoidCollisions={true}

@@ -5,11 +5,8 @@ import AddressIcon from '@/components/AddressIcon'
 import shortenString from '@/components/utils/ShortenString'
 import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
 import AddressBookEntryForm, { AddressBookEntryFormProps } from './AddressBookEntryForm'
-import { ErrorDisplay } from '@/components/validationError/ErrorDisplay'
-import { AlertTriangle } from 'lucide-react'
 import { HistoryItemSceleton } from '@/components/SwapHistory/Snippet'
 import { SearchComponent } from '@/components/Input/Search'
-import { filterChipClasses } from '@/components/SwapHistory/Filters/chipStyles'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/shadcn/popover'
 
 type EditingState =
@@ -20,11 +17,9 @@ type EditingState =
 const AddressBookStep: FC = () => {
     const savedAddresses = useAddressBookStore(s => s.savedAddresses)
     const removeAddress = useAddressBookStore(s => s.removeAddress)
-    const clearAll = useAddressBookStore(s => s.clearAll)
 
     const [editing, setEditing] = useState<EditingState>({ kind: 'closed' })
     const [query, setQuery] = useState('')
-    const [pendingClearAll, setPendingClearAll] = useState(false)
 
     const closeForm = () => setEditing({ kind: 'closed' })
 
@@ -72,48 +67,13 @@ const AddressBookStep: FC = () => {
     }
 
     return (
-        <div className="flex flex-col h-full text-primary-text">
-            <div className="space-y-2 pb-3">
-                <SearchComponent
-                    searchQuery={query}
-                    setSearchQuery={setQuery}
-                    placeholder="Search by name or address"
-                    containerClassName="mb-0"
-                />
-                <div className="flex flex-wrap items-center gap-2">
-                    <button type="button" onClick={() => setEditing({ kind: 'create' })} className={filterChipClasses(false)}>
-                        <Plus className="h-4 w-4" />
-                        <span>Add new</span>
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setPendingClearAll(true)}
-                        className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors shrink-0 whitespace-nowrap bg-error-background text-error-foreground hover:brightness-110"
-                    >
-                        <Trash2 className="h-4 w-4" />
-                        <span>Clear all</span>
-                    </button>
-                </div>
-            </div>
-            {pendingClearAll && (
-                <div className="mb-3">
-                    <ErrorDisplay
-                        icon={<AlertTriangle className="h-5 w-5 text-warning-foreground" />}
-                        title="Delete all saved addresses?"
-                        message="This removes every saved name from your address book. It can't be undone."
-                        footer={
-                            <div className="flex gap-2 mt-3">
-                                <button type="button" onClick={() => setPendingClearAll(false)} className="flex-1 h-10 rounded-md text-sm font-medium bg-secondary-500 hover:bg-secondary-300 text-primary-text transition">
-                                    Cancel
-                                </button>
-                                <button type="button" onClick={() => { clearAll(); setPendingClearAll(false) }} className="flex-1 h-10 rounded-md text-sm font-medium bg-error-background text-error-foreground hover:brightness-110 transition">
-                                    Delete all
-                                </button>
-                            </div>
-                        }
-                    />
-                </div>
-            )}
+        <div className="flex flex-col text-primary-text">
+            <SearchComponent
+                searchQuery={query}
+                setSearchQuery={setQuery}
+                placeholder="Search by name or address"
+                containerClassName="mb-2"
+            />
             <div className="flex flex-col gap-2">
                 {filteredAddresses.length === 0 && (
                     <div className="flex items-baseline gap-1 px-1 py-3 text-sm text-secondary-text min-w-0">
@@ -167,6 +127,14 @@ const AddressBookStep: FC = () => {
                     )
                 })}
             </div>
+            <button
+                type="button"
+                onClick={() => setEditing({ kind: 'create' })}
+                className="mt-2 flex items-center justify-center gap-2 w-full h-12 rounded-xl text-base font-medium bg-secondary-500 hover:bg-secondary-400 text-primary-text transition"
+            >
+                <Plus className="h-5 w-5" />
+                <span>Add address</span>
+            </button>
         </div>
     )
 }
