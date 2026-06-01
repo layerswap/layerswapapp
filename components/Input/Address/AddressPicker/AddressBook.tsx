@@ -31,9 +31,9 @@ const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, desti
                                 <p className="text-sm text-secondary-text">Address Book</p>
                             </div>
                         }
-                        className="[&_[cmdk-group-heading]]:pb-1! [&_[cmdk-group-heading]]:px-0! py-0! px-0!"
+                        className="[&_[cmdk-group-heading]]:pb-1! [&_[cmdk-group-heading]]:px-0! py-0! px-0! [&_.bg-secondary-800]:bg-transparent!"
                     >
-                        <div className="w-full flex flex-col items-stretch max-h-[200px] overflow-y-auto styled-scroll gap-2">
+                        <div className="w-full flex flex-col items-stretch gap-2">
                             {addressBook.map(item => {
                                 const isSelected = Address.equals(item.address, destination_address!, destination!)
                                 const handleRemove = onRemove && item.group === AddressGroup.ManualAdded ? () => onRemove(item.address, !!item.name) : undefined

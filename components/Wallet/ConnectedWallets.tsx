@@ -6,7 +6,6 @@ import { useState } from "react"
 import WalletsList from "./WalletsList"
 import VaulDrawer from "@/components/modal/vaulModal"
 import { Wallet } from "@/Models/WalletProvider"
-import { useAddressName } from "@/stores/addressBookStore"
 
 export const WalletsHeader = () => {
     const { wallets } = useWallet()
@@ -102,8 +101,7 @@ export const WalletsMenu = () => {
 const WalletsMenuWalletsList = ({ wallets }: { wallets: Wallet[] }) => {
     const wallet = wallets[0]
     const [openModal, setOpenModal] = useState<boolean>(false)
-    const bookName = useAddressName(wallet?.address, null, wallet?.providerName)
-    const shortAddress = wallet?.address ? new Address(wallet.address, null, wallet.providerName).toShortString() : ''
+    const resolved = wallet?.address ? new Address(wallet.address, null, wallet.providerName).nameAndAddress() : undefined
 
     return <>
         <button onClick={() => setOpenModal(true)} type="button" className="py-3 px-4 bg-secondary-500 flex items-center w-full rounded-xl space-x-1 disabled:text-secondary-text/40 disabled:bg-primary-900 disabled:cursor-not-allowed relative font-semibold transform border border-secondary-500 hover:bg-secondary-400 transition duration-200 ease-in-out outline-hidden">
@@ -112,12 +110,12 @@ const WalletsMenuWalletsList = ({ wallets }: { wallets: Wallet[] }) => {
                     <div className="flex gap-4 items-start text-primary-text">
                         <wallet.icon className='h-5 w-5' />
                         {!wallet.isLoading && wallet.address && (
-                            bookName
+                            resolved?.name
                                 ? <p className="flex items-baseline gap-1 min-w-0 max-w-[220px]">
-                                    <span className="truncate max-w-[100px]">{bookName}</span>
-                                    <span className="shrink-0">({shortAddress})</span>
+                                    <span className="truncate max-w-[100px]">{resolved.name}</span>
+                                    <span className="shrink-0">({resolved.address})</span>
                                 </p>
-                                : <p>{shortAddress}</p>
+                                : <p>{resolved?.address}</p>
                         )}
                     </div>
                     :

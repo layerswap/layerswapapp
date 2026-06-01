@@ -12,7 +12,6 @@ import { SwapDirection, SwapFormValues } from "@/components/DTOs/SwapFormValues"
 import { WalletsIcons } from "@/components/Wallet/ConnectedWallets";
 import { useFormikContext } from "formik";
 import { AccountIdentity, useSwapAccounts, useSelectSwapAccount } from "@/context/swapAccounts";
-import { useAddressName } from "@/stores/addressBookStore";
 
 const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const [openModal, setOpenModal] = useState<boolean>(false)
@@ -91,7 +90,7 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
 
 const AccountsPickerButton: FC<{ accounts: AccountIdentity[], network: NetworkRoute | undefined, onOpenModalClick: () => void }> = ({ accounts, network, onOpenModalClick }) => {
     const firstWallet = useMemo(() => accounts[0], [accounts])
-    const bookName = useAddressName(firstWallet?.address, network)
+    const resolved = firstWallet?.address ? new Address(firstWallet.address, null, firstWallet.providerName) : undefined
     if (accounts.length > 0) {
         return <button onClick={onOpenModalClick} type="button" className="p-1.5 max-sm:p-2 justify-self-start text-secondary-text hover:bg-secondary-500 max-sm:bg-secondary-500 hover:text-primary-text focus:outline-hidden inline-flex rounded-lg items-center active:animate-press-down">
             {
@@ -100,9 +99,7 @@ const AccountsPickerButton: FC<{ accounts: AccountIdentity[], network: NetworkRo
                         <firstWallet.icon className='h-5 w-5' />
                         {
                             firstWallet.address &&
-                            (bookName
-                                ? <p className="truncate max-w-[90px]">{bookName}</p>
-                                : <p>{new Address(firstWallet.address, null, firstWallet.providerName).toShortString()}</p>)
+                            <p className="truncate max-w-[90px]">{resolved?.displayName()}</p>
                         }
                         <ChevronDown className="h-5 w-5" />
                     </div>

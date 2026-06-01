@@ -9,8 +9,6 @@ import { useConnectModal } from "@/components/WalletModal";
 import { useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts";
 import AddressIcon from "@/components/AddressIcon";
 import { Address as AddressClass } from "@/lib/address";
-import { useAddressName } from "@/stores/addressBookStore";
-import shortenString from "@/components/utils/ShortenString";
 import VaulDrawer from "@/components/modal/vaulModal";
 import { WalletItem } from "@/components/Wallet/WalletsList";
 
@@ -90,7 +88,8 @@ const DestinationWalletPicker: FC<DestinationWalletPickerProps> = ({ address, de
     const hasAddress = !!address;
     const WalletIcon = account?.icon;
     const walletName = account?.displayName?.split('-')[0] || 'Connected wallet';
-    const savedName = useAddressName(address, destination);
+    const addr = hasAddress && destination ? new AddressClass(address!, destination) : undefined;
+    const resolved = addr?.nameAndAddress();
 
     return (
         <>
@@ -115,10 +114,10 @@ const DestinationWalletPicker: FC<DestinationWalletPickerProps> = ({ address, de
                 </div>
                 <div className="ml-2 flex flex-col grow overflow-hidden min-w-0 text-left">
                     <p className={`text-base leading-5 font-medium truncate ${hasAddress ? 'text-primary-text' : 'text-secondary-text'}`}>
-                        {hasAddress ? (savedName ?? shortenString(address!)) : 'Select wallet'}
+                        {hasAddress ? addr?.displayName() : 'Select wallet'}
                     </p>
                     <p className="text-secondary-text text-sm font-normal leading-4 truncate whitespace-nowrap">
-                        {hasAddress ? (savedName ? shortenString(address!) : walletName) : 'Pick destination wallet'}
+                        {hasAddress ? (resolved?.name ? resolved.address : walletName) : 'Pick destination wallet'}
                     </p>
                 </div>
                 <span className="ml-auto px-2 pointer-events-none text-primary-text shrink-0">

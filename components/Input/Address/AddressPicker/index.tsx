@@ -119,6 +119,15 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
     const addressBookAddresses = groupedAddresses?.filter(a => a.group !== AddressGroup.ConnectedWallet)
 
+    const incompatibleAddressBook = useMemo<AddressItem[]>(
+        () => destination
+            ? savedAddresses
+                .filter(e => !((!e.networkType || e.networkType === destination.type) && AddressClass.isValid(e.address, destination)))
+                .map(e => ({ address: e.address, group: AddressGroup.ManualAdded, name: e.name }))
+            : [],
+        [savedAddresses, destination]
+    )
+
     const normalizedDestAddress = useMemo(
         () => destination && destination_address
             ? new AddressClass(destination_address, destination).normalized
@@ -244,10 +253,12 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                 }
 
                 {
-                    destination && provider && !manualAddress && unAvailableWallets.length > 0 &&
+                    destination && !manualAddress && (unAvailableWallets.length > 0 || incompatibleAddressBook.length > 0) &&
                     <NotCompatibleWallets
                         notCompatibleWallets={unAvailableWallets}
+                        notCompatibleAddresses={incompatibleAddressBook}
                         destination={destination}
+                        partner={partner}
                         isLoading={isConnecting}
                     />
                 }

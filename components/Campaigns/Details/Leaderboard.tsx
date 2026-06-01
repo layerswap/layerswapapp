@@ -157,7 +157,7 @@ const LeaderboardItem: FC<{
                 <div>
                     <div className="text-sm font-bold text-primary-text leading-3">
                         {user?.address && network?.account_explorer_template && <Link target="_blank" className="hover:opacity-80" href={getExplorerUrl(network?.account_explorer_template, user?.address)}>
-                            {user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : addressInstance?.toShortString() || ''}
+                            {user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : addressInstance?.displayName() || ''}
                         </Link>}
                     </div>
                     <p className="mt-1 text-sm font-medium text-secondary-text leading-3">{truncateDecimals(user.amount, token?.precision)} {token?.symbol}</p>

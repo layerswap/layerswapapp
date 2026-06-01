@@ -1,5 +1,6 @@
 import { isValidAddress } from '@/lib/address/validator';
 import { addressFormat } from '@/lib/address/formatter';
+import { findSavedAddress, useAddressBookStore } from '@/stores/addressBookStore';
 
 export type AddressDisplayFormat = 'short' | 'ending' | 'full' | 'emphasized';
 
@@ -131,11 +132,25 @@ export class Address {
   }
 
   /**
-   * Format as "name (0x123...5678)", falling back to the short address when there's no name
-   * @param name - Optional saved/display name for this address
+   * The book name (or `undefined`) plus the short address. Use it when you need both —
+   * e.g. "name (address)" or to check if the address is saved.
    */
-  labeled(name?: string | null): string {
-    return name ? `${name} (${this.toShortString()})` : this.toShortString();
+  nameAndAddress(): { name: string | undefined; address: string } {
+    const name = findSavedAddress(
+      useAddressBookStore.getState().savedAddresses,
+      this._raw,
+      this._network,
+      this._providerName
+    )?.name;
+    return { name, address: this.toShortString() };
+  }
+
+  /**
+   * The book name, or the short address when there's none. Use it to show "name or address".
+   */
+  displayName(): string {
+    const { name, address } = this.nameAndAddress();
+    return name ?? address;
   }
 
   /**

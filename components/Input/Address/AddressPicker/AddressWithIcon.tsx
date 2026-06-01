@@ -4,7 +4,7 @@ import AddressIcon from "@/components/AddressIcon";
 import { Address, getExplorerUrl } from "@/lib/address";
 import { Copy, Check, ChevronDown, WalletIcon, Pencil, Link2, SquareArrowOutUpRight, Unplug, Info, Trash2, BookmarkPlus } from "lucide-react";
 import { Partner } from "@/Models/Partner";
-import { Network } from "@/Models/Network";
+import { Network, NetworkType } from "@/Models/Network";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components//shadcn/popover";
 import useCopyClipboard from "@/hooks/useCopyClipboard";
 import Link from "next/link";
@@ -175,8 +175,6 @@ type AddressDetailsPopoverProps = ExtendedAddressBaseProps
     & ({ network: Network, providerName?: string } | { network?: Network, providerName: string })
 
 const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, network, providerName, isForCurrency, children, onDisconnect, onRemove, showDetails = false, title, description, logo: Logo, onPopoverOpenChange, onTooltipOpenChange, shouldShowChevron = true, displayName: displayNameProp }) => {
-    const savedName = useAddressName(address, network)
-    const displayName = displayNameProp ?? savedName
     const [isCopied, setCopied] = useCopyClipboard()
     const [isPopoverOpen, setPopoverOpen] = useState(false)
     const [saving, setSaving] = useState(false)
@@ -187,15 +185,13 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
         onPopoverOpenChange?.(open)
     }
 
-    const addr = useMemo(() => {
-        if (network) {
-            return new Address(address, network, providerName)
-        }
-        else {
-            return new Address(address, null, providerName!)
-        }
-    }, [address, network, providerName]);
+    const addr = useMemo(() =>
+        new Address(address, network ?? null, providerName!),
+        [address, network, providerName]
+    );
 
+    const { name: resolvedName, address: shortAddress } = addr.nameAndAddress()
+    const displayName = displayNameProp ?? resolvedName
 
     const isAddressValid = useMemo(() => {
         if (network) {
@@ -204,7 +200,8 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
         return false
     }, [addr.full, network]);
 
-    const canSave = !isForCurrency && !savedName && !!network && isAddressValid
+    const saveNetworkType = network?.type ?? (providerName ? providerName.toLowerCase() as NetworkType : undefined)
+    const canSave = !isForCurrency && !resolvedName && !!saveNetworkType
 
     // Resolver for action buttons
     const getActionButtons = useCallback(() => {
@@ -259,7 +256,7 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
                                         children ??
                                         <div className="hover:text-secondary-text transition duration-200 flex gap-1 items-center cursor-pointer min-w-0">
                                             <p className={`${isForCurrency ? "text-xs self-end" : "text-sm"} block font-medium group-hover/addressItem:underline ${displayName ? 'min-w-0 max-w-[260px] truncate' : ''}`}>
-                                                {addr.labeled(displayName)}
+                                                {displayName ? `${displayName} (${shortAddress})` : shortAddress}
                                             </p>
                                             {shouldShowChevron ?
                                                 <ChevronDown className="invisible group-hover/addressItem:visible h-4 w-4 shrink-0" />
@@ -337,7 +334,7 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
                             ))}
                         </div>
                     )}
-                    {saving && network && <SaveToBookNameForm address={address} networkType={network.type} onDone={() => setSaving(false)} compact />}
+                    {saving && saveNetworkType && <SaveToBookNameForm address={address} networkType={saveNetworkType} onDone={() => setSaving(false)} compact />}
                 </PopoverContent>
             </Popover>
         </div>

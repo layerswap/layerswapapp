@@ -89,7 +89,7 @@ export const useAddressBookStore = create<AddressBookState>()(persist<AddressBoo
     }
 ))
 
-const findSavedAddress = (savedAddresses: SavedAddress[], address: string | undefined | null, network?: { name: string } | null, providerName?: string) => {
+export const findSavedAddress = (savedAddresses: SavedAddress[], address: string | undefined | null, network?: { name: string } | null, providerName?: string) => {
     if (!address) return undefined
     return savedAddresses.find(e => Address.equals(e.address, address, network, providerName))
 }
