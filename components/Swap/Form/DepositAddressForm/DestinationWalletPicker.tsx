@@ -9,6 +9,7 @@ import { useConnectModal } from "@/components/WalletModal";
 import { useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts";
 import AddressIcon from "@/components/AddressIcon";
 import { Address as AddressClass } from "@/lib/address";
+import { useAddressName } from "@/stores/addressBookStore";
 import VaulDrawer from "@/components/modal/vaulModal";
 import { WalletItem } from "@/components/Wallet/WalletsList";
 
@@ -89,7 +90,8 @@ const DestinationWalletPicker: FC<DestinationWalletPickerProps> = ({ address, de
     const WalletIcon = account?.icon;
     const walletName = account?.displayName?.split('-')[0] || 'Connected wallet';
     const addr = hasAddress && destination ? new AddressClass(address!, destination) : undefined;
-    const resolved = addr?.nameAndAddress();
+    const savedName = useAddressName(address, destination);
+    const shortAddress = addr?.toShortString();
 
     return (
         <>
@@ -114,10 +116,10 @@ const DestinationWalletPicker: FC<DestinationWalletPickerProps> = ({ address, de
                 </div>
                 <div className="ml-2 flex flex-col grow overflow-hidden min-w-0 text-left">
                     <p className={`text-base leading-5 font-medium truncate ${hasAddress ? 'text-primary-text' : 'text-secondary-text'}`}>
-                        {hasAddress ? addr?.displayName() : 'Select wallet'}
+                        {hasAddress ? (savedName ?? shortAddress) : 'Select wallet'}
                     </p>
                     <p className="text-secondary-text text-sm font-normal leading-4 truncate whitespace-nowrap">
-                        {hasAddress ? (resolved?.name ? resolved.address : walletName) : 'Pick destination wallet'}
+                        {hasAddress ? (savedName ? shortAddress : walletName) : 'Pick destination wallet'}
                     </p>
                 </div>
                 <span className="ml-auto px-2 pointer-events-none text-primary-text shrink-0">

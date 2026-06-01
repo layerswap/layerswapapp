@@ -89,7 +89,6 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
                             description={addressItem.wallet?.providerName}
                             logo={addressItem.wallet?.icon}
                             onRemove={addressItem.group === AddressGroup.ManualAdded ? onRemove : undefined}
-                            displayName={resolvedDisplayName}
                         />
                     ) : (
                         resolvedDisplayName
@@ -146,7 +145,6 @@ type ExtendedAddressBaseProps = {
     shouldShowChevron?: boolean
     onPopoverOpenChange?: (open: boolean) => void;
     onTooltipOpenChange?: (open: boolean) => void;
-    displayName?: string;
 }
 type ExtendedAddressProps = ExtendedAddressBaseProps
     & { network?: Network, providerName?: string }
@@ -163,18 +161,20 @@ const calculateMaxWidth = (balance: string | undefined) => {
     }
 };
 
-export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, providerName, isForCurrency, children, onDisconnect, onRemove, showDetails = false, title, description, logo: Logo, onPopoverOpenChange, onTooltipOpenChange, shouldShowChevron = true, displayName }) => {
+export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, providerName, isForCurrency, children, onDisconnect, onRemove, showDetails = false, title, description, logo: Logo, onPopoverOpenChange, onTooltipOpenChange, shouldShowChevron = true }) => {
+    const savedName = useAddressName(address, network, providerName)
     if (!network && !providerName) {
+        const short = shortenString(address)
         return <p className="text-sm block font-medium">
-            {displayName || shortenString(address)}
+            {savedName ? `${savedName} (${short})` : short}
         </p>
     }
-    return <AddressDetailsPopover address={address} network={network!} providerName={providerName!} isForCurrency={isForCurrency} onDisconnect={onDisconnect} onRemove={onRemove} showDetails={showDetails} title={title} description={description} logo={Logo} onPopoverOpenChange={onPopoverOpenChange} onTooltipOpenChange={onTooltipOpenChange} shouldShowChevron={shouldShowChevron} displayName={displayName}>{children}</AddressDetailsPopover>
+    return <AddressDetailsPopover address={address} network={network!} providerName={providerName!} isForCurrency={isForCurrency} onDisconnect={onDisconnect} onRemove={onRemove} showDetails={showDetails} title={title} description={description} logo={Logo} onPopoverOpenChange={onPopoverOpenChange} onTooltipOpenChange={onTooltipOpenChange} shouldShowChevron={shouldShowChevron}>{children}</AddressDetailsPopover>
 }
 type AddressDetailsPopoverProps = ExtendedAddressBaseProps
     & ({ network: Network, providerName?: string } | { network?: Network, providerName: string })
 
-const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, network, providerName, isForCurrency, children, onDisconnect, onRemove, showDetails = false, title, description, logo: Logo, onPopoverOpenChange, onTooltipOpenChange, shouldShowChevron = true, displayName: displayNameProp }) => {
+const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, network, providerName, isForCurrency, children, onDisconnect, onRemove, showDetails = false, title, description, logo: Logo, onPopoverOpenChange, onTooltipOpenChange, shouldShowChevron = true }) => {
     const [isCopied, setCopied] = useCopyClipboard()
     const [isPopoverOpen, setPopoverOpen] = useState(false)
     const [saving, setSaving] = useState(false)
@@ -190,8 +190,7 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
         [address, network, providerName]
     );
 
-    const { name: resolvedName, address: shortAddress } = addr.nameAndAddress()
-    const displayName = displayNameProp ?? resolvedName
+    const displayName = useAddressName(address, network, providerName)
 
     const isAddressValid = useMemo(() => {
         if (network) {
@@ -201,7 +200,7 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
     }, [addr.full, network]);
 
     const saveNetworkType = network?.type ?? (providerName ? providerName.toLowerCase() as NetworkType : undefined)
-    const canSave = !isForCurrency && !resolvedName && !!saveNetworkType
+    const canSave = !isForCurrency && !displayName && !!saveNetworkType
 
     // Resolver for action buttons
     const getActionButtons = useCallback(() => {
@@ -256,7 +255,7 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
                                         children ??
                                         <div className="hover:text-secondary-text transition duration-200 flex gap-1 items-center cursor-pointer min-w-0">
                                             <p className={`${isForCurrency ? "text-xs self-end" : "text-sm"} block font-medium group-hover/addressItem:underline ${displayName ? 'min-w-0 max-w-[260px] truncate' : ''}`}>
-                                                {displayName ? `${displayName} (${shortAddress})` : shortAddress}
+                                                {addr.labeledAddress()}
                                             </p>
                                             {shouldShowChevron ?
                                                 <ChevronDown className="invisible group-hover/addressItem:visible h-4 w-4 shrink-0" />

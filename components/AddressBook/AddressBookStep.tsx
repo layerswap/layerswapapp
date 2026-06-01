@@ -131,7 +131,7 @@ const AddressBookStep: FC = () => {
                                 </div>
                                 <div className="min-w-0">
                                     <p className="text-sm font-medium text-primary-text truncate">{entry.name}</p>
-                                    <ExtendedAddress address={raw} providerName={entry.networkType} shouldShowChevron={false} displayName="">
+                                    <ExtendedAddress address={raw} providerName={entry.networkType} shouldShowChevron={false}>
                                         <p className="text-xs text-secondary-text truncate cursor-pointer hover:text-primary-text hover:underline transition w-fit">
                                             {shortenString(raw)}
                                         </p>

@@ -94,9 +94,12 @@ export const findSavedAddress = (savedAddresses: SavedAddress[], address: string
     return savedAddresses.find(e => Address.equals(e.address, address, network, providerName))
 }
 
-/** Reactive: component re-renders when the resolved name for `address` changes. */
-export const useAddressName = (address: string | undefined | null, network?: { name: string } | null, providerName?: string) =>
-    useAddressBookStore(s => findSavedAddress(s.savedAddresses, address, network, providerName)?.name)
+/** Reactive saved name. With `labeled`, falls back to the short address when there's no name. */
+export const useAddressName = (address: string | undefined | null, network?: { name: string } | null, providerName?: string, labeled = false) => {
+    const name = useAddressBookStore(s => findSavedAddress(s.savedAddresses, address, network, providerName)?.name)
+    if (!labeled || name || !address) return name
+    return new Address(address, network ?? null, providerName!).toShortString()
+}
 
 /** Reactive: name-resolving finder bound to the current book snapshot. Use inside loops/memos. */
 export const useAddressNameFinder = () => {

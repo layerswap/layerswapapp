@@ -132,25 +132,31 @@ export class Address {
   }
 
   /**
-   * The book name (or `undefined`) plus the short address. Use it when you need both —
-   * e.g. "name (address)" or to check if the address is saved.
+   * The book name, or the short address when there's none. Use it to show "name or address".
    */
-  nameAndAddress(): { name: string | undefined; address: string } {
+  displayName(): string {
     const name = findSavedAddress(
       useAddressBookStore.getState().savedAddresses,
       this._raw,
       this._network,
       this._providerName
     )?.name;
-    return { name, address: this.toShortString() };
+    return name ?? this.toShortString();
   }
 
   /**
-   * The book name, or the short address when there's none. Use it to show "name or address".
+   * "name (short address)" when the address is saved, otherwise just the short address.
+   * Use it for a single-line label that pairs the name with its address.
    */
-  displayName(): string {
-    const { name, address } = this.nameAndAddress();
-    return name ?? address;
+  labeledAddress(): string {
+    const name = findSavedAddress(
+      useAddressBookStore.getState().savedAddresses,
+      this._raw,
+      this._network,
+      this._providerName
+    )?.name;
+    const short = this.toShortString();
+    return name ? `${name} (${short})` : short;
   }
 
   /**
