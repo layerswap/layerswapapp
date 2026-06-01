@@ -14,6 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/pop
 import FilledCheck from "@/components/icons/FilledCheck";
 import clsx from "clsx";
 import { useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts";
+import { useAddressName } from "@/stores/addressBookStore";
 
 const SourceWalletPicker: FC = () => {
     const [openModal, setOpenModal] = useState<boolean>(false)
@@ -29,7 +30,7 @@ const SourceWalletPicker: FC = () => {
     const { provider } = useWallet(values.from, "withdrawal")
     const selectedSourceAccount = useSelectedAccount("from", values.from?.name);
     const sourceAddress = selectedSourceAccount?.address && values.from ? new Address(selectedSourceAccount.address, values.from) : undefined
-    const sourceLabel = sourceAddress?.displayName()
+    const sourceName = useAddressName(selectedSourceAccount?.address, values.from)
 
     const { selectedConnector } = useConnectModal()
     const availableWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
@@ -83,7 +84,7 @@ const SourceWalletPicker: FC = () => {
                             <div className="inline-flex items-center relative px-0.5">
                                 <selectedSourceAccount.icon className="w-4 h-4" />
                             </div>
-                            <div className="text-secondary-text truncate max-w-[90px]">{sourceLabel}</div>
+                            <div className="text-secondary-text truncate max-w-[90px]">{sourceName ?? sourceAddress?.toShortString()}</div>
                             <div className="w-4 h-4 items-center flex text-secondary-text">
                                 <ChevronDown className="h-4 w-4" aria-hidden="true" />
                             </div>
