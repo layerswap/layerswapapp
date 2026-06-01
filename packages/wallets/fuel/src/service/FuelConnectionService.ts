@@ -15,6 +15,11 @@ import { useFuelStore } from './fuelStore'
 export class FuelConnectionService {
     private _networks: NetworkWithTokens[] = []
     private _networksKey = ''
+    // `connectWallet` mutates the module-global `BAKO_STATE.{state.last_req,
+    // period_durtion}` while connecting. Rapid double-clicks or a retry firing
+    // while a connect is still in flight would interleave those writes. Chain
+    // connects through this promise so they run one-at-a-time.
+    private _connectQueue: Promise<unknown> = Promise.resolve()
 
     setNetworks(networks: NetworkWithTokens[]): void {
         const key = networks.map(n => n.name).join('|')
@@ -86,7 +91,17 @@ export class FuelConnectionService {
         }
     }
 
-    async connectWallet({ connector }: { connector: InternalConnector }): Promise<Wallet | undefined> {
+    connectWallet({ connector }: { connector: InternalConnector }): Promise<Wallet | undefined> {
+        // Serialize against any in-flight connect (see `_connectQueue`). The
+        // `.then(run, run)` runs `run` whether the prior connect resolved or
+        // rejected, so one failure doesn't wedge the queue.
+        const run = () => this.doConnectWallet({ connector })
+        const result = this._connectQueue.then(run, run)
+        this._connectQueue = result.catch(() => { })
+        return result
+    }
+
+    private async doConnectWallet({ connector }: { connector: InternalConnector }): Promise<Wallet | undefined> {
         const attemptConnection = async (isRetry: boolean = false): Promise<Wallet | undefined> => {
             try {
                 const fuelConnector = useFuelStore.getState().connectors.find(w => w.name === connector.name)

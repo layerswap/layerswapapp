@@ -1,3 +1,11 @@
+// Intentional dependency on @layerswap/wallet-evm's PUBLIC api. Paradex L1
+// authorization needs a real ethers signer bound to the same wagmi config the
+// EVM provider populated — something the abstract WalletConnectionProvider
+// can't expose. wallet-evm is declared as a peerDependency precisely so this
+// resolves to the single shared module instance (and thus the same
+// `getEvmConfig()` singleton); do NOT make it a bundled dependency or the
+// signer would bind to a different, empty config. Keep usage limited to these
+// documented, package-root exports.
 import { getEthersSigner, getEvmConfig } from '@layerswap/wallet-evm'
 import { KnownInternalNames } from '@layerswap/widget/internal'
 import { ActionMessageType, type Network, type TransferProvider, type TransferProps, type Wallet } from '@layerswap/widget/types'
@@ -47,6 +55,7 @@ export function createParadexTransfer(): TransferProvider {
 
         async executeTransfer(params: TransferProps, wallet?: Wallet): Promise<string> {
             const selectedWallet = wallet ?? params.selectedWallet
+            if (!selectedWallet) throw new Error('No wallet selected')
 
             try {
                 const client = await resolveParadexAccount(selectedWallet)

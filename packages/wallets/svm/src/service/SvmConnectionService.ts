@@ -206,6 +206,10 @@ export class SvmConnectionService {
     }
 
     async connectWallet({ connector }: { connector: WalletModalConnector }): Promise<Wallet | undefined> {
+        // `unsubscribeDisplayUri` is assigned only inside the WalletConnect
+        // branch below (after every early throw) and is cleared in both the
+        // inner `finally` around connect() and the outer `finally`, so no early
+        // exit can leak the display-uri listener.
         let unsubscribeDisplayUri: (() => void) | undefined
         const registry = getRegistryEntry(connector)
         const isMobilePlatform = this._deps.isMobilePlatform ?? false

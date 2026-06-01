@@ -262,7 +262,12 @@ const Connect: FC<{ connectFn?: () => Promise<Wallet | undefined | void>; setMou
     const { connect } = useConnectModal()
     const { providers } = useWallet()
 
-    const isProvidersReady = providers.every(p => typeof p.ready === 'boolean' ? p.ready : true)
+    // Unloaded descriptor stubs report `ready: false`, but opening the modal is
+    // exactly what triggers their load (`loadAll` on modal open). Gating the
+    // connect button on stub readiness would deadlock: the disabled button can
+    // never open the modal that would make the stubs ready. So only real
+    // providers that are still initializing keep the button disabled.
+    const isProvidersReady = providers.every(p => p.isStub || (typeof p.ready === 'boolean' ? p.ready : true))
 
     const connectWallet = async () => {
         setMountWalletPortal && setMountWalletPortal(true)

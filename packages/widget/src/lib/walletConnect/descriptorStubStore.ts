@@ -25,5 +25,6 @@ export function createDescriptorStubStore(
         activeWallet: undefined,
         connectWallet: () => undefined,
         ready: false,
+        isStub: true,
     }))
 }

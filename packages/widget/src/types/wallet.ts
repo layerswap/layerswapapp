@@ -185,6 +185,15 @@ export type WalletConnectionProvider = {
     unsupportedPlatforms?: string[],
     hideFromList?: boolean,
     ready: boolean,
+    /**
+     * True only for the synthetic stub served while a {@link WalletProviderDescriptor}
+     * has not loaded its real provider yet. Consumers MUST NOT gate connect/modal
+     * affordances on `ready === false` for a stub — opening the modal is what
+     * triggers the descriptor load. Use this flag to tell "not loaded yet"
+     * (selectable, should trigger a load) apart from "real provider still
+     * initializing" (show a spinner, keep disabled).
+     */
+    isStub?: boolean,
 
     multiStepHandlers?: MultiStepHandler[],
 }

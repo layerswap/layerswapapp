@@ -35,7 +35,7 @@ export function createEVMTransferProvider(
             } catch (error) {
                 const transactionResolvedError = resolveError(error as BaseError)
                 const e = new Error()
-                e.message = error.message
+                e.message = error instanceof Error ? error.message : String(error)
 
                 if (transactionResolvedError && transactionResolvedError === "insufficient_funds") {
                     e.name = ActionMessageType.InsufficientFunds

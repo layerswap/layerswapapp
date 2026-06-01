@@ -89,6 +89,16 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
     return res
 }
 
+// When `isNotAvailableCondition` is set, `resolveProvider` builds a fresh
+// wrapper object (and a fresh `requestAdditionalConnectors` closure) on every
+// call. Because `useWallet` recomputes whenever ANY provider's snapshot moves
+// (the snapshot array changes identity even if the resolved provider didn't),
+// that would hand every consumer a new `provider` reference on unrelated
+// updates and cascade re-renders. Cache the wrapper keyed weakly by the base
+// snapshot object so the same (snapshot, network, purpose) returns a stable
+// reference; a real state change produces a new snapshot → new cache entry.
+const resolvedProviderCache = new WeakMap<WalletConnectionProvider, Map<string, WalletConnectionProvider>>()
+
 const resolveProvider = (network: Network | undefined, walletProviders: WalletConnectionProvider[], purpose?: WalletPurpose) => {
     if (!purpose || !network) return
 
@@ -106,6 +116,11 @@ const resolveProvider = (network: Network | undefined, walletProviders: WalletCo
     }
 
     if (provider?.isNotAvailableCondition && purpose) {
+        const cacheKey = `${network.name}|${purpose}`
+        const cachedByKey = resolvedProviderCache.get(provider)
+        const cached = cachedByKey?.get(cacheKey)
+        if (cached) return cached
+
         const availableConnectors = provider.availableConnectors?.filter(connector => (provider.isNotAvailableCondition && network?.name) ? !provider.isNotAvailableCondition(connector.id, network?.name, purpose) : true)
         const additionalConnectors = provider.additionalConnectors?.filter(connector => (provider.isNotAvailableCondition && network?.name) ? !provider.isNotAvailableCondition(connector.id, network?.name, purpose) : true)
         const requestAdditionalConnectors = provider.requestAdditionalConnectors
@@ -137,6 +152,9 @@ const resolveProvider = (network: Network | undefined, walletProviders: WalletCo
             additionalConnectors,
             requestAdditionalConnectors,
         }
+        const byKey = cachedByKey ?? new Map<string, WalletConnectionProvider>()
+        byKey.set(cacheKey, resolvedProvider)
+        if (!cachedByKey) resolvedProviderCache.set(provider, byKey)
         return resolvedProvider
     }
 

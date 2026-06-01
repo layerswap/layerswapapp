@@ -45,7 +45,7 @@ export function createTonTransfer(): TransferProvider {
                 throw new Error("No transaction BOC returned")
             } catch (error) {
                 const e = new Error()
-                e.message = error.message
+                e.message = error instanceof Error ? error.message : String(error)
 
                 if (typeof error === 'string' && error?.includes('Reject request')) {
                     e.name = ActionMessageType.TransactionRejected

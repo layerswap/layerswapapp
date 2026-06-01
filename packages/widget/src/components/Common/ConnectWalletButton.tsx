@@ -17,7 +17,13 @@ const ConnectWalletButton: FC<Props> = ({ provider, onConnect, descriptionText, 
     const [isLoading, setIsLoading] = useState(false)
     const { connect } = useConnectModal()
     const { loadAll } = useWalletDescriptorLoader()
-    const isProviderReady = typeof provider?.ready === 'boolean' ? provider.ready : true
+    // A descriptor stub isn't "initializing" — its SDK simply hasn't been
+    // requested yet. Treat it as ready-to-click so the button stays enabled
+    // (clicking opens the modal, which triggers the descriptor load) and so
+    // the hover/focus prefetch below can actually fire — disabled buttons
+    // suppress pointer events in most browsers.
+    const isStub = provider?.isStub === true
+    const isProviderReady = isStub || (typeof provider?.ready === 'boolean' ? provider.ready : true)
 
     // Kick off the descriptor SDK download as soon as the user shows
     // intent (mouse-enter or keyboard-focus) on the button. The await on
@@ -32,6 +38,16 @@ const ConnectWalletButton: FC<Props> = ({ provider, onConnect, descriptionText, 
     }, [loadAll])
 
     const handleConnect = async () => {
+        if (isStub) {
+            // Descriptor not loaded yet: kick off the SDK download and open the
+            // generic modal. Once the real provider replaces the stub in the
+            // registry, a re-render hands this button the real provider and the
+            // next click connects it directly.
+            void loadAll()
+            const result = await connect()
+            if (onConnect && result) onConnect(result)
+            return
+        }
         if (!isProviderReady) return
         setIsLoading(true)
         const result = await connect(provider)

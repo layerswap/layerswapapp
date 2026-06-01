@@ -96,6 +96,8 @@ export class StarknetConnectionService {
     private _deps: RuntimeDeps = {}
     private _restoreTimer: number | undefined
     private _restoringStoredWallets = false
+    private _restoreAttempts = 0
+    private readonly _maxRestoreAttempts = 20
 
     setNetworks(networks: NetworkWithTokens[]): void {
         const key = networks.map(n => n.name).join('|')
@@ -135,12 +137,33 @@ export class StarknetConnectionService {
         )
     }
 
+    /**
+     * Drops persisted Starknet accounts that we've repeatedly failed to
+     * resolve back to a connected wallet (e.g. the user switched accounts in
+     * the wallet, or the stored connector is no longer available). Without
+     * this they would stay "pending" forever and keep the retry loop alive.
+     */
+    private clearStalePendingWallets(): void {
+        const state = useStarknetStore.getState()
+        const connectedAddresses = new Set(state.connectedWallets.map(wallet => wallet.address.toLowerCase()))
+        const stale = Object.values(state.starknetAccounts || {}).filter(
+            address => !connectedAddresses.has(address.toLowerCase()),
+        )
+        for (const address of stale) state.removeAccount(address)
+    }
+
     requestStoredWalletHydration(): void {
         if (typeof window === 'undefined' || this._restoreTimer || this._restoringStoredWallets) return
 
+        // Fresh trigger (e.g. networks just changed): allow a new bounded run.
+        this._restoreAttempts = 0
+
         const attemptHydration = async (): Promise<void> => {
             this._restoreTimer = undefined
-            if (!this.hasPendingStoredWallets()) return
+            if (!this.hasPendingStoredWallets()) {
+                this._restoreAttempts = 0
+                return
+            }
 
             if (this.getStarknetNetwork()) {
                 this._restoringStoredWallets = true
@@ -151,11 +174,24 @@ export class StarknetConnectionService {
                 }
             }
 
-            if (this.hasPendingStoredWallets()) {
-                this._restoreTimer = window.setTimeout(() => {
-                    void attemptHydration()
-                }, 500)
+            if (!this.hasPendingStoredWallets()) {
+                this._restoreAttempts = 0
+                return
             }
+
+            // Still pending after this attempt. Bound the retry so a stale or
+            // unresolvable persisted account can't wake the page every 500ms
+            // for its entire lifetime. After the cap, drop the stale entries.
+            this._restoreAttempts += 1
+            if (this._restoreAttempts >= this._maxRestoreAttempts) {
+                this.clearStalePendingWallets()
+                this._restoreAttempts = 0
+                return
+            }
+
+            this._restoreTimer = window.setTimeout(() => {
+                void attemptHydration()
+            }, 500)
         }
 
         this._restoreTimer = window.setTimeout(() => {

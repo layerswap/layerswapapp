@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, lazy, useContext, useEffect, useMemo, useRef } from "react";
+import React, { createContext, lazy, Suspense, useContext, useEffect, useMemo, useRef } from "react";
 import type { StoreApi } from "zustand/vanilla";
 import { WalletConnectionProvider, WalletConnectionStore, WalletProvider, WalletProviderDescriptor, WalletWrapper, isWalletProviderDescriptor } from "@/types";
 import { useSettingsState } from "./settings";
@@ -16,6 +16,14 @@ import { useWalletDescriptorLoader } from "@/lib/walletConnect/walletDescriptorL
 import clsx from "clsx";
 
 const ConnectorsList = lazy(() => import("@/components/Wallet/WalletModal/ConnectorsList"));
+
+// Shown while the connectors chunk loads on first modal open, so a slow chunk
+// fetch surfaces a spinner instead of falling through to the error boundary.
+const ConnectorsListFallback: React.FC = () => (
+    <div className="flex h-full w-full items-center justify-center py-10">
+        <div className="loader text-[3px]!" />
+    </div>
+);
 
 type RegistryEntry = { id: string; store: StoreApi<WalletConnectionProvider> }
 
@@ -155,7 +163,9 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
                         <div className="flex flex-col gap-3 h-full">
                             {!selectedConnector && !selectedMultiChainConnector ? topContent : null}
                             <div className="flex-1 min-h-0">
-                                <ConnectorsList onFinish={onFinish} />
+                                <Suspense fallback={<ConnectorsListFallback />}>
+                                    <ConnectorsList onFinish={onFinish} />
+                                </Suspense>
                             </div>
                         </div>
                     ) : null}
