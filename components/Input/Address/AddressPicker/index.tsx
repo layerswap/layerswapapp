@@ -28,7 +28,6 @@ export type AddressItem = {
     group: AddressGroup,
     wallet?: Wallet,
     providerName?: string,
-    name?: string,
 }
 
 export type AddressTriggerProps = {
@@ -123,7 +122,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         () => destination
             ? savedAddresses
                 .filter(e => !((!e.networkType || e.networkType === destination.type) && AddressClass.isValid(e.address, destination)))
-                .map(e => ({ address: e.address, group: AddressGroup.ManualAdded, name: e.name }))
+                .map(e => ({ address: e.address, group: AddressGroup.ManualAdded }))
             : [],
         [savedAddresses, destination]
     )
@@ -337,7 +336,6 @@ const resolveAddressGroups = ({
                 address: entry.address,
                 group: AddressGroup.ManualAdded,
                 providerName,
-                name: entry.name,
             })
         }
     })
@@ -355,9 +353,6 @@ const getUniqueAddresses = (addresses: AddressItem[], destination: NetworkRoute)
         const normalized = new AddressClass(a.address, destination).normalized;
         if (!normalizedMap.has(normalized)) {
             normalizedMap.set(normalized, a);
-        } else if (a.name && !normalizedMap.get(normalized)!.name) {
-            const existing = normalizedMap.get(normalized)!
-            normalizedMap.set(normalized, { ...existing, name: a.name })
         }
     });
 

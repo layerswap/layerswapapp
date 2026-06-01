@@ -28,8 +28,7 @@ type Props = {
 const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, onRemove }) => {
 
     const maxWalletNameWidth = calculateMaxWidth(String(balance?.amount));
-    const bookName = useAddressName(addressItem.address, network)
-    const resolvedDisplayName = addressItem.name ?? bookName
+    const resolvedDisplayName = useAddressName(addressItem.address, network)
 
     const descriptions = [
         {

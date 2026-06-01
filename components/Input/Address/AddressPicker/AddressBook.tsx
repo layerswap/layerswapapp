@@ -8,6 +8,7 @@ import AddressWithIcon from "./AddressWithIcon";
 import { Partner } from "@/Models/Partner";
 import { Wallet } from "@/Models/WalletProvider";
 import { BookOpen } from "lucide-react";
+import { useAddressNameFinder } from "@/stores/addressBookStore";
 
 type AddressBookProps = {
     addressBook: AddressItem[];
@@ -19,6 +20,7 @@ type AddressBookProps = {
 }
 
 const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, destination, destination_address, partner, onRemove }) => {
+    const resolveName = useAddressNameFinder()
 
     return (
         <div className="text-left mt-1!">
@@ -36,7 +38,8 @@ const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, desti
                         <div className="w-full flex flex-col items-stretch gap-2">
                             {addressBook.map(item => {
                                 const isSelected = Address.equals(item.address, destination_address!, destination!)
-                                const handleRemove = onRemove && item.group === AddressGroup.ManualAdded ? () => onRemove(item.address, !!item.name) : undefined
+                                const isBookEntry = !!resolveName(item.address, destination)
+                                const handleRemove = onRemove && item.group === AddressGroup.ManualAdded ? () => onRemove(item.address, isBookEntry) : undefined
                                 return (
                                     <CommandItem key={item.address} onSelect={() => onSelectAddress(item.address, item.wallet)} className={`group/addressItem !px-3 !py-3 rounded-lg hover:bg-secondary-600 w-full transition duration-200 bg-secondary-500 ${isSelected && 'bg-secondary-400'}`}>
                                         <div className={`flex items-center justify-between w-full`}>
