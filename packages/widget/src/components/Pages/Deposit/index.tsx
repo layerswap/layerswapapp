@@ -1,6 +1,7 @@
 "use client";
 import { FC, useCallback, useMemo } from "react";
 import { Formik } from "formik";
+import clsx from "clsx";
 import toast from "react-hot-toast";
 import { SwapDataProvider, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
@@ -9,12 +10,15 @@ import { ApiError, LSAPIKnownErrorCode } from "@/Models/ApiError";
 import { Partner } from "@/Models/Partner";
 import useWallet from "@/hooks/useWallet";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/shadcn/dialog";
 import { DepositStep, DepositStepProvider, useDepositStep } from "./depositStepContext";
 import DepositHeader from "./DepositHeader";
 import MethodPicker from "./Options/MethodPicker";
 import WalletFlow from "./Wallet";
 import TransferCrypto from "./TransferCrypto";
 import { SupportedDestination, useResolvedDestinations } from "./DestinationTokenPicker";
+
+export type DepositMode = "inline" | "button";
 
 export type DepositProps = {
     partner?: Partner;
@@ -24,6 +28,13 @@ export type DepositProps = {
     /** Recipient address on the destination network. Required — the deposit
      * widget never asks the end user for this. */
     destinationAddress: string;
+    /** "inline" (default) renders the widget directly. "button" renders a Pay
+     * button that opens the widget inside a dialog. */
+    mode?: DepositMode;
+    /** Label for the trigger button when mode="button". Defaults to "Pay". */
+    buttonLabel?: string;
+    /** Extra className applied to the trigger button when mode="button". */
+    buttonClassName?: string;
 };
 
 const StepRouter: FC<{ step: DepositStep; partner?: Partner; destinationAddress: string }> = ({
@@ -116,17 +127,39 @@ const DepositInner: FC<DepositProps> = ({ partner, destinations, destinationAddr
     );
 };
 
-export const Deposit: FC<DepositProps> = ({ partner, destinations, destinationAddress }) => {
-    // `id="widget"` is required because the shared route-picker modal
-    // (components/Modal/modalWithoutAnimation.tsx) portals into the element
-    // with that id. Without it the picker silently no-ops.
-    return (
-        <div id="widget" className="relative w-full flex flex-col gap-4 p-4 sm:p-5 bg-secondary-700 rounded-2xl overflow-hidden has-openpicker:min-h-[675px]">
-            <SwapDataProvider>
-                <DepositInner partner={partner} destinations={destinations} destinationAddress={destinationAddress} />
-            </SwapDataProvider>
-        </div>
-    );
+// `id="widget"` is required because the shared route-picker modal
+// (components/Modal/modalWithoutAnimation.tsx) portals into the element
+// with that id. Without it the picker silently no-ops.
+const DepositCard: FC<Pick<DepositProps, "partner" | "destinations" | "destinationAddress">> = ({ partner, destinations, destinationAddress }) => (
+    <div id="widget" className="relative w-full flex flex-col gap-4 p-4 sm:p-5 bg-secondary-700 rounded-2xl overflow-hidden has-openpicker:min-h-[675px]">
+        <SwapDataProvider>
+            <DepositInner partner={partner} destinations={destinations} destinationAddress={destinationAddress} />
+        </SwapDataProvider>
+    </div>
+);
+
+export const Deposit: FC<DepositProps> = ({ mode = "inline", buttonLabel = "Deposit", buttonClassName, partner, destinations, destinationAddress }) => {
+    if (mode === "button") {
+        return (
+            <Dialog>
+                <DialogTrigger asChild>
+                    <button
+                        type="button"
+                        className={clsx(
+                            "navigation-focus-ring-text-bold-lg enabled:active:animate-press-down bg-primary-500 text-primary-buttonTextColor font-medium rounded-full px-6 py-2 hover:brightness-110 transition duration-200 ease-in-out focus:outline-none",
+                            buttonClassName,
+                        )}
+                    >
+                        {buttonLabel}
+                    </button>
+                </DialogTrigger>
+                <DialogContent className="!p-0 !bg-transparent !ring-0 !gap-0 sm:!max-w-md">
+                    <DepositCard partner={partner} destinations={destinations} destinationAddress={destinationAddress} />
+                </DialogContent>
+            </Dialog>
+        );
+    }
+    return <DepositCard partner={partner} destinations={destinations} destinationAddress={destinationAddress} />;
 };
 
 export default Deposit;

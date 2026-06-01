@@ -76,6 +76,7 @@
     "@tanstack/virtual-core": "^3.13.12",
     "@uidotdev/usehooks": "^2.4.1",
     "axios": "catalog:",
+    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^0.2.0",
     "color": "4.2.3",
