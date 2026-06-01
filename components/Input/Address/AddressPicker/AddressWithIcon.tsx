@@ -162,11 +162,10 @@ const calculateMaxWidth = (balance: string | undefined) => {
 };
 
 export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, providerName, isForCurrency, children, onDisconnect, onRemove, showDetails = false, title, description, logo: Logo, onPopoverOpenChange, onTooltipOpenChange, shouldShowChevron = true }) => {
-    const savedName = useAddressName(address, network, providerName)
     if (!network && !providerName) {
         const short = shortenString(address)
-        return <p className="text-sm block font-medium">
-            {savedName ? `${savedName} (${short})` : short}
+        return <p className="text-sm block font-medium text-secondary-text">
+            {short}
         </p>
     }
     return <AddressDetailsPopover address={address} network={network!} providerName={providerName!} isForCurrency={isForCurrency} onDisconnect={onDisconnect} onRemove={onRemove} showDetails={showDetails} title={title} description={description} logo={Logo} onPopoverOpenChange={onPopoverOpenChange} onTooltipOpenChange={onTooltipOpenChange} shouldShowChevron={shouldShowChevron}>{children}</AddressDetailsPopover>
