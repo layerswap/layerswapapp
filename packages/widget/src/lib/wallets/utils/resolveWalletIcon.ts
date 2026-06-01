@@ -1,4 +1,5 @@
 import { InternalConnector } from "@/types"
+import { normalizeIconSrc } from "./knownConnectorIcons"
 
 /**
  * Resolve a wallet connector's icon to a string URL / data URI for use as
@@ -7,13 +8,15 @@ import { InternalConnector } from "@/types"
  * in that case.
  *
  * Historically this returned a React component. After the icon-string
- * migration, it's a thin passthrough.
+ * migration, it's a thin passthrough that also normalizes raw inline SVG
+ * markup (which some adapters expose) into a `data:` URI — see
+ * `normalizeIconSrc`.
  */
 export const resolveWalletConnectorIcon = (
     { connector, iconUrl }: { connector?: InternalConnector, address?: string, iconUrl?: string },
-): string | undefined => connector?.icon || iconUrl || undefined
+): string | undefined => normalizeIconSrc(connector?.icon || iconUrl || undefined)
 
 export const walletIconResolver = (
     _address: string | undefined,
     iconUrl: string | undefined,
-): string | undefined => iconUrl || undefined
+): string | undefined => normalizeIconSrc(iconUrl || undefined)

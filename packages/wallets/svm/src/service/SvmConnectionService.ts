@@ -104,7 +104,7 @@ export class SvmConnectionService {
             installed.push({
                 name: wallet.name.trim(),
                 id: wallet.name.trim(),
-                icon: wallet.icon,
+                icon: resolveSolanaWalletConnectorIcon({ connector: wallet.name, iconUrl: wallet.icon }),
                 type: isInstalled ? 'injected' : 'other',
                 installUrl: wallet.url,
                 hasBrowserExtension: !isWcAdapter,

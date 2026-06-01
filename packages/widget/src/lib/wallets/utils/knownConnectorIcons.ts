@@ -84,6 +84,27 @@ export function getKnownConnectorIconBase64(id: string | undefined): string | un
 }
 
 /**
+ * Normalize an icon value into something usable as an `<img src>`.
+ *
+ * Some wallet adapters — notably Wallet Standard wallets surfaced for Solana
+ * (e.g. MetaMask, Backpack) — expose `icon` as raw inline SVG markup instead
+ * of the spec-required `data:` URI. Handed straight to an `<img src>` the
+ * browser treats the markup as a relative URL and fires a bogus request to
+ * `/<svg ...>`. Wrap raw SVG/XML markup into a data URI; pass anything that
+ * already looks like a URL (`data:`, `http(s):`, `blob:`, a path) through
+ * untouched.
+ */
+export function normalizeIconSrc(icon: string | undefined): string | undefined {
+    if (!icon) return undefined
+    const trimmed = icon.trim()
+    if (trimmed.startsWith('<svg') || trimmed.startsWith('<?xml')) {
+        const base64 = btoa(encodeURIComponent(trimmed).replace(/%([0-9A-F]{2})/g, (_, p1) => String.fromCharCode(parseInt(p1, 16))))
+        return `data:image/svg+xml;base64,${base64}`
+    }
+    return icon
+}
+
+/**
  * Resolve a wallet icon by trying, in order: an explicit URL, the known
  * connector overrides, then undefined (widget falls back to a generative
  * AddressIcon based on the wallet address).
@@ -92,6 +113,6 @@ export function resolveWalletIconString(opts: {
     id?: string
     iconUrl?: string
 }): string | undefined {
-    if (opts.iconUrl) return opts.iconUrl
+    if (opts.iconUrl) return normalizeIconSrc(opts.iconUrl)
     return getKnownConnectorIconBase64(opts.id)
 }
