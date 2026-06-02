@@ -1,5 +1,6 @@
-import { FC, ReactNode, useState } from 'react'
+import { FC, useState } from 'react'
 import clsx from 'clsx'
+import { X } from 'lucide-react'
 import { useAddressBookStore, NAME_MAX, COUNTER_SHOW_AT } from '@/stores/addressBookStore'
 import { NetworkType } from '@/Models/Network'
 
@@ -36,54 +37,59 @@ const AddressBookEntryForm: FC<AddressBookEntryFormProps> = ({ initial, onClose 
         onClose()
     }
 
+    const onKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Escape') { e.preventDefault(); onClose() }
+    }
+
     return (
-        <form onSubmit={submit} className="flex flex-col h-full">
-            <div className="flex flex-col gap-2">
-                <Field
-                    label="Name"
-                    hint={trimmedName.length > COUNTER_SHOW_AT && (
-                        <span className={clsx('text-xs tabular-nums', trimmedName.length > NAME_MAX ? 'text-error-foreground' : 'text-secondary-text')}>
+        <form onSubmit={submit} onKeyDown={onKeyDown} className="flex items-start gap-2 min-w-0 w-full">
+            <div className="flex flex-col gap-1.5 min-w-0 flex-1">
+                <div className="relative w-full">
+                    <input
+                        type="text"
+                        autoFocus
+                        value={name}
+                        onChange={e => setName(e.target.value)}
+                        placeholder="Name this address"
+                        autoComplete="off"
+                        className="w-full h-9 pl-3 pr-14 rounded-lg text-sm bg-secondary-300 border border-transparent text-primary-text placeholder:text-secondary-text focus:border-primary focus:ring-0 focus:outline-hidden"
+                    />
+                    {trimmedName.length > COUNTER_SHOW_AT && (
+                        <span className={clsx('absolute right-3 top-1/2 -translate-y-1/2 text-xs tabular-nums', trimmedName.length > NAME_MAX ? 'text-error-foreground' : 'text-secondary-text')}>
                             {trimmedName.length} / {NAME_MAX}
                         </span>
                     )}
-                >
-                    <input
-                        type="text"
-                        value={name}
-                        onChange={e => setName(e.target.value)}
-                        placeholder="My Layerswap wallet…"
-                        autoComplete="off"
-                        className="w-full h-14 bg-transparent border-0 outline-none text-primary-text placeholder:text-secondary-text text-[22px] font-normal leading-7 focus:ring-0 p-0"
-                    />
-                </Field>
-                <Field label="Address">
-                    <input
-                        type="text"
-                        value={address}
-                        onChange={e => setAddress(e.target.value.replace(/\s+/g, ''))}
-                        placeholder="0x…"
-                        autoCorrect="off"
-                        autoComplete="off"
-                        spellCheck={false}
-                        className="w-full h-14 bg-transparent border-0 outline-none text-primary-text placeholder:text-secondary-text text-[22px] leading-7 focus:ring-0 p-0"
-                    />
-                </Field>
+                </div>
+                <input
+                    type="text"
+                    value={address}
+                    onChange={e => setAddress(e.target.value.replace(/\s+/g, ''))}
+                    placeholder="0x…"
+                    autoCorrect="off"
+                    autoComplete="off"
+                    spellCheck={false}
+                    className="w-full h-9 px-3 rounded-lg text-sm bg-secondary-300 border border-transparent text-primary-text placeholder:text-secondary-text focus:border-primary focus:ring-0 focus:outline-hidden truncate"
+                />
             </div>
-            <button type="submit" disabled={!canSubmit} className="mt-2 w-full h-12 rounded-xl text-base font-medium bg-primary text-primary-buttonTextColor hover:brightness-110 disabled:bg-secondary-300 disabled:text-secondary-text disabled:cursor-not-allowed transition">
-                Save
-            </button>
+            <div className="flex items-center gap-1.5 shrink-0">
+                <button
+                    type="submit"
+                    disabled={!canSubmit}
+                    className="h-9 px-3 rounded-lg text-sm font-medium bg-primary text-primary-buttonTextColor hover:brightness-110 disabled:bg-secondary-300 disabled:text-secondary-text disabled:cursor-not-allowed transition"
+                >
+                    Save
+                </button>
+                <button
+                    type="button"
+                    onClick={onClose}
+                    aria-label="Cancel"
+                    className="h-9 w-9 flex items-center justify-center rounded-lg text-secondary-text hover:text-primary-text hover:bg-secondary-400 transition"
+                >
+                    <X className="h-4 w-4" />
+                </button>
+            </div>
         </form>
     )
 }
-
-const Field: FC<{ label: string, hint?: ReactNode, children: ReactNode }> = ({ label, hint, children }) => (
-    <label className="block bg-secondary-500 rounded-2xl p-4">
-        <div className="flex items-center justify-between mb-1">
-            <span className="text-secondary-text text-base">{label}</span>
-            {hint}
-        </div>
-        {children}
-    </label>
-)
 
 export default AddressBookEntryForm
