@@ -33,23 +33,10 @@ const AddressBookStep: FC = () => {
         )
     }, [savedAddresses, query])
 
-    if (editing.kind === 'create') {
-        return <AddressBookEntryForm initial={editing.initial} onClose={closeForm} />
-    }
-    if (editing.kind === 'edit') {
-        return (
-            <AddressBookEntryForm
-                initial={{
-                    name: editing.entry.name,
-                    address: editing.entry.address,
-                    editingOriginalAddress: editing.entry.address,
-                    networkType: editing.entry.networkType,
-                }}
-                onClose={closeForm}
-            />
-        )
-    }
     if (savedAddresses.length === 0) {
+        if (editing.kind === 'create') {
+            return <AddressBookEntryForm initial={editing.initial} onClose={closeForm} />
+        }
         return (
             <div className="flex flex-col justify-center items-center h-full text-primary-text">
                 <HistoryItemSceleton className="scale-[.63] w-full shadow-card mr-7" />
@@ -83,6 +70,11 @@ const AddressBookStep: FC = () => {
                 )}
                 {filteredAddresses.map(entry => {
                     const raw = entry.address
+                    if (editing.kind === 'edit' && editing.entry.address === raw) {
+                        return (
+                            <AddressBookEntryForm key={raw} initial={{ name: entry.name, address: entry.address, editingOriginalAddress: entry.address, networkType: entry.networkType, }} onClose={closeForm} />
+                        )
+                    }
                     return (
                         <div key={raw} className="flex items-center justify-between gap-2 p-3 rounded-xl bg-secondary-500">
                             <div className="flex items-center gap-3 min-w-0">
@@ -127,14 +119,20 @@ const AddressBookStep: FC = () => {
                     )
                 })}
             </div>
-            <button
-                type="button"
-                onClick={() => setEditing({ kind: 'create' })}
-                className="mt-2 flex items-center justify-center gap-2 w-full h-12 rounded-xl text-base font-medium bg-secondary-500 hover:bg-secondary-400 text-primary-text transition"
-            >
-                <Plus className="h-5 w-5" />
-                <span>Add address</span>
-            </button>
+            {editing.kind === 'create' ? (
+                <div className="mt-2">
+                    <AddressBookEntryForm initial={editing.initial} onClose={closeForm} />
+                </div>
+            ) : (
+                <button
+                    type="button"
+                    onClick={() => setEditing({ kind: 'create' })}
+                    className="mt-2 flex items-center justify-center gap-2 w-full h-12 rounded-xl text-base font-medium bg-secondary-500 hover:bg-secondary-400 text-primary-text transition"
+                >
+                    <Plus className="h-5 w-5" />
+                    <span>Add address</span>
+                </button>
+            )}
         </div>
     )
 }
