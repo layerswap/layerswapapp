@@ -6,8 +6,8 @@ import SourcePicker from "@/components/Input/SourcePicker";
 import { useQuoteData } from "@/hooks/useFee";
 import { useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import { useSelectedAccount } from "@/context/swapAccounts";
-import { ErrorDisplay } from "@/components/Pages/Swap/Form/SecondaryComponents/validationError/ErrorDisplay";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
+import QuoteDetails from "@/components/Pages/Swap/Form/FeeDetails";
 import { useDepositStep } from "../depositStepContext";
 import QuoteSummary from "../_shared/QuoteSummary";
 
@@ -48,6 +48,7 @@ const AmountStep: FC = () => {
 
     const amountNum = Number(values?.amount);
     const hasAmount = Number.isFinite(amountNum) && amountNum > 0;
+    const hasQuote = !!fee?.quote && !quoteError;
     const canContinue = !!from && !!fromAsset && !!to && !!toAsset && !!sourceAccount?.address && !!values?.destination_address && hasAmount && !quoteError && !isQuoteLoading;
 
     const handleContinue = () => {
@@ -61,10 +62,17 @@ const AmountStep: FC = () => {
     };
 
     const receiveAmount = fee?.quote?.receive_amount;
-    const showReceiveSummary = (!!fee?.quote && !quoteError) || isQuoteLoading;
+
+    const submitLabel = isQuoteLoading
+        ? "Fetching best route…"
+        : quoteError
+            ? "Choose a supported token"
+            : !hasAmount
+                ? "Enter an amount"
+                : "Continue";
 
     return (
-        <div className="flex flex-col gap-2 w-full">
+        <div className="flex flex-col gap-2.5 w-full">
             <SourcePicker
                 minAllowedAmount={minAllowedAmount}
                 maxAllowedAmount={maxAllowedAmount}
@@ -75,29 +83,66 @@ const AmountStep: FC = () => {
                 hideManualTransfer
             />
 
-            {quoteError?.message && (
-                <div role="alert">
-                    <ErrorDisplay
-                        icon={<AlertTriangle className="h-5 w-5 text-warning-foreground" />}
-                        title="Quote unavailable"
-                        message={quoteError.message}
-                    />
-                </div>
+            {quoteError && (
+                <FriendlyRouteError
+                    fromSymbol={fromAsset?.symbol}
+                    fromChain={from?.display_name}
+                    toSymbol={toAsset?.symbol}
+                    toChain={to?.display_name}
+                />
             )}
 
-            {showReceiveSummary && (
+            {(hasQuote || isQuoteLoading) && (
                 <QuoteSummary
                     receiveAmount={receiveAmount != null ? Number(receiveAmount) : undefined}
                     tokenSymbol={toAsset?.symbol}
-                    minUsd={minAllowedAmountInUsd ?? undefined}
-                    maxUsd={maxAllowedAmountInUsd ?? undefined}
+                    network={to}
+                    token={toAsset}
                     isLoading={isQuoteLoading}
                 />
             )}
 
+            {(hasQuote || isQuoteLoading) && (
+                <QuoteDetails
+                    swapValues={values}
+                    quote={fee?.quote}
+                    reward={fee?.reward}
+                    isQuoteLoading={isQuoteLoading}
+                />
+            )}
+
             <SubmitButton isDisabled={!canContinue} onClick={handleContinue}>
-                Continue
+                {submitLabel}
             </SubmitButton>
+        </div>
+    );
+};
+
+type ErrorProps = {
+    fromSymbol?: string;
+    fromChain?: string;
+    toSymbol?: string;
+    toChain?: string;
+};
+
+const FriendlyRouteError: FC<ErrorProps> = ({ fromSymbol, fromChain, toSymbol, toChain }) => {
+    const pair = fromSymbol && fromChain && toSymbol && toChain
+        ? `${fromSymbol} on ${fromChain} to ${toSymbol} on ${toChain}`
+        : "this pair";
+    return (
+        <div role="alert" className="bg-secondary-500 rounded-2xl p-4 flex gap-3">
+            <span className="shrink-0 inline-flex items-center justify-center h-7 w-7 rounded-full bg-warning-background/50 text-warning-foreground">
+                <AlertTriangle className="h-4 w-4" />
+            </span>
+            <div className="flex flex-col gap-1 min-w-0">
+                <span className="text-primary-text text-[15px] font-semibold">
+                    Route not available for this pair
+                </span>
+                <span className="text-secondary-text text-[13px] leading-snug">
+                    We can&apos;t bridge {pair} right now. Try a different source
+                    token or chain to continue.
+                </span>
+            </div>
         </div>
     );
 };

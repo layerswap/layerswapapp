@@ -85,18 +85,29 @@ const DestinationTokenPicker: FC<Props> = ({ destinations }) => {
                     type="button"
                     disabled={triggerDisabled && !selected}
                     className={clsx(
-                        "flex items-center justify-between gap-2 w-full bg-secondary-500 rounded-xl px-3 py-2 transition-colors",
+                        "flex items-center justify-between gap-2 w-full bg-secondary-500 rounded-2xl transition-colors border border-transparent px-4 py-3",
                         triggerDisabled
                             ? "cursor-default"
-                            : "hover:bg-secondary-400/70 focus-visible:ring-2 focus-visible:ring-primary-500/60 focus-visible:outline-none",
+                            : "hover:bg-secondary-400/70 hover:border-secondary-400 focus-visible:ring-2 focus-visible:ring-primary-500/60 focus-visible:outline-none",
                     )}
                 >
-                    <span className="flex items-center gap-2 min-w-0">
-                        {selected ? (
-                            <TokenWithNetworkBadge token={selected.token} network={selected.network} />
-                        ) : (
-                            <span className="text-secondary-text text-sm">Select destination token</span>
-                        )}
+                    <span className="flex items-center gap-3 min-w-0">
+                        <DestinationBadge token={selected?.token} network={selected?.network} />
+                        <span className="flex flex-col min-w-0 text-left">
+                            <span className="text-secondary-text text-[11px] uppercase tracking-wider">
+                                You receive
+                            </span>
+                            {selected ? (
+                                <span className="text-primary-text text-base font-semibold truncate">
+                                    {selected.token.symbol}
+                                    <span className="text-secondary-text font-normal text-sm">
+                                        {" "}on {selected.network.display_name}
+                                    </span>
+                                </span>
+                            ) : (
+                                <span className="text-secondary-text text-sm">Select destination token</span>
+                            )}
+                        </span>
                     </span>
                     {!triggerDisabled && (
                         <ChevronDown
@@ -129,7 +140,31 @@ const DestinationTokenPicker: FC<Props> = ({ destinations }) => {
                                         { "bg-secondary-400/40": isSelected },
                                     )}
                                 >
-                                    <TokenWithNetworkBadge token={r.token} network={r.network} />
+                                    <span className="flex items-center gap-2 min-w-0">
+                                        <span className="relative inline-flex shrink-0 h-7 w-7">
+                                            <ImageWithFallback
+                                                src={r.token.logo}
+                                                alt={`${r.token.symbol} logo`}
+                                                height="24"
+                                                width="24"
+                                                loading="eager"
+                                                fetchPriority="high"
+                                                className="h-6 w-6 rounded-full object-contain"
+                                            />
+                                            <span className="absolute left-[13px] top-3.5 h-4 w-4 rounded border border-secondary-500 bg-secondary-400 overflow-hidden">
+                                                <ImageWithFallback
+                                                    src={r.network.logo}
+                                                    alt={r.network.display_name}
+                                                    height="14"
+                                                    width="14"
+                                                    loading="eager"
+                                                    fetchPriority="high"
+                                                    className="object-contain"
+                                                />
+                                            </span>
+                                        </span>
+                                        <span className="text-primary-text text-base font-medium truncate">{r.token.symbol}</span>
+                                    </span>
                                     {isSelected && <Check className="h-4 w-4 text-primary-text shrink-0" />}
                                 </button>
                             );
@@ -141,32 +176,31 @@ const DestinationTokenPicker: FC<Props> = ({ destinations }) => {
     );
 };
 
-const TokenWithNetworkBadge: FC<{ token: NetworkRouteToken; network: NetworkRoute }> = ({ token, network }) => (
-    <span className="flex items-center gap-2 min-w-0">
-        <span className="relative inline-flex shrink-0 h-7 w-7">
+const DestinationBadge: FC<{ token?: NetworkRouteToken; network?: NetworkRoute }> = ({ token, network }) => (
+    <div className="inline-flex items-center relative shrink-0 h-10 w-10">
+        <div className="h-6 w-6">
             <ImageWithFallback
-                src={token.logo}
-                alt={`${token.symbol} logo`}
-                height="24"
-                width="24"
+                src={token?.logo}
+                alt="Token Logo"
+                height="36"
+                width="36"
                 loading="eager"
                 fetchPriority="high"
-                className="h-6 w-6 rounded-full object-contain"
+                className="rounded-full object-contain"
             />
-            <span className="absolute left-[13px] top-3.5 h-4 w-4 rounded border border-secondary-500 bg-secondary-400 overflow-hidden">
-                <ImageWithFallback
-                    src={network.logo}
-                    alt={network.display_name}
-                    height="14"
-                    width="14"
-                    loading="eager"
-                    fetchPriority="high"
-                    className="object-contain"
-                />
-            </span>
-        </span>
-        <span className="text-primary-text text-base font-medium truncate">{token.symbol}</span>
-    </span>
+        </div>
+        <div className="absolute left-[16px] top-3.5 h-4 w-4 rounded border border-secondary-500 bg-secondary-400 overflow-hidden">
+            <ImageWithFallback
+                src={network?.logo}
+                alt="Network Logo"
+                height="14"
+                width="14"
+                loading="eager"
+                fetchPriority="high"
+                className="object-contain"
+            />
+        </div>
+    </div>
 );
 
 export default DestinationTokenPicker;

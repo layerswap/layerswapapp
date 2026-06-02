@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, ReactNode } from "react";
 import { useFormikContext } from "formik";
 import clsx from "clsx";
 import { QrCode, Wallet as WalletIcon, ChevronRight } from "lucide-react";
@@ -8,45 +8,87 @@ import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { useDepositStep } from "../depositStepContext";
 import { Address } from "@/lib/address/Address";
+import DestinationTokenPicker, { SupportedDestination } from "../DestinationTokenPicker";
+
+type Badge = {
+    label: string;
+    tone: "fast" | "any";
+};
 
 type MethodCardProps = {
-    icon: React.ReactNode;
+    icon: ReactNode;
+    iconTone?: "neutral" | "wallet";
     title: string;
+    badge?: Badge;
     subtitle: string;
     onClick: () => void;
     disabled?: boolean;
     disabledReason?: string;
 };
 
-const MethodCard: FC<MethodCardProps> = ({ icon, title, subtitle, onClick, disabled, disabledReason }) => (
+const badgeStyles: Record<Badge["tone"], string> = {
+    fast: "bg-success-background text-success-foreground",
+    any: "bg-secondary-400/60 text-secondary-text",
+};
+
+const MethodCard: FC<MethodCardProps> = ({
+    icon,
+    iconTone = "neutral",
+    title,
+    badge,
+    subtitle,
+    onClick,
+    disabled,
+    disabledReason,
+}) => (
     <button
         type="button"
         onClick={onClick}
         disabled={disabled}
         title={disabled ? disabledReason : undefined}
         className={clsx(
-            "group/card flex items-center gap-3 w-full text-left rounded-xl px-3.5 py-3 transition-colors",
+            "group/card flex items-start gap-3.5 w-full text-left rounded-2xl px-4 py-3.5 transition-colors",
             "bg-secondary-500 hover:bg-secondary-400/70",
+            "border border-transparent hover:border-secondary-300",
             "focus-visible:ring-2 focus-visible:ring-primary-500/60 focus-visible:outline-none",
-            "disabled:opacity-50 disabled:hover:bg-secondary-500 disabled:cursor-not-allowed",
+            "disabled:opacity-50 disabled:hover:bg-secondary-500 disabled:hover:border-transparent disabled:cursor-not-allowed",
         )}
     >
-        <div className="shrink-0 h-10 w-10 rounded-lg bg-secondary-400 flex items-center justify-center">
+        <div
+            className={clsx(
+                "shrink-0 h-[46px] w-[46px] rounded-xl flex items-center justify-center border",
+                iconTone === "wallet"
+                    ? "bg-[#1c1408] border-[#3a2a12]"
+                    : "bg-secondary-700 border-secondary-400",
+            )}
+        >
             {icon}
         </div>
-        <div className="flex-1 min-w-0">
-            <div className="text-primary-text text-base font-semibold leading-tight">
-                {title}
+        <div className="flex-1 min-w-0 flex flex-col gap-1">
+            <div className="flex items-center gap-2 min-w-0">
+                <span className="text-primary-text text-base font-semibold truncate">{title}</span>
+                {badge && (
+                    <span
+                        className={clsx(
+                            "shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold",
+                            badgeStyles[badge.tone],
+                        )}
+                    >
+                        {badge.label}
+                    </span>
+                )}
             </div>
-            <div className="text-secondary-text text-xs mt-0.5 truncate">
-                {subtitle}
-            </div>
+            <span className="text-secondary-text text-[13px] leading-tight truncate">{subtitle}</span>
         </div>
-        <ChevronRight className="h-4 w-4 text-secondary-text shrink-0" />
+        <ChevronRight className="h-5 w-5 text-primary-text-tertiary shrink-0 mt-2.5" />
     </button>
 );
 
-const MethodPicker: FC = () => {
+type Props = {
+    destinations: SupportedDestination[];
+};
+
+const MethodPicker: FC<Props> = ({ destinations }) => {
     const { setFieldValue, values } = useFormikContext<SwapFormValues>();
     const { push } = useDepositStep();
     const { wallets } = useWallet();
@@ -79,34 +121,44 @@ const MethodPicker: FC = () => {
     // connect modal still opens) but block forward navigation until ready.
     const walletDisabled = hasWallet && !destinationReady;
     const walletSubtitle = hasWallet
-        ? new Address(primaryWallet?.address, null, primaryWallet.providerName).toShortString()
+        ? `Connected · ${new Address(primaryWallet?.address, null, primaryWallet.providerName).toShortString()}`
         : "Connect a wallet";
 
     const WalletProviderIcon = primaryWallet?.icon;
     const walletCardIcon = hasWallet && WalletProviderIcon
-        ? <WalletProviderIcon className="h-5 w-5" />
-        : <WalletIcon className="h-5 w-5 text-primary-text" />;
+        ? <WalletProviderIcon className="h-7 w-7" />
+        : <WalletIcon className="h-6 w-6 text-primary-text" />;
 
     return (
-        <div className="flex flex-col gap-2 w-full">
-            <p className="text-secondary-text text-xs">Choose method</p>
-            <div className="flex flex-col gap-2 w-full">
-                <MethodCard
-                    icon={walletCardIcon}
-                    title="Wallet transfer"
-                    subtitle={walletSubtitle}
-                    onClick={handleWalletClick}
-                    disabled={walletDisabled}
-                    disabledReason="Pick a destination first"
-                />
-                <MethodCard
-                    icon={<QrCode className="h-5 w-5 text-primary-text" />}
-                    title="Deposit address"
-                    subtitle="Generate a deposit address and transfer from any wallet"
-                    onClick={handleTransferCryptoClick}
-                    disabled={!destinationReady}
-                    disabledReason="Pick a destination first"
-                />
+        <div className="flex flex-col gap-3 w-full">
+            <DestinationTokenPicker destinations={destinations} />
+
+            <div>
+                <p className="text-secondary-text text-xs px-1 pt-0.5 mb-1">
+                    Choose how to fund this deposit
+                </p>
+
+                <div className="flex flex-col gap-2.5 w-full">
+                    <MethodCard
+                        icon={walletCardIcon}
+                        iconTone={hasWallet ? "wallet" : "neutral"}
+                        title="Wallet transfer"
+                        badge={{ label: "Fastest", tone: "fast" }}
+                        subtitle={walletSubtitle}
+                        onClick={handleWalletClick}
+                        disabled={walletDisabled}
+                        disabledReason="Pick a destination first"
+                    />
+                    <MethodCard
+                        icon={<QrCode className="h-6 w-6 text-primary-200" />}
+                        title="Deposit address"
+                        badge={{ label: "Any source", tone: "any" }}
+                        subtitle="Send from any wallet, exchange or CEX"
+                        onClick={handleTransferCryptoClick}
+                        disabled={!destinationReady}
+                        disabledReason="Pick a destination first"
+                    />
+                </div>
             </div>
         </div>
     );

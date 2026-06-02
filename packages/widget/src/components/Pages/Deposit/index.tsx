@@ -17,6 +17,8 @@ import MethodPicker from "./Options/MethodPicker";
 import WalletFlow from "./Wallet";
 import TransferCrypto from "./TransferCrypto";
 import { SupportedDestination, useResolvedDestinations } from "./DestinationTokenPicker";
+import Stepper from "./_shared/Stepper";
+import { Widget } from "@/components/Widget/Index";
 
 export type DepositMode = "inline" | "button";
 
@@ -37,18 +39,19 @@ export type DepositProps = {
     buttonClassName?: string;
 };
 
-const StepRouter: FC<{ step: DepositStep; partner?: Partner; destinationAddress: string }> = ({
+const StepRouter: FC<{ step: DepositStep; partner?: Partner; destinations: SupportedDestination[]; destinationAddress: string }> = ({
     step,
     partner,
+    destinations,
     destinationAddress,
 }) => {
     switch (step) {
-        case "method-picker": return <MethodPicker />;
+        case "method-picker": return <MethodPicker destinations={destinations} />;
         case "transfer-crypto": return <TransferCrypto partner={partner} destinationAddress={destinationAddress} />;
         case "wallet-amount":
         case "wallet-processing": return <WalletFlow partner={partner} />;
         default: {
-            const _exhaustive: never = step;
+            void (step satisfies never);
             return null;
         }
     }
@@ -57,9 +60,10 @@ const StepRouter: FC<{ step: DepositStep; partner?: Partner; destinationAddress:
 const DepositForm: FC<DepositProps> = ({ partner, destinations, destinationAddress }) => {
     const { step } = useDepositStep();
     return (
-        <div className="flex flex-col gap-2 w-full">
-            <DepositHeader destinations={destinations} />
-            <StepRouter step={step} partner={partner} destinationAddress={destinationAddress} />
+        <div className="flex flex-col gap-3 w-full pt-4">
+            <DepositHeader />
+            <Stepper step={step} />
+            <StepRouter step={step} partner={partner} destinations={destinations} destinationAddress={destinationAddress} />
         </div>
     );
 };
@@ -127,15 +131,14 @@ const DepositInner: FC<DepositProps> = ({ partner, destinations, destinationAddr
     );
 };
 
-// `id="widget"` is required because the shared route-picker modal
-// (components/Modal/modalWithoutAnimation.tsx) portals into the element
-// with that id. Without it the picker silently no-ops.
+
 const DepositCard: FC<Pick<DepositProps, "partner" | "destinations" | "destinationAddress">> = ({ partner, destinations, destinationAddress }) => (
-    <div id="widget" className="relative w-full flex flex-col gap-4 p-4 sm:p-5 bg-secondary-700 rounded-2xl overflow-hidden has-openpicker:min-h-[675px]">
+    <Widget hideMenu>
         <SwapDataProvider>
             <DepositInner partner={partner} destinations={destinations} destinationAddress={destinationAddress} />
         </SwapDataProvider>
-    </div>
+    </Widget>
+
 );
 
 export const Deposit: FC<DepositProps> = ({ mode = "inline", buttonLabel = "Deposit", buttonClassName, partner, destinations, destinationAddress }) => {
