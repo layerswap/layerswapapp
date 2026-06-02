@@ -16,6 +16,8 @@ import { WalletQrCode } from "./WalletQrCode";
 import { LoadingConnect } from "./LoadingConnect";
 import CircularLoader from "@/components/Icons/CircularLoader";
 import { useConnectors } from "@/hooks/useConnectors";
+import { useWalletProvidersRegistry } from "@/context/walletProviders";
+import { useWalletDescriptorLoader } from "@/lib/walletConnect/walletDescriptorLoader";
 
 type ProviderPaginationState = {
     loaded: boolean;
@@ -71,6 +73,8 @@ const canRequestAdditionalConnectors = (provider: WalletConnectionProvider): pro
 
 const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { providers } = useWallet();
+    const registry = useWalletProvidersRegistry()
+    const { loadAll } = useWalletDescriptorLoader()
     const { setSelectedConnector, selectedProvider, setSelectedProvider, selectedConnector, selectedMultiChainConnector, setSelectedMultiChainConnector } = useConnectModal()
     let [recentConnectors, setRecentConnectors] = usePersistedState<({ providerName?: string, connectorName?: string }[])>([], 'recentConnectors', 'localStorage');
     const [connectionError, setConnectionError] = useState<string | undefined>(undefined);
@@ -126,12 +130,62 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         return () => clearTimeout(scrollTimeout.current as any);
     }, []);
 
+    // Reads CURRENT store state (not a render snapshot) to decide whether a
+    // wallet is exposed by more than one ecosystem.
+    const liveMultiChain = useCallback((name: string) => {
+        const lower = name.toLowerCase()
+        const providersWith = registry.getEntries().filter(e =>
+            e.store.getState().availableConnectors?.some(c => c.name.toLowerCase() === lower)
+        )
+        return providersWith.length > 1
+    }, [registry])
+
+    // Resolves once every provider has finished loading (no stubs left, all
+    // real providers `ready`), bounded by `timeoutMs` so a never-ready ecosystem
+    // can't hang the connect. `loadAll()` only imports lazy descriptor modules;
+    // we then wait for the stores to actually publish their connectors.
+    const awaitProvidersSettled = useCallback(async (timeoutMs = 1200) => {
+        await loadAll()
+        const settled = () => registry.getEntries().every(e => {
+            const s = e.store.getState()
+            return !s.isStub && s.ready
+        })
+        if (settled()) return
+        await new Promise<void>(resolve => {
+            let unsub = () => { }
+            const finish = () => { clearTimeout(timer); unsub(); resolve() }
+            const timer = setTimeout(finish, timeoutMs)
+            unsub = registry.subscribe(() => { if (settled()) finish() })
+        })
+    }, [loadAll, registry])
+
     const connect = async (connector: WalletModalConnector, provider: WalletConnectionProvider) => {
         try {
             setConnectionError(undefined)
             if (connector?.isMultiChain) {
                 setSelectedMultiChainConnector(connector)
                 return;
+            }
+            // Multi-ecosystem wallets (e.g. MetaMask: EVM + Solana + Tron) surface
+            // their non-EVM connectors only after late-loading providers settle.
+            // If a wallet is clicked while any provider is still loading, the
+            // `isMultiChain` flag may not be final yet — wait (bounded) and
+            // re-check before committing to a single-ecosystem connect, so we
+            // don't skip the ecosystem picker. Scoped to injected/standard
+            // connectors (the only kind that can be multi-ecosystem) so
+            // WalletConnect/registry wallets are never delayed.
+            const providersStillLoading = registry.getEntries().some(e => {
+                const s = e.store.getState()
+                return s.isStub || !s.ready
+            })
+            if (connector?.type === 'injected' && providersStillLoading && !liveMultiChain(connector.name)) {
+                setSelectedConnector(connector)
+                await awaitProvidersSettled()
+                if (liveMultiChain(connector.name)) {
+                    setSelectedConnector(undefined)
+                    setSelectedMultiChainConnector(connector)
+                    return
+                }
             }
             setSelectedConnector(connector)
             if (connector?.hasBrowserExtension !== false && connector.extensionNotFound && !connector?.showQrCode && !isMobilePlatfrom) return

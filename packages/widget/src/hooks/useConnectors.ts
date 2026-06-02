@@ -56,6 +56,31 @@ export function useConnectors({
     const initialSortedRef = useRef<InitialSnapshot | null>(null)
     const appendedRef = useRef<InternalConnector[]>([])
 
+    // Live multichain membership: a wallet is multichain when the same name is
+    // exposed by more than one provider (ecosystem). This is derived from the
+    // CURRENT connector set rather than frozen into `initialSortedRef`, so it
+    // flips to `true` as late-loading ecosystems (e.g. Solana/Tron) populate
+    // their connectors after the initial snapshot was taken. Freezing it (the
+    // old behaviour) pinned an early "EVM-only" snapshot to isMultiChain=false.
+    const multiChainNames = useMemo(() => {
+        const byName = new Map<string, Set<string>>()
+        for (const c of [...featuredConnectors, ...additionalConnectors, ...(searchResults ?? [])]) {
+            if (!c?.providerName) continue
+            const key = c.name.toLowerCase()
+            let providers = byName.get(key)
+            if (!providers) {
+                providers = new Set()
+                byName.set(key, providers)
+            }
+            providers.add(c.providerName)
+        }
+        const names = new Set<string>()
+        for (const [key, providers] of byName) {
+            if (providers.size > 1) names.add(key)
+        }
+        return names
+    }, [featuredConnectors, additionalConnectors, searchResults])
+
     const initialConnectors: InternalConnector[] = useMemo(() => {
         const recentNames = new Set(recentConnectors?.map(r => r.connectorName?.toLowerCase()).filter(Boolean))
         const isRecent = (c: InternalConnector) => recentNames.has(c.name.toLowerCase())
@@ -96,14 +121,17 @@ export function useConnectors({
 
         const base = [...initialSortedRef.current.list, ...appendedRef.current]
 
+        const withMultiChain = (list: InternalConnector[]) =>
+            list.map(c => ({ ...c, isMultiChain: multiChainNames.has(c.name.toLowerCase()) }))
+
         if (searchResults?.length) {
             const existingNames = new Set(base.map(c => c.name.toLowerCase()))
             const newResults = searchResults.filter(c => !existingNames.has(c.name.toLowerCase()))
-            return [...base, ...newResults]
+            return withMultiChain([...base, ...newResults])
         }
 
-        return base
-    }, [featuredConnectors, additionalConnectors, recentConnectors, searchResults, filterKey]);
+        return withMultiChain(base)
+    }, [featuredConnectors, additionalConnectors, recentConnectors, searchResults, filterKey, multiChainNames]);
 
     return {
         featuredConnectors,
