@@ -1,5 +1,5 @@
 import { Address } from "@/lib/address";
-import { useAddressName } from "@/stores/addressBookStore";
+import { useNamedAddress } from "@/stores/addressBookStore";
 import { ChevronDown, PlusIcon } from "lucide-react";
 import { AddressGroup, AddressItem, AddressTriggerProps } from "./Address/AddressPicker";
 import { Partner } from "@/Models/Partner";
@@ -10,7 +10,7 @@ import clsx from 'clsx';
 
 const DestinationWalletPicker = (props: AddressTriggerProps) => {
     const { addressItem, connectedWallet, partner, destination } = props
-    const label = useAddressName(addressItem?.address, destination, undefined, true)
+    const label = useNamedAddress(addressItem?.address, destination)
     return destination && <div
     data-attr={addressItem ? "address-item" : "add-address"}
     className={clsx(

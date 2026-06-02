@@ -12,7 +12,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components//shadcn/to
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import clsx from "clsx";
 import shortenString from "@/components/utils/ShortenString";
-import { useAddressName } from "@/stores/addressBookStore";
+import { useAddressName, useLabeledAddress } from "@/stores/addressBookStore";
 import { SaveToBookNameForm } from "@/components/AddressBook/SaveToBookInline";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
 
@@ -163,9 +163,8 @@ const calculateMaxWidth = (balance: string | undefined) => {
 
 export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, providerName, isForCurrency, children, onDisconnect, onRemove, showDetails = false, title, description, logo: Logo, onPopoverOpenChange, onTooltipOpenChange, shouldShowChevron = true }) => {
     if (!network && !providerName) {
-        const short = shortenString(address)
-        return <p className="text-sm block font-medium text-secondary-text">
-            {short}
+        return children ?? <p className="text-sm block font-medium text-secondary-text">
+            {shortenString(address)}
         </p>
     }
     return <AddressDetailsPopover address={address} network={network!} providerName={providerName!} isForCurrency={isForCurrency} onDisconnect={onDisconnect} onRemove={onRemove} showDetails={showDetails} title={title} description={description} logo={Logo} onPopoverOpenChange={onPopoverOpenChange} onTooltipOpenChange={onTooltipOpenChange} shouldShowChevron={shouldShowChevron}>{children}</AddressDetailsPopover>
@@ -191,6 +190,7 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
     );
 
     const displayName = useAddressName(address, network, providerName)
+    const labeledAddress = useLabeledAddress(address, network, providerName)
 
     const isAddressValid = useMemo(() => {
         if (network) {
@@ -255,7 +255,7 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
                                         children ??
                                         <div className="hover:text-secondary-text transition duration-200 flex gap-1 items-center cursor-pointer min-w-0">
                                             <p className={`${isForCurrency ? "text-xs self-end" : "text-sm"} block font-medium group-hover/addressItem:underline ${displayName ? 'min-w-0 max-w-[260px] truncate' : ''}`}>
-                                                {addr.labeledAddress()}
+                                                {labeledAddress}
                                             </p>
                                             {shouldShowChevron ?
                                                 <ChevronDown className="invisible group-hover/addressItem:visible h-4 w-4 shrink-0" />
@@ -323,7 +323,7 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
                     <p className="text-secondary-text text-sm leading-5 break-all text-left font-mono">
                         <><span className="text-primary-text font-medium">{start}</span><span>{middle}</span><span className="text-primary-text font-medium">{end}</span></>
                     </p>
-                    {buttons.length > 0 && (
+                    <div className="space-y-1.5">
                         <div className="flex gap-3">
                             {buttons.map((button) => (
                                 <ActionButton
@@ -333,8 +333,8 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
                                 />
                             ))}
                         </div>
-                    )}
-                    {saving && saveNetworkType && <SaveToBookNameForm address={address} networkType={saveNetworkType} onDone={() => setSaving(false)} compact />}
+                        {saving && saveNetworkType && <SaveToBookNameForm address={address} networkType={saveNetworkType} onDone={() => setSaving(false)} compact />}
+                    </div>
                 </PopoverContent>
             </Popover>
         </div>

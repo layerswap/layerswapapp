@@ -13,7 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/pop
 import FilledCheck from "@/components/icons/FilledCheck";
 import clsx from "clsx";
 import { useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts";
-import { useAddressName } from "@/stores/addressBookStore";
+import { useNamedAddress } from "@/stores/addressBookStore";
 
 const SourceWalletPicker: FC = () => {
     const [openModal, setOpenModal] = useState<boolean>(false)
@@ -28,7 +28,7 @@ const SourceWalletPicker: FC = () => {
 
     const { provider } = useWallet(values.from, "withdrawal")
     const selectedSourceAccount = useSelectedAccount("from", values.from?.name);
-    const sourceLabel = useAddressName(selectedSourceAccount?.address, values.from, undefined, true)
+    const sourceLabel = useNamedAddress(selectedSourceAccount?.address, values.from)
 
     const { selectedConnector } = useConnectModal()
     const availableWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
