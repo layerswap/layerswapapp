@@ -53,7 +53,7 @@ const AddressBookEntryForm: FC<AddressBookEntryFormProps> = ({ initial, onClose 
                         onChange={e => setName(e.target.value)}
                         placeholder="My Layerswap wallet…"
                         autoComplete="off"
-                        className="w-full h-14 bg-transparent border-0 outline-none text-primary-text placeholder:text-secondary-text text-[22px] font-normal leading-7 focus:ring-0 p-0"
+                        className="w-full h-10 bg-transparent border-0 outline-none text-primary-text placeholder:text-secondary-text text-lg font-normal leading-7 focus:ring-0 p-0"
                     />
                 </Field>
                 <Field label="Address">
@@ -65,20 +65,25 @@ const AddressBookEntryForm: FC<AddressBookEntryFormProps> = ({ initial, onClose 
                         autoCorrect="off"
                         autoComplete="off"
                         spellCheck={false}
-                        className="w-full h-14 bg-transparent border-0 outline-none text-primary-text placeholder:text-secondary-text text-[22px] leading-7 focus:ring-0 p-0"
+                        className="w-full h-10 bg-transparent border-0 outline-none text-primary-text placeholder:text-secondary-text text-lg leading-7 focus:ring-0 p-0"
                     />
                 </Field>
             </div>
-            <button type="submit" disabled={!canSubmit} className="mt-2 w-full h-12 rounded-xl text-base font-medium bg-primary text-primary-buttonTextColor hover:brightness-110 disabled:bg-secondary-300 disabled:text-secondary-text disabled:cursor-not-allowed transition">
-                Save
-            </button>
+            <div className="mt-2 flex gap-2">
+                <button type="submit" disabled={!canSubmit} className="flex-1 h-12 rounded-xl text-base font-medium bg-primary text-primary-buttonTextColor hover:brightness-110 disabled:bg-secondary-300 disabled:text-secondary-text disabled:cursor-not-allowed transition">
+                    Save
+                </button>
+                <button type="button" onClick={onClose} className="flex-1 h-12 rounded-xl text-base font-medium bg-secondary-500 hover:bg-secondary-400 text-primary-text transition">
+                    Cancel
+                </button>
+            </div>
         </form>
     )
 }
 
 const Field: FC<{ label: string, hint?: ReactNode, children: ReactNode }> = ({ label, hint, children }) => (
-    <label className="block bg-secondary-500 rounded-2xl p-4">
-        <div className="flex items-center justify-between mb-1">
+    <label className="block bg-secondary-500 rounded-2xl px-4 py-2.5">
+        <div className="flex items-center justify-between mb-0.5">
             <span className="text-secondary-text text-base">{label}</span>
             {hint}
         </div>

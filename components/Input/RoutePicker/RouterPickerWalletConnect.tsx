@@ -6,6 +6,7 @@ import { ChevronDown, Plus } from "lucide-react";
 import { WalletItem } from "@/components/Wallet/WalletsList";
 import { Network, NetworkRoute, Token } from "@/Models/Network";
 import { Address } from "@/lib/address";
+import { useNamedAddress } from "@/stores/addressBookStore";
 import WalletIcon from "@/components/icons/WalletIcon";
 import ConnectButton from "@/components/buttons/connectButton";
 import { SwapDirection, SwapFormValues } from "@/components/DTOs/SwapFormValues";
@@ -90,7 +91,7 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
 
 const AccountsPickerButton: FC<{ accounts: AccountIdentity[], network: NetworkRoute | undefined, onOpenModalClick: () => void }> = ({ accounts, network, onOpenModalClick }) => {
     const firstWallet = useMemo(() => accounts[0], [accounts])
-    const resolved = firstWallet?.address ? new Address(firstWallet.address, null, firstWallet.providerName) : undefined
+    const accountLabel = useNamedAddress(firstWallet?.address, null, firstWallet?.providerName)
     if (accounts.length > 0) {
         return <button onClick={onOpenModalClick} type="button" className="p-1.5 max-sm:p-2 justify-self-start text-secondary-text hover:bg-secondary-500 max-sm:bg-secondary-500 hover:text-primary-text focus:outline-hidden inline-flex rounded-lg items-center active:animate-press-down">
             {
@@ -99,7 +100,7 @@ const AccountsPickerButton: FC<{ accounts: AccountIdentity[], network: NetworkRo
                         <firstWallet.icon className='h-5 w-5' />
                         {
                             firstWallet.address &&
-                            <p className="truncate max-w-[90px]">{resolved?.displayName()}</p>
+                            <p className="truncate max-w-[90px]">{accountLabel}</p>
                         }
                         <ChevronDown className="h-5 w-5" />
                     </div>

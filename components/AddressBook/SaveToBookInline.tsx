@@ -35,9 +35,9 @@ export const SaveToBookNameForm: FC<{ address: string, networkType: NetworkType,
                     placeholder="Name this address"
                     autoComplete="off"
                     className={clsx(
-                        'pr-20 w-full rounded-lg border truncate hover:overflow-x-scroll focus:border-primary focus:ring-0 focus:outline-hidden',
+                        'pr-20 w-full text-base rounded-lg border truncate hover:overflow-x-scroll focus:border-primary focus:ring-0 focus:outline-hidden',
                         compact
-                            ? 'pl-3 h-9 text-sm bg-secondary-300 border-transparent placeholder:text-secondary-text'
+                            ? 'pl-3 h-9 bg-secondary-300 border-transparent placeholder:text-secondary-text'
                             : 'h-12 leading-4 font-semibold border-secondary-800 !bg-secondary-500 placeholder:text-primary-text-tertiary/80 placeholder:font-normal'
                     )}
                 />
