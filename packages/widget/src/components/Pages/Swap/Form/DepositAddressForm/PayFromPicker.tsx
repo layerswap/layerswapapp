@@ -2,8 +2,8 @@ import { FC, useMemo, useState } from "react";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import useWallet from "@/hooks/useWallet";
 import { Selector, SelectorContent, SelectorTrigger } from "@/components/Select/Selector/Index";
-import { SelectedRouteDisplay } from "@/components/Input/RoutePicker/Routes";
 import { Content } from "@/components/Input/RoutePicker/Content";
+import PickerTriggerContent from "@/components/Pages/Deposit/_shared/PickerTriggerContent";
 import { groupRoutes } from "@/hooks/useFormRoutes";
 import { useRecentNetworksStore } from "@/stores/recentRoutesStore";
 import { useRouteSortingStore } from "@/stores/routeSortingStore";
@@ -42,40 +42,69 @@ const PayFromPicker: FC<PayFromPickerProps> = ({ selectedSource, onSourceChange,
         });
     }, [availableRoutes, searchQuery, routesHistory, suggestionsLimit, sortingOption]);
 
-    // Disable until the destination resolves a non-empty source list.
     const hasOptions = availableRoutes.length > 0;
     const hasMultipleOptions = availableRoutes.length > 1 || availableRoutes.some(r => r.tokens.length > 1);
 
+    // "Most used" = the (network, token) pair with the highest count in the
+    // user's source-route history. Shown only when the currently selected
+    // source matches that pair. New users with no history don't see it.
+    const mostUsedKey = useMemo(() => {
+        const buckets = routesHistory?.sourceRoutes;
+        if (!buckets) return null;
+        let best: { network: string; token: string; count: number } | null = null;
+        for (const [network, tokens] of Object.entries(buckets)) {
+            for (const [token, count] of Object.entries(tokens)) {
+                if (!best || count > best.count) {
+                    best = { network, token, count };
+                }
+            }
+        }
+        return best;
+    }, [routesHistory]);
+
+    const isMostUsed = !!(
+        selectedSource &&
+        mostUsedKey &&
+        mostUsedKey.network === selectedSource.network.name &&
+        mostUsedKey.token === selectedSource.token.symbol
+    );
+
     return (
-        <div className="flex items-center gap-2">
-            <span className="w-24 shrink-0 text-sm text-secondary-text tracking-wide">Send</span>
-            <div className="flex-1 min-w-0">
-                <Selector>
-                    <SelectorTrigger disabled={!hasOptions || !hasMultipleOptions} className="bg-secondary-500 hover:bg-secondary-400/70 rounded-xl px-3.5 py-3 transition-colors">
-                        <SelectedRouteDisplay
-                            route={selectedSource?.network}
-                            token={selectedSource?.token}
-                            placeholder="Select source"
-                        />
-                    </SelectorTrigger>
-                    <SelectorContent isLoading={false}>
-                        {({ closeModal }) => (
-                            <Content
-                                onSelect={(r, t) => { onSourceChange(r, t); closeModal(); }}
-                                searchQuery={searchQuery}
-                                setSearchQuery={setSearchQuery}
-                                rowElements={routeElements}
-                                direction="from"
-                                selectedRoute={selectedSource?.network.name}
-                                selectedToken={selectedSource?.token.symbol}
-                                hideTokenSwitch
-                                hideBalances
-                            />
-                        )}
-                    </SelectorContent>
-                </Selector>
-            </div>
-        </div>
+        <Selector>
+            <SelectorTrigger
+                disabled={!hasOptions || !hasMultipleOptions}
+                className="group w-full bg-secondary-500 hover:bg-secondary-400/70 disabled:hover:bg-secondary-500 border border-transparent rounded-2xl !px-4 !py-3 transition-colors disabled:cursor-not-allowed"
+            >
+                <PickerTriggerContent
+                    label="You send"
+                    token={selectedSource?.token}
+                    network={selectedSource?.network}
+                    placeholder="Select source"
+                    accessory={
+                        isMostUsed ? (
+                            <span className="inline-flex items-center bg-secondary-300 text-secondary-text text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full">
+                                <span>Most used</span>
+                            </span>
+                        ) : null
+                    }
+                />
+            </SelectorTrigger>
+            <SelectorContent isLoading={false}>
+                {({ closeModal }) => (
+                    <Content
+                        onSelect={(r, t) => { onSourceChange(r, t); closeModal(); }}
+                        searchQuery={searchQuery}
+                        setSearchQuery={setSearchQuery}
+                        rowElements={routeElements}
+                        direction="from"
+                        selectedRoute={selectedSource?.network.name}
+                        selectedToken={selectedSource?.token.symbol}
+                        hideTokenSwitch
+                        hideBalances
+                    />
+                )}
+            </SelectorContent>
+        </Selector>
     );
 };
 

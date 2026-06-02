@@ -130,7 +130,7 @@ const MethodPicker: FC<Props> = ({ destinations }) => {
         : <WalletIcon className="h-6 w-6 text-primary-text" />;
 
     return (
-        <div className="flex flex-col gap-3 w-full">
+        <div className="flex flex-col gap-2 w-full">
             <DestinationTokenPicker destinations={destinations} />
 
             <div>
@@ -138,7 +138,7 @@ const MethodPicker: FC<Props> = ({ destinations }) => {
                     Choose how to fund this deposit
                 </p>
 
-                <div className="flex flex-col gap-2.5 w-full">
+                <div className="flex flex-col gap-2 w-full">
                     <MethodCard
                         icon={walletCardIcon}
                         iconTone={hasWallet ? "wallet" : "neutral"}

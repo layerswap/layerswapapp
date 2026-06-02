@@ -25,7 +25,7 @@ const DepositHeader: FC = () => {
         : null;
 
     return (
-        <div className="flex items-center gap-1 min-w-0 w-full">
+        <div className="flex items-center gap-1 min-w-0 w-full h-[32px]">
             {canGoBack && (
                 <IconButton
                     onClick={back}
@@ -33,7 +33,7 @@ const DepositHeader: FC = () => {
                     aria-label="Back"
                 />
             )}
-            <h2 className="text-primary-text text-2xl font-semibold truncate">
+            <h2 className="text-primary-text text-lg font-semibold truncate">
                 {title}
                 {chainHint && (
                     <span className="text-secondary-text font-normal">{" · "}{chainHint}</span>

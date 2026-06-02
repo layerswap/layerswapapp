@@ -138,7 +138,6 @@ const DepositCard: FC<Pick<DepositProps, "partner" | "destinations" | "destinati
             <DepositInner partner={partner} destinations={destinations} destinationAddress={destinationAddress} />
         </SwapDataProvider>
     </Widget>
-
 );
 
 export const Deposit: FC<DepositProps> = ({ mode = "inline", buttonLabel = "Deposit", buttonClassName, partner, destinations, destinationAddress }) => {

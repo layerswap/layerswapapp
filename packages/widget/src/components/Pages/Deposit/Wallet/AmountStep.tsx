@@ -72,7 +72,7 @@ const AmountStep: FC = () => {
                 : "Continue";
 
     return (
-        <div className="flex flex-col gap-2.5 w-full">
+        <div className="flex flex-col gap-3 w-full">
             <SourcePicker
                 minAllowedAmount={minAllowedAmount}
                 maxAllowedAmount={maxAllowedAmount}

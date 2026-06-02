@@ -38,9 +38,12 @@ type Props = {
      * owns Formik's `destination_address` and any autofill from the connected
      * wallet would just stomp on it. */
     lockDestinationAddress?: boolean;
+    /** When true, hide the "Easy deposit in 3 steps" instructional banner.
+     * Used by the deposit widget where the parent provides its own context. */
+    hideEasyDepositBanner?: boolean;
 };
 
-const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPicker, lockDestinationAddress }) => {
+const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPicker, lockDestinationAddress, hideEasyDepositBanner }) => {
     const {
         values, isSubmitting, setFieldValue, submitForm
     } = useFormikContext<SwapFormValues>();
@@ -196,15 +199,15 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
 
     return (
         <>
-            <Form className="h-full grow flex flex-col flex-1 justify-between w-full gap-2">
+            <Form className="h-full grow flex flex-col flex-1 justify-between w-full gap-3">
                 {isProcessing ? (
                     <Processing />
                 ) : (
                     <Widget.Content>
                         <div className="w-full flex flex-col justify-between flex-1 relative min-h-60">
-                            <div className="flex flex-col w-full gap-2">
+                            <div className="flex flex-col w-full gap-3">
 
-                                <EasyDepositBanner />
+                                {!hideEasyDepositBanner && <EasyDepositBanner />}
 
                                 {!providersReady && !hasWallet ? (
                                     <div className="flex items-center justify-center gap-2 py-12 text-sm text-secondary-text">

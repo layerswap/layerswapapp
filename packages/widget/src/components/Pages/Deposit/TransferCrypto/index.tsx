@@ -39,6 +39,7 @@ const TransferCrypto: FC<Props> = ({ partner, destinationAddress }) => {
                 disableAutoConnect
                 hideDestinationPicker
                 lockDestinationAddress
+                hideEasyDepositBanner
             />
         </ValidationProvider>
     );
