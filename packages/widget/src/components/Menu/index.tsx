@@ -12,6 +12,7 @@ import { CampaignDetailsComponent } from "../Pages/Campaigns/Details";
 import { Modal, ModalContent } from "../Modal/modalWithoutAnimation";
 import { useCallbacks } from "../../context/callbackProvider";
 import { useControllableState } from "../Modal/vaul/use-controllable-state";
+import AddressBookStep from "../AddressBook/AddressBookStep";
 
 const Comp = () => {
 
@@ -85,6 +86,9 @@ const Comp = () => {
                                 </WizardItem>
                                 <WizardItem StepName={MenuStep.CampaignDetails} GoBack={() => { goToStep(MenuStep.Campaigns, "back"); onMenuNavigationChange("/campaigns") }} className="h-full" inModal>
                                     <CampaignDetailsComponent campaignName={selectedCampaign} />
+                                </WizardItem>
+                                <WizardItem StepName={MenuStep.AddressBook} GoBack={goBackToMenuStep} inModal>
+                                    <AddressBookStep />
                                 </WizardItem>
                             </Wizard>
                         </div>

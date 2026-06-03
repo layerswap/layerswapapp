@@ -1,4 +1,4 @@
-import { BookOpen, Gift, Map, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus } from "lucide-react";
+import { BookOpen, BookUser, Gift, Map, Home, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus } from "lucide-react";
 import { FC, useState } from "react";
 import { useIntercom } from "react-use-intercom";
 import ChatIcon from "../Icons/ChatIcon";
@@ -13,7 +13,7 @@ import { MenuStep } from "../../Models/Wizard";
 import { WalletsMenu } from "../Wallet/WalletComponents/ConnectedWallets";
 import VaulDrawer from "../Modal/vaulModal";
 
-const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ goToStep }) => {
+const MenuList: FC<{ goToStep: (step: MenuStep, path?: string) => void }> = ({ goToStep }) => {
     const { boot, show, update } = useIntercom()
     const [openFeedbackModal, setOpenFeedbackModal] = useState(false);
 
@@ -29,6 +29,9 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
             <Menu.Group>
                 <Menu.Item onClick={() => goToStep(MenuStep.Transactions, "/transactions")} icon={<ScrollText className="h-5 w-5" />} >
                     Transactions
+                </Menu.Item>
+                <Menu.Item onClick={() => goToStep(MenuStep.AddressBook)} icon={<BookUser className="h-5 w-5" />}>
+                    Address Book
                 </Menu.Item>
                 <Menu.Item onClick={() => goToStep(MenuStep.Campaigns, '/campaigns')} icon={<Gift className="h-5 w-5" />} >
                     Campaigns
