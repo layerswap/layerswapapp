@@ -46,7 +46,7 @@ const PickerTriggerContent: FC<PickerTriggerContentProps> = ({
             ) : (
                 <span className="h-9 w-9 rounded-full bg-secondary-400 shrink-0" aria-hidden="true" />
             )}
-            <span className="flex flex-col grow min-w-0 gap-0.5">
+            <span className="flex flex-col grow min-w-0">
                 <span className="text-xs text-secondary-text leading-none">
                     <span>{label}</span>
                 </span>

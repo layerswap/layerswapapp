@@ -54,13 +54,6 @@ const QuoteSummary: FC<Props> = ({
             />
             <div className="flex items-center justify-between text-secondary-text text-sm relative z-10">
                 <span>You receive</span>
-                <span className="inline-flex items-center gap-1.5 text-success-foreground text-[11px] font-medium">
-                    <span className="relative inline-flex h-1.5 w-1.5">
-                        <span className="absolute inset-0 rounded-full bg-success-foreground animate-ping opacity-60" />
-                        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-success-foreground" />
-                    </span>
-                    Live quote
-                </span>
             </div>
             <div className="flex items-baseline justify-between gap-3 relative z-10">
                 <span className="tabular-nums text-primary-text font-medium leading-none text-[28px] truncate">
@@ -83,12 +76,6 @@ const QuoteSummary: FC<Props> = ({
                     </span>
                 </span>
             </div>
-            {network?.display_name && (
-                <div className="flex items-center gap-1.5 text-secondary-text text-xs mt-1 relative z-10">
-                    <ShieldCheck className="h-3 w-3 text-success-foreground" />
-                    <span>Rate guaranteed · on {network.display_name}</span>
-                </div>
-            )}
         </div>
     );
 };
