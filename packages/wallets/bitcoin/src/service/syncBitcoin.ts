@@ -9,8 +9,8 @@ import type { InternalConnector } from '@layerswap/widget/types'
 import { snapshotFromBitcoinAccount, useBitcoinStore } from './bitcoinStore'
 import { connectorsConfigs } from './connectorsConfigs'
 
-let _attached = false
 let _dispose: (() => void) | null = null
+let _config: Config | null = null
 
 const resolveConnectors = async (connectors: readonly Awaited<ReturnType<typeof getConnectors>>[number][]): Promise<InternalConnector[]> => {
     return Promise.all(connectors.map(async (connector) => {
@@ -30,16 +30,19 @@ const resolveConnectors = async (connectors: readonly Awaited<ReturnType<typeof 
 }
 
 export function attachBitcoinSync(config: Config): () => void {
-    if (_attached) return _dispose ?? (() => { })
-    _attached = true
+    if (_config === config && _dispose) return _dispose
+    _dispose?.()
+    _config = config
 
     const store = useBitcoinStore.getState()
     const initialConnectors = getConnectors(config)
     store._setAccount(snapshotFromBitcoinAccount(getAccount(config)))
     store._setAllConnectors(initialConnectors)
 
+    let disposed = false
+
     resolveConnectors(initialConnectors).then((resolved) => {
-        useBitcoinStore.getState()._setResolvedConnectors(resolved)
+        if (!disposed) useBitcoinStore.getState()._setResolvedConnectors(resolved)
     })
 
     const unwatchAccount = watchAccount(config, {
@@ -51,20 +54,22 @@ export function attachBitcoinSync(config: Config): () => void {
         onChange: (connectors) => {
             useBitcoinStore.getState()._setAllConnectors(connectors)
             resolveConnectors(connectors).then((resolved) => {
-                useBitcoinStore.getState()._setResolvedConnectors(resolved)
+                if (!disposed) useBitcoinStore.getState()._setResolvedConnectors(resolved)
             })
         },
     })
 
     _dispose = () => {
+        if (disposed) return
+        disposed = true
         unwatchAccount()
         unwatchConnectors()
-        _attached = false
         _dispose = null
+        _config = null
     }
     return _dispose
 }
 
 export function isBitcoinSyncAttached(): boolean {
-    return _attached
+    return _dispose !== null
 }

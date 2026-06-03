@@ -91,6 +91,8 @@ export function createStarknetConnection(
         },
         destroy() {
             unsubs.forEach(u => u())
+            // This store owns the module-level Starknet hydration lifecycle.
+            starknetConnectionService.dispose()
         },
     }
 }

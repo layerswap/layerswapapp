@@ -24,10 +24,10 @@ export function attachFuelSync(fuel: Fuel): () => void {
     }
 
     const onConnection = () => {
-        fuelConnectionService.resolveConnectedWallets().catch(() => { /* swallow */ })
+        fuelConnectionService.syncConnectedWallets().catch(() => { /* swallow */ })
     }
     const onCurrentConnector = () => {
-        fuelConnectionService.resolveConnectedWallets().catch(() => { /* swallow */ })
+        fuelConnectionService.syncConnectedWallets().catch(() => { /* swallow */ })
     }
 
     let perConnectorDisposers: Array<() => void> = []
@@ -38,7 +38,7 @@ export function attachFuelSync(fuel: Fuel): () => void {
 
         for (const c of connectors) {
             const handler = async () => {
-                await fuelConnectionService.resolveConnectedWallets()
+                await fuelConnectionService.syncConnectedWallets()
             }
             c.on(FuelConnectorEventTypes.currentNetwork, handler)
             perConnectorDisposers.push(() => c.off(FuelConnectorEventTypes.currentNetwork, handler))

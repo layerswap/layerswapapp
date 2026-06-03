@@ -5,7 +5,7 @@ import type {
     WalletConnectionProvider,
     WalletModalConnector,
 } from '@layerswap/widget/types'
-import { walletIconResolver } from '@layerswap/widget/internal'
+import { connectModalStore, walletIconResolver } from '@layerswap/widget/internal'
 import {
     isWalletInfoCurrentlyInjected,
     isWalletInfoInjectable,
@@ -107,28 +107,33 @@ export class TonConnectionService {
 
         // Set up the status-change promise first so we don't miss an instant
         // injected connect that resolves before we set the listener.
+        const abortController = typeof AbortController !== 'undefined' ? new AbortController() : undefined
+        let unsubscribeStatus: (() => void) | undefined
+        let unsubscribeModal: (() => void) | undefined
         const connectionResultPromise = new Promise<TonWallet>((resolve, reject) => {
-            const cleanup = () => {
-                unsubscribe()
-            }
-            const unsubscribe = tonConnect.onStatusChange(
+            unsubscribeStatus = tonConnect.onStatusChange(
                 (wallet) => {
                     if (wallet) {
-                        cleanup()
                         resolve(wallet)
                     }
                 },
                 (err) => {
-                    cleanup()
                     reject(err)
                 },
             )
+            unsubscribeModal = connectModalStore.subscribe(() => {
+                const modal = connectModalStore.getSnapshot()
+                if (!modal.isWalletModalOpen || modal.selectedConnector?.id !== connector.id) {
+                    abortController?.abort()
+                    reject(new Error('TON wallet connection cancelled'))
+                }
+            })
         })
 
         try {
             if (isWalletInfoCurrentlyInjected(walletInfo) || (isWalletInfoInjectable(walletInfo) && walletInfo.injected)) {
                 const injectable = walletInfo as WalletInfoInjectable
-                tonConnect.connect({ jsBridgeKey: injectable.jsBridgeKey })
+                tonConnect.connect({ jsBridgeKey: injectable.jsBridgeKey }, { signal: abortController?.signal })
             } else if (isWalletInfoRemote(walletInfo)) {
                 const remote = walletInfo as WalletInfoRemote
                 // Loading state for the QR view while the bridge handshakes.
@@ -137,7 +142,7 @@ export class TonConnectionService {
                 const universalLink = tonConnect.connect({
                     universalLink: remote.universalLink,
                     bridgeUrl: remote.bridgeUrl,
-                }) as string
+                }, { signal: abortController?.signal }) as string
 
                 // Prefer the wallet's native scheme (e.g. `tonkeeper-tc://`) for the
                 // open-in-app button — it launches the desktop wallet directly. Falls
@@ -170,6 +175,9 @@ export class TonConnectionService {
         } catch (e) {
             if (e instanceof Error) throw e
             throw new Error(String(e))
+        } finally {
+            unsubscribeStatus?.()
+            unsubscribeModal?.()
         }
     }
 

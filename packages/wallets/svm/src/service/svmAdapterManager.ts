@@ -64,9 +64,15 @@ class SvmAdapterManager {
             this._tryRestoreSelection()
         })
         const offUnregister = on('unregister', (...wallets) => {
-            this._standardAdapters = this._standardAdapters.filter(
-                adapter => !wallets.some(wallet => wallet === adapter.wallet)
-            )
+            const removedWallets = new Set(wallets)
+            const removedAdapters: StandardWalletAdapter[] = []
+            const keptAdapters: StandardWalletAdapter[] = []
+            for (const adapter of this._standardAdapters) {
+                if (removedWallets.has(adapter.wallet)) removedAdapters.push(adapter)
+                else keptAdapters.push(adapter)
+            }
+            this._standardAdapters = keptAdapters
+            removedAdapters.forEach(adapter => this._destroyStandardAdapter(adapter))
             this._recompute()
         })
 
@@ -82,8 +88,7 @@ class SvmAdapterManager {
     /** Recompute the merged adapter list (standard wins on name collisions) and re-bind listeners. */
     private _recompute(): void {
         for (const adapter of this._adapters) {
-            this._detachers.get(adapter)?.()
-            this._detachers.delete(adapter)
+            this._detach(adapter)
         }
 
         const standardNames = new Set(this._standardAdapters.map(a => a.name))
@@ -137,6 +142,17 @@ class SvmAdapterManager {
             adapter.off('disconnect', onDisconnect)
             adapter.off('readyStateChange', onReadyStateChange)
         })
+    }
+
+    private _detach(adapter: Adapter): void {
+        const detach = this._detachers.get(adapter)
+        detach?.()
+        this._detachers.delete(adapter)
+    }
+
+    private _destroyStandardAdapter(adapter: StandardWalletAdapter): void {
+        this._detach(adapter)
+        adapter.destroy()
     }
 
     private _pushWallets(): void {
@@ -193,9 +209,10 @@ class SvmAdapterManager {
         this._standardOff?.()
         this._standardOff = undefined
         for (const adapter of this._adapters) {
-            const detach = this._detachers.get(adapter)
-            detach?.()
-            this._detachers.delete(adapter)
+            this._detach(adapter)
+        }
+        for (const adapter of this._standardAdapters) {
+            adapter.destroy()
         }
         this._adapters = []
         this._manualAdapters = []

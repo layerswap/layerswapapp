@@ -47,15 +47,15 @@ export type LayerswapContextProps = {
 
 const INTERCOM_APP_ID = 'h5zisg78'
 const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callbacks, config, walletProviders = [] }) => {
-    let { apiKey, version, settings: _settings, theme: themeData, initialValues, imtblPassport, tonConfigs, walletConnect } = config || {}
+    const { apiKey, version, settings: _settings, theme, initialValues, imtblPassport, tonConfigs, walletConnect } = config || {}
     const [fetchedSettings, setFetchedSettings] = useState<LayerSwapSettings | null>(null)
     // Defer Intercom script injection until the browser is idle. The provider
     // stays mounted so its context is always available (no remount of any
     // subtree); only the network/parse cost of the third-party widget is
     // pushed past first paint.
     const intercomReady = useDeferredIntercomInit()
-    themeData = { ...THEME_COLORS['default'], ...config?.theme }
-
+    const themeData = useMemo(() => ({ ...THEME_COLORS['default'], ...(theme ?? {}) }), [theme])
+    // Legacy globals are read synchronously by descendants during render.
     AppSettings.ApiVersion = version || AppSettings.ApiVersion
     AppSettings.ImtblPassportConfig = imtblPassport
     AppSettings.TonClientConfig = tonConfigs || AppSettings.TonClientConfig
@@ -64,14 +64,25 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
     if (apiKey) LayerSwapApiClient.apiKey = apiKey
 
     useEffect(() => {
-        if (!_settings) {
-            (async () => {
-                const fetchedSettings = await getSettings(apiKey || AppSettings.LayerswapApiKeys[version || AppSettings.ApiVersion])
-                if (!fetchedSettings) throw new Error('Failed to fetch settings')
-                setFetchedSettings(fetchedSettings)
-            })()
+        if (_settings) {
+            setFetchedSettings(null)
+            return
         }
-    }, [])
+
+        let cancelled = false
+        const apiVersion = version || AppSettings.ApiVersion
+        const settingsApiKey = apiKey || AppSettings.LayerswapApiKeys[apiVersion]
+
+        void (async () => {
+            const fetchedSettings = await getSettings(settingsApiKey)
+            if (!fetchedSettings) throw new Error('Failed to fetch settings')
+            if (!cancelled) setFetchedSettings(fetchedSettings)
+        })()
+
+        return () => {
+            cancelled = true
+        }
+    }, [_settings, apiKey, version])
 
     const settings = _settings || fetchedSettings
     if (!settings) return <WidgetLoading />

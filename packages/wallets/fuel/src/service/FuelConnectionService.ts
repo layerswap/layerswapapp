@@ -193,7 +193,6 @@ export class FuelConnectionService {
                 const addresses = (await connector.accounts()).map(a => Address.fromAddressOrString(a).toB256())
                 if (connector.connected && addresses.length > 0) {
                     const w = await this.resolveFuelWallet(connector, addresses[0], addresses)
-                    this.addWallet(w)
                     wallets.push(w)
                 }
             } catch (e) {
@@ -202,6 +201,13 @@ export class FuelConnectionService {
             }
         }
         return wallets
+    }
+
+    async syncConnectedWallets(): Promise<void> {
+        const wallets = await this.resolveConnectedWallets()
+        for (const wallet of wallets) {
+            this.addWallet(wallet)
+        }
     }
 
     buildProvider(): WalletConnectionProvider {

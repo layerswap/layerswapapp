@@ -231,7 +231,13 @@ export class SvmConnectionService {
             if (!targetAdapter) throw new Error('Connector not found')
 
             if (useSvmStore.getState().activeAddress) {
-                try { await targetAdapter.disconnect() } catch { /* noop */ }
+                const activeAdapter = svmAdapterManager.getActiveAdapter()
+                const adaptersToDisconnect = svmAdapterManager.getAdapters().filter(adapter =>
+                    adapter !== targetAdapter && (adapter === activeAdapter || adapter.connected)
+                )
+                for (const adapter of adaptersToDisconnect) {
+                    try { await adapter.disconnect() } catch { /* noop */ }
+                }
             }
 
             const resolveURI = registry
