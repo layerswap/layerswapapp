@@ -1,4 +1,4 @@
-import { BookOpen, BookUser, Gift, Map, Home, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus } from "lucide-react";
+import { BookOpen, BookUser, Gift, Map, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus } from "lucide-react";
 import { FC, useState } from "react";
 import { useIntercom } from "react-use-intercom";
 import ChatIcon from "../Icons/ChatIcon";

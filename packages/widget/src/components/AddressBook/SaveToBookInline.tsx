@@ -1,10 +1,10 @@
 import { FC, useState } from 'react'
 import clsx from 'clsx'
 import { BookmarkPlus } from 'lucide-react'
-import FilledX from '@/components/icons/FilledX'
-import SecondaryButton from '@/components/buttons/secondaryButton'
+import FilledX from '@/components/Icons/FilledX'
 import { useAddressBookStore, NAME_MAX, COUNTER_SHOW_AT } from '@/stores/addressBookStore'
 import { NetworkType } from '@/Models/Network'
+import SecondaryButton from '../Buttons/secondaryButton'
 
 export const SaveToBookNameForm: FC<{ address: string, networkType: NetworkType, onDone: () => void, compact?: boolean }> = ({ address, networkType, onDone, compact }) => {
     const addAddress = useAddressBookStore(s => s.addAddress)

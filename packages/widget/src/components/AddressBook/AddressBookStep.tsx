@@ -1,13 +1,13 @@
 import { FC, useMemo, useState } from 'react'
 import { useAddressBookStore, SavedAddress } from '@/stores/addressBookStore'
 import { MoreVertical, Pencil, Plus, Trash2 } from 'lucide-react'
-import AddressIcon from '@/components/AddressIcon'
 import shortenString from '@/components/utils/ShortenString'
 import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
 import AddressBookEntryForm, { AddressBookEntryFormProps } from './AddressBookEntryForm'
-import { HistoryItemSceleton } from '@/components/SwapHistory/Snippet'
 import { SearchComponent } from '@/components/Input/Search'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/shadcn/popover'
+import AddressIcon from '../Common/AddressIcon'
+import { HistoryItemSceleton } from '../Pages/SwapHistory/Snippet'
 
 type EditingState =
     | { kind: 'closed' }

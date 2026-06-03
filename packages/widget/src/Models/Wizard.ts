@@ -45,6 +45,7 @@ export enum MenuStep {
     Menu = "Menu",
     Transactions = "Transactions",
     TransactionDetails = "Transaction Details",
+    AddressBook = "Address Book",
     Campaigns = "Campaigns",
     CampaignDetails = "Campaign Details"
 }
