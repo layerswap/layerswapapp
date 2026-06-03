@@ -28,7 +28,6 @@ import DepositMethodComponent from "./FeeDetails/DepositMethod";
 import { AddressGroup } from "@/components/Input/Address/AddressPicker";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { ExchangeReceiveAmount } from "@/components/Input/Amount/ExchangeReceiveAmount";
-import shortenString from "@/components/utils/ShortenString";
 
 type Props = {
     partner?: Partner;
@@ -96,7 +95,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                                     <AddressButton address={addressItem.address} network={destination} wallet={wallet} addressProviderIcon={addressProviderIcon} />
                                                 </>
                                                     : destination_address ? <>
-                                                        <AddressButton address={destination_address} />
+                                                        <AddressButton address={destination_address} network={destination} />
                                                     </>
                                                         :
                                                         <span className="flex items-center">
@@ -194,19 +193,11 @@ const AddressButton = ({ address, network, wallet, addressProviderIcon }: { addr
                         width="36"
                         height="36"
                     />) : (
-                        <AddressIcon className="scale-150 h-9 w-9" address={network ? new AddressClass(address, network).full : address} size={36} />
+                        <AddressIcon className="h-9 w-9" address={network ? new AddressClass(address, network).full : address} size={36} rounded="6px" />
                     )
                 }
             </div>
-            {
-                network ? (
-                    <ExtendedAddress address={address} network={network} providerName={wallet?.providerName} showDetails={wallet ? true : false} title={wallet?.displayName?.split("-")[0]} description={wallet?.providerName} logo={wallet?.icon} />
-                ) : (
-                    <p className="text-sm block font-medium">
-                        {shortenString(address)}
-                    </p>
-                )
-            }
+            <ExtendedAddress address={address} network={network} providerName={wallet?.providerName} showDetails={wallet ? true : false} title={wallet?.displayName?.split("-")[0]} description={wallet?.providerName} logo={wallet?.icon} />
         </div>
         <span className="justify-self-end right-0 flex items-center pointer-events-none  text-primary-text">
             <span className="absolute right-0 pr-2 pointer-events-none text-primary-text">

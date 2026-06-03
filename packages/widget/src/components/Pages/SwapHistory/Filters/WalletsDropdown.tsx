@@ -8,6 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/shadcn'
 import VaulDrawer from '@/components/Modal/vaulModal'
 import WalletsList from '@/components/Wallet/WalletComponents/WalletsList'
 import WalletIconView from '@/components/Wallet/WalletIconView'
+import { useAddressNameFinder } from '@/stores/addressBookStore'
 
 type WalletsDropdownProps = {
     wallets: Wallet[]
@@ -28,6 +29,7 @@ const WalletsDropdown: FC<WalletsDropdownProps> = ({ wallets, selectedAddresses,
     const [manageOpen, setManageOpen] = useState(false)
     const disabled = wallets.length === 0
     const label = count > 0 ? `Wallets (${count})` : 'Wallets'
+    const findName = useAddressNameFinder()
 
     const rows = useMemo<Row[]>(() => {
         const seen = new Set<string>()
@@ -39,14 +41,14 @@ const WalletsDropdown: FC<WalletsDropdownProps> = ({ wallets, selectedAddresses,
                 seen.add(addr.normalized)
                 out.push({
                     address,
-                    label: w.displayName || w.providerName,
+                    label: findName(address, null, w.providerName) || w.displayName || w.providerName,
                     short: addr.toShortString(),
                     icon: <WalletIconView wallet={w} className="w-5 h-5" size={20} />,
                 })
             }
         }
         return out
-    }, [wallets])
+    }, [wallets, findName])
 
     return (
         <>

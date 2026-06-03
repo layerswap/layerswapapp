@@ -14,6 +14,7 @@ import VaulDrawer from "@/components/Modal/vaulModal";
 import { getExplorerUrl } from "@/lib/address/explorerUrl";
 import { Network, Token } from "@/Models";
 import { Address } from "@/lib/address/Address";
+import { useNamedAddress } from "@/stores/addressBookStore"
 
 type Props = {
     campaign: Campaign
@@ -156,6 +157,7 @@ const LeaderboardItem: FC<{
         () => new Address(user.address, network),
         [user, network]
     );
+    const displayName = useNamedAddress(user.address, network)
     return <div key={user.position} className="items-center flex justify-between">
         <div className="flex items-center">
             <p className="text-xl font-medium text-primary-text w-fit mr-1">{user.position}.</p>
@@ -164,7 +166,7 @@ const LeaderboardItem: FC<{
                 <div>
                     <div className="text-sm font-bold text-primary-text leading-3">
                         {user?.address && network?.account_explorer_template && <a target="_blank" className="hover:opacity-80" href={getExplorerUrl(network?.account_explorer_template, user?.address)}>
-                            {user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : addressInstance?.toShortString() || ''}
+                            {user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : displayName}
                         </a>}
                     </div>
                     <p className="mt-1 text-sm font-medium text-secondary-text leading-3">{truncateDecimals(user.amount, token?.precision)} {token?.symbol}</p>

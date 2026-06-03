@@ -9,6 +9,7 @@ import WizardItem from "../Wizard/WizardItem";
 import { Modal, ModalContent } from "../Modal/modalWithoutAnimation";
 import { useCallbacks } from "../../context/callbackProvider";
 import { useControllableState } from "../Modal/vaul/use-controllable-state";
+import AddressBookStep from "../AddressBook/AddressBookStep";
 
 // History and Campaigns are only rendered after the user opens this menu
 // and navigates to a sub-step. Lazy-loading keeps their components — plus
@@ -102,6 +103,9 @@ const Comp = () => {
                                     <Suspense fallback={null}>
                                         <CampaignDetailsComponent campaignName={selectedCampaign} />
                                     </Suspense>
+                                </WizardItem>
+                                <WizardItem StepName={MenuStep.AddressBook} GoBack={goBackToMenuStep} inModal>
+                                    <AddressBookStep />
                                 </WizardItem>
                             </Wizard>
                         </div>

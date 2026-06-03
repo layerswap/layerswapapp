@@ -7,10 +7,12 @@ import { Wallet } from "@/types/wallet";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import WalletIconView from "@/components/Wallet/WalletIconView";
 import clsx from 'clsx';
+import { useNamedAddress } from "@/stores/addressBookStore";
 
 const DestinationWalletPicker = (props: AddressTriggerProps) => {
     const { addressItem, connectedWallet, partner, destination } = props
-    return destination && <div 
+    const label = useNamedAddress(addressItem?.address, destination)
+    return destination && <div
     data-attr={addressItem ? "address-item" : "add-address"}
     className={clsx(
         "flex items-center space-x-2 text-sm rounded-lg py-1 px-2 justify-self-end",
@@ -26,9 +28,7 @@ const DestinationWalletPicker = (props: AddressTriggerProps) => {
                     <div className="inline-flex items-center relative px-0.5">
                         <ResolvedIcon addressItem={addressItem} partner={partner} wallet={connectedWallet} destination={destination} />
                     </div>
-                    <div className="text-secondary-text">
-                        {new Address(addressItem.address, destination).toShortString()}
-                    </div>
+                    <div className="text-secondary-text truncate max-w-[90px]">{label}</div>
                     <div className="w-4 h-4 items-center flex text-secondary-text">
                         <ChevronDown className="h-4 w-4" aria-hidden="true" />
                     </div>

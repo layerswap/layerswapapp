@@ -8,6 +8,10 @@ import WalletIcon from "@/components/Icons/WalletIcon";
 import WalletIconView from "@/components/Wallet/WalletIconView";
 import { WalletItem } from "@/components/Wallet/WalletComponents/WalletsList";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
+import { AddressItem } from ".";
+import { Partner } from "@/Models/Partner";
+import AddressIcon from "@/components/Common/AddressIcon";
+import AddressWithIcon from "./AddressWithIcon";
 
 type Props = {
     provider: WalletConnectionProvider,
@@ -73,14 +77,23 @@ const ConnectedWallets: FC<Props> = ({ provider, onClick, onConnect, destination
 
 type NotCompatibleWalletsProps = {
     notCompatibleWallets: Wallet[],
+    notCompatibleAddresses?: AddressItem[],
     destination: Network,
+    partner?: Partner,
     isLoading?: boolean,
 }
 
-export const NotCompatibleWallets: FC<NotCompatibleWalletsProps> = ({ notCompatibleWallets, destination, isLoading }) => {
-    const [showIncompatibleWallets, setShowIncompatibleWallets] = useState(notCompatibleWallets.length === 1)
+const MAX_ICONS = 3
 
-    if (!notCompatibleWallets.length) return null
+export const NotCompatibleWallets: FC<NotCompatibleWalletsProps> = ({ notCompatibleWallets, notCompatibleAddresses = [], destination, partner, isLoading }) => {
+    const total = notCompatibleWallets.length + notCompatibleAddresses.length
+    const [showIncompatibleWallets, setShowIncompatibleWallets] = useState(total === 1)
+
+    const walletIcons = notCompatibleWallets.slice(0, MAX_ICONS)
+    const addressIcons = notCompatibleAddresses.slice(0, Math.max(0, MAX_ICONS - walletIcons.length))
+    const hiddenIconsCount = total - walletIcons.length - addressIcons.length
+
+    if (!total) return null
 
     return (
         <ResizablePanel>
@@ -100,12 +113,22 @@ export const NotCompatibleWallets: FC<NotCompatibleWalletsProps> = ({ notCompati
                         {isLoading ? (
                             <RefreshCw className="h-3 w-auto animate-spin" />
                         ) : (
-                            <div className="space-x-1 flex">
-                                {notCompatibleWallets?.map((wallet) => (
+                            <div className="space-x-1 flex items-center">
+                                {walletIcons.map((wallet) => (
                                     <div key={wallet.address} className="inline-flex items-center relative">
                                         <WalletIconView wallet={wallet} className="w-4 h-4 rounded-xs bg-secondary-800" size={16} />
                                     </div>
                                 ))}
+                                {addressIcons.map((item) => (
+                                    <div key={item.address} className="inline-flex items-center relative">
+                                        <AddressIcon className="w-4 h-4" address={item.address} size={16} rounded="2px" />
+                                    </div>
+                                ))}
+                                {hiddenIconsCount > 0 && (
+                                    <div className="w-4 h-4 bg-secondary-600 text-primary-text text-[8px] rounded-full flex items-center justify-center border-2 border-background">
+                                        <span>+{hiddenIconsCount}</span>
+                                    </div>
+                                )}
                                 <ChevronDown
                                     className={`h-5 w-auto ${showIncompatibleWallets ? 'rotate-180' : ''} transition-all duration-200`}
                                 />
@@ -113,8 +136,8 @@ export const NotCompatibleWallets: FC<NotCompatibleWalletsProps> = ({ notCompati
                         )}
                     </div>
                 </button>
-                {showIncompatibleWallets &&
-                    notCompatibleWallets.map((wallet, index) => (
+                {showIncompatibleWallets && <>
+                    {notCompatibleWallets.map((wallet, index) => (
                         <div key={`${index}${wallet.address}`} className="group/addressItem w-full rounded-md hover:bg-secondary-700! transition duration-200 opacity-50 cursor-not-allowed">
                             <WalletItem
                                 account={wallet}
@@ -125,6 +148,12 @@ export const NotCompatibleWallets: FC<NotCompatibleWalletsProps> = ({ notCompati
                             />
                         </div>
                     ))}
+                    {notCompatibleAddresses.map((item, index) => (
+                        <div key={`${index}${item.address}`} className="group/addressItem w-full rounded-md p-3 bg-secondary-500 transition duration-200 opacity-50 cursor-not-allowed pointer-events-none">
+                            <AddressWithIcon addressItem={item} partner={partner} network={destination} />
+                        </div>
+                    ))}
+                </>}
             </div>
         </ResizablePanel>
     )
