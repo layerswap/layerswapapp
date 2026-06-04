@@ -79,7 +79,7 @@ const AddressBookStep: FC = () => {
                         <div key={raw} className="flex items-center justify-between gap-2 p-3 rounded-xl bg-secondary-500">
                             <div className="flex items-center gap-3 min-w-0">
                                 <div className="rounded-md h-8 w-8 overflow-hidden">
-                                    <AddressIcon className="h-8 w-8" address={raw} size={32} rounded="6px" />
+                                    <AddressIcon className="rounded-md" address={raw} size={32} providerName={entry.networkType} />
                                 </div>
                                 <div className="min-w-0">
                                     <p className="text-sm font-medium text-primary-text truncate">{entry.name}</p>

@@ -319,7 +319,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
                                                 height="36"
                                             />
                                         ) : (
-                                            <AddressIcon className="h-4 w-4" address={new Address(swapBasicData.destination_address, swapBasicData?.destination_network).full} size={36} rounded="4px" />
+                                            <AddressIcon className="rounded-[4px]" address={new Address(swapBasicData.destination_address, swapBasicData?.destination_network).full} size={16} network={swapBasicData?.destination_network} />
                                         )}
                                         {
                                             ((swapBasicData?.destination_network && Address.isValid(swapBasicData?.destination_address, swapBasicData?.destination_network)) ?
