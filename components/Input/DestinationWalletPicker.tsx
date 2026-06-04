@@ -3,9 +3,8 @@ import { useNamedAddress } from "@/stores/addressBookStore";
 import { ChevronDown, PlusIcon } from "lucide-react";
 import { AddressGroup, AddressItem, AddressTriggerProps } from "./Address/AddressPicker";
 import { Partner } from "@/Models/Partner";
-import AddressIcon from "../AddressIcon";
+import { ResolvedAddressIcon } from "../AddressIcon";
 import { Wallet } from "@/Models/WalletProvider";
-import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import clsx from 'clsx';
 
 const DestinationWalletPicker = (props: AddressTriggerProps) => {
@@ -60,21 +59,15 @@ type AdderssIconprops = {
 }
 const ResolvedIcon = (props: AdderssIconprops) => {
     const { addressItem, wallet, partner, destination } = props
-    if (partner?.is_wallet && addressItem.group === AddressGroup.FromQuery) {
-        return <ImageWithFallback
-            alt="Partner logo"
-            className='rounded-md object-contain'
-            src={partner.logo}
-            width="16"
-            height="26"
-        />
-    }
-    else if (addressItem.group === AddressGroup.ConnectedWallet && wallet) {
-        return <wallet.icon className="w-4 h-4" />
-    }
-    else {
-        return <AddressIcon className="p-0.5" address={destination ? new Address(addressItem.address, destination).full : addressItem.address} size={16} network={destination} />
-    }
+    return <ResolvedAddressIcon
+        address={destination ? new Address(addressItem.address, destination).full : addressItem.address}
+        size={16}
+        className="p-0.5"
+        network={destination}
+        walletIcon={addressItem.group === AddressGroup.ConnectedWallet ? wallet?.icon : undefined}
+        partnerLogo={(partner?.is_wallet && addressItem.group === AddressGroup.FromQuery) ? partner.logo : undefined}
+        partnerLogoClassName="rounded-md object-contain"
+    />
 }
 
 export default DestinationWalletPicker

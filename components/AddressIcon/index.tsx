@@ -1,9 +1,10 @@
 'use client'
 import Jazzicon from "./jazzicon.mjs";
-import { FC, useEffect, useRef } from "react";
+import { FC, ReactNode, SVGProps, useEffect, useRef } from "react";
 import { UserRound } from "lucide-react";
 import clsx from "clsx";
 import { useAddressName } from "@/stores/addressBookStore";
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 
 type Props = {
     address: string;
@@ -51,3 +52,23 @@ const AddressIcon: FC<Props> = ({ address, size, className, network, providerNam
 }
 
 export default AddressIcon
+
+type ResolvedAddressIconProps = {
+    address: string;
+    size: number;
+    className?: string;
+    network?: { name: string } | null;
+    providerName?: string;
+    walletIcon?: (props: SVGProps<SVGSVGElement>) => ReactNode;
+    walletIconClassName?: string;
+    partnerLogo?: string;
+    partnerLogoClassName?: string;
+}
+
+export const ResolvedAddressIcon: FC<ResolvedAddressIconProps> = ({ address, size, className, network, providerName, walletIcon: WalletIcon, walletIconClassName, partnerLogo, partnerLogoClassName, }) => {
+    if (WalletIcon) return <WalletIcon width={size} height={size} className={walletIconClassName} />
+    if (partnerLogo) return (
+        <ImageWithFallback alt="Partner logo" src={partnerLogo} width={size} height={size} className={partnerLogoClassName} />
+    )
+    return <AddressIcon address={address} size={size} className={className} network={network} providerName={providerName} />
+}
