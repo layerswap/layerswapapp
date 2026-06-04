@@ -2,7 +2,7 @@
 import Jazzicon from "./jazzicon.mjs";
 import { FC, ReactNode, SVGProps, useEffect, useRef } from "react";
 import { UserRound } from "lucide-react";
-import clsx from "clsx";
+import { cn } from "@/helpers/cn";
 import { useAddressName } from "@/stores/addressBookStore";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 
@@ -38,7 +38,7 @@ const AddressIcon: FC<Props> = ({ address, size, className, network, providerNam
     }, [address, size, saved]);
 
     return (
-        <div className={clsx("relative overflow-hidden rounded-md", className)} style={{ width: size, height: size }}>
+        <div className={cn("relative overflow-hidden rounded-md", className)} style={{ width: size, height: size }}>
             <div className="absolute inset-0" ref={ref as any} />
             {saved && (
                 <div className="absolute inset-0 flex items-center justify-center">

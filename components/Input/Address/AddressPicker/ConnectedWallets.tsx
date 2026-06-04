@@ -120,7 +120,7 @@ export const NotCompatibleWallets: FC<NotCompatibleWalletsProps> = ({ notCompati
                                 ))}
                                 {addressIcons.map((item) => (
                                     <div key={item.address} className="inline-flex items-center relative">
-                                        <AddressIcon className="rounded-[2px]!" address={item.address} size={16} network={destination} />
+                                        <AddressIcon className="rounded-[2px]" address={item.address} size={16} network={destination} />
                                     </div>
                                 ))}
                                 {hiddenIconsCount > 0 && (

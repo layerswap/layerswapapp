@@ -42,7 +42,7 @@ export const SummaryRow: FC<{
                             <ResolvedAddressIcon
                                 address={addressInstance?.full || ''}
                                 size={16}
-                                className="rounded-[4px]!"
+                                className="rounded-[4px]"
                                 network={to}
                                 walletIcon={wallet?.icon}
                                 walletIconClassName="bg-secondary-700 rounded-sm"
