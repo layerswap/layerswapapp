@@ -1,6 +1,6 @@
 import { FC, MouseEventHandler, ReactNode, SVGProps, useCallback, useMemo, useState } from "react"
 import { AddressGroup, AddressItem } from ".";
-import AddressIcon from "@/components/AddressIcon";
+import { ResolvedAddressIcon } from "@/components/AddressIcon";
 import { Address, getExplorerUrl } from "@/lib/address";
 import { Copy, Check, ChevronDown, WalletIcon, Pencil, Link2, SquareArrowOutUpRight, Unplug, Info, Trash2, BookmarkPlus } from "lucide-react";
 import { Partner } from "@/Models/Partner";
@@ -60,21 +60,13 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
     return (
         <div className="w-full flex items-center justify-between">
             <div className="flex bg-secondary-400 text-primary-text items-center justify-center rounded-md h-8 overflow-hidden w-8">
-                {
-                    (partner?.is_wallet && addressItem.group === AddressGroup.FromQuery) ? (
-                        partner?.logo && (
-                            <ImageWithFallback
-                                alt="Partner logo"
-                                className="rounded-md object-contain"
-                                src={partner.logo}
-                                width="36"
-                                height="36"
-                            />
-                        )
-                    ) : (
-                        <AddressIcon className="h-9 w-9" address={address} size={32} rounded="6px" />
-                    )
-                }
+                <ResolvedAddressIcon
+                    address={address}
+                    size={32}
+                    network={network}
+                    partnerLogo={(partner?.is_wallet && addressItem.group === AddressGroup.FromQuery) ? partner.logo : undefined}
+                    partnerLogoClassName="rounded-md object-contain"
+                />
             </div>
 
             <div className="flex flex-col items-start grow min-w-0 ml-3 text-sm">
