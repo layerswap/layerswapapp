@@ -1,7 +1,6 @@
 import { useFormikContext } from "formik";
 import { Dispatch, FC, SetStateAction, useCallback, useState } from "react";
 import useWallet from "@/hooks/useWallet";
-import { Address } from "@/lib/address/Address";
 import { ChevronDown, CircleHelp, QrCode } from "lucide-react";
 import VaulDrawer, { ModalFooterPortal } from "@/components/Modal/vaulModal";
 import { SelectAccountProps, Wallet } from "@/types/wallet";
@@ -14,6 +13,7 @@ import FilledCheck from "@/components/Icons/FilledCheck";
 import clsx from "clsx";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts";
+import { useNamedAddress } from "@/stores/addressBookStore";
 
 type SourceWalletPickerProps = {
     hideManualTransfer?: boolean;
@@ -32,6 +32,7 @@ const SourceWalletPicker: FC<SourceWalletPickerProps> = ({ hideManualTransfer })
 
     const { provider } = useWallet(values.from, "withdrawal")
     const selectedSourceAccount = useSelectedAccount("from", values.from?.name);
+    const sourceLabel = useNamedAddress(selectedSourceAccount?.address, values.from)
 
     const { selectedConnector } = useConnectModal()
     const availableWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
@@ -85,9 +86,7 @@ const SourceWalletPicker: FC<SourceWalletPickerProps> = ({ hideManualTransfer })
                             <div className="inline-flex items-center relative px-0.5">
                                 <selectedSourceAccount.icon className="w-4 h-4" />
                             </div>
-                            <div className="text-secondary-text">
-                                {new Address(selectedSourceAccount.address, values.from).toShortString()}
-                            </div>
+                            <div className="text-secondary-text truncate max-w-[90px]">{sourceLabel}</div>
                             <div className="w-4 h-4 items-center flex text-secondary-text">
                                 <ChevronDown className="h-4 w-4" aria-hidden="true" />
                             </div>
@@ -265,7 +264,7 @@ const Connect: FC<{ connectFn?: () => Promise<Wallet | undefined | void>; setMou
     const { connect } = useConnectModal()
     const { providers } = useWallet()
 
-    const isProvidersReady = providers.every(p => typeof p.ready === 'boolean' ? p.ready : true)
+    const isProvidersReady = providers.every(p => p.ready)
 
     const connectWallet = async () => {
         setMountWalletPortal && setMountWalletPortal(true)

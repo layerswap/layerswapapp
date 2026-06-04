@@ -96,6 +96,7 @@ const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
     ])
 
     const noAccounts = wallets.length === 0
+    if (noAccounts) return <ConnectWalletCard />
 
     return (
         <div className="relative flex flex-col h-full min-h-0">
@@ -111,7 +112,6 @@ const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
                     filtersActive={filtersActive}
                     clearFilters={clearFilters}
                     onNewTransferClick={onNewTransferClick}
-                    noAccounts={noAccounts}
                 />
             </div>
         </div>
@@ -130,7 +130,6 @@ type SwapsListProps = {
     filtersActive: boolean
     clearFilters: () => void
     onNewTransferClick?: () => void
-    noAccounts: boolean
 }
 
 const SwapsList: FC<SwapsListProps> = ({
@@ -143,7 +142,6 @@ const SwapsList: FC<SwapsListProps> = ({
     filtersActive,
     clearFilters,
     onNewTransferClick,
-    noAccounts,
 }) => {
     const [showAll, setShowAll] = useState(false)
     const [expanded, setExpanded] = useState<string | undefined>(undefined)
@@ -232,7 +230,6 @@ const SwapsList: FC<SwapsListProps> = ({
 
     if (!list.length) {
         if (filtersActive && hasAnySwaps) return <NoMatches onClear={clearFilters} />
-        if (noAccounts) return <ConnectWalletCard />
         return <BlankHistory onNewTransferClick={onNewTransferClick} />
     }
 

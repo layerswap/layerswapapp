@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
 import LayerSwapApiClient, { Quote, SwapBasicData, SwapQuote } from '../lib/apiClients/layerSwapApiClient'
 import { ApiResponse } from '../Models/ApiResponse'
@@ -117,6 +117,8 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
 
     const { cache } = useSWRConfig();
     const isQuoteLoading = useLoadingStore((state) => state.isLoading);
+    // Remember the last settled quote we emitted, so that while the next one loads we don't flash stale data after an empty state (e.g. a route that errored).
+    const lastSettledQuoteRef = useRef<Quote | undefined>(undefined)
     //TODO: implement middleware that handles the delay logic
     const quoteFetchWrapper = useCallback(async (url: string): Promise<ApiResponse<Quote>> => {
         const { setLoading, key, setKey } = useLoadingStore.getState()
@@ -148,7 +150,7 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
         }
     }, [cache])
 
-    const { data: quote, mutate: mutateFee, error: quoteError } = useSWR<ApiResponse<Quote>>(quoteURL, quoteFetchWrapper, {
+    const { data: quote, mutate: mutateFee, error: quoteError, isLoading: swrIsLoading } = useSWR<ApiResponse<Quote>>(quoteURL, quoteFetchWrapper, {
         refreshInterval: (refreshInterval || refreshInterval == 0) ? refreshInterval : 42000,
         dedupingInterval: 5000,
         keepPreviousData: true,
@@ -156,16 +158,20 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
 
     const quoteData = quote?.data
     const hasValidAmount = !!debouncedAmount && Number(debouncedAmount) > 0
+    const isTransitioning = swrIsLoading || isDebouncing
+    const resolvedQuote = (quoteError || !hasQuoteParams || !hasValidAmount) ? undefined : quoteData
+    if (!isTransitioning) lastSettledQuoteRef.current = resolvedQuote
+    const suppressStale = isTransitioning && lastSettledQuoteRef.current === undefined
 
     return {
         minAllowedAmount: amountRange?.data?.min_amount,
         maxAllowedAmount: amountRange?.data?.max_amount,
         minAllowedAmountInUsd: amountRange?.data?.min_amount_in_usd,
         maxAllowedAmountInUsd: amountRange?.data?.max_amount_in_usd,
-        quote: (quoteError || !hasQuoteParams || !hasValidAmount) ? undefined : quoteData,
-        quoteTokenPrices: quoteData?.quote ? {
-            source_token: quoteData.quote.source_token,
-            destination_token: quoteData.quote.destination_token,
+        quote: suppressStale ? undefined : resolvedQuote,
+        quoteTokenPrices: (resolvedQuote?.quote && !suppressStale) ? {
+            source_token: resolvedQuote.quote.source_token,
+            destination_token: resolvedQuote.quote.destination_token,
         } : undefined,
         isQuoteLoading: isQuoteLoading,
         isDebouncing,

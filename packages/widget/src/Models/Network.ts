@@ -9,6 +9,7 @@ export enum NetworkType {
     TON = 'ton',
     Fuel = 'fuel',
     Bitcoin = 'bitcoin',
+    Tron = 'tron',
 }
 
 export class Network {

@@ -12,6 +12,7 @@ import { useFormikContext } from "formik";
 import { AccountIdentity, useSwapAccounts, useSelectSwapAccount } from "@/context/swapAccounts";
 import { SwapDirection, SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { Address } from "@/lib/address/Address";
+import { useNamedAddress } from "@/stores/addressBookStore";
 
 const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const [openModal, setOpenModal] = useState<boolean>(false)
@@ -90,6 +91,7 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
 
 const AccountsPickerButton: FC<{ accounts: AccountIdentity[], network: NetworkRoute | undefined, onOpenModalClick: () => void }> = ({ accounts, network, onOpenModalClick }) => {
     const firstWallet = useMemo(() => accounts[0], [accounts])
+    const accountLabel = useNamedAddress(firstWallet?.address, null, firstWallet?.providerName)
     if (accounts.length > 0) {
         return <button onClick={onOpenModalClick} type="button" className="p-1.5 max-sm:p-2 justify-self-start text-secondary-text hover:bg-secondary-500 max-sm:bg-secondary-500 hover:text-primary-text focus:outline-hidden inline-flex rounded-lg items-center active:animate-press-down">
             {
@@ -98,7 +100,7 @@ const AccountsPickerButton: FC<{ accounts: AccountIdentity[], network: NetworkRo
                         <firstWallet.icon className='h-5 w-5' />
                         {
                             firstWallet.address &&
-                            <p>{new Address(firstWallet.address, null, firstWallet.providerName).toShortString()}</p>
+                            <p className="truncate max-w-[90px]">{accountLabel}</p>
                         }
                         <ChevronDown className="h-5 w-5" />
                     </div>

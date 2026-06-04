@@ -1,5 +1,6 @@
 import { Context, createContext, useCallback, useContext, useMemo, useState } from 'react'
 import useWallet from '@/hooks/useWallet';
+import { Address } from '@/lib/address/Address';
 import { getKey, useBalanceStore } from '@/stores/balanceStore';
 import { useManualDestAddressesStore } from '@/stores/manualDestAddressesStore';
 import { Wallet, WalletConnectionProvider } from '@/types/wallet';
@@ -49,13 +50,15 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
     const [selectedDestAccounts, setSelectedDestinationAccounts] = useState<BaseAccountIdentity[]>([])
     const [selectedSourceAccounts, setSelectedSourceAccounts] = useState<BaseAccountIdentity[]>([])
     const { providers } = useWallet()
+    const addManualDestAddress = useManualDestAddressesStore(s => s.addManualDestAddress)
+    const manualDestAddresses = useManualDestAddressesStore(s => s.manualDestAddresses)
 
     const sourceAccounts: AccountIdentityWithSupportedNetworks[] = useMemo(() => {
         return providers.map(provider => {
             if (!hasWallet(provider)) return null;
 
             const selectedWallet = provider.connectedWallets?.find(wallet => wallet.id === selectedSourceAccounts.find(acc =>
-                acc.providerName === provider.name && wallet.addresses.some(a => a === acc.address))?.id && wallet.addresses)
+                acc.providerName === provider.name && wallet.addresses.some(a => Address.equals(a, acc.address, null, provider.name)))?.id && wallet.addresses)
 
             const wallet = selectedWallet || provider.activeWallet;
             const selectedAccountAddress = selectedWallet ? selectedSourceAccounts.find(acc => acc.providerName === provider.name && acc.id === selectedWallet.id)?.address : undefined
@@ -85,14 +88,18 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
                 acc => acc.providerName === provider.name && acc.id === 'manually_added'
             );
 
-            if (manuallyAdded) {
+            const manualStillExists = manuallyAdded && manualDestAddresses.some(
+                m => m.providerName === provider.name && Address.equals(m.address, manuallyAdded.address, null, provider.name)
+            );
+
+            if (manuallyAdded && manualStillExists) {
                 return ResolveManualSwapAccount(provider, manuallyAdded.address);
             }
 
             if (!hasWallet(provider)) return null;
 
             const selectedWallet = provider.connectedWallets?.find(wallet => wallet.id === selectedDestAccounts.find(acc =>
-                acc.providerName === provider.name && wallet.addresses.some(a => a === acc.address))?.id && wallet.addresses)
+                acc.providerName === provider.name && wallet.addresses.some(a => Address.equals(a, acc.address, null, provider.name)))?.id && wallet.addresses)
 
             const wallet = selectedWallet || provider.activeWallet;
             const selectedAccountAddress = selectedWallet ? selectedDestAccounts.find(acc => acc.providerName === provider.name && acc.id === selectedWallet.id)?.address : undefined
@@ -100,14 +107,11 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
 
             return ResolveWalletSwapAccount(provider, wallet, address);
         }).filter(Boolean) as AccountIdentity[];
-    }, [providers, selectedDestAccounts]);
+    }, [providers, selectedDestAccounts, manualDestAddresses]);
 
     const selectDestinationAccount = useCallback((account: BaseAccountIdentity) => {
-        if (account.id === 'manually_added') {
-            useManualDestAddressesStore.getState().addManualDestAddress({
-                address: account.address,
-                providerName: account.providerName,
-            });
+        if (account.id === 'manually_added' && account.address && account.providerName) {
+            addManualDestAddress({ address: account.address, providerName: account.providerName });
         }
         setSelectedDestinationAccounts(prev => {
             const existingAccountIndex = prev.findIndex(acc => acc.providerName === account.providerName);
