@@ -311,7 +311,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
                                         <ResolvedAddressIcon
                                             address={new Address(swapBasicData.destination_address, swapBasicData?.destination_network).full}
                                             size={16}
-                                            className="rounded-[4px]"
+                                            className="rounded-[4px]!"
                                             network={swapBasicData?.destination_network}
                                             walletIcon={WalletIcon}
                                             walletIconClassName="bg-secondary-700 rounded-sm"
