@@ -265,7 +265,6 @@ const NestedWalletAddress: FC<NestedWalletAddressProps> = ({ selectable, address
             <div className='flex items-center w-fit gap-3' >
                 <div className="flex bg-secondary-400 items-center justify-center rounded-md h-8 w-8 overflow-hidden">
                     <AddressIcon
-                        className="rounded-md"
                         address={address}
                         size={32}
                         network={network}

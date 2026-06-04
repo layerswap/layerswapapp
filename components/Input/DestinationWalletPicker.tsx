@@ -73,7 +73,7 @@ const ResolvedIcon = (props: AdderssIconprops) => {
         return <wallet.icon className="w-4 h-4" />
     }
     else {
-        return <AddressIcon className="p-0.5 rounded-md" address={destination ? new Address(addressItem.address, destination).full : addressItem.address} size={16} network={destination} />
+        return <AddressIcon className="p-0.5" address={destination ? new Address(addressItem.address, destination).full : addressItem.address} size={16} network={destination} />
     }
 }
 

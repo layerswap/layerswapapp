@@ -180,7 +180,7 @@ const AddressButton = ({ address, network, wallet, addressProviderIcon }: { addr
                         width="36"
                         height="36"
                     />) : (
-                        <AddressIcon className="rounded-md" address={network ? new AddressClass(address, network).full : address} size={36} network={network} />
+                        <AddressIcon address={network ? new AddressClass(address, network).full : address} size={36} network={network} />
                     )
                 }
             </div>

@@ -28,7 +28,7 @@ export const resolveWalletConnectorIndex = (id: string) => {
 }
 
 const AddressIconWrapper = (address: string) => (props: typeof AddressIcon) => {
-    return <AddressIcon className="rounded-md" address={address} size={24} {...props} />
+    return <AddressIcon address={address} size={24} {...props} />
 }
 
 const SVGIconWrapper = (iconUrl: string) => (props) => {

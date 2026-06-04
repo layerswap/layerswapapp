@@ -29,7 +29,7 @@ const ContractAddressNote: FC<Props> = ({ values, onDontShowAgainChange }) => {
         destination && destination_address &&
         <div className="flex flex-col items-center gap-4 mt-2 w-full">
             <div className="h-24 w-24 rounded-2xl overflow-hidden">
-                <AddressIcon className="scale-150 blur-[1.5px] rounded-md" address={new Address(destination_address, destination).full} size={96} />
+                <AddressIcon address={new Address(destination_address, destination).full} size={96} />
             </div>
             <div className="text-center max-w-xs space-y-1">
                 <p className="text-2xl">Address Confirmation</p>
