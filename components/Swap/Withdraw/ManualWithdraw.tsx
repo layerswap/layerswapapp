@@ -1,4 +1,4 @@
-import AddressIcon from '@/components/AddressIcon'
+import { ResolvedAddressIcon } from '@/components/AddressIcon'
 import CopyButton from '@/components/buttons/copyButton'
 import { ImageWithFallback } from '@/components/Common/ImageWithFallback'
 import QRIcon from '@/components/icons/QRIcon'
@@ -308,19 +308,16 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
                                 }
                                 value={
                                     <span className="cursor-pointer hover:underline flex items-center gap-1">
-                                        {WalletIcon ? (
-                                            <WalletIcon className="w-4 h-4 bg-secondary-700 rounded-sm" />
-                                        ) : addressProviderIcon ? (
-                                            <ImageWithFallback
-                                                alt="Partner logo"
-                                                className="h-4 w-4 rounded-md object-contain"
-                                                src={partner.logo}
-                                                width="36"
-                                                height="36"
-                                            />
-                                        ) : (
-                                            <AddressIcon className="h-4 w-4" address={new Address(swapBasicData.destination_address, swapBasicData?.destination_network).full} size={36} rounded="4px" />
-                                        )}
+                                        <ResolvedAddressIcon
+                                            address={new Address(swapBasicData.destination_address, swapBasicData?.destination_network).full}
+                                            size={16}
+                                            className="rounded-[4px]"
+                                            network={swapBasicData?.destination_network}
+                                            walletIcon={WalletIcon}
+                                            walletIconClassName="bg-secondary-700 rounded-sm"
+                                            partnerLogo={addressProviderIcon || undefined}
+                                            partnerLogoClassName="rounded-md object-contain"
+                                        />
                                         {
                                             ((swapBasicData?.destination_network && Address.isValid(swapBasicData?.destination_address, swapBasicData?.destination_network)) ?
                                                 <div className="text-sm group/addressItem text-secondary-text">
