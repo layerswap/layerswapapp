@@ -19,7 +19,6 @@ type MethodCardProps = {
     icon: ReactNode;
     iconTone?: "neutral" | "wallet";
     title: string;
-    badge?: Badge;
     subtitle: string;
     onClick: () => void;
     disabled?: boolean;
@@ -35,7 +34,6 @@ const MethodCard: FC<MethodCardProps> = ({
     icon,
     iconTone = "neutral",
     title,
-    badge,
     subtitle,
     onClick,
     disabled,
@@ -65,19 +63,7 @@ const MethodCard: FC<MethodCardProps> = ({
             {icon}
         </div>
         <div className="flex-1 min-w-0 flex flex-col gap-1">
-            <div className="flex items-center gap-2 min-w-0">
-                <span className="text-primary-text text-base font-semibold truncate">{title}</span>
-                {badge && (
-                    <span
-                        className={clsx(
-                            "shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold",
-                            badgeStyles[badge.tone],
-                        )}
-                    >
-                        {badge.label}
-                    </span>
-                )}
-            </div>
+            <span className="text-primary-text text-base font-semibold truncate">{title}</span>
             <span className="text-secondary-text text-[13px] leading-tight truncate">{subtitle}</span>
         </div>
         <ChevronRight className="h-5 w-5 text-primary-text-tertiary shrink-0 mt-2.5" />
@@ -108,7 +94,7 @@ const MethodPicker: FC<Props> = ({ destinations }) => {
         }
         if (!destinationReady) return;
         setFieldValue("depositMethod", "wallet", false);
-        push("wallet-amount");
+        push("wallet-source");
     };
 
     const handleTransferCryptoClick = () => {
@@ -143,7 +129,6 @@ const MethodPicker: FC<Props> = ({ destinations }) => {
                         icon={walletCardIcon}
                         iconTone={hasWallet ? "wallet" : "neutral"}
                         title="Wallet transfer"
-                        badge={{ label: "Fastest", tone: "fast" }}
                         subtitle={walletSubtitle}
                         onClick={handleWalletClick}
                         disabled={walletDisabled}
@@ -152,7 +137,6 @@ const MethodPicker: FC<Props> = ({ destinations }) => {
                     <MethodCard
                         icon={<QrCode className="h-6 w-6 text-primary-200" />}
                         title="Deposit address"
-                        badge={{ label: "Any source", tone: "any" }}
                         subtitle="Send from any wallet, exchange or CEX"
                         onClick={handleTransferCryptoClick}
                         disabled={!destinationReady}

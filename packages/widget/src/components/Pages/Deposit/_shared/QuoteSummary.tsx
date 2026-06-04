@@ -1,13 +1,11 @@
 import { FC } from "react";
-import { ShieldCheck } from "lucide-react";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
-import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
+import { NetworkRouteToken } from "@/Models/Network";
 import { formatTokenAmount } from "@/components/utils/formatTokenAmount";
 
 type Props = {
     receiveAmount?: number;
     tokenSymbol?: string;
-    network?: NetworkRoute;
     token?: NetworkRouteToken;
     isLoading?: boolean;
 };
@@ -21,7 +19,6 @@ const Bar: FC<{ className?: string }> = ({ className }) => (
 const QuoteSummary: FC<Props> = ({
     receiveAmount,
     tokenSymbol,
-    network,
     token,
     isLoading,
 }) => {
@@ -30,7 +27,7 @@ const QuoteSummary: FC<Props> = ({
 
     if (isLoading) {
         return (
-            <div className="bg-secondary-500 border border-secondary-400 rounded-2xl p-4 flex flex-col gap-3">
+            <div className="bg-secondary-500 border border-secondary-400 rounded-2xl w-full p-4 flex flex-col gap-3">
                 <div className="flex items-center justify-between gap-2">
                     <Bar className="h-3 w-20" />
                     <Bar className="h-3 w-14" />
@@ -47,7 +44,7 @@ const QuoteSummary: FC<Props> = ({
     if (!hasReceive) return null;
 
     return (
-        <div className="relative overflow-hidden bg-secondary-500 ring ring-primary-500/20 rounded-2xl p-4 flex flex-col gap-1.5">
+        <div className="relative w-full overflow-hidden bg-secondary-500 ring ring-primary-500/20 rounded-2xl p-4 flex flex-col gap-1.5">
             <span
                 aria-hidden
                 className="pointer-events-none absolute -top-12 -right-10 h-40 w-40 rounded-full bg-primary-500/15 blur-3xl"

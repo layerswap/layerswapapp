@@ -1,5 +1,5 @@
 "use client";
-import { FC, useCallback, useMemo } from "react";
+import { FC, useCallback, useMemo, useState } from "react";
 import { Formik } from "formik";
 import clsx from "clsx";
 import toast from "react-hot-toast";
@@ -17,8 +17,8 @@ import MethodPicker from "./Options/MethodPicker";
 import WalletFlow from "./Wallet";
 import TransferCrypto from "./TransferCrypto";
 import { SupportedDestination, useResolvedDestinations } from "./DestinationTokenPicker";
-import Stepper from "./_shared/Stepper";
 import { Widget } from "@/components/Widget/Index";
+import ResizablePanel from "@/components/Common/ResizablePanel";
 
 export type DepositMode = "inline" | "button";
 
@@ -48,6 +48,7 @@ const StepRouter: FC<{ step: DepositStep; partner?: Partner; destinations: Suppo
     switch (step) {
         case "method-picker": return <MethodPicker destinations={destinations} />;
         case "transfer-crypto": return <TransferCrypto partner={partner} destinationAddress={destinationAddress} />;
+        case "wallet-source":
         case "wallet-amount":
         case "wallet-processing": return <WalletFlow partner={partner} />;
         default: {
@@ -57,18 +58,20 @@ const StepRouter: FC<{ step: DepositStep; partner?: Partner; destinations: Suppo
     }
 };
 
-const DepositForm: FC<DepositProps> = ({ partner, destinations, destinationAddress }) => {
+const DepositForm: FC<DepositProps & { onClose?: () => void }> = ({ partner, destinations, destinationAddress, onClose }) => {
     const { step } = useDepositStep();
     return (
         <div className="flex flex-col gap-3 w-full pt-4">
-            <DepositHeader />
-            <Stepper step={step} />
-            <StepRouter step={step} partner={partner} destinations={destinations} destinationAddress={destinationAddress} />
+            <DepositHeader onClose={onClose} />
+            <div className="h-px w-full bg-secondary-400" />
+            <ResizablePanel>
+                <StepRouter step={step} partner={partner} destinations={destinations} destinationAddress={destinationAddress} />
+            </ResizablePanel>
         </div>
     );
 };
 
-const DepositInner: FC<DepositProps> = ({ partner, destinations, destinationAddress }) => {
+const DepositInner: FC<DepositProps & { onClose?: () => void }> = ({ partner, destinations, destinationAddress, onClose }) => {
     const settings = useSettingsState();
     const initialSettings = useInitialSettings();
     const { wallets } = useWallet();
@@ -125,25 +128,26 @@ const DepositInner: FC<DepositProps> = ({ partner, destinations, destinationAddr
     return (
         <Formik initialValues={initialValues} validateOnMount onSubmit={handleSubmit}>
             <DepositStepProvider>
-                <DepositForm partner={partner} destinations={destinations} destinationAddress={destinationAddress} />
+                <DepositForm partner={partner} destinations={destinations} destinationAddress={destinationAddress} onClose={onClose} />
             </DepositStepProvider>
         </Formik>
     );
 };
 
 
-const DepositCard: FC<Pick<DepositProps, "partner" | "destinations" | "destinationAddress">> = ({ partner, destinations, destinationAddress }) => (
+const DepositCard: FC<Pick<DepositProps, "partner" | "destinations" | "destinationAddress"> & { onClose?: () => void }> = ({ partner, destinations, destinationAddress, onClose }) => (
     <Widget hideMenu>
         <SwapDataProvider>
-            <DepositInner partner={partner} destinations={destinations} destinationAddress={destinationAddress} />
+            <DepositInner partner={partner} destinations={destinations} destinationAddress={destinationAddress} onClose={onClose} />
         </SwapDataProvider>
     </Widget>
 );
 
 export const Deposit: FC<DepositProps> = ({ mode = "inline", buttonLabel = "Deposit", buttonClassName, partner, destinations, destinationAddress }) => {
+    const [open, setOpen] = useState(false);
     if (mode === "button") {
         return (
-            <Dialog>
+            <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
                     <button
                         type="button"
@@ -155,8 +159,8 @@ export const Deposit: FC<DepositProps> = ({ mode = "inline", buttonLabel = "Depo
                         {buttonLabel}
                     </button>
                 </DialogTrigger>
-                <DialogContent className="!p-0 !bg-transparent !ring-0 !gap-0 sm:!max-w-md">
-                    <DepositCard partner={partner} destinations={destinations} destinationAddress={destinationAddress} />
+                <DialogContent showCloseButton={false} className="!p-0 !bg-transparent !ring-0 !gap-0 sm:!max-w-md">
+                    <DepositCard partner={partner} destinations={destinations} destinationAddress={destinationAddress} onClose={() => setOpen(false)} />
                 </DialogContent>
             </Dialog>
         );

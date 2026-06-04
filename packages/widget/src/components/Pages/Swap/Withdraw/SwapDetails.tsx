@@ -76,7 +76,7 @@ const Container = ({ type, children, goBack }: Props & {
     if (type === "widget")
         return <Widget goBack={goBack}><>{children}</></Widget>
     else
-        return <div className="w-full flex flex-col justify-between h-full space-y-2 text-secondary-text">
+        return <div className="w-full flex flex-col flex-1 justify-between h-full space-y-2 text-secondary-text">
             {children}
         </div>
 }

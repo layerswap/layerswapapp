@@ -79,6 +79,11 @@ const DestinationTokenPicker: FC<Props> = ({ destinations }) => {
 
     const triggerDisabled = resolved.length <= 1;
 
+    // With a single (or no) supported destination there is nothing to pick —
+    // the destination is already pre-populated via the effect above and the
+    // initial form values, so hide the picker entirely.
+    if (triggerDisabled) return null;
+
     return (
         <Popover open={open} onOpenChange={triggerDisabled ? undefined : setOpen}>
             <PopoverTrigger asChild>

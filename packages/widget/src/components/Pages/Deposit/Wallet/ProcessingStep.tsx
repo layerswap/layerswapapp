@@ -19,7 +19,7 @@ const ProcessingStep: FC<Props> = ({ partner }) => {
     const { back } = useDepositStep();
 
     return (
-        <div className="w-full">
+        <div className="w-full h-full flex-1 min-h-0 flex flex-col">
             <SwapDetails
                 type="contained"
                 partner={partner}

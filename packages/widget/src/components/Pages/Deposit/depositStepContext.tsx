@@ -2,6 +2,7 @@ import { createContext, ReactNode, useCallback, useContext, useMemo, useState } 
 
 export type DepositStep =
     | "method-picker"
+    | "wallet-source"
     | "wallet-amount"
     | "wallet-processing"
     | "transfer-crypto";

@@ -14,12 +14,11 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
         >
             {/* <Swap /> */}
             <Deposit
+                mode="button"
                 destinations={[
-                    { network: "BASE_MAINNET", token: "USDC" },
-                    { network: "ARBITRUM_MAINNET", token: "USDC" },
-                    { network: "ETHEREUM_MAINNET", token: "USDC" },
+                    { network: "STARKNET_SEPOLIA", token: "ETH" },
                 ]}
-                destinationAddress="0xB2029bbd8C1cBCC43c3A7b7fE3d118b0C57D7C31"
+                destinationAddress="0x04f5F8e5cDae95A5C1B84b97f7fd7fEff3463325C97Cc84D2830e1150Acf6820"
             />
         </WidgetWrapper>
     )
