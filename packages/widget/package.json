@@ -89,6 +89,7 @@
     "react-hot-toast": "^2.2.0",
     "react-use-intercom": "^2.0.0",
     "swr": "catalog:",
+    "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.5",
     "uuid": "^9.0.0"
   },
