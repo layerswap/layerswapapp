@@ -1,6 +1,6 @@
 import { FC, useMemo } from 'react'
 import { ChevronDown } from 'lucide-react'
-import { ResolvedAddressIcon } from '../../AddressIcon'
+import AddressIcon from '../../AddressIcon'
 import { Address } from "@/lib/address";
 import { Wallet } from '@/Models/WalletProvider'
 import { SwapValues } from '..'
@@ -13,6 +13,7 @@ import { GasFee } from './DetailedEstimates'
 import NumFlowWithFallback from '@/components/Common/NumFlowWithFallback'
 import { Partner } from '@/Models/Partner'
 import { useQueryState } from '@/context/query'
+import { ImageWithFallback } from '@/components/Common/ImageWithFallback'
 
 export const SummaryRow: FC<{
     isQuoteLoading?: boolean
@@ -39,16 +40,18 @@ export const SummaryRow: FC<{
                     </div>
                     <div className="text-right text-primary-text">
                         <span className="cursor-pointer hover:underline flex items-center gap-2">
-                            <ResolvedAddressIcon
-                                address={addressInstance?.full || ''}
-                                size={16}
-                                className="rounded-[4px]"
-                                network={to}
-                                walletIcon={wallet?.icon}
-                                walletIconClassName="bg-secondary-700 rounded-sm"
-                                partnerLogo={addressProviderIcon || undefined}
-                                partnerLogoClassName="rounded-md object-contain"
-                            />
+                            {wallet?.icon ? (
+                                <wallet.icon className="w-4 h-4 bg-secondary-700 rounded-sm" />
+                            ) : addressProviderIcon ? (
+                                <ImageWithFallback
+                                    alt="Partner logo"
+                                    className="rounded-md object-contain h-4 w-4"
+                                    src={addressProviderIcon}
+                                    width="36"
+                                    height="36"
+                                />) : (
+                                <AddressIcon className="rounded-[4px]" address={addressInstance?.full || ''} size={16} network={to} />
+                            )}
                             {
                                 ((Address.isValid(values?.destination_address, values?.to) && values?.to) ?
                                     <div className="text-sm group/addressItem text-secondary-text">
