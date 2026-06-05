@@ -1,6 +1,5 @@
 'use client'
 import { FC, ReactNode, useEffect, useState } from "react"
-import ThemeWrapper from "@/components/themeWrapper";
 import { ErrorBoundary } from "react-error-boundary";
 import { SettingsProvider } from "./settings";
 import { LayerSwapAppSettings } from "@/Models/LayerSwapAppSettings";
@@ -71,21 +70,19 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
                 <CallbackProvider callbacks={callbacks}>
                     <ErrorProvider>
                         <ErrorBoundary FallbackComponent={ErrorFallback} >
-                            <ThemeWrapper>
-                                <WalletsProviders
-                                    appName={initialValues?.appName}
-                                    themeData={themeData}
-                                    walletProviders={walletProviders}
-                                >
-                                    <ResolverProviders walletProviders={walletProviders}>
-                                        <SwapAccountsProvider>
-                                            <AsyncModalProvider>
-                                                {children}
-                                            </AsyncModalProvider>
-                                        </SwapAccountsProvider>
-                                    </ResolverProviders>
-                                </WalletsProviders>
-                            </ThemeWrapper>
+                            <WalletsProviders
+                                appName={initialValues?.appName}
+                                themeData={themeData}
+                                walletProviders={walletProviders}
+                            >
+                                <ResolverProviders walletProviders={walletProviders}>
+                                    <SwapAccountsProvider>
+                                        <AsyncModalProvider>
+                                            {children}
+                                        </AsyncModalProvider>
+                                    </SwapAccountsProvider>
+                                </ResolverProviders>
+                            </WalletsProviders>
                         </ErrorBoundary>
                     </ErrorProvider>
                 </CallbackProvider>

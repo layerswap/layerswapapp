@@ -4,60 +4,65 @@ import {
     ColorsTrigger, CardRadiusButtonTrigger, ThemeButtonTrigger, InitialSettingsButtonTrigger, LoadingButtonTrigger,
     ConfigurationButton,
     ConfigurationButtonTrigger,
+    WidgetTypeSwitcher,
+    DepositConfigButton,
+    DepositConfigButtonTrigger,
+    DepositDestinationsButton,
+    DepositDestinationsButtonTrigger,
+    DepositModeSwitcher,
 } from "./buttons";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import clsx from "clsx";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { CodeSegment } from "./CodeSegment";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, } from "@/components/ui/accordion"
 import { Code, Paintbrush } from "lucide-react";
+import { useWidgetContext } from "@/context/ConfigContext";
 
 const tabValues = [
     { value: 'design', component: <><Paintbrush /> <span className="text-xl">Design</span></> },
     { value: 'code', component: <><Code /> <span className="text-xl">Code</span></> },
 ]
 
-const accordionElements = {
-    "Theme": [
-        {
-            trigger: <ColorsTrigger />,
-            content: <ColorsContent />
-        },
-        {
-            trigger: <CardRadiusButtonTrigger />,
-            content: <CardRadiusButton />
-        },
-        {
-            trigger: <ThemeButtonTrigger />,
-            content: <ThemeButton />
-        },
-    ],
-    "Widget configs": [
-        {
-            trigger: <InitialSettingsButtonTrigger />,
-            content: <InitialSettingsButton />
-        },
-        {
-            trigger: <ConfigurationButtonTrigger />,
-            content: <ConfigurationButton />
-        }
-    ],
-    // "Wallet configs": [
-    //     {
-    //         trigger: <ManageExternallyTriger />,
-    //         content: <ManageExternallyButton />
-    //     },
-    // ],
-    "Other": [
-        {
-            trigger: <LoadingButtonTrigger />,
-            content: null,
-        },
-    ]
-}
+type AccordionEntry = { trigger: React.ReactNode; content: React.ReactNode | null };
+type AccordionGroup = { extras?: React.ReactNode; items: AccordionEntry[] };
 
 export function ControlPanel() {
-    const [activeTab, setActiveTab] = useState('design')
+    const [activeTab, setActiveTab] = useState('design');
+    const { widgetType } = useWidgetContext();
+
+    const accordionElements: Record<string, AccordionGroup> = useMemo(() => {
+        const themeGroup: AccordionGroup = {
+            items: [
+                { trigger: <ColorsTrigger />, content: <ColorsContent /> },
+                { trigger: <CardRadiusButtonTrigger />, content: <CardRadiusButton /> },
+                { trigger: <ThemeButtonTrigger />, content: <ThemeButton /> },
+            ],
+        };
+
+        const widgetGroup: AccordionGroup = widgetType === 'deposit'
+            ? {
+                extras: <DepositModeSwitcher />,
+                items: [
+                    { trigger: <DepositConfigButtonTrigger />, content: <DepositConfigButton /> },
+                    { trigger: <DepositDestinationsButtonTrigger />, content: <DepositDestinationsButton /> },
+                ],
+            }
+            : {
+                items: [
+                    { trigger: <InitialSettingsButtonTrigger />, content: <InitialSettingsButton /> },
+                    { trigger: <ConfigurationButtonTrigger />, content: <ConfigurationButton /> },
+                ],
+            };
+
+        return {
+            "Theme": themeGroup,
+            [widgetType === 'deposit' ? "Deposit configs" : "Widget configs"]: widgetGroup,
+            "Other": {
+                items: [{ trigger: <LoadingButtonTrigger />, content: null }],
+            },
+        };
+    }, [widgetType]);
 
     return (
         <div className="text-primary-text w-[500px] min-h-screen bg-secondary-900 overflow-y-auto h-full styled-scroll">
@@ -68,6 +73,7 @@ export function ControlPanel() {
                     <CloseButton />
                 </div>
             </div>
+            <WidgetTypeSwitcher />
             <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="design" className=" space-y-6 px-5">
                 <TabsList className="flex items-center bg-secondary-700 hover:bg-secondary-600 transition-colors duration-200 rounded-xl !m-0">
                     {
@@ -87,14 +93,15 @@ export function ControlPanel() {
                 <TabsContent value="design" className=" mt-0">
                     <Accordion collapsible type="single" className="flex flex-col w-full border-none bg-transparent space-y-9 pt-9">
                         {
-                            Object.entries(accordionElements).map(([groupName, items]) => (
+                            Object.entries(accordionElements).map(([groupName, group]) => (
                                 <div key={groupName}>
                                     <h5 className="text-lg mb-3 text-primary-text">
                                         {groupName}
                                     </h5>
+                                    {group.extras && <div className="mb-3">{group.extras}</div>}
                                     <div className="space-y-3">
                                         {
-                                            items.map((item, index) => (
+                                            group.items.map((item, index) => (
                                                 item.content ? (
                                                     <AccordionItem key={`${groupName}-${index}`}
                                                         value={`item-${groupName}-${index}`}

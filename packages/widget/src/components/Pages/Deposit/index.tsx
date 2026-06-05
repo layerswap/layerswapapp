@@ -20,6 +20,7 @@ import { SupportedDestination, useResolvedDestinations } from "./DestinationToke
 import { Widget } from "@/components/Widget/Index";
 import ResizablePanel from "@/components/Common/ResizablePanel";
 import { DepositSettings } from "@/lib/AppSettings";
+import ThemeWrapper from "@/components/themeWrapper";
 
 export type DepositMode = "inline" | "button";
 
@@ -148,11 +149,13 @@ const DepositCard: FC<Pick<DepositProps, "partner" | "destinations" | "destinati
     DepositSettings.ActionButtonText = actionButtonText || "Deposit";
 
     return (
-        <Widget hideMenu>
-            <SwapDataProvider>
-                <DepositInner partner={partner} destinations={destinations} destinationAddress={destinationAddress} title={title} onClose={onClose} />
-            </SwapDataProvider>
-        </Widget>
+        <ThemeWrapper>
+            <Widget hideMenu>
+                <SwapDataProvider>
+                    <DepositInner partner={partner} destinations={destinations} destinationAddress={destinationAddress} title={title} onClose={onClose} />
+                </SwapDataProvider>
+            </Widget>
+        </ThemeWrapper>
     );
 };
 

@@ -3,14 +3,17 @@ import { FC, useEffect } from 'react';
 import SwapForm from "./Form"
 import { SWRConfig, mutate } from 'swr';
 import { SwapStatus } from '@/Models/SwapStatus';
+import ThemeWrapper from '@/components/themeWrapper';
 
 export const Swap: FC = () => {
   return (
-    <div className="text-primary-text h-full">
-      <SWRConfig value={{ use: [updatePendingCount] }}>
-        <SwapForm />
-      </SWRConfig>
-    </div >
+    <ThemeWrapper>
+      <div className="text-primary-text h-full">
+        <SWRConfig value={{ use: [updatePendingCount] }}>
+          <SwapForm />
+        </SWRConfig>
+      </div >
+    </ThemeWrapper>
   )
 };
 const swapsStatuses: { [key: string]: SwapStatus } = {}
