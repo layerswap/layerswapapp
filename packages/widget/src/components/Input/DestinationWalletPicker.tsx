@@ -2,24 +2,23 @@ import { Address } from "@/lib/address/Address";
 import { ChevronDown, PlusIcon } from "lucide-react";
 import { AddressGroup, AddressItem, AddressTriggerProps } from "./Address/AddressPicker";
 import { Partner } from "@/Models/Partner";
-import AddressIcon from "@/components/Common/AddressIcon";
 import { Wallet } from "@/types/wallet";
-import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import clsx from 'clsx';
 import { useNamedAddress } from "@/stores/addressBookStore";
+import { ResolvedAddressIcon } from "../Common/AddressIcon";
 
 const DestinationWalletPicker = (props: AddressTriggerProps) => {
     const { addressItem, connectedWallet, partner, destination } = props
     const label = useNamedAddress(addressItem?.address, destination)
     return destination && <div
-    data-attr={addressItem ? "address-item" : "add-address"}
-    className={clsx(
-        "flex items-center space-x-2 text-sm rounded-lg py-1 px-2 justify-self-end",
-        {
-            "hover:bg-secondary-400": addressItem,
-            "bg-secondary-400 hover:bg-secondary-300": !addressItem
-        }
-    )}>
+        data-attr={addressItem ? "address-item" : "add-address"}
+        className={clsx(
+            "flex items-center space-x-2 text-sm rounded-lg py-1 px-2 justify-self-end",
+            {
+                "hover:bg-secondary-400": addressItem,
+                "bg-secondary-400 hover:bg-secondary-300": !addressItem
+            }
+        )}>
         <div className="rounded-lg flex space-x-1 items-center cursor-pointer">
             {
                 addressItem &&
@@ -60,21 +59,15 @@ type AdderssIconprops = {
 }
 const ResolvedIcon = (props: AdderssIconprops) => {
     const { addressItem, wallet, partner, destination } = props
-    if (partner?.is_wallet && addressItem.group === AddressGroup.FromQuery) {
-        return <ImageWithFallback
-            alt="Partner logo"
-            className='rounded-md object-contain'
-            src={partner.logo}
-            width="16"
-            height="26"
-        />
-    }
-    else if (addressItem.group === AddressGroup.ConnectedWallet && wallet) {
-        return <wallet.icon className="w-4 h-4" />
-    }
-    else {
-        return <AddressIcon className="h-4 w-4 p-0.5" address={destination ? new Address(addressItem.address, destination).full : addressItem.address} size={20} />
-    }
+    return <ResolvedAddressIcon
+        address={destination ? new Address(addressItem.address, destination).full : addressItem.address}
+        size={16}
+        className="p-0.5 rounded-[3px]"
+        network={destination}
+        walletIcon={addressItem.group === AddressGroup.ConnectedWallet ? wallet?.icon : undefined}
+        partnerLogo={(partner?.is_wallet && addressItem.group === AddressGroup.FromQuery) ? partner.logo : undefined}
+        partnerLogoClassName="rounded-md object-contain"
+    />
 }
 
 export default DestinationWalletPicker

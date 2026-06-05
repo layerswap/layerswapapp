@@ -243,7 +243,7 @@ function ResolveManualSwapAccount(provider: WalletConnectionProvider, address: s
         displayName: "Manual",
         addresses: [address],
         icon: (props: any) => (
-            <AddressIcon className="h-4 w-4 p-0.5" address={address} size={20} {...props} />
+            <AddressIcon className="p-0.5" address={address} size={20} {...props} />
         ),
     };
 }
