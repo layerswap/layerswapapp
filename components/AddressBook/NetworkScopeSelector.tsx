@@ -21,13 +21,13 @@ export type NetworkScopeSelectorProps = {
 
 const OptionLogo: FC<{ option?: ScopeOption, size: number }> = ({ option, size }) =>
     option?.logo
-        ? <ImageWithFallback src={option.logo} alt={option.label} width={size} height={size} className="rounded-md object-cover bg-secondary-800" />
+        ? <ImageWithFallback src={option.logo} alt={option.label} width={size} height={size} className="rounded-md object-contain" />
         : <span style={{ width: size, height: size }} className="rounded-md bg-secondary-800" />
 
 const StackedLogos: FC<{ options: ScopeOption[] }> = ({ options }) => (
     <span className="inline-flex items-center shrink-0">
         {options.slice(0, 3).map((o, i) => (
-            <span key={o.key} className={clsx('inline-flex rounded-md ring-2 ring-secondary-300', i > 0 && '-ml-2')}>
+            <span key={o.key} className={clsx('inline-flex rounded-md ', i > 0 && '-ml-2')}>
                 <OptionLogo option={o} size={20} />
             </span>
         ))}
