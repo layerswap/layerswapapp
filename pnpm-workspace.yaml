@@ -1,6 +1,7 @@
 packages:
   - packages/**
   - apps/*
+  - examples/cdn-embed
 
 catalog:
   '@tanstack/react-query': 5.90.11
