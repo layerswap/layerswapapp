@@ -5,6 +5,7 @@ import AddressIcon from '@/components/AddressIcon'
 import shortenString from '@/components/utils/ShortenString'
 import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
 import AddressBookEntryForm, { AddressBookEntryFormProps } from './AddressBookEntryForm'
+import AddressBadge from './AddressBadge'
 import { HistoryItemSceleton } from '@/components/SwapHistory/Snippet'
 import { SearchComponent } from '@/components/Input/Search'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/shadcn/popover'
@@ -72,22 +73,27 @@ const AddressBookStep: FC = () => {
                     const raw = entry.address
                     if (editing.kind === 'edit' && editing.entry.address === raw) {
                         return (
-                            <AddressBookEntryForm key={raw} initial={{ name: entry.name, address: entry.address, editingOriginalAddress: entry.address, networkType: entry.networkType, }} onClose={closeForm} />
+                            <AddressBookEntryForm key={raw} initial={{ name: entry.name, address: entry.address, editingOriginalAddress: entry.address, networkTypes: entry.networkTypes, networks: entry.networks, }} onClose={closeForm} />
                         )
                     }
                     return (
-                        <div key={raw} className="flex items-center justify-between gap-2 p-3 rounded-xl bg-secondary-500">
-                            <div className="flex items-center gap-3 min-w-0">
+                        <div key={raw} className="flex items-center gap-2 p-3 rounded-xl bg-secondary-500">
+                            <div className="flex items-center gap-3 min-w-0 flex-1">
                                 <div className="rounded-md h-8 w-8 overflow-hidden">
-                                    <AddressIcon address={raw} size={32} providerName={entry.networkType} />
+                                    <AddressIcon address={raw} size={32} providerName={entry.networkTypes?.[0]} />
                                 </div>
-                                <div className="min-w-0">
-                                    <p className="text-sm font-medium text-primary-text truncate">{entry.name}</p>
-                                    <ExtendedAddress address={raw} providerName={entry.networkType} shouldShowChevron={false}>
-                                        <p className="text-xs text-secondary-text truncate cursor-pointer hover:text-primary-text hover:underline transition w-fit">
-                                            {shortenString(raw)}
-                                        </p>
-                                    </ExtendedAddress>
+                                <div className="min-w-0 flex-1">
+                                    <div className="flex items-center justify-between gap-2 w-full min-w-0">
+                                        <p className="text-sm font-medium text-primary-text truncate">{entry.name}</p>
+                                        <AddressBadge entry={entry} />
+                                    </div>
+                                    <div className="w-fit max-w-full min-w-0">
+                                        <ExtendedAddress address={raw} providerName={entry.networkTypes?.[0]} shouldShowChevron={false}>
+                                            <p className="text-xs text-secondary-text truncate cursor-pointer hover:text-primary-text hover:underline transition w-fit">
+                                                {shortenString(raw)}
+                                            </p>
+                                        </ExtendedAddress>
+                                    </div>
                                 </div>
                             </div>
                             <Popover>

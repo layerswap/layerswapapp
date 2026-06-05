@@ -263,9 +263,6 @@ importers:
       react-hot-toast:
         specifier: ^2.2.0
         version: 2.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      react-swipeable:
-        specifier: ^7.0.0
-        version: 7.0.2(react@18.3.1)
       react-use-intercom:
         specifier: ^2.0.0
         version: 2.1.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -11240,11 +11237,6 @@ packages:
       '@types/react':
         optional: true
 
-  react-swipeable@7.0.2:
-    resolution: {integrity: sha512-v1Qx1l+aC2fdxKa9aKJiaU/ZxmJ5o98RMoFwUqAAzVWUcxgfHFXDDruCKXhw6zIYXm6V64JiHgP9f6mlME5l8w==}
-    peerDependencies:
-      react: ^16.8.3 || ^17 || ^18 || ^19.0.0 || ^19.0.0-rc
-
   react-use-gesture@8.0.1:
     resolution: {integrity: sha512-CXzUNkulUdgouaAlvAsC5ZVo0fi9KGSBSk81WrE4kOIcJccpANe9zZkAYr5YZZhqpicIFxitsrGVS4wmoMun9A==}
     deprecated: This package is no longer maintained. Please use @use-gesture/react instead
@@ -15845,7 +15837,7 @@ snapshots:
     dependencies:
       '@jest/fake-timers': 29.7.0
       '@jest/types': 29.6.3
-      '@types/node': 25.3.0
+      '@types/node': 22.19.11
       jest-mock: 29.7.0
 
   '@jest/expect-utils@29.7.0':
@@ -15863,7 +15855,7 @@ snapshots:
     dependencies:
       '@jest/types': 29.6.3
       '@sinonjs/fake-timers': 10.3.0
-      '@types/node': 25.3.0
+      '@types/node': 22.19.11
       jest-message-util: 29.7.0
       jest-mock: 29.7.0
       jest-util: 29.7.0
@@ -15906,7 +15898,7 @@ snapshots:
       '@jest/schemas': 29.6.3
       '@types/istanbul-lib-coverage': 2.0.6
       '@types/istanbul-reports': 3.0.4
-      '@types/node': 25.3.0
+      '@types/node': 22.19.11
       '@types/yargs': 17.0.35
       chalk: 4.1.2
 
@@ -21194,11 +21186,11 @@ snapshots:
 
   '@types/bn.js@4.11.6':
     dependencies:
-      '@types/node': 25.3.0
+      '@types/node': 22.19.11
 
   '@types/bn.js@5.1.6':
     dependencies:
-      '@types/node': 25.3.0
+      '@types/node': 22.19.11
 
   '@types/bn.js@5.2.0':
     dependencies:
@@ -21208,7 +21200,7 @@ snapshots:
     dependencies:
       '@types/http-cache-semantics': 4.2.0
       '@types/keyv': 3.1.4
-      '@types/node': 25.3.0
+      '@types/node': 22.19.11
       '@types/responselike': 1.0.3
 
   '@types/chai@5.2.3':
@@ -21218,7 +21210,7 @@ snapshots:
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 25.3.0
+      '@types/node': 22.19.11
 
   '@types/crypto-js@4.2.2': {}
 
@@ -21244,7 +21236,7 @@ snapshots:
 
   '@types/graceful-fs@4.1.9':
     dependencies:
-      '@types/node': 25.3.0
+      '@types/node': 22.19.11
 
   '@types/hoist-non-react-statics@3.3.7(@types/react@18.3.28)':
     dependencies:
@@ -21271,7 +21263,7 @@ snapshots:
 
   '@types/keyv@3.1.4':
     dependencies:
-      '@types/node': 25.3.0
+      '@types/node': 22.19.11
 
   '@types/lodash.mergewith@4.6.9':
     dependencies:
@@ -21303,7 +21295,7 @@ snapshots:
 
   '@types/pbkdf2@3.1.2':
     dependencies:
-      '@types/node': 25.3.0
+      '@types/node': 22.19.11
 
   '@types/prop-types@15.7.15': {}
 
@@ -21320,11 +21312,11 @@ snapshots:
 
   '@types/responselike@1.0.3':
     dependencies:
-      '@types/node': 25.3.0
+      '@types/node': 22.19.11
 
   '@types/secp256k1@4.0.7':
     dependencies:
-      '@types/node': 25.3.0
+      '@types/node': 22.19.11
 
   '@types/semver@7.7.1': {}
 
@@ -21344,11 +21336,11 @@ snapshots:
 
   '@types/ws@7.4.7':
     dependencies:
-      '@types/node': 25.3.0
+      '@types/node': 22.19.11
 
   '@types/ws@8.18.1':
     dependencies:
-      '@types/node': 25.3.0
+      '@types/node': 22.19.11
 
   '@types/yargs-parser@21.0.3': {}
 
@@ -23421,7 +23413,7 @@ snapshots:
 
   chrome-launcher@0.15.2:
     dependencies:
-      '@types/node': 25.3.0
+      '@types/node': 22.19.11
       escape-string-regexp: 4.0.0
       is-wsl: 2.2.0
       lighthouse-logger: 1.4.2
@@ -23432,7 +23424,7 @@ snapshots:
 
   chromium-edge-launcher@0.3.0:
     dependencies:
-      '@types/node': 25.3.0
+      '@types/node': 22.19.11
       escape-string-regexp: 4.0.0
       is-wsl: 2.2.0
       lighthouse-logger: 1.4.2
@@ -25999,7 +25991,7 @@ snapshots:
     dependencies:
       '@jest/types': 29.6.3
       '@types/graceful-fs': 4.1.9
-      '@types/node': 25.3.0
+      '@types/node': 22.19.11
       anymatch: 3.1.3
       fb-watchman: 2.0.2
       graceful-fs: 4.2.11
@@ -26033,7 +26025,7 @@ snapshots:
   jest-mock@29.7.0:
     dependencies:
       '@jest/types': 29.6.3
-      '@types/node': 25.3.0
+      '@types/node': 22.19.11
       jest-util: 29.7.0
 
   jest-regex-util@29.6.3: {}
@@ -26066,7 +26058,7 @@ snapshots:
   jest-util@29.7.0:
     dependencies:
       '@jest/types': 29.6.3
-      '@types/node': 25.3.0
+      '@types/node': 22.19.11
       chalk: 4.1.2
       ci-info: 3.9.0
       graceful-fs: 4.2.11
@@ -26083,13 +26075,13 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 25.3.0
+      '@types/node': 22.19.11
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
   jest-worker@29.7.0:
     dependencies:
-      '@types/node': 25.3.0
+      '@types/node': 22.19.11
       jest-util: 29.7.0
       merge-stream: 2.0.0
       supports-color: 8.1.1
@@ -27623,7 +27615,7 @@ snapshots:
       '@protobufjs/path': 1.1.2
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.0
-      '@types/node': 25.3.0
+      '@types/node': 22.19.11
       long: 5.3.2
 
   protobufjs@7.5.4:
@@ -27638,7 +27630,7 @@ snapshots:
       '@protobufjs/path': 1.1.2
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.0
-      '@types/node': 25.3.0
+      '@types/node': 22.19.11
       long: 5.3.2
 
   proxy-addr@2.0.7:
@@ -28072,10 +28064,6 @@ snapshots:
       tslib: 2.8.1
     optionalDependencies:
       '@types/react': 18.3.28
-
-  react-swipeable@7.0.2(react@18.3.1):
-    dependencies:
-      react: 18.3.1
 
   react-use-gesture@8.0.1(react@18.3.1):
     dependencies:
