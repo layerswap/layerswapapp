@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "pnpm install",
+  "buildCommand": "cd ../.. && pnpm build:packages && cd examples/cdn-embed && pnpm build",
+  "outputDirectory": "dist",
+  "framework": null,
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  },
+  "ignoreCommand": "bash -c 'cd ../.. && git diff --quiet HEAD^ HEAD -- examples/cdn-embed packages || exit 1'"
+}
