@@ -19,6 +19,7 @@ import TransferCrypto from "./TransferCrypto";
 import { SupportedDestination, useResolvedDestinations } from "./DestinationTokenPicker";
 import { Widget } from "@/components/Widget/Index";
 import ResizablePanel from "@/components/Common/ResizablePanel";
+import { DepositSettings } from "@/lib/AppSettings";
 
 export type DepositMode = "inline" | "button";
 
@@ -33,10 +34,17 @@ export type DepositProps = {
     /** "inline" (default) renders the widget directly. "button" renders a Pay
      * button that opens the widget inside a dialog. */
     mode?: DepositMode;
+    /** Title shown in the widget header. Defaults to "Deposit". */
+    title?: string;
     /** Label for the trigger button when mode="button". Defaults to "Pay". */
     buttonLabel?: string;
     /** Extra className applied to the trigger button when mode="button". */
     buttonClassName?: string;
+    /** When true, hide the "Send to" recipient row in the quote summary. The
+     * deposit widget's recipient is the integrator's own locked address, so
+     * the row is often redundant for the end user. Defaults to false. */
+    hideRecipient?: boolean;
+    actionButtonText?: string;
 };
 
 const StepRouter: FC<{ step: DepositStep; partner?: Partner; destinations: SupportedDestination[]; destinationAddress: string }> = ({
@@ -58,11 +66,11 @@ const StepRouter: FC<{ step: DepositStep; partner?: Partner; destinations: Suppo
     }
 };
 
-const DepositForm: FC<DepositProps & { onClose?: () => void }> = ({ partner, destinations, destinationAddress, onClose }) => {
+const DepositForm: FC<DepositProps & { onClose?: () => void }> = ({ partner, destinations, destinationAddress, title, onClose }) => {
     const { step } = useDepositStep();
     return (
         <div className="flex flex-col gap-3 w-full pt-4">
-            <DepositHeader onClose={onClose} />
+            <DepositHeader title={title} onClose={onClose} />
             <div className="h-px w-full bg-secondary-400" />
             <ResizablePanel>
                 <StepRouter step={step} partner={partner} destinations={destinations} destinationAddress={destinationAddress} />
@@ -71,7 +79,7 @@ const DepositForm: FC<DepositProps & { onClose?: () => void }> = ({ partner, des
     );
 };
 
-const DepositInner: FC<DepositProps & { onClose?: () => void }> = ({ partner, destinations, destinationAddress, onClose }) => {
+const DepositInner: FC<DepositProps & { onClose?: () => void }> = ({ partner, destinations, destinationAddress, title, onClose }) => {
     const settings = useSettingsState();
     const initialSettings = useInitialSettings();
     const { wallets } = useWallet();
@@ -128,22 +136,27 @@ const DepositInner: FC<DepositProps & { onClose?: () => void }> = ({ partner, de
     return (
         <Formik initialValues={initialValues} validateOnMount onSubmit={handleSubmit}>
             <DepositStepProvider>
-                <DepositForm partner={partner} destinations={destinations} destinationAddress={destinationAddress} onClose={onClose} />
+                <DepositForm partner={partner} destinations={destinations} destinationAddress={destinationAddress} title={title} onClose={onClose} />
             </DepositStepProvider>
         </Formik>
     );
 };
 
 
-const DepositCard: FC<Pick<DepositProps, "partner" | "destinations" | "destinationAddress"> & { onClose?: () => void }> = ({ partner, destinations, destinationAddress, onClose }) => (
-    <Widget hideMenu>
-        <SwapDataProvider>
-            <DepositInner partner={partner} destinations={destinations} destinationAddress={destinationAddress} onClose={onClose} />
-        </SwapDataProvider>
-    </Widget>
-);
+const DepositCard: FC<Pick<DepositProps, "partner" | "destinations" | "destinationAddress" | "hideRecipient" | "title" | "actionButtonText"> & { onClose?: () => void }> = ({ partner, destinations, destinationAddress, hideRecipient, title, actionButtonText, onClose }) => {
+    DepositSettings.HideRecipient = !!hideRecipient;
+    DepositSettings.ActionButtonText = actionButtonText || "Deposit";
 
-export const Deposit: FC<DepositProps> = ({ mode = "inline", buttonLabel = "Deposit", buttonClassName, partner, destinations, destinationAddress }) => {
+    return (
+        <Widget hideMenu>
+            <SwapDataProvider>
+                <DepositInner partner={partner} destinations={destinations} destinationAddress={destinationAddress} title={title} onClose={onClose} />
+            </SwapDataProvider>
+        </Widget>
+    );
+};
+
+export const Deposit: FC<DepositProps> = ({ mode = "inline", buttonLabel = "Deposit", buttonClassName, partner, destinations, destinationAddress, hideRecipient, title }) => {
     const [open, setOpen] = useState(false);
     if (mode === "button") {
         return (
@@ -159,13 +172,13 @@ export const Deposit: FC<DepositProps> = ({ mode = "inline", buttonLabel = "Depo
                         {buttonLabel}
                     </button>
                 </DialogTrigger>
-                <DialogContent showCloseButton={false} className="!p-0 !bg-transparent !ring-0 !gap-0 sm:!max-w-md">
-                    <DepositCard partner={partner} destinations={destinations} destinationAddress={destinationAddress} onClose={() => setOpen(false)} />
+                <DialogContent showCloseButton={false} className="!p-0 !bg-transparent !ring-0 !gap-0 sm:!max-w-md *:min-w-0">
+                    <DepositCard partner={partner} destinations={destinations} destinationAddress={destinationAddress} hideRecipient={hideRecipient} title={title} onClose={() => setOpen(false)} />
                 </DialogContent>
             </Dialog>
         );
     }
-    return <DepositCard partner={partner} destinations={destinations} destinationAddress={destinationAddress} />;
+    return <DepositCard partner={partner} destinations={destinations} destinationAddress={destinationAddress} hideRecipient={hideRecipient} title={title} />;
 };
 
 export default Deposit;

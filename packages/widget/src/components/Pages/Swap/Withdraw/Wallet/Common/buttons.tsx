@@ -23,6 +23,7 @@ import { resolvePriceImpactValues } from "@/lib/fees";
 import InfoIcon from "@/components/Icons/InfoIcon";
 import { useBalance } from "@/lib/balances/useBalance";
 import useSWRGas from "@/lib/gases/useSWRGas";
+import { DepositSettings } from "@/lib/AppSettings";
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData } = useSwapDataState()
     const { source_network } = swapBasicData || {}
@@ -370,7 +371,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 onClick={handleClick}
                 isDisabled={quoteIsLoading || !!quoteError}
             >
-                {error ? 'Try again' : 'Swap now'}
+                {error ? 'Try again' : DepositSettings.ActionButtonText || 'Swap now'}
             </ButtonWrapper>
         </>
     )

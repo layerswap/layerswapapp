@@ -248,10 +248,10 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
                                             the eventual layout instead of a blank gap. */}
                                         {(showDepositInfo || lockDestinationAddress) && (
                                             <DepositAddressInfo
-                                                sourceNetwork={from?.name}
-                                                sourceToken={fromAsset?.symbol}
-                                                destinationNetwork={destination?.name}
-                                                destinationToken={toCurrency?.symbol}
+                                                sourceNetwork={from}
+                                                sourceToken={fromAsset}
+                                                destinationNetwork={destination}
+                                                destinationToken={toCurrency}
                                                 destinationAddress={destination_address}
                                                 refuel={!!refuel || !!swapBasicData?.refuel}
                                                 depositAddress={depositAddress}

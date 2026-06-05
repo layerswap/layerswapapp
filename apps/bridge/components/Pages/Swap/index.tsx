@@ -15,6 +15,7 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
             {/* <Swap /> */}
             <Deposit
                 mode="button"
+                hideRecipient
                 destinations={[
                     { network: "STARKNET_SEPOLIA", token: "ETH" },
                 ]}

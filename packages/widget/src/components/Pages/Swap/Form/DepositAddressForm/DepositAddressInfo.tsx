@@ -1,19 +1,21 @@
 import { FC, useEffect, useMemo, useState } from "react";
-import { ChevronDown, Copy, Check, Info } from "lucide-react";
+import { ChevronDown, Copy, Check, Info, ArrowRight } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { AnimatePresence, motion } from "framer-motion";
 import clsx from "clsx";
 import useCopyClipboard from "@/hooks/useCopyClipboard";
 import { useDetailedQuote } from "@/hooks/useDetailedQuote";
+import { Network, Token } from "@/Models/Network";
+import TokenChainBadge from "@/components/Pages/Deposit/_shared/TokenChainBadge";
 import { formatFee, formatTierRange } from "./helpers";
 import { formatTokenAmount } from "@/components/utils/formatTokenAmount";
 import { formatEtaFromMs } from "@/components/utils/formatTime";
 
 type DepositAddressInfoProps = {
-    sourceNetwork: string | undefined;
-    sourceToken: string | undefined;
-    destinationNetwork: string | undefined;
-    destinationToken: string | undefined;
+    sourceNetwork: Network | undefined;
+    sourceToken: Token | undefined;
+    destinationNetwork: Network | undefined;
+    destinationToken: Token | undefined;
     destinationAddress: string | undefined;
     refuel: boolean;
     depositAddress: string | undefined;
@@ -35,13 +37,13 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
 
     useEffect(() => {
         setIsFeesExpanded(false);
-    }, [sourceNetwork, sourceToken]);
+    }, [sourceNetwork?.name, sourceToken?.symbol]);
 
     const { detailedQuotes, isLoading: isQuoteLoading } = useDetailedQuote({
-        sourceNetwork,
-        sourceToken,
-        destinationNetwork,
-        destinationToken,
+        sourceNetwork: sourceNetwork?.name,
+        sourceToken: sourceToken?.symbol,
+        destinationNetwork: destinationNetwork?.name,
+        destinationToken: destinationToken?.symbol,
         destinationAddress,
         refuel,
         useDepositAddress: true,
@@ -57,13 +59,13 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
     const minDepositDisplay = useMemo(() => {
         const min = sortedTiers[0]?.min_amount;
         if (!min || !sourceToken) return null;
-        return `${formatTokenAmount(min)} ${sourceToken}`;
+        return `${formatTokenAmount(min)} ${sourceToken.symbol}`;
     }, [sortedTiers, sourceToken]);
 
     const maxDepositDisplay = useMemo(() => {
         const max = sortedTiers[sortedTiers.length - 1]?.max_amount;
         if (!max || !Number.isFinite(max) || !sourceToken) return null;
-        return `${formatTokenAmount(max)} ${sourceToken}`;
+        return `${formatTokenAmount(max)} ${sourceToken.symbol}`;
     }, [sortedTiers, sourceToken]);
 
     const handleCopy = () => {
@@ -88,10 +90,10 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
         : null;
 
     return (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 overflow-hidden">
             {/* Deposit address + QR — UNCHANGED per user request */}
             <div>
-                <div className="flex items-stretch bg-secondary-400 rounded-xl overflow-hidden">
+                <div className="flex items-stretch bg-secondary-500 rounded-xl overflow-hidden">
                     <div className="shrink-0 bg-white p-1.5 flex items-center">
                         {isCreatingSwap || !depositAddress ? (
                             <div className="h-[140px] w-[140px] bg-secondary-100 rounded animate-pulse" />
@@ -155,6 +157,51 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
                     </div>
                 </div>
             </div>
+
+            {/* You send → You receive summary */}
+            {sourceToken && destinationToken && (
+                <div className="bg-secondary-500 rounded-xl px-4 py-3 flex items-center gap-3">
+                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                        <TokenChainBadge
+                            tokenLogo={sourceToken.logo}
+                            tokenSymbol={sourceToken.symbol}
+                            networkLogo={sourceNetwork?.logo}
+                            networkName={sourceNetwork?.display_name}
+                            size={32}
+                        />
+                        <span className="flex flex-col min-w-0">
+                            <span className="text-xs text-secondary-text leading-none">
+                                <span>You send</span>
+                            </span>
+                            <span className="leading-tight truncate mt-1">
+                                <span className="text-sm font-semibold text-primary-text">{sourceToken.symbol}</span>
+                            </span>
+                        </span>
+                    </div>
+
+                    <span aria-hidden="true" className="shrink-0 inline-flex items-center justify-center h-6 w-6 rounded-lg bg-secondary-800">
+                        <ArrowRight className="h-4 w-4 text-primary" />
+                    </span>
+
+                    <div className="flex items-center gap-2.5 flex-1 min-w-0 justify-end">
+                        <span className="flex flex-col min-w-0 items-end text-right">
+                            <span className="text-xs text-secondary-text leading-none">
+                                <span>You receive</span>
+                            </span>
+                            <span className="leading-tight truncate mt-1 w-full text-right">
+                                <span className="text-sm font-semibold text-primary-text">{destinationToken.symbol}</span>
+                            </span>
+                        </span>
+                        <TokenChainBadge
+                            tokenLogo={destinationToken.logo}
+                            tokenSymbol={destinationToken.symbol}
+                            networkLogo={destinationNetwork?.logo}
+                            networkName={destinationNetwork?.display_name}
+                            size={32}
+                        />
+                    </div>
+                </div>
+            )}
 
             {/* Min · Max · Fee meta-row */}
             {showQuoteSkeleton ? (
@@ -244,7 +291,7 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
                                             tier,
                                             idx === 0,
                                             idx === sortedTiers.length - 1,
-                                            sourceToken!
+                                            sourceToken!.symbol
                                         );
                                         const fee = formatFee(tier.total_percentage_fee, tier.total_fixed_fee_in_usd);
                                         const isActive = idx === 0;

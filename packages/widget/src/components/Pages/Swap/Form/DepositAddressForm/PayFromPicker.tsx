@@ -73,7 +73,7 @@ const PayFromPicker: FC<PayFromPickerProps> = ({ selectedSource, onSourceChange,
         <Selector>
             <SelectorTrigger
                 disabled={!hasOptions || !hasMultipleOptions}
-                className="group w-full bg-secondary-500 hover:bg-secondary-400/70 disabled:hover:bg-secondary-500 border border-transparent rounded-2xl !px-4 !py-3 transition-colors disabled:cursor-not-allowed"
+                className="group w-full bg-secondary-500 hover:bg-secondary-400/70 disabled:hover:bg-secondary-500 border border-transparent rounded-xl !px-4 !py-3 transition-colors disabled:cursor-not-allowed"
             >
                 <PickerTriggerContent
                     label="You send"
