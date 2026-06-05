@@ -69,4 +69,5 @@ export default class AppSettings extends WalletsConfigs {
 export class DepositSettings extends AppSettings {
     static HideRecipient: boolean = false
     static ActionButtonText: string | undefined = undefined
+    static DefaultAmountUsd: number = 1
 }

@@ -205,7 +205,7 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
 
             {/* Min · Max · Fee meta-row */}
             {showQuoteSkeleton ? (
-                <div className="bg-secondary-500 rounded-xl px-3 py-3 flex items-center justify-around gap-2">
+                <div className="bg-secondary-500 rounded-xl px-3 py-3 flex items-center justify-around gap-2 h-[64px]">
                     {[0, 1, 2].map((i) => (
                         <span key={i} className="flex flex-col items-center gap-1.5 animate-pulse">
                             <span className="h-2.5 w-12 bg-secondary-400 rounded" />

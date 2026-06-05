@@ -17,9 +17,10 @@ type Props = {
     fee: ReturnType<typeof useQuoteData>['quote'];
     quoteTokenPrices?: QuoteTokenPrices;
     hideManualTransfer?: boolean;
+    onRoutePickerTriggerClick?: () => void;
 }
 
-const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd, fee, quoteTokenPrices, hideManualTransfer }: Props) => {
+const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd, fee, quoteTokenPrices, hideManualTransfer, onRoutePickerTriggerClick }: Props) => {
     const { values } = useFormikContext<SwapFormValues>()
 
     const { fromAsset: fromCurrency, from, depositMethod } = values || {}
@@ -61,7 +62,7 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, mi
                 </div>
 
                 <div className="justify-self-end self-start">
-                    <RoutePicker minAllowedAmount={minAllowedAmount} maxAllowedAmount={maxAmountFromApi} direction="from" quote={fee?.quote} quoteTokenPrices={quoteTokenPrices} />
+                    <RoutePicker minAllowedAmount={minAllowedAmount} maxAllowedAmount={maxAmountFromApi} direction="from" quote={fee?.quote} quoteTokenPrices={quoteTokenPrices} onTriggerClick={onRoutePickerTriggerClick} />
                 </div>
             </div>
         </div>

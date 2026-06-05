@@ -486,7 +486,7 @@ function sortTokensByRelevance(
 
 function sortGroupedTokensByRelevance(
     groups: (GroupedTokenElement & { totalUSD: number })[],
-    balances: Record<string, NetworkBalance> | null,
+    _balances: Record<string, NetworkBalance> | null,
     routesHistory: RoutesHistory,
     direction: SwapDirection
 ): GroupedTokenElement[] {
@@ -802,9 +802,9 @@ function getSuggestedRoutes(routes: NetworkRoute[], balances: Record<string, Net
     return sorted.slice(0, effectiveLimit)
 }
 
-const extractTokenElementsAsSuggested = (routes: NetworkRoute[]): NetworkTokenElement[] => routes.flatMap(route => (route.tokens || []).map(token => ({ type: 'suggested_token', route: { token, route } })))
+export const extractTokenElementsAsSuggested = (routes: NetworkRoute[]): NetworkTokenElement[] => routes.flatMap(route => (route.tokens || []).map(token => ({ type: 'suggested_token', route: { token, route } })))
 
-const sortSuggestedTokenElements = (direction: SwapDirection, balances: Record<string, NetworkBalance> | null, routesHistory: RoutesHistory) => (a: NetworkTokenElement, b: NetworkTokenElement) => {
+export const sortSuggestedTokenElements = (direction: SwapDirection, balances: Record<string, NetworkBalance> | null, routesHistory: RoutesHistory) => (a: NetworkTokenElement, b: NetworkTokenElement) => {
     if (direction === "from" && balances) {
         const a_balance = getNetworkTokenElementBalance(a, balances)
         const b_balance = getNetworkTokenElementBalance(b, balances)

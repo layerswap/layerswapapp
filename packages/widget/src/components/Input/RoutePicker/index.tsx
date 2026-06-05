@@ -16,7 +16,7 @@ import { SwapDirection, SwapFormValues } from "@/components/Pages/Swap/Form/Swap
 import useSuggestionsLimit from "@/hooks/useSuggestionsLimit";
 import useWallet from "@/hooks/useWallet";
 
-const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, className?: string, minAllowedAmount?: number, maxAllowedAmount?: number, quote?: SwapQuote, quoteTokenPrices?: QuoteTokenPrices, hideBalance?: boolean }> = ({ direction, isExchange = false, className, minAllowedAmount, maxAllowedAmount, quote, quoteTokenPrices, hideBalance = false }) => {
+const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, className?: string, minAllowedAmount?: number, maxAllowedAmount?: number, quote?: SwapQuote, quoteTokenPrices?: QuoteTokenPrices, hideBalance?: boolean, onTriggerClick?: () => void }> = ({ direction, isExchange = false, className, minAllowedAmount, maxAllowedAmount, quote, quoteTokenPrices, hideBalance = false, onTriggerClick }) => {
     const {
         values,
         setFieldValue,
@@ -71,32 +71,47 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
     }, [currencyFieldName, direction])
 
     const showBalance = !hideBalance && !isExchange && (direction === 'to' || values.depositMethod === 'wallet')
+    const triggerDataAttr = direction === "from" ? "from-route-picker" : "to-route-picker";
+    const triggerClassName = "group-[.exchange-picker]:bg-secondary-500 py-1.5 px-2 group-[.exchange-picker]:py-2! group-[.exchange-picker]:px-3! active:animate-press-down group-[.exchange-picker]:active:animate-none";
 
     return (
         <div className={clsx("flex flex-col self-end relative items-center", className)}>
-            <Selector>
-                <SelectorTrigger data-attr={direction === "from" ? "from-route-picker" : "to-route-picker"} disabled={false} className={"group-[.exchange-picker]:bg-secondary-500 py-1.5 px-2 group-[.exchange-picker]:py-2! group-[.exchange-picker]:px-3! active:animate-press-down group-[.exchange-picker]:active:animate-none"}>
-                    <SelectedRouteDisplay route={selectedRoute} token={selectedToken} placeholder="Select token" />
-                </SelectorTrigger>
-                <SelectorContent
-                    isLoading={isLoading}
-                    searchHint="Search"
-                    header={<PickerWalletConnect direction={direction} />}
-                    ref={ref}
-                >
-                    {({ closeModal }) => (
-                        <Content
-                            onSelect={(r, t) => { handleSelect(r, t); closeModal(); }}
-                            searchQuery={searchQuery}
-                            setSearchQuery={setSearchQuery}
-                            rowElements={routeElements}
-                            direction={direction}
-                            selectedRoute={selectedRoute?.name}
-                            selectedToken={selectedToken?.symbol}
-                        />
-                    )}
-                </SelectorContent>
-            </Selector>
+            {onTriggerClick ? (
+                <div className="rounded-2xl flex items-center relative w-full z-10 self-end">
+                    <button
+                        type="button"
+                        onClick={onTriggerClick}
+                        data-attr={triggerDataAttr}
+                        className={clsx("rounded-2xl focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow flex items-center text-left justify-bottom w-full px-2 pr-0 bg-secondary-300 hover:bg-secondary-200 font-semibold", triggerClassName)}
+                    >
+                        <SelectedRouteDisplay route={selectedRoute} token={selectedToken} placeholder="Select token" />
+                    </button>
+                </div>
+            ) : (
+                <Selector>
+                    <SelectorTrigger data-attr={triggerDataAttr} disabled={false} className={triggerClassName}>
+                        <SelectedRouteDisplay route={selectedRoute} token={selectedToken} placeholder="Select token" />
+                    </SelectorTrigger>
+                    <SelectorContent
+                        isLoading={isLoading}
+                        searchHint="Search"
+                        header={<PickerWalletConnect direction={direction} />}
+                        ref={ref}
+                    >
+                        {({ closeModal }) => (
+                            <Content
+                                onSelect={(r, t) => { handleSelect(r, t); closeModal(); }}
+                                searchQuery={searchQuery}
+                                setSearchQuery={setSearchQuery}
+                                rowElements={routeElements}
+                                direction={direction}
+                                selectedRoute={selectedRoute?.name}
+                                selectedToken={selectedToken?.symbol}
+                            />
+                        )}
+                    </SelectorContent>
+                </Selector>
+            )}
             {
                 showBalance &&
                 <Balance values={values} direction={direction} minAllowedAmount={minAllowedAmount} maxAllowedAmount={maxAllowedAmount} quoteTokenPrices={quoteTokenPrices ?? quote} />

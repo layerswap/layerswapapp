@@ -24,6 +24,27 @@ const TextRow = ({ label, value, onChange, placeholder, disabled }: { label: str
     </div>
 );
 
+const NumberRow = ({ label, value, onChange, placeholder, disabled }: { label: string, value: number | undefined, onChange: (v: number | undefined) => void, placeholder?: string, disabled?: boolean }) => (
+    <div className="flex flex-col gap-1 px-2 py-2">
+        <label className={clsx("text-sm text-secondary-text", disabled && "opacity-50")}>{label}</label>
+        <Input
+            type="number"
+            inputMode="decimal"
+            min={0}
+            value={value ?? ""}
+            onChange={(e) => {
+                const raw = e.target.value;
+                if (raw === "") return onChange(undefined);
+                const parsed = Number(raw);
+                onChange(Number.isFinite(parsed) ? parsed : undefined);
+            }}
+            placeholder={placeholder}
+            disabled={disabled}
+            className="bg-secondary-500 rounded-xl h-11"
+        />
+    </div>
+);
+
 export function DepositConfigButton() {
     const { depositProps, updateDepositProp } = useWidgetContext();
     const isButtonMode = depositProps.mode === "button";
@@ -45,9 +66,15 @@ export function DepositConfigButton() {
             <TextRow
                 label="Trigger button label"
                 value={depositProps.buttonLabel}
-                placeholder="Pay"
+                placeholder="Deposit"
                 onChange={(v) => updateDepositProp("buttonLabel", v)}
                 disabled={!isButtonMode}
+            />
+            <NumberRow
+                label="Default amount (USD)"
+                value={depositProps.defaultAmountUsd}
+                placeholder="1"
+                onChange={(v) => updateDepositProp("defaultAmountUsd", v)}
             />
             <ToggleRow
                 label="Hide recipient"

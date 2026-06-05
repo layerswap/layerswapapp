@@ -12,7 +12,7 @@ import QuoteSummary from "../_shared/QuoteSummary";
 
 const AmountStep: FC = () => {
     const { values, setFieldValue } = useFormikContext<SwapFormValues>();
-    const { push } = useDepositStep();
+    const { push, back } = useDepositStep();
     const { setSwapId, setSubmitedFormValues } = useSwapDataUpdate();
     const { setSwapError } = useSwapDataState();
 
@@ -81,6 +81,7 @@ const AmountStep: FC = () => {
                     fee={fee}
                     quoteTokenPrices={quoteTokenPrices}
                     hideManualTransfer
+                    onRoutePickerTriggerClick={back}
                 />
 
                 {(hasQuote || isQuoteLoading) ? (

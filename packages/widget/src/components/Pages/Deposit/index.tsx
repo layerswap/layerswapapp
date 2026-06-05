@@ -32,12 +32,12 @@ export type DepositProps = {
     /** Recipient address on the destination network. Required — the deposit
      * widget never asks the end user for this. */
     destinationAddress: string;
-    /** "inline" (default) renders the widget directly. "button" renders a Pay
+    /** "inline" (default) renders the widget directly. "button" renders a Deposit
      * button that opens the widget inside a dialog. */
     mode?: DepositMode;
     /** Title shown in the widget header. Defaults to "Deposit". */
     title?: string;
-    /** Label for the trigger button when mode="button". Defaults to "Pay". */
+    /** Label for the trigger button when mode="button". Defaults to "Deposit". */
     buttonLabel?: string;
     /** Extra className applied to the trigger button when mode="button". */
     buttonClassName?: string;
@@ -46,6 +46,9 @@ export type DepositProps = {
      * the row is often redundant for the end user. Defaults to false. */
     hideRecipient?: boolean;
     actionButtonText?: string;
+    /** Default amount (in USD) seeded into the wallet flow once the user
+     * picks a source token. Defaults to $1. Set to 0 to disable seeding. */
+    defaultAmountUsd?: number;
 };
 
 const StepRouter: FC<{ step: DepositStep; partner?: Partner; destinations: SupportedDestination[]; destinationAddress: string }> = ({
@@ -144,9 +147,10 @@ const DepositInner: FC<DepositProps & { onClose?: () => void }> = ({ partner, de
 };
 
 
-const DepositCard: FC<Pick<DepositProps, "partner" | "destinations" | "destinationAddress" | "hideRecipient" | "title" | "actionButtonText"> & { onClose?: () => void }> = ({ partner, destinations, destinationAddress, hideRecipient, title, actionButtonText, onClose }) => {
+const DepositCard: FC<Pick<DepositProps, "partner" | "destinations" | "destinationAddress" | "hideRecipient" | "title" | "actionButtonText" | "defaultAmountUsd"> & { onClose?: () => void }> = ({ partner, destinations, destinationAddress, hideRecipient, title, actionButtonText, defaultAmountUsd, onClose }) => {
     DepositSettings.HideRecipient = !!hideRecipient;
     DepositSettings.ActionButtonText = actionButtonText || "Deposit";
+    DepositSettings.DefaultAmountUsd = defaultAmountUsd ?? 1;
 
     return (
         <ThemeWrapper>
@@ -159,7 +163,7 @@ const DepositCard: FC<Pick<DepositProps, "partner" | "destinations" | "destinati
     );
 };
 
-export const Deposit: FC<DepositProps> = ({ mode = "inline", buttonLabel = "Deposit", buttonClassName, partner, destinations, destinationAddress, hideRecipient, title }) => {
+export const Deposit: FC<DepositProps> = ({ mode = "inline", buttonLabel = "Deposit", buttonClassName, ...props }) => {
     const [open, setOpen] = useState(false);
     if (mode === "button") {
         return (
@@ -176,12 +180,12 @@ export const Deposit: FC<DepositProps> = ({ mode = "inline", buttonLabel = "Depo
                     </button>
                 </DialogTrigger>
                 <DialogContent showCloseButton={false} className="!p-0 !bg-transparent !ring-0 !gap-0 sm:!max-w-md *:min-w-0">
-                    <DepositCard partner={partner} destinations={destinations} destinationAddress={destinationAddress} hideRecipient={hideRecipient} title={title} onClose={() => setOpen(false)} />
+                    <DepositCard {...props} onClose={() => setOpen(false)} />
                 </DialogContent>
             </Dialog>
         );
     }
-    return <DepositCard partner={partner} destinations={destinations} destinationAddress={destinationAddress} hideRecipient={hideRecipient} title={title} />;
+    return <DepositCard {...props} />;
 };
 
 export default Deposit;
