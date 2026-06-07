@@ -14,7 +14,7 @@ import { Partner } from '@/Models/Partner'
 import { ImageWithFallback } from '@/components/Common/ImageWithFallback'
 import { useInitialSettings } from '@/context/settings'
 import { Address } from '@/lib/address/Address'
-import { DepositSettings } from '@/lib/AppSettings'
+import { useDepositSettings } from '@/context/depositSettings'
 
 export const SummaryRow: FC<{
     isQuoteLoading?: boolean
@@ -27,7 +27,7 @@ export const SummaryRow: FC<{
     partner?: Partner
 }> = ({ quoteData, isQuoteLoading, values, wallet, onOpen, sourceAddress, isOpen, partner }) => {
     const { destination_address: destinationAddressFromQuery }  = useInitialSettings()
-    const hideRecipient = DepositSettings.HideRecipient
+    const { hideRecipient } = useDepositSettings()
     const { to, destination_address } = values
     const addressProviderIcon = destinationAddressFromQuery && partner?.is_wallet && Address.equals(destinationAddressFromQuery, values?.destination_address!, values?.to!) && partner?.logo
     const addressInstance = useMemo(() => (destination_address && to) ? new Address(destination_address, to) : null, [destination_address, to])

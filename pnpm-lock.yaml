@@ -914,15 +914,15 @@ importers:
       react-error-boundary:
         specifier: ^4.0.11
         version: 4.1.2(react@19.2.3)
-      react-hot-toast:
-        specifier: ^2.2.0
-        version: 2.6.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       react-use-intercom:
         specifier: ^2.0.0
         version: 2.1.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       swr:
         specifier: 'catalog:'
         version: 2.3.8(react@19.2.3)
+      tailwind-merge:
+        specifier: ^3.3.0
+        version: 3.4.0
       tailwindcss-animate:
         specifier: ^1.0.5
         version: 1.0.7(tailwindcss@4.0.15)
@@ -30609,9 +30609,9 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0
-      abitype: 1.0.8(typescript@5.9.3)(zod@4.0.5)
+      abitype: 1.0.8(typescript@5.9.3)(zod@3.25.76)
       isows: 1.0.7(ws@8.18.2(bufferutil@4.1.0)(utf-8-validate@5.0.10))
-      ox: 0.7.1(typescript@5.9.3)(zod@4.0.5)
+      ox: 0.7.1(typescript@5.9.3)(zod@3.25.76)
       ws: 8.18.2(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     optionalDependencies:
       typescript: 5.9.3
@@ -30660,9 +30660,9 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0
-      abitype: 1.2.3(typescript@5.9.3)(zod@4.0.5)
+      abitype: 1.2.3(typescript@5.9.3)(zod@3.25.76)
       isows: 1.0.7(ws@8.18.3(bufferutil@4.1.0)(utf-8-validate@5.0.10))
-      ox: 0.11.3(typescript@5.9.3)(zod@4.0.5)
+      ox: 0.11.3(typescript@5.9.3)(zod@3.25.76)
       ws: 8.18.3(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     optionalDependencies:
       typescript: 5.9.3

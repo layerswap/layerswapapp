@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useCallback } from "react";
 import { useFormikContext } from "formik";
 import SubmitButton from "@/components/Buttons/submitButton";
 import SourcePicker from "@/components/Input/SourcePicker";
@@ -50,7 +50,7 @@ const AmountStep: FC = () => {
     const hasQuote = !!fee?.quote && !quoteError;
     const canContinue = !!from && !!fromAsset && !!to && !!toAsset && !!sourceAccount?.address && !!values?.destination_address && hasAmount && !quoteError && !isQuoteLoading;
 
-    const handleContinue = () => {
+    const handleContinue = useCallback(() => {
         if (!canContinue) return;
         if (!values?.amount) return;
         if (setSwapError) setSwapError("");
@@ -58,7 +58,7 @@ const AmountStep: FC = () => {
         setSubmitedFormValues({ ...values, depositMethod: "wallet" });
         setSwapId(undefined);
         push("wallet-processing");
-    };
+    }, [canContinue, values, setSwapError, setFieldValue, setSubmitedFormValues, setSwapId, push]);
 
     const receiveAmount = fee?.quote?.receive_amount;
 

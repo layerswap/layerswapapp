@@ -1,14 +1,12 @@
 import { FC, ReactNode } from "react";
-import { useFormikContext } from "formik";
 import clsx from "clsx";
 import { QrCode, Wallet as WalletIcon, ChevronRight } from "lucide-react";
 import useWallet from "@/hooks/useWallet";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
-import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
-import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { useDepositStep } from "../depositStepContext";
+import { useDepositSelection } from "../depositSelectionContext";
 import { Address } from "@/lib/address/Address";
-import DestinationTokenPicker, { SupportedDestination } from "../DestinationTokenPicker";
+import DestinationTokenPicker from "../DestinationTokenPicker";
 
 type Badge = {
     label: string;
@@ -56,7 +54,7 @@ const MethodCard: FC<MethodCardProps> = ({
             className={clsx(
                 "shrink-0 h-[46px] w-[46px] rounded-xl flex items-center justify-center border",
                 iconTone === "wallet"
-                    ? "bg-[#1c1408] border-[#3a2a12]"
+                    ? "bg-warning-background border-warning-foreground/20"
                     : "bg-secondary-700 border-secondary-400",
             )}
         >
@@ -70,18 +68,11 @@ const MethodCard: FC<MethodCardProps> = ({
     </button>
 );
 
-type Props = {
-    destinations: SupportedDestination[];
-};
-
-const MethodPicker: FC<Props> = ({ destinations }) => {
-    const { setFieldValue, values } = useFormikContext<SwapFormValues>();
+const MethodPicker: FC = () => {
     const { push } = useDepositStep();
     const { wallets } = useWallet();
     const { connect } = useConnectModal();
-
-    const destination = values?.to as NetworkRoute | undefined;
-    const destinationToken = values?.toAsset as NetworkRouteToken | undefined;
+    const { destination, destinationToken } = useDepositSelection();
 
     const primaryWallet = wallets[0];
     const hasWallet = !!primaryWallet;
@@ -93,12 +84,10 @@ const MethodPicker: FC<Props> = ({ destinations }) => {
             if (!connectedWallet) return;
         }
         if (!destinationReady) return;
-        setFieldValue("depositMethod", "wallet", false);
         push("wallet-source");
     };
 
     const handleTransferCryptoClick = () => {
-        setFieldValue("depositMethod", "deposit_address", false);
         push("transfer-crypto");
     };
 
@@ -117,7 +106,7 @@ const MethodPicker: FC<Props> = ({ destinations }) => {
 
     return (
         <div className="flex flex-col gap-2 w-full">
-            <DestinationTokenPicker destinations={destinations} />
+            <DestinationTokenPicker />
 
             <div>
                 <p className="text-secondary-text text-xs px-1 pt-0.5 mb-1">

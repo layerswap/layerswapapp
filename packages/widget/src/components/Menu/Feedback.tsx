@@ -1,9 +1,12 @@
 import { Form, Formik, FormikErrors } from 'formik';
-import { FC, useCallback } from 'react'
-import toast from 'react-hot-toast';
+import { FC, useCallback, useState } from 'react'
+import { CheckCircle2 } from 'lucide-react';
 import { useIntercom } from 'react-use-intercom';
 import { SendFeedbackMessage } from '../../lib/telegram';
 import SubmitButton from '../Buttons/submitButton';
+import { ErrorDisplay } from '../Pages/Swap/Form/SecondaryComponents/validationError/ErrorDisplay';
+import ErrorDismissButton from '../Pages/Swap/Form/SecondaryComponents/validationError/ErrorDismissButton';
+import FailIcon from '../Icons/FailIcon';
 
 interface SendFeedbackFormValues {
     Feedback: string;
@@ -16,26 +19,38 @@ type Props = {
 const SendFeedback: FC<Props> = ({ onSend }) => {
     const initialValues: SendFeedbackFormValues = { Feedback: '' }
     const { boot, show, update } = useIntercom()
+    const [error, setError] = useState<string>("")
+    const [sent, setSent] = useState(false)
 
     const handleSendFeedback = useCallback(async (values: SendFeedbackFormValues) => {
+        if (values.Feedback.length === 0) return
+        setError("")
         try {
-            if (values.Feedback.length !== 0) {
-                const sender = "No login"
-                const res = await SendFeedbackMessage(sender, values.Feedback)
-                if (!res.ok) {
-                    throw new Error(res.description || "Could not send feedback, something went wrong")
-                } else {
-                    toast.success("Thank you for reaching out and providing us with valuable feedback.")
-                    onSend()
-                }
-            } else if (values.Feedback.length == 0) {
-                toast.error("This field is required and cannot be empty")
+            const sender = "No login"
+            const res = await SendFeedbackMessage(sender, values.Feedback)
+            if (!res.ok) {
+                throw new Error(res.description || "Could not send feedback, something went wrong")
             }
+            setSent(true)
         }
         catch (e) {
-            toast.error(e.message)
+            setError(e.message)
         }
-    }, [onSend])
+    }, [])
+
+    if (sent) {
+        return (
+            <div className="flex flex-col items-center justify-center text-center gap-3 py-10">
+                <CheckCircle2 className="h-10 w-10 text-primary" />
+                <p className="text-base text-primary-text font-medium">
+                    Thank you for reaching out and providing us with valuable feedback.
+                </p>
+                <SubmitButton type="button" onClick={onSend}>
+                    Close
+                </SubmitButton>
+            </div>
+        )
+    }
 
     return (
         <Formik
@@ -77,6 +92,16 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
                         >
                             Need help?
                         </button>
+                        {error ? (
+                            <ErrorDisplay
+                                icon={<FailIcon className="h-5 w-5" />}
+                                title="Couldn't send feedback"
+                                message={error}
+                                action={
+                                    <ErrorDismissButton onClick={() => setError("")} />
+                                }
+                            />
+                        ) : null}
                         <SubmitButton type='submit' isDisabled={isSubmitting || !isValid} isSubmitting={isSubmitting}>
                             Send
                         </SubmitButton>

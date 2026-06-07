@@ -1,6 +1,9 @@
 import { FC } from "react";
+import { Formik } from "formik";
 import { Partner } from "@/Models/Partner";
+import { SwapDataProvider } from "@/context/swap";
 import { useDepositStep } from "../depositStepContext";
+import { useDepositInitialValues } from "../depositSelectionContext";
 import SourceStep from "./SourceStep";
 import AmountStep from "./AmountStep";
 import ProcessingStep from "./ProcessingStep";
@@ -17,10 +20,31 @@ const Comp: FC<Props> = ({ partner }) => {
     return null;
 };
 
+const WalletFlowInner: FC<Props> = ({ partner }) => {
+    const initialValues = useDepositInitialValues("wallet");
+    // No-op submit: the wallet flow never goes through Formik submit. AmountStep
+    // persists the form via setSubmitedFormValues/setSwapId and pushes to the
+    // processing step, which renders SwapDetails from this flow's provider.
+    return (
+        <Formik initialValues={initialValues} validateOnMount onSubmit={() => { }}>
+            <div className="flex flex-col min-h-[400px] h-full">
+                <Comp partner={partner} />
+            </div>
+        </Formik>
+    );
+};
+
+/**
+ * Wallet transfer sub-flow (source → amount → processing). Owns its own
+ * SwapDataProvider + Formik so its swap lifecycle and form state are isolated
+ * from the deposit-address flow (mirrors the per-tab separation in the main
+ * swap flow). StepRouter renders this component for all three wallet-* steps,
+ * so the providers stay mounted across the steps and only reset on exit.
+ */
 const WalletFlow: FC<Props> = ({ partner }) => (
-    <div className="flex flex-col min-h-[400px] h-full">
-        <Comp partner={partner} />
-    </div>
+    <SwapDataProvider>
+        <WalletFlowInner partner={partner} />
+    </SwapDataProvider>
 );
 
 export default WalletFlow;

@@ -1,13 +1,12 @@
-import { FC, useEffect, useMemo, useState } from "react";
-import { useFormikContext } from "formik";
+import { FC, useMemo, useState } from "react";
 import { Check } from "lucide-react";
 import clsx from "clsx";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
 import TokenChainBadge from "./_shared/TokenChainBadge";
 import PickerTriggerContent from "./_shared/PickerTriggerContent";
 import { useSettingsState } from "@/context/settings";
-import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
+import { useDepositSelection } from "./depositSelectionContext";
 
 export type SupportedDestination = {
     /** Network `name` (canonical identifier like `BASE_MAINNET`). */
@@ -44,36 +43,19 @@ export function useResolvedDestinations(destinations: SupportedDestination[]): R
     }, [settings.destinationRoutes, destinations]);
 }
 
-type Props = {
-    destinations: SupportedDestination[];
-};
-
-const DestinationTokenPicker: FC<Props> = ({ destinations }) => {
-    const { values, setFieldValue } = useFormikContext<SwapFormValues>();
-    const resolved = useResolvedDestinations(destinations);
+const DestinationTokenPicker: FC = () => {
+    const { resolved, destination, destinationToken, setSelection } = useDepositSelection();
     const [open, setOpen] = useState(false);
 
     const selected = useMemo(() => {
-        if (!values?.to || !values?.toAsset) return undefined;
+        if (!destination || !destinationToken) return undefined;
         return resolved.find(
-            r => r.network.name === values.to?.name && r.token.symbol === values.toAsset?.symbol,
+            r => r.network.name === destination.name && r.token.symbol === destinationToken.symbol,
         );
-    }, [resolved, values?.to, values?.toAsset]);
-
-    // Pre-populate with the first supported destination when nothing is set
-    // yet, or when the current selection isn't in the supported list (e.g. the
-    // integrator changed their list at runtime).
-    useEffect(() => {
-        if (resolved.length === 0) return;
-        if (selected) return;
-        const next = resolved[0];
-        setFieldValue("to", next.network, false);
-        setFieldValue("toAsset", next.token, true);
-    }, [resolved, selected, setFieldValue]);
+    }, [resolved, destination, destinationToken]);
 
     const handleSelect = (r: ResolvedDestination) => {
-        setFieldValue("to", r.network, false);
-        setFieldValue("toAsset", r.token, true);
+        setSelection(r.network, r.token);
         setOpen(false);
     };
 

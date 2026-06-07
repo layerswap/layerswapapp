@@ -23,6 +23,7 @@ import { SwapFormValues } from "../SwapFormValues";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import Processing from "../../Withdraw/Processing";
 import ValidationError from "../SecondaryComponents/validationError";
+import SwapError from "../SecondaryComponents/SwapError";
 
 type Props = {
     partner?: Partner;
@@ -260,9 +261,8 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
                                         )}
                                     </>
                                 )}
-                            </div>
-                            <div>
-                                {routeValidation.message ? <ValidationError /> : null}
+                                <ValidationError />
+                                <SwapError />
                             </div>
                         </div>
                     </Widget.Content>

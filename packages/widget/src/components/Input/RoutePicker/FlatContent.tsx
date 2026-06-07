@@ -1,9 +1,9 @@
-import { FC, useEffect, useMemo, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { NetworkBalance } from "@/Models/Balance";
 import { SwapDirection } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { useVirtualizer } from "@/lib/virtual";
-import { extractTokenElementsAsSuggested, sortSuggestedTokenElements } from "@/hooks/useFormRoutes";
+import { extractTokenElementsAsSuggested, sortSuggestedTokenElements } from "@/helpers/routeUtils";
 import { useRecentNetworksStore } from "@/stores/recentRoutesStore";
 import { useSelectorState } from "@/components/Select/Selector/Index";
 import NavigatableList, { NavigatableItem } from "@/components/NavigatableList";
@@ -62,11 +62,11 @@ export const FlatContent: FC<Props> = ({
         overscan: 8,
     });
 
-    const handleScroll = () => {
+    const handleScroll = useCallback(() => {
         setIsScrolling(true);
         if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
         scrollTimeout.current = setTimeout(() => setIsScrolling(false), 1000);
-    };
+    }, []); // only refs and state setters — stable
 
     useEffect(() => {
         return () => {

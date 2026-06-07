@@ -112,7 +112,7 @@ const PayFromPicker: FC<PayFromPickerProps> = ({ selectedSource, onSourceChange,
                     sideOffset={6}
                     collisionPadding={12}
                     container={portalContainer}
-                    className="p-2 bg-secondary-600! rounded-xl max-w-none! w-[var(--radix-popover-trigger-width)]! flex flex-col h-[400px] max-h-[var(--radix-popover-content-available-height)] overflow-hidden"
+                    className="p-2 bg-secondary-600! rounded-xl max-w-none! w-[var(--radix-popover-trigger-width)]! flex flex-col h-[340px] max-h-[var(--radix-popover-content-available-height)] overflow-hidden"
                 >
                     <SearchComponent
                         searchQuery={searchQuery}

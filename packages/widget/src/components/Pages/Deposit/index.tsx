@@ -1,25 +1,18 @@
 "use client";
-import { FC, useCallback, useMemo, useState } from "react";
-import { Formik } from "formik";
+import { FC, useState } from "react";
 import clsx from "clsx";
-import toast from "react-hot-toast";
-import { SwapDataProvider, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
-import { useInitialSettings, useSettingsState } from "@/context/settings";
-import { generateSwapInitialValues } from "@/lib/generateSwapInitialValues";
-import { ApiError, LSAPIKnownErrorCode } from "@/Models/ApiError";
 import { Partner } from "@/Models/Partner";
-import useWallet from "@/hooks/useWallet";
-import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/shadcn/dialog";
 import { DepositStep, DepositStepProvider, useDepositStep } from "./depositStepContext";
+import { DepositSelectionProvider } from "./depositSelectionContext";
 import DepositHeader from "./DepositHeader";
 import MethodPicker from "./Options/MethodPicker";
 import WalletFlow from "./Wallet";
 import TransferCrypto from "./TransferCrypto";
-import { SupportedDestination, useResolvedDestinations } from "./DestinationTokenPicker";
+import { SupportedDestination } from "./DestinationTokenPicker";
 import { Widget } from "@/components/Widget/Index";
 import ResizablePanel from "@/components/Common/ResizablePanel";
-import { DepositSettings } from "@/lib/AppSettings";
+import { DepositSettingsProvider } from "@/context/depositSettings";
 import ThemeWrapper from "@/components/themeWrapper";
 
 export type DepositMode = "inline" | "button";
@@ -51,15 +44,13 @@ export type DepositProps = {
     defaultAmountUsd?: number;
 };
 
-const StepRouter: FC<{ step: DepositStep; partner?: Partner; destinations: SupportedDestination[]; destinationAddress: string }> = ({
+const StepRouter: FC<{ step: DepositStep; partner?: Partner }> = ({
     step,
     partner,
-    destinations,
-    destinationAddress,
 }) => {
     switch (step) {
-        case "method-picker": return <MethodPicker destinations={destinations} />;
-        case "transfer-crypto": return <TransferCrypto partner={partner} destinationAddress={destinationAddress} />;
+        case "method-picker": return <MethodPicker />;
+        case "transfer-crypto": return <TransferCrypto partner={partner} />;
         case "wallet-source":
         case "wallet-amount":
         case "wallet-processing": return <WalletFlow partner={partner} />;
@@ -70,96 +61,36 @@ const StepRouter: FC<{ step: DepositStep; partner?: Partner; destinations: Suppo
     }
 };
 
-const DepositForm: FC<DepositProps & { onClose?: () => void }> = ({ partner, destinations, destinationAddress, title, onClose }) => {
+const DepositForm: FC<Pick<DepositProps, "partner" | "title"> & { onClose?: () => void }> = ({ partner, title, onClose }) => {
     const { step } = useDepositStep();
     return (
         <div className="flex flex-col gap-3 w-full pt-4">
             <DepositHeader title={title} onClose={onClose} />
             <div className="h-px w-full bg-secondary-400" />
             <ResizablePanel>
-                <StepRouter step={step} partner={partner} destinations={destinations} destinationAddress={destinationAddress} />
+                <StepRouter step={step} partner={partner} />
             </ResizablePanel>
         </div>
     );
 };
 
-const DepositInner: FC<DepositProps & { onClose?: () => void }> = ({ partner, destinations, destinationAddress, title, onClose }) => {
-    const settings = useSettingsState();
-    const initialSettings = useInitialSettings();
-    const { wallets } = useWallet();
-    const { createSwap, setSwapId, setSubmitedFormValues } = useSwapDataUpdate();
-    const { setSwapError } = useSwapDataState();
-    const resolvedDestinations = useResolvedDestinations(destinations);
-
-    const connectedAutofillNetworks = useMemo(() => {
-        const set = new Set<string>();
-        wallets.forEach(w => {
-            w.autofillSupportedNetworks?.forEach(n => set.add(n.toLowerCase()));
-        });
-        return set;
-    }, [wallets]);
-
-    const initialValues: SwapFormValues = useMemo(() => {
-        const base = generateSwapInitialValues(settings, initialSettings, "deposit-address", connectedAutofillNetworks);
-        const firstDestination = resolvedDestinations[0];
-        return {
-            ...base,
-            to: firstDestination?.network ?? base.to,
-            toAsset: firstDestination?.token ?? base.toAsset,
-            destination_address: destinationAddress,
-        };
-    }, []);
-
-    const handleSubmit = useCallback(
-        async (values: SwapFormValues) => {
-            // The wallet sub-flow does not go through Formik submit — its
-            // Review step calls setSubmitedFormValues directly and pushes to
-            // the processing step. Only the deposit-address flow ends up here,
-            // triggered by DepositAddressForm's auto-submit effect.
-            if (values.depositMethod === "wallet") return;
-
-            if (setSwapError) setSwapError("");
-            setSubmitedFormValues(values);
-            try {
-                const swap = await createSwap(values, initialSettings, partner);
-                setSwapId(swap.swap.id);
-            } catch (error) {
-                const data: ApiError = error?.response?.data?.error;
-                if (data?.code === LSAPIKnownErrorCode.BLACKLISTED_ADDRESS) {
-                    toast.error("You can't transfer to that address. Please double check.");
-                } else if (data?.code === LSAPIKnownErrorCode.INVALID_ADDRESS_ERROR) {
-                    toast.error(`Enter a valid ${values.to?.display_name} address`);
-                } else {
-                    toast.error(data?.message || error?.message || "Could not create swap");
-                }
-            }
-        },
-        [createSwap, setSwapId, setSubmitedFormValues, setSwapError, initialSettings, partner],
-    );
-
-    return (
-        <Formik initialValues={initialValues} validateOnMount onSubmit={handleSubmit}>
-            <DepositStepProvider>
-                <DepositForm partner={partner} destinations={destinations} destinationAddress={destinationAddress} title={title} onClose={onClose} />
-            </DepositStepProvider>
-        </Formik>
-    );
-};
-
-
 const DepositCard: FC<Pick<DepositProps, "partner" | "destinations" | "destinationAddress" | "hideRecipient" | "title" | "actionButtonText" | "defaultAmountUsd"> & { onClose?: () => void }> = ({ partner, destinations, destinationAddress, hideRecipient, title, actionButtonText, defaultAmountUsd, onClose }) => {
-    DepositSettings.HideRecipient = !!hideRecipient;
-    DepositSettings.ActionButtonText = actionButtonText || "Deposit";
-    DepositSettings.DefaultAmountUsd = defaultAmountUsd ?? 1;
-
     return (
-        <ThemeWrapper>
-            <Widget hideMenu>
-                <SwapDataProvider>
-                    <DepositInner partner={partner} destinations={destinations} destinationAddress={destinationAddress} title={title} onClose={onClose} />
-                </SwapDataProvider>
-            </Widget>
-        </ThemeWrapper>
+        <DepositSettingsProvider value={{
+            hideRecipient: !!hideRecipient,
+            actionButtonText,
+            defaultAmountUsd,
+        }}>
+            <ThemeWrapper>
+                <Widget hideMenu>
+                    <DepositSelectionProvider destinations={destinations} destinationAddress={destinationAddress}>
+                        <DepositStepProvider>
+                            <DepositForm partner={partner} title={title} onClose={onClose} />
+                        </DepositStepProvider>
+                    </DepositSelectionProvider>
+                </Widget>
+            </ThemeWrapper>
+        </DepositSettingsProvider>
     );
 };
 
