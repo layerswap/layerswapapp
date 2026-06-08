@@ -47,6 +47,23 @@ export type RemoteWidgetProps = {
     immutablePassport?: Record<string, unknown>;
   };
   /**
+   * Filter/customize the wallet provider set built inside the remote.
+   * `exclude: ['tron', 'fuel']` drops those chains from the connect modal.
+   */
+  walletProvidersConfig?: {
+    exclude?: Array<
+      | 'evm'
+      | 'starknet'
+      | 'fuel'
+      | 'paradex'
+      | 'bitcoin'
+      | 'ton'
+      | 'svm'
+      | 'tron'
+      | 'imtblPassport'
+    >;
+  };
+  /**
    * Widget-level event callbacks (onSwapCreate, onSwapComplete, onError,
    * onSwapStatusChange, …). Forwarded to `LayerswapProvider`'s callbacks
    * prop.

@@ -48,6 +48,7 @@ export function App() {
                 ? { manifest: MANIFEST_URL, verify: true }
                 : { remoteEntry: REMOTE_ENTRY })}
               config={{ version: 'mainnet' }}
+              walletProvidersConfig={{ exclude: ['tron', 'fuel'] }}
               wagmiConfig={wagmiConfig}
               callbacks={{
                 onSwapCreate: (swap) => console.log('[host] swap created', swap),
