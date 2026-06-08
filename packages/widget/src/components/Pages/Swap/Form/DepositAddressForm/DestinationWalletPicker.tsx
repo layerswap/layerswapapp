@@ -105,10 +105,9 @@ const DestinationWalletPicker: FC<DestinationWalletPickerProps> = ({ address, de
                         <WalletIcon className="h-7 w-7 object-contain" />
                     ) : hasAddress && destination ? (
                         <AddressIcon
-                            className="h-7 w-7"
                             address={new AddressClass(address!, destination).full}
                             size={28}
-                            rounded="6px"
+                            providerName={destination?.type}
                         />
                     ) : (
                         <Wallet className="h-4 w-4 text-secondary-text"/>

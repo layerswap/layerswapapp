@@ -1,6 +1,5 @@
 import { FC, useMemo } from 'react'
 import { ChevronDown } from 'lucide-react'
-import AddressIcon from '@/components/Common/AddressIcon'
 import { Wallet } from '@/types/wallet'
 import { SwapValues } from '..'
 import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
@@ -15,6 +14,7 @@ import { ImageWithFallback } from '@/components/Common/ImageWithFallback'
 import { useInitialSettings } from '@/context/settings'
 import { Address } from '@/lib/address/Address'
 import { useDepositSettings } from '@/context/depositSettings'
+import AddressIcon from '@/components/Common/AddressIcon'
 
 export const SummaryRow: FC<{
     isQuoteLoading?: boolean
@@ -51,7 +51,7 @@ export const SummaryRow: FC<{
                                     width="36"
                                     height="36"
                                 />) : (
-                                <AddressIcon className="h-4 w-4" address={addressInstance?.full || ''} size={36} rounded="4px" />
+                                <AddressIcon className="rounded-[4px]" address={addressInstance?.full || ''} size={16} network={to} />
                             )}
                             {
                                 ((Address.isValid(values?.destination_address, values?.to) && values?.to) ?

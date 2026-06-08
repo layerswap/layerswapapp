@@ -1,4 +1,3 @@
-import AddressIcon from '@/components/Common/AddressIcon'
 import CopyButton from '@/components/Buttons/copyButton'
 import { ImageWithFallback } from '@/components/Common/ImageWithFallback'
 import QRIcon from '@/components/Icons/QRIcon'
@@ -26,6 +25,7 @@ import { Partner } from '@/Models/Partner'
 import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
 import QuoteDetails from '../Form/FeeDetails'
 import { Address } from "@/lib/address/Address";
+import AddressIcon from '@/components/Common/AddressIcon'
 
 interface Props {
     swapBasicData: SwapBasicData;
@@ -319,7 +319,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
                                                 height="36"
                                             />
                                         ) : (
-                                            <AddressIcon className="h-4 w-4" address={new Address(swapBasicData.destination_address, swapBasicData?.destination_network).full} size={36} rounded="4px" />
+                                            <AddressIcon className="rounded-[4px]" address={new Address(swapBasicData.destination_address, swapBasicData?.destination_network).full} size={16} network={swapBasicData?.destination_network} />
                                         )}
                                         {
                                             ((swapBasicData?.destination_network && Address.isValid(swapBasicData?.destination_address, swapBasicData?.destination_network)) ?
