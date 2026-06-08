@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "rspack serve --config rspack.config.mjs",
-    "build": "rspack build --config rspack.config.mjs",
+    "build": "rspack build --config rspack.config.mjs --mode production && node scripts/build-manifest.mjs",
     "start": "node serve.mjs"
   },
   "dependencies": {

@@ -15,6 +15,7 @@ import type {
   CallbacksContextType,
 } from '@layerswap/widget';
 import { initRemote, loadWidget } from './runtime';
+import { fetchManifest, resolveRemoteEntry, verifyManifest, ManifestError } from './manifest';
 
 /**
  * Mirrors the shape of the props the CDN remote's `./Widget` export
@@ -59,13 +60,35 @@ export type RemoteWidgetProps = {
   wagmiConfig?: WagmiConfig;
 };
 
-export type LayerswapWidgetProps = RemoteWidgetProps & {
+type Loadable =
+  | {
+    /**
+     * URL to a `manifest.json` describing the active build. The loader
+     * fetches the manifest first, then `remoteEntry` from inside it.
+     * Enables atomic rollback, channel pinning, and signature
+     * verification — pass this for production deployments.
+     */
+    manifest: string;
+    remoteEntry?: never;
+  }
+  | {
+    /**
+     * Direct URL to `remoteEntry.js`, bypassing the manifest layer.
+     * Useful for local dev or quick experiments; production should use
+     * the `manifest` form so kill-switch + signing apply.
+     */
+    remoteEntry: string;
+    manifest?: never;
+  };
+
+export type LayerswapWidgetProps = RemoteWidgetProps & Loadable & {
   /**
-   * Full URL to the CDN-hosted `remoteEntry.js`. In production this is
-   * `https://cdn.layerswap.io/v1/remoteEntry.js`; in local dev point it
-   * at `http://127.0.0.1:3100/remoteEntry.js`.
+   * When true (and `manifest` is set), the loader requires a valid
+   * signature on the manifest against the baked-in public key. Manifests
+   * without a signature or with an invalid one are rejected. Default
+   * false until a real signing key is wired in CI.
    */
-  remoteEntry: string;
+  verify?: boolean;
   /** Shown while the remote bundle is being fetched / initialized. */
   fallback?: ReactNode;
   /** Fired once the remote module has loaded and the widget mounts. */
@@ -96,8 +119,31 @@ class WidgetErrorBoundary extends Component<
   }
 }
 
-function buildLoader(remoteEntry: string): () => Promise<{ default: WidgetComponent }> {
+type ResolvedSource = { remoteEntry: string };
+
+async function resolveSource(
+  props: Pick<LayerswapWidgetProps, 'manifest' | 'remoteEntry' | 'verify'>,
+): Promise<ResolvedSource> {
+  if (props.remoteEntry) return { remoteEntry: props.remoteEntry };
+  if (!props.manifest) {
+    throw new Error('LayerswapWidget: must pass either `manifest` or `remoteEntry`');
+  }
+  const manifest = await fetchManifest(props.manifest);
+  if (manifest.killSwitch) {
+    throw new ManifestError('kill-switch', 'manifest kill switch is set — refusing to load remote');
+  }
+  if (props.verify) {
+    const ok = await verifyManifest(manifest);
+    if (!ok) {
+      throw new ManifestError('signature', 'manifest signature is missing or invalid');
+    }
+  }
+  return { remoteEntry: resolveRemoteEntry(props.manifest, manifest.remoteEntry) };
+}
+
+function buildLoader(props: LayerswapWidgetProps): () => Promise<{ default: WidgetComponent }> {
   return async () => {
+    const { remoteEntry } = await resolveSource(props);
     initRemote(remoteEntry);
     const Widget = await loadWidget<WidgetComponent>();
     return { default: Widget };
@@ -105,11 +151,15 @@ function buildLoader(remoteEntry: string): () => Promise<{ default: WidgetCompon
 }
 
 export function LayerswapWidget(props: LayerswapWidgetProps) {
-  const { remoteEntry, fallback, onReady, onError, ...rest } = props;
+  const { manifest, remoteEntry, verify, fallback, onReady, onError, ...rest } = props;
 
-  // Re-create the lazy component whenever the remoteEntry URL changes,
-  // so swapping channels (e.g. v1 → pinned v1.3.0) doesn't reuse a stale bundle.
-  const LazyWidget = useMemo(() => lazy(buildLoader(remoteEntry)), [remoteEntry]);
+  // Re-create the lazy component when the URL/verify flags change.
+  const LazyWidget = useMemo(
+    () => lazy(buildLoader(props)),
+    // Identity-stable subset — re-build only on real config changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [manifest, remoteEntry, verify],
+  );
 
   return (
     <WidgetErrorBoundary fallback={fallback ?? null} onError={onError}>
