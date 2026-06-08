@@ -5,7 +5,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/pop
 import { FlatContent } from "@/components/Input/RoutePicker/FlatContent";
 import { SearchComponent } from "@/components/Input/Search";
 import PickerTriggerContent from "@/components/Pages/Deposit/_shared/PickerTriggerContent";
-import { useRecentNetworksStore } from "@/stores/recentRoutesStore";
 import useDepositAddressAvailableRoutes from "@/hooks/useDepositAddressAvailableRoutes";
 
 type PayFromPickerProps = {
@@ -16,7 +15,6 @@ type PayFromPickerProps = {
 }
 
 const PayFromPicker: FC<PayFromPickerProps> = ({ selectedSource, onSourceChange, destinationNetwork, destinationToken }) => {
-    const routesHistory = useRecentNetworksStore(state => state.recentRoutes);
     const [open, setOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     // Portal into the widget root so the popover lives inside any wrapping
@@ -52,30 +50,6 @@ const PayFromPicker: FC<PayFromPickerProps> = ({ selectedSource, onSourceChange,
     const hasMultipleOptions = availableRoutes.length > 1 || availableRoutes.some(r => r.tokens.length > 1);
     const triggerDisabled = !hasOptions || !hasMultipleOptions;
 
-    // "Most used" = the (network, token) pair with the highest count in the
-    // user's source-route history. Shown only when the currently selected
-    // source matches that pair. New users with no history don't see it.
-    const mostUsedKey = useMemo(() => {
-        const buckets = routesHistory?.sourceRoutes;
-        if (!buckets) return null;
-        let best: { network: string; token: string; count: number } | null = null;
-        for (const [network, tokens] of Object.entries(buckets)) {
-            for (const [token, count] of Object.entries(tokens)) {
-                if (!best || count > best.count) {
-                    best = { network, token, count };
-                }
-            }
-        }
-        return best;
-    }, [routesHistory]);
-
-    const isMostUsed = !!(
-        selectedSource &&
-        mostUsedKey &&
-        mostUsedKey.network === selectedSource.network.name &&
-        mostUsedKey.token === selectedSource.token.symbol
-    );
-
     return (
         <Popover open={open} onOpenChange={triggerDisabled ? undefined : setOpen}>
             <PopoverTrigger asChild>
@@ -96,13 +70,6 @@ const PayFromPicker: FC<PayFromPickerProps> = ({ selectedSource, onSourceChange,
                         placeholder="Select source"
                         showChevron={!triggerDisabled}
                         chevronOpen={open}
-                        accessory={
-                            isMostUsed ? (
-                                <span className="inline-flex items-center bg-secondary-300 text-secondary-text text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full">
-                                    <span>Most used</span>
-                                </span>
-                            ) : null
-                        }
                     />
                 </button>
             </PopoverTrigger>

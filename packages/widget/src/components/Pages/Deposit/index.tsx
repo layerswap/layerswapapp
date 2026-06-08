@@ -17,6 +17,7 @@ import { DepositSettingsProvider } from "@/context/depositSettings";
 import ThemeWrapper from "@/components/themeWrapper";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
 import useAllWithdrawalBalances from "@/hooks/useAllWithdrawalBalances";
+import { useConnectModal } from "@/exports/internal";
 
 export type DepositMode = "inline" | "button";
 
@@ -107,9 +108,11 @@ const DepositCard: FC<Pick<DepositProps, "partner" | "destinations" | "destinati
 
 export const Deposit: FC<DepositProps> = ({ mode = "inline", buttonLabel = "Deposit", buttonClassName, ...props }) => {
     const [open, setOpen] = useState(false);
+    const { cancel } = useConnectModal();
+
     if (mode === "button") {
         return (
-            <Dialog open={open} onOpenChange={setOpen}>
+            <Dialog open={open} onOpenChange={(state) => { setOpen(state); if (!state) cancel() }}>
                 <DialogTrigger asChild>
                     <button
                         type="button"

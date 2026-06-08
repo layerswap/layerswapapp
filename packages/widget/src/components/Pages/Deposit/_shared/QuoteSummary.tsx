@@ -2,9 +2,12 @@ import { FC } from "react";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { NetworkRouteToken } from "@/Models/Network";
 import { formatTokenAmount } from "@/components/utils/formatTokenAmount";
+import { formatUsd } from "@/components/utils/formatUsdAmount";
+import { useUsdModeStore } from "@/stores/usdModeStore";
 
 type Props = {
     receiveAmount?: number;
+    receiveAmountInUsd?: number;
     tokenSymbol?: string;
     token?: NetworkRouteToken;
     isLoading?: boolean;
@@ -18,12 +21,19 @@ const Bar: FC<{ className?: string }> = ({ className }) => (
 
 const QuoteSummary: FC<Props> = ({
     receiveAmount,
+    receiveAmountInUsd,
     tokenSymbol,
     token,
     isLoading,
 }) => {
+    const isUsdMode = useUsdModeStore(s => s.isUsdMode);
     const hasReceive =
         receiveAmount != null && Number.isFinite(receiveAmount) && tokenSymbol;
+
+    // Mirror the amount field's USD toggle: show the received value in USD when
+    // it's available, otherwise fall back to the token amount.
+    const showUsd =
+        isUsdMode && receiveAmountInUsd != null && Number.isFinite(receiveAmountInUsd);
 
     if (isLoading) {
         return (
@@ -46,7 +56,9 @@ const QuoteSummary: FC<Props> = ({
             </div>
             <div className="flex items-baseline justify-between gap-3 relative z-10">
                 <span className="tabular-nums text-primary-text font-medium leading-none text-[28px] truncate">
-                    {formatTokenAmount(receiveAmount as number)}
+                    {showUsd
+                        ? formatUsd(receiveAmountInUsd as number)
+                        : formatTokenAmount(receiveAmount as number)}
                 </span>
                 <span className="shrink-0 inline-flex items-center gap-1.5 bg-secondary-300 rounded-full pr-2 pl-1 py-1">
                     {token?.logo && (

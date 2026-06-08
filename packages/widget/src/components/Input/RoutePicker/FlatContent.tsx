@@ -1,9 +1,9 @@
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FC, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { NetworkBalance } from "@/Models/Balance";
 import { SwapDirection } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { useVirtualizer } from "@/lib/virtual";
-import { extractTokenElementsAsSuggested, sortSuggestedTokenElements } from "@/helpers/routeUtils";
+import { extractTokenElementsAsSuggested, getTokenElementBalanceAmount, sortSuggestedTokenElements } from "@/helpers/routeUtils";
 import { useRecentNetworksStore } from "@/stores/recentRoutesStore";
 import { useSelectorState } from "@/components/Select/Selector/Index";
 import NavigatableList, { NavigatableItem } from "@/components/NavigatableList";
@@ -22,6 +22,10 @@ type Props = {
     selectedToken: string | undefined;
     onSelect: (route: NetworkRoute, token: NetworkRouteToken) => Promise<void> | void;
     hideBalances?: boolean;
+    /** Show only tokens the connected wallet actually holds (balance > 0). */
+    onlyWithBalance?: boolean;
+    /** Rendered when there are no tokens to show (after loading settles). */
+    emptyState?: ReactNode;
 };
 
 const ROW_HEIGHT = 52;
@@ -36,6 +40,8 @@ export const FlatContent: FC<Props> = ({
     selectedToken,
     onSelect,
     hideBalances,
+    onlyWithBalance,
+    emptyState,
 }) => {
     const parentRef = useRef<HTMLDivElement>(null);
     const [isScrolling, setIsScrolling] = useState(false);
@@ -48,10 +54,15 @@ export const FlatContent: FC<Props> = ({
         const flattened = extractTokenElementsAsSuggested(routes).filter(
             e => e.route.token.status === "active"
         );
-        return flattened.sort(sortSuggestedTokenElements(direction, balances, recentRoutes));
-    }, [routes, balances, direction, recentRoutes]);
+        const sorted = flattened.sort(sortSuggestedTokenElements(direction, balances, recentRoutes));
+        if (onlyWithBalance) {
+            return sorted.filter(e => getTokenElementBalanceAmount(e, balances) > 0);
+        }
+        return sorted;
+    }, [routes, balances, direction, recentRoutes, onlyWithBalance]);
 
     const showSkeletons = balancesLoading && items.length === 0 && direction === "from";
+    const showEmptyState = !!emptyState && !showSkeletons && !balancesLoading && items.length === 0;
 
     const virtualCount = showSkeletons ? SKELETON_COUNT : items.length;
 
@@ -94,6 +105,7 @@ export const FlatContent: FC<Props> = ({
                         disabled={!isProvidersReady}
                     />
                 )}
+                {showEmptyState && emptyState}
                 <div
                     style={{
                         height: virtualizer.getTotalSize(),

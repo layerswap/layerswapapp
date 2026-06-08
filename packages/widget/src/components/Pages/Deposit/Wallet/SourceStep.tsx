@@ -11,6 +11,7 @@ import { useDepositSettings } from "@/context/depositSettings";
 import { useLatestSourceAccount } from "@/context/swapAccounts";
 import { useDepositStep } from "../depositStepContext";
 import { filterRoutesByAccount } from "./filterRoutesByAccounts";
+import { CircleAlert } from "lucide-react";
 
 const SourceStep: FC = () => {
     const { values, setFieldValue } = useFormikContext<SwapFormValues>();
@@ -81,11 +82,26 @@ const SourceStep: FC = () => {
                         selectedRoute={selectedRoute?.name}
                         selectedToken={selectedToken?.symbol}
                         onSelect={handleSelect}
+                        onlyWithBalance
+                        emptyState={<NoBalancesEmptyState />}
                     />
                 </div>
             </div>
         </div>
     );
 };
+
+const NoBalancesEmptyState: FC = () => (
+    <div className="flex flex-col items-center justify-center text-center h-full min-h-[260px] px-6 gap-4">
+        <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-secondary-500 text-primary-text">
+            <CircleAlert className="h-7 w-7 text-primary-text" />
+        </div>
+        <p className="text-sm text-secondary-text leading-5">
+            There are no tokens available in your wallet.
+            <br />
+            Please connect a different wallet.
+        </p>
+    </div>
+);
 
 export default SourceStep;

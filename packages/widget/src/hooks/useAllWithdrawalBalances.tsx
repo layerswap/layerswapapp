@@ -9,6 +9,7 @@ export default function useAllWithdrawalBalances() {
 
     const networks = useSettingsState().networks
     const swapAccounts = useSwapAccounts("from")
+
     const walletNetworks = useMemo(() => {
         return swapAccounts.map(account => {
             const withdrawalNetworks = account.walletWithdrawalSupportedNetworks
@@ -24,14 +25,14 @@ export default function useAllWithdrawalBalances() {
         }).flat().filter(item => item !== null) as Array<{ address: string, network: NetworkWithTokens }>
     }, [swapAccounts, networks])
 
-    const walletNetwokrsString = useMemo(() => {
+    const walletNetworksString = useMemo(() => {
         return walletNetworks.map(item => `${item.address}-${item.network.name}`).join(',')
     }, [walletNetworks])
 
     useEffect(() => {
         if (walletNetworks)
             useBalanceStore.getState().initSortingBalances(walletNetworks)
-    }, [walletNetwokrsString])
+    }, [walletNetworksString])
 
     useEffect(() => {
         return () => {

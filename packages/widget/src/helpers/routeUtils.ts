@@ -34,8 +34,12 @@ export const sortSuggestedTokenElements = (direction: SwapDirection, balances: R
     return a_rank - b_rank
 }
 
+/** Raw token amount held for a route/token, or 0 when unknown. */
+export const getTokenElementBalanceAmount = (item: NetworkTokenElement, balances: Record<string, NetworkBalance> | null) =>
+    balances?.[item.route.route.name]?.balances?.find(b => b.token === item.route.token.symbol)?.amount || 0
+
 const getNetworkTokenElementBalance = (item: NetworkTokenElement, balances: Record<string, NetworkBalance>) => {
-    return (balances[item.route.route.name]?.balances?.find(b => b.token === item.route.token.symbol)?.amount || 0) * item.route.token.price_in_usd
+    return getTokenElementBalanceAmount(item, balances) * item.route.token.price_in_usd
 }
 const getUsedCount = (item: NetworkTokenElement, history: RoutesHistory, direction: SwapDirection) => {
     return direction === "from" ? history.sourceRoutes?.[item.route.route.name]?.[item.route.token.symbol] || 0 : history.destinationRoutes?.[item.route.route.name]?.[item.route.token.symbol] || 0

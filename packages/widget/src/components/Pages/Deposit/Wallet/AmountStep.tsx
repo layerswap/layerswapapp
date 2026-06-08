@@ -63,6 +63,11 @@ const AmountStep: FC = () => {
     }, [canContinue, values, setSwapError, setFieldValue, setSubmitedFormValues, setSwapId, push]);
 
     const receiveAmount = fee?.quote?.receive_amount;
+    const destinationPriceInUsd = fee?.quote?.destination_token?.price_in_usd;
+    const receiveAmountInUsd =
+        receiveAmount != null && destinationPriceInUsd
+            ? Number(receiveAmount) * destinationPriceInUsd
+            : undefined;
 
     const submitLabel = isQuoteLoading
         ? "Fetching best route…"
@@ -85,6 +90,7 @@ const AmountStep: FC = () => {
                 {(hasQuote || isQuoteLoading) ? (
                     <QuoteSummary
                         receiveAmount={receiveAmount != null ? Number(receiveAmount) : undefined}
+                        receiveAmountInUsd={receiveAmountInUsd}
                         tokenSymbol={toAsset?.symbol}
                         token={toAsset}
                         isLoading={isQuoteLoading}
