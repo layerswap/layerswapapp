@@ -15,7 +15,6 @@ import { Widget } from "@/components/Widget/Index";
 import ResizablePanel from "@/components/Common/ResizablePanel";
 import { DepositSettingsProvider } from "@/context/depositSettings";
 import ThemeWrapper from "@/components/themeWrapper";
-import useWindowDimensions from "@/hooks/useWindowDimensions";
 import useAllWithdrawalBalances from "@/hooks/useAllWithdrawalBalances";
 import { useConnectModal } from "@/exports/internal";
 
@@ -68,20 +67,15 @@ const StepRouter: FC<{ step: DepositStep; partner?: Partner }> = ({
 
 const DepositForm: FC<Pick<DepositProps, "partner" | "title"> & { onClose?: () => void }> = ({ partner, title, onClose }) => {
     const { step } = useDepositStep();
-    const { isMobile } = useWindowDimensions();
     useAllWithdrawalBalances();
 
     return (
         <div className="flex flex-col gap-3 w-full pt-4 max-sm:pb-4">
             <DepositHeader title={title} onClose={onClose} />
             <div className="h-px w-full bg-secondary-400" />
-            {
-                isMobile ?
-                    <StepRouter step={step} partner={partner} />
-                    : <ResizablePanel>
-                        <StepRouter step={step} partner={partner} />
-                    </ResizablePanel>
-            }
+            <ResizablePanel>
+                <StepRouter step={step} partner={partner} />
+            </ResizablePanel>
         </div>
     );
 };
