@@ -17,11 +17,11 @@ app's existing copy.
 ## Usage
 
 ```tsx
-import { LayerswapEmbed } from '@layerswap/widget-react';
+import { LayerswapWidget } from '@layerswap/widget-react';
 
 export function App() {
   return (
-    <LayerswapEmbed
+    <LayerswapWidget
       remoteEntry="https://cdn.layerswap.io/v1/remoteEntry.js"
       config={{ version: 'mainnet' }}
       fallback={<div>Loading widget…</div>}
@@ -41,7 +41,7 @@ project ID can be supplied from the host.
 
 ## How it works
 
-1. `<LayerswapEmbed>` calls `@module-federation/runtime`'s `init()` with the
+1. `<LayerswapWidget>` calls `@module-federation/runtime`'s `init()` with the
    host's `react` / `react-dom` registered into the shared scope as
    singletons.
 2. `loadRemote('layerswap_widget/Widget')` fetches the manifest +

@@ -59,7 +59,7 @@ export type RemoteWidgetProps = {
   wagmiConfig?: WagmiConfig;
 };
 
-export type LayerswapEmbedProps = RemoteWidgetProps & {
+export type LayerswapWidgetProps = RemoteWidgetProps & {
   /**
    * Full URL to the CDN-hosted `remoteEntry.js`. In production this is
    * `https://cdn.layerswap.io/v1/remoteEntry.js`; in local dev point it
@@ -76,7 +76,7 @@ export type LayerswapEmbedProps = RemoteWidgetProps & {
 
 type WidgetComponent = ComponentType<RemoteWidgetProps>;
 
-class EmbedErrorBoundary extends Component<
+class WidgetErrorBoundary extends Component<
   { fallback: ReactNode; onError?: (error: unknown) => void; children: ReactNode },
   { error: unknown }
 > {
@@ -104,7 +104,7 @@ function buildLoader(remoteEntry: string): () => Promise<{ default: WidgetCompon
   };
 }
 
-export function LayerswapEmbed(props: LayerswapEmbedProps) {
+export function LayerswapWidget(props: LayerswapWidgetProps) {
   const { remoteEntry, fallback, onReady, onError, ...rest } = props;
 
   // Re-create the lazy component whenever the remoteEntry URL changes,
@@ -112,12 +112,12 @@ export function LayerswapEmbed(props: LayerswapEmbedProps) {
   const LazyWidget = useMemo(() => lazy(buildLoader(remoteEntry)), [remoteEntry]);
 
   return (
-    <EmbedErrorBoundary fallback={fallback ?? null} onError={onError}>
+    <WidgetErrorBoundary fallback={fallback ?? null} onError={onError}>
       <Suspense fallback={fallback ?? null}>
         <ReadySignal onReady={onReady} />
         <LazyWidget {...(rest as RemoteWidgetProps)} />
       </Suspense>
-    </EmbedErrorBoundary>
+    </WidgetErrorBoundary>
   );
 }
 

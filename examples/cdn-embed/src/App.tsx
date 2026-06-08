@@ -1,6 +1,6 @@
 import { WagmiProvider } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { LayerswapEmbed } from '@layerswap/widget-react';
+import { LayerswapWidget } from '@layerswap/widget-react';
 import { wagmiConfig } from './wagmi';
 import { HostWallet } from './HostWallet';
 
@@ -35,7 +35,7 @@ export function App() {
           </p>
           <HostWallet />
           <div style={{ width: '100%', maxWidth: 512 }}>
-            <LayerswapEmbed
+            <LayerswapWidget
               remoteEntry={REMOTE_ENTRY}
               config={{ version: 'mainnet' }}
               wagmiConfig={wagmiConfig}
