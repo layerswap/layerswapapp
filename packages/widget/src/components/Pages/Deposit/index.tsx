@@ -8,6 +8,7 @@ import { DepositSelectionProvider } from "./depositSelectionContext";
 import DepositHeader from "./DepositHeader";
 import MethodPicker from "./Options/MethodPicker";
 import WalletFlow from "./Wallet";
+import WaitingForConnect from "./Wallet/WaitingForConnect";
 import TransferCrypto from "./TransferCrypto";
 import { SupportedDestination } from "./DestinationTokenPicker";
 import { Widget } from "@/components/Widget/Index";
@@ -15,6 +16,7 @@ import ResizablePanel from "@/components/Common/ResizablePanel";
 import { DepositSettingsProvider } from "@/context/depositSettings";
 import ThemeWrapper from "@/components/themeWrapper";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
+import useAllWithdrawalBalances from "@/hooks/useAllWithdrawalBalances";
 
 export type DepositMode = "inline" | "button";
 
@@ -51,8 +53,8 @@ const StepRouter: FC<{ step: DepositStep; partner?: Partner }> = ({
 }) => {
     switch (step) {
         case "method-picker": return <MethodPicker />;
+        case "wallet-connecting": return <WaitingForConnect />;
         case "transfer-crypto": return <TransferCrypto partner={partner} />;
-        case "wallet-ecosystem":
         case "wallet-source":
         case "wallet-amount":
         case "wallet-processing": return <WalletFlow partner={partner} />;
@@ -66,6 +68,7 @@ const StepRouter: FC<{ step: DepositStep; partner?: Partner }> = ({
 const DepositForm: FC<Pick<DepositProps, "partner" | "title"> & { onClose?: () => void }> = ({ partner, title, onClose }) => {
     const { step } = useDepositStep();
     const { isMobile } = useWindowDimensions();
+    useAllWithdrawalBalances();
 
     return (
         <div className="flex flex-col gap-3 w-full pt-4 max-sm:pb-4">

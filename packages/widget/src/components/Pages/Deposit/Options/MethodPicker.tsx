@@ -1,12 +1,13 @@
 import { FC, ReactNode } from "react";
 import clsx from "clsx";
-import { QrCode, Wallet as WalletIcon, WalletCards, ChevronRight } from "lucide-react";
+import { QrCode, ChevronRight } from "lucide-react";
 import useWallet from "@/hooks/useWallet";
-import { useConnectModal } from "@/components/Wallet/WalletModal";
+import { useSelectSwapAccount } from "@/context/swapAccounts";
 import { useDepositStep } from "../depositStepContext";
 import { useDepositSelection } from "../depositSelectionContext";
 import { Address } from "@/lib/address/Address";
 import DestinationTokenPicker from "../DestinationTokenPicker";
+import WalletIcon from "@/components/Icons/WalletIcon";
 
 type MethodCardProps = {
     icon: ReactNode;
@@ -52,20 +53,24 @@ const MethodCard: FC<MethodCardProps> = ({
 const MethodPicker: FC = () => {
     const { push } = useDepositStep();
     const { wallets } = useWallet();
-    const { connect } = useConnectModal();
     const { destination, destinationToken } = useDepositSelection();
+    const selectSourceAccount = useSelectSwapAccount("from");
 
     const primaryWallet = wallets[0];
     const hasWallet = !!primaryWallet;
     const destinationReady = !!destination && !!destinationToken;
 
-    const handleWalletClick = async () => {
-        if (!hasWallet) {
-            const connectedWallet = await connect(undefined, { dismissible: true });
-            if (!connectedWallet) return;
-        }
+    const handleWalletClick = () => {
         if (!destinationReady) return;
-        push("wallet-source");
+        // Already connected: mark it as the latest source account (so SourceStep
+        // scopes routes to it) and skip the connect modal. Otherwise hand off to
+        // the connecting step, which opens the connect modal over a spinner.
+        if (hasWallet) {
+            selectSourceAccount(primaryWallet);
+            push("wallet-source");
+            return;
+        }
+        push("wallet-connecting");
     };
 
     const handleTransferCryptoClick = () => {
@@ -73,12 +78,14 @@ const MethodPicker: FC = () => {
     };
 
     const handleMoreWalletsClick = () => {
-        push("wallet-ecosystem");
+        if (!destinationReady) return;
+        push("wallet-connecting");
     };
 
     // The wallet flow lands on AmountStep, which requires a destination to
     // produce a quote. Keep the card actionable while disconnected (so the
-    // connect modal still opens) but block forward navigation until ready.
+    // connecting step can still open the connect modal) but block forward
+    // navigation until ready.
     const walletDisabled = hasWallet && !destinationReady;
     const walletSubtitle = hasWallet
         ? `Connected · ${new Address(primaryWallet?.address, null, primaryWallet.providerName).toShortString()}`
@@ -87,7 +94,7 @@ const MethodPicker: FC = () => {
     const WalletProviderIcon = primaryWallet?.icon;
     const walletCardIcon = hasWallet && WalletProviderIcon
         ? <WalletProviderIcon className="h-7 w-7" />
-        : <WalletIcon className="h-6 w-6 text-primary-text" />;
+        : <WalletIcon className="h-6 w-6 text-primary-text" strokeWidth={2} />;
 
     return (
         <div className="flex flex-col gap-2 w-full">
@@ -107,17 +114,17 @@ const MethodPicker: FC = () => {
                     disabledReason="Pick a destination first"
                 />
                 <MethodCard
-                    icon={<QrCode className="h-6 w-6 text-primary-200" />}
+                    icon={<QrCode className="h-6 w-6 text-primary-text" />}
                     title="Deposit address"
-                    subtitle="Send from any wallet, exchange or CEX"
+                    subtitle="Send from any wallet or CEX"
                     onClick={handleTransferCryptoClick}
                     disabled={!destinationReady}
                     disabledReason="Pick a destination first"
                 />
                 <MethodCard
-                    icon={<WalletCards className="h-6 w-6 text-primary-200" />}
+                    icon={<WalletIcon className="h-6 w-6 text-primary-text" strokeWidth={2} />}
                     title="More wallets"
-                    subtitle="Use MetaMask, Coinbase or more"
+                    subtitle="Use MetaMask, Phantom or more"
                     onClick={handleMoreWalletsClick}
                     disabled={!destinationReady}
                     disabledReason="Pick a destination first"

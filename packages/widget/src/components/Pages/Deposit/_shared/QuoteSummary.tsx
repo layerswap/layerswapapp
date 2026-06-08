@@ -27,16 +27,12 @@ const QuoteSummary: FC<Props> = ({
 
     if (isLoading) {
         return (
-            <div className="bg-secondary-500 border border-secondary-400 rounded-2xl w-full p-4 flex flex-col gap-3">
-                <div className="flex items-center justify-between gap-2">
-                    <Bar className="h-3 w-20" />
-                    <Bar className="h-3 w-14" />
-                </div>
-                <div className="flex items-center justify-between gap-2">
-                    <Bar className="h-8 w-36" />
+            <div className="w-full bg-secondary-500 rounded-2xl p-4 flex flex-col gap-1.5">
+                <Bar className="h-3.5 w-20" />
+                <div className="flex items-baseline justify-between gap-3">
+                    <Bar className="h-7 w-32" />
                     <Bar className="h-7 w-24 rounded-full" />
                 </div>
-                <Bar className="h-3 w-40" />
             </div>
         );
     }
@@ -44,11 +40,7 @@ const QuoteSummary: FC<Props> = ({
     if (!hasReceive) return null;
 
     return (
-        <div className="relative w-full overflow-hidden bg-secondary-500 ring ring-primary-500/20 rounded-2xl p-4 flex flex-col gap-1.5">
-            <span
-                aria-hidden
-                className="pointer-events-none absolute -top-12 -right-10 h-40 w-40 rounded-full bg-primary-500/15 blur-3xl"
-            />
+        <div className="relative w-full overflow-hidden bg-secondary-500 rounded-2xl p-4 flex flex-col gap-1.5">
             <div className="flex items-center justify-between text-secondary-text text-sm relative z-10">
                 <span>You receive</span>
             </div>

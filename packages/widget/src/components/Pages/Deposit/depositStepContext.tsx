@@ -2,7 +2,7 @@ import { createContext, ReactNode, useCallback, useContext, useMemo, useState } 
 
 export type DepositStep =
     | "method-picker"
-    | "wallet-ecosystem"
+    | "wallet-connecting"
     | "wallet-source"
     | "wallet-amount"
     | "wallet-processing"
@@ -11,6 +11,10 @@ export type DepositStep =
 type DepositStepContextValue = {
     step: DepositStep;
     push: (next: DepositStep) => void;
+    /** Swap the current step for another without growing the stack, so `back`
+     * skips the replaced step. Used by the connecting step to hand off to
+     * wallet-source once a wallet is connected. */
+    replace: (next: DepositStep) => void;
     back: () => void;
     reset: () => void;
     canGoBack: boolean;
@@ -25,6 +29,10 @@ export function DepositStepProvider({ children }: { children: ReactNode }) {
         setStack(prev => prev[prev.length - 1] === next ? prev : [...prev, next]);
     }, []);
 
+    const replace = useCallback((next: DepositStep) => {
+        setStack(prev => prev[prev.length - 1] === next ? prev : [...prev.slice(0, -1), next]);
+    }, []);
+
     const back = useCallback(() => {
         setStack(prev => prev.length > 1 ? prev.slice(0, -1) : prev);
     }, []);
@@ -36,10 +44,11 @@ export function DepositStepProvider({ children }: { children: ReactNode }) {
     const value = useMemo<DepositStepContextValue>(() => ({
         step: stack[stack.length - 1],
         push,
+        replace,
         back,
         reset,
         canGoBack: stack.length > 1,
-    }), [stack, push, back, reset]);
+    }), [stack, push, replace, back, reset]);
 
     return (
         <DepositStepContext.Provider value={value}>

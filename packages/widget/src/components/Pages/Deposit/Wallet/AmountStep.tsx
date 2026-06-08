@@ -5,6 +5,7 @@ import SourcePicker from "@/components/Input/SourcePicker";
 import { useQuoteData } from "@/hooks/useFee";
 import { useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import { useSelectedAccount } from "@/context/swapAccounts";
+import { useValidationContext } from "@/context/validationContext";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import QuoteDetails from "@/components/Pages/Swap/Form/FeeDetails";
 import { useDepositStep } from "../depositStepContext";
@@ -45,10 +46,11 @@ const AmountStep: FC = () => {
             : undefined,
     );
 
-    const amountNum = Number(values?.amount);
-    const hasAmount = Number.isFinite(amountNum) && amountNum > 0;
+    const { formValidation } = useValidationContext();
+
     const hasQuote = !!fee?.quote && !quoteError;
-    const canContinue = !!from && !!fromAsset && !!to && !!toAsset && !!sourceAccount?.address && !!values?.destination_address && hasAmount && !quoteError && !isQuoteLoading;
+    const isValid = !formValidation.message;
+    const canContinue = isValid && hasQuote && !isQuoteLoading && !!sourceAccount?.address;
 
     const handleContinue = useCallback(() => {
         if (!canContinue) return;
@@ -64,11 +66,7 @@ const AmountStep: FC = () => {
 
     const submitLabel = isQuoteLoading
         ? "Fetching best route…"
-        : quoteError
-            ? "Choose a supported token"
-            : !hasAmount
-                ? "Enter an amount"
-                : "Continue";
+        : formValidation.message || "Continue";
 
     return (
         <div className="flex flex-col gap-3 w-full flex-1 min-h-0 justify-between">
