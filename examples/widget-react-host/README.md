@@ -31,10 +31,6 @@ into the MF shared scope so the remote uses those exact instances.
 
 ## Known follow-ups (not blockers)
 
-- The widget's `index.css` references `/cnbs1.png` as a host-served asset.
-  We ship a copy of that file in `public/` so the example works; for
-  production the widget CSS should switch to CDN-absolute or
-  `import.meta.url`-relative refs.
 - Signed manifest verification (per the design doc §11) is not implemented
   yet — this example just loads `remoteEntry.js` directly. Add signing
   before pointing real integrators at the public CDN.
