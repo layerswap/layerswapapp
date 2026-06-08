@@ -4,6 +4,8 @@ import { Partner } from "@/Models/Partner";
 import { SwapDataProvider } from "@/context/swap";
 import { useDepositStep } from "../depositStepContext";
 import { useDepositInitialValues } from "../depositSelectionContext";
+import { DepositWalletProvider } from "./depositWalletContext";
+import EcosystemStep from "./EcosystemStep";
 import SourceStep from "./SourceStep";
 import AmountStep from "./AmountStep";
 import ProcessingStep from "./ProcessingStep";
@@ -14,6 +16,7 @@ type Props = {
 
 const Comp: FC<Props> = ({ partner }) => {
     const { step } = useDepositStep();
+    if (step === "wallet-ecosystem") return <EcosystemStep />;
     if (step === "wallet-source") return <SourceStep />;
     if (step === "wallet-amount") return <AmountStep />;
     if (step === "wallet-processing") return <ProcessingStep partner={partner} />;
@@ -42,9 +45,11 @@ const WalletFlowInner: FC<Props> = ({ partner }) => {
  * so the providers stay mounted across the steps and only reset on exit.
  */
 const WalletFlow: FC<Props> = ({ partner }) => (
-    <SwapDataProvider>
-        <WalletFlowInner partner={partner} />
-    </SwapDataProvider>
+    <DepositWalletProvider>
+        <SwapDataProvider>
+            <WalletFlowInner partner={partner} />
+        </SwapDataProvider>
+    </DepositWalletProvider>
 );
 
 export default WalletFlow;

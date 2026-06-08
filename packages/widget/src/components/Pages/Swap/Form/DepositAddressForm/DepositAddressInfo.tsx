@@ -159,7 +159,29 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
             </div>
 
             {/* You send → You receive summary */}
-            {sourceToken && destinationToken && (
+            {!(sourceToken && destinationToken) ? (
+                <div className="bg-secondary-500 rounded-xl px-4 py-3 flex items-center gap-3 h-[62px]">
+                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                        <span className="shrink-0 h-8 w-8 rounded-full bg-secondary-400 animate-pulse" />
+                        <span className="flex flex-col gap-1.5 min-w-0">
+                            <span className="h-2.5 w-12 bg-secondary-400 rounded animate-pulse" />
+                            <span className="h-3 w-10 bg-secondary-400 rounded animate-pulse" />
+                        </span>
+                    </div>
+
+                    <span aria-hidden="true" className="shrink-0 inline-flex items-center justify-center h-6 w-6 rounded-lg bg-secondary-800">
+                        <ArrowRight className="h-4 w-4 text-primary" />
+                    </span>
+
+                    <div className="flex items-center gap-2.5 flex-1 min-w-0 justify-end">
+                        <span className="flex flex-col gap-1.5 min-w-0 items-end">
+                            <span className="h-2.5 w-12 bg-secondary-400 rounded animate-pulse" />
+                            <span className="h-3 w-10 bg-secondary-400 rounded animate-pulse" />
+                        </span>
+                        <span className="shrink-0 h-8 w-8 rounded-full bg-secondary-400 animate-pulse" />
+                    </div>
+                </div>
+            ) : (
                 <div className="bg-secondary-500 rounded-xl px-4 py-3 flex items-center gap-3">
                     <div className="flex items-center gap-2.5 flex-1 min-w-0">
                         <TokenChainBadge
@@ -202,6 +224,7 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
                     </div>
                 </div>
             )}
+
 
             {/* Min · Max · Fee meta-row */}
             {showQuoteSkeleton ? (

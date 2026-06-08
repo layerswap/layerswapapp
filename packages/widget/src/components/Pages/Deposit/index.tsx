@@ -51,6 +51,7 @@ const StepRouter: FC<{ step: DepositStep; partner?: Partner }> = ({
     switch (step) {
         case "method-picker": return <MethodPicker />;
         case "transfer-crypto": return <TransferCrypto partner={partner} />;
+        case "wallet-ecosystem":
         case "wallet-source":
         case "wallet-amount":
         case "wallet-processing": return <WalletFlow partner={partner} />;
@@ -64,7 +65,7 @@ const StepRouter: FC<{ step: DepositStep; partner?: Partner }> = ({
 const DepositForm: FC<Pick<DepositProps, "partner" | "title"> & { onClose?: () => void }> = ({ partner, title, onClose }) => {
     const { step } = useDepositStep();
     return (
-        <div className="flex flex-col gap-3 w-full pt-4">
+        <div className="flex flex-col gap-3 w-full pt-4 max-sm:pb-4">
             <DepositHeader title={title} onClose={onClose} />
             <div className="h-px w-full bg-secondary-400" />
             <ResizablePanel>

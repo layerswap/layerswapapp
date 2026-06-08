@@ -1,6 +1,6 @@
 import { FC, ReactNode } from "react";
 import clsx from "clsx";
-import { QrCode, Wallet as WalletIcon, ChevronRight } from "lucide-react";
+import { QrCode, Wallet as WalletIcon, WalletCards, ChevronRight } from "lucide-react";
 import useWallet from "@/hooks/useWallet";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { useDepositStep } from "../depositStepContext";
@@ -8,14 +8,8 @@ import { useDepositSelection } from "../depositSelectionContext";
 import { Address } from "@/lib/address/Address";
 import DestinationTokenPicker from "../DestinationTokenPicker";
 
-type Badge = {
-    label: string;
-    tone: "fast" | "any";
-};
-
 type MethodCardProps = {
     icon: ReactNode;
-    iconTone?: "neutral" | "wallet";
     title: string;
     subtitle: string;
     onClick: () => void;
@@ -23,14 +17,8 @@ type MethodCardProps = {
     disabledReason?: string;
 };
 
-const badgeStyles: Record<Badge["tone"], string> = {
-    fast: "bg-success-background text-success-foreground",
-    any: "bg-secondary-400/60 text-secondary-text",
-};
-
 const MethodCard: FC<MethodCardProps> = ({
     icon,
-    iconTone = "neutral",
     title,
     subtitle,
     onClick,
@@ -50,14 +38,7 @@ const MethodCard: FC<MethodCardProps> = ({
             "disabled:opacity-50 disabled:hover:bg-secondary-500 disabled:hover:border-transparent disabled:cursor-not-allowed",
         )}
     >
-        <div
-            className={clsx(
-                "shrink-0 h-[46px] w-[46px] rounded-xl flex items-center justify-center border",
-                iconTone === "wallet"
-                    ? "bg-warning-background border-warning-foreground/20"
-                    : "bg-secondary-700 border-secondary-400",
-            )}
-        >
+        <div className="shrink-0 h-[46px] w-[46px] rounded-xl flex items-center justify-center border bg-secondary-700 border-secondary-400" >
             {icon}
         </div>
         <div className="flex-1 min-w-0 flex flex-col gap-1">
@@ -80,7 +61,7 @@ const MethodPicker: FC = () => {
 
     const handleWalletClick = async () => {
         if (!hasWallet) {
-            const connectedWallet = await connect(undefined, { dismissible: true, fullHeight: true });
+            const connectedWallet = await connect(undefined, { dismissible: true });
             if (!connectedWallet) return;
         }
         if (!destinationReady) return;
@@ -89,6 +70,10 @@ const MethodPicker: FC = () => {
 
     const handleTransferCryptoClick = () => {
         push("transfer-crypto");
+    };
+
+    const handleMoreWalletsClick = () => {
+        push("wallet-ecosystem");
     };
 
     // The wallet flow lands on AmountStep, which requires a destination to
@@ -108,30 +93,35 @@ const MethodPicker: FC = () => {
         <div className="flex flex-col gap-2 w-full">
             <DestinationTokenPicker />
 
-            <div>
-                <p className="text-secondary-text text-xs px-1 pt-0.5 mb-1">
-                    Choose how to fund this deposit
-                </p>
+            <p className="text-secondary-text text-xs px-1 pt-0.5 mb-1">
+                Choose how to fund this deposit
+            </p>
 
-                <div className="flex flex-col gap-2 w-full">
-                    <MethodCard
-                        icon={walletCardIcon}
-                        iconTone={hasWallet ? "wallet" : "neutral"}
-                        title="Wallet transfer"
-                        subtitle={walletSubtitle}
-                        onClick={handleWalletClick}
-                        disabled={walletDisabled}
-                        disabledReason="Pick a destination first"
-                    />
-                    <MethodCard
-                        icon={<QrCode className="h-6 w-6 text-primary-200" />}
-                        title="Deposit address"
-                        subtitle="Send from any wallet, exchange or CEX"
-                        onClick={handleTransferCryptoClick}
-                        disabled={!destinationReady}
-                        disabledReason="Pick a destination first"
-                    />
-                </div>
+            <div className="flex flex-col gap-2 w-full">
+                <MethodCard
+                    icon={walletCardIcon}
+                    title="Wallet transfer"
+                    subtitle={walletSubtitle}
+                    onClick={handleWalletClick}
+                    disabled={walletDisabled}
+                    disabledReason="Pick a destination first"
+                />
+                <MethodCard
+                    icon={<QrCode className="h-6 w-6 text-primary-200" />}
+                    title="Deposit address"
+                    subtitle="Send from any wallet, exchange or CEX"
+                    onClick={handleTransferCryptoClick}
+                    disabled={!destinationReady}
+                    disabledReason="Pick a destination first"
+                />
+                <MethodCard
+                    icon={<WalletCards className="h-6 w-6 text-primary-200" />}
+                    title="More wallets"
+                    subtitle="Use MetaMask, Coinbase or more"
+                    onClick={handleMoreWalletsClick}
+                    disabled={!destinationReady}
+                    disabledReason="Pick a destination first"
+                />
             </div>
         </div>
     );
