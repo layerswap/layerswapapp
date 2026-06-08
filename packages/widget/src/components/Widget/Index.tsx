@@ -13,10 +13,10 @@ type Props = {
    hideMenu?: boolean;
    goBack?: () => void;
    contextualMenu?: React.ReactNode;
-
+   fitHeight?: boolean;
 }
 
-const Widget = ({ children, hideMenu, goBack, contextualMenu }: Props) => {
+const Widget = ({ children, hideMenu, goBack, contextualMenu, fitHeight = false }: Props) => {
    const wrapper = useRef(null);
    const { isEmbedded } = useSettingsState()
 
@@ -29,9 +29,9 @@ const Widget = ({ children, hideMenu, goBack, contextualMenu }: Props) => {
          id="widget"
          style={AppSettings.ThemeData?.cardBackgroundStyle}
          className={clsx("sm:pb-4 rounded-3xl w-full overflow-hidden relative bg-secondary-700 h-full flex flex-col has-expandContainerHeight:min-h-[650px]", {
-            "max-sm:has-openpicker:min-h-svh max-sm:min-h-[99.8svh] sm:has-openpicker:min-h-[79svh]! sm:has-openaddresspicker:min-h-[500px]": AppSettings.ThemeData?.enableWideVersion,
+            "max-sm:has-openpicker:min-h-svh max-sm:min-h-[99.8svh] sm:has-openpicker:min-h-[79svh]! sm:has-openaddresspicker:min-h-[500px]": AppSettings.ThemeData?.enableWideVersion && !fitHeight,
             "max-sm:min-h-[99svh]!": isEmbedded,
-            "has-openpicker:min-h-[675px]": !AppSettings.ThemeData?.enableWideVersion
+            "has-openpicker:min-h-[675px]": !AppSettings.ThemeData?.enableWideVersion && !fitHeight,
          })}
       >
          {
