@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useMemo, useState } from "react";
 import { WalletConnectionProvider } from "@/types/wallet";
 import clsx from "clsx";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
@@ -8,17 +8,6 @@ import MenuIcon from "@/components/Icons/MenuIcon";
 export const ProviderPicker: FC<{ providers: WalletConnectionProvider[], selectedProviderNames: string[], setSelectedProviderNames: (providerNames: string[]) => void }> = ({ providers, selectedProviderNames, setSelectedProviderNames }) => {
     const values = useMemo(() => providers.map(p => p.name).sort(), [providers])
     const [open, setOpen] = useState(false)
-    // Radix portals to document.body by default. Our Tailwind utilities
-    // are scoped to `.layerswap-styles` (postcss-prefixwrap), so a popover
-    // outside that scope renders unstyled — no background, no z-index —
-    // and reads as "clicking does nothing" even though the popover opens.
-    // Portal into `#widget` instead, which the wallet drawer also uses
-    // and which always sits inside `.layerswap-styles`.
-    const [container, setContainer] = useState<HTMLElement | null>(null)
-    useEffect(() => {
-        if (!open) return
-        setContainer(document.getElementById('widget'))
-    }, [open])
 
     const onSelect = (item: string) => {
         if (selectedProviderNames.includes(item)) {
@@ -48,7 +37,7 @@ export const ProviderPicker: FC<{ providers: WalletConnectionProvider[], selecte
                     </div>
                 )}
             </PopoverTrigger>
-            <PopoverContent container={container} align="end" className="w-[130px]! text-primary-text! p-2 space-y-1 bg-secondary-500! rounded-xl!" style={{ width: '130px', minWidth: '130px', maxWidth: '130px' }}>
+            <PopoverContent align="end" className="w-[130px]! text-primary-text! p-2 space-y-1 bg-secondary-500! rounded-xl!" style={{ width: '130px', minWidth: '130px', maxWidth: '130px' }}>
                 {
                     values.map((item, index) => (
                         <div key={index} onClick={() => onSelect(item)} className="px-2 py-1 text-left flex items-center w-full gap-2.5 hover:bg-secondary-400 rounded-lg transition-colors duration-200 text-secondary-text cursor-pointer">
