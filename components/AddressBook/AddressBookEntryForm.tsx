@@ -7,7 +7,7 @@ import NetworkScopeSelector from './NetworkScopeSelector'
 import { useNetworkScope } from './useNetworkScope'
 
 export type AddressBookEntryFormProps = {
-    initial?: Partial<SavedAddress> & { editingOriginalAddress?: string }
+    initial?: Partial<SavedAddress> & { originalAddress?: string }
     availableNetworks?: string[]
     onClose: () => void
 }
@@ -28,18 +28,18 @@ const AddressBookEntryForm: FC<AddressBookEntryFormProps> = ({ initial, availabl
         const trimmed = address.trim()
         if (!trimmed) return false
         return savedAddresses.some(e =>
-            !(initial?.editingOriginalAddress && Address.equals(e.address, initial.editingOriginalAddress, null, e.networkTypes?.[0])) &&
+            !(initial?.originalAddress && Address.equals(e.address, initial.originalAddress, null, e.networkTypes?.[0])) &&
             Address.equals(e.address, trimmed, null, provider)
         )
-    }, [savedAddresses, address, provider, initial?.editingOriginalAddress])
+    }, [savedAddresses, address, provider, initial?.originalAddress])
 
     const canSubmit = !!trimmedName && !!address.trim() && !(trimmedName.length > NAME_MAX) && !isDuplicate && (!scope.selector || scope.selector.selected.length > 0)
 
     const submit = () => {
         if (!canSubmit) return
         const entry = { name: trimmedName, address: address.trim(), ...scope.entry }
-        if (initial?.editingOriginalAddress) {
-            editAddress(initial.editingOriginalAddress, entry)
+        if (initial?.originalAddress) {
+            editAddress(initial.originalAddress, entry)
         } else {
             addAddress(entry)
         }

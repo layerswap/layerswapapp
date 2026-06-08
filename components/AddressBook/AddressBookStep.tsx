@@ -73,7 +73,7 @@ const AddressBookStep: FC = () => {
                     const raw = entry.address
                     if (editing.kind === 'edit' && editing.entry.address === raw) {
                         return (
-                            <AddressBookEntryForm key={raw} initial={{ name: entry.name, address: entry.address, editingOriginalAddress: entry.address, networkTypes: entry.networkTypes, networks: entry.networks, }} onClose={closeForm} />
+                            <AddressBookEntryForm key={raw} initial={{ name: entry.name, address: entry.address, originalAddress: entry.address, networkTypes: entry.networkTypes, networks: entry.networks, }} onClose={closeForm} />
                         )
                     }
                     return (

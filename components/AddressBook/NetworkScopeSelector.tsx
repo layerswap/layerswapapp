@@ -12,8 +12,7 @@ export type ScopeOption = { key: string, label: string, logo?: string }
 export type NetworkScopeSelectorProps = {
     sectionLabel: string
     masterLabel: string
-    searchable: boolean
-    globeWhenAll?: boolean
+    overlapping: boolean
     options: ScopeOption[]
     selected: string[]
     onChange: (keys: string[]) => void
@@ -41,7 +40,7 @@ const describeSelection = (selected: string[], options: ScopeOption[], masterLab
     return `${selected.length} selected`
 }
 
-const NetworkScopeSelector: FC<NetworkScopeSelectorProps> = ({ sectionLabel, masterLabel, searchable, globeWhenAll, options, selected, onChange }) => {
+const NetworkScopeSelector: FC<NetworkScopeSelectorProps> = ({ sectionLabel, masterLabel, overlapping, options, selected, onChange }) => {
     const [open, setOpen] = useState(false)
     const [query, setQuery] = useState('')
     const { drawerRef, container: widget, modal } = useDrawerContext()
@@ -56,9 +55,9 @@ const NetworkScopeSelector: FC<NetworkScopeSelectorProps> = ({ sectionLabel, mas
     const selectAll = () => onChange(allOn ? [] : options.map(o => o.key))
 
     const trimmedQuery = query.trim().toLowerCase()
-    const filtered = searchable && trimmedQuery ? options.filter(o => o.label.toLowerCase().includes(trimmedQuery)) : options
+    const filtered = !overlapping && trimmedQuery ? options.filter(o => o.label.toLowerCase().includes(trimmedQuery)) : options
 
-    const showGlobe = allOn && globeWhenAll
+    const showGlobe = allOn && !overlapping
 
     return (
         <div className="bg-secondary-500 rounded-2xl px-4 py-3">
@@ -75,19 +74,19 @@ const NetworkScopeSelector: FC<NetworkScopeSelectorProps> = ({ sectionLabel, mas
                     </button>
                 </PopoverTrigger>
                 <PopoverContent container={modal ? drawerRef.current : undefined} collisionBoundary={widget ?? undefined} collisionPadding={8} align="start" className="w-[var(--radix-popover-trigger-width)]! max-w-none! bg-secondary-500! p-0 rounded-2xl overflow-hidden">
-                    {searchable && (
+                    {!overlapping && (
                         <div className="p-2 pb-1 border-b border-secondary-500">
                             <SearchComponent searchQuery={query} setSearchQuery={setQuery} placeholder="Search networks" containerClassName="mb-0 h-9 bg-secondary-300! focus-within:bg-secondary-200!" className="bg-transparent!" />
                         </div>
                     )}
                     <div className="overflow-y-auto styled-scroll p-1 max-h-60">
-                        <CheckboxRow checked={allOn} onToggle={selectAll} icon={<Globe className="w-4 h-4 text-secondary-text" />} label={masterLabel} />
+                        <CheckboxRow checked={allOn} onToggle={selectAll} icon={overlapping ? <StackedLogos options={options} /> : <Globe className="w-4 h-4 text-secondary-text" />} label={masterLabel} className="h-12 text-base" />
                         <div className="h-px bg-primary-text-tertiary/15 mx-3 my-1" />
                         {filtered.length === 0 ? (
-                            <div className="px-3 py-2 text-sm text-secondary-text"><span>No networks found</span></div>
+                            <div className="flex items-center h-12 px-3 text-base text-secondary-text"><span>No networks found</span></div>
                         ) : (
                             filtered.map(o => (
-                                <CheckboxRow key={o.key} checked={selected.includes(o.key)} onToggle={() => toggle(o.key)} icon={<OptionLogo option={o} size={20} />} label={o.label} />
+                                <CheckboxRow key={o.key} checked={selected.includes(o.key)} onToggle={() => toggle(o.key)} icon={<OptionLogo option={o} size={20} />} label={o.label} className="h-12 text-base" />
                             ))
                         )}
                     </div>

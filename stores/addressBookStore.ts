@@ -6,6 +6,9 @@ import { addressFormat } from '@/lib/address/formatter'
 import { NetworkType } from '@/Models/Network'
 import { AddressSelectionMode, classifyAddress } from '@/lib/address/detector'
 import KnownInternalNames from '@/lib/knownIds'
+import AppSettings from '@/lib/AppSettings'
+
+const SolanaNetwork = AppSettings.ApiVersion === 'sandbox' ? KnownInternalNames.Networks.SolanaDevnet : KnownInternalNames.Networks.SolanaMainnet
 
 export const NAME_MAX = 20
 export const COUNTER_SHOW_AT = 15
@@ -45,18 +48,14 @@ const cleanStrings = (value: unknown) =>
     Array.isArray(value) ? value.filter(v => typeof v === 'string' && v.length > 0) as string[] : undefined
 
 const migrateLegacyScope = (address: string, networkTypes: NetworkType[] | undefined, networks: string[] | undefined, legacyType: NetworkType | undefined, hadNetworkTypes: boolean): Pick<SavedAddress, 'networkTypes' | 'networks'> => {
-    const shouldMigrate = !hadNetworkTypes
-        || legacyType === NetworkType.EVM
-        || legacyType === NetworkType.Solana
-        || (networkTypes?.includes(NetworkType.Solana) && !networks?.length)
-
+    const shouldMigrate = !hadNetworkTypes || legacyType === NetworkType.EVM || legacyType === NetworkType.Solana || (networkTypes?.includes(NetworkType.Solana) && !networks?.length)
     if (!shouldMigrate) return { networkTypes, networks }
 
     const detected = classifyAddress(address)
     const types = detected.types
 
     if (legacyType === NetworkType.Solana || types.includes(NetworkType.Solana)) {
-        return { networkTypes: [NetworkType.Solana], networks: [KnownInternalNames.Networks.SolanaMainnet] }
+        return { networkTypes: [NetworkType.Solana], networks: [SolanaNetwork] }
     }
     if (types.includes(NetworkType.Fuel) && types.includes(NetworkType.Starknet)) {
         return { networkTypes: types }

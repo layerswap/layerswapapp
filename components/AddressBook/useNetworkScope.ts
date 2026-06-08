@@ -31,13 +31,10 @@ export function useNetworkScope(address: string, initial?: Partial<SavedAddress>
         switch (detected.selection) {
             case AddressSelectionMode.Networks: {
                 const type = detected.types[0]
-                const scopedNetworks = networks.filter(n =>
-                    detected.types.includes(n.type) &&
-                    (!availableNetworks || availableNetworks.includes(n.name))
-                )
+                const scopedNetworks = networks.filter(n => detected.types.includes(n.type) && (!availableNetworks || availableNetworks.includes(n.name)))
                 const options = scopedNetworks.map(n => ({ key: n.name, label: n.display_name, logo: n.logo }))
                 return {
-                    selectorProps: { sectionLabel: 'Networks', masterLabel: 'All networks', searchable: true, globeWhenAll: true, options },
+                    selectorProps: { sectionLabel: 'Networks', masterLabel: 'All networks', overlapping: false, options },
                     defaults: defaultNetworkScope(type, scopedNetworks),
                     saved: initial?.networks,
                     toEntry: keys => ({ networkTypes: detected.types, networks: keys }),
@@ -46,7 +43,7 @@ export function useNetworkScope(address: string, initial?: Partial<SavedAddress>
             case AddressSelectionMode.Overlap: {
                 const options = detected.types.map(t => ({ key: t as string, label: AddressTypeLabel(t), logo: networks.find(n => n.type === t)?.logo }))
                 return {
-                    selectorProps: { sectionLabel: 'Network type', masterLabel: 'Both', searchable: false, options },
+                    selectorProps: { sectionLabel: 'Network type', masterLabel: 'Both', overlapping: true, options },
                     defaults: options.map(o => o.key),
                     saved: initial?.networkTypes,
                     toEntry: keys => ({ networkTypes: keys as NetworkType[] }),
