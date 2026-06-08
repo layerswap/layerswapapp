@@ -1,8 +1,11 @@
 "use client";
-import { FC, useState } from "react";
+import { FC, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import { Partner } from "@/Models/Partner";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/shadcn/dialog";
+import { FamilyDrawer, ViewsRegistry } from "@/components/Modal/FamilyDrawer";
+import { useConnectModal } from "@/components/Wallet/WalletModal";
+import useWindowDimensions from "@/hooks/useWindowDimensions";
 import { DepositStep, DepositStepProvider, useDepositStep } from "./depositStepContext";
 import { DepositSelectionProvider } from "./depositSelectionContext";
 import DepositHeader from "./DepositHeader";
@@ -14,7 +17,6 @@ import { Widget } from "@/components/Widget/Index";
 import ResizablePanel from "@/components/Common/ResizablePanel";
 import { DepositSettingsProvider } from "@/context/depositSettings";
 import ThemeWrapper from "@/components/themeWrapper";
-import useWindowDimensions from "@/hooks/useWindowDimensions";
 
 export type DepositMode = "inline" | "button";
 
@@ -53,6 +55,7 @@ const StepRouter: FC<{ step: DepositStep; partner?: Partner }> = ({
         case "method-picker": return <MethodPicker />;
         case "transfer-crypto": return <TransferCrypto partner={partner} />;
         case "wallet-ecosystem":
+        case "wallet-connect":
         case "wallet-source":
         case "wallet-amount":
         case "wallet-processing": return <WalletFlow partner={partner} />;
@@ -64,12 +67,24 @@ const StepRouter: FC<{ step: DepositStep; partner?: Partner }> = ({
 };
 
 const DepositForm: FC<Pick<DepositProps, "partner" | "title"> & { onClose?: () => void }> = ({ partner, title, onClose }) => {
-    const { step } = useDepositStep();
+    const { step, back } = useDepositStep();
     const { isMobile } = useWindowDimensions();
+    const { selectedConnector, selectedMultiChainConnector, goBack } = useConnectModal();
+
+    // On the inline connect step the single deposit header doubles as the
+    // connect header: its back navigates within the connect sub-views first
+    // (goBack), and only pops the step once at the connector grid. The title
+    // mirrors the modal's ("Select ecosystem" while choosing a multichain
+    // ecosystem, otherwise "Connect wallet").
+    const inConnectSubView = !!(selectedConnector || selectedMultiChainConnector);
+    const headerTitle = step === "wallet-connect"
+        ? (selectedMultiChainConnector && !selectedConnector ? "Select ecosystem" : "Connect wallet")
+        : title;
+    const headerBack = step === "wallet-connect" && inConnectSubView ? goBack : back;
 
     return (
         <div className="flex flex-col gap-3 w-full pt-4 max-sm:pb-4">
-            <DepositHeader title={title} onClose={onClose} />
+            <DepositHeader title={headerTitle} onClose={onClose} onBack={headerBack} />
             <div className="h-px w-full bg-secondary-400" />
             {
                 isMobile ?
@@ -104,20 +119,53 @@ const DepositCard: FC<Pick<DepositProps, "partner" | "destinations" | "destinati
 
 export const Deposit: FC<DepositProps> = ({ mode = "inline", buttonLabel = "Deposit", buttonClassName, ...props }) => {
     const [open, setOpen] = useState(false);
+    const { isMobile } = useWindowDimensions();
+
+    // Keep the latest props reachable from the (stable) drawer view. Recreating
+    // the view component on every render would remount the whole deposit flow
+    // and lose its state, so the view is memoized once and reads through a ref.
+    const propsRef = useRef(props);
+    propsRef.current = props;
+    const drawerViews = useMemo<ViewsRegistry>(
+        () => ({
+            default: function DepositDrawerView() {
+                return <DepositCard {...propsRef.current} onClose={() => setOpen(false)} />;
+            },
+        }),
+        [],
+    );
+
     if (mode === "button") {
+        const triggerButton = (
+            <button
+                type="button"
+                className={clsx(
+                    "navigation-focus-ring-text-bold-lg enabled:active:animate-press-down bg-primary-500 text-primary-buttonTextColor font-medium rounded-full px-6 py-2 hover:brightness-110 transition duration-200 ease-in-out focus:outline-none",
+                    buttonClassName,
+                )}
+            >
+                {buttonLabel}
+            </button>
+        );
+
+        // Mobile: present the deposit flow as a draggable bottom sheet. The
+        // Widget supplies its own surface, so the drawer renders in `bare` mode.
+        if (isMobile) {
+            return (
+                <FamilyDrawer
+                    bare
+                    open={open}
+                    onOpenChange={setOpen}
+                    trigger={triggerButton}
+                    views={drawerViews}
+                />
+            );
+        }
+
+        // Desktop: keep the centered dialog.
         return (
             <Dialog open={open} onOpenChange={setOpen}>
-                <DialogTrigger asChild>
-                    <button
-                        type="button"
-                        className={clsx(
-                            "navigation-focus-ring-text-bold-lg enabled:active:animate-press-down bg-primary-500 text-primary-buttonTextColor font-medium rounded-full px-6 py-2 hover:brightness-110 transition duration-200 ease-in-out focus:outline-none",
-                            buttonClassName,
-                        )}
-                    >
-                        {buttonLabel}
-                    </button>
-                </DialogTrigger>
+                <DialogTrigger asChild>{triggerButton}</DialogTrigger>
                 <DialogContent showCloseButton={false} className="!p-0 !bg-transparent !ring-0 !gap-0 sm:!max-w-md *:min-w-0">
                     <DepositCard {...props} onClose={() => setOpen(false)} />
                 </DialogContent>
@@ -126,5 +174,4 @@ export const Deposit: FC<DepositProps> = ({ mode = "inline", buttonLabel = "Depo
     }
     return <DepositCard {...props} />;
 };
-
 export default Deposit;

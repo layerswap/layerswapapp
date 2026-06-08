@@ -3,7 +3,6 @@ import clsx from "clsx";
 import { ChevronRight } from "lucide-react";
 import { useSettingsState } from "@/context/settings";
 import useWallet from "@/hooks/useWallet";
-import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { ResolveConnectorIcon } from "@/components/Icons/ConnectorIcons";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { NetworkRoute, NetworkType } from "@/Models/Network";
@@ -34,9 +33,8 @@ const resolveProviderForRoutes = (
 const EcosystemStep: FC = () => {
     const { sourceRoutes } = useSettingsState();
     const { providers } = useWallet();
-    const { connect } = useConnectModal();
     const { push } = useDepositStep();
-    const { setSourceEcosystem } = useDepositWallet();
+    const { setSourceEcosystem, setConnectProvider } = useDepositWallet();
 
     // Group source routes by ecosystem (NetworkType) and keep only the ones we
     // can actually connect a wallet for.
@@ -60,11 +58,10 @@ const EcosystemStep: FC = () => {
             .filter((e): e is Ecosystem => e !== null);
     }, [sourceRoutes, providers]);
 
-    const handleSelect = async (ecosystem: Ecosystem) => {
-        const connected = await connect(ecosystem.provider, { dismissible: true });
-        if (!connected) return;
+    const handleSelect = (ecosystem: Ecosystem) => {
         setSourceEcosystem(ecosystem.type);
-        push("wallet-source");
+        setConnectProvider(ecosystem.provider);
+        push("wallet-connect");
     };
 
     return (

@@ -2,7 +2,6 @@ import { FC, ReactNode } from "react";
 import clsx from "clsx";
 import { QrCode, Wallet as WalletIcon, WalletCards, ChevronRight } from "lucide-react";
 import useWallet from "@/hooks/useWallet";
-import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { useDepositStep } from "../depositStepContext";
 import { useDepositSelection } from "../depositSelectionContext";
 import { Address } from "@/lib/address/Address";
@@ -52,20 +51,21 @@ const MethodCard: FC<MethodCardProps> = ({
 const MethodPicker: FC = () => {
     const { push } = useDepositStep();
     const { wallets } = useWallet();
-    const { connect } = useConnectModal();
     const { destination, destinationToken } = useDepositSelection();
 
     const primaryWallet = wallets[0];
     const hasWallet = !!primaryWallet;
     const destinationReady = !!destination && !!destinationToken;
 
-    const handleWalletClick = async () => {
-        if (!hasWallet) {
-            const connectedWallet = await connect(undefined, { dismissible: true });
-            if (!connectedWallet) return;
+    const handleWalletClick = () => {
+        // Already connected: go straight to the source step (once a destination
+        // is picked). Otherwise open the inline connect step, which advances to
+        // the source step on success (or back here if no destination yet).
+        if (hasWallet) {
+            if (destinationReady) push("wallet-source");
+            return;
         }
-        if (!destinationReady) return;
-        push("wallet-source");
+        push("wallet-connect");
     };
 
     const handleTransferCryptoClick = () => {
@@ -78,7 +78,7 @@ const MethodPicker: FC = () => {
 
     // The wallet flow lands on AmountStep, which requires a destination to
     // produce a quote. Keep the card actionable while disconnected (so the
-    // connect modal still opens) but block forward navigation until ready.
+    // inline connect step can still open) but block forward navigation until ready.
     const walletDisabled = hasWallet && !destinationReady;
     const walletSubtitle = hasWallet
         ? `Connected · ${new Address(primaryWallet?.address, null, primaryWallet.providerName).toShortString()}`

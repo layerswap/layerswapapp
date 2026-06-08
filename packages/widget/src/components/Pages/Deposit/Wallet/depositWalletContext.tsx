@@ -1,5 +1,6 @@
 import { createContext, ReactNode, useContext, useMemo, useState } from "react";
 import { NetworkType } from "@/Models/Network";
+import { WalletConnectionProvider } from "@/types/wallet";
 
 type DepositWalletContextValue = {
     /** The ecosystem chosen via the "More Wallets" flow. When set, the source
@@ -7,6 +8,11 @@ type DepositWalletContextValue = {
      * default "Wallet transfer" path (shows all source networks). */
     sourceEcosystem?: NetworkType;
     setSourceEcosystem: (type?: NetworkType) => void;
+    /** The wallet provider the connect step should connect against. Set by the
+     * EcosystemStep ("More wallets" → pick an ecosystem); undefined for the
+     * "Wallet transfer" path, where the connect step offers all wallets. */
+    connectProvider?: WalletConnectionProvider;
+    setConnectProvider: (provider?: WalletConnectionProvider) => void;
 };
 
 const DepositWalletContext = createContext<DepositWalletContextValue | null>(null);
@@ -19,11 +25,14 @@ const DepositWalletContext = createContext<DepositWalletContextValue | null>(nul
  */
 export function DepositWalletProvider({ children }: { children: ReactNode }) {
     const [sourceEcosystem, setSourceEcosystem] = useState<NetworkType | undefined>(undefined);
+    const [connectProvider, setConnectProvider] = useState<WalletConnectionProvider | undefined>(undefined);
 
     const value = useMemo<DepositWalletContextValue>(() => ({
         sourceEcosystem,
         setSourceEcosystem,
-    }), [sourceEcosystem]);
+        connectProvider,
+        setConnectProvider,
+    }), [sourceEcosystem, connectProvider]);
 
     return (
         <DepositWalletContext.Provider value={value}>

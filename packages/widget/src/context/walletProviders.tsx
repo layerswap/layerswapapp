@@ -19,7 +19,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
     const { networks } = useSettingsState();
     const settings = useSettingsState();
     const isMobilePlatform = isMobile();
-    const { goBack, onFinish, open, setOpen, selectedConnector, selectedMultiChainConnector, dismissible, topContent, fullHeight, hideHeader } = useConnectModal()
+    const { goBack, onFinish, open, setOpen, presentation, selectedConnector, selectedMultiChainConnector, dismissible, topContent, fullHeight, hideHeader } = useConnectModal()
 
     const allProviders = walletProviders.map(provider => provider.walletConnectionProvider ? provider.walletConnectionProvider({ networks }) : undefined).filter(provider => provider !== undefined) as WalletConnectionProvider[];
 
@@ -39,7 +39,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
         <WalletProvidersContext.Provider value={providers}>
             {children}
             <VaulDrawer
-                show={open}
+                show={open && presentation === 'modal'}
                 setShow={setOpen}
                 onClose={onFinish}
                 modalId={"connectNewWallet"}
