@@ -1,8 +1,9 @@
-# cdn-embed example
+# widget-react-host example
 
-Demonstrates loading `@layerswap/widget` at runtime from a Module-Federation
-remote, with the integrator's bundle containing **only** `@layerswap/widget-react`
-(no widget code, no wallet adapters, no `framer-motion`, etc.).
+Demonstrates a host app integrating `@layerswap/widget-react`, which loads
+the Layerswap widget at runtime from a Module-Federation remote. The host
+bundle contains **only** `@layerswap/widget-react` (no widget code, no
+wallet adapters, no `framer-motion`, etc.).
 
 ## Run locally
 
@@ -13,7 +14,7 @@ Two dev servers — the CDN-remote and this host app.
 pnpm --filter @layerswap/widget-cdn dev
 
 # Terminal 2 — serve this example on :3001
-pnpm --filter cdn-embed-example dev -- --host 127.0.0.1 --port 3001 --no-open
+pnpm --filter widget-react-host-example dev -- --host 127.0.0.1 --port 3001 --no-open
 ```
 
 Then open `http://127.0.0.1:3001/`. The host page loads `remoteEntry.js`
@@ -23,10 +24,10 @@ Point at a production CDN by setting `VITE_LAYERSWAP_REMOTE_ENTRY`.
 
 ## What's in the host bundle
 
-Only `@layerswap/widget-react` (a few KB plus `@module-federation/runtime`). React,
-react-dom, wagmi, viem, react-query, and zustand stay as the host's own
-copies (declared peer-deps on `@layerswap/widget-react`) and are fed into the MF
-shared scope so the remote uses those exact instances.
+Only `@layerswap/widget-react` (a few KB plus `@module-federation/runtime`).
+React, react-dom, wagmi, viem, react-query, and zustand stay as the host's
+own copies (declared peer-deps on `@layerswap/widget-react`) and are fed
+into the MF shared scope so the remote uses those exact instances.
 
 ## Known follow-ups (not blockers)
 
