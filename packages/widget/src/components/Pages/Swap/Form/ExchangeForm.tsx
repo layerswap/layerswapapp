@@ -25,8 +25,9 @@ import { useCallbacks } from "@/context/callbackProvider";
 import QuoteDetails from "./FeeDetails";
 import DepositMethodComponent from "./FeeDetails/DepositMethod";
 import { AddressGroup } from "@/components/Input/Address/AddressPicker";
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { ExchangeReceiveAmount } from "@/components/Input/Amount/ExchangeReceiveAmount";
-import { ResolvedAddressIcon } from "@/components/Common/AddressIcon";
+import AddressIcon from "@/components/Common/AddressIcon";
 
 type Props = {
     partner?: Partner;
@@ -176,15 +177,19 @@ const AddressButton = ({ address, network, wallet, addressProviderIcon }: { addr
     return <div className="justify-between w-full items-center flex font-light space-x-2 mx-auto rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative">
         <div className="flex items-center gap-2">
             <div className="flex bg-secondary-400 text-primary-text items-center justify-center rounded-md h-7 w-7 overflow-hidden">
-                <ResolvedAddressIcon
-                    address={network ? new AddressClass(address, network).full : address}
-                    size={28}
-                    network={network}
-                    walletIcon={wallet?.icon}
-                    walletIconClassName="object-contain"
-                    partnerLogo={addressProviderIcon || undefined}
-                    partnerLogoClassName="rounded-md object-contain"
-                />
+                {
+                    wallet?.icon ? (
+                        <wallet.icon className="h-7 w-7 object-contain" />
+                    ) : addressProviderIcon ? (<ImageWithFallback
+                        alt="Partner logo"
+                        className="rounded-md object-contain h-7 w-7"
+                        src={addressProviderIcon}
+                        width="36"
+                        height="36"
+                    />) : (
+                        <AddressIcon address={network ? new AddressClass(address, network).full : address} size={36} network={network} />
+                    )
+                }
             </div>
             <ExtendedAddress address={address} network={network} providerName={wallet?.providerName} showDetails={wallet ? true : false} title={wallet?.displayName?.split("-")[0]} description={wallet?.providerName} logo={wallet?.icon} />
         </div>

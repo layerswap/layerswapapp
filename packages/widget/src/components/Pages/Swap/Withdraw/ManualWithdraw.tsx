@@ -25,7 +25,7 @@ import { Partner } from '@/Models/Partner'
 import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
 import QuoteDetails from '../Form/FeeDetails'
 import { Address } from "@/lib/address/Address";
-import { ResolvedAddressIcon } from '@/components/Common/AddressIcon'
+import AddressIcon from '@/components/Common/AddressIcon'
 
 interface Props {
     swapBasicData: SwapBasicData;
@@ -308,16 +308,19 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
                                 }
                                 value={
                                     <span className="cursor-pointer hover:underline flex items-center gap-1">
-                                        <ResolvedAddressIcon
-                                            address={new Address(swapBasicData.destination_address, swapBasicData?.destination_network).full}
-                                            size={16}
-                                            className="rounded-[4px]"
-                                            network={swapBasicData?.destination_network}
-                                            walletIcon={WalletIcon}
-                                            walletIconClassName="bg-secondary-700 rounded-sm"
-                                            partnerLogo={addressProviderIcon || undefined}
-                                            partnerLogoClassName="rounded-md object-contain"
-                                        />
+                                        {WalletIcon ? (
+                                            <WalletIcon className="w-4 h-4 bg-secondary-700 rounded-sm" />
+                                        ) : addressProviderIcon ? (
+                                            <ImageWithFallback
+                                                alt="Partner logo"
+                                                className="h-4 w-4 rounded-md object-contain"
+                                                src={partner.logo}
+                                                width="36"
+                                                height="36"
+                                            />
+                                        ) : (
+                                            <AddressIcon className="rounded-[4px]" address={new Address(swapBasicData.destination_address, swapBasicData?.destination_network).full} size={16} network={swapBasicData?.destination_network} />
+                                        )}
                                         {
                                             ((swapBasicData?.destination_network && Address.isValid(swapBasicData?.destination_address, swapBasicData?.destination_network)) ?
                                                 <div className="text-sm group/addressItem text-secondary-text">

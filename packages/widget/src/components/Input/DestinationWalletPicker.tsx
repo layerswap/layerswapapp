@@ -5,7 +5,8 @@ import { Partner } from "@/Models/Partner";
 import { Wallet } from "@/types/wallet";
 import clsx from 'clsx';
 import { useNamedAddress } from "@/stores/addressBookStore";
-import { ResolvedAddressIcon } from "../Common/AddressIcon";
+import { ImageWithFallback } from "../Common/ImageWithFallback";
+import AddressIcon from "../Common/AddressIcon";
 
 const DestinationWalletPicker = (props: AddressTriggerProps) => {
     const { addressItem, connectedWallet, partner, destination } = props
@@ -59,15 +60,21 @@ type AdderssIconprops = {
 }
 const ResolvedIcon = (props: AdderssIconprops) => {
     const { addressItem, wallet, partner, destination } = props
-    return <ResolvedAddressIcon
-        address={destination ? new Address(addressItem.address, destination).full : addressItem.address}
-        size={16}
-        className="p-0.5 rounded-[3px]"
-        network={destination}
-        walletIcon={addressItem.group === AddressGroup.ConnectedWallet ? wallet?.icon : undefined}
-        partnerLogo={(partner?.is_wallet && addressItem.group === AddressGroup.FromQuery) ? partner.logo : undefined}
-        partnerLogoClassName="rounded-md object-contain"
-    />
+    if (partner?.is_wallet && addressItem.group === AddressGroup.FromQuery) {
+        return <ImageWithFallback
+            alt="Partner logo"
+            className='rounded-md object-contain'
+            src={partner.logo}
+            width="16"
+            height="26"
+        />
+    }
+    else if (addressItem.group === AddressGroup.ConnectedWallet && wallet) {
+        return <wallet.icon className="w-4 h-4" />
+    }
+    else {
+        return <AddressIcon className="p-0.5 rounded-[3px]" address={destination ? new Address(addressItem.address, destination).full : addressItem.address} size={16} network={destination} />
+    }
 }
 
 export default DestinationWalletPicker

@@ -12,7 +12,7 @@ import shortenString from "@/components/utils/ShortenString";
 import { useAddressName, useLabeledAddress } from "@/stores/addressBookStore";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
 import { Address } from "@/lib/address/Address";
-import AddressIcon, { ResolvedAddressIcon } from "@/components/Common/AddressIcon";
+import AddressIcon from "@/components/Common/AddressIcon";
 import { SaveToBookNameForm } from "@/components/AddressBook/SaveToBookInline";
 import { getExplorerUrl } from "@/lib/address/explorerUrl";
 
@@ -60,13 +60,21 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
     return (
         <div className="w-full flex items-center justify-between">
             <div className="flex bg-secondary-400 text-primary-text items-center justify-center rounded-md h-8 overflow-hidden w-8">
-                <ResolvedAddressIcon
-                    address={address}
-                    size={32}
-                    network={network}
-                    partnerLogo={(partner?.is_wallet && addressItem.group === AddressGroup.FromQuery) ? partner.logo : undefined}
-                    partnerLogoClassName="rounded-md object-contain"
-                />
+                {
+                    (partner?.is_wallet && addressItem.group === AddressGroup.FromQuery) ? (
+                        partner?.logo && (
+                            <ImageWithFallback
+                                alt="Partner logo"
+                                className="rounded-md object-contain"
+                                src={partner.logo}
+                                width="36"
+                                height="36"
+                            />
+                        )
+                    ) : (
+                        <AddressIcon address={address} size={32} network={network} />
+                    )
+                }
             </div>
 
             <div className="flex flex-col items-start grow min-w-0 ml-3 text-sm">
