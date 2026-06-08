@@ -27,7 +27,7 @@ const QuoteSummary: FC<Props> = ({
 
     if (isLoading) {
         return (
-            <div className="w-full bg-secondary-500 rounded-2xl p-4 flex flex-col gap-1.5">
+            <div className="w-full bg-secondary-500 rounded-2xl p-4 flex flex-col gap-1.5 h-[86.5px]">
                 <Bar className="h-3.5 w-20" />
                 <div className="flex items-baseline justify-between gap-3">
                     <Bar className="h-7 w-32" />

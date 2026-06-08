@@ -121,14 +121,16 @@ const MethodPicker: FC = () => {
                     disabled={!destinationReady}
                     disabledReason="Pick a destination first"
                 />
-                <MethodCard
-                    icon={<WalletIcon className="h-6 w-6 text-primary-text" strokeWidth={2} />}
-                    title="More wallets"
-                    subtitle="Use MetaMask, Phantom or more"
-                    onClick={handleMoreWalletsClick}
-                    disabled={!destinationReady}
-                    disabledReason="Pick a destination first"
-                />
+                {hasWallet && (
+                    <MethodCard
+                        icon={<WalletIcon className="h-6 w-6 text-primary-text" strokeWidth={2} />}
+                        title="More wallets"
+                        subtitle="Use MetaMask, Phantom or more"
+                        onClick={handleMoreWalletsClick}
+                        disabled={!destinationReady}
+                        disabledReason="Pick a destination first"
+                    />
+                )}
             </div>
         </div>
     );
