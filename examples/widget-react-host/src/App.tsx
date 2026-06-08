@@ -4,6 +4,10 @@ import { LayerswapWidget } from '@layerswap/widget-react';
 import { wagmiConfig } from './wagmi';
 import { HostWallet } from './HostWallet';
 
+// Production: integrators set VITE_LAYERSWAP_REMOTE_ENTRY to the channel
+// URL, e.g. https://cdn.layerswap.io/v1/remoteEntry.js (channel layout
+// per the design doc §10). Dev: the local dev-server serves the same
+// artifact from the root for convenience.
 const REMOTE_ENTRY =
   import.meta.env.VITE_LAYERSWAP_REMOTE_ENTRY ??
   'http://127.0.0.1:3100/remoteEntry.js';

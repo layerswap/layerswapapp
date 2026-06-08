@@ -38,6 +38,12 @@ const SHARED_SINGLETONS = {
   zustand: { singleton: true, requiredVersion: false, eager: false, version: depVersion('zustand') },
 };
 
+// Channel under which artifacts are published. v1 follows the design doc
+// §10 — major channels are immutable URL roots (`/v1/`, `/v2/`). Override
+// at build time via `LAYERSWAP_CHANNEL=v1.3.0 pnpm build` to produce a
+// pinned immutable build.
+const CHANNEL = process.env.LAYERSWAP_CHANNEL || 'v1';
+
 export default (env, argv) => {
   const isProd = argv?.mode === 'production' || process.env.NODE_ENV === 'production';
   return {
@@ -45,9 +51,16 @@ export default (env, argv) => {
     devtool: isProd ? 'source-map' : 'eval-cheap-module-source-map',
     entry: {}, // Pure remote — no app entry.
     output: {
-      path: path.resolve(__dirname, 'dist'),
+      // Production: dist/v1/* so `vercel.json` can serve from the channel root.
+      // Dev: keep dist/ flat (the dev-server serves whatever publicPath says).
+      path: path.resolve(__dirname, isProd ? `dist/${CHANNEL}` : 'dist'),
       publicPath: 'auto',
       uniqueName: 'layerswap_widget_remote',
+      // remoteEntry.js stays stable so loaders can find it. Everything it
+      // loads (chunks) is content-hashed for far-future cache-and-forget;
+      // remoteEntry.js itself takes the short-cache from vercel.json.
+      filename: '[name].js',
+      chunkFilename: isProd ? '[name].[contenthash:8].js' : '[name].js',
       clean: true,
     },
     resolve: {
