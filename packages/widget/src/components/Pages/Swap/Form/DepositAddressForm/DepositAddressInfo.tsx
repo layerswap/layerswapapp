@@ -104,6 +104,12 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
                                 includeMargin={false}
                                 size={140}
                                 level="H"
+                                imageSettings={sourceNetwork?.logo ? {
+                                    src: sourceNetwork.logo,
+                                    height: 30,
+                                    width: 30,
+                                    excavate: true,
+                                } : undefined}
                             />
                         )}
                     </div>

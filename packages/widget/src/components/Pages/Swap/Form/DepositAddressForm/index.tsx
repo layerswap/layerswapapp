@@ -122,7 +122,7 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
         setFieldValue('depositMethod', 'deposit_address', true)
     }, [])
 
-    const { routeValidation, formValidation } = useValidationContext();
+    const { formValidation } = useValidationContext();
     const { swapId, swapBasicData, swapDetails, depositActionsResponse, refuel } = useSwapDataState();
     const { setSwapId } = useSwapDataUpdate();
 

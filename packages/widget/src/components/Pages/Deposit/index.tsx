@@ -118,7 +118,11 @@ export const Deposit: FC<DepositProps> = ({ mode = "inline", buttonLabel = "Depo
                         {buttonLabel}
                     </button>
                 </DialogTrigger>
-                <DialogContent showCloseButton={false} className="!p-0 !bg-transparent !ring-0 !gap-0 sm:!max-w-md *:min-w-0">
+                <DialogContent
+                    showCloseButton={false}
+                    onInteractOutside={(e) => e.preventDefault()}
+                    className="!p-0 !bg-transparent !ring-0 !gap-0 sm:!max-w-md *:min-w-0"
+                >
                     <DepositCard {...props} onClose={() => setOpen(false)} />
                 </DialogContent>
             </Dialog>

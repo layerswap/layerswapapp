@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 export type DepositStep =
     | "method-picker"
@@ -18,12 +18,19 @@ type DepositStepContextValue = {
     back: () => void;
     reset: () => void;
     canGoBack: boolean;
+    /** Whether the header's close button should be locked (hidden) because a
+     * transfer is mid-flight. Each flow computes its own condition and reports
+     * it via `useReportCloseLock` from inside its SwapDataProvider, so steps
+     * rendered above that provider (e.g. the header) can react to it. */
+    closeLocked: boolean;
+    setCloseLocked: (locked: boolean) => void;
 };
 
 const DepositStepContext = createContext<DepositStepContextValue | null>(null);
 
 export function DepositStepProvider({ children }: { children: ReactNode }) {
     const [stack, setStack] = useState<DepositStep[]>(["method-picker"]);
+    const [closeLocked, setCloseLocked] = useState(false);
 
     const push = useCallback((next: DepositStep) => {
         setStack(prev => prev[prev.length - 1] === next ? prev : [...prev, next]);
@@ -39,6 +46,7 @@ export function DepositStepProvider({ children }: { children: ReactNode }) {
 
     const reset = useCallback(() => {
         setStack(["method-picker"]);
+        setCloseLocked(false);
     }, []);
 
     const value = useMemo<DepositStepContextValue>(() => ({
@@ -48,7 +56,9 @@ export function DepositStepProvider({ children }: { children: ReactNode }) {
         back,
         reset,
         canGoBack: stack.length > 1,
-    }), [stack, push, replace, back, reset]);
+        closeLocked,
+        setCloseLocked,
+    }), [stack, push, replace, back, reset, closeLocked]);
 
     return (
         <DepositStepContext.Provider value={value}>
@@ -61,4 +71,18 @@ export function useDepositStep() {
     const ctx = useContext(DepositStepContext);
     if (!ctx) throw new Error("useDepositStep must be used within DepositStepProvider");
     return ctx;
+}
+
+/**
+ * Reports whether the header's close button should be locked (hidden) and
+ * clears it on unmount (e.g. when the user steps back out of the flow). Call
+ * from a component rendered inside the SwapDataProvider that owns the swap
+ * status, with the flow-specific lock condition.
+ */
+export function useReportCloseLock(locked: boolean) {
+    const { setCloseLocked } = useDepositStep();
+    useEffect(() => {
+        setCloseLocked(locked);
+    }, [locked, setCloseLocked]);
+    useEffect(() => () => setCloseLocked(false), [setCloseLocked]);
 }

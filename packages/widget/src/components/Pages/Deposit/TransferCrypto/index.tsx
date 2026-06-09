@@ -8,6 +8,9 @@ import { useInitialSettings } from "@/context/settings";
 import { ApiError, LSAPIKnownErrorCode } from "@/Models/ApiError";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { useDepositInitialValues, useDepositSelection } from "../depositSelectionContext";
+import { useReportCloseLock } from "../depositStepContext";
+import { useResolvedSwapStatus } from "@/hooks/useResolvedSwapStatus";
+import { TransactionType } from "@/lib/apiClients/layerSwapApiClient";
 
 type Props = {
     partner?: Partner;
@@ -25,6 +28,20 @@ const PinDestinationAddress: FC<{ destinationAddress: string }> = ({ destination
         if (values?.destination_address === destinationAddress) return;
         setFieldValue("destination_address", destinationAddress, true);
     }, [destinationAddress, values?.destination_address, setFieldValue]);
+    return null;
+};
+
+/**
+ * Locks the header's close button once the backend detects the user's input
+ * transaction (i.e. they've sent funds to the deposit address), keeping it
+ * hidden until the swap reaches a terminal status. Rendered inside this flow's
+ * SwapDataProvider so the swap status resolves correctly.
+ */
+const ReportDepositCloseLock: FC = () => {
+    const { swapDetails } = useSwapDataState();
+    const { isTerminal } = useResolvedSwapStatus();
+    const inputDetected = !!swapDetails?.transactions?.some(t => t.type === TransactionType.Input);
+    useReportCloseLock(inputDetected && !isTerminal);
     return null;
 };
 
@@ -67,6 +84,7 @@ const DepositAddressFlow: FC<Props> = ({ partner }) => {
                 wrapping element. */}
             <>
                 <PinDestinationAddress destinationAddress={destinationAddress} />
+                <ReportDepositCloseLock />
                 <ValidationProvider>
                     <DepositAddressForm
                         partner={partner}
