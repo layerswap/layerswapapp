@@ -27,14 +27,14 @@ export const SummaryRow: FC<{
     partner?: Partner
 }> = ({ quoteData, isQuoteLoading, values, wallet, onOpen, sourceAddress, isOpen, partner }) => {
     const { destination_address: destinationAddressFromQuery }  = useInitialSettings()
-    const { hideRecipient } = useDepositSettings()
+    const { showDestinationAddress } = useDepositSettings()
     const { to, destination_address } = values
     const addressProviderIcon = destinationAddressFromQuery && partner?.is_wallet && Address.equals(destinationAddressFromQuery, values?.destination_address!, values?.to!) && partner?.logo
     const addressInstance = useMemo(() => (destination_address && to) ? new Address(destination_address, to) : null, [destination_address, to])
 
     return (
         <div className={clsx("flex flex-col w-full p-2", { "!pb-0 !-mb-1": isOpen })}>
-            {!hideRecipient && values.destination_address && sourceAddress?.toLowerCase() !== values.destination_address?.toLowerCase() && (
+            {showDestinationAddress && values.destination_address && sourceAddress?.toLowerCase() !== values.destination_address?.toLowerCase() && (
                 <div className={`flex items-center w-full justify-between gap-1 text-sm px-2 py-3`}>
                     <div className="inline-flex items-center text-left text-secondary-text gap-1 pr-4">
                         <label>Send to</label>

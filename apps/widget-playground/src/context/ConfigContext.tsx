@@ -9,7 +9,7 @@ export type PlaygroundDepositProps = Omit<DepositProps, 'partner'>;
 
 const DEFAULT_DEPOSIT_PROPS: PlaygroundDepositProps = {
     mode: 'button',
-    hideRecipient: true,
+    showDestinationAddress: false,
     title: 'Deposit',
     buttonLabel: 'Deposit',
     actionButtonText: 'Deposit',

@@ -1,8 +1,8 @@
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
 export type DepositSettingsValue = {
-    /** Hide the "Send to" recipient row in the quote summary. */
-    hideRecipient: boolean;
+    /** Show the "Send to" destination address row in the quote summary. */
+    showDestinationAddress: boolean;
     /** Label for the primary action button. `undefined` means "use the
      * consumer's own default". */
     actionButtonText: string | undefined;
@@ -13,7 +13,7 @@ export type DepositSettingsValue = {
 // Outside a provider (the regular swap flow) `actionButtonText` is undefined so
 // consumers apply their own fallback (e.g. "Swap now").
 const CONTEXT_DEFAULTS: DepositSettingsValue = {
-    hideRecipient: false,
+    showDestinationAddress: true,
     actionButtonText: undefined,
     defaultAmountUsd: 1,
 };
@@ -40,11 +40,11 @@ export function DepositSettingsProvider({
 }) {
     const merged = useMemo<DepositSettingsValue>(
         () => ({
-            hideRecipient: value.hideRecipient ?? false,
+            showDestinationAddress: value.showDestinationAddress ?? false,
             actionButtonText: value.actionButtonText || DEPOSIT_ACTION_BUTTON_TEXT,
             defaultAmountUsd: value.defaultAmountUsd ?? 1,
         }),
-        [value.hideRecipient, value.actionButtonText, value.defaultAmountUsd],
+        [value.showDestinationAddress, value.actionButtonText, value.defaultAmountUsd],
     );
     return (
         <DepositSettingsContext.Provider value={merged}>

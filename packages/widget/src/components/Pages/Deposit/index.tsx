@@ -39,10 +39,10 @@ export type DepositProps = {
     buttonLabel?: string;
     /** Extra className applied to the trigger button when mode="button". */
     buttonClassName?: string;
-    /** When true, hide the "Send to" recipient row in the quote summary. The
-     * deposit widget's recipient is the integrator's own locked address, so
-     * the row is often redundant for the end user. Defaults to false. */
-    hideRecipient?: boolean;
+    /** When true, show the "Send to" destination address row in the quote
+     * summary. The deposit widget's recipient is the integrator's own locked
+     * address, so the row is often redundant for the end user. Defaults to false. */
+    showDestinationAddress?: boolean;
     actionButtonText?: string;
     /** Default amount (in USD) seeded into the wallet flow once the user
      * picks a source token. Defaults to $1. Set to 0 to disable seeding. */
@@ -85,10 +85,10 @@ const DepositForm: FC<Pick<DepositProps, "partner" | "title"> & { onClose?: () =
     );
 };
 
-const DepositCard: FC<Pick<DepositProps, "partner" | "destination" | "destinationAddress" | "hideRecipient" | "title" | "actionButtonText" | "defaultAmountUsd"> & { onClose?: () => void }> = ({ partner, destination, destinationAddress, hideRecipient, title, actionButtonText, defaultAmountUsd, onClose }) => {
+const DepositCard: FC<Pick<DepositProps, "partner" | "destination" | "destinationAddress" | "showDestinationAddress" | "title" | "actionButtonText" | "defaultAmountUsd"> & { onClose?: () => void }> = ({ partner, destination, destinationAddress, showDestinationAddress, title, actionButtonText, defaultAmountUsd, onClose }) => {
     return (
         <DepositSettingsProvider value={{
-            hideRecipient: !!hideRecipient,
+            showDestinationAddress,
             actionButtonText,
             defaultAmountUsd,
         }}>

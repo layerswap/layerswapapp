@@ -478,6 +478,16 @@ importers:
       js-sha3:
         specifier: ^0.8.0
         version: 0.8.0
+    devDependencies:
+      rimraf:
+        specifier: ^5.0.0
+        version: 5.0.10
+      tsc-alias:
+        specifier: ^1.8.16
+        version: 1.8.16
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.3
 
   packages/wallets/all:
     dependencies:
