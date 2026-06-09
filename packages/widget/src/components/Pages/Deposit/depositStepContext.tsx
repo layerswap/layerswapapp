@@ -1,4 +1,5 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useWalletProviders } from "@/context/walletProviders";
 
 export type DepositStep =
     | "method-picker"
@@ -18,6 +19,10 @@ type DepositStepContextValue = {
     back: () => void;
     reset: () => void;
     canGoBack: boolean;
+    /** Whether any wallet-connection method is available. When false, the deposit
+     * address is the only funding method, so the flow opens straight on it and
+     * the method picker is never shown. */
+    hasWalletMethods: boolean;
     /** Whether the header's close button should be locked (hidden) because a
      * transfer is mid-flight. Each flow computes its own condition and reports
      * it via `useReportCloseLock` from inside its SwapDataProvider, so steps
@@ -29,8 +34,26 @@ type DepositStepContextValue = {
 const DepositStepContext = createContext<DepositStepContextValue | null>(null);
 
 export function DepositStepProvider({ children }: { children: ReactNode }) {
-    const [stack, setStack] = useState<DepositStep[]>(["method-picker"]);
+    // With no wallet-connection providers there is no "Wallet transfer" method,
+    // so the method picker would only ever show the deposit-address card. Skip it
+    // entirely: open straight on the deposit address and root the stack there, so
+    // there is no step to go back to (the header hides the back button).
+    const hasWalletMethods = useWalletProviders().length > 0;
+    const rootStep: DepositStep = hasWalletMethods ? "method-picker" : "transfer-crypto";
+
+    const [stack, setStack] = useState<DepositStep[]>([rootStep]);
     const [closeLocked, setCloseLocked] = useState(false);
+
+    // If wallet providers load asynchronously (or the prop changes) after mount,
+    // `hasWalletMethods` — and therefore `rootStep` — can flip. Re-root the stack so
+    // the flow doesn't stay stuck on a step that no longer applies (e.g. left on
+    // "method-picker" after the methods disappear, or vice versa). The functional
+    // update makes this a no-op on mount and during normal navigation, firing only
+    // when the root step actually changes. closeLocked clears itself: the unmounted
+    // step's `useReportCloseLock` cleanup resets it.
+    useEffect(() => {
+        setStack(prev => prev[0] === rootStep ? prev : [rootStep]);
+    }, [rootStep]);
 
     const push = useCallback((next: DepositStep) => {
         setStack(prev => prev[prev.length - 1] === next ? prev : [...prev, next]);
@@ -45,9 +68,9 @@ export function DepositStepProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const reset = useCallback(() => {
-        setStack(["method-picker"]);
+        setStack([rootStep]);
         setCloseLocked(false);
-    }, []);
+    }, [rootStep]);
 
     const value = useMemo<DepositStepContextValue>(() => ({
         step: stack[stack.length - 1],
@@ -56,9 +79,10 @@ export function DepositStepProvider({ children }: { children: ReactNode }) {
         back,
         reset,
         canGoBack: stack.length > 1,
+        hasWalletMethods,
         closeLocked,
         setCloseLocked,
-    }), [stack, push, replace, back, reset, closeLocked]);
+    }), [stack, push, replace, back, reset, hasWalletMethods, closeLocked]);
 
     return (
         <DepositStepContext.Provider value={value}>

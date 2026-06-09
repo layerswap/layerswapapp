@@ -9,11 +9,16 @@ import { ApiError, LSAPIKnownErrorCode } from "@/Models/ApiError";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { useDepositInitialValues, useDepositSelection } from "../depositSelectionContext";
 import { useReportCloseLock } from "../depositStepContext";
+import DestinationTokenPicker from "../DestinationTokenPicker";
 import { useResolvedSwapStatus } from "@/hooks/useResolvedSwapStatus";
 import { TransactionType } from "@/lib/apiClients/layerSwapApiClient";
 
 type Props = {
     partner?: Partner;
+    /** Render the destination token picker above the form. Needed when this step
+     * is the flow root (no method picker), since the picker normally lives there.
+     * It self-hides when there is a single supported destination. */
+    showDestinationPicker?: boolean;
 };
 
 /**
@@ -45,7 +50,7 @@ const ReportDepositCloseLock: FC = () => {
     return null;
 };
 
-const DepositAddressFlow: FC<Props> = ({ partner }) => {
+const DepositAddressFlow: FC<Props> = ({ partner, showDestinationPicker }) => {
     const initialSettings = useInitialSettings();
     const { destinationAddress } = useDepositSelection();
     const initialValues = useDepositInitialValues("deposit_address");
@@ -83,6 +88,7 @@ const DepositAddressFlow: FC<Props> = ({ partner }) => {
             {/* Formik calls React.Children.only on JSX children — keep a single
                 wrapping element. */}
             <>
+                {showDestinationPicker && <DestinationTokenPicker />}
                 <PinDestinationAddress destinationAddress={destinationAddress} />
                 <ReportDepositCloseLock />
                 <ValidationProvider>
@@ -109,9 +115,9 @@ const DepositAddressFlow: FC<Props> = ({ partner }) => {
  * supplies the destination address, so the internal picker stays hidden and the
  * address autofill is locked.
  */
-const TransferCrypto: FC<Props> = ({ partner }) => (
+const TransferCrypto: FC<Props> = ({ partner, showDestinationPicker }) => (
     <SwapDataProvider>
-        <DepositAddressFlow partner={partner} />
+        <DepositAddressFlow partner={partner} showDestinationPicker={showDestinationPicker} />
     </SwapDataProvider>
 );
 

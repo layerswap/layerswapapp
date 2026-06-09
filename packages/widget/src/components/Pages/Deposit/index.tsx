@@ -47,14 +47,17 @@ export type DepositProps = {
     defaultAmountUsd?: number;
 };
 
-const StepRouter: FC<{ step: DepositStep; partner?: Partner }> = ({
+const StepRouter: FC<{ step: DepositStep; partner?: Partner; hasWalletMethods: boolean }> = ({
     step,
     partner,
+    hasWalletMethods,
 }) => {
     switch (step) {
         case "method-picker": return <MethodPicker />;
         case "wallet-connecting": return <WaitingForConnect />;
-        case "transfer-crypto": return <TransferCrypto partner={partner} />;
+        // When there is no method picker (no wallet methods), the deposit-address
+        // step is the root, so it must surface the destination picker itself.
+        case "transfer-crypto": return <TransferCrypto partner={partner} showDestinationPicker={!hasWalletMethods} />;
         case "wallet-source":
         case "wallet-amount":
         case "wallet-processing": return <WalletFlow partner={partner} />;
@@ -66,7 +69,7 @@ const StepRouter: FC<{ step: DepositStep; partner?: Partner }> = ({
 };
 
 const DepositForm: FC<Pick<DepositProps, "partner" | "title"> & { onClose?: () => void }> = ({ partner, title, onClose }) => {
-    const { step } = useDepositStep();
+    const { step, hasWalletMethods } = useDepositStep();
     useAllWithdrawalBalances();
 
     return (
@@ -74,7 +77,7 @@ const DepositForm: FC<Pick<DepositProps, "partner" | "title"> & { onClose?: () =
             <DepositHeader title={title} onClose={onClose} />
             <div className="h-px w-full bg-secondary-400" />
             <ResizablePanel>
-                <StepRouter step={step} partner={partner} />
+                <StepRouter step={step} partner={partner} hasWalletMethods={hasWalletMethods} />
             </ResizablePanel>
         </div>
     );

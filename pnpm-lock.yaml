@@ -461,6 +461,24 @@ importers:
         specifier: ^5
         version: 5.9.3
 
+  packages/utils:
+    dependencies:
+      '@ton/core':
+        specifier: ^0.62.0
+        version: 0.62.1(@ton/crypto@3.3.0)
+      bitcoin-address-validation:
+        specifier: ^3.0.0
+        version: 3.0.0
+      bn.js:
+        specifier: ^5.2.2
+        version: 5.2.2
+      bs58:
+        specifier: ^6.0.0
+        version: 6.0.0
+      js-sha3:
+        specifier: ^0.8.0
+        version: 0.8.0
+
   packages/wallets/all:
     dependencies:
       '@layerswap/wallet-bitcoin':
@@ -836,6 +854,9 @@ importers:
       '@headlessui/react':
         specifier: ^2.1.1
         version: 2.2.9(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@layerswap/utils':
+        specifier: workspace:^
+        version: link:../utils
       '@number-flow/react':
         specifier: ^0.5.10
         version: 0.5.10(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -30609,9 +30630,9 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0
-      abitype: 1.0.8(typescript@5.9.3)(zod@4.0.5)
+      abitype: 1.0.8(typescript@5.9.3)(zod@3.25.76)
       isows: 1.0.7(ws@8.18.2(bufferutil@4.1.0)(utf-8-validate@5.0.10))
-      ox: 0.7.1(typescript@5.9.3)(zod@4.0.5)
+      ox: 0.7.1(typescript@5.9.3)(zod@3.25.76)
       ws: 8.18.2(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     optionalDependencies:
       typescript: 5.9.3
@@ -30660,9 +30681,9 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0
-      abitype: 1.2.3(typescript@5.9.3)(zod@4.0.5)
+      abitype: 1.2.3(typescript@5.9.3)(zod@3.25.76)
       isows: 1.0.7(ws@8.18.3(bufferutil@4.1.0)(utf-8-validate@5.0.10))
-      ox: 0.11.3(typescript@5.9.3)(zod@4.0.5)
+      ox: 0.11.3(typescript@5.9.3)(zod@3.25.76)
       ws: 8.18.3(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     optionalDependencies:
       typescript: 5.9.3

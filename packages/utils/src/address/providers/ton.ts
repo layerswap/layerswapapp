@@ -1,7 +1,8 @@
 import { Address } from "@ton/core";
-import { KnownInternalNames } from "@layerswap/widget/internal";
-import { AddressUtilsProvider, AddressUtilsProviderProps, Network } from "@layerswap/widget/types";
-import { name } from "./constants";
+import KnownInternalNames from "@/knownIds";
+import { AddressUtilsProvider, AddressUtilsProviderProps, Network } from "@/types";
+
+export const name = 'Ton';
 
 export class TonAddressUtilsProvider implements AddressUtilsProvider {
     readonly providerName = name;

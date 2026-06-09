@@ -3,7 +3,6 @@ import { AppSettings } from "@layerswap/widget/internal";
 import useSVMConnection from "./useSVMConnection";
 import SVMProviderWrapper from "./SVMProvider";
 import { SolanaBalanceProvider } from "./svmBalanceProvider";
-import { SolanaAddressUtilsProvider } from "./svmAddressUtilsProvider";
 import React, { createContext, useContext } from "react";
 import { useSVMTransfer } from "./transferProvider/useSVMTransfer";
 
@@ -29,7 +28,6 @@ export function createSVMProvider(config: SVMProviderConfig = {}): WalletProvide
         customHook,
         balanceProviders,
         gasProviders,
-        addressUtilsProviders,
         transferProviders
     } = config;
 
@@ -60,11 +58,6 @@ export function createSVMProvider(config: SVMProviderConfig = {}): WalletProvide
         ? (Array.isArray(gasProviders) ? gasProviders : [gasProviders])
         : defaultGasProviders;
 
-    const defaultAddressUtilsProviders = [new SolanaAddressUtilsProvider()];
-    const finalAddressUtilsProviders = addressUtilsProviders !== undefined
-        ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
-        : defaultAddressUtilsProviders;
-
     const defaultTransferProviders = [useSVMTransfer];
     const finalTransferProviders = transferProviders !== undefined
         ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
@@ -74,7 +67,6 @@ export function createSVMProvider(config: SVMProviderConfig = {}): WalletProvide
         id: "solana",
         wrapper: WrapperComponent,
         walletConnectionProvider,
-        addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
         transferProvider: finalTransferProviders,
@@ -97,7 +89,6 @@ export const SVMProvider: WalletProvider = {
         );
     },
     walletConnectionProvider: useSVMConnection,
-    addressUtilsProvider: [new SolanaAddressUtilsProvider()],
     gasProvider: [
         new LazyGasProvider(
             (n) => n.type === NetworkType.Solana,

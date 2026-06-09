@@ -1,0 +1,60 @@
+{
+  "name": "@layerswap/utils",
+  "version": "1.3.0",
+  "description": "Shared internal utilities for Layerswap Widget (address validation & formatting)",
+  "type": "module",
+  "main": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "typings": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/esm/index.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "dist/**/*"
+  ],
+  "scripts": {
+    "build": "pnpm run clean && pnpm run build:esm+types",
+    "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm && tsc-alias -p tsconfig.json --outDir ./dist/types",
+    "check:types": "tsc --noEmit",
+    "clean": "rimraf dist tsconfig.tsbuildinfo"
+  },
+  "author": "Layerswap",
+  "homepage": "https://github.com/layerswap/layerswapapp",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/layerswap/layerswapapp.git",
+    "directory": "packages/utils"
+  },
+  "keywords": [
+    "layerswap",
+    "utils",
+    "address"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@ton/core": "^0.62.0",
+    "bitcoin-address-validation": "^3.0.0",
+    "bn.js": "^5.2.2",
+    "bs58": "^6.0.0",
+    "js-sha3": "^0.8.0"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.0",
+    "tsc-alias": "^1.8.16",
+    "typescript": "^5.9.2"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "bugs": {
+    "url": "https://github.com/layerswap/layerswapapp/issues"
+  }
+}
