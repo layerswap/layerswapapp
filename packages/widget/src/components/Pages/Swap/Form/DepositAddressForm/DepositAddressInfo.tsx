@@ -1,12 +1,10 @@
 import { FC, useEffect, useMemo, useState } from "react";
-import { ChevronDown, Copy, Check, Info, ArrowRight } from "lucide-react";
+import { ChevronDown, ChevronUp, Copy, Check } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { AnimatePresence, motion } from "framer-motion";
-import clsx from "clsx";
 import useCopyClipboard from "@/hooks/useCopyClipboard";
 import { useDetailedQuote } from "@/hooks/useDetailedQuote";
 import { Network, Token } from "@/Models/Network";
-import TokenChainBadge from "@/components/Pages/Deposit/_shared/TokenChainBadge";
 import { formatFee, formatTierRange } from "./helpers";
 import { formatTokenAmount } from "@/components/utils/formatTokenAmount";
 import { formatEtaFromMs } from "@/components/utils/formatTime";
@@ -83,12 +81,6 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
         };
     }, [depositAddress]);
 
-    const showQuoteSkeleton = (isCreatingSwap || isQuoteLoading) && !bestQuote;
-    const hasMultipleTiers = sortedTiers.length > 1 && !!sourceToken;
-    const cheapestFee = sortedTiers[0]
-        ? formatFee(sortedTiers[0].total_percentage_fee, sortedTiers[0].total_fixed_fee_in_usd)
-        : null;
-
     return (
         <div className="flex flex-col gap-3 overflow-hidden">
             {/* Deposit address + QR — UNCHANGED per user request */}
@@ -164,195 +156,93 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
                 </div>
             </div>
 
-            {/* You send → You receive summary */}
-            {!(sourceToken && destinationToken) ? (
-                <div className="bg-secondary-500 rounded-xl px-4 py-3 flex items-center gap-3 h-[62px]">
-                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                        <span className="shrink-0 h-8 w-8 rounded-full bg-secondary-400 animate-pulse" />
-                        <span className="flex flex-col gap-1.5 min-w-0">
-                            <span className="h-2.5 w-12 bg-secondary-400 rounded animate-pulse" />
-                            <span className="h-3 w-10 bg-secondary-400 rounded animate-pulse" />
-                        </span>
-                    </div>
-
-                    <span aria-hidden="true" className="shrink-0 inline-flex items-center justify-center h-6 w-6 rounded-lg bg-secondary-800">
-                        <ArrowRight className="h-4 w-4 text-primary" />
-                    </span>
-
-                    <div className="flex items-center gap-2.5 flex-1 min-w-0 justify-end">
-                        <span className="flex flex-col gap-1.5 min-w-0 items-end">
-                            <span className="h-2.5 w-12 bg-secondary-400 rounded animate-pulse" />
-                            <span className="h-3 w-10 bg-secondary-400 rounded animate-pulse" />
-                        </span>
-                        <span className="shrink-0 h-8 w-8 rounded-full bg-secondary-400 animate-pulse" />
-                    </div>
-                </div>
-            ) : (
-                <div className="bg-secondary-500 rounded-xl px-4 py-3 flex items-center gap-3">
-                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                        <TokenChainBadge
-                            tokenLogo={sourceToken.logo}
-                            tokenSymbol={sourceToken.symbol}
-                            networkLogo={sourceNetwork?.logo}
-                            networkName={sourceNetwork?.display_name}
-                            size={32}
-                        />
-                        <span className="flex flex-col min-w-0">
-                            <span className="text-xs text-secondary-text leading-none">
-                                <span>You send</span>
-                            </span>
-                            <span className="leading-tight truncate mt-1">
-                                <span className="text-sm font-semibold text-primary-text">{sourceToken.symbol}</span>
-                            </span>
-                        </span>
-                    </div>
-
-                    <span aria-hidden="true" className="shrink-0 inline-flex items-center justify-center h-6 w-6 rounded-lg bg-secondary-800">
-                        <ArrowRight className="h-4 w-4 text-primary" />
-                    </span>
-
-                    <div className="flex items-center gap-2.5 flex-1 min-w-0 justify-end">
-                        <span className="flex flex-col min-w-0 items-end text-right">
-                            <span className="text-xs text-secondary-text leading-none">
-                                <span>You receive</span>
-                            </span>
-                            <span className="leading-tight truncate mt-1 w-full text-right">
-                                <span className="text-sm font-semibold text-primary-text">{destinationToken.symbol}</span>
-                            </span>
-                        </span>
-                        <TokenChainBadge
-                            tokenLogo={destinationToken.logo}
-                            tokenSymbol={destinationToken.symbol}
-                            networkLogo={destinationNetwork?.logo}
-                            networkName={destinationNetwork?.display_name}
-                            size={32}
-                        />
+            {/* Min/Max container */}
+            {!(isQuoteLoading && !bestQuote) && (minDepositDisplay || maxDepositDisplay) && (
+                <div className="bg-secondary-500 rounded-xl px-3.5 py-3">
+                    <div className="flex flex-col gap-1.5 text-xs text-secondary-text">
+                        {minDepositDisplay && (
+                            <div className="flex items-center justify-between">
+                                <span>Minimum</span>
+                                <span className="text-primary-text">{minDepositDisplay}</span>
+                            </div>
+                        )}
+                        {maxDepositDisplay && (
+                            <div className="flex items-center justify-between">
+                                <span>Maximum</span>
+                                <span className="text-primary-text">{maxDepositDisplay}</span>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
 
-
-            {/* Min · Max · Fee meta-row */}
-            {showQuoteSkeleton ? (
-                <div className="bg-secondary-500 rounded-xl px-3 py-3 flex items-center justify-around gap-2 h-[64px]">
-                    {[0, 1, 2].map((i) => (
-                        <span key={i} className="flex flex-col items-center gap-1.5 animate-pulse">
-                            <span className="h-2.5 w-12 bg-secondary-400 rounded" />
-                            <span className="h-3 w-20 bg-secondary-400 rounded" />
-                        </span>
-                    ))}
-                </div>
-            ) : (sortedTiers.length >= 1 || minDepositDisplay || maxDepositDisplay) && (
-                <>
-                    <div className="bg-secondary-500 rounded-xl px-3 py-3 flex items-center justify-around gap-2">
-                        {minDepositDisplay && (
-                            <>
-                                <span className="flex flex-col items-center gap-1">
-                                    <span className="text-xs text-primary-text-tertiary">
-                                        <span>Minimum</span>
-                                    </span>
-                                    <span className="text-sm font-semibold text-primary-text whitespace-nowrap">{minDepositDisplay}</span>
-                                </span>
-                                {(maxDepositDisplay || cheapestFee) && (
-                                    <span aria-hidden="true" className="w-px h-7 bg-secondary-text/30 rounded-full shrink-0" />
-                                )}
-                            </>
-                        )}
-                        {maxDepositDisplay && (
-                            <>
-                                <span className="flex flex-col items-center gap-1">
-                                    <span className="text-xs text-primary-text-tertiary">
-                                        <span>Maximum</span>
-                                    </span>
-                                    <span className="text-sm font-semibold text-primary-text whitespace-nowrap">{maxDepositDisplay}</span>
-                                </span>
-                                {cheapestFee && (
-                                    <span aria-hidden="true" className="w-px h-7 bg-secondary-text/30 rounded-full shrink-0" />
-                                )}
-                            </>
-                        )}
-                        {cheapestFee && (
-                            hasMultipleTiers ? (
+            {/* Fees + Est. time container */}
+            {!(isQuoteLoading && !bestQuote) && sortedTiers.length >= 1 && (
+                <div className="bg-secondary-500 rounded-xl px-3.5 py-3">
+                    {isFeesExpanded && sortedTiers.length > 1 && sourceToken ? (
+                        <div className="flex flex-col gap-2 text-xs">
+                            <div className="flex items-center justify-between text-secondary-text">
+                                <span>{"Fees by amount"}</span>
                                 <button
                                     type="button"
-                                    onClick={() => setIsFeesExpanded(v => !v)}
-                                    aria-expanded={isFeesExpanded}
-                                    aria-label={isFeesExpanded ? 'Hide fee tiers' : 'Show fee tiers'}
-                                    className="flex flex-col items-center gap-1 group/fee bg-transparent border-0 p-0 cursor-pointer"
+                                    onClick={() => setIsFeesExpanded(false)}
+                                    className="inline-flex items-center hover:text-primary-text transition-colors"
+                                    aria-label="Hide fee tiers"
                                 >
-                                    <span className="inline-flex items-center gap-1 text-xs text-primary-text-tertiary group-hover/fee:text-primary transition-colors">
-                                        <span>Fee</span>
-                                        <ChevronDown
-                                            className={clsx(
-                                                "h-3 w-3 transition-transform duration-200",
-                                                isFeesExpanded && "rotate-180"
-                                            )}
-                                            aria-hidden="true"
-                                        />
-                                    </span>
-                                    <span className="text-sm font-semibold text-primary-text whitespace-nowrap">{cheapestFee}</span>
+                                    <ChevronUp className="h-4 w-4" />
                                 </button>
-                            ) : (
-                                <span className="flex flex-col items-center gap-1">
-                                    <span className="text-xs text-primary-text-tertiary">
-                                        <span>Fee</span>
-                                    </span>
-                                    <span className="text-sm font-semibold text-primary-text whitespace-nowrap">{cheapestFee}</span>
-                                </span>
-                            )
-                        )}
-                    </div>
-
-                    {/* Fee tier accordion */}
-                    <AnimatePresence initial={false}>
-                        {isFeesExpanded && hasMultipleTiers && (
-                            <motion.div
-                                key="fee-tiers"
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: "auto", opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                transition={{ duration: 0.2, ease: "easeInOut" }}
-                                style={{ overflow: "hidden" }}
-                            >
-                                <div className="bg-secondary-500 rounded-xl px-3.5 py-3 flex flex-col gap-2">
-                                    {sortedTiers.map((tier, idx) => {
-                                        const range = formatTierRange(
-                                            tier,
-                                            idx === 0,
-                                            idx === sortedTiers.length - 1,
-                                            sourceToken!.symbol
-                                        );
-                                        const fee = formatFee(tier.total_percentage_fee, tier.total_fixed_fee_in_usd);
-                                        const isActive = idx === 0;
-                                        return (
-                                            <div
-                                                key={`${tier.min_amount}-${tier.max_amount}`}
-                                                className={clsx(
-                                                    "flex items-center justify-between gap-3 px-3 py-2 rounded-lg text-xs",
-                                                    isActive
-                                                        ? "bg-primary/10 border border-primary/30"
-                                                        : "bg-secondary-700 border border-transparent"
-                                                )}
-                                            >
-                                                <span className="text-secondary-text">{range}</span>
-                                                <span className="flex items-center gap-3">
-                                                    <span className={clsx("font-semibold", isActive ? "text-primary-text" : "text-primary-text")}>{fee}</span>
-                                                    <span className="tabular-nums min-w-14 text-right text-secondary-text/80">
-                                                        {formatEtaFromMs(tier.avg_completion_milliseconds)}
-                                                    </span>
+                            </div>
+                            <div className="flex flex-col gap-0.5 border-t border-secondary-400/40 pt-2">
+                                {sortedTiers.map((tier, idx) => {
+                                    const range = formatTierRange(
+                                        tier,
+                                        idx === 0,
+                                        idx === sortedTiers.length - 1,
+                                        sourceToken.symbol
+                                    );
+                                    const fee = formatFee(tier.total_percentage_fee, tier.total_fixed_fee_in_usd);
+                                    return (
+                                        <div
+                                            key={`${tier.min_amount}-${tier.max_amount}`}
+                                            className="flex items-center justify-between gap-4 text-xs"
+                                        >
+                                            <span className="text-secondary-text">{range}</span>
+                                            <span className="flex items-center gap-3">
+                                                <span className="text-primary-text">{fee}</span>
+                                                <span className="tabular-nums min-w-14 text-right text-secondary-text/80">
+                                                    {formatEtaFromMs(tier.avg_completion_milliseconds)}
                                                 </span>
-                                            </div>
-                                        );
-                                    })}
-                                    <div className="flex items-center gap-1.5 text-[11px] text-secondary-text pt-1">
-                                        <Info className="h-3 w-3 shrink-0" aria-hidden="true" />
-                                        <span>Fee is deducted from the amount you send.</span>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </>
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="flex items-start justify-between gap-3 text-xs">
+                            <span className="text-secondary-text shrink-0">Fees</span>
+                            <div className="flex flex-col items-end gap-1 min-w-0">
+                                <span className="flex items-center gap-1 min-w-0">
+                                    <span className="text-primary-text">{formatFee(sortedTiers[0].total_percentage_fee, sortedTiers[0].total_fixed_fee_in_usd)}</span>
+                                    {sortedTiers.length > 1 && sourceToken && (
+                                        <span className="text-secondary-text truncate">{`· ${formatTierRange(sortedTiers[0], true, false, sourceToken.symbol)}`}</span>
+                                    )}
+                                </span>
+                                {sortedTiers.length > 1 && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsFeesExpanded(true)}
+                                        className="flex items-center gap-1 text-secondary-text hover:text-primary-text transition-colors"
+                                        aria-label="Show fee for larger sends"
+                                    >
+                                        <span>{`${formatFee(sortedTiers[1].total_percentage_fee, sortedTiers[1].total_fixed_fee_in_usd)} for larger sends`}</span>
+                                        <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
             )}
         </div>
     );
