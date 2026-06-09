@@ -61,7 +61,7 @@ export const ConfigProvider: FC<{ children: React.ReactNode }> = ({ children }) 
     const [showPanel, setShowPanel] = useState(true);
     const [actionText, setActionText] = useState('');
     const [initialValues, setInitialSettings] = useState<InitialSettings>({});
-    const [widgetType, setWidgetType] = useState<WidgetType>('swap');
+    const [widgetType, setWidgetType] = useState<WidgetType>('deposit');
     const [depositProps, setDepositProps] = useState<PlaygroundDepositProps>(DEFAULT_DEPOSIT_PROPS);
     const bumpWidgetKey = () => {
         setWidgetRenderKey(prev => prev + 1);

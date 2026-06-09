@@ -55,26 +55,32 @@ function DialogContent({
 }) {
   return (
     <DialogPortal>
-      <DialogOverlay />
-      <DialogPrimitive.Content
-        data-slot="dialog-content"
-        className={classNames(
-          "layerswap-styles fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-2xl bg-secondary-800 p-4 text-sm text-primary-text ring-1 ring-secondary-500 duration-100 outline-none sm:max-w-sm data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
-          className
-        )}
-        {...props}
-      >
-        {children}
-        {showCloseButton && (
-          <DialogPrimitive.Close
-            data-slot="dialog-close"
-            className="absolute right-4 top-4 p-1.5 flex items-center justify-center rounded-full bg-secondary-500 ring-1 ring-secondary-400 text-secondary-text hover:text-primary-text hover:brightness-110 active:animate-press-down focus:outline-hidden transition"
-          >
-            <XIcon className="h-4 w-4" strokeWidth={2.5} />
-            <span className="sr-only">Close</span>
-          </DialogPrimitive.Close>
-        )}
-      </DialogPrimitive.Content>
+      {/* Radix portals to document.body, outside the `.layerswap-styles` CSS
+          prefix scope. The published CSS uses descendant selectors
+          (`.layerswap-styles .fixed`), so the scope class must sit on an
+          ancestor — putting it on the content element itself does nothing. */}
+      <div className="layerswap-styles">
+        <DialogOverlay />
+        <DialogPrimitive.Content
+          data-slot="dialog-content"
+          className={classNames(
+            "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-2xl bg-secondary-800 p-4 text-sm text-primary-text ring-1 ring-secondary-500 duration-100 outline-none sm:max-w-sm data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
+            className
+          )}
+          {...props}
+        >
+          {children}
+          {showCloseButton && (
+            <DialogPrimitive.Close
+              data-slot="dialog-close"
+              className="absolute right-4 top-4 p-1.5 flex items-center justify-center rounded-full bg-secondary-500 ring-1 ring-secondary-400 text-secondary-text hover:text-primary-text hover:brightness-110 active:animate-press-down focus:outline-hidden transition"
+            >
+              <XIcon className="h-4 w-4" strokeWidth={2.5} />
+              <span className="sr-only">Close</span>
+            </DialogPrimitive.Close>
+          )}
+        </DialogPrimitive.Content>
+      </div>
     </DialogPortal>
   )
 }
