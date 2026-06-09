@@ -76,6 +76,12 @@ export function useUsdTokenSync({
     currentAmountRef.current = amount;
     const prevAmountRef = useRef(amount);
     const preciseUsdRef = useRef<number>(0);
+    // The field can mount with a pre-seeded formik amount (e.g. the deposit flow
+    // seeds the default amount before this field mounts) while the global store
+    // still holds a stale usdAmount from a previous mount. Until the first
+    // reconciliation happens, the sync effect must run even if the amount didn't
+    // change since mount.
+    const didInitUsdRef = useRef(false);
 
     // --- Core conversion: USD -> token ---
 
@@ -122,6 +128,7 @@ export function useUsdTokenSync({
     // Sync usdAmount when formik amount changes externally (e.g. quick action buttons).
     // The ref-based guards ensure only truly external changes trigger the sync.
     useEffect(() => {
+        const isInitialSync = !didInitUsdRef.current;
         const amountChanged = prevAmountRef.current !== amount;
         prevAmountRef.current = amount;
 
@@ -136,26 +143,37 @@ export function useUsdTokenSync({
             if (amountChanged) {
                 internalAmountChangeRef.current = false;
             }
+            didInitUsdRef.current = true;
             return;
         }
-        if (!amountChanged) return;
+        if (!amountChanged && !isInitialSync) return;
         if (skipSync) {
             const amountNum = Number(amount);
             if (!isNaN(amountNum) && amountNum > 0 && sourceCurrencyPriceInUsd) {
                 preciseUsdRef.current = amountNum * sourceCurrencyPriceInUsd;
             }
+            didInitUsdRef.current = true;
             return;
         }
-        if (!isUsdMode || !sourceCurrencyPriceInUsd) return;
+        if (!isUsdMode) {
+            didInitUsdRef.current = true;
+            return;
+        }
+        // On the initial sync, keep waiting for a price — the effect re-runs
+        // when it resolves (it's a dependency), completing the reconciliation.
+        if (!sourceCurrencyPriceInUsd) return;
 
         const amountNum = Number(amount);
         if (isNaN(amountNum) || amountNum <= 0) {
+            preciseUsdRef.current = 0;
             setUsdAmount('');
+            didInitUsdRef.current = true;
             return;
         }
         const preciseUsd = amountNum * sourceCurrencyPriceInUsd;
         preciseUsdRef.current = preciseUsd;
         setUsdAmount(preciseUsd.toFixed(2).replace(/\.?0+$/, ''));
+        didInitUsdRef.current = true;
     }, [amount, isUsdMode, sourceCurrencyPriceInUsd, setUsdAmount]);
 
     // --- Toggle handler ---

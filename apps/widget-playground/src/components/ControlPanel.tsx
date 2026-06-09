@@ -56,8 +56,8 @@ export function ControlPanel() {
             };
 
         return {
-            "Theme": themeGroup,
             [widgetType === 'deposit' ? "Deposit configs" : "Widget configs"]: widgetGroup,
+            "Theme": themeGroup,
             "Other": {
                 items: [{ trigger: <LoadingButtonTrigger />, content: null }],
             },

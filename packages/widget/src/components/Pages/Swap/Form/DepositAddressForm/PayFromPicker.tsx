@@ -2,8 +2,10 @@ import { FC, useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
-import { FlatContent } from "@/components/Input/RoutePicker/FlatContent";
-import { SearchComponent } from "@/components/Input/Search";
+import { Content } from "@/components/Input/RoutePicker/Content";
+import { groupRoutes } from "@/hooks/useFormRoutes";
+import { useRecentNetworksStore } from "@/stores/recentRoutesStore";
+import { useRouteSortingStore } from "@/stores/routeSortingStore";
 import PickerTriggerContent from "@/components/Pages/Deposit/_shared/PickerTriggerContent";
 import useDepositAddressAvailableRoutes from "@/hooks/useDepositAddressAvailableRoutes";
 
@@ -26,25 +28,23 @@ const PayFromPicker: FC<PayFromPickerProps> = ({ selectedSource, onSourceChange,
     }, []);
 
     const { availableRoutes } = useDepositAddressAvailableRoutes(destinationNetwork, destinationToken);
+    const routesHistory = useRecentNetworksStore(state => state.recentRoutes);
+    const sortingOption = useRouteSortingStore((s) => s.sortingOption);
 
-    useEffect(() => {
-        if (!open) setSearchQuery('');
-    }, [open]);
-
-    const filteredRoutes = useMemo(() => {
-        const q = searchQuery.trim().toLowerCase();
-        if (!q) return availableRoutes;
-        return availableRoutes
-            .map(r => {
-                const matched = (r.tokens ?? []).filter(t => {
-                    const networkMatch = r.display_name.toLowerCase().includes(q) || r.name.toLowerCase().includes(q);
-                    const tokenMatch = t.symbol.toLowerCase().includes(q) || t.display_asset?.toLowerCase().includes(q);
-                    return networkMatch || tokenMatch;
-                });
-                return matched.length > 0 ? { ...r, tokens: matched } : null;
-            })
-            .filter((r): r is NetworkRoute => r !== null);
-    }, [availableRoutes, searchQuery]);
+    const routeElements = useMemo(() => {
+        return groupRoutes({
+            routes: availableRoutes,
+            direction: 'from',
+            balances: null,
+            groupBy: 'token',
+            recents: routesHistory,
+            balancesLoaded: false,
+            search: searchQuery,
+            sortingOption,
+            skipBalanceGate: true,
+            hideSuggestions: true,
+        });
+    }, [availableRoutes, searchQuery, routesHistory, sortingOption]);
 
     const hasOptions = availableRoutes.length > 0;
     const hasMultipleOptions = availableRoutes.length > 1 || availableRoutes.some(r => r.tokens.length > 1);
@@ -79,26 +79,19 @@ const PayFromPicker: FC<PayFromPickerProps> = ({ selectedSource, onSourceChange,
                     sideOffset={6}
                     collisionPadding={12}
                     container={portalContainer}
-                    className="p-2 bg-secondary-600! rounded-xl max-w-none! w-[var(--radix-popover-trigger-width)]! flex flex-col h-[340px] max-h-[var(--radix-popover-content-available-height)] overflow-hidden"
+                    className="p-2 bg-secondary-600! text-primary-text rounded-xl max-w-none! w-[var(--radix-popover-trigger-width)]! flex flex-col h-[340px] max-h-[var(--radix-popover-content-available-height)] overflow-hidden"
                 >
-                    <SearchComponent
+                    <Content
+                        onSelect={(r, t) => { onSourceChange(r, t); setOpen(false); }}
                         searchQuery={searchQuery}
                         setSearchQuery={setSearchQuery}
-                        isOpen={open}
-                        placeholder="Search by token or network"
+                        rowElements={routeElements}
+                        direction="from"
+                        selectedRoute={selectedSource?.network.name}
+                        selectedToken={selectedSource?.token.symbol}
+                        hideTokenSwitch
+                        hideBalances
                     />
-                    <div className="flex-1 min-h-0">
-                        <FlatContent
-                            onSelect={(r, t) => { onSourceChange(r, t); setOpen(false); }}
-                            routes={filteredRoutes}
-                            balances={null}
-                            balancesLoading={false}
-                            direction="from"
-                            selectedRoute={selectedSource?.network.name}
-                            selectedToken={selectedSource?.token.symbol}
-                            hideBalances
-                        />
-                    </div>
                 </PopoverContent>
             )}
         </Popover>

@@ -27,15 +27,15 @@ const DepositSelectionContext = createContext<DepositSelectionContextValue | nul
  * WalletFlow, each of which now owns its own Formik + SwapDataProvider.
  */
 export function DepositSelectionProvider({
-    destinations,
+    destination,
     destinationAddress,
     children,
 }: {
-    destinations: SupportedDestination[];
+    destination: SupportedDestination;
     destinationAddress: string;
     children: ReactNode;
 }) {
-    const resolved = useResolvedDestinations(destinations);
+    const resolved = useResolvedDestinations(destination);
     const settings = useSettingsState();
     const initialSettings = useInitialSettings();
     const { wallets } = useWallet();

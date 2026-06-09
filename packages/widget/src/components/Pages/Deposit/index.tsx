@@ -24,9 +24,9 @@ export type DepositMode = "inline" | "button";
 
 export type DepositProps = {
     partner?: Partner;
-    /** Allowed destination network/token pairs. The user picks from this list
-     * via the token dropdown; the network is determined by the chosen token. */
-    destinations: SupportedDestination[];
+    /** The single destination network and its allowed tokens. The network is
+     * fixed; the user picks one of the tokens via the token dropdown. */
+    destination: SupportedDestination;
     /** Recipient address on the destination network. Required — the deposit
      * widget never asks the end user for this. */
     destinationAddress: string;
@@ -85,7 +85,7 @@ const DepositForm: FC<Pick<DepositProps, "partner" | "title"> & { onClose?: () =
     );
 };
 
-const DepositCard: FC<Pick<DepositProps, "partner" | "destinations" | "destinationAddress" | "hideRecipient" | "title" | "actionButtonText" | "defaultAmountUsd"> & { onClose?: () => void }> = ({ partner, destinations, destinationAddress, hideRecipient, title, actionButtonText, defaultAmountUsd, onClose }) => {
+const DepositCard: FC<Pick<DepositProps, "partner" | "destination" | "destinationAddress" | "hideRecipient" | "title" | "actionButtonText" | "defaultAmountUsd"> & { onClose?: () => void }> = ({ partner, destination, destinationAddress, hideRecipient, title, actionButtonText, defaultAmountUsd, onClose }) => {
     return (
         <DepositSettingsProvider value={{
             hideRecipient: !!hideRecipient,
@@ -94,7 +94,7 @@ const DepositCard: FC<Pick<DepositProps, "partner" | "destinations" | "destinati
         }}>
             <ThemeWrapper>
                 <Widget hideMenu fitHeight>
-                    <DepositSelectionProvider destinations={destinations} destinationAddress={destinationAddress}>
+                    <DepositSelectionProvider destination={destination} destinationAddress={destinationAddress}>
                         <DepositStepProvider>
                             <DepositForm partner={partner} title={title} onClose={onClose} />
                         </DepositStepProvider>
