@@ -81,6 +81,8 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
         };
     }, [depositAddress]);
 
+    const showQuoteSkeleton = (isCreatingSwap || isQuoteLoading) && !bestQuote;
+
     return (
         <div className="flex flex-col gap-3 overflow-hidden">
             {/* Deposit address + QR — UNCHANGED per user request */}
@@ -155,6 +157,35 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
                     </div>
                 </div>
             </div>
+
+            {/* Min/Max skeleton */}
+            {showQuoteSkeleton && (
+                <div className="bg-secondary-500 rounded-xl px-3.5 py-3">
+                    <div className="flex flex-col gap-1.5">
+                        <div className="flex items-center justify-between">
+                            <span className="h-3 w-16 bg-secondary-400 rounded animate-pulse" />
+                            <span className="h-3 w-20 bg-secondary-400 rounded animate-pulse" />
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <span className="h-3 w-16 bg-secondary-400 rounded animate-pulse" />
+                            <span className="h-3 w-20 bg-secondary-400 rounded animate-pulse" />
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Fees skeleton */}
+            {showQuoteSkeleton && (
+                <div className="bg-secondary-500 rounded-xl px-3.5 py-3">
+                    <div className="flex items-start justify-between gap-3">
+                        <span className="h-3 w-10 bg-secondary-400 rounded animate-pulse" />
+                        <div className="flex flex-col items-end gap-1.5">
+                            <span className="h-3 w-28 bg-secondary-400 rounded animate-pulse" />
+                            <span className="h-3 w-32 bg-secondary-400 rounded animate-pulse" />
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Min/Max container */}
             {!(isQuoteLoading && !bestQuote) && (minDepositDisplay || maxDepositDisplay) && (

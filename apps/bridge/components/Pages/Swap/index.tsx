@@ -1,4 +1,5 @@
-import { LayerSwapSettings, Swap, ThemeData, Deposit } from "@layerswap/widget"
+import { LayerSwapSettings, Swap, ThemeData } from "@layerswap/widget"
+import { Deposit } from "@layerswap/widget/deposit"
 import { FC } from "react"
 import WidgetWrapper from "../../WidgetWrapper"
 import { QueryParams } from "../../../helpers/querryHelper"

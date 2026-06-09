@@ -11,6 +11,10 @@
       "types": "./dist/types/exports/index.d.ts",
       "default": "./dist/esm/exports/index.js"
     },
+    "./deposit": {
+      "types": "./dist/types/exports/deposit.d.ts",
+      "default": "./dist/esm/exports/deposit.js"
+    },
     "./internal": {
       "types": "./dist/types/exports/internal.d.ts",
       "default": "./dist/esm/exports/internal.js"

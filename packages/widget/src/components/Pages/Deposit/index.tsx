@@ -17,6 +17,8 @@ import { DepositSettingsProvider } from "@/context/depositSettings";
 import ThemeWrapper from "@/components/themeWrapper";
 import useAllWithdrawalBalances from "@/hooks/useAllWithdrawalBalances";
 import { useConnectModal } from "@/exports/internal";
+import { DepositLoading, LayerswapProvider } from "@/index";
+import { LayerswapContextProps } from "@/context/LayerswapProvider";
 
 export type DepositMode = "inline" | "button";
 
@@ -103,7 +105,7 @@ const DepositCard: FC<Pick<DepositProps, "partner" | "destinations" | "destinati
     );
 };
 
-export const Deposit: FC<DepositProps> = ({ mode = "inline", buttonLabel = "Deposit", buttonClassName, ...props }) => {
+export const DepositComponent: FC<DepositProps> = ({ mode = "inline", buttonLabel = "Deposit", buttonClassName, ...props }) => {
     const [open, setOpen] = useState(false);
     const { cancel } = useConnectModal();
 
@@ -133,5 +135,17 @@ export const Deposit: FC<DepositProps> = ({ mode = "inline", buttonLabel = "Depo
     }
     return <DepositCard {...props} />;
 };
+
+export const Deposit: FC<LayerswapContextProps & DepositProps> = ({ callbacks, config, walletProviders, children, ...depositProps }) => {
+    const resolvedConfig: LayerswapContextProps['config'] = {
+        ...config,
+        loadingComponent: <DepositLoading />
+    }
+    return (
+        <LayerswapProvider callbacks={callbacks} config={resolvedConfig} walletProviders={walletProviders}>
+            <DepositComponent {...depositProps} />
+        </LayerswapProvider>
+    );
+}
 
 export default Deposit;

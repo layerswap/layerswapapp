@@ -27,6 +27,11 @@ export type LayerswapWidgetConfig = {
     settings?: LayerSwapSettings;
     theme?: ThemeData | null,
     initialValues?: InitialSettings,
+    /** Skeleton shown while settings are being fetched (i.e. when `settings`
+     * isn't supplied). Defaults to the swap-shaped `WidgetLoading`; deposit
+     * integrations can pass `<DepositLoading />` so the init state matches their
+     * layout. */
+    loadingComponent?: ReactNode,
 } & WalletsConfigs
 
 export type LayerswapContextProps = {
@@ -38,7 +43,7 @@ export type LayerswapContextProps = {
 
 const INTERCOM_APP_ID = 'h5zisg78'
 const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callbacks, config, walletProviders = [] }) => {
-    let { apiKey, version, settings: _settings, theme: themeData, initialValues, imtblPassport, tonConfigs, walletConnect } = config || {}
+    let { apiKey, version, settings: _settings, theme: themeData, initialValues, loadingComponent, imtblPassport, tonConfigs, walletConnect } = config || {}
     const [fetchedSettings, setFetchedSettings] = useState<LayerSwapSettings | null>(null)
     themeData = { ...THEME_COLORS['default'], ...config?.theme }
 
@@ -60,7 +65,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
     }, [])
 
     const settings = _settings || fetchedSettings
-    if (!settings) return <WidgetLoading />
+    if (!settings) return <>{loadingComponent ?? <WidgetLoading />}</>
 
     let appSettings = new LayerSwapAppSettings(settings)
 
