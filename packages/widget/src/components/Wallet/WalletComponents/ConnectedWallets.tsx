@@ -53,6 +53,13 @@ type WalletsIconsProps = {
         address?: string;
     }[]
 }
+
+const ConnectedWalletIcon = ({ wallet }: { wallet: WalletsIconsProps["wallets"][number] }) => (
+    <span className="rounded-md border-2 border-secondary-600 bg-secondary-700 shrink-0 h-6 w-6 overflow-hidden">
+        <WalletIconView wallet={wallet as Wallet} className="h-full w-full" size={24} />
+    </span>
+)
+
 export const WalletsIcons = ({ wallets }: WalletsIconsProps) => {
 
     const uniqueWallets = wallets.filter((wallet, index, self) => index === self.findIndex((t) => t.id === wallet.id))
@@ -64,11 +71,11 @@ export const WalletsIcons = ({ wallets }: WalletsIconsProps) => {
         <div className="-space-x-2 flex" aria-label="Connected wallets">
             {
                 firstWallet?.displayName &&
-                <WalletIconView wallet={firstWallet as Wallet} className="rounded-md border-2 border-secondary-600 bg-secondary-700 shrink-0 h-6 w-6" size={24} />
+                <ConnectedWalletIcon wallet={firstWallet} />
             }
             {
                 secondWallet?.displayName &&
-                <WalletIconView wallet={secondWallet as Wallet} className="rounded-md border-2 border-secondary-600 bg-secondary-700 shrink-0 h-6 w-6" size={24} />
+                <ConnectedWalletIcon wallet={secondWallet} />
             }
             {
                 uniqueWallets.length > 2 &&
