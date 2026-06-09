@@ -2,7 +2,6 @@ import { WalletProvider, BaseWalletProviderConfig, ThemeData, LazyBalanceProvide
 import { TonGasProvider } from "./tonGasProvider";
 import TonProviderWrapper from "./TonProvider";
 import useTONConnection from "./useTONConnection";
-import { TonAddressUtilsProvider } from "./tonAddressUtilsProvider";
 import React, { createContext, useContext } from "react";
 import { AppSettings, KnownInternalNames } from "@layerswap/widget/internal";
 import { useTONTransfer } from "./transferProvider/useTONTransfer";
@@ -32,7 +31,6 @@ export function createTONProvider(config: TONProviderConfig = {}): WalletProvide
         customHook,
         balanceProviders,
         gasProviders,
-        addressUtilsProviders,
         transferProviders
     } = config;
 
@@ -63,11 +61,6 @@ export function createTONProvider(config: TONProviderConfig = {}): WalletProvide
         ? (Array.isArray(gasProviders) ? gasProviders : [gasProviders])
         : defaultGasProviders;
 
-    const defaultAddressUtilsProviders = [new TonAddressUtilsProvider()];
-    const finalAddressUtilsProviders = addressUtilsProviders !== undefined
-        ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
-        : defaultAddressUtilsProviders;
-
     const defaultTransferProviders = [useTONTransfer];
     const finalTransferProviders = transferProviders !== undefined
         ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
@@ -77,7 +70,6 @@ export function createTONProvider(config: TONProviderConfig = {}): WalletProvide
         id: "ton",
         wrapper: WrapperComponent,
         walletConnectionProvider,
-        addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
         transferProvider: finalTransferProviders,
@@ -92,7 +84,6 @@ export const TONProvider: WalletProvider = {
     id: "ton",
     wrapper: ({ children, themeData }: { children: React.ReactNode, themeData?: ThemeData }) => {
         const configs = AppSettings.TonClientConfig;
-        console.log('configs', configs)
         return (
             <TonConfigContext.Provider value={configs}>
                 <TonProviderWrapper tonConfigs={configs} themeData={themeData}>
@@ -102,7 +93,6 @@ export const TONProvider: WalletProvider = {
         );
     },
     walletConnectionProvider: useTONConnection,
-    addressUtilsProvider: [new TonAddressUtilsProvider()],
     gasProvider: [new TonGasProvider()],
     balanceProvider: [
         new LazyBalanceProvider(

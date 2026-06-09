@@ -1,7 +1,22 @@
 "use client";
 import { Context, createContext, Dispatch, FC, SetStateAction, useContext, useEffect, useMemo, useState } from 'react';
-import { ThemeData, THEME_COLORS, LayerswapWidgetConfig } from '@layerswap/widget';
+import { ThemeData, THEME_COLORS, LayerswapWidgetConfig, type DepositProps } from '@layerswap/widget';
 import { InitialSettings } from '@layerswap/widget/types';
+
+export type WidgetType = 'swap' | 'deposit';
+
+export type PlaygroundDepositProps = Omit<DepositProps, 'partner'>;
+
+const DEFAULT_DEPOSIT_PROPS: PlaygroundDepositProps = {
+    mode: 'button',
+    showDestinationAddress: false,
+    title: 'Deposit',
+    buttonLabel: 'Deposit',
+    actionButtonText: 'Deposit',
+    defaultAmountUsd: 1,
+    destination: { network: 'STARKNET_MAINNET', tokens: ['ETH'] },
+    destinationAddress: '0x04f5F8e5cDae95A5C1B84b97f7fd7fEff3463325C97Cc84D2830e1150Acf6820',
+};
 
 interface ContextType {
     themeData: ThemeData | undefined;
@@ -13,6 +28,8 @@ interface ContextType {
     actionText: string;
     initialValues: InitialSettings
     config: LayerswapWidgetConfig;
+    widgetType: WidgetType;
+    depositProps: PlaygroundDepositProps;
     updateActionText: (val: string) => void;
     updateShowPanel: (val: boolean) => void;
     updateShowLoading: (val: boolean) => void;
@@ -23,6 +40,9 @@ interface ContextType {
         themeName?: string | undefined;
     } | undefined>>
     updateInitialValues: <K extends keyof InitialSettings>(key: K, value: InitialSettings[K] | undefined) => void;
+    updateWidgetType: (val: WidgetType) => void;
+    updateDepositProp: <K extends keyof PlaygroundDepositProps>(key: K, value: PlaygroundDepositProps[K]) => void;
+    updateDepositProps: Dispatch<SetStateAction<PlaygroundDepositProps>>;
     resetData: () => void;
 }
 
@@ -41,13 +61,15 @@ export const ConfigProvider: FC<{ children: React.ReactNode }> = ({ children }) 
     const [showPanel, setShowPanel] = useState(true);
     const [actionText, setActionText] = useState('');
     const [initialValues, setInitialSettings] = useState<InitialSettings>({});
+    const [widgetType, setWidgetType] = useState<WidgetType>('swap');
+    const [depositProps, setDepositProps] = useState<PlaygroundDepositProps>(DEFAULT_DEPOSIT_PROPS);
     const bumpWidgetKey = () => {
         setWidgetRenderKey(prev => prev + 1);
     };
 
     useEffect(() => {
         bumpWidgetKey()
-    }, [customEvmSwitch, showLoading, initialValues])
+    }, [customEvmSwitch, showLoading, initialValues, widgetType, depositProps])
 
     const resetData = () => {
         setThemeData({
@@ -60,6 +82,8 @@ export const ConfigProvider: FC<{ children: React.ReactNode }> = ({ children }) 
         setCustomEvmSwitch(false);
         setShowLoading(false);
         setActionText('');
+        setWidgetType('swap');
+        setDepositProps(DEFAULT_DEPOSIT_PROPS);
     };
 
     function updateTheme<K extends keyof ThemeData>(prop: K, value: ThemeData[K]) {
@@ -85,6 +109,10 @@ export const ConfigProvider: FC<{ children: React.ReactNode }> = ({ children }) 
         });
     };
 
+    const updateDepositProp = <K extends keyof PlaygroundDepositProps>(key: K, value: PlaygroundDepositProps[K]) => {
+        setDepositProps(prev => ({ ...prev, [key]: value }));
+    };
+
     const config: LayerswapWidgetConfig = useMemo(() => {
         return {
             theme: themeData?.theme,
@@ -96,7 +124,9 @@ export const ConfigProvider: FC<{ children: React.ReactNode }> = ({ children }) 
     return (
         <WidgetContext.Provider value={{
             themeData: themeData?.theme, themeName: themeData?.themeName, widgetRenderKey, customEvmSwitch, showLoading, showPanel, actionText, initialValues, config,
-            updateTheme, updateWholeTheme: setThemeData, resetData, updateCustomEvmSwitch: setCustomEvmSwitch, updateShowLoading: setShowLoading, updateShowPanel: setShowPanel, updateActionText: setActionText, updateInitialValues
+            widgetType, depositProps,
+            updateTheme, updateWholeTheme: setThemeData, resetData, updateCustomEvmSwitch: setCustomEvmSwitch, updateShowLoading: setShowLoading, updateShowPanel: setShowPanel, updateActionText: setActionText, updateInitialValues,
+            updateWidgetType: setWidgetType, updateDepositProp, updateDepositProps: setDepositProps,
         }}>
             <>
                 {children}

@@ -1,12 +1,11 @@
-import { resolverService } from "@/lib/resolvers/resolverService";
+import { addressUtilsResolver } from "@layerswap/utils";
 
 export function isValidAddress({address, network, providerName}: {address?: string, network?: { name: string } | null, providerName?: string}): boolean {
     if (!address || !network || isBlacklistedAddress(address)) {
         return false
     }
     try {
-        const resolver = resolverService.getAddressUtilsResolver();
-        return resolver.isValidAddress({ network, address });
+        return addressUtilsResolver.isValidAddress({ network, address });
     } catch (err) {
         return false
     }

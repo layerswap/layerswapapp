@@ -1,5 +1,5 @@
 "use client";
-import { useWidgetContext } from "@/context/ConfigContext";
+import { useWidgetContext, type PlaygroundDepositProps } from "@/context/ConfigContext";
 import hljs from "highlight.js";
 import { useEffect, useRef, useState } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -47,46 +47,99 @@ function formatJS(value: any, indent = 2, depth = 0): string {
     return String(value);
 }
 
-/**
- * Build the config snippet.
- * - Only includes non-empty sections.
- * - Omits actionText if it's "Next"
- * - Omits initialSettings if it has no keys after pruning
- * - Includes featuredNetwork if available in context and non-empty
- */
-function buildConfigSnippet(
+type WidgetType = 'swap' | 'deposit';
+
+function buildSwapSnippet(
     theme: Record<string, any> | undefined,
     actionText: string | undefined,
     initialValues: InitialSettings | undefined,
 ): string {
     const configObj: Record<string, any> = {};
-
     if (theme) configObj.theme = pruneUndefinedDeep(theme);
-
-    if (actionText && actionText !== "Next") {
-        configObj.actionText = actionText;
-    }
-
+    if (actionText && actionText !== "Next") configObj.actionText = actionText;
     const prunedInitial = pruneUndefinedDeep(initialValues ?? {});
     if (isPlainObject(prunedInitial) && Object.keys(prunedInitial).length > 0) {
         configObj.initialValues = prunedInitial;
     }
+    return `const config = ${formatJS(configObj, 2, 0)};`;
+}
 
-    const header = `const config = `;
-    return `${header}${formatJS(configObj, 2, 0)};`;
+function buildDepositSnippet(
+    theme: Record<string, any> | undefined,
+    depositProps: PlaygroundDepositProps,
+): string {
+    const configObj: Record<string, any> = {};
+    if (theme) configObj.theme = pruneUndefinedDeep(theme);
+    const prunedDeposit = pruneUndefinedDeep(depositProps);
+    return `const config = ${formatJS(configObj, 2, 0)};\n\nconst depositProps = ${formatJS(prunedDeposit, 2, 0)};`;
+}
+
+function buildConfigSnippet(
+    widgetType: WidgetType,
+    theme: Record<string, any> | undefined,
+    actionText: string | undefined,
+    initialValues: InitialSettings | undefined,
+    depositProps: PlaygroundDepositProps,
+): string {
+    return widgetType === 'deposit'
+        ? buildDepositSnippet(theme, depositProps)
+        : buildSwapSnippet(theme, actionText, initialValues);
+}
+
+function jsObjectToJSON(str: string): string {
+    return str.replace(/(\w+):/g, '"$1":');
+}
+
+function extractBalancedObject(code: string, startIndex: number): string | null {
+    let i = startIndex;
+    while (i < code.length && code[i] !== '{') i++;
+    if (i >= code.length) return null;
+    let depth = 0;
+    let inString: string | null = null;
+    for (let j = i; j < code.length; j++) {
+        const ch = code[j];
+        if (inString) {
+            if (ch === '\\') { j++; continue; }
+            if (ch === inString) inString = null;
+            continue;
+        }
+        if (ch === '"' || ch === "'") { inString = ch; continue; }
+        if (ch === '{') depth++;
+        else if (ch === '}') {
+            depth--;
+            if (depth === 0) return code.slice(i, j + 1);
+        }
+    }
+    return null;
+}
+
+function parseNamedObject(code: string, name: string): Record<string, any> | null {
+    const header = new RegExp(`const\\s+${name}\\s*=\\s*`);
+    const match = code.match(header);
+    if (!match || match.index === undefined) return null;
+    const objSrc = extractBalancedObject(code, match.index + match[0].length);
+    if (!objSrc) return null;
+    try {
+        return JSON.parse(jsObjectToJSON(objSrc));
+    } catch {
+        return null;
+    }
 }
 
 export function CodeSegment() {
     const ctx = useWidgetContext();
-    const { themeData, actionText, initialValues, updateWholeTheme, updateActionText, updateInitialValues } = ctx;
+    const {
+        themeData, actionText, initialValues, widgetType, depositProps,
+        updateWholeTheme, updateActionText, updateInitialValues, updateDepositProps,
+    } = ctx;
 
-    const generatedCode = buildConfigSnippet(themeData, actionText, initialValues);
+    const generatedCode = buildConfigSnippet(widgetType, themeData, actionText, initialValues, depositProps);
 
     const [copied, setCopied] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isUserEdited, setIsUserEdited] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const [lastAppliedState, setLastAppliedState] = useState<{ theme?: ThemeData; actionText?: string; initialValues?: InitialSettings } | null>(null);
+    const [lastAppliedState, setLastAppliedState] = useState<{ theme?: ThemeData; actionText?: string; initialValues?: InitialSettings; depositProps?: PlaygroundDepositProps } | null>(null);
     const codeRef = useRef<HTMLElement>(null);
     const preRef = useRef<HTMLPreElement>(null);
 
@@ -107,7 +160,7 @@ export function CodeSegment() {
             setLastAppliedState(null);
             setError(null);
         }
-    }, [themeData, actionText, initialValues]);
+    }, [themeData, actionText, initialValues, widgetType, depositProps]);
 
     const handleCopy = async () => {
         const text = codeRef.current?.textContent || generatedCode;
@@ -116,24 +169,10 @@ export function CodeSegment() {
         setTimeout(() => setCopied(false), 2000);
     };
 
-    const parseConfig = (code: string): Record<string, any> | null => {
-        try {
-            let configStr = code.trim();
-            configStr = configStr.replace(/^\s*const\s+config\s*=\s*/, "");
-            configStr = configStr.replace(/;?\s*$/, "");
-            const jsonStr = configStr.replace(/(\w+):/g, '"$1":');
-
-            const config = JSON.parse(jsonStr);
-            return config;
-        } catch (e) {
-            return null;
-        }
-    };
-
     const applyConfig = () => {
         setError(null);
         const code = codeRef.current?.textContent || "";
-        const config = parseConfig(code);
+        const config = parseNamedObject(code, "config");
 
         if (!config) {
             setError("Invalid config format. Please check your syntax.");
@@ -144,7 +183,8 @@ export function CodeSegment() {
             setLastAppliedState({
                 theme: themeData,
                 actionText,
-                initialValues
+                initialValues,
+                depositProps,
             });
 
             if (config.theme) {
@@ -158,6 +198,13 @@ export function CodeSegment() {
                 Object.keys(newInitialValues).forEach((key) => {
                     updateInitialValues(key as keyof InitialSettings, newInitialValues[key as keyof InitialSettings]);
                 });
+            }
+
+            if (widgetType === 'deposit') {
+                const parsedDeposit = parseNamedObject(code, "depositProps");
+                if (parsedDeposit) {
+                    updateDepositProps((prev) => ({ ...prev, ...parsedDeposit }));
+                }
             }
             setIsUserEdited(false);
         } catch (e) {
@@ -181,6 +228,9 @@ export function CodeSegment() {
                 updateInitialValues(key as keyof InitialSettings, prevInitialValues[key as keyof InitialSettings]);
             });
         }
+        if (lastAppliedState.depositProps) {
+            updateDepositProps(lastAppliedState.depositProps);
+        }
         setLastAppliedState(null);
         setIsUserEdited(false);
     };
@@ -196,7 +246,6 @@ export function CodeSegment() {
 
     const handleBlur = () => {
         setIsEditing(false);
-        // Re-highlight after editing is done
         if (codeRef.current) {
             const text = codeRef.current.textContent || "";
             codeRef.current.textContent = text;

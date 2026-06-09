@@ -3,7 +3,6 @@ import { WalletProvider, BaseWalletProviderConfig } from "@layerswap/widget/type
 import { BitcoinProvider as BitcoinProviderWrapper } from "./BitcoinProvider";
 import { BitcoinGasProvider } from "./bitcoinGasProvider";
 import { BitcoinBalanceProvider } from "./bitcoinBalanceProvider";
-import { BitcoinAddressUtilsProvider } from "./bitcoinAddressUtilsProvider";
 import React from "react";
 import { useBitcoinTransfer } from "./transferProvider/useBitcoinTransfer";
 
@@ -14,7 +13,6 @@ export function createBitcoinProvider(config: BitcoinProviderConfig = {}): Walle
         customHook,
         balanceProviders,
         gasProviders,
-        addressUtilsProviders,
         transferProviders
     } = config;
 
@@ -38,12 +36,6 @@ export function createBitcoinProvider(config: BitcoinProviderConfig = {}): Walle
         ? (Array.isArray(gasProviders) ? gasProviders : [gasProviders])
         : defaultGasProviders;
 
-    const defaultAddressUtilsProviders = [new BitcoinAddressUtilsProvider()];
-    const finalAddressUtilsProviders = addressUtilsProviders !== undefined
-        ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
-        : defaultAddressUtilsProviders;
-
-
     const defaultTransferProviders = [useBitcoinTransfer];
     const finalTransferProviders = transferProviders !== undefined
         ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
@@ -53,7 +45,6 @@ export function createBitcoinProvider(config: BitcoinProviderConfig = {}): Walle
         id: "bitcoin",
         wrapper: WrapperComponent,
         walletConnectionProvider,
-        addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
         transferProvider: finalTransferProviders,
@@ -67,7 +58,6 @@ export const BitcoinProvider: WalletProvider = {
     id: "bitcoin",
     wrapper: BitcoinProviderWrapper,
     walletConnectionProvider: useBitcoinConnection,
-    addressUtilsProvider: [new BitcoinAddressUtilsProvider()],
     gasProvider: [new BitcoinGasProvider()],
     balanceProvider: [new BitcoinBalanceProvider()],
     transferProvider: [useBitcoinTransfer],

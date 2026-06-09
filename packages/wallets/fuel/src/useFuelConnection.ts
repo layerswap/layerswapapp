@@ -184,6 +184,8 @@ export default function useFuelConnection({ networks }: WalletConnectionProvider
         }
     })
 
+    const providerIcon = useMemo(() => networks.find(n => commonSupportedNetworks.some(name => name === n.name))?.logo, [networks])
+
     const provider: WalletConnectionProvider = {
         connectWallet,
         disconnectWallets,
@@ -200,6 +202,7 @@ export default function useFuelConnection({ networks }: WalletConnectionProvider
         connectedWallets,
         name,
         id,
+        providerIcon,
         ready: connectors.length > 0
     }
 

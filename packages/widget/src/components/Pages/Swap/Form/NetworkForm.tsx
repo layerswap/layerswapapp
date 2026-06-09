@@ -134,7 +134,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                             }
                             {
                                 !autoSlippageWouldWork ? (
-                                    <QuoteDetails swapValues={values} quote={quote?.quote} reward={quote?.reward} isQuoteLoading={isQuoteLoading} />
+                                    <QuoteDetails swapValues={values} quote={quote?.quote} reward={quote?.reward} isQuoteLoading={isQuoteLoading} triggerClassnames="mt-2" />
                                 ) : null
                             }
                         </div>

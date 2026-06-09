@@ -332,7 +332,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
                                     </span>
                                 }
                             />
-                            <QuoteDetails swapValues={swapValues} quote={quote} isQuoteLoading={isQuoteLoading} triggerClassnames='mt-0!' />
+                            <QuoteDetails swapValues={swapValues} quote={quote} isQuoteLoading={isQuoteLoading} />
                         </>
                     )}
                 </div>

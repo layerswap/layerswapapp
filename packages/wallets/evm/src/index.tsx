@@ -3,7 +3,6 @@ import { WalletProvider, BaseWalletProviderConfig, WalletProviderModule, LazyBal
 import { createContext, ReactNode, useContext, type JSX } from 'react';
 import useEVMConnection from "./useEVMConnection"
 import EVMProviderWrapper from "./EVMProvider"
-import { EVMAddressUtilsProvider } from "./evmAddressUtilsProvider"
 import { AppSettings, KnownInternalNames } from "@layerswap/widget/internal";
 import { useEVMTransfer } from "./transferProvider/useEVMTransfer";
 import { EVMContractAddressProvider } from "./evmContractAddressProvider";
@@ -33,7 +32,6 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         customHook,
         balanceProviders,
         gasProviders,
-        addressUtilsProviders,
         transferProviders,
         contractAddressProviders,
         rpcHealthCheckProviders
@@ -100,11 +98,6 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         ? (Array.isArray(gasProviders) ? gasProviders : [gasProviders])
         : defaultGasProviders;
 
-    const defaultAddressUtilsProviders = [new EVMAddressUtilsProvider()];
-    const finalAddressUtilsProviders = addressUtilsProviders !== undefined
-        ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
-        : defaultAddressUtilsProviders;
-
     const defaultContractAddressProviders = [new EVMContractAddressProvider()];
     const finalContractAddressProviders = contractAddressProviders !== undefined
         ? (Array.isArray(contractAddressProviders) ? contractAddressProviders : [contractAddressProviders])
@@ -124,7 +117,6 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         id: "evm",
         wrapper: WrapperComponent,
         walletConnectionProvider: walletConnectionProvider,
-        addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
         transferProvider: finalTransferProviders,
@@ -152,7 +144,6 @@ export const EVMProvider: WalletProvider = {
         );
     },
     walletConnectionProvider: useEVMConnection,
-    addressUtilsProvider: [new EVMAddressUtilsProvider()],
     gasProvider: [new LazyGasProvider(
         (n) => n.type === NetworkType.EVM && !!n.token,
         () => import("./gasProviders/evmGasProvider").then(m => new m.EVMGasProvider())

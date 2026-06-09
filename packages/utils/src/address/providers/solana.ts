@@ -1,6 +1,7 @@
-import { Network, NetworkType, AddressUtilsProvider, AddressUtilsProviderProps } from "@layerswap/widget/types";
-import { name } from "./constants";
 import bs58 from 'bs58';
+import { Network, NetworkType, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
+
+export const name = 'Solana';
 
 export class SolanaAddressUtilsProvider implements AddressUtilsProvider {
     readonly providerName = name;

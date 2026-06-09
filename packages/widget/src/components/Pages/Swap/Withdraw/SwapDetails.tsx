@@ -55,7 +55,7 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, onCancelWithd
                             : <Withdraw type={type} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} onCancelWithdrawal={onCancelWithdrawal} partner={partner} />
                     )
                     :
-                    <div className='space-y-3 w-full h-full'>
+                    <div className='space-y-2 w-full h-full'>
                         <Processing />
                         {
                             storedWalletTransaction?.status == BackendTransactionStatus.Failed &&
@@ -76,7 +76,7 @@ const Container = ({ type, children, goBack }: Props & {
     if (type === "widget")
         return <Widget goBack={goBack}><>{children}</></Widget>
     else
-        return <div className="w-full flex flex-col justify-between h-full space-y-3 text-secondary-text">
+        return <div className="w-full flex flex-col flex-1 justify-between h-full space-y-2 text-secondary-text">
             {children}
         </div>
 }

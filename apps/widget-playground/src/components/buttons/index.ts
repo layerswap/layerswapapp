@@ -8,3 +8,7 @@ export { ManageExternallyButton, ManageExternallyTriger } from "./ManageExternal
 export { LoadingButtonTrigger } from "./LoadingButton"
 export { InitialSettingsButton, InitialSettingsButtonTrigger } from "./InitialSettings/InitialSettingsButton"
 export { ConfigurationButton, ConfigurationButtonTrigger } from "./ConfigurationButton"
+export { WidgetTypeSwitcher } from "./WidgetTypeSwitcher"
+export { DepositConfigButton, DepositConfigButtonTrigger } from "./DepositConfigButton"
+export { DepositModeSwitcher } from "./DepositModeSwitcher"
+export { DepositDestinationsButton, DepositDestinationsButtonTrigger } from "./DepositDestinations/DepositDestinationsButton"

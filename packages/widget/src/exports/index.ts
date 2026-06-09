@@ -1,9 +1,11 @@
 export { Swap } from '../components/Pages/Swap/Form';
 export { SwapWithdrawal } from '../components/Pages/Swap/Withdraw';
+export { Deposit, DepositComponent, type DepositProps, type DepositMode } from '../components/Pages/Deposit';
 export { TransactionsHistory } from '../components/Pages/SwapHistory';
 export { Campaigns } from '../components/Pages/Campaigns';
 export { CampaignDetails } from '../components/Pages/Campaigns/Details';
 export { WidgetLoading } from '../components/WidgetLoading'
+export { DepositLoading } from '../components/Pages/Deposit/DepositLoading'
 export { LayerSwapSettings } from '../Models/LayerSwapSettings'
 export { type ThemeData, THEME_COLORS, type ThemeColor } from '../Models/Theme'
 export { getSettings, useSettings } from '../helpers/getSettings'
