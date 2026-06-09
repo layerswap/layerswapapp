@@ -227,6 +227,7 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
                                             }}
                                             destinationNetwork={destination?.name}
                                             destinationToken={toCurrency?.symbol}
+                                            hideDestinationPicker={hideDestinationPicker}
                                         />
 
                                         {/* Destination network/token + recipient address share one "Receive" row */}

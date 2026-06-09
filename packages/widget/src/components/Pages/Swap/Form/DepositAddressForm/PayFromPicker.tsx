@@ -1,35 +1,32 @@
-import { FC, useEffect, useMemo, useState } from "react";
-import clsx from "clsx";
+import { FC, useMemo, useState } from "react";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
+import useWallet from "@/hooks/useWallet";
+import { Selector, SelectorContent, SelectorTrigger } from "@/components/Select/Selector/Index";
+import { SelectedRouteDisplay } from "@/components/Input/RoutePicker/Routes";
 import { Content } from "@/components/Input/RoutePicker/Content";
 import { groupRoutes } from "@/hooks/useFormRoutes";
 import { useRecentNetworksStore } from "@/stores/recentRoutesStore";
 import { useRouteSortingStore } from "@/stores/routeSortingStore";
-import PickerTriggerContent from "@/components/Pages/Deposit/_shared/PickerTriggerContent";
+import useSuggestionsLimit from "@/hooks/useSuggestionsLimit";
 import useDepositAddressAvailableRoutes from "@/hooks/useDepositAddressAvailableRoutes";
+import PickerTriggerContent from "@/components/Pages/Deposit/_shared/PickerTriggerContent";
 
 type PayFromPickerProps = {
     selectedSource: { network: NetworkRoute; token: NetworkRouteToken } | null;
     onSourceChange: (network: NetworkRoute, token: NetworkRouteToken) => void;
     destinationNetwork: string | undefined;
     destinationToken: string | undefined;
+    hideDestinationPicker?: boolean;
 }
 
-const PayFromPicker: FC<PayFromPickerProps> = ({ selectedSource, onSourceChange, destinationNetwork, destinationToken }) => {
-    const [open, setOpen] = useState(false);
+const PayFromPicker: FC<PayFromPickerProps> = ({ selectedSource, onSourceChange, destinationNetwork, destinationToken, hideDestinationPicker }) => {
     const [searchQuery, setSearchQuery] = useState('');
-    // Portal into the widget root so the popover lives inside any wrapping
-    // Radix Dialog. Otherwise Dialog's body-level scroll lock (pointer-events:
-    // none on body) eats wheel events on the popover's scrollable list.
-    const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
-    useEffect(() => {
-        setPortalContainer(document.getElementById("widget"));
-    }, []);
+    const { wallets } = useWallet();
+    const { suggestionsLimit } = useSuggestionsLimit({ hasWallet: wallets.length > 0 });
+    const sortingOption = useRouteSortingStore((s) => s.sortingOption);
+    const routesHistory = useRecentNetworksStore(state => state.recentRoutes);
 
     const { availableRoutes } = useDepositAddressAvailableRoutes(destinationNetwork, destinationToken);
-    const routesHistory = useRecentNetworksStore(state => state.recentRoutes);
-    const sortingOption = useRouteSortingStore((s) => s.sortingOption);
 
     const routeElements = useMemo(() => {
         return groupRoutes({
@@ -40,61 +37,57 @@ const PayFromPicker: FC<PayFromPickerProps> = ({ selectedSource, onSourceChange,
             recents: routesHistory,
             balancesLoaded: false,
             search: searchQuery,
+            suggestionsLimit,
             sortingOption,
             skipBalanceGate: true,
             hideSuggestions: true,
         });
-    }, [availableRoutes, searchQuery, routesHistory, sortingOption]);
+    }, [availableRoutes, searchQuery, routesHistory, suggestionsLimit, sortingOption]);
 
+    // Disable until the destination resolves a non-empty source list.
     const hasOptions = availableRoutes.length > 0;
     const hasMultipleOptions = availableRoutes.length > 1 || availableRoutes.some(r => r.tokens.length > 1);
-    const triggerDisabled = !hasOptions || !hasMultipleOptions;
 
     return (
-        <Popover open={open} onOpenChange={triggerDisabled ? undefined : setOpen}>
-            <PopoverTrigger asChild>
-                <button
-                    type="button"
-                    disabled={triggerDisabled}
-                    className={clsx(
-                        "w-full bg-secondary-500 rounded-xl border border-transparent !px-4 !py-3 transition-colors",
-                        triggerDisabled
-                            ? "cursor-not-allowed"
-                            : "hover:bg-secondary-400/70 hover:border-secondary-400 focus-visible:ring-2 focus-visible:ring-primary-500/60 focus-visible:outline-none",
-                    )}
-                >
-                    <PickerTriggerContent
-                        label="You send"
-                        token={selectedSource?.token}
-                        network={selectedSource?.network}
-                        placeholder="Select source"
-                        showChevron={!triggerDisabled}
-                        chevronOpen={open}
-                    />
-                </button>
-            </PopoverTrigger>
-            {!triggerDisabled && (
-                <PopoverContent
-                    align="start"
-                    sideOffset={6}
-                    collisionPadding={12}
-                    container={portalContainer}
-                    className="p-2 bg-secondary-600! text-primary-text rounded-xl max-w-none! w-[var(--radix-popover-trigger-width)]! flex flex-col h-[340px] max-h-[var(--radix-popover-content-available-height)] overflow-hidden"
-                >
-                    <Content
-                        onSelect={(r, t) => { onSourceChange(r, t); setOpen(false); }}
-                        searchQuery={searchQuery}
-                        setSearchQuery={setSearchQuery}
-                        rowElements={routeElements}
-                        direction="from"
-                        selectedRoute={selectedSource?.network.name}
-                        selectedToken={selectedSource?.token.symbol}
-                        hideTokenSwitch
-                        hideBalances
-                    />
-                </PopoverContent>
-            )}
-        </Popover>
+        <div className="flex items-center gap-2">
+            {!hideDestinationPicker && <span className="w-24 shrink-0 text-sm text-secondary-text tracking-wide">Send</span>}
+            <div className="flex-1 min-w-0">
+                <Selector>
+                    <SelectorTrigger disabled={!hasOptions || !hasMultipleOptions} className={`bg-secondary-500 hover:bg-secondary-400/70 rounded-xl px-3.5 py-3 transition-colors ${hideDestinationPicker ? "pr-4" : ""}`}>
+                        {
+                            hideDestinationPicker
+                                ? <PickerTriggerContent
+                                    label="You send"
+                                    token={selectedSource?.token}
+                                    network={selectedSource?.network}
+                                    placeholder="Select source"
+                                    showChevron={hasOptions}
+                                />
+                                : <SelectedRouteDisplay
+                                    route={selectedSource?.network}
+                                    token={selectedSource?.token}
+                                    placeholder="Select source"
+                                />
+                        }
+                    </SelectorTrigger>
+                    <SelectorContent isLoading={false}>
+                        {({ closeModal }) => (
+                            <Content
+                                onSelect={(r, t) => { onSourceChange(r, t); closeModal(); }}
+                                searchQuery={searchQuery}
+                                setSearchQuery={setSearchQuery}
+                                rowElements={routeElements}
+                                direction="from"
+                                selectedRoute={selectedSource?.network.name}
+                                selectedToken={selectedSource?.token.symbol}
+                                hideTokenSwitch
+                                hideBalances
+                            />
+                        )}
+                    </SelectorContent>
+                </Selector>
+            </div>
+        </div>
     );
 };
 
