@@ -345,7 +345,6 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
                                 className="object-contain"
                             />
                         </div>
-
                     </div>
                     <div className="ml-2 flex flex-col grow text-primary-text overflow-hidden min-w-0 max-w-3/4 group-[.exchange-picker]:max-w-full xs:max-w-[60px]"                    >
                         <p className="text-base leading-5 font-medium">{token.symbol}</p>

@@ -1,6 +1,7 @@
-import { Network, AddressUtilsProvider, AddressUtilsProviderProps } from "@layerswap/widget/types";
-import { KnownInternalNames } from "@layerswap/widget/internal";
-import { name } from "./constants";
+import KnownInternalNames from "@/knownIds";
+import { Network, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
+
+export const name = 'Fuel';
 
 export class FuelAddressUtilsProvider implements AddressUtilsProvider {
     readonly providerName = name;

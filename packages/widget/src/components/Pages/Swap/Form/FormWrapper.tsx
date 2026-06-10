@@ -4,7 +4,6 @@ import { useSettingsState } from "@/context/settings";
 import { UpdateSwapInterface, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import React from "react";
 import ConnectNetwork from "@/components/Pages/Swap/Form/SecondaryComponents/ConnectNetwork";
-import toast from "react-hot-toast";
 import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "@/lib/generateSwapInitialValues";
 import { Partner } from "@/Models/Partner";
 import { ApiError, LSAPIKnownErrorCode } from "@/Models/ApiError";
@@ -142,9 +141,9 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
             })
         }
         catch (error) {
-            toast.error(error?.message)
+            setSwapError && setSwapError(error?.message)
         }
-    }, [createSwap, initialSettings, partner, swapBasicData, getProvider, settings, type])
+    }, [createSwap, initialSettings, partner, swapBasicData, getProvider, settings, type, setSwapError])
 
     const initialValues: SwapFormValues = swapBasicData ? generateSwapInitialValuesFromSwap(swapBasicData, swapBasicData.refuel, settings, type)
         : generateSwapInitialValues(settings, initialSettings, type, connectedAutofillNetworks)

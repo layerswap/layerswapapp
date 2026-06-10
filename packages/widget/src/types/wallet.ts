@@ -2,7 +2,6 @@ import { TransferProps, TransferProvider } from './transfer';
 import { NetworkWithTokens } from '@/Models/Network';
 import { BalanceProvider } from './balance';
 import { GasProvider } from './gas';
-import { AddressUtilsProvider } from './addressUtils';
 import { NftProvider } from './nft';
 import { ContractAddressCheckerProvider } from './contract';
 import { RpcHealthCheckProvider } from './rpcHealth';
@@ -79,7 +78,6 @@ export type WalletProvider = WalletWrapper & {
      * during render.
      */
     createConnection: (props: WalletConnectionProviderProps) => WalletConnectionStore,
-    addressUtilsProvider?: AddressUtilsProvider | AddressUtilsProvider[],
     nftProvider?: NftProvider | NftProvider[],
     gasProvider?: GasProvider | GasProvider[],
     balanceProvider?: BalanceProvider | BalanceProvider[],
@@ -218,7 +216,6 @@ export type BaseWalletProviderConfig = {
     customConnection?: (props: WalletConnectionProviderProps) => WalletConnectionStore
     balanceProviders?: BalanceProvider | BalanceProvider[]
     gasProviders?: GasProvider | GasProvider[]
-    addressUtilsProviders?: AddressUtilsProvider | AddressUtilsProvider[]
     transferProviders?: (() => TransferProvider) | (() => TransferProvider)[]
     contractAddressProviders?: ContractAddressCheckerProvider | ContractAddressCheckerProvider[]
     rpcHealthCheckProviders?: RpcHealthCheckProvider | RpcHealthCheckProvider[]

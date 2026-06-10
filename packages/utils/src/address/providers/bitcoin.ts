@@ -1,7 +1,8 @@
-import { AddressUtilsProvider, AddressUtilsProviderProps } from '@layerswap/widget/types';
-import { validate, Network } from 'bitcoin-address-validation';
-import { KnownInternalNames } from "@layerswap/widget/internal";
-import { name } from "./constants";
+import { validate, Network as BtcNetwork } from 'bitcoin-address-validation';
+import KnownInternalNames from "@/knownIds";
+import { AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
+
+export const name = 'Bitcoin';
 
 export class BitcoinAddressUtilsProvider implements AddressUtilsProvider {
     readonly providerName = name;
@@ -16,7 +17,7 @@ export class BitcoinAddressUtilsProvider implements AddressUtilsProvider {
             return false
         }
         const isTestnet = network?.name.toLowerCase().includes("testnet");
-        return validate(address, isTestnet ? Network.testnet : Network.mainnet);
+        return validate(address, isTestnet ? BtcNetwork.testnet : BtcNetwork.mainnet);
     }
 
     addressFormat(props: AddressUtilsProviderProps): string {

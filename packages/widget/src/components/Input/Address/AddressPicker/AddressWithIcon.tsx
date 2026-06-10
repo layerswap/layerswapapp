@@ -73,7 +73,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
                             />
                         )
                     ) : (
-                        <AddressIcon className="h-9 w-9" address={address} size={32} rounded="6px" />
+                        <AddressIcon address={address} size={32} network={network} />
                     )
                 }
             </div>

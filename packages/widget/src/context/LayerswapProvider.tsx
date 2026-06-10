@@ -1,7 +1,6 @@
 'use client'
 import { FC, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useDeferredIntercomInit } from "@/hooks/useDeferredIntercomInit"
-import ThemeWrapper from "@/components/themeWrapper";
 import { ErrorBoundary } from "react-error-boundary";
 import { SettingsProvider } from "./settings";
 import { LayerSwapAppSettings } from "@/Models/LayerSwapAppSettings";
@@ -30,6 +29,11 @@ export type LayerswapWidgetConfig = {
     settings?: LayerSwapSettings;
     theme?: ThemeData | null,
     initialValues?: InitialSettings,
+    /** Skeleton shown while settings are being fetched (i.e. when `settings`
+     * isn't supplied). Defaults to the swap-shaped `WidgetLoading`; deposit
+     * integrations can pass `<DepositLoading />` so the init state matches their
+     * layout. */
+    loadingComponent?: ReactNode,
 } & WalletsConfigs
 
 export type LayerswapContextProps = {
@@ -47,7 +51,7 @@ export type LayerswapContextProps = {
 
 const INTERCOM_APP_ID = 'h5zisg78'
 const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callbacks, config, walletProviders = [] }) => {
-    const { apiKey, version, settings: _settings, theme, initialValues, imtblPassport, tonConfigs, walletConnect } = config || {}
+    let { apiKey, version, settings: _settings, theme, initialValues, loadingComponent, imtblPassport, tonConfigs, walletConnect } = config || {}
     const [fetchedSettings, setFetchedSettings] = useState<LayerSwapSettings | null>(null)
     // Defer Intercom script injection until the browser is idle. The provider
     // stays mounted so its context is always available (no remount of any
@@ -85,7 +89,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
     }, [_settings, apiKey, version])
 
     const settings = _settings || fetchedSettings
-    if (!settings) return <WidgetLoading />
+    if (!settings) return <>{loadingComponent ?? <WidgetLoading />}</>
 
     let appSettings = new LayerSwapAppSettings(settings)
 
@@ -95,25 +99,23 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
                 <CallbackProvider callbacks={callbacks}>
                     <ErrorProvider>
                         <ErrorBoundary FallbackComponent={ErrorFallback} >
-                            <ThemeWrapper>
-                                <DescriptorHydrationBoundary walletProviders={walletProviders}>
-                                    {(resolvedProviders) => (
-                                        <WalletsProviders
-                                            appName={initialValues?.appName}
-                                            themeData={themeData}
-                                            walletProviders={resolvedProviders}
-                                        >
-                                            <ResolverProviders walletProviders={resolvedProviders}>
-                                                <SwapAccountsProvider>
-                                                    <AsyncModalProvider>
-                                                        {children}
-                                                    </AsyncModalProvider>
-                                                </SwapAccountsProvider>
-                                            </ResolverProviders>
-                                        </WalletsProviders>
-                                    )}
-                                </DescriptorHydrationBoundary>
-                            </ThemeWrapper>
+                            <DescriptorHydrationBoundary walletProviders={walletProviders}>
+                                {(resolvedProviders) => (
+                                    <WalletsProviders
+                                        appName={initialValues?.appName}
+                                        themeData={themeData}
+                                        walletProviders={resolvedProviders}
+                                    >
+                                        <ResolverProviders walletProviders={resolvedProviders}>
+                                            <SwapAccountsProvider>
+                                                <AsyncModalProvider>
+                                                    {children}
+                                                </AsyncModalProvider>
+                                            </SwapAccountsProvider>
+                                        </ResolverProviders>
+                                    </WalletsProviders>
+                                )}
+                            </DescriptorHydrationBoundary>
                         </ErrorBoundary>
                     </ErrorProvider>
                 </CallbackProvider>

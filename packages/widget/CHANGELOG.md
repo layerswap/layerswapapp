@@ -1,5 +1,16 @@
 # @layerswap/widget
 
+## 1.4.0
+
+### Minor Changes
+
+- Add Deposit widget
+
+### Patch Changes
+
+- Updated dependencies
+  - @layerswap/utils@1.4.0
+
 ## 1.2.2
 
 ### Patch Changes

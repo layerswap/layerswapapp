@@ -16,6 +16,7 @@ import { useRouteTokenSwitchStore } from "@/stores/routeTokenSwitchStore";
 import { SwapDirection, SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { getTotalBalanceInUSD } from "../helpers/balanceHelper";
 import { SortingOption, useRouteSortingStore } from "@/stores/routeSortingStore";
+import { extractTokenElementsAsSuggested, sortSuggestedTokenElements } from "../helpers/routeUtils";
 
 type Props = {
     direction: SwapDirection;
@@ -486,7 +487,7 @@ function sortTokensByRelevance(
 
 function sortGroupedTokensByRelevance(
     groups: (GroupedTokenElement & { totalUSD: number })[],
-    balances: Record<string, NetworkBalance> | null,
+    _balances: Record<string, NetworkBalance> | null,
     routesHistory: RoutesHistory,
     direction: SwapDirection
 ): GroupedTokenElement[] {
@@ -802,43 +803,6 @@ function getSuggestedRoutes(routes: NetworkRoute[], balances: Record<string, Net
     return sorted.slice(0, effectiveLimit)
 }
 
-const extractTokenElementsAsSuggested = (routes: NetworkRoute[]): NetworkTokenElement[] => routes.flatMap(route => (route.tokens || []).map(token => ({ type: 'suggested_token', route: { token, route } })))
-
-const sortSuggestedTokenElements = (direction: SwapDirection, balances: Record<string, NetworkBalance> | null, routesHistory: RoutesHistory) => (a: NetworkTokenElement, b: NetworkTokenElement) => {
-    if (direction === "from" && balances) {
-        const a_balance = getNetworkTokenElementBalance(a, balances)
-        const b_balance = getNetworkTokenElementBalance(b, balances)
-        if (a_balance !== b_balance) {
-            return b_balance - a_balance
-        }
-    }
-    if (routesHistory) {
-        const a_used = getUsedCount(a, routesHistory, direction)
-        const b_used = getUsedCount(b, routesHistory, direction)
-        if (a_used !== b_used) {
-            return b_used - a_used
-        }
-    }
-
-    const a_rank = getRank(a, direction)
-    const b_rank = getRank(b, direction)
-    return a_rank - b_rank
-}
-
-const getNetworkTokenElementBalance = (item: NetworkTokenElement, balances: Record<string, NetworkBalance>) => {
-    return (balances[item.route.route.name]?.balances?.find(b => b.token === item.route.token.symbol)?.amount || 0) * item.route.token.price_in_usd
-}
-const getUsedCount = (item: NetworkTokenElement, history: RoutesHistory, direction: SwapDirection) => {
-    return direction === "from" ? history.sourceRoutes?.[item.route.route.name]?.[item.route.token.symbol] || 0 : history.destinationRoutes?.[item.route.route.name]?.[item.route.token.symbol] || 0
-}
-const getRank = (item: NetworkTokenElement, direction: SwapDirection) => {
-    switch (direction) {
-        case "from":
-            return item.route.token.source_rank || 0;
-        case "to":
-            return item.route.token.destination_rank || 0
-    }
-}
 const resolveTitle = (text: string): TitleElement => {
     return { type: 'group_title', text }
 }

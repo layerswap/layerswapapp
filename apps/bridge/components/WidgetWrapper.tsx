@@ -35,7 +35,7 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
     const router = useRouter()
 
     const walletConnectConfigs = {
-        projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '',
+        projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
         name: 'Layerswap',
         description: 'Layerswap App',
         url: 'https://layerswap.io/app/',
@@ -77,9 +77,9 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
 
     const themeOverrides: Partial<ThemeData> = {
         borderRadius: 'default',
-        enablePortal: true,
-        enableWideVersion: true,
-        hidePoweredBy: true,
+        enablePortal: false,
+        enableWideVersion: false,
+        hidePoweredBy: false,
     }
 
     const baseTheme: ThemeData = {
@@ -106,14 +106,14 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
         onFormChange(formData) {
             updateFormBulk(formData);
         },
-        onSwapCreate(swapData) {
-            setSwapPath(swapData.swap.id, router)
-        },
-        onSwapModalStateChange(open) {
-            if (!open) {
-                removeSwapPath(router)
-            }
-        },
+        // onSwapCreate(swapData) {
+        //     setSwapPath(swapData.swap.id, router)
+        // },
+        // onSwapModalStateChange(open) {
+        //     if (!open) {
+        //         removeSwapPath(router)
+        //     }
+        // },
         onMenuNavigationChange(path) {
             setMenuPath(path, router)
         },

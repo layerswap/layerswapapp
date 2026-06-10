@@ -2,25 +2,25 @@ import { Address } from "@/lib/address/Address";
 import { ChevronDown, PlusIcon } from "lucide-react";
 import { AddressGroup, AddressItem, AddressTriggerProps } from "./Address/AddressPicker";
 import { Partner } from "@/Models/Partner";
-import AddressIcon from "@/components/Common/AddressIcon";
 import { Wallet } from "@/types/wallet";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import WalletIconView from "@/components/Wallet/WalletIconView";
 import clsx from 'clsx';
 import { useNamedAddress } from "@/stores/addressBookStore";
+import AddressIcon from "../Common/AddressIcon";
 
 const DestinationWalletPicker = (props: AddressTriggerProps) => {
     const { addressItem, connectedWallet, partner, destination } = props
     const label = useNamedAddress(addressItem?.address, destination)
     return destination && <div
-    data-attr={addressItem ? "address-item" : "add-address"}
-    className={clsx(
-        "flex items-center space-x-2 text-sm rounded-lg py-1 px-2 justify-self-end",
-        {
-            "hover:bg-secondary-400": addressItem,
-            "bg-secondary-400 hover:bg-secondary-300": !addressItem
-        }
-    )}>
+        data-attr={addressItem ? "address-item" : "add-address"}
+        className={clsx(
+            "flex items-center space-x-2 text-sm rounded-lg py-1 px-2 justify-self-end",
+            {
+                "hover:bg-secondary-400": addressItem,
+                "bg-secondary-400 hover:bg-secondary-300": !addressItem
+            }
+        )}>
         <div className="rounded-lg flex space-x-1 items-center cursor-pointer">
             {
                 addressItem &&
@@ -74,7 +74,7 @@ const ResolvedIcon = (props: AdderssIconprops) => {
         return <WalletIconView wallet={wallet} className="w-4 h-4" size={16} />
     }
     else {
-        return <AddressIcon className="h-4 w-4 p-0.5" address={destination ? new Address(addressItem.address, destination).full : addressItem.address} size={20} />
+        return <AddressIcon className="p-0.5 rounded-[3px]" address={destination ? new Address(addressItem.address, destination).full : addressItem.address} size={16} network={destination} />
     }
 }
 

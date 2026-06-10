@@ -132,7 +132,7 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
         <>
             <Widget.Content>
                 <div className="w-full flex flex-col justify-between  text-secondary-text">
-                    <div className='grid grid-cols-1 gap-3 '>
+                    <div className='grid grid-cols-1 gap-2 '>
                         <SwapSummary />
                         <SwapQuoteDetails swapBasicData={swapBasicData} quote={quote} refuel={refuel} quoteIsLoading={quoteIsLoading} quoteError={quoteError} partner={partner} />
                         {withdraw?.content}

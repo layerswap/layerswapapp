@@ -171,7 +171,7 @@ function inflateRoutes(
         }
 
         const baseTokensBySymbol = new Map<string, NetworkRouteToken>(
-            (baseNetwork.tokens || []).map((token) => [token.symbol, token as NetworkRouteToken])
+            (baseNetwork.tokens || []).map((token) => [token.symbol, token])
         );
 
         const tokens = (compactRoute.tokens || []).map((compactToken) =>

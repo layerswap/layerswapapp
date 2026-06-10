@@ -23,17 +23,17 @@ export type ResolveResult = {
 export async function resolveWalletConnectWallets(opts: ResolveOptions = {}): Promise<ResolveResult> {
     const chains = opts.chainIds?.join(',')
         || (opts.namespace ? chainsForNamespace(opts.namespace) : undefined)
-
+    const projectId = opts.projectId || '6113382c2e587bff00e2b5c3d68531f3'
     const response = await fetchWallets({
         page: opts.page ?? 1,
         entries: opts.entries ?? 40,
         chains: chains || undefined,
         search: opts.search,
-        projectId: opts.projectId || '',
+        projectId,
     })
 
     const wallets = response.data
-        .map((wallet) => mapWallet(wallet, opts.projectId || ''))
+        .map((wallet) => mapWallet(wallet, projectId))
         .filter(w => !SLUGS_TO_FILTER.includes(w.id))
 
     return {
