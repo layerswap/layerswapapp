@@ -9,8 +9,6 @@ import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
 import WidgetWrapper from '../../components/WidgetWrapper';
 import MaintananceContent from '../../components/maintanance/maintanance';
 
-
-
 const SwapDetails = ({ settings, themeData, apiKey, swapData }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter()
   const resolvedSettings = useMemo(() => inflateSettings(settings), [settings])
