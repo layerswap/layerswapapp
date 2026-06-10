@@ -118,7 +118,7 @@ const LeaderbordComponent: FC<{
                                 <div className="flex items-center">
                                     <p className="text-xl font-medium text-primary-text w-fit mr-1">{position}.</p>
                                     <div className="cols-start-2 flex items-center space-x-2">
-                                        <AddressIcon address={addressInstance?.full || ''} size={25} network={network} />
+                                        <AddressIcon address={addressInstance?.full || ''} size={25} network={network} className="rounded-[3px]" />
                                         <div>
                                             <div className="text-sm font-bold text-primary-text leading-3">
                                                 {network?.account_explorer_template && <Link target="_blank" className="hover:opacity-80" href={getExplorerUrl(network?.account_explorer_template, address)}>
@@ -155,7 +155,7 @@ const LeaderboardItem: FC<{
         <div className="flex items-center">
             <p className="text-xl font-medium text-primary-text w-fit mr-1">{user.position}.</p>
             <div className="cols-start-2 flex items-center space-x-2">
-                <AddressIcon address={addressInstance?.full || ''} size={25} network={network} />
+                <AddressIcon address={addressInstance?.full || ''} size={25} network={network} className="rounded-[3px]" />
                 <div>
                     <div className="text-sm font-bold text-primary-text leading-3">
                         {user?.address && network?.account_explorer_template && <Link target="_blank" className="hover:opacity-80" href={getExplorerUrl(network?.account_explorer_template, user?.address)}>
