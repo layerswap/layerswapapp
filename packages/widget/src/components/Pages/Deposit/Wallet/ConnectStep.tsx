@@ -1,10 +1,10 @@
 import { FC, useCallback, useEffect } from "react";
 import ConnectorsList from "@/components/Wallet/WalletModal/ConnectorsList";
-import { ModalWalletProvider, useConnectModal } from "@/components/Wallet/WalletModal";
+import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { Wallet } from "@/types/wallet";
 import { useDepositStep } from "../depositStepContext";
 import { useDepositSelection } from "../depositSelectionContext";
-import { useDepositWallet } from "./depositWalletContext";
+import { useSelectSwapAccount } from "@/context/swapAccounts";
 
 /**
  * Inline presentation of the wallet-connect UI, rendered as a deposit step so
@@ -23,12 +23,11 @@ import { useDepositWallet } from "./depositWalletContext";
  */
 const ConnectStep: FC = () => {
     const { push, back } = useDepositStep();
-    const { setOpen, setPresentation, setSelectedProvider } = useConnectModal();
-    const { connectProvider } = useDepositWallet();
+    const { setOpen, setPresentation } = useConnectModal();
     const { destination, destinationToken } = useDepositSelection();
+    const selectSourceAccount = useSelectSwapAccount("from");
 
     useEffect(() => {
-        setSelectedProvider(connectProvider as ModalWalletProvider | undefined);
         setPresentation("inline");
         setOpen(true);
         return () => {
@@ -45,12 +44,13 @@ const ConnectStep: FC = () => {
         // The wallet flow lands on AmountStep, which needs a destination to
         // quote. If one isn't picked yet (the "Wallet transfer" card can be
         // used while disconnected), drop back to the method picker instead.
+        selectSourceAccount(wallet);
         if (destinationReady) push("wallet-source");
         else back();
     }, [destinationReady, push, back]);
 
     return (
-        <div className="openpicker flex flex-col h-full min-h-0 w-full">
+        <div className="openpicker flex flex-col min-h-0 w-full h-[400px]">
             <ConnectorsList onFinish={handleFinish} />
         </div>
     );

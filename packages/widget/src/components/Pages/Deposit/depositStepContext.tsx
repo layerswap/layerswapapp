@@ -3,7 +3,6 @@ import { useWalletProviders } from "@/context/walletProviders";
 
 export type DepositStep =
     | "method-picker"
-    | "wallet-ecosystem"
     | "wallet-connect"
     | "wallet-source"
     | "wallet-amount"

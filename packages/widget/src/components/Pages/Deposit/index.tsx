@@ -11,7 +11,6 @@ import { DepositSelectionProvider } from "./depositSelectionContext";
 import DepositHeader from "./DepositHeader";
 import MethodPicker from "./Options/MethodPicker";
 import WalletFlow from "./Wallet";
-import WaitingForConnect from "./Wallet/WaitingForConnect";
 import TransferCrypto from "./TransferCrypto";
 import { SupportedDestination } from "./DestinationTokenPicker";
 import { Widget } from "@/components/Widget/Index";
@@ -59,7 +58,6 @@ const StepRouter: FC<{ step: DepositStep; partner?: Partner; hasWalletMethods: b
     switch (step) {
         case "method-picker": return <MethodPicker />;
         case "transfer-crypto": return <TransferCrypto partner={partner} showDestinationPicker={!hasWalletMethods} />;
-        case "wallet-ecosystem":
         case "wallet-connect":
         case "wallet-source":
         case "wallet-amount":
