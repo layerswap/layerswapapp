@@ -48,7 +48,7 @@ export type Wallet = {
     connect?: () => Promise<Wallet | undefined>;
     isNotAvailable?: boolean;
     withdrawalSupportedNetworks?: string[],
-    asSourceSupportedNetworks?: string[],
+    asSourceSupportedNetworks?: string[],s
     autofillSupportedNetworks?: string[],
     networkIcon?: string,
 }
