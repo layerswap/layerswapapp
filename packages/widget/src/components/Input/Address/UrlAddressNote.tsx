@@ -25,7 +25,7 @@ const UrlAddressNote: FC<Props> = ({ partner, values }) => {
         address &&
         <div className="flex flex-col items-center gap-6 mt-2 w-full">
             <div className="h-24 w-24 rounded-2xl overflow-hidden">
-                <AddressIcon className="scale-150 h-24 w-24 blur-[1.5px]" address={address} size={96} />
+                <AddressIcon address={address} size={96} />
             </div>
             <div className="text-center max-w-xs space-y-1">
                 <p className="text-2xl">Address Confirmation</p>
@@ -50,7 +50,7 @@ const UrlAddressNote: FC<Props> = ({ partner, values }) => {
                 </div>
                 <div className='flex gap-3 text-sm items-center w-full'>
                     <div className='flex shrink-0 bg-secondary-400 text-primary-text items-center justify-center rounded-md h-9 overflow-hidden w-9'>
-                        <AddressIcon className="scale-150 h-9 w-9" address={address} size={36} />
+                        <AddressIcon address={address} size={36} />
                     </div>
                     <p className="break-all text-sm">
                         {address}

@@ -4,7 +4,12 @@ import { useDepositStep } from "./depositStepContext";
 import IconButton from "@/components/Buttons/iconButton";
 
 const DepositHeader: FC<{ title?: string; onClose?: () => void; onBack?: () => void }> = ({ title = "Deposit", onClose, onBack }) => {
-    const { back, canGoBack } = useDepositStep();
+    const { back, canGoBack, closeLocked } = useDepositStep();
+
+    // Hide the close button while a transfer is mid-flight so the user can't
+    // dismiss the modal. Each flow reports its own lock condition (see
+    // useReportCloseLock); it clears once the swap is terminal.
+    const showClose = !!onClose && !closeLocked;
 
     return (
         <div className="flex items-center justify-between w-full h-[32px]">
@@ -20,7 +25,7 @@ const DepositHeader: FC<{ title?: string; onClose?: () => void; onBack?: () => v
                     {title}
                 </h2>
             </div>
-            {onClose && (
+            {showClose && (
                 <IconButton
                     onClick={onClose}
                     icon={<X className="h-5 w-5" />}

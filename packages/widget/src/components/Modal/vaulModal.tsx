@@ -359,8 +359,8 @@ const vaulStyles = `
 [data-vaul-drawer] {
     touch-action: none;
     will-change: transform;
-    transition: transform 0.1s cubic-bezier(0.32, 0.72, 0, 1);
-    animation-duration: 0.1s;
+    transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+    animation-duration: 0.5s;
     animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
 }
 [data-vaul-drawer][data-vaul-snap-points='false'][data-vaul-drawer-direction='bottom'][data-state='open'] {
@@ -373,7 +373,7 @@ const vaulStyles = `
     transform: translate3d(0, var(--snap-point-height, 0), 0);
 }
 [data-vaul-overlay][data-vaul-snap-points='false'] {
-    animation-duration: 0.1s;
+    animation-duration: 0.5s;
     animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
 }
 [data-vaul-overlay][data-vaul-snap-points='false'][data-state='open'] {
@@ -382,9 +382,12 @@ const vaulStyles = `
 [data-vaul-overlay][data-state='closed'] {
     animation-name: fadeOut;
 }
+[data-vaul-animate='false'] {
+    animation: none !important;
+}
 [data-vaul-overlay][data-vaul-snap-points='true'] {
     opacity: 0;
-    transition: opacity 0.1s cubic-bezier(0.32, 0.72, 0, 1);
+    transition: opacity 0.5s cubic-bezier(0.32, 0.72, 0, 1);
 }
 [data-vaul-overlay][data-vaul-snap-points='true'] {
     opacity: 1;
@@ -401,6 +404,12 @@ const vaulStyles = `
     left: 0;
     right: 0;
     height: 200%;
+}
+[data-vaul-overlay][data-vaul-snap-points='true']:not([data-vaul-snap-points-overlay='true']):not([data-state='closed']) {
+    opacity: 0;
+}
+[data-vaul-overlay][data-vaul-snap-points-overlay='true'] {
+    opacity: 1;
 }
 [data-vaul-handle] {
     display: block;
@@ -426,6 +435,17 @@ const vaulStyles = `
     width: max(100%, 2.75rem);
     height: max(100%, 2.75rem);
     touch-action: inherit;
+}
+@media (hover: hover) and (pointer: fine) {
+    [data-vaul-drawer] {
+        user-select: none;
+    }
+}
+@media (pointer: fine) {
+    [data-vaul-handle-hitarea] {
+        width: 100%;
+        height: 100%;
+    }
 }
 @keyframes fadeIn {
     from { opacity: 0; }

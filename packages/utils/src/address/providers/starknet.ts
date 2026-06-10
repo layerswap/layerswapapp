@@ -1,4 +1,8 @@
 import BN from 'bn.js';
+import KnownInternalNames from "@/knownIds";
+import { Network, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
+
+export const name = 'Starknet';
 
 const TWO = toBN(2);
 const MASK_251 = TWO.pow(toBN(251));
@@ -6,7 +10,7 @@ const MASK_221 = TWO.pow(toBN(221));
 
 type BigNumberish = string | number | BN;
 
-export function validateAndParseAddress(address: string): boolean {
+function validateAndParseAddress(address: string): boolean {
     if (typeof address !== 'string') {
         return false;
     }
@@ -62,4 +66,27 @@ function toBN(number: BigNumberish, base?: number | 'hex') {
 
 function isHex(hex: string): boolean {
     return hex.startsWith('0x');
+}
+
+export class StarknetAddressUtilsProvider implements AddressUtilsProvider {
+    readonly providerName = name;
+
+    supportsNetwork(network: Network): boolean {
+        return (KnownInternalNames.Networks.StarkNetMainnet.includes(network.name) || KnownInternalNames.Networks.StarkNetSepolia.includes(network.name))
+            || (KnownInternalNames.Networks.ParadexMainnet.includes(network.name) || KnownInternalNames.Networks.ParadexTestnet.includes(network.name))
+    }
+
+    isValidAddress(props: AddressUtilsProviderProps): boolean {
+        const { address } = props;
+        if (!address) {
+            return false
+        }
+        return validateAndParseAddress(address);
+    }
+
+    addressFormat(props: AddressUtilsProviderProps): string {
+        const { address } = props;
+        if (!address) return '';
+        return addAddressPadding(address.toLowerCase());
+    }
 }

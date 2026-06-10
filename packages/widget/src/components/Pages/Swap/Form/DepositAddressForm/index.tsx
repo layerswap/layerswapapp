@@ -12,7 +12,7 @@ import { useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import { generateSwapInitialValues } from "@/lib/generateSwapInitialValues";
-import { TransactionType } from "@/lib/apiClients/layerSwapApiClient";
+import { BackendTransactionStatus, TransactionType } from "@/lib/apiClients/layerSwapApiClient";
 import EasyDepositBanner from "./EasyDepositBanner";
 import PayFromPicker from "./PayFromPicker";
 import ReceivePicker from "./ReceivePicker";
@@ -122,7 +122,7 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
         setFieldValue('depositMethod', 'deposit_address', true)
     }, [])
 
-    const { routeValidation, formValidation } = useValidationContext();
+    const { formValidation } = useValidationContext();
     const { swapId, swapBasicData, swapDetails, depositActionsResponse, refuel } = useSwapDataState();
     const { setSwapId } = useSwapDataUpdate();
 
@@ -186,7 +186,7 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
     // The Processing panel renders "Transfer complete" as soon as an output
     // transaction exists, even before swapStatus flips to Completed. Mirror
     // that here so the "Deposit more" button appears at the same time.
-    const hasOutputTx = !!swapDetails?.transactions?.some(t => t.type === TransactionType.Output);
+    const hasOutputTx = swapDetails?.transactions?.find(t => t.type === TransactionType.Output)?.status == BackendTransactionStatus.Completed;
     const isCompleted = !!swapId && swapMatchesValues && hasOutputTx;
     const showDepositInfo = !!swapId && swapMatchesValues && !isProcessing;
 
@@ -227,6 +227,7 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
                                             }}
                                             destinationNetwork={destination?.name}
                                             destinationToken={toCurrency?.symbol}
+                                            hideDestinationPicker={hideDestinationPicker}
                                         />
 
                                         {/* Destination network/token + recipient address share one "Receive" row */}

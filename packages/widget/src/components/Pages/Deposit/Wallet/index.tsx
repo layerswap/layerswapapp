@@ -2,10 +2,9 @@ import { FC } from "react";
 import { Formik } from "formik";
 import { Partner } from "@/Models/Partner";
 import { SwapDataProvider } from "@/context/swap";
+import { ValidationProvider } from "@/context/validationContext";
 import { useDepositStep } from "../depositStepContext";
 import { useDepositInitialValues } from "../depositSelectionContext";
-import { DepositWalletProvider } from "./depositWalletContext";
-import EcosystemStep from "./EcosystemStep";
 import ConnectStep from "./ConnectStep";
 import SourceStep from "./SourceStep";
 import AmountStep from "./AmountStep";
@@ -17,7 +16,6 @@ type Props = {
 
 const Comp: FC<Props> = ({ partner }) => {
     const { step } = useDepositStep();
-    if (step === "wallet-ecosystem") return <EcosystemStep />;
     if (step === "wallet-connect") return <ConnectStep />;
     if (step === "wallet-source") return <SourceStep />;
     if (step === "wallet-amount") return <AmountStep />;
@@ -32,9 +30,11 @@ const WalletFlowInner: FC<Props> = ({ partner }) => {
     // processing step, which renders SwapDetails from this flow's provider.
     return (
         <Formik initialValues={initialValues} validateOnMount onSubmit={() => { }}>
-            <div className="flex flex-col min-h-[400px] h-full">
-                <Comp partner={partner} />
-            </div>
+            <ValidationProvider>
+                <div className="flex flex-col min-h-[373px] h-full">
+                    <Comp partner={partner} />
+                </div>
+            </ValidationProvider>
         </Formik>
     );
 };
@@ -47,11 +47,9 @@ const WalletFlowInner: FC<Props> = ({ partner }) => {
  * so the providers stay mounted across the steps and only reset on exit.
  */
 const WalletFlow: FC<Props> = ({ partner }) => (
-    <DepositWalletProvider>
-        <SwapDataProvider>
-            <WalletFlowInner partner={partner} />
-        </SwapDataProvider>
-    </DepositWalletProvider>
+    <SwapDataProvider>
+        <WalletFlowInner partner={partner} />
+    </SwapDataProvider>
 );
 
 export default WalletFlow;

@@ -11,20 +11,24 @@ import { DepositSelectionProvider } from "./depositSelectionContext";
 import DepositHeader from "./DepositHeader";
 import MethodPicker from "./Options/MethodPicker";
 import WalletFlow from "./Wallet";
+import WaitingForConnect from "./Wallet/WaitingForConnect";
 import TransferCrypto from "./TransferCrypto";
 import { SupportedDestination } from "./DestinationTokenPicker";
 import { Widget } from "@/components/Widget/Index";
 import ResizablePanel from "@/components/Common/ResizablePanel";
 import { DepositSettingsProvider } from "@/context/depositSettings";
 import ThemeWrapper from "@/components/themeWrapper";
+import useAllWithdrawalBalances from "@/hooks/useAllWithdrawalBalances";
+import { DepositLoading, LayerswapProvider } from "@/index";
+import { LayerswapContextProps } from "@/context/LayerswapProvider";
 
 export type DepositMode = "inline" | "button";
 
 export type DepositProps = {
     partner?: Partner;
-    /** Allowed destination network/token pairs. The user picks from this list
-     * via the token dropdown; the network is determined by the chosen token. */
-    destinations: SupportedDestination[];
+    /** The single destination network and its allowed tokens. The network is
+     * fixed; the user picks one of the tokens via the token dropdown. */
+    destination: SupportedDestination;
     /** Recipient address on the destination network. Required — the deposit
      * widget never asks the end user for this. */
     destinationAddress: string;
@@ -37,23 +41,24 @@ export type DepositProps = {
     buttonLabel?: string;
     /** Extra className applied to the trigger button when mode="button". */
     buttonClassName?: string;
-    /** When true, hide the "Send to" recipient row in the quote summary. The
-     * deposit widget's recipient is the integrator's own locked address, so
-     * the row is often redundant for the end user. Defaults to false. */
-    hideRecipient?: boolean;
+    /** When true, show the "Send to" destination address row in the quote
+     * summary. The deposit widget's recipient is the integrator's own locked
+     * address, so the row is often redundant for the end user. Defaults to false. */
+    showDestinationAddress?: boolean;
     actionButtonText?: string;
     /** Default amount (in USD) seeded into the wallet flow once the user
      * picks a source token. Defaults to $1. Set to 0 to disable seeding. */
     defaultAmountUsd?: number;
 };
 
-const StepRouter: FC<{ step: DepositStep; partner?: Partner }> = ({
+const StepRouter: FC<{ step: DepositStep; partner?: Partner; hasWalletMethods: boolean }> = ({
     step,
     partner,
+    hasWalletMethods,
 }) => {
     switch (step) {
         case "method-picker": return <MethodPicker />;
-        case "transfer-crypto": return <TransferCrypto partner={partner} />;
+        case "transfer-crypto": return <TransferCrypto partner={partner} showDestinationPicker={!hasWalletMethods} />;
         case "wallet-ecosystem":
         case "wallet-connect":
         case "wallet-source":
@@ -67,8 +72,7 @@ const StepRouter: FC<{ step: DepositStep; partner?: Partner }> = ({
 };
 
 const DepositForm: FC<Pick<DepositProps, "partner" | "title"> & { onClose?: () => void }> = ({ partner, title, onClose }) => {
-    const { step, back } = useDepositStep();
-    const { isMobile } = useWindowDimensions();
+    const { step, back, hasWalletMethods } = useDepositStep();
     const { selectedConnector, selectedMultiChainConnector, goBack } = useConnectModal();
 
     // On the inline connect step the single deposit header doubles as the
@@ -81,32 +85,29 @@ const DepositForm: FC<Pick<DepositProps, "partner" | "title"> & { onClose?: () =
         ? (selectedMultiChainConnector && !selectedConnector ? "Select ecosystem" : "Connect wallet")
         : title;
     const headerBack = step === "wallet-connect" && inConnectSubView ? goBack : back;
+    useAllWithdrawalBalances();
 
     return (
         <div className="flex flex-col gap-3 w-full pt-4 max-sm:pb-4">
             <DepositHeader title={headerTitle} onClose={onClose} onBack={headerBack} />
             <div className="h-px w-full bg-secondary-400" />
-            {
-                isMobile ?
-                    <StepRouter step={step} partner={partner} />
-                    : <ResizablePanel>
-                        <StepRouter step={step} partner={partner} />
-                    </ResizablePanel>
-            }
+            <ResizablePanel>
+                <StepRouter step={step} partner={partner} hasWalletMethods={hasWalletMethods} />
+            </ResizablePanel>
         </div>
     );
 };
 
-const DepositCard: FC<Pick<DepositProps, "partner" | "destinations" | "destinationAddress" | "hideRecipient" | "title" | "actionButtonText" | "defaultAmountUsd"> & { onClose?: () => void }> = ({ partner, destinations, destinationAddress, hideRecipient, title, actionButtonText, defaultAmountUsd, onClose }) => {
+const DepositCard: FC<Pick<DepositProps, "partner" | "destination" | "destinationAddress" | "showDestinationAddress" | "title" | "actionButtonText" | "defaultAmountUsd"> & { onClose?: () => void }> = ({ partner, destination, destinationAddress, showDestinationAddress, title, actionButtonText, defaultAmountUsd, onClose }) => {
     return (
         <DepositSettingsProvider value={{
-            hideRecipient: !!hideRecipient,
+            showDestinationAddress,
             actionButtonText,
             defaultAmountUsd,
         }}>
             <ThemeWrapper>
                 <Widget hideMenu fitHeight>
-                    <DepositSelectionProvider destinations={destinations} destinationAddress={destinationAddress}>
+                    <DepositSelectionProvider destination={destination} destinationAddress={destinationAddress}>
                         <DepositStepProvider>
                             <DepositForm partner={partner} title={title} onClose={onClose} />
                         </DepositStepProvider>
@@ -117,7 +118,7 @@ const DepositCard: FC<Pick<DepositProps, "partner" | "destinations" | "destinati
     );
 };
 
-export const Deposit: FC<DepositProps> = ({ mode = "inline", buttonLabel = "Deposit", buttonClassName, ...props }) => {
+export const DepositComponent: FC<DepositProps> = ({ mode = "inline", buttonLabel = "Deposit", buttonClassName, ...props }) => {
     const [open, setOpen] = useState(false);
     const { isMobile } = useWindowDimensions();
 
@@ -174,4 +175,17 @@ export const Deposit: FC<DepositProps> = ({ mode = "inline", buttonLabel = "Depo
     }
     return <DepositCard {...props} />;
 };
+
+export const Deposit: FC<LayerswapContextProps & DepositProps> = ({ callbacks, config, walletProviders, children, ...depositProps }) => {
+    const resolvedConfig: LayerswapContextProps['config'] = {
+        ...config,
+        loadingComponent: <DepositLoading />
+    }
+    return (
+        <LayerswapProvider callbacks={callbacks} config={resolvedConfig} walletProviders={walletProviders}>
+            <DepositComponent {...depositProps} />
+        </LayerswapProvider>
+    );
+}
+
 export default Deposit;

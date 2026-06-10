@@ -9,8 +9,7 @@ export function createParadexProvider(config: ParadexProviderConfig = {}): Walle
     const {
         customHook,
         balanceProviders,
-        gasProviders,
-        addressUtilsProviders
+        gasProviders
     } = config;
 
     const walletConnectionProvider = customHook || useParadexConnection;
@@ -24,15 +23,10 @@ export function createParadexProvider(config: ParadexProviderConfig = {}): Walle
         ? (Array.isArray(gasProviders) ? gasProviders : [gasProviders])
         : undefined;
 
-    const finalAddressUtilsProviders = addressUtilsProviders !== undefined
-        ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
-        : undefined;
-
     return {
         id: "paradex",
         wrapper: ActiveParadexAccountProvider,
         walletConnectionProvider,
-        addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
         // balanceProvider: finalBalanceProviders,
     };

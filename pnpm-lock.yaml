@@ -461,6 +461,34 @@ importers:
         specifier: ^5
         version: 5.9.3
 
+  packages/utils:
+    dependencies:
+      '@ton/core':
+        specifier: ^0.62.0
+        version: 0.62.1(@ton/crypto@3.3.0)
+      bitcoin-address-validation:
+        specifier: ^3.0.0
+        version: 3.0.0
+      bn.js:
+        specifier: ^5.2.2
+        version: 5.2.2
+      bs58:
+        specifier: ^6.0.0
+        version: 6.0.0
+      js-sha3:
+        specifier: ^0.8.0
+        version: 0.8.0
+    devDependencies:
+      rimraf:
+        specifier: ^5.0.0
+        version: 5.0.10
+      tsc-alias:
+        specifier: ^1.8.16
+        version: 1.8.16
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.3
+
   packages/wallets/all:
     dependencies:
       '@layerswap/wallet-bitcoin':
@@ -836,6 +864,9 @@ importers:
       '@headlessui/react':
         specifier: ^2.1.1
         version: 2.2.9(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@layerswap/utils':
+        specifier: workspace:^
+        version: link:../utils
       '@number-flow/react':
         specifier: ^0.5.10
         version: 0.5.10(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -921,7 +952,7 @@ importers:
         specifier: 'catalog:'
         version: 2.3.8(react@19.2.3)
       tailwind-merge:
-        specifier: ^3.3.0
+        specifier: ^3.4.0
         version: 3.4.0
       tailwindcss-animate:
         specifier: ^1.0.5

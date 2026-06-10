@@ -77,9 +77,9 @@ export function DepositConfigButton() {
                 onChange={(v) => updateDepositProp("defaultAmountUsd", v)}
             />
             <ToggleRow
-                label="Hide recipient"
-                checked={depositProps.hideRecipient ?? false}
-                onCheckedChange={(val) => updateDepositProp("hideRecipient", val)}
+                label="Show destination address"
+                checked={depositProps.showDestinationAddress ?? false}
+                onCheckedChange={(val) => updateDepositProp("showDestinationAddress", val)}
             />
         </div>
     );

@@ -4,6 +4,7 @@ import { useIntercom } from 'react-use-intercom';
 import { SwapStatus } from '@/Models/SwapStatus';
 import QuestionIcon from '@/components//Icons/Question';
 import { ErrorHandler } from '@/lib/ErrorHandler';
+import { useDepositSettings } from '@/context/depositSettings';
 
 const Failed: FC = () => {
     const { swapDetails } = useSwapDataState()
@@ -60,10 +61,11 @@ type Props = {
 }
 
 const Expired = ({ onGetHelp }: Props) => {
+    const { isDepositFlow } = useDepositSettings()
     return (
         <div>
             <span className='text-md text-left text-xs md:text-sm text-primary-text'>The transfer wasn&apos;t completed during the allocated timeframe.</span>
-            <span className='text-secondary-text'><span> If you&apos;ve already sent crypto for this swap, your funds are safe, </span><span className='underline hover:cursor-pointer' onClick={() => onGetHelp()}>please contact our support.</span></span>
+            <span className='text-secondary-text'><span>{` If you've already sent crypto for this ${isDepositFlow ? 'deposit' : 'swap'}, your funds are safe, `}</span><span className='underline hover:cursor-pointer' onClick={() => onGetHelp()}>please contact our support.</span></span>
         </div>
     )
 }
@@ -82,10 +84,11 @@ const Delay: FC = () => {
 }
 
 const Canceled = ({ onGetHelp }: Props) => {
+    const { isDepositFlow } = useDepositSettings()
     return (
         <div>
             <p className='text-md text-left text-primary-text'><span>The transaction was cancelled by your request.</span>
-                <span className='text-secondary-text'><span> If you&apos;ve already sent crypto for this swap, your funds are safe,</span><span className='underline hover:cursor-pointer' onClick={() => onGetHelp()}> please contact our support.</span></span>
+                <span className='text-secondary-text'><span>{` If you've already sent crypto for this ${isDepositFlow ? 'deposit' : 'swap'}, your funds are safe,`}</span><span className='underline hover:cursor-pointer' onClick={() => onGetHelp()}> please contact our support.</span></span>
             </p>
         </div>
     )

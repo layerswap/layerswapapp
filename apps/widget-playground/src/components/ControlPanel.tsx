@@ -56,8 +56,8 @@ export function ControlPanel() {
             };
 
         return {
-            "Theme": themeGroup,
             [widgetType === 'deposit' ? "Deposit configs" : "Widget configs"]: widgetGroup,
+            "Theme": themeGroup,
             "Other": {
                 items: [{ trigger: <LoadingButtonTrigger />, content: null }],
             },
@@ -73,7 +73,6 @@ export function ControlPanel() {
                     <CloseButton />
                 </div>
             </div>
-            <WidgetTypeSwitcher />
             <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="design" className=" space-y-6 px-5">
                 <TabsList className="flex items-center bg-secondary-700 hover:bg-secondary-600 transition-colors duration-200 rounded-xl !m-0">
                     {
@@ -91,6 +90,9 @@ export function ControlPanel() {
                     }
                 </TabsList>
                 <TabsContent value="design" className=" mt-0">
+                    <div className="pt-6">
+                        <WidgetTypeSwitcher />
+                    </div>
                     <Accordion collapsible type="single" className="flex flex-col w-full border-none bg-transparent space-y-9 pt-9">
                         {
                             Object.entries(accordionElements).map(([groupName, group]) => (

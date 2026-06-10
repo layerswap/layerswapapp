@@ -1,5 +1,5 @@
 //@ts-check
-import plugin from 'tailwindcss/plugin'
+const plugin = require('tailwindcss/plugin')
 
 module.exports = {
   content: [

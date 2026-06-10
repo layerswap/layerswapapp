@@ -1,4 +1,4 @@
-import { FC, ReactNode } from "react";
+import { FC } from "react";
 import { ChevronDown } from "lucide-react";
 import clsx from "clsx";
 import TokenChainBadge from "./TokenChainBadge";
@@ -11,9 +11,6 @@ type PickerTriggerContentProps = {
     token?: { logo?: string; symbol: string };
     network?: { logo?: string; display_name: string };
     placeholder?: string;
-    /** Optional content slotted to the left of the chevron — used for the
-     * "Most used" pill in the source picker. */
-    accessory?: ReactNode;
     showChevron?: boolean;
     chevronOpen?: boolean;
 };
@@ -28,7 +25,6 @@ const PickerTriggerContent: FC<PickerTriggerContentProps> = ({
     token,
     network,
     placeholder = "Select",
-    accessory,
     showChevron = true,
     chevronOpen = false,
 }) => {
@@ -61,9 +57,8 @@ const PickerTriggerContent: FC<PickerTriggerContentProps> = ({
                     </span>
                 )}
             </span>
-            {(accessory || showChevron) && (
+            {showChevron ? (
                 <span className="ml-auto flex items-center gap-2 shrink-0">
-                    {accessory}
                     {showChevron && (
                         <ChevronDown
                             className={clsx(
@@ -74,7 +69,7 @@ const PickerTriggerContent: FC<PickerTriggerContentProps> = ({
                         />
                     )}
                 </span>
-            )}
+            ) : null}
         </div>
     );
 };

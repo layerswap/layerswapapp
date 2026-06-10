@@ -1,11 +1,13 @@
 import { FC, ReactNode } from "react";
 import clsx from "clsx";
-import { QrCode, Wallet as WalletIcon, WalletCards, ChevronRight } from "lucide-react";
+import { QrCode, ChevronRight } from "lucide-react";
 import useWallet from "@/hooks/useWallet";
+import { useSelectSwapAccount } from "@/context/swapAccounts";
 import { useDepositStep } from "../depositStepContext";
 import { useDepositSelection } from "../depositSelectionContext";
 import { Address } from "@/lib/address/Address";
 import DestinationTokenPicker from "../DestinationTokenPicker";
+import WalletIcon from "@/components/Icons/WalletIcon";
 
 type MethodCardProps = {
     icon: ReactNode;
@@ -52,17 +54,20 @@ const MethodPicker: FC = () => {
     const { push } = useDepositStep();
     const { wallets } = useWallet();
     const { destination, destinationToken } = useDepositSelection();
+    const selectSourceAccount = useSelectSwapAccount("from");
 
     const primaryWallet = wallets[0];
     const hasWallet = !!primaryWallet;
     const destinationReady = !!destination && !!destinationToken;
 
     const handleWalletClick = () => {
-        // Already connected: go straight to the source step (once a destination
-        // is picked). Otherwise open the inline connect step, which advances to
-        // the source step on success (or back here if no destination yet).
+        if (!destinationReady) return;
+        // Already connected: mark it as the latest source account (so SourceStep
+        // scopes routes to it) and skip the connect modal. Otherwise hand off to
+        // the connecting step, which opens the connect modal over a spinner.
         if (hasWallet) {
-            if (destinationReady) push("wallet-source");
+            selectSourceAccount(primaryWallet);
+            push("wallet-source");
             return;
         }
         push("wallet-connect");
@@ -73,12 +78,10 @@ const MethodPicker: FC = () => {
     };
 
     const handleMoreWalletsClick = () => {
-        push("wallet-ecosystem");
+        if (!destinationReady) return;
+        push("wallet-connect");
     };
 
-    // The wallet flow lands on AmountStep, which requires a destination to
-    // produce a quote. Keep the card actionable while disconnected (so the
-    // inline connect step can still open) but block forward navigation until ready.
     const walletDisabled = hasWallet && !destinationReady;
     const walletSubtitle = hasWallet
         ? `Connected · ${new Address(primaryWallet?.address, null, primaryWallet.providerName).toShortString()}`
@@ -87,7 +90,7 @@ const MethodPicker: FC = () => {
     const WalletProviderIcon = primaryWallet?.icon;
     const walletCardIcon = hasWallet && WalletProviderIcon
         ? <WalletProviderIcon className="h-7 w-7" />
-        : <WalletIcon className="h-6 w-6 text-primary-text" />;
+        : <WalletIcon className="h-6 w-6 text-primary-text" strokeWidth={2} />;
 
     return (
         <div className="flex flex-col gap-2 w-full">
@@ -107,21 +110,23 @@ const MethodPicker: FC = () => {
                     disabledReason="Pick a destination first"
                 />
                 <MethodCard
-                    icon={<QrCode className="h-6 w-6 text-primary-200" />}
+                    icon={<QrCode className="h-6 w-6 text-primary-text" />}
                     title="Deposit address"
-                    subtitle="Send from any wallet, exchange or CEX"
+                    subtitle="Send from any wallet or CEX"
                     onClick={handleTransferCryptoClick}
                     disabled={!destinationReady}
                     disabledReason="Pick a destination first"
                 />
-                <MethodCard
-                    icon={<WalletCards className="h-6 w-6 text-primary-200" />}
-                    title="More wallets"
-                    subtitle="Use MetaMask, Coinbase or more"
-                    onClick={handleMoreWalletsClick}
-                    disabled={!destinationReady}
-                    disabledReason="Pick a destination first"
-                />
+                {hasWallet && (
+                    <MethodCard
+                        icon={<WalletIcon className="h-6 w-6 text-primary-text" strokeWidth={2} />}
+                        title="More wallets"
+                        subtitle="Use MetaMask, Phantom and more"
+                        onClick={handleMoreWalletsClick}
+                        disabled={!destinationReady}
+                        disabledReason="Pick a destination first"
+                    />
+                )}
             </div>
         </div>
     );

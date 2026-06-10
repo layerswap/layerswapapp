@@ -8,13 +8,13 @@ export type WidgetType = 'swap' | 'deposit';
 export type PlaygroundDepositProps = Omit<DepositProps, 'partner'>;
 
 const DEFAULT_DEPOSIT_PROPS: PlaygroundDepositProps = {
-    mode: 'button',
-    hideRecipient: true,
+    mode: 'inline',
+    showDestinationAddress: false,
     title: 'Deposit',
     buttonLabel: 'Deposit',
     actionButtonText: 'Deposit',
     defaultAmountUsd: 1,
-    destinations: [{ network: 'STARKNET_MAINNET', token: 'ETH' }],
+    destination: { network: 'STARKNET_MAINNET', tokens: ['ETH'] },
     destinationAddress: '0x04f5F8e5cDae95A5C1B84b97f7fd7fEff3463325C97Cc84D2830e1150Acf6820',
 };
 
@@ -61,7 +61,7 @@ export const ConfigProvider: FC<{ children: React.ReactNode }> = ({ children }) 
     const [showPanel, setShowPanel] = useState(true);
     const [actionText, setActionText] = useState('');
     const [initialValues, setInitialSettings] = useState<InitialSettings>({});
-    const [widgetType, setWidgetType] = useState<WidgetType>('swap');
+    const [widgetType, setWidgetType] = useState<WidgetType>('deposit');
     const [depositProps, setDepositProps] = useState<PlaygroundDepositProps>(DEFAULT_DEPOSIT_PROPS);
     const bumpWidgetKey = () => {
         setWidgetRenderKey(prev => prev + 1);

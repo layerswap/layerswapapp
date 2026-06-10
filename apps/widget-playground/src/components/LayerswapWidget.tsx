@@ -1,6 +1,8 @@
 "use client";
 import { FC, useMemo } from 'react';
-import { Deposit, LayerswapProvider, Swap, WidgetLoading } from '@layerswap/widget';
+import { LayerswapProvider, Swap, WidgetLoading } from '@layerswap/widget';
+import { DepositComponent, DepositLoading } from '@layerswap/widget/deposit';
+
 import { useWidgetContext } from '@/context/ConfigContext';
 import { useSettingsState } from '@/context/settings';
 import { getDefaultProviders } from '@layerswap/wallets';
@@ -54,9 +56,11 @@ const LayerswapWidget: FC = () => {
                 >
                     {
                         showLoading
-                            ? <WidgetLoading />
+                            ? widgetType === 'deposit'
+                                ? <DepositLoading />
+                                : <WidgetLoading />
                             : widgetType === 'deposit'
-                                ? <Deposit {...depositProps} />
+                                ? <DepositComponent {...depositProps} />
                                 : <Swap />
                     }
                 </LayerswapProvider>
