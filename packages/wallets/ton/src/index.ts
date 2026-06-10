@@ -8,7 +8,6 @@ import type {
 import { LazyBalanceProvider } from "@layerswap/widget/types"
 import { KnownInternalNames } from "@layerswap/widget/internal"
 import { TonGasProvider } from "./tonGasProvider"
-import { TonAddressUtilsProvider } from "./tonAddressUtilsProvider"
 import { createTonTransfer } from "./transferProvider/createTonTransfer"
 import { createTonConnection } from "./service/createTonConnection"
 import { initTonProvider } from "./init"
@@ -28,7 +27,6 @@ export function createTONProvider(config: TONProviderConfig = {}): WalletProvide
         customConnection,
         balanceProviders,
         gasProviders,
-        addressUtilsProviders,
         transferProviders,
     } = config
 
@@ -60,11 +58,6 @@ export function createTONProvider(config: TONProviderConfig = {}): WalletProvide
         ? (Array.isArray(gasProviders) ? gasProviders : [gasProviders])
         : defaultGasProviders
 
-    const defaultAddressUtilsProviders = [new TonAddressUtilsProvider()]
-    const finalAddressUtilsProviders = addressUtilsProviders !== undefined
-        ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
-        : defaultAddressUtilsProviders
-
     const defaultTransferProviders = [createTonTransfer]
     const finalTransferProviders = transferProviders !== undefined
         ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
@@ -74,7 +67,6 @@ export function createTONProvider(config: TONProviderConfig = {}): WalletProvide
         id: "ton",
         init,
         createConnection,
-        addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
         transferProvider: finalTransferProviders,

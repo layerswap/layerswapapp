@@ -5,7 +5,6 @@ import type {
     WalletConnectionProviderProps,
     BaseWalletProviderConfig,
 } from "@layerswap/widget/types"
-import { FuelAddressUtilsProvider } from "./fuelAddressUtilsProvider"
 import { FuelBalanceProvider } from "./fuelBalanceProvider"
 import { FuelGasProvider } from "./fuelGasProvider"
 import { createFuelTransfer } from "./transferProvider/createFuelTransfer"
@@ -19,7 +18,6 @@ export function createFuelProvider(config: FuelProviderConfig = {}): WalletProvi
         customConnection,
         balanceProviders,
         gasProviders,
-        addressUtilsProviders,
         transferProviders,
     } = config
 
@@ -46,11 +44,6 @@ export function createFuelProvider(config: FuelProviderConfig = {}): WalletProvi
         ? (Array.isArray(gasProviders) ? gasProviders : [gasProviders])
         : defaultGasProviders
 
-    const defaultAddressUtilsProviders = [new FuelAddressUtilsProvider()]
-    const finalAddressUtilsProviders = addressUtilsProviders !== undefined
-        ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
-        : defaultAddressUtilsProviders
-
     const defaultTransferProviders = [createFuelTransfer]
     const finalTransferProviders = transferProviders !== undefined
         ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
@@ -60,7 +53,6 @@ export function createFuelProvider(config: FuelProviderConfig = {}): WalletProvi
         id: "fuel",
         init,
         createConnection,
-        addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
         transferProvider: finalTransferProviders,

@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { useWalletProviders } from "@/context/walletProviders";
+import { useWalletProvidersRegistry } from "@/context/walletProviders";
 
 export type DepositStep =
     | "method-picker"
@@ -38,7 +38,8 @@ export function DepositStepProvider({ children }: { children: ReactNode }) {
     // so the method picker would only ever show the deposit-address card. Skip it
     // entirely: open straight on the deposit address and root the stack there, so
     // there is no step to go back to (the header hides the back button).
-    const hasWalletMethods = useWalletProviders().length > 0;
+    const { getEntries } = useWalletProvidersRegistry();
+    const hasWalletMethods = getEntries().length > 0;
     const rootStep: DepositStep = hasWalletMethods ? "method-picker" : "transfer-crypto";
 
     const [stack, setStack] = useState<DepositStep[]>([rootStep]);

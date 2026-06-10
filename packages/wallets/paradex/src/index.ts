@@ -15,7 +15,6 @@ export function createParadexProvider(config: ParadexProviderConfig = {}): Walle
         customConnection,
         balanceProviders,
         gasProviders,
-        addressUtilsProviders,
         transferProviders,
     } = config
 
@@ -35,10 +34,6 @@ export function createParadexProvider(config: ParadexProviderConfig = {}): Walle
         ? (Array.isArray(gasProviders) ? gasProviders : [gasProviders])
         : undefined
 
-    const finalAddressUtilsProviders = addressUtilsProviders !== undefined
-        ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
-        : undefined
-
     const defaultTransferProviders = [createParadexTransfer]
     const finalTransferProviders = transferProviders !== undefined
         ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
@@ -47,7 +42,6 @@ export function createParadexProvider(config: ParadexProviderConfig = {}): Walle
     return {
         id: "paradex",
         createConnection,
-        addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
         transferProvider: finalTransferProviders,
         // balanceProvider: finalBalanceProviders,

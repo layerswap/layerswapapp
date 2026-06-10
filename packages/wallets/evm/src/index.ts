@@ -8,7 +8,6 @@ import { LazyBalanceProvider, LazyGasProvider, NetworkType } from "@layerswap/wi
 import { KnownInternalNames } from "@layerswap/widget/internal"
 import { createEvmConnection } from "./service/createEvmConnection"
 import { initEvmProvider } from "./EVMProvider/init"
-import { EVMAddressUtilsProvider } from "./evmAddressUtilsProvider"
 import { createEvmTransfer } from "./transferProvider/createEvmTransfer"
 import { EVMContractAddressProvider } from "./evmContractAddressProvider"
 import { EVMRpcHealthCheckProvider } from "./rpcHealthCheckProvider"
@@ -23,7 +22,6 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         customConnection,
         balanceProviders,
         gasProviders,
-        addressUtilsProviders,
         transferProviders,
         contractAddressProviders,
         rpcHealthCheckProviders,
@@ -87,11 +85,6 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         ? (Array.isArray(gasProviders) ? gasProviders : [gasProviders])
         : defaultGasProviders
 
-    const defaultAddressUtilsProviders = [new EVMAddressUtilsProvider()]
-    const finalAddressUtilsProviders = addressUtilsProviders !== undefined
-        ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
-        : defaultAddressUtilsProviders
-
     const defaultContractAddressProviders = [new EVMContractAddressProvider()]
     const finalContractAddressProviders = contractAddressProviders !== undefined
         ? (Array.isArray(contractAddressProviders) ? contractAddressProviders : [contractAddressProviders])
@@ -111,7 +104,6 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         id: "evm",
         init,
         createConnection,
-        addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
         transferProvider: finalTransferProviders,

@@ -8,6 +8,7 @@ import { useDepositSelection } from "../depositSelectionContext";
 import { Address } from "@/lib/address/Address";
 import DestinationTokenPicker from "../DestinationTokenPicker";
 import WalletIcon from "@/components/Icons/WalletIcon";
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 
 type MethodCardProps = {
     icon: ReactNode;
@@ -93,7 +94,13 @@ const MethodPicker: FC = () => {
 
     const WalletProviderIcon = primaryWallet?.icon;
     const walletCardIcon = hasWallet && WalletProviderIcon
-        ? <WalletProviderIcon className="h-7 w-7" />
+        ? <ImageWithFallback
+            alt={primaryWallet.displayName ?? primaryWallet.id}
+            className="h-7 w-7 object-contain"
+            src={primaryWallet.icon}
+            width="28"
+            height="28"
+        />
         : <WalletIcon className="h-6 w-6 text-primary-text" strokeWidth={2} />;
 
     return (

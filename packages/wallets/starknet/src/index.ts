@@ -9,7 +9,6 @@ import type {
 import { LazyGasProvider } from "@layerswap/widget/types"
 import { KnownInternalNames } from "@layerswap/widget/internal"
 import { StarknetBalanceProvider } from "./starknetBalanceProvider"
-import { StarknetAddressUtilsProvider } from "./starknetAddressUtilsProvider"
 import { StarknetNftProvider } from "./starknetNftProvider"
 import { createStarknetTransfer } from "./transferProvider/createStarknetTransfer"
 import { createStarknetConnection } from "./service/createStarknetConnection"
@@ -29,7 +28,6 @@ export function createStarknetProvider(config: StarknetProviderConfig = {}): Wal
         customConnection,
         balanceProviders,
         gasProviders,
-        addressUtilsProviders,
         nftProviders,
         transferProviders,
     } = config
@@ -62,11 +60,6 @@ export function createStarknetProvider(config: StarknetProviderConfig = {}): Wal
         ? (Array.isArray(gasProviders) ? gasProviders : [gasProviders])
         : defaultGasProviders
 
-    const defaultAddressUtilsProviders = [new StarknetAddressUtilsProvider()]
-    const finalAddressUtilsProviders = addressUtilsProviders !== undefined
-        ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
-        : defaultAddressUtilsProviders
-
     const defaultNftProviders = [new StarknetNftProvider()]
     const finalNftProviders = nftProviders !== undefined
         ? (Array.isArray(nftProviders) ? nftProviders : [nftProviders])
@@ -81,7 +74,6 @@ export function createStarknetProvider(config: StarknetProviderConfig = {}): Wal
         id: "starknet",
         init,
         createConnection,
-        addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
         nftProvider: finalNftProviders,
