@@ -1,6 +1,8 @@
 "use client";
 import { FC, useMemo } from 'react';
 import { LayerswapProvider, Swap, WidgetLoading } from '@layerswap/widget';
+import { DepositComponent, DepositLoading } from '@layerswap/widget/deposit';
+
 import { useWidgetContext } from '@/context/ConfigContext';
 import { useSettingsState } from '@/context/settings';
 import { getDefaultProviders } from '@layerswap/wallets';
@@ -22,7 +24,7 @@ const walletConnectConfigs = {
 }
 
 const LayerswapWidget: FC = () => {
-    const { widgetRenderKey, showLoading, config, customEvmSwitch, initialValues } = useWidgetContext();
+    const { widgetRenderKey, showLoading, config, initialValues, widgetType, depositProps } = useWidgetContext();
     const settings = useSettingsState();
 
     const defaultWalletProviders = useMemo(() => getDefaultProviders({
@@ -41,7 +43,7 @@ const LayerswapWidget: FC = () => {
         <div
             key={widgetRenderKey}
             className="flex items-center justify-center min-h-screen w-full place-self-center">
-            <div className='w-full h-full rounded-xl'>
+            <div className={`h-full rounded-xl mx-auto ${widgetType == 'deposit' && depositProps.mode === 'button' ? 'w-fit' : 'w-full'}`}>
                 <LayerswapProvider
                     walletProviders={defaultWalletProviders}
                     config={{
@@ -54,8 +56,12 @@ const LayerswapWidget: FC = () => {
                 >
                     {
                         showLoading
-                            ? <WidgetLoading />
-                            : <Swap />
+                            ? widgetType === 'deposit'
+                                ? <DepositLoading />
+                                : <WidgetLoading />
+                            : widgetType === 'deposit'
+                                ? <DepositComponent {...depositProps} />
+                                : <Swap />
                     }
                 </LayerswapProvider>
             </div>

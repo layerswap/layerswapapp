@@ -1,5 +1,10 @@
+import KnownInternalNames from "@/knownIds";
+import { Network, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
+
+export const name = 'Tron';
+
 // Function to decode a Base58 string
-export default function decodeBase58(base58Str) {
+function decodeBase58(base58Str: string): string {
     const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
     const BASE = 58;
 
@@ -39,4 +44,25 @@ export default function decodeBase58(base58Str) {
     let resultHex = bytes.map(b => b.toString(16).padStart(2, '0')).join('');
 
     return resultHex;
+}
+
+export class TronAddressUtilsProvider implements AddressUtilsProvider {
+    readonly providerName = name;
+
+    supportsNetwork(network: Network): boolean {
+        return KnownInternalNames.Networks.TronMainnet.includes(network.name) || KnownInternalNames.Networks.TronTestnet.includes(network.name)
+    }
+
+    isValidAddress(props: AddressUtilsProviderProps): boolean {
+        const { address } = props;
+        if (!address) {
+            return false
+        }
+        const decodedAddress = decodeBase58(address).toUpperCase();
+        return decodedAddress.startsWith('41') && decodedAddress.length == 42
+    }
+
+    addressFormat(props: AddressUtilsProviderProps): string {
+        return props.address ?? '';
+    }
 }

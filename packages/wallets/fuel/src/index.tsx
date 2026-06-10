@@ -1,4 +1,3 @@
-import { FuelAddressUtilsProvider } from "./fuelAddressUtilsProvider";
 import { FuelBalanceProvider } from "./fuelBalanceProvider";
 import { FuelGasProvider } from "./fuelGasProvider";
 import FuelProviderWrapper from "./FuelProvider";
@@ -14,7 +13,6 @@ export function createFuelProvider(config: FuelProviderConfig = {}): WalletProvi
         customHook,
         balanceProviders,
         gasProviders,
-        addressUtilsProviders,
         transferProviders
     } = config;
 
@@ -38,11 +36,6 @@ export function createFuelProvider(config: FuelProviderConfig = {}): WalletProvi
         ? (Array.isArray(gasProviders) ? gasProviders : [gasProviders])
         : defaultGasProviders;
 
-    const defaultAddressUtilsProviders = [new FuelAddressUtilsProvider()];
-    const finalAddressUtilsProviders = addressUtilsProviders !== undefined
-        ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
-        : defaultAddressUtilsProviders;
-
     const defaultTransferProviders = [useFuelTransfer];
     const finalTransferProviders = transferProviders !== undefined
         ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
@@ -52,7 +45,6 @@ export function createFuelProvider(config: FuelProviderConfig = {}): WalletProvi
         id: "fuel",
         wrapper: WrapperComponent,
         walletConnectionProvider,
-        addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
         transferProvider: finalTransferProviders,
@@ -66,7 +58,6 @@ export const FuelProvider: WalletProvider = {
     id: "fuel",
     wrapper: FuelProviderWrapper,
     walletConnectionProvider: useFuelConnection,
-    addressUtilsProvider: [new FuelAddressUtilsProvider()],
     gasProvider: [new FuelGasProvider()],
     balanceProvider: [new FuelBalanceProvider()],
     transferProvider: [useFuelTransfer],

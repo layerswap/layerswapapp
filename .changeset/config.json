@@ -6,7 +6,8 @@
     [
       "@layerswap/widget",
       "@layerswap/wallet-*",
-      "@layerswap/wallets"
+      "@layerswap/wallets",
+      "@layerswap/utils"
     ]
   ],
   "linked": [],

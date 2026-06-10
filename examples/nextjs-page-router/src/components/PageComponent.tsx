@@ -1,5 +1,5 @@
 "use client";
-import { LayerswapProvider, Swap, LayerSwapSettings } from '@layerswap/widget';
+import { LayerswapProvider, DepositComponent, LayerSwapSettings } from '@layerswap/widget';
 import { getDefaultProviders } from "@layerswap/wallets";
 
 export function PageComponent({ layerswapSettings }: { layerswapSettings: LayerSwapSettings }) {
@@ -36,7 +36,7 @@ export function PageComponent({ layerswapSettings }: { layerswapSettings: LayerS
                     }}
                     walletProviders={walletProviders}
                 >
-                    <Swap />
+                    <DepositComponent mode='button' destination={{network:'ETHEREUM_MAINNET', tokens:['ETH']}} destinationAddress='0xB2029bbd8C1cBCC43c3A7b7fE3d118b0C57D7C31' />
                 </LayerswapProvider>
             </div>
         </div>

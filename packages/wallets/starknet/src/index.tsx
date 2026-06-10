@@ -3,7 +3,6 @@ import useStarknetConnection from "./useStarknetConnection";
 import { StarknetBalanceProvider } from "./starknetBalanceProvider";
 import { WalletProvider, BaseWalletProviderConfig, NftProvider, LazyGasProvider } from "@layerswap/widget/types";
 import { AppSettings, KnownInternalNames } from "@layerswap/widget/internal";
-import { StarknetAddressUtilsProvider } from "./starknetAddressUtilsProvider";
 import { StarknetNftProvider } from "./starknetNftProvider";
 import React from "react";
 import { useStarknetTransfer } from "./useStarknetTransfer";
@@ -24,7 +23,6 @@ export function createStarknetProvider(config: StarknetProviderConfig = {}): Wal
         customHook,
         balanceProviders,
         gasProviders,
-        addressUtilsProviders,
         nftProviders,
         transferProviders
     } = config;
@@ -48,11 +46,6 @@ export function createStarknetProvider(config: StarknetProviderConfig = {}): Wal
         ? (Array.isArray(gasProviders) ? gasProviders : [gasProviders])
         : defaultGasProviders;
 
-    const defaultAddressUtilsProviders = [new StarknetAddressUtilsProvider()];
-    const finalAddressUtilsProviders = addressUtilsProviders !== undefined
-        ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
-        : defaultAddressUtilsProviders;
-
     const defaultNftProviders = [new StarknetNftProvider()];
     const finalNftProviders = nftProviders !== undefined
         ? (Array.isArray(nftProviders) ? nftProviders : [nftProviders])
@@ -67,7 +60,6 @@ export function createStarknetProvider(config: StarknetProviderConfig = {}): Wal
         id: "starknet",
         wrapper: StarknetProviderWrapper,
         walletConnectionProvider,
-        addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
         nftProvider: finalNftProviders,
@@ -89,7 +81,6 @@ export const StarknetProvider: WalletProvider = {
         );
     },
     walletConnectionProvider: useStarknetConnection,
-    addressUtilsProvider: [new StarknetAddressUtilsProvider()],
     gasProvider: [
         new LazyGasProvider(
             (n) => isStarknetNetwork(n.name),

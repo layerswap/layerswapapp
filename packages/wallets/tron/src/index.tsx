@@ -2,7 +2,6 @@ import { WalletProvider, BaseWalletProviderConfig, LazyBalanceProvider } from "@
 import { TronGasProvider } from "./tronGasProvider";
 import TronProviderWrapper from "./TronProvider";
 import useTronConnection from "./useTronConnection";
-import { TronAddressUtilsProvider } from "./tronAddressUtilsProvider";
 import React from "react";
 import { useTronTransfer } from "./transferProvider/useTronTransfer";
 import { KnownInternalNames } from "@layerswap/widget/internal";
@@ -14,7 +13,6 @@ export function createTronProvider(config: TronProviderConfig = {}): WalletProvi
         customHook,
         balanceProviders,
         gasProviders,
-        addressUtilsProviders,
         transferProviders
     } = config;
 
@@ -43,11 +41,6 @@ export function createTronProvider(config: TronProviderConfig = {}): WalletProvi
         ? (Array.isArray(gasProviders) ? gasProviders : [gasProviders])
         : defaultGasProviders;
 
-    const defaultAddressUtilsProviders = [new TronAddressUtilsProvider()];
-    const finalAddressUtilsProviders = addressUtilsProviders !== undefined
-        ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
-        : defaultAddressUtilsProviders;
-
     const defaultTransferProviders = [useTronTransfer];
     const finalTransferProviders = transferProviders !== undefined
         ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
@@ -57,7 +50,6 @@ export function createTronProvider(config: TronProviderConfig = {}): WalletProvi
         id: "tron",
         wrapper: WrapperComponent,
         walletConnectionProvider,
-        addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
         transferProvider: finalTransferProviders,
@@ -71,7 +63,6 @@ export const TronProvider: WalletProvider = {
     id: "tron",
     wrapper: TronProviderWrapper,
     walletConnectionProvider: useTronConnection,
-    addressUtilsProvider: [new TronAddressUtilsProvider()],
     gasProvider: [new TronGasProvider()],
     balanceProvider: [
         new LazyBalanceProvider(

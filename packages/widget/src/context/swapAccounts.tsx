@@ -19,6 +19,10 @@ type PickerAccountsProviderProps = {
 type SwapAccountsContextType = {
     sourceAccounts: AccountIdentityWithSupportedNetworks[];
     destinationAccounts: (AccountIdentity | AccountIdentityWithSupportedNetworks)[];
+    /** The source account most recently chosen via selectSourceAccount, kept so
+     * flows that work with a single wallet (e.g. the deposit wallet transfer)
+     * can scope to the latest pick rather than every connected provider. */
+    lastSelectedSource: BaseAccountIdentity | undefined;
 }
 
 type SwapAccountsUpdateContextType = {
@@ -49,6 +53,7 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
 
     const [selectedDestAccounts, setSelectedDestinationAccounts] = useState<BaseAccountIdentity[]>([])
     const [selectedSourceAccounts, setSelectedSourceAccounts] = useState<BaseAccountIdentity[]>([])
+    const [lastSelectedSource, setLastSelectedSource] = useState<BaseAccountIdentity | undefined>(undefined)
     const { providers } = useWallet()
     const addManualDestAddress = useManualDestAddressesStore(s => s.addManualDestAddress)
     const manualDestAddresses = useManualDestAddressesStore(s => s.manualDestAddresses)
@@ -124,6 +129,7 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
         });
     }, [])
     const selectSourceAccount = useCallback((account: BaseAccountIdentity) => {
+        setLastSelectedSource(account);
         const previousSourceAccount = sourceAccounts.find(acc => acc.providerName === account.providerName);
         if (destinationAccounts.some(acc => acc.address === previousSourceAccount?.address && acc.providerName === previousSourceAccount?.providerName)) {
             selectDestinationAccount(account);
@@ -142,7 +148,8 @@ export function SwapAccountsProvider({ children }: PickerAccountsProviderProps) 
     const stateValues: SwapAccountsContextType = useMemo(() => ({
         sourceAccounts,
         destinationAccounts,
-    }), [sourceAccounts, destinationAccounts]);
+        lastSelectedSource,
+    }), [sourceAccounts, destinationAccounts, lastSelectedSource]);
 
     const update: SwapAccountsUpdateContextType = useMemo(() => ({
         selectDestinationAccount,
@@ -186,6 +193,25 @@ export function useSelectedAccount(direction: SwapDirection, networkName: string
             }
             return acc.provider?.autofillSupportedNetworks?.some(n => n === networkName)
         });
+}
+
+/**
+ * The full source account most recently chosen via selectSourceAccount,
+ * resolved against the live source accounts (so it carries the wallet's
+ * supported-network info). Returns undefined before any source pick. Used by
+ * single-wallet flows that need to scope to the latest connected wallet rather
+ * than every connected provider.
+ */
+export function useLatestSourceAccount(): AccountIdentityWithSupportedNetworks | undefined {
+    const values = useContext<SwapAccountsContextType>(SwapAccountsStateContext as Context<SwapAccountsContextType>);
+    if (values === undefined) {
+        throw new Error('useLatestSourceAccount must be used within a SwapAccountsProvider');
+    }
+    const { lastSelectedSource, sourceAccounts } = values;
+    if (!lastSelectedSource) return undefined;
+    return sourceAccounts.find(acc =>
+        acc.providerName === lastSelectedSource.providerName && acc.id === lastSelectedSource.id,
+    );
 }
 
 export function useNetworkBalanceKey(direction: SwapDirection, networkName: string | undefined) {

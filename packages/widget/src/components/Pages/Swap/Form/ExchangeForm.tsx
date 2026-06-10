@@ -152,7 +152,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                     ? <ValidationError />
                                     : null
                             }
-                            <QuoteDetails swapValues={values} quote={quote?.quote} isQuoteLoading={isQuoteLoading} reward={quote?.reward} variant="base" />
+                            <QuoteDetails swapValues={values} quote={quote?.quote} isQuoteLoading={isQuoteLoading} reward={quote?.reward} variant="base" triggerClassnames="mt-2" />
                         </div>
                     </div>
                 </Widget.Content>
