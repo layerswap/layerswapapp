@@ -8,7 +8,7 @@ export type WidgetType = 'swap' | 'deposit';
 export type PlaygroundDepositProps = Omit<DepositProps, 'partner'>;
 
 const DEFAULT_DEPOSIT_PROPS: PlaygroundDepositProps = {
-    mode: 'button',
+    mode: 'inline',
     showDestinationAddress: false,
     title: 'Deposit',
     buttonLabel: 'Deposit',

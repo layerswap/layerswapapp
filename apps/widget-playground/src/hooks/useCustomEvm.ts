@@ -116,7 +116,7 @@ export default function useEVM(): WalletConnectionProvider {
         connectWallet,
         activeWallet: connectedWallets.find((w) => w.isActive),
         connectedWallets,
-        availableWalletsForConnect,
+        // availableWalletsForConnect,
         asSourceSupportedNetworks: supportedNetworks.asSource,
         autofillSupportedNetworks: supportedNetworks.autofill,
         withdrawalSupportedNetworks: supportedNetworks.withdrawal,
