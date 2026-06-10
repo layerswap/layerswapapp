@@ -61,7 +61,7 @@ const PayFromPicker: FC<PayFromPickerProps> = ({ selectedSource, onSourceChange,
                                     token={selectedSource?.token}
                                     network={selectedSource?.network}
                                     placeholder="Select source"
-                                    showChevron={hasOptions}
+                                    showChevron={hasMultipleOptions}
                                 />
                                 : <SelectedRouteDisplay
                                     route={selectedSource?.network}

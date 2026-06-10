@@ -53,6 +53,13 @@ export function useFamilyDrawer(): FamilyDrawerContextValue {
   return ctx;
 }
 
+/** Like useFamilyDrawer, but returns undefined outside a <FamilyDrawer>. Lets
+ * hosted content detect the drawer and defer height animation to its morph
+ * instead of running a competing one. */
+export function useOptionalFamilyDrawer(): FamilyDrawerContextValue | undefined {
+  return useContext(FamilyDrawerContext);
+}
+
 // ============================================================================
 // Styles (injected once)
 // ============================================================================
@@ -319,6 +326,10 @@ export interface FamilyDrawerProps {
    * handle — the hosted view is expected to supply its own surface. Drag-to-
    * dismiss, height morphing, rounding, and the drop shadow are preserved. */
   bare?: boolean;
+  /** When false, clicking the overlay outside the panel does not close the
+   * drawer. Escape, drag-to-dismiss, and explicit close buttons still work.
+   * Defaults to true. */
+  closeOnOutsideClick?: boolean;
 }
 
 export function FamilyDrawer({
@@ -330,6 +341,7 @@ export function FamilyDrawer({
   defaultOpen = false,
   onOpenChange,
   bare = false,
+  closeOnOutsideClick = true,
 }: FamilyDrawerProps) {
   useInjectStyles();
 
@@ -578,7 +590,7 @@ export function FamilyDrawer({
             <div
               className="fd-overlay"
               data-visible={visible}
-              onClick={close}
+              onClick={closeOnOutsideClick ? close : undefined}
             />
             <div
               ref={panelRef}

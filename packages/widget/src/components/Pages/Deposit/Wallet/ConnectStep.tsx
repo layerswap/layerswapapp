@@ -50,7 +50,7 @@ const ConnectStep: FC = () => {
     }, [destinationReady, push, back]);
 
     return (
-        <div className="openpicker flex flex-col min-h-0 w-full h-[400px]">
+        <div className="openpicker flex flex-col min-h-0 w-full h-[373px]">
             <ConnectorsList onFinish={handleFinish} />
         </div>
     );

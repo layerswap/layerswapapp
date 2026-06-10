@@ -3,7 +3,7 @@ import { FC, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import { Partner } from "@/Models/Partner";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/shadcn/dialog";
-import { FamilyDrawer, ViewsRegistry } from "@/components/Modal/FamilyDrawer";
+import { FamilyDrawer, ViewsRegistry, useOptionalFamilyDrawer } from "@/components/Modal/FamilyDrawer";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
 import { DepositStep, DepositStepProvider, useDepositStep } from "./depositStepContext";
@@ -72,12 +72,8 @@ const StepRouter: FC<{ step: DepositStep; partner?: Partner; hasWalletMethods: b
 const DepositForm: FC<Pick<DepositProps, "partner" | "title"> & { onClose?: () => void }> = ({ partner, title, onClose }) => {
     const { step, back, hasWalletMethods } = useDepositStep();
     const { selectedConnector, selectedMultiChainConnector, goBack } = useConnectModal();
+    const inFamilyDrawer = !!useOptionalFamilyDrawer();
 
-    // On the inline connect step the single deposit header doubles as the
-    // connect header: its back navigates within the connect sub-views first
-    // (goBack), and only pops the step once at the connector grid. The title
-    // mirrors the modal's ("Select ecosystem" while choosing a multichain
-    // ecosystem, otherwise "Connect wallet").
     const inConnectSubView = !!(selectedConnector || selectedMultiChainConnector);
     const headerTitle = step === "wallet-connect"
         ? (selectedMultiChainConnector && !selectedConnector ? "Select ecosystem" : "Connect wallet")
@@ -89,9 +85,13 @@ const DepositForm: FC<Pick<DepositProps, "partner" | "title"> & { onClose?: () =
         <div className="flex flex-col gap-3 w-full pt-4 max-sm:pb-4">
             <DepositHeader title={headerTitle} onClose={onClose} onBack={headerBack} />
             <div className="h-px w-full bg-secondary-400" />
-            <ResizablePanel>
-                <StepRouter step={step} partner={partner} hasWalletMethods={hasWalletMethods} />
-            </ResizablePanel>
+            {inFamilyDrawer
+                ? <StepRouter step={step} partner={partner} hasWalletMethods={hasWalletMethods} />
+                : (
+                    <ResizablePanel>
+                        <StepRouter step={step} partner={partner} hasWalletMethods={hasWalletMethods} />
+                    </ResizablePanel>
+                )}
         </div>
     );
 };
@@ -153,6 +153,7 @@ export const DepositComponent: FC<DepositProps> = ({ mode = "inline", buttonLabe
             return (
                 <FamilyDrawer
                     bare
+                    closeOnOutsideClick={false}
                     open={open}
                     onOpenChange={setOpen}
                     trigger={triggerButton}
@@ -165,7 +166,11 @@ export const DepositComponent: FC<DepositProps> = ({ mode = "inline", buttonLabe
         return (
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>{triggerButton}</DialogTrigger>
-                <DialogContent showCloseButton={false} className="!p-0 !bg-transparent !ring-0 !gap-0 sm:!max-w-md *:min-w-0">
+                <DialogContent
+                    onInteractOutside={(e) => e.preventDefault()}
+                    showCloseButton={false}
+                    className="!p-0 !bg-transparent !ring-0 !gap-0 sm:!max-w-md *:min-w-0"
+                >
                     <DepositCard {...props} onClose={() => setOpen(false)} />
                 </DialogContent>
             </Dialog>
