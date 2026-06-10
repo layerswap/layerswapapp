@@ -8,6 +8,9 @@ export type DepositSettingsValue = {
     actionButtonText: string | undefined;
     /** Default amount (in USD) seeded into the wallet flow. 0 disables seeding. */
     defaultAmountUsd: number;
+    /** True when rendered inside the Deposit widget. Drives deposit-specific
+     * copy in the shared processing timeline. Not integrator-configurable. */
+    isDepositFlow: boolean;
 };
 
 // Outside a provider (the regular swap flow) `actionButtonText` is undefined so
@@ -16,6 +19,7 @@ const CONTEXT_DEFAULTS: DepositSettingsValue = {
     showDestinationAddress: true,
     actionButtonText: undefined,
     defaultAmountUsd: 1,
+    isDepositFlow: false,
 };
 
 // The deposit flow's own default label. Lives here as the single source of
@@ -35,7 +39,7 @@ export function DepositSettingsProvider({
     value,
     children,
 }: {
-    value: Partial<DepositSettingsValue>;
+    value: Partial<Omit<DepositSettingsValue, 'isDepositFlow'>>;
     children: ReactNode;
 }) {
     const merged = useMemo<DepositSettingsValue>(
@@ -43,6 +47,7 @@ export function DepositSettingsProvider({
             showDestinationAddress: value.showDestinationAddress ?? false,
             actionButtonText: value.actionButtonText || DEPOSIT_ACTION_BUTTON_TEXT,
             defaultAmountUsd: value.defaultAmountUsd ?? 1,
+            isDepositFlow: true,
         }),
         [value.showDestinationAddress, value.actionButtonText, value.defaultAmountUsd],
     );

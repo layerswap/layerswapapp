@@ -22,6 +22,7 @@ import { ErrorHandler } from '@/lib/ErrorHandler';
 import { getExplorerUrl } from '@/lib/address/explorerUrl';
 import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
 import { SwapPhase } from '@/components/utils/resolveSwapPhase';
+import { useDepositSettings } from '@/context/depositSettings';
 
 const apiClient = new LayerSwapApiClient();
 
@@ -35,6 +36,7 @@ type Props = {
 const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) => {
     const { boot, show, update } = useIntercom();
     const { onSwapStatusChange } = useCallbacks()
+    const { isDepositFlow } = useDepositSettings()
     const setSwapTransaction = useSwapTransactionStore(state => state.setSwapTransaction);
     const storedWalletTransaction = useSwapTransactionStore(
         state => swapDetails?.id ? state.swapTransactions[swapDetails.id] : undefined,
@@ -144,7 +146,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                 description: null
             },
             current: {
-                name: 'Processing your deposit',
+                name: isDepositFlow ? 'Processing your transfer' : 'Processing your deposit',
                 description: <div className='flex space-x-1'>
                     <div>
                         <LinkWithIcon
@@ -170,9 +172,9 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                 </div>
             },
             complete: {
-                name: `Deposit confirmed`,
+                name: isDepositFlow ? `Transfer confirmed` : `Deposit confirmed`,
                 description: <div>
-                    <span>We&apos;ve received your deposit.</span>{' '}
+                    <span>{`We've received your ${isDepositFlow ? 'transfer' : 'deposit'}.`}</span>{' '}
                     <LinkWithIcon
                         name={'View in explorer'}
                         url={getExplorerUrl(input_tx_explorer, transactionHash)}
@@ -210,15 +212,15 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
         },
         "output_transfer": {
             upcoming: {
-                name: `Sending ${destination_token.symbol} to your address`,
+                name: isDepositFlow ? 'Completing your deposit' : `Sending ${destination_token.symbol} to your address`,
                 description: null
             },
             current: {
-                name: `Sending ${destination_token.symbol} to your address`,
+                name: isDepositFlow ? 'Completing your deposit' : `Sending ${destination_token.symbol} to your address`,
                 description: null
             },
             complete: {
-                name: `${swapOutputTransaction?.amount && truncateDecimals(swapOutputTransaction?.amount, destination_token.decimals)} ${destination_token.symbol} was sent to your address`,
+                name: `${swapOutputTransaction?.amount && truncateDecimals(swapOutputTransaction?.amount, destination_token.decimals)} ${destination_token.symbol} ${isDepositFlow ? 'deposited' : 'was sent to your address'}`,
                 description: swapOutputTransaction?.amount ? <div className="flex flex-col">
                     <div>
                         <span>Transaction: </span>{' '}
@@ -329,6 +331,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
         swapDetails.status,
         swapInputTxStatus,
         startIntercom,
+        isDepositFlow,
     ]);
 
     const { currentSteps, stepsProgressPercentage } = useMemo(() => {
