@@ -2,6 +2,7 @@ import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import { Address } from '../lib/address';
 import { QuoteError } from './useFee';
 import { ceilUsd, floorUsd } from '@/components/utils/formatUsdAmount';
+import { isDepositAddressFlow } from '@/helpers/swapFlow';
 
 interface Params {
     values: SwapFormValues;
@@ -26,21 +27,21 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
     let amount = values.amount ? Number(values.amount) : undefined;
 
     // Deposit address flow without exchange: no amount or exchange required
-    const isDepositAddressFlow = values.depositMethod === 'deposit_address' && !values.fromExchange;
+    const depositAddressFlow = isDepositAddressFlow(values.depositMethod, values.fromExchange);
 
-    if (!isDepositAddressFlow && !values.from && !values.fromExchange) {
+    if (!depositAddressFlow && !values.from && !values.fromExchange) {
         return { message: 'Select source' };
     }
     if (!values.to) {
         return { message: 'Select destination' };
     }
-    if (!isDepositAddressFlow && !values.fromAsset) {
+    if (!depositAddressFlow && !values.fromAsset) {
         return { message: 'Select source asset' };
     }
     if (!values.toAsset) {
         return { message: 'Select destination asset' };
     }
-    if (!isDepositAddressFlow) {
+    if (!depositAddressFlow) {
         if (amount === undefined || isNaN(Number(amount))) {
             return { message: 'Enter an amount' };
         }
@@ -61,7 +62,7 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
             return { message: 'Invalid amount' };
         }
     }
-    if (isDepositAddressFlow) {
+    if (depositAddressFlow) {
         if (!values.from || !values.fromAsset) {
             return { message: 'No source route available' };
         }
@@ -76,7 +77,7 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
         }
     }
 
-    if (!isDepositAddressFlow) {
+    if (!depositAddressFlow) {
         if (
             values.from?.name.toLowerCase() === sameAccountNetwork?.toLowerCase() ||
             values.to?.name.toLowerCase() === sameAccountNetwork?.toLowerCase()

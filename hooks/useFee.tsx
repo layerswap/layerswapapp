@@ -55,7 +55,7 @@ type Props = {
     withDelay?: boolean
 }
 
-export function useQuoteData(formValues: Props | undefined, refreshInterval?: number): UseQuoteData {
+export function useQuoteData(formValues: Props | undefined, refreshInterval?: number, options?: { fetchLimits?: boolean }): UseQuoteData {
     const { fromCurrency, toCurrency, from, to, amount, refuel, depositMethod } = formValues || {}
     const [debouncedAmount, setDebouncedAmount] = useState(amount)
     const [isDebouncing, setIsDebouncing] = useState(false)
@@ -80,7 +80,9 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
     const apiClient = new LayerSwapApiClient()
     const use_deposit_address = depositMethod === 'wallet' ? false : true
 
-    const limitsURL = (from && to && depositMethod && toCurrency && fromCurrency) ?
+    const fetchLimits = options?.fetchLimits ?? true
+
+    const limitsURL = (fetchLimits && from && to && depositMethod && toCurrency && fromCurrency) ?
         buildLimitsUrl({
             sourceNetwork: from!,
             sourceToken: fromCurrency!,

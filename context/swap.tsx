@@ -17,6 +17,7 @@ import { useSettingsState } from './settings';
 import { QuoteError, transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { useRecentNetworksStore } from '@/stores/recentRoutesStore';
 import { resolvePersistantQueryParams } from '@/helpers/querryHelper';
+import { isDepositAddressFlow, isDepositAddressSwap } from '@/helpers/swapFlow';
 import { useSelectedAccount } from './swapAccounts';
 import { Address } from '@/lib/address';
 import { useSlippageStore } from '@/stores/slippageStore';
@@ -76,7 +77,8 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
 
     const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapBasicFormData, !!swapBasicFormData?.refuel), [swapBasicFormData]);
 
-    const { quote: formDataQuote, quoteError: formDataQuoteError } = useQuoteData(quoteArgs, swapId ? 0 : undefined);
+    // Deposit address flow doesn't use limits — min/max come from the detailed quote there
+    const { quote: formDataQuote, quoteError: formDataQuoteError } = useQuoteData(quoteArgs, swapId ? 0 : undefined, { fetchLimits: !isDepositAddressSwap(swapBasicFormData) });
 
     const handleUpdateSwapid = useCallback((value: string | undefined) => {
         setSwapId(value)
@@ -89,12 +91,10 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     }, [router])
 
     const setSubmitedFormValues = useCallback((values: NonNullable<SwapFormValues>) => {
-        const isDepositAddressFlow = values.depositMethod === 'deposit_address' && !values.fromExchange;
-
         if (!values.from || !values.to || !values.fromAsset || !values.toAsset || !values.destination_address)
             throw new Error("Form data is missing")
 
-        if (!isDepositAddressFlow && !values.amount)
+        if (!isDepositAddressFlow(values.depositMethod, values.fromExchange) && !values.amount)
             throw new Error("Form data is missing")
 
         setSwapBasicFormData({
@@ -204,11 +204,10 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             throw new Error("No swap data")
 
         const { to, fromAsset: fromCurrency, toAsset: toCurrency, from, refuel, fromExchange, depositMethod, amount, destination_address } = values
-        const isDepositAddressFlow = depositMethod === 'deposit_address' && !fromExchange;
 
         if (!to || !fromCurrency || !toCurrency || !from || !destination_address || !depositMethod)
             throw new Error("Form data is missing")
-        if (!isDepositAddressFlow && !amount)
+        if (!isDepositAddressFlow(depositMethod, fromExchange) && !amount)
             throw new Error("Form data is missing")
 
         const sourceIsSupported = selectedWallet && WalletIsSupportedForSource({
