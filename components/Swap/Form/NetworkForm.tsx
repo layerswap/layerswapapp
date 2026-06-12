@@ -26,7 +26,6 @@ import RefuelToggle from "@/components/FeeDetails/Refuel";
 import RefuelModal from "@/components/FeeDetails/RefuelModal";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import posthog from "posthog-js";
-import ContractAddressValidationCache from "@/components/validationError/ContractAddressValidationCache";
 import { Slippage } from "@/components/FeeDetails/Slippage";
 
 type Props = {
@@ -132,9 +131,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                             }
                             {
                                 routeValidation.message
-                                    ? <div className="mt-2">
-                                        <ValidationError />
-                                    </div>
+                                    ? <ValidationError />
                                     : null
                             }
                             {
@@ -160,11 +157,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                     openModal={openRefuelModal}
                     setOpenModal={setOpenRefuelModal}
                     fee={quote}
-                />
-                <ContractAddressValidationCache
-                    source_network={source}
-                    destination_network={destination}
-                    destination_address={values.destination_address}
                 />
             </Form>
         </>

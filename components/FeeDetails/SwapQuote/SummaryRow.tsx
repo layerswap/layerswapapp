@@ -50,7 +50,7 @@ export const SummaryRow: FC<{
                                     width="36"
                                     height="36"
                                 />) : (
-                                <AddressIcon className="h-4 w-4" address={addressInstance?.full || ''} size={36} rounded="4px" />
+                                <AddressIcon className="rounded-[4px]" address={addressInstance?.full || ''} size={16} network={to} />
                             )}
                             {
                                 ((Address.isValid(values?.destination_address, values?.to) && values?.to) ?

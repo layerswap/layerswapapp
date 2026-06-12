@@ -1,12 +1,12 @@
 const Phantom = (props) => {
     return (
         <svg
-            {...props}
             xmlns="http://www.w3.org/2000/svg"
             width="32"
             height="32"
             viewBox="0 0 1200 1200"
             fill="none"
+            {...props}
         >
             <g clipPath="url(#clip0_2596_138588)">
                 <rect width="1200" height="1200" rx="257.592" fill="#AB9FF2" />

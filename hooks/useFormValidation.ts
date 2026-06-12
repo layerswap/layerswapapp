@@ -1,5 +1,5 @@
-import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import { Address } from '../lib/address';
+import { SwapFormValues } from '@/components/DTOs/SwapFormValues';
+import { Address } from '@/lib/address';
 import { QuoteError } from './useFee';
 import { ceilUsd, floorUsd } from '@/components/utils/formatUsdAmount';
 
@@ -12,7 +12,8 @@ interface Params {
     isUsdMode: boolean,
     sourceAddress: string | undefined,
     sameAccountNetwork?: string | undefined,
-    quoteError?: QuoteError
+    quoteError?: QuoteError,
+    noExchangeWithdrawalRoute?: boolean
 }
 
 export const FORM_VALIDATION_ERROR_CODES = {
@@ -22,7 +23,7 @@ export const FORM_VALIDATION_ERROR_CODES = {
 }
 
 
-export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isUsdMode, sourceAddress, sameAccountNetwork, quoteError }: Params) {
+export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isUsdMode, sourceAddress, sameAccountNetwork, quoteError, noExchangeWithdrawalRoute }: Params) {
     let amount = values.amount ? Number(values.amount) : undefined;
 
     // Deposit address flow without exchange: no amount or exchange required
@@ -34,7 +35,10 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
     if (!values.to) {
         return { message: 'Select destination' };
     }
-    if (!isDepositAddressFlow && !values.fromAsset) {
+    if (noExchangeWithdrawalRoute) {
+        return { message: 'Route not found', code: FORM_VALIDATION_ERROR_CODES.ROUTE_NOT_FOUND };
+    }
+    if (!isDepositAddressFlow && !values.fromExchange && !values.fromAsset) {
         return { message: 'Select source asset' };
     }
     if (!values.toAsset) {
@@ -78,8 +82,8 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
 
     if (!isDepositAddressFlow) {
         if (
-            values.from?.name.toLowerCase() === sameAccountNetwork?.toLowerCase() ||
-            values.to?.name.toLowerCase() === sameAccountNetwork?.toLowerCase()
+            (values.from?.name && values.from?.name.toLowerCase() === sameAccountNetwork?.toLowerCase()) ||
+            (values.to?.name && values.to?.name.toLowerCase() === sameAccountNetwork?.toLowerCase())
         ) {
             if (
                 sourceAddress &&
