@@ -22,6 +22,7 @@ import SwapDetails from "..";
 import { useBalance } from "@/lib/balances/useBalance";
 import ContractAddressNote from "@/components/Input/Address/ContractAddressNote";
 import { useContractAddressStore } from "@/stores/contractAddressStore";
+import ContractAddressValidationCache, { ContractSourceAddressValidationCache } from "@/components/validationError/ContractAddressValidationCache";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -160,7 +161,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
             validateOnMount={true}
             onSubmit={handleSubmit}
         >
-            {({ setFieldValue }) => (
+            {({ setFieldValue, values }) => (
                 <>
                     <Modal
                         height="fit"
@@ -188,6 +189,15 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                         }} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />
                     </VaulDrawer>
                     {children}
+                    <ContractAddressValidationCache
+                        source_network={values.from}
+                        destination_network={values.to}
+                        address={values.destination_address}
+                    />
+                    <ContractSourceAddressValidationCache
+                        source_network={values.from}
+                        destination_network={values.to}
+                    />
                 </>
             )}
         </Formik>
