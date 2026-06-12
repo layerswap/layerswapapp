@@ -17,7 +17,8 @@ export default function useExchangeNetworks({ fromExchange, to, toAsset }: Props
     const apiClient = new LayerSwapApiClient()
     const {
         data: apiResponse,
-        isLoading
+        isLoading,
+        isValidating
     } = useSWR<ApiResponse<ExchangeNetwork[]>>(exchangeNetworksURL, apiClient.fetcher,
         {
             keepPreviousData: true,
@@ -26,5 +27,5 @@ export default function useExchangeNetworks({ fromExchange, to, toAsset }: Props
         })
     //As the response does not give the statuses and it does not include not active tokens, we can assume all are active
     const networks = useMemo(() => (apiResponse?.data?.map(n => ({ ...n, token: { ...n.token, status: "active" as "active" } }))), [apiResponse])
-    return { networks, isLoading }
+    return { networks, isLoading, isValidating }
 }
