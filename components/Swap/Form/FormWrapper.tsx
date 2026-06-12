@@ -5,7 +5,6 @@ import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { removeSwapPath, UpdateSwapInterface, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import React from "react";
 import ConnectNetwork from "@/components/ConnectNetwork";
-import toast from "react-hot-toast";
 import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "@/lib/generateSwapInitialValues";
 import Modal from "@/components/modal/modal";
 import { useRouter } from "next/router";
@@ -135,7 +134,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
             })
         }
         catch (error) {
-            toast.error(error?.message)
+            console.error(error)
         }
     }, [createSwap, query, partner, router, swapBasicData, getProvider, settings, type])
 

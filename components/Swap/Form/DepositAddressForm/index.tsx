@@ -108,11 +108,11 @@ const DepositAddressForm: FC<Props> = () => {
     }, [])
 
     const { routeValidation, formValidation } = useValidationContext();
-    const { swapId, swapBasicData, swapDetails, depositActionsResponse, refuel } = useSwapDataState();
+    const { swapId, swapBasicData, swapDetails, depositActionsResponse, depositActionsError, swapError, refuel } = useSwapDataState();
     const { setSwapId } = useSwapDataUpdate();
 
     const isValid = !formValidation.message;
-    const error = formValidation.message;
+    const error = formValidation.message || swapError || depositActionsError || '';
 
     const allFieldsReady = !!(from && fromAsset && destination && toCurrency && destination_address);
 
@@ -175,10 +175,8 @@ const DepositAddressForm: FC<Props> = () => {
     const isCompleted = !!swapId && swapMatchesValues && hasOutputTx;
     const showDepositInfo = !!swapId && swapMatchesValues && !isProcessing;
 
-    // Reset the swap so the auto-submit effect creates a fresh one for the
-    // same form values. `attemptedKeyRef` must be cleared explicitly because
-    // it caches the last (from, fromAsset, to, toAsset, address) we tried.
-    const handleDepositMore = () => {
+    // Clear the cached attempt key so re-selecting the same route re-creates the swap.
+    const resetSwap = () => {
         attemptedKeyRef.current = null;
         setSwapId(undefined);
     };
@@ -206,7 +204,7 @@ const DepositAddressForm: FC<Props> = () => {
                                         <PayFromPicker
                                             selectedSource={from && fromAsset ? { network: from, token: fromAsset } : null}
                                             onSourceChange={(network, token) => {
-                                                setSwapId(undefined);
+                                                resetSwap();
                                                 setFieldValue('from', network, false);
                                                 setFieldValue('fromAsset', token, true);
                                             }}
@@ -218,7 +216,7 @@ const DepositAddressForm: FC<Props> = () => {
                                         <ReceivePicker
                                             selectedDestination={destination && toCurrency ? { network: destination, token: toCurrency } : null}
                                             onDestinationChange={(network, token) => {
-                                                setSwapId(undefined);
+                                                resetSwap();
                                                 setFieldValue('to', network, false);
                                                 setFieldValue('toAsset', token, true);
                                             }}
@@ -258,7 +256,7 @@ const DepositAddressForm: FC<Props> = () => {
                         depositAddress={depositAddress}
                         isProcessing={isProcessing}
                         isCompleted={isCompleted}
-                        onDepositMore={handleDepositMore}
+                        onDepositMore={resetSwap}
                     />
                 </Widget.Footer>
             </Form>

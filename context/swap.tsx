@@ -45,6 +45,7 @@ export type SwapContextData = {
     swapApiError?: ApiError,
     depositAddressIsFromAccount?: boolean,
     depositActionsResponse?: DepositAction[],
+    depositActionsError?: string,
     withdrawType: WithdrawType | undefined,
     swapTransaction: SwapTransaction | undefined,
     swapBasicData: SwapBasicData & { refuel: boolean } | undefined,
@@ -165,9 +166,10 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const use_deposit_address = swapBasicData?.use_deposit_address
     const deposit_actions_endpoint = swapId ? `/swaps/${swapId}/deposit_actions${(use_deposit_address || !selectedSourceAccount || !sourceIsSupported) ? "" : `?source_address=${selectedSourceAccount?.address}`}` : null
     const inputTransfer = swapDetails?.transactions.find(t => t.type === TransactionType.Input);
-    const { data: depositActions } = useSWR<ApiResponse<DepositAction[]>>(!inputTransfer ? deposit_actions_endpoint : null, layerswapApiClient.fetcher)
+    const { data: depositActions, error: depositActionsSwrError } = useSWR<ApiResponse<DepositAction[]>>(!inputTransfer ? deposit_actions_endpoint : null, layerswapApiClient.fetcher)
 
     const depositActionsResponse = depositActions?.data
+    const depositActionsError = depositActionsSwrError ? (depositActionsSwrError?.response?.data?.error?.message || 'Could not generate deposit address.') : undefined
 
     const currentSwap = data?.data?.swap
     const storedWalletTransaction = useSwapTransactionStore(
@@ -287,6 +289,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             depositAddressIsFromAccount: !!depositAddressIsFromAccount,
             swapApiError: error,
             depositActionsResponse,
+            depositActionsError,
             quote,
             quoteIsLoading,
             quoteError,
