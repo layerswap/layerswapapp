@@ -1,7 +1,9 @@
 import { FC, useEffect, useMemo, useRef } from "react";
 import { Form, useFormikContext } from "formik";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plug } from "lucide-react";
 import ValidationError from "@/components/validationError";
+import WalletIcon from "@/components/icons/WalletIcon";
+import SubmitButton from "@/components/buttons/submitButton";
 import { Widget } from "@/components/Widget/Index";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { Partner } from "@/Models/Partner";
@@ -48,7 +50,8 @@ const DepositAddressForm: FC<Props> = () => {
     // to appear — opening the connect modal in that window would just slide it
     // back out a moment later.
     const providersReady = providers.every(p => p.ready);
-    const { connect, isWalletModalOpen, cancel } = useConnectModal();
+    const noWallet = providersReady && !hasWallet;
+    const { connect } = useConnectModal();
     const settings = useSettingsState();
     const query = useQueryState();
 
@@ -60,21 +63,14 @@ const DepositAddressForm: FC<Props> = () => {
         return set;
     }, [wallets]);
 
-    // When the user lands on this flow with no wallet at all, force a
-    // non-dismissable connect modal — there's nothing for the picker to show
-    // until at least one wallet is connected. The modal is torn down when
-    // either a wallet appears (cleanup) or the form unmounts (user navigated
-    // away). `isWalletModalOpen` is read via a ref so its updates don't
-    // re-trigger this effect and cancel our just-opened modal.
-    const isWalletModalOpenRef = useRef(isWalletModalOpen);
-    useEffect(() => { isWalletModalOpenRef.current = isWalletModalOpen; });
-    useEffect(() => {
-        if (!providersReady) return;
-        if (hasWallet) return;
-        if (isWalletModalOpenRef.current) return;
-        connect(undefined, { dismissible: false, topContent: <EasyDepositBanner variant="modal" currentStepIndex={0} />, fullHeight: true, hideHeader: true });
-        return () => { cancel(); };
-    }, [providersReady, hasWallet, connect, cancel]);
+    // With no wallet there's nothing for the pickers to show, so the flow
+    // surfaces an inline "Connect a wallet" prompt (see render) instead of
+    // trapping the user behind a non-dismissable modal — on mobile that modal
+    // covered the tab bar and left no way back to the other tabs. The picker is
+    // opened on demand and stays dismissible so navigation is never lost.
+    const openConnectModal = () => {
+        connect(undefined, { dismissible: true, topContent: <EasyDepositBanner variant="modal" currentStepIndex={0} />, fullHeight: true });
+    };
 
     // Apply default destination/source when a wallet is present and the form
     // is still blank. `generateSwapInitialValues` is the same helper used by
@@ -200,6 +196,20 @@ const DepositAddressForm: FC<Props> = () => {
                                         <Loader2 className="h-4 w-4 animate-spin" />
                                         <span>Loading wallets…</span>
                                     </div>
+                                ) : noWallet ? (
+                                    <button
+                                        type="button"
+                                        onClick={openConnectModal}
+                                        className="group flex w-full flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-secondary-300 py-10 px-4 text-center transition-colors hover:border-secondary-200 hover:bg-secondary-500/40"
+                                    >
+                                        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/20">
+                                            <WalletIcon className="h-6 w-6 text-primary" />
+                                        </span>
+                                        <span className="space-y-1">
+                                            <span className="block text-sm font-semibold text-primary-text">Connect a wallet to get started</span>
+                                            <span className="block text-xs text-secondary-text">Choose where you&apos;d like to receive your assets.</span>
+                                        </span>
+                                    </button>
                                 ) : (
                                     <>
                                         {/* Source (Pay from) */}
@@ -249,17 +259,23 @@ const DepositAddressForm: FC<Props> = () => {
                     </Widget.Content>
                 )}
                 <Widget.Footer showPoweredBy>
-                    <DepositAddressFormButton
-                        values={values}
-                        isValid={isValid}
-                        error={error}
-                        isSubmitting={isSubmitting}
-                        showDepositInfo={showDepositInfo}
-                        depositAddress={depositAddress}
-                        isProcessing={isProcessing}
-                        isCompleted={isCompleted}
-                        onDepositMore={handleDepositMore}
-                    />
+                    {noWallet ? (
+                        <SubmitButton type="button" onClick={openConnectModal} icon={<Plug className="h-5 w-5" />}>
+                            Connect wallet
+                        </SubmitButton>
+                    ) : (
+                        <DepositAddressFormButton
+                            values={values}
+                            isValid={isValid}
+                            error={error}
+                            isSubmitting={isSubmitting}
+                            showDepositInfo={showDepositInfo}
+                            depositAddress={depositAddress}
+                            isProcessing={isProcessing}
+                            isCompleted={isCompleted}
+                            onDepositMore={handleDepositMore}
+                        />
+                    )}
                 </Widget.Footer>
             </Form>
         </>
