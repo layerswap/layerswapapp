@@ -5,7 +5,7 @@ import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '@/Models/ApiResponse';
 import { Partner } from '@/Models/Partner';
 import { ApiError } from '@/Models/ApiError';
-import { Wallet, WalletConnectionProvider } from '@/types/wallet';
+import { Wallet } from '@/types/wallet';
 import useWallet from '@/hooks/useWallet';
 import { Network } from '@/Models/Network';
 import { useSettingsState } from './settings';
@@ -19,6 +19,7 @@ import { useCallbacks } from './callbackProvider';
 import { Address } from '@/lib/address/Address';
 import { useSwapTransactionStore } from '@/stores';
 import { resolveSwapPhase } from '@/components/utils/resolveSwapPhase';
+import { useContractAddressStore } from '@/stores/contractAddressStore';
 
 export const SwapDataStateContext = createContext<SwapContextData | null>(null);
 
@@ -147,9 +148,9 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const selectedSourceAccount = useSelectedAccount("from", swapBasicFormData?.source_network?.name);
     const { wallets } = useWallet(swapBasicFormData?.source_network, 'asSource')
     const selectedWallet = (selectedSourceAccount?.address && swapBasicFormData) && wallets.find(w => Address.equals(w.address, selectedSourceAccount.address, swapBasicFormData?.source_network))
+    const { checkContractStatus } = useContractAddressStore();
 
     const sourceIsSupported = (swapBasicData && selectedWallet) && WalletIsSupportedForSource({
-        providers: providers,
         sourceNetwork: swapBasicData.source_network,
         sourceWallet: selectedWallet
     })
@@ -203,11 +204,14 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         if (!isDepositAddressFlow && !amount)
             throw new Error("Form data is missing")
 
-        const sourceIsSupported = selectedWallet && WalletIsSupportedForSource({
-            providers: providers,
+        const sourceWalletIsSupported = selectedWallet && WalletIsSupportedForSource({
             sourceNetwork: from,
             sourceWallet: selectedWallet
         })
+        const contractCheckResult = (isDepositAddressFlow && selectedWallet) ? await checkContractStatus(selectedWallet.address, from, to) : null
+        const isContract = contractCheckResult?.sourceIsContract ?? false
+        const sourceIsSupported = sourceWalletIsSupported && !isContract
+
         const slippage = useSlippageStore.getState().slippage
         // In the deposit-address flow the user hasn't committed to an amount
         // yet — they'll send whatever they want to the QR address. Sending a
@@ -315,7 +319,7 @@ export function useSwapDataUpdate() {
     return updateFns;
 }
 
-const WalletIsSupportedForSource = ({ providers, sourceNetwork, sourceWallet }: { providers: WalletConnectionProvider[] | undefined, sourceWallet: Wallet | undefined, sourceNetwork: Network | undefined }) => {
-    const isSupported = sourceWallet && providers?.find(p => p.name === sourceWallet.providerName)?.asSourceSupportedNetworks?.some(n => n === sourceNetwork?.name) || false
+const WalletIsSupportedForSource = ({ sourceNetwork, sourceWallet }: { sourceWallet: Wallet | undefined, sourceNetwork: Network | undefined }) => {
+    const isSupported = (sourceWallet && sourceWallet?.asSourceSupportedNetworks?.some(n => n === sourceNetwork?.name)) || false
     return isSupported
 }

@@ -21,6 +21,7 @@ import ContractAddressNote from "@/components/Input/Address/ContractAddressNote"
 import { useContractAddressStore } from "@/stores/contractAddressStore";
 import UrlAddressNote from "@/components/Input/Address/UrlAddressNote";
 import { Address } from "@/lib/address/Address";
+import ContractAddressValidationCache, { ContractSourceAddressValidationCache } from "./SecondaryComponents/validationError/ContractAddressValidationCache";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -160,8 +161,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
             validateOnMount={true}
             onSubmit={handleSubmit}
         >
-            {({ setFieldValue }) => (
-
+            {({ setFieldValue, values }) => (
                 <>
                     <VaulDrawer
                         show={showConnectNetworkModal}
@@ -190,6 +190,15 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                         }} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />
                     </VaulDrawer>
                     {children}
+                    <ContractAddressValidationCache
+                        source_network={values.from}
+                        destination_network={values.to}
+                        address={values.destination_address}
+                    />
+                    <ContractSourceAddressValidationCache
+                        source_network={values.from}
+                        destination_network={values.to}
+                    />
                 </>
             )}
         </Formik>
