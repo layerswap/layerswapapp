@@ -39,7 +39,7 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
     if (noExchangeWithdrawalRoute) {
         return { message: 'Route not found', code: FORM_VALIDATION_ERROR_CODES.ROUTE_NOT_FOUND };
     }
-    if (!isDepositAddressFlow && !values.fromExchange && !values.fromAsset) {
+    if (!depositAddressFlow && !values.fromExchange && !values.fromAsset) {
         return { message: 'Select source asset' };
     }
     if (!values.toAsset) {

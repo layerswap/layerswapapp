@@ -204,17 +204,17 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             throw new Error("No swap data")
 
         const { to, fromAsset: fromCurrency, toAsset: toCurrency, from, refuel, fromExchange, depositMethod, amount, destination_address } = values
-
+        const depositAddressFlow = isDepositAddressFlow(depositMethod, fromExchange)
         if (!to || !fromCurrency || !toCurrency || !from || !destination_address || !depositMethod)
             throw new Error("Form data is missing")
-        if (!isDepositAddressFlow(depositMethod, fromExchange) && !amount)
+        if (!depositAddressFlow && !amount)
             throw new Error("Form data is missing")
 
         const sourceWalletIsSupported = selectedWallet && WalletIsSupportedForSource({
             sourceNetwork: from,
             sourceWallet: selectedWallet
         })
-        const contractCheckResult = (isDepositAddressFlow && selectedWallet) ? await checkContractStatus(selectedWallet.address, from, to) : null
+        const contractCheckResult = (depositAddressFlow && selectedWallet) ? await checkContractStatus(selectedWallet.address, from, to) : null
         const isContract = contractCheckResult?.sourceIsContract ?? false
         const sourceIsSupported = sourceWalletIsSupported && !isContract
 
