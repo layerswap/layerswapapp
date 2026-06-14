@@ -184,9 +184,13 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
         && swapDetails.status !== SwapStatus.Created;
     const isProcessing = !!swapId && swapMatchesValues && isPostUserTransferStatus;
     // The Processing panel renders "Transfer complete" as soon as an output
-    // transaction exists, even before swapStatus flips to Completed. Mirror
-    // that here so the "Deposit more" button appears at the same time.
-    const hasOutputTx = swapDetails?.transactions?.find(t => t.type === TransactionType.Output)?.status == BackendTransactionStatus.Completed;
+    // transaction exists (resolveSwapPhase's `outputReady`: a hash + amount) —
+    // even before the output tx status string flips to "completed". Mirror that
+    // exact signal here so the "Deposit more" button appears at the same moment
+    // the panel shows the deposit as done, instead of waiting for a status the
+    // panel never gates on.
+    const outputTx = swapDetails?.transactions?.find(t => t.type === TransactionType.Output);
+    const hasOutputTx = !!(outputTx?.transaction_hash && outputTx?.amount);
     const isCompleted = !!swapId && swapMatchesValues && hasOutputTx;
     const showDepositInfo = !!swapId && swapMatchesValues && !isProcessing;
 

@@ -100,7 +100,13 @@ export function useDepositSelection() {
  * flow captures whichever selection is resolved by then (mirrors the per-tab
  * initial-values behavior in the main swap flow).
  */
-export function useDepositInitialValues(depositMethod: NonNullable<SwapFormValues["depositMethod"]>): SwapFormValues {
+export function useDepositInitialValues(
+    depositMethod: NonNullable<SwapFormValues["depositMethod"]>,
+    /** Pre-resolved source pick (e.g. from the deposit prefetcher). Seeding it
+     * here lets Formik mount with a complete form, so a prefetched swap matches
+     * the values immediately instead of waiting for the auto-source effect. */
+    source?: { network: NetworkRoute; token: NetworkRouteToken },
+): SwapFormValues {
     const settings = useSettingsState();
     const initialSettings = useInitialSettings();
     const { wallets } = useWallet();
@@ -118,6 +124,8 @@ export function useDepositInitialValues(depositMethod: NonNullable<SwapFormValue
         const base = generateSwapInitialValues(settings, initialSettings, "deposit-address", connectedAutofillNetworks);
         return {
             ...base,
+            from: source?.network ?? base.from,
+            fromAsset: source?.token ?? base.fromAsset,
             to: destination ?? base.to,
             toAsset: destinationToken ?? base.toAsset,
             destination_address: destinationAddress,
@@ -128,5 +136,5 @@ export function useDepositInitialValues(depositMethod: NonNullable<SwapFormValue
         // selection on the render Formik mounts with — otherwise the flow opens
         // with a blank destination and can never recover. Formik only reads
         // initialValues at mount, so recomputing here is harmless.
-    }, [settings, initialSettings, connectedAutofillNetworks, destination, destinationToken, destinationAddress, depositMethod]);
+    }, [settings, initialSettings, connectedAutofillNetworks, destination, destinationToken, destinationAddress, depositMethod, source]);
 }
