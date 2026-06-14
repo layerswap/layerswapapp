@@ -126,9 +126,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                             }
                             {
                                 routeValidation.message
-                                    ? <div className="mt-2">
-                                        <ValidationError />
-                                    </div>
+                                    ? <ValidationError />
                                     : null
                             }
                             {
