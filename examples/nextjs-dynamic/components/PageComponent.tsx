@@ -1,5 +1,5 @@
-import { FC } from "react";
-import { Swap, LayerswapProvider, LayerSwapSettings, ThemeData } from '@layerswap/widget'
+import { FC, useState } from "react";
+import { Swap, DepositComponent, LayerswapProvider, LayerSwapSettings, ThemeData } from '@layerswap/widget'
 import { StarknetWalletConnectors } from "@dynamic-labs/starknet";
 import { DynamicContextProvider, DynamicWidget } from "@dynamic-labs/sdk-react-core";
 import { createEVMProvider } from "@layerswap/wallet-evm"
@@ -10,7 +10,10 @@ import useCustomStarknet from "../hooks/useCustomStarknet";
 import { WalletProvider } from "@layerswap/widget/types";
 import "@layerswap/widget/index.css"
 
+type WidgetType = "swap" | "deposit";
+
 const PageComponent: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
+    const [widgetType, setWidgetType] = useState<WidgetType>("swap");
 
     const starknetProvider: WalletProvider = createStarknetProvider({
         customHook: useCustomStarknet,
@@ -47,6 +50,7 @@ const PageComponent: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
 
                 <div className="flex flex-col items-center justify-center gap-4">
                     <DynamicWidget />
+                    <WidgetSwitcher value={widgetType} onChange={setWidgetType} />
                     <div className="w-[600px] mx-auto place-self-center rounded-lg">
                         <LayerswapProvider
                             config={{
@@ -62,7 +66,14 @@ const PageComponent: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
                             }}
                             walletProviders={walletProviders}
                         >
-                            <Swap />
+                            {widgetType === "swap" ? (
+                                <Swap />
+                            ) : (
+                                <DepositComponent
+                                    destination={{ network: "STARKNET_MAINNET", tokens: ["WBTC", "ETH"] }}
+                                    destinationAddress="0x01837e50abe7B59bc3d0A57F09D80a0C34aAF1127b2c5E36b9E9b817030FF11b"
+                                />
+                            )}
                         </LayerswapProvider>
                     </div>
                 </div>
@@ -70,6 +81,31 @@ const PageComponent: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
             </div>
         </DynamicContextProvider>
     )
+}
+
+function WidgetSwitcher({
+    value,
+    onChange,
+}: {
+    value: WidgetType;
+    onChange: (value: WidgetType) => void;
+}) {
+    return (
+        <div className="flex items-center gap-1 p-1 rounded-lg bg-gray-800">
+            {(["swap", "deposit"] as const).map((type) => (
+                <button
+                    key={type}
+                    type="button"
+                    onClick={() => onChange(type)}
+                    className={`rounded-md px-6 py-1.5 text-sm font-medium capitalize transition-colors duration-200 ${
+                        value === type ? "bg-pink-600 text-white" : "text-gray-400 hover:text-white"
+                    }`}
+                >
+                    {type}
+                </button>
+            ))}
+        </div>
+    );
 }
 
 const theme: ThemeData = {
