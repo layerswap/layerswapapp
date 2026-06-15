@@ -12,7 +12,7 @@ import { useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import { generateSwapInitialValues } from "@/lib/generateSwapInitialValues";
-import { BackendTransactionStatus, TransactionType } from "@/lib/apiClients/layerSwapApiClient";
+import { TransactionType } from "@/lib/apiClients/layerSwapApiClient";
 import EasyDepositBanner from "./EasyDepositBanner";
 import PayFromPicker from "./PayFromPicker";
 import ReceivePicker from "./ReceivePicker";
@@ -225,6 +225,11 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
                                         <PayFromPicker
                                             selectedSource={from && fromAsset ? { network: from, token: fromAsset } : null}
                                             onSourceChange={(network, token) => {
+                                                const isSameSource = from?.name === network.name && fromAsset?.symbol === token.symbol;
+                                                if (isSameSource) {
+                                                    if (!swapId) attemptedKeyRef.current = null;
+                                                    return;
+                                                }
                                                 setSwapId(undefined);
                                                 setFieldValue('from', network, false);
                                                 setFieldValue('fromAsset', token, true);

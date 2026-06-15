@@ -42,7 +42,10 @@ export default function useAutoSourceRoute() {
         destinationToken: toAsset?.symbol,
     })
 
-    const sourceRoutes = data?.data?.filter(r => r.deposit_methods?.includes('deposit_address'))
+    const sourceRoutes = useMemo(
+        () => data?.data?.filter(r => r.deposit_methods?.includes('deposit_address')),
+        [data?.data]
+    )
 
     const isSourceInRoutes = useMemo(() => {
         if (!sourceRoutes || !from || !fromAsset) return false

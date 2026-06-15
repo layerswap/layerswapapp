@@ -13,6 +13,7 @@ import { useSelectedAccount } from "@/context/swapAccounts";
 import { useCallbacks } from "@/context/callbackProvider";
 import { WalletIsSupportedForSource } from "@/context/swap";
 import { useRecentNetworksStore } from "@/stores/recentRoutesStore";
+import { useContractAddressStore } from "@/stores/contractAddressStore";
 import { Address } from "@/lib/address/Address";
 import { useDepositSelection } from "./depositSelectionContext";
 import { useDepositStep } from "./depositStepContext";
@@ -40,13 +41,26 @@ type DepositPrefetchContextValue = {
 
 const DepositPrefetchContext = createContext<DepositPrefetchContextValue | null>(null);
 
-const makeKey = (from: string, fromToken: string, to: { name: string }, toToken: string, address: string) =>
-    `${from}|${fromToken}|${to.name}|${toToken}|${new Address(address, to).normalized}`;
+const makeKey = (
+    from: string,
+    fromToken: string,
+    to: { name: string },
+    toToken: string,
+    address: string,
+    sourceAddress?: string,
+    sourceNetwork?: { name: string },
+) => {
+    const normalizedDestinationAddress = new Address(address, to).normalized;
+    const normalizedSourceAddress = sourceAddress && sourceNetwork
+        ? new Address(sourceAddress, sourceNetwork).normalized
+        : "";
+    return `${from}|${fromToken}|${to.name}|${toToken}|${normalizedDestinationAddress}|${normalizedSourceAddress}`;
+};
 
-const keyFromValues = (values: SwapFormValues): string | null => {
+const keyFromValues = (values: SwapFormValues, sourceAddress?: string): string | null => {
     const { from, fromAsset, to, toAsset, destination_address } = values;
     if (!from || !fromAsset || !to || !toAsset || !destination_address) return null;
-    return makeKey(from.name, fromAsset.symbol, to, toAsset.symbol, destination_address);
+    return makeKey(from.name, fromAsset.symbol, to, toAsset.symbol, destination_address, sourceAddress, from);
 };
 
 /**
@@ -64,6 +78,7 @@ export function DepositPrefetchProvider({ children }: { children: ReactNode }) {
     const initialSettings = useInitialSettings();
     const { onSwapCreate } = useCallbacks();
     const updateRecentTokens = useRecentNetworksStore(state => state.updateRecentNetworks);
+    const checkContractStatus = useContractAddressStore(state => state.checkContractStatus);
 
     const apiClient = useMemo(() => new LayerSwapApiClient(), []);
 
@@ -106,47 +121,59 @@ export function DepositPrefetchProvider({ children }: { children: ReactNode }) {
     const { wallets } = useWallet(prefetchedSource?.network, "asSource");
     const selectedWallet = selectedSourceAccount
         && wallets.find(w => Address.equals(w.address, selectedSourceAccount.address, prefetchedSource?.network));
-    const sourceIsSupported = !!selectedWallet && WalletIsSupportedForSource({
+    const sourceWalletIsSupported = !!selectedWallet && WalletIsSupportedForSource({
         sourceNetwork: prefetchedSource?.network,
         sourceWallet: selectedWallet,
     });
+    const candidateSourceAddress = sourceWalletIsSupported ? selectedSourceAccount?.address : undefined;
 
     const currentKey = (prefetchedSource && destination && destinationToken && destinationAddress)
-        ? makeKey(prefetchedSource.network.name, prefetchedSource.token.symbol, destination, destinationToken.symbol, destinationAddress)
+        ? makeKey(prefetchedSource.network.name, prefetchedSource.token.symbol, destination, destinationToken.symbol, destinationAddress, candidateSourceAddress, prefetchedSource.network)
         : null;
 
     useEffect(() => {
         if (!active || !currentKey || !prefetchedSource || !destination || !destinationToken || !destinationAddress) return;
         if (swaps[currentKey] || inFlight.current.has(currentKey) || failedKeys.current.has(currentKey)) return;
 
-        const params: CreateSwapParams = {
-            source_network: prefetchedSource.network.name,
-            source_token: prefetchedSource.token.symbol,
-            destination_network: destination.name,
-            destination_token: destinationToken.symbol,
-            destination_address: destinationAddress,
-            reference_id: initialSettings.externalId,
-            refuel: false,
-            use_deposit_address: true,
-            source_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
-            refund_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
-        };
-
         const key = currentKey;
-        const promise = apiClient.CreateSwapAsync(params).then(response => {
+        const promise = (async () => {
+            const contractCheckResult = (selectedWallet && candidateSourceAddress)
+                ? await checkContractStatus(selectedWallet.address, prefetchedSource.network, destination)
+                : null;
+            const sourceIsContract = contractCheckResult?.sourceIsContract ?? false;
+            const sourceAddressForSwap = sourceIsContract ? undefined : candidateSourceAddress;
+
+            const params: CreateSwapParams = {
+                source_network: prefetchedSource.network.name,
+                source_token: prefetchedSource.token.symbol,
+                destination_network: destination.name,
+                destination_token: destinationToken.symbol,
+                destination_address: destinationAddress,
+                reference_id: initialSettings.externalId,
+                refuel: false,
+                use_deposit_address: true,
+                source_address: sourceAddressForSwap,
+                refund_address: sourceAddressForSwap,
+            };
+
+            const response = await apiClient.CreateSwapAsync(params);
             if (response?.error) throw response.error;
             const swap = response?.data;
             if (!swap?.swap.id) throw new Error("Could not create swap");
             createdByPrefetch.current.add(swap.swap.id);
             setSwaps(prev => ({ ...prev, [key]: swap }));
             return swap;
-        });
+        })();
         inFlight.current.set(key, promise);
         // Failed prefetches are not retried — the flow's own submit path
         // recreates the swap and surfaces the error to the user.
         promise.catch(() => { failedKeys.current.add(key); })
             .finally(() => { inFlight.current.delete(key); });
-    }, [active, currentKey, prefetchedSource, destination, destinationToken, destinationAddress, swaps, sourceIsSupported, selectedSourceAccount?.address, initialSettings.externalId, apiClient]);
+        // 'swaps' is intentionally not a dep: the inFlight/failedKeys refs and the
+        // swaps[currentKey] guard (read fresh whenever currentKey changes) handle
+        // dedup. Listing it would re-run this effect after every setSwaps it
+        // triggers — a redundant pass that only the guard saves from looping.
+    }, [active, currentKey, prefetchedSource, destination, destinationToken, destinationAddress, selectedWallet, candidateSourceAddress, checkContractStatus, initialSettings.externalId, apiClient]);
 
     const prefetchedSwap = currentKey ? swaps[currentKey] : undefined;
 
@@ -160,12 +187,12 @@ export function DepositPrefetchProvider({ children }: { children: ReactNode }) {
     );
 
     const claimPrefetchedSwap = useCallback((values: SwapFormValues) => {
-        const key = keyFromValues(values);
+        const key = keyFromValues(values, candidateSourceAddress);
         if (!key) return undefined;
         const ready = swaps[key];
         if (ready && !usedIds.current.has(ready.swap.id)) return Promise.resolve(ready);
         return inFlight.current.get(key);
-    }, [swaps]);
+    }, [swaps, candidateSourceAddress]);
 
     const markSwapUsed = useCallback((swap: SwapResponse, values?: SwapFormValues) => {
         const id = swap.swap.id;
@@ -182,10 +209,10 @@ export function DepositPrefetchProvider({ children }: { children: ReactNode }) {
             }
         }
         if (values) {
-            const key = keyFromValues(values);
+            const key = keyFromValues(values, candidateSourceAddress);
             if (key) setSwaps(prev => prev[key]?.swap.id === id ? prev : { ...prev, [key]: swap });
         }
-    }, [onSwapCreate, updateRecentTokens]);
+    }, [onSwapCreate, updateRecentTokens, candidateSourceAddress]);
 
     const value = useMemo<DepositPrefetchContextValue>(() => ({
         prefetchedSource,
