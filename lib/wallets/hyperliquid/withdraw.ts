@@ -18,7 +18,7 @@ export type SignSendToEvmParams = {
  * EIP-712-sign a Hyperliquid `sendToEvmWithData` action with the connected EVM
  * wallet. HyperCore burns the USDC through HyperEVM via Circle CCTP and (with
  * `data: '0x'`) auto-mints + forwards it to the recipient on the destination chain.
- * The domain chainId is the destination chain id (Arbitrum); the connected wallet
+ * The domain chainId is the destination chain id (Base); the connected wallet
  * must be on that chain (some wallets reject foreign-domain typed data) — enforced
  * by the step component's ChangeNetwork branch.
  */

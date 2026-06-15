@@ -79,7 +79,8 @@ export type HyperliquidSendToEvmAction = {
     destinationRecipient: string;
     /** 'hex' for EVM, 'base58' for Solana. */
     addressEncoding: string;
-    /** CCTP destination domain (e.g. 3 = Arbitrum). */
+    /** Circle's wire field name carrying the CCTP destination domain (e.g. 6 = Base).
+     * Keep this name — it's what Hyperliquid expects; our config calls it `destinationCctpDomain`. */
     destinationChainId: number;
     /** Gas limit for the destination forwarding transaction. */
     gasLimit: number;

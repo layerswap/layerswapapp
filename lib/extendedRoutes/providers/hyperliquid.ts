@@ -1,24 +1,29 @@
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
-import KnownInternalNames from "@/lib/knownIds";
 import { ExtendedRouteProvider, ExtendedTokenMapping } from "../types";
-
-const USDC = 'USDC'
+import { HYPERLIQUID_ROUTES, HyperliquidRoute } from "@/lib/wallets/hyperliquid/routes";
+import { HYPERLIQUID_USDC_SYMBOL } from "@/lib/wallets/hyperliquid/constants";
 
 /**
- * HL CCTP withdrawal (sendToEvmWithData): ~5 min arrival, 2 USDC minimum.
- * `flatFee` is the per-destination CCTP forwarding fee (Base). NOTE: verify the
- * exact Base forwarding fee — Circle's docs only quote Arbitrum (0.2 USDC).
- * When more destinations are added later, give each its own fee here.
+ * Derive the extended-route mapping from the shared route table — fee, timing,
+ * minimum and destination all come from HYPERLIQUID_ROUTES so adding/switching a
+ * destination is a single edit there.
  */
-const HYPERLIQUID_MAPPING = (real: { networkName: string }): ExtendedTokenMapping => ({
-    extendedTokenSymbol: USDC,
-    real: { networkName: real.networkName, tokenSymbol: USDC },
-    flatFee: 0.2,
-    extraCompletionSeconds: 300,
-    minSourceAmount: 2,
-    realDecimals: 6,
-    directDestinations: [{ networkName: real.networkName, tokenSymbol: USDC }],
+const toMapping = (route: HyperliquidRoute): ExtendedTokenMapping => ({
+    extendedTokenSymbol: HYPERLIQUID_USDC_SYMBOL,
+    real: { networkName: route.realNetworkName, tokenSymbol: route.realTokenSymbol },
+    flatFee: route.flatFee,
+    extraCompletionSeconds: route.arrivalSeconds,
+    minSourceAmount: route.minSourceAmount,
+    realDecimals: route.realDecimals,
+    directDestinations: [{ networkName: route.realNetworkName, tokenSymbol: route.realTokenSymbol }],
 })
+
+const mappings: Record<string, Record<string, ExtendedTokenMapping>> = Object.fromEntries(
+    Object.entries(HYPERLIQUID_ROUTES).map(([hlNetwork, route]) => [
+        hlNetwork,
+        { [HYPERLIQUID_USDC_SYMBOL]: toMapping(route) },
+    ]),
+)
 
 // Cache resolved routes by the source network object so the returned route (and
 // its token objects) keep stable identity across renders. Without this, every
@@ -30,18 +35,8 @@ const routeCache = new WeakMap<object, NetworkRoute>()
 export const hyperliquidProvider: ExtendedRouteProvider = {
     id: 'hyperliquid',
     direction: 'source',
-    extendedNetworkNames: [
-        KnownInternalNames.Networks.HyperliquidMainnet,
-        KnownInternalNames.Networks.HyperliquidTestnet,
-    ],
-    mappings: {
-        [KnownInternalNames.Networks.HyperliquidMainnet]: {
-            [USDC]: HYPERLIQUID_MAPPING({ networkName: KnownInternalNames.Networks.BaseMainnet }),
-        },
-        [KnownInternalNames.Networks.HyperliquidTestnet]: {
-            [USDC]: HYPERLIQUID_MAPPING({ networkName: KnownInternalNames.Networks.BaseSepolia }),
-        },
-    },
+    extendedNetworkNames: Object.keys(HYPERLIQUID_ROUTES),
+    mappings,
     resolveExtendedRoute(networkName, allNetworks) {
         const network = allNetworks.find(n => n.name === networkName)
         if (!network) return undefined

@@ -2,6 +2,7 @@ import { NetworkWithTokens } from "../../../Models/Network";
 import { TokenBalance } from "../../../Models/Balance";
 import KnownInternalNames from "../../knownIds";
 import { HyperliquidClient } from "../../apiClients/hyperliquidClient";
+import { HYPERLIQUID_USDC_SYMBOL } from "../../wallets/hyperliquid/constants";
 import { BalanceProvider } from "@/Models/BalanceProvider";
 
 export class HyperliquidBalanceProvider extends BalanceProvider {
@@ -30,7 +31,7 @@ export class HyperliquidBalanceProvider extends BalanceProvider {
             const balances: TokenBalance[] = [];
 
             // Only support USDC balances for now
-            const usdcToken = network.tokens.find(token => token.symbol === 'USDC');
+            const usdcToken = network.tokens.find(token => token.symbol === HYPERLIQUID_USDC_SYMBOL);
 
             if (usdcToken) {
                 const usdcBalance = await this.client.getAvailableTokenBalance(address, nodeUrl, usdcToken.symbol, options?.timeoutMs, options?.retryCount);

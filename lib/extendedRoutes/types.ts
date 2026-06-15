@@ -22,9 +22,9 @@ export type ExtendedTokenMapping = {
     extraCompletionSeconds: number
     /** Minimum amount that may leave the extended source (source-token units). */
     minSourceAmount?: number
-    /** Decimal places of the real token; used to truncate the bridged amount. */
+    /** Decimal places of the real token; used to truncate the forwarded amount. */
     realDecimals?: number
-    /** Pairs fulfilled entirely client-side (no backend swap), e.g. HL/USDC -> ARBITRUM/USDC. */
+    /** Pairs fulfilled entirely client-side (no backend swap), e.g. HL/USDC -> BASE/USDC. */
     directDestinations?: RealRouteRef[]
 }
 
@@ -59,7 +59,7 @@ export type ResolvedExtendedMapping = ExtendedTokenMapping & {
  * Destination-side semantics (no v1 provider, designed for later):
  * an extended destination D maps to real destination R; the backend swap
  * delivers to the user's own address on R, then a provider-supplied
- * completion-step component executes the post-hop (e.g. deposit into a bridge
- * contract). The registry/quote/creation seams branch by `direction`, so adding
+ * completion-step component executes the post-hop (e.g. deposit into a
+ * destination protocol's contract). The registry/quote/creation seams branch by `direction`, so adding
  * it later means a new provider + one completion-step dispatch.
  */

@@ -7,7 +7,7 @@ import { ExtendedFulfillmentMode } from '@/lib/extendedRoutes/types';
  * or a generated uuid (direct mode). Lets the post-create UI keep showing the
  * extended source (e.g. Hyperliquid) and lets the withdraw step resume after a
  * reload. Absent on another device → the UI degrades gracefully to the real
- * (Arbitrum) identity and manual withdrawal.
+ * (Base) identity and manual withdrawal.
  */
 export type ExtendedRouteWithdrawal = {
     submittedAt: number
