@@ -6,7 +6,7 @@ import useCopyClipboard from "@/hooks/useCopyClipboard";
 type DepositAddressFormButtonProps = {
     values: SwapFormValues;
     isValid: boolean;
-    error: string;
+    error?: string;
     isSubmitting: boolean;
     showDepositInfo: boolean;
     depositAddress: string | undefined;

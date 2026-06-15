@@ -112,7 +112,7 @@ const DepositAddressForm: FC<Props> = () => {
     const { setSwapId } = useSwapDataUpdate();
 
     const isValid = !formValidation.message;
-    const error = formValidation.message || '';
+    const error = formValidation.message;
 
     const allFieldsReady = !!(from && fromAsset && destination && toCurrency && destination_address);
 
