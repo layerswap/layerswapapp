@@ -152,7 +152,15 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             if (extendedRecord && backendQuote) {
                 const extendedNetwork = networks.find(n => n.name === extendedRecord.extendedNetwork)
                 const extendedToken = extendedNetwork?.tokens.find(t => t.symbol === extendedRecord.extendedToken)
-                const mapping = getExtendedMapping(extendedRecord.extendedNetwork, extendedRecord.extendedToken)
+                // Use the swap's actual destination so the restored mapping resolves
+                // to the same destination candidate the original flow used.
+                const swap = data.data.swap
+                const mapping = getExtendedMapping(
+                    extendedRecord.extendedNetwork,
+                    extendedRecord.extendedToken,
+                    swap?.destination_network?.name,
+                    swap?.destination_token?.symbol,
+                )
                 if (extendedNetwork && extendedToken && mapping) {
                     return transformQuoteForExtendedRoute({ quote: backendQuote }, mapping, extendedNetwork, extendedToken, Number(extendedRecord.sourceAmount))?.quote
                 }
@@ -248,8 +256,8 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         // Extended source bridge mode (e.g. Hyperliquid): create the real backend
         // swap (Base/USDC) for the forwarded amount (A - flat fee), via a deposit
         // address. The HL withdrawal then funds that deposit address.
-        const extendedMapping = getExtendedMapping(from.name, fromCurrency.symbol)
-        const isExtendedBridge = !!extendedMapping && extendedMapping.resolveMode(to.name, toCurrency.symbol) === 'viaDepositAddressSwap'
+        const extendedMapping = getExtendedMapping(from.name, fromCurrency.symbol, to.name, toCurrency.symbol)
+        const isExtendedBridge = !!extendedMapping
 
         const data: CreateSwapParams = isExtendedBridge ? {
             amount: extendedMapping!.toRealAmount(Number(amount)).toString(),
@@ -302,7 +310,6 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         if (isExtendedBridge && extendedMapping) {
             useExtendedRoutesStore.getState().setRecord(swap.swap.id, {
                 providerId: extendedMapping.provider.id,
-                mode: 'viaDepositAddressSwap',
                 extendedNetwork: from.name,
                 extendedToken: fromCurrency.symbol,
                 realNetwork: extendedMapping.real.networkName,

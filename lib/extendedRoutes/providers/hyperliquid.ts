@@ -1,27 +1,29 @@
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
-import { ExtendedRouteProvider, ExtendedTokenMapping } from "../types";
-import { HYPERLIQUID_ROUTES, HyperliquidRoute } from "@/lib/wallets/hyperliquid/routes";
+import { ExtendedRouteProvider, ExtendedTokenMapping, RealRouteRef } from "../types";
+import { HYPERLIQUID_ROUTES, HyperliquidDestination, HyperliquidRoute, getHyperliquidCandidates, pickHyperliquidDestination } from "@/lib/wallets/hyperliquid/routes";
 import { HYPERLIQUID_USDC_SYMBOL } from "@/lib/wallets/hyperliquid/constants";
 
 /**
- * Derive the extended-route mapping from the shared route table — fee, timing,
- * minimum and destination all come from HYPERLIQUID_ROUTES so adding/switching a
- * destination is a single edit there.
+ * Build an extended-route mapping from a (route, chosen destination) pair.
+ * Each destination owns its own CCTP fee/timing/decimals, so the mapping varies
+ * with whichever destination ends up active.
  */
-const toMapping = (route: HyperliquidRoute): ExtendedTokenMapping => ({
+const toMapping = (route: HyperliquidRoute, dest: HyperliquidDestination): ExtendedTokenMapping => ({
     extendedTokenSymbol: HYPERLIQUID_USDC_SYMBOL,
-    real: { networkName: route.realNetworkName, tokenSymbol: route.realTokenSymbol },
-    flatFee: route.flatFee,
-    extraCompletionSeconds: route.arrivalSeconds,
+    real: { networkName: dest.realNetworkName, tokenSymbol: dest.realTokenSymbol },
+    flatFee: dest.flatFee,
+    extraCompletionSeconds: dest.arrivalSeconds,
     minSourceAmount: route.minSourceAmount,
-    realDecimals: route.realDecimals,
-    directDestinations: [{ networkName: route.realNetworkName, tokenSymbol: route.realTokenSymbol }],
+    realDecimals: dest.realDecimals,
 })
 
+/** Primary-destination mappings — used by the picker's visibility filter when
+ * the user hasn't selected a destination yet. The active flow uses
+ * `resolveActiveMapping` instead so it picks the right destination per `to`. */
 const mappings: Record<string, Record<string, ExtendedTokenMapping>> = Object.fromEntries(
     Object.entries(HYPERLIQUID_ROUTES).map(([hlNetwork, route]) => [
         hlNetwork,
-        { [HYPERLIQUID_USDC_SYMBOL]: toMapping(route) },
+        { [HYPERLIQUID_USDC_SYMBOL]: toMapping(route, route.destinations[0]) },
     ]),
 )
 
@@ -62,5 +64,17 @@ export const hyperliquidProvider: ExtendedRouteProvider = {
 
         routeCache.set(network, route)
         return route
+    },
+    resolveActiveMapping(networkName, tokenSymbol, toNetworkName, toTokenSymbol) {
+        if (tokenSymbol !== HYPERLIQUID_USDC_SYMBOL) return undefined
+        const route = HYPERLIQUID_ROUTES[networkName]
+        if (!route) return undefined
+        const dest = pickHyperliquidDestination(networkName, toNetworkName, toTokenSymbol)
+        if (!dest) return undefined
+        return toMapping(route, dest)
+    },
+    getRealCandidates(networkName, tokenSymbol): RealRouteRef[] {
+        if (tokenSymbol !== HYPERLIQUID_USDC_SYMBOL) return []
+        return getHyperliquidCandidates(networkName)
     },
 }

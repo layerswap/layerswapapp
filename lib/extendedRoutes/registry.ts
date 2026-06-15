@@ -15,11 +15,19 @@ export function isExtendedSourceNetwork(name?: string): boolean {
     return SOURCE_PROVIDERS.some(p => p.extendedNetworkNames.includes(name))
 }
 
-export function getExtendedMapping(networkName?: string, tokenSymbol?: string): ResolvedExtendedMapping | undefined {
+export function getExtendedMapping(
+    networkName?: string,
+    tokenSymbol?: string,
+    toNetworkName?: string,
+    toTokenSymbol?: string,
+): ResolvedExtendedMapping | undefined {
     if (!networkName || !tokenSymbol) return undefined
 
     for (const provider of SOURCE_PROVIDERS) {
-        const mapping = provider.mappings[networkName]?.[tokenSymbol]
+        // Prefer the provider's per-destination resolver (e.g. HL primary/fallback).
+        // Static `mappings` is the fallback for providers with a single destination.
+        const mapping = provider.resolveActiveMapping?.(networkName, tokenSymbol, toNetworkName, toTokenSymbol)
+            ?? provider.mappings[networkName]?.[tokenSymbol]
         if (!mapping) continue
 
         const realDecimals = mapping.realDecimals ?? 6
@@ -28,11 +36,6 @@ export function getExtendedMapping(networkName?: string, tokenSymbol?: string): 
             ...mapping,
             provider,
             extendedNetworkName: networkName,
-            resolveMode(toNetworkName, toTokenSymbol) {
-                const isDirect = !!mapping.directDestinations?.some(d =>
-                    d.networkName === toNetworkName && d.tokenSymbol === toTokenSymbol)
-                return isDirect ? 'direct' : 'viaDepositAddressSwap'
-            },
             toRealAmount(sourceAmount) {
                 return truncateDecimalsToFloor(sourceAmount - mapping.flatFee, realDecimals)
             },

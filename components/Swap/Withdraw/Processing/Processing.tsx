@@ -127,29 +127,35 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             },
             current: {
                 name: 'Processing your deposit',
-                description: <div className='flex space-x-1'>
-                    <div>
-                        <LinkWithIcon
-                            name={'View in explorer'}
-                            url={getExplorerUrl(input_tx_explorer, transactionHash)}
-                        />
-                    </div>
-                    <div>
-                        <span>
-                            {swapInputTransaction && swapInputTransaction?.confirmations > 0 && (
+                description: <>
+                    {
+                        transactionHash
+                            ? <div className='flex space-x-1'>
                                 <div>
-                                    <span className='whitespace-nowrap'>| Confirmations </span>
-                                    <span className="text-primary-text ml-1">
-                                        <span>{swapInputTransaction?.confirmations >= swapInputTransaction?.max_confirmations
-                                            ? swapInputTransaction?.max_confirmations
-                                            : swapInputTransaction?.confirmations}</span>
-                                        <span>/</span>{swapInputTransaction?.max_confirmations}
+                                    <LinkWithIcon
+                                        name={'View in explorer'}
+                                        url={getExplorerUrl(input_tx_explorer, transactionHash)}
+                                    />
+                                </div>
+                                <div>
+                                    <span>
+                                        {swapInputTransaction && swapInputTransaction?.confirmations > 0 && (
+                                            <div>
+                                                <span className='whitespace-nowrap'>| Confirmations </span>
+                                                <span className="text-primary-text ml-1">
+                                                    <span>{swapInputTransaction?.confirmations >= swapInputTransaction?.max_confirmations
+                                                        ? swapInputTransaction?.max_confirmations
+                                                        : swapInputTransaction?.confirmations}</span>
+                                                    <span>/</span>{swapInputTransaction?.max_confirmations}
+                                                </span>
+                                            </div>
+                                        )}
                                     </span>
                                 </div>
-                            )}
-                        </span>
-                    </div>
-                </div>
+                            </div>
+                            : null
+                    }
+                </>
             },
             complete: {
                 name: `Deposit confirmed`,

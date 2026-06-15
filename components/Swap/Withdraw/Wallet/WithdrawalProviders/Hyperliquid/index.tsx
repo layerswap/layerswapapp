@@ -6,19 +6,14 @@ import WalletMessage from "../../../messages/Message";
 import ActionMessages from "../../../messages/TransactionMessages";
 import WalletIcon from "@/components/icons/WalletIcon";
 import { Address } from "@/lib/address";
-import { SubmittedPanel } from "./SubmittedPanel";
 import { useHyperliquidWithdrawal } from "./useHyperliquidWithdrawal";
 
 export const HyperliquidWalletWithdraw: FC<WithdrawPageProps> = (props) => {
     const { source_network } = props.swapBasicData
     const {
-        handleWithdraw, loading, error, rejected, isDirect, record, hlConfig,
-        isConnected, wallet, activeAddress, activeChain, sourceAddress, networks,
+        handleWithdraw, loading, error, rejected, hlConfig,
+        isConnected, wallet, activeAddress, activeChain, sourceAddress,
     } = useHyperliquidWithdrawal(props)
-
-    if (record?.withdrawal) {
-        return <SubmittedPanel isDirect={isDirect} destination={record.withdrawal.destination} realNetworkName={record.realNetwork} networks={networks} />
-    }
 
     if (!isConnected || !wallet) {
         return <div className="w-full space-y-3">

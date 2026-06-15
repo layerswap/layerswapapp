@@ -9,8 +9,6 @@ import { NetworkRoute, NetworkWithTokens } from "@/Models/Network";
 
 export type RealRouteRef = { networkName: string; tokenSymbol: string }
 
-export type ExtendedFulfillmentMode = 'viaDepositAddressSwap' | 'direct'
-
 export type ExtendedTokenMapping = {
     /** Token symbol on the extended network, e.g. 'USDC' on HYPERLIQUID_*. */
     extendedTokenSymbol: string
@@ -24,8 +22,6 @@ export type ExtendedTokenMapping = {
     minSourceAmount?: number
     /** Decimal places of the real token; used to truncate the forwarded amount. */
     realDecimals?: number
-    /** Pairs fulfilled entirely client-side (no backend swap), e.g. HL/USDC -> BASE/USDC. */
-    directDestinations?: RealRouteRef[]
 }
 
 export interface ExtendedRouteProvider {
@@ -35,20 +31,33 @@ export interface ExtendedRouteProvider {
     direction: 'source' | 'destination'
     /** Extended network names this provider owns, e.g. [HYPERLIQUID_MAINNET, HYPERLIQUID_TESTNET]. */
     extendedNetworkNames: string[]
-    /** mappings[networkName][tokenSymbol] -> token mapping. */
+    /** mappings[networkName][tokenSymbol] -> token mapping (for the primary
+     * destination, used by the picker visibility check). */
     mappings: Record<string, Record<string, ExtendedTokenMapping>>
     /**
      * Build an injectable NetworkRoute from settings.networks. Returns undefined
      * when the network is absent (e.g. testnet on a prod settings payload).
      */
     resolveExtendedRoute(networkName: string, allNetworks: NetworkWithTokens[]): NetworkRoute | undefined
+    /**
+     * Resolve the mapping for a specific (extended source, token, destination).
+     * Lets providers with multiple destination candidates (e.g. HL primary +
+     * fallback) pick the right one based on the user's selected destination.
+     * Optional — if absent, the registry uses the static `mappings` entry.
+     */
+    resolveActiveMapping?(networkName: string, tokenSymbol: string, toNetworkName?: string, toTokenSymbol?: string): ExtendedTokenMapping | undefined
+    /**
+     * Real (network, token) candidates for an extended (source, token) pair.
+     * The picker uses this to show the extended source iff AT LEAST ONE
+     * candidate has a backend deposit-address route. Optional — defaults to
+     * the primary `mappings[…][…].real`.
+     */
+    getRealCandidates?(networkName: string, tokenSymbol: string): RealRouteRef[]
 }
 
 export type ResolvedExtendedMapping = ExtendedTokenMapping & {
     provider: ExtendedRouteProvider
     extendedNetworkName: string
-    /** 'direct' when the selected destination matches a `directDestinations` entry. */
-    resolveMode(toNetworkName?: string, toTokenSymbol?: string): ExtendedFulfillmentMode
     /** A - flatFee, truncated to the real token's decimals (what arrives at the deposit address). */
     toRealAmount(sourceAmount: number): number
     /** realAmount + flatFee (what must leave the extended source). */

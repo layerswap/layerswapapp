@@ -3,7 +3,7 @@ import { Quote } from "@/lib/apiClients/layerSwapApiClient";
 import { SwapFormValues, SwapDirection } from "@/components/DTOs/SwapFormValues";
 import { parseHmsString } from "@/components/utils/formatTime";
 import { RealRouteRef, ResolvedExtendedMapping } from "./types";
-import { getExtendedMapping, getSourceProviders, isExtendedSourceNetwork } from "./registry";
+import { getSourceProviders, isExtendedSourceNetwork } from "./registry";
 
 export type ExtendedLimits = {
     min_amount: number
@@ -45,9 +45,12 @@ function injectExtendedSources({ routes, values, networks }: Omit<InjectArgs, 'd
             const qualifyingTokens: NetworkRouteToken[] = extendedRoute.tokens.filter(token => {
                 const mapping = tokenMappings[token.symbol]
                 if (!mapping) return false
-                // Show iff the backend offers the real deposit-address route, OR the
-                // selected destination is fulfilled directly client-side.
-                return realDepositAddressRoutePresent(routes, mapping.real) || directDestinationSelected(mapping, values)
+                // Show iff the backend offers a real deposit-address route for AT
+                // LEAST ONE of the provider's candidate destinations for this token
+                // (primary or any fallback). Falls back to the static mapping when
+                // the provider doesn't enumerate candidates.
+                const candidates = provider.getRealCandidates?.(extendedName, token.symbol) ?? [mapping.real]
+                return candidates.some(c => realDepositAddressRoutePresent(routes, c))
             })
 
             if (qualifyingTokens.length) {
@@ -59,23 +62,10 @@ function injectExtendedSources({ routes, values, networks }: Omit<InjectArgs, 'd
     return additions.length ? [...routes, ...additions] : routes
 }
 
-function injectExtendedDestinations({ routes, values, networks }: Omit<InjectArgs, 'direction'>): NetworkRoute[] {
+function injectExtendedDestinations({ routes, values }: Omit<InjectArgs, 'direction'>): NetworkRoute[] {
     if (!isExtendedSourceNetwork(values.from?.name)) return routes
-
     // The extended network can never be its own destination.
-    let result = routes.filter(r => !isExtendedSourceNetwork(r.name))
-
-    const mapping = getExtendedMapping(values.from?.name, values.fromAsset?.symbol)
-    if (!mapping?.directDestinations?.length) return result
-
-    const additions: NetworkRoute[] = []
-    for (const direct of mapping.directDestinations) {
-        if (result.some(r => r.name === direct.networkName && r.tokens?.some(t => t.symbol === direct.tokenSymbol))) continue
-        const route = buildRealRoute(direct, networks)
-        if (route) additions.push(route)
-    }
-
-    return additions.length ? [...result, ...additions] : result
+    return routes.filter(r => !isExtendedSourceNetwork(r.name))
 }
 
 function realDepositAddressRoutePresent(routes: NetworkRoute[], real: RealRouteRef): boolean {
@@ -83,40 +73,6 @@ function realDepositAddressRoutePresent(routes: NetworkRoute[], real: RealRouteR
         r.name === real.networkName
         && r.deposit_methods?.includes('deposit_address')
         && r.tokens?.some(t => t.symbol === real.tokenSymbol && t.status === 'active'))
-}
-
-function directDestinationSelected(mapping: { directDestinations?: RealRouteRef[] }, values: SwapFormValues): boolean {
-    return !!mapping.directDestinations?.some(d =>
-        d.networkName === values.to?.name && d.tokenSymbol === values.toAsset?.symbol)
-}
-
-// Cache built routes by source network object + token symbol so injected direct
-// destinations keep stable token identity across renders (see routeCache note in
-// providers/hyperliquid.ts — otherwise RoutePicker's resync effect loops).
-const realRouteCache = new WeakMap<object, Map<string, NetworkRoute>>()
-
-function buildRealRoute(real: RealRouteRef, networks: NetworkWithTokens[]): NetworkRoute | undefined {
-    const network = networks.find(n => n.name === real.networkName)
-    if (!network) return undefined
-
-    let byToken = realRouteCache.get(network)
-    if (!byToken) {
-        byToken = new Map()
-        realRouteCache.set(network, byToken)
-    }
-    const cached = byToken.get(real.tokenSymbol)
-    if (cached) return cached
-
-    const token = network.tokens.find(t => t.symbol === real.tokenSymbol)
-    if (!token) return undefined
-
-    const route = {
-        ...network,
-        tokens: [{ ...token, status: 'active' as const }],
-    } as NetworkRoute
-
-    byToken.set(real.tokenSymbol, route)
-    return route
 }
 
 /** Displayed limits = backend limits + flat fee (clamped to minSourceAmount). */
@@ -162,37 +118,6 @@ export function transformQuoteForExtendedRoute(
             total_fee: quote.quote.total_fee + mapping.flatFee,
             total_fee_in_usd: quote.quote.total_fee_in_usd + mapping.flatFee * pricePerToken,
             avg_completion_time: addSecondsToHms(quote.quote.avg_completion_time, mapping.extraCompletionSeconds),
-        },
-    }
-}
-
-/** Local quote for direct mode (no backend call): receive = A - fee, time = 5 min. */
-export function buildDirectQuote(
-    mapping: ResolvedExtendedMapping,
-    sourceNetwork: Network,
-    sourceToken: Token,
-    destinationNetwork: Network,
-    destinationToken: Token,
-    sourceAmount: number,
-): Quote {
-    const receive = mapping.toRealAmount(sourceAmount)
-    const pricePerToken = sourceToken.price_in_usd ?? 1
-
-    return {
-        quote: {
-            source_network: sourceNetwork,
-            source_token: sourceToken,
-            destination_network: destinationNetwork,
-            destination_token: destinationToken,
-            requested_amount: sourceAmount,
-            receive_amount: receive,
-            min_receive_amount: receive,
-            total_fee: mapping.flatFee,
-            total_fee_in_usd: mapping.flatFee * pricePerToken,
-            blockchain_fee: mapping.flatFee,
-            service_fee: 0,
-            avg_completion_time: addSecondsToHms(undefined, mapping.extraCompletionSeconds),
-            rate: 1,
         },
     }
 }

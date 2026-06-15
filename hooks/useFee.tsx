@@ -9,7 +9,7 @@ import { isDiffByPercent } from '@/components/utils/numbers'
 import { useSlippageStore } from '@/stores/slippageStore'
 import { useSettingsState } from '@/context/settings'
 import { getExtendedMapping } from '@/lib/extendedRoutes/registry'
-import { buildDirectQuote, transformLimitsForExtendedRoute, transformQuoteForExtendedRoute } from '@/lib/extendedRoutes/transforms'
+import { transformLimitsForExtendedRoute, transformQuoteForExtendedRoute } from '@/lib/extendedRoutes/transforms'
 
 const apiClient = new LayerswapApiClient()
 
@@ -85,23 +85,18 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
     const use_deposit_address = depositMethod === 'wallet' ? false : true
 
     // Extended source (e.g. Hyperliquid): the backend doesn't know this source,
-    // so quote/limits are fetched against the real route it maps to (bridge mode)
-    // or synthesized entirely client-side (direct mode).
+    // so quote/limits are fetched against the real route it maps to (bridge mode).
     const { networks } = useSettingsState()
-    const extendedMapping = useMemo(() => getExtendedMapping(from, fromCurrency), [from, fromCurrency])
-    const mode = extendedMapping?.resolveMode(to, toCurrency)
-    const isDirect = !!extendedMapping && mode === 'direct'
-    const isBridge = !!extendedMapping && mode === 'viaDepositAddressSwap'
+    const extendedMapping = useMemo(() => getExtendedMapping(from, fromCurrency, to, toCurrency), [from, fromCurrency, to, toCurrency])
+    const isBridge = !!extendedMapping
     const effectiveFrom = isBridge ? extendedMapping!.real.networkName : from
     const effectiveFromToken = isBridge ? extendedMapping!.real.tokenSymbol : fromCurrency
     const effectiveUseDepositAddress = extendedMapping ? true : use_deposit_address
 
     const extendedNetworkObj = useMemo(() => extendedMapping ? networks.find(n => n.name === extendedMapping.extendedNetworkName) : undefined, [networks, extendedMapping])
     const extendedTokenObj = useMemo(() => extendedNetworkObj?.tokens.find(t => t.symbol === extendedMapping?.extendedTokenSymbol), [extendedNetworkObj, extendedMapping])
-    const directDestNetworkObj = useMemo(() => isDirect ? networks.find(n => n.name === to) : undefined, [networks, isDirect, to])
-    const directDestTokenObj = useMemo(() => directDestNetworkObj?.tokens.find(t => t.symbol === toCurrency), [directDestNetworkObj, toCurrency])
 
-    const limitsURL = (!isDirect && from && to && depositMethod && toCurrency && fromCurrency) ?
+    const limitsURL = (from && to && depositMethod && toCurrency && fromCurrency) ?
         buildLimitsUrl({
             sourceNetwork: effectiveFrom!,
             sourceToken: effectiveFromToken!,
@@ -126,7 +121,7 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
     // Bridge mode fetches the backend quote for the truncated real amount (A - fee).
     const effectiveAmount = isBridge ? extendedMapping!.toRealAmount(Number(debouncedAmount)) : debouncedAmount
 
-    const quoteURL = (!isDirect && hasQuoteParams && !isDebouncing && (!isBridge || Number(effectiveAmount) > 0))
+    const quoteURL = (hasQuoteParams && !isDebouncing && (!isBridge || Number(effectiveAmount) > 0))
         ? buildQuoteUrl({
             sourceNetwork: effectiveFrom!,
             sourceToken: effectiveFromToken!,
@@ -187,15 +182,11 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
     if (!isTransitioning) lastSettledQuoteRef.current = resolvedQuote
     const suppressStale = isTransitioning && lastSettledQuoteRef.current === undefined
 
-    // Re-denominate (bridge) or synthesize (direct) outputs for extended routes.
+    // Re-denominate the backend quote so the source side reads as the extended route.
     let finalQuote = suppressStale ? undefined : resolvedQuote
     if (extendedMapping && hasValidAmount && debouncedAmount) {
         const sourceAmount = Number(debouncedAmount)
-        if (isDirect) {
-            finalQuote = (extendedNetworkObj && extendedTokenObj && directDestNetworkObj && directDestTokenObj && sourceAmount > extendedMapping.flatFee)
-                ? buildDirectQuote(extendedMapping, extendedNetworkObj, extendedTokenObj, directDestNetworkObj, directDestTokenObj, sourceAmount)
-                : undefined
-        } else if (isBridge && finalQuote && extendedNetworkObj && extendedTokenObj) {
+        if (isBridge && finalQuote && extendedNetworkObj && extendedTokenObj) {
             finalQuote = transformQuoteForExtendedRoute(finalQuote, extendedMapping, extendedNetworkObj, extendedTokenObj, sourceAmount)
         }
     }
@@ -210,15 +201,6 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
         maxAllowedAmount = transformed?.max_amount
         minAllowedAmountInUsd = transformed?.min_amount_in_usd
         maxAllowedAmountInUsd = transformed?.max_amount_in_usd
-    } else if (isDirect) {
-        // No backend bound in direct mode; the only ceiling is the HL available
-        // balance, applied separately via the balance provider + MinMax cap.
-        const price = extendedTokenObj?.price_in_usd ?? 1
-        const directMin = extendedMapping!.minSourceAmount ?? extendedMapping!.flatFee
-        minAllowedAmount = directMin
-        minAllowedAmountInUsd = directMin * price
-        maxAllowedAmount = undefined
-        maxAllowedAmountInUsd = undefined
     }
 
     return {
@@ -227,13 +209,13 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
         minAllowedAmountInUsd,
         maxAllowedAmountInUsd,
         quote: finalQuote,
-        quoteTokenPrices: (finalQuote?.quote && (isDirect || !suppressStale)) ? {
+        quoteTokenPrices: (finalQuote?.quote && !suppressStale) ? {
             source_token: finalQuote.quote.source_token,
             destination_token: finalQuote.quote.destination_token,
         } : undefined,
-        isQuoteLoading: isDirect ? false : isQuoteLoading,
+        isQuoteLoading,
         isDebouncing,
-        quoteError: isDirect ? undefined : quoteError,
+        quoteError,
         mutateFee,
         mutateLimits,
         limitsValidating,
