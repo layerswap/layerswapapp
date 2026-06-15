@@ -47,7 +47,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
     const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
     const { isQuoteLoading, quote, quoteTokenPrices, minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd } = useQuoteData(quoteArgs, quoteRefreshInterval);
-    const { routeValidation, formValidation } = useValidationContext();
+    const { formValidation } = useValidationContext();
 
     const isValid = !formValidation.message;
     const error = formValidation.message;
@@ -140,11 +140,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                             </div>
                         </div>
                         <div>
-                            {
-                                routeValidation.message
-                                    ? <ValidationError />
-                                    : null
-                            }
+                            <ValidationError />
                             <QuoteDetails swapValues={values} quote={quote?.quote} isQuoteLoading={isQuoteLoading} reward={quote?.reward} variant="base" />
                         </div>
                     </div>

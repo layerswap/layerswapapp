@@ -55,7 +55,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const toAsset = values.toAsset;
     const fromAsset = values.fromAsset;
-    const { formValidation, routeValidation, autoSlippageWouldWork, isTestingAutoSlippage } = useValidationContext();
+    const { formValidation, autoSlippageWouldWork, isTestingAutoSlippage } = useValidationContext();
     const query = useQueryState();
 
     const isValid = !formValidation.message;
@@ -129,11 +129,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                     </div>
                                 ) : null
                             }
-                            {
-                                routeValidation.message
-                                    ? <ValidationError />
-                                    : null
-                            }
+                            <ValidationError />
                             {
                                 !autoSlippageWouldWork ? (
                                     <QuoteDetails swapValues={values} quote={quote?.quote} reward={quote?.reward} isQuoteLoading={isQuoteLoading} />

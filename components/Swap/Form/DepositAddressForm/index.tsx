@@ -107,12 +107,12 @@ const DepositAddressForm: FC<Props> = () => {
         setFieldValue('depositMethod', 'deposit_address', true)
     }, [])
 
-    const { routeValidation, formValidation } = useValidationContext();
-    const { swapId, swapBasicData, swapDetails, depositActionsResponse, depositActionsError, swapError, refuel } = useSwapDataState();
+    const { formValidation } = useValidationContext();
+    const { swapId, swapBasicData, swapDetails, depositActionsResponse, refuel } = useSwapDataState();
     const { setSwapId } = useSwapDataUpdate();
 
     const isValid = !formValidation.message;
-    const error = formValidation.message || swapError || depositActionsError || '';
+    const error = formValidation.message || '';
 
     const allFieldsReady = !!(from && fromAsset && destination && toCurrency && destination_address);
 
@@ -241,7 +241,7 @@ const DepositAddressForm: FC<Props> = () => {
                                 )}
                             </div>
                             <div>
-                                {routeValidation.message ? <ValidationError /> : null}
+                                <ValidationError />
                             </div>
                         </div>
                     </Widget.Content>

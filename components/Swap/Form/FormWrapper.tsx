@@ -62,7 +62,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
     const { setConfirmed, isConfirmed, checkContractStatus } = useContractAddressStore();
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
-        setSwapError && setSwapError('')
+        setSwapError && setSwapError(null)
         const { destination_address, to } = values
         setWalletWihdrawDone(false)
         if (!walletWihdrawDone) {
@@ -135,9 +135,9 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
             })
         }
         catch (error) {
-            console.error(error)
+            setSwapError && setSwapError(error?.message || 'Could not create swap')
         }
-    }, [createSwap, query, partner, router, swapBasicData, getProvider, settings, type])
+    }, [createSwap, query, partner, router, swapBasicData, getProvider, settings, type, setSwapError])
 
     const initialValues: SwapFormValues = swapBasicData ? generateSwapInitialValuesFromSwap(swapBasicData, swapBasicData.refuel, settings, type)
         : generateSwapInitialValues(settings, query, type, connectedAutofillNetworks)

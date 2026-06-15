@@ -58,7 +58,7 @@ export type SwapContextData = {
     swapId: string | undefined,
     swapModalOpen: boolean,
     swapError?: string | null | undefined,
-    setSwapError?: (value: string) => void
+    setSwapError?: (value: string | null) => void
 }
 
 export function SwapDataProvider({ children, initialSwapData }: { children: React.ReactNode, initialSwapData?: SwapResponse | null }) {
@@ -73,7 +73,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const [swapBasicFormData, setSwapBasicFormData] = useState<SwapBasicData & { refuel: boolean }>()
     const updateRecentTokens = useRecentNetworksStore(state => state.updateRecentNetworks)
     const [swapModalOpen, setSwapModalOpen] = useState(false)
-    const [swapError, setSwapError] = useState<string>('')
+    const [swapError, setSwapError] = useState<string | null>(null)
 
     const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapBasicFormData, !!swapBasicFormData?.refuel), [swapBasicFormData]);
 
@@ -241,12 +241,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             data.slippage = slippage.toString()
         }
 
-        let swapResponse
-        try {
-            swapResponse = await layerswapApiClient.CreateSwapAsync(data)
-        } catch (error) {
-            setSwapError(error?.response?.data?.error?.message || 'Unexpected error occurred.')
-        }
+        const swapResponse = await layerswapApiClient.CreateSwapAsync(data)
 
         if (swapResponse?.error) {
             throw swapResponse?.error
