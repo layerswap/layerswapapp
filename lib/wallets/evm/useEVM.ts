@@ -115,6 +115,10 @@ export default function useEVM(): WalletProvider {
 
     const withdrawalSupportedNetworks = useMemo(() => [
         ...asSourceSupportedNetworks,
+        // Extended source: Hyperliquid withdrawals are wallet-signed via EVM, but
+        // HL is NOT a real backend source (kept out of asSourceSupportedNetworks).
+        KnownInternalNames.Networks.HyperliquidMainnet,
+        KnownInternalNames.Networks.HyperliquidTestnet,
     ], [asSourceSupportedNetworks])
 
     const autofillSupportedNetworks = useMemo(() => [

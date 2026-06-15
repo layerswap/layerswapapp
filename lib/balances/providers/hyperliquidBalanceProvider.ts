@@ -27,19 +27,17 @@ export class HyperliquidBalanceProvider extends BalanceProvider {
                     ? "https://api.hyperliquid.xyz" : "https://api.hyperliquid-testnet.xyz";
             }
 
-            const clearinghouseState = await this.client.getClearinghouseState(address, nodeUrl, options?.timeoutMs, options?.retryCount);
-
             const balances: TokenBalance[] = [];
 
             // Only support USDC balances for now
             const usdcToken = network.tokens.find(token => token.symbol === 'USDC');
 
             if (usdcToken) {
-                const withdrawableAmount = parseFloat(clearinghouseState.withdrawable);
-                if (withdrawableAmount >= 0) {
+                const usdcBalance = await this.client.getAvailableTokenBalance(address, nodeUrl, usdcToken.symbol, options?.timeoutMs, options?.retryCount);
+                if (usdcBalance.available >= 0) {
                     balances.push({
                         network: network.name,
-                        amount: withdrawableAmount,
+                        amount: usdcBalance.available,
                         decimals: usdcToken.decimals,
                         isNativeCurrency: false,
                         token: usdcToken.symbol,

@@ -44,6 +44,10 @@ const EVMWalletWithdrawal = dynamic<WithdrawPageProps>(
     () => import("./WithdrawalProviders/EVMWalletWithdraw").then((module) => module.EVMWalletWithdrawal),
     { ssr: false }
 );
+const HyperliquidWalletWithdraw = dynamic<WithdrawPageProps>(
+    () => import('../Wallet/WithdrawalProviders/Hyperliquid').then(m => m.HyperliquidWalletWithdraw),
+    { ssr: false }
+)
 
 type Props = {
     swapData: SwapBasicData
@@ -122,6 +126,12 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
                 source_network?.type == NetworkType.EVM ? source_network.name : undefined
             ],
             component: EVMWalletWithdrawal
+        },
+        {
+            supportedNetworks: [
+                source_network?.type == NetworkType.Hyperliquid ? source_network.name : undefined
+            ],
+            component: HyperliquidWalletWithdraw
         }
     ] as { supportedNetworks: (string | undefined)[]; component: ComponentType<WithdrawPageProps> }[], [source_network])
 

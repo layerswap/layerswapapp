@@ -3,10 +3,11 @@ import { QueryParams } from "../Models/QueryParams";
 import { Address } from "./address";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
 import { SwapBasicData } from "./apiClients/layerSwapApiClient";
+import { resolveExtendedRouteByName } from "./extendedRoutes/registry";
 
 export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: QueryParams, type: 'cross-chain' | 'exchange' | 'deposit-address', connectedAutofillNetworks?: Set<string>): SwapFormValues {
     const { destination_address, amount, fromAsset, toAsset, from, to, lockFromAsset, lockToAsset, depositMethod, fromExchange } = queryParams
-    const { sourceExchanges, sourceRoutes, destinationRoutes } = settings || {}
+    const { sourceExchanges, sourceRoutes, destinationRoutes, networks } = settings || {}
 
     const lockedSourceCurrency = lockFromAsset ?
         sourceRoutes.find(l => l.name === to)
@@ -18,6 +19,7 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
         : undefined
 
     const sourceNetwork = sourceRoutes.find(l => l.name.toUpperCase() === from?.toUpperCase())
+        ?? resolveExtendedRouteByName(from?.toUpperCase(), networks)
     let destinationNetwork = destinationRoutes.find(l => l.name.toUpperCase() === to?.toUpperCase())
 
     const initialSourceExchange = sourceExchanges.find(e => e.name.toLowerCase() === from?.toLowerCase())

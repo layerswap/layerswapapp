@@ -21,6 +21,9 @@ import { useSelectedAccount } from './swapAccounts';
 import { Address } from '@/lib/address';
 import { useSlippageStore } from '@/stores/slippageStore';
 import { posthog } from 'posthog-js';
+import { getExtendedMapping } from '@/lib/extendedRoutes/registry';
+import { transformQuoteForExtendedRoute } from '@/lib/extendedRoutes/transforms';
+import { useExtendedRoutesStore } from '@/stores/extendedRoutesStore';
 
 export const SwapDataStateContext = createContext<SwapContextData | null>(null);
 
@@ -67,7 +70,8 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const router = useRouter();
     const [swapId, setSwapId] = useState<string | undefined>(router.query.swapId?.toString())
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
-    const { sourceRoutes, destinationRoutes } = useSettingsState()
+    const { sourceRoutes, destinationRoutes, networks } = useSettingsState()
+    const extendedRecord = useExtendedRoutesStore(s => swapId ? s.records[swapId] : undefined)
     const [swapBasicFormData, setSwapBasicFormData] = useState<SwapBasicData & { refuel: boolean }>()
     const updateRecentTokens = useRecentNetworksStore(state => state.updateRecentNetworks)
     const [swapModalOpen, setSwapModalOpen] = useState(false)
@@ -117,14 +121,32 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
 
     const swapBasicData = useMemo(() => {
         if (swapId && data?.data) {
-            return data?.data?.swap ? {
+            if (!data.data.swap) return undefined
+            const base = {
                 ...data.data.swap,
                 requested_amount: data.data.swap.requested_amount.toString(),
                 refuel: !!data.data.refuel
-            } : undefined;
+            }
+            // Show the extended source (e.g. Hyperliquid) post-create / after reload.
+            // The backend swap stays real (Arbitrum); only the displayed identity is
+            // substituted. Absent record (other device) → keeps the real identity.
+            if (extendedRecord) {
+                const extendedNetwork = networks.find(n => n.name === extendedRecord.extendedNetwork)
+                const extendedToken = extendedNetwork?.tokens.find(t => t.symbol === extendedRecord.extendedToken)
+                if (extendedNetwork && extendedToken) {
+                    // Present as a wallet flow (use_deposit_address: false): the user's
+                    // action IS a wallet signature (sendToEvmWithData), so the withdraw screen
+                    // must keep rendering the wallet footer / provider step even though
+                    // the underlying backend swap uses a deposit address. (The real
+                    // deposit-address fetch is unaffected — HL isn't asSource-supported,
+                    // so deposit_actions resolves without a source_address regardless.)
+                    return { ...base, source_network: extendedNetwork, source_token: extendedToken, requested_amount: extendedRecord.sourceAmount, use_deposit_address: false }
+                }
+            }
+            return base
         }
         return swapBasicFormData
-    }, [data, swapBasicFormData, swapId])
+    }, [data, swapBasicFormData, swapId, extendedRecord, networks])
 
     const swapDetails = useMemo(() => {
         if (swapId)
@@ -133,10 +155,21 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
 
     const quote = useMemo(() => {
         if (swapId && data?.data) {
-            return data?.data?.quote
+            const backendQuote = data?.data?.quote
+            // Re-denominate the backend quote to the extended source (Hyperliquid):
+            // requested_amount = A, fee += flat fee, completion += extra time.
+            if (extendedRecord && backendQuote) {
+                const extendedNetwork = networks.find(n => n.name === extendedRecord.extendedNetwork)
+                const extendedToken = extendedNetwork?.tokens.find(t => t.symbol === extendedRecord.extendedToken)
+                const mapping = getExtendedMapping(extendedRecord.extendedNetwork, extendedRecord.extendedToken)
+                if (extendedNetwork && extendedToken && mapping) {
+                    return transformQuoteForExtendedRoute({ quote: backendQuote }, mapping, extendedNetwork, extendedToken, Number(extendedRecord.sourceAmount))?.quote
+                }
+            }
+            return backendQuote
         }
         return formDataQuote?.quote
-    }, [formDataQuote, data, swapId]);
+    }, [formDataQuote, data, swapId, extendedRecord, networks]);
 
     const quoteError = useMemo(() => {
         if (swapId && data?.data) {
@@ -217,7 +250,26 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             sourceWallet: selectedWallet
         })
         const slippage = useSlippageStore.getState().slippage
-        const data: CreateSwapParams = {
+
+        // Extended source bridge mode (e.g. Hyperliquid): create the real backend
+        // swap (Arbitrum/USDC) for the bridged amount (A - flat fee), via a deposit
+        // address. The HL withdrawal then funds that deposit address.
+        const extendedMapping = getExtendedMapping(from.name, fromCurrency.symbol)
+        const isExtendedBridge = !!extendedMapping && extendedMapping.resolveMode(to.name, toCurrency.symbol) === 'viaDepositAddressSwap'
+
+        const data: CreateSwapParams = isExtendedBridge ? {
+            amount: extendedMapping!.toRealAmount(Number(amount)).toString(),
+            source_network: extendedMapping!.real.networkName,
+            source_token: extendedMapping!.real.tokenSymbol,
+            destination_network: to.name,
+            destination_token: toCurrency.symbol,
+            destination_address: destination_address,
+            reference_id: query.externalId,
+            refuel: !!refuel,
+            use_deposit_address: true,
+            source_address: undefined,
+            refund_address: undefined,
+        } : {
             amount: amount || undefined,
             source_network: from.name,
             destination_network: to.name,
@@ -232,7 +284,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             refund_address: sourceIsSupported ? selectedSourceAccount?.address : undefined
         }
 
-        if (depositMethod === 'wallet' && slippage && slippage > 0 && slippage < 0.8) {
+        if (!isExtendedBridge && depositMethod === 'wallet' && slippage && slippage > 0 && slippage < 0.8) {
             data.slippage = slippage.toString()
         }
 
@@ -250,6 +302,22 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         const swap = swapResponse?.data;
         if (!swap?.swap.id)
             throw new Error("Could not create swap")
+
+        // Persist the extended identity so the post-create UI and the withdraw step
+        // can keep showing the extended source and resume after a reload.
+        if (isExtendedBridge && extendedMapping) {
+            useExtendedRoutesStore.getState().setRecord(swap.swap.id, {
+                providerId: extendedMapping.provider.id,
+                mode: 'viaDepositAddressSwap',
+                extendedNetwork: from.name,
+                extendedToken: fromCurrency.symbol,
+                realNetwork: extendedMapping.real.networkName,
+                realToken: extendedMapping.real.tokenSymbol,
+                sourceAddress: selectedSourceAccount?.address || '',
+                sourceAmount: (amount || '').toString(),
+                createdAt: Date.now(),
+            })
+        }
 
         updateRecentTokens({
             from: !fromExchange ? { network: from.name, token: fromCurrency.symbol } : undefined,

@@ -17,6 +17,7 @@ import { useRouteTokenSwitchStore } from "@/stores/routeTokenSwitchStore";
 import { useRouteSortingStore, SortingOption } from "@/stores/routeSortingStore";
 import { useQueryState } from "@/context/query";
 import { getTotalBalanceInUSD } from "../helpers/balanceHelper";
+import { injectExtendedRoutes } from "@/lib/extendedRoutes/transforms";
 
 type Props = {
     direction: SwapDirection;
@@ -161,11 +162,18 @@ function filterRoutesByQuery(
 }
 
 function useRoutes({ direction, values }: Props) {
-    const { sourceRoutes, destinationRoutes } = useSettingsState();
+    const { sourceRoutes, destinationRoutes, networks } = useSettingsState();
     const apiClient = new LayerSwapApiClient();
     const url = useMemo(() => resolveNetworkRoutesURL(direction, values), [direction, values]);
     const defaultRoutes = direction === 'from' ? sourceRoutes : destinationRoutes;
-    return useRoutesData<NetworkRoute>(url, defaultRoutes || [], apiClient.fetcher);
+    const { routes, isLoading } = useRoutesData<NetworkRoute>(url, defaultRoutes || [], apiClient.fetcher);
+    // Append client-side extended routes (e.g. Hyperliquid as source). Upstream of
+    // all filtering/sorting/grouping, so locks and suggestions work unchanged.
+    const extendedRoutes = useMemo(
+        () => injectExtendedRoutes({ routes, direction, values, networks }),
+        [routes, direction, values, networks]
+    );
+    return { routes: extendedRoutes, isLoading };
 }
 
 // ---------- Token Helpers ----------
