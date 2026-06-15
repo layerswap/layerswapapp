@@ -1,34 +1,45 @@
 import React, { useEffect } from 'react';
 import { Network } from '@/Models/Network';
 import { useContractAddressStore } from '@/stores/contractAddressStore';
+import { useSelectedAccount } from '@/context/swapAccounts';
 
 
 interface Props {
     source_network?: Network;
     destination_network?: Network;
-    destination_address?: string;
+    address?: string;
 }
 
-const ContractAddressValidationCache: React.FC<Props> = ({ source_network, destination_network, destination_address }) => {
+const ContractAddressValidationCache: React.FC<Props> = ({ source_network, destination_network, address }) => {
     const {
         isContractInNetwork,
     } = useContractAddressStore();
 
     useEffect(() => {
         //perform check for source network
-        if (destination_address && source_network && source_network.type === 'evm') {
-            isContractInNetwork(destination_address, source_network.name);
+        if (address && source_network && source_network.type === 'evm') {
+            isContractInNetwork(address, source_network.name);
         }
-    }, [destination_address, source_network?.name, isContractInNetwork]);
+    }, [address, source_network?.name, isContractInNetwork]);
 
     useEffect(() => {
         //perform check for destination network
-        if (destination_address && destination_network && destination_network.type === 'evm') {
-            isContractInNetwork(destination_address, destination_network.name);
+        if (address && destination_network && destination_network.type === 'evm') {
+            isContractInNetwork(address, destination_network.name);
         }
-    }, [destination_address, destination_network?.name, isContractInNetwork]);
+    }, [address, destination_network?.name, isContractInNetwork]);
 
     return null;
 };
+
+export const ContractSourceAddressValidationCache: React.FC<Props> = ({ source_network, destination_network }) => {
+    const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
+    
+    return <ContractAddressValidationCache
+        source_network={source_network}
+        destination_network={destination_network}
+        address={selectedSourceAccount?.address}
+    />
+}
 
 export default ContractAddressValidationCache
