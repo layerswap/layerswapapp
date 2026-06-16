@@ -1,6 +1,6 @@
 import { NetworkRoute, NetworkWithTokens } from "@/Models/Network";
-import { truncateDecimalsToFloor } from "@/components/utils/RoundDecimals";
-import { ExtendedRouteProvider, ResolvedExtendedMapping } from "./types";
+import { DecimalInput, addDecimal, subtractDecimal } from "./amounts";
+import { ExtendedRoutePlan, ExtendedRouteProvider, RealRouteRef, ResolvedExtendedMapping } from "./types";
 import { hyperliquidProvider } from "./providers/hyperliquid";
 
 // Adding a provider = one file + one entry here.
@@ -37,15 +37,60 @@ export function getExtendedMapping(
             provider,
             extendedNetworkName: networkName,
             toRealAmount(sourceAmount) {
-                return truncateDecimalsToFloor(sourceAmount - mapping.flatFee, realDecimals)
+                return subtractDecimal(sourceAmount, mapping.flatFee, realDecimals)
             },
             toSourceAmount(realAmount) {
-                return realAmount + mapping.flatFee
+                return addDecimal(realAmount, mapping.flatFee, realDecimals)
             },
         }
     }
 
     return undefined
+}
+
+export type ResolveExtendedRoutePlanArgs = {
+    sourceNetworkName?: string
+    sourceTokenSymbol?: string
+    destinationNetworkName?: string
+    destinationTokenSymbol?: string
+    sourceAmount?: DecimalInput
+    availableRoutes?: NetworkRoute[]
+}
+
+export function resolveExtendedRoutePlan({
+    sourceNetworkName,
+    sourceTokenSymbol,
+    destinationNetworkName,
+    destinationTokenSymbol,
+    sourceAmount,
+    availableRoutes,
+}: ResolveExtendedRoutePlanArgs): ExtendedRoutePlan | undefined {
+    const mapping = getExtendedMapping(sourceNetworkName, sourceTokenSymbol, destinationNetworkName, destinationTokenSymbol)
+    if (!mapping) return undefined
+    if (availableRoutes && !realDepositAddressRoutePresent(availableRoutes, mapping.real)) return undefined
+
+    const hasSourceAmount = sourceAmount !== undefined && String(sourceAmount).trim() !== ''
+    let realAmount: string | undefined
+    if (hasSourceAmount) {
+        try {
+            realAmount = mapping.toRealAmount(sourceAmount)
+        } catch {
+            realAmount = undefined
+        }
+    }
+
+    return {
+        mapping,
+        sourceAmount: hasSourceAmount ? String(sourceAmount) : undefined,
+        realAmount,
+    }
+}
+
+export function realDepositAddressRoutePresent(routes: NetworkRoute[], real: RealRouteRef): boolean {
+    return routes.some(r =>
+        r.name === real.networkName
+        && r.deposit_methods?.includes('deposit_address')
+        && r.tokens?.some(t => t.symbol === real.tokenSymbol && t.status === 'active'))
 }
 
 export function resolveExtendedRouteByName(name: string | undefined, networks: NetworkWithTokens[]): NetworkRoute | undefined {

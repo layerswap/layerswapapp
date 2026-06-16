@@ -21,8 +21,8 @@ import { useSelectedAccount } from './swapAccounts';
 import { Address } from '@/lib/address';
 import { useSlippageStore } from '@/stores/slippageStore';
 import { posthog } from 'posthog-js';
-import { getExtendedMapping } from '@/lib/extendedRoutes/registry';
-import { transformQuoteForExtendedRoute } from '@/lib/extendedRoutes/transforms';
+import { resolveExtendedRoutePlan } from '@/lib/extendedRoutes/registry';
+import { buildCreateSwapParamsForExtendedRoute, transformQuoteForExtendedRoute } from '@/lib/extendedRoutes/transforms';
 import { useExtendedRoutesStore } from '@/stores/extendedRoutesStore';
 import { useContractAddressStore } from '@/stores/contractAddressStore';
 
@@ -155,14 +155,16 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
                 // Use the swap's actual destination so the restored mapping resolves
                 // to the same destination candidate the original flow used.
                 const swap = data.data.swap
-                const mapping = getExtendedMapping(
-                    extendedRecord.extendedNetwork,
-                    extendedRecord.extendedToken,
-                    swap?.destination_network?.name,
-                    swap?.destination_token?.symbol,
-                )
+                const plan = resolveExtendedRoutePlan({
+                    sourceNetworkName: extendedRecord.extendedNetwork,
+                    sourceTokenSymbol: extendedRecord.extendedToken,
+                    destinationNetworkName: swap?.destination_network?.name,
+                    destinationTokenSymbol: swap?.destination_token?.symbol,
+                    sourceAmount: extendedRecord.sourceAmount,
+                })
+                const mapping = plan?.mapping
                 if (extendedNetwork && extendedToken && mapping) {
-                    return transformQuoteForExtendedRoute({ quote: backendQuote }, mapping, extendedNetwork, extendedToken, Number(extendedRecord.sourceAmount))?.quote
+                    return transformQuoteForExtendedRoute({ quote: backendQuote }, mapping, extendedNetwork, extendedToken, extendedRecord.sourceAmount)?.quote
                 }
             }
             return backendQuote
@@ -256,22 +258,23 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         // Extended source bridge mode (e.g. Hyperliquid): create the real backend
         // swap (Base/USDC) for the forwarded amount (A - flat fee), via a deposit
         // address. The HL withdrawal then funds that deposit address.
-        const extendedMapping = getExtendedMapping(from.name, fromCurrency.symbol, to.name, toCurrency.symbol)
-        const isExtendedBridge = !!extendedMapping
+        const extendedPlan = resolveExtendedRoutePlan({
+            sourceNetworkName: from.name,
+            sourceTokenSymbol: fromCurrency.symbol,
+            destinationNetworkName: to.name,
+            destinationTokenSymbol: toCurrency.symbol,
+            sourceAmount: amount,
+        })
+        const isExtendedBridge = !!extendedPlan
 
-        const data: CreateSwapParams = isExtendedBridge ? {
-            amount: extendedMapping!.toRealAmount(Number(amount)).toString(),
-            source_network: extendedMapping!.real.networkName,
-            source_token: extendedMapping!.real.tokenSymbol,
-            destination_network: to.name,
-            destination_token: toCurrency.symbol,
-            destination_address: destination_address,
-            reference_id: query.externalId,
-            refuel: !!refuel,
-            use_deposit_address: true,
-            source_address: undefined,
-            refund_address: undefined,
-        } : {
+        const data: CreateSwapParams = extendedPlan ? buildCreateSwapParamsForExtendedRoute({
+            plan: extendedPlan,
+            destinationNetworkName: to.name,
+            destinationTokenSymbol: toCurrency.symbol,
+            destinationAddress: destination_address,
+            referenceId: query.externalId,
+            refuel,
+        }) : {
             amount: amount || undefined,
             source_network: from.name,
             destination_network: to.name,
@@ -307,13 +310,13 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
 
         // Persist the extended identity so the post-create UI and the withdraw step
         // can keep showing the extended source and resume after a reload.
-        if (isExtendedBridge && extendedMapping) {
+        if (extendedPlan) {
             useExtendedRoutesStore.getState().setRecord(swap.swap.id, {
-                providerId: extendedMapping.provider.id,
+                providerId: extendedPlan.mapping.provider.id,
                 extendedNetwork: from.name,
                 extendedToken: fromCurrency.symbol,
-                realNetwork: extendedMapping.real.networkName,
-                realToken: extendedMapping.real.tokenSymbol,
+                realNetwork: extendedPlan.mapping.real.networkName,
+                realToken: extendedPlan.mapping.real.tokenSymbol,
                 sourceAddress: selectedSourceAccount?.address || '',
                 sourceAmount: (amount || '').toString(),
                 createdAt: Date.now(),

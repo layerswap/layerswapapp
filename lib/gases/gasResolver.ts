@@ -3,6 +3,7 @@ import { GasProps } from "../../Models/Balance";
 import { BitcoinGasProvider } from "./providers/bitcoinGasProvider";
 import { EVMGasProvider } from "./providers/evmGasProvider";
 import { FuelGasProvider } from "./providers/fuelGasProvider";
+import { HyperliquidGasProvider } from "./providers/hyperliquidGasProvider";
 import { LoopringGasProvider } from "./providers/loopringGasProvider";
 import { SolanaGasProvider } from "./providers/solanaGasProvider";
 import { StarknetGasProvider } from "./providers/starknetGasProvider";
@@ -13,6 +14,7 @@ export class GasResolver {
         new BitcoinGasProvider(),
         new StarknetGasProvider(),
         new LoopringGasProvider(),
+        new HyperliquidGasProvider(),
         new EVMGasProvider(),
         new FuelGasProvider(),
         new SolanaGasProvider(),

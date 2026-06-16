@@ -1,9 +1,10 @@
 import { Network, NetworkRoute, NetworkRouteToken, NetworkWithTokens, Token } from "@/Models/Network";
-import { Quote } from "@/lib/apiClients/layerSwapApiClient";
+import { CreateSwapParams, Quote } from "@/lib/apiClients/layerSwapApiClient";
 import { SwapFormValues, SwapDirection } from "@/components/DTOs/SwapFormValues";
 import { parseHmsString } from "@/components/utils/formatTime";
-import { RealRouteRef, ResolvedExtendedMapping } from "./types";
-import { getSourceProviders, isExtendedSourceNetwork } from "./registry";
+import { ExtendedRoutePlan, ResolvedExtendedMapping } from "./types";
+import { getSourceProviders, isExtendedSourceNetwork, resolveExtendedRoutePlan } from "./registry";
+import { DecimalInput, decimalToNumber, isPositiveDecimal } from "./amounts";
 
 export type ExtendedLimits = {
     min_amount: number
@@ -45,12 +46,15 @@ function injectExtendedSources({ routes, values, networks }: Omit<InjectArgs, 'd
             const qualifyingTokens: NetworkRouteToken[] = extendedRoute.tokens.filter(token => {
                 const mapping = tokenMappings[token.symbol]
                 if (!mapping) return false
-                // Show iff the backend offers a real deposit-address route for AT
-                // LEAST ONE of the provider's candidate destinations for this token
-                // (primary or any fallback). Falls back to the static mapping when
-                // the provider doesn't enumerate candidates.
-                const candidates = provider.getRealCandidates?.(extendedName, token.symbol) ?? [mapping.real]
-                return candidates.some(c => realDepositAddressRoutePresent(routes, c))
+                // Show iff the active route plan can be fulfilled by the same real
+                // deposit-address route that quote/create will use.
+                return !!resolveExtendedRoutePlan({
+                    sourceNetworkName: extendedName,
+                    sourceTokenSymbol: token.symbol,
+                    destinationNetworkName: values.to?.name,
+                    destinationTokenSymbol: values.toAsset?.symbol,
+                    availableRoutes: routes,
+                })
             })
 
             if (qualifyingTokens.length) {
@@ -66,13 +70,6 @@ function injectExtendedDestinations({ routes, values }: Omit<InjectArgs, 'direct
     if (!isExtendedSourceNetwork(values.from?.name)) return routes
     // The extended network can never be its own destination.
     return routes.filter(r => !isExtendedSourceNetwork(r.name))
-}
-
-function realDepositAddressRoutePresent(routes: NetworkRoute[], real: RealRouteRef): boolean {
-    return routes.some(r =>
-        r.name === real.networkName
-        && r.deposit_methods?.includes('deposit_address')
-        && r.tokens?.some(t => t.symbol === real.tokenSymbol && t.status === 'active'))
 }
 
 /** Displayed limits = backend limits + flat fee (clamped to minSourceAmount). */
@@ -103,7 +100,7 @@ export function transformQuoteForExtendedRoute(
     mapping: ResolvedExtendedMapping,
     extendedNetwork: Network,
     extendedToken: Token,
-    sourceAmount: number,
+    sourceAmount: DecimalInput,
 ): Quote | undefined {
     if (!quote?.quote) return quote
     const pricePerToken = extendedToken.price_in_usd ?? 1
@@ -114,7 +111,7 @@ export function transformQuoteForExtendedRoute(
             ...quote.quote,
             source_network: extendedNetwork,
             source_token: extendedToken,
-            requested_amount: sourceAmount,
+            requested_amount: decimalToNumber(sourceAmount),
             total_fee: quote.quote.total_fee + mapping.flatFee,
             total_fee_in_usd: quote.quote.total_fee_in_usd + mapping.flatFee * pricePerToken,
             avg_completion_time: addSecondsToHms(quote.quote.avg_completion_time, mapping.extraCompletionSeconds),
@@ -130,4 +127,39 @@ function addSecondsToHms(value: string | undefined, addSeconds: number): string 
     const minutes = Math.floor((total % 3600) / 60)
     const seconds = total % 60
     return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+}
+
+export type ExtendedCreateSwapParamsArgs = {
+    plan: ExtendedRoutePlan
+    destinationNetworkName: string
+    destinationTokenSymbol: string
+    destinationAddress: string
+    referenceId?: string
+    refuel?: boolean
+}
+
+export function buildCreateSwapParamsForExtendedRoute({
+    plan,
+    destinationNetworkName,
+    destinationTokenSymbol,
+    destinationAddress,
+    referenceId,
+    refuel,
+}: ExtendedCreateSwapParamsArgs): CreateSwapParams {
+    if (!plan.realAmount) throw new Error('Extended route amount is missing')
+    if (!isPositiveDecimal(plan.realAmount)) throw new Error('Extended route amount is invalid')
+
+    return {
+        amount: plan.realAmount,
+        source_network: plan.mapping.real.networkName,
+        source_token: plan.mapping.real.tokenSymbol,
+        destination_network: destinationNetworkName,
+        destination_token: destinationTokenSymbol,
+        destination_address: destinationAddress,
+        reference_id: referenceId,
+        refuel: !!refuel,
+        use_deposit_address: true,
+        source_address: undefined,
+        refund_address: undefined,
+    }
 }

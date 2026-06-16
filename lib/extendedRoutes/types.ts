@@ -1,4 +1,5 @@
 import { NetworkRoute, NetworkWithTokens } from "@/Models/Network";
+import { DecimalInput } from "./amounts";
 
 /**
  * Extended routes are swap routes the client can execute even though the
@@ -59,9 +60,15 @@ export type ResolvedExtendedMapping = ExtendedTokenMapping & {
     provider: ExtendedRouteProvider
     extendedNetworkName: string
     /** A - flatFee, truncated to the real token's decimals (what arrives at the deposit address). */
-    toRealAmount(sourceAmount: number): number
+    toRealAmount(sourceAmount: DecimalInput): string
     /** realAmount + flatFee (what must leave the extended source). */
-    toSourceAmount(realAmount: number): number
+    toSourceAmount(realAmount: DecimalInput): string
+}
+
+export type ExtendedRoutePlan = {
+    mapping: ResolvedExtendedMapping
+    sourceAmount?: string
+    realAmount?: string
 }
 
 /**

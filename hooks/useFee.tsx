@@ -8,8 +8,9 @@ import { create } from 'zustand';
 import { isDiffByPercent } from '@/components/utils/numbers'
 import { useSlippageStore } from '@/stores/slippageStore'
 import { useSettingsState } from '@/context/settings'
-import { getExtendedMapping } from '@/lib/extendedRoutes/registry'
+import { resolveExtendedRoutePlan } from '@/lib/extendedRoutes/registry'
 import { transformLimitsForExtendedRoute, transformQuoteForExtendedRoute } from '@/lib/extendedRoutes/transforms'
+import { isPositiveDecimal } from '@/lib/extendedRoutes/amounts'
 
 const apiClient = new LayerswapApiClient()
 
@@ -87,11 +88,18 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
     // Extended source (e.g. Hyperliquid): the backend doesn't know this source,
     // so quote/limits are fetched against the real route it maps to (bridge mode).
     const { networks } = useSettingsState()
-    const extendedMapping = useMemo(() => getExtendedMapping(from, fromCurrency, to, toCurrency), [from, fromCurrency, to, toCurrency])
-    const isBridge = !!extendedMapping
+    const extendedPlan = useMemo(() => resolveExtendedRoutePlan({
+        sourceNetworkName: from,
+        sourceTokenSymbol: fromCurrency,
+        destinationNetworkName: to,
+        destinationTokenSymbol: toCurrency,
+        sourceAmount: debouncedAmount,
+    }), [from, fromCurrency, to, toCurrency, debouncedAmount])
+    const extendedMapping = extendedPlan?.mapping
+    const isBridge = !!extendedPlan
     const effectiveFrom = isBridge ? extendedMapping!.real.networkName : from
     const effectiveFromToken = isBridge ? extendedMapping!.real.tokenSymbol : fromCurrency
-    const effectiveUseDepositAddress = extendedMapping ? true : use_deposit_address
+    const effectiveUseDepositAddress = extendedPlan ? true : use_deposit_address
 
     const extendedNetworkObj = useMemo(() => extendedMapping ? networks.find(n => n.name === extendedMapping.extendedNetworkName) : undefined, [networks, extendedMapping])
     const extendedTokenObj = useMemo(() => extendedNetworkObj?.tokens.find(t => t.symbol === extendedMapping?.extendedTokenSymbol), [extendedNetworkObj, extendedMapping])
@@ -119,9 +127,9 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
     const hasQuoteParams = from && to && depositMethod && toCurrency && fromCurrency && debouncedAmount
 
     // Bridge mode fetches the backend quote for the truncated real amount (A - fee).
-    const effectiveAmount = isBridge ? extendedMapping!.toRealAmount(Number(debouncedAmount)) : debouncedAmount
+    const effectiveAmount = isBridge ? extendedPlan.realAmount : debouncedAmount
 
-    const quoteURL = (hasQuoteParams && !isDebouncing && (!isBridge || Number(effectiveAmount) > 0))
+    const quoteURL = (hasQuoteParams && !isDebouncing && (!isBridge || (effectiveAmount && isPositiveDecimal(effectiveAmount))))
         ? buildQuoteUrl({
             sourceNetwork: effectiveFrom!,
             sourceToken: effectiveFromToken!,
@@ -176,7 +184,7 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
     })
 
     const quoteData = quote?.data
-    const hasValidAmount = !!debouncedAmount && Number(debouncedAmount) > 0
+    const hasValidAmount = !!debouncedAmount && isPositiveDecimal(String(debouncedAmount))
     const isTransitioning = swrIsLoading || isDebouncing
     const resolvedQuote = (quoteError || !hasQuoteParams || !hasValidAmount) ? undefined : quoteData
     if (!isTransitioning) lastSettledQuoteRef.current = resolvedQuote
@@ -185,7 +193,7 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
     // Re-denominate the backend quote so the source side reads as the extended route.
     let finalQuote = suppressStale ? undefined : resolvedQuote
     if (extendedMapping && hasValidAmount && debouncedAmount) {
-        const sourceAmount = Number(debouncedAmount)
+        const sourceAmount = String(debouncedAmount)
         if (isBridge && finalQuote && extendedNetworkObj && extendedTokenObj) {
             finalQuote = transformQuoteForExtendedRoute(finalQuote, extendedMapping, extendedNetworkObj, extendedTokenObj, sourceAmount)
         }
@@ -195,8 +203,8 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
     let maxAllowedAmount = amountRange?.data?.max_amount
     let minAllowedAmountInUsd = amountRange?.data?.min_amount_in_usd
     let maxAllowedAmountInUsd = amountRange?.data?.max_amount_in_usd
-    if (isBridge) {
-        const transformed = transformLimitsForExtendedRoute(amountRange?.data, extendedMapping!)
+    if (isBridge && extendedMapping) {
+        const transformed = transformLimitsForExtendedRoute(amountRange?.data, extendedMapping)
         minAllowedAmount = transformed?.min_amount
         maxAllowedAmount = transformed?.max_amount
         minAllowedAmountInUsd = transformed?.min_amount_in_usd
