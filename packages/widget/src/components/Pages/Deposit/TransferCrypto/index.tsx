@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import { Formik, useFormikContext } from "formik";
 import { Partner } from "@/Models/Partner";
 import DepositAddressForm from "@/components/Pages/Swap/Form/DepositAddressForm";
@@ -8,10 +8,11 @@ import { useInitialSettings } from "@/context/settings";
 import { ApiError, LSAPIKnownErrorCode } from "@/Models/ApiError";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { useDepositInitialValues, useDepositSelection } from "../depositSelectionContext";
+import { useDepositPrefetch } from "../depositPrefetchContext";
 import { useReportCloseLock } from "../depositStepContext";
 import DestinationTokenPicker from "../DestinationTokenPicker";
 import { useResolvedSwapStatus } from "@/hooks/useResolvedSwapStatus";
-import { TransactionType } from "@/lib/apiClients/layerSwapApiClient";
+import { SwapResponse, TransactionType } from "@/lib/apiClients/layerSwapApiClient";
 
 type Props = {
     partner?: Partner;
@@ -50,12 +51,19 @@ const ReportDepositCloseLock: FC = () => {
     return null;
 };
 
-const DepositAddressFlow: FC<Props> = ({ partner, showDestinationPicker }) => {
+const DepositAddressFlow: FC<Props & { initialSwapData?: SwapResponse }> = ({ partner, showDestinationPicker, initialSwapData }) => {
     const initialSettings = useInitialSettings();
     const { destinationAddress } = useDepositSelection();
-    const initialValues = useDepositInitialValues("deposit_address");
+    const { prefetchedSource, claimPrefetchedSwap, markSwapUsed } = useDepositPrefetch();
+    const initialValues = useDepositInitialValues("deposit_address", prefetchedSource);
     const { createSwap, setSwapId, setSubmitedFormValues } = useSwapDataUpdate();
     const { setSwapError } = useSwapDataState();
+
+    // The seeded swap came from the prefetcher — report it as used so the
+    // integrator's onSwapCreate fires and "Deposit more" creates a fresh one.
+    useEffect(() => {
+        if (initialSwapData) markSwapUsed(initialSwapData);
+    }, []);
 
     const handleSubmit = useCallback(
         async (values: SwapFormValues) => {
@@ -65,7 +73,12 @@ const DepositAddressFlow: FC<Props> = ({ partner, showDestinationPicker }) => {
             if (setSwapError) setSwapError("");
             setSubmitedFormValues(values);
             try {
-                const swap = await createSwap(values, initialSettings, partner);
+                // A prefetched (possibly still in-flight) swap for these exact
+                // values takes priority; on its failure fall back to a regular
+                // creation so the user still gets a swap and a real error path.
+                let swap = await claimPrefetchedSwap(values)?.catch(() => undefined);
+                if (!swap) swap = await createSwap(values, initialSettings, partner);
+                markSwapUsed(swap, values);
                 setSwapId(swap.swap.id);
             } catch (error) {
                 const data: ApiError = error?.response?.data?.error;
@@ -80,7 +93,7 @@ const DepositAddressFlow: FC<Props> = ({ partner, showDestinationPicker }) => {
                 if (setSwapError) setSwapError(message);
             }
         },
-        [createSwap, setSwapId, setSubmitedFormValues, setSwapError, initialSettings, partner],
+        [createSwap, setSwapId, setSubmitedFormValues, setSwapError, initialSettings, partner, claimPrefetchedSwap, markSwapUsed],
     );
 
     return (
@@ -115,10 +128,17 @@ const DepositAddressFlow: FC<Props> = ({ partner, showDestinationPicker }) => {
  * supplies the destination address, so the internal picker stays hidden and the
  * address autofill is locked.
  */
-const TransferCrypto: FC<Props> = ({ partner, showDestinationPicker }) => (
-    <SwapDataProvider>
-        <DepositAddressFlow partner={partner} showDestinationPicker={showDestinationPicker} />
-    </SwapDataProvider>
-);
+const TransferCrypto: FC<Props> = ({ partner, showDestinationPicker }) => {
+    const { prefetchedSwap } = useDepositPrefetch();
+    // Snapshot at mount: SwapDataProvider reads initialSwapData only once (it
+    // seeds swapId state and SWR fallbackData), so a swap that resolves later
+    // must go through the claim path in handleSubmit instead.
+    const [initialSwapData] = useState(() => prefetchedSwap);
+    return (
+        <SwapDataProvider initialSwapData={initialSwapData}>
+            <DepositAddressFlow partner={partner} showDestinationPicker={showDestinationPicker} initialSwapData={initialSwapData} />
+        </SwapDataProvider>
+    );
+};
 
 export default TransferCrypto;

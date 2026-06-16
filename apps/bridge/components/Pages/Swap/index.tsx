@@ -13,12 +13,12 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
             initialValues={initialValues}
             enableSwapCallbacks
         >
-            {/* <Swap /> */}
-            <DepositComponent
+            <Swap />
+            {/* <DepositComponent
                 mode="button"
-                destination={{ network: "STARKNET_SEPOLIA", tokens: ["ETH"] }}
+                destination={{ network: "STARKNET_SEPOLIA", tokens: ["ETH", "USDC"] }}
                 destinationAddress="0x04f5F8e5cDae95A5C1B84b97f7fd7fEff3463325C97Cc84D2830e1150Acf6820"
-            />
+            />  */}
         </WidgetWrapper>
     )
 }

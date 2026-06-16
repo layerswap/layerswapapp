@@ -68,7 +68,10 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const [quoteIsLoading, setQuoteLoading] = useState<boolean>(false)
     const [withdrawType, setWithdrawType] = useState<WithdrawType>()
     const [depositAddressIsFromAccount, setDepositAddressIsFromAccount] = useState<boolean>()
-    const [swapId, setSwapId] = useState<string | undefined>(initialSettings.swapId?.toString())
+    // A pre-created swap (e.g. the deposit widget's prefetcher) seeds both the
+    // id and, via SWR fallbackData below, the swap details — so consumers render
+    // with data on first paint instead of a loading state.
+    const [swapId, setSwapId] = useState<string | undefined>(initialSettings.swapId?.toString() ?? initialSwapData?.swap.id)
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
     const [swapModalOpen, setSwapModalOpen] = useState(false)
     const [swapError, setSwapError] = useState<string>('')
@@ -106,7 +109,12 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const layerswapApiClient = new LayerSwapApiClient()
     const swap_details_endpoint = `/swaps/${swapId}?exclude_deposit_actions=true`
     const [interval, setInterval] = useState(0)
-    const { data, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval, dedupingInterval: interval || 1000, fallbackData: initialSwapData ? { data: initialSwapData } : undefined })
+    // Scope the fallback to the seeded swap's own id: SWR applies fallbackData
+    // to ANY key with an empty cache, so without the guard a newly created swap
+    // (e.g. after a source change) would briefly read as the seeded one and get
+    // dropped by the form's stale-swap effect.
+    const seededSwapIsActive = !!initialSwapData && swapId === initialSwapData.swap.id
+    const { data, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval, dedupingInterval: interval || 1000, fallbackData: seededSwapIsActive ? { data: initialSwapData } : undefined })
 
     const swapBasicData = useMemo(() => {
         if (swapId && data?.data) {
@@ -160,7 +168,11 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const inputTransfer = swapDetails?.transactions.find(t => t.type === TransactionType.Input);
     const { data: depositActions } = useSWR<ApiResponse<DepositAction[]>>(!inputTransfer ? deposit_actions_endpoint : null, layerswapApiClient.fetcher)
 
+    // The create-swap response may already carry deposit actions — use them as
+    // a fallback (only while the seeded swap is still the active one) so the
+    // deposit address renders without waiting for the separate fetch.
     const depositActionsResponse = depositActions?.data
+        ?? (swapId && swapId === initialSwapData?.swap.id ? initialSwapData?.deposit_actions : undefined)
 
     const currentSwap = data?.data?.swap
     const storedWalletTransaction = useSwapTransactionStore(
@@ -319,7 +331,7 @@ export function useSwapDataUpdate() {
     return updateFns;
 }
 
-const WalletIsSupportedForSource = ({ sourceNetwork, sourceWallet }: { sourceWallet: Wallet | undefined, sourceNetwork: Network | undefined }) => {
+export const WalletIsSupportedForSource = ({ sourceNetwork, sourceWallet }: { sourceWallet: Wallet | undefined, sourceNetwork: Network | undefined }) => {
     const isSupported = (sourceWallet && sourceWallet?.asSourceSupportedNetworks?.some(n => n === sourceNetwork?.name)) || false
     return isSupported
 }

@@ -8,6 +8,7 @@ import { useConnectModal } from "@/components/Wallet/WalletModal";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
 import { DepositStep, DepositStepProvider, useDepositStep } from "./depositStepContext";
 import { DepositSelectionProvider } from "./depositSelectionContext";
+import { DepositPrefetchProvider } from "./depositPrefetchContext";
 import DepositHeader from "./DepositHeader";
 import MethodPicker from "./Options/MethodPicker";
 import WalletFlow from "./Wallet";
@@ -107,7 +108,9 @@ const DepositCard: FC<Pick<DepositProps, "partner" | "destination" | "destinatio
                 <Widget hideMenu fitHeight>
                     <DepositSelectionProvider destination={destination} destinationAddress={destinationAddress}>
                         <DepositStepProvider>
-                            <DepositForm partner={partner} title={title} onClose={onClose} />
+                            <DepositPrefetchProvider>
+                                <DepositForm partner={partner} title={title} onClose={onClose} />
+                            </DepositPrefetchProvider>
                         </DepositStepProvider>
                     </DepositSelectionProvider>
                 </Widget>
