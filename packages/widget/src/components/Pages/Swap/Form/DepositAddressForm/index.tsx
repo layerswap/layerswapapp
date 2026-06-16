@@ -214,7 +214,7 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
 
                                 {!hideEasyDepositBanner && <EasyDepositBanner />}
 
-                                {!providersReady && !hasWallet ? (
+                                {!disableAutoConnect && !providersReady && !hasWallet ? (
                                     <div className="flex items-center justify-center gap-2 py-12 text-sm text-secondary-text">
                                         <Loader2 className="h-4 w-4 animate-spin" />
                                         <span>Loading wallets…</span>
