@@ -53,7 +53,7 @@ const PayFromPicker: FC<PayFromPickerProps> = ({ selectedSource, onSourceChange,
             {!hideDestinationPicker && <span className="w-24 shrink-0 text-sm text-secondary-text tracking-wide">Send</span>}
             <div className="flex-1 min-w-0">
                 <Selector>
-                    <SelectorTrigger disabled={!hasOptions || !hasMultipleOptions} className={`bg-secondary-500 hover:bg-secondary-400/70 rounded-xl px-3.5 py-3 transition-colors ${hideDestinationPicker ? "pr-4" : ""}`}>
+                    <SelectorTrigger disabled={!hasOptions || !hasMultipleOptions} className={`bg-secondary-500 hover:bg-secondary-400/70 rounded-xl px-4 py-3 transition-colors ${hideDestinationPicker ? "pr-4" : ""}`}>
                         {
                             hideDestinationPicker
                                 ? <PickerTriggerContent
@@ -82,6 +82,7 @@ const PayFromPicker: FC<PayFromPickerProps> = ({ selectedSource, onSourceChange,
                                 selectedToken={selectedSource?.token.symbol}
                                 hideTokenSwitch
                                 hideBalances
+                                hideConnectButton
                             />
                         )}
                     </SelectorContent>
