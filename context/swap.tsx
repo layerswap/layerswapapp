@@ -22,8 +22,9 @@ import { Address } from '@/lib/address';
 import { useSlippageStore } from '@/stores/slippageStore';
 import { posthog } from 'posthog-js';
 import { resolveExtendedRoutePlan } from '@/lib/extendedRoutes/registry';
-import { buildCreateSwapParamsForExtendedRoute, transformQuoteForExtendedRoute } from '@/lib/extendedRoutes/transforms';
+import { buildCreateSwapParamsForExtendedRoute } from '@/lib/extendedRoutes/transforms';
 import { useExtendedRoutesStore } from '@/stores/extendedRoutesStore';
+import { useExtendedSwapData } from '@/hooks/useExtendedSwapDisplay';
 import { useContractAddressStore } from '@/stores/contractAddressStore';
 
 export const SwapDataStateContext = createContext<SwapContextData | null>(null);
@@ -72,7 +73,6 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const [swapId, setSwapId] = useState<string | undefined>(router.query.swapId?.toString())
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
     const { sourceRoutes, destinationRoutes, networks } = useSettingsState()
-    const extendedRecord = useExtendedRoutesStore(s => swapId ? s.records[swapId] : undefined)
     const [swapBasicFormData, setSwapBasicFormData] = useState<SwapBasicData & { refuel: boolean }>()
     const updateRecentTokens = useRecentNetworksStore(state => state.updateRecentNetworks)
     const [swapModalOpen, setSwapModalOpen] = useState(false)
@@ -119,25 +119,26 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const [interval, setInterval] = useState(0)
     const { data, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval, dedupingInterval: interval || 1000, fallbackData: initialSwapData ? { data: initialSwapData } : undefined })
 
+    // Basic data for a loaded swap (real backend identity). `useExtendedSwapData`
+    // overlays the extended-route (e.g. Hyperliquid) source/amount/quote on top.
+    const baseSwapData = useMemo<(SwapBasicData & { refuel: boolean }) | undefined>(() => {
+        if (!(swapId && data?.data?.swap)) return undefined
+        return {
+            ...data.data.swap,
+            requested_amount: data.data.swap.requested_amount.toString(),
+            refuel: !!data.data.refuel,
+        }
+    }, [data, swapId])
+
+    const extendedSwapData = useExtendedSwapData(swapId, baseSwapData, data?.data?.quote)
+
     const swapBasicData = useMemo(() => {
         if (swapId && data?.data) {
             if (!data.data.swap) return undefined
-            const base = {
-                ...data.data.swap,
-                requested_amount: data.data.swap.requested_amount.toString(),
-                refuel: !!data.data.refuel
-            }
-            if (extendedRecord) {
-                const extendedNetwork = networks.find(n => n.name === extendedRecord.extendedNetwork)
-                const extendedToken = extendedNetwork?.tokens.find(t => t.symbol === extendedRecord.extendedToken)
-                if (extendedNetwork && extendedToken) {
-                    return { ...base, source_network: extendedNetwork, source_token: extendedToken, requested_amount: extendedRecord.sourceAmount, use_deposit_address: false }
-                }
-            }
-            return base
+            return extendedSwapData?.swapBasicData ?? baseSwapData
         }
         return swapBasicFormData
-    }, [data, swapBasicFormData, swapId, extendedRecord, networks])
+    }, [data, swapBasicFormData, swapId, baseSwapData, extendedSwapData])
 
     const swapDetails = useMemo(() => {
         if (swapId)
@@ -146,31 +147,10 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
 
     const quote = useMemo(() => {
         if (swapId && data?.data) {
-            const backendQuote = data?.data?.quote
-            // Re-denominate the backend quote to the extended source (Hyperliquid):
-            // requested_amount = A, fee += flat fee, completion += extra time.
-            if (extendedRecord && backendQuote) {
-                const extendedNetwork = networks.find(n => n.name === extendedRecord.extendedNetwork)
-                const extendedToken = extendedNetwork?.tokens.find(t => t.symbol === extendedRecord.extendedToken)
-                // Use the swap's actual destination so the restored mapping resolves
-                // to the same destination candidate the original flow used.
-                const swap = data.data.swap
-                const plan = resolveExtendedRoutePlan({
-                    sourceNetworkName: extendedRecord.extendedNetwork,
-                    sourceTokenSymbol: extendedRecord.extendedToken,
-                    destinationNetworkName: swap?.destination_network?.name,
-                    destinationTokenSymbol: swap?.destination_token?.symbol,
-                    sourceAmount: extendedRecord.sourceAmount,
-                })
-                const mapping = plan?.mapping
-                if (extendedNetwork && extendedToken && mapping) {
-                    return transformQuoteForExtendedRoute({ quote: backendQuote }, mapping, extendedNetwork, extendedToken, extendedRecord.sourceAmount)?.quote
-                }
-            }
-            return backendQuote
+            return extendedSwapData ? extendedSwapData.quote : data.data.quote
         }
         return formDataQuote?.quote
-    }, [formDataQuote, data, swapId, extendedRecord, networks]);
+    }, [formDataQuote, data, swapId, extendedSwapData]);
 
     const quoteError = useMemo(() => {
         if (swapId && data?.data) {
@@ -337,7 +317,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         });
 
         return swap;
-    }, [selectedSourceAccount, selectedWallet, updateRecentTokens, swapDetails?.id])
+    }, [selectedSourceAccount, selectedWallet, updateRecentTokens, swapDetails?.id, networks])
 
     const updateFns = useMemo<UpdateSwapInterface>(() => ({
         createSwap,

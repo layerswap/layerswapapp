@@ -167,11 +167,13 @@ function useRoutes({ direction, values }: Props) {
     const url = useMemo(() => resolveNetworkRoutesURL(direction, values), [direction, values]);
     const defaultRoutes = direction === 'from' ? sourceRoutes : destinationRoutes;
     const { routes, isLoading } = useRoutesData<NetworkRoute>(url, defaultRoutes || [], apiClient.fetcher);
-    // Append client-side extended routes (e.g. Hyperliquid as source). Upstream of
-    // all filtering/sorting/grouping, so locks and suggestions work unchanged.
+
+    const toName = values.to?.name;
+    const toAssetSymbol = values.toAsset?.symbol;
+    const fromName = values.from?.name;
     const extendedRoutes = useMemo(
         () => injectExtendedRoutes({ routes, direction, values, networks }),
-        [routes, direction, values, networks]
+        [routes, direction, networks, toName, toAssetSymbol, fromName]
     );
     return { routes: extendedRoutes, isLoading };
 }

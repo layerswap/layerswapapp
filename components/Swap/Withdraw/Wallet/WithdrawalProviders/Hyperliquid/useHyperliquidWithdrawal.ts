@@ -38,6 +38,13 @@ const logWithdrawalError = (error: unknown, ctx: { swapId?: string; fromAddress?
     })
 }
 
+const isUserRejection = (err: unknown): boolean => {
+    if (resolveError(err as any) === 'transaction_rejected') return true
+    if (err instanceof Error && /user rejected|user denied|rejected the request/i.test(err.message)) return true
+    const code = (err as any)?.code ?? (err as any)?.cause?.code
+    return code === 4001
+}
+
 /**
  * Owns the Hyperliquid withdrawal flow and its UI state. The flow is decomposed
  * into three ordered steps — resolve the backend swap + deposit address, prepare
@@ -131,11 +138,15 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
         }
 
         // Poll the fresh split (uncached — NOT the React balance store) until the
-        // chosen source pool covers `required`, or we hit the timeout.
+        // chosen source pool covers `required`, or we hit the timeout. Bail if the
+        // component unmounts mid-poll — this can run for up to the timeout window,
+        // so the caller must not set state (consolidation/error) on a dead component.
         const pollUntilTargetCovers = async (client: HyperliquidClient, sourceDex: string, required: number): Promise<boolean> => {
             const deadline = Date.now() + HYPERLIQUID_TRANSFER_POLL_TIMEOUT_MS
             while (Date.now() < deadline) {
+                if (!mountedRef.current) return false
                 await sleep(HYPERLIQUID_TRANSFER_POLL_INTERVAL_MS)
+                if (!mountedRef.current) return false
                 const split = await client.getWithdrawableSplit(sourceAddress!, hlConfig!.nodeUrl, source_token.symbol)
                 const targetAvailable = sourceDex === HYPERLIQUID_DEX_SPOT ? split.spot : split.perps
                 if (targetAvailable >= required) return true
@@ -174,7 +185,7 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
                     account: sourceAddress as `0x${string}`,
                 })
             } catch (signErr) {
-                if (resolveError(signErr) === 'transaction_rejected') {
+                if (isUserRejection(signErr)) {
                     setRejected(true)
                     return null
                 }
@@ -192,7 +203,8 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
             if (mountedRef.current) setConsolidation(prev => prev && { ...prev, step: 'settle' })
             const settled = await pollUntilTargetCovers(client, plan.sourceDex, required)
             if (!settled) {
-                setError({ header: 'Balance is updating', details: 'Your funds are moving between your Hyperliquid balances. Please try again in a moment.' })
+                // Unmounted mid-poll → leave state untouched; timed out while mounted → surface the retry hint.
+                if (mountedRef.current) setError({ header: 'Balance is updating', details: 'Your funds are moving between your Hyperliquid balances. Please try again in a moment.' })
                 return null
             }
             // Transfer applied — drop the consolidation notice so the withdraw step
@@ -216,7 +228,7 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
                     sourceDex,
                 })
             } catch (signErr) {
-                if (resolveError(signErr) === 'transaction_rejected') {
+                if (isUserRejection(signErr)) {
                     setRejected(true)
                     return false
                 }
@@ -243,7 +255,14 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
             if (!hlConfig) throw new Error('Unsupported Hyperliquid network')
             if (!sourceAddress) throw new Error('No connected Hyperliquid account')
 
-            const amount = swapBasicData.requested_amount.toString()
+            // The amount string is signed verbatim into the action and leaves
+            // HyperCore as-is. Reject anything beyond the source token's precision
+            // (USDC = 6 dp): `Number()` silently rounds excess decimals, which on a
+            // signed financial amount would withdraw a different value than shown.
+            const amount = swapBasicData.requested_amount.toString().trim()
+            const decimals = source_token.decimals ?? 6
+            const amountPattern = decimals > 0 ? new RegExp(`^\\d+(\\.\\d{1,${decimals}})?$`) : /^\d+$/
+            if (!amountPattern.test(amount)) throw new Error(`Invalid amount — at most ${decimals} decimal places for ${source_token.symbol}`)
             const A = Number(amount)
             if (!Number.isFinite(A) || A <= 0) throw new Error('Invalid amount')
 

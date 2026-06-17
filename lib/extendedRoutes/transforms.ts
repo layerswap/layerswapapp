@@ -72,7 +72,8 @@ function injectExtendedDestinations({ routes, values }: Omit<InjectArgs, 'direct
     return routes.filter(r => !isExtendedSourceNetwork(r.name))
 }
 
-/** Displayed limits = backend limits + flat fee (clamped to minSourceAmount). */
+/** Displayed limits = backend limits + flat fee (the min is resolved dynamically
+ * off the backend min, not a static floor). */
 export function transformLimitsForExtendedRoute(limits: ExtendedLimits | undefined, mapping: ResolvedExtendedMapping): ExtendedLimits | undefined {
     if (!limits) return limits
     const pricePerToken =
@@ -80,7 +81,7 @@ export function transformLimitsForExtendedRoute(limits: ExtendedLimits | undefin
             : limits.max_amount > 0 ? limits.max_amount_in_usd / limits.max_amount
                 : 1
 
-    const min_amount = Math.max(limits.min_amount + mapping.flatFee, mapping.minSourceAmount ?? 0)
+    const min_amount = limits.min_amount + mapping.flatFee
     const max_amount = limits.max_amount + mapping.flatFee
 
     return {
@@ -114,6 +115,7 @@ export function transformQuoteForExtendedRoute(
             requested_amount: decimalToNumber(sourceAmount),
             total_fee: quote.quote.total_fee + mapping.flatFee,
             total_fee_in_usd: quote.quote.total_fee_in_usd + mapping.flatFee * pricePerToken,
+            blockchain_fee: quote.quote.blockchain_fee + mapping.flatFee,
             avg_completion_time: addSecondsToHms(quote.quote.avg_completion_time, mapping.extraCompletionSeconds),
         },
     }
