@@ -34,11 +34,15 @@ export class HyperliquidBalanceProvider extends BalanceProvider {
             const usdcToken = network.tokens.find(token => token.symbol === HYPERLIQUID_USDC_SYMBOL);
 
             if (usdcToken) {
-                const usdcBalance = await this.client.getAvailableTokenBalance(address, nodeUrl, usdcToken.symbol, options?.timeoutMs, options?.retryCount);
-                if (usdcBalance.available >= 0) {
+                // Report the combined withdrawable across both HyperCore pools (spot
+                // available + perps withdrawable). The withdrawal flow can pull from
+                // either pool — and consolidate between them — so the user's spendable
+                // balance is the sum, not spot alone.
+                const split = await this.client.getWithdrawableSplit(address, nodeUrl, usdcToken.symbol, options?.timeoutMs, options?.retryCount);
+                if (split.combined >= 0) {
                     balances.push({
                         network: network.name,
-                        amount: usdcBalance.available,
+                        amount: split.combined,
                         decimals: usdcToken.decimals,
                         isNativeCurrency: false,
                         token: usdcToken.symbol,

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAccount, useConfig } from "wagmi";
 import posthog from "posthog-js";
 import { WithdrawPageProps } from "../../Common/sharedTypes";
@@ -10,14 +10,16 @@ import { useSelectedAccount } from "@/context/swapAccounts";
 import { useQueryState } from "@/context/query";
 import { useSettingsState } from "@/context/settings";
 import useWallet from "@/hooks/useWallet";
-import { useBalance } from "@/lib/balances/useBalance";
 import { NetworkRoute } from "@/Models/Network";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { BackendTransactionStatus, DepositAction } from "@/lib/apiClients/layerSwapApiClient";
 import { HyperliquidClient } from "@/lib/apiClients/hyperliquidClient";
-import { resolveHyperliquidConfig } from "@/lib/wallets/hyperliquid/constants";
-import { signSendToEvm } from "@/lib/wallets/hyperliquid/withdraw";
+import { resolveHyperliquidConfig, HYPERLIQUID_DEX_SPOT, HYPERLIQUID_WITHDRAW_HEADROOM, HYPERLIQUID_TRANSFER_POLL_INTERVAL_MS, HYPERLIQUID_TRANSFER_POLL_TIMEOUT_MS } from "@/lib/wallets/hyperliquid/constants";
+import { signSendToEvm, signUsdClassTransfer } from "@/lib/wallets/hyperliquid/withdraw";
+import { planWithdrawal } from "@/lib/wallets/hyperliquid/planWithdrawal";
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
+
+const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
 
 const HL_EXCEPTION_TYPE = 'Hyperliquid Withdrawal Error'
 
@@ -38,10 +40,16 @@ const logWithdrawalError = (error: unknown, ctx: { swapId?: string; fromAddress?
 
 /**
  * Owns the Hyperliquid withdrawal flow and its UI state. The flow is decomposed
- * into three ordered steps — resolve the backend swap + deposit address, balance
- * preflight, sign + submit — wrapped in a single submit guard. On success it
- * records a pending input transaction so the standard Processing screen takes
- * over (no real source hash: the backend detects the CCTP deposit on Base).
+ * into three ordered steps — resolve the backend swap + deposit address, prepare
+ * the source pool (read the fresh spot/perps split, pick a `sourceDex`, and
+ * consolidate via `usdClassTransfer` when neither pool alone covers the amount),
+ * sign + submit — wrapped in a single submit guard. On success it records a
+ * pending input transaction so the standard Processing screen takes over (no real
+ * source hash: the backend detects the CCTP deposit on Base).
+ *
+ * The flow is idempotent across retries: every attempt re-reads the split, so after
+ * a successful consolidation a retry finds the target pool already covers the amount
+ * and skips straight to the withdraw signature.
  * The component that consumes this hook is a thin presentational shell.
  */
 export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: WithdrawPageProps) {
@@ -60,18 +68,28 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
     const sourceAddress = selectedSourceAccount?.address
 
-    // Full network (with tokens/node_url) for the shared balance pipeline.
-    const sourceNetwork = useMemo(() => source_network?.name ? networks.find(n => n.name === source_network.name) : undefined, [networks, source_network?.name])
-    const { mutate: refreshBalance } = useBalance(sourceAddress, sourceNetwork)
-
     const hlConfig = useMemo(() => resolveHyperliquidConfig(source_network?.name, networks, destination_network?.name, destination_token?.symbol), [source_network?.name, networks, destination_network?.name, destination_token?.symbol])
 
     const [loading, setLoading] = useState(false)
+    // Set while a `usdClassTransfer` consolidation is in flight, so the UI can
+    // explain the extra wallet signature (what's moving, which direction, and which
+    // phase). `step`: 'sign' = awaiting the transfer signature, 'settle' = waiting
+    // for HyperCore to apply it. Undefined when no consolidation is needed.
+    const [consolidation, setConsolidation] = useState<{ amount: string; toPerp: boolean; step: 'sign' | 'settle' } | undefined>()
     const [error, setError] = useState<StepError | undefined>()
     const [rejected, setRejected] = useState(false)
     // Synchronous double-submit guard: covers the click→re-render gap that the
     // `loading` state can't (two rapid clicks before React swaps the button out).
     const submittingRef = useRef(false)
+    // Consolidation widens the async window (sign + submit + poll); avoid setting
+    // state after the component unmounts mid-flow.
+    const mountedRef = useRef(true)
+    // Set true in setup (not just false in cleanup): under StrictMode the cleanup
+    // fires once right after mount, which would otherwise leave this false forever.
+    useEffect(() => {
+        mountedRef.current = true
+        return () => { mountedRef.current = false }
+    }, [])
 
     // Note: WalletTransferAction (the registry that mounts this step) already keeps
     // the wallet's active account aligned with the selected source account.
@@ -112,28 +130,82 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
             return { destination, activeSwapId }
         }
 
-        // Step 2 — re-read the available balance through the shared balance pipeline
-        // (same source as the picker / MinMax) so the numbers can't diverge.
-        // Returns false (with a surfaced error) when the preflight can't proceed.
-        const preflightBalance = async (amountA: number): Promise<boolean> => {
-            const fresh = await refreshBalance()
-            if (!fresh) {
-                setError({ header: 'Balance check failed', details: 'Could not verify your Hyperliquid balance. Please try again.' })
-                return false
+        // Poll the fresh split (uncached — NOT the React balance store) until the
+        // chosen source pool covers `required`, or we hit the timeout.
+        const pollUntilTargetCovers = async (client: HyperliquidClient, sourceDex: string, required: number): Promise<boolean> => {
+            const deadline = Date.now() + HYPERLIQUID_TRANSFER_POLL_TIMEOUT_MS
+            while (Date.now() < deadline) {
+                await sleep(HYPERLIQUID_TRANSFER_POLL_INTERVAL_MS)
+                const split = await client.getWithdrawableSplit(sourceAddress!, hlConfig!.nodeUrl, source_token.symbol)
+                const targetAvailable = sourceDex === HYPERLIQUID_DEX_SPOT ? split.spot : split.perps
+                if (targetAvailable >= required) return true
             }
-            const available = fresh.balances?.find(b => b.token === source_token.symbol)?.amount ?? 0
-            if (available < amountA) {
-                setError({ header: 'Insufficient balance', details: `Your available Hyperliquid balance (${available} ${source_token.symbol}) is below ${amountA} ${source_token.symbol}.` })
-                return false
+            return false
+        }
+
+        // Step 2 — read the fresh on-chain spot/perps split and decide which pool to
+        // withdraw from. If neither pool alone covers the amount but the combined
+        // balance does, consolidate via `usdClassTransfer` and wait for it to settle.
+        // Returns the chosen sourceDex (and the transfer nonce, if one was used) or
+        // null (with a surfaced error/rejection) when the source can't be prepared.
+        const prepareSource = async (client: HyperliquidClient, amount: string, activeSwapId: string): Promise<{ sourceDex: string; transferNonce?: number } | null> => {
+            const required = Number(amount) + HYPERLIQUID_WITHDRAW_HEADROOM
+            const split = await client.getWithdrawableSplit(sourceAddress!, hlConfig!.nodeUrl, source_token.symbol)
+            const plan = planWithdrawal(split, required, source_token.decimals)
+
+            if (plan.insufficient) {
+                setError({ header: 'Insufficient balance', details: `Your available Hyperliquid balance (${split.combined} ${source_token.symbol}) is below ${amount} ${source_token.symbol}.` })
+                return null
             }
-            return true
+            if (!plan.transfer) return { sourceDex: plan.sourceDex }
+
+            // Consolidate: move the deficit into the chosen pool first. Tell the user
+            // what they're about to sign (this is a second, internal-only signature),
+            // and let it paint before the wallet prompt opens so they read it first.
+            if (mountedRef.current) setConsolidation({ amount: plan.transfer.amount, toPerp: plan.transfer.toPerp, step: 'sign' })
+            await sleep(50)
+            const transferNonce = Date.now()
+            let signedTransfer: Awaited<ReturnType<typeof signUsdClassTransfer>>
+            try {
+                signedTransfer = await signUsdClassTransfer(config, hlConfig!, {
+                    amount: plan.transfer.amount,
+                    toPerp: plan.transfer.toPerp,
+                    nonce: transferNonce,
+                    account: sourceAddress as `0x${string}`,
+                })
+            } catch (signErr) {
+                if (resolveError(signErr) === 'transaction_rejected') {
+                    setRejected(true)
+                    return null
+                }
+                throw signErr
+            }
+
+            const transferResp = await client.usdClassTransfer(signedTransfer.action, signedTransfer.signature, hlConfig!.nodeUrl)
+            if (transferResp.status === 'err') {
+                // Nothing moved — safe to bail.
+                setError(resolveHyperliquidError(transferResp.response))
+                logWithdrawalError(new Error(transferResp.response), { swapId: activeSwapId, fromAddress: sourceAddress })
+                return null
+            }
+
+            if (mountedRef.current) setConsolidation(prev => prev && { ...prev, step: 'settle' })
+            const settled = await pollUntilTargetCovers(client, plan.sourceDex, required)
+            if (!settled) {
+                setError({ header: 'Balance is updating', details: 'Your funds are moving between your Hyperliquid balances. Please try again in a moment.' })
+                return null
+            }
+            // Transfer applied — drop the consolidation notice so the withdraw step
+            // shows the normal "Withdrawing" copy for its own signature.
+            if (mountedRef.current) setConsolidation(undefined)
+            return { sourceDex: plan.sourceDex, transferNonce }
         }
 
         // Step 3 — sign + submit (single attempt — signed, time-bound nonce).
         // Returns false (with surfaced error/rejection) when submission didn't succeed.
-        const signAndSubmit = async (destination: string, activeSwapId: string, amount: string): Promise<boolean> => {
-            const client = new HyperliquidClient()
-            const time = Date.now()
+        const signAndSubmit = async (client: HyperliquidClient, destination: string, activeSwapId: string, amount: string, sourceDex: string, transferNonce?: number): Promise<boolean> => {
+            // Keep the withdraw nonce strictly after any consolidation transfer's.
+            const time = transferNonce !== undefined ? Math.max(Date.now(), transferNonce + 1) : Date.now()
             let signed: Awaited<ReturnType<typeof signSendToEvm>>
             try {
                 signed = await signSendToEvm(config, hlConfig!, {
@@ -141,6 +213,7 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
                     amount,
                     nonce: time,
                     account: sourceAddress as `0x${string}`,
+                    sourceDex,
                 })
             } catch (signErr) {
                 if (resolveError(signErr) === 'transaction_rejected') {
@@ -174,21 +247,25 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
             const A = Number(amount)
             if (!Number.isFinite(A) || A <= 0) throw new Error('Invalid amount')
 
+            const client = new HyperliquidClient()
             const { destination, activeSwapId } = await resolveSwapAndDepositAddress(amount)
-            if (!await preflightBalance(A)) return
-            await signAndSubmit(destination, activeSwapId, amount)
+            const source = await prepareSource(client, amount, activeSwapId)
+            if (!source) return
+            await signAndSubmit(client, destination, activeSwapId, amount, source.sourceDex, source.transferNonce)
         } catch (e) {
             logWithdrawalError(e, { swapId, fromAddress: sourceAddress })
             setError({ header: 'Withdrawal failed', details: (e as Error)?.message || 'Unexpected error occurred.' })
         } finally {
             setLoading(false)
+            setConsolidation(undefined)
             submittingRef.current = false
         }
-    }, [hlConfig, sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, depositActionsResponse, swapId, swapDetails, refuel, query, config, createSwap, setSwapId, onWalletWithdrawalSuccess, swapBasicData.requested_amount, refreshBalance])
+    }, [hlConfig, sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, depositActionsResponse, swapId, swapDetails, refuel, query, config, createSwap, setSwapId, onWalletWithdrawalSuccess, swapBasicData.requested_amount])
 
     return {
         handleWithdraw,
         loading,
+        consolidation,
         error,
         rejected,
         hlConfig,

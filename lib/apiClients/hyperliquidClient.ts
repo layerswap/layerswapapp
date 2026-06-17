@@ -90,9 +90,38 @@ export type HyperliquidSendToEvmAction = {
     nonce: number;
 };
 
+/**
+ * Hyperliquid `usdClassTransfer` action — moves USDC between the user's perp and
+ * spot balances on HyperCore (internal, no CCTP). `toPerp: true` = spot→perp,
+ * `false` = perp→spot. Used to consolidate funds into one pool when neither pool
+ * alone covers a withdrawal but the combined balance does.
+ */
+export type HyperliquidUsdClassTransferAction = {
+    type: 'usdClassTransfer';
+    hyperliquidChain: 'Mainnet' | 'Testnet';
+    /** Hex chain id the typed data is signed against — must match the wallet's chain. */
+    signatureChainId: `0x${string}`;
+    /** Plain decimal USDC amount to move. */
+    amount: string;
+    /** true = spot→perp, false = perp→spot. */
+    toPerp: boolean;
+    /** Nonce, in ms; Hyperliquid requires `nonce === action.nonce`. */
+    nonce: number;
+};
+
 export type HyperliquidSignature = { r: string; s: string; v: number };
 
 export type HyperliquidWithdrawResponse = { status: 'ok' } | { status: 'err'; response: string };
+
+/** Free, withdrawable USDC split across the two HyperCore pools. */
+export type WithdrawableSplit = {
+    /** Spot available = total - hold, floored at 0. */
+    spot: number;
+    /** Perps `withdrawable` (free USDC after margin), floored at 0. */
+    perps: number;
+    /** spot + perps. */
+    combined: number;
+};
 
 const parseBalanceAmount = (value: string | undefined): number => {
     const amount = Number(value)
@@ -158,11 +187,23 @@ export class HyperliquidClient {
         return response.json();
     }
 
-    async getAvailableTokenBalance(user: string, nodeUrl: string, coin: string, timeoutMs?: number, retryCount?: number): Promise<HyperliquidTokenBalance> {
-        // Hyperliquid documents spotClearinghouseState as the balance source of
-        // truth for unified and portfolio margin accounts.
-        const spotState = await this.getSpotClearinghouseState(user, nodeUrl, timeoutMs, retryCount)
-        return getAvailableTokenBalance(spotState, coin)
+    /**
+     * Free, withdrawable USDC split across both HyperCore pools. The `sendToEvmWithData`
+     * withdrawal can pull from either (spot or perp) via `sourceDex`, so the caller needs
+     * the split to pick a pool — or consolidate via `usdClassTransfer` when neither alone
+     * covers the amount. Fetches both clearinghouse states concurrently; either failing
+     * rejects the whole split (we can't decide a source on partial data).
+     */
+    async getWithdrawableSplit(user: string, nodeUrl: string, coin: string, timeoutMs?: number, retryCount?: number): Promise<WithdrawableSplit> {
+        const [spotState, perpsState] = await Promise.all([
+            this.getSpotClearinghouseState(user, nodeUrl, timeoutMs, retryCount),
+            this.getClearinghouseState(user, nodeUrl, timeoutMs, retryCount),
+        ])
+        const spot = getAvailableTokenBalance(spotState, coin).available
+        // `withdrawable` is the free USDC after margin — the correct field, not
+        // accountValue/totalRawUsd (which include margin-locked equity).
+        const perps = Math.max(parseBalanceAmount(perpsState.withdrawable), 0)
+        return { spot, perps, combined: spot + perps }
     }
 
     /**
@@ -171,6 +212,30 @@ export class HyperliquidClient {
      * and is signed, so a blind retry risks a double-submit.
      */
     async withdraw(action: HyperliquidSendToEvmAction, signature: HyperliquidSignature, nodeUrl: string, timeoutMs?: number): Promise<HyperliquidWithdrawResponse> {
+        const { fetchWithTimeout } = await import("@/lib/fetchWithTimeout");
+        const response = await fetchWithTimeout(`${nodeUrl}/exchange`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ action, nonce: action.nonce, signature }),
+            timeoutMs: timeoutMs ?? 60000,
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        return response.json();
+    }
+
+    /**
+     * Submit a signed `usdClassTransfer` action to move USDC between the user's
+     * perp and spot pools. Like `withdraw`, deliberately NOT wrapped in `retry`:
+     * the action carries a time-bound nonce and is signed, so a blind retry risks
+     * a double-submit.
+     */
+    async usdClassTransfer(action: HyperliquidUsdClassTransferAction, signature: HyperliquidSignature, nodeUrl: string, timeoutMs?: number): Promise<HyperliquidWithdrawResponse> {
         const { fetchWithTimeout } = await import("@/lib/fetchWithTimeout");
         const response = await fetchWithTimeout(`${nodeUrl}/exchange`, {
             method: 'POST',

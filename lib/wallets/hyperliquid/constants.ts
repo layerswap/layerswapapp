@@ -6,10 +6,27 @@ import { HYPERLIQUID_ROUTES, pickHyperliquidDestination } from "./routes";
 export const HYPERLIQUID_USDC_SYMBOL = 'USDC'
 /** HyperCore-native token name the `sendToEvmWithData` action withdraws. */
 export const HYPERLIQUID_SPOT_TOKEN = 'USDC'
-/** Source balance the withdrawal pulls from ('spot' dex; '' would be perp). */
-export const HYPERLIQUID_SOURCE_DEX = 'spot'
+/** `sourceDex` value to pull a withdrawal from the spot pool. */
+export const HYPERLIQUID_DEX_SPOT = 'spot'
+/** `sourceDex` value to pull a withdrawal from the perp pool (empty string). */
+export const HYPERLIQUID_DEX_PERP = ''
+/** Default source balance the withdrawal pulls from ('spot' dex; '' would be perp). */
+export const HYPERLIQUID_SOURCE_DEX = HYPERLIQUID_DEX_SPOT
 /** Gas limit for the CCTP forwarding transaction on the destination chain. */
 export const HYPERLIQUID_WITHDRAW_GAS_LIMIT = 200000
+
+/**
+ * Headroom (USDC) the HyperCore-side `sendToEvmWithData` requires above the
+ * withdrawn amount — the action needs balance strictly greater than `amount`.
+ * Single source of truth shared by the gas provider (deducted from MAX) and the
+ * withdrawal flow (added to `required` when choosing a source pool).
+ */
+export const HYPERLIQUID_WITHDRAW_HEADROOM = 0.01
+
+/** Poll cadence while waiting for a `usdClassTransfer` to settle on HyperCore. */
+export const HYPERLIQUID_TRANSFER_POLL_INTERVAL_MS = 1500
+/** Give-up window for the `usdClassTransfer` settlement poll. */
+export const HYPERLIQUID_TRANSFER_POLL_TIMEOUT_MS = 30000
 
 export type HyperliquidChain = 'Mainnet' | 'Testnet'
 

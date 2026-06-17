@@ -2,7 +2,7 @@ import { signTypedData } from '@wagmi/core'
 import { parseSignature } from 'viem'
 import { Config } from 'wagmi'
 import { HyperliquidConfig, HYPERLIQUID_SOURCE_DEX, HYPERLIQUID_SPOT_TOKEN, HYPERLIQUID_WITHDRAW_GAS_LIMIT } from './constants'
-import { HyperliquidSendToEvmAction, HyperliquidSignature } from '@/lib/apiClients/hyperliquidClient'
+import { HyperliquidSendToEvmAction, HyperliquidSignature, HyperliquidUsdClassTransferAction } from '@/lib/apiClients/hyperliquidClient'
 
 export type SignSendToEvmParams = {
     /** Recipient address on the destination chain. */
@@ -12,6 +12,8 @@ export type SignSendToEvmParams = {
     /** Nonce, in ms; Hyperliquid requires `nonce === action.nonce`. */
     nonce: number
     account?: `0x${string}`
+    /** Source pool to pull from: 'spot' (default) or '' for perp. */
+    sourceDex?: string
 }
 
 /**
@@ -35,7 +37,7 @@ export async function signSendToEvm(
         signatureChainId: hlConfig.signatureChainIdHex,
         token: HYPERLIQUID_SPOT_TOKEN,
         amount: params.amount,
-        sourceDex: HYPERLIQUID_SOURCE_DEX,
+        sourceDex: params.sourceDex ?? HYPERLIQUID_SOURCE_DEX,
         destinationRecipient,
         addressEncoding: 'hex',
         destinationChainId: hlConfig.destinationCctpDomain,
@@ -77,6 +79,73 @@ export async function signSendToEvm(
             destinationChainId: action.destinationChainId,
             gasLimit: BigInt(action.gasLimit),
             data: action.data,
+            nonce: BigInt(action.nonce),
+        },
+    }
+
+    const signatureHex = await signTypedData(wagmiConfig, typedData as any)
+
+    const parsed = parseSignature(signatureHex)
+    const v = parsed.v !== undefined ? Number(parsed.v) : (parsed.yParity ?? 0) + 27
+
+    return {
+        action,
+        signature: { r: parsed.r, s: parsed.s, v },
+    }
+}
+
+export type SignUsdClassTransferParams = {
+    /** Plain decimal USDC string to move between pools. */
+    amount: string
+    /** true = spot→perp, false = perp→spot. */
+    toPerp: boolean
+    /** Nonce, in ms; Hyperliquid requires `nonce === action.nonce`. */
+    nonce: number
+    account?: `0x${string}`
+}
+
+/**
+ * EIP-712-sign a Hyperliquid `usdClassTransfer` action — moves USDC between the
+ * connected account's perp and spot pools on HyperCore. Mirrors `signSendToEvm`:
+ * same `HyperliquidSignTransaction` domain, signed against the destination chain
+ * id (`hlConfig.signatureChainId`), which the wallet is already forced onto by the
+ * step component's ChangeNetwork gate — so no extra network switch is introduced.
+ */
+export async function signUsdClassTransfer(
+    wagmiConfig: Config,
+    hlConfig: HyperliquidConfig,
+    params: SignUsdClassTransferParams,
+): Promise<{ action: HyperliquidUsdClassTransferAction; signature: HyperliquidSignature }> {
+    const action: HyperliquidUsdClassTransferAction = {
+        type: 'usdClassTransfer',
+        hyperliquidChain: hlConfig.hyperliquidChain,
+        signatureChainId: hlConfig.signatureChainIdHex,
+        amount: params.amount,
+        toPerp: params.toPerp,
+        nonce: params.nonce,
+    }
+
+    const typedData = {
+        account: params.account,
+        domain: {
+            name: 'HyperliquidSignTransaction',
+            version: '1',
+            chainId: hlConfig.signatureChainId,
+            verifyingContract: '0x0000000000000000000000000000000000000000',
+        },
+        types: {
+            'HyperliquidTransaction:UsdClassTransfer': [
+                { name: 'hyperliquidChain', type: 'string' },
+                { name: 'amount', type: 'string' },
+                { name: 'toPerp', type: 'bool' },
+                { name: 'nonce', type: 'uint64' },
+            ],
+        },
+        primaryType: 'HyperliquidTransaction:UsdClassTransfer',
+        message: {
+            hyperliquidChain: action.hyperliquidChain,
+            amount: action.amount,
+            toPerp: action.toPerp,
             nonce: BigInt(action.nonce),
         },
     }
