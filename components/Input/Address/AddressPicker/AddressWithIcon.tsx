@@ -59,10 +59,10 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
 
     return (
         <div className="w-full flex items-center justify-between">
-            <div className="flex bg-secondary-400 text-primary-text items-center justify-center rounded-md h-8 overflow-hidden w-8">
-                {
-                    (partner?.is_wallet && addressItem.group === AddressGroup.FromQuery) ? (
-                        partner?.logo && (
+            {
+                (partner?.is_wallet && addressItem.group === AddressGroup.FromQuery) ? (
+                    <div className="flex bg-secondary-400 text-primary-text items-center justify-center rounded-md h-8 overflow-hidden w-8">
+                        {partner?.logo && (
                             <ImageWithFallback
                                 alt="Partner logo"
                                 className="rounded-md object-contain"
@@ -70,12 +70,12 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
                                 width="36"
                                 height="36"
                             />
-                        )
-                    ) : (
-                        <AddressIcon address={address} size={32} network={network} />
-                    )
-                }
-            </div>
+                        )}
+                    </div>
+                ) : (
+                    <AddressIcon address={address} size={36} network={network} className="rounded-md shrink-0" />
+                )
+            }
 
             <div className="flex flex-col items-start grow min-w-0 ml-3 text-sm">
                 <div className="flex w-full min-w-0">

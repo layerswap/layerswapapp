@@ -43,8 +43,10 @@ export function useNetworkScope(address: string, initial?: Partial<SavedAddress>
             case AddressSelectionMode.Overlap: {
                 const options = detected.types.map(t => ({ key: t as string, label: AddressTypeLabel(t), logo: networks.find(n => n.type === t)?.logo }))
                 return {
-                    selectorProps: { sectionLabel: 'Network type', masterLabel: 'Both', overlapping: true, options },
-                    defaults: options.map(o => o.key),
+                    // Single-select disambiguation: the address is exactly one of these,
+                    // we just can't tell from the string — so no "both" default.
+                    selectorProps: { sectionLabel: 'Network', masterLabel: '', overlapping: true, options },
+                    defaults: [],
                     saved: initial?.networkTypes,
                     toEntry: keys => ({ networkTypes: keys as NetworkType[] }),
                 }

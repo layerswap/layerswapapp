@@ -12,6 +12,7 @@ export type ScopeOption = { key: string, label: string, logo?: string }
 export type NetworkScopeSelectorProps = {
     sectionLabel: string
     masterLabel: string
+    /** Single-select disambiguation (Starknet/Fuel): no "all" master, picking one replaces. */
     overlapping: boolean
     options: ScopeOption[]
     selected: string[]
@@ -33,6 +34,23 @@ const StackedLogos: FC<{ options: ScopeOption[] }> = ({ options }) => (
     </span>
 )
 
+const RadioRow: FC<{ checked: boolean, onSelect: () => void, option: ScopeOption }> = ({ checked, onSelect, option }) => (
+    <div
+        role="radio"
+        aria-checked={checked}
+        tabIndex={0}
+        onClick={onSelect}
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect() } }}
+        className="w-full flex items-center gap-3 px-3 h-12 rounded-2xl text-base hover:bg-secondary-400 text-primary-text cursor-pointer select-none"
+    >
+        <span className="w-5 h-5 flex items-center justify-center shrink-0"><OptionLogo option={option} size={20} /></span>
+        <span className="flex-1 min-w-0 truncate text-left">{option.label}</span>
+        <span className={clsx('w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center', checked ? 'border-primary' : 'border-secondary-text')}>
+            {checked && <span className="w-2 h-2 rounded-full bg-primary" />}
+        </span>
+    </div>
+)
+
 const describeSelection = (selected: string[], options: ScopeOption[], masterLabel: string): string => {
     if (selected.length === 0) return 'None selected'
     if (selected.length === options.length) return masterLabel
@@ -50,14 +68,25 @@ const NetworkScopeSelector: FC<NetworkScopeSelectorProps> = ({ sectionLabel, mas
     const allOn = selected.length === options.length
     const selectedOptions = options.filter(o => selected.includes(o.key))
 
-    const toggle = (key: string) =>
-        onChange(selected.includes(key) ? selected.filter(k => k !== key) : [...selected, key])
+    const toggle = (key: string) => {
+        // Overlap is a single-select disambiguation — pick one, no toggling off.
+        if (overlapping) { onChange([key]); return }
+        // First pick out of the "all" state replaces it with just that option,
+        // rather than producing a surprising "all-but-one" selection.
+        if (allOn) { onChange([key]); return }
+        const next = selected.includes(key) ? selected.filter(k => k !== key) : [...selected, key]
+        // Deselecting the last option snaps back to "all" — an empty scope is meaningless.
+        onChange(next.length === 0 ? options.map(o => o.key) : next)
+    }
     const selectAll = () => onChange(allOn ? [] : options.map(o => o.key))
 
     const trimmedQuery = query.trim().toLowerCase()
     const filtered = !overlapping && trimmedQuery ? options.filter(o => o.label.toLowerCase().includes(trimmedQuery)) : options
 
     const showGlobe = allOn && !overlapping
+    // Single-select overlap with nothing chosen yet needs a prompt, not "None selected".
+    const placeholder = overlapping && selected.length === 0
+    const triggerLabel = placeholder ? 'Select network' : describeSelection(selected, options, masterLabel)
 
     return (
         <div className="bg-secondary-500 rounded-2xl px-4 py-3">
@@ -68,7 +97,7 @@ const NetworkScopeSelector: FC<NetworkScopeSelectorProps> = ({ sectionLabel, mas
                         <span className="inline-flex items-center gap-2.5 text-base min-w-0">
                             {showGlobe && <Globe className="w-5 h-5 text-secondary-text shrink-0" />}
                             {!showGlobe && selectedOptions.length > 0 && <StackedLogos options={selectedOptions} />}
-                            <span className="truncate">{describeSelection(selected, options, masterLabel)}</span>
+                            <span className={clsx('truncate', placeholder && 'text-secondary-text')}>{triggerLabel}</span>
                         </span>
                         <ChevronDown className={clsx('w-5 h-5 text-secondary-text shrink-0 transition-transform duration-200', open && 'rotate-180')} />
                     </button>
@@ -80,10 +109,18 @@ const NetworkScopeSelector: FC<NetworkScopeSelectorProps> = ({ sectionLabel, mas
                         </div>
                     )}
                     <div className="overflow-y-auto styled-scroll p-1 max-h-60">
-                        <CheckboxRow checked={allOn} onToggle={selectAll} icon={overlapping ? <StackedLogos options={options} /> : <Globe className="w-4 h-4 text-secondary-text" />} label={masterLabel} className="h-12 text-base" />
-                        <div className="h-px bg-primary-text-tertiary/15 mx-3 my-1" />
+                        {!overlapping && (
+                            <>
+                                <CheckboxRow checked={allOn} onToggle={selectAll} icon={<Globe className="w-4 h-4 text-secondary-text" />} label={masterLabel} className="h-12 text-base" />
+                                <div className="h-px bg-primary-text-tertiary/15 mx-3 my-1" />
+                            </>
+                        )}
                         {filtered.length === 0 ? (
                             <div className="flex items-center h-12 px-3 text-base text-secondary-text"><span>No networks found</span></div>
+                        ) : overlapping ? (
+                            filtered.map(o => (
+                                <RadioRow key={o.key} checked={selected.includes(o.key)} onSelect={() => { toggle(o.key); setOpen(false) }} option={o} />
+                            ))
                         ) : (
                             filtered.map(o => (
                                 <CheckboxRow key={o.key} checked={selected.includes(o.key)} onToggle={() => toggle(o.key)} icon={<OptionLogo option={o} size={20} />} label={o.label} className="h-12 text-base" />
