@@ -22,7 +22,7 @@ const AddressBookEntryForm: FC<AddressBookEntryFormProps> = ({ initial, availabl
     const scope = useNetworkScope(address, initial, availableNetworks)
 
     const trimmedName = name.trim()
-    const provider = scope.entry.networkTypes?.[0]
+    const provider = scope.provider
 
     const isDuplicate = useMemo(() => {
         const trimmed = address.trim()

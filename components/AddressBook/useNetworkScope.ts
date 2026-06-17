@@ -10,7 +10,7 @@ const validKeys = (keys: string[] | undefined, options: { key: string }[]) => {
     return (keys ?? []).filter(key => optionKeys.includes(key))
 }
 
-export function useNetworkScope(address: string, initial?: Partial<SavedAddress>, availableNetworks?: string[]): { selector: NetworkScopeSelectorProps | null, entry: Pick<SavedAddress, 'networkTypes' | 'networks'> } {
+export function useNetworkScope(address: string, initial?: Partial<SavedAddress>, availableNetworks?: string[]): { selector: NetworkScopeSelectorProps | null, entry: Pick<SavedAddress, 'networkTypes' | 'networks'>, provider: NetworkType | undefined } {
     const { networks } = useSettingsState()
     const [picked, setPicked] = useState<{ signature: string, keys: string[] } | null>(null)
 
@@ -66,5 +66,5 @@ export function useNetworkScope(address: string, initial?: Partial<SavedAddress>
         ? { ...mode.selectorProps, selected, onChange: (keys: string[]) => setPicked({ signature, keys }) }
         : null
 
-    return { selector, entry }
+    return { selector, entry, provider: entry.networkTypes?.[0] }
 }
