@@ -1,11 +1,14 @@
 import { validate, Network as BtcNetwork } from 'bitcoin-address-validation';
 import KnownInternalNames from "@/knownIds";
-import { AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
+import { NetworkType, AddressSelectionMode, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
 
 export const name = 'Bitcoin';
 
 export class BitcoinAddressUtilsProvider implements AddressUtilsProvider {
     readonly providerName = name;
+    readonly networkType = NetworkType.Bitcoin;
+    readonly label = 'Bitcoin';
+    readonly selection = AddressSelectionMode.Auto;
 
     supportsNetwork(network: { name: string }): boolean {
         return KnownInternalNames.Networks.BitcoinMainnet.includes(network.name) || KnownInternalNames.Networks.BitcoinTestnet.includes(network.name)

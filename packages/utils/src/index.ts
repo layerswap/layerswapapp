@@ -1,7 +1,8 @@
 export { default as KnownInternalNames } from "@/knownIds";
 
 export type { AddressUtilsProvider, AddressUtilsProviderProps, Network } from "@/types";
-export { NetworkType } from "@/types";
+export { NetworkType, AddressSelectionMode } from "@/types";
+import { NetworkType } from "@/types";
 
 export { AddressUtilsResolver } from "@/address/addressUtilsResolver";
 
@@ -34,5 +35,13 @@ export const addressUtilsProviders = [
 ];
 
 // Singleton resolver wired with every provider — the canonical entry point for
-// address validation/formatting in the widget.
+// address validation/formatting/classification in the widget.
 export const addressUtilsResolver = new AddressUtilsResolver(addressUtilsProviders);
+
+// Address classification helpers, bound to the singleton resolver. Names match the
+// widget consumers so adapting to the monorepo is just an import-source swap.
+export const classifyAddress = (address: string) => addressUtilsResolver.classifyAddress(address);
+export const AddressTypeLabel = (type: NetworkType) => addressUtilsResolver.addressTypeLabel(type);
+export const AddressSelectionType = (type: NetworkType) => addressUtilsResolver.addressSelectionType(type);
+export const defaultNetworkScope = (type: NetworkType, candidates: { name: string; type: NetworkType }[]) =>
+    addressUtilsResolver.defaultNetworkScope(type, candidates);

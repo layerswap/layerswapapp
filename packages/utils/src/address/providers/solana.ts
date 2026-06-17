@@ -1,10 +1,14 @@
 import bs58 from 'bs58';
-import { Network, NetworkType, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
+import { Network, NetworkType, AddressSelectionMode, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
 
 export const name = 'Solana';
 
 export class SolanaAddressUtilsProvider implements AddressUtilsProvider {
     readonly providerName = name;
+    readonly networkType = NetworkType.Solana;
+    readonly label = 'Solana';
+    readonly selection = AddressSelectionMode.Networks;
+    readonly defaultScope = 'primary' as const;
 
     supportsNetwork(network: Network): boolean {
         return network.type === NetworkType.Solana

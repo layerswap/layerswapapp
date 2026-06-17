@@ -1,47 +1,17 @@
 import BN from 'bn.js';
-<<<<<<<< HEAD:packages/utils/src/address/providers/starknet.ts
 import KnownInternalNames from "@/knownIds";
-import { Network, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
+import { Network, NetworkType, AddressSelectionMode, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
 
 export const name = 'Starknet';
-========
-import { NetworkType } from '@/Models/Network';
-import { AddressSelectionMode, AddressValidator } from '../types';
 
 type BigNumberish = string | number | BN;
->>>>>>>> origin/dev:lib/address/detector/providers/starknet.ts
 
 const TWO = toBN(2);
 const MASK_251 = TWO.pow(toBN(251));
 const MASK_221 = TWO.pow(toBN(221));
 
-<<<<<<<< HEAD:packages/utils/src/address/providers/starknet.ts
-type BigNumberish = string | number | BN;
-
-function validateAndParseAddress(address: string): boolean {
-    if (typeof address !== 'string') {
-        return false;
-    }
-
-    if (!assertInRange(address, MASK_221, MASK_251)) {
-        return false;
-    }
-
-    const result = addAddressPadding(address);
-
-    if (!result.match(/^(0x)?[0-9a-fA-F]{64}$/)) {
-        return false;
-    }
-
-    return true;
-}
-
-function addAddressPadding(address: string): string {
-    return addHexPrefix(removeHexPrefix(address).padStart(64, '0'));
-========
 function removeHexPrefix(hex: string): string {
     return hex.replace(/^0x/, '');
->>>>>>>> origin/dev:lib/address/detector/providers/starknet.ts
 }
 
 function addHexPrefix(hex: string): string {
@@ -83,13 +53,11 @@ export function validateAndParseAddress(address: string): boolean {
     return !!result.match(/^(0x)?[0-9a-fA-F]{64}$/);
 }
 
-<<<<<<<< HEAD:packages/utils/src/address/providers/starknet.ts
-function isHex(hex: string): boolean {
-    return hex.startsWith('0x');
-}
-
 export class StarknetAddressUtilsProvider implements AddressUtilsProvider {
     readonly providerName = name;
+    readonly networkType = NetworkType.Starknet;
+    readonly label = 'Starknet';
+    readonly selection = AddressSelectionMode.Auto;
 
     supportsNetwork(network: Network): boolean {
         return (KnownInternalNames.Networks.StarkNetMainnet.includes(network.name) || KnownInternalNames.Networks.StarkNetSepolia.includes(network.name))
@@ -110,14 +78,3 @@ export class StarknetAddressUtilsProvider implements AddressUtilsProvider {
         return addAddressPadding(address.toLowerCase());
     }
 }
-========
-export const starknetValidator: AddressValidator = {
-    type: NetworkType.Starknet,
-    label: 'Starknet',
-    selection: AddressSelectionMode.Auto,
-    validate(address) {
-        if (!address) return false;
-        return validateAndParseAddress(address);
-    },
-};
->>>>>>>> origin/dev:lib/address/detector/providers/starknet.ts

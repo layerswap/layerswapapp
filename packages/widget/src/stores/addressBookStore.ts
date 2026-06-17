@@ -4,7 +4,7 @@ import { createJSONStorage, persist } from 'zustand/middleware'
 import { Address } from '@/lib/address/Address'
 import { addressFormat } from '@/lib/address/formatter'
 import { NetworkType } from '@/Models/Network'
-import { AddressSelectionMode, classifyAddress } from '@/lib/address/detector'
+import { AddressSelectionMode, classifyAddress } from '@layerswap/utils'
 import KnownInternalNames from '@/lib/knownIds'
 import AppSettings from '@/lib/AppSettings'
 

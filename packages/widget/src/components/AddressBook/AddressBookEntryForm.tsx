@@ -1,7 +1,7 @@
 import { FC, ReactNode, useMemo, useState } from 'react'
 import clsx from 'clsx'
 import { useAddressBookStore, NAME_MAX, COUNTER_SHOW_AT, SavedAddress } from '@/stores/addressBookStore'
-import { Address } from '@/lib/address'
+import { Address } from '@/lib/address/Address'
 import AddressBadge from './AddressBadge'
 import NetworkScopeSelector from './NetworkScopeSelector'
 import { useNetworkScope } from './useNetworkScope'

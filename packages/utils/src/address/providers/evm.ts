@@ -1,6 +1,6 @@
 import { keccak256 } from "js-sha3";
 import KnownInternalNames from "@/knownIds";
-import { Network, NetworkType, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
+import { Network, NetworkType, AddressSelectionMode, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
 
 export const name = 'EVM';
 
@@ -32,6 +32,10 @@ function isValidEtherAddress(address: string): boolean {
 
 export class EVMAddressUtilsProvider implements AddressUtilsProvider {
     readonly providerName = name;
+    readonly networkType = NetworkType.EVM;
+    readonly label = 'EVM';
+    readonly selection = AddressSelectionMode.Networks;
+    readonly defaultScope = 'all' as const;
 
     supportsNetwork(network: Network): boolean {
         return (network.type === NetworkType.EVM && !!network.token)

@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useSettingsState } from '@/context/settings'
 import { NetworkType } from '@/Models/Network'
-import { classifyAddress, AddressTypeLabel } from '@/lib/address/detector'
+import { classifyAddress, AddressTypeLabel } from '@layerswap/utils'
 import KnownInternalNames from '@/lib/knownIds'
 
 export type ScopeItem = { name: string, logo?: string }

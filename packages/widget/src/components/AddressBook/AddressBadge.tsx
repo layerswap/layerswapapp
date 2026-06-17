@@ -1,7 +1,7 @@
 import { FC } from 'react'
 import clsx from 'clsx'
 import { NetworkType } from '@/Models/Network'
-import { classifyAddress, AddressTypeLabel } from '@/lib/address/detector'
+import { classifyAddress, AddressTypeLabel } from '@layerswap/utils'
 
 type BadgeEntry = { address?: string, networkTypes?: NetworkType[] }
 

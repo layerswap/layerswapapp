@@ -5,7 +5,7 @@ import FilledX from '@/components/Icons/FilledX'
 import { useAddressBookStore, NAME_MAX, COUNTER_SHOW_AT } from '@/stores/addressBookStore'
 import { NetworkType } from '@/Models/Network'
 import SecondaryButton from '../Buttons/secondaryButton'
-import { AddressSelectionType, AddressSelectionMode } from '@/lib/address/detector'
+import { AddressSelectionType, AddressSelectionMode } from '@layerswap/utils'
 
 export const SaveToBookNameForm: FC<{ address: string, network: { name?: string, type: NetworkType }, onDone: () => void, compact?: boolean }> = ({ address, network, onDone, compact }) => {
     const addAddress = useAddressBookStore(s => s.addAddress)
