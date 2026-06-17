@@ -67,7 +67,7 @@ const Comp = () => {
                                     <HistoryList onNewTransferClick={() => { closeModal(); clearMenuPath(router) }} />
                                 </WizardItem>
                                 <WizardItem StepName={MenuStep.AddressBook} GoBack={goBackToMenuStep} inModal>
-                                    <AddressBookStep />
+                                    <AddressBookStep onBack={goBackToMenuStep} />
                                 </WizardItem>
                             </Wizard>
                         </div>
