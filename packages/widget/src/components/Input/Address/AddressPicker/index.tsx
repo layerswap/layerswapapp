@@ -16,7 +16,7 @@ import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import VaulDrawer from "@/components/Modal/vaulModal";
 import { useManualDestAddresses, useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts";
 import { ManualDestAddress, useManualDestAddressesStore } from "@/stores/manualDestAddressesStore";
-import { SavedAddress, useAddressBookStore } from "@/stores/addressBookStore";
+import { SavedAddress, savedAddressMatchesNetwork, useAddressBookStore } from "@/stores/addressBookStore";
 
 export enum AddressGroup {
     ConnectedWallet = "Connected wallet",
@@ -75,10 +75,6 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const [manualAddress, setManualAddress] = useState<string>('')
     const [isConnecting, setIsConnecting] = useState(false)
     const savedAddresses = useAddressBookStore(s => s.savedAddresses)
-    const savedAddressesForDestination = useMemo(
-        () => destination ? savedAddresses.filter(e => (!e.networkType || e.networkType === destination.type) && AddressClass.isValid(e.address, destination)) : [],
-        [savedAddresses, destination]
-    )
 
     const manualDestAddresses = useManualDestAddresses()
     const removeManualDestAddress = useManualDestAddressesStore(s => s.removeManualDestAddress)
@@ -106,12 +102,12 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         return resolveAddressGroups({
             destination,
             wallets: connectedWallets,
-            savedAddresses: savedAddressesForDestination,
+            savedAddresses,
             manualAddresses: manualDestAddresses,
             addressFromQuery: initialSettings.destination_address,
             providerName: provider?.name,
         })
-    }, [destination, connectedWallets, savedAddressesForDestination, manualDestAddresses, initialSettings.destination_address, connectedWalletskey, provider?.name])
+    }, [destination, connectedWallets, savedAddresses, manualDestAddresses, initialSettings.destination_address, connectedWalletskey, provider?.name])
 
     const destinationAddressItem = destination && destination_address ?
         groupedAddresses?.find(a => a.address.toLowerCase() === destination_address.toLowerCase())
@@ -122,7 +118,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const incompatibleAddressBook = useMemo<AddressItem[]>(
         () => destination
             ? savedAddresses
-                .filter(e => !((!e.networkType || e.networkType === destination.type) && AddressClass.isValid(e.address, destination)))
+                .filter(e => !(savedAddressMatchesNetwork(e, destination) && AddressClass.isValid(e.address, destination)))
                 .map(e => ({ address: e.address, group: AddressGroup.ManualAdded }))
             : [],
         [savedAddresses, destination]
@@ -322,16 +318,17 @@ const resolveAddressGroups = ({
     }
 
     manualAddresses.forEach(entry => {
-        if (entry.providerName === providerName && AddressClass.isValid(entry.address, destination)) {
-            addresses.push({
-                address: entry.address,
-                group: AddressGroup.ManualAdded,
-                providerName: entry.providerName,
-            })
-        }
+        if (entry.providerName !== providerName || !AddressClass.isValid(entry.address, destination)) return
+        const bookEntry = savedAddresses.find(e => AddressClass.equals(e.address, entry.address, destination, providerName))
+        if (bookEntry && !savedAddressMatchesNetwork(bookEntry, destination)) return
+        addresses.push({
+            address: entry.address,
+            group: AddressGroup.ManualAdded,
+            providerName: entry.providerName,
+        })
     })
     savedAddresses.forEach(entry => {
-        if ((!entry.networkType || entry.networkType === destination.type) && AddressClass.isValid(entry.address, destination)) {
+        if (savedAddressMatchesNetwork(entry, destination) && AddressClass.isValid(entry.address, destination)) {
             addresses.push({
                 address: entry.address,
                 group: AddressGroup.ManualAdded,

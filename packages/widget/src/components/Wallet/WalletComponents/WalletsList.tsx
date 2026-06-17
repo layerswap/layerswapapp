@@ -1,11 +1,11 @@
 import { Plus, Unplug } from "lucide-react";
 import AddressIcon from "@/components/Common/AddressIcon";
 import { SelectAccountProps, Wallet, WalletConnectionProvider } from "@/types/wallet";
-import { FC, HTMLAttributes, useCallback } from "react";
+import { FC, HTMLAttributes, useCallback, useState } from "react";
 import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
 import { clsx } from 'clsx';
 import { useConnectModal } from "../WalletModal";
-import { Network, Token } from "@/Models/Network";
+import { Network, NetworkType, Token } from "@/Models/Network";
 import FilledCheck from "@/components/Icons/FilledCheck";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import { useSettingsState } from "@/context/settings";
@@ -13,6 +13,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/too
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { AccountIdentity, useSelectedAccount } from "@/context/swapAccounts";
 import { useBalance } from "@/lib/balances/useBalance";
+import VaulDrawer from "@/components/Modal/vaulModal";
+import AddressBookEntryForm from "@/components/AddressBook/AddressBookEntryForm";
 
 type Props = {
     selectable?: boolean;
@@ -97,6 +99,11 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: wallet, n
     const isSelected = selectable && (wallet.addresses.length == 1 && wallet.address == selectedAddress)
     const walletBalanceAmount = walletBalance?.amount !== undefined ? truncateDecimals(walletBalance.amount, token?.precision) : ''
 
+    const [saveAddress, setSaveAddress] = useState<string | null>(null)
+    const saveType = network?.type ?? (wallet.providerName ? wallet.providerName.toLowerCase() as NetworkType : undefined)
+    const supportedNetworks = getWithdrawalSupportedNetworks(wallet)
+    const saveInDrawer = !(selectable && onWalletSelect && network)
+
     return (
         <div className="rounded-md outline-hidden text-primary-tex">
             <button
@@ -154,6 +161,7 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: wallet, n
                                             showDetails
                                             addressClassNames="font-normal text-sm"
                                             onDisconnect={() => hasDisconnect(wallet) && wallet.disconnect()}
+                                            onSaveRequest={saveInDrawer ? () => setSaveAddress(wallet.address) : undefined}
                                         />
                                     }
                                     <p className="text-xs text-secondary-text text-start">
@@ -217,10 +225,31 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: wallet, n
                             selectedAddress={selectedAddress}
                             token={token}
                             isCompatible={isCompatible}
+                            onSaveToBook={saveInDrawer ? setSaveAddress : undefined}
                         />)
                     }
                 </div>
             }
+            {saveInDrawer && <VaulDrawer
+                show={!!saveAddress}
+                setShow={() => setSaveAddress(null)}
+                header="Save address"
+                modalId="saveWalletToBook"
+                mode="fitHeight"
+            >
+                <VaulDrawer.Snap id="item-1" className="pb-0">
+                    {saveAddress && (
+                        <AddressBookEntryForm
+                            initial={{
+                                address: saveAddress,
+                                networkTypes: saveType ? [saveType] : undefined,
+                            }}
+                            availableNetworks={supportedNetworks.length ? supportedNetworks : undefined}
+                            onClose={() => setSaveAddress(null)}
+                        />
+                    )}
+                </VaulDrawer.Snap>
+            </VaulDrawer>}
         </div>
     )
 }
@@ -235,9 +264,10 @@ type NestedWalletAddressProps = {
     onWalletSelect?: (props: SelectAccountProps) => void;
     selectedAddress: string | undefined;
     isCompatible?: boolean;
+    onSaveToBook?: (address: string) => void;
 }
 
-const NestedWalletAddress: FC<NestedWalletAddressProps> = ({ selectable, address, network, onWalletSelect, token, wallet, selectedAddress, isCompatible }) => {
+const NestedWalletAddress: FC<NestedWalletAddressProps> = ({ selectable, address, network, onWalletSelect, token, wallet, selectedAddress, isCompatible, onSaveToBook }) => {
     const { networks } = useSettingsState()
     const balanceNetwork = token ? networks.find(n => n.name === network?.name && n.tokens.some(t => t.symbol === token.symbol)) : undefined
     const { balances, isLoading: isBalanceLoading } = useBalance(
@@ -284,6 +314,7 @@ const NestedWalletAddress: FC<NestedWalletAddressProps> = ({ selectable, address
                             description={wallet.providerName}
                             logo={wallet.icon}
                             showDetails
+                            onSaveRequest={onSaveToBook ? () => onSaveToBook(address) : undefined}
                         />
                     }
                 </div>
@@ -326,5 +357,10 @@ function hasDisconnect(w: AccountIdentity | Wallet): w is Wallet & { disconnect:
 }
 function isLoading(w: AccountIdentity | Wallet): w is Wallet & { isLoading: boolean } {
     return 'isLoading' in w && typeof w.isLoading === 'boolean' && w.isLoading;
+}
+function getWithdrawalSupportedNetworks(w: AccountIdentity | Wallet): string[] {
+    return 'provider' in w
+        ? w.provider.withdrawalSupportedNetworks ?? []
+        : w.withdrawalSupportedNetworks ?? [];
 }
 export default WalletsList

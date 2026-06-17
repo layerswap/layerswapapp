@@ -88,7 +88,7 @@ const Comp = () => {
                                     <CampaignDetailsComponent campaignName={selectedCampaign} />
                                 </WizardItem>
                                 <WizardItem StepName={MenuStep.AddressBook} GoBack={goBackToMenuStep} inModal>
-                                    <AddressBookStep />
+                                    <AddressBookStep onBack={goBackToMenuStep} />
                                 </WizardItem>
                             </Wizard>
                         </div>
