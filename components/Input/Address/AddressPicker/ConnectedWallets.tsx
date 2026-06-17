@@ -120,7 +120,7 @@ export const NotCompatibleWallets: FC<NotCompatibleWalletsProps> = ({ notCompati
                                 ))}
                                 {addressIcons.map((item) => (
                                     <div key={item.address} className="inline-flex items-center relative">
-                                        <AddressIcon className="rounded-xs" address={item.address} size={16} network={destination} />
+                                        <AddressIcon className="rounded-xs" address={item.address} size={16} providerName={item.providerName} />
                                     </div>
                                 ))}
                                 {hiddenIconsCount > 0 && (
@@ -141,7 +141,6 @@ export const NotCompatibleWallets: FC<NotCompatibleWalletsProps> = ({ notCompati
                             <WalletItem
                                 account={wallet}
                                 selectable={true}
-                                network={destination}
                                 selectedAddress={undefined}
                                 isCompatible={false}
                             />
@@ -149,7 +148,7 @@ export const NotCompatibleWallets: FC<NotCompatibleWalletsProps> = ({ notCompati
                     ))}
                     {notCompatibleAddresses.map((item, index) => (
                         <div key={`${index}${item.address}`} className="group/addressItem w-full rounded-md p-3 bg-secondary-500 transition duration-200 opacity-50 cursor-not-allowed pointer-events-none">
-                            <AddressWithIcon addressItem={item} partner={partner} network={destination} />
+                            <AddressWithIcon addressItem={item} partner={partner} />
                         </div>
                     ))}
                 </>}
