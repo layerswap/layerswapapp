@@ -131,11 +131,10 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
     /**
      * Override the base `autoConnect` so we never start a NEW WC pairing from
      * wallet-adapter-react's auto-reconnect path. A new pairing requires the
-     * user to scan a QR, which isn't available during auto-reconnect; calling
-     * `provider.connect()` there hangs with `_connecting = true` until the
-     * internal timeout, blocking any subsequent user-initiated connect
-     * (`connect()` early-returns on `this.connecting`). Only resume an
-     * existing session here; a real connect always goes through `connect()`.
+     * user to scan a QR, which isn't available during a silent auto-reconnect;
+     * calling `provider.connect()` there would surface a QR with no UI to scan
+     * and hang with `_connecting = true` until the internal timeout. Only resume
+     * an existing session here; a real connect always goes through `connect()`.
      */
     async autoConnect(): Promise<void> {
         if (this._readyState !== WalletReadyState.Loadable) return
@@ -146,12 +145,15 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
     }
 
     async connect(): Promise<void> {
+        // Hoisted so the `finally` can compare it against `this._provider`.
+        let provider: UniversalProviderType | undefined
         try {
-            if (this.connected || this.connecting) return
+            if (this.connected) return
             if (this._readyState !== WalletReadyState.Loadable) throw new WalletNotReadyError()
 
+            if (this._connecting) this.resetProvider()
             this._connecting = true
-            const provider = await this.getProvider()
+            provider = await this.getProvider()
 
             // Reuse existing session when available
             const existing = provider.session
@@ -182,6 +184,7 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
                     },
                 },
             })
+            if (provider !== this._provider) return
 
             if (!session) throw new Error("WalletConnect Solana: empty session")
             this._session = session
@@ -192,7 +195,20 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
         } catch (error: any) {
             throw error
         } finally {
-            this._connecting = false
+            if (provider === this._provider) this._connecting = false
+        }
+    }
+
+    private resetProvider(): void {
+        const provider = this._provider
+        if (provider && this._internalDisplayUriHandler) {
+            try { provider.off("display_uri", this._internalDisplayUriHandler) } catch { /* no-op */ }
+        }
+        this._provider = undefined
+        this._providerInitPromise = undefined
+        this._internalDisplayUriHandler = undefined
+        if (this._readyState === WalletReadyState.Loadable) {
+            this.getProvider().catch(() => { /* next connect() will surface the real error */ })
         }
     }
 
@@ -233,15 +249,7 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
         // Only tear down the provider if its own `disconnect()` threw, because
         // then `provider.session` may still be set.
         if (providerDisconnectThrew && provider) {
-            if (this._internalDisplayUriHandler) {
-                try { provider.off("display_uri", this._internalDisplayUriHandler) } catch { /* no-op */ }
-            }
-            this._provider = undefined
-            this._providerInitPromise = undefined
-            this._internalDisplayUriHandler = undefined
-            if (this._readyState === WalletReadyState.Loadable) {
-                this.getProvider().catch(() => { /* next connect() will surface the real error */ })
-            }
+            this.resetProvider()
         }
 
         this.emit("disconnect")
@@ -276,7 +284,7 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
                         "Wallet returned only a signature for a versioned transaction; full signed transaction required",
                     )
                 }
-                ;(transaction as Transaction).addSignature(this._publicKey, Buffer.from(base58.decode(result.signature)))
+                ; (transaction as Transaction).addSignature(this._publicKey, Buffer.from(base58.decode(result.signature)))
                 return transaction
             } catch (error: any) {
                 throw new WalletSignTransactionError(error?.message, error)

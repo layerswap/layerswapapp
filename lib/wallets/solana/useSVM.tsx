@@ -17,6 +17,8 @@ import {
     getRegistryEntry,
     type WalletConnectWalletBase,
 } from "@/lib/wallets/walletConnect/types"
+import { walletKey } from "@/lib/wallets/utils/walletKey"
+import { findRegistryWalletByName } from "@/lib/wallets/walletConnect/findRegistryWallet"
 import { buildDeepLink } from "@/lib/wallets/walletConnect/buildDeepLink"
 import { subscribeDisplayUri } from "@/lib/wallets/walletConnect/subscribeDisplayUri"
 import { mapConnectError } from "@/lib/wallets/walletConnect/mapConnectError"
@@ -111,20 +113,22 @@ export default function useSVM(): WalletProvider {
 
     const connectWallet = useCallback(async ({ connector }: { connector: WalletModalConnector }) => {
         let unsubscribeDisplayUri: (() => void) | undefined
-        const registry = getRegistryEntry(connector)
+        let registry: WalletConnectWalletBase | undefined
         try {
-            const isRegistryWallet = !!registry
             const isBareWcTile = connector.name === SOLANA_WC_ADAPTER_NAME
             const currentWallets = walletsRef.current
-            const installedAdapter = currentWallets.find(w => w.adapter.name === connector.name) ||
-                currentWallets.find(w => w.adapter.name.includes(connector.name))
+            const installedAdapter = currentWallets.find(w => walletKey(w.adapter.name) === walletKey(connector.name))
             const walletConnectAdapter = currentWallets.find(w => w.adapter.name === SOLANA_WC_ADAPTER_NAME)
 
-            // Decide which adapter actually performs the connect:
-            // - Registry WC wallets and the bare WC tile always go through the WC adapter
-            // - Installed adapters that explicitly want a QR (showQrCode) or are missing on mobile fall back to WC
-            const useWalletConnect = isRegistryWallet || isBareWcTile
+            let matchedRegistry = getRegistryEntry(connector)
+            if (!matchedRegistry && isMobilePlatform && installedAdapter && !isBareWcTile) {
+                matchedRegistry = await findRegistryWalletByName(requestRegistryConnectors, connector.name)
+            }
+            const useWalletConnect = isBareWcTile
+                || (!!matchedRegistry && (isMobilePlatform || !installedAdapter))
                 || (connector.hasBrowserExtension && (connector.showQrCode || (isMobilePlatform && connector.extensionNotFound)))
+
+            registry = useWalletConnect ? matchedRegistry : undefined
 
             const targetAdapterEntry = useWalletConnect ? walletConnectAdapter : installedAdapter
             if (!targetAdapterEntry) throw new Error('Connector not found')
@@ -133,8 +137,9 @@ export default function useSVM(): WalletProvider {
                 try { await targetAdapterEntry.adapter.disconnect() } catch { /* noop */ }
             }
 
-            const resolveURI = registry
-                ? (uri: string) => buildDeepLink({ id: registry.id, mobile: registry.mobile }, uri)
+            const deeplinkRegistry = registry
+            const resolveURI = deeplinkRegistry
+                ? (uri: string) => buildDeepLink({ id: deeplinkRegistry.id, mobile: deeplinkRegistry.mobile }, uri)
                 : undefined
 
             if (useWalletConnect && walletConnectAdapter) {
@@ -153,16 +158,22 @@ export default function useSVM(): WalletProvider {
                 const wantsQrModal = !isMobilePlatform || !resolveURI
 
                 if (wantsQrModal) {
-                    setSelectedConnector({ ...connector, qr: { state: 'loading', value: undefined }, showQrCode: true })
+                    setSelectedConnector(prev => (prev && prev.id === connector.id)
+                        ? { ...connector, qr: { state: 'loading', value: undefined }, showQrCode: true }
+                        : prev)
                 } else {
-                    setSelectedConnector({ ...connector })
+                    setSelectedConnector(prev => (prev && prev.id === connector.id)
+                        ? { ...connector }
+                        : prev)
                 }
 
                 unsubscribeDisplayUri = subscribeDisplayUri({
                     source: wcAdapter,
                     resolveURI,
                     isMobilePlatform,
-                    onQr: (qr) => setSelectedConnector({ ...connector, qr, showQrCode: true }),
+                    onQr: (qr) => setSelectedConnector(prev => (prev && prev.id === connector.id)
+                        ? { ...connector, qr, showQrCode: true }
+                        : prev),
                 })
 
                 // Track recent registry wallets so they can be re-surfaced
@@ -221,7 +232,7 @@ export default function useSVM(): WalletProvider {
             unsubscribeDisplayUri?.()
             if (registry) clearPendingDynamicWcMetadata(SOLANA_NS)
         }
-    }, [connectedWallet, disconnect, select, isMobilePlatform, setSelectedConnector, addWalletConnectWallet, commonSupportedNetworks, networks, name])
+    }, [connectedWallet, disconnect, select, isMobilePlatform, setSelectedConnector, addWalletConnectWallet, commonSupportedNetworks, networks, name, requestRegistryConnectors])
 
     const disconnectWallet = useCallback(async () => {
         try {
@@ -235,32 +246,29 @@ export default function useSVM(): WalletProvider {
     const { availableConnectors, additionalConnectors } = useMemo(() => {
         const installed: InternalConnector[] = []
         const registry: InternalConnector[] = []
-        const seenIds = new Set<string>()
-        const seenNames = new Set<string>()
 
         for (const wallet of wallets) {
-            const isWcAdapter = wallet.adapter.name === SOLANA_WC_ADAPTER_NAME
-            const isInstalled = wallet.readyState === 'Installed' || wallet.readyState === 'Loadable' || wallet.adapter.name === 'Coinbase Wallet'
+            const adapterName = wallet.adapter.name.trim()
+            const isWcAdapter = adapterName === SOLANA_WC_ADAPTER_NAME
+            const isInstalled = wallet.readyState === 'Installed' || wallet.readyState === 'Loadable' || adapterName === 'Coinbase Wallet'
             const internalConnector: InternalConnector = {
-                name: wallet.adapter.name.trim(),
-                id: wallet.adapter.name.trim(),
+                name: adapterName,
+                id: adapterName,
                 icon: wallet.adapter.icon,
                 type: isInstalled ? 'injected' : 'other',
                 installUrl: wallet.adapter?.url,
                 hasBrowserExtension: !isWcAdapter,
                 extensionNotFound: isWcAdapter ? false : !isInstalled,
-                isLoadable: wallet.readyState === 'Loadable' && wallet.adapter.name !== 'Coinbase Wallet',
+                isLoadable: wallet.readyState === 'Loadable' && adapterName !== 'Coinbase Wallet',
                 providerName: name,
-                order: resolveWalletConnectorIndex(wallet.adapter.name.trim().toLowerCase()),
+                order: resolveWalletConnectorIndex(adapterName.toLowerCase()),
             }
             installed.push(internalConnector)
-            seenIds.add(internalConnector.id.toLowerCase())
-            seenNames.add(internalConnector.name.toLowerCase())
         }
 
+        const installedKeys = new Set(installed.map(connector => walletKey(connector.name)))
         for (const reg of walletConnectConnectors) {
-            if (seenIds.has(reg.id.toLowerCase())) continue
-            if (seenNames.has(reg.name.toLowerCase())) continue
+            if (installedKeys.has(walletKey(reg.name)) || installedKeys.has(walletKey(reg.id))) continue
             registry.push(createRegistryConnector(reg, isMobilePlatform, name))
         }
 
@@ -281,12 +289,11 @@ export default function useSVM(): WalletProvider {
 
     const requestAdditionalConnectors = useCallback(async (params: RequestAdditionalConnectorsParams = {}): Promise<RequestAdditionalConnectorsResult> => {
         const result = await requestRegistryConnectors(params)
-        const installedConnectorIds = new Set(availableConnectors.map(connector => connector.id.toLowerCase()))
-        const installedConnectorNames = new Set(availableConnectors.map(connector => connector.name.toLowerCase()))
+        const installedKeys = new Set(availableConnectors.map(connector => walletKey(connector.name)))
 
         return {
             connectors: result.connectors
-                .filter(connector => !installedConnectorIds.has(connector.id.toLowerCase()) && !installedConnectorNames.has(connector.name.toLowerCase()))
+                .filter(connector => !installedKeys.has(walletKey(connector.name)) && !installedKeys.has(walletKey(connector.id)))
                 .map(connector => createRegistryConnector(connector, isMobilePlatform, name)),
             nextPage: result.nextPage,
             totalCount: result.totalCount,
