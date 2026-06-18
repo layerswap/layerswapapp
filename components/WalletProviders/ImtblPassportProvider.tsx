@@ -5,8 +5,8 @@ const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_IMMUTABLE_PUBLISHABLE_KEY;
 const CLIENT_ID = process.env.NEXT_PUBLIC_IMMUTABLE_CLIENT_ID;
 
 export const initilizePassport = async (basePath: string) => {
-    const passport = (await import('@imtbl/sdk')).passport
-    const config = (await import('@imtbl/sdk')).config
+    const passport = await import('@imtbl/passport')
+    const config = await import('@imtbl/config')
     const redirectUri = basePath ? `${window.location.origin}${basePath}/imtblRedirect` : `${window.location.origin}/imtblRedirect`
     const logoutRedirectUri = basePath ? `${window.location.origin}${basePath}/` : `${window.location.origin}/`
 
