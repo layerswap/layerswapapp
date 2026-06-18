@@ -119,7 +119,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         () => destination
             ? savedAddresses
                 .filter(e => !(savedAddressMatchesNetwork(e, destination) && AddressClass.isValid(e.address, destination)))
-                .map(e => ({ address: e.address, group: AddressGroup.ManualAdded }))
+                .map(e => ({ address: e.address, group: AddressGroup.ManualAdded, providerName: e.networkTypes?.[0] }))
             : [],
         [savedAddresses, destination]
     )
