@@ -44,7 +44,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
     "light": {
         tertiary: '134, 134, 134',
         buttonTextColor: '17, 17, 17',
-        logo: '255, 0, 147',
+        logo: '255, 50, 114',
         primary: {
             DEFAULT: '228, 37, 117',
             '100': '246, 182, 209',
@@ -75,7 +75,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
     "default": {
         tertiary: '118, 128, 147',
         buttonTextColor: '228, 229, 240',
-        logo: '255, 0, 147',
+        logo: '255, 50, 114',
         borderRadius: 'default',
         warning: {
             Foreground: '255, 201, 74',

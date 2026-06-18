@@ -60,8 +60,9 @@ export class FuelConnectionService {
     getAvailableConnectors(): InternalConnector[] {
         const connectors = useFuelStore.getState().connectors
         return connectors.map(c => {
-            const isInstalled = c.installed && !(c as any).dAppWindow
             const icon = this.resolveConnectorImageIcon(c.metadata.image)
+            const isInstalled = c.installed && !c['dAppWindow']
+            const isLoadable = c.metadata?.install?.action !== 'Install'
             return {
                 name: c.name,
                 id: c.name,
@@ -69,6 +70,7 @@ export class FuelConnectionService {
                 type: isInstalled ? 'injected' : 'other',
                 installUrl: c.metadata.install.link,
                 extensionNotFound: !c.installed,
+                isLoadable,
                 providerName: PROVIDER_NAME,
             }
         })
