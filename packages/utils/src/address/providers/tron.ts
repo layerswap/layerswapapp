@@ -1,5 +1,5 @@
 import KnownInternalNames from "@/knownIds";
-import { Network, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
+import { Network, NetworkType, AddressSelectionMode, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
 
 export const name = 'Tron';
 
@@ -48,6 +48,9 @@ function decodeBase58(base58Str: string): string {
 
 export class TronAddressUtilsProvider implements AddressUtilsProvider {
     readonly providerName = name;
+    readonly networkType = NetworkType.Tron;
+    readonly label = 'Tron';
+    readonly selection = AddressSelectionMode.Auto;
 
     supportsNetwork(network: Network): boolean {
         return KnownInternalNames.Networks.TronMainnet.includes(network.name) || KnownInternalNames.Networks.TronTestnet.includes(network.name)

@@ -1,10 +1,13 @@
 import KnownInternalNames from "@/knownIds";
-import { Network, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
+import { Network, NetworkType, AddressSelectionMode, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
 
 export const name = 'Fuel';
 
 export class FuelAddressUtilsProvider implements AddressUtilsProvider {
     readonly providerName = name;
+    readonly networkType = NetworkType.Fuel;
+    readonly label = 'Fuel';
+    readonly selection = AddressSelectionMode.Auto;
 
     supportsNetwork(network: Network): boolean {
         return (KnownInternalNames.Networks.FuelMainnet.includes(network.name) || KnownInternalNames.Networks.FuelTestnet.includes(network.name))

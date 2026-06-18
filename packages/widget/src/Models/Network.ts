@@ -1,16 +1,9 @@
 import { Refuel } from "../lib/apiClients/layerSwapApiClient";
+import { NetworkType } from "@layerswap/utils";
 
-export enum NetworkType {
-    EVM = "evm",
-    Starknet = "starknet",
-    Solana = "solana",
-    Cosmos = "cosmos",
-    StarkEx = "starkex",//TODO check this
-    TON = 'ton',
-    Fuel = 'fuel',
-    Bitcoin = 'bitcoin',
-    Tron = 'tron',
-}
+// NetworkType lives in the @layerswap/utils leaf package (single source of truth);
+// re-exported here so existing `@/Models/Network` importers keep working.
+export { NetworkType };
 
 export class Network {
     name: string;
