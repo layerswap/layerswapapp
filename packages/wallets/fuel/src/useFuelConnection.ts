@@ -173,6 +173,7 @@ export default function useFuelConnection({ networks }: WalletConnectionProvider
 
     const availableConnectors: InternalConnector[] = connectors.map(c => {
         const isInstalled = c.installed && !c['dAppWindow']
+        const isLoadable = c.metadata?.install?.action !== 'Install'
         return {
             name: c.name,
             id: c.name,
@@ -180,6 +181,7 @@ export default function useFuelConnection({ networks }: WalletConnectionProvider
             type: isInstalled ? 'injected' : 'other',
             installUrl: c.metadata.install.link,
             extensionNotFound: !c.installed,
+            isLoadable,
             providerName: name
         }
     })
