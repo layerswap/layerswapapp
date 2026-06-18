@@ -28,6 +28,8 @@ const commonSupportedNetworks = [
 const name = 'Fuel'
 const id = 'fuel'
 
+const LOADABLE_FUEL_CONNECTOR_IDS = new Set(['bako safe'])
+
 export default function useFuel(): WalletProvider {
     const { address: evmAddress, connector: evmConnector } = useAccount()
     const { connectors } = useConnectors()
@@ -190,13 +192,15 @@ export default function useFuel(): WalletProvider {
     }, [connectors]);
 
     const availableConnectors: InternalConnector[] = connectors.map(c => {
-        const isInstalled = c.installed && !c['dAppWindow']
+        const isLoadable = LOADABLE_FUEL_CONNECTOR_IDS.has(c.name.trim().toLowerCase())
+        const isInstalled = c.installed
         return {
             name: c.name,
             id: c.name,
             type: isInstalled ? 'injected' : 'other',
             installUrl: c.metadata.install.link,
             extensionNotFound: !c.installed,
+            isLoadable,
             providerName: name
         }
     })
