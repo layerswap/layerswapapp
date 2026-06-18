@@ -46,7 +46,7 @@ function assertInRange(input: BigNumberish, lowerBound: BigNumberish, upperBound
 }
 
 /** Validates a Starknet address: value in range [2^221, 2^251) and 0x + 64 hex once padded. */
-export function validateAndParseAddress(address: string): boolean {
+function validateAndParseAddress(address: string): boolean {
     if (typeof address !== 'string') return false;
     if (!assertInRange(address, MASK_221, MASK_251)) return false;
     const result = addAddressPadding(address);

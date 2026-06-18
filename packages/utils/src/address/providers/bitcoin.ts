@@ -19,7 +19,11 @@ export class BitcoinAddressUtilsProvider implements AddressUtilsProvider {
         if (!address) {
             return false
         }
-        const isTestnet = network?.name.toLowerCase().includes("testnet");
+        // No network (classification path) → accept either, matching the old detector's network-agnostic validate.
+        if (!network) {
+            return validate(address, BtcNetwork.mainnet) || validate(address, BtcNetwork.testnet);
+        }
+        const isTestnet = network.name.toLowerCase().includes("testnet");
         return validate(address, isTestnet ? BtcNetwork.testnet : BtcNetwork.mainnet);
     }
 

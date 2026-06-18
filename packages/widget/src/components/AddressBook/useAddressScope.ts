@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useSettingsState } from '@/context/settings'
 import { NetworkType } from '@/Models/Network'
-import { classifyAddress, AddressTypeLabel } from '@layerswap/utils'
+import { classifyAddress, addressTypeLabel } from '@layerswap/utils'
 import KnownInternalNames from '@/lib/knownIds'
 
 export type ScopeItem = { name: string, logo?: string }
@@ -38,7 +38,7 @@ export function useAddressScope(address: string, networkTypes?: NetworkType[], n
         const typeItem = (type: NetworkType): ScopeItem => {
             const ofType = allNetworks.filter(n => n.type === type)
             const flagship = ofType.find(n => n.name === KnownInternalNames.Networks.EthereumMainnet) ?? ofType[0]
-            return { name: AddressTypeLabel(type), logo: flagship?.logo }
+            return { name: addressTypeLabel(type), logo: flagship?.logo }
         }
 
         const types = networkTypes?.length ? networkTypes : classifyAddress(address).types
@@ -53,7 +53,7 @@ export function useAddressScope(address: string, networkTypes?: NetworkType[], n
             // If the picked set covers every network of a single type, call it "all".
             const single = types.length === 1 ? allNetworks.filter(n => n.type === types[0]) : []
             const isAll = single.length > 0 && items.length >= single.length
-            return finalize(items, isAll ? `All ${AddressTypeLabel(types[0])} networks` : undefined)
+            return finalize(items, isAll ? `All ${addressTypeLabel(types[0])} networks` : undefined)
         }
         // Overlapping types — represent each provider type.
         if (types.length > 1) {
@@ -62,7 +62,7 @@ export function useAddressScope(address: string, networkTypes?: NetworkType[], n
         // Whole single type with no explicit networks — every network of that type.
         return finalize(
             allNetworks.filter(n => n.type === types[0]).map(n => ({ name: n.display_name, logo: n.logo })),
-            `All ${AddressTypeLabel(types[0])} networks`,
+            `All ${addressTypeLabel(types[0])} networks`,
         )
     }, [allNetworks, address, networkTypes, networks])
 }

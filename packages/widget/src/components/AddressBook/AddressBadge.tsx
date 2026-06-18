@@ -1,7 +1,7 @@
 import { FC } from 'react'
 import clsx from 'clsx'
 import { NetworkType } from '@/Models/Network'
-import { classifyAddress, AddressTypeLabel } from '@layerswap/utils'
+import { classifyAddress, addressTypeLabel } from '@layerswap/utils'
 
 type BadgeEntry = { address?: string, networkTypes?: NetworkType[] }
 
@@ -10,7 +10,7 @@ const scopeLabel = ({ address, networkTypes }: BadgeEntry): string | null => {
     if (!trimmed) return null
     const types = networkTypes?.length ? networkTypes : classifyAddress(trimmed).types
     if (!types.length) return 'Unrecognized'
-    return types.map(AddressTypeLabel).join(' / ')
+    return types.map(addressTypeLabel).join(' / ')
 }
 
 const AddressBadge: FC<{ entry?: BadgeEntry, duplicate?: boolean }> = ({ entry, duplicate }) => {

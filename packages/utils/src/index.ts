@@ -41,7 +41,7 @@ export const addressUtilsResolver = new AddressUtilsResolver(addressUtilsProvide
 // Address classification helpers, bound to the singleton resolver. Names match the
 // widget consumers so adapting to the monorepo is just an import-source swap.
 export const classifyAddress = (address: string) => addressUtilsResolver.classifyAddress(address);
-export const AddressTypeLabel = (type: NetworkType) => addressUtilsResolver.addressTypeLabel(type);
-export const AddressSelectionType = (type: NetworkType) => addressUtilsResolver.addressSelectionType(type);
+export const addressTypeLabel = (type: NetworkType) => addressUtilsResolver.addressTypeLabel(type);
+export const addressSelectionType = (type: NetworkType) => addressUtilsResolver.addressSelectionType(type);
 export const defaultNetworkScope = (type: NetworkType, candidates: { name: string; type: NetworkType }[]) =>
     addressUtilsResolver.defaultNetworkScope(type, candidates);

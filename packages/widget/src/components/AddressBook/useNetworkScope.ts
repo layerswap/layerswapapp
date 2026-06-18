@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { NetworkType } from '@/Models/Network'
 import { useSettingsState } from '@/context/settings'
-import { classifyAddress, AddressTypeLabel, AddressSelectionMode, defaultNetworkScope } from '@layerswap/utils'
+import { classifyAddress, addressTypeLabel, AddressSelectionMode, defaultNetworkScope } from '@layerswap/utils'
 import { SavedAddress } from '@/stores/addressBookStore'
 import { NetworkScopeSelectorProps } from './NetworkScopeSelector'
 
@@ -41,7 +41,7 @@ export function useNetworkScope(address: string, initial?: Partial<SavedAddress>
                 }
             }
             case AddressSelectionMode.Overlap: {
-                const options = detected.types.map(t => ({ key: t as string, label: AddressTypeLabel(t), logo: networks.find(n => n.type === t)?.logo }))
+                const options = detected.types.map(t => ({ key: t as string, label: addressTypeLabel(t), logo: networks.find(n => n.type === t)?.logo }))
                 return {
                     // Single-select disambiguation: the address is exactly one of these,
                     // we just can't tell from the string — so no "both" default.
