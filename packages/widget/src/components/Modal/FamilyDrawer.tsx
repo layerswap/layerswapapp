@@ -367,6 +367,13 @@ export function FamilyDrawer({
   viewRef.current = view;
   const [exiting, setExiting] = useState<string | null>(null);
   const exitTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  // True only while a view transition is morphing. The height transition is
+  // gated on this so that height changes *within* a view (an accordion opening,
+  // a quote loading) snap to fit and let the hosted content run its own
+  // animation — otherwise the drawer morph and the inner animation fight and
+  // jitter. The morph still plays when the view actually changes.
+  const [morphing, setMorphing] = useState(false);
+  const morphTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // measurement + morph timing
   const measureRef = useRef<HTMLDivElement>(null);
@@ -397,17 +404,35 @@ export function FamilyDrawer({
         () => setExiting(null),
         opacityDuration * 1000 + 30
       );
+      // Freeze the current height so the morph has a length to animate FROM
+      // (CSS can't transition out of `auto`), then enable the height transition
+      // for the duration of the view change only.
+      const cur = panelRef.current?.offsetHeight;
+      if (cur != null) setHeight(cur);
+      setMorphing(true);
+      clearTimeout(morphTimer.current);
+      morphTimer.current = setTimeout(() => setMorphing(false), CLOSE_MS);
       onViewChange?.(next);
       setViewState(next);
     },
     [onViewChange, opacityDuration]
   );
 
-  // clear any pending crossfade timer on unmount
-  useEffect(() => () => clearTimeout(exitTimer.current), []);
+  // clear any pending timers on unmount
+  useEffect(
+    () => () => {
+      clearTimeout(exitTimer.current);
+      clearTimeout(morphTimer.current);
+    },
+    []
+  );
 
-  // measure content height; derive crossfade duration from the delta
+  // Measure content height only while a view is morphing. Outside a morph the
+  // panel runs at `height: auto` and follows its content via plain CSS layout —
+  // so an accordion or quote animating inside drives the panel for free, with
+  // no ResizeObserver re-renders fighting it (that was the mobile jank).
   useLayoutEffect(() => {
+    if (!morphing) return;
     const el = measureRef.current;
     if (!el) return;
     const measure = () => {
@@ -429,7 +454,7 @@ export function FamilyDrawer({
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [mounted, view]);
+  }, [morphing, view]);
 
   // drive enter/exit transitions off `isOpen`
   useEffect(() => {
@@ -575,7 +600,7 @@ export function FamilyDrawer({
   );
 
   const heightTrans =
-    ready && !dragging ? "height 270ms var(--fd-morph)" : "";
+    ready && !dragging && morphing ? "height 270ms var(--fd-morph)" : "";
   const transformTrans = dragging ? "" : "transform 350ms var(--fd-slide)";
   const transition =
     [heightTrans, transformTrans].filter(Boolean).join(", ") || "none";
@@ -603,7 +628,7 @@ export function FamilyDrawer({
               aria-label="Drawer"
               tabIndex={-1}
               style={{
-                height: height != null ? height : "auto",
+                height: morphing && height != null ? height : "auto",
                 transform: visible
                   ? `translateY(${dragY}px)`
                   : "translateY(110%)",

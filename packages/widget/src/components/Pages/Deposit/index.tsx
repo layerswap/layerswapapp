@@ -3,7 +3,7 @@ import { FC, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import { Partner } from "@/Models/Partner";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/shadcn/dialog";
-import { FamilyDrawer, ViewsRegistry, useOptionalFamilyDrawer } from "@/components/Modal/FamilyDrawer";
+import { FamilyDrawer, ViewsRegistry } from "@/components/Modal/FamilyDrawer";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
 import { DepositStep, DepositStepProvider, useDepositStep } from "./depositStepContext";
@@ -73,7 +73,6 @@ const StepRouter: FC<{ step: DepositStep; partner?: Partner; hasWalletMethods: b
 const DepositForm: FC<Pick<DepositProps, "partner" | "title"> & { onClose?: () => void }> = ({ partner, title, onClose }) => {
     const { step, back, hasWalletMethods } = useDepositStep();
     const { selectedConnector, selectedMultiChainConnector, goBack } = useConnectModal();
-    const inFamilyDrawer = !!useOptionalFamilyDrawer();
 
     const inConnectSubView = !!(selectedConnector || selectedMultiChainConnector);
     const headerTitle = step === "wallet-connect"
@@ -86,13 +85,13 @@ const DepositForm: FC<Pick<DepositProps, "partner" | "title"> & { onClose?: () =
         <div className="flex flex-col gap-3 w-full pt-4 max-sm:pb-4">
             <DepositHeader title={headerTitle} onClose={onClose} onBack={headerBack} />
             <div className="h-px w-full bg-secondary-400" />
-            {inFamilyDrawer
-                ? <StepRouter step={step} partner={partner} hasWalletMethods={hasWalletMethods} />
-                : (
-                    <ResizablePanel>
-                        <StepRouter step={step} partner={partner} hasWalletMethods={hasWalletMethods} />
-                    </ResizablePanel>
-                )}
+            {/* The panel tweens height only when this key changes (a step or
+                connect sub-view transition). In-step changes — accordion, quote
+                loading — snap to fit so the inner element owns its own animation
+                and nothing fights it. */}
+            <ResizablePanel transitionKey={`${step}:${selectedMultiChainConnector ? "eco" : ""}:${selectedConnector ? "conn" : ""}`}>
+                <StepRouter step={step} partner={partner} hasWalletMethods={hasWalletMethods} />
+            </ResizablePanel>
         </div>
     );
 };
