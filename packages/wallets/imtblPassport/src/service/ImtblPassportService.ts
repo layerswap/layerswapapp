@@ -36,8 +36,8 @@ export class ImtblPassportService {
         const { publishableKey, clientId, redirectUri, logoutRedirectUri } = config || {}
         if (!publishableKey || !clientId || !redirectUri || !logoutRedirectUri) return
 
-        const passport = (await import('@imtbl/sdk')).passport
-        const sdkConfig = (await import('@imtbl/sdk')).config
+        const passport = await import('@imtbl/passport')
+        const sdkConfig = await import('@imtbl/config')
 
         const instance = new passport.Passport({
             baseConfig: {
