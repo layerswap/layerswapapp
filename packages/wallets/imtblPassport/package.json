@@ -42,7 +42,8 @@
     "@layerswap/widget": "workspace:^"
   },
   "dependencies": {
-    "@imtbl/sdk": "1.45.10",
+    "@imtbl/config": "2.20.0",
+    "@imtbl/passport": "2.20.0",
     "axios": "catalog:"
   },
   "devDependencies": {

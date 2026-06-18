@@ -5,8 +5,8 @@ export const initilizePassport = async (configs: ImtblPassportConfig | undefined
 
     const { publishableKey, clientId, redirectUri, logoutRedirectUri } = configs || {};
 
-    const passport = (await import('@imtbl/sdk')).passport
-    const config = (await import('@imtbl/sdk')).config
+    const passport = await import('@imtbl/passport')
+    const config = await import('@imtbl/config')
 
     if (publishableKey && clientId && redirectUri && logoutRedirectUri) {
         passportInstance = new passport.Passport({
