@@ -1,5 +1,5 @@
 import { ArrowDown, Fuel } from "lucide-react";
-import { FC } from "react";
+import { FC, ReactNode } from "react";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import LayerSwapApiClient, { Quote, SwapBasicData, SwapResponse } from "@/lib/apiClients/layerSwapApiClient";
 import { ApiResponse } from "@/Models/ApiResponse";
@@ -53,67 +53,43 @@ const Summary: FC<SwapInfoProps> = (props) => {
         <div className="bg-secondary-500 rounded-2xl px-3 py-4 w-full relative z-10">
 
             <div className="font-normal flex flex-col w-full relative z-10 space-y-3">
-                <div className="w-full grid grid-cols-10">
-                    <RouteTokenPair
-                        route={sourceExchange || source}
-                        token={sourceCurrency}
-                    />
-                    <div className="flex flex-col col-start-6 col-span-6 items-end min-w-0">
-                        {
-                            requestedAmount && (isUsdMode ? (
-                                <p className="text-primary-text text-xl leading-6 font-normal flex items-center justify-end min-w-0 w-full">
-                                    <NumFlowWithFallback value={requestedAmountInUsd || 0} prefix="$" trend={0} />
-                                </p>
-                            ) : (
-                                <p className="text-primary-text text-xl leading-6 font-normal flex items-center justify-end min-w-0 w-full space-x-1">
-                                    <span className="truncate min-w-0">{truncateDecimals(Number(requestedAmount), sourceCurrency.precision)}</span>
-                                    <span className="shrink-0">{` ${sourceCurrency.symbol}`}</span>
-                                </p>
-                            ))
-                        }
-                        <p className="text-secondary-text text-sm leading-5 flex font-medium justify-end gap-1">
-                            {isUsdMode ? (
-                                <>
-                                    <span className="truncate min-w-0">{truncateDecimals(Number(requestedAmount), sourceCurrency.precision)}</span>
-                                    <span className="shrink-0">{`${sourceCurrency.symbol}`}</span>
-                                </>
-                            ) : (
-                                <NumFlowWithFallback value={requestedAmountInUsd || 0} prefix="$" trend={0} />
-                            )}
-                        </p>
-                    </div>
-                </div>
+                <SwapRow
+                    route={sourceExchange || source}
+                    token={sourceCurrency}
+                    primary={requestedAmount ? (isUsdMode ? (
+                        <NumFlowWithFallback value={requestedAmountInUsd || 0} prefix="$" trend={0} />
+                    ) : (
+                        <span>{truncateDecimals(Number(requestedAmount), sourceCurrency.precision)}{` ${sourceCurrency.symbol}`}</span>
+                    )) : null}
+                    secondary={requestedAmount ? (isUsdMode ? (
+                        <span>{truncateDecimals(Number(requestedAmount), sourceCurrency.precision)}{` ${sourceCurrency.symbol}`}</span>
+                    ) : (
+                        <NumFlowWithFallback value={requestedAmountInUsd || 0} prefix="$" trend={0} />
+                    )) : null}
+                />
                 <div className="relative text-secondary-text">
                     <hr className="border border-secondary-400 w-full rounded-full" />
                     <ArrowDown className="absolute left-1/2 -translate-x-1/2 -top-2.5 h-6 w-6 p-1 bg-secondary-400 rounded-md text-secondary-text" />
                 </div>
-                <div className="w-full grid grid-cols-10">
-                    <RouteTokenPair
-                        route={destination}
-                        token={destinationCurrency}
-                    />
-                    {
-                        receiveAmount && (
-                            <div className="flex flex-col justify-end items-end w-full col-start-7 col-span-4 h-11">
-                                <p className="text-primary-text text-xl font-normal text-end">
-                                    {isUsdMode ? (
-                                        <NumFlowWithFallback value={receiveAmountInUsd || 0} prefix="$" trend={0} />
-                                    ) : (
-                                        <NumFlowWithFallback value={receiveAmount} suffix={` ${destinationCurrency.symbol}`} trend={0} format={{ maximumFractionDigits: quote.quote.destination_token?.decimals || 2 }} />
-                                    )}
-                                </p>
-                                <p className="text-secondary-text text-sm flex items-baseline gap-1 font-medium">
-                                    <PriceImpact className="text-sm" quote={swapQuote} refuel={refuel} />
-                                    {isUsdMode ? (
-                                        <NumFlowWithFallback value={receiveAmount} suffix={` ${destinationCurrency.symbol}`} trend={0} format={{ maximumFractionDigits: quote.quote.destination_token?.decimals || 2 }} />
-                                    ) : (
-                                        <NumFlowWithFallback value={receiveAmountInUsd || 0} prefix="$" trend={0} />
-                                    )}
-                                </p>
-                            </div>
-                        )
-                    }
-                </div>
+                <SwapRow
+                    route={destination}
+                    token={destinationCurrency}
+                    primary={receiveAmount ? (isUsdMode ? (
+                        <NumFlowWithFallback value={receiveAmountInUsd || 0} prefix="$" trend={0} />
+                    ) : (
+                        <NumFlowWithFallback value={receiveAmount} suffix={` ${destinationCurrency.symbol}`} trend={0} format={{ maximumFractionDigits: quote.quote.destination_token?.decimals || 2 }} />
+                    )) : null}
+                    secondary={receiveAmount ? (
+                        <>
+                            <PriceImpact className="text-sm" quote={swapQuote} refuel={refuel} />
+                            {isUsdMode ? (
+                                <NumFlowWithFallback value={receiveAmount} suffix={` ${destinationCurrency.symbol}`} trend={0} format={{ maximumFractionDigits: quote.quote.destination_token?.decimals || 2 }} />
+                            ) : (
+                                <NumFlowWithFallback value={receiveAmountInUsd || 0} prefix="$" trend={0} />
+                            )}
+                        </>
+                    ) : null}
+                />
                 {
                     (!!refuel != undefined && nativeCurrency) ?
                         <div className="flex items-center justify-between w-full ">
@@ -136,15 +112,17 @@ const Summary: FC<SwapInfoProps> = (props) => {
     )
 }
 
-type RouteTokenPairProps = {
+type SwapRowProps = {
     route: { logo: string, display_name: string },
     token: Token,
+    primary: ReactNode,
+    secondary: ReactNode,
 }
 
-const RouteTokenPair: FC<RouteTokenPairProps> = ({ route, token }) => {
+const SwapRow: FC<SwapRowProps> = ({ route, token, primary, secondary }) => {
 
     return (
-        <div className="flex grow gap-4 text-left items-center md:text-base relative col-span-5 align-center">
+        <div className="w-full flex items-center gap-4 text-left md:text-base min-w-0">
             <div className="inline-flex items-center relative shrink-0 h-8 w-8">
                 <ImageWithFallback
                     src={token.logo}
@@ -167,11 +145,17 @@ const RouteTokenPair: FC<RouteTokenPairProps> = ({ route, token }) => {
                     />
                 </div>
             </div>
-            <div className="text-primary-text overflow-hidden">
-                <p className="text-xl leading-6 font-normal">{token.symbol}</p>
-                <p className="text-secondary-text text-sm truncate whitespace-nowrap font-medium leading-5">
-                    {route.display_name}
-                </p>
+            <div className="flex flex-col grow min-w-0">
+                <div className="flex items-center gap-2 h-8">
+                    <p className="text-primary-text text-xl leading-6 font-normal grow truncate min-w-0">{token.symbol}</p>
+                    <div className="text-primary-text text-xl leading-6 font-normal flex items-center justify-end shrink-0 whitespace-nowrap">{primary}</div>
+                </div>
+                <div className="flex items-center gap-2 h-5">
+                    <p className="text-secondary-text text-sm truncate whitespace-nowrap font-medium leading-5 grow min-w-0">
+                        {route.display_name}
+                    </p>
+                    <div className="text-secondary-text text-sm flex items-center justify-end gap-1 font-medium shrink-0 whitespace-nowrap">{secondary}</div>
+                </div>
             </div>
         </div>
     )
