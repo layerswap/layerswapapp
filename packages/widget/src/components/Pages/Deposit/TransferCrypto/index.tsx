@@ -22,12 +22,6 @@ type Props = {
     showDestinationPicker?: boolean;
 };
 
-/**
- * Keeps Formik's destination_address pinned to the integrator value in case
- * anything inside the form attempts to clear it (e.g. transient state during a
- * destination switch). Rendered inside this flow's own Formik so the context
- * resolves to the deposit-address form provider.
- */
 const PinDestinationAddress: FC<{ destinationAddress: string }> = ({ destinationAddress }) => {
     const { values, setFieldValue } = useFormikContext<SwapFormValues>();
     useEffect(() => {
@@ -37,12 +31,6 @@ const PinDestinationAddress: FC<{ destinationAddress: string }> = ({ destination
     return null;
 };
 
-/**
- * Locks the header's close button once the backend detects the user's input
- * transaction (i.e. they've sent funds to the deposit address), keeping it
- * hidden until the swap reaches a terminal status. Rendered inside this flow's
- * SwapDataProvider so the swap status resolves correctly.
- */
 const ReportDepositCloseLock: FC = () => {
     const { swapDetails } = useSwapDataState();
     const { isTerminal } = useResolvedSwapStatus();
@@ -98,9 +86,7 @@ const DepositAddressFlow: FC<Props & { initialSwapData?: SwapResponse }> = ({ pa
 
     return (
         <Formik initialValues={initialValues} validateOnMount onSubmit={handleSubmit}>
-            {/* Formik calls React.Children.only on JSX children — keep a single
-                wrapping element. */}
-            <>
+            <div className="flex flex-col gap-3">
                 {showDestinationPicker && <DestinationTokenPicker />}
                 <PinDestinationAddress destinationAddress={destinationAddress} />
                 <ReportDepositCloseLock />
@@ -113,26 +99,13 @@ const DepositAddressFlow: FC<Props & { initialSwapData?: SwapResponse }> = ({ pa
                         hideEasyDepositBanner
                     />
                 </ValidationProvider>
-            </>
+            </div>
         </Formik>
     );
 };
 
-/**
- * Wrapper that reuses the existing DepositAddressForm for the "Transfer Crypto"
- * sub-flow. It owns its own SwapDataProvider + Formik so its swap lifecycle and
- * form state are isolated from the wallet flow (mirrors the per-tab separation
- * in the main swap flow). We disable auto wallet-connect-on-mount because the
- * user already chose this method from the parent picker (and may not have a
- * wallet at all — manual transfer doesn't require one). The integrator always
- * supplies the destination address, so the internal picker stays hidden and the
- * address autofill is locked.
- */
 const TransferCrypto: FC<Props> = ({ partner, showDestinationPicker }) => {
     const { prefetchedSwap } = useDepositPrefetch();
-    // Snapshot at mount: SwapDataProvider reads initialSwapData only once (it
-    // seeds swapId state and SWR fallbackData), so a swap that resolves later
-    // must go through the claim path in handleSubmit instead.
     const [initialSwapData] = useState(() => prefetchedSwap);
     return (
         <SwapDataProvider initialSwapData={initialSwapData}>

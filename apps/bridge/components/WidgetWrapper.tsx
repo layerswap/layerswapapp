@@ -62,9 +62,9 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
 
     const themeOverrides: Partial<ThemeData> = {
         borderRadius: 'default',
-        enablePortal: true,
-        enableWideVersion: true,
-        hidePoweredBy: true,
+        enablePortal: false,
+        enableWideVersion: false,
+        hidePoweredBy: false,
     }
 
     const baseTheme: ThemeData = {
