@@ -20,12 +20,12 @@ function addAddressPadding(address: string): string {
     return addHexPrefix(removeHexPrefix(address).padStart(64, '0'));
 }
 
-function isHex(hex: string): boolean {
+function hasHexPrefix(hex: string): boolean {
     return hex.startsWith('0x');
 }
 
 function toBN(number: BigNumberish, base?: number | 'hex') {
-    if (typeof number === 'string' && isHex(number) && !base) {
+    if (typeof number === 'string' && hasHexPrefix(number) && !base) {
         return new BN(removeHexPrefix(number), 'hex');
     }
     return new BN(number, base);

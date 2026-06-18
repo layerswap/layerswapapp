@@ -1,7 +1,6 @@
 export { BitcoinBalanceProvider } from "./bitcoinBalanceProvider";
 export { EVMBalanceProvider } from "./evmBalanceProvider";
 export { FuelBalanceProvider } from "./fuelBalanceProvider";
-export { LoopringBalanceProvider } from "./loopringBalanceProvider";
 export { ParadexBalanceProvider } from "./paradexBalanceProvider";
 export { QueryBalanceProvider } from "./queryBalanceProvider";
 export { SolanaBalanceProvider } from "./solanaBalanceProvider";

@@ -12,10 +12,6 @@ const StarknetWalletWithdrawStep = dynamic<WithdrawPageProps>(
     () => import("./WithdrawalProviders/StarknetWalletWithdraw").then((module) => module.StarknetWalletWithdrawStep),
     { ssr: false }
 );
-const LoopringWalletWithdraw = dynamic<WithdrawPageProps>(
-    () => import("./WithdrawalProviders/Loopring").then((module) => module.LoopringWalletWithdraw),
-    { ssr: false }
-);
 const TonWalletWithdrawStep = dynamic<WithdrawPageProps>(
     () => import("./WithdrawalProviders/TonWalletWithdraw").then((module) => module.TonWalletWithdrawStep),
     { ssr: false }
@@ -75,14 +71,6 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
         },
         {
             supportedNetworks: [
-                KnownInternalNames.Networks.LoopringMainnet,
-                KnownInternalNames.Networks.LoopringGoerli,
-                KnownInternalNames.Networks.LoopringSepolia
-            ],
-            component: LoopringWalletWithdraw
-        },
-        {
-            supportedNetworks: [
                 KnownInternalNames.Networks.TONMainnet,
                 KnownInternalNames.Networks.TONTestnet
             ],
@@ -104,7 +92,8 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
         },
         {
             supportedNetworks: [
-                KnownInternalNames.Networks.TronMainnet
+                KnownInternalNames.Networks.TronMainnet,
+                KnownInternalNames.Networks.TronTestnet
             ],
             component: TronWalletWithdraw
         },
