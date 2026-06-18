@@ -47,7 +47,8 @@
     "@tronweb3/tronwallet-adapter-okxwallet": "^1.0.6",
     "@tronweb3/tronwallet-adapter-metamask-tron": "^1.0.0",
     "@tronweb3/tronwallet-adapter-tronlink": "^1.1.12",
-    "tronweb": "^6.0.4"
+    "@tronweb3/tronwallet-adapter-trust": "^1.0.0",
+    "tronweb": "^6.3.0"
   },
   "devDependencies": {
     "@layerswap/widget": "workspace:^",

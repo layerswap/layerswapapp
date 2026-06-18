@@ -28,7 +28,7 @@ type Props = {
 const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, onRemove }) => {
 
     const maxWalletNameWidth = calculateMaxWidth(String(balance?.amount));
-    const resolvedDisplayName = useAddressName(addressItem.address, network)
+    const resolvedDisplayName = useAddressName(addressItem.address, network, addressItem.providerName)
 
     const descriptions = [
         {
@@ -55,15 +55,18 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
         if (network) {
             return new Address(addressItem.address, network).full
         }
+        if (addressItem.providerName) {
+            return new Address(addressItem.address, null, addressItem.providerName).full
+        }
         return addressItem.address
-    }, [addressItem.address, network])
+    }, [addressItem.address, network, addressItem.providerName])
 
     return (
         <div className="w-full flex items-center justify-between">
-            <div className="flex bg-secondary-400 text-primary-text items-center justify-center rounded-md h-8 overflow-hidden w-8">
-                {
-                    (partner?.is_wallet && addressItem.group === AddressGroup.FromQuery) ? (
-                        partner?.logo && (
+            {
+                (partner?.is_wallet && addressItem.group === AddressGroup.FromQuery) ? (
+                    <div className="flex bg-secondary-400 text-primary-text items-center justify-center rounded-md h-8 overflow-hidden w-8">
+                        {partner?.logo && (
                             <ImageWithFallback
                                 alt="Partner logo"
                                 className="rounded-md object-contain"
@@ -71,12 +74,12 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
                                 width="36"
                                 height="36"
                             />
-                        )
-                    ) : (
-                        <AddressIcon address={address} size={32} network={network} />
-                    )
-                }
-            </div>
+                        )}
+                    </div>
+                ) : (
+                    <AddressIcon address={address} size={36} network={network} providerName={addressItem.providerName} className="rounded-md shrink-0" />
+                )
+            }
 
             <div className="flex flex-col items-start grow min-w-0 ml-3 text-sm">
                 <div className="flex w-full min-w-0">
@@ -154,6 +157,8 @@ type ExtendedAddressBaseProps = {
     shouldShowChevron?: boolean
     onPopoverOpenChange?: (open: boolean) => void;
     onTooltipOpenChange?: (open: boolean) => void;
+    /** When provided, the popover Save button calls this instead of showing the inline name form for saving address to address book. */
+    onSaveRequest?: () => void;
 }
 type ExtendedAddressProps = ExtendedAddressBaseProps
     & { network?: Network, providerName?: string }
@@ -170,18 +175,18 @@ const calculateMaxWidth = (balance: string | undefined) => {
     }
 };
 
-export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, providerName, isForCurrency, children, onDisconnect, onRemove, showDetails = false, title, description, logo: Logo, onPopoverOpenChange, onTooltipOpenChange, shouldShowChevron = true }) => {
+export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, providerName, isForCurrency, children, onDisconnect, onRemove, showDetails = false, title, description, logo: Logo, onPopoverOpenChange, onTooltipOpenChange, shouldShowChevron = true, onSaveRequest }) => {
     if (!network && !providerName) {
         return children ?? <p className="text-sm block font-medium text-secondary-text">
             {shortenString(address)}
         </p>
     }
-    return <AddressDetailsPopover address={address} network={network!} providerName={providerName!} isForCurrency={isForCurrency} onDisconnect={onDisconnect} onRemove={onRemove} showDetails={showDetails} title={title} description={description} logo={Logo} onPopoverOpenChange={onPopoverOpenChange} onTooltipOpenChange={onTooltipOpenChange} shouldShowChevron={shouldShowChevron}>{children}</AddressDetailsPopover>
+    return <AddressDetailsPopover address={address} network={network!} providerName={providerName!} isForCurrency={isForCurrency} onDisconnect={onDisconnect} onRemove={onRemove} showDetails={showDetails} title={title} description={description} logo={Logo} onPopoverOpenChange={onPopoverOpenChange} onTooltipOpenChange={onTooltipOpenChange} shouldShowChevron={shouldShowChevron} onSaveRequest={onSaveRequest}>{children}</AddressDetailsPopover>
 }
 type AddressDetailsPopoverProps = ExtendedAddressBaseProps
     & ({ network: Network, providerName?: string } | { network?: Network, providerName: string })
 
-const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, network, providerName, isForCurrency, children, onDisconnect, onRemove, showDetails = false, title, description, logo: Logo, onPopoverOpenChange, onTooltipOpenChange, shouldShowChevron = true }) => {
+const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, network, providerName, isForCurrency, children, onDisconnect, onRemove, showDetails = false, title, description, logo: Logo, onPopoverOpenChange, onTooltipOpenChange, shouldShowChevron = true, onSaveRequest }) => {
     const [isCopied, setCopied] = useCopyClipboard()
     const [isPopoverOpen, setPopoverOpen] = useState(false)
     const [saving, setSaving] = useState(false)
@@ -228,7 +233,7 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
             ...(canSave && !saving ? [{
                 title: 'Save',
                 Icon: BookmarkPlus,
-                onClick: (e: React.MouseEvent<HTMLDivElement>) => { e.stopPropagation(); setSaving(true); }
+                onClick: (e: React.MouseEvent<HTMLDivElement>) => { e.stopPropagation(); if (onSaveRequest) { setPopoverOpen(false); onSaveRequest(); } else { setSaving(true); } }
             }] : []),
             ...(onDisconnect ? [{
                 title: 'Disconnect',
@@ -247,7 +252,7 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
         const showTitles = buttons.length <= 2;
 
         return { buttons, showTitles };
-    }, [addr.full, network, providerName, isAddressValid, isCopied, onDisconnect, onRemove, canSave, saving]);
+    }, [addr.full, network, providerName, isAddressValid, isCopied, onDisconnect, onRemove, canSave, saving, onSaveRequest]);
 
     const { buttons, showTitles } = getActionButtons();
     const { start, middle, end } = useMemo(() => addr.toEmphasizedParts(), [addr]);
@@ -338,7 +343,7 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
                                 />
                             ))}
                         </div>
-                        {saving && saveNetworkType && <SaveToBookNameForm address={address} networkType={saveNetworkType} onDone={() => setSaving(false)} compact />}
+                        {saving && saveNetworkType && !onSaveRequest && <SaveToBookNameForm address={address} network={{ name: network?.name, type: saveNetworkType }} onDone={() => setSaving(false)} compact />}
                     </div>
                 </PopoverContent>
             </Popover>

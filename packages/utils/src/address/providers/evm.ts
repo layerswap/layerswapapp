@@ -1,14 +1,14 @@
 import { keccak256 } from "js-sha3";
 import KnownInternalNames from "@/knownIds";
-import { Network, NetworkType, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
+import { Network, NetworkType, AddressSelectionMode, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
 
 export const name = 'EVM';
 
 function isChecksumAddress(address: string): boolean {
     // Check each case
     address = address.replace('0x', '');
-    var addressHash = keccak256(address.toLowerCase());
-    for (var i = 0; i < 40; i++) {
+    const addressHash = keccak256(address.toLowerCase());
+    for (let i = 0; i < 40; i++) {
         // the nth letter should be uppercase if the nth digit of casemap is 1
         if ((parseInt(addressHash[i], 16) > 7 && address[i].toUpperCase() !== address[i]) || (parseInt(addressHash[i], 16) <= 7 && address[i].toLowerCase() !== address[i])) {
             return false;
@@ -32,6 +32,10 @@ function isValidEtherAddress(address: string): boolean {
 
 export class EVMAddressUtilsProvider implements AddressUtilsProvider {
     readonly providerName = name;
+    readonly networkType = NetworkType.EVM;
+    readonly label = 'EVM';
+    readonly selection = AddressSelectionMode.Networks;
+    readonly defaultScope = 'all' as const;
 
     supportsNetwork(network: Network): boolean {
         return (network.type === NetworkType.EVM && !!network.token)

@@ -1,11 +1,15 @@
-import { LayerswapProvider, Swap } from '@layerswap/widget';
+import { useState } from 'react';
+import { LayerswapProvider, Swap, DepositComponent } from '@layerswap/widget';
 // import { createEVMProvider } from '@layerswap/wallet-evm';
 // import { createSVMProvider } from '@layerswap/wallet-svm';
 // import { createBitcoinProvider } from '@layerswap/wallet-bitcoin';
 // import { createStarknetProvider } from '@layerswap/wallet-starknet';
 import { getDefaultProviders } from '@layerswap/wallets';
 
+type WidgetType = "swap" | "deposit";
+
 export function LayerswapWidget() {
+  const [widgetType, setWidgetType] = useState<WidgetType>("swap");
   const walletConnect = {
     projectId: '821ab14954640abd9a7974a70f74bc6c',
     name: 'Layerswap Example',
@@ -38,6 +42,7 @@ export function LayerswapWidget() {
           our documentation
         </a>.
       </p>
+      <WidgetSwitcher value={widgetType} onChange={setWidgetType} />
       <div className="w-full max-w-lg mx-auto h-full rounded-xl">
         <LayerswapProvider
           config={{
@@ -46,9 +51,41 @@ export function LayerswapWidget() {
           }}
           walletProviders={walletProviders}
         >
-          <Swap />
+          {widgetType === "swap" ? (
+            <Swap />
+          ) : (
+            <DepositComponent
+              destination={{ network: "ETHEREUM_MAINNET", tokens: ["ETH"] }}
+              destinationAddress="0xB2029bbd8C1cBCC43c3A7b7fE3d118b0C57D7C31"
+            />
+          )}
         </LayerswapProvider>
       </div>
+    </div>
+  );
+}
+
+function WidgetSwitcher({
+  value,
+  onChange,
+}: {
+  value: WidgetType;
+  onChange: (value: WidgetType) => void;
+}) {
+  return (
+    <div className="flex items-center gap-1 p-1 mb-4 rounded-lg bg-gray-800">
+      {(["swap", "deposit"] as const).map((type) => (
+        <button
+          key={type}
+          type="button"
+          onClick={() => onChange(type)}
+          className={`rounded-md px-6 py-1.5 text-sm font-medium capitalize transition-colors duration-200 ${
+            value === type ? "bg-pink-600 text-white" : "text-gray-400 hover:text-white"
+          }`}
+        >
+          {type}
+        </button>
+      ))}
     </div>
   );
 }

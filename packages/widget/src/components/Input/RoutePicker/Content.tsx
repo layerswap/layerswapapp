@@ -24,6 +24,7 @@ type ContentProps = {
     partialPublished?: boolean;
     hideTokenSwitch?: boolean;
     hideBalances?: boolean;
+    hideConnectButton?: boolean;
 }
 
 export const Content: FC<ContentProps> = (props) => {
@@ -35,7 +36,7 @@ export const Content: FC<ContentProps> = (props) => {
     </>
 }
 
-const Items: FC<ContentProps & { isScrolling: boolean; setIsScrolling: (isScrolling: boolean) => void; }> = ({ searchQuery, setSearchQuery, rowElements, selectedToken, selectedRoute, direction, onSelect, isScrolling, setIsScrolling, hideTokenSwitch, hideBalances }) => {
+const Items: FC<ContentProps & { isScrolling: boolean; setIsScrolling: (isScrolling: boolean) => void; }> = ({ searchQuery, setSearchQuery, rowElements, selectedToken, selectedRoute, direction, onSelect, isScrolling, setIsScrolling, hideTokenSwitch, hideBalances, hideConnectButton }) => {
     const parentRef = useRef<HTMLDivElement>(null)
     const [openValues, setOpenValues] = useState<string[]>(selectedRoute ? [selectedRoute] : [])
     const { wallets, providers } = useWallet()
@@ -132,7 +133,7 @@ const Items: FC<ContentProps & { isScrolling: boolean; setIsScrolling: (isScroll
                 ref={parentRef}
             >
                 {
-                    wallets.length === 0 && direction === 'from' && !searchQuery &&
+                    !hideConnectButton && wallets.length === 0 && direction === 'from' && !searchQuery &&
                     <ConnectWalletButton
                         descriptionText="Connect your wallet to browse your assets and choose easier"
                         className="w-full my-2.5"
