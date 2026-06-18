@@ -1,11 +1,14 @@
 import { Address } from "@ton/core";
 import KnownInternalNames from "@/knownIds";
-import { AddressUtilsProvider, AddressUtilsProviderProps, Network } from "@/types";
+import { NetworkType, AddressSelectionMode, AddressUtilsProvider, AddressUtilsProviderProps, Network } from "@/types";
 
 export const name = 'Ton';
 
 export class TonAddressUtilsProvider implements AddressUtilsProvider {
     readonly providerName = name;
+    readonly networkType = NetworkType.TON;
+    readonly label = 'TON';
+    readonly selection = AddressSelectionMode.Auto;
 
     supportsNetwork(network: Network): boolean {
         return KnownInternalNames.Networks.TONMainnet.includes(network.name) || KnownInternalNames.Networks.TONTestnet.includes(network.name)

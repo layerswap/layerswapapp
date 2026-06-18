@@ -80,9 +80,10 @@ const resolveProvider = (network: Network | undefined, walletProviders: WalletCo
         const resolvedProvider = {
             ...provider,
             connectedWallets: provider.connectedWallets?.map(wallet => {
+                const connectorId = wallet.internalId ?? wallet.id
                 return {
                     ...wallet,
-                    isNotAvailable: (provider.isNotAvailableCondition && network?.name && wallet.internalId) ? provider.isNotAvailableCondition(wallet.internalId, network?.name, purpose) : false,
+                    isNotAvailable: (provider.isNotAvailableCondition && network?.name && connectorId) ? provider.isNotAvailableCondition(connectorId, network?.name, purpose) : false,
                 }
             }),
             activeWallet: provider.activeWallet ? {
