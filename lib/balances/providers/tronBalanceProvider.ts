@@ -8,7 +8,7 @@ import { BalanceProvider } from "@/Models/BalanceProvider";
 
 export class TronBalanceProvider extends BalanceProvider {
     supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
-        return KnownInternalNames.Networks.TronMainnet.includes(network.name)
+        return (KnownInternalNames.Networks.TronMainnet.includes(network.name) || KnownInternalNames.Networks.TronTestnet.includes(network.name))
     }
 
     fetchBalance: BalanceProvider['fetchBalance'] = async (address, network) => {

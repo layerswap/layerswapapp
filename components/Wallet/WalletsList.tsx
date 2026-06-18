@@ -133,10 +133,10 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: wallet, n
                                     <ImageWithFallback
                                         src={wallet?.networkIcon || ''}
                                         alt="Wallet default network icon"
-                                        height="40"
-                                        width="40"
+                                        height="20"
+                                        width="20"
                                         loading="eager"
-                                        className="object-contain rounded-md border-2 border-secondary-800" />
+                                        className="object-contain rounded-md border-2 border-secondary-800 bg-secondary-800" />
                                 </div>
                             }
 

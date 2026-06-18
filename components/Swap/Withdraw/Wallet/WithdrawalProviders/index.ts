@@ -1,6 +1,5 @@
 export { StarknetWalletWithdrawStep } from "./StarknetWalletWithdraw";
 export { EVMWalletWithdrawal } from "./EVMWalletWithdraw";
-export { LoopringWalletWithdraw } from "./Loopring";
 export { TonWalletWithdrawStep } from "./TonWalletWithdraw";
 export { ParadexWalletWithdraw } from "./paradex/index";
 export { FuelWalletWithdrawStep } from "./FuelWalletWithdrawal";
