@@ -2,6 +2,7 @@ import { NetworkWithTokens } from "../../../Models/Network";
 import { TokenBalance } from "../../../Models/Balance";
 import KnownInternalNames from "../../knownIds";
 import { HyperliquidClient } from "../../apiClients/hyperliquidClient";
+import { HYPERLIQUID_USDC_SYMBOL, resolveHyperliquidNodeUrl } from "../../wallets/hyperliquid/constants";
 import { BalanceProvider } from "@/Models/BalanceProvider";
 
 export class HyperliquidBalanceProvider extends BalanceProvider {
@@ -21,25 +22,27 @@ export class HyperliquidBalanceProvider extends BalanceProvider {
         if (!network?.tokens && !network.token) return;
 
         try {
-            var nodeUrl = network.node_url;
-            if (nodeUrl == null) {
-                nodeUrl = network.name == KnownInternalNames.Networks.HyperliquidMainnet
-                    ? "https://api.hyperliquid.xyz" : "https://api.hyperliquid-testnet.xyz";
-            }
-
-            const clearinghouseState = await this.client.getClearinghouseState(address, nodeUrl, options?.timeoutMs, options?.retryCount);
+            // Route the settings `node_url` through the same allowlist the
+            // withdrawal flow uses — an attacker-controlled override could
+            // otherwise feed forged balances here. Falls back to the route default.
+            const nodeUrl = resolveHyperliquidNodeUrl(network.name, network.node_url);
+            if (!nodeUrl) return;
 
             const balances: TokenBalance[] = [];
 
             // Only support USDC balances for now
-            const usdcToken = network.tokens.find(token => token.symbol === 'USDC');
+            const usdcToken = network.tokens.find(token => token.symbol === HYPERLIQUID_USDC_SYMBOL);
 
             if (usdcToken) {
-                const withdrawableAmount = parseFloat(clearinghouseState.withdrawable);
-                if (withdrawableAmount >= 0) {
+                // Report the combined withdrawable across both HyperCore pools (spot
+                // available + perps withdrawable). The withdrawal flow can pull from
+                // either pool — and consolidate between them — so the user's spendable
+                // balance is the sum, not spot alone.
+                const split = await this.client.getWithdrawableSplit(address, nodeUrl, usdcToken.symbol, options?.timeoutMs, options?.retryCount);
+                if (split.combined >= 0) {
                     balances.push({
                         network: network.name,
-                        amount: withdrawableAmount,
+                        amount: split.combined,
                         decimals: usdcToken.decimals,
                         isNativeCurrency: false,
                         token: usdcToken.symbol,
