@@ -17,7 +17,7 @@ import { useRouteTokenSwitchStore } from "@/stores/routeTokenSwitchStore";
 import { useRouteSortingStore, SortingOption } from "@/stores/routeSortingStore";
 import { useQueryState } from "@/context/query";
 import { getTotalBalanceInUSD } from "../helpers/balanceHelper";
-import { injectExtendedRoutes } from "@/lib/extendedRoutes/transforms";
+import { isExtendedSourceNetwork, mergeExtendedSourceRoutes } from "@/lib/extendedRoutes/registry";
 
 type Props = {
     direction: SwapDirection;
@@ -168,14 +168,15 @@ function useRoutes({ direction, values }: Props) {
     const defaultRoutes = direction === 'from' ? sourceRoutes : destinationRoutes;
     const { routes, isLoading } = useRoutesData<NetworkRoute>(url, defaultRoutes || [], apiClient.fetcher);
 
-    const toName = values.to?.name;
-    const toAssetSymbol = values.toAsset?.symbol;
     const fromName = values.from?.name;
-    const extendedRoutes = useMemo(
-        () => injectExtendedRoutes({ routes, direction, values, networks }),
-        [routes, direction, networks, toName, toAssetSymbol, fromName]
-    );
-    return { routes: extendedRoutes, isLoading };
+    const finalRoutes = useMemo(() => {
+        // Re-add extended sources after SWR revalidation (the backend list lacks them).
+        if (direction === 'from') return mergeExtendedSourceRoutes(routes, networks);
+        // An extended source is a real backend destination too — exclude it from the
+        // destination list when it's the selected source so it can't route to itself.
+        return isExtendedSourceNetwork(fromName) ? routes.filter(r => r.name !== fromName) : routes;
+    }, [routes, direction, networks, fromName]);
+    return { routes: finalRoutes, isLoading };
 }
 
 // ---------- Token Helpers ----------

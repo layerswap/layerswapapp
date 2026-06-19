@@ -85,7 +85,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                 return
             }
             const fallback = storedWalletTransaction?.timestamp ?? Date.now();
-            if (Date.now() - (loggedNotDetectedTxAt.current ?? fallback) > 60000) {
+            if (transactionHash && Date.now() - (loggedNotDetectedTxAt.current ?? fallback) > 60000) {
                 loggedNotDetectedTxAt.current = Date.now();
                 const inputNetwork = realSourceNetwork ?? source_network
                 logError(`Transaction not detected in ${inputNetwork.name}. Tx hash: \`${transactionHash}\`. Tx status: ${swapInputTxStatus}. Swap id: \`${swapDetails.id}\`. ${inputNetwork.display_name} explorer: ${getExplorerUrl(inputNetwork?.transaction_explorer_template, transactionHash)} . LS explorer: https://layerswap.io/explorer/${storedWalletTransaction?.hash} `);

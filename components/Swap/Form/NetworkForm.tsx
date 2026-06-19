@@ -12,7 +12,6 @@ import { useQueryState } from "@/context/query";
 import { Widget } from "@/components/Widget/Index";
 import { motion, useCycle } from "framer-motion";
 import { useSettingsState } from "@/context/settings";
-import { resolveExtendedRouteByName } from "@/lib/extendedRoutes/registry";
 import { swapInProgress } from "@/components/utils/swapUtils";
 import { ArrowUpDown } from "lucide-react";
 import FormButton from "../FormButton";
@@ -173,7 +172,6 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<
     const {
         sourceRoutes,
         destinationRoutes,
-        networks,
     } = useSettingsState()
 
     const {
@@ -188,8 +186,8 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<
     const valuesSwapper = useCallback(async () => {
         swapInProgress.current = true;
 
-        const newFrom = sourceRoutes?.find(l => l.name === destination?.name) ?? resolveExtendedRouteByName(destination?.name, networks)
-        const newTo = destinationRoutes?.find(l => l.name === source?.name) ?? resolveExtendedRouteByName(source?.name, networks)
+        const newFrom = sourceRoutes?.find(l => l.name === destination?.name)
+        const newTo = destinationRoutes?.find(l => l.name === source?.name)
         const newFromToken = newFrom?.tokens.find(t => t.symbol === toCurrency?.symbol)
         const newToToken = newTo?.tokens.find(t => t.symbol === fromCurrency?.symbol)
 
@@ -226,7 +224,7 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<
 
         swapInProgress.current = false;
 
-    }, [values, sourceRoutes, destinationRoutes, networks, selectedSourceAccount])
+    }, [values, sourceRoutes, destinationRoutes, selectedSourceAccount])
 
     return (
         <button

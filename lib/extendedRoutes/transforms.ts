@@ -1,9 +1,7 @@
-import { Network, NetworkRoute, NetworkRouteToken, NetworkWithTokens, Token } from "@/Models/Network";
+import { Network, Token } from "@/Models/Network";
 import { CreateSwapParams, Quote } from "@/lib/apiClients/layerSwapApiClient";
-import { SwapFormValues, SwapDirection } from "@/components/DTOs/SwapFormValues";
 import { parseHmsString } from "@/components/utils/formatTime";
 import { ExtendedRoutePlan, ResolvedExtendedMapping } from "./types";
-import { getSourceProviders, isExtendedSourceNetwork, resolveExtendedRoutePlan } from "./registry";
 import { DecimalInput, decimalToNumber, isPositiveDecimal } from "./amounts";
 
 export type ExtendedLimits = {
@@ -11,65 +9,6 @@ export type ExtendedLimits = {
     min_amount_in_usd: number
     max_amount: number
     max_amount_in_usd: number
-}
-
-type InjectArgs = {
-    routes: NetworkRoute[]
-    direction: SwapDirection
-    values: SwapFormValues
-    networks: NetworkWithTokens[]
-}
-
-/**
- * Append extended routes to the backend list. Upstream of all filtering/sorting,
- * so locks, grouping and suggestions keep working unchanged.
- */
-export function injectExtendedRoutes({ routes, direction, values, networks }: InjectArgs): NetworkRoute[] {
-    if (direction === 'from') return injectExtendedSources({ routes, values, networks })
-    return injectExtendedDestinations({ routes, values, networks })
-}
-
-function injectExtendedSources({ routes, values, networks }: Omit<InjectArgs, 'direction'>): NetworkRoute[] {
-    const additions: NetworkRoute[] = []
-
-    for (const provider of getSourceProviders()) {
-        for (const extendedName of provider.extendedNetworkNames) {
-            // Future backend adoption = zero conflict: skip names already present.
-            if (routes.some(r => r.name === extendedName)) continue
-            // Can't route a network to itself.
-            if (values.to?.name === extendedName) continue
-
-            const extendedRoute = provider.resolveExtendedRoute(extendedName, networks)
-            if (!extendedRoute) continue
-
-            const tokenMappings = provider.mappings[extendedName] || {}
-            const qualifyingTokens: NetworkRouteToken[] = extendedRoute.tokens.filter(token => {
-                const mapping = tokenMappings[token.symbol]
-                if (!mapping) return false
-                // Show iff the active route plan can be fulfilled by the same real
-                // deposit-address route that quote/create will use.
-                return !!resolveExtendedRoutePlan({
-                    sourceNetworkName: extendedName,
-                    sourceTokenSymbol: token.symbol,
-                    destinationNetworkName: values.to?.name,
-                    destinationTokenSymbol: values.toAsset?.symbol,
-                    availableRoutes: routes,
-                })
-            })
-
-            if (qualifyingTokens.length) {
-                additions.push({ ...extendedRoute, tokens: qualifyingTokens })
-            }
-        }
-    }
-
-    return additions.length ? [...routes, ...additions] : routes
-}
-
-function injectExtendedDestinations({ routes, values }: Omit<InjectArgs, 'direction'>): NetworkRoute[] {
-    if (!isExtendedSourceNetwork(values.from?.name)) return routes
-    // The extended network can never be its own destination.
-    return routes.filter(r => !isExtendedSourceNetwork(r.name))
 }
 
 /** Displayed limits = backend limits + flat fee (the min is resolved dynamically

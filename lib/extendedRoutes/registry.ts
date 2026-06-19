@@ -93,8 +93,21 @@ export function realDepositAddressRoutePresent(routes: NetworkRoute[], real: Rea
         && r.tokens?.some(t => t.symbol === real.tokenSymbol && t.status === 'active'))
 }
 
-export function resolveExtendedRouteByName(name: string | undefined, networks: NetworkWithTokens[]): NetworkRoute | undefined {
-    if (!name) return undefined
-    const provider = SOURCE_PROVIDERS.find(p => p.extendedNetworkNames.includes(name))
-    return provider?.resolveExtendedRoute(name, networks)
+/**
+ * Append extended source routes (e.g. Hyperliquid) to a backend route list so
+ * downstream consumers treat them as first-class sources — no per-call-site
+ * resolving. Idempotent: skips names already present, so it is safe to call on
+ * both the SSR fallback and revalidated backend data.
+ */
+export function mergeExtendedSourceRoutes(routes: NetworkRoute[], networks: NetworkWithTokens[]): NetworkRoute[] {
+    const additions: NetworkRoute[] = []
+    for (const provider of SOURCE_PROVIDERS) {
+        for (const extendedName of provider.extendedNetworkNames) {
+            // Future backend adoption = zero conflict: skip names already present.
+            if (routes.some(r => r.name === extendedName)) continue
+            const extendedRoute = provider.resolveExtendedRoute(extendedName, networks)
+            if (extendedRoute) additions.push(extendedRoute)
+        }
+    }
+    return additions.length ? [...routes, ...additions] : routes
 }
