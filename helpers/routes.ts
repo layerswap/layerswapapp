@@ -1,4 +1,5 @@
 import { SwapDirection, SwapFormValues } from "../components/DTOs/SwapFormValues"
+import { resolveExtendedRoutePlan } from "@/lib/extendedRoutes/registry"
 
 export const resolveExchangesURLForSelectedToken = (values: SwapFormValues) => {
 
@@ -8,15 +9,23 @@ export const resolveExchangesURLForSelectedToken = (values: SwapFormValues) => {
 
     const { from, fromAsset: fromCurrency } = values
 
+    // Extended sources are unknown to the backend, so query exchanges against
+    // the real source selected by the route plan.
+    const extendedPlan = resolveExtendedRoutePlan({
+        sourceNetworkName: from?.name,
+        sourceTokenSymbol: fromCurrency?.symbol,
+    })
+    const sourceNetworkName = extendedPlan?.mapping.real.networkName ?? from?.name
+    const sourceTokenSymbol = extendedPlan?.mapping.real.tokenSymbol ?? fromCurrency?.symbol
 
     const params = new URLSearchParams({
         include_unmatched,
         include_swaps,
         include_unavailable,
-        ...(from?.name && fromCurrency?.symbol ?
+        ...(sourceNetworkName && sourceTokenSymbol ?
             {
-                ['source_network']: from?.name,
-                ['source_token']: fromCurrency?.symbol,
+                ['source_network']: sourceNetworkName,
+                ['source_token']: sourceTokenSymbol,
             }
             : {}
         )
@@ -59,14 +68,28 @@ export const resolveNetworkRoutesURL = (direction: SwapDirection, values: SwapFo
     // makes the picker disagree with the auto-picker.
     const useDepositAddressSwaps = hasDepositAddress && direction === 'from'
 
+    // Listing destinations for an extended source: substitute the real source
+    // selected by the route plan and force the deposit-address swap set.
+    const extendedPlan = direction === 'to' ? resolveExtendedRoutePlan({
+        sourceNetworkName: from?.name,
+        sourceTokenSymbol: fromCurrency?.symbol,
+    }) : undefined
+
+    let networkName = isCEX || unboundDestination ? undefined : selectednetwork?.name
+    let tokenName = isCEX || unboundDestination ? undefined : selectedToken
+    if (extendedPlan && !isCEX) {
+        networkName = extendedPlan.mapping.real.networkName
+        tokenName = extendedPlan.mapping.real.tokenSymbol
+    }
+
     return resolveRoutesURLForSelectedToken({
         direction,
-        network: isCEX || unboundDestination ? undefined : selectednetwork?.name,
-        token: isCEX || unboundDestination ? undefined : selectedToken,
+        network: networkName,
+        token: tokenName,
         includes: { unmatched: !hasDepositAddress, unavailable: !hasDepositAddress, swaps: !isCEX },
         networkTypes,
         hasDepositAddress,
-        useDepositAddressSwaps,
+        useDepositAddressSwaps: useDepositAddressSwaps || !!extendedPlan,
     })
 }
 
