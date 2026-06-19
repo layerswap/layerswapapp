@@ -23,6 +23,8 @@ import { getExplorerUrl } from '@/lib/address/explorerUrl';
 import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
 import { SwapPhase } from '@/components/utils/resolveSwapPhase';
 import { useDepositSettings } from '@/context/depositSettings';
+import { useSettingsState } from '@/context/settings';
+import { useExtendedRoutesStore } from '@/stores/extendedRoutesStore';
 
 const apiClient = new LayerSwapApiClient();
 
@@ -49,13 +51,20 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     } = swapBasicData
     const { fail_reason } = swapDetails
 
+    const { networks } = useSettingsState()
+    const extendedRecord = useExtendedRoutesStore(s => swapDetails?.id ? s.records[swapDetails.id] : undefined)
+    const realSourceNetwork = useMemo(
+        () => extendedRecord ? networks.find(n => n.name === extendedRecord.realNetwork) : undefined,
+        [extendedRecord, networks],
+    )
+
     const startIntercom = useCallback(() => {
         boot();
         show();
         update({ customAttributes: { swapId: swapDetails.id } });
     }, [boot, show, update, swapDetails.id]);
 
-    const input_tx_explorer = source_network?.transaction_explorer_template
+    const input_tx_explorer = (realSourceNetwork ?? source_network)?.transaction_explorer_template
     const output_tx_explorer = destination_network?.transaction_explorer_template
 
     const swapInputTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Input)
@@ -65,7 +74,8 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     const swapRefuelTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Refuel)
     const swapRefundTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Refund)
 
-    const { data: inputTxStatusData } = useSWR<ApiResponse<{ status: TransactionStatus }>>((transactionHash && swapInputTransaction?.status !== BackendTransactionStatus.Completed) ? [source_network?.name, transactionHash] : null, ([network, tx_id]) => apiClient.GetTransactionStatus(network, tx_id as any), { dedupingInterval: 6000 })
+    const inputTxNetworkName = realSourceNetwork?.name ?? source_network?.name
+    const { data: inputTxStatusData } = useSWR<ApiResponse<{ status: TransactionStatus }>>((transactionHash && swapInputTransaction?.status !== BackendTransactionStatus.Completed) ? [inputTxNetworkName, transactionHash] : null, ([network, tx_id]) => apiClient.GetTransactionStatus(network, tx_id as any), { dedupingInterval: 6000 })
 
     const inputTxStatusFromApi = inputTxStatusData?.data?.status?.toLowerCase() as TransactionStatus | undefined
     const resolved = useResolvedSwapStatus({ inputTxStatusFromApi })
@@ -79,9 +89,10 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                 return
             }
             const fallback = storedWalletTransaction?.timestamp ?? Date.now();
-            if (Date.now() - (loggedNotDetectedTxAt.current ?? fallback) > 60000) {
+            if (transactionHash && Date.now() - (loggedNotDetectedTxAt.current ?? fallback) > 60000) {
                 loggedNotDetectedTxAt.current = Date.now();
-                const error = new Error(`Transaction not detected in ${source_network.name}. Tx hash: \`${transactionHash}\`. Tx status: ${swapInputTxStatus}. Swap id: \`${swapDetails.id}\`. ${source_network.display_name} explorer: ${getExplorerUrl(source_network?.transaction_explorer_template, transactionHash)} . LS explorer: https://layerswap.io/explorer/${storedWalletTransaction?.hash} `);
+                const inputNetwork = realSourceNetwork ?? source_network
+                const error = new Error(`Transaction not detected in ${inputNetwork.name}. Tx hash: \`${transactionHash}\`. Tx status: ${swapInputTxStatus}. Swap id: \`${swapDetails.id}\`. ${source_network.display_name} explorer: ${getExplorerUrl(inputNetwork?.transaction_explorer_template, transactionHash)} . LS explorer: https://layerswap.io/explorer/${storedWalletTransaction?.hash} `);
                 ErrorHandler({
                     type: "TransactionNotDetected",
                     message: error.message,
@@ -147,29 +158,35 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             },
             current: {
                 name: isDepositFlow ? 'Processing your transfer' : 'Processing your deposit',
-                description: <div className='flex space-x-1'>
-                    <div>
-                        <LinkWithIcon
-                            name={'View in explorer'}
-                            url={getExplorerUrl(input_tx_explorer, transactionHash)}
-                        />
-                    </div>
-                    <div>
-                        <span>
-                            {swapInputTransaction && swapInputTransaction?.confirmations > 0 && (
+                description: <>
+                    {
+                        transactionHash
+                            ? <div className='flex space-x-1'>
                                 <div>
-                                    <span className='whitespace-nowrap'>| Confirmations </span>
-                                    <span className="text-primary-text ml-1">
-                                        <span>{swapInputTransaction?.confirmations >= swapInputTransaction?.max_confirmations
-                                            ? swapInputTransaction?.max_confirmations
-                                            : swapInputTransaction?.confirmations}</span>
-                                        <span>/</span>{swapInputTransaction?.max_confirmations}
+                                    <LinkWithIcon
+                                        name={'View in explorer'}
+                                        url={getExplorerUrl(input_tx_explorer, transactionHash)}
+                                    />
+                                </div>
+                                <div>
+                                    <span>
+                                        {swapInputTransaction && swapInputTransaction?.confirmations > 0 && (
+                                            <div>
+                                                <span className='whitespace-nowrap'>| Confirmations </span>
+                                                <span className="text-primary-text ml-1">
+                                                    <span>{swapInputTransaction?.confirmations >= swapInputTransaction?.max_confirmations
+                                                        ? swapInputTransaction?.max_confirmations
+                                                        : swapInputTransaction?.confirmations}</span>
+                                                    <span>/</span>{swapInputTransaction?.max_confirmations}
+                                                </span>
+                                            </div>
+                                        )}
                                     </span>
                                 </div>
-                            )}
-                        </span>
-                    </div>
-                </div>
+                            </div>
+                    : null
+                    }
+                </>
             },
             complete: {
                 name: isDepositFlow ? `Transfer confirmed` : `Deposit confirmed`,

@@ -11,6 +11,7 @@ import ManualWithdraw from './ManualWithdraw';
 import { Partner } from '@/Models';
 import { useCallbacks } from "@/context/callbackProvider";
 import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
+import { isExtendedSourceNetwork } from '@/lib/extendedRoutes/registry';
 
 type Props = {
     type: "widget" | "contained",
@@ -32,6 +33,13 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, onCancelWithd
         useSwapTransactionStore.getState().removeSwapTransaction(swapDetails?.id || '');
     }, [swapDetails?.id])
 
+    const resolveWithdrawScreen = () => {
+        if (swapBasicData?.use_deposit_address === true && !isExtendedSourceNetwork(swapBasicData?.source_network?.name)) {
+            return <ManualWithdraw swapBasicData={swapBasicData} depositActions={depositActionsResponse} refuel={refuel} partner={partner} type={type} quote={quote} isQuoteLoading={quoteIsLoading} />
+        }
+        return <Withdraw type={type} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} onCancelWithdrawal={onCancelWithdrawal} partner={partner} />
+    }
+
     if (!swapBasicData) return <>
         <div className="w-full h-[430px]">
             <div className="animate-pulse flex space-x-4">
@@ -48,11 +56,7 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, onCancelWithd
         <Container type={type} goBack={onBackClick}>
             {
                 resolved.showWithdrawScreen ?
-                    (
-                        swapBasicData?.use_deposit_address === true
-                            ? <ManualWithdraw swapBasicData={swapBasicData} depositActions={depositActionsResponse} refuel={refuel} partner={partner} type={type} quote={quote} isQuoteLoading={quoteIsLoading} />
-                            : <Withdraw type={type} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} onCancelWithdrawal={onCancelWithdrawal} partner={partner} />
-                    )
+                    resolveWithdrawScreen()
                     :
                     <div className='space-y-2 w-full h-full'>
                         <Processing />

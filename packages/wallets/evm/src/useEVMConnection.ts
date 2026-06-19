@@ -83,6 +83,8 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
 
     const withdrawalSupportedNetworks = useMemo(() => [
         ...asSourceSupportedNetworks,
+        KnownInternalNames.Networks.HyperliquidMainnet,
+        KnownInternalNames.Networks.HyperliquidTestnet,
     ], [asSourceSupportedNetworks])
 
     const autofillSupportedNetworks = useMemo(() => [

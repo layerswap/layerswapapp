@@ -52,8 +52,8 @@ export function useBalance(
     ])
 
     const mutate = () => {
-        if (!address || !network) return
-        fetchBalance(address, network, { ignoreCache: true })
+        if (!address || !network) return Promise.resolve(undefined)
+        return fetchBalance(address, network, { ignoreCache: true })
     }
 
     return {
