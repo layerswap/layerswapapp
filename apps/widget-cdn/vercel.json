@@ -6,10 +6,9 @@
   "framework": null,
   "git": {
     "deploymentEnabled": {
-      "main": true
+      "main": false
     }
   },
-  "ignoreCommand": "bash -c 'cd ../.. && git diff --quiet HEAD^ HEAD -- apps/widget-cdn packages || exit 1'",
   "headers": [
     {
       "source": "/v1/remoteEntry.js",

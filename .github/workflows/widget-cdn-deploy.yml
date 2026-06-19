@@ -1,0 +1,155 @@
+name: widget-cdn — build, sign, deploy
+
+# Production builds of `apps/widget-cdn` go through CI so the signing
+# key never lives outside `secrets.LAYERSWAP_PRIVATE_KEY_PEM`. The
+# `vercel.json` in apps/widget-cdn disables the git-integrated
+# auto-deploy, so this workflow is the only path to a production
+# deploy of the CDN.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/widget-cdn/**'
+      - 'packages/widget/**'
+      - 'packages/wallets/**'
+      - 'packages/widget-react/**'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/widget-cdn-deploy.yml'
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: 'Channel to publish under (e.g. v1, v1.3.0)'
+        required: false
+        default: 'v1'
+
+concurrency:
+  group: widget-cdn-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  # id-token: write is here for the OIDC upgrade path — if you move the
+  # signing key into AWS KMS / GCP Secret Manager / HashiCorp Vault later,
+  # this scope lets the runner exchange a short-lived OIDC token for
+  # cloud credentials without static long-lived secrets in the repo.
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: widget-cdn-production
+    env:
+      LAYERSWAP_CHANNEL: ${{ inputs.channel || 'v1' }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build workspace packages
+        run: pnpm build:packages
+
+      # Stage the signing key from the GitHub secret to a tempfile.
+      # `build-manifest.mjs` accepts either inline PEM text or a path; we
+      # use a path so the key isn't visible in process argv listings or
+      # in env-dumps that might land in CI logs. The file is wiped at the
+      # end of the job regardless of outcome.
+      - name: Stage signing key
+        id: key
+        env:
+          PEM: ${{ secrets.LAYERSWAP_PRIVATE_KEY_PEM }}
+        run: |
+          if [ -z "$PEM" ]; then
+            echo "::error::secrets.LAYERSWAP_PRIVATE_KEY_PEM is not set."
+            exit 1
+          fi
+          umask 077
+          KEY_PATH="$RUNNER_TEMP/layerswap-signing.pem"
+          printf '%s\n' "$PEM" > "$KEY_PATH"
+          echo "key-path=$KEY_PATH" >> "$GITHUB_OUTPUT"
+
+      - name: Build + sign widget-cdn
+        working-directory: apps/widget-cdn
+        env:
+          LAYERSWAP_PRIVATE_KEY_PEM: ${{ steps.key.outputs.key-path }}
+        run: pnpm build
+
+      # Round-trip the signature against the public key constant baked into
+      # `@layerswap/widget-react`. Fails the deploy if the key in CI doesn't
+      # match the bundled public key — catches rotation mismatches before
+      # they reach integrators.
+      - name: Verify signature against bundled public key
+        working-directory: apps/widget-cdn
+        run: pnpm verify-manifest
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel project config
+        working-directory: apps/widget-cdn
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      # `vercel build` wraps the already-built `dist/` into Vercel's
+      # `.vercel/output/` format. We pass --prebuilt to `deploy` so Vercel
+      # does NOT re-run our buildCommand — it would have to re-sign without
+      # the GitHub secret. This pattern keeps signing strictly in CI.
+      - name: Pack for Vercel
+        working-directory: apps/widget-cdn
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy to Vercel
+        id: deploy
+        working-directory: apps/widget-cdn
+        run: |
+          URL=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "Deployed: $URL"
+
+      - name: Wipe signing key from runner
+        if: always()
+        run: rm -f "$RUNNER_TEMP/layerswap-signing.pem"
+
+      - name: Smoke-test the deployed manifest
+        # Light end-to-end check: the manifest URL is reachable, served
+        # with the right CORS header, contains a signature, and has the
+        # kill-switch off. Doesn't re-verify the signature against the
+        # bundled key (already done above) — this is a deploy-pipeline
+        # check, not a crypto check.
+        run: |
+          set -euo pipefail
+          URL="${{ steps.deploy.outputs.url }}"
+          MANIFEST_URL="$URL/${{ env.LAYERSWAP_CHANNEL }}/manifest.json"
+          echo "Fetching $MANIFEST_URL"
+          curl -fsSL -H "Origin: https://example.com" -D /tmp/headers "$MANIFEST_URL" -o /tmp/manifest.json
+          grep -i 'access-control-allow-origin' /tmp/headers || { echo "::error::CDN missing CORS header"; exit 1; }
+          node -e "
+            const m = JSON.parse(require('fs').readFileSync('/tmp/manifest.json','utf8'));
+            if (!m.signature) { console.error('deployed manifest has no signature'); process.exit(1); }
+            if (m.killSwitch) { console.error('deployed manifest has killSwitch=true'); process.exit(1); }
+            console.log('deployed manifest OK  version=', m.version);
+          "
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## widget-cdn deploy" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Channel: \`${{ env.LAYERSWAP_CHANNEL }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- URL: ${{ steps.deploy.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Manifest: ${{ steps.deploy.outputs.url }}/${{ env.LAYERSWAP_CHANNEL }}/manifest.json" >> "$GITHUB_STEP_SUMMARY"
