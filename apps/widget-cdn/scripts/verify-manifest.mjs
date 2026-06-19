@@ -9,10 +9,10 @@
 //
 // Same canonical encoding as packages/widget-react/src/manifest.ts.
 
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createVerify, createPublicKey } from 'node:crypto';
+import { createVerify, createPublicKey, createHash } from 'node:crypto';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -66,4 +66,50 @@ if (!ok) {
     process.exit(5);
 }
 
-console.log(`[verify-manifest] OK  channel=${CHANNEL}  version=${manifest.version}`);
+// Round-trip the chunks map against the actual files on disk. Catches
+// the case where the manifest was signed with stale hashes (e.g. the
+// hashing step accidentally ran before the build refreshed the chunks).
+const chunks = manifest.chunks ?? {};
+if (Object.keys(chunks).length === 0) {
+    console.error('[verify-manifest] manifest has no `chunks` map — CDN-tamper protection is missing.');
+    process.exit(6);
+}
+
+const DIST = dirname(MANIFEST_PATH);
+const actualFiles = readdirSync(DIST).filter((n) => n.endsWith('.js'));
+
+const expected = new Set(Object.keys(chunks));
+const actual = new Set(actualFiles);
+
+// Every chunk on disk must be in the manifest, and vice versa.
+const missingInManifest = actualFiles.filter((n) => !expected.has(n));
+const missingOnDisk = [...expected].filter((n) => !actual.has(n));
+
+if (missingInManifest.length > 0) {
+    console.error('[verify-manifest] files on disk missing from manifest:', missingInManifest);
+    process.exit(7);
+}
+if (missingOnDisk.length > 0) {
+    console.error('[verify-manifest] files referenced in manifest are missing from disk:', missingOnDisk);
+    process.exit(7);
+}
+
+// Each listed hash must match the actual file content.
+const mismatches = [];
+for (const filename of actualFiles) {
+    const bytes = readFileSync(join(DIST, filename));
+    const digest = createHash('sha384').update(bytes).digest('base64');
+    const expectedHash = chunks[filename];
+    const actualHash = `sha384-${digest}`;
+    if (expectedHash !== actualHash) {
+        mismatches.push({ filename, expected: expectedHash, actual: actualHash });
+    }
+}
+
+if (mismatches.length > 0) {
+    console.error('[verify-manifest] chunk hashes do not match disk content:');
+    for (const m of mismatches) console.error(`  ${m.filename}\n    expected: ${m.expected}\n    actual:   ${m.actual}`);
+    process.exit(8);
+}
+
+console.log(`[verify-manifest] OK  channel=${CHANNEL}  version=${manifest.version}  chunks=${actualFiles.length}`);

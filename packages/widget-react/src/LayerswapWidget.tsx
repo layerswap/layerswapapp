@@ -16,6 +16,7 @@ import type {
 } from '@layerswap/widget';
 import { initRemote, loadWidget } from './runtime';
 import { fetchManifest, resolveRemoteEntry, verifyManifest, ManifestError } from './manifest';
+import { registerChunkHashes } from './sri';
 
 /**
  * Mirrors the shape of the props the CDN remote's `./Widget` export
@@ -155,7 +156,15 @@ async function resolveSource(
       throw new ManifestError('signature', 'manifest signature is missing or invalid');
     }
   }
-  return { remoteEntry: resolveRemoteEntry(props.manifest, manifest.remoteEntry) };
+  const remoteEntry = resolveRemoteEntry(props.manifest, manifest.remoteEntry);
+  // Install per-chunk SRI BEFORE MF runtime starts loading scripts. Once
+  // the manifest's signed body is trusted, its `chunks` map pins the bytes
+  // of every JS file the browser will fetch from our origin — including
+  // remoteEntry.js and every lazy chunk loaded later.
+  if (manifest.chunks && Object.keys(manifest.chunks).length > 0) {
+    registerChunkHashes(remoteEntry, manifest.chunks);
+  }
+  return { remoteEntry };
 }
 
 function buildLoader(props: LayerswapWidgetProps): () => Promise<{ default: WidgetComponent }> {

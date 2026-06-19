@@ -15,6 +15,16 @@ export type Manifest = {
     version: string;
     /** Absolute or manifest-relative URL to the remoteEntry.js. */
     remoteEntry: string;
+    /**
+     * Per-file SRI hashes for every JS chunk in the build, keyed by
+     * filename (e.g. `"1499.abc12345.js": "sha384-…"`). The loader uses
+     * these to set the `integrity` attribute on every `<script>` tag the
+     * MF runtime creates for our CDN origin — browser verifies natively
+     * and refuses to execute on mismatch. Closes the "swap a chunk while
+     * keeping the manifest" attack: the manifest's signed body pins the
+     * exact bytes of every downstream file.
+     */
+    chunks?: Record<string, string>;
     /** Operational kill switch — loader refuses to execute when true. */
     killSwitch?: boolean;
     /** Base64-encoded ECDSA P-256 signature over canonical(manifest, signature:null). */

@@ -1,16 +1,22 @@
 #!/usr/bin/env node
 // Emit `dist/<channel>/manifest.json` after `rspack build`.
 //
-// If `LAYERSWAP_PRIVATE_KEY_PEM` is set (path to an ECDSA P-256 private key
-// PEM file or the PEM text itself), the manifest is signed and the resulting
-// detached signature lives in the `signature` field. Otherwise the manifest
-// is emitted with `signature: null` — useful for local builds. The loader
-// rejects unsigned manifests only when called with `verify: true`.
+// The manifest contains:
+//   - version + remoteEntry URL
+//   - per-file SHA-384 hashes (SRI format) for every JS in dist/<channel>
+//   - killSwitch flag
+//   - detached ECDSA P-256 signature over the canonical body
+//
+// If `LAYERSWAP_PRIVATE_KEY_PEM` is set (path to a PEM file or PEM text),
+// the manifest is signed and the resulting signature lives in the
+// `signature` field. Otherwise the manifest is emitted unsigned — useful
+// for local builds. The loader rejects unsigned manifests only when
+// called with `verify: true`.
 
 import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createSign, createPrivateKey } from 'node:crypto';
+import { createSign, createPrivateKey, createHash } from 'node:crypto';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -29,9 +35,30 @@ const version = pkgJson.version || '0.0.0';
 // remoteEntry.js sits at the channel root by Rspack config.
 const remoteEntry = './remoteEntry.js';
 
+// Hash every JS file in the channel directory and record under the
+// filename. The browser will use these via SRI when MF loads the scripts.
+function sriOf(filePath) {
+    const bytes = readFileSync(filePath);
+    const digest = createHash('sha384').update(bytes).digest('base64');
+    return `sha384-${digest}`;
+}
+
+function collectChunks(dir) {
+    const out = {};
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        if (entry.isFile() && entry.name.endsWith('.js')) {
+            out[entry.name] = sriOf(join(dir, entry.name));
+        }
+    }
+    return out;
+}
+
+const chunks = collectChunks(DIST);
+
 const manifest = {
     version,
     remoteEntry,
+    chunks,
     killSwitch: false,
     signature: null,
 };
@@ -53,8 +80,8 @@ if (keyMaterial) {
     const signer = createSign('SHA256');
     signer.update(canonical);
     signer.end();
-    const der = signer.sign({ key: privateKey, dsaEncoding: 'ieee-p1363' });
-    manifest.signature = Buffer.from(der).toString('base64');
+    const sig = signer.sign({ key: privateKey, dsaEncoding: 'ieee-p1363' });
+    manifest.signature = Buffer.from(sig).toString('base64');
     console.log('[build-manifest] manifest signed.');
 } else {
     console.log('[build-manifest] LAYERSWAP_PRIVATE_KEY_PEM unset — emitting unsigned manifest.');
@@ -63,4 +90,4 @@ if (keyMaterial) {
 const out = join(DIST, 'manifest.json');
 writeFileSync(out, JSON.stringify(manifest, null, 2));
 console.log(`[build-manifest] wrote ${out}`);
-console.log(`[build-manifest] channel: ${CHANNEL}  version: ${version}  signature: ${manifest.signature ? 'yes' : 'no'}`);
+console.log(`[build-manifest] channel: ${CHANNEL}  version: ${version}  chunks: ${Object.keys(chunks).length}  signature: ${manifest.signature ? 'yes' : 'no'}`);
