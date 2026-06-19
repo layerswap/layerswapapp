@@ -1,6 +1,7 @@
 import { FC } from "react";
 import clsx from "clsx";
 import ColorSchema from "@/components/ColorSchema";
+import { PoweredByFooter } from "@/components/Widget/Footer";
 import AppSettings from "@/lib/AppSettings";
 
 const MethodCardSkeleton: FC = () => (
@@ -56,6 +57,8 @@ export const DepositLoading: FC = () => {
                                                 <MethodCardSkeleton />
                                             </div>
                                         </div>
+
+                                        {!AppSettings.ThemeData?.hidePoweredBy && <PoweredByFooter />}
                                     </div>
                                 </div>
                             </div>

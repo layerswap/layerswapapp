@@ -97,6 +97,7 @@ const DepositAddressFlow: FC<Props & { initialSwapData?: SwapResponse }> = ({ pa
                         hideDestinationPicker
                         lockDestinationAddress
                         hideEasyDepositBanner
+                        hidePoweredBy
                     />
                 </ValidationProvider>
             </div>

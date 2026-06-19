@@ -47,7 +47,7 @@ const ConnectStep: FC = () => {
         selectSourceAccount(wallet);
         if (destinationReady) push("wallet-source");
         else back();
-    }, [destinationReady, push, back]);
+    }, [destinationReady, push, back, selectSourceAccount]);
 
     return (
         <div className="openpicker flex flex-col min-h-0 w-full h-[373px]">

@@ -72,7 +72,7 @@ const Comp = ({ children, hidden, sticky = true, showPoweredBy }: FooterProps) =
                     </>
                     :
                     <div
-                        className={clsx('space-y-3', { 'mb-3 sm:mb-0': !showPoweredBy })}
+                        className={clsx('space-y-3')}
                     >
                         {children}
                     </div>
@@ -90,16 +90,22 @@ const Footer = ({ children, hidden, sticky, showPoweredBy }: FooterProps) => {
             {children}
             {
                 isPoweredByVisible &&
-                <div className={clsx("flex justify-center text-secondary-text", {
+                <PoweredByFooter className={clsx({
                     'mt-3 sm:!mb-0': isFooterSticky,
                     'mb-3 sm:!mb-0': !isFooterSticky,
-                })}>
-                    <a target="_blank" href='https://layerswap.io/' className="flex items-center gap-1.5 w-fit">
-                        <PoweredBy className="fill-secondary-text text-secondary-text" />
-                    </a>
-                </div>
+                })} />
             }
         </Comp>
+    )
+}
+
+export const PoweredByFooter = ({ className }: { className?: string }) => {
+    return (
+        <div className={clsx("flex justify-center text-secondary-text", className)}>
+            <a target="_blank" href='https://layerswap.io/' className="flex items-center gap-1.5 w-fit">
+                <PoweredBy className="fill-secondary-text text-secondary-text" />
+            </a>
+        </div>
     )
 }
 

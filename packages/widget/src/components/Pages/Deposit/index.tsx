@@ -1,5 +1,5 @@
 "use client";
-import { FC, useMemo, useRef, useState } from "react";
+import { FC, useCallback, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import { Partner } from "@/Models/Partner";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/shadcn/dialog";
@@ -15,6 +15,8 @@ import WalletFlow from "./Wallet";
 import TransferCrypto from "./TransferCrypto";
 import { SupportedDestination } from "./DestinationTokenPicker";
 import { Widget } from "@/components/Widget/Index";
+import { PoweredByFooter } from "@/components/Widget/Footer";
+import AppSettings from "@/lib/AppSettings";
 import ResizablePanel from "@/components/Common/ResizablePanel";
 import { DepositSettingsProvider } from "@/context/depositSettings";
 import ThemeWrapper from "@/components/themeWrapper";
@@ -92,6 +94,7 @@ const DepositForm: FC<Pick<DepositProps, "partner" | "title"> & { onClose?: () =
             <ResizablePanel transitionKey={`${step}:${selectedMultiChainConnector ? "eco" : ""}:${selectedConnector ? "conn" : ""}`}>
                 <StepRouter step={step} partner={partner} hasWalletMethods={hasWalletMethods} />
             </ResizablePanel>
+            {!AppSettings.ThemeData?.hidePoweredBy && <PoweredByFooter />}
         </div>
     );
 };
@@ -121,6 +124,23 @@ const DepositCard: FC<Pick<DepositProps, "partner" | "destination" | "destinatio
 export const DepositComponent: FC<DepositProps> = ({ mode = "inline", buttonLabel = "Deposit", buttonClassName, ...props }) => {
     const [open, setOpen] = useState(false);
     const { isMobile } = useWindowDimensions();
+    const { cancel } = useConnectModal();
+
+    // Closing the deposit surface — via Escape, the in-widget close button, or
+    // (on mobile) drag-to-dismiss — must also cancel any in-flight wallet
+    // connection so a pending connect() promise doesn't dangle. cancel() resolves
+    // that promise with `undefined` and is a no-op when nothing is connecting.
+    const closeDeposit = useCallback(() => {
+        setOpen(false);
+        cancel();
+    }, [cancel]);
+    const handleOpenChange = useCallback(
+        (next: boolean) => {
+            if (next) setOpen(true);
+            else closeDeposit();
+        },
+        [closeDeposit],
+    );
 
     // Keep the latest props reachable from the (stable) drawer view. Recreating
     // the view component on every render would remount the whole deposit flow
@@ -130,7 +150,7 @@ export const DepositComponent: FC<DepositProps> = ({ mode = "inline", buttonLabe
     const drawerViews = useMemo<ViewsRegistry>(
         () => ({
             default: function DepositDrawerView() {
-                return <DepositCard {...propsRef.current} onClose={() => setOpen(false)} />;
+                return <DepositCard {...propsRef.current} onClose={closeDeposit} />;
             },
         }),
         [],
@@ -157,7 +177,7 @@ export const DepositComponent: FC<DepositProps> = ({ mode = "inline", buttonLabe
                     bare
                     closeOnOutsideClick={false}
                     open={open}
-                    onOpenChange={setOpen}
+                    onOpenChange={handleOpenChange}
                     trigger={triggerButton}
                     views={drawerViews}
                 />
@@ -166,14 +186,14 @@ export const DepositComponent: FC<DepositProps> = ({ mode = "inline", buttonLabe
 
         // Desktop: keep the centered dialog.
         return (
-            <Dialog open={open} onOpenChange={setOpen}>
+            <Dialog open={open} onOpenChange={handleOpenChange}>
                 <DialogTrigger asChild>{triggerButton}</DialogTrigger>
                 <DialogContent
                     onInteractOutside={(e) => e.preventDefault()}
                     showCloseButton={false}
                     className="!p-0 !bg-transparent !ring-0 !gap-0 sm:!max-w-md *:min-w-0"
                 >
-                    <DepositCard {...props} onClose={() => setOpen(false)} />
+                    <DepositCard {...props} onClose={closeDeposit} />
                 </DialogContent>
             </Dialog>
         );

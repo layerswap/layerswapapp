@@ -42,9 +42,13 @@ type Props = {
     /** When true, hide the "Easy deposit in 3 steps" instructional banner.
      * Used by the deposit widget where the parent provides its own context. */
     hideEasyDepositBanner?: boolean;
+    /** When true, suppress the "Powered by Layerswap" footer. Used by the
+     * deposit widget, which renders a single powered-by footer at its own root
+     * so it shows on every step rather than only this reused form. */
+    hidePoweredBy?: boolean;
 };
 
-const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPicker, lockDestinationAddress, hideEasyDepositBanner }) => {
+const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPicker, lockDestinationAddress, hideEasyDepositBanner, hidePoweredBy }) => {
     const {
         values, isSubmitting, setFieldValue, submitForm
     } = useFormikContext<SwapFormValues>();
@@ -277,7 +281,7 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
                         </div>
                     </Widget.Content>
                 )}
-                <Widget.Footer showPoweredBy>
+                <Widget.Footer showPoweredBy={!hidePoweredBy}>
                     <DepositAddressFormButton
                         values={values}
                         isValid={isValid}
