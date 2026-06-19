@@ -1,8 +1,6 @@
-import { Network } from "@/Models/Network";
-import KnownInternalNames from "../../knownIds";
-import { HYPERLIQUID_USDC_SYMBOL, HYPERLIQUID_WITHDRAW_HEADROOM } from "../../wallets/hyperliquid/constants";
-import { GasProps } from "../../../Models/Balance";
-import { GasProvider, GasWithToken } from "./types";
+import { HYPERLIQUID_USDC_SYMBOL, HYPERLIQUID_WITHDRAW_HEADROOM } from "./constants";
+import { KnownInternalNames } from "@layerswap/widget/internal";
+import { GasProps, GasProvider, GasWithToken, Network } from "@layerswap/widget/types";
 
 /**
  * Headroom HL reserves for the `sendToEvmWithData` HyperCore-side processing, in

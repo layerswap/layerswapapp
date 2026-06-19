@@ -1,4 +1,4 @@
-import { WithdrawableSplit } from '@/lib/apiClients/hyperliquidClient'
+import { WithdrawableSplit } from './hyperliquidClient'
 import { HYPERLIQUID_DEX_PERP, HYPERLIQUID_DEX_SPOT } from './constants'
 
 /**

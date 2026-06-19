@@ -1,7 +1,6 @@
-import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
-import { ExtendedRouteProvider, ExtendedTokenMapping, RealRouteRef } from "../types";
-import { HYPERLIQUID_ROUTES, HyperliquidDestination, HyperliquidRoute, getHyperliquidCandidates, pickHyperliquidDestination } from "@/lib/wallets/hyperliquid/routes";
-import { HYPERLIQUID_USDC_SYMBOL } from "@/lib/wallets/hyperliquid/constants";
+import { HYPERLIQUID_ROUTES, HyperliquidDestination, HyperliquidRoute, getHyperliquidCandidates, pickHyperliquidDestination } from "./routes";
+import { HYPERLIQUID_USDC_SYMBOL } from "./constants";
+import { ExtendedRouteProvider, ExtendedTokenMapping, NetworkRoute, NetworkRouteToken, RealRouteRef } from "@layerswap/widget/types";
 
 /**
  * Build an extended-route mapping from a (route, chosen destination) pair.

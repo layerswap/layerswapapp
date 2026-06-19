@@ -75,11 +75,11 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
     const defaultBalanceProviders = [
         new LazyBalanceProvider(
             (n) => n.type === NetworkType.EVM && !!n.token,
-            () => import("./balanceProviders/evmBalanceProvider").then(m => new m.EVMBalanceProvider())
+            () => import("./balanceProviders").then(m => new m.EVMBalanceProvider())
         ),
         new LazyBalanceProvider(
             (n) => n.name === KnownInternalNames.Networks.HyperliquidMainnet || n.name === KnownInternalNames.Networks.HyperliquidTestnet,
-            () => import("./balanceProviders/hyperliquidBalanceProvider").then(m => new m.HyperliquidBalanceProvider())
+            () => import("./balanceProviders").then(m => new m.HyperliquidBalanceProvider())
         ),
         ...moduleBalanceProviders,
     ];
@@ -90,7 +90,11 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
     const defaultGasProviders = [
         new LazyGasProvider(
             (n) => n.type === NetworkType.EVM && !!n.token,
-            () => import("./gasProviders/evmGasProvider").then(m => new m.EVMGasProvider())
+            () => import("./gasProviders").then(m => new m.EVMGasProvider())
+        ),
+        new LazyGasProvider(
+            (n) => n.type === NetworkType.EVM && !!n.token,
+            () => import("./gasProviders").then(m => new m.HyperliquidGasProvider())
         ),
         ...moduleGasProviders,
     ];
@@ -144,18 +148,24 @@ export const EVMProvider: WalletProvider = {
         );
     },
     walletConnectionProvider: useEVMConnection,
-    gasProvider: [new LazyGasProvider(
-        (n) => n.type === NetworkType.EVM && !!n.token,
-        () => import("./gasProviders/evmGasProvider").then(m => new m.EVMGasProvider())
-    )],
+    gasProvider: [
+        new LazyGasProvider(
+            (n) => n.type === NetworkType.EVM && !!n.token,
+            () => import("./gasProviders").then(m => new m.EVMGasProvider()),
+        ),
+        new LazyGasProvider(
+            (n) => n.type === NetworkType.EVM && !!n.token,
+            () => import("./gasProviders").then(m => new m.HyperliquidGasProvider()),
+        )
+    ],
     balanceProvider: [
         new LazyBalanceProvider(
             (n) => n.type === NetworkType.EVM && !!n.token,
-            () => import("./balanceProviders/evmBalanceProvider").then(m => new m.EVMBalanceProvider())
+            () => import("./balanceProviders").then(m => new m.EVMBalanceProvider())
         ),
         new LazyBalanceProvider(
             (n) => n.name === KnownInternalNames.Networks.HyperliquidMainnet || n.name === KnownInternalNames.Networks.HyperliquidTestnet,
-            () => import("./balanceProviders/hyperliquidBalanceProvider").then(m => new m.HyperliquidBalanceProvider())
+            () => import("./balanceProviders").then(m => new m.HyperliquidBalanceProvider())
         ),
     ],
     transferProvider: [useEVMTransfer],

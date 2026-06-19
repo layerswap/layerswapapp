@@ -1,10 +1,8 @@
 import { NetworkRoute, NetworkWithTokens } from "@/Models/Network";
 import { DecimalInput, addDecimal, subtractDecimal } from "./amounts";
 import { ExtendedRoutePlan, ExtendedRouteProvider, RealRouteRef, ResolvedExtendedMapping } from "./types";
-import { hyperliquidProvider } from "./providers/hyperliquid";
 
-// Adding a provider = one file + one entry here.
-const SOURCE_PROVIDERS: ExtendedRouteProvider[] = [hyperliquidProvider]
+const SOURCE_PROVIDERS: ExtendedRouteProvider[] = []
 
 export function getSourceProviders(): ExtendedRouteProvider[] {
     return SOURCE_PROVIDERS

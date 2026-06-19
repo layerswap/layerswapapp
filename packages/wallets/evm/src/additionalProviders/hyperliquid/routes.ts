@@ -1,4 +1,3 @@
-import KnownInternalNames from "@/lib/knownIds";
 
 /**
  * Single source of truth for Hyperliquid CCTP withdrawal routes, keyed by the
@@ -10,6 +9,8 @@ import KnownInternalNames from "@/lib/knownIds";
  *
  * Adding/switching a destination = one entry in `destinations`.
  */
+
+import { KnownInternalNames } from "@layerswap/widget/internal"
 
 /** Per-destination CCTP params + economics. Different chains can have different
  * forwarding fees, arrival times, decimals, and signature chain ids. */

@@ -2,7 +2,7 @@ import { signTypedData } from '@wagmi/core'
 import { parseSignature } from 'viem'
 import { Config } from 'wagmi'
 import { HyperliquidConfig, HYPERLIQUID_SOURCE_DEX, HYPERLIQUID_SPOT_TOKEN, HYPERLIQUID_WITHDRAW_GAS_LIMIT } from './constants'
-import { HyperliquidSendToEvmAction, HyperliquidSignature, HyperliquidUsdClassTransferAction } from '@/lib/apiClients/hyperliquidClient'
+import { HyperliquidSendToEvmAction, HyperliquidSignature, HyperliquidUsdClassTransferAction } from './hyperliquidClient'
 
 export type SignSendToEvmParams = {
     /** Recipient address on the destination chain. */

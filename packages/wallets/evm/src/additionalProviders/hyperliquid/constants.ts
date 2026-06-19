@@ -1,4 +1,4 @@
-import { NetworkWithTokens } from "@/Models/Network";
+import { NetworkWithTokens } from "@layerswap/widget/types";
 import { HYPERLIQUID_ROUTES, pickHyperliquidDestination } from "./routes";
 
 export const HYPERLIQUID_USDC_SYMBOL = 'USDC'
