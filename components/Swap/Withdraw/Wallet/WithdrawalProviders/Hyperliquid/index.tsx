@@ -21,7 +21,7 @@ export const HyperliquidWalletWithdraw: FC<WithdrawPageProps> = (props) => {
     if (consolidation) {
         const fromLabel = consolidation.toPerp ? 'Spot' : 'Perps'
         const toLabel = consolidation.toPerp ? 'Perps' : 'Spot'
-        const symbol = source_token?.symbol
+        const symbol = source_token.symbol
         consolidationMessage = consolidation.step === 'sign'
             ? {
                 header: 'Approve moving your balance',
