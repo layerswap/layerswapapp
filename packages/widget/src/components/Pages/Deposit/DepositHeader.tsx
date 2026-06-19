@@ -3,7 +3,7 @@ import { ChevronLeft, X } from "lucide-react";
 import { useDepositStep } from "./depositStepContext";
 import IconButton from "@/components/Buttons/iconButton";
 
-const DepositHeader: FC<{ title?: string; onClose?: () => void }> = ({ title = "Deposit", onClose }) => {
+const DepositHeader: FC<{ title?: string; onClose?: () => void; onBack?: () => void }> = ({ title = "Deposit", onClose, onBack }) => {
     const { back, canGoBack, closeLocked } = useDepositStep();
 
     // Hide the close button while a transfer is mid-flight so the user can't
@@ -16,7 +16,7 @@ const DepositHeader: FC<{ title?: string; onClose?: () => void }> = ({ title = "
             <div className="flex items-center gap-1">
                 {canGoBack && (
                     <IconButton
-                        onClick={back}
+                        onClick={onBack ?? back}
                         icon={<ChevronLeft className="h-5 w-5" />}
                         aria-label="Back"
                     />

@@ -70,7 +70,7 @@ const MethodPicker: FC = () => {
             push("wallet-source");
             return;
         }
-        push("wallet-connecting");
+        push("wallet-connect");
     };
 
     const handleTransferCryptoClick = () => {
@@ -79,13 +79,9 @@ const MethodPicker: FC = () => {
 
     const handleMoreWalletsClick = () => {
         if (!destinationReady) return;
-        push("wallet-connecting");
+        push("wallet-connect");
     };
 
-    // The wallet flow lands on AmountStep, which requires a destination to
-    // produce a quote. Keep the card actionable while disconnected (so the
-    // connecting step can still open the connect modal) but block forward
-    // navigation until ready.
     const walletDisabled = hasWallet && !destinationReady;
     const walletSubtitle = hasWallet
         ? `Connected · ${new Address(primaryWallet?.address, null, primaryWallet.providerName).toShortString()}`

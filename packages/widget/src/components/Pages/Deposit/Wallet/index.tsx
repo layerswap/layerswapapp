@@ -5,6 +5,7 @@ import { SwapDataProvider } from "@/context/swap";
 import { ValidationProvider } from "@/context/validationContext";
 import { useDepositStep } from "../depositStepContext";
 import { useDepositInitialValues } from "../depositSelectionContext";
+import ConnectStep from "./ConnectStep";
 import SourceStep from "./SourceStep";
 import AmountStep from "./AmountStep";
 import ProcessingStep from "./ProcessingStep";
@@ -15,6 +16,7 @@ type Props = {
 
 const Comp: FC<Props> = ({ partner }) => {
     const { step } = useDepositStep();
+    if (step === "wallet-connect") return <ConnectStep />;
     if (step === "wallet-source") return <SourceStep />;
     if (step === "wallet-amount") return <AmountStep />;
     if (step === "wallet-processing") return <ProcessingStep partner={partner} />;

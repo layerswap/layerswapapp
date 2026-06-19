@@ -3,7 +3,7 @@ import ColorSchema from "./ColorSchema";
 import AppSettings from "../lib/AppSettings";
 import { FC } from "react";
 import WalletIcon from "./Icons/WalletIcon";
-import { PoweredBy } from "./Widget/Footer";
+import { PoweredByFooter } from "./Widget/Footer";
 import clsx from "clsx";
 export const WidgetLoading: FC = () => {
     const isFooterSticky = (AppSettings.ThemeData?.enablePortal && AppSettings.ThemeData?.enablePortal == true) ?? false
@@ -86,14 +86,10 @@ export const WidgetLoading: FC = () => {
                                                         </div>
                                                         {
                                                             !AppSettings.ThemeData?.hidePoweredBy &&
-                                                            <div className={clsx("flex justify-center text-secondary-text", {
+                                                            <PoweredByFooter className={clsx({
                                                                 'mt-3 sm:!mb-0': isFooterSticky,
                                                                 'mb-3 sm:!mb-0': !isFooterSticky,
-                                                            })}>
-                                                                <a target="_blank" href='https://layerswap.io/' className="flex items-center gap-1.5 w-fit">
-                                                                    <PoweredBy className="fill-secondary-text text-secondary-text" />
-                                                                </a>
-                                                            </div>
+                                                            })} />
                                                         }
                                                     </div>
                                                 </div>
