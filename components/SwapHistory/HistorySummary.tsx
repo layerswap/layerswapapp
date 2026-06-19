@@ -12,6 +12,7 @@ import { Wallet } from "@/Models/WalletProvider";
 import { ImageWithFallback } from "../Common/ImageWithFallback";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip"
 import { truncateDecimals } from "../utils/RoundDecimals"
+import { useExtendedSwapDisplay } from "@/hooks/useExtendedSwapDisplay"
 
 type SwapInfoProps = {
     className?: string,
@@ -36,25 +37,31 @@ const HistorySummary: FC<SwapInfoProps> = ({
 
     const { source_network, destination_network, source_token, destination_token, source_exchange, destination_exchange, requested_amount } = swap || {}
 
-    const source = hideFrom ? partner : (source_exchange || source_network)
+    const extendedDisplay = useExtendedSwapDisplay(swap?.id)
+    const displaySourceNetwork = extendedDisplay?.network ?? source_network
+    const displaySourceToken = extendedDisplay?.token ?? source_token
+
+    const source = hideFrom ? partner : (source_exchange || displaySourceNetwork)
     const destination = hideTo ? partner : (destination_exchange || destination_network)
 
     const sourceTransaction = swap.transactions?.find(t => t.type === TransactionType.Input)
-    const sentAmount = sourceTransaction?.amount ?? requested_amount
+    const sentAmount = extendedDisplay
+        ? Number(extendedDisplay.record.sourceAmount)
+        : (sourceTransaction?.amount ?? requested_amount)
 
     const destinationTransaction = swap.transactions?.find(t => t.type === TransactionType.Output)
     const receiveAmount = destinationTransaction?.amount ?? quote?.receive_amount
 
     return (
-        source_token && <>
+        displaySourceToken && <>
             <div className={`${className || ""} bg-secondary-500 relative z-10 w-full rounded-xl overflow-hidden hover:bg-secondary-400`}>
                 <div className="grid grid-cols-12 items-center gap-2 relative z-50">
                     <div className="col-span-6 flex items-center gap-2 p-3">
                         <div className="w-8 h-8 relative">
                             <div className="h-[30px] w-[30px] rounded-full overflow-hidden">
                                 <ImageWithFallback
-                                    src={source_token.logo}
-                                    alt={`${source_token.symbol} logo`}
+                                    src={displaySourceToken.logo}
+                                    alt={`${displaySourceToken.symbol} logo`}
                                     width={30}
                                     height={30}
                                     className="rounded-full"
@@ -78,7 +85,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <span className="truncate block shrink">
-                                            {truncateDecimals(sentAmount, source_token.precision)}
+                                            {truncateDecimals(sentAmount, displaySourceToken.precision)}
                                         </span>
                                     </TooltipTrigger>
                                     <TooltipContent>
@@ -86,7 +93,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                                     </TooltipContent>
                                 </Tooltip>
 
-                                <span className="shrink-0">{source_token.symbol}</span>
+                                <span className="shrink-0">{displaySourceToken.symbol}</span>
                             </div>
 
                             <span className="text-secondary-text text-sm text-left leading-3.5">

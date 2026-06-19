@@ -11,14 +11,12 @@ type Props = {
     className?: string;
     network?: { name: string } | null;
     providerName?: string;
-    /** Render the raw identicon without the "saved address" blur + person overlay. */
-    plain?: boolean;
 }
 
-const AddressIcon: FC<Props> = ({ address, size, className, network, providerName, plain }) => {
+const AddressIcon: FC<Props> = ({ address, size, className, network, providerName }) => {
     const ref = useRef<HTMLDivElement>(null)
     const savedName = useAddressName(address, network, providerName)
-    const saved = !plain && !!savedName
+    const saved = !!savedName
     // Mirror the connected-wallet network badge (≈0.5 of the icon, poking out the corner).
     const badgeSize = Math.max(9, Math.round(size * 0.5))
     const badgeOffset = Math.max(1, Math.round(size * 0.08))

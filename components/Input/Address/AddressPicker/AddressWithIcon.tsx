@@ -28,7 +28,7 @@ type Props = {
 const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, onRemove }) => {
 
     const maxWalletNameWidth = calculateMaxWidth(String(balance?.amount));
-    const resolvedDisplayName = useAddressName(addressItem.address, network)
+    const resolvedDisplayName = useAddressName(addressItem.address, network, addressItem.providerName)
 
     const descriptions = [
         {
@@ -54,8 +54,11 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
         if (network) {
             return new Address(addressItem.address, network).full
         }
+        if (addressItem.providerName) {
+            return new Address(addressItem.address, null, addressItem.providerName).full
+        }
         return addressItem.address
-    }, [addressItem.address, network])
+    }, [addressItem.address, network, addressItem.providerName])
 
     return (
         <div className="w-full flex items-center justify-between">
@@ -73,7 +76,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
                         )}
                     </div>
                 ) : (
-                    <AddressIcon address={address} size={36} network={network} className="rounded-md shrink-0" />
+                    <AddressIcon address={address} size={36} network={network} providerName={addressItem.providerName} className="rounded-md shrink-0" />
                 )
             }
 

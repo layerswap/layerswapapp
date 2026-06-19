@@ -12,10 +12,6 @@ const StarknetWalletWithdrawStep = dynamic<WithdrawPageProps>(
     () => import("./WithdrawalProviders/StarknetWalletWithdraw").then((module) => module.StarknetWalletWithdrawStep),
     { ssr: false }
 );
-const LoopringWalletWithdraw = dynamic<WithdrawPageProps>(
-    () => import("./WithdrawalProviders/Loopring").then((module) => module.LoopringWalletWithdraw),
-    { ssr: false }
-);
 const TonWalletWithdrawStep = dynamic<WithdrawPageProps>(
     () => import("./WithdrawalProviders/TonWalletWithdraw").then((module) => module.TonWalletWithdrawStep),
     { ssr: false }
@@ -44,6 +40,10 @@ const EVMWalletWithdrawal = dynamic<WithdrawPageProps>(
     () => import("./WithdrawalProviders/EVMWalletWithdraw").then((module) => module.EVMWalletWithdrawal),
     { ssr: false }
 );
+const HyperliquidWalletWithdraw = dynamic<WithdrawPageProps>(
+    () => import('../Wallet/WithdrawalProviders/Hyperliquid').then(m => m.HyperliquidWalletWithdraw),
+    { ssr: false }
+)
 
 type Props = {
     swapData: SwapBasicData
@@ -71,14 +71,6 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
         },
         {
             supportedNetworks: [
-                KnownInternalNames.Networks.LoopringMainnet,
-                KnownInternalNames.Networks.LoopringGoerli,
-                KnownInternalNames.Networks.LoopringSepolia
-            ],
-            component: LoopringWalletWithdraw
-        },
-        {
-            supportedNetworks: [
                 KnownInternalNames.Networks.TONMainnet,
                 KnownInternalNames.Networks.TONTestnet
             ],
@@ -100,7 +92,8 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
         },
         {
             supportedNetworks: [
-                KnownInternalNames.Networks.TronMainnet
+                KnownInternalNames.Networks.TronMainnet,
+                KnownInternalNames.Networks.TronTestnet
             ],
             component: TronWalletWithdraw
         },
@@ -122,6 +115,12 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
                 source_network?.type == NetworkType.EVM ? source_network.name : undefined
             ],
             component: EVMWalletWithdrawal
+        },
+        {
+            supportedNetworks: [
+                source_network?.type == NetworkType.Hyperliquid ? source_network.name : undefined
+            ],
+            component: HyperliquidWalletWithdraw
         }
     ] as { supportedNetworks: (string | undefined)[]; component: ComponentType<WithdrawPageProps> }[], [source_network])
 
