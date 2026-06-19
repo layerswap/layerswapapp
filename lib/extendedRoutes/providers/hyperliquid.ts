@@ -13,7 +13,6 @@ const toMapping = (route: HyperliquidRoute, dest: HyperliquidDestination): Exten
     real: { networkName: dest.realNetworkName, tokenSymbol: dest.realTokenSymbol },
     flatFee: dest.flatFee,
     extraCompletionSeconds: dest.arrivalSeconds,
-    minSourceAmount: route.minSourceAmount,
     realDecimals: dest.realDecimals,
 })
 

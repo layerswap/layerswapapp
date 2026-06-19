@@ -34,8 +34,6 @@ export type HyperliquidRoute = {
     hyperliquidChain: 'Mainnet' | 'Testnet'
     /** HL API endpoint; overridable per-network via settings `node_url`. */
     defaultNodeUrl: string
-    /** Minimum amount that may leave Hyperliquid, in source-token units. */
-    minSourceAmount: number
     /** Destination candidates in priority order. First non-conflicting one wins. */
     destinations: HyperliquidDestination[]
 }
@@ -93,13 +91,11 @@ export const HYPERLIQUID_ROUTES: Record<string, HyperliquidRoute> = {
     [KnownInternalNames.Networks.HyperliquidMainnet]: {
         hyperliquidChain: 'Mainnet',
         defaultNodeUrl: MAINNET_NODE,
-        minSourceAmount: 1,
         destinations: [BASE_MAINNET, ARBITRUM_MAINNET],
     },
     [KnownInternalNames.Networks.HyperliquidTestnet]: {
         hyperliquidChain: 'Testnet',
         defaultNodeUrl: TESTNET_NODE,
-        minSourceAmount: 1,
         destinations: [BASE_SEPOLIA, ARBITRUM_SEPOLIA],
     },
 }

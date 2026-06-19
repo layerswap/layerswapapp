@@ -19,8 +19,6 @@ export type ExtendedTokenMapping = {
     flatFee: number
     /** Extra completion time added to the backend quote, in seconds. */
     extraCompletionSeconds: number
-    /** Minimum amount that may leave the extended source (source-token units). */
-    minSourceAmount?: number
     /** Decimal places of the real token; used to truncate the forwarded amount. */
     realDecimals?: number
 }
