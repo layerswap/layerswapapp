@@ -34,7 +34,10 @@ import { useAdditionalConnectors } from "@/lib/wallets/walletConnect/useAddition
 import { createRegistryConnector } from "@/lib/wallets/walletConnect/createRegistryConnector"
 
 const SOLANA_NS = 'solana'
-const SOLANA_WC_ADAPTER_NAME = 'WalletConnect'
+const SOLANA_WC_MODAL_NAME = 'WalletConnect'
+const SOLANA_HIDDEN_WC_NAME = 'Hidden WalletConnect'
+
+const normalizeWcName = (name?: string) => name === SOLANA_HIDDEN_WC_NAME ? SOLANA_WC_MODAL_NAME : name
 
 const solanaNames = [KnownInternalNames.Networks.SolanaMainnet, KnownInternalNames.Networks.SolanaDevnet, KnownInternalNames.Networks.SolanaTestnet]
 
@@ -71,7 +74,7 @@ export default function useSVM(): WalletProvider {
         // for UP.init() — the cold init is what makes recent-wallet reconnects
         // after a refresh spin on "QR loading" for several seconds.
         if (isWalletModalOpen) {
-            const wcAdapterEntry = walletsRef.current.find(w => w.adapter.name === SOLANA_WC_ADAPTER_NAME)
+            const wcAdapterEntry = walletsRef.current.find(w => w.adapter.name === SOLANA_HIDDEN_WC_NAME)
             const wcAdapter = wcAdapterEntry?.adapter as unknown as SolanaWalletConnectAdapter | undefined
             wcAdapter?.warmup?.()
         }
@@ -80,14 +83,15 @@ export default function useSVM(): WalletProvider {
     const connectedWallets = useMemo(() => {
 
         if (solanaWallet?.adapter.connected === true) {
-            const isWalletConnect = connectedAdapterName === SOLANA_WC_ADAPTER_NAME
+            const isWalletConnect = connectedAdapterName === SOLANA_WC_MODAL_NAME || connectedAdapterName === SOLANA_HIDDEN_WC_NAME
             const dynamicMeta = (isWalletConnect && connectedAddress)
                 ? (getDynamicWcMetadata(SOLANA_NS, connectedAddress) || getPendingDynamicWcMetadata(SOLANA_NS))
                 : null
 
-            const displayName = dynamicMeta?.name || connectedAdapterName
+            const normalizedName = normalizeWcName(connectedAdapterName)
+            const displayName = dynamicMeta?.name || normalizedName
             const displayIcon = dynamicMeta?.icon || connectedWallet?.adapter.icon
-            const displayId = dynamicMeta?.id || (connectedAdapterName ? String(connectedAdapterName) : undefined)
+            const displayId = dynamicMeta?.id || (normalizedName ? String(normalizedName) : undefined)
 
             const wallet: Wallet | undefined = (connectedAddress && displayId) ? {
                 id: displayId,
@@ -115,22 +119,24 @@ export default function useSVM(): WalletProvider {
         let unsubscribeDisplayUri: (() => void) | undefined
         let registry: WalletConnectWalletBase | undefined
         try {
-            const isBareWcTile = connector.name === SOLANA_WC_ADAPTER_NAME
+            const isBareWcTile = connector.name === SOLANA_WC_MODAL_NAME
             const currentWallets = walletsRef.current
             const installedAdapter = currentWallets.find(w => walletKey(w.adapter.name) === walletKey(connector.name))
-            const walletConnectAdapter = currentWallets.find(w => w.adapter.name === SOLANA_WC_ADAPTER_NAME)
+            const hiddenWcAdapter = currentWallets.find(w => w.adapter.name === SOLANA_HIDDEN_WC_NAME)
+            const modalWcAdapter = currentWallets.find(w => w.adapter.name === SOLANA_WC_MODAL_NAME)
 
             let matchedRegistry = getRegistryEntry(connector)
             if (!matchedRegistry && isMobilePlatform && installedAdapter && !isBareWcTile) {
                 matchedRegistry = await findRegistryWalletByName(requestRegistryConnectors, connector.name)
             }
-            const useWalletConnect = isBareWcTile
-                || (!!matchedRegistry && (isMobilePlatform || !installedAdapter))
+            const useWalletConnect = !isBareWcTile && (
+                (!!matchedRegistry && (isMobilePlatform || !installedAdapter))
                 || (connector.hasBrowserExtension && (connector.showQrCode || (isMobilePlatform && connector.extensionNotFound)))
+            )
 
             registry = useWalletConnect ? matchedRegistry : undefined
 
-            const targetAdapterEntry = useWalletConnect ? walletConnectAdapter : installedAdapter
+            const targetAdapterEntry = isBareWcTile ? modalWcAdapter : (useWalletConnect ? hiddenWcAdapter : installedAdapter)
             if (!targetAdapterEntry) throw new Error('Connector not found')
 
             if (connectedWallet) {
@@ -142,8 +148,8 @@ export default function useSVM(): WalletProvider {
                 ? (uri: string) => buildDeepLink({ id: deeplinkRegistry.id, mobile: deeplinkRegistry.mobile }, uri)
                 : undefined
 
-            if (useWalletConnect && walletConnectAdapter) {
-                const wcAdapter = walletConnectAdapter.adapter as unknown as SolanaWalletConnectAdapter
+            if (useWalletConnect && hiddenWcAdapter) {
+                const wcAdapter = hiddenWcAdapter.adapter as unknown as SolanaWalletConnectAdapter
 
                 // Track display metadata so connectedWallets can render the right name/icon after success
                 setPendingMetadataForRegistry(SOLANA_NS, registry)
@@ -206,8 +212,9 @@ export default function useSVM(): WalletProvider {
                 })
             }
 
-            const displayId = registry?.id || (newConnectedWallet?.adapter.name ? String(newConnectedWallet.adapter.name) : undefined)
-            const displayName = registry?.name || newConnectedWallet?.adapter.name
+            const resolvedAdapterName = normalizeWcName(newConnectedWallet?.adapter.name)
+            const displayId = registry?.id || (resolvedAdapterName ? String(resolvedAdapterName) : undefined)
+            const displayName = registry?.name || resolvedAdapterName
             const displayIconRaw = registry?.icon || newConnectedWallet?.adapter.icon
 
             const wallet: Wallet | undefined = newAddress && newConnectedWallet && displayId ? {
@@ -249,7 +256,8 @@ export default function useSVM(): WalletProvider {
 
         for (const wallet of wallets) {
             const adapterName = wallet.adapter.name.trim()
-            const isWcAdapter = adapterName === SOLANA_WC_ADAPTER_NAME
+            if (adapterName === SOLANA_HIDDEN_WC_NAME) continue
+            const isWcAdapter = adapterName === SOLANA_WC_MODAL_NAME
             const isInstalled = wallet.readyState === 'Installed' || wallet.readyState === 'Loadable' || adapterName === 'Coinbase Wallet'
             const internalConnector: InternalConnector = {
                 name: adapterName,
