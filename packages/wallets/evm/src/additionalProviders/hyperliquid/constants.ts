@@ -14,6 +14,14 @@ export const HYPERLIQUID_WITHDRAW_HEADROOM = 0.01
 export const HYPERLIQUID_TRANSFER_POLL_INTERVAL_MS = 1500
 export const HYPERLIQUID_TRANSFER_POLL_TIMEOUT_MS = 30000
 
+// Hyperliquid actions are EIP-712-signed against a fixed Ethereum domain (the wallet must be
+// on this chain to sign). The CCTP destination is carried separately by `destinationCctpDomain`,
+// so the signing chain is independent of where the funds land — a constant Ethereum chain works.
+export const HYPERLIQUID_SIGNATURE_CHAIN_ID_MAINNET = 1
+export const HYPERLIQUID_SIGNATURE_CHAIN_ID_TESTNET = 11155111
+const HYPERLIQUID_SIGNATURE_CHAIN_ID_HEX_MAINNET = '0x1' as const
+const HYPERLIQUID_SIGNATURE_CHAIN_ID_HEX_TESTNET = '0xaa36a7' as const
+
 export type HyperliquidChain = 'Mainnet' | 'Testnet'
 
 function registrableDomain(hostname: string): string {
@@ -66,12 +74,14 @@ export function resolveHyperliquidConfig(
     if (!dest) return undefined
 
     const network = networks.find(n => n.name === sourceNetworkName)
+    const isTestnet = route.hyperliquidChain === 'Testnet'
 
     return {
         nodeUrl: resolveNodeUrl(network?.node_url, route.defaultNodeUrl),
         hyperliquidChain: route.hyperliquidChain,
-        signatureChainId: dest.signatureChainId,
-        signatureChainIdHex: dest.signatureChainIdHex,
+        // Fixed Ethereum signing domain — independent of the CCTP destination below.
+        signatureChainId: isTestnet ? HYPERLIQUID_SIGNATURE_CHAIN_ID_TESTNET : HYPERLIQUID_SIGNATURE_CHAIN_ID_MAINNET,
+        signatureChainIdHex: isTestnet ? HYPERLIQUID_SIGNATURE_CHAIN_ID_HEX_TESTNET : HYPERLIQUID_SIGNATURE_CHAIN_ID_HEX_MAINNET,
         destinationCctpDomain: dest.destinationCctpDomain,
     }
 }

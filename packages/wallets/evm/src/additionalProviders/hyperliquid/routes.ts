@@ -22,9 +22,6 @@ export type HyperliquidDestination = {
     realDecimals: number
     /** Circle CCTP destination domain (6 = Base, 3 = Arbitrum, …). */
     destinationCctpDomain: number
-    /** Destination chain's EVM chain id; the typed-data domain is signed against it. */
-    signatureChainId: number
-    signatureChainIdHex: `0x${string}`
     /** CCTP forwarding fee, in source-token (USDC) units. */
     flatFee: number
     /** Typical arrival time added to the quote, in seconds. */
@@ -52,8 +49,6 @@ const BASE_MAINNET: HyperliquidDestination = {
     realTokenSymbol: 'USDC',
     realDecimals: 6,
     destinationCctpDomain: BASE_CCTP_DOMAIN,
-    signatureChainId: 8453,
-    signatureChainIdHex: '0x2105',
     flatFee: 0.2,
     arrivalSeconds: 5,
 }
@@ -62,8 +57,6 @@ const ARBITRUM_MAINNET: HyperliquidDestination = {
     realTokenSymbol: 'USDC',
     realDecimals: 6,
     destinationCctpDomain: ARBITRUM_CCTP_DOMAIN,
-    signatureChainId: 42161,
-    signatureChainIdHex: '0xa4b1',
     flatFee: 0.2,
     arrivalSeconds: 5,
 }
@@ -72,8 +65,6 @@ const BASE_SEPOLIA: HyperliquidDestination = {
     realTokenSymbol: 'USDC',
     realDecimals: 6,
     destinationCctpDomain: BASE_CCTP_DOMAIN,
-    signatureChainId: 84532,
-    signatureChainIdHex: '0x14a34',
     flatFee: 0.2,
     arrivalSeconds: 5,
 }
@@ -82,8 +73,6 @@ const ARBITRUM_SEPOLIA: HyperliquidDestination = {
     realTokenSymbol: 'USDC',
     realDecimals: 6,
     destinationCctpDomain: ARBITRUM_CCTP_DOMAIN,
-    signatureChainId: 421614,
-    signatureChainIdHex: '0x66eee',
     flatFee: 0.2,
     arrivalSeconds: 5,
 }

@@ -1,4 +1,4 @@
-import { TransferProvider, TransferProps, Wallet } from "@/types"
+import { TransferProvider, TransferProps, TransferProgress, Wallet } from "@/types"
 
 export class TransferResolver {
     private providers: TransferProvider[]
@@ -7,7 +7,7 @@ export class TransferResolver {
         this.providers = providers || []
     }
 
-    async executeTransfer(params: TransferProps, wallet?: Wallet): Promise<string | undefined> {
+    async executeTransfer(params: TransferProps, wallet?: Wallet, onProgress?: (info: TransferProgress | undefined) => void): Promise<string | undefined> {
         const provider = this.providers.find(p => p.supportsNetwork(params.network))
         if (!provider) {
             const error = `No transfer provider found for network: ${params.network.name}`
@@ -15,6 +15,6 @@ export class TransferResolver {
             throw error
         }
 
-        return provider.executeTransfer(params, wallet)
+        return provider.executeTransfer(params, wallet, onProgress)
     }
 }
