@@ -172,9 +172,7 @@ function useRoutes({ direction, values }: Props) {
     const toName = values.to?.name;
     const toAssetSymbol = values.toAsset?.symbol;
     const finalRoutes = useMemo(() => {
-        if (direction === 'from') return mergeExtendedSourceRoutes(routes, networks);
-        // An extended source is a real backend destination too — exclude it from the
-        // destination list when it's the selected source so it can't route to itself.
+        if (direction === 'from') return mergeExtendedSourceRoutes(routes, networks, toName, toAssetSymbol);
         return isExtendedSourceNetwork(fromName) ? routes.filter(r => r.name !== fromName) : routes;
     }, [routes, direction, networks, fromName, toName, toAssetSymbol]);
     return { routes: finalRoutes, isLoading };

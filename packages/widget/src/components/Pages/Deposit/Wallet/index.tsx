@@ -5,7 +5,7 @@ import { SwapDataProvider } from "@/context/swap";
 import { ValidationProvider } from "@/context/validationContext";
 import { useDepositStep } from "../depositStepContext";
 import { useDepositInitialValues } from "../depositSelectionContext";
-import { useSourceRoute } from "../Options/useHyperliquidDepositOption";
+import { useSourceRoute } from "../Options/useSourceRoute";
 import ConnectStep from "./ConnectStep";
 import SourceStep from "./SourceStep";
 import AmountStep from "./AmountStep";
@@ -30,7 +30,11 @@ const WalletFlowInner: FC<Props> = ({ partner }) => {
     const initialValues = useDepositInitialValues("wallet", presetSource);
 
     return (
-        <Formik initialValues={initialValues} validateOnMount onSubmit={() => { }}>
+        <Formik
+            initialValues={initialValues}
+            validateOnMount
+            onSubmit={() => { }}
+        >
             <ValidationProvider>
                 <div className="flex flex-col min-h-[373px] h-full">
                     <Comp partner={partner} />

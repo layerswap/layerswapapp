@@ -94,7 +94,7 @@ export function DepositStepProvider({ children }: { children: ReactNode }) {
         setCloseLocked,
         presetSourceNetwork,
         setPresetSourceNetwork,
-    }), [stack, push, replace, back, reset, hasWalletMethods, closeLocked, presetSourceNetwork]);
+    }), [stack, push, replace, back, reset, hasWalletMethods, closeLocked, setCloseLocked, presetSourceNetwork, setPresetSourceNetwork]);
 
     return (
         <DepositStepContext.Provider value={value}>

@@ -1,48 +1,12 @@
 import { useMemo } from "react";
-import { useSettingsState } from "@/context/settings";
 import useFormRoutes from "@/hooks/useFormRoutes";
 import useWallet from "@/hooks/useWallet";
-import { isExtendedSourceNetwork, mergeExtendedSourceRoutes } from "@/lib/extendedRoutes/registry";
+import { isExtendedSourceNetwork } from "@/lib/extendedRoutes/registry";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { Wallet } from "@/types/wallet";
 import { useDepositSelection } from "../depositSelectionContext";
-
-/** The only token Hyperliquid is mapped for today. */
-const HYPERLIQUID_USDC_SYMBOL = "USDC";
-
-const pickToken = (route?: NetworkRoute): NetworkRouteToken | undefined =>
-    route?.tokens?.find(t => t.symbol === HYPERLIQUID_USDC_SYMBOL) ?? route?.tokens?.[0];
-
-/**
- * Source routes with the client-side extended sources (e.g. Hyperliquid) merged
- * in. Merged here at render time rather than read off `settings.sourceRoutes`:
- * `LayerSwapAppSettings` merges at construction, but the extended-route registry
- * is only populated later (in `ResolverProviders`), so the settings copy can miss
- * them. Re-merging here — like `useFormRoutes` does — is synchronous (no fetch)
- * and stable on first paint.
- */
-function useMergedSourceRoutes(): NetworkRoute[] {
-    const { sourceRoutes, networks } = useSettingsState();
-    return useMemo(() => mergeExtendedSourceRoutes(sourceRoutes ?? [], networks), [sourceRoutes, networks]);
-}
-
-/**
- * Resolve an extended source network name (e.g. HYPERLIQUID_MAINNET) into the
- * `NetworkRoute` + token to pre-select as the source. Synchronous and stable on
- * first paint. Used to seed the wallet flow's Formik values.
- */
-export function useSourceRoute(
-    networkName?: string,
-): { network: NetworkRoute; token: NetworkRouteToken } | undefined {
-    const routes = useMergedSourceRoutes();
-    return useMemo(() => {
-        if (!networkName) return undefined;
-        const network = routes.find(r => r.name === networkName);
-        const token = pickToken(network);
-        return network && token ? { network, token } : undefined;
-    }, [networkName, routes]);
-}
+import { pickSourceToken, useMergedSourceRoutes } from "./useSourceRoute";
 
 type HyperliquidDepositOption = {
     /** Hyperliquid is configured as a source at all — resolved synchronously, so
@@ -88,7 +52,7 @@ export function useHyperliquidDepositOption(): HyperliquidDepositOption {
     return useMemo(() => {
         // Synchronous presence + route/token from the merged source list.
         const network = mergedSources.find(r => isExtendedSourceNetwork(r.name));
-        const token = pickToken(network);
+        const token = pickSourceToken(network);
         const present = !!network && !!token;
 
         // Reachability for this destination, from the gated (scoped) route list.
