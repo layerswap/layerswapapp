@@ -1,13 +1,16 @@
 import { FC, ReactNode } from "react";
 import clsx from "clsx";
-import { QrCode, ChevronRight } from "lucide-react";
+import { QrCode, ChevronRight, Loader2 } from "lucide-react";
 import useWallet from "@/hooks/useWallet";
 import { useSelectSwapAccount } from "@/context/swapAccounts";
+import { useInitialSettings } from "@/context/settings";
 import { useDepositStep } from "../depositStepContext";
 import { useDepositSelection } from "../depositSelectionContext";
 import { Address } from "@/lib/address/Address";
 import DestinationTokenPicker from "../DestinationTokenPicker";
 import WalletIcon from "@/components/Icons/WalletIcon";
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
+import { useHyperliquidDepositOption } from "./useHyperliquidDepositOption";
 
 type MethodCardProps = {
     icon: ReactNode;
@@ -16,6 +19,9 @@ type MethodCardProps = {
     onClick: () => void;
     disabled?: boolean;
     disabledReason?: string;
+    /** Show a spinner instead of the chevron (and keep the card non-interactive)
+     * while the method's availability is still resolving. */
+    loading?: boolean;
 };
 
 const MethodCard: FC<MethodCardProps> = ({
@@ -25,12 +31,13 @@ const MethodCard: FC<MethodCardProps> = ({
     onClick,
     disabled,
     disabledReason,
+    loading,
 }) => (
     <button
         type="button"
         onClick={onClick}
         disabled={disabled}
-        title={disabled ? disabledReason : undefined}
+        title={disabled && !loading ? disabledReason : undefined}
         className={clsx(
             "group/card flex items-start gap-3.5 w-full text-left rounded-2xl px-4 py-3.5 transition-colors",
             "bg-secondary-500 hover:bg-secondary-400/70",
@@ -46,22 +53,31 @@ const MethodCard: FC<MethodCardProps> = ({
             <span className="text-primary-text text-base font-semibold truncate">{title}</span>
             <span className="text-secondary-text text-[13px] leading-tight truncate">{subtitle}</span>
         </div>
-        <ChevronRight className="h-5 w-5 text-primary-text-tertiary shrink-0 mt-2.5" />
+        {loading
+            ? <Loader2 className="h-5 w-5 text-primary-text-tertiary shrink-0 mt-2.5 animate-spin" />
+            : <ChevronRight className="h-5 w-5 text-primary-text-tertiary shrink-0 mt-2.5" />}
     </button>
 );
 
 const MethodPicker: FC = () => {
-    const { push } = useDepositStep();
+    const { push, setPresetSourceNetwork } = useDepositStep();
     const { wallets } = useWallet();
     const { destination, destinationToken } = useDepositSelection();
     const selectSourceAccount = useSelectSwapAccount("from");
+    const { hideHyperliquidDeposit } = useInitialSettings();
+    const hyperliquid = useHyperliquidDepositOption();
 
     const primaryWallet = wallets[0];
     const hasWallet = !!primaryWallet;
     const destinationReady = !!destination && !!destinationToken;
+    // Render the card whenever Hyperliquid is configured; its enabled/loading
+    // state (not its presence) reflects reachability, so it never flashes away.
+    const showHyperliquid = hyperliquid.present && !hideHyperliquidDeposit;
 
     const handleWalletClick = () => {
         if (!destinationReady) return;
+        // Pick-any-source flow: clear any extended-source preset a prior method left.
+        setPresetSourceNetwork(undefined);
         // Already connected: mark it as the latest source account (so SourceStep
         // scopes routes to it) and skip the connect modal. Otherwise hand off to
         // the connecting step, which opens the connect modal over a spinner.
@@ -79,6 +95,18 @@ const MethodPicker: FC = () => {
 
     const handleMoreWalletsClick = () => {
         if (!destinationReady) return;
+        setPresetSourceNetwork(undefined);
+        push("wallet-connect");
+    };
+
+    const handleHyperliquidClick = () => {
+        if (!destinationReady || !hyperliquid.available || !hyperliquid.hlNetworkName) return;
+        setPresetSourceNetwork(hyperliquid.hlNetworkName);
+        if (hyperliquid.compatibleWallet) {
+            selectSourceAccount(hyperliquid.compatibleWallet);
+            push("wallet-amount");
+            return;
+        }
         push("wallet-connect");
     };
 
@@ -109,6 +137,35 @@ const MethodPicker: FC = () => {
                     disabled={walletDisabled}
                     disabledReason="Pick a destination first"
                 />
+                {showHyperliquid && (
+                    <MethodCard
+                        icon={
+                            <ImageWithFallback
+                                src={hyperliquid.network?.logo}
+                                alt="Hyperliquid logo"
+                                height={28}
+                                width={28}
+                                className="rounded-full object-contain"
+                            />
+                        }
+                        title="Deposit from Hyperliquid"
+                        subtitle={
+                            hyperliquid.loading
+                                ? "Checking availability…"
+                                : hyperliquid.available
+                                    ? "From your Hyperliquid balance"
+                                    : "Not available for this destination"
+                        }
+                        onClick={handleHyperliquidClick}
+                        loading={hyperliquid.loading}
+                        disabled={hyperliquid.loading || !hyperliquid.available || !destinationReady}
+                        disabledReason={
+                            !destinationReady
+                                ? "Pick a destination first"
+                                : "Hyperliquid can't reach this destination"
+                        }
+                    />
+                )}
                 <MethodCard
                     icon={<QrCode className="h-6 w-6 text-primary-text" />}
                     title="Deposit address"

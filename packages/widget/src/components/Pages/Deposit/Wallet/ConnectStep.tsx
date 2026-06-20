@@ -22,7 +22,7 @@ import { useSelectSwapAccount } from "@/context/swapAccounts";
  * which becomes connect-aware on this step (see DepositForm).
  */
 const ConnectStep: FC = () => {
-    const { push, back } = useDepositStep();
+    const { push, back, replace, presetSourceNetwork } = useDepositStep();
     const { setOpen, setPresentation } = useConnectModal();
     const { destination, destinationToken } = useDepositSelection();
     const selectSourceAccount = useSelectSwapAccount("from");
@@ -45,9 +45,10 @@ const ConnectStep: FC = () => {
         // quote. If one isn't picked yet (the "Wallet transfer" card can be
         // used while disconnected), drop back to the method picker instead.
         selectSourceAccount(wallet);
-        if (destinationReady) push("wallet-source");
-        else back();
-    }, [destinationReady, push, back, selectSourceAccount]);
+        if (!destinationReady) { back(); return; }
+        if (presetSourceNetwork) replace("wallet-amount");
+        else push("wallet-source");
+    }, [destinationReady, push, back, replace, presetSourceNetwork, selectSourceAccount]);
 
     return (
         <div className="openpicker flex flex-col min-h-0 w-full h-[373px]">

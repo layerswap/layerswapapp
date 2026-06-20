@@ -107,7 +107,8 @@ export function realDepositAddressRoutePresent(routes: NetworkRoute[], real: Rea
  * resolving. Idempotent: skips names already present, so it is safe to call on
  * both the SSR fallback and revalidated backend data.
  */
-export function mergeExtendedSourceRoutes(routes: NetworkRoute[], networks: NetworkWithTokens[]): NetworkRoute[] {
+export function mergeExtendedSourceRoutes(routes: NetworkRoute[], networks: NetworkWithTokens[], toNetworkName?: string,
+    toTokenSymbol?: string,): NetworkRoute[] {
     const additions: NetworkRoute[] = []
     for (const provider of sourceProviders) {
         for (const extendedName of provider.extendedNetworkNames) {
@@ -117,5 +118,17 @@ export function mergeExtendedSourceRoutes(routes: NetworkRoute[], networks: Netw
             if (extendedRoute) additions.push(extendedRoute)
         }
     }
-    return additions.length ? [...routes, ...additions] : routes
+    const _routes = additions.length ? [...routes, ...additions] : routes
+
+    return _routes.filter(route => {
+        if (!isExtendedSourceNetwork(route.name)) return true
+        return (route.tokens ?? []).some(token =>
+            resolveExtendedRoutePlan({
+                sourceNetworkName: route.name,
+                sourceTokenSymbol: token.symbol,
+                destinationNetworkName: toNetworkName,
+                destinationTokenSymbol: toTokenSymbol,
+                availableRoutes: routes,
+            }) !== undefined)
+    })
 }
