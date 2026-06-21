@@ -19,5 +19,7 @@ export async function findRegistryWalletByName(request: RegistrySearch, name: st
     const key = walletKey(name)
     if (!key) return undefined
     const { connectors } = await request({ query: name, pageSize: 10 })
-    return connectors.find(reg => walletKey(reg.name) === key || walletKey(reg.id) === key)
+    const match = connectors.find(reg => walletKey(reg.name) === key || walletKey(reg.id) === key)
+    if (!match?.mobile?.native && !match?.mobile?.universal) return undefined
+    return match
 }

@@ -3,9 +3,10 @@ import {
     WalletProvider,
 } from "@solana/wallet-adapter-react";
 import { ReactNode, useEffect, useMemo, useState } from "react";
-import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
+import { WalletAdapterNetwork, WalletReadyState } from "@solana/wallet-adapter-base";
 import { SolanaWalletConnectAdapter } from "@/lib/wallets/solana/SolanaWalletConnectAdapter";
 import { WALLETCONNECT_PROJECT_ID, WALLETCONNECT_METADATA } from "@/lib/wallets/walletConnect/config";
+import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
 
 const SOLANA_NETWORK = process.env.NEXT_PUBLIC_API_VERSION == 'sandbox' ? WalletAdapterNetwork.Devnet : WalletAdapterNetwork.Mainnet;
 
@@ -41,9 +42,17 @@ function SolanaProvider({ children }: { children: ReactNode }) {
                 async autoConnect() { }
             }
 
+
+            class MobilePhantomWalletAdapter extends PhantomWalletAdapter {
+                get readyState() {
+                    const rs = super.readyState;
+                    return rs === WalletReadyState.NotDetected && isMobile() ? WalletReadyState.Loadable : rs;
+                }
+            }
+
             setReady(true);
             setAdapters([
-                new PhantomWalletAdapter(),
+                new MobilePhantomWalletAdapter(),
                 new NightlyWalletAdapter(),
                 new SolflareWalletAdapter(),
                 new BitgetWalletAdapter(),

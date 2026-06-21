@@ -70,14 +70,9 @@ export default function useSVM(): WalletProvider {
         if (isWalletModalOpen && !walletConnectBrowseMetadata.loaded) {
             requestRegistryConnectors({ page: 1, pageSize: 40 }).catch((error) => console.warn('Failed to load Solana WalletConnect wallets registry', error))
         }
-        // Pre-warm the WC provider so the user's first wallet click doesn't wait
-        // for UP.init() — the cold init is what makes recent-wallet reconnects
-        // after a refresh spin on "QR loading" for several seconds.
-        if (isWalletModalOpen) {
-            const wcAdapterEntry = walletsRef.current.find(w => w.adapter.name === SOLANA_HIDDEN_WC_NAME)
-            const wcAdapter = wcAdapterEntry?.adapter as unknown as SolanaWalletConnectAdapter | undefined
-            wcAdapter?.warmup?.()
-        }
+        // Intentionally no WC pre-warm here: the custom adapter's UniversalProvider stays
+        // lazy (init on first use). With both WC adapters registered, eagerly warming would
+        // spin up a second WC provider before the user has picked one.
     }, [isWalletModalOpen, walletConnectBrowseMetadata.loaded, requestRegistryConnectors])
 
     const connectedWallets = useMemo(() => {
@@ -123,20 +118,27 @@ export default function useSVM(): WalletProvider {
             const currentWallets = walletsRef.current
             const installedAdapter = currentWallets.find(w => walletKey(w.adapter.name) === walletKey(connector.name))
             const hiddenWcAdapter = currentWallets.find(w => w.adapter.name === SOLANA_HIDDEN_WC_NAME)
-            const modalWcAdapter = currentWallets.find(w => w.adapter.name === SOLANA_WC_MODAL_NAME)
 
             let matchedRegistry = getRegistryEntry(connector)
             if (!matchedRegistry && isMobilePlatform && installedAdapter && !isBareWcTile) {
                 matchedRegistry = await findRegistryWalletByName(requestRegistryConnectors, connector.name)
             }
-            const useWalletConnect = !isBareWcTile && (
-                (!!matchedRegistry && (isMobilePlatform || !installedAdapter))
-                || (connector.hasBrowserExtension && (connector.showQrCode || (isMobilePlatform && connector.extensionNotFound)))
-            )
+            // Bare "WalletConnect" tile mirrors EVM's `showQrModal: isMobile()`:
+            //  • Desktop → route through the custom ("Hidden") adapter so we render our OWN
+            //    QR screen (no AppKit modal on desktop).
+            //  • Mobile  → route through the OFFICIAL adapter (installedAdapter, name ===
+            //    SOLANA_WC_MODAL_NAME) so its connect() opens the WalletConnect/AppKit modal
+            //    (wallet list to deeplink), exactly like EVM does on mobile.
+            const useWalletConnect = isBareWcTile
+                ? !isMobilePlatform
+                : (
+                    (!!matchedRegistry && (isMobilePlatform || !installedAdapter))
+                    || (connector.hasBrowserExtension && (connector.showQrCode || (isMobilePlatform && connector.extensionNotFound)))
+                )
 
             registry = useWalletConnect ? matchedRegistry : undefined
 
-            const targetAdapterEntry = isBareWcTile ? modalWcAdapter : (useWalletConnect ? hiddenWcAdapter : installedAdapter)
+            const targetAdapterEntry = useWalletConnect ? hiddenWcAdapter : installedAdapter
             if (!targetAdapterEntry) throw new Error('Connector not found')
 
             if (connectedWallet) {
