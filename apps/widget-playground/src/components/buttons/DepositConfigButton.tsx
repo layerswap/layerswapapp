@@ -2,7 +2,19 @@
 import { useWidgetContext } from "@/context/ConfigContext";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
+import { MultiSelect } from "@/components/ui/multiselect";
+import { DEPOSIT_METHODS, type DepositMethodId } from "@layerswap/widget";
 import clsx from "clsx";
+
+// Friendly labels for the deposit-method allow-list control. Keyed by
+// DepositMethodId so adding a method to the widget surfaces a type error here
+// until it's given a label.
+const METHOD_LABELS: Record<DepositMethodId, string> = {
+    wallet: "Wallet transfer",
+    deposit_address: "Deposit address",
+    hyperliquid: "Hyperliquid",
+};
+const METHOD_OPTIONS = DEPOSIT_METHODS.map((m) => ({ value: m, label: METHOD_LABELS[m] }));
 
 const ToggleRow = ({ label, checked, onCheckedChange }: { label: string, checked: boolean, onCheckedChange: (checked: boolean) => void }) => (
     <div className="rounded-md py-3 px-2 flex items-center justify-between gap-2 hover:bg-secondary-500 transition-colors duration-200">
@@ -81,6 +93,17 @@ export function DepositConfigButton() {
                 checked={depositProps.showDestinationAddress ?? false}
                 onCheckedChange={(val) => updateDepositProp("showDestinationAddress", val)}
             />
+            <div className="flex flex-col gap-1 px-2 py-2">
+                <label className="text-sm text-secondary-text">Methods</label>
+                {/* Allow-list of funding methods to show. Undefined means "all", so
+                    default the control to every method until the user narrows it. */}
+                <MultiSelect
+                    options={METHOD_OPTIONS}
+                    value={depositProps.methods ?? [...DEPOSIT_METHODS]}
+                    onChange={(val) => updateDepositProp("methods", val as DepositMethodId[])}
+                    placeholder="Select methods"
+                />
+            </div>
         </div>
     );
 }
