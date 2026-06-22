@@ -44,7 +44,7 @@ export function useHyperliquidDepositOption(): HyperliquidDepositOption {
     const { wallets } = useWallet();
 
     const values = useMemo<SwapFormValues>(
-        () => ({ to: destination, toAsset: destinationToken, depositMethod: "wallet" }),
+        () => ({ to: destination, toAsset: destinationToken, depositMethod: "deposit_address" }),
         [destination, destinationToken],
     );
     const { allRoutes, isLoading } = useFormRoutes({ direction: "from", values });

@@ -56,7 +56,7 @@ export const hyperliquidProvider: ExtendedRouteProvider = {
 
         const route = {
             ...network,
-            deposit_methods: ['wallet'],
+            deposit_methods: ['deposit_address'],
             tokens,
         } as NetworkRoute
 
