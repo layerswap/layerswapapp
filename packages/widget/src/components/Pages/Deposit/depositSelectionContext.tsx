@@ -1,10 +1,12 @@
 import { createContext, ReactNode, useCallback, useContext, useMemo, useState } from "react";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
+import { useDepositSettings } from "@/context/depositSettings";
 import { generateSwapInitialValues } from "@/lib/generateSwapInitialValues";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import useWallet from "@/hooks/useWallet";
 import { ResolvedDestination, SupportedDestination, useResolvedDestinations } from "./DestinationTokenPicker";
+import { seedDefaultAmount } from "./seedDefaultAmount";
 
 type DepositSelectionContextValue = {
     /** Integrator-provided destination pairs resolved against settings. */
@@ -109,6 +111,7 @@ export function useDepositInitialValues(
 ): SwapFormValues {
     const settings = useSettingsState();
     const initialSettings = useInitialSettings();
+    const { defaultAmountUsd } = useDepositSettings();
     const { wallets } = useWallet();
     const { destination, destinationToken, destinationAddress } = useDepositSelection();
 
@@ -122,6 +125,12 @@ export function useDepositInitialValues(
 
     return useMemo<SwapFormValues>(() => {
         const base = generateSwapInitialValues(settings, initialSettings, "deposit-address", connectedAutofillNetworks);
+        // A pre-selected source (the extended-source shortcut, e.g. Hyperliquid)
+        // skips SourceStep, so seed the default amount here — SourceStep does the
+        // same on manual selection, so the shortcut matches the wallet method.
+        const seededAmount = depositMethod === "wallet" && source
+            ? seedDefaultAmount(source.token, defaultAmountUsd)
+            : undefined;
         return {
             ...base,
             from: source?.network ?? base.from,
@@ -130,11 +139,12 @@ export function useDepositInitialValues(
             toAsset: destinationToken ?? base.toAsset,
             destination_address: destinationAddress,
             depositMethod,
+            amount: seededAmount ?? base.amount,
         };
         // Keep deps correct so that if settings/destination resolve AFTER mount
         // (SSR fallback → SWR revalidation), the value reflects the latest
         // selection on the render Formik mounts with — otherwise the flow opens
         // with a blank destination and can never recover. Formik only reads
         // initialValues at mount, so recomputing here is harmless.
-    }, [settings, initialSettings, connectedAutofillNetworks, destination, destinationToken, destinationAddress, depositMethod, source]);
+    }, [settings, initialSettings, connectedAutofillNetworks, destination, destinationToken, destinationAddress, depositMethod, source, defaultAmountUsd]);
 }

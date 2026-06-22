@@ -29,6 +29,14 @@ type DepositStepContextValue = {
      * rendered above that provider (e.g. the header) can react to it. */
     closeLocked: boolean;
     setCloseLocked: (locked: boolean) => void;
+    /** Extended source network (e.g. HYPERLIQUID_MAINNET) the wallet flow should
+     * pre-select as the source, skipping the source picker. Set by the method
+     * picker; consumed by the wallet flow (seeds Formik `from`/`fromAsset`) and
+     * the connect step (routes straight to the amount step). `undefined` for the
+     * normal "pick any source" wallet flow. A network name (not the route) keeps
+     * this lightweight and generalizes to future extended sources. */
+    presetSourceNetwork: string | undefined;
+    setPresetSourceNetwork: (network: string | undefined) => void;
 };
 
 const DepositStepContext = createContext<DepositStepContextValue | null>(null);
@@ -43,6 +51,7 @@ export function DepositStepProvider({ children }: { children: ReactNode }) {
 
     const [stack, setStack] = useState<DepositStep[]>([rootStep]);
     const [closeLocked, setCloseLocked] = useState(false);
+    const [presetSourceNetwork, setPresetSourceNetwork] = useState<string | undefined>(undefined);
 
     // If wallet providers load asynchronously (or the prop changes) after mount,
     // `hasWalletMethods` — and therefore `rootStep` — can flip. Re-root the stack so
@@ -70,6 +79,7 @@ export function DepositStepProvider({ children }: { children: ReactNode }) {
     const reset = useCallback(() => {
         setStack([rootStep]);
         setCloseLocked(false);
+        setPresetSourceNetwork(undefined);
     }, [rootStep]);
 
     const value = useMemo<DepositStepContextValue>(() => ({
@@ -82,7 +92,9 @@ export function DepositStepProvider({ children }: { children: ReactNode }) {
         hasWalletMethods,
         closeLocked,
         setCloseLocked,
-    }), [stack, push, replace, back, reset, hasWalletMethods, closeLocked]);
+        presetSourceNetwork,
+        setPresetSourceNetwork,
+    }), [stack, push, replace, back, reset, hasWalletMethods, closeLocked, setCloseLocked, presetSourceNetwork, setPresetSourceNetwork]);
 
     return (
         <DepositStepContext.Provider value={value}>

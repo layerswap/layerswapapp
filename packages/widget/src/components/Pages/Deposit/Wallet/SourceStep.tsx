@@ -11,6 +11,7 @@ import { useDepositSettings } from "@/context/depositSettings";
 import { useLatestSourceAccount } from "@/context/swapAccounts";
 import { useDepositStep } from "../depositStepContext";
 import { filterRoutesByAccount } from "./filterRoutesByAccounts";
+import { seedDefaultAmount } from "../seedDefaultAmount";
 import { CircleAlert } from "lucide-react";
 
 const SourceStep: FC = () => {
@@ -48,21 +49,14 @@ const SourceStep: FC = () => {
                 setFieldValue,
             });
 
-            const defaultUsd = defaultAmountUsd;
-            const price = token.price_in_usd;
-            if (defaultUsd > 0 && price && price > 0) {
-                const precision = token.precision || 6;
-                const tokenAmount = defaultUsd / price;
-                const factor = Math.pow(10, precision);
-                const truncated = Math.trunc(tokenAmount * factor) / factor;
-                if (truncated > 0) {
-                    await updateForm({
-                        formDataKey: "amount",
-                        formDataValue: truncated.toString(),
-                        shouldValidate: true,
-                        setFieldValue,
-                    });
-                }
+            const seededAmount = seedDefaultAmount(token, defaultAmountUsd);
+            if (seededAmount) {
+                await updateForm({
+                    formDataKey: "amount",
+                    formDataValue: seededAmount,
+                    shouldValidate: true,
+                    setFieldValue,
+                });
             }
 
             push("wallet-amount");

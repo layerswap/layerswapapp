@@ -169,13 +169,12 @@ function useRoutes({ direction, values }: Props) {
     const { routes, isLoading } = useRoutesData<NetworkRoute>(url, defaultRoutes || [], apiClient.fetcher);
 
     const fromName = values.from?.name;
+    const toName = values.to?.name;
+    const toAssetSymbol = values.toAsset?.symbol;
     const finalRoutes = useMemo(() => {
-        // Re-add extended sources after SWR revalidation (the backend list lacks them).
-        if (direction === 'from') return mergeExtendedSourceRoutes(routes, networks);
-        // An extended source is a real backend destination too — exclude it from the
-        // destination list when it's the selected source so it can't route to itself.
+        if (direction === 'from') return mergeExtendedSourceRoutes(routes, networks, toName, toAssetSymbol);
         return isExtendedSourceNetwork(fromName) ? routes.filter(r => r.name !== fromName) : routes;
-    }, [routes, direction, networks, fromName]);
+    }, [routes, direction, networks, fromName, toName, toAssetSymbol]);
     return { routes: finalRoutes, isLoading };
 }
 
@@ -351,7 +350,7 @@ function sortGroupedTokens(
     // Sort items within each group
     const groupsWithSortedItems = tokenElements.map(group => {
         const sortedItems = sortGroupedTokenItems(group.items, sortingOption, direction, balances, routesHistory);
-        const totalUSD = balances 
+        const totalUSD = balances
             ? sortedItems.reduce((sum, item) => sum + resolveTokenUSDBalance(item.route.route, item.route.token, balances), 0)
             : 0;
         return { ...group, items: sortedItems, totalUSD };
@@ -664,27 +663,27 @@ const mergeGroups = (suggestedRoutes: (NetworkTokenElement | TokenSceletonElemen
 }
 
 const resolveNetworkRoutes = (
-    routes: NetworkRoute[], 
-    balances: Record<string, NetworkBalance> | null, 
+    routes: NetworkRoute[],
+    balances: Record<string, NetworkBalance> | null,
     direction: SwapDirection,
     routesHistory: RoutesHistory,
     sortingOption: SortingOption = SortingOption.RELEVANCE
 ): NetworkElement[] => {
     // Sort routes based on selected option
     const sortedRoutes = sortRoutes(routes, sortingOption, direction, balances, routesHistory);
-    
+
     return sortedRoutes.map(r => ({
         type: 'network',
-        route: { 
-            ...r, 
+        route: {
+            ...r,
             tokens: sortTokens(r.tokens, r, sortingOption, direction, balances, routesHistory)
         }
     }));
 }
 
 const resolveTokenRoutes = (
-    routes: NetworkRoute[], 
-    balances: Record<string, NetworkBalance> | null, 
+    routes: NetworkRoute[],
+    balances: Record<string, NetworkBalance> | null,
     direction: SwapDirection,
     routesHistory: RoutesHistory,
     sortingOption: SortingOption = SortingOption.RELEVANCE
@@ -808,7 +807,7 @@ function getSuggestedRoutes(routes: NetworkRoute[], balances: Record<string, Net
         if (balancesLoading && direction === "from")
             return Array(effectiveLimit).fill({ type: "sceleton_token" });
     }
-    
+
     const tokenElements = extractTokenElementsAsSuggested(routes).filter(t => t.route.token.status === "active")
     const sorted = tokenElements.sort(sortSuggestedTokenElements(direction, balances, routesHistory))
     return sorted.slice(0, effectiveLimit)
