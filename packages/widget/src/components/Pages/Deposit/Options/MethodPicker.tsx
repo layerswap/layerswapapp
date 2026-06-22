@@ -8,6 +8,7 @@ import { useDepositStep } from "../depositStepContext";
 import { DepositMethodId } from "../depositMethods";
 import { useDepositSelection } from "../depositSelectionContext";
 import { Address } from "@/lib/address/Address";
+import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import DestinationTokenPicker from "../DestinationTokenPicker";
 import WalletIcon from "@/components/Icons/WalletIcon";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
@@ -80,6 +81,10 @@ const MethodPicker: FC = () => {
     // Render the card whenever Hyperliquid is configured; its enabled/loading
     // state (not its presence) reflects reachability, so it never flashes away.
     const showHyperliquid = hyperliquid.present && canShow("hyperliquid");
+    // Surface the connected wallet's withdrawable HL balance once it resolves.
+    const hyperliquidBalanceLabel = hyperliquid.compatibleWalletBalance != null && hyperliquid.token
+        ? `Balance: ${truncateDecimals(hyperliquid.compatibleWalletBalance, hyperliquid.token.precision)} ${hyperliquid.token.symbol}`
+        : undefined;
 
     const handleWalletClick = () => {
         if (!destinationReady) return;
@@ -110,7 +115,11 @@ const MethodPicker: FC = () => {
     const handleHyperliquidClick = () => {
         if (!destinationReady || !hyperliquid.available || !hyperliquid.hlNetworkName) return;
         setPresetSourceNetwork(hyperliquid.hlNetworkName);
-        if (hyperliquid.compatibleWallet) {
+        // Skip straight to the amount step with the already-connected wallet — but
+        // only when we don't positively know its Hyperliquid balance is below the
+        // minimum deposit. If it can't cover the minimum, route through connect so
+        // the user can pick a funded wallet, then continue the normal flow.
+        if (hyperliquid.compatibleWallet && !hyperliquid.compatibleWalletBelowMinimum) {
             selectSourceAccount(hyperliquid.compatibleWallet);
             push("wallet-amount");
             return;
@@ -173,7 +182,7 @@ const MethodPicker: FC = () => {
                             hyperliquid.loading
                                 ? "Checking availability…"
                                 : hyperliquid.available
-                                    ? "From your Hyperliquid balance"
+                                    ? (hyperliquidBalanceLabel ?? "From your Hyperliquid balance")
                                     : "Not available for this destination"
                         }
                         onClick={handleHyperliquidClick}

@@ -16,7 +16,7 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
             {/* <Swap /> */}
             <DepositComponent
                 mode="button"
-                destination={{ network: "ETHEREUM_MAINNET", tokens: ["USDC", "ETH"] }}
+                destination={{ network: "ETHEREUM_SEPOLIA", tokens: ["USDC", "ETH"] }}
                 destinationAddress="0xB2029bbd8C1cBCC43c3A7b7fE3d118b0C57D7C31"
             />
         </WidgetWrapper>
