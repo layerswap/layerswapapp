@@ -21,6 +21,10 @@ import { useSelectedAccount } from './swapAccounts';
 import { Address } from '@/lib/address';
 import { useSlippageStore } from '@/stores/slippageStore';
 import { posthog } from 'posthog-js';
+import { resolveExtendedRoutePlan } from '@/lib/extendedRoutes/registry';
+import { buildCreateSwapParamsForExtendedRoute } from '@/lib/extendedRoutes/transforms';
+import { useExtendedRoutesStore } from '@/stores/extendedRoutesStore';
+import { useExtendedSwapData } from '@/hooks/useExtendedSwapDisplay';
 import { useContractAddressStore } from '@/stores/contractAddressStore';
 
 export const SwapDataStateContext = createContext<SwapContextData | null>(null);
@@ -69,7 +73,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const router = useRouter();
     const [swapId, setSwapId] = useState<string | undefined>(router.query.swapId?.toString())
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
-    const { sourceRoutes, destinationRoutes } = useSettingsState()
+    const { sourceRoutes, destinationRoutes, networks } = useSettingsState()
     const [swapBasicFormData, setSwapBasicFormData] = useState<SwapBasicData & { refuel: boolean }>()
     const updateRecentTokens = useRecentNetworksStore(state => state.updateRecentNetworks)
     const [swapModalOpen, setSwapModalOpen] = useState(false)
@@ -116,16 +120,26 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const [interval, setInterval] = useState(0)
     const { data, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval, dedupingInterval: interval || 1000, fallbackData: initialSwapData ? { data: initialSwapData } : undefined })
 
+    // Basic data for a loaded swap (real backend identity). `useExtendedSwapData`
+    // overlays the extended-route (e.g. Hyperliquid) source/amount/quote on top.
+    const baseSwapData = useMemo<(SwapBasicData & { refuel: boolean }) | undefined>(() => {
+        if (!(swapId && data?.data?.swap)) return undefined
+        return {
+            ...data.data.swap,
+            requested_amount: data.data.swap.requested_amount.toString(),
+            refuel: !!data.data.refuel,
+        }
+    }, [data, swapId])
+
+    const extendedSwapData = useExtendedSwapData(swapId, baseSwapData, data?.data?.quote)
+
     const swapBasicData = useMemo(() => {
         if (swapId && data?.data) {
-            return data?.data?.swap ? {
-                ...data.data.swap,
-                requested_amount: data.data.swap.requested_amount.toString(),
-                refuel: !!data.data.refuel
-            } : undefined;
+            if (!data.data.swap) return undefined
+            return extendedSwapData?.swapBasicData ?? baseSwapData
         }
         return swapBasicFormData
-    }, [data, swapBasicFormData, swapId])
+    }, [data, swapBasicFormData, swapId, baseSwapData, extendedSwapData])
 
     const swapDetails = useMemo(() => {
         if (swapId)
@@ -134,10 +148,10 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
 
     const quote = useMemo(() => {
         if (swapId && data?.data) {
-            return data?.data?.quote
+            return extendedSwapData ? extendedSwapData.quote : data.data.quote
         }
         return formDataQuote?.quote
-    }, [formDataQuote, data, swapId]);
+    }, [formDataQuote, data, swapId, extendedSwapData]);
 
     const quoteError = useMemo(() => {
         if (swapId && data?.data) {
@@ -222,7 +236,27 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         const sourceIsSupported = sourceWalletIsSupported && !isContract
 
         const slippage = useSlippageStore.getState().slippage
-        const data: CreateSwapParams = {
+
+        // Extended source bridge mode (e.g. Hyperliquid): create the real backend
+        // swap (Base/USDC) for the forwarded amount (A - flat fee), via a deposit
+        // address. The HL withdrawal then funds that deposit address.
+        const extendedPlan = resolveExtendedRoutePlan({
+            sourceNetworkName: from.name,
+            sourceTokenSymbol: fromCurrency.symbol,
+            destinationNetworkName: to.name,
+            destinationTokenSymbol: toCurrency.symbol,
+            sourceAmount: amount,
+        })
+        const isExtendedBridge = !!extendedPlan
+
+        const data: CreateSwapParams = extendedPlan ? buildCreateSwapParamsForExtendedRoute({
+            plan: extendedPlan,
+            destinationNetworkName: to.name,
+            destinationTokenSymbol: toCurrency.symbol,
+            destinationAddress: destination_address,
+            referenceId: query.externalId,
+            refuel,
+        }) : {
             amount: amount || undefined,
             source_network: from.name,
             destination_network: to.name,
@@ -237,7 +271,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             refund_address: sourceIsSupported ? selectedSourceAccount?.address : undefined
         }
 
-        if (depositMethod === 'wallet' && slippage && slippage > 0 && slippage < 0.8) {
+        if (!isExtendedBridge && depositMethod === 'wallet' && slippage && slippage > 0 && slippage < 0.8) {
             data.slippage = slippage.toString()
         }
 
@@ -250,6 +284,21 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         const swap = swapResponse?.data;
         if (!swap?.swap.id)
             throw new Error("Could not create swap")
+
+        // Persist the extended identity so the post-create UI and the withdraw step
+        // can keep showing the extended source and resume after a reload.
+        if (extendedPlan) {
+            useExtendedRoutesStore.getState().setRecord(swap.swap.id, {
+                providerId: extendedPlan.mapping.provider.id,
+                extendedNetwork: from.name,
+                extendedToken: fromCurrency.symbol,
+                realNetwork: extendedPlan.mapping.real.networkName,
+                realToken: extendedPlan.mapping.real.tokenSymbol,
+                sourceAddress: selectedSourceAccount?.address || '',
+                sourceAmount: (amount || '').toString(),
+                createdAt: Date.now(),
+            })
+        }
 
         updateRecentTokens({
             from: !fromExchange ? { network: from.name, token: fromCurrency.symbol } : undefined,
@@ -265,9 +314,9 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         });
 
         return swap;
-    }, [selectedSourceAccount, formDataQuote])
+    }, [selectedSourceAccount, selectedWallet, updateRecentTokens, swapDetails?.id, networks])
 
-    const updateFns: UpdateSwapInterface = {
+    const updateFns = useMemo<UpdateSwapInterface>(() => ({
         createSwap,
         setCodeRequested,
         setInterval,
@@ -278,27 +327,30 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         setSubmitedFormValues,
         setQuoteLoading,
         setSwapModalOpen
-    };
+    }), [createSwap, mutate, handleUpdateSwapid, setSubmitedFormValues]);
+
+    const stateValue = useMemo(() => ({
+        withdrawType,
+        codeRequested,
+        swapTransaction,
+        depositAddressIsFromAccount: !!depositAddressIsFromAccount,
+        swapApiError: error,
+        depositActionsResponse,
+        depositActionsError,
+        quote,
+        quoteIsLoading,
+        quoteError,
+        refuel,
+        swapBasicData,
+        swapDetails,
+        swapId,
+        swapModalOpen,
+        swapError,
+        setSwapError
+    }), [withdrawType, codeRequested, swapTransaction, depositAddressIsFromAccount, error, depositActionsResponse, depositActionsError, quote, quoteIsLoading, quoteError, refuel, swapBasicData, swapDetails, swapId, swapModalOpen, swapError]);
+
     return (
-        <SwapDataStateContext.Provider value={{
-            withdrawType,
-            codeRequested,
-            swapTransaction,
-            depositAddressIsFromAccount: !!depositAddressIsFromAccount,
-            swapApiError: error,
-            depositActionsResponse,
-            depositActionsError,
-            quote,
-            quoteIsLoading,
-            quoteError,
-            refuel,
-            swapBasicData,
-            swapDetails,
-            swapId,
-            swapModalOpen,
-            swapError,
-            setSwapError
-        }}>
+        <SwapDataStateContext.Provider value={stateValue}>
             <SwapDataUpdateContext.Provider value={updateFns}>
                 {children}
             </SwapDataUpdateContext.Provider>

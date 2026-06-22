@@ -73,10 +73,6 @@ export class BalanceResolver {
                 const { FuelBalanceProvider } = await import("./providers/fuelBalanceProvider");
                 return new FuelBalanceProvider();
             }
-            case "loopring": {
-                const { LoopringBalanceProvider } = await import("./providers/loopringBalanceProvider");
-                return new LoopringBalanceProvider();
-            }
             case "solana": {
                 const { SolanaBalanceProvider } = await import("./providers/solanaBalanceProvider");
                 return new SolanaBalanceProvider();
@@ -133,11 +129,6 @@ export class BalanceResolver {
             || network.name === KnownInternalNames.Networks.StarkNetGoerli
             || network.name === KnownInternalNames.Networks.StarkNetSepolia) {
             prioritized.push("starknet");
-        }
-        if (network.name === KnownInternalNames.Networks.LoopringMainnet
-            || network.name === KnownInternalNames.Networks.LoopringGoerli
-            || network.name === KnownInternalNames.Networks.LoopringSepolia) {
-            prioritized.push("loopring");
         }
         if (network.name === KnownInternalNames.Networks.TONMainnet
             || network.name === KnownInternalNames.Networks.TONTestnet) {
@@ -234,7 +225,6 @@ type ProviderKind =
     | "starknet"
     | "evm"
     | "fuel"
-    | "loopring"
     | "solana"
     | "ton"
     | "tron"
@@ -246,7 +236,6 @@ const allProviderKinds: ProviderKind[] = [
     "starknet",
     "evm",
     "fuel",
-    "loopring",
     "solana",
     "ton",
     "tron",

@@ -75,7 +75,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
     "light": {
         tertiary: '134, 134, 134',
         buttonTextColor: '17, 17, 17',
-        logo: '255, 0, 147',
+        logo: '255, 50, 114',
         footerLogo: 'none',
         primary: {
             DEFAULT: '228, 37, 117',
@@ -107,7 +107,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
     "default": {
         tertiary: '118, 128, 147',
         buttonTextColor: '228, 229, 240',
-        logo: '255, 0, 147',
+        logo: '255, 50, 114',
         footerLogo: 'none',
         warning: {
             Foreground: '255, 201, 74',
@@ -151,7 +151,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
     "halloween": {
         tertiary: "110, 80, 140",
         buttonTextColor: "255, 240, 200",
-        logo: '255, 0, 147',
+        logo: '255, 50, 114',
         footerLogo: "none",
         warning: {
             Foreground: "255, 180, 70",
