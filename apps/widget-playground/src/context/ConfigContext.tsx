@@ -14,8 +14,8 @@ const DEFAULT_DEPOSIT_PROPS: PlaygroundDepositProps = {
     buttonLabel: 'Deposit',
     actionButtonText: 'Deposit',
     defaultAmountUsd: 1,
-    destination: { network: 'STARKNET_MAINNET', tokens: ['ETH'] },
-    destinationAddress: '0x04f5F8e5cDae95A5C1B84b97f7fd7fEff3463325C97Cc84D2830e1150Acf6820',
+    destination: { network: 'STARKNET_MAINNET', tokens: ['USDC'] },
+    destinationAddress: '0x01837e50abe7B59bc3d0A57F09D80a0C34aAF1127b2c5E36b9E9b817030FF11b',
 };
 
 interface ContextType {
