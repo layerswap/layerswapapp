@@ -196,6 +196,10 @@ export default function useSVM(): WalletProvider {
                 unsubscribeDisplayUri = undefined
             }
 
+            if (targetAdapterEntry.adapter.readyState === 'Loadable' && targetAdapterEntry.adapter.connected !== true) {
+                await new Promise<never>(() => { })
+            }
+
             // Prefer the adapter we just connected — `wallets.find(connected)` can
             // return a stale entry (e.g. a previously-connected Phantom that sits
             // earlier in the array) and yield the wrong address. Fall back to the

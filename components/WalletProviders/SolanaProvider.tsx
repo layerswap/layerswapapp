@@ -10,8 +10,6 @@ import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
 
 const SOLANA_NETWORK = process.env.NEXT_PUBLIC_API_VERSION == 'sandbox' ? WalletAdapterNetwork.Devnet : WalletAdapterNetwork.Mainnet;
 
-const isWalletConnectAdapterName = (name: string) => name === 'Hidden WalletConnect' || name === 'WalletConnect';
-
 function SolanaProvider({ children }: { children: ReactNode }) {
     const [adapters, setAdapters] = useState<any[]>([]);
     const [ready, setReady] = useState(false);
@@ -88,7 +86,7 @@ function SolanaProvider({ children }: { children: ReactNode }) {
 
     return (
         <ConnectionProvider endpoint={endpoint}>
-            <WalletProvider wallets={adapters} autoConnect={ready ? (async (adapter) => !isWalletConnectAdapterName(adapter.name)) : false}>
+            <WalletProvider wallets={adapters} autoConnect={ready ? (async (adapter) => adapter.name !== 'WalletConnect') : false}>
                 {children}
             </WalletProvider>
         </ConnectionProvider>
