@@ -52,12 +52,16 @@ type Props = {
     amount: string | number | undefined
     refuel: boolean | undefined
     depositMethod: "wallet" | "deposit_address" | undefined
+}
+type Options = {
+    fetchLimits?: boolean
+    refreshInterval?: number
     withDelay?: boolean
 }
 
-export function useQuoteData(formValues: Props | undefined, refreshInterval: number = 20000, options: { fetchLimits: boolean } = { fetchLimits: true }): UseQuoteData {
+export function useQuoteData(formValues: Props | undefined, options: Options = { fetchLimits: true, refreshInterval: 20000 }): UseQuoteData {
     const { fromCurrency, toCurrency, from, to, amount, refuel, depositMethod } = formValues || {}
-    const { fetchLimits } = options
+    const { fetchLimits, refreshInterval, withDelay } = options
 
     const [debouncedAmount, setDebouncedAmount] = useState(amount)
     const [isDebouncing, setIsDebouncing] = useState(false)
@@ -185,7 +189,7 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval: num
     }
 }
 
-export function transformFormValuesToQuoteArgs(values: SwapFormValues, withDelay?: boolean): Props | undefined {
+export function transformFormValuesToQuoteArgs(values: SwapFormValues): Props | undefined {
     return {
         amount: values.amount,
         from: values.from?.name,
@@ -194,7 +198,6 @@ export function transformFormValuesToQuoteArgs(values: SwapFormValues, withDelay
         to: values.to?.name,
         toCurrency: values.toAsset?.symbol,
         refuel: values.refuel,
-        withDelay
     }
 }
 

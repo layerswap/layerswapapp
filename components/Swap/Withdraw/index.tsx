@@ -69,7 +69,7 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
 
     const quoteArgs = transformSwapDataToQuoteArgs(swapBasicData, !!refuel);
     // Limits feed useOutOfGas, which only matters for wallet withdrawals — skip them in deposit address flow
-    const { minAllowedAmount, maxAllowedAmount } = useQuoteData(quoteArgs, undefined, { fetchLimits: !isDepositAddressSwap(swapBasicData) });
+    const { minAllowedAmount, maxAllowedAmount } = useQuoteData(quoteArgs, { fetchLimits: !isDepositAddressSwap(swapBasicData) });
     const { outOfGas } = useOutOfGas({
         address: selectedSourceAccount?.address,
         network: source_network,

@@ -31,7 +31,7 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, mi
         setActionTempUsdValue(usdValue)
     }
 
-    return <div className="flex flex-col w-full bg-secondary-500 rounded-2xl p-4 pb-[15px] space-y-[27px] group/source" onClick={setShowQuickActions} ref={parentRef}>
+    return <div className="flex flex-col w-full bg-secondary-500 rounded-2xl p-4 pb-3.75 space-y-6.75 group/source" onClick={setShowQuickActions} ref={parentRef}>
         <div className="grid grid-cols-9 gap-2 items-center h-7">
             <label htmlFor="From" className="block col-span-5 font-normal text-secondary-text text-base leading-5 mt-0.5">
                 Send from
@@ -44,7 +44,7 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, mi
             {
                 from && fromCurrency &&
                 <div className={clsx(
-                    "absolute z-10 -top-[26px] left-0",
+                    "absolute z-10 -top-6.5 left-0",
                     {
                         "hidden": !showQuickActions,
                         "block": showQuickActions

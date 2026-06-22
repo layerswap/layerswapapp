@@ -78,7 +78,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapBasicFormData, !!swapBasicFormData?.refuel), [swapBasicFormData]);
 
     // Deposit address flow doesn't use limits — min/max come from the detailed quote there
-    const { quote: formDataQuote, quoteError: formDataQuoteError } = useQuoteData(quoteArgs, swapId ? 0 : undefined, { fetchLimits: !isDepositAddressSwap(swapBasicFormData) });
+    const { quote: formDataQuote, quoteError: formDataQuoteError } = useQuoteData(quoteArgs, { refreshInterval: swapId ? 0 : undefined, fetchLimits: !isDepositAddressSwap(swapBasicFormData) });
 
     const handleUpdateSwapid = useCallback((value: string | undefined) => {
         setSwapId(value)
