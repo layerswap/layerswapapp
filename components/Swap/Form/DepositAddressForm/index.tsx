@@ -108,7 +108,7 @@ const DepositAddressForm: FC<Props> = () => {
     }, [])
 
     const { formValidation } = useValidationContext();
-    const { swapId, swapBasicData, swapDetails, depositActionsResponse, refuel } = useSwapDataState();
+    const { swapId, swapBasicData, swapDetails, depositActionsResponse, refuel, swapError, depositActionsError } = useSwapDataState();
     const { setSwapId } = useSwapDataUpdate();
 
     const isValid = !formValidation.message;
@@ -256,6 +256,7 @@ const DepositAddressForm: FC<Props> = () => {
                         depositAddress={depositAddress}
                         isProcessing={isProcessing}
                         isCompleted={isCompleted}
+                        hasDepositError={!!swapError || !!depositActionsError}
                         onDepositMore={resetSwap}
                     />
                 </Widget.Footer>
