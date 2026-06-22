@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import useFormRoutes from "@/hooks/useFormRoutes";
 import useWallet from "@/hooks/useWallet";
 import { useQuoteData } from "@/hooks/useFee";
-import { isExtendedSourceNetwork } from "@/lib/extendedRoutes/registry";
+import { isExtendedSourceNetwork, resolveExtendedRoutePlan } from "@/lib/extendedRoutes/registry";
 import { getKey, useBalanceStore } from "@/stores/balanceStore";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
@@ -73,7 +73,20 @@ export function useHyperliquidDepositOption(): HyperliquidDepositOption {
         [destination, destinationToken],
     );
     const { allRoutes, isLoading } = useFormRoutes({ direction: "from", values: reachValues });
-    const available = !isLoading && allRoutes.some(r => isExtendedSourceNetwork(r.name));
+    // Available only when the real network the extended source maps to has a
+    // usable deposit-address route to this destination. We check the mapped
+    // real network — not the extended source's own presence in the list, which
+    // says nothing about whether the underlying hop is actually reachable.
+    const available = useMemo(() => {
+        if (isLoading || !network || !token) return false;
+        return resolveExtendedRoutePlan({
+            sourceNetworkName: network.name,
+            sourceTokenSymbol: token.symbol,
+            destinationNetworkName: destination?.name,
+            destinationTokenSymbol: destinationToken?.symbol,
+            availableRoutes: allRoutes,
+        }) !== undefined;
+    }, [isLoading, network, token, destination, destinationToken, allRoutes]);
 
     // The connected wallet's withdrawable Hyperliquid balance. Prefetched into the
     // balance store by `useAllWithdrawalBalances` (mounted in the deposit form), so

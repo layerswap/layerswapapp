@@ -5,6 +5,8 @@ import { Wallet } from "@/types/wallet";
 import { useDepositStep } from "../depositStepContext";
 import { useDepositSelection } from "../depositSelectionContext";
 import { useSelectSwapAccount } from "@/context/swapAccounts";
+import useWallet from "@/hooks/useWallet";
+import { isExtendedSourceNetwork } from "@/lib/extendedRoutes/registry";
 
 /**
  * Inline presentation of the wallet-connect UI, rendered as a deposit step so
@@ -23,14 +25,25 @@ import { useSelectSwapAccount } from "@/context/swapAccounts";
  */
 const ConnectStep: FC = () => {
     const { push, back, replace, presetSourceNetwork } = useDepositStep();
-    const { setOpen, setPresentation } = useConnectModal();
+    const { setOpen, setPresentation, setSelectedProvider } = useConnectModal();
     const { destination, destinationToken } = useDepositSelection();
+    const { providers } = useWallet();
     const selectSourceAccount = useSelectSwapAccount("from");
 
     useEffect(() => {
         setPresentation("inline");
+        // An extended source (e.g. Hyperliquid) can only be funded by the wallet
+        // that signs its withdrawal — an EVM wallet. Lock the connector list to
+        // that provider so the user can't pick an incompatible chain. The same
+        // `withdrawalSupportedNetworks` signal the picker uses to find a
+        // compatible wallet identifies the provider here.
+        const lockedProvider = presetSourceNetwork && isExtendedSourceNetwork(presetSourceNetwork)
+            ? providers.find(p => p.withdrawalSupportedNetworks?.includes(presetSourceNetwork))
+            : undefined;
+        if (lockedProvider) setSelectedProvider(lockedProvider);
         setOpen(true);
         return () => {
+            setSelectedProvider(undefined);
             setPresentation("modal");
             setOpen(false);
         };
