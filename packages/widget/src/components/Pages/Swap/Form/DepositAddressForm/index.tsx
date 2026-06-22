@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useRef } from "react";
+import { FC, ReactNode, useEffect, useMemo, useRef } from "react";
 import { Form, useFormikContext } from "formik";
 import { Loader2 } from "lucide-react";
 import { Widget } from "@/components/Widget/Index";
@@ -46,9 +46,15 @@ type Props = {
      * deposit widget, which renders a single powered-by footer at its own root
      * so it shows on every step rather than only this reused form. */
     hidePoweredBy?: boolean;
+    /** When provided, replaces the built-in destination ReceivePicker with a
+     * caller-supplied destination row and lays out the source picker as the
+     * labeled "Send" row. The deposit widget passes an integrator-constrained,
+     * wallet-less picker here so the no-wallet flow matches the default
+     * Send/Receive layout while keeping the destination locked to its config. */
+    destinationPicker?: ReactNode;
 };
 
-const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPicker, lockDestinationAddress, hideEasyDepositBanner, hidePoweredBy }) => {
+const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPicker, lockDestinationAddress, hideEasyDepositBanner, hidePoweredBy, destinationPicker }) => {
     const {
         values, isSubmitting, setFieldValue, submitForm
     } = useFormikContext<SwapFormValues>();
@@ -225,6 +231,10 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
                                     </div>
                                 ) : (
                                     <>
+                                        {/* A caller-supplied destination row implies the labeled
+                                            Send/Receive layout (it stands in for the built-in
+                                            ReceivePicker), so the source picker drops its "You send"
+                                            card styling. */}
                                         {/* Source (Pay from) */}
                                         <PayFromPicker
                                             selectedSource={from && fromAsset ? { network: from, token: fromAsset } : null}
@@ -240,22 +250,24 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
                                             }}
                                             destinationNetwork={destination?.name}
                                             destinationToken={toCurrency?.symbol}
-                                            hideDestinationPicker={hideDestinationPicker}
+                                            hideDestinationPicker={hideDestinationPicker && !destinationPicker}
                                         />
 
                                         {/* Destination network/token + recipient address share one "Receive" row */}
-                                        {!hideDestinationPicker && (
-                                            <ReceivePicker
-                                                selectedDestination={destination && toCurrency ? { network: destination, token: toCurrency } : null}
-                                                onDestinationChange={(network, token) => {
-                                                    setSwapId(undefined);
-                                                    setFieldValue('to', network, false);
-                                                    setFieldValue('toAsset', token, true);
-                                                }}
-                                                destinationAddress={destination_address}
-                                                destination={destination}
-                                            />
-                                        )}
+                                        {destinationPicker
+                                            ? destinationPicker
+                                            : !hideDestinationPicker && (
+                                                <ReceivePicker
+                                                    selectedDestination={destination && toCurrency ? { network: destination, token: toCurrency } : null}
+                                                    onDestinationChange={(network, token) => {
+                                                        setSwapId(undefined);
+                                                        setFieldValue('to', network, false);
+                                                        setFieldValue('toAsset', token, true);
+                                                    }}
+                                                    destinationAddress={destination_address}
+                                                    destination={destination}
+                                                />
+                                            )}
 
                                         {/* Deposit address + QR + fees. When the destination
                                             address is integrator-locked, render this in skeleton
