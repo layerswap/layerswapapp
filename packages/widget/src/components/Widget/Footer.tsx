@@ -102,9 +102,7 @@ const Footer = ({ children, hidden, sticky, showPoweredBy }: FooterProps) => {
 export const PoweredByFooter = ({ className }: { className?: string }) => {
     return (
         <div className={clsx("flex justify-center text-secondary-text", className)}>
-            <a target="_blank" href='https://layerswap.io/' className="flex items-center gap-1.5 w-fit">
-                <PoweredBy className="fill-secondary-text text-secondary-text" />
-            </a>
+            <PoweredBy className="fill-secondary-text text-secondary-text" />
         </div>
     )
 }

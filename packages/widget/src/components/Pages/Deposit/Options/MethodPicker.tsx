@@ -82,7 +82,7 @@ const MethodPicker: FC = () => {
     // state (not its presence) reflects reachability, so it never flashes away.
     const showHyperliquid = hyperliquid.present && canShow("hyperliquid");
     // Surface the connected wallet's withdrawable HL balance once it resolves.
-    const hyperliquidBalanceLabel = hyperliquid.compatibleWalletBalance != null && hyperliquid.token
+    const hyperliquidBalanceLabel = (hyperliquid.compatibleWalletBalance != null && hyperliquid.compatibleWalletBalance > 0) && hyperliquid.token
         ? `Balance: ${truncateDecimals(hyperliquid.compatibleWalletBalance, hyperliquid.token.precision)} ${hyperliquid.token.symbol}`
         : undefined;
 
