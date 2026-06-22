@@ -23,7 +23,7 @@ const DestinationPicker = (props: Props) => {
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
     const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
-    const { quote, isQuoteLoading } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval, withDelay: true });
+    const { quote, isQuoteLoading } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval });
 
     return <div className="flex flex-col w-full bg-secondary-500 rounded-2xl p-4 pb-3.75 space-y-6.75">
         <div className="grid grid-cols-9 gap-2 items-center h-7">

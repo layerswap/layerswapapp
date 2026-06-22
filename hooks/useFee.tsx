@@ -54,14 +54,13 @@ type Props = {
     depositMethod: "wallet" | "deposit_address" | undefined
 }
 type Options = {
-    fetchLimits?: boolean
+    skipLimits?: boolean
     refreshInterval?: number
-    withDelay?: boolean
 }
 
-export function useQuoteData(formValues: Props | undefined, options: Options = { fetchLimits: true, refreshInterval: 20000 }): UseQuoteData {
+export function useQuoteData(formValues: Props | undefined, options: Options = { skipLimits: false, refreshInterval: 20000 }): UseQuoteData {
     const { fromCurrency, toCurrency, from, to, amount, refuel, depositMethod } = formValues || {}
-    const { fetchLimits, refreshInterval, withDelay } = options
+    const { skipLimits, refreshInterval } = options
 
     const [debouncedAmount, setDebouncedAmount] = useState(amount)
     const [isDebouncing, setIsDebouncing] = useState(false)
@@ -87,7 +86,7 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
     const use_deposit_address = depositMethod === 'wallet' ? false : true
 
 
-    const limitsURL = (fetchLimits && from && to && depositMethod && toCurrency && fromCurrency) ?
+    const limitsURL = (!skipLimits && from && to && depositMethod && toCurrency && fromCurrency) ?
         buildLimitsUrl({
             sourceNetwork: from!,
             sourceToken: fromCurrency!,

@@ -50,7 +50,7 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
     // Deposit address flow doesn't use limits — resolveFormValidation skips amount checks there
-    const { minAllowedAmount, maxAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, quoteError, quote, isQuoteLoading, isDebouncing } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval, fetchLimits: !isDepositAddressFlow(values.depositMethod, values.fromExchange) });
+    const { minAllowedAmount, maxAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, quoteError, quote, isQuoteLoading, isDebouncing } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval, skipLimits: isDepositAddressFlow(values.depositMethod, values.fromExchange) });
 
     const { autoSlippage } = useSlippageStore();
     const quoteErrorCode = quoteError?.response?.data?.error?.code || quoteError?.code;
