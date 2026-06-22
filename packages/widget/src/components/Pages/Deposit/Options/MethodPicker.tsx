@@ -3,8 +3,9 @@ import clsx from "clsx";
 import { QrCode, ChevronRight, Loader2 } from "lucide-react";
 import useWallet from "@/hooks/useWallet";
 import { useSelectSwapAccount } from "@/context/swapAccounts";
-import { useInitialSettings } from "@/context/settings";
+import { useDepositSettings } from "@/context/depositSettings";
 import { useDepositStep } from "../depositStepContext";
+import { DepositMethodId } from "../depositMethods";
 import { useDepositSelection } from "../depositSelectionContext";
 import { Address } from "@/lib/address/Address";
 import DestinationTokenPicker from "../DestinationTokenPicker";
@@ -69,15 +70,16 @@ const MethodPicker: FC = () => {
     const { wallets } = useWallet();
     const { destination, destinationToken } = useDepositSelection();
     const selectSourceAccount = useSelectSwapAccount("from");
-    const { hideHyperliquidDeposit } = useInitialSettings();
+    const { methods } = useDepositSettings();
     const hyperliquid = useHyperliquidDepositOption();
 
+    const canShow = (m: DepositMethodId) => methods.includes(m);
     const primaryWallet = wallets[0];
     const hasWallet = !!primaryWallet;
     const destinationReady = !!destination && !!destinationToken;
     // Render the card whenever Hyperliquid is configured; its enabled/loading
     // state (not its presence) reflects reachability, so it never flashes away.
-    const showHyperliquid = hyperliquid.present && !hideHyperliquidDeposit;
+    const showHyperliquid = hyperliquid.present && canShow("hyperliquid");
 
     const handleWalletClick = () => {
         if (!destinationReady) return;
@@ -135,14 +137,26 @@ const MethodPicker: FC = () => {
             </p>
 
             <div className="flex flex-col gap-2 w-full">
-                <MethodCard
-                    icon={walletCardIcon}
-                    title="Wallet transfer"
-                    subtitle={walletSubtitle}
-                    onClick={handleWalletClick}
-                    disabled={walletDisabled}
-                    disabledReason="Pick a destination first"
-                />
+                {canShow("wallet") && (
+                    <MethodCard
+                        icon={walletCardIcon}
+                        title="Wallet transfer"
+                        subtitle={walletSubtitle}
+                        onClick={handleWalletClick}
+                        disabled={walletDisabled}
+                        disabledReason="Pick a destination first"
+                    />
+                )}
+                {canShow("deposit_address") && (
+                    <MethodCard
+                        icon={<QrCode className="h-6 w-6 text-primary-text" />}
+                        title="Deposit address"
+                        subtitle="Send from any wallet or CEX"
+                        onClick={handleTransferCryptoClick}
+                        disabled={!destinationReady}
+                        disabledReason="Pick a destination first"
+                    />
+                )}
                 {showHyperliquid && (
                     <MethodCard
                         icon={
@@ -172,15 +186,7 @@ const MethodPicker: FC = () => {
                         }
                     />
                 )}
-                <MethodCard
-                    icon={<QrCode className="h-6 w-6 text-primary-text" />}
-                    title="Deposit address"
-                    subtitle="Send from any wallet or CEX"
-                    onClick={handleTransferCryptoClick}
-                    disabled={!destinationReady}
-                    disabledReason="Pick a destination first"
-                />
-                {hasWallet && (
+                {canShow("wallet") && hasWallet && (
                     <MethodCard
                         icon={<WalletIcon className="h-6 w-6 text-primary-text" strokeWidth={2} />}
                         title="More wallets"

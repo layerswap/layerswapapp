@@ -28,7 +28,6 @@ export class PersistantQueryParams {
     appName?: string = "";
     depositMethod?: string = "";
     hideDepositMethod?: boolean = false;
-    hideHyperliquidDeposit?: boolean = false;
     hideLogo?: boolean = false
     sameAccountNetwork?: string = "";
     clientId?: string = "";

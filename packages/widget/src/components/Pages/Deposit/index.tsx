@@ -7,6 +7,7 @@ import { FamilyDrawer, ViewsRegistry } from "@/components/Modal/FamilyDrawer";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
 import { DepositStep, DepositStepProvider, useDepositStep } from "./depositStepContext";
+import { DepositMethodId } from "./depositMethods";
 import { DepositSelectionProvider } from "./depositSelectionContext";
 import { DepositPrefetchProvider } from "./depositPrefetchContext";
 import DepositHeader from "./DepositHeader";
@@ -51,6 +52,10 @@ export type DepositProps = {
     /** Default amount (in USD) seeded into the wallet flow once the user
      * picks a source token. Defaults to $1. Set to 0 to disable seeding. */
     defaultAmountUsd?: number;
+    /** The deposit funding methods to offer, e.g. `['wallet','deposit_address']`.
+     * Acts as an allow-list: only listed methods can appear (a method also still
+     * needs its own runtime condition). Defaults to all available methods. */
+    methods?: DepositMethodId[];
 };
 
 const StepRouter: FC<{ step: DepositStep; partner?: Partner; hasWalletMethods: boolean }> = ({
@@ -99,12 +104,13 @@ const DepositForm: FC<Pick<DepositProps, "partner" | "title"> & { onClose?: () =
     );
 };
 
-const DepositCard: FC<Pick<DepositProps, "partner" | "destination" | "destinationAddress" | "showDestinationAddress" | "title" | "actionButtonText" | "defaultAmountUsd"> & { onClose?: () => void }> = ({ partner, destination, destinationAddress, showDestinationAddress, title, actionButtonText, defaultAmountUsd, onClose }) => {
+const DepositCard: FC<Pick<DepositProps, "partner" | "destination" | "destinationAddress" | "showDestinationAddress" | "title" | "actionButtonText" | "defaultAmountUsd" | "methods"> & { onClose?: () => void }> = ({ partner, destination, destinationAddress, showDestinationAddress, title, actionButtonText, defaultAmountUsd, methods, onClose }) => {
     return (
         <DepositSettingsProvider value={{
             showDestinationAddress,
             actionButtonText,
             defaultAmountUsd,
+            methods,
         }}>
             <ThemeWrapper>
                 <Widget hideMenu fitHeight>
