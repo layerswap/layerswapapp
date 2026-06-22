@@ -8,8 +8,4 @@ export const WALLETCONNECT_METADATA = {
     description: 'Layerswap App',
     url: 'https://layerswap.io/app/',
     icons: ['https://www.layerswap.io/app/symbol.png'],
-    redirect: {
-        native: '',
-        universal: typeof window !== 'undefined' ? window.location.origin : 'https://layerswap.io/app/',
-    },
 }
