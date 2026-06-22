@@ -36,7 +36,7 @@ const DepositAddressFormButton: FC<DepositAddressFormButtonProps> = ({
     if (hasDepositError) {
         return (
             <SubmitButton type="button" buttonStyle="secondary" isDisabled>
-                Couldn't generate deposit
+                Couldn&apos;t generate deposit
             </SubmitButton>
         );
     }
