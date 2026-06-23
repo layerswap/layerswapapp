@@ -98,7 +98,7 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
         finally {
             setLoading(false)
         }
-    }, [walletPublicKey, source_network, source_token, solanaWallet])
+    }, [walletPublicKey, source_network, source_token, solanaWallet, balances])
 
     if (!wallet || !walletPublicKey) {
         return <ConnectWalletButton />
