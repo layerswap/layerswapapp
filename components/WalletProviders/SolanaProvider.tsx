@@ -4,13 +4,17 @@ import {
 } from "@solana/wallet-adapter-react";
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import { WalletAdapterNetwork, WalletReadyState } from "@solana/wallet-adapter-base";
-import { SolanaWalletConnectAdapter } from "@/lib/wallets/solana/SolanaWalletConnectAdapter";
+import { SolanaHiddenWalletConnectName, SolanaWalletConnectAdapter } from "@/lib/wallets/solana/SolanaWalletConnectAdapter";
 import { WALLETCONNECT_PROJECT_ID, WALLETCONNECT_METADATA } from "@/lib/wallets/walletConnect/config";
 import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
 
 const SOLANA_NETWORK = process.env.NEXT_PUBLIC_API_VERSION == 'sandbox' ? WalletAdapterNetwork.Devnet : WalletAdapterNetwork.Mainnet;
 
-const shouldAutoConnect = async (adapter: { name: string }) => adapter.name !== 'WalletConnect';
+const shouldAutoConnect = async (adapter: { name: string; canAutoConnect?: () => Promise<boolean> }) => {
+    if (adapter.name === 'WalletConnect') return false
+    if (adapter.name === SolanaHiddenWalletConnectName) return adapter.canAutoConnect?.() ?? false
+    return true
+};
 
 function SolanaProvider({ children }: { children: ReactNode }) {
     const [adapters, setAdapters] = useState<any[]>([]);

@@ -144,6 +144,16 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
         } catch { /* silent — the user can still connect manually */ }
     }
 
+    async canAutoConnect(): Promise<boolean> {
+        if (this._readyState !== WalletReadyState.Loadable || this._connecting) return false
+        try {
+            const provider = await this.getProvider()
+            return !!provider.session
+        } catch {
+            return false
+        }
+    }
+
     async connect(): Promise<void> {
         // Hoisted so the `finally` can compare it against `this._provider`.
         let provider: UniversalProviderType | undefined
