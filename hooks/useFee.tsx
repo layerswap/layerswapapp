@@ -58,11 +58,16 @@ type Props = {
     amount: string | number | undefined
     refuel: boolean | undefined
     depositMethod: "wallet" | "deposit_address" | undefined
-    withDelay?: boolean
+}
+type Options = {
+    skipLimits?: boolean
+    refreshInterval?: number
 }
 
-export function useQuoteData(formValues: Props | undefined, refreshInterval?: number): UseQuoteData {
+export function useQuoteData(formValues: Props | undefined, options: Options = { skipLimits: false, refreshInterval: 20000 }): UseQuoteData {
     const { fromCurrency, toCurrency, from, to, amount, refuel, depositMethod } = formValues || {}
+    const { skipLimits, refreshInterval } = options
+
     const [debouncedAmount, setDebouncedAmount] = useState(amount)
     const [isDebouncing, setIsDebouncing] = useState(false)
     const { slippage } = useSlippageStore()
@@ -104,7 +109,7 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
     const extendedNetworkObj = useMemo(() => extendedMapping ? networks.find(n => n.name === extendedMapping.extendedNetworkName) : undefined, [networks, extendedMapping])
     const extendedTokenObj = useMemo(() => extendedNetworkObj?.tokens.find(t => t.symbol === extendedMapping?.extendedTokenSymbol), [extendedNetworkObj, extendedMapping])
 
-    const limitsURL = (from && to && depositMethod && toCurrency && fromCurrency) ?
+    const limitsURL = (!skipLimits && from && to && depositMethod && toCurrency && fromCurrency) ?
         buildLimitsUrl({
             sourceNetwork: effectiveFrom!,
             sourceToken: effectiveFromToken!,
@@ -230,7 +235,7 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
     }
 }
 
-export function transformFormValuesToQuoteArgs(values: SwapFormValues, withDelay?: boolean): Props | undefined {
+export function transformFormValuesToQuoteArgs(values: SwapFormValues): Props | undefined {
     return {
         amount: values.amount,
         from: values.from?.name,
@@ -239,7 +244,6 @@ export function transformFormValuesToQuoteArgs(values: SwapFormValues, withDelay
         to: values.to?.name,
         toCurrency: values.toAsset?.symbol,
         refuel: values.refuel,
-        withDelay
     }
 }
 
