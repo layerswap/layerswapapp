@@ -318,7 +318,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         });
 
         return swap;
-    }, [selectedSourceAccount, selectedWallet, updateRecentTokens, swapDetails?.id, networks])
+    }, [selectedSourceAccount, selectedWallet, updateRecentTokens, swapDetails?.id, networks, sourceRoutes])
 
     const updateFns = useMemo<UpdateSwapInterface>(() => ({
         createSwap,
