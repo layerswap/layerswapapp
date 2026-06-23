@@ -38,7 +38,7 @@ function SolanaProvider({ children }: { children: ReactNode }) {
 
             if (cancelled) return;
 
-            class MobilePhantomWalletAdapter extends PhantomWalletAdapter {
+            class LoadablePhantomAdapter extends PhantomWalletAdapter {
                 get readyState() {
                     const rs = super.readyState;
                     return rs === WalletReadyState.NotDetected && isMobile() ? WalletReadyState.Loadable : rs;
@@ -47,7 +47,7 @@ function SolanaProvider({ children }: { children: ReactNode }) {
 
             setReady(true);
             setAdapters([
-                new MobilePhantomWalletAdapter(),
+                new LoadablePhantomAdapter(),
                 new NightlyWalletAdapter(),
                 new SolflareWalletAdapter(),
                 new BitgetWalletAdapter(),
