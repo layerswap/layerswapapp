@@ -164,7 +164,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 }) => {
     const query = useQueryState()
     const goHome = useGoHome()
-    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, refuel: refuelData } = useSwapDataState()
+    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, refuel: refuelData, setSwapError } = useSwapDataState()
     const { onWalletWithdrawalSuccess: onWalletWithdrawalSuccess, onCancelWithdrawal } = useWalletWithdrawalState();
     const { createSwap, setSwapId, setQuoteLoading } = useSwapDataUpdate()
     const { setSwapTransaction } = useSwapTransactionStore();
@@ -215,7 +215,10 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     depositMethod: 'wallet',
                 }
 
-                const newSwapData = await createSwap(swapValues, query);
+                const newSwapData = await createSwap(swapValues, query).catch((e: any) => {
+                    setSwapError?.(e?.response?.data?.error?.message || e?.message || 'Could not create swap')
+                    throw e
+                });
                 const newSwapId = newSwapData?.swap?.id;
                 if (!newSwapId) {
                     throw new Error('Swap ID is undefined');

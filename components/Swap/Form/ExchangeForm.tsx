@@ -38,7 +38,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
     } = useFormikContext<SwapFormValues>();
 
     const { fromAsset: fromCurrency, from, to: destination, destination_address, amount, toAsset: toCurrency } = values || {};
-    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
+    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
     const [actionTempValue, setActionTempValue] = useState<number | undefined>(undefined)
 
     const { wallets } = useWallet();
@@ -46,8 +46,8 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
 
     const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
-    const { isQuoteLoading, quote, quoteTokenPrices, minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd } = useQuoteData(quoteArgs, quoteRefreshInterval);
-    const { routeValidation, formValidation } = useValidationContext();
+    const { isQuoteLoading, quote, quoteTokenPrices, minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval });
+    const { formValidation } = useValidationContext();
 
     const isValid = !formValidation.message;
     const error = formValidation.message;
@@ -140,11 +140,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                             </div>
                         </div>
                         <div>
-                            {
-                                routeValidation.message
-                                    ? <ValidationError />
-                                    : null
-                            }
+                            <ValidationError />
                             <QuoteDetails swapValues={values} quote={quote?.quote} isQuoteLoading={isQuoteLoading} reward={quote?.reward} variant="base" />
                         </div>
                     </div>

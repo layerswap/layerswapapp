@@ -18,12 +18,10 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({ icon, title, message
                         {title}
                     </p>
                     {message && (
-                        <div className="flex items-center justify-between gap-2">
-                            <p className="text-secondary-text text-sm leading-4.5">{message}</p>
-                            {action}
-                        </div>
+                        <p className="text-secondary-text text-sm leading-4.5">{message}</p>
                     )}
                 </div>
+                {action}
             </div>
             {footer}
         </div>

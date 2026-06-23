@@ -48,14 +48,14 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const selectedSourceAccount = useSelectedAccount("from", source?.name);
 
     const { providers, wallets } = useWallet();
-    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
+    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
     const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
-    const { minAllowedAmount, maxAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isQuoteLoading, quote, quoteTokenPrices } = useQuoteData(quoteArgs, quoteRefreshInterval);
+    const { minAllowedAmount, maxAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isQuoteLoading, quote, quoteTokenPrices } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval });
 
     const toAsset = values.toAsset;
     const fromAsset = values.fromAsset;
-    const { formValidation, routeValidation, autoSlippageWouldWork, isTestingAutoSlippage } = useValidationContext();
+    const { formValidation, autoSlippageWouldWork, isTestingAutoSlippage } = useValidationContext();
     const query = useQueryState();
 
     const isValid = !formValidation.message;
@@ -129,11 +129,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                     </div>
                                 ) : null
                             }
-                            {
-                                routeValidation.message
-                                    ? <ValidationError />
-                                    : null
-                            }
+                            <ValidationError />
                             {
                                 !autoSlippageWouldWork ? (
                                     <QuoteDetails swapValues={values} quote={quote?.quote} reward={quote?.reward} isQuoteLoading={isQuoteLoading} />
