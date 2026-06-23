@@ -21,6 +21,7 @@ import { ICON_CLASSES_WARNING } from '../Form/SecondaryComponents/validationErro
 import { RefreshBalanceButton } from '../Form/SecondaryComponents/validationError/RefreshBalanceButton';
 import { AdjustAmountButton } from '../Form/SecondaryComponents/validationError/AdjustAmountButton';
 import { AnimatePresence, motion } from 'framer-motion';
+import { isDepositAddressSwap } from '@/helpers/swapFlow';
 
 const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: () => void, onCancelWithdrawal?: () => void, partner?: Partner }> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal, partner }) => {
     const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading, quoteError } = useSwapDataState()
@@ -67,7 +68,8 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
         && Number(walletBalanceAmount) < Number(swapBasicData?.requested_amount)
 
     const quoteArgs = transformSwapDataToQuoteArgs(swapBasicData, !!refuel);
-    const { minAllowedAmount, maxAllowedAmount } = useQuoteData(quoteArgs);
+    // Limits feed useOutOfGas, which only matters for wallet withdrawals — skip them in deposit address flow
+    const { minAllowedAmount, maxAllowedAmount } = useQuoteData(quoteArgs, { skipLimits: isDepositAddressSwap(swapBasicData) });
     const { outOfGas } = useOutOfGas({
         address: selectedSourceAccount?.address,
         network: source_network,

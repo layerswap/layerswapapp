@@ -24,6 +24,7 @@ import { useExtendedSwapData } from '@/hooks/useExtendedSwapDisplay';
 import { resolveExtendedRoutePlan } from '@/lib/extendedRoutes/registry';
 import { buildCreateSwapParamsForExtendedRoute } from '@/lib/extendedRoutes/transforms';
 import { useExtendedRoutesStore } from '@/stores/extendedRoutesStore';
+import { isDepositAddressFlow, isDepositAddressSwap } from '@/helpers/swapFlow';
 
 export const SwapDataStateContext = createContext<SwapContextData | null>(null);
 
@@ -46,6 +47,7 @@ export type SwapContextData = {
     swapApiError?: ApiError,
     depositAddressIsFromAccount?: boolean,
     depositActionsResponse?: DepositAction[],
+    depositActionsError?: string,
     withdrawType: WithdrawType | undefined,
     swapTransaction: SwapTransaction | undefined,
     swapBasicData: SwapBasicData & { refuel: boolean } | undefined,
@@ -57,7 +59,7 @@ export type SwapContextData = {
     swapId: string | undefined,
     swapModalOpen: boolean,
     swapError?: string | null | undefined,
-    setSwapError?: (value: string) => void
+    setSwapError?: (value: string | null) => void
 }
 
 export function SwapDataProvider({ children, initialSwapData }: { children: React.ReactNode, initialSwapData?: SwapResponse | null }) {
@@ -78,23 +80,22 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const { sourceRoutes, destinationRoutes, networks } = useSettingsState()
     const updateRecentTokens = useRecentNetworksStore(state => state.updateRecentNetworks)
     const [swapModalOpen, setSwapModalOpen] = useState(false)
-    const [swapError, setSwapError] = useState<string>('')
+    const [swapError, setSwapError] = useState<string | null>(null)
 
     const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapBasicFormData, !!swapBasicFormData?.refuel), [swapBasicFormData]);
 
-    const { quote: formDataQuote, quoteError: formDataQuoteError } = useQuoteData(quoteArgs, swapId ? 0 : undefined);
+    // Deposit address flow doesn't use limits — min/max come from the detailed quote there
+    const { quote: formDataQuote, quoteError: formDataQuoteError } = useQuoteData(quoteArgs, { refreshInterval: swapId ? 0 : undefined, skipLimits: isDepositAddressSwap(swapBasicFormData) });
 
     const handleUpdateSwapid = (value: string | undefined) => {
         setSwapId(value)
     }
 
     const setSubmitedFormValues = useCallback((values: NonNullable<SwapFormValues>) => {
-        const isDepositAddressFlow = values.depositMethod === 'deposit_address' && !values.fromExchange;
-
         if (!values.from || !values.to || !values.fromAsset || !values.toAsset || !values.destination_address)
             throw new Error("Form data is missing")
 
-        if (!isDepositAddressFlow && !values.amount)
+        if (!isDepositAddressFlow(values.depositMethod, values.fromExchange) && !values.amount)
             throw new Error("Form data is missing")
 
         setSwapBasicFormData({
@@ -180,13 +181,14 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const use_deposit_address = swapBasicData?.use_deposit_address
     const deposit_actions_endpoint = swapId ? `/swaps/${swapId}/deposit_actions${(use_deposit_address || !selectedSourceAccount || !sourceIsSupported) ? "" : `?source_address=${selectedSourceAccount?.address}`}` : null
     const inputTransfer = swapDetails?.transactions.find(t => t.type === TransactionType.Input);
-    const { data: depositActions } = useSWR<ApiResponse<DepositAction[]>>(!inputTransfer ? deposit_actions_endpoint : null, layerswapApiClient.fetcher)
+    const { data: depositActions, error: depositActionsSwrError } = useSWR<ApiResponse<DepositAction[]>>(!inputTransfer ? deposit_actions_endpoint : null, layerswapApiClient.fetcher)
 
     // The create-swap response may already carry deposit actions — use them as
     // a fallback (only while the seeded swap is still the active one) so the
     // deposit address renders without waiting for the separate fetch.
     const depositActionsResponse = depositActions?.data
         ?? (swapId && swapId === initialSwapData?.swap.id ? initialSwapData?.deposit_actions : undefined)
+    const depositActionsError = depositActionsSwrError ? (depositActionsSwrError?.response?.data?.error?.message || 'Could not generate deposit address.') : undefined
 
     const currentSwap = data?.data?.swap
     const storedWalletTransaction = useSwapTransactionStore(
@@ -223,18 +225,17 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             throw new Error("No swap data")
 
         const { to, fromAsset: fromCurrency, toAsset: toCurrency, from, refuel, fromExchange, depositMethod, amount, destination_address } = values
-        const isDepositAddressFlow = depositMethod === 'deposit_address' && !fromExchange;
-
+        const depositAddressFlow = isDepositAddressFlow(depositMethod, fromExchange)
         if (!to || !fromCurrency || !toCurrency || !from || !destination_address || !depositMethod)
             throw new Error("Form data is missing")
-        if (!isDepositAddressFlow && !amount)
+        if (!depositAddressFlow && !amount)
             throw new Error("Form data is missing")
 
         const sourceWalletIsSupported = selectedWallet && WalletIsSupportedForSource({
             sourceNetwork: from,
             sourceWallet: selectedWallet
         })
-        const contractCheckResult = (isDepositAddressFlow && selectedWallet) ? await checkContractStatus(selectedWallet.address, from, to) : null
+        const contractCheckResult = (depositAddressFlow && selectedWallet) ? await checkContractStatus(selectedWallet.address, from, to) : null
         const isContract = contractCheckResult?.sourceIsContract ?? false
         const sourceIsSupported = sourceWalletIsSupported && !isContract
 
@@ -279,12 +280,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             data.slippage = slippage.toString()
         }
 
-        let swapResponse
-        try {
-            swapResponse = await layerswapApiClient.CreateSwapAsync(data)
-        } catch (error) {
-            setSwapError(error?.response?.data?.error?.message || 'Unexpected error occurred.')
-        }
+        const swapResponse = await layerswapApiClient.CreateSwapAsync(data)
 
         if (swapResponse?.error) {
             throw swapResponse?.error
@@ -339,6 +335,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         depositAddressIsFromAccount: !!depositAddressIsFromAccount,
         swapApiError: error,
         depositActionsResponse,
+        depositActionsError,
         quote,
         quoteIsLoading,
         quoteError,
@@ -349,7 +346,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         swapModalOpen,
         swapError,
         setSwapError
-    }), [withdrawType, swapTransaction, depositAddressIsFromAccount, error, depositActionsResponse, quote, quoteIsLoading, quoteError, refuel, swapBasicData, swapDetails, swapId, swapModalOpen, swapError]);
+    }), [withdrawType, swapTransaction, depositAddressIsFromAccount, error, depositActionsResponse, depositActionsError, quote, quoteIsLoading, quoteError, refuel, swapBasicData, swapDetails, swapId, swapModalOpen, swapError]);
 
     return (
         <SwapDataStateContext.Provider value={stateValue}>

@@ -1,10 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
 
-/**
- * Shared dismiss (×) button for inline `ErrorDisplay` actions. Keeps the markup
- * and a11y label consistent across the feedback, swap, and wallet-connect errors.
- */
 const ErrorDismissButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
     <button
         type="button"
