@@ -56,6 +56,7 @@ export function useExtendedSwapData(
     backendQuote: SwapQuote | undefined,
 ): ExtendedSwapData | undefined {
     const display = useExtendedSwapDisplay(swapId)
+    const { sourceRoutes } = useSettingsState()
     return useMemo(() => {
         if (!display || !base) return undefined
         const { network, token, record } = display
@@ -79,6 +80,7 @@ export function useExtendedSwapData(
                 destinationNetworkName: base.destination_network?.name,
                 destinationTokenSymbol: base.destination_token?.symbol,
                 sourceAmount: record.sourceAmount,
+                availableRoutes: sourceRoutes,
             })
             const mapping = plan?.mapping
             if (mapping) {
@@ -87,5 +89,5 @@ export function useExtendedSwapData(
         }
 
         return { swapBasicData, quote }
-    }, [display, base, backendQuote])
+    }, [display, base, backendQuote, sourceRoutes])
 }

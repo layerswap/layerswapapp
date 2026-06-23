@@ -244,6 +244,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             destinationNetworkName: to.name,
             destinationTokenSymbol: toCurrency.symbol,
             sourceAmount: amount,
+            availableRoutes: sourceRoutes,
         })
         const isExtendedBridge = !!extendedPlan
 

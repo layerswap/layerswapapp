@@ -41,11 +41,35 @@ export type HyperliquidRoute = {
 const MAINNET_NODE = "https://api.hyperliquid.xyz"
 const TESTNET_NODE = "https://api.hyperliquid-testnet.xyz"
 
+/** Avalanche C-Chain CCTP domain. */
+const AVALANCHE_CCTP_DOMAIN = 1
+/** Sonic CCTP domain. */
+const SONIC_CCTP_DOMAIN = 13
 /** Base (and Base Sepolia) CCTP domain. */
 const BASE_CCTP_DOMAIN = 6
 /** Arbitrum (and Arbitrum Sepolia) CCTP domain. */
 const ARBITRUM_CCTP_DOMAIN = 3
 
+const AVALANCHE_MAINNET: HyperliquidDestination = {
+    realNetworkName: KnownInternalNames.Networks.AvalancheMainnet,
+    realTokenSymbol: 'USDC',
+    realDecimals: 6,
+    destinationCctpDomain: AVALANCHE_CCTP_DOMAIN,
+    signatureChainId: 43114,
+    signatureChainIdHex: '0xa86a',
+    flatFee: 0.2,
+    arrivalSeconds: 5,
+}
+const SONIC_MAINNET: HyperliquidDestination = {
+    realNetworkName: KnownInternalNames.Networks.SonicMainnet,
+    realTokenSymbol: 'USDC',
+    realDecimals: 6,
+    destinationCctpDomain: SONIC_CCTP_DOMAIN,
+    signatureChainId: 146,
+    signatureChainIdHex: '0x92',
+    flatFee: 0.2,
+    arrivalSeconds: 5,
+}
 const BASE_MAINNET: HyperliquidDestination = {
     realNetworkName: KnownInternalNames.Networks.BaseMainnet,
     realTokenSymbol: 'USDC',
@@ -91,7 +115,7 @@ export const HYPERLIQUID_ROUTES: Record<string, HyperliquidRoute> = {
     [KnownInternalNames.Networks.HyperliquidMainnet]: {
         hyperliquidChain: 'Mainnet',
         defaultNodeUrl: MAINNET_NODE,
-        destinations: [BASE_MAINNET, ARBITRUM_MAINNET],
+        destinations: [AVALANCHE_MAINNET, SONIC_MAINNET, BASE_MAINNET, ARBITRUM_MAINNET],
     },
     [KnownInternalNames.Networks.HyperliquidTestnet]: {
         hyperliquidChain: 'Testnet',
@@ -100,24 +124,45 @@ export const HYPERLIQUID_ROUTES: Record<string, HyperliquidRoute> = {
     },
 }
 
+/** Predicate the picker uses to skip candidates the backend can't currently
+ * fulfill. Supplied by callers that know the available backend routes (built from
+ * the settings source routes); when omitted, availability isn't considered. */
+export type RealRouteAvailability = (real: { networkName: string; tokenSymbol: string }) => boolean
+
 /**
- * Pick the active destination for an HL source. Returns the first destination
- * whose (realNetworkName, realTokenSymbol) does not equal the user's selected
- * destination — the only case where a backend swap would be same-chain same-token.
- * If `to` is unset, returns the primary destination.
+ * Pick the active destination for an HL source, walking the configured priority
+ * order (AVAX → Sonic → Base → Arbitrum) and returning the first candidate that:
+ *   1. wouldn't create a same-chain same-token backend swap (those don't exist —
+ *      e.g. picking Base/USDC skips the Base candidate), and
+ *   2. is actually available on the backend, when an availability predicate is
+ *      supplied — so newly-listed destinations (AVAX/Sonic) silently fall back to
+ *      a live one (Base/Arbitrum) until the backend lists them.
+ * Falls back to the first non-self-swap candidate when none are known-available,
+ * and to the primary destination when `to` is unset.
  */
 export function pickHyperliquidDestination(
     hlNetworkName: string | undefined,
     toNetworkName?: string,
     toTokenSymbol?: string,
+    isRealRouteAvailable?: RealRouteAvailability,
 ): HyperliquidDestination | undefined {
     if (!hlNetworkName) return undefined
     const route = HYPERLIQUID_ROUTES[hlNetworkName]
     if (!route) return undefined
-    if (!toNetworkName || !toTokenSymbol) return route.destinations[0]
-    return route.destinations.find(d =>
+
+    const notSelfSwap = (d: HyperliquidDestination) =>
         !(d.realNetworkName === toNetworkName && d.realTokenSymbol === toTokenSymbol)
-    ) ?? route.destinations[0]
+    const eligible = route.destinations.filter(notSelfSwap)
+    const candidates = eligible.length ? eligible : route.destinations
+
+    if (isRealRouteAvailable) {
+        const available = candidates.find(d =>
+            isRealRouteAvailable({ networkName: d.realNetworkName, tokenSymbol: d.realTokenSymbol })
+        )
+        if (available) return available
+    }
+
+    return candidates[0]
 }
 
 /** Candidate (real network, real token) refs for an HL source — used by the
