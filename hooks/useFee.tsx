@@ -1,12 +1,18 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues'
-import LayerSwapApiClient, { Quote, SwapBasicData, SwapQuote } from '../lib/apiClients/layerSwapApiClient'
+import LayerswapApiClient, { Quote, SwapBasicData, SwapQuote } from '../lib/apiClients/layerSwapApiClient'
 import { ApiResponse } from '../Models/ApiResponse'
 import { sleep } from 'fuels'
 import { create } from 'zustand';
 import { isDiffByPercent } from '@/components/utils/numbers'
 import { useSlippageStore } from '@/stores/slippageStore'
+import { useSettingsState } from '@/context/settings'
+import { resolveExtendedRoutePlan } from '@/lib/extendedRoutes/registry'
+import { transformLimitsForExtendedRoute, transformQuoteForExtendedRoute } from '@/lib/extendedRoutes/transforms'
+import { isPositiveDecimal } from '@/lib/extendedRoutes/amounts'
+
+const apiClient = new LayerswapApiClient()
 
 export type QuoteTokenPrices = Pick<SwapQuote, 'source_token' | 'destination_token'>
 
@@ -82,17 +88,34 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
         }
     }, [amount])
 
-    const apiClient = new LayerSwapApiClient()
     const use_deposit_address = depositMethod === 'wallet' ? false : true
 
+    // Extended source (e.g. Hyperliquid): the backend doesn't know this source,
+    // so quote/limits are fetched against the real route it maps to (bridge mode).
+    const { networks } = useSettingsState()
+    const extendedPlan = useMemo(() => resolveExtendedRoutePlan({
+        sourceNetworkName: from,
+        sourceTokenSymbol: fromCurrency,
+        destinationNetworkName: to,
+        destinationTokenSymbol: toCurrency,
+        sourceAmount: debouncedAmount,
+    }), [from, fromCurrency, to, toCurrency, debouncedAmount])
+    const extendedMapping = extendedPlan?.mapping
+    const isBridge = !!extendedPlan
+    const effectiveFrom = isBridge ? extendedMapping!.real.networkName : from
+    const effectiveFromToken = isBridge ? extendedMapping!.real.tokenSymbol : fromCurrency
+    const effectiveUseDepositAddress = extendedPlan ? true : use_deposit_address
+
+    const extendedNetworkObj = useMemo(() => extendedMapping ? networks.find(n => n.name === extendedMapping.extendedNetworkName) : undefined, [networks, extendedMapping])
+    const extendedTokenObj = useMemo(() => extendedNetworkObj?.tokens.find(t => t.symbol === extendedMapping?.extendedTokenSymbol), [extendedNetworkObj, extendedMapping])
 
     const limitsURL = (!skipLimits && from && to && depositMethod && toCurrency && fromCurrency) ?
         buildLimitsUrl({
-            sourceNetwork: from!,
-            sourceToken: fromCurrency!,
+            sourceNetwork: effectiveFrom!,
+            sourceToken: effectiveFromToken!,
             destinationNetwork: to!,
             destinationToken: toCurrency!,
-            useDepositAddress: use_deposit_address,
+            useDepositAddress: effectiveUseDepositAddress,
             refuel
         }) : null
 
@@ -108,15 +131,18 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
 
     const hasQuoteParams = from && to && depositMethod && toCurrency && fromCurrency && debouncedAmount
 
-    const quoteURL = (hasQuoteParams && !isDebouncing)
+    // Bridge mode fetches the backend quote for the truncated real amount (A - fee).
+    const effectiveAmount = isBridge ? extendedPlan.realAmount : debouncedAmount
+
+    const quoteURL = (hasQuoteParams && !isDebouncing && (!isBridge || (effectiveAmount && isPositiveDecimal(effectiveAmount))))
         ? buildQuoteUrl({
-            sourceNetwork: from!,
-            sourceToken: fromCurrency!,
+            sourceNetwork: effectiveFrom!,
+            sourceToken: effectiveFromToken!,
             destinationNetwork: to!,
             destinationToken: toCurrency!,
-            amount: debouncedAmount || 0,
+            amount: effectiveAmount || 0,
             refuel: !!refuel,
-            useDepositAddress: use_deposit_address,
+            useDepositAddress: effectiveUseDepositAddress,
             slippage,
         })
         : null
@@ -163,23 +189,44 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
     })
 
     const quoteData = quote?.data
-    const hasValidAmount = !!debouncedAmount && Number(debouncedAmount) > 0
+    const hasValidAmount = !!debouncedAmount && isPositiveDecimal(String(debouncedAmount))
     const isTransitioning = swrIsLoading || isDebouncing
     const resolvedQuote = (quoteError || !hasQuoteParams || !hasValidAmount) ? undefined : quoteData
     if (!isTransitioning) lastSettledQuoteRef.current = resolvedQuote
     const suppressStale = isTransitioning && lastSettledQuoteRef.current === undefined
 
+    // Re-denominate the backend quote so the source side reads as the extended route.
+    let finalQuote = suppressStale ? undefined : resolvedQuote
+    if (extendedMapping && hasValidAmount && debouncedAmount) {
+        const sourceAmount = String(debouncedAmount)
+        if (isBridge && finalQuote && extendedNetworkObj && extendedTokenObj) {
+            finalQuote = transformQuoteForExtendedRoute(finalQuote, extendedMapping, extendedNetworkObj, extendedTokenObj, sourceAmount)
+        }
+    }
+
+    let minAllowedAmount = amountRange?.data?.min_amount
+    let maxAllowedAmount = amountRange?.data?.max_amount
+    let minAllowedAmountInUsd = amountRange?.data?.min_amount_in_usd
+    let maxAllowedAmountInUsd = amountRange?.data?.max_amount_in_usd
+    if (isBridge && extendedMapping) {
+        const transformed = transformLimitsForExtendedRoute(amountRange?.data, extendedMapping)
+        minAllowedAmount = transformed?.min_amount
+        maxAllowedAmount = transformed?.max_amount
+        minAllowedAmountInUsd = transformed?.min_amount_in_usd
+        maxAllowedAmountInUsd = transformed?.max_amount_in_usd
+    }
+
     return {
-        minAllowedAmount: amountRange?.data?.min_amount,
-        maxAllowedAmount: amountRange?.data?.max_amount,
-        minAllowedAmountInUsd: amountRange?.data?.min_amount_in_usd,
-        maxAllowedAmountInUsd: amountRange?.data?.max_amount_in_usd,
-        quote: suppressStale ? undefined : resolvedQuote,
-        quoteTokenPrices: (resolvedQuote?.quote && !suppressStale) ? {
-            source_token: resolvedQuote.quote.source_token,
-            destination_token: resolvedQuote.quote.destination_token,
+        minAllowedAmount,
+        maxAllowedAmount,
+        minAllowedAmountInUsd,
+        maxAllowedAmountInUsd,
+        quote: finalQuote,
+        quoteTokenPrices: (finalQuote?.quote && !suppressStale) ? {
+            source_token: finalQuote.quote.source_token,
+            destination_token: finalQuote.quote.destination_token,
         } : undefined,
-        isQuoteLoading: isQuoteLoading,
+        isQuoteLoading,
         isDebouncing,
         quoteError,
         mutateFee,
@@ -253,7 +300,7 @@ export function buildQuoteUrl(args: QuoteUrlArgs): string {
 }
 
 export const getLimits = async (swapValues: LimitsQueryOptions) => {
-    const apiClient = new LayerSwapApiClient()
+    const apiClient = new LayerswapApiClient()
     const { sourceToken, sourceNetwork, destinationNetwork, destinationToken, refuel, useDepositAddress } = swapValues || {}
 
     if (!sourceNetwork || !destinationNetwork || !useDepositAddress || !destinationToken || !sourceToken)

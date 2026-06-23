@@ -6,6 +6,7 @@ import { useFormikContext } from 'formik';
 import { QuoteError } from './useFee';
 import { useSelectedAccount } from '@/context/swapAccounts';
 import { ICON_CLASSES_WARNING } from '@/components/validationError/constants';
+import { isExtendedSourceNetwork } from '@/lib/extendedRoutes/registry';
 
 interface ValidationDetails {
     title?: string;
@@ -40,7 +41,7 @@ export function useRouteValidation(quoteError?: QuoteError, hasQuote?: boolean, 
         }
     }
 
-    if (quoteErrorCode === "QUOTE_REQUIRES_NO_DEPOSIT_ADDRESS") {
+    if (quoteErrorCode === "QUOTE_REQUIRES_NO_DEPOSIT_ADDRESS" && !isExtendedSourceNetwork(from?.name)) {
         validationDetails = { title: 'Manual swapping is not supported', type: 'warning', icon: <RouteOff className={ICON_CLASSES_WARNING} /> };
         validationMessage = `Swaps via manual transfer are not supported for this route. Please select a wallet to send from.`;
     }

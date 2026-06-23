@@ -5,8 +5,9 @@ import FilledX from '@/components/icons/FilledX'
 import SecondaryButton from '@/components/buttons/secondaryButton'
 import { useAddressBookStore, NAME_MAX, COUNTER_SHOW_AT } from '@/stores/addressBookStore'
 import { NetworkType } from '@/Models/Network'
+import { AddressSelectionType, AddressSelectionMode } from '@/lib/address/detector'
 
-export const SaveToBookNameForm: FC<{ address: string, networkType: NetworkType, onDone: () => void, compact?: boolean }> = ({ address, networkType, onDone, compact }) => {
+export const SaveToBookNameForm: FC<{ address: string, network: { name?: string, type: NetworkType }, onDone: () => void, compact?: boolean }> = ({ address, network, onDone, compact }) => {
     const addAddress = useAddressBookStore(s => s.addAddress)
     const [name, setName] = useState('')
 
@@ -16,7 +17,11 @@ export const SaveToBookNameForm: FC<{ address: string, networkType: NetworkType,
 
     const confirm = () => {
         if (!isValid) return
-        addAddress({ name: trimmed, address, networkType })
+        let networks: string[] | undefined
+        if (AddressSelectionType(network.type) === AddressSelectionMode.Networks && network.name) {
+            networks = [network.name]
+        }
+        addAddress({ name: trimmed, address, networkTypes: [network.type], networks })
         onDone()
     }
 
@@ -69,7 +74,7 @@ export const SaveToBookNameForm: FC<{ address: string, networkType: NetworkType,
     )
 }
 
-const SaveToBookInline: FC<{ address: string, networkType: NetworkType }> = ({ address, networkType }) => {
+const SaveToBookInline: FC<{ address: string, network: { name?: string, type: NetworkType } }> = ({ address, network }) => {
     const [editing, setEditing] = useState(false)
 
     if (!editing) {
@@ -83,7 +88,7 @@ const SaveToBookInline: FC<{ address: string, networkType: NetworkType }> = ({ a
         )
     }
 
-    return <SaveToBookNameForm address={address} networkType={networkType} onDone={() => setEditing(false)} />
+    return <SaveToBookNameForm address={address} network={network} onDone={() => setEditing(false)} />
 }
 
 export default SaveToBookInline

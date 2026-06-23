@@ -5,7 +5,6 @@ import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { removeSwapPath, UpdateSwapInterface, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import React from "react";
 import ConnectNetwork from "@/components/ConnectNetwork";
-import toast from "react-hot-toast";
 import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "@/lib/generateSwapInitialValues";
 import Modal from "@/components/modal/modal";
 import { useRouter } from "next/router";
@@ -63,7 +62,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
     const { setConfirmed, isConfirmed, checkContractStatus } = useContractAddressStore();
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
-        setSwapError && setSwapError('')
+        setSwapError && setSwapError(null)
         const { destination_address, to } = values
         setWalletWihdrawDone(false)
         if (!walletWihdrawDone) {
@@ -136,9 +135,9 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
             })
         }
         catch (error) {
-            toast.error(error?.message)
+            setSwapError && setSwapError(error?.message || 'Could not create swap')
         }
-    }, [createSwap, query, partner, router, swapBasicData, getProvider, settings, type])
+    }, [createSwap, query, partner, router, swapBasicData, getProvider, settings, type, setSwapError])
 
     const initialValues: SwapFormValues = swapBasicData ? generateSwapInitialValuesFromSwap(swapBasicData, swapBasicData.refuel, settings, type)
         : generateSwapInitialValues(settings, query, type, connectedAutofillNetworks)
@@ -253,6 +252,8 @@ const handleCreateSwap = async ({ query, values, partner, setShowSwapModal, crea
             } else {
                 throw new Error(`Daily limit of ${values.fromAsset?.symbol} transfers from ${values.from?.display_name} is reached.`)
             }
+        } else if (data?.code === "QUOTE_REQUIRES_NO_DEPOSIT_ADDRESS") {
+            throw new Error("This route isn't available with a deposit address. Try a different source or destination.")
         }
         else {
             throw new Error(data?.message || error?.message)
