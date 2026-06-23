@@ -66,7 +66,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
     const { setConfirmed, isConfirmed, checkContractStatus } = useContractAddressStore();
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
-        setSwapError && setSwapError('')
+        setSwapError && setSwapError(null)
         const { destination_address, to } = values
         setWalletWihdrawDone(false)
         if (!walletWihdrawDone) {
@@ -142,7 +142,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
             })
         }
         catch (error) {
-            setSwapError && setSwapError(error?.message)
+            setSwapError && setSwapError(error?.message || 'Could not create swap')
         }
     }, [createSwap, initialSettings, partner, swapBasicData, getProvider, settings, type, setSwapError])
 
@@ -263,6 +263,8 @@ const handleCreateSwap = async ({ query, values, partner, setShowSwapModal, crea
             } else {
                 throw new Error(`Daily limit of ${values.fromAsset?.symbol} transfers from ${values.from?.display_name} is reached.`)
             }
+        } else if (data?.code === "QUOTE_REQUIRES_NO_DEPOSIT_ADDRESS") {
+            throw new Error("This route isn't available with a deposit address. Try a different source or destination.")
         }
         else {
             throw new Error(data?.message || error?.message)

@@ -20,6 +20,11 @@ export type ModalWalletProvider = WalletConnectionProvider & {
     isSelectedFromFilter?: boolean;
 }
 
+/** Where the connect UI is rendered. `modal` is the default global VaulDrawer;
+ * `inline` lets a host (e.g. the deposit flow) render ConnectorsList inside its
+ * own widget as a step, in which case the global modal is suppressed. */
+export type ConnectPresentation = 'modal' | 'inline';
+
 type SharedType = { provider?: WalletConnectionProvider, connectCallback: (value: Wallet | undefined) => void, dismissible?: boolean, topContent?: ReactNode, fullHeight?: boolean, hideHeader?: boolean }
 
 type ConnectModalContextType = {
@@ -36,6 +41,8 @@ type ConnectModalContextType = {
     onFinish: (connectedWallet?: Wallet | undefined) => void;
     setOpen: (value: boolean) => void;
     open: boolean;
+    presentation: ConnectPresentation;
+    setPresentation: (value: ConnectPresentation) => void;
     dismissible: boolean;
     topContent: ReactNode;
     fullHeight: boolean;
@@ -51,6 +58,7 @@ export function WalletModalProvider({ children }) {
     const [selectedConnector, setSelectedConnector] = useState<WalletModalConnector | undefined>(undefined);
     const [selectedMultiChainConnector, setSelectedMultiChainConnector] = useState<InternalConnector | undefined>(undefined)
     const [open, setOpen] = useState(false);
+    const [presentation, setPresentation] = useState<ConnectPresentation>('modal');
     const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
     const [dismissible, setDismissible] = useState(true);
     const [topContent, setTopContent] = useState<ReactNode>(null);
@@ -65,6 +73,10 @@ export function WalletModalProvider({ children }) {
         if (!hasConnectorPicker) {
             await provider?.connectWallet()
         }
+        // connect() is the modal entry point; inline hosts drive the machine
+        // directly via setPresentation('inline'). Force modal here so a prior
+        // inline session can't leak into a programmatic connect().
+        setPresentation('modal');
         setSelectedProvider(provider);
         setDismissible(dismissibleArg);
         setTopContent(topContentArg);
@@ -113,6 +125,7 @@ export function WalletModalProvider({ children }) {
             setTopContent(null)
             setFullHeight(false)
             setHideHeader(false)
+            setPresentation('modal')
         }
         setIsWalletModalOpen(open)
         connectModalStore._syncOpen(open)
@@ -132,9 +145,9 @@ export function WalletModalProvider({ children }) {
         connect, cancel, selectedProvider, setSelectedProvider,
         selectedConnector, setSelectedConnector,
         selectedMultiChainConnector, setSelectedMultiChainConnector,
-        isWalletModalOpen, goBack, onFinish, setOpen, open, dismissible, topContent, fullHeight, hideHeader
+        isWalletModalOpen, goBack, onFinish, setOpen, open, presentation, setPresentation, dismissible, topContent, fullHeight, hideHeader
     }), [connect, cancel, selectedProvider, selectedConnector,
-        selectedMultiChainConnector, isWalletModalOpen, goBack, onFinish, open, dismissible, topContent, fullHeight, hideHeader])
+        selectedMultiChainConnector, isWalletModalOpen, goBack, onFinish, open, presentation, dismissible, topContent, fullHeight, hideHeader])
 
     return (
         <ConnectModalContext.Provider value={contextValue}>

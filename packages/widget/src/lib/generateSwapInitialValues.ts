@@ -20,8 +20,6 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
     const sourceNetwork = sourceRoutes.find(l => l.name.toUpperCase() === from?.toUpperCase())
     let destinationNetwork = destinationRoutes.find(l => l.name.toUpperCase() === to?.toUpperCase())
 
-    const initialSourceExchange = sourceExchanges.find(e => e.name.toLowerCase() === from?.toLowerCase())
-
     // Deposit-address flow defaults to the top-ranked destination so the user
     // lands on a populated form — but only when a wallet is already connected.
     // Without a wallet there's no way to autofill the destination address, so

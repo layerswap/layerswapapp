@@ -210,7 +210,7 @@ export default class NetworkSettings {
             ChainId: 59144,
             BaseFeeMultiplier: 1.7,
         };
-        NetworkSettings.KnownSettings[KnownInternalNames.Networks.BaseTestnet] = {
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.BaseSepolia] = {
             GasCalculationType: GasCalculation.OptimismType
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.BaseMainnet] = {

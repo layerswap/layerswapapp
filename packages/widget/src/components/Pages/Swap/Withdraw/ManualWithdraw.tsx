@@ -131,30 +131,30 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
     const { networks: withdrawalNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeNetworks(exchangeNetworkParams);
 
     const requestAmount = (
-        <span className='inline-flex items-center gap-1 px-1.5 mx-1 bg-secondary-300 rounded-lg'>
+        <span className='inline-flex items-center gap-1 px-1.5 bg-secondary-300 rounded-lg whitespace-nowrap'>
             <span>{truncateDecimals(Number(swapBasicData?.requested_amount), swapBasicData?.source_token?.precision)}</span> <span>{swapBasicData?.source_token?.symbol}</span>
             <CopyButton toCopy={swapBasicData?.requested_amount} iconClassName='text-secondary-text' />
         </span>
     )
 
     const destinationNetwork = (
-        <span className='flex items-center gap-1'>
+        <span className='inline-flex items-center gap-1 min-w-0'>
             {destinationLogo && <ImageWithFallback
                 src={destinationLogo!}
                 alt="Project Logo"
                 height="16"
                 width="16"
                 loading="eager"
-                className="rounded-md object-contain"
+                className="rounded-md object-contain shrink-0"
             />}
-            {swapBasicData?.destination_network?.display_name}
+            <span className='break-words min-w-0'>{swapBasicData?.destination_network?.display_name}</span>
         </span>
     )
 
     const sourceNetworkPopover = (
         <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
             <PopoverTrigger asChild>
-                <button className="inline-flex items-center gap-1 px-1.5 mx-1 bg-secondary-300 rounded-lg">
+                <button className="inline-flex items-center gap-1 px-1.5 bg-secondary-300 rounded-lg whitespace-nowrap">
                     <ImageWithFallback
                         src={selectedFrom.network?.logo ?? swapBasicData?.source_network?.logo}
                         alt="Project Logo"
@@ -272,25 +272,21 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
                             <Step
                                 number={2}
                                 label={
-                                    <span>
-                                        <span className='inline-flex items-center'>
-                                            <span>Send</span>
-                                            {requestAmount}
-                                        </span>
+                                    <span className="flex flex-wrap items-center gap-x-1 gap-y-1.5">
+                                        <span>Send</span>
+                                        {requestAmount}
                                         <span>via</span>
                                         {swapBasicData?.source_exchange ? (
-                                            <span className="inline-flex items-center align-bottom max-sm:mt-1">
-                                                {sourceNetworkPopover}
-                                            </span>
+                                            sourceNetworkPopover
                                         ) : (
-                                            <span className="inline-flex items-center gap-1 mx-1 h-6 align-bottom">
+                                            <span className="inline-flex items-center gap-1 px-1.5 bg-secondary-300 rounded-lg whitespace-nowrap">
                                                 <ImageWithFallback
                                                     src={swapBasicData?.source_network?.logo}
                                                     alt="Project Logo"
                                                     height="16"
                                                     width="16"
                                                     loading="eager"
-                                                    className="rounded-sm object-contain"
+                                                    className="rounded-sm object-contain shrink-0"
                                                 />
                                                 <span>{swapBasicData?.source_network?.display_name}</span>
                                             </span>
@@ -329,11 +325,11 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
                                         )}
                                         {
                                             ((swapBasicData?.destination_network && Address.isValid(swapBasicData?.destination_address, swapBasicData?.destination_network)) ?
-                                                <div className="text-sm group/addressItem text-secondary-text">
+                                                <span className="group/addressItem min-w-0 truncate">
                                                     <ExtendedAddress address={swapBasicData?.destination_address} network={swapBasicData?.destination_network} shouldShowChevron={false} />
-                                                </div>
+                                                </span>
                                                 :
-                                                <p className="text-sm text-secondary-text">{new Address(swapBasicData?.destination_address, swapBasicData?.destination_network).toShortString()}</p>)
+                                                <span className="min-w-0 truncate">{new Address(swapBasicData?.destination_address, swapBasicData?.destination_network).toShortString()}</span>)
                                         }
                                     </span>
                                 }
@@ -357,9 +353,9 @@ const Step = ({ number, label, value }: { number: number, label: ReactNode, valu
         <div className="w-6 h-6 rounded-md bg-secondary-400 text-primary-text flex items-center justify-center text-base font-normal leading-6">
             {number}
         </div>
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
             <div className="font-normal text-base leading-6">{label}</div>
-            <div className="text-sm text-secondary-text">{value}</div>
+            {value != null && <div className="text-sm text-secondary-text">{value}</div>}
         </div>
     </div>
 )

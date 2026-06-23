@@ -49,7 +49,7 @@ const PickerTriggerContent: FC<PickerTriggerContentProps> = ({
                 {hasSelection ? (
                     <span className="leading-tight truncate">
                         <span className="text-base font-semibold text-primary-text">{token!.symbol}</span>
-                        <span className="ml-1 text-sm font-normal text-secondary-text"> on {network!.display_name}</span>
+                        <span className="ml-1 text-sm font-normal text-secondary-text">on {network!.display_name}</span>
                     </span>
                 ) : (
                     <span className="text-sm text-secondary-text leading-tight">

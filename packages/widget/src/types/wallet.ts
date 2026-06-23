@@ -7,6 +7,7 @@ import { ContractAddressCheckerProvider } from './contract';
 import { RpcHealthCheckProvider } from './rpcHealth';
 import type { ThemeData } from '@/Models/Theme';
 import type { StoreApi } from 'zustand/vanilla';
+import { ExtendedRouteProvider } from '../lib/extendedRoutes/types';
 export { type WalletModalConnector } from '@/components/Wallet/WalletModal'
 
 export type InternalConnector = {
@@ -84,6 +85,7 @@ export type WalletProvider = WalletWrapper & {
     transferProvider?: (() => TransferProvider) | (() => TransferProvider)[],
     contractAddressProvider?: ContractAddressCheckerProvider | ContractAddressCheckerProvider[],
     rpcHealthCheckProvider?: RpcHealthCheckProvider | RpcHealthCheckProvider[],
+    extendedRouteProvider?: ExtendedRouteProvider | ExtendedRouteProvider[],
 }
 
 /**

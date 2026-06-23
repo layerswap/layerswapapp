@@ -95,6 +95,7 @@ const DestinationTokenPicker: FC = () => {
                 <PopoverContent
                     align="start"
                     sideOffset={6}
+                    style={{ zIndex: 70 }}
                     className="p-1 bg-secondary-500! rounded-xl max-h-80 overflow-y-auto max-w-none! w-[var(--radix-popover-trigger-width)]!"
                 >
                     <div className="flex flex-col gap-0.5">

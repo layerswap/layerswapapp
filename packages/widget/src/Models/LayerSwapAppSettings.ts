@@ -8,7 +8,7 @@ export class LayerSwapAppSettings {
         this.networks = settings.networks;
         this.sourceExchanges = settings.sourceExchanges || [];
 
-        this.sourceRoutes = settings.sourceRoutes || []
+        this.sourceRoutes = settings.sourceRoutes || [];
         this.destinationRoutes = settings.destinationRoutes || []
     }
 

@@ -128,7 +128,7 @@ export default class KnownInternalNames {
 
         public static readonly BaseMainnet: string = "BASE_MAINNET";
 
-        public static readonly BaseTestnet: string = "BASE_TESTNET";
+        public static readonly BaseSepolia: string = "BASE_SEPOLIA";
 
         public static readonly AvalancheMainnet: string = "AVAX_MAINNET";
 

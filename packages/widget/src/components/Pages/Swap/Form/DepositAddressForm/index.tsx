@@ -1,4 +1,4 @@
-import { FC, Suspense, lazy, useEffect, useMemo, useRef } from "react";
+import { FC, ReactNode, Suspense, lazy, useEffect, useMemo, useRef } from "react";
 import { Form, useFormikContext } from "formik";
 import { Loader2 } from "lucide-react";
 import { Widget } from "@/components/Widget/Index";
@@ -29,6 +29,7 @@ import { useConnectModal } from "@/components/Wallet/WalletModal";
 const Processing = lazy(() => import(/* webpackChunkName: "swap-processing" */ "../../Withdraw/Processing"))
 import ValidationError from "../SecondaryComponents/validationError";
 import SwapError from "../SecondaryComponents/SwapError";
+import { NetworkRoute, NetworkRouteToken } from "@/Models";
 
 type Props = {
     partner?: Partner;
@@ -47,9 +48,19 @@ type Props = {
     /** When true, hide the "Easy deposit in 3 steps" instructional banner.
      * Used by the deposit widget where the parent provides its own context. */
     hideEasyDepositBanner?: boolean;
+    /** When true, suppress the "Powered by Layerswap" footer. Used by the
+     * deposit widget, which renders a single powered-by footer at its own root
+     * so it shows on every step rather than only this reused form. */
+    hidePoweredBy?: boolean;
+    /** When provided, replaces the built-in destination ReceivePicker with a
+     * caller-supplied destination row and lays out the source picker as the
+     * labeled "Send" row. The deposit widget passes an integrator-constrained,
+     * wallet-less picker here so the no-wallet flow matches the default
+     * Send/Receive layout while keeping the destination locked to its config. */
+    destinationPicker?: ReactNode;
 };
 
-const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPicker, lockDestinationAddress, hideEasyDepositBanner }) => {
+const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPicker, lockDestinationAddress, hideEasyDepositBanner, hidePoweredBy, destinationPicker }) => {
     const {
         values, isSubmitting, setFieldValue, submitForm
     } = useFormikContext<SwapFormValues>();
@@ -130,7 +141,7 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
     }, [])
 
     const { formValidation } = useValidationContext();
-    const { swapId, swapBasicData, swapDetails, depositActionsResponse, refuel } = useSwapDataState();
+    const { swapId, swapBasicData, swapDetails, depositActionsResponse, refuel, swapError, depositActionsError } = useSwapDataState();
     const { setSwapId } = useSwapDataUpdate();
 
     const isValid = !formValidation.message;
@@ -201,11 +212,13 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
     const isCompleted = !!swapId && swapMatchesValues && hasOutputTx;
     const showDepositInfo = !!swapId && swapMatchesValues && !isProcessing;
 
-    // Reset the swap so the auto-submit effect creates a fresh one for the
-    // same form values. `attemptedKeyRef` must be cleared explicitly because
-    // it caches the last (from, fromAsset, to, toAsset, address) we tried.
-    const handleDepositMore = () => {
-        attemptedKeyRef.current = null;
+    // Clear the cached attempt key so re-selecting the same route re-creates the swap.
+    const resetSwap = (network?: NetworkRoute, token?: NetworkRouteToken) => {
+        const isSameSource = from?.name === network?.name && fromAsset?.symbol === token?.symbol;
+        if (isSameSource) {
+            if (!swapId) attemptedKeyRef.current = null;
+            return;
+        }
         setSwapId(undefined);
     };
 
@@ -223,70 +236,75 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
 
                                 {!hideEasyDepositBanner && <EasyDepositBanner />}
 
-                                {!providersReady && !hasWallet ? (
+                                {!disableAutoConnect && !providersReady && !hasWallet ? (
                                     <div className="flex items-center justify-center gap-2 py-12 text-sm text-secondary-text">
                                         <Loader2 className="h-4 w-4 animate-spin" />
                                         <span>Loading wallets…</span>
                                     </div>
                                 ) : (
                                     <>
+                                        {/* A caller-supplied destination row implies the labeled
+                                            Send/Receive layout (it stands in for the built-in
+                                            ReceivePicker), so the source picker drops its "You send"
+                                            card styling. */}
                                         {/* Source (Pay from) */}
                                         <PayFromPicker
                                             selectedSource={from && fromAsset ? { network: from, token: fromAsset } : null}
                                             onSourceChange={(network, token) => {
-                                                const isSameSource = from?.name === network.name && fromAsset?.symbol === token.symbol;
-                                                if (isSameSource) {
-                                                    if (!swapId) attemptedKeyRef.current = null;
-                                                    return;
-                                                }
-                                                setSwapId(undefined);
+                                                resetSwap(network, token);
                                                 setFieldValue('from', network, false);
                                                 setFieldValue('fromAsset', token, true);
                                             }}
                                             destinationNetwork={destination?.name}
                                             destinationToken={toCurrency?.symbol}
-                                            hideDestinationPicker={hideDestinationPicker}
+                                            hideDestinationPicker={hideDestinationPicker && !destinationPicker}
                                         />
 
                                         {/* Destination network/token + recipient address share one "Receive" row */}
-                                        {!hideDestinationPicker && (
-                                            <ReceivePicker
-                                                selectedDestination={destination && toCurrency ? { network: destination, token: toCurrency } : null}
-                                                onDestinationChange={(network, token) => {
-                                                    setSwapId(undefined);
-                                                    setFieldValue('to', network, false);
-                                                    setFieldValue('toAsset', token, true);
-                                                }}
-                                                destinationAddress={destination_address}
-                                                destination={destination}
-                                            />
-                                        )}
+                                        {
+                                            destinationPicker
+                                                ? destinationPicker
+                                                : !hideDestinationPicker && (
+                                                    <ReceivePicker
+                                                        selectedDestination={destination && toCurrency ? { network: destination, token: toCurrency } : null}
+                                                        onDestinationChange={(network, token) => {
+                                                            resetSwap(network, token);
+                                                            setFieldValue('to', network, false);
+                                                            setFieldValue('toAsset', token, true);
+                                                        }}
+                                                        destinationAddress={destination_address}
+                                                        destination={destination}
+                                                    />
+                                                )
+                                        }
 
                                         {/* Deposit address + QR + fees. When the destination
                                             address is integrator-locked, render this in skeleton
                                             mode while the swap is being created so the user sees
                                             the eventual layout instead of a blank gap. */}
-                                        {(showDepositInfo || lockDestinationAddress) && (
-                                            <DepositAddressInfo
-                                                sourceNetwork={from}
-                                                sourceToken={fromAsset}
-                                                destinationNetwork={destination}
-                                                destinationToken={toCurrency}
-                                                destinationAddress={destination_address}
-                                                refuel={!!refuel || !!swapBasicData?.refuel}
-                                                depositAddress={depositAddress}
-                                                isCreatingSwap={!showDepositInfo}
-                                            />
-                                        )}
+                                        {
+                                            (showDepositInfo || lockDestinationAddress) && (
+                                                <DepositAddressInfo
+                                                    sourceNetwork={from}
+                                                    sourceToken={fromAsset}
+                                                    destinationNetwork={destination}
+                                                    destinationToken={toCurrency}
+                                                    destinationAddress={destination_address}
+                                                    refuel={!!refuel || !!swapBasicData?.refuel}
+                                                    depositAddress={depositAddress}
+                                                    isCreatingSwap={!showDepositInfo}
+                                                />
+                                            )
+                                        }
                                     </>
                                 )}
                                 <ValidationError />
                                 <SwapError />
-                            </div>
-                        </div>
-                    </Widget.Content>
+                            </div >
+                        </div >
+                    </Widget.Content >
                 )}
-                <Widget.Footer showPoweredBy>
+                <Widget.Footer showPoweredBy={!hidePoweredBy}>
                     <DepositAddressFormButton
                         values={values}
                         isValid={isValid}
@@ -296,10 +314,11 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
                         depositAddress={depositAddress}
                         isProcessing={isProcessing}
                         isCompleted={isCompleted}
-                        onDepositMore={handleDepositMore}
+                        hasDepositError={!!swapError || !!depositActionsError}
+                        onDepositMore={resetSwap}
                     />
                 </Widget.Footer>
-            </Form>
+            </Form >
         </>
     )
 }

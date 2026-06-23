@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useMemo } from "react";
 import { WalletProvider, WalletProviderDescriptor, WalletWrapper, isWalletProviderDescriptor, NftProvider, BalanceProvider, GasProvider, TransferProvider, ContractAddressCheckerProvider, RpcHealthCheckProvider } from "@/types";
 import { resolverService } from "@/lib/resolvers/resolverService";
+import { setExtendedRouteProviders } from "@/lib/extendedRoutes/registry";
 
 type ResolverContextType = {
     isInitialized: boolean;
@@ -64,15 +65,17 @@ export const ResolverProviders: React.FC<React.PropsWithChildren<{
 
             resolverService.setProviders(balanceProviders, gasProviders, nftProviders, transferProviders, contractAddressProviders, rpcHealthCheckProviders)
 
-            return true;
-        }, [realProviders, transferProviders, contractAddressProviders, rpcHealthCheckProviders]);
+            setExtendedRouteProviders(walletProviders.flatMap((p: WalletProvider) => p.extendedRouteProvider ?? []).filter(Boolean))
 
-    return (
-        <ResolverContext.Provider value={{ isInitialized }}>
-            {children}
-        </ResolverContext.Provider>
-    );
-};
+            return true;
+        }, [walletProviders, transferProviders, contractAddressProviders, rpcHealthCheckProviders]);
+
+        return (
+            <ResolverContext.Provider value={{ isInitialized }}>
+                {children}
+            </ResolverContext.Provider>
+        );
+    };
 
 export const useResolvers = () => {
     const context = useContext(ResolverContext);
