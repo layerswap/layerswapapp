@@ -1,6 +1,7 @@
-import { TransferProvider, TransferProps, TransferProgress, Network, ActionMessageType } from "@layerswap/widget/types"
-import { Config } from "wagmi"
+import { TransferProvider, TransferProps, TransferProgress, ActionMessageType } from "@layerswap/widget/types"
+import { KnownInternalNames } from "@layerswap/widget/internal"
 import { switchChain } from "@wagmi/core"
+import { getEvmConfig } from "../../service/getEvmConfig"
 import { HyperliquidClient } from "./hyperliquidClient"
 import { signSendToEvm, signUsdClassTransfer } from "./withdraw"
 import { planWithdrawal } from "./planWithdrawal"
@@ -59,14 +60,16 @@ const resolveConfig = (params: TransferProps): HyperliquidConfig | undefined =>
  * the CCTP deposit, there is no source hash), throws on rejection/failure, and reports
  * prerequisite progress through the generic `onProgress` callback.
  */
-export function createHyperliquidTransferProvider(
-    config: Config,
-    supportsNetwork: (network: Network) => boolean,
-): TransferProvider {
+export function createHyperliquidTransfer(): TransferProvider {
+    const supportsNetwork = (network: Parameters<TransferProvider['supportsNetwork']>[0]) =>
+        network.name === KnownInternalNames.Networks.HyperliquidMainnet
+        || network.name === KnownInternalNames.Networks.HyperliquidTestnet
+
     return {
         supportsNetwork,
 
         async executeTransfer(params: TransferProps, _wallet, onProgress?: (info: TransferProgress | undefined) => void): Promise<string> {
+            const config = getEvmConfig()
             const { token: sourceToken, sourceAddress, depositAddress } = params
             // Verbatim string carries 6dp precision; `params.amount` (number) would round.
             const amount = params.amountExact ?? String(params.amount)

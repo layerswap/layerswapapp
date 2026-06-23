@@ -14,12 +14,14 @@ export function computeEvmNetworkBuckets(networks: NetworkWithTokens[]): EvmNetw
         KnownInternalNames.Networks.LoopringMainnet,
         KnownInternalNames.Networks.LoopringSepolia,
     ]
-    const withdrawal = [...asSource]
-    const autofill = [
+    const withdrawal = [
         ...asSource,
-        KnownInternalNames.Networks.BrineMainnet,
         KnownInternalNames.Networks.HyperliquidMainnet,
         KnownInternalNames.Networks.HyperliquidTestnet,
+    ]
+    const autofill = [
+        ...withdrawal,
+        KnownInternalNames.Networks.BrineMainnet
     ]
     return { asSource, withdrawal, autofill }
 }

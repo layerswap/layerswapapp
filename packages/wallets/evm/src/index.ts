@@ -12,6 +12,8 @@ import { createEvmTransfer } from "./transferProvider/createEvmTransfer"
 import { EVMContractAddressProvider } from "./evmContractAddressProvider"
 import { EVMRpcHealthCheckProvider } from "./rpcHealthCheckProvider"
 import type { EVMProviderConfig, WalletConnectConfig } from "./types"
+import { hyperliquidProvider } from "./additionalProviders/hyperliquid/hyperliquidExtendedRouteProvider"
+import { createHyperliquidTransfer } from "./additionalProviders/hyperliquid/createHyperliquidTransferProvider"
 
 export type { EVMProviderConfig, WalletConnectConfig }
 
@@ -62,11 +64,11 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
     const defaultBalanceProviders = [
         new LazyBalanceProvider(
             (n) => n.type === NetworkType.EVM && !!n.token,
-            () => import("./balanceProviders/evmBalanceProvider").then(m => new m.EVMBalanceProvider())
+            () => import("./balanceProviders").then(m => new m.EVMBalanceProvider())
         ),
         new LazyBalanceProvider(
             (n) => n.name === KnownInternalNames.Networks.HyperliquidMainnet || n.name === KnownInternalNames.Networks.HyperliquidTestnet,
-            () => import("./balanceProviders/hyperliquidBalanceProvider").then(m => new m.HyperliquidBalanceProvider())
+            () => import("./balanceProviders").then(m => new m.HyperliquidBalanceProvider())
         ),
         ...moduleBalanceProviders,
     ]
@@ -77,7 +79,11 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
     const defaultGasProviders = [
         new LazyGasProvider(
             (n) => n.type === NetworkType.EVM && !!n.token,
-            () => import("./gasProviders/evmGasProvider").then(m => new m.EVMGasProvider())
+            () => import("./gasProviders").then(m => new m.EVMGasProvider())
+        ),
+        new LazyGasProvider(
+            (n) => n.type === NetworkType.Hyperliquid && !!n.token,
+            () => import("./gasProviders").then(m => new m.HyperliquidGasProvider())
         ),
         ...moduleGasProviders,
     ]
@@ -90,7 +96,7 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         ? (Array.isArray(contractAddressProviders) ? contractAddressProviders : [contractAddressProviders])
         : defaultContractAddressProviders
 
-    const defaultTransferProviders = [createEvmTransfer]
+    const defaultTransferProviders = [createEvmTransfer, createHyperliquidTransfer]
     const finalTransferProviders = transferProviders !== undefined
         ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
         : defaultTransferProviders
@@ -109,6 +115,7 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         transferProvider: finalTransferProviders,
         contractAddressProvider: finalContractAddressProviders,
         rpcHealthCheckProvider: finalRPCHealthCheckProviders,
+        extendedRouteProvider: [hyperliquidProvider]
     }
 }
 
