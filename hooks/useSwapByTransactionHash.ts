@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import useSWR from 'swr'
 import LayerSwapApiClient, { SwapResponse } from '@/lib/apiClients/layerSwapApiClient'
 import { ApiResponse } from '@/Models/ApiResponse'
+import { useExtendedSourceSkin } from './useExtendedSourceSkin'
 
 export function useSwapByTransactionHash(hash: string, delayMs = 400) {
     const trimmed = hash.trim()
@@ -24,9 +25,11 @@ export function useSwapByTransactionHash(hash: string, delayMs = 400) {
 
     const pendingDebounce = trimmed !== debounced
 
+    const skinSwap = useExtendedSourceSkin()
+
     return {
         isActive: trimmed.length > 0,
-        swap: data?.data ?? null,
+        swap: data?.data ? skinSwap(data.data) : null,
         isLoading: !!key && (isLoading || isValidating) || pendingDebounce,
         error,
     }

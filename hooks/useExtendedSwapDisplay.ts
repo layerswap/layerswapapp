@@ -5,32 +5,37 @@ import { ExtendedRouteRecord, useExtendedRoutesStore } from "@/stores/extendedRo
 import { SwapBasicData, SwapQuote } from "@/lib/apiClients/layerSwapApiClient"
 import { resolveExtendedRoutePlan } from "@/lib/extendedRoutes/registry"
 import { transformQuoteForExtendedRoute } from "@/lib/extendedRoutes/transforms"
+import { buildExtendedSourceSkin } from "@/lib/extendedRoutes/skin"
 
 export type ExtendedSwapDisplay = {
-    /** Display-side source (e.g. Hyperliquid) that should replace the swap's
-     * real source_network in any user-facing summary. */
+    /** Source the swap should show: the REAL network in every blockchain-functional
+     * respect (name, type, chain_id, explorer templates, …) skinned with the
+     * extended source's display identity (display_name/logo). Consumers use it
+     * directly — no real-vs-extended reconciliation needed. */
     network: NetworkWithTokens
-    /** Display-side source token. */
+    /** Source token, real-functional with the extended source's display logo. */
     token: Token
-    /** Persisted record for this swap. */
+    /** Persisted record for this swap (raw extended/real identity). */
     record: ExtendedRouteRecord
 }
 
 /**
- * For a given swapId, return the extended (display) source if this device
- * recorded an extended-route flow for it (e.g. Hyperliquid → backend via Base).
- * Returns undefined when no record exists (other device, or non-extended swap) —
- * callers should fall back to the swap's real source in that case.
+ * For a given swapId, return the extended source skin if this device recorded an
+ * extended-route flow for it (e.g. Hyperliquid → backend via Base). The returned
+ * `network`/`token` are the REAL route wearing the extended source's display name
+ * and logo, so every consumer (explorer links, status queries, summaries) stays
+ * blind to the extended/real split. Returns undefined when no record exists (other
+ * device, or non-extended swap), or when either side can't be resolved from
+ * settings — callers fall back to the swap's real source unchanged.
  */
 export function useExtendedSwapDisplay(swapId: string | undefined): ExtendedSwapDisplay | undefined {
     const { networks } = useSettingsState()
     const record = useExtendedRoutesStore(s => swapId ? s.records[swapId] : undefined)
     return useMemo(() => {
         if (!record) return undefined
-        const network = networks.find(n => n.name === record.extendedNetwork)
-        const token = network?.tokens.find(t => t.symbol === record.extendedToken)
-        if (!network || !token) return undefined
-        return { network, token, record }
+        const skin = buildExtendedSourceSkin(record, networks)
+        if (!skin) return undefined
+        return { network: skin.network, token: skin.token, record }
     }, [record, networks])
 }
 
@@ -56,6 +61,7 @@ export function useExtendedSwapData(
     backendQuote: SwapQuote | undefined,
 ): ExtendedSwapData | undefined {
     const display = useExtendedSwapDisplay(swapId)
+    const { sourceRoutes } = useSettingsState()
     return useMemo(() => {
         if (!display || !base) return undefined
         const { network, token, record } = display
@@ -79,6 +85,7 @@ export function useExtendedSwapData(
                 destinationNetworkName: base.destination_network?.name,
                 destinationTokenSymbol: base.destination_token?.symbol,
                 sourceAmount: record.sourceAmount,
+                availableRoutes: sourceRoutes,
             })
             const mapping = plan?.mapping
             if (mapping) {
@@ -87,5 +94,5 @@ export function useExtendedSwapData(
         }
 
         return { swapBasicData, quote }
-    }, [display, base, backendQuote])
+    }, [display, base, backendQuote, sourceRoutes])
 }

@@ -92,14 +92,15 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
 
     // Extended source (e.g. Hyperliquid): the backend doesn't know this source,
     // so quote/limits are fetched against the real route it maps to (bridge mode).
-    const { networks } = useSettingsState()
+    const { networks, sourceRoutes } = useSettingsState()
     const extendedPlan = useMemo(() => resolveExtendedRoutePlan({
         sourceNetworkName: from,
         sourceTokenSymbol: fromCurrency,
         destinationNetworkName: to,
         destinationTokenSymbol: toCurrency,
         sourceAmount: debouncedAmount,
-    }), [from, fromCurrency, to, toCurrency, debouncedAmount])
+        availableRoutes: sourceRoutes,
+    }), [from, fromCurrency, to, toCurrency, debouncedAmount, sourceRoutes])
     const extendedMapping = extendedPlan?.mapping
     const isBridge = !!extendedPlan
     const effectiveFrom = isBridge ? extendedMapping!.real.networkName : from
