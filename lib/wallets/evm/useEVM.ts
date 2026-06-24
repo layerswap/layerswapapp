@@ -282,7 +282,9 @@ export default function useEVM(): WalletProvider {
                 && connector.id !== "metaMaskSDK"
 
             if (wantsQrModal) {
-                setSelectedConnector({ ...connector, icon: base64Icon, qr: { state: 'loading', value: undefined }, showQrCode })
+                setSelectedConnector(prev => (prev && prev.id === connector.id)
+                    ? { ...connector, icon: base64Icon, qr: { state: 'loading', value: undefined }, showQrCode }
+                    : prev)
             }
 
             if (wantsMobileRedirect || wantsQrModal) {
@@ -290,7 +292,9 @@ export default function useEVM(): WalletProvider {
                     source: wagmiDisplayUriSource(actualConnector),
                     resolveURI,
                     isMobilePlatform,
-                    onQr: (qr) => setSelectedConnector({ ...connector, icon: base64Icon, qr, showQrCode }),
+                    onQr: (qr) => setSelectedConnector(prev => (prev && prev.id === connector.id)
+                        ? { ...connector, icon: base64Icon, qr, showQrCode }
+                        : prev),
                 })
             }
 

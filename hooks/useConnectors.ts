@@ -1,6 +1,7 @@
 import { useMemo, useRef } from "react";
 import { InternalConnector, WalletProvider } from "../Models/WalletProvider";
 import { removeDuplicatesWithKey } from "../components/WalletModal/utils";
+import { walletKey } from "@/lib/wallets/utils/walletKey";
 
 type UseConnectorsParams = {
     searchValue?: string;
@@ -16,6 +17,22 @@ type InitialSnapshot = {
     seen: Set<string>;
 }
 
+const resolveNames = (groups: InternalConnector[][]): InternalConnector[][] => {
+    const canonical = new Map<string, string>()
+    const fromInstalled = new Set<string>()
+    for (const group of groups) {
+        for (const c of group) {
+            if (!c?.name) continue
+            const key = walletKey(c.name)
+            if (c.type === 'injected' ? !fromInstalled.has(key) : !canonical.has(key)) {
+                canonical.set(key, c.name)
+                if (c.type === 'injected') fromInstalled.add(key)
+            }
+        }
+    }
+    return groups.map(group => group.map(c => c?.name ? { ...c, name: canonical.get(walletKey(c.name)) ?? c.name } : c))
+}
+
 export function useConnectors({
     featuredProviders,
     filteredProviders,
@@ -24,29 +41,25 @@ export function useConnectors({
     searchResults,
 }: UseConnectorsParams) {
 
-    const featuredConnectors = useMemo(() =>
-        featuredProviders
-            .filter(g => g.availableConnectors && g.availableConnectors?.length > 0)
-            .map((provider) =>
-                provider.availableConnectors
-                    ?.filter(v => searchValue ? v.name.toLowerCase().includes(searchValue.toLowerCase()) : true)
-                    .map((connector) => ({ ...connector, providerName: provider.name }))
-            )
-            .flat() as InternalConnector[],
-        [featuredProviders, searchValue]
-    );
+    const { featuredConnectors, additionalConnectors, resolvedSearchResults } = useMemo(() => {
+        const collect = (pick: (p: WalletProvider) => InternalConnector[] | undefined) =>
+            featuredProviders
+                .filter(p => (pick(p)?.length ?? 0) > 0)
+                .flatMap(p => pick(p)!
+                    .filter(c => searchValue ? c.name.toLowerCase().includes(searchValue.toLowerCase()) : true)
+                    .map(c => ({ ...c, providerName: p.name }))) as InternalConnector[]
 
-    const additionalConnectors = useMemo(() =>
-        featuredProviders
-            .filter(g => g.additionalConnectors && g.additionalConnectors?.length > 0)
-            .map((provider) =>
-                provider.additionalConnectors
-                    ?.filter(v => searchValue ? v.name.toLowerCase().includes(searchValue.toLowerCase()) : true)
-                    .map((connector) => ({ ...connector, providerName: provider.name }))
-            )
-            .flat() as InternalConnector[],
-        [featuredProviders, searchValue]
-    );
+        const [featured, additional, search] = resolveNames([
+            collect(p => p.availableConnectors),
+            collect(p => p.additionalConnectors),
+            searchResults ?? [],
+        ])
+        return {
+            featuredConnectors: featured,
+            additionalConnectors: additional,
+            resolvedSearchResults: searchResults ? search : undefined,
+        }
+    }, [featuredProviders, searchValue, searchResults]);
 
     const filterKey = useMemo(() => {
         const providerKey = featuredProviders.map(p => p.name).join('|')
@@ -63,7 +76,8 @@ export function useConnectors({
 
         if (initialSortedRef.current?.key !== filterKey) {
             // Filter context changed (providers or search query): resort the current
-            // set once and reset the appended bucket.
+            // set once and reset the appended bucket. Names are already resolved, so
+            // the same wallet from different chains collapses to one tile here.
             const recent = featuredConnectors.filter(c => isRecent(c))
             const installed = featuredConnectors.filter(c => !isRecent(c) && isInstalled(c))
             const rest = featuredConnectors.filter(c => !isRecent(c) && !isInstalled(c))
@@ -94,20 +108,34 @@ export function useConnectors({
             for (const c of additionalConnectors) appendIfNew(c)
         }
 
+        const providersByName = new Map<string, Set<string>>()
+        for (const c of [...featuredConnectors, ...additionalConnectors, ...(resolvedSearchResults ?? [])]) {
+            if (!c.name || !c.providerName) continue
+            const key = c.name.toLowerCase()
+            if (!providersByName.has(key)) providersByName.set(key, new Set())
+            providersByName.get(key)!.add(c.providerName)
+        }
+        const withMultiChain = (list: InternalConnector[]) => list.map(c => ({
+            ...c,
+            isMultiChain: (providersByName.get(c.name.toLowerCase())?.size ?? 0) > 1,
+        }))
+
         const base = [...initialSortedRef.current.list, ...appendedRef.current]
 
-        if (searchResults?.length) {
+        if (resolvedSearchResults?.length) {
             const existingNames = new Set(base.map(c => c.name.toLowerCase()))
-            const newResults = searchResults.filter(c => !existingNames.has(c.name.toLowerCase()))
-            return [...base, ...newResults]
+            const newResults = (removeDuplicatesWithKey(resolvedSearchResults, 'name') as InternalConnector[])
+                .filter(c => !existingNames.has(c.name.toLowerCase()))
+            return withMultiChain([...base, ...newResults])
         }
 
-        return base
-    }, [featuredConnectors, additionalConnectors, recentConnectors, searchResults, filterKey]);
+        return withMultiChain(base)
+    }, [featuredConnectors, additionalConnectors, recentConnectors, resolvedSearchResults, filterKey]);
 
     return {
         featuredConnectors,
         additionalConnectors,
+        resolvedSearchResults,
         initialConnectors,
         featuredProviders,
         filteredProviders,

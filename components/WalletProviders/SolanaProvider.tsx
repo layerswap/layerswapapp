@@ -3,11 +3,18 @@ import {
     WalletProvider,
 } from "@solana/wallet-adapter-react";
 import { ReactNode, useEffect, useMemo, useState } from "react";
-import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
-import { SolanaWalletConnectAdapter } from "@/lib/wallets/solana/SolanaWalletConnectAdapter";
+import { WalletAdapterNetwork, WalletReadyState } from "@solana/wallet-adapter-base";
+import { SolanaHiddenWalletConnectName, SolanaWalletConnectAdapter } from "@/lib/wallets/solana/SolanaWalletConnectAdapter";
 import { WALLETCONNECT_PROJECT_ID, WALLETCONNECT_METADATA } from "@/lib/wallets/walletConnect/config";
+import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
 
 const SOLANA_NETWORK = process.env.NEXT_PUBLIC_API_VERSION == 'sandbox' ? WalletAdapterNetwork.Devnet : WalletAdapterNetwork.Mainnet;
+
+const shouldAutoConnect = async (adapter: { name: string; canAutoConnect?: () => Promise<boolean> }) => {
+    if (adapter.name === 'WalletConnect') return false
+    if (adapter.name === SolanaHiddenWalletConnectName) return adapter.canAutoConnect?.() ?? false
+    return true
+};
 
 function SolanaProvider({ children }: { children: ReactNode }) {
     const [adapters, setAdapters] = useState<any[]>([]);
@@ -29,14 +36,22 @@ function SolanaProvider({ children }: { children: ReactNode }) {
                 SolflareWalletAdapter,
                 BitgetWalletAdapter,
                 TrustWalletAdapter,
-                LedgerWalletAdapter
+                LedgerWalletAdapter,
+                WalletConnectWalletAdapter,
             } = adaptersModule;
 
             if (cancelled) return;
 
+            class LoadablePhantomAdapter extends PhantomWalletAdapter {
+                get readyState() {
+                    const rs = super.readyState;
+                    return rs === WalletReadyState.NotDetected && isMobile() ? WalletReadyState.Loadable : rs;
+                }
+            }
+
             setReady(true);
             setAdapters([
-                new PhantomWalletAdapter(),
+                new LoadablePhantomAdapter(),
                 new NightlyWalletAdapter(),
                 new SolflareWalletAdapter(),
                 new BitgetWalletAdapter(),
@@ -48,7 +63,15 @@ function SolanaProvider({ children }: { children: ReactNode }) {
                         projectId: WALLETCONNECT_PROJECT_ID,
                         metadata: WALLETCONNECT_METADATA,
                     }
-                })
+                }),
+                new WalletConnectWalletAdapter({
+                    network: SOLANA_NETWORK,
+                    options: {
+                        projectId: WALLETCONNECT_PROJECT_ID,
+                        metadata: WALLETCONNECT_METADATA,
+                        customStoragePrefix: 'officialSolanaWalletConnect',
+                    }
+                }),
             ]);
         };
 
@@ -64,7 +87,7 @@ function SolanaProvider({ children }: { children: ReactNode }) {
 
     return (
         <ConnectionProvider endpoint={endpoint}>
-            <WalletProvider wallets={adapters} autoConnect={ready}>
+            <WalletProvider wallets={adapters} autoConnect={ready ? shouldAutoConnect : false}>
                 {children}
             </WalletProvider>
         </ConnectionProvider>
