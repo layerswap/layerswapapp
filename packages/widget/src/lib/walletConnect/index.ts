@@ -9,3 +9,4 @@ export * from "./registry"
 export * from './subscribeDisplayUri'
 export * from "./types"
 export * from "./useAdditionalConnectors"
+export * from './findRegistryWallet'

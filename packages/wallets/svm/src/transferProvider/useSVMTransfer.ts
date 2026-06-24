@@ -3,7 +3,7 @@ import { useWallet } from "@solana/wallet-adapter-react"
 import { configureAndSendCurrentTransaction } from "./transactionSender"
 
 export function useSVMTransfer(): TransferProvider {
-    const { signTransaction } = useWallet()
+    const { wallet: solanaWallet } = useWallet();
 
     return {
         supportsNetwork(network: Network): boolean {
@@ -11,7 +11,10 @@ export function useSVMTransfer(): TransferProvider {
         },
 
         async executeTransfer(params: TransferProps): Promise<string> {
-            if (!signTransaction) {
+            const adapter = solanaWallet?.adapter
+            const signTx = adapter && 'signTransaction' in adapter ? adapter.signTransaction.bind(adapter) : undefined
+
+            if (!signTx) {
                 throw new Error('Solana wallet not connected or does not support signing')
             }
 
@@ -51,10 +54,10 @@ export function useSVMTransfer(): TransferProvider {
                 const signature = await configureAndSendCurrentTransaction(
                     transaction,
                     connection,
-                    signTransaction
+                    signTx
                 )
 
-                if(!signature) {
+                if (!signature) {
                     throw new Error('No transaction signature returned')
                 }
 
@@ -62,8 +65,14 @@ export function useSVMTransfer(): TransferProvider {
             } catch (error) {
                 const e = new Error()
                 e.message = error.message
-
-                if (error.name === ActionMessageType.InsufficientFunds) {
+                if (e.name == "WalletNotConnectedError") {
+                    if (solanaWallet?.adapter?.connected !== true) {
+                        await solanaWallet?.adapter.disconnect()
+                    }
+                    const error = new Error('Wallet not connected')
+                    throw error
+                }
+                else if (error.name === ActionMessageType.InsufficientFunds) {
                     e.name = ActionMessageType.InsufficientFunds
                     throw e
                 } else if (error.message === "User rejected the request.") {

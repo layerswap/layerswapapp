@@ -26,7 +26,7 @@ function SolanaProvider({ children }: SolanaProviderProps): ReactElement {
     const walletConnectConfigs = useWalletConnectConfig();
     const WALLETCONNECT_PROJECT_ID = walletConnectConfigs?.projectId
 
-    const solNetwork = AppSettings.ApiVersion == 'sandbox' ? WalletAdapterNetwork.Devnet : WalletAdapterNetwork.Mainnet;;
+    const solNetwork = AppSettings.ApiVersion == 'testnet' ? WalletAdapterNetwork.Devnet : WalletAdapterNetwork.Mainnet;;
     const endpoint = useMemo(() => clusterApiUrl(solNetwork), [solNetwork]);
 
     const wcMetdata = {
