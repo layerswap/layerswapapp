@@ -1,13 +1,15 @@
-import { HYPERLIQUID_ROUTES, HyperliquidDestination, HyperliquidRoute, getHyperliquidCandidates, pickHyperliquidDestination } from "./routes";
+import { HYPERLIQUID_ROUTES, HyperliquidDestination, getHyperliquidCandidates, pickHyperliquidDestination } from "./routes";
 import { HYPERLIQUID_USDC_SYMBOL } from "./constants";
 import { ExtendedRouteProvider, ExtendedTokenMapping, NetworkRoute, NetworkRouteToken, RealRouteRef } from "@layerswap/widget/types";
+import { realDepositAddressRoutePresent } from "@layerswap/widget/internal";
+
 
 /**
- * Build an extended-route mapping from a (route, chosen destination) pair.
+ * Build an extended-route mapping from a chosen destination.
  * Each destination owns its own CCTP fee/timing/decimals, so the mapping varies
  * with whichever destination ends up active.
  */
-const toMapping = (route: HyperliquidRoute, dest: HyperliquidDestination): ExtendedTokenMapping => ({
+const toMapping = (dest: HyperliquidDestination): ExtendedTokenMapping => ({
     extendedTokenSymbol: HYPERLIQUID_USDC_SYMBOL,
     real: { networkName: dest.realNetworkName, tokenSymbol: dest.realTokenSymbol },
     flatFee: dest.flatFee,
@@ -21,7 +23,7 @@ const toMapping = (route: HyperliquidRoute, dest: HyperliquidDestination): Exten
 const mappings: Record<string, Record<string, ExtendedTokenMapping>> = Object.fromEntries(
     Object.entries(HYPERLIQUID_ROUTES).map(([hlNetwork, route]) => [
         hlNetwork,
-        { [HYPERLIQUID_USDC_SYMBOL]: toMapping(route, route.destinations[0]) },
+        { [HYPERLIQUID_USDC_SYMBOL]: toMapping(route.destinations[0]) },
     ]),
 )
 
@@ -63,13 +65,18 @@ export const hyperliquidProvider: ExtendedRouteProvider = {
         routeCache.set(network, route)
         return route
     },
-    resolveActiveMapping(networkName, tokenSymbol, toNetworkName, toTokenSymbol) {
+    resolveActiveMapping(networkName, tokenSymbol, toNetworkName, toTokenSymbol, availableRoutes) {
         if (tokenSymbol !== HYPERLIQUID_USDC_SYMBOL) return undefined
         const route = HYPERLIQUID_ROUTES[networkName]
         if (!route) return undefined
-        const dest = pickHyperliquidDestination(networkName, toNetworkName, toTokenSymbol)
+        // When the caller knows the backend routes, let the picker fall back past
+        // destinations the backend doesn't currently offer (e.g. AVAX/Sonic).
+        const isRealRouteAvailable = availableRoutes
+            ? (real: RealRouteRef) => realDepositAddressRoutePresent(availableRoutes, real)
+            : undefined
+        const dest = pickHyperliquidDestination(networkName, toNetworkName, toTokenSymbol, isRealRouteAvailable)
         if (!dest) return undefined
-        return toMapping(route, dest)
+        return toMapping(dest)
     },
     getRealCandidates(networkName, tokenSymbol): RealRouteRef[] {
         if (tokenSymbol !== HYPERLIQUID_USDC_SYMBOL) return []

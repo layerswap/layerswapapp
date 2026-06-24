@@ -35,7 +35,7 @@ const ChainIDs = {
 const WALLET_CONNECT_ICON =
     'data:image/svg+xml;base64,PHN2ZyBoZWlnaHQ9IjE4NSIgdmlld0JveD0iMCAwIDMwMCAxODUiIHdpZHRoPSIzMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0ibTYxLjQzODU0MjkgMzYuMjU2MjYxMmM0OC45MTEyMjQxLTQ3Ljg4ODE2NjMgMTI4LjIxMTk4NzEtNDcuODg4MTY2MyAxNzcuMTIzMjA5MSAwbDUuODg2NTQ1IDUuNzYzNDE3NGMyLjQ0NTU2MSAyLjM5NDQwODEgMi40NDU1NjEgNi4yNzY1MTEyIDAgOC42NzA5MjA0bC0yMC4xMzY2OTUgMTkuNzE1NTAzYy0xLjIyMjc4MSAxLjE5NzIwNTEtMy4yMDUzIDEuMTk3MjA1MS00LjQyODA4MSAwbC04LjEwMDU4NC03LjkzMTE0NzljLTM0LjEyMTY5Mi0zMy40MDc5ODE3LTg5LjQ0Mzg4Ni0zMy40MDc5ODE3LTEyMy41NjU1Nzg4IDBsLTguNjc1MDU2MiA4LjQ5MzYwNTFjLTEuMjIyNzgxNiAxLjE5NzIwNDEtMy4yMDUzMDEgMS4xOTcyMDQxLTQuNDI4MDgwNiAwbC0yMC4xMzY2OTQ5LTE5LjcxNTUwMzFjLTIuNDQ1NTYxMi0yLjM5NDQwOTItMi40NDU1NjEyLTYuMjc2NTEyMiAwLTguNjcwOTIwNHptMjE4Ljc2Nzc5NjEgNDAuNzczNzQ0OSAxNy45MjE2OTcgMTcuNTQ2ODk3YzIuNDQ1NTQ5IDIuMzk0Mzk2OSAyLjQ0NTU2MyA2LjI3NjQ3NjkuMDAwMDMxIDguNjcwODg5OWwtODAuODEwMTcxIDc5LjEyMTEzNGMtMi40NDU1NDQgMi4zOTQ0MjYtNi40MTA1ODIgMi4zOTQ0NTMtOC44NTYxNi4wMDAwNjItLjAwMDAxLS4wMDAwMTAtLjAwMDAyMi0uMDAwMDIyLS4wMDAwMzItLjAwMDAzMmwtNTcuMzU0MTQzLTU2LjE1NDU3MmMtLjYxMTM5LS41OTg2MDItMS42MDI2NS0uNTk4NjAyLTIuMjE0MDQgMC0uMDAwMDA0LjAwMDAwNC0uMDAwMDA3LjAwMDAwOC0uMDAwMDExLjAwMDAxMWwtNTcuMzUyOTIxMiA1Ni4xNTQ1MzFjLTIuNDQ1NTM2OCAyLjM5NDQzMi02LjQxMDU3NTUgMi4zOTQ0NzItOC44NTYxNjEyLjAwMDA4Ny0uMDAwMDE0My0uMDAwMDE0LS4wMDAwMjk2LS4wMDAwMjgtLjAwMDA0NDktLjAwMDA0NGwtODAuODEyNDE5NDMtNzkuMTIyMTg1Yy0yLjQ0NTU2MDIxLTIuMzk0NDA4LTIuNDQ1NTYwMjEtNi4yNzY1MTE1IDAtOC42NzA5MTk3bDE3LjkyMTcyOTYzLTE3LjU0Njg2NzNjMi40NDU1NjAyLTIuMzk0NDA4MiA2LjQxMDU5ODktMi4zOTQ0MDgyIDguODU2MTYwMiAwbDU3LjM1NDk3NzUgNTYuMTU1MzU3Yy42MTEzOTA4LjU5ODYwMiAxLjYwMjY0OS41OTg2MDIgMi4yMTQwMzk4IDAgLjAwMDAwOTItLjAwMDAwOS4wMDAwMTc0LS4wMDAwMTcuMDAwMDI2NS0uMDAwMDI0bDU3LjM1MjEwMzEtNTYuMTU1MzMzYzIuNDQ1NTA1LTIuMzk0NDYzMyA2LjQxMDU0NC0yLjM5NDU1MzEgOC44NTYxNjEtLjAwMDIuMDAwMDM0LjAwMDAzMzYuMDAwMDY4LjAwMDA2NzMuMDAwMTAxLjAwMDEwMWw1Ny4zNTQ5MDIgNTYuMTU1NDMyYy42MTEzOS41OTg2MDEgMS42MDI2NS41OTg2MDEgMi4yMTQwNCAwbDU3LjM1Mzk3NS01Ni4xNTQzMjQ5YzIuNDQ1NTYxLTIuMzk0NDA5MiA2LjQxMDU5OS0yLjM5NDQwOTIgOC44NTYxNiAweiIgZmlsbD0iIzNiOTlmYyIvPjwvc3ZnPg=='
 
-export const SolanaWalletConnectWalletName = "WalletConnect" as WalletName<"WalletConnect">
+export const SolanaHiddenWalletConnectName = "Hidden WalletConnect" as WalletName<"Hidden WalletConnect">
 
 export type SolanaWalletConnectAdapterConfig = {
     network: WalletAdapterNetwork.Mainnet | WalletAdapterNetwork.Devnet
@@ -45,7 +45,7 @@ export type SolanaWalletConnectAdapterConfig = {
 type DisplayUriListener = (uri: string) => void
 
 export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
-    name = SolanaWalletConnectWalletName
+    name = SolanaHiddenWalletConnectName
     url = "https://walletconnect.org"
     icon = WALLET_CONNECT_ICON
 
@@ -131,11 +131,10 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
     /**
      * Override the base `autoConnect` so we never start a NEW WC pairing from
      * wallet-adapter-react's auto-reconnect path. A new pairing requires the
-     * user to scan a QR, which isn't available during auto-reconnect; calling
-     * `provider.connect()` there hangs with `_connecting = true` until the
-     * internal timeout, blocking any subsequent user-initiated connect
-     * (`connect()` early-returns on `this.connecting`). Only resume an
-     * existing session here; a real connect always goes through `connect()`.
+     * user to scan a QR, which isn't available during a silent auto-reconnect;
+     * calling `provider.connect()` there would surface a QR with no UI to scan
+     * and hang with `_connecting = true` until the internal timeout. Only resume
+     * an existing session here; a real connect always goes through `connect()`.
      */
     async autoConnect(): Promise<void> {
         if (this._readyState !== WalletReadyState.Loadable) return
@@ -145,13 +144,26 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
         } catch { /* silent — the user can still connect manually */ }
     }
 
-    async connect(): Promise<void> {
+    async canAutoConnect(): Promise<boolean> {
+        if (this._readyState !== WalletReadyState.Loadable || this._connecting) return false
         try {
-            if (this.connected || this.connecting) return
+            const provider = await this.getProvider()
+            return !!provider.session
+        } catch {
+            return false
+        }
+    }
+
+    async connect(): Promise<void> {
+        // Hoisted so the `finally` can compare it against `this._provider`.
+        let provider: UniversalProviderType | undefined
+        try {
+            if (this.connected) return
             if (this._readyState !== WalletReadyState.Loadable) throw new WalletNotReadyError()
 
+            if (this._connecting) this.resetProvider()
             this._connecting = true
-            const provider = await this.getProvider()
+            provider = await this.getProvider()
 
             // Reuse existing session when available
             const existing = provider.session
@@ -182,6 +194,7 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
                     },
                 },
             })
+            if (provider !== this._provider) return
 
             if (!session) throw new Error("WalletConnect Solana: empty session")
             this._session = session
@@ -192,7 +205,20 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
         } catch (error: any) {
             throw error
         } finally {
-            this._connecting = false
+            if (provider === this._provider) this._connecting = false
+        }
+    }
+
+    private resetProvider(): void {
+        const provider = this._provider
+        if (provider && this._internalDisplayUriHandler) {
+            try { provider.off("display_uri", this._internalDisplayUriHandler) } catch { /* no-op */ }
+        }
+        this._provider = undefined
+        this._providerInitPromise = undefined
+        this._internalDisplayUriHandler = undefined
+        if (this._readyState === WalletReadyState.Loadable) {
+            this.getProvider().catch(() => { /* next connect() will surface the real error */ })
         }
     }
 
@@ -233,15 +259,7 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
         // Only tear down the provider if its own `disconnect()` threw, because
         // then `provider.session` may still be set.
         if (providerDisconnectThrew && provider) {
-            if (this._internalDisplayUriHandler) {
-                try { provider.off("display_uri", this._internalDisplayUriHandler) } catch { /* no-op */ }
-            }
-            this._provider = undefined
-            this._providerInitPromise = undefined
-            this._internalDisplayUriHandler = undefined
-            if (this._readyState === WalletReadyState.Loadable) {
-                this.getProvider().catch(() => { /* next connect() will surface the real error */ })
-            }
+            this.resetProvider()
         }
 
         this.emit("disconnect")
@@ -276,7 +294,7 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
                         "Wallet returned only a signature for a versioned transaction; full signed transaction required",
                     )
                 }
-                ;(transaction as Transaction).addSignature(this._publicKey, Buffer.from(base58.decode(result.signature)))
+                ; (transaction as Transaction).addSignature(this._publicKey, Buffer.from(base58.decode(result.signature)))
                 return transaction
             } catch (error: any) {
                 throw new WalletSignTransactionError(error?.message, error)

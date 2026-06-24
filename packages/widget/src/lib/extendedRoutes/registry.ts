@@ -1,6 +1,7 @@
 import { NetworkRoute, NetworkWithTokens } from "@/Models/Network";
 import { DecimalInput, addDecimal, subtractDecimal } from "./amounts";
-import { ExtendedRoutePlan, ExtendedRouteProvider, RealRouteRef, ResolvedExtendedMapping } from "./types";
+import { ExtendedRoutePlan, ExtendedRouteProvider, ResolvedExtendedMapping } from "./types";
+import { realDepositAddressRoutePresent } from "./availability";
 
 let sourceProviders: ExtendedRouteProvider[] = []
 
@@ -28,13 +29,15 @@ export function getExtendedMapping(
     tokenSymbol?: string,
     toNetworkName?: string,
     toTokenSymbol?: string,
+    availableRoutes?: NetworkRoute[],
 ): ResolvedExtendedMapping | undefined {
     if (!networkName || !tokenSymbol) return undefined
 
     for (const provider of sourceProviders) {
         // Prefer the provider's per-destination resolver (e.g. HL primary/fallback).
+        // `availableRoutes` lets it skip destinations the backend can't yet fulfill.
         // Static `mappings` is the fallback for providers with a single destination.
-        const mapping = provider.resolveActiveMapping?.(networkName, tokenSymbol, toNetworkName, toTokenSymbol)
+        const mapping = provider.resolveActiveMapping?.(networkName, tokenSymbol, toNetworkName, toTokenSymbol, availableRoutes)
             ?? provider.mappings[networkName]?.[tokenSymbol]
         if (!mapping) continue
 
@@ -73,8 +76,10 @@ export function resolveExtendedRoutePlan({
     sourceAmount,
     availableRoutes,
 }: ResolveExtendedRoutePlanArgs): ExtendedRoutePlan | undefined {
-    const mapping = getExtendedMapping(sourceNetworkName, sourceTokenSymbol, destinationNetworkName, destinationTokenSymbol)
+    const mapping = getExtendedMapping(sourceNetworkName, sourceTokenSymbol, destinationNetworkName, destinationTokenSymbol, availableRoutes)
     if (!mapping) return undefined
+    // Final guard: even after fallback the chosen real route must exist on the
+    // backend, else this extended route can't be fulfilled at all.
     if (availableRoutes && !realDepositAddressRoutePresent(availableRoutes, mapping.real)) return undefined
 
     const hasSourceAmount = sourceAmount !== undefined && String(sourceAmount).trim() !== ''
@@ -92,13 +97,6 @@ export function resolveExtendedRoutePlan({
         sourceAmount: hasSourceAmount ? String(sourceAmount) : undefined,
         realAmount,
     }
-}
-
-export function realDepositAddressRoutePresent(routes: NetworkRoute[], real: RealRouteRef): boolean {
-    return routes.some(r =>
-        r.name === real.networkName
-        && r.deposit_methods?.includes('deposit_address')
-        && r.tokens?.some(t => t.symbol === real.tokenSymbol && t.status === 'active'))
 }
 
 /**

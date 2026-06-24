@@ -14,6 +14,12 @@ interface TabsContextType {
 }
 const TabsContext = createContext<TabsContextType | undefined>(undefined)
 
+export const useTabs = () => {
+    const ctx = useContext(TabsContext)
+    if (!ctx) throw new Error('useTabs must be used within <Tabs>')
+    return ctx
+}
+
 interface TabsProps {
     defaultValue: string
     children: ReactNode

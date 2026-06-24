@@ -164,7 +164,7 @@ function filterRoutesByQuery(
 function useRoutes({ direction, values }: Props) {
     const { sourceRoutes, destinationRoutes, networks } = useSettingsState();
     const apiClient = new LayerSwapApiClient();
-    const url = useMemo(() => resolveNetworkRoutesURL(direction, values), [direction, values]);
+    const url = useMemo(() => resolveNetworkRoutesURL(direction, values, undefined, sourceRoutes), [direction, values, sourceRoutes]);
     const defaultRoutes = direction === 'from' ? sourceRoutes : destinationRoutes;
     const { routes, isLoading } = useRoutesData<NetworkRoute>(url, defaultRoutes || [], apiClient.fetcher);
 
@@ -776,10 +776,10 @@ function resolveSelectedToken(values: SwapFormValues, direction: SwapDirection) 
 // ---------- Exchange ----------
 
 function useExchangeRoutes({ values }: Props) {
-    const { sourceExchanges } = useSettingsState();
+    const { sourceExchanges, sourceRoutes } = useSettingsState();
 
     const apiClient = new LayerSwapApiClient()
-    const exchangeRoutesURL = useMemo(() => resolveExchangesURLForSelectedToken(values), [values])
+    const exchangeRoutesURL = useMemo(() => resolveExchangesURLForSelectedToken(values, sourceRoutes), [values, sourceRoutes])
     const {
         data: apiResponse,
         isLoading,

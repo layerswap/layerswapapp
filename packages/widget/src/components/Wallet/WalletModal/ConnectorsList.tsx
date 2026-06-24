@@ -300,6 +300,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     const {
         featuredConnectors,
         additionalConnectors,
+        resolvedSearchResults,
         initialConnectors,
     } = useConnectors({
         featuredProviders,
@@ -446,7 +447,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     if (selectedMultiChainConnector) {
         return <MultichainConnectorPicker
             selectedConnector={selectedMultiChainConnector}
-            allConnectors={[...featuredConnectors, ...additionalConnectors] as InternalConnector[]}
+            allConnectors={[...featuredConnectors, ...additionalConnectors, ...(resolvedSearchResults ?? [])] as InternalConnector[]}
             providers={featuredProviders}
             connect={connect}
         />

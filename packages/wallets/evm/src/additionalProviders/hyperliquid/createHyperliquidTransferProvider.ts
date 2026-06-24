@@ -47,7 +47,9 @@ async function pollUntilTargetCovers(
 }
 
 const resolveConfig = (params: TransferProps): HyperliquidConfig | undefined =>
-    resolveHyperliquidConfig(params.network?.name, params.networks ?? [], params.destinationNetwork?.name, params.destinationToken?.symbol)
+    // Pass the backend source routes so the destination (and thus CCTP domain) resolved here
+    // matches the one the swap was created/priced against — availability fallback must not diverge.
+    resolveHyperliquidConfig(params.network?.name, params.networks ?? [], params.destinationNetwork?.name, params.destinationToken?.symbol, params.sourceRoutes)
 
 /**
  * The Hyperliquid transfer provider — a standard `TransferProvider` whose `supportsNetwork`

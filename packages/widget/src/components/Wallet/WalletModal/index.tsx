@@ -1,5 +1,5 @@
 "use client";
-import { Context, createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { Context, createContext, Dispatch, ReactNode, SetStateAction, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { InternalConnector, Wallet, WalletConnectionProvider } from '@/types/wallet';
 
 export type WalletModalConnector = InternalConnector & {
@@ -33,7 +33,7 @@ type ConnectModalContextType = {
     setSelectedProvider: (value: ModalWalletProvider | undefined) => void;
     isWalletModalOpen?: boolean;
     selectedConnector: WalletModalConnector | undefined;
-    setSelectedConnector: (value: WalletModalConnector | undefined) => void;
+    setSelectedConnector: Dispatch<SetStateAction<WalletModalConnector | undefined>>;
     selectedMultiChainConnector: InternalConnector | undefined;
     setSelectedMultiChainConnector: (value: InternalConnector | undefined) => void;
     goBack: () => void;
