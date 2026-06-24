@@ -6,34 +6,40 @@
   "framework": null,
   "git": {
     "deploymentEnabled": {
-      "main": true
+      "main": false
     }
   },
-  "ignoreCommand": "bash -c 'cd ../.. && git diff --quiet HEAD^ HEAD -- apps/widget-cdn packages || exit 1'",
   "headers": [
     {
-      "source": "/v1/remoteEntry.js",
+      "source": "/:channel(v[0-9][0-9.]*)/remoteEntry.js",
       "headers": [
         { "key": "Access-Control-Allow-Origin", "value": "*" },
         { "key": "Cache-Control", "value": "public, max-age=60, must-revalidate" }
       ]
     },
     {
-      "source": "/v1/mf-manifest.json",
+      "source": "/:channel(v[0-9][0-9.]*)/manifest.json",
       "headers": [
         { "key": "Access-Control-Allow-Origin", "value": "*" },
         { "key": "Cache-Control", "value": "public, max-age=60, must-revalidate" }
       ]
     },
     {
-      "source": "/v1/(.+\\.[0-9a-f]{8}\\.(?:js|css|map))",
+      "source": "/:channel(v[0-9][0-9.]*)/mf-manifest.json",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Cache-Control", "value": "public, max-age=60, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/:channel(v[0-9][0-9.]*)/:file(.+\\.[0-9a-f]{8}\\.(?:js|css|map))",
       "headers": [
         { "key": "Access-Control-Allow-Origin", "value": "*" },
         { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
     },
     {
-      "source": "/v1/(.+\\.(?:js|css|map))",
+      "source": "/:channel(v[0-9][0-9.]*)/:file(.+\\.(?:js|css|map))",
       "headers": [
         { "key": "Access-Control-Allow-Origin", "value": "*" },
         { "key": "Cache-Control", "value": "public, max-age=300, must-revalidate" }
