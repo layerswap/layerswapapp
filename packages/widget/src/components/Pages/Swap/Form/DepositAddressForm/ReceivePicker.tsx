@@ -16,6 +16,15 @@ type ReceivePickerProps = {
     onDestinationChange: (network: NetworkRoute, token: NetworkRouteToken) => void;
     destinationAddress: string | undefined;
     destination: NetworkRoute | undefined;
+    /** Constrain the destination options to this route list instead of the full
+     * deposit-address destination set. Used by the deposit widget, which only
+     * ever offers the integrator's configured network and tokens. */
+    routes?: NetworkRoute[];
+    /** Hide the destination wallet picker (the selector then spans the full
+     * row). Used when the recipient address is fixed by the caller — the
+     * deposit widget locks it to the integrator's address, so there is no
+     * wallet to choose. */
+    hideWalletPicker?: boolean;
 }
 
 const ReceivePicker: FC<ReceivePickerProps> = ({
@@ -23,6 +32,8 @@ const ReceivePicker: FC<ReceivePickerProps> = ({
     onDestinationChange,
     destinationAddress,
     destination,
+    routes,
+    hideWalletPicker,
 }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const { wallets } = useWallet();
@@ -30,15 +41,16 @@ const ReceivePicker: FC<ReceivePickerProps> = ({
     const sortingOption = useRouteSortingStore((s) => s.sortingOption);
     const routesHistory = useRecentNetworksStore(state => state.recentRoutes);
 
-    const { data: destinationRoutesData } = useDepositAddressDestinations();
+    // Skip the network fetch entirely when the caller supplies a fixed route set.
+    const { data: destinationRoutesData } = useDepositAddressDestinations({ enabled: !routes });
 
     const availableRoutes = useMemo(() => {
-        const routes = destinationRoutesData?.data;
-        if (!routes) return [];
-        return routes
+        const source = routes ?? destinationRoutesData?.data;
+        if (!source) return [];
+        return source
             .map(route => ({ ...route, tokens: route.tokens?.filter(t => t.status === 'active') ?? [] }))
             .filter(route => route.tokens.length > 0);
-    }, [destinationRoutesData]);
+    }, [routes, destinationRoutesData]);
 
     const routeElements = useMemo(() => {
         return groupRoutes({
@@ -88,13 +100,15 @@ const ReceivePicker: FC<ReceivePickerProps> = ({
                         </SelectorContent>
                     </Selector>
                 </div>
-                <div className="flex-1 min-w-0">
-                    <DestinationWalletPicker
-                        address={destinationAddress}
-                        destination={destination}
-                        token={selectedDestination?.token}
-                    />
-                </div>
+                {!hideWalletPicker && (
+                    <div className="flex-1 min-w-0">
+                        <DestinationWalletPicker
+                            address={destinationAddress}
+                            destination={destination}
+                            token={selectedDestination?.token}
+                        />
+                    </div>
+                )}
             </div>
         </div>
     );

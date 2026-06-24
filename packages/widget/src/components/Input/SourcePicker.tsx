@@ -16,9 +16,11 @@ type Props = {
     maxAllowedAmountInUsd: ReturnType<typeof useQuoteData>['maxAllowedAmountInUsd'];
     fee: ReturnType<typeof useQuoteData>['quote'];
     quoteTokenPrices?: QuoteTokenPrices;
+    hideManualTransfer?: boolean;
+    onRoutePickerTriggerClick?: () => void;
 }
 
-const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd, fee, quoteTokenPrices }: Props) => {
+const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd, fee, quoteTokenPrices, hideManualTransfer, onRoutePickerTriggerClick }: Props) => {
     const { values } = useFormikContext<SwapFormValues>()
 
     const { fromAsset: fromCurrency, from, depositMethod } = values || {}
@@ -31,20 +33,20 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, mi
         setActionTempUsdValue(usdValue)
     }
 
-    return <div className="flex flex-col w-full bg-secondary-500 rounded-2xl p-4 pb-[15px] space-y-[27px] group/source" onClick={setShowQuickActions} ref={parentRef}>
+    return <div className="flex flex-col w-full bg-secondary-500 rounded-2xl p-4 pb-3.75 space-y-6.75 group/source" onClick={setShowQuickActions} ref={parentRef}>
         <div className="grid grid-cols-9 gap-2 items-center h-7">
             <label htmlFor="From" className="block col-span-4 font-normal text-secondary-text text-base leading-5 mt-0.5">
                 Send from
             </label>
             <div className="col-span-5 justify-self-end">
-                <SourceWalletPicker />
+                <SourceWalletPicker hideManualTransfer={hideManualTransfer} />
             </div>
         </div>
         <div className="relative">
             {
                 from && fromCurrency &&
                 <div className={clsx(
-                    "absolute z-10 -top-[26px] left-0",
+                    "absolute z-10 -top-6.5 left-0",
                     {
                         "hidden": !showQuickActions,
                         "block": showQuickActions
@@ -60,7 +62,7 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, mi
                 </div>
 
                 <div className="justify-self-end self-start">
-                    <RoutePicker minAllowedAmount={minAllowedAmount} maxAllowedAmount={maxAmountFromApi} direction="from" quote={fee?.quote} quoteTokenPrices={quoteTokenPrices} />
+                    <RoutePicker minAllowedAmount={minAllowedAmount} maxAllowedAmount={maxAmountFromApi} direction="from" quote={fee?.quote} quoteTokenPrices={quoteTokenPrices} onTriggerClick={onRoutePickerTriggerClick} />
                 </div>
             </div>
         </div>

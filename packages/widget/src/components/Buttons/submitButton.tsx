@@ -35,9 +35,9 @@ const SubmitButton: FC<SubmitButtonProps> = ({ isDisabled, isSubmitting, icon, c
                 {
                     'text-primary-buttonTextColor bg-primary-500': buttonStyle === 'filled',
                     'text-primary-text bg-secondary-300 hover:bg-secondary-400': buttonStyle === 'secondary',
-                    'py-4 px-4': size === 'large',
-                    'py-3 px-2 md:px-3': size === 'medium',
-                    'py-2.5 px-2.5 text-sm': size === 'small',
+                    'py-4 px-4 min-h-14': size === 'large',
+                    'py-3 px-2 md:px-3 min-h-12': size === 'medium',
+                    'py-2.5 px-2.5 text-sm min-h-10': size === 'small',
                 })}
         >
             <span className={`${button_align === "right" ? 'order-last' : 'order-first'} ${text_align === 'center' ? "absolute left-0 inset-y-0 flex items-center pl-3" : "relative"}`}>

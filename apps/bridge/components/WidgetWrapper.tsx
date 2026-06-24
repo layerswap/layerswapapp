@@ -9,6 +9,17 @@ import { logError } from "./utils/logError"
 
 type LayerswapProviderComponentProps = ComponentProps<typeof LayerswapProvider>;
 
+// Hoisted to module scope — all values are build-time constants, so a single
+// stable reference avoids recreating the providers if this is ever added to a
+// memo dependency array.
+const WALLET_CONNECT_CONFIGS = {
+    projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
+    name: 'Layerswap',
+    description: 'Layerswap App',
+    url: 'https://layerswap.io/app/',
+    icons: ['https://www.layerswap.io/app/symbol.png'],
+};
+
 type WidgetWrapperProps<T extends Record<string, unknown> = Record<string, never>> = T & {
     children: ReactNode;
     settings?: LayerSwapSettings;
@@ -33,14 +44,6 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
     enableSwapCallbacks = false,
 }: WidgetWrapperProps<T>) => {
     const router = useRouter()
-
-    const walletConnectConfigs = {
-        projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '',
-        name: 'Layerswap',
-        description: 'Layerswap App',
-        url: 'https://layerswap.io/app/',
-        icons: ['https://www.layerswap.io/app/symbol.png']
-    }
 
     const immutablePassportConfig = useMemo(() => {
         const clientId = process.env.NEXT_PUBLIC_IMMUTABLE_CLIENT_ID
@@ -68,7 +71,7 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
     }, [router.basePath])
 
     const defaultWalletProviders = useMemo(() => getDefaultProviders({
-        walletConnect: walletConnectConfigs,
+        walletConnect: WALLET_CONNECT_CONFIGS,
         ton: tonConfig,
         immutablePassport: immutablePassportConfig,
     }), [tonConfig, immutablePassportConfig])
@@ -77,9 +80,9 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
 
     const themeOverrides: Partial<ThemeData> = {
         borderRadius: 'default',
-        enablePortal: true,
-        enableWideVersion: true,
-        hidePoweredBy: true,
+        enablePortal: false,
+        enableWideVersion: false,
+        hidePoweredBy: false,
     }
 
     const baseTheme: ThemeData = {
@@ -106,14 +109,14 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
         onFormChange(formData) {
             updateFormBulk(formData);
         },
-        onSwapCreate(swapData) {
-            setSwapPath(swapData.swap.id, router)
-        },
-        onSwapModalStateChange(open) {
-            if (!open) {
-                removeSwapPath(router)
-            }
-        },
+        // onSwapCreate(swapData) {
+        //     setSwapPath(swapData.swap.id, router)
+        // },
+        // onSwapModalStateChange(open) {
+        //     if (!open) {
+        //         removeSwapPath(router)
+        //     }
+        // },
         onMenuNavigationChange(path) {
             setMenuPath(path, router)
         },

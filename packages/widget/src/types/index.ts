@@ -12,3 +12,4 @@ export * from './rpcHealth'
 export * from '../Models'
 export * from '../components/Pages/Swap/Withdraw/messages/TransactionMessages'
 export * from '../components/Pages/Swap/Withdraw/Wallet/Common/sharedTypes'
+export * from "../lib/extendedRoutes/types"

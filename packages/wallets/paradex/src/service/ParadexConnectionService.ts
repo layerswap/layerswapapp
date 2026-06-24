@@ -198,10 +198,23 @@ export class ParadexConnectionService {
         networkIcon,
     }: ResolveSingleWalletProps): Wallet | undefined {
         const paradexAddress = paradexAccounts?.[l1Account?.toLowerCase()]
+        if (!paradexAddress) return undefined
+
+        // The mapping is persisted in localStorage; a tampered/corrupted entry
+        // must never be used to derive the trading account. Paradex addresses are
+        // Starknet field elements (0x + up to 64 hex chars) — reject anything else
+        // and drop the bad entry so it isn't retried.
+        const isValidParadexAddress = /^0x[0-9a-fA-F]{1,64}$/.test(paradexAddress)
+        if (!isValidParadexAddress) {
+            console.error(`[Paradex] Address integrity check failed for ${l1Account}; removing entry`)
+            this.removeParadexAccount(l1Account)
+            return undefined
+        }
+
         const wallet = provider.connectedWallets?.find(w =>
             w.id === walletId && w.addresses.some(wa => wa.toLowerCase() === l1Account.toLowerCase()),
         )
-        if (!paradexAddress || !wallet) return undefined
+        if (!wallet) return undefined
         const displayName = `${wallet.id} (${new Address(l1Account, undefined, provider.name).toShortString()})`
         return {
             ...wallet,

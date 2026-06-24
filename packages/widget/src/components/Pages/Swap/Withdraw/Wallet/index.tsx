@@ -14,6 +14,9 @@ import { ActionMessages } from "../messages/TransactionMessages";
 import { useTransfer } from "@/hooks/useTransfer";
 import { useRpcHealth } from "@/context/rpcHealthContext";
 import RPCUnhealthyMessage from "./RPCUnhealthyMessage";
+import SwapError from "@/components/Pages/Swap/Form/SecondaryComponents/SwapError";
+import { isExtendedSourceNetwork } from "@/lib/extendedRoutes/registry";
+import { HyperliquidWalletWithdraw } from "../WithdrawalProviders/Hyperliquid";
 
 type Props = {
     swapData: SwapBasicData
@@ -76,6 +79,16 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
             console.error(e.message)
         }
     }, [swapId])
+
+    // Extended sources (e.g. Hyperliquid) have their own withdraw flow — the chain logic
+    // comes from the wallet package's Hyperliquid TransferProvider, the UI lives here.
+    if (isExtendedSourceNetwork(source_network?.name)) {
+        return <HyperliquidWalletWithdraw
+            swapId={swapId}
+            swapBasicData={swapBasicData}
+            refuel={refuel}
+        />
+    }
 
     if (provider?.multiStepHandlers) {
         const MultiStepHandler = provider.multiStepHandlers.find(handler => handler.supportedNetworks.includes(source_network?.name))?.component
@@ -222,7 +235,8 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
         />
     }
 
-    return <div className="w-full space-y-3 flex flex-col justify-between h-full text-primary-text">
+    return <div className="w-full space-y-2 flex flex-col justify-between h-full text-primary-text">
+        <SwapError />
         {
             buttonClicked &&
             <ActionMessage

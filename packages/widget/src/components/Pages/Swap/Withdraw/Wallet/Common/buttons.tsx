@@ -4,8 +4,10 @@ import { ActionData } from "./sharedTypes";
 import SubmitButton, { SubmitButtonProps } from "@/components/Buttons/submitButton";
 import useWallet from "@/hooks/useWallet";
 import { useSwapDataState, useSwapDataUpdate } from "@/context/swap";
-import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
+import { ErrorDisplay } from "@/components/Pages/Swap/Form/SecondaryComponents/validationError/ErrorDisplay";
+import ErrorDismissButton from "@/components/Pages/Swap/Form/SecondaryComponents/validationError/ErrorDismissButton";
+import FailIcon from "@/components/Icons/FailIcon";
 import WalletMessage from "../../messages/Message";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { Network, NetworkRoute } from "@/Models/Network";
@@ -23,38 +25,53 @@ import { resolvePriceImpactValues } from "@/lib/fees";
 import InfoIcon from "@/components/Icons/InfoIcon";
 import { useBalance } from "@/lib/balances/useBalance";
 import useSWRGas from "@/lib/gases/useSWRGas";
+import { useDepositSettings } from "@/context/depositSettings";
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData } = useSwapDataState()
     const { source_network } = swapBasicData || {}
     const [loading, setLoading] = useState(false)
+    const [connectError, setConnectError] = useState<string>("")
     const { provider } = useWallet(source_network, 'withdrawal')
     const { connect } = useConnectModal()
 
     const clickHandler = useCallback(async () => {
         try {
             setLoading(true)
+            setConnectError("")
 
             if (!provider) throw new Error(`No provider from ${source_network?.name}`)
 
             await connect(provider)
         }
         catch (e) {
-            toast.error(e.message)
+            setConnectError(e.message)
         }
         finally {
             setLoading(false)
         }
     }, [provider])
 
-    return <ButtonWrapper
-        onClick={props.onClick ?? clickHandler}
-        icon={loading ? <Loader2 className="h-6 w-6 animate-spin" /> : (props.icon ?? <WalletIcon className="stroke-2 w-6 h-6" />)}
-        isDisabled={loading || props.isDisabled}
-        isSubmitting={loading || props.isSubmitting}
-        {...props}
-    >
-        Send from wallet
-    </ButtonWrapper>
+    return <div className="flex flex-col gap-2 w-full">
+        {connectError ? (
+            <ErrorDisplay
+                icon={<FailIcon className="h-5 w-5" />}
+                title="Couldn't connect wallet"
+                message={connectError}
+                action={
+                    <ErrorDismissButton onClick={() => setConnectError("")} />
+                }
+            />
+        ) : null}
+        <ButtonWrapper
+            onClick={props.onClick ?? clickHandler}
+            icon={loading ? <Loader2 className="h-6 w-6 animate-spin" /> : (props.icon ?? <WalletIcon className="stroke-2 w-6 h-6" />)}
+            isDisabled={loading || props.isDisabled}
+            isSubmitting={loading || props.isSubmitting}
+            {...props}
+        >
+            Send from wallet
+        </ButtonWrapper>
+    </div>
 }
 
 export const ChangeNetworkMessage: FC<{ data: ActionData, network: string }> = ({ data, network }) => {
@@ -160,7 +177,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     refuel,
     ...props
 }) => {
-    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, refuel: refuelData } = useSwapDataState()
+    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, refuel: refuelData, setSwapError } = useSwapDataState()
     const { onWalletWithdrawalSuccess: onWalletWithdrawalSuccess, onCancelWithdrawal } = useWalletWithdrawalState();
     const { createSwap, setSwapId, setQuoteLoading } = useSwapDataUpdate()
     const { setSwapTransaction } = useSwapTransactionStore();
@@ -179,6 +196,8 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const [loading, setLoading] = useState(false)
     const [showCriticalMarketPriceImpactButtons, setShowCriticalMarketPriceImpactButtons] = useState(false)
 
+    const { actionButtonText } = useDepositSettings()
+
     const priceImpactValues = useMemo(() => quote ? resolvePriceImpactValues(quote, refuel ? refuelData : undefined) : undefined, [quote, refuel]);
     const criticalMarketPriceImpact = useMemo(() => priceImpactValues?.criticalMarketPriceImpact, [priceImpactValues]);
 
@@ -194,6 +213,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
             setLoading(true)
             clearError?.()
+            setSwapError?.("")
             let swapData: SwapDetails | undefined = swapDetails
             let depositActions = depositActionsResponse;
 
@@ -212,7 +232,10 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     depositMethod: 'wallet',
                 }
 
-                const newSwapData = await createSwap(swapValues, initialSettings);
+                const newSwapData = await createSwap(swapValues, initialSettings).catch((e: any) => {
+                    setSwapError?.(e?.response?.data?.error?.message || e?.message || 'Could not create swap')
+                    throw e
+                });
                 const newSwapId = newSwapData?.swap?.id;
                 if (!newSwapId) {
                     throw new Error('Swap ID is undefined');
@@ -370,7 +393,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 onClick={handleClick}
                 isDisabled={quoteIsLoading || !!quoteError}
             >
-                {error ? 'Try again' : 'Swap now'}
+                {error ? 'Try again' : actionButtonText || 'Swap now'}
             </ButtonWrapper>
         </>
     )

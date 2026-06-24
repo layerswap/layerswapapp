@@ -56,7 +56,15 @@ export class TonConnectionService {
 
     resolveWallet(snapshot: TonWalletSnapshot | undefined): Wallet | undefined {
         if (!snapshot?.address) return undefined
-        const normalizedAddress = Address.parse(snapshot.address).toString({ bounceable: false })
+        let normalizedAddress: string
+        try {
+            normalizedAddress = Address.parse(snapshot.address).toString({ bounceable: false })
+        } catch (e) {
+            // A malformed address (corrupted state / unexpected connector response)
+            // must not crash the whole TON resolution flow — drop the wallet instead.
+            console.warn('[TON] Failed to parse wallet address:', snapshot.address, e)
+            return undefined
+        }
         const walletId = snapshot.walletName || snapshot.appName
         if (!walletId) return undefined
 
@@ -88,8 +96,10 @@ export class TonConnectionService {
                 await tonConnect.disconnect()
             }
         } catch (e) {
-            // TODO: handle error
-            console.log(e)
+            // Disconnect is best-effort — log but do not rethrow.
+            // The UI should treat the wallet as disconnected regardless.
+            const msg = e instanceof Error ? e.message : String(e)
+            console.error(`[TON] Failed to disconnect wallet: ${msg}`)
         }
     }
 

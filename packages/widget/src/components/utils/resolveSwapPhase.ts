@@ -31,6 +31,7 @@ export type ResolveSwapPhaseInput = {
     refuel: Refuel | undefined;
     inputTxStatusFromApi?: TransactionStatus;
     storedWalletTransaction?: StoredWalletTransaction;
+    isDepositFlow?: boolean;
 };
 
 export type StepStatuses = {
@@ -120,6 +121,7 @@ export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStat
         outputTx,
         inputReady,
         failReason: swapDetails?.fail_reason,
+        isDepositFlow: input.isDepositFlow ?? false,
     });
 
     const isTerminal = TERMINAL_PHASES.has(phase);
@@ -261,14 +263,17 @@ function resolveGeneralStatus(args: {
     outputTx: Transaction | undefined;
     inputReady: boolean;
     failReason: string | undefined;
+    isDepositFlow: boolean;
 }): { title: string; subTitle: string | null } {
-    const { phase, inputTx, outputTx, inputReady, failReason } = args;
+    const { phase, inputTx, outputTx, inputReady, failReason, isDepositFlow } = args;
+    const noun = isDepositFlow ? 'Deposit' : 'Transfer';
+    const lowerNoun = isDepositFlow ? 'deposit' : 'transfer';
 
     switch (phase) {
         case SwapPhase.Completed:
-            return { title: 'Transfer complete', subTitle: formatElapsedTime(inputTx, outputTx) };
+            return { title: `${noun} complete`, subTitle: formatElapsedTime(inputTx, outputTx) };
         case SwapPhase.SettlingOutput:
-            return { title: 'Finalizing transfer', subTitle: null };
+            return { title: `Finalizing ${lowerNoun}`, subTitle: null };
         case SwapPhase.Refunded:
             return {
                 title: 'Refund complete',
@@ -281,17 +286,17 @@ function resolveGeneralStatus(args: {
             };
         case SwapPhase.Failed:
             return {
-                title: failReason === SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? 'Transfer on hold' : 'Transfer failed',
+                title: failReason === SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? `${noun} on hold` : `${noun} failed`,
                 subTitle: 'View instructions below',
             };
         case SwapPhase.Delayed:
-            return { title: 'Transfer delayed', subTitle: 'View instructions below' };
+            return { title: `${noun} delayed`, subTitle: 'View instructions below' };
         case SwapPhase.Cancelled:
-            return { title: 'Transfer cancelled', subTitle: '...' };
+            return { title: `${noun} cancelled`, subTitle: '...' };
         case SwapPhase.Expired:
-            return { title: 'Transfer expired', subTitle: '...' };
+            return { title: `${noun} expired`, subTitle: '...' };
         default:
-            return { title: 'Transfer in progress', subTitle: inputReady ? '' : null };
+            return { title: `${noun} in progress`, subTitle: inputReady ? '' : null };
     }
 }
 

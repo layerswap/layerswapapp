@@ -1,4 +1,4 @@
-import { resolverService } from "@/lib/resolvers/resolverService";
+import { addressUtilsResolver } from "@layerswap/utils";
 
 type AddressFormatProps = {
     address: string;
@@ -9,8 +9,7 @@ type AddressFormatProps = {
 export function addressFormat(props: AddressFormatProps): string {
     const { address, network, providerName } = props
     try {
-        const resolver = resolverService.getAddressUtilsResolver();
-        return resolver.addressFormat({ address, network, providerName });
+        return addressUtilsResolver.addressFormat({ address, network, providerName });
     } catch (err) {
         return address
     }

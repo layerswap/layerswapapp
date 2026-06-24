@@ -1,7 +1,6 @@
 'use client'
 import { FC, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useDeferredIntercomInit } from "@/hooks/useDeferredIntercomInit"
-import ThemeWrapper from "@/components/themeWrapper";
 import { ErrorBoundary } from "react-error-boundary";
 import { SettingsProvider } from "./settings";
 import { LayerSwapAppSettings } from "@/Models/LayerSwapAppSettings";
@@ -30,6 +29,11 @@ export type LayerswapWidgetConfig = {
     settings?: LayerSwapSettings;
     theme?: ThemeData | null,
     initialValues?: InitialSettings,
+    /** Skeleton shown while settings are being fetched (i.e. when `settings`
+     * isn't supplied). Defaults to the swap-shaped `WidgetLoading`; deposit
+     * integrations can pass `<DepositLoading />` so the init state matches their
+     * layout. */
+    loadingComponent?: ReactNode,
 } & WalletsConfigs
 
 export type LayerswapContextProps = {
@@ -47,7 +51,7 @@ export type LayerswapContextProps = {
 
 const INTERCOM_APP_ID = 'h5zisg78'
 const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callbacks, config, walletProviders = [] }) => {
-    const { apiKey, version, settings: _settings, theme, initialValues, imtblPassport, tonConfigs, walletConnect } = config || {}
+    let { apiKey, version, settings: _settings, theme, initialValues, loadingComponent, imtblPassport, tonConfigs, walletConnect } = config || {}
     const [fetchedSettings, setFetchedSettings] = useState<LayerSwapSettings | null>(null)
     // Defer Intercom script injection until the browser is idle. The provider
     // stays mounted so its context is always available (no remount of any
@@ -85,7 +89,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
     }, [_settings, apiKey, version])
 
     const settings = _settings || fetchedSettings
-    if (!settings) return <WidgetLoading />
+    if (!settings) return <>{loadingComponent ?? <WidgetLoading />}</>
 
     let appSettings = new LayerSwapAppSettings(settings)
 
@@ -95,25 +99,23 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
                 <CallbackProvider callbacks={callbacks}>
                     <ErrorProvider>
                         <ErrorBoundary FallbackComponent={ErrorFallback} >
-                            <ThemeWrapper>
-                                <DescriptorHydrationBoundary walletProviders={walletProviders}>
-                                    {(resolvedProviders) => (
-                                        <WalletsProviders
-                                            appName={initialValues?.appName}
-                                            themeData={themeData}
-                                            walletProviders={resolvedProviders}
-                                        >
-                                            <ResolverProviders walletProviders={resolvedProviders}>
-                                                <SwapAccountsProvider>
-                                                    <AsyncModalProvider>
-                                                        {children}
-                                                    </AsyncModalProvider>
-                                                </SwapAccountsProvider>
-                                            </ResolverProviders>
-                                        </WalletsProviders>
-                                    )}
-                                </DescriptorHydrationBoundary>
-                            </ThemeWrapper>
+                            <DescriptorHydrationBoundary walletProviders={walletProviders}>
+                                {(resolvedProviders) => (
+                                    <WalletsProviders
+                                        appName={initialValues?.appName}
+                                        themeData={themeData}
+                                        walletProviders={resolvedProviders}
+                                    >
+                                        <ResolverProviders walletProviders={resolvedProviders}>
+                                            <SwapAccountsProvider>
+                                                <AsyncModalProvider>
+                                                    {children}
+                                                </AsyncModalProvider>
+                                            </SwapAccountsProvider>
+                                        </ResolverProviders>
+                                    </WalletsProviders>
+                                )}
+                            </DescriptorHydrationBoundary>
                         </ErrorBoundary>
                     </ErrorProvider>
                 </CallbackProvider>
@@ -136,6 +138,12 @@ const DescriptorHydrationBoundary: FC<{
     const [loadedById, setLoadedById] = useState<ReadonlyMap<string, WalletProvider | WalletWrapper>>(new Map())
     // In-flight loads, deduplicated by id, so concurrent triggers don't double-import the SDK.
     const inflightRef = useRef<Map<string, Promise<void>>>(new Map())
+    // Mirror `loadedById` into a ref so `loadById`/`loadAll` can read the latest
+    // resolved set WITHOUT listing it as a dependency. Otherwise every resolved
+    // descriptor changes their identity → new context value → all loader
+    // consumers re-render (8 cascades when opening the modal).
+    const loadedByIdRef = useRef(loadedById)
+    loadedByIdRef.current = loadedById
 
     const resolvedProviders = useMemo(() => {
         return walletProviders.map(p => {
@@ -146,7 +154,7 @@ const DescriptorHydrationBoundary: FC<{
     }, [walletProviders, loadedById])
 
     const loadById = useCallback<(id: string) => Promise<void>>(async (id) => {
-        if (loadedById.has(id)) return
+        if (loadedByIdRef.current.has(id)) return
         const existing = inflightRef.current.get(id)
         if (existing) return existing
         const descriptor = walletProviders.find(p => isWalletProviderDescriptor(p) && p.id === id) as WalletProviderDescriptor | undefined
@@ -163,14 +171,14 @@ const DescriptorHydrationBoundary: FC<{
         })
         inflightRef.current.set(id, p)
         return p
-    }, [loadedById, walletProviders])
+    }, [walletProviders])
 
     const loadAll = useCallback(async () => {
         const pending = walletProviders
-            .filter((p): p is WalletProviderDescriptor => isWalletProviderDescriptor(p) && !loadedById.has(p.id))
+            .filter((p): p is WalletProviderDescriptor => isWalletProviderDescriptor(p) && !loadedByIdRef.current.has(p.id))
             .map(p => loadById(p.id))
         await Promise.all(pending)
-    }, [walletProviders, loadById, loadedById])
+    }, [walletProviders, loadById])
 
     const loaderValue = useMemo(() => ({ loadById, loadAll }), [loadById, loadAll])
 

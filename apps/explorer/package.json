@@ -20,7 +20,7 @@
     "framer-motion": "^10.16.15",
     "heroicons": "^2.0.18",
     "lucide-react": "^0.379.0",
-    "next": "15.5.9",
+    "next": "15.5.18",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-router-dom": "^6.14.1",
@@ -35,8 +35,8 @@
     "@types/react-dom": "catalog:",
     "autoprefixer": "^10.4.5",
     "eslint": "8.43.0",
-    "eslint-config-next": "^15.3.3",
-    "postcss": "^8.4.13",
+    "eslint-config-next": "^15.5.19",
+    "postcss": "^8.5.10",
     "tailwindcss": "^4.0.15",
     "typescript": "^5"
   }

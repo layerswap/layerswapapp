@@ -9,7 +9,6 @@ import RoutePicker from "@/components/Input/RoutePicker";
 import ExchangeAmountField from "@/components/Input/Amount/ExchangeAmountField";
 import Address from "@/components/Input/Address";
 import { ChevronDown } from "lucide-react";
-import AddressIcon from "@/components/Common/AddressIcon";
 import { Address as AddressClass } from "@/lib/address/Address";
 import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
 import MinMax from "@/components/Input/Amount/MinMax";
@@ -28,6 +27,7 @@ import DepositMethodComponent from "./FeeDetails/DepositMethod";
 import { AddressGroup } from "@/components/Input/Address/AddressPicker";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { ExchangeReceiveAmount } from "@/components/Input/Amount/ExchangeReceiveAmount";
+import AddressIcon from "@/components/Common/AddressIcon";
 
 type Props = {
     partner?: Partner;
@@ -45,7 +45,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
     }, [values, onFormChange]);
 
     const { fromAsset: fromCurrency, from, to: destination, destination_address, amount, toAsset: toCurrency } = values || {};
-    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
+    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
     const [actionTempValue, setActionTempValue] = useState<number | undefined>(undefined)
 
     const { wallets } = useWallet();
@@ -53,8 +53,8 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
 
     const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
-    const { isQuoteLoading, quote, quoteTokenPrices, minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd } = useQuoteData(quoteArgs, quoteRefreshInterval);
-    const { routeValidation, formValidation } = useValidationContext();
+    const { isQuoteLoading, quote, quoteTokenPrices, minAllowedAmount, maxAllowedAmount: maxAmountFromApi, minAllowedAmountInUsd, maxAllowedAmountInUsd } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval });
+    const { formValidation } = useValidationContext();
 
     const isValid = !formValidation.message;
     const error = formValidation.message;
@@ -147,12 +147,8 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                             </div>
                         </div>
                         <div>
-                            {
-                                routeValidation.message
-                                    ? <ValidationError />
-                                    : null
-                            }
-                            <QuoteDetails swapValues={values} quote={quote?.quote} isQuoteLoading={isQuoteLoading} reward={quote?.reward} variant="base" />
+                            <ValidationError />
+                            <QuoteDetails swapValues={values} quote={quote?.quote} isQuoteLoading={isQuoteLoading} reward={quote?.reward} variant="base" triggerClassnames="mt-2" />
                         </div>
                     </div>
                 </Widget.Content>
@@ -193,7 +189,7 @@ const AddressButton = ({ address, network, wallet, addressProviderIcon }: { addr
                         width="36"
                         height="36"
                     />) : (
-                        <AddressIcon className="h-9 w-9" address={network ? new AddressClass(address, network).full : address} size={36} rounded="6px" />
+                        <AddressIcon address={network ? new AddressClass(address, network).full : address} size={36} network={network} />
                     )
                 }
             </div>

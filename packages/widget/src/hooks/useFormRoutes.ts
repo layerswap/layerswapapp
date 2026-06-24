@@ -16,6 +16,8 @@ import { useRouteTokenSwitchStore } from "@/stores/routeTokenSwitchStore";
 import { SwapDirection, SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { getTotalBalanceInUSD } from "../helpers/balanceHelper";
 import { SortingOption, useRouteSortingStore } from "@/stores/routeSortingStore";
+import { extractTokenElementsAsSuggested, sortSuggestedTokenElements } from "../helpers/routeUtils";
+import { isExtendedSourceNetwork, mergeExtendedSourceRoutes } from "@/lib/extendedRoutes/registry";
 
 type Props = {
     direction: SwapDirection;
@@ -160,11 +162,20 @@ function filterRoutesByQuery(
 }
 
 function useRoutes({ direction, values }: Props) {
-    const { sourceRoutes, destinationRoutes } = useSettingsState();
+    const { sourceRoutes, destinationRoutes, networks } = useSettingsState();
     const apiClient = new LayerSwapApiClient();
     const url = useMemo(() => resolveNetworkRoutesURL(direction, values), [direction, values]);
     const defaultRoutes = direction === 'from' ? sourceRoutes : destinationRoutes;
-    return useRoutesData<NetworkRoute>(url, defaultRoutes || [], apiClient.fetcher);
+    const { routes, isLoading } = useRoutesData<NetworkRoute>(url, defaultRoutes || [], apiClient.fetcher);
+
+    const fromName = values.from?.name;
+    const toName = values.to?.name;
+    const toAssetSymbol = values.toAsset?.symbol;
+    const finalRoutes = useMemo(() => {
+        if (direction === 'from') return mergeExtendedSourceRoutes(routes, networks, toName, toAssetSymbol);
+        return isExtendedSourceNetwork(fromName) ? routes.filter(r => r.name !== fromName) : routes;
+    }, [routes, direction, networks, fromName, toName, toAssetSymbol]);
+    return { routes: finalRoutes, isLoading };
 }
 
 // ---------- Token Helpers ----------
@@ -339,7 +350,7 @@ function sortGroupedTokens(
     // Sort items within each group
     const groupsWithSortedItems = tokenElements.map(group => {
         const sortedItems = sortGroupedTokenItems(group.items, sortingOption, direction, balances, routesHistory);
-        const totalUSD = balances 
+        const totalUSD = balances
             ? sortedItems.reduce((sum, item) => sum + resolveTokenUSDBalance(item.route.route, item.route.token, balances), 0)
             : 0;
         return { ...group, items: sortedItems, totalUSD };
@@ -486,7 +497,7 @@ function sortTokensByRelevance(
 
 function sortGroupedTokensByRelevance(
     groups: (GroupedTokenElement & { totalUSD: number })[],
-    balances: Record<string, NetworkBalance> | null,
+    _balances: Record<string, NetworkBalance> | null,
     routesHistory: RoutesHistory,
     direction: SwapDirection
 ): GroupedTokenElement[] {
@@ -652,27 +663,27 @@ const mergeGroups = (suggestedRoutes: (NetworkTokenElement | TokenSceletonElemen
 }
 
 const resolveNetworkRoutes = (
-    routes: NetworkRoute[], 
-    balances: Record<string, NetworkBalance> | null, 
+    routes: NetworkRoute[],
+    balances: Record<string, NetworkBalance> | null,
     direction: SwapDirection,
     routesHistory: RoutesHistory,
     sortingOption: SortingOption = SortingOption.RELEVANCE
 ): NetworkElement[] => {
     // Sort routes based on selected option
     const sortedRoutes = sortRoutes(routes, sortingOption, direction, balances, routesHistory);
-    
+
     return sortedRoutes.map(r => ({
         type: 'network',
-        route: { 
-            ...r, 
+        route: {
+            ...r,
             tokens: sortTokens(r.tokens, r, sortingOption, direction, balances, routesHistory)
         }
     }));
 }
 
 const resolveTokenRoutes = (
-    routes: NetworkRoute[], 
-    balances: Record<string, NetworkBalance> | null, 
+    routes: NetworkRoute[],
+    balances: Record<string, NetworkBalance> | null,
     direction: SwapDirection,
     routesHistory: RoutesHistory,
     sortingOption: SortingOption = SortingOption.RELEVANCE
@@ -796,49 +807,12 @@ function getSuggestedRoutes(routes: NetworkRoute[], balances: Record<string, Net
         if (balancesLoading && direction === "from")
             return Array(effectiveLimit).fill({ type: "sceleton_token" });
     }
-    
+
     const tokenElements = extractTokenElementsAsSuggested(routes).filter(t => t.route.token.status === "active")
     const sorted = tokenElements.sort(sortSuggestedTokenElements(direction, balances, routesHistory))
     return sorted.slice(0, effectiveLimit)
 }
 
-const extractTokenElementsAsSuggested = (routes: NetworkRoute[]): NetworkTokenElement[] => routes.flatMap(route => (route.tokens || []).map(token => ({ type: 'suggested_token', route: { token, route } })))
-
-const sortSuggestedTokenElements = (direction: SwapDirection, balances: Record<string, NetworkBalance> | null, routesHistory: RoutesHistory) => (a: NetworkTokenElement, b: NetworkTokenElement) => {
-    if (direction === "from" && balances) {
-        const a_balance = getNetworkTokenElementBalance(a, balances)
-        const b_balance = getNetworkTokenElementBalance(b, balances)
-        if (a_balance !== b_balance) {
-            return b_balance - a_balance
-        }
-    }
-    if (routesHistory) {
-        const a_used = getUsedCount(a, routesHistory, direction)
-        const b_used = getUsedCount(b, routesHistory, direction)
-        if (a_used !== b_used) {
-            return b_used - a_used
-        }
-    }
-
-    const a_rank = getRank(a, direction)
-    const b_rank = getRank(b, direction)
-    return a_rank - b_rank
-}
-
-const getNetworkTokenElementBalance = (item: NetworkTokenElement, balances: Record<string, NetworkBalance>) => {
-    return (balances[item.route.route.name]?.balances?.find(b => b.token === item.route.token.symbol)?.amount || 0) * item.route.token.price_in_usd
-}
-const getUsedCount = (item: NetworkTokenElement, history: RoutesHistory, direction: SwapDirection) => {
-    return direction === "from" ? history.sourceRoutes?.[item.route.route.name]?.[item.route.token.symbol] || 0 : history.destinationRoutes?.[item.route.route.name]?.[item.route.token.symbol] || 0
-}
-const getRank = (item: NetworkTokenElement, direction: SwapDirection) => {
-    switch (direction) {
-        case "from":
-            return item.route.token.source_rank || 0;
-        case "to":
-            return item.route.token.destination_rank || 0
-    }
-}
 const resolveTitle = (text: string): TitleElement => {
     return { type: 'group_title', text }
 }

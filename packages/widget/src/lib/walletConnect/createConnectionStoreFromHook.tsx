@@ -68,6 +68,12 @@ export function createReactHookConnectionAdapter(
             if (shallowEqualProvider(store.getState(), value)) return
             store.setState(value, true)
         }, [value])
+        // Reset the shared store when the Hydrator unmounts so a widget remount
+        // (e.g. via `widgetRenderKey`) doesn't briefly surface the previous
+        // session's wallet as connected before the hook re-fires.
+        useLayoutEffect(() => {
+            return () => { store.setState(EMPTY_PROVIDER, true) }
+        }, [])
         return null
     }
 
@@ -77,8 +83,9 @@ export function createReactHookConnectionAdapter(
             // Networks propagate via the Hydrator's props. No-op here.
         },
         destroy() {
-            // Per-package adapters are singletons; we don't tear them down
-            // because a remount would reuse the same instance.
+            // Reset to the empty snapshot so a clean remount doesn't inherit the
+            // previous session's wallet state from this singleton store.
+            store.setState(EMPTY_PROVIDER, true)
         },
     })
 

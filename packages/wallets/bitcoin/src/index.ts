@@ -7,7 +7,6 @@ import type {
 } from "@layerswap/widget/types"
 import { BitcoinGasProvider } from "./bitcoinGasProvider"
 import { BitcoinBalanceProvider } from "./bitcoinBalanceProvider"
-import { BitcoinAddressUtilsProvider } from "./bitcoinAddressUtilsProvider"
 import { createBitcoinTransfer } from "./transferProvider/createBitcoinTransfer"
 import { createBitcoinConnection } from "./service/createBitcoinConnection"
 import { initBitcoinProvider } from "./init"
@@ -19,7 +18,6 @@ export function createBitcoinProvider(config: BitcoinProviderConfig = {}): Walle
         customConnection,
         balanceProviders,
         gasProviders,
-        addressUtilsProviders,
         transferProviders,
     } = config
 
@@ -47,11 +45,6 @@ export function createBitcoinProvider(config: BitcoinProviderConfig = {}): Walle
         ? (Array.isArray(gasProviders) ? gasProviders : [gasProviders])
         : defaultGasProviders
 
-    const defaultAddressUtilsProviders = [new BitcoinAddressUtilsProvider()]
-    const finalAddressUtilsProviders = addressUtilsProviders !== undefined
-        ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
-        : defaultAddressUtilsProviders
-
     const defaultTransferProviders = [createBitcoinTransfer]
     const finalTransferProviders = transferProviders !== undefined
         ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
@@ -61,7 +54,6 @@ export function createBitcoinProvider(config: BitcoinProviderConfig = {}): Walle
         id: "bitcoin",
         init,
         createConnection,
-        addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
         transferProvider: finalTransferProviders,

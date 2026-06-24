@@ -4,7 +4,6 @@ import { useSettingsState } from "@/context/settings";
 import { UpdateSwapInterface, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import React from "react";
 import ConnectNetwork from "@/components/Pages/Swap/Form/SecondaryComponents/ConnectNetwork";
-import toast from "react-hot-toast";
 import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "@/lib/generateSwapInitialValues";
 import { Partner } from "@/Models/Partner";
 import { ApiError, LSAPIKnownErrorCode } from "@/Models/ApiError";
@@ -28,6 +27,7 @@ import ContractAddressNote from "@/components/Input/Address/ContractAddressNote"
 import { useContractAddressStore } from "@/stores/contractAddressStore";
 import UrlAddressNote from "@/components/Input/Address/UrlAddressNote";
 import { Address } from "@/lib/address/Address";
+import ContractAddressValidationCache, { ContractSourceAddressValidationCache } from "./SecondaryComponents/validationError/ContractAddressValidationCache";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -66,7 +66,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
     const { setConfirmed, isConfirmed, checkContractStatus } = useContractAddressStore();
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
-        setSwapError && setSwapError('')
+        setSwapError && setSwapError(null)
         const { destination_address, to } = values
         setWalletWihdrawDone(false)
         if (!walletWihdrawDone) {
@@ -142,9 +142,9 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
             })
         }
         catch (error) {
-            toast.error(error?.message)
+            setSwapError && setSwapError(error?.message || 'Could not create swap')
         }
-    }, [createSwap, initialSettings, partner, swapBasicData, getProvider, settings, type])
+    }, [createSwap, initialSettings, partner, swapBasicData, getProvider, settings, type, setSwapError])
 
     const initialValues: SwapFormValues = swapBasicData ? generateSwapInitialValuesFromSwap(swapBasicData, swapBasicData.refuel, settings, type)
         : generateSwapInitialValues(settings, initialSettings, type, connectedAutofillNetworks)
@@ -167,8 +167,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
             validateOnMount={true}
             onSubmit={handleSubmit}
         >
-            {({ setFieldValue }) => (
-
+            {({ setFieldValue, values }) => (
                 <>
                     <VaulDrawer
                         show={showConnectNetworkModal}
@@ -201,6 +200,15 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                         ) : null}
                     </VaulDrawer>
                     {children}
+                    <ContractAddressValidationCache
+                        source_network={values.from}
+                        destination_network={values.to}
+                        address={values.destination_address}
+                    />
+                    <ContractSourceAddressValidationCache
+                        source_network={values.from}
+                        destination_network={values.to}
+                    />
                 </>
             )}
         </Formik>
@@ -255,6 +263,8 @@ const handleCreateSwap = async ({ query, values, partner, setShowSwapModal, crea
             } else {
                 throw new Error(`Daily limit of ${values.fromAsset?.symbol} transfers from ${values.from?.display_name} is reached.`)
             }
+        } else if (data?.code === "QUOTE_REQUIRES_NO_DEPOSIT_ADDRESS") {
+            throw new Error("This route isn't available with a deposit address. Try a different source or destination.")
         }
         else {
             throw new Error(data?.message || error?.message)

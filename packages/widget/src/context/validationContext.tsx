@@ -10,6 +10,8 @@ import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues';
 import { useSlippageStore } from '@/stores';
 import { useAutoSlippageTest } from '@/hooks/useAutoSlippageTest';
 import { useUsdModeStore } from '@/stores/usdModeStore';
+import { isDepositAddressFlow } from '@/helpers/swapFlow';
+import useExchangeNetworks from '@/hooks/useExchangeNetworks';
 
 export interface ValidationDetails {
     title?: string;
@@ -47,13 +49,16 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
     const selectedSourceAccount = useSelectedAccount("from", values.from?.name);
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
-    const { minAllowedAmount, maxAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, quoteError, quote, isQuoteLoading, isDebouncing } = useQuoteData(quoteArgs, quoteRefreshInterval)
+    // Deposit address flow doesn't use limits — resolveFormValidation skips amount checks there
+    const { minAllowedAmount, maxAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, quoteError, quote, isQuoteLoading, isDebouncing } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval, skipLimits: isDepositAddressFlow(values.depositMethod, values.fromExchange) });
 
     const { autoSlippage } = useSlippageStore();
     const quoteErrorCode = quoteError?.response?.data?.error?.code || quoteError?.code;
     const shouldTestAutoSlippage = !autoSlippage && !quote && !!values.amount && Number(values.amount) > 0 && !!values.from && !!values.to && !quoteErrorCode && !(isQuoteLoading || isDebouncing);
     const { autoSlippageWouldWork, isTestingAutoSlippage } = useAutoSlippageTest({ values, shouldTest: shouldTestAutoSlippage });
 
+    const { networks: exchangeWithdrawalNetworks, isLoading: exchangeNetworksLoading, isValidating: exchangeNetworksValidating } = useExchangeNetworks({ fromExchange: values.fromExchange?.name, to: values.to?.name, toAsset: values.toAsset?.symbol });
+    const noExchangeWithdrawalRoute = !!values.fromExchange && !!values.to && !!values.toAsset && !exchangeNetworksLoading && !exchangeNetworksValidating && (exchangeWithdrawalNetworks?.length ?? 0) === 0;
     const routeValidation = useRouteValidation(quoteError, !!quote, isQuoteLoading || isDebouncing, autoSlippageWouldWork);
 
     const isUsdMode = useUsdModeStore(s => s.isUsdMode);
@@ -67,7 +72,8 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
         isUsdMode,
         sourceAddress: selectedSourceAccount?.address,
         sameAccountNetwork,
-        quoteError
+        quoteError,
+        noExchangeWithdrawalRoute
     })
 
     const value = useMemo(

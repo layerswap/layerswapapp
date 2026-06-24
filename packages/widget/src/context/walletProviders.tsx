@@ -41,7 +41,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
     const settings = useSettingsState();
     const { networks } = settings;
     const isMobilePlatform = isMobile();
-    const { goBack, onFinish, open, setOpen, selectedConnector, selectedMultiChainConnector, dismissible, topContent, fullHeight, hideHeader } = useConnectModal()
+    const { goBack, onFinish, open, setOpen, presentation, selectedConnector, selectedMultiChainConnector, dismissible, topContent, fullHeight, hideHeader } = useConnectModal()
 
     const walletProvidersRegistry = useMemo(() => createWalletProvidersRegistry(), [])
     const { loadAll } = useWalletDescriptorLoader()
@@ -139,7 +139,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
         <WalletProvidersRegistryContext.Provider value={walletProvidersRegistry}>
             {children}
             <VaulDrawer
-                show={open}
+                show={open && presentation === 'modal'}
                 setShow={setOpen}
                 onClose={onFinish}
                 modalId={"connectNewWallet"}

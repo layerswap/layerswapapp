@@ -1,7 +1,6 @@
 import { BalanceResolver } from "@/lib/balances/balanceResolver";
 import { GasResolver } from "@/lib/gases/gasResolver";
-import { AddressUtilsResolver } from '@/lib/address/addressUtilsResolver'
-import { AddressUtilsProvider, BalanceProvider, ContractAddressCheckerProvider, GasProvider, NftProvider, TransferProvider } from "@/types";
+import { BalanceProvider, ContractAddressCheckerProvider, GasProvider, NftProvider, TransferProvider } from "@/types";
 import { RpcHealthCheckProvider } from "@/types/rpcHealth";
 import { NftBalanceResolver } from "../nft/nftBalanceResolver";
 import { TransferResolver } from "../transfers/transferResolver";
@@ -11,7 +10,6 @@ import { RpcHealthCheckResolver } from "../rpcHealth/rpcHealthCheckResolver";
 class UtilsResolverService {
     private balanceResolver: BalanceResolver | null = null;
     private gasResolver: GasResolver | null = null;
-    private addressUtilsResolver: AddressUtilsResolver | null = null;
     private nftResolver: NftBalanceResolver | null = null;
     private transferResolver: TransferResolver | null = null;
     private contractAddressResolver: ContractAddressResolver | null = null;
@@ -20,7 +18,6 @@ class UtilsResolverService {
     setProviders(
         balanceProviders: BalanceProvider[],
         gasProviders: GasProvider[],
-        addressUtilsProviders: AddressUtilsProvider[],
         nftProviders: NftProvider[],
         transferProviders: TransferProvider[],
         contractAddressProviders: ContractAddressCheckerProvider[],
@@ -28,7 +25,6 @@ class UtilsResolverService {
     ) {
         this.balanceResolver = new BalanceResolver(balanceProviders);
         this.gasResolver = new GasResolver(gasProviders);
-        this.addressUtilsResolver = new AddressUtilsResolver(addressUtilsProviders);
         this.nftResolver = new NftBalanceResolver(nftProviders);
         this.transferResolver = new TransferResolver(transferProviders);
         this.contractAddressResolver = new ContractAddressResolver(contractAddressProviders);
@@ -47,13 +43,6 @@ class UtilsResolverService {
             throw new Error('ResolverService not initialized. Make sure to call setProviders first.');
         }
         return this.gasResolver;
-    }
-
-    getAddressUtilsResolver(): AddressUtilsResolver {
-        if (!this.addressUtilsResolver) {
-            throw new Error('ResolverService not initialized. Make sure to call setProviders first.');
-        }
-        return this.addressUtilsResolver;
     }
 
     getNftResolver(): NftBalanceResolver {

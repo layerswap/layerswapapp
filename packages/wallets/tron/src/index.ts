@@ -8,7 +8,6 @@ import type {
 import { LazyBalanceProvider } from "@layerswap/widget/types"
 import { KnownInternalNames } from "@layerswap/widget/internal"
 import { TronGasProvider } from "./tronGasProvider"
-import { TronAddressUtilsProvider } from "./tronAddressUtilsProvider"
 import { createTronTransfer } from "./transferProvider/createTronTransfer"
 import { createTronConnection } from "./service/createTronConnection"
 import { initTronProvider } from "./init"
@@ -20,7 +19,6 @@ export function createTronProvider(config: TronProviderConfig = {}): WalletProvi
         customConnection,
         balanceProviders,
         gasProviders,
-        addressUtilsProviders,
         transferProviders,
     } = config
 
@@ -52,11 +50,6 @@ export function createTronProvider(config: TronProviderConfig = {}): WalletProvi
         ? (Array.isArray(gasProviders) ? gasProviders : [gasProviders])
         : defaultGasProviders
 
-    const defaultAddressUtilsProviders = [new TronAddressUtilsProvider()]
-    const finalAddressUtilsProviders = addressUtilsProviders !== undefined
-        ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
-        : defaultAddressUtilsProviders
-
     const defaultTransferProviders = [createTronTransfer]
     const finalTransferProviders = transferProviders !== undefined
         ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
@@ -66,7 +59,6 @@ export function createTronProvider(config: TronProviderConfig = {}): WalletProvi
         id: "tron",
         init,
         createConnection,
-        addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
         transferProvider: finalTransferProviders,

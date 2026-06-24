@@ -1,4 +1,3 @@
-import ResizablePanel from '@/components/Common/ResizablePanel';
 import { FC, useState } from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/shadcn/accordion';
 import clsx from 'clsx';
@@ -56,7 +55,7 @@ export default function QuoteDetails({ swapValues: values, quote, isQuoteLoading
                         <AccordionTrigger
                             data-attr="see-swap-details"
                             className={clsx(
-                                'p-3.5 pr-5 w-full rounded-2xl flex items-center justify-between transition-colors duration-200 hover:bg-secondary-400 mt-2',
+                                'p-3.5 pr-5 w-full rounded-2xl flex items-center justify-between transition-colors duration-200 hover:bg-secondary-400',
                                 triggerClassnames,
                                 {
                                     'bg-secondary-500': !isAccordionOpen,
@@ -75,17 +74,15 @@ export default function QuoteDetails({ swapValues: values, quote, isQuoteLoading
                             <ChevronDown className='h-3.5 w-3.5 text-secondary-text' />
                         </AccordionTrigger>
                         <AccordionContent className='rounded-2xl'>
-                            <ResizablePanel>
-                                {
-                                    (quote || isQuoteLoading) && fromCurrency && toAsset &&
-                                    <DetailedEstimates
-                                        swapValues={values}
-                                        quote={quote}
-                                        variant={variant}
-                                        reward={reward}
-                                    />
-                                }
-                            </ResizablePanel>
+                            {
+                                (quote || isQuoteLoading) && fromCurrency && toAsset &&
+                                <DetailedEstimates
+                                    swapValues={values}
+                                    quote={quote}
+                                    variant={variant}
+                                    reward={reward}
+                                />
+                            }
                         </AccordionContent>
                     </AccordionItem>
                 </Accordion>

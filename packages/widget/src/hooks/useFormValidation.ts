@@ -2,6 +2,7 @@ import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues';
 import { QuoteError } from './useFee';
 import { Address } from '@/lib/address/Address';
 import { ceilUsd, floorUsd } from '@/components/utils/formatUsdAmount';
+import { isDepositAddressFlow } from '@/helpers/swapFlow';
 
 interface Params {
     values: SwapFormValues;
@@ -12,7 +13,8 @@ interface Params {
     isUsdMode: boolean,
     sourceAddress: string | undefined,
     sameAccountNetwork?: string | undefined,
-    quoteError?: QuoteError
+    quoteError?: QuoteError,
+    noExchangeWithdrawalRoute?: boolean
 }
 
 export const FORM_VALIDATION_ERROR_CODES = {
@@ -22,25 +24,28 @@ export const FORM_VALIDATION_ERROR_CODES = {
 }
 
 
-export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isUsdMode, sourceAddress, sameAccountNetwork, quoteError }: Params) {
+export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isUsdMode, sourceAddress, sameAccountNetwork, quoteError, noExchangeWithdrawalRoute }: Params) {
     let amount = values.amount ? Number(values.amount) : undefined;
 
     // Deposit address flow without exchange: no amount or exchange required
-    const isDepositAddressFlow = values.depositMethod === 'deposit_address' && !values.fromExchange;
+    const depositAddressFlow = isDepositAddressFlow(values.depositMethod, values.fromExchange);
 
-    if (!isDepositAddressFlow && !values.from && !values.fromExchange) {
+    if (!depositAddressFlow && !values.from && !values.fromExchange) {
         return { message: 'Select source' };
     }
     if (!values.to) {
         return { message: 'Select destination' };
     }
-    if (!isDepositAddressFlow && !values.fromAsset) {
+    if (noExchangeWithdrawalRoute) {
+        return { message: 'Route not found', code: FORM_VALIDATION_ERROR_CODES.ROUTE_NOT_FOUND };
+    }
+    if (!depositAddressFlow && !values.fromExchange && !values.fromAsset) {
         return { message: 'Select source asset' };
     }
     if (!values.toAsset) {
         return { message: 'Select destination asset' };
     }
-    if (!isDepositAddressFlow) {
+    if (!depositAddressFlow) {
         if (amount === undefined || isNaN(Number(amount))) {
             return { message: 'Enter an amount' };
         }
@@ -61,7 +66,7 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
             return { message: 'Invalid amount' };
         }
     }
-    if (isDepositAddressFlow) {
+    if (depositAddressFlow) {
         if (!values.from || !values.fromAsset) {
             return { message: 'No source route available' };
         }
@@ -76,10 +81,10 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
         }
     }
 
-    if (!isDepositAddressFlow) {
+    if (!depositAddressFlow) {
         if (
-            values.from?.name.toLowerCase() === sameAccountNetwork?.toLowerCase() ||
-            values.to?.name.toLowerCase() === sameAccountNetwork?.toLowerCase()
+            (values.from?.name && values.from?.name.toLowerCase() === sameAccountNetwork?.toLowerCase()) ||
+            (values.to?.name && values.to?.name.toLowerCase() === sameAccountNetwork?.toLowerCase())
         ) {
             if (
                 sourceAddress &&

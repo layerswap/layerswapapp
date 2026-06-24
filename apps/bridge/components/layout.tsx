@@ -58,10 +58,12 @@ export default function Layout({ children, themeData }: Props) {
   return (<>
     <Head>
       <title>Layerswap App I Bridge & Swap Tokens Across Chains</title>
+      <link rel="icon" type="image/png" href={`${basePath}/favicon/favicon-96x96.png`} sizes="96x96" />
+      <link rel="icon" type="image/svg+xml" href={`${basePath}/favicon/favicon.svg`} />
+      <link rel="shortcut icon" href={`${basePath}/favicon/favicon.ico`} />
       <link rel="apple-touch-icon" sizes="180x180" href={`${basePath}/favicon/apple-touch-icon.png`} />
-      <link rel="icon" type="image/png" sizes="32x32" href={`${basePath}/favicon/favicon-32x32.png`} />
-      <link rel="icon" type="image/png" sizes="16x16" href={`${basePath}/favicon/favicon-16x16.png`} />
       <link rel="manifest" href={`${basePath}/favicon/site.webmanifest`} />
+      <meta name="apple-mobile-web-app-title" content="Layerswap" />
       <meta name="msapplication-TileColor" content="#ffffff" />
       <meta name="theme-color" content={`rgb(${themeData?.secondary?.[900] || THEME_COLORS.default.secondary?.[900]})`} />
       <meta name="description" content="Layerswap is the most affordable way to swap & bridge crypto assets across Solana, Ethereum, Bitcoin, Starknet, TON, Fuel, and 80+ more blockchains." />

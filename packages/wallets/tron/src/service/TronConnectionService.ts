@@ -96,8 +96,9 @@ export class TronConnectionService {
         try {
             await tronAdapterManager.disconnect()
         } catch (e) {
-            // TODO: handle error
-            console.log(e)
+            // Disconnect is best-effort — log but do not rethrow.
+            const msg = e instanceof Error ? e.message : String(e)
+            console.error(`[TRON] Failed to disconnect wallet: ${msg}`)
         }
     }
 

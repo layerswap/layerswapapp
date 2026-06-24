@@ -7,7 +7,6 @@ import type {
 } from "@layerswap/widget/types"
 import { LazyGasProvider, NetworkType } from "@layerswap/widget/types"
 import { SolanaBalanceProvider } from "./svmBalanceProvider"
-import { SolanaAddressUtilsProvider } from "./svmAddressUtilsProvider"
 import { createSvmTransfer } from "./transferProvider/createSvmTransfer"
 import { createSvmConnection } from "./service/createSvmConnection"
 import { initSvmProvider } from "./init"
@@ -30,7 +29,6 @@ export function createSVMProvider(config: SVMProviderConfig = {}): WalletProvide
         customConnection,
         balanceProviders,
         gasProviders,
-        addressUtilsProviders,
         transferProviders,
     } = config
 
@@ -62,11 +60,6 @@ export function createSVMProvider(config: SVMProviderConfig = {}): WalletProvide
         ? (Array.isArray(gasProviders) ? gasProviders : [gasProviders])
         : defaultGasProviders
 
-    const defaultAddressUtilsProviders = [new SolanaAddressUtilsProvider()]
-    const finalAddressUtilsProviders = addressUtilsProviders !== undefined
-        ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
-        : defaultAddressUtilsProviders
-
     const defaultTransferProviders = [createSvmTransfer]
     const finalTransferProviders = transferProviders !== undefined
         ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
@@ -76,7 +69,6 @@ export function createSVMProvider(config: SVMProviderConfig = {}): WalletProvide
         id: "solana",
         init,
         createConnection,
-        addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
         transferProvider: finalTransferProviders,

@@ -4,14 +4,14 @@ import { Widget } from '@/components/Widget/Index';
 import { useSwapDataState } from '@/context/swap';
 import Withdraw from './Withdraw';
 import Processing from './Processing';
-import { BackendTransactionStatus, TransactionType } from '@/lib/apiClients/layerSwapApiClient';
-import { SwapStatus } from '@/Models/SwapStatus';
+import { BackendTransactionStatus } from '@/lib/apiClients/layerSwapApiClient';
 import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import SubmitButton from '@/components/Buttons/submitButton';
 import ManualWithdraw from './ManualWithdraw';
 import { Partner } from '@/Models';
 import { useCallbacks } from "@/context/callbackProvider";
 import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
+import { isExtendedSourceNetwork } from '@/lib/extendedRoutes/registry';
 
 type Props = {
     type: "widget" | "contained",
@@ -33,6 +33,13 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, onCancelWithd
         useSwapTransactionStore.getState().removeSwapTransaction(swapDetails?.id || '');
     }, [swapDetails?.id])
 
+    const resolveWithdrawScreen = () => {
+        if (swapBasicData?.use_deposit_address === true && !isExtendedSourceNetwork(swapBasicData?.source_network?.name)) {
+            return <ManualWithdraw swapBasicData={swapBasicData} depositActions={depositActionsResponse} refuel={refuel} partner={partner} type={type} quote={quote} isQuoteLoading={quoteIsLoading} />
+        }
+        return <Withdraw type={type} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} onCancelWithdrawal={onCancelWithdrawal} partner={partner} />
+    }
+
     if (!swapBasicData) return <>
         <div className="w-full h-[430px]">
             <div className="animate-pulse flex space-x-4">
@@ -49,13 +56,9 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, onCancelWithd
         <Container type={type} goBack={onBackClick}>
             {
                 resolved.showWithdrawScreen ?
-                    (
-                        swapBasicData?.use_deposit_address === true
-                            ? <ManualWithdraw swapBasicData={swapBasicData} depositActions={depositActionsResponse} refuel={refuel} partner={partner} type={type} quote={quote} isQuoteLoading={quoteIsLoading} />
-                            : <Withdraw type={type} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} onCancelWithdrawal={onCancelWithdrawal} partner={partner} />
-                    )
+                    resolveWithdrawScreen()
                     :
-                    <div className='space-y-3 w-full h-full'>
+                    <div className='space-y-2 w-full h-full'>
                         <Processing />
                         {
                             storedWalletTransaction?.status == BackendTransactionStatus.Failed &&
@@ -76,7 +79,7 @@ const Container = ({ type, children, goBack }: Props & {
     if (type === "widget")
         return <Widget goBack={goBack}><>{children}</></Widget>
     else
-        return <div className="w-full flex flex-col justify-between h-full space-y-3 text-secondary-text">
+        return <div className="w-full flex flex-col flex-1 justify-between h-full space-y-2 text-secondary-text">
             {children}
         </div>
 }

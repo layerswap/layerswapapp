@@ -1,5 +1,5 @@
-import { FC } from "react";
-import { Swap, LayerswapProvider, LayerSwapSettings, ThemeData } from '@layerswap/widget'
+import { FC, useMemo, useState } from "react";
+import { Swap, DepositComponent, LayerswapProvider, LayerSwapSettings, ThemeData } from '@layerswap/widget'
 import { createEVMProvider } from "@layerswap/wallet-evm"
 import "@layerswap/widget/index.css"
 import '@rainbow-me/rainbowkit/styles.css';
@@ -30,8 +30,13 @@ const PageComponent: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
 }
 
 
+type WidgetType = "swap" | "deposit";
+
 const Comp: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
-    const walletProviders = [createEVMProvider({ walletConnectConfigs: walletConnect, wagmiConfig: config })]
+    // Memoize so the provider isn't recreated on every render (which would tear
+    // down and re-init the wallet connection, disconnecting the active wallet).
+    const walletProviders = useMemo(() => [createEVMProvider({ walletConnectConfigs: walletConnect, wagmiConfig: config })], [])
+    const [widgetType, setWidgetType] = useState<WidgetType>("swap");
 
     return (<div className="h-screen flex flex-col items-center justify-center gap-4">
         <h1 className="text-2xl font-bold text-white text-center">Layerswap Widget with RainbowKit Example</h1>
@@ -40,6 +45,7 @@ const Comp: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
         </p>
 
         <ConnectButton />
+        <WidgetSwitcher value={widgetType} onChange={setWidgetType} />
         <div className="w-[600px] mx-auto flex flex-col justify-center place-self-center h- rounded-lg">
             <LayerswapProvider
                 config={{
@@ -55,11 +61,43 @@ const Comp: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
                 }}
                 walletProviders={walletProviders}
             >
-                <Swap />
+                {widgetType === "swap" ? (
+                    <Swap />
+                ) : (
+                    <DepositComponent
+                        destination={{ network: "ETHEREUM_MAINNET", tokens: ["USDC", "ETH"] }}
+                        destinationAddress="0xB2029bbd8C1cBCC43c3A7b7fE3d118b0C57D7C31"
+                    />
+                )}
             </LayerswapProvider>
         </div>
     </div>
     )
+}
+
+function WidgetSwitcher({
+    value,
+    onChange,
+}: {
+    value: WidgetType;
+    onChange: (value: WidgetType) => void;
+}) {
+    return (
+        <div className="flex items-center gap-1 p-1 rounded-lg bg-gray-800">
+            {(["swap", "deposit"] as const).map((type) => (
+                <button
+                    key={type}
+                    type="button"
+                    onClick={() => onChange(type)}
+                    className={`rounded-md px-6 py-1.5 text-sm font-medium capitalize transition-colors duration-200 ${
+                        value === type ? "bg-pink-600 text-white" : "text-gray-400 hover:text-white"
+                    }`}
+                >
+                    {type}
+                </button>
+            ))}
+        </div>
+    );
 }
 
 const theme: ThemeData = {

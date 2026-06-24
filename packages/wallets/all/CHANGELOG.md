@@ -1,5 +1,45 @@
 # @layerswap/wallets
 
+## 1.5.0
+
+### Minor Changes
+
+- Add Deposit from Hyperliquid option
+
+### Patch Changes
+
+- Updated dependencies
+  - @layerswap/widget@1.5.0
+  - @layerswap/wallet-bitcoin@1.5.0
+  - @layerswap/wallet-evm@1.5.0
+  - @layerswap/wallet-fuel@1.5.0
+  - @layerswap/wallet-imtbl-passport@1.5.0
+  - @layerswap/wallet-paradex@1.5.0
+  - @layerswap/wallet-starknet@1.5.0
+  - @layerswap/wallet-svm@1.5.0
+  - @layerswap/wallet-ton@1.5.0
+  - @layerswap/wallet-tron@1.5.0
+
+## 1.4.0
+
+### Minor Changes
+
+- Add Deposit widget
+
+### Patch Changes
+
+- Updated dependencies
+  - @layerswap/wallet-bitcoin@1.4.0
+  - @layerswap/wallet-evm@1.4.0
+  - @layerswap/wallet-fuel@1.4.0
+  - @layerswap/wallet-imtbl-passport@1.4.0
+  - @layerswap/wallet-paradex@1.4.0
+  - @layerswap/wallet-starknet@1.4.0
+  - @layerswap/wallet-svm@1.4.0
+  - @layerswap/wallet-ton@1.4.0
+  - @layerswap/wallet-tron@1.4.0
+  - @layerswap/widget@1.4.0
+
 ## 1.2.0
 
 ### Patch Changes

@@ -99,8 +99,9 @@ export class BitcoinConnectionService {
             const connector = getConnectors(config).find(c => c.name.toLowerCase() === connectorName.toLowerCase())
             await disconnect(config, { connector })
         } catch (e) {
-            // TODO: handle error
-            console.log(e)
+            // Disconnect is best-effort — log but do not rethrow.
+            const msg = e instanceof Error ? e.message : String(e)
+            console.error(`[Bitcoin] Failed to disconnect ${connectorName}: ${msg}`)
         }
     }
 
@@ -111,8 +112,8 @@ export class BitcoinConnectionService {
                 getConnectors(config).map((connector) => disconnect(config, { connector })),
             )
         } catch (e) {
-            // TODO: handle error
-            console.log(e)
+            const msg = e instanceof Error ? e.message : String(e)
+            console.error(`[Bitcoin] Failed to disconnect wallets: ${msg}`)
         }
     }
 

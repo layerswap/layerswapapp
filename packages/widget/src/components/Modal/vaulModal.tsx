@@ -35,12 +35,17 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
     const [snap, setSnap] = useState<number | string | null>(null);
     const [snapElement, setSnapElement] = useState<SnapElement | null>(null);
 
-    const { snapPoints } = useSnapPoints()
+    const { snapPoints, snapElemenetsHeight } = useSnapPoints()
     const snapPointsHeight = useMemo(() => snapPoints.map((item) => item.height), [snapPoints]);
 
     const isFitHeightMode = mode === 'fitHeight';
     const isSnapPointsMode = mode === 'snapPoints';
     const isLastSnap = isSnapPointsMode ? snapElement?.id === snapPoints[snapPoints.length - 1]?.id : true;
+
+    const snapPointsSettled = snapElemenetsHeight.length > 0 && snap !== null && snapPointsHeight.includes(snap);
+    const everSettledRef = useRef(false);
+    if (snapPointsSettled) everSettledRef.current = true;
+    const parked = isSnapPointsMode && !everSettledRef.current;
 
     const snapPointsProps = useMemo(() => {
         if (!isSnapPointsMode) return {};
@@ -59,9 +64,9 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
     }
 
     useEffect(() => {
-        if (isFitHeightMode || !show || snapPoints.length === 0) return;
+        if (isFitHeightMode || !show || snapPoints.length === 0 || snapElemenetsHeight.length === 0) return;
         setSnapElement(snapPoints.find((item) => item.id === snapElement?.id) || snapPoints[0]);
-    }, [snapPoints, show, mode, snapElement?.id])
+    }, [snapPoints, show, mode, snapElement?.id, snapElemenetsHeight.length])
 
     useEffect(() => {
         if (isFitHeightMode || !snapElement || snapElement.height === snap) return;
@@ -107,7 +112,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
     }, [mode, show, isMobile])
 
     const handleOpenChange = (open: boolean) => {
-        if (isSnapPointsMode) setSnap(open && snapPoints.length > 0 ? snapPoints[0].height : null);
+        if (isSnapPointsMode) setSnap(open && snapPoints.length > 0 && snapElemenetsHeight.length > 0 ? snapPoints[0].height : null);
         setShow(open);
         if (!open) return onClose && onClose()
     }
@@ -197,6 +202,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                 <Drawer.Content
                     data-testid="content"
                     data-fit-height={isFitHeightMode ? 'true' : undefined}
+                    style={parked ? { transform: 'translate3d(0, 100%, 0)', animation: 'none', transition: 'none' } : undefined}
                     className={clsx('absolute bg-secondary-700 rounded-t-3xl bottom-0 left-0 right-0 z-50 text-primary-text ring-0! outline-hidden!', className, {
                         'flex flex-col pb-4 h-full': isSnapPointsMode,
                         'flex flex-col': isFitHeightMode,
@@ -359,8 +365,8 @@ const vaulStyles = `
 [data-vaul-drawer] {
     touch-action: none;
     will-change: transform;
-    transition: transform 0.1s cubic-bezier(0.32, 0.72, 0, 1);
-    animation-duration: 0.1s;
+    transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+    animation-duration: 0.5s;
     animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
 }
 [data-vaul-drawer][data-vaul-snap-points='false'][data-vaul-drawer-direction='bottom'][data-state='open'] {
@@ -373,7 +379,7 @@ const vaulStyles = `
     transform: translate3d(0, var(--snap-point-height, 0), 0);
 }
 [data-vaul-overlay][data-vaul-snap-points='false'] {
-    animation-duration: 0.1s;
+    animation-duration: 0.5s;
     animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
 }
 [data-vaul-overlay][data-vaul-snap-points='false'][data-state='open'] {
@@ -382,9 +388,12 @@ const vaulStyles = `
 [data-vaul-overlay][data-state='closed'] {
     animation-name: fadeOut;
 }
+[data-vaul-animate='false'] {
+    animation: none !important;
+}
 [data-vaul-overlay][data-vaul-snap-points='true'] {
     opacity: 0;
-    transition: opacity 0.1s cubic-bezier(0.32, 0.72, 0, 1);
+    transition: opacity 0.5s cubic-bezier(0.32, 0.72, 0, 1);
 }
 [data-vaul-overlay][data-vaul-snap-points='true'] {
     opacity: 1;
@@ -401,6 +410,12 @@ const vaulStyles = `
     left: 0;
     right: 0;
     height: 200%;
+}
+[data-vaul-overlay][data-vaul-snap-points='true']:not([data-vaul-snap-points-overlay='true']):not([data-state='closed']) {
+    opacity: 0;
+}
+[data-vaul-overlay][data-vaul-snap-points-overlay='true'] {
+    opacity: 1;
 }
 [data-vaul-handle] {
     display: block;
@@ -426,6 +441,17 @@ const vaulStyles = `
     width: max(100%, 2.75rem);
     height: max(100%, 2.75rem);
     touch-action: inherit;
+}
+@media (hover: hover) and (pointer: fine) {
+    [data-vaul-drawer] {
+        user-select: none;
+    }
+}
+@media (pointer: fine) {
+    [data-vaul-handle-hitarea] {
+        width: 100%;
+        height: 100%;
+    }
 }
 @keyframes fadeIn {
     from { opacity: 0; }

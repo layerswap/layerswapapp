@@ -25,7 +25,6 @@ import RefuelModal from "./FeeDetails/RefuelModal";
 import { SwapFormValues } from "./SwapFormValues";
 import { useCallbacks } from "@/context/callbackProvider";
 import { Slippage } from "./FeeDetails/Slippage";
-import ContractAddressValidationCache from "./SecondaryComponents/validationError/ContractAddressValidationCache";
 
 type Props = {
     partner?: Partner;
@@ -49,14 +48,14 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const selectedSourceAccount = useSelectedAccount("from", source?.name);
 
     const { providers, wallets } = useWallet();
-    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
+    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
     const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
-    const { minAllowedAmount, maxAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isQuoteLoading, quote, quoteTokenPrices } = useQuoteData(quoteArgs, quoteRefreshInterval);
+    const { minAllowedAmount, maxAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isQuoteLoading, quote, quoteTokenPrices } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval });
 
     const toAsset = values.toAsset;
     const fromAsset = values.fromAsset;
-    const { formValidation, routeValidation, autoSlippageWouldWork, isTestingAutoSlippage } = useValidationContext();
+    const { formValidation, autoSlippageWouldWork, isTestingAutoSlippage } = useValidationContext();
     const initialSettings = useInitialSettings();
 
     const isValid = !formValidation.message;
@@ -125,16 +124,10 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                     </div>
                                 ) : null
                             }
-                            {
-                                routeValidation.message
-                                    ? <div className="mt-2">
-                                        <ValidationError />
-                                    </div>
-                                    : null
-                            }
+                            <ValidationError />
                             {
                                 !autoSlippageWouldWork ? (
-                                    <QuoteDetails swapValues={values} quote={quote?.quote} reward={quote?.reward} isQuoteLoading={isQuoteLoading} />
+                                    <QuoteDetails swapValues={values} quote={quote?.quote} reward={quote?.reward} isQuoteLoading={isQuoteLoading} triggerClassnames="mt-2" />
                                 ) : null
                             }
                         </div>
@@ -155,11 +148,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                     openModal={openRefuelModal}
                     setOpenModal={setOpenRefuelModal}
                     fee={quote}
-                />
-                <ContractAddressValidationCache
-                    source_network={source}
-                    destination_network={destination}
-                    destination_address={values.destination_address}
                 />
             </Form>
         </>
