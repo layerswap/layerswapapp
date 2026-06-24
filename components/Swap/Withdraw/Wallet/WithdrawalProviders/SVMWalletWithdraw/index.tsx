@@ -22,7 +22,7 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
     const { wallets } = useWallet(source_network, 'withdrawal')
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
 
-    const { wallet: solanaWallet, signTransaction } = useSolanaWallet();
+    const { wallet: solanaWallet } = useSolanaWallet();
     const walletPublicKey = solanaWallet?.adapter.publicKey
     const solanaNode = source_network?.node_url
     const networkName = source_network?.name
@@ -35,8 +35,10 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
         setLoading(true)
         setError(undefined)
         try {
+            const adapter = solanaWallet?.adapter
+            const signTx = adapter && 'signTransaction' in adapter ? adapter.signTransaction.bind(adapter) : undefined
 
-            if (!signTransaction) throw new Error('Missing signTransaction')
+            if (!signTx) throw new Error('Missing signTransaction')
             if (!callData) throw new Error('Missing callData')
             if (!swapId) throw new Error('Missing swapId')
 
@@ -65,10 +67,14 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
                 insufficientTokensArr.push(source_token?.symbol);
             }
             setInsufficientTokens(insufficientTokensArr)
+            if (balances && insufficientTokensArr.length > 0) {
+                setError('insufficientFunds')
+                return
+            }
             const signature = await configureAndSendCurrentTransaction(
                 transaction,
                 connection,
-                signTransaction
+                signTx
             );
 
             return signature;
@@ -76,7 +82,9 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
         }
         catch (e) {
             if (e.name == "WalletNotConnectedError") {
-                await solanaWallet?.adapter.disconnect()
+                if (solanaWallet?.adapter?.connected !== true) {
+                    await solanaWallet?.adapter.disconnect()
+                }
                 setError('Wallet not connected')
                 return
             }
@@ -90,7 +98,7 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
         finally {
             setLoading(false)
         }
-    }, [walletPublicKey, signTransaction, source_network, source_token, solanaWallet])
+    }, [walletPublicKey, source_network, source_token, solanaWallet, balances])
 
     if (!wallet || !walletPublicKey) {
         return <ConnectWalletButton />
