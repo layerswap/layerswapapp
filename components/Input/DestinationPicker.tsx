@@ -20,12 +20,12 @@ const DestinationPicker = (props: Props) => {
     const { partner } = props
     const { values } = useFormikContext<SwapFormValues>()
     const { toAsset: toCurrency } = values
-    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
+    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
     const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
-    const { quote, isQuoteLoading } = useQuoteData(quoteArgs, quoteRefreshInterval)
+    const { quote, isQuoteLoading } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval });
 
-    return <div className="flex flex-col w-full bg-secondary-500 rounded-2xl p-4 pb-[15px] space-y-[27px]">
+    return <div className="flex flex-col w-full bg-secondary-500 rounded-2xl p-4 pb-3.75 space-y-6.75">
         <div className="grid grid-cols-9 gap-2 items-center h-7">
             <label htmlFor="To" className="block col-span-4 font-normal text-secondary-text text-base leading-5 w-30">
                 Receive at

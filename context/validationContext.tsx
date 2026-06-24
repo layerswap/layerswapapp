@@ -10,6 +10,7 @@ import { useSelectedAccount } from './swapAccounts';
 import { useSlippageStore } from '@/stores/slippageStore';
 import { useAutoSlippageTest } from '@/hooks/useAutoSlippageTest';
 import { useUsdModeStore } from '@/stores/usdModeStore';
+import { isDepositAddressFlow } from '@/helpers/swapFlow';
 import useExchangeNetworks from '@/hooks/useExchangeNetworks';
 
 export interface ValidationDetails {
@@ -48,7 +49,8 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
     const selectedSourceAccount = useSelectedAccount("from", values.from?.name);
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
-    const { minAllowedAmount, maxAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, quoteError, quote, isQuoteLoading, isDebouncing } = useQuoteData(quoteArgs, quoteRefreshInterval)
+    // Deposit address flow doesn't use limits — resolveFormValidation skips amount checks there
+    const { minAllowedAmount, maxAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, quoteError, quote, isQuoteLoading, isDebouncing } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval, skipLimits: isDepositAddressFlow(values.depositMethod, values.fromExchange) });
 
     const { autoSlippage } = useSlippageStore();
     const quoteErrorCode = quoteError?.response?.data?.error?.code || quoteError?.code;

@@ -15,6 +15,7 @@ import InfoIcon from '@/components/icons/InfoIcon';
 import { Partner } from '@/Models/Partner';
 import useOutOfGas from '@/lib/gases/useOutOfGas';
 import { transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
+import { isDepositAddressSwap } from '@/helpers/swapFlow';
 import { truncateDecimals } from '@/components/utils/RoundDecimals';
 import { AnimatePresence, motion } from 'framer-motion';
 import useSWRGas from '@/lib/gases/useSWRGas';
@@ -67,7 +68,8 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
         && Number(walletBalanceAmount) < Number(swapBasicData?.requested_amount)
 
     const quoteArgs = transformSwapDataToQuoteArgs(swapBasicData, !!refuel);
-    const { minAllowedAmount, maxAllowedAmount } = useQuoteData(quoteArgs);
+    // Limits feed useOutOfGas, which only matters for wallet withdrawals — skip them in deposit address flow
+    const { minAllowedAmount, maxAllowedAmount } = useQuoteData(quoteArgs, { skipLimits: isDepositAddressSwap(swapBasicData) });
     const { outOfGas } = useOutOfGas({
         address: selectedSourceAccount?.address,
         network: source_network,
