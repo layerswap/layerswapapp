@@ -1,6 +1,7 @@
-import { SwapDataProvider } from "@/context/swap";
-import React, { useMemo, useState } from "react";
-import { NetworkExchangeTabs, Tabs, TabsContent } from "./Tabs";
+import { removeSwapPath, SwapDataProvider } from "@/context/swap";
+import React, { useEffect, useMemo, useRef } from "react";
+import { useRouter } from "next/router";
+import { NetworkExchangeTabs, Tabs, TabsContent, useTabs } from "./Tabs";
 import NetworkForm from "./NetworkForm";
 import ExchangeForm from "./ExchangeForm";
 import DepositAddressForm from "./DepositAddressForm";
@@ -29,6 +30,7 @@ export default function Form() {
     const partner = appName && partnerData?.data?.client_id?.toLowerCase() === (appName as string)?.toLowerCase() ? partnerData?.data : undefined
 
     return <Tabs defaultValue={defaultTab}>
+        <SwapPathTabSync />
         {!theme?.header?.hideTabs ? <div className="hidden sm:block">
             <NetworkExchangeTabs />
         </div> : null}
@@ -80,6 +82,23 @@ export default function Form() {
         </TabsContent>
 
     </Tabs>
+}
+
+// The deposit-address flow writes /swap/{id} into the URL (shallow pushState)
+// when it auto-creates a swap. Each tab has its own SwapDataProvider, so on tab
+// switch that provider's swapId is gone but the URL path lingers. Clear it on
+// every tab change. Scoped to tab changes (not unmount) so it never races with
+// real page navigation.
+const SwapPathTabSync = () => {
+    const { activeId } = useTabs()
+    const router = useRouter()
+    const prevActiveId = useRef(activeId)
+    useEffect(() => {
+        if (prevActiveId.current === activeId) return
+        prevActiveId.current = activeId
+        removeSwapPath(router)
+    }, [activeId, router])
+    return null
 }
 
 const defaultTabResolver = ({ from, sourceExchanges, defaultTabQueryParam }: { from: string | undefined, sourceExchanges: ReturnType<typeof useSettingsState>['sourceExchanges'], defaultTabQueryParam: string | undefined }) => {
