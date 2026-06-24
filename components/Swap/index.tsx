@@ -28,7 +28,7 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, partner, onCa
     const removeStoredTransaction = useCallback(() => {
         useSwapTransactionStore.getState().removeSwapTransaction(swapDetails?.id || '');
     }, [swapDetails?.id])
-console.log('basicdata', swapBasicData)
+
     const resolveWithdrawScreen = () => {
         if (swapBasicData?.use_deposit_address === true) {
             return <ManualWithdraw swapBasicData={swapBasicData} depositActions={depositActionsResponse} refuel={refuel} partner={partner} type={type} quote={quote} isQuoteLoading={quoteIsLoading} />
