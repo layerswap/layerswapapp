@@ -1,7 +1,10 @@
 import { useMemo, useRef } from "react";
-import { InternalConnector, WalletProvider } from "../Models/WalletProvider";
-import { removeDuplicatesWithKey } from "../components/WalletModal/utils";
+import { InternalConnector, WalletModalConnector, WalletProvider } from "@/Models/WalletProvider";
+import { removeDuplicatesWithKey } from "@/components/WalletModal/utils";
 import { walletKey } from "@/lib/wallets/utils/walletKey";
+import { getRegistryEntry, type WalletConnectWalletBase } from "@/lib/wallets/walletConnect/types";
+import { createRegistryConnector } from "@/lib/wallets/walletConnect/createRegistryConnector";
+import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
 
 type UseConnectorsParams = {
     searchValue?: string;
@@ -31,6 +34,30 @@ const resolveNames = (groups: InternalConnector[][]): InternalConnector[][] => {
         }
     }
     return groups.map(group => group.map(c => c?.name ? { ...c, name: canonical.get(walletKey(c.name)) ?? c.name } : c))
+}
+
+const resolveChainConnectors = (pool: InternalConnector[], providers: WalletProvider[]) => {
+    const toProvider: Record<string, string> = { eip155: 'EVM', solana: 'Solana' }
+    const mobile = isMobile()
+    const records = new Map<string, { variants: InternalConnector[], entry?: WalletConnectWalletBase }>()
+    const recordFor = (name: string) => records.get(name.toLowerCase()) ?? records.set(name.toLowerCase(), { variants: [] }).get(name.toLowerCase())!
+
+    for (const c of pool) {
+        if (!c.name) continue
+        const record = recordFor(c.name)
+        if (c.providerName && !record.variants.some(x => x.providerName === c.providerName)) record.variants.push(c)
+        if (!record.entry) {
+            const wk = walletKey(c.name)
+            record.entry = getRegistryEntry(c) ?? providers.find(p => p.name === c.providerName)?.registryWallets?.find(r => walletKey(r.name) === wk || walletKey(r.id) === wk)
+        }
+    }
+    for (const record of records.values()) {
+        for (const chain of record.entry?.chains ?? []) {
+            const p = toProvider[chain.split(':')[0]]
+            if (p && !record.variants.some(x => x.providerName === p)) record.variants.push(createRegistryConnector(record.entry!, mobile, p))
+        }
+    }
+    return records
 }
 
 export function useConnectors({
@@ -69,7 +96,7 @@ export function useConnectors({
     const initialSortedRef = useRef<InitialSnapshot | null>(null)
     const appendedRef = useRef<InternalConnector[]>([])
 
-    const initialConnectors: InternalConnector[] = useMemo(() => {
+    const initialConnectors: WalletModalConnector[] = useMemo(() => {
         const recentNames = new Set(recentConnectors?.map(r => r.connectorName?.toLowerCase()).filter(Boolean))
         const isRecent = (c: InternalConnector) => recentNames.has(c.name.toLowerCase())
         const isInstalled = (c: InternalConnector) => c.type === 'injected' && !c.isLoadable
@@ -108,17 +135,12 @@ export function useConnectors({
             for (const c of additionalConnectors) appendIfNew(c)
         }
 
-        const providersByName = new Map<string, Set<string>>()
-        for (const c of [...featuredConnectors, ...additionalConnectors, ...(resolvedSearchResults ?? [])]) {
-            if (!c.name || !c.providerName) continue
-            const key = c.name.toLowerCase()
-            if (!providersByName.has(key)) providersByName.set(key, new Set())
-            providersByName.get(key)!.add(c.providerName)
-        }
-        const withMultiChain = (list: InternalConnector[]) => list.map(c => ({
-            ...c,
-            isMultiChain: (providersByName.get(c.name.toLowerCase())?.size ?? 0) > 1,
-        }))
+        const pool = [...featuredConnectors, ...additionalConnectors, ...(resolvedSearchResults ?? [])]
+        const connectorsByWallet = resolveChainConnectors(pool, featuredProviders)
+        const withMultiChain = (list: InternalConnector[]): WalletModalConnector[] => list.map(c => {
+            const variants = connectorsByWallet.get(c.name.toLowerCase())?.variants ?? []
+            return { ...c, variants, isMultiChain: variants.length > 1 }
+        })
 
         const base = [...initialSortedRef.current.list, ...appendedRef.current]
 
