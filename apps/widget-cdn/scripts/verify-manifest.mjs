@@ -47,8 +47,26 @@ const pubB64 = m[1];
 const pubDer = Buffer.from(pubB64, 'base64');
 const publicKey = createPublicKey({ key: pubDer, format: 'der', type: 'spki' });
 
+// Deterministic JSON: sorts object keys recursively at every level. Must
+// match `canonicalize` in packages/widget-react/src/manifest.ts and the
+// signer in build-manifest.mjs byte-for-byte. The array form of
+// JSON.stringify is an allowlist applied to every nested object and would
+// drop the entire `chunks` map from the signed bytes.
+function canonicalJSON(value) {
+    if (Array.isArray(value)) {
+        return `[${value.map(canonicalJSON).join(',')}]`;
+    }
+    if (value && typeof value === 'object') {
+        const entries = Object.keys(value)
+            .sort()
+            .map((k) => `${JSON.stringify(k)}:${canonicalJSON(value[k])}`);
+        return `{${entries.join(',')}}`;
+    }
+    return JSON.stringify(value) ?? 'null';
+}
+
 const body = { ...manifest, signature: null };
-const canonical = JSON.stringify(body, Object.keys(body).sort());
+const canonical = canonicalJSON(body);
 
 const verifier = createVerify('SHA256');
 verifier.update(canonical);

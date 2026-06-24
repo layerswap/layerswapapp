@@ -22,6 +22,13 @@
 
 type ChunkHashes = Record<string, string>;
 
+// A well-formed SHA-384 SRI value (48 zero bytes → 64 base64 chars) that no
+// real chunk can hash to. Used to hard-fail a known-origin script that isn't
+// in the manifest. It must be syntactically valid so the browser keeps it in
+// the integrity metadata set and enforces it (an unparseable value would be
+// dropped, defeating the block).
+const UNMATCHABLE_SRI = `sha384-${'A'.repeat(64)}`;
+
 let installed = false;
 const originHashes = new Map<string, ChunkHashes>();
 
@@ -52,6 +59,12 @@ function lookupHash(scriptUrl: string): string | undefined {
     }
     const hashes = originHashes.get(url.origin);
     if (!hashes) return undefined;
+    // Basename-only lookup. Safe inside one Module Federation build because
+    // Rspack outputs all chunks under a single flat channel directory with
+    // unique filenames. If we ever start serving two builds with overlapping
+    // chunk basenames under the same origin (e.g. `/v1/foo.js` and
+    // `/v1.3.0/foo.js`), they'd collide here — keep the build flat or key
+    // the map by full pathname.
     const filename = url.pathname.split('/').filter(Boolean).pop() ?? '';
     return hashes[filename];
 }
@@ -60,9 +73,11 @@ function installScriptSrcInterceptor(): void {
     if (installed) return;
     if (typeof window === 'undefined' || typeof HTMLScriptElement === 'undefined') return;
 
-    const proto = HTMLScriptElement.prototype as unknown as Record<string, unknown>;
-    const srcDesc = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'src')
-        || Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'src');
+    // `src` is defined on `HTMLScriptElement.prototype`, not the more general
+    // `HTMLElement.prototype` — no fallback needed. If a future environment
+    // ever moves it, returning early is the right fail-safe (we'd rather not
+    // run with SRI disabled than silently bypass it).
+    const srcDesc = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'src');
     if (!srcDesc || !srcDesc.set || !srcDesc.get) return;
 
     const origSet = srcDesc.set;
@@ -105,10 +120,15 @@ function applyIntegrityIfKnown(el: HTMLScriptElement, src: string): void {
         // unknown origins pass through untouched.
         const url = safeUrl(src);
         if (url && originHashes.has(url.origin)) {
-            // Known origin, unknown chunk → block.
+            // Known origin, unknown chunk → block. Use a syntactically valid
+            // SHA-384 digest (correct length, valid base64) that no real
+            // content can match. A malformed digest like "sha384-INVALID…"
+            // risks being discarded as unparseable by the SRI implementation,
+            // which would leave an empty metadata set and let the script run.
             // eslint-disable-next-line no-console
             console.error('[layerswap/widget-react] refusing to load unmanifest chunk:', src);
-            el.setAttribute('integrity', 'sha384-INVALID-UNMANIFEST-CHUNK');
+            el.setAttribute('integrity', UNMATCHABLE_SRI);
+            el.setAttribute('crossorigin', 'anonymous');
         }
         return;
     }

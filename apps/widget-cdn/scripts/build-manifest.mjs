@@ -53,6 +53,25 @@ function collectChunks(dir) {
     return out;
 }
 
+// Deterministic JSON: sorts object keys recursively at every level. Must
+// match `canonicalize` in packages/widget-react/src/manifest.ts byte-for-byte.
+// Do NOT use `JSON.stringify(body, Object.keys(body).sort())`: the array form
+// is a property allowlist applied to EVERY nested object, which would drop
+// every entry of the `chunks` map (its keys are filenames, not field names),
+// leaving the chunk hashes out of the signed bytes.
+function canonicalJSON(value) {
+    if (Array.isArray(value)) {
+        return `[${value.map(canonicalJSON).join(',')}]`;
+    }
+    if (value && typeof value === 'object') {
+        const entries = Object.keys(value)
+            .sort()
+            .map((k) => `${JSON.stringify(k)}:${canonicalJSON(value[k])}`);
+        return `{${entries.join(',')}}`;
+    }
+    return JSON.stringify(value) ?? 'null';
+}
+
 const chunks = collectChunks(DIST);
 
 const manifest = {
@@ -75,7 +94,7 @@ if (keyMaterial) {
     }
 
     const body = { ...manifest, signature: null };
-    const canonical = JSON.stringify(body, Object.keys(body).sort());
+    const canonical = canonicalJSON(body);
     // ECDSA P-256 over SHA-256, raw IEEE-P1363 signature (matches WebCrypto verify).
     const signer = createSign('SHA256');
     signer.update(canonical);

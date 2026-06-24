@@ -62,14 +62,37 @@ const toBytes = (s: string): ArrayBuffer => {
 };
 
 /**
- * Canonical serialization for signing: JSON with sorted keys and the
- * `signature` field set to `null`. The signer and the verifier must agree
- * on this exact byte sequence.
+ * Deterministic JSON: sorts object keys recursively at every level.
+ *
+ * We must NOT use `JSON.stringify(body, Object.keys(body).sort())` — when the
+ * second argument is an array it acts as a property allowlist applied to
+ * EVERY nested object, which silently drops every entry of the `chunks` map
+ * (its keys are chunk filenames, not top-level field names). That would leave
+ * the chunk hashes out of the signed bytes entirely, so a CDN-side chunk swap
+ * with a matching rewritten hash would still verify. Sort recursively instead.
+ */
+function canonicalJSON(value: unknown): string {
+    if (Array.isArray(value)) {
+        return `[${value.map(canonicalJSON).join(',')}]`;
+    }
+    if (value && typeof value === 'object') {
+        const obj = value as Record<string, unknown>;
+        const entries = Object.keys(obj)
+            .sort()
+            .map((k) => `${JSON.stringify(k)}:${canonicalJSON(obj[k])}`);
+        return `{${entries.join(',')}}`;
+    }
+    return JSON.stringify(value) ?? 'null';
+}
+
+/**
+ * Canonical serialization for signing: deterministic JSON (keys sorted at
+ * every level) with the `signature` field set to `null`. The signer and the
+ * verifier must agree on this exact byte sequence.
  */
 export function canonicalize(manifest: Manifest): ArrayBuffer {
     const body: Manifest = { ...manifest, signature: null };
-    const sorted = JSON.stringify(body, Object.keys(body).sort());
-    return toBytes(sorted);
+    return toBytes(canonicalJSON(body));
 }
 
 /**
