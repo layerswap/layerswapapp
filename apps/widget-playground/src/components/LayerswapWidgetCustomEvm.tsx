@@ -1,5 +1,5 @@
 "use client";
-import { FC } from 'react';
+import { FC, useMemo } from 'react';
 import { LayerswapProvider, Swap, WidgetLoading } from '@layerswap/widget';
 import { useWidgetContext } from '@/context/ConfigContext';
 import { useSettingsState } from '@/context/settings';
@@ -30,9 +30,13 @@ const LayerswapWidgetCustomEvm: FC = () => {
     const { widgetRenderKey, showLoading, config } = useWidgetContext();
     const settings = useSettingsState();
 
-    const evmProvider = createEVMProvider({
+    // Memoize so the provider isn't recreated on every render — a fresh
+    // provider object retriggers WalletProvidersProvider's teardown/re-init
+    // effect and disconnects the active wallet mid-flow.
+    const evmProvider = useMemo(() => createEVMProvider({
         customConnection: customEvmAdapter.createConnection,
-    })
+    }), [])
+    const walletProviders = useMemo(() => [evmProvider], [evmProvider])
 
     return (
         <DynamicContextProvider
@@ -55,7 +59,7 @@ const LayerswapWidgetCustomEvm: FC = () => {
                                     version: process.env.NEXT_PUBLIC_API_VERSION as 'mainnet' | 'testnet',
                                     settings
                                 }}
-                                walletProviders={[evmProvider]}
+                                walletProviders={walletProviders}
                             >
 
                                 {

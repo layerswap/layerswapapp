@@ -5,7 +5,6 @@ import type {
     WalletConnectionProviderProps,
     WalletConnectionStore,
 } from '@layerswap/widget/types'
-import { useWalletStore } from '@layerswap/widget/internal'
 import { createStore } from 'zustand/vanilla'
 import { createFuelTransfer } from '../transferProvider/createFuelTransfer'
 import { fuelConnectionService } from './FuelConnectionService'
@@ -43,12 +42,11 @@ export function createFuelConnection(
 
     const computeSnapshot = (): WalletConnectionProvider => {
         const fuelState = useFuelStore.getState()
-        const walletState = useWalletStore.getState()
         const inputs: SnapshotInputs = {
             connectors: fuelState.connectors,
             fuel: fuelState.fuel,
             ready: fuelState.ready,
-            connectedWallets: walletState.connectedWallets,
+            connectedWallets: fuelState.connectedWallets,
             networks,
         }
         if (lastInputs
@@ -82,7 +80,6 @@ export function createFuelConnection(
 
     const unsubs: (() => void)[] = [
         useFuelStore.subscribe(sync),
-        useWalletStore.subscribe(sync),
     ]
 
     return {

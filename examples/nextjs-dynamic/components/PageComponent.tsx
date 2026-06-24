@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useMemo, useState } from "react";
 import { Swap, DepositComponent, LayerswapProvider, LayerSwapSettings, ThemeData } from '@layerswap/widget'
 import { StarknetWalletConnectors } from "@dynamic-labs/starknet";
 import { DynamicContextProvider, DynamicWidget } from "@dynamic-labs/sdk-react-core";
@@ -8,7 +8,6 @@ import { createSVMProvider } from "@layerswap/wallet-svm"
 import { createBitcoinProvider } from "@layerswap/wallet-bitcoin"
 import useCustomStarknet, { customStarknetAdapter } from "../hooks/useCustomStarknet";
 import { useSettingsState } from "@layerswap/widget/internal";
-import { WalletProvider } from "@layerswap/widget/types";
 import "@layerswap/widget/index.css"
 
 const CustomStarknetHydrator: FC = () => {
@@ -20,12 +19,12 @@ type WidgetType = "swap" | "deposit";
 const PageComponent: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
     const [widgetType, setWidgetType] = useState<WidgetType>("swap");
 
-    const starknetProvider: WalletProvider = createStarknetProvider({
-        customConnection: customStarknetAdapter.createConnection,
-    })
-
-    const walletProviders = [
-        starknetProvider,
+    // Memoize so the providers aren't recreated on every render (which would
+    // tear down and re-init the wallet connections, disconnecting active wallets).
+    const walletProviders = useMemo(() => [
+        createStarknetProvider({
+            customConnection: customStarknetAdapter.createConnection,
+        }),
         createEVMProvider({
             walletConnectConfigs: walletConnect
         }),
@@ -33,7 +32,7 @@ const PageComponent: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
             walletConnectConfigs: walletConnect
         }),
         createBitcoinProvider(),
-    ]
+    ], [])
 
     return (
         <DynamicContextProvider

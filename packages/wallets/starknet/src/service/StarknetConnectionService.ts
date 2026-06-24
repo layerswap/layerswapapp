@@ -45,12 +45,33 @@ type ResolveStarknetWalletProps = {
     asSourceSupportedNetworks?: string[]
 }
 
+/**
+ * Validate the RPC endpoint before handing it to `RpcProvider`. The signing
+ * `WalletAccount` is built on top of this provider, so a non-RPC scheme injected
+ * via a compromised settings response (e.g. `javascript:`/`data:`) must never
+ * reach it. We require a well-formed secure-transport URL rather than pinning a
+ * host allowlist, so legitimate network/infra changes don't break resolution.
+ */
+function assertSecureRpcUrl(url: string | undefined): asserts url is string {
+    if (!url) throw new Error('Missing Starknet RPC node_url')
+    let parsed: URL
+    try {
+        parsed = new URL(url)
+    } catch {
+        throw new Error(`Invalid Starknet RPC URL: ${url}`)
+    }
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'wss:') {
+        throw new Error(`Untrusted Starknet RPC protocol: ${parsed.protocol}`)
+    }
+}
+
 export async function resolveStarknetWallet(props: ResolveStarknetWalletProps): Promise<Wallet | null> {
     const { name, connector, network, disconnectWallets, address, withdrawalSupportedNetworks, autofillSupportedNetworks, asSourceSupportedNetworks } = props
     try {
         const walletChain = network?.chain_id
+        assertSecureRpcUrl(network?.node_url)
         const { RpcProvider, WalletAccount } = await import('starknet')
-        const rpcProvider = new RpcProvider({ nodeUrl: network?.node_url })
+        const rpcProvider = new RpcProvider({ nodeUrl: network!.node_url })
 
         const walletAccount = new WalletAccount({ provider: rpcProvider, walletProvider: (connector as any).wallet, address })
 
@@ -160,6 +181,10 @@ export class StarknetConnectionService {
 
         const attemptHydration = async (): Promise<void> => {
             this._restoreTimer = undefined
+            // Unconditional re-entrancy guard at the top: if a hydration is already
+            // in flight (e.g. a fresh setNetworks() scheduled another run), bail so
+            // we never run two hydrateStoredWallets() concurrently and duplicate entries.
+            if (this._restoringStoredWallets) return
             if (!this.hasPendingStoredWallets()) {
                 this._restoreAttempts = 0
                 return
@@ -238,8 +263,9 @@ export class StarknetConnectionService {
             await starknetConnectorManager.disconnectAll()
             if (address) useStarknetStore.getState().removeAccount(address)
         } catch (e) {
-            // TODO: handle error
-            console.log(e)
+            // Disconnect is best-effort — log but do not rethrow.
+            const msg = e instanceof Error ? e.message : String(e)
+            console.error(`[Starknet] Failed to disconnect wallet: ${msg}`)
         }
     }
 

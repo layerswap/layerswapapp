@@ -164,8 +164,9 @@ export class EvmConnectionService {
             const connector = connections.find(c => c.connector.name.toLowerCase() === connectorName.toLowerCase())?.connector
             await disconnect(config, { connector })
         } catch (e) {
-            // TODO: handle error
-            console.log(e)
+            // Disconnect is best-effort — log but do not rethrow.
+            const msg = e instanceof Error ? e.message : String(e)
+            console.error(`[EVM] Failed to disconnect ${connectorName}: ${msg}`)
         }
     }
 
@@ -175,8 +176,8 @@ export class EvmConnectionService {
             const connections = getConnections(config)
             await Promise.all(connections.map(c => this.disconnectWallet(c.connector.name)))
         } catch (e) {
-            // TODO: handle error
-            console.log(e)
+            const msg = e instanceof Error ? e.message : String(e)
+            console.error(`[EVM] Failed to disconnect wallets: ${msg}`)
         }
     }
 
@@ -333,6 +334,20 @@ export class EvmConnectionService {
                     accounts: accounts as readonly [`0x${string}`, ...`0x${string}`[]],
                     chainId: Number(chainId),
                     connector: connector as unknown as Connector,
+                }
+            }
+
+            // Guard against a malicious/compromised connector reporting an active
+            // address that is not actually one of its accounts — otherwise all
+            // subsequent transactions would be attributed to a spoofed address.
+            if (activeAccount.address && connection.accounts.length > 0) {
+                const isValidAccount = connection.accounts.some(
+                    a => a.toLowerCase() === activeAccount.address!.toLowerCase(),
+                )
+                if (!isValidAccount) {
+                    throw new Error(
+                        `Account validation failed: ${activeAccount.address} not in connector accounts. Reconnect your wallet.`,
+                    )
                 }
             }
 
