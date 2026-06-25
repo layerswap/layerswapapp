@@ -42,9 +42,11 @@ export interface ExtendedRouteProvider {
      * Resolve the mapping for a specific (extended source, token, destination).
      * Lets providers with multiple destination candidates (e.g. HL primary +
      * fallback) pick the right one based on the user's selected destination.
+     * `availableRoutes`, when supplied, lets the provider skip candidates whose
+     * real route the backend can't currently fulfill (availability fallback).
      * Optional — if absent, the registry uses the static `mappings` entry.
      */
-    resolveActiveMapping?(networkName: string, tokenSymbol: string, toNetworkName?: string, toTokenSymbol?: string): ExtendedTokenMapping | undefined
+    resolveActiveMapping?(networkName: string, tokenSymbol: string, toNetworkName?: string, toTokenSymbol?: string, availableRoutes?: NetworkRoute[]): ExtendedTokenMapping | undefined
     /**
      * Real (network, token) candidates for an extended (source, token) pair.
      * The picker uses this to show the extended source iff AT LEAST ONE

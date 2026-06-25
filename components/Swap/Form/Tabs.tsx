@@ -12,6 +12,12 @@ interface TabsContextType {
 }
 const TabsContext = createContext<TabsContextType | undefined>(undefined)
 
+export const useTabs = () => {
+    const ctx = useContext(TabsContext)
+    if (!ctx) throw new Error('useTabs must be used within <Tabs>')
+    return ctx
+}
+
 interface TabsProps {
     defaultValue: string
     children: ReactNode
@@ -36,7 +42,7 @@ export const TabsList: FC<TabsListProps> = ({ children }) => {
                 onHoverStart={() => setHovered(true)}
                 onHoverEnd={() => setHovered(false)}
                 animate={{ width: hoveredOnDesktop ? 180 : 48 }}
-                className="sm:absolute right-full top-24 overflow-hidden rounded-l-xl max-sm:right-19 max-sm:z-20 max-sm:top-[9px] max-sm:w-fit! max-sm:rounded-lg"
+                className="sm:absolute right-full top-24 overflow-hidden rounded-l-xl max-sm:right-19 max-sm:z-20 max-sm:top-2.25 max-sm:w-fit! max-sm:rounded-lg"
                 transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
             >
                 <div className="flex flex-col bg-secondary-500 h-full p-1.5 sm:p-2 w-full space-y-2 max-sm:flex-row max-sm:space-y-0 max-sm:space-x-2">

@@ -45,6 +45,11 @@ export function useUsdTokenSync({
     const setUsdAmount = useUsdModeStore(s => s.setUsdAmount);
     const toggleMode = useUsdModeStore(s => s.toggleMode);
 
+    // usdAmount lives in a global store that outlives the form. On unmount
+    // (e.g. switching tabs, which resets the rest of the form) clear the value
+    // so it doesn't linger. The persisted isUsdMode preference is left intact.
+    useEffect(() => () => setUsdAmount(''), [setUsdAmount]);
+
     // --- Price resolution with fallback chain ---
 
     // Cache the last quote-derived price so we don't fall back to the token's

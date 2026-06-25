@@ -14,7 +14,6 @@ import SecondaryButton from '../buttons/secondaryButton';
 import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '@/helpers/querryHelper';
 import { getExplorerUrl } from '@/lib/address';
-import { useExtendedSwapDisplay } from '@/hooks/useExtendedSwapDisplay';
 
 type Props = {
     swapResponse: SwapResponse
@@ -29,19 +28,15 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
 
     const { setSwapModalOpen, setSwapId } = useSwapDataUpdate()
 
-    const extendedDisplay = useExtendedSwapDisplay(swap?.id)
-    const repeatFromName = extendedDisplay?.network.name ?? source_network?.name
-    const repeatFromAsset = extendedDisplay?.token.symbol ?? source_token.symbol
-
     const handleRepeatSwap = async () => {
         router.push({
             pathname: `/`,
             query: {
                 ...resolvePersistantQueryParams(router.query),
                 destAddress: destination_address,
-                from: repeatFromName,
+                from: source_network?.name,
                 to: destination_network?.name,
-                fromAsset: repeatFromAsset,
+                fromAsset: source_token.symbol,
                 toAsset: destination_token.symbol,
             }
         }, undefined, { shallow: false })

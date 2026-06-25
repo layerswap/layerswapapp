@@ -64,7 +64,7 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
 
     const config = useConfig()
     const { address: activeAddress, chain: activeChain, isConnected } = useAccount()
-    const { networks } = useSettingsState()
+    const { networks, sourceRoutes } = useSettingsState()
     const query = useQueryState()
     const { onWalletWithdrawalSuccess } = useWalletWithdrawalState()
     const { swapDetails, depositActionsResponse } = useSwapDataState()
@@ -75,7 +75,7 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
     const sourceAddress = selectedSourceAccount?.address
 
-    const hlConfig = useMemo(() => resolveHyperliquidConfig(source_network?.name, networks, destination_network?.name, destination_token?.symbol), [source_network?.name, networks, destination_network?.name, destination_token?.symbol])
+    const hlConfig = useMemo(() => resolveHyperliquidConfig(source_network?.name, networks, destination_network?.name, destination_token?.symbol, sourceRoutes), [source_network?.name, networks, destination_network?.name, destination_token?.symbol, sourceRoutes])
 
     const [loading, setLoading] = useState(false)
     // Set while a `usdClassTransfer` consolidation is in flight, so the UI can
