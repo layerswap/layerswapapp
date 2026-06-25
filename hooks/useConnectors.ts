@@ -54,7 +54,7 @@ const resolveChainConnectors = (pool: InternalConnector[], providers: WalletProv
     for (const record of records.values()) {
         for (const chain of record.entry?.chains ?? []) {
             const p = toProvider[chain.split(':')[0]]
-            if (p && !record.variants.some(x => x.providerName === p)) record.variants.push(createRegistryConnector(record.entry!, mobile, p))
+            if (p && providers.some(prov => prov.name === p) && !record.variants.some(x => x.providerName === p)) record.variants.push(createRegistryConnector(record.entry!, mobile, p))
         }
     }
     return records
