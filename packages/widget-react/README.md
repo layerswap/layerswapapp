@@ -91,7 +91,8 @@ widget then shows the same physical wallet twice. Either:
 | `callbacks` | `CallbacksContextType` | `onSwapCreate`, `onSwapComplete`, `onError`, `onSwapModalStateChange`, etc. |
 | `wagmiConfig` | `wagmi/Config` | Host wagmi config the widget adopts for EVM. |
 | `walletDefaults` | `DefaultWalletConfig` | `walletConnect` (projectId, etc.), `ton`, `immutablePassport`. |
-| `walletProvidersConfig.exclude` | `string[]` | Drop chains from the default provider list — `['tron', 'fuel']`, etc. |
+| `walletProvidersConfig.include` | `string[]` | Allowlist — keep only these chains, e.g. `['evm', 'svm']`. Applied before `exclude`. |
+| `walletProvidersConfig.exclude` | `string[]` | Blocklist — drop chains from the provider list — `['tron', 'fuel']`, etc. |
 | `fallback` | `ReactNode` | Shown while loading. |
 | `onReady` | `() => void` | Fires once the widget mounts. |
 | `onError` | `(err) => void` | Fires on load/render failure; receives a `ManifestError` for manifest issues. |

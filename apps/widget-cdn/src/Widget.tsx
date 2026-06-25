@@ -29,7 +29,13 @@ export type WalletProviderId =
   | 'imtblPassport';
 
 export type WalletProvidersConfig = {
-  /** Drop these provider ids from the default set. */
+  /**
+   * Allowlist — keep only these provider ids. When omitted, all default
+   * providers are kept. Applied before `exclude`, so the two can be
+   * combined (include a broad set, then subtract a few).
+   */
+  include?: WalletProviderId[];
+  /** Blocklist — drop these provider ids from the set. */
   exclude?: WalletProviderId[];
 };
 
@@ -58,28 +64,40 @@ export type WidgetProps = {
 
 const Widget: FC<WidgetProps> = ({ config, walletDefaults, walletProvidersConfig, callbacks, wagmiConfig }) => {
   const walletProviders = useMemo(() => {
-    const defaults = getDefaultProviders(walletDefaults ?? {});
+    let providers = getDefaultProviders(walletDefaults ?? {});
 
-    if (wagmiConfig) {
-      // Replace the default eager EVM provider with one that adopts the
-      // host's wagmi config. All other defaults (descriptors for non-EVM
-      // chains) stay intact and remain lazy.
-      const evmIndex = defaults.findIndex((p) => (p as { id?: string }).id === 'evm');
-      const hostEvm = createEVMProvider({
-        walletConnectConfigs: walletDefaults?.walletConnect,
-        wagmiConfig,
-      });
-      if (evmIndex >= 0) defaults[evmIndex] = hostEvm;
-      else defaults.unshift(hostEvm);
+    // Allowlist — keep only the requested ids. Filtering here (before any
+    // `loadProvider()` call) means dropped chains never dynamic-import their
+    // SDK, so an `include` list gets the same lazy-loading win as `exclude`.
+    const included = walletProvidersConfig?.include;
+    if (included && included.length > 0) {
+      const keep = new Set<string>(included);
+      providers = providers.filter((p) => keep.has((p as { id?: string }).id ?? ''));
     }
 
+    // Blocklist — drop the requested ids. Applied after `include` so the two
+    // can be combined.
     const excluded = walletProvidersConfig?.exclude;
     if (excluded && excluded.length > 0) {
       const drop = new Set<string>(excluded);
-      return defaults.filter((p) => !drop.has((p as { id?: string }).id ?? ''));
+      providers = providers.filter((p) => !drop.has((p as { id?: string }).id ?? ''));
     }
 
-    return defaults;
+    if (wagmiConfig) {
+      // Replace the eager EVM provider with one that adopts the host's wagmi
+      // config so the widget tracks the host's account/chain. Only do this
+      // when EVM is actually in the resolved set — respect the include/exclude
+      // lists literally rather than force-injecting EVM.
+      const evmIndex = providers.findIndex((p) => (p as { id?: string }).id === 'evm');
+      if (evmIndex >= 0) {
+        providers[evmIndex] = createEVMProvider({
+          walletConnectConfigs: walletDefaults?.walletConnect,
+          wagmiConfig,
+        });
+      }
+    }
+
+    return providers;
   }, [wagmiConfig, walletDefaults, walletProvidersConfig]);
 
   return (

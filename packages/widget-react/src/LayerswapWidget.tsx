@@ -18,6 +18,18 @@ import { initRemote, loadWidget } from './runtime';
 import { fetchManifest, resolveRemoteEntry, verifyManifest, ManifestError } from './manifest';
 import { registerChunkHashes } from './sri';
 
+/** Wallet provider ids matching what the remote's `getDefaultProviders()` emits. */
+export type WalletProviderId =
+  | 'evm'
+  | 'starknet'
+  | 'fuel'
+  | 'paradex'
+  | 'bitcoin'
+  | 'ton'
+  | 'svm'
+  | 'tron'
+  | 'imtblPassport';
+
 /**
  * Mirrors the shape of the props the CDN remote's `./Widget` export
  * accepts. Types are imported (type-only — erased at runtime) from
@@ -49,20 +61,16 @@ export type RemoteWidgetProps = {
   };
   /**
    * Filter/customize the wallet provider set built inside the remote.
-   * `exclude: ['tron', 'fuel']` drops those chains from the connect modal.
+   * `include` is an allowlist (keep only these chains); `exclude` is a
+   * blocklist (drop these chains). When both are set, `include` is applied
+   * first, then `exclude` subtracts from it. Either way, chains left out
+   * never dynamic-import their SDK, so the bundle stays lean.
+   * `exclude: ['tron', 'fuel']` drops those chains from the connect modal;
+   * `include: ['evm', 'svm']` keeps only EVM and Solana.
    */
   walletProvidersConfig?: {
-    exclude?: Array<
-      | 'evm'
-      | 'starknet'
-      | 'fuel'
-      | 'paradex'
-      | 'bitcoin'
-      | 'ton'
-      | 'svm'
-      | 'tron'
-      | 'imtblPassport'
-    >;
+    include?: Array<WalletProviderId>;
+    exclude?: Array<WalletProviderId>;
   };
   /**
    * Widget-level event callbacks (onSwapCreate, onSwapComplete, onError,
