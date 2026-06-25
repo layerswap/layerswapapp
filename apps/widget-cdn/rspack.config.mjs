@@ -187,6 +187,9 @@ export default (env, argv) => {
         filename: 'remoteEntry.js',
         exposes: {
           './Widget': './src/Widget.tsx',
+          // Imperative mount entry for framework-agnostic hosts. Owns its own
+          // React root so non-React pages can embed it without a host framework.
+          './mount': './src/mount.tsx',
         },
         shared: SHARED_SINGLETONS,
         // Disable MF's dev-only live-reload bridge. With the remote consumed

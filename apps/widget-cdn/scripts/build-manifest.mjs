@@ -54,7 +54,9 @@ function collectChunks(dir) {
 }
 
 // Deterministic JSON: sorts object keys recursively at every level. Must
-// match `canonicalize` in packages/widget-react/src/manifest.ts byte-for-byte.
+// match the verifier's `canonicalize` byte-for-byte — its reference
+// implementation lives in the shared loader core
+// (packages/widget-js/src/manifest.ts), which every loader consumes.
 // Do NOT use `JSON.stringify(body, Object.keys(body).sort())`: the array form
 // is a property allowlist applied to EVERY nested object, which would drop
 // every entry of the `chunks` map (its keys are filenames, not field names),

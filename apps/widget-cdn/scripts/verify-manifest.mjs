@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 // Round-trip the signed manifest in CI before we ship. Reads
 // `dist/<channel>/manifest.json` and verifies the signature against the
-// public key constant currently exported from `@layerswap/widget-react`.
-// Exits non-zero if anything is wrong — catches:
+// public key constant defined in the shared loader core (packages/widget-js),
+// which every loader consumes. Exits non-zero if anything is wrong — catches:
 //   - Unsigned manifests when verification is supposed to be on
-//   - Drift between the build-time canonicalization and the loader's
+//   - Drift between the build-time canonicalization and the loaders'
 //   - Wrong-key situations (key in CI doesn't match the bundled public key)
 //
-// Same canonical encoding as packages/widget-react/src/manifest.ts.
+// Same canonical encoding as the shared loader core
+// (packages/widget-js/src/manifest.ts).
 
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -33,14 +34,14 @@ if (!manifest.signature) {
     process.exit(3);
 }
 
-// Pull the bundled public key from the widget-react source so we verify
-// against the same constant the loader will. If the key has been rotated
+// Pull the public key from the shared loader core (widget-js) so we verify
+// against the same constant every loader uses. If the key has been rotated
 // in source but the signer is still using the old one, this catches it.
-const MANIFEST_SRC = join(REPO_ROOT, 'packages', 'widget-react', 'src', 'manifest.ts');
+const MANIFEST_SRC = join(REPO_ROOT, 'packages', 'widget-js', 'src', 'manifest.ts');
 const src = readFileSync(MANIFEST_SRC, 'utf8');
 const m = src.match(/MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64\s*=\s*['"]([A-Za-z0-9+/=]+)['"]/);
 if (!m) {
-    console.error('[verify-manifest] could not extract MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64 from widget-react source.');
+    console.error('[verify-manifest] could not extract MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64 from widget-js source.');
     process.exit(4);
 }
 const pubB64 = m[1];
@@ -48,8 +49,9 @@ const pubDer = Buffer.from(pubB64, 'base64');
 const publicKey = createPublicKey({ key: pubDer, format: 'der', type: 'spki' });
 
 // Deterministic JSON: sorts object keys recursively at every level. Must
-// match `canonicalize` in packages/widget-react/src/manifest.ts and the
-// signer in build-manifest.mjs byte-for-byte. The array form of
+// match `canonicalize` in the shared loader core
+// (packages/widget-js/src/manifest.ts) and the signer in build-manifest.mjs
+// byte-for-byte. The array form of
 // JSON.stringify is an allowlist applied to every nested object and would
 // drop the entire `chunks` map from the signed bytes.
 function canonicalJSON(value) {
@@ -78,9 +80,9 @@ const ok = verifier.verify(
 );
 
 if (!ok) {
-    console.error('[verify-manifest] SIGNATURE INVALID — the private key in CI does not match the public key in widget-react.');
+    console.error('[verify-manifest] SIGNATURE INVALID — the private key in CI does not match the public key in the loader core.');
     console.error('  manifest:', MANIFEST_PATH);
-    console.error('  widget-react public key:', pubB64);
+    console.error('  loader core public key:', pubB64);
     process.exit(5);
 }
 

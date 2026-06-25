@@ -1,7 +1,7 @@
 {
-  "name": "@layerswap/widget-react",
+  "name": "@layerswap/widget-types",
   "version": "0.1.0",
-  "description": "React component that fetches the Layerswap widget from the CDN at runtime via Module Federation. Integrators install this and nothing else.",
+  "description": "Shared, zero-runtime TypeScript contract for the Layerswap widget: config, callbacks, theme, and prop types consumed by @layerswap/widget, @layerswap/widget-js, and @layerswap/widget-react.",
   "type": "module",
   "main": "dist/esm/index.js",
   "types": "dist/types/index.d.ts",
@@ -12,10 +12,7 @@
       "default": "./dist/esm/index.js"
     }
   },
-  "sideEffects": [
-    "./src/sri.ts",
-    "./dist/esm/sri.js"
-  ],
+  "sideEffects": false,
   "files": [
     "dist",
     "dist/**/*"
@@ -32,31 +29,25 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/layerswap/layerswapapp.git",
-    "directory": "packages/widget-react"
+    "directory": "packages/widget-types"
   },
   "keywords": [
     "layerswap",
     "widget",
-    "embed",
-    "cdn",
-    "module-federation"
+    "types",
+    "contract"
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@tanstack/react-query": "catalog:",
-    "react": "^18.0.0 || ^19.0.0",
-    "react-dom": "^18.0.0 || ^19.0.0",
-    "viem": "catalog:",
-    "wagmi": "catalog:",
-    "zustand": "catalog:"
+    "wagmi": "catalog:"
   },
-  "dependencies": {
-    "@layerswap/widget-js": "workspace:^"
+  "peerDependenciesMeta": {
+    "wagmi": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/react": "catalog:",
-    "react": "catalog:",
-    "react-dom": "catalog:",
     "wagmi": "catalog:"
   },
   "engines": {

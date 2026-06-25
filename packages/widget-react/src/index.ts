@@ -1,13 +1,18 @@
 export { LayerswapWidget } from './LayerswapWidget';
 export type { LayerswapWidgetProps, RemoteWidgetProps } from './LayerswapWidget';
-export type { Manifest } from './manifest';
-export { ManifestError } from './manifest';
+// Manifest format + error type live in the framework-agnostic core.
+export type { Manifest } from '@layerswap/widget-js';
+export { ManifestError } from '@layerswap/widget-js';
 
-// Convenience type re-exports from `@layerswap/widget` so integrators with
-// the widget installed as a (optional) peer-dep don't need a second import.
+// Widget prop/config/theme contract, re-exported (via the core) from the
+// shared zero-runtime `@layerswap/widget-types` package — no dependency on
+// the heavy `@layerswap/widget` package.
 export type {
-  LayerswapWidgetConfig,
-  CallbacksContextType,
+  WidgetConfig,
+  WidgetCallbacks,
+  WidgetProps,
+  WalletDefaults,
+  WalletProviderId,
   ThemeData,
   ThemeColor,
-} from '@layerswap/widget';
+} from '@layerswap/widget-js';

@@ -1,7 +1,7 @@
 {
-  "name": "@layerswap/widget-react",
+  "name": "@layerswap/widget-js",
   "version": "0.1.0",
-  "description": "React component that fetches the Layerswap widget from the CDN at runtime via Module Federation. Integrators install this and nothing else.",
+  "description": "Framework-agnostic loader that fetches the Layerswap widget from the CDN at runtime via Module Federation and mounts it into any DOM element. No framework required.",
   "type": "module",
   "main": "dist/esm/index.js",
   "types": "dist/types/index.d.ts",
@@ -32,31 +32,30 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/layerswap/layerswapapp.git",
-    "directory": "packages/widget-react"
+    "directory": "packages/widget-js"
   },
   "keywords": [
     "layerswap",
     "widget",
     "embed",
     "cdn",
-    "module-federation"
+    "module-federation",
+    "vanilla"
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@tanstack/react-query": "catalog:",
-    "react": "^18.0.0 || ^19.0.0",
-    "react-dom": "^18.0.0 || ^19.0.0",
-    "viem": "catalog:",
-    "wagmi": "catalog:",
-    "zustand": "catalog:"
+    "wagmi": "catalog:"
+  },
+  "peerDependenciesMeta": {
+    "wagmi": {
+      "optional": true
+    }
   },
   "dependencies": {
-    "@layerswap/widget-js": "workspace:^"
+    "@layerswap/widget-types": "workspace:^",
+    "@module-federation/runtime": "^0.9.0"
   },
   "devDependencies": {
-    "@types/react": "catalog:",
-    "react": "catalog:",
-    "react-dom": "catalog:",
     "wagmi": "catalog:"
   },
   "engines": {

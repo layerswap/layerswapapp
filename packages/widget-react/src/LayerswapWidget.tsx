@@ -10,82 +10,25 @@ import {
   Component,
   ErrorInfo,
 } from 'react';
-import type { Config as WagmiConfig } from 'wagmi';
-import type {
-  LayerswapWidgetConfig,
-  CallbacksContextType,
-} from '@layerswap/widget';
-import { initRemote, loadWidget } from './runtime';
-import { fetchManifest, resolveRemoteEntry, verifyManifest, ManifestError } from './manifest';
-import { registerChunkHashes } from './sri';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import {
+  resolveSource,
+  initRemote,
+  loadRemoteModule,
+  type WidgetProps,
+  type SharedLib,
+} from '@layerswap/widget-js';
 
 /** Wallet provider ids matching what the remote's `getDefaultProviders()` emits. */
-export type WalletProviderId =
-  | 'evm'
-  | 'starknet'
-  | 'fuel'
-  | 'paradex'
-  | 'bitcoin'
-  | 'ton'
-  | 'svm'
-  | 'tron'
-  | 'imtblPassport';
+export type { WalletProviderId } from '@layerswap/widget-js';
 
 /**
- * Mirrors the shape of the props the CDN remote's `./Widget` export
- * accepts. Types are imported (type-only — erased at runtime) from
- * `@layerswap/widget` so integrators get full IDE help. The widget package
- * is declared as an *optional* peer dependency — install it as a devDep
- * if you want typed config.
+ * Shape of the props the CDN remote's widget export accepts — re-exported
+ * from the framework-agnostic core so the React and vanilla packages stay in
+ * lockstep.
  */
-export type RemoteWidgetProps = {
-  /**
-   * Widget config — apiKey, version, theme, initialValues, settings.
-   * Forwarded verbatim to `LayerswapProvider`.
-   */
-  config?: LayerswapWidgetConfig;
-  /**
-   * Defaults for the bundled `getDefaultProviders()` call inside the
-   * remote (walletConnect projectId, ton manifest, immutablePassport).
-   * Structurally typed — see `@layerswap/wallets`' `DefaultWalletConfig`.
-   */
-  walletDefaults?: {
-    walletConnect?: {
-      projectId: string;
-      name?: string;
-      description?: string;
-      url?: string;
-      icons?: string[];
-    };
-    ton?: { tonApiKey?: string; manifestUrl?: string };
-    immutablePassport?: Record<string, unknown>;
-  };
-  /**
-   * Filter/customize the wallet provider set built inside the remote.
-   * `include` is an allowlist (keep only these chains); `exclude` is a
-   * blocklist (drop these chains). When both are set, `include` is applied
-   * first, then `exclude` subtracts from it. Either way, chains left out
-   * never dynamic-import their SDK, so the bundle stays lean.
-   * `exclude: ['tron', 'fuel']` drops those chains from the connect modal;
-   * `include: ['evm', 'svm']` keeps only EVM and Solana.
-   */
-  walletProvidersConfig?: {
-    include?: Array<WalletProviderId>;
-    exclude?: Array<WalletProviderId>;
-  };
-  /**
-   * Widget-level event callbacks (onSwapCreate, onSwapComplete, onError,
-   * onSwapStatusChange, …). Forwarded to `LayerswapProvider`'s callbacks
-   * prop.
-   */
-  callbacks?: CallbacksContextType;
-  /**
-   * Host wagmi `Config`. When supplied, the remote widget's EVM provider
-   * adopts this instance and the widget reads the host's connected
-   * account/chain via the same wagmi store the host already uses.
-   */
-  wagmiConfig?: WagmiConfig;
-};
+export type RemoteWidgetProps = WidgetProps;
 
 export type LayerswapWidgetProps = RemoteWidgetProps & {
   /**
@@ -133,42 +76,33 @@ class WidgetErrorBoundary extends Component<
   }
 }
 
-type ResolvedSource = { remoteEntry: string };
-
-async function resolveSource(
-  props: Pick<LayerswapWidgetProps, 'manifest' | 'verify'>,
-): Promise<ResolvedSource> {
-  if (!props.manifest) {
-    throw new Error('LayerswapWidget: `manifest` is required');
-  }
-  // When verifying, force a revalidation so we check the freshest bytes.
-  // Otherwise let the browser HTTP cache satisfy repeated mounts.
-  const manifest = await fetchManifest(props.manifest, !props.verify);
-  if (manifest.killSwitch) {
-    throw new ManifestError('kill-switch', 'manifest kill switch is set — refusing to load remote');
-  }
-  if (props.verify) {
-    const ok = await verifyManifest(manifest);
-    if (!ok) {
-      throw new ManifestError('signature', 'manifest signature is missing or invalid');
-    }
-  }
-  const remoteEntry = resolveRemoteEntry(props.manifest, manifest.remoteEntry);
-  // Install per-chunk SRI BEFORE MF runtime starts loading scripts. Once
-  // the manifest's signed body is trusted, its `chunks` map pins the bytes
-  // of every JS file the browser will fetch from our origin — including
-  // remoteEntry.js and every lazy chunk loaded later.
-  if (manifest.chunks && Object.keys(manifest.chunks).length > 0) {
-    registerChunkHashes(remoteEntry, manifest.chunks);
-  }
-  return { remoteEntry };
+// Share the host's React/ReactDOM with the remote as MF singletons so the
+// widget dedups onto the host's instance instead of bundling its own. The
+// range mirrors this package's peerDependencies: accept React 18 and 19 (the
+// widget relies on 18+ hook semantics) while rejecting 17, where those hooks
+// don't exist. `requiredVersion: false` would silently dedup an incompatible
+// host version. Vanilla (non-React) hosts use `@layerswap/widget-js` directly,
+// which shares nothing and lets the remote bundle its own React.
+function hostReactShare(): Record<string, SharedLib> {
+  return {
+    react: {
+      version: (React as { version?: string }).version ?? '0.0.0',
+      lib: () => React,
+      requiredVersion: '^18.0.0 || ^19.0.0',
+    },
+    'react-dom': {
+      version: (ReactDOM as { version?: string }).version ?? '0.0.0',
+      lib: () => ReactDOM,
+      requiredVersion: '^18.0.0 || ^19.0.0',
+    },
+  };
 }
 
 function buildLoader(props: LayerswapWidgetProps): () => Promise<{ default: WidgetComponent }> {
   return async () => {
-    const { remoteEntry } = await resolveSource(props);
-    initRemote(remoteEntry);
-    const Widget = await loadWidget<WidgetComponent>();
+    const { remoteEntry } = await resolveSource({ manifest: props.manifest, verify: props.verify });
+    initRemote(remoteEntry, hostReactShare());
+    const Widget = await loadRemoteModule<WidgetComponent>('Widget');
     return { default: Widget };
   };
 }

@@ -37,7 +37,7 @@ export type Manifest = {
  * private key held in CI (`secrets.LAYERSWAP_PRIVATE_KEY_PEM`) and the public
  * half in `apps/widget-cdn/.keys/`. Verification is fully functional with it.
  *
- * Rotating this key requires a version bump of `@layerswap/widget-react`;
+ * Rotating this key requires a version bump of `@layerswap/widget-js`;
  * integrators pin it transitively via npm SRI.
  *
  * Current key: generated 2026-06 (pre-KMS). Before a 1.0 release, regenerate
@@ -110,7 +110,7 @@ export async function verifyManifest(manifest: Manifest, publicKeyB64: string = 
     try {
         const subtle = (globalThis.crypto as Crypto | undefined)?.subtle;
         if (!subtle) {
-            console.warn('[layerswap/widget-react] WebCrypto unavailable — manifest signature cannot be verified');
+            console.warn('[layerswap/widget-js] WebCrypto unavailable — manifest signature cannot be verified');
             return false;
         }
         const key = await subtle.importKey(
@@ -124,7 +124,7 @@ export async function verifyManifest(manifest: Manifest, publicKeyB64: string = 
         const body = canonicalize(manifest);
         return await subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, key, sig, body);
     } catch (err) {
-        console.warn('[layerswap/widget-react] manifest verification threw:', err);
+        console.warn('[layerswap/widget-js] manifest verification threw:', err);
         return false;
     }
 }

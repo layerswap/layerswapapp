@@ -10,7 +10,7 @@
  * attribute on the script tags the Module Federation runtime creates.
  * The browser does the verification natively; on mismatch it refuses
  * to execute the script, MF reports the load failure, and the error
- * boundary in `LayerswapWidget` catches it.
+ * boundary in the host loader catches it.
  *
  * The interception works by patching the `src` property descriptor on
  * `HTMLScriptElement.prototype`. Whenever someone sets `script.src`
@@ -126,7 +126,7 @@ function applyIntegrityIfKnown(el: HTMLScriptElement, src: string): void {
             // risks being discarded as unparseable by the SRI implementation,
             // which would leave an empty metadata set and let the script run.
             // eslint-disable-next-line no-console
-            console.error('[layerswap/widget-react] refusing to load unmanifest chunk:', src);
+            console.error('[layerswap/widget-js] refusing to load unmanifest chunk:', src);
             el.setAttribute('integrity', UNMATCHABLE_SRI);
             el.setAttribute('crossorigin', 'anonymous');
         }
