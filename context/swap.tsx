@@ -11,7 +11,7 @@ import { resolveSwapPhase } from '../components/utils/resolveSwapPhase';
 import { useSwapTransactionStore } from '../stores/swapTransactionStore';
 import { Wallet } from '../Models/WalletProvider';
 import useWallet from '../hooks/useWallet';
-import { Network } from '../Models/Network';
+import { Network, NetworkType } from '../Models/Network';
 import { TrackEvent } from "@/pages/_document";
 import { useSettingsState } from './settings';
 import { QuoteError, transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
@@ -236,6 +236,17 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
 
         const slippage = useSlippageStore.getState().slippage
 
+        // Gasless deposit: when the source token supports EIP-3009 gasless deposits and
+        // we're depositing from a supported EVM wallet, the swap is created with
+        // use_gasless/use_depository so the backend returns a `sign` deposit action
+        // (signature instead of an on-chain transaction). Never for the extended-route
+        // (Hyperliquid) bridge below.
+        const useGasless = depositMethod === 'wallet'
+            && from.type === NetworkType.EVM
+            && !!fromCurrency.supports_gasless_deposit
+            && !!sourceIsSupported
+            && !!selectedSourceAccount?.address
+
         // Extended source bridge mode (e.g. Hyperliquid): create the real backend
         // swap (Base/USDC) for the forwarded amount (A - flat fee), via a deposit
         // address. The HL withdrawal then funds that deposit address.
@@ -268,7 +279,8 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             refuel: !!refuel,
             use_deposit_address: depositMethod === 'wallet' ? false : true,
             source_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
-            refund_address: sourceIsSupported ? selectedSourceAccount?.address : undefined
+            refund_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
+            ...(useGasless && { use_gasless: true, use_depository: true }),
         }
 
         if (!isExtendedBridge && depositMethod === 'wallet' && slippage && slippage > 0 && slippage < 0.8) {

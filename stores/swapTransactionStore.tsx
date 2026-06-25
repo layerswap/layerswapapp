@@ -20,6 +20,18 @@ type SwapDepositHintClickedStore = {
     setSwapDepositHintClicked: (Id: string) => void;
 };
 
+export type GaslessAuthorization = {
+    // EIP-3009 signature expiry (unix seconds). After this passes with no input tx
+    // on the swap, the paymaster failed to publish in time and the user must retry.
+    validBefore: number;
+};
+
+type GaslessAuthorizationStore = {
+    authorizations: Record<string, GaslessAuthorization>;
+    setGaslessAuthorization: (Id: string, validBefore: number) => void;
+    removeGaslessAuthorization: (Id: string) => void;
+};
+
 
 export const useSwapTransactionStore = create(
     persist<SwapTransactionStore>(
@@ -48,6 +60,32 @@ export const useSwapTransactionStore = create(
         }),
         {
             name: 'swapTransactions',
+            storage: createJSONStorage(() => localStorage),
+        }
+    ),
+)
+
+export const useGaslessAuthorizationStore = create(
+    persist<GaslessAuthorizationStore>(
+        (set) => ({
+            authorizations: {},
+            setGaslessAuthorization: (Id, validBefore) => {
+                set((state) => ({
+                    authorizations: {
+                        ...state.authorizations,
+                        [Id]: { validBefore },
+                    },
+                }));
+            },
+            removeGaslessAuthorization: (Id) => {
+                set((state) => {
+                    const { [Id]: _removed, ...remaining } = state.authorizations;
+                    return { authorizations: remaining };
+                });
+            },
+        }),
+        {
+            name: 'gaslessAuthorizations',
             storage: createJSONStorage(() => localStorage),
         }
     ),

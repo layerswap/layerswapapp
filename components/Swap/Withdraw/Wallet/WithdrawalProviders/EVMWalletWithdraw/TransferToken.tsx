@@ -5,8 +5,8 @@ import { ActionData, TransferProps } from "../../Common/sharedTypes";
 import TransactionMessage from "./transactionMessage";
 import { SendTransactionButton } from "../../Common/buttons";
 import { isMobile } from "@/lib/openLink";
-import { sendTransaction } from '@wagmi/core'
-import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
+import { sendTransaction, getAccount } from '@wagmi/core'
+import { DepositAction, SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import useWallet from "@/hooks/useWallet";
 import { useSwapDataState } from "@/context/swap";
@@ -75,6 +75,36 @@ const TransferTokenButton: FC<Props> = ({
         }
     }, [config, chainId, selectedSourceAccount?.address, gasData?.gas])
 
+    // Gasless deposit: sign the EIP-3009 typed data verbatim via the wallet's
+    // EIP-1193 provider (eth_signTypedData_v4). This is a signature request — no gas,
+    // no transaction. The raw JSON is passed unchanged (the domain chainId and uint256
+    // message fields arrive as strings and `types` includes EIP712Domain), matching the
+    // backend's typed_data exactly.
+    const signHandler = useCallback(async (signAction: DepositAction): Promise<string> => {
+        if (!signAction.typed_data)
+            throw new Error('Missing typed data for gasless deposit')
+        if (!selectedSourceAccount?.address)
+            throw new Error('No selected account')
+
+        const provider = await getAccount(config).connector?.getProvider() as
+            { request?: (args: { method: string; params: any[] }) => Promise<unknown> } | undefined
+        if (!provider?.request)
+            throw new Error('Wallet provider unavailable')
+
+        if (isMobile() && wallet?.metadata?.deepLink) {
+            window.location.href = wallet.metadata?.deepLink
+            await new Promise(resolve => setTimeout(resolve, 100))
+        }
+
+        const signature = await provider.request({
+            method: 'eth_signTypedData_v4',
+            params: [selectedSourceAccount.address, JSON.stringify(signAction.typed_data)],
+        })
+        if (typeof signature !== 'string')
+            throw new Error('Invalid signature returned by wallet')
+        return signature
+    }, [config, selectedSourceAccount?.address, wallet?.metadata?.deepLink])
+
     const transaction: ActionData = {
         error: error,
         isError: !!error,
@@ -107,6 +137,7 @@ const TransferTokenButton: FC<Props> = ({
             !loading &&
             <SendTransactionButton
                 onClick={clickHandler}
+                onSign={signHandler}
                 error={!!error && buttonClicked}
                 clearError={() => setError(undefined)}
                 swapData={swapData}

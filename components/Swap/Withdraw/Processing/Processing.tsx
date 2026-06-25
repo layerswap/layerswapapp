@@ -21,6 +21,9 @@ import { posthog } from 'posthog-js';
 import { getExplorerUrl } from '@/lib/address';
 import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
 import { SwapPhase } from '@/components/utils/resolveSwapPhase';
+import { SwapFailureReason } from '@/hooks/useSwapRetry';
+import { ErrorDisplay } from '@/components/validationError/ErrorDisplay';
+import InfoIcon from '@/components/icons/InfoIcon';
 
 const apiClient = new LayerSwapApiClient();
 
@@ -29,9 +32,10 @@ type Props = {
     swapDetails: SwapDetails;
     quote: SwapQuote | undefined;
     refuel: Refuel | undefined;
+    failureReason?: SwapFailureReason;
 }
 
-const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) => {
+const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel, failureReason }) => {
     const { boot, show, update } = useIntercom();
     const setSwapTransaction = useSwapTransactionStore(state => state.setSwapTransaction);
     const storedWalletTransaction = useSwapTransactionStore(
@@ -352,6 +356,21 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
         const percentage = current.length ? (completed / current.length) * 100 : 0;
         return { currentSteps: current, stepsProgressPercentage: percentage };
     }, [progressStates, stepStatuses]);
+
+    if (failureReason === 'gasless_authorization_expired') {
+        return (
+            <Widget.Content fitContent>
+                <div className="w-full min-h-102.5 h-full space-y-2 flex flex-col text-primary-text">
+                    <SwapSummary />
+                    <ErrorDisplay
+                        icon={<InfoIcon className="w-5 h-5 text-secondary-text" />}
+                        title="Something went wrong"
+                        message="We couldn’t submit your gasless deposit before the authorization expired. Please try again."
+                    />
+                </div>
+            </Widget.Content>
+        )
+    }
 
     return (
         <Widget.Content fitContent>

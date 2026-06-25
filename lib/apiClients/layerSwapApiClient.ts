@@ -54,6 +54,15 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/swaps/${swapId}/deposit_speedup`, { transaction_id: tx_id });
     }
 
+    async AuthorizeSwapAsync(swapId: string, signature: string): Promise<ApiResponse<void>> {
+        return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/swaps/${swapId}/authorize`, { signature });
+    }
+
+    async GetDepositActionsAsync(swapId: string, sourceAddress?: string): Promise<ApiResponse<DepositAction[]>> {
+        const query = sourceAddress ? `?source_address=${sourceAddress}` : "";
+        return await this.AuthenticatedRequest<ApiResponse<DepositAction[]>>("GET", `/swaps/${swapId}/deposit_actions${query}`);
+    }
+
     async GetSwapAsync(swapId: string): Promise<ApiResponse<SwapResponse>> {
         return await this.AuthenticatedRequest<ApiResponse<SwapResponse>>("GET", `/swaps/${swapId}`);
     }
@@ -136,6 +145,8 @@ export type CreateSwapParams = {
     source_exchange?: string
     destination_exchange?: string
     use_deposit_address: boolean
+    use_depository?: boolean
+    use_gasless?: boolean
     app_name?: string,
 }
 
@@ -209,6 +220,13 @@ export type SwapItem = {
     destination_exchange?: Exchange,
 }
 
+export type EIP712TypedData = {
+    types: Record<string, { name: string, type: string }[]>,
+    primaryType: string,
+    domain: Record<string, string | number>,
+    message: Record<string, string | number>,
+}
+
 export type DepositAction = {
     amount: number,
     amount_in_base_units: string,
@@ -219,7 +237,13 @@ export type DepositAction = {
     to_address?: `0x${string}`,
     token: Token,
     fee_token: Token,
-    type: 'transfer' | 'manual_transfer',
+    type: 'transfer' | 'manual_transfer' | 'sign',
+    // Gasless ('sign') deposit fields — EIP-3009 ReceiveWithAuthorization typed data
+    // is signed (eth_signTypedData_v4) instead of broadcasting a transaction.
+    typed_data?: EIP712TypedData,
+    valid_after?: number,
+    valid_before?: number,
+    nonce?: string,
 }
 
 export type Quote = {

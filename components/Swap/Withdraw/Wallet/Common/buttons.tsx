@@ -11,7 +11,7 @@ import { useConnectModal } from "@/components/WalletModal";
 import { Network, NetworkRoute } from "@/Models/Network";
 import { useQueryState } from "@/context/query";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
-import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
+import { useSwapTransactionStore, useGaslessAuthorizationStore } from "@/stores/swapTransactionStore";
 import LayerSwapApiClient, { BackendTransactionStatus, DepositAction, SwapBasicData, SwapDetails } from "@/lib/apiClients/layerSwapApiClient";
 import sleep from "@/lib/wallets/utils/sleep";
 import { isDiffByPercent } from "@/components/utils/numbers";
@@ -150,6 +150,9 @@ type SendFromWalletButtonProps = Omit<ButtonWrapperProps, 'onClick'> & {
     error?: boolean;
     clearError?: () => void
     onClick: (props: TransferProps) => Promise<string | undefined>
+    // Gasless deposit: signs the `sign` deposit action's typed data and returns the
+    // signature hex (eth_signTypedData_v4). Provided by EVM withdrawal only.
+    onSign?: (signAction: DepositAction) => Promise<string>
     swapData: SwapBasicData,
     refuel: boolean
 };
@@ -158,6 +161,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     error,
     clearError,
     onClick,
+    onSign,
     swapData: swapBasicData,
     refuel,
     ...props
@@ -184,6 +188,10 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
     const priceImpactValues = useMemo(() => quote ? resolvePriceImpactValues(quote, refuel ? refuelData : undefined) : undefined, [quote, refuel]);
     const criticalMarketPriceImpact = useMemo(() => priceImpactValues?.criticalMarketPriceImpact, [priceImpactValues]);
+
+    // Gasless deposit: the source token signals EIP-3009 support and the EVM step
+    // supplied a signer. Drives the "Sign" affordance and the post-create sign branch.
+    const isGaslessCapable = !!onSign && !!swapBasicData.source_token?.supports_gasless_deposit
 
     const handleClick = async () => {
         try {
@@ -248,6 +256,42 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
             if (!swapData) {
                 throw new Error('No swap data')
+            }
+
+            // Gasless deposit: sign the EIP-3009 typed data and POST it to /authorize
+            // instead of broadcasting a transaction. There is no user-side tx hash —
+            // record an empty pending marker to leave the withdraw screen (mirrors the
+            // Hyperliquid flow); the backend's input tx arrives once the paymaster
+            // publishes the deposit.
+            const signAction = depositActions.find(action => action.type === 'sign')
+            if (signAction && onSign) {
+                if (!selectedSourceAccount?.address) {
+                    throw new Error('No selected account')
+                }
+                setActionStateText("Sign in wallet")
+                let authorizedValidBefore: number | undefined
+                try {
+                    authorizedValidBefore = await submitGaslessAuthorization({
+                        swapId: swapData.id,
+                        signAction,
+                        onSign,
+                        sourceAddress: selectedSourceAccount.address,
+                        layerswapApiClient,
+                    })
+                } catch (e: any) {
+                    if (!isUserRejection(e)) {
+                        setSwapError?.(e?.response?.data?.error?.message || e?.message || 'Could not authorize the gasless deposit')
+                    }
+                    throw e
+                }
+                setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, '')
+                // Record the signature deadline so the processing screen can surface a
+                // "something went wrong, try again" state if the paymaster never publishes.
+                if (authorizedValidBefore) {
+                    useGaslessAuthorizationStore.getState().setGaslessAuthorization(swapData.id, authorizedValidBefore)
+                }
+                onWalletWithdrawalSuccess?.()
+                return
             }
 
             const transferProps = resolveTransactionData(swapData, depositActions, swapBasicData.destination_address, swapBasicData.source_network);
@@ -362,7 +406,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 onClick={handleClick}
                 isDisabled={quoteIsLoading || !!quoteError}
             >
-                {error ? 'Try again' : 'Swap now'}
+                {error ? 'Try again' : (isGaslessCapable ? 'Sign & swap (no gas)' : 'Swap now')}
             </ButtonWrapper>
         </>
     )
@@ -382,5 +426,62 @@ const resolveTransactionData = (swapDetails: SwapDetails, deposit_actions: Depos
         sequenceNumber: swapDetails.metadata.sequence_number,
         swapId: swapDetails.id,
         userDestinationAddress: destination_address
+    }
+}
+
+const isUserRejection = (err: unknown): boolean => {
+    if (err instanceof Error && /user rejected|user denied|rejected the request/i.test(err.message)) return true
+    const code = (err as any)?.code ?? (err as any)?.cause?.code
+    return code === 4001
+}
+
+// The unix-seconds expiry (validUntil) of a sign action's authorization.
+const resolveGaslessValidBefore = (action: DepositAction): number | undefined => {
+    if (typeof action.valid_before === 'number') return action.valid_before
+    const fromTypedData = action.typed_data?.message?.validBefore
+    const parsed = fromTypedData != null ? Number(fromTypedData) : NaN
+    return Number.isFinite(parsed) ? parsed : undefined
+}
+
+// Sign the gasless ('sign') deposit action and submit the signature to /authorize.
+// Returns the `valid_before` of the authorization that succeeded (so the caller can
+// detect a paymaster timeout later). Handles the authorize responses from the
+// integration doc §4:
+//  - "already authorized" → treat as success (the deposit is already in flight).
+//  - "expired" → the signature window (~30 min) lapsed; re-fetch a fresh sign action
+//    (new valid_before/nonce), re-sign and re-authorize once.
+//  - any other error → rethrow for the caller to surface.
+const submitGaslessAuthorization = async (args: {
+    swapId: string,
+    signAction: DepositAction,
+    onSign: (signAction: DepositAction) => Promise<string>,
+    sourceAddress: string,
+    layerswapApiClient: LayerSwapApiClient,
+}): Promise<number | undefined> => {
+    const { swapId, signAction, onSign, sourceAddress, layerswapApiClient } = args
+
+    const authorize = async (action: DepositAction) => {
+        const signature = await onSign(action)
+        await layerswapApiClient.AuthorizeSwapAsync(swapId, signature)
+    }
+
+    try {
+        await authorize(signAction)
+        return resolveGaslessValidBefore(signAction)
+    } catch (e: any) {
+        const message: string = (e?.response?.data?.error?.message || e?.message || '').toLowerCase()
+        if (message.includes('already') && message.includes('authoriz')) {
+            return resolveGaslessValidBefore(signAction)
+        }
+        if (message.includes('expired')) {
+            const refreshed = await layerswapApiClient.GetDepositActionsAsync(swapId, sourceAddress)
+            const freshSignAction = refreshed?.data?.find(action => action.type === 'sign')
+            if (!freshSignAction?.typed_data) {
+                throw new Error('Could not refresh the gasless deposit authorization. Please try again.')
+            }
+            await authorize(freshSignAction)
+            return resolveGaslessValidBefore(freshSignAction)
+        }
+        throw e
     }
 }
