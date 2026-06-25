@@ -93,6 +93,10 @@ export class BalanceResolver {
                 const { HyperliquidBalanceProvider } = await import("./providers/hyperliquidBalanceProvider");
                 return new HyperliquidBalanceProvider();
             }
+            case "polymarket": {
+                const { PolymarketBalanceProvider } = await import("./providers/polymarketBalanceProvider");
+                return new PolymarketBalanceProvider();
+            }
             default:
                 throw new Error(`Unsupported balance provider kind: ${kind}`);
         }
@@ -150,6 +154,9 @@ export class BalanceResolver {
         if (network.name === KnownInternalNames.Networks.HyperliquidMainnet
             || network.name === KnownInternalNames.Networks.HyperliquidTestnet) {
             prioritized.push("hyperliquid");
+        }
+        if (network.name === KnownInternalNames.Networks.PolymarketMainnet) {
+            prioritized.push("polymarket");
         }
 
         if (network.type === NetworkType.Solana) {
@@ -229,7 +236,8 @@ type ProviderKind =
     | "ton"
     | "tron"
     | "bitcoin"
-    | "hyperliquid";
+    | "hyperliquid"
+    | "polymarket";
 
 const allProviderKinds: ProviderKind[] = [
     "query",
@@ -241,4 +249,5 @@ const allProviderKinds: ProviderKind[] = [
     "tron",
     "bitcoin",
     "hyperliquid",
+    "polymarket",
 ];

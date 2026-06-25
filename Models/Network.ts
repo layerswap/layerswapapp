@@ -11,6 +11,7 @@ export enum NetworkType {
     Bitcoin = 'bitcoin',
     Tron = 'tron',
     Hyperliquid = 'hyperliquid',
+    Polymarket = 'polymarket',
 }
 
 export class Network {

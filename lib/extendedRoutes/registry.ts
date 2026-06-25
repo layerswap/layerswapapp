@@ -3,11 +3,12 @@ import { DecimalInput, addDecimal, subtractDecimal } from "./amounts";
 import { ExtendedRoutePlan, ExtendedRouteProvider, ResolvedExtendedMapping } from "./types";
 import { realDepositAddressRoutePresent } from "./availability";
 import { hyperliquidProvider } from "./providers/hyperliquid";
+import { polymarketProvider } from "./providers/polymarket";
 
 export { realDepositAddressRoutePresent };
 
 // Adding a provider = one file + one entry here.
-const SOURCE_PROVIDERS: ExtendedRouteProvider[] = [hyperliquidProvider]
+const SOURCE_PROVIDERS: ExtendedRouteProvider[] = [hyperliquidProvider, polymarketProvider]
 
 export function getSourceProviders(): ExtendedRouteProvider[] {
     return SOURCE_PROVIDERS
@@ -110,4 +111,26 @@ export function mergeExtendedSourceRoutes(routes: NetworkRoute[], networks: Netw
         }
     }
     return additions.length ? [...routes, ...additions] : routes
+}
+
+/**
+ * Inject synthesized extended networks (e.g. Polymarket) into the settings
+ * `networks` list — for providers whose network the backend does NOT define. Run
+ * once at settings inflation (before `mergeExtendedSourceRoutes`) so the route
+ * resolver, source skin, and balance prioritization all resolve the network the same
+ * way they do for a backend-defined one. Idempotent: skips names already present, so
+ * a future backend entry takes precedence with zero conflict. Providers without
+ * `resolveExtendedNetwork` (e.g. Hyperliquid) contribute nothing.
+ */
+export function mergeExtendedSourceNetworks(networks: NetworkWithTokens[]): NetworkWithTokens[] {
+    const additions: NetworkWithTokens[] = []
+    for (const provider of SOURCE_PROVIDERS) {
+        if (!provider.resolveExtendedNetwork) continue
+        for (const extendedName of provider.extendedNetworkNames) {
+            if (networks.some(n => n.name === extendedName)) continue
+            const network = provider.resolveExtendedNetwork(extendedName, networks)
+            if (network) additions.push(network)
+        }
+    }
+    return additions.length ? [...networks, ...additions] : networks
 }

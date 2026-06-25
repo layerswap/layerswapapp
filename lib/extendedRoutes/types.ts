@@ -21,6 +21,10 @@ export type ExtendedTokenMapping = {
     extraCompletionSeconds: number
     /** Decimal places of the real token; used to truncate the forwarded amount. */
     realDecimals?: number
+    /** Provider-imposed minimum (source-token units) applied as a floor on the
+     * displayed/validated min, on top of the backend min + flat fee — e.g. the
+     * Polymarket bridge's minimum checkout. Optional; absent = no extra floor. */
+    minAmount?: number
 }
 
 export interface ExtendedRouteProvider {
@@ -38,6 +42,15 @@ export interface ExtendedRouteProvider {
      * when the network is absent (e.g. testnet on a prod settings payload).
      */
     resolveExtendedRoute(networkName: string, allNetworks: NetworkWithTokens[]): NetworkRoute | undefined
+    /**
+     * Synthesize the extended network as a full `NetworkWithTokens` from the real
+     * base network in settings, for providers whose network the backend does NOT
+     * define (e.g. Polymarket). Injected into `settings.networks` once at inflation
+     * so the route resolver, source skin, and balance prioritization all resolve it
+     * uniformly. Returns undefined when the base network is absent. Optional — when
+     * absent (e.g. Hyperliquid, which the backend defines), nothing is injected.
+     */
+    resolveExtendedNetwork?(networkName: string, allNetworks: NetworkWithTokens[]): NetworkWithTokens | undefined
     /**
      * Resolve the mapping for a specific (extended source, token, destination).
      * Lets providers with multiple destination candidates (e.g. HL primary +

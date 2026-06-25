@@ -11,8 +11,9 @@ export type ExtendedLimits = {
     max_amount_in_usd: number
 }
 
-/** Displayed limits = backend limits + flat fee (the min is resolved dynamically
- * off the backend min, not a static floor). */
+/** Displayed limits = backend limits + flat fee, floored by any provider minimum
+ * (e.g. the Polymarket bridge's minimum checkout). The min is resolved dynamically
+ * off the backend min, then raised to the provider floor when one applies. */
 export function transformLimitsForExtendedRoute(limits: ExtendedLimits | undefined, mapping: ResolvedExtendedMapping): ExtendedLimits | undefined {
     if (!limits) return limits
     const pricePerToken =
@@ -20,7 +21,7 @@ export function transformLimitsForExtendedRoute(limits: ExtendedLimits | undefin
             : limits.max_amount > 0 ? limits.max_amount_in_usd / limits.max_amount
                 : 1
 
-    const min_amount = limits.min_amount + mapping.flatFee
+    const min_amount = Math.max(limits.min_amount + mapping.flatFee, mapping.minAmount ?? 0)
     const max_amount = limits.max_amount + mapping.flatFee
 
     return {
