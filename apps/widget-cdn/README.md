@@ -15,7 +15,11 @@ runtime delivery via `@layerswap/widget-react`.
 pnpm dev
 ```
 
-Serves the remote on `http://127.0.0.1:3100/remoteEntry.js`.
+Serves the remote on `http://127.0.0.1:3100/remoteEntry.js`, plus an
+unsigned `http://127.0.0.1:3100/manifest.json` pointing at it — so the
+`@layerswap/widget-react` loader's manifest path works in dev exactly as
+it does in prod. Load it with `verify: false` (the dev manifest is
+unsigned).
 
 ## Production build
 

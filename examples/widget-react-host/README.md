@@ -17,10 +17,13 @@ pnpm --filter @layerswap/widget-cdn dev
 pnpm --filter widget-react-host-example dev -- --host 127.0.0.1 --port 3001 --no-open
 ```
 
-Then open `http://127.0.0.1:3001/`. The host page loads `remoteEntry.js`
-from the local CDN dev-server and mounts the widget.
+Then open `http://127.0.0.1:3001/`. The host page fetches the manifest at
+`http://127.0.0.1:3100/manifest.json` from the local CDN dev-server, then
+loads the `remoteEntry.js` it points at and mounts the widget.
 
-Point at a production CDN by setting `VITE_LAYERSWAP_REMOTE_ENTRY`.
+Point at a production CDN by setting `VITE_LAYERSWAP_MANIFEST` (e.g.
+`https://cdn.layerswap.io/v1/manifest.json`), and `VITE_LAYERSWAP_VERIFY=true`
+to require a valid manifest signature.
 
 ## What's in the host bundle
 
@@ -31,6 +34,6 @@ into the MF shared scope so the remote uses those exact instances.
 
 ## Known follow-ups (not blockers)
 
-- Signed manifest verification (per the design doc §11) is not implemented
-  yet — this example just loads `remoteEntry.js` directly. Add signing
-  before pointing real integrators at the public CDN.
+- The local dev-server manifest is unsigned, so this example runs with
+  `verify` off by default. Point it at a signed prod build and set
+  `VITE_LAYERSWAP_VERIFY=true` to exercise signature verification.

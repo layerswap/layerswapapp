@@ -85,7 +85,7 @@ widget then shows the same physical wallet twice. Either:
 
 | Prop | Type | Description |
 |---|---|---|
-| `manifest` *or* `remoteEntry` | `string` | URL to `manifest.json` (preferred) or directly to `remoteEntry.js`. |
+| `manifest` | `string` | URL to `manifest.json`. The loader fetches it, then loads the `remoteEntry` it points at. |
 | `verify` | `boolean` | Require a valid signature on the manifest. Default false until your signing pipeline is live. |
 | `config` | `LayerswapWidgetConfig` | Forwarded to the widget's `LayerswapProvider`. Includes `apiKey`, `version`, `theme`, `initialValues`, `settings`. |
 | `callbacks` | `CallbacksContextType` | `onSwapCreate`, `onSwapComplete`, `onError`, `onSwapModalStateChange`, etc. |
@@ -153,12 +153,14 @@ Notes:
 
 ## Local development
 
-To develop against a local widget-cdn dev server, point `remoteEntry`
-directly at it (skip the manifest layer):
+Run the widget-cdn dev server (`pnpm dev` in `apps/widget-cdn`) — it
+serves both `remoteEntry.js` and an unsigned `manifest.json` at
+`http://127.0.0.1:3100`. Point `manifest` at that dev manifest (leave
+`verify` off, since the dev manifest is unsigned):
 
 ```tsx
 <LayerswapWidget
-  remoteEntry="http://127.0.0.1:3100/remoteEntry.js"
+  manifest="http://127.0.0.1:3100/manifest.json"
   config={{ version: 'testnet' }}
 />
 ```

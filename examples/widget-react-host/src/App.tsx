@@ -4,17 +4,16 @@ import { LayerswapWidget } from '@layerswap/widget-react';
 import { wagmiConfig } from './wagmi';
 import { HostWallet } from './HostWallet';
 
-// Production: integrators point `manifest` at the channel manifest URL,
-// e.g. https://cdn.layerswap.io/v1/manifest.json. The loader fetches it,
-// honors `killSwitch`, optionally verifies the signature, then loads the
-// remote entry it points at. Set VITE_LAYERSWAP_MANIFEST to switch URLs.
-//
-// VITE_LAYERSWAP_REMOTE_ENTRY (legacy) still works for direct remoteEntry
-// loading if no manifest is supplied — used by the Rspack dev server flow.
-const MANIFEST_URL = import.meta.env.VITE_LAYERSWAP_MANIFEST;
-const REMOTE_ENTRY =
-  import.meta.env.VITE_LAYERSWAP_REMOTE_ENTRY ??
-  'http://127.0.0.1:3100/remoteEntry.js';
+// Integrators point `manifest` at the channel manifest URL. The loader
+// fetches it, honors `killSwitch`, optionally verifies the signature, then
+// loads the remote entry it points at. Defaults to the local widget-cdn dev
+// server (`pnpm dev` in apps/widget-cdn); set VITE_LAYERSWAP_MANIFEST to the
+// production URL (e.g. https://cdn.layerswap.io/v1/manifest.json).
+const MANIFEST_URL =
+  import.meta.env.VITE_LAYERSWAP_MANIFEST ?? 'http://127.0.0.1:3100/manifest.json';
+// The dev server emits an unsigned manifest, so verification is off by
+// default. Enable it (VITE_LAYERSWAP_VERIFY=true) against a signed prod build.
+const VERIFY = import.meta.env.VITE_LAYERSWAP_VERIFY === 'true';
 
 const queryClient = new QueryClient();
 
@@ -37,16 +36,15 @@ export function App() {
           </h1>
           <p style={{ marginBottom: 20, color: '#9CA3AF', maxWidth: 540, textAlign: 'center' }}>
             The host page below mounts its own <code>WagmiProvider</code> and a
-            connect button. The Layerswap widget is fetched at runtime from{' '}
-            <code>{REMOTE_ENTRY}</code>. Connect the host wallet and compare
-            its account against what the widget sees.
+            connect button. The Layerswap widget is fetched at runtime via the
+            manifest at <code>{MANIFEST_URL}</code>. Connect the host wallet and
+            compare its account against what the widget sees.
           </p>
           <HostWallet />
           <div style={{ width: '100%', maxWidth: 512 }}>
             <LayerswapWidget
-              {...(MANIFEST_URL
-                ? { manifest: MANIFEST_URL, verify: true }
-                : { remoteEntry: REMOTE_ENTRY })}
+              manifest={MANIFEST_URL}
+              verify={VERIFY}
               config={{ version: 'mainnet' }}
               walletProvidersConfig={{ exclude: ['tron', 'fuel'] }}
               wagmiConfig={wagmiConfig}

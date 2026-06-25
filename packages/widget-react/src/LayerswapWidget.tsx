@@ -78,28 +78,15 @@ export type RemoteWidgetProps = {
   wagmiConfig?: WagmiConfig;
 };
 
-type Loadable =
-  | {
-    /**
-     * URL to a `manifest.json` describing the active build. The loader
-     * fetches the manifest first, then `remoteEntry` from inside it.
-     * Enables atomic rollback, channel pinning, and signature
-     * verification — pass this for production deployments.
-     */
-    manifest: string;
-    remoteEntry?: never;
-  }
-  | {
-    /**
-     * Direct URL to `remoteEntry.js`, bypassing the manifest layer.
-     * Useful for local dev or quick experiments; production should use
-     * the `manifest` form so kill-switch + signing apply.
-     */
-    remoteEntry: string;
-    manifest?: never;
-  };
-
-export type LayerswapWidgetProps = RemoteWidgetProps & Loadable & {
+export type LayerswapWidgetProps = RemoteWidgetProps & {
+  /**
+   * URL to a `manifest.json` describing the active build. The loader
+   * fetches the manifest first, then the `remoteEntry` it points at.
+   * Enables atomic rollback, channel pinning, and signature
+   * verification. For local development, point this at the widget-cdn
+   * dev server's manifest (`http://127.0.0.1:3100/manifest.json`).
+   */
+  manifest: string;
   /**
    * When true (and `manifest` is set), the loader requires a valid
    * signature on the manifest against the baked-in public key. Manifests
@@ -140,11 +127,10 @@ class WidgetErrorBoundary extends Component<
 type ResolvedSource = { remoteEntry: string };
 
 async function resolveSource(
-  props: Pick<LayerswapWidgetProps, 'manifest' | 'remoteEntry' | 'verify'>,
+  props: Pick<LayerswapWidgetProps, 'manifest' | 'verify'>,
 ): Promise<ResolvedSource> {
-  if (props.remoteEntry) return { remoteEntry: props.remoteEntry };
   if (!props.manifest) {
-    throw new Error('LayerswapWidget: must pass either `manifest` or `remoteEntry`');
+    throw new Error('LayerswapWidget: `manifest` is required');
   }
   const manifest = await fetchManifest(props.manifest);
   if (manifest.killSwitch) {
@@ -177,14 +163,14 @@ function buildLoader(props: LayerswapWidgetProps): () => Promise<{ default: Widg
 }
 
 export function LayerswapWidget(props: LayerswapWidgetProps) {
-  const { manifest, remoteEntry, verify, fallback, onReady, onError, ...rest } = props;
+  const { manifest, verify, fallback, onReady, onError, ...rest } = props;
 
   // Re-create the lazy component when the URL/verify flags change.
   const LazyWidget = useMemo(
     () => lazy(buildLoader(props)),
     // Identity-stable subset — re-build only on real config changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [manifest, remoteEntry, verify],
+    [manifest, verify],
   );
 
   return (

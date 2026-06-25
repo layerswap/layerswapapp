@@ -44,6 +44,37 @@ const SHARED_SINGLETONS = {
 // pinned immutable build.
 const CHANNEL = process.env.LAYERSWAP_CHANNEL || 'v1';
 
+// Dev-only: emit a minimal `manifest.json` next to `remoteEntry.js` so the
+// loader's (now sole) manifest path works against the dev server. Mirrors the
+// shape `scripts/build-manifest.mjs` writes for prod, minus the per-chunk SRI
+// hashes and signature — dev chunks aren't content-hashed and dev loads run
+// with `verify: false`.
+const devManifestPlugin = {
+  apply(compiler) {
+    compiler.hooks.thisCompilation.tap('DevManifest', (compilation) => {
+      compilation.hooks.processAssets.tap(
+        {
+          name: 'DevManifest',
+          stage: rspack.Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL,
+        },
+        () => {
+          const manifest = {
+            version: '0.0.0-dev',
+            remoteEntry: './remoteEntry.js',
+            chunks: {},
+            killSwitch: false,
+            signature: null,
+          };
+          compilation.emitAsset(
+            'manifest.json',
+            new rspack.sources.RawSource(JSON.stringify(manifest, null, 2)),
+          );
+        },
+      );
+    });
+  },
+};
+
 export default (env, argv) => {
   const isProd = argv?.mode === 'production' || process.env.NODE_ENV === 'production';
   return {
@@ -168,6 +199,8 @@ export default (env, argv) => {
           disableDynamicRemoteTypeHints: true,
         },
       }),
+      // Prod manifests come from scripts/build-manifest.mjs (hashed + signed).
+      ...(isProd ? [] : [devManifestPlugin]),
     ],
     devServer: {
       port: 3100,
