@@ -29,42 +29,37 @@ export const ResolverProviders: React.FC<React.PropsWithChildren<{
             [walletProviders],
         );
 
-        const transferProviders = useMemo(() => realProviders
-            .map(provider => provider.transferProvider)
-            .flat()
-            .filter((provider): provider is (() => TransferProvider) => Boolean(provider))
-            .map(provider => provider()),
-            [realProviders]);
-
-        const contractAddressProviders: ContractAddressCheckerProvider[] = useMemo(() => realProviders
-            .map(provider => provider.contractAddressProvider)
-            .flat()
-            .filter((provider): provider is ContractAddressCheckerProvider => Boolean(provider)),
-            [realProviders]);
-
-        const rpcHealthCheckProviders: RpcHealthCheckProvider[] = useMemo(() => realProviders
-            .map(provider => provider.rpcHealthCheckProvider)
-            .flat()
-            .filter((provider): provider is RpcHealthCheckProvider => Boolean(provider)),
-            [realProviders]);
-
-        const balanceProviders: BalanceProvider[] = useMemo(() => realProviders
-            .map(provider => provider.balanceProvider)
-            .flat()
-            .filter((provider): provider is BalanceProvider => Boolean(provider)),
-            [realProviders]);
-
-        const gasProviders: GasProvider[] = useMemo(() => realProviders
-            .map(provider => provider.gasProvider)
-            .flat()
-            .filter((provider): provider is GasProvider => Boolean(provider)),
-            [realProviders]);
-
-        const nftProviders: NftProvider[] = useMemo(() => realProviders
-            .map(provider => provider.nftProvider)
-            .flat()
-            .filter((provider): provider is NftProvider => Boolean(provider)),
-            [realProviders]);
+        // Derive all six provider arrays in a single memo so they share one
+        // stable identity. When `realProviders` changes (e.g. a lazy descriptor
+        // resolves), this produces exactly one new object and the effect below
+        // fires once — instead of six independent memos each queuing the effect.
+        const providerArrays = useMemo(() => ({
+            balance: realProviders
+                .map(provider => provider.balanceProvider)
+                .flat()
+                .filter((provider): provider is BalanceProvider => Boolean(provider)),
+            gas: realProviders
+                .map(provider => provider.gasProvider)
+                .flat()
+                .filter((provider): provider is GasProvider => Boolean(provider)),
+            nft: realProviders
+                .map(provider => provider.nftProvider)
+                .flat()
+                .filter((provider): provider is NftProvider => Boolean(provider)),
+            transfer: realProviders
+                .map(provider => provider.transferProvider)
+                .flat()
+                .filter((provider): provider is (() => TransferProvider) => Boolean(provider))
+                .map(provider => provider()),
+            contractAddress: realProviders
+                .map(provider => provider.contractAddressProvider)
+                .flat()
+                .filter((provider): provider is ContractAddressCheckerProvider => Boolean(provider)),
+            rpcHealthCheck: realProviders
+                .map(provider => provider.rpcHealthCheckProvider)
+                .flat()
+                .filter((provider): provider is RpcHealthCheckProvider => Boolean(provider)),
+        }), [realProviders]);
 
         // Tracks whether the resolver registry has been wired up at least once.
         // Flipped from inside the effect so consumers gate on a real post-commit
@@ -72,12 +67,19 @@ export const ResolverProviders: React.FC<React.PropsWithChildren<{
         const [isInitialized, setIsInitialized] = useState(false);
 
         useEffect(() => {
-            resolverService.setProviders(balanceProviders, gasProviders, nftProviders, transferProviders, contractAddressProviders, rpcHealthCheckProviders)
+            resolverService.setProviders(
+                providerArrays.balance,
+                providerArrays.gas,
+                providerArrays.nft,
+                providerArrays.transfer,
+                providerArrays.contractAddress,
+                providerArrays.rpcHealthCheck,
+            )
 
             setExtendedRouteProviders(walletProviders.flatMap((p: WalletProvider) => p.extendedRouteProvider ?? []).filter(Boolean))
 
             setIsInitialized(true);
-        }, [walletProviders, balanceProviders, gasProviders, nftProviders, transferProviders, contractAddressProviders, rpcHealthCheckProviders]);
+        }, [walletProviders, providerArrays]);
 
         return (
             <ResolverContext.Provider value={{ isInitialized }}>

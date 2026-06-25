@@ -38,9 +38,9 @@ if (!manifest.signature) {
 // in source but the signer is still using the old one, this catches it.
 const MANIFEST_SRC = join(REPO_ROOT, 'packages', 'widget-react', 'src', 'manifest.ts');
 const src = readFileSync(MANIFEST_SRC, 'utf8');
-const m = src.match(/PLACEHOLDER_PUBLIC_KEY_SPKI_B64\s*=\s*['"]([A-Za-z0-9+/=]+)['"]/);
+const m = src.match(/MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64\s*=\s*['"]([A-Za-z0-9+/=]+)['"]/);
 if (!m) {
-    console.error('[verify-manifest] could not extract PLACEHOLDER_PUBLIC_KEY_SPKI_B64 from widget-react source.');
+    console.error('[verify-manifest] could not extract MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64 from widget-react source.');
     process.exit(4);
 }
 const pubB64 = m[1];

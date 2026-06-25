@@ -103,7 +103,9 @@ jobs:
 
       - name: Pull Vercel project config
         working-directory: apps/widget-cdn
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: vercel pull --yes --environment=production
 
       # `vercel build` wraps the already-built `dist/` into Vercel's
       # `.vercel/output/` format. We pass --prebuilt to `deploy` so Vercel
@@ -111,13 +113,17 @@ jobs:
       # the GitHub secret. This pattern keeps signing strictly in CI.
       - name: Pack for Vercel
         working-directory: apps/widget-cdn
-        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: vercel build --prod
 
       - name: Deploy to Vercel
         id: deploy
         working-directory: apps/widget-cdn
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
-          URL=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          URL=$(vercel deploy --prebuilt --prod)
           echo "url=$URL" >> "$GITHUB_OUTPUT"
           echo "Deployed: $URL"
 

@@ -340,7 +340,12 @@ export class EvmConnectionService {
             // Guard against a malicious/compromised connector reporting an active
             // address that is not actually one of its accounts — otherwise all
             // subsequent transactions would be attributed to a spoofed address.
-            if (activeAccount.address && connection.accounts.length > 0) {
+            if (activeAccount.address) {
+                if (connection.accounts.length === 0) {
+                    throw new Error(
+                        `Account validation failed: connector reported active address ${activeAccount.address} but returned no accounts. Reconnect your wallet.`,
+                    )
+                }
                 const isValidAccount = connection.accounts.some(
                     a => a.toLowerCase() === activeAccount.address!.toLowerCase(),
                 )

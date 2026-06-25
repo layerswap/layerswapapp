@@ -5,7 +5,8 @@ import {
   lazy,
   useMemo,
   useEffect,
-  useState,
+  useRef,
+  useCallback,
   Component,
   ErrorInfo,
 } from 'react';
@@ -140,7 +141,9 @@ async function resolveSource(
   if (!props.manifest) {
     throw new Error('LayerswapWidget: `manifest` is required');
   }
-  const manifest = await fetchManifest(props.manifest);
+  // When verifying, force a revalidation so we check the freshest bytes.
+  // Otherwise let the browser HTTP cache satisfy repeated mounts.
+  const manifest = await fetchManifest(props.manifest, !props.verify);
   if (manifest.killSwitch) {
     throw new ManifestError('kill-switch', 'manifest kill switch is set — refusing to load remote');
   }
@@ -170,8 +173,35 @@ function buildLoader(props: LayerswapWidgetProps): () => Promise<{ default: Widg
   };
 }
 
+/**
+ * Host-side React loader for the CDN-delivered Layerswap widget.
+ *
+ * This is a browser-only component — it fetches the remote bundle and inits the
+ * Module Federation runtime, both of which require browser globals. In Next.js,
+ * import it via `next/dynamic` with `{ ssr: false }` so it never renders on the
+ * server:
+ *
+ * ```ts
+ * const LayerswapWidget = dynamic(
+ *   () => import('@layerswap/widget-react').then(m => m.LayerswapWidget),
+ *   { ssr: false },
+ * );
+ * ```
+ */
 export function LayerswapWidget(props: LayerswapWidgetProps) {
   const { manifest, verify, fallback, onReady, onError, ...rest } = props;
+
+  // De-dup guard lives on the parent (which persists across `LazyWidget`
+  // recreation) rather than inside `ReadySignal`. Changing `manifest`/`verify`
+  // rebuilds the lazy factory and remounts the Suspense subtree, so a guard
+  // local to ReadySignal would reset and fire `onReady` again. The ref keeps
+  // it firing exactly once per physical `LayerswapWidget` mount.
+  const onReadyFiredRef = useRef(false);
+  const stableOnReady = useCallback(() => {
+    if (onReadyFiredRef.current) return;
+    onReadyFiredRef.current = true;
+    onReady?.();
+  }, [onReady]);
 
   // Re-create the lazy component when the URL/verify flags change.
   const LazyWidget = useMemo(
@@ -184,7 +214,7 @@ export function LayerswapWidget(props: LayerswapWidgetProps) {
   return (
     <WidgetErrorBoundary fallback={fallback ?? null} onError={onError}>
       <Suspense fallback={fallback ?? null}>
-        <ReadySignal onReady={onReady} />
+        <ReadySignal onReady={stableOnReady} />
         <LazyWidget {...(rest as RemoteWidgetProps)} />
       </Suspense>
     </WidgetErrorBoundary>
@@ -192,11 +222,10 @@ export function LayerswapWidget(props: LayerswapWidgetProps) {
 }
 
 function ReadySignal({ onReady }: { onReady?: () => void }) {
-  const [fired, setFired] = useState(false);
   useEffect(() => {
-    if (fired || !onReady) return;
-    onReady();
-    setFired(true);
-  }, [fired, onReady]);
+    // Runs once per Suspense resolve; the parent's ref guard prevents the
+    // callback from double-firing across LazyWidget recreation.
+    onReady?.();
+  }, [onReady]);
   return null;
 }

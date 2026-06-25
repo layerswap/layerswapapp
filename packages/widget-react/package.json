@@ -12,7 +12,10 @@
       "default": "./dist/esm/index.js"
     }
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "./src/sri.ts",
+    "./dist/esm/sri.js"
+  ],
   "files": [
     "dist",
     "dist/**/*"
@@ -64,6 +67,6 @@
     "wagmi": "catalog:"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=18"
   }
 }

@@ -29,7 +29,11 @@ function PopoverTrigger({
  */
 function useWidgetContainer(): HTMLElement | null {
   const [el, setEl] = React.useState<HTMLElement | null>(null)
-  React.useEffect(() => {
+  // useLayoutEffect runs synchronously after DOM mutation, before paint, so
+  // the portal resolves to `#widget` before the popover is first painted —
+  // avoiding the body→#widget remount flash a passive effect would cause.
+  // This component never renders server-side, so the SSR warning is moot.
+  React.useLayoutEffect(() => {
     setEl(document.getElementById('widget'))
   }, [])
   return el

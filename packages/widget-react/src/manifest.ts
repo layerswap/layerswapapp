@@ -32,17 +32,19 @@ export type Manifest = {
 };
 
 /**
- * Public key (raw P-256 SPKI, base64) used to verify the manifest signature.
+ * P-256 SPKI public key used to verify manifest signatures (base64-encoded).
+ * This is the live trust anchor for all widget deployments — it matches the
+ * private key held in CI (`secrets.LAYERSWAP_PRIVATE_KEY_PEM`) and the public
+ * half in `apps/widget-cdn/.keys/`. Verification is fully functional with it.
  *
- * **TODO:** This is a placeholder generated locally. Before pointing real
- * integrators at this build:
- *   1. Generate the production keypair in a KMS/HSM.
- *   2. Replace this constant with the public key half (export SPKI, base64).
- *   3. Bake into a release of `@layerswap/widget-react` and publish under
- *      SRI-pinned npm. Rotating the key thereafter requires a `widget-react`
- *      version bump (the public key is the trust anchor).
+ * Rotating this key requires a version bump of `@layerswap/widget-react`;
+ * integrators pin it transitively via npm SRI.
+ *
+ * Current key: generated 2026-06 (pre-KMS). Before a 1.0 release, regenerate
+ * in a KMS/HSM and update this constant plus the GitHub secret
+ * `LAYERSWAP_PRIVATE_KEY_PEM`.
  */
-export const PLACEHOLDER_PUBLIC_KEY_SPKI_B64 =
+export const MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64 =
     'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEtrU5cbU2kkaqwBPLusROxy1lhbQDTKt9kqJ5z5ngnOlN2xZQzAiHlKLufz5Nlzuf2FpkJX0L+kbGKm0sKn1pJQ==';
 
 const fromB64 = (b64: string): ArrayBuffer => {
@@ -103,7 +105,7 @@ export function canonicalize(manifest: Manifest): ArrayBuffer {
  * whether to enforce verification (the loader treats "missing signature
  * AND verify: true" as a hard failure).
  */
-export async function verifyManifest(manifest: Manifest, publicKeyB64: string = PLACEHOLDER_PUBLIC_KEY_SPKI_B64): Promise<boolean> {
+export async function verifyManifest(manifest: Manifest, publicKeyB64: string = MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64): Promise<boolean> {
     if (!manifest.signature) return false;
     try {
         const subtle = (globalThis.crypto as Crypto | undefined)?.subtle;
@@ -147,10 +149,18 @@ export class ManifestError extends Error {
     }
 }
 
-export async function fetchManifest(manifestUrl: string): Promise<Manifest> {
+/**
+ * Fetch and minimally validate the manifest.
+ *
+ * `allowCache` lets the browser HTTP cache satisfy the request (`cache:
+ * 'default'`). Callers pass `false` when signature verification is on so the
+ * freshest bytes are checked; with verification off, respecting the CDN's
+ * `Cache-Control` avoids a network round-trip on every mount/remount.
+ */
+export async function fetchManifest(manifestUrl: string, allowCache = false): Promise<Manifest> {
     let res: Response;
     try {
-        res = await fetch(manifestUrl, { cache: 'no-cache' });
+        res = await fetch(manifestUrl, { cache: allowCache ? 'default' : 'no-cache' });
     } catch (err) {
         throw new ManifestError('fetch', `failed to fetch manifest: ${err instanceof Error ? err.message : String(err)}`);
     }

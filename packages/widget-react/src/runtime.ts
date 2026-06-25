@@ -15,6 +15,9 @@ let initializedFor: string | null = null;
  * supports re-registering remotes.
  */
 export function initRemote(remoteEntry: string): void {
+  // No-op on the server: the MF runtime touches browser globals, and any
+  // module-level state set here would otherwise leak across SSR requests.
+  if (typeof window === 'undefined') return;
   if (initialized && initializedFor === remoteEntry) return;
 
   init({
@@ -30,13 +33,21 @@ export function initRemote(remoteEntry: string): void {
         version: (React as { version?: string }).version ?? '0.0.0',
         scope: 'default',
         lib: () => React,
-        shareConfig: { singleton: true, requiredVersion: false },
+        // Mirror the package's peerDependencies range: accept React 18 and 19
+        // (the widget relies on 18+ hook semantics) while rejecting 17, where
+        // those hooks don't exist. `false` here would silently dedup an
+        // incompatible host version.
+        shareConfig: { singleton: true, requiredVersion: '^18.0.0 || ^19.0.0' },
       },
       'react-dom': {
         version: (ReactDOM as { version?: string }).version ?? '0.0.0',
         scope: 'default',
         lib: () => ReactDOM,
-        shareConfig: { singleton: true, requiredVersion: false },
+        // Mirror the package's peerDependencies range: accept React 18 and 19
+        // (the widget relies on 18+ hook semantics) while rejecting 17, where
+        // those hooks don't exist. `false` here would silently dedup an
+        // incompatible host version.
+        shareConfig: { singleton: true, requiredVersion: '^18.0.0 || ^19.0.0' },
       },
     },
   });
@@ -46,6 +57,9 @@ export function initRemote(remoteEntry: string): void {
 }
 
 export async function loadWidget<T = unknown>(): Promise<T> {
+  if (typeof window === 'undefined') {
+    throw new Error('[layerswap/widget-react] loadWidget() requires a browser environment');
+  }
   const mod = await loadRemote<{ default: T } | T>(`${REMOTE_NAME}/Widget`);
   if (mod && typeof mod === 'object' && 'default' in (mod as Record<string, unknown>)) {
     return (mod as { default: T }).default;
