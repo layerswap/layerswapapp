@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useMemo, useState } from "react";
 import { AppKitConnectButton, AppKitAccountButton } from '@reown/appkit/react'
 import { Swap, DepositComponent, LayerswapProvider, LayerSwapSettings, ThemeData } from '@layerswap/widget'
 import { createEVMProvider } from "@layerswap/wallet-evm"
@@ -49,7 +49,9 @@ type WidgetType = "swap" | "deposit";
 
 const Comp: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
     const { address } = useAccount()
-    const walletProviders = [createEVMProvider({ walletConnectConfigs: walletConnect, wagmiConfig: wagmiAdapter.wagmiConfig })]
+    // Memoize so the provider isn't recreated on every render (which would tear
+    // down and re-init the wallet connection, disconnecting the active wallet).
+    const walletProviders = useMemo(() => [createEVMProvider({ walletConnectConfigs: walletConnect, wagmiConfig: wagmiAdapter.wagmiConfig })], [])
     const [widgetType, setWidgetType] = useState<WidgetType>("swap");
 
     return <div className="h-screen flex flex-col items-center justify-center gap-4">

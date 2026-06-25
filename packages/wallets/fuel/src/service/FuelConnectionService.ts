@@ -4,7 +4,7 @@ import type {
     Wallet,
     WalletConnectionProvider,
 } from '@layerswap/widget/types'
-import { sleep, useWalletStore } from '@layerswap/widget/internal'
+import { sleep } from '@layerswap/widget/internal'
 import type { FuelConnector } from '@fuel-ts/account'
 import { Address } from '@fuel-ts/address'
 import { name as PROVIDER_NAME, id as PROVIDER_ID, commonSupportedNetworks } from '../constants'
@@ -29,15 +29,15 @@ export class FuelConnectionService {
     }
 
     private addWallet(wallet: Wallet): void {
-        useWalletStore.getState().connectWallet(wallet)
+        useFuelStore.getState().connectWallet(wallet)
     }
 
-    private removeWallet(providerName: string, connectorName?: string): void {
-        useWalletStore.getState().disconnectWallet(providerName, connectorName)
+    private removeWallet(connectorName?: string): void {
+        useFuelStore.getState().disconnectWallet(connectorName)
     }
 
-    private getConnectedFromGlobalStore(): Wallet[] {
-        return useWalletStore.getState().connectedWallets.filter(w => w.providerName === PROVIDER_NAME)
+    private getConnectedWallets(): Wallet[] {
+        return useFuelStore.getState().connectedWallets
     }
 
     getNetworkIcon(): string | undefined {
@@ -141,10 +141,12 @@ export class FuelConnectionService {
             if (!fuelConnector) throw new Error('Connector not found')
             await fuelConnector.disconnect()
         } catch (e) {
-            // TODO: handle error
-            console.log(e)
+            // Disconnect is best-effort — log but do not rethrow; the wallet is
+            // removed from the store in `finally` regardless.
+            const msg = e instanceof Error ? e.message : String(e)
+            console.error(`[Fuel] Failed to disconnect ${connectorName}: ${msg}`)
         } finally {
-            this.removeWallet(PROVIDER_NAME, connectorName)
+            this.removeWallet(connectorName)
         }
     }
 
@@ -155,11 +157,12 @@ export class FuelConnectionService {
             const connectors = useFuelStore.getState().connectors
             for (const connector of connectors.filter(c => c.connected)) {
                 await connector.disconnect()
-                this.removeWallet(PROVIDER_NAME)
+                this.removeWallet()
             }
         } catch (e) {
-            // TODO: handle error
-            console.log(e)
+            // Best-effort bulk disconnect — log but do not rethrow.
+            const msg = e instanceof Error ? e.message : String(e)
+            console.error(`[Fuel] Failed to disconnect wallets: ${msg}`)
         }
     }
 
@@ -170,8 +173,8 @@ export class FuelConnectionService {
             const res = await fuel.selectConnector(wallet.id)
             if (!res) throw new Error('Could not switch account')
         } catch (e) {
-            // TODO: handle error
-            console.log(e)
+            const msg = e instanceof Error ? e.message : String(e)
+            console.error(`[Fuel] Failed to switch account to ${wallet.id}: ${msg}`)
         }
     }
 
@@ -182,8 +185,8 @@ export class FuelConnectionService {
             const res = await fuelConnector.selectNetwork({ chainId: Number(chainId) })
             if (!res) throw new Error('Could not switch chain')
         } catch (e) {
-            // TODO: handle error
-            console.log(e)
+            const msg = e instanceof Error ? e.message : String(e)
+            console.error(`[Fuel] Failed to switch chain to ${chainId}: ${msg}`)
         }
     }
 
@@ -198,8 +201,8 @@ export class FuelConnectionService {
                     wallets.push(w)
                 }
             } catch (e) {
-                // TODO: handle error
-                console.log(e)
+                const msg = e instanceof Error ? e.message : String(e)
+                console.error(`[Fuel] Failed to resolve connected wallet for ${connector.name}: ${msg}`)
             }
         }
         return wallets
@@ -213,7 +216,7 @@ export class FuelConnectionService {
     }
 
     buildProvider(): WalletConnectionProvider {
-        const connectedWallets = this.getConnectedFromGlobalStore()
+        const connectedWallets = this.getConnectedWallets()
         return {
             connectWallet: this.connectWallet.bind(this),
             disconnectWallets: this.disconnectWallets.bind(this),

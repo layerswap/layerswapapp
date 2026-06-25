@@ -138,6 +138,12 @@ const DescriptorHydrationBoundary: FC<{
     const [loadedById, setLoadedById] = useState<ReadonlyMap<string, WalletProvider | WalletWrapper>>(new Map())
     // In-flight loads, deduplicated by id, so concurrent triggers don't double-import the SDK.
     const inflightRef = useRef<Map<string, Promise<void>>>(new Map())
+    // Mirror `loadedById` into a ref so `loadById`/`loadAll` can read the latest
+    // resolved set WITHOUT listing it as a dependency. Otherwise every resolved
+    // descriptor changes their identity → new context value → all loader
+    // consumers re-render (8 cascades when opening the modal).
+    const loadedByIdRef = useRef(loadedById)
+    loadedByIdRef.current = loadedById
 
     const resolvedProviders = useMemo(() => {
         return walletProviders.map(p => {
@@ -148,7 +154,7 @@ const DescriptorHydrationBoundary: FC<{
     }, [walletProviders, loadedById])
 
     const loadById = useCallback<(id: string) => Promise<void>>(async (id) => {
-        if (loadedById.has(id)) return
+        if (loadedByIdRef.current.has(id)) return
         const existing = inflightRef.current.get(id)
         if (existing) return existing
         const descriptor = walletProviders.find(p => isWalletProviderDescriptor(p) && p.id === id) as WalletProviderDescriptor | undefined
@@ -165,14 +171,14 @@ const DescriptorHydrationBoundary: FC<{
         })
         inflightRef.current.set(id, p)
         return p
-    }, [loadedById, walletProviders])
+    }, [walletProviders])
 
     const loadAll = useCallback(async () => {
         const pending = walletProviders
-            .filter((p): p is WalletProviderDescriptor => isWalletProviderDescriptor(p) && !loadedById.has(p.id))
+            .filter((p): p is WalletProviderDescriptor => isWalletProviderDescriptor(p) && !loadedByIdRef.current.has(p.id))
             .map(p => loadById(p.id))
         await Promise.all(pending)
-    }, [walletProviders, loadById, loadedById])
+    }, [walletProviders, loadById])
 
     const loaderValue = useMemo(() => ({ loadById, loadAll }), [loadById, loadAll])
 
