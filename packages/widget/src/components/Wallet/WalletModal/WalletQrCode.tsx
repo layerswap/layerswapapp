@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { WalletModalConnector } from ".";
 import { resolveWalletConnectorIcon } from "@/lib/wallets/utils/resolveWalletIcon";
-import { QRCodeSVG } from "qrcode.react";
+import StyledQRCode from "@/components/Common/StyledQRCode";
 import CopyButton from "@/components/Buttons/copyButton";
 
 export const WalletQrCode: FC<{ selectedConnector: WalletModalConnector }> = ({ selectedConnector }) => {
@@ -13,25 +13,13 @@ export const WalletQrCode: FC<{ selectedConnector: WalletModalConnector }> = ({ 
                 <ConnectorIcon className="w-6 h-6" />
                 <p className="text-sm font-medium text-primary-text">{selectedConnector?.name}</p>
             </div>
-            <div className="bg-white p-3 rounded-2xl">
+            <div className="bg-secondary-500 p-3 rounded-2xl">
                 {
                     selectedConnector?.qr?.state == 'fetched' ?
-                        <QRCodeSVG
-                            className="rounded-lg"
-                            value={selectedConnector?.qr.value}
-                            includeMargin={false}
+                        <StyledQRCode
+                            value={selectedConnector?.qr.value ?? ''}
                             size={220}
-                            level={"H"}
-                            imageSettings={
-                                selectedConnector.icon
-                                    ? {
-                                        src: selectedConnector.icon,
-                                        height: 40,
-                                        width: 40,
-                                        excavate: true,
-                                    }
-                                    : undefined
-                            }
+                            logo={selectedConnector.icon}
                         />
                         :
                         <div className="w-[220px] h-[220px] relative">
