@@ -19,8 +19,13 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const REPO_ROOT = resolve(ROOT, '..', '..');
 
-const CHANNEL = process.env.LAYERSWAP_CHANNEL || 'v1';
-const MANIFEST_PATH = join(ROOT, 'dist', CHANNEL, 'manifest.json');
+// Resolve the same version-named build directory build-manifest.mjs wrote.
+// Read from the workspace symlink (exports map hides ./package.json).
+const widgetPkg = JSON.parse(
+    readFileSync(join(ROOT, 'node_modules', '@layerswap', 'widget', 'package.json'), 'utf8'),
+);
+const VERSION = process.env.LAYERSWAP_RELEASE_VERSION || widgetPkg.version || '0.0.0';
+const MANIFEST_PATH = join(ROOT, 'dist', VERSION, 'manifest.json');
 
 if (!existsSync(MANIFEST_PATH)) {
     console.error(`[verify-manifest] missing ${MANIFEST_PATH} — run \`pnpm build\` first.`);
@@ -132,4 +137,4 @@ if (mismatches.length > 0) {
     process.exit(8);
 }
 
-console.log(`[verify-manifest] OK  channel=${CHANNEL}  version=${manifest.version}  chunks=${actualFiles.length}`);
+console.log(`[verify-manifest] OK  version=${manifest.version}  channel=${manifest.channel}  chunks=${actualFiles.length}`);

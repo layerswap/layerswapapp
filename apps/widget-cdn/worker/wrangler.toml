@@ -1,0 +1,23 @@
+name = "layerswap-widget-cdn"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+
+# The R2 bucket holding the immutable per-version builds plus the single
+# mutable `channels.json` pointer. Create it once with:
+#   wrangler r2 bucket create layerswap-widget-cdn
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "layerswap-widget-cdn"
+
+# Serve the CDN from your own domain. Configure the custom domain in the
+# Cloudflare dashboard (Workers & Pages → this Worker → Triggers → Custom
+# Domains) or uncomment below once the zone is on Cloudflare:
+#
+# routes = [
+#   { pattern = "cdn.layerswap.io", custom_domain = true },
+# ]
+#
+# Until then the Worker is reachable at its *.workers.dev subdomain.
+
+[observability]
+enabled = true

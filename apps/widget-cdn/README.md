@@ -1,13 +1,49 @@
 # @layerswap/widget-cdn
 
 Rspack Module-Federation **remote** that exposes `@layerswap/widget` for
-runtime delivery via `@layerswap/widget-react`.
+runtime delivery, plus the Cloudflare **Worker + R2** edge that serves it.
 
 - `name`: `layerswap_widget`
 - `filename`: `remoteEntry.js`
-- `exposes`: `./Widget`
+- `exposes`: `./Widget`, `./mount`
 - Shared singletons: `react`, `react-dom`, `wagmi`, `viem`,
   `@tanstack/react-query`, `zustand`
+
+Consumed by `@layerswap/widget-react` (React hosts) and
+`@layerswap/widget-js` (framework-agnostic hosts).
+
+## Versioning model
+
+Every build is published to an **immutable, version-named prefix** in R2 and
+never overwritten. A single mutable pointer (`channels.json`) maps each rolling
+major channel to its current version, and the Worker turns that into a redirect.
+
+```
+R2 bucket (layerswap-widget-cdn)
+├── 1.5.0/                 ← immutable build, write-once
+│   ├── manifest.json      ← signed; describes this exact build
+│   ├── remoteEntry.js
+│   └── <name>.<hash>.js   ← content-hashed chunks
+├── 1.5.1/                 ← next release, also immutable
+└── channels.json          ← the ONLY mutable object: { "v1": "1.5.0" }
+```
+
+Integrators choose their risk posture by which URL they load:
+
+| URL | Behavior |
+|---|---|
+| `…/v1/manifest.json` | **Rolling** — Worker 302-redirects to the current `v1` build. Auto-updates within ~60s of a channel flip. |
+| `…/1.5.0/manifest.json` | **Pinned** — frozen forever at that exact build. |
+
+The loader follows the redirect and resolves the relative `remoteEntry` against
+the **final** URL, so the remote and every chunk it loads anchor at the
+immutable version path. **Rollback / roll-forward is a pointer flip** — no
+rebuild, no re-upload (see `scripts/rollback-r2.mjs`).
+
+The build's identity is the `@layerswap/widget` version. A breaking change to
+the embed/mount API or a required host singleton major (react/wagmi/viem) is
+what warrants cutting a new major channel (`v2`); anything backward-compatible
+ships within the existing channel.
 
 ## Dev
 
@@ -15,11 +51,11 @@ runtime delivery via `@layerswap/widget-react`.
 pnpm dev
 ```
 
-Serves the remote on `http://127.0.0.1:3100/remoteEntry.js`, plus an
-unsigned `http://127.0.0.1:3100/manifest.json` pointing at it — so the
-`@layerswap/widget-react` loader's manifest path works in dev exactly as
-it does in prod. Load it with `verify: false` (the dev manifest is
-unsigned).
+Serves the remote on `http://127.0.0.1:3100/remoteEntry.js`, plus an unsigned
+`http://127.0.0.1:3100/manifest.json` pointing at it — so the loader's manifest
+path works in dev exactly as in prod. Load it with `verify: false` (the dev
+manifest is unsigned). Dev output stays flat in `dist/` (no version directory,
+no redirect).
 
 ## Production build
 
@@ -27,110 +63,105 @@ unsigned).
 LAYERSWAP_PRIVATE_KEY_PEM=/path/to/signing-key.pem pnpm build
 ```
 
-Emits to `dist/v1/` — content-hashed chunks, stable `remoteEntry.js`,
-plus `manifest.json` signed with the provided key. Without
-`LAYERSWAP_PRIVATE_KEY_PEM`, the manifest is emitted unsigned — fine for
-local builds but rejected by integrators using `verify: true`.
+Emits to `dist/<version>/` (e.g. `dist/1.5.0/`) — content-hashed chunks, stable
+`remoteEntry.js`, plus a `manifest.json` signed with the provided key. The
+manifest carries `version`, `channel`, `gitSha`, `builtAt`, per-chunk SHA-384
+SRI hashes, the kill switch, and the signature. Without
+`LAYERSWAP_PRIVATE_KEY_PEM` the manifest is emitted unsigned — fine for local
+builds, rejected by the deploy script and by integrators using `verify: true`.
 
-`LAYERSWAP_CHANNEL` (default `v1`) controls the output subdirectory.
-Set to a pinned version like `v1.3.0` for an immutable build alongside
-the rolling `/v1/`.
+`LAYERSWAP_RELEASE_VERSION` overrides the version label (and therefore the
+output directory) for a one-off build.
 
-## CI deploy (production)
+```bash
+pnpm verify-manifest   # round-trip the signature against the bundled public key
+```
 
-Production deploys go through `.github/workflows/widget-cdn-deploy.yml`.
-Vercel's git-integrated auto-deploy is **disabled** for this project
-(`git.deploymentEnabled.main: false`) so signing is unbypassable.
+## The edge: Cloudflare Worker + R2
 
-### Required GitHub secrets
+The Worker (`worker/`) serves R2 and does the rolling-channel redirect:
+
+- `GET /vN/<path>` → reads `channels.json`, 302-redirects to `/<version>/<path>`
+  (short cache so flips propagate fast).
+- `GET /<version>/<path>` → serves from R2 with `immutable` caching + permissive
+  CORS (chunks load `crossorigin="anonymous"` for SRI).
+- Security headers (HSTS, nosniff, frame-deny) on every response.
+
+```bash
+pnpm worker:dev      # local Worker dev
+pnpm worker:deploy   # wrangler deploy
+```
+
+## Deploy
+
+```bash
+pnpm deploy:r2                  # upload dist/<version>/ to R2 + flip channel pointer
+LAYERSWAP_PROMOTE=false pnpm deploy:r2   # upload only (staged release)
+ALLOW_OVERWRITE=1 pnpm deploy:r2         # re-upload an existing version (escape hatch)
+
+# roll a channel to any already-published version (instant; no rebuild):
+node scripts/rollback-r2.mjs v1 1.4.0
+```
+
+`deploy:r2` refuses to overwrite an already-published version — published
+builds are immutable. Bump `@layerswap/widget` to ship again.
+
+### CI deploy (production)
+
+Production deploys go through `.github/workflows/widget-cdn-deploy.yml`. The
+signing key never leaves CI. The workflow: builds + signs → verifies the
+signature against the bundled public key → uploads the immutable build to R2 →
+flips the channel pointer → smoke-tests the live channel. The Worker is
+deployed separately (manually, or via the `deploy_worker` dispatch input — it
+rarely changes).
+
+#### Required GitHub secrets
 
 | Secret | Value |
 |---|---|
-| `LAYERSWAP_PRIVATE_KEY_PEM` | ECDSA P-256 private key in PEM format. Whose **public** key half is baked into `@layerswap/widget-react/src/manifest.ts`. |
-| `VERCEL_TOKEN` | Vercel API token with deploy rights on the project. |
-| `VERCEL_ORG_ID` | From `.vercel/project.json` after running `vercel link`. |
-| `VERCEL_PROJECT_ID` | Same source as `VERCEL_ORG_ID`. |
+| `LAYERSWAP_PRIVATE_KEY_PEM` | ECDSA P-256 private key (PEM). Its public half is baked into `@layerswap/widget-js/src/manifest.ts`. |
+| `R2_ACCOUNT_ID` | Cloudflare account id. |
+| `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` | R2 **Account** API token (Object Read & Write) credentials. |
+| `CLOUDFLARE_API_TOKEN` | *(optional)* Only if CI deploys the Worker. |
 
-### First-time setup
+#### Required GitHub variables
 
-1. **Generate the keypair** (one-time, outside CI):
+| Variable | Value |
+|---|---|
+| `R2_BUCKET` | Bucket name (default `layerswap-widget-cdn`). |
+| `CDN_BASE_URL` | Public CDN origin, e.g. the Worker's `*.workers.dev` URL or custom domain. Used by the smoke test. |
+
+### First-time infrastructure setup
+
+1. **Enable R2** in the Cloudflare dashboard (Storage & databases → R2).
+2. **Create the bucket**: `wrangler r2 bucket create layerswap-widget-cdn`.
+3. **Deploy the Worker**: `pnpm worker:deploy` (registers a `*.workers.dev`
+   subdomain on first run, or wire a custom domain in `worker/wrangler.toml`).
+4. **Create an R2 Account API token** (Object Read & Write) → set
+   `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` / `R2_ACCOUNT_ID`.
+5. **Generate the signing keypair** (one-time):
    ```bash
-   openssl ecparam -name prime256v1 -genkey -noout -out manifest-private.pem
-   openssl ec -in manifest-private.pem -pubout -outform DER \
-     | base64 | tr -d '\n'
+   openssl ecparam -name prime256v1 -genkey -noout -out .keys/manifest-private.pem
+   openssl ec -in .keys/manifest-private.pem -pubout -outform DER | base64 | tr -d '\n'
    ```
-   The base64 SPKI from the second command goes into
-   `packages/widget-react/src/manifest.ts` as
-   `PLACEHOLDER_PUBLIC_KEY_SPKI_B64` (replace the placeholder; rename
-   the constant to `PUBLIC_KEY_SPKI_B64` once it's the real key).
-2. **Publish a fresh `@layerswap/widget-react`** version so integrators
-   pin the new public key.
-3. **Add the private PEM to GitHub Secrets** as
-   `LAYERSWAP_PRIVATE_KEY_PEM` (paste the file contents verbatim,
-   including the `-----BEGIN/END EC PRIVATE KEY-----` lines).
-4. **Link the Vercel project** (`vercel link` from `apps/widget-cdn/`)
-   and copy the resulting org/project IDs into GitHub Secrets.
-5. **Disable Vercel git auto-deploy** in the Vercel dashboard for this
-   project — the `vercel.json` already declares `deploymentEnabled.main:
-   false` but the dashboard toggle is the actual gate.
+   Put the base64 SPKI into `packages/widget-js/src/manifest.ts`
+   (`MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64`) and `.keys/manifest-public.b64.txt`,
+   and the private PEM into the `LAYERSWAP_PRIVATE_KEY_PEM` secret.
 
-The next push to `main` touching `apps/widget-cdn` (or any of the
-workspace packages it depends on) triggers the workflow. The workflow:
+### Key rotation
 
-1. Stages the PEM to a tempfile on the runner.
-2. Builds + signs locally (the build script reads the tempfile path).
-3. Verifies the resulting `manifest.json` against the bundled public
-   key — fails the deploy if the key in CI doesn't match.
-4. Packs via `vercel build` and deploys via `vercel deploy --prebuilt`
-   so Vercel never re-runs the build (and therefore never needs the
-   signing key itself).
-5. Wipes the tempfile.
-6. Smoke-tests the deployed `manifest.json`: reachable, CORS set,
-   signed, kill-switch off.
+The public key constant in `@layerswap/widget-js` is the trust anchor. Rotate:
 
-### Manual deploy
+1. Generate a new keypair.
+2. Update `MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64` in
+   `packages/widget-js/src/manifest.ts` (+ `.keys/manifest-public.b64.txt`).
+3. Publish a new `@layerswap/widget-js` (and `-react`) version so integrators
+   pin the new key.
+4. Update `LAYERSWAP_PRIVATE_KEY_PEM` in GitHub Secrets; redeploy.
 
-`workflow_dispatch` accepts a `channel` input (default `v1`) so you can
-publish pinned immutable builds:
+### Upgrading to KMS
 
-```
-Actions → widget-cdn — build, sign, deploy → Run workflow
-  channel: v1.3.0
-```
-
-### Upgrading from PEM-in-secret to true KMS
-
-The current workflow trusts GitHub Secrets to hold the private key. The
-secure upgrade is to keep the key non-extractable inside AWS KMS /
-Google Cloud KMS / HashiCorp Vault and have the build call the KMS
-sign API instead. The workflow already requests `id-token: write` so
-OIDC federation works without static credentials.
-
-Migration shape (not implemented — leave it to your platform team's
-preference):
-
-1. Generate a P-256 signing key in KMS, mark non-extractable.
-2. Export public key SPKI; bake it into `widget-react` (same as today).
-3. Rewrite `scripts/build-manifest.mjs` so that when
-   `LAYERSWAP_KMS_KEY_ARN` (or equivalent) is set, it calls KMS to sign
-   the canonical body instead of using the local PEM. Keep PEM-based
-   signing as a fallback for local dev.
-4. In the workflow, exchange OIDC token for cloud creds before calling
-   the build step; drop `LAYERSWAP_PRIVATE_KEY_PEM` from secrets.
-
-The loader (`@layerswap/widget-react`) does not change — it only sees
-the bytes, never the key.
-
-### Rotation
-
-The public key constant in `@layerswap/widget-react` is the trust
-anchor. To rotate:
-
-1. Generate the new keypair.
-2. Update `PUBLIC_KEY_SPKI_B64` in `packages/widget-react/src/manifest.ts`.
-3. Publish a new `@layerswap/widget-react` minor (or major) version.
-4. Update `LAYERSWAP_PRIVATE_KEY_PEM` in GitHub Secrets to the new key.
-5. Trigger a deploy.
-
-Integrators upgrade by bumping the `@layerswap/widget-react` dep. SRI
-pinning that package is recommended.
+The current workflow trusts a GitHub Secret to hold the private key. The secure
+upgrade keeps the key non-extractable in a KMS/HSM and signs via its API. The
+workflow already requests `id-token: write` for OIDC federation. The loader
+never changes — it only sees signed bytes, never the key.

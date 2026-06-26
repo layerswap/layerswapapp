@@ -30,7 +30,7 @@ export async function resolveSource(options: ResolveOptions): Promise<ResolvedSo
   }
   // When verifying, force a revalidation so we check the freshest bytes.
   // Otherwise let the browser HTTP cache satisfy repeated mounts.
-  const manifest = await fetchManifest(options.manifest, !options.verify);
+  const { manifest, url: resolvedManifestUrl } = await fetchManifest(options.manifest, !options.verify);
   if (manifest.killSwitch) {
     throw new ManifestError('kill-switch', 'manifest kill switch is set — refusing to load remote');
   }
@@ -40,7 +40,12 @@ export async function resolveSource(options: ResolveOptions): Promise<ResolvedSo
       throw new ManifestError('signature', 'manifest signature is missing or invalid');
     }
   }
-  const remoteEntry = resolveRemoteEntry(options.manifest, manifest.remoteEntry);
+  // Resolve against the manifest's FINAL (post-redirect) URL, not the URL the
+  // caller passed. A rolling channel URL (`/v1/manifest.json`) 302-redirects to
+  // an immutable build (`/1.5.0/manifest.json`); resolving the relative
+  // `remoteEntry` against that lands the remote — and, via MF's `publicPath:
+  // 'auto'`, every chunk it loads — at the immutable `/1.5.0/` path.
+  const remoteEntry = resolveRemoteEntry(resolvedManifestUrl, manifest.remoteEntry);
   // Install per-chunk SRI BEFORE MF runtime starts loading scripts. Once
   // the manifest's signed body is trusted, its `chunks` map pins the bytes
   // of every JS file the browser will fetch from our origin — including

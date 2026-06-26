@@ -1,28 +1,41 @@
 name: widget-cdn — build, sign, deploy
 
-# Production builds of `apps/widget-cdn` go through CI so the signing
-# key never lives outside `secrets.LAYERSWAP_PRIVATE_KEY_PEM`. The
-# `vercel.json` in apps/widget-cdn disables the git-integrated
-# auto-deploy, so this workflow is the only path to a production
-# deploy of the CDN.
+# Production builds of `apps/widget-cdn` go through CI so the signing key never
+# lives outside `secrets.LAYERSWAP_PRIVATE_KEY_PEM`. The build is uploaded to
+# Cloudflare R2 under an immutable per-version prefix and the rolling channel
+# pointer (`channels.json`) is flipped to it. The Cloudflare Worker in
+# `apps/widget-cdn/worker` serves R2 and 302-redirects `/vN/*` to the current
+# version. This workflow is the only path to a production CDN deploy.
 
 on:
   push:
-    branches: [main]
+    # `babkenmes/widget-cdn-delivery` is temporary — for testing the full
+    # deploy pipeline on the feature branch before merging. Remove it (leaving
+    # just `main`) once the CDN is verified end-to-end.
+    branches: [main, babkenmes/widget-cdn-delivery]
     paths:
       - 'apps/widget-cdn/**'
       - 'packages/widget/**'
       - 'packages/wallets/**'
       - 'packages/widget-react/**'
+      # widget-js holds the manifest signing public key — a rotation there must
+      # trigger a rebuild+resign or the signature won't match.
+      - 'packages/widget-js/**'
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
       - '.github/workflows/widget-cdn-deploy.yml'
   workflow_dispatch:
     inputs:
-      channel:
-        description: 'Channel to publish under (e.g. v1, v1.3.0)'
+      promote:
+        description: 'Flip the rolling channel to this build (uncheck to upload only)'
+        type: boolean
         required: false
-        default: 'v1'
+        default: true
+      deploy_worker:
+        description: 'Also deploy the Cloudflare Worker (edge router)'
+        type: boolean
+        required: false
+        default: false
 
 concurrency:
   group: widget-cdn-${{ github.ref }}
@@ -30,10 +43,7 @@ concurrency:
 
 permissions:
   contents: read
-  # id-token: write is here for the OIDC upgrade path — if you move the
-  # signing key into AWS KMS / GCP Secret Manager / HashiCorp Vault later,
-  # this scope lets the runner exchange a short-lived OIDC token for
-  # cloud credentials without static long-lived secrets in the repo.
+  # Reserved for an OIDC upgrade path if the signing key moves into KMS later.
   id-token: write
 
 jobs:
@@ -41,9 +51,18 @@ jobs:
     runs-on: ubuntu-latest
     environment: widget-cdn-production
     env:
-      LAYERSWAP_CHANNEL: ${{ inputs.channel || 'v1' }}
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      # R2 credentials (an R2 API token scoped to the bucket) + endpoint.
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_BUCKET: ${{ vars.R2_BUCKET || 'layerswap-widget-cdn' }}
+      # Promotion defaults to true on push; honors the dispatch toggle otherwise.
+      LAYERSWAP_PROMOTE: ${{ (github.event_name == 'workflow_dispatch' && inputs.promote == false) && 'false' || 'true' }}
+      # Published versions are immutable — re-pushing the SAME @layerswap/widget
+      # version fails the upload by design. While iterating on this branch,
+      # either bump the widget patch version between pushes, or uncomment the
+      # next line to allow overwriting an existing version. Re-comment before merge.
+      # ALLOW_OVERWRITE: '1'
 
     steps:
       - uses: actions/checkout@v4
@@ -65,11 +84,14 @@ jobs:
       - name: Build workspace packages
         run: pnpm build:packages
 
-      # Stage the signing key from the GitHub secret to a tempfile.
-      # `build-manifest.mjs` accepts either inline PEM text or a path; we
-      # use a path so the key isn't visible in process argv listings or
-      # in env-dumps that might land in CI logs. The file is wiped at the
-      # end of the job regardless of outcome.
+      # Build provenance stamped into the signed manifest.
+      - name: Compute build metadata
+        run: |
+          echo "LAYERSWAP_GIT_SHA=${GITHUB_SHA}" >> "$GITHUB_ENV"
+          echo "LAYERSWAP_BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
+
+      # Stage the signing key to a tempfile (not argv/env-dump visible). Wiped
+      # at job end regardless of outcome.
       - name: Stage signing key
         id: key
         env:
@@ -90,72 +112,62 @@ jobs:
           LAYERSWAP_PRIVATE_KEY_PEM: ${{ steps.key.outputs.key-path }}
         run: pnpm build
 
-      # Round-trip the signature against the public key constant baked into
-      # `@layerswap/widget-react`. Fails the deploy if the key in CI doesn't
-      # match the bundled public key — catches rotation mismatches before
-      # they reach integrators.
+      # Round-trip the signature against the public key bundled into the loader
+      # core. Fails the deploy on a key mismatch before anything ships.
       - name: Verify signature against bundled public key
         working-directory: apps/widget-cdn
         run: pnpm verify-manifest
 
-      - name: Install Vercel CLI
-        run: npm install --global vercel@latest
-
-      - name: Pull Vercel project config
+      # Upload the immutable build to R2 and (unless promote=false) flip the
+      # rolling channel pointer. Refuses to overwrite an already-published
+      # version, so re-running a deploy for an unchanged version is a no-op
+      # error rather than a silent clobber — bump @layerswap/widget to ship.
+      - name: Upload to R2 + promote channel
         working-directory: apps/widget-cdn
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: vercel pull --yes --environment=production
-
-      # `vercel build` wraps the already-built `dist/` into Vercel's
-      # `.vercel/output/` format. We pass --prebuilt to `deploy` so Vercel
-      # does NOT re-run our buildCommand — it would have to re-sign without
-      # the GitHub secret. This pattern keeps signing strictly in CI.
-      - name: Pack for Vercel
-        working-directory: apps/widget-cdn
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: vercel build --prod
-
-      - name: Deploy to Vercel
-        id: deploy
-        working-directory: apps/widget-cdn
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: |
-          URL=$(vercel deploy --prebuilt --prod)
-          echo "url=$URL" >> "$GITHUB_OUTPUT"
-          echo "Deployed: $URL"
+        run: pnpm deploy:r2
 
       - name: Wipe signing key from runner
         if: always()
         run: rm -f "$RUNNER_TEMP/layerswap-signing.pem"
 
-      - name: Smoke-test the deployed manifest
-        # Light end-to-end check: the manifest URL is reachable, served
-        # with the right CORS header, contains a signature, and has the
-        # kill-switch off. Doesn't re-verify the signature against the
-        # bundled key (already done above) — this is a deploy-pipeline
-        # check, not a crypto check.
+      # Optional: deploy the edge Worker. Only needed when worker code changes;
+      # off by default on push, opt-in via workflow_dispatch.
+      - name: Deploy Cloudflare Worker
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_worker == true }}
+        working-directory: apps/widget-cdn
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+        run: pnpm worker:deploy
+
+      # End-to-end check against the live CDN: the rolling channel resolves,
+      # the manifest is reachable with CORS, signed, and kill-switch off.
+      - name: Smoke-test the live channel
+        if: ${{ env.LAYERSWAP_PROMOTE != 'false' && vars.CDN_BASE_URL != '' }}
         run: |
           set -euo pipefail
-          URL="${{ steps.deploy.outputs.url }}"
-          MANIFEST_URL="$URL/${{ env.LAYERSWAP_CHANNEL }}/manifest.json"
-          echo "Fetching $MANIFEST_URL"
-          curl -fsSL -H "Origin: https://example.com" -D /tmp/headers "$MANIFEST_URL" -o /tmp/manifest.json
+          VERSION=$(node -e "console.log(require('./apps/widget-cdn/node_modules/@layerswap/widget/package.json').version)")
+          CHANNEL="v${VERSION%%.*}"
+          MANIFEST_URL="${{ vars.CDN_BASE_URL }}/${CHANNEL}/manifest.json"
+          echo "Fetching (following redirects) $MANIFEST_URL"
+          curl -fsSL -L -H "Origin: https://example.com" -D /tmp/headers "$MANIFEST_URL" -o /tmp/manifest.json
           grep -i 'access-control-allow-origin' /tmp/headers || { echo "::error::CDN missing CORS header"; exit 1; }
           node -e "
             const m = JSON.parse(require('fs').readFileSync('/tmp/manifest.json','utf8'));
-            if (!m.signature) { console.error('deployed manifest has no signature'); process.exit(1); }
-            if (m.killSwitch) { console.error('deployed manifest has killSwitch=true'); process.exit(1); }
-            console.log('deployed manifest OK  version=', m.version);
+            if (!m.signature) { console.error('live manifest has no signature'); process.exit(1); }
+            if (m.killSwitch) { console.error('live manifest has killSwitch=true'); process.exit(1); }
+            if (m.version !== '${VERSION}') { console.error('live channel still on', m.version, '— expected ${VERSION}'); process.exit(1); }
+            console.log('live channel OK  version=', m.version, ' gitSha=', m.gitSha);
           "
 
       - name: Summary
         if: always()
         run: |
-          echo "## widget-cdn deploy" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Channel: \`${{ env.LAYERSWAP_CHANNEL }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- URL: ${{ steps.deploy.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Manifest: ${{ steps.deploy.outputs.url }}/${{ env.LAYERSWAP_CHANNEL }}/manifest.json" >> "$GITHUB_STEP_SUMMARY"
+          VERSION=$(node -e "console.log(require('./apps/widget-cdn/node_modules/@layerswap/widget/package.json').version)" 2>/dev/null || echo "?")
+          {
+            echo "## widget-cdn deploy"
+            echo ""
+            echo "- Version: \`${VERSION}\`"
+            echo "- Channel promoted: \`${LAYERSWAP_PROMOTE}\`"
+            echo "- Commit: \`${GITHUB_SHA}\`"
+          } >> "$GITHUB_STEP_SUMMARY"

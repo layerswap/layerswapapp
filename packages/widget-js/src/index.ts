@@ -30,7 +30,7 @@ export {
   fetchManifest,
   resolveRemoteEntry,
 } from './manifest';
-export type { Manifest } from './manifest';
+export type { Manifest, FetchedManifest } from './manifest';
 
 // Runtime SRI interceptor.
 export { registerChunkHashes } from './sri';

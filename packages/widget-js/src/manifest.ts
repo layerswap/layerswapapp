@@ -11,9 +11,27 @@
  * of the manifest with `signature` itself set to `null`. See `verifyManifest`.
  */
 export type Manifest = {
-    /** Semver of the build this manifest describes. */
+    /** Semver of the build this manifest describes (the `@layerswap/widget` version). */
     version: string;
-    /** Absolute or manifest-relative URL to the remoteEntry.js. */
+    /**
+     * Major channel this build belongs to, e.g. `"v1"`. Informational — the
+     * loader fetches whatever manifest URL it's given; this field lets tooling
+     * and humans see which compatibility channel a pinned build came from.
+     */
+    channel?: string;
+    /** Git commit the build was produced from (provenance — not security-critical). */
+    gitSha?: string;
+    /** ISO-8601 build timestamp (provenance). */
+    builtAt?: string;
+    /**
+     * Absolute or manifest-relative URL to the remoteEntry.js.
+     *
+     * Kept origin-relative (`"./remoteEntry.js"`) so the same signed bytes work
+     * whether the manifest is fetched directly at its immutable version path
+     * (`/1.5.0/manifest.json`) or reached via a rolling-channel redirect
+     * (`/v1/manifest.json` → 302 → `/1.5.0/manifest.json`). The loader resolves
+     * it against the manifest's FINAL (post-redirect) URL — see `resolveSource`.
+     */
     remoteEntry: string;
     /**
      * Per-file SRI hashes for every JS chunk in the build, keyed by
@@ -45,7 +63,7 @@ export type Manifest = {
  * `LAYERSWAP_PRIVATE_KEY_PEM`.
  */
 export const MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64 =
-    'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEtrU5cbU2kkaqwBPLusROxy1lhbQDTKt9kqJ5z5ngnOlN2xZQzAiHlKLufz5Nlzuf2FpkJX0L+kbGKm0sKn1pJQ==';
+    'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAESuHFHbltz/hfcY+DzIrLq7Ixc4efHE8SLZdNg0pZZDHTfdwbqLpGk4461EgNranHLWnVsoAbyQ4IyHIVnRAVKw==';
 
 const fromB64 = (b64: string): ArrayBuffer => {
     const bin = atob(b64);
@@ -149,6 +167,19 @@ export class ManifestError extends Error {
     }
 }
 
+/** A fetched manifest plus the URL it was ultimately served from. */
+export type FetchedManifest = {
+    manifest: Manifest;
+    /**
+     * The FINAL URL the manifest was served from, after any HTTP redirects.
+     * When a rolling channel (`/v1/manifest.json`) 302-redirects to an
+     * immutable build (`/1.5.0/manifest.json`), this is the latter — so
+     * resolving the relative `remoteEntry` against it anchors the remote (and
+     * every chunk it loads) at the immutable version path, not the channel root.
+     */
+    url: string;
+};
+
 /**
  * Fetch and minimally validate the manifest.
  *
@@ -156,8 +187,13 @@ export class ManifestError extends Error {
  * 'default'`). Callers pass `false` when signature verification is on so the
  * freshest bytes are checked; with verification off, respecting the CDN's
  * `Cache-Control` avoids a network round-trip on every mount/remount.
+ *
+ * Returns both the parsed manifest and the post-redirect URL it came from.
+ * `fetch` follows redirects by default, so `res.url` reflects the final
+ * location; callers MUST resolve `remoteEntry` against that, not the URL they
+ * requested, for the rolling-channel redirect to work.
  */
-export async function fetchManifest(manifestUrl: string, allowCache = false): Promise<Manifest> {
+export async function fetchManifest(manifestUrl: string, allowCache = false): Promise<FetchedManifest> {
     let res: Response;
     try {
         res = await fetch(manifestUrl, { cache: allowCache ? 'default' : 'no-cache' });
@@ -176,5 +212,7 @@ export async function fetchManifest(manifestUrl: string, allowCache = false): Pr
     if (!json || typeof json !== 'object' || typeof (json as Manifest).remoteEntry !== 'string') {
         throw new ManifestError('parse', 'manifest is missing required `remoteEntry` field');
     }
-    return json as Manifest;
+    // `res.url` is empty in some non-browser fetch polyfills — fall back to the
+    // requested URL so resolution still works (just without redirect-awareness).
+    return { manifest: json as Manifest, url: res.url || manifestUrl };
 }

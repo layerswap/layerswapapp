@@ -21,18 +21,40 @@ import { createSign, createPrivateKey, createHash } from 'node:crypto';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 
-const CHANNEL = process.env.LAYERSWAP_CHANNEL || 'v1';
-const DIST = join(ROOT, 'dist', CHANNEL);
+// The build's identity is the `@layerswap/widget` version — that's the thing
+// that actually changes between releases. (widget-cdn's own package.json
+// version is irrelevant; it used to be read here and was stuck at 0.1.0.)
+//
+// Read the version from the workspace symlink directly — `@layerswap/widget`'s
+// `exports` map doesn't expose `./package.json`, so `require.resolve(...)`
+// throws ERR_PACKAGE_PATH_NOT_EXPORTED.
+const widgetPkg = JSON.parse(
+    readFileSync(join(ROOT, 'node_modules', '@layerswap', 'widget', 'package.json'), 'utf8'),
+);
+const version = process.env.LAYERSWAP_RELEASE_VERSION || widgetPkg.version || '0.0.0';
+
+// Major compatibility channel, e.g. "v1". The Worker's rolling redirect
+// (`/v1/manifest.json`) resolves to whatever version is current for this major.
+const channel = `v${version.split('.')[0]}`;
+
+// Build provenance — not security-critical (the signature covers integrity),
+// but lets a live build be mapped back to a commit + build time. Passed in by
+// CI; falls back to GitHub's env and finally to placeholders for local builds.
+const gitSha = process.env.LAYERSWAP_GIT_SHA || process.env.GITHUB_SHA || 'local';
+const builtAt = process.env.LAYERSWAP_BUILD_TIME || new Date().toISOString();
+
+// Build output lives in the immutable, version-named directory — must match
+// rspack.config.mjs (`dist/${RELEASE_VERSION}`).
+const DIST = join(ROOT, 'dist', version);
 
 if (!existsSync(DIST)) {
     console.error(`[build-manifest] expected ${DIST} to exist — run \`pnpm build\` first.`);
     process.exit(1);
 }
 
-const pkgJson = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'));
-const version = pkgJson.version || '0.0.0';
-
-// remoteEntry.js sits at the channel root by Rspack config.
+// remoteEntry.js sits at the version-directory root by Rspack config. Kept
+// origin-relative so the same signed manifest works whether served at its
+// version path or reached via the rolling-channel redirect.
 const remoteEntry = './remoteEntry.js';
 
 // Hash every JS file in the channel directory and record under the
@@ -78,6 +100,9 @@ const chunks = collectChunks(DIST);
 
 const manifest = {
     version,
+    channel,
+    gitSha,
+    builtAt,
     remoteEntry,
     chunks,
     killSwitch: false,
@@ -111,4 +136,4 @@ if (keyMaterial) {
 const out = join(DIST, 'manifest.json');
 writeFileSync(out, JSON.stringify(manifest, null, 2));
 console.log(`[build-manifest] wrote ${out}`);
-console.log(`[build-manifest] channel: ${CHANNEL}  version: ${version}  chunks: ${Object.keys(chunks).length}  signature: ${manifest.signature ? 'yes' : 'no'}`);
+console.log(`[build-manifest] version: ${version}  channel: ${channel}  gitSha: ${gitSha}  chunks: ${Object.keys(chunks).length}  signature: ${manifest.signature ? 'yes' : 'no'}`);
