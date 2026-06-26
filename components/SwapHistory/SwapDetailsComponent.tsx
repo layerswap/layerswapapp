@@ -14,6 +14,7 @@ import SecondaryButton from '../buttons/secondaryButton';
 import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '@/helpers/querryHelper';
 import { getExplorerUrl } from '@/lib/address';
+import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon';
 
 type Props = {
     swapResponse: SwapResponse
@@ -62,6 +63,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
     const refuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
     const refundTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refund)
+    const sourceAddress = swapInputTransaction?.from
 
     return (
         <>
@@ -83,6 +85,20 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                             <span className="text-left text-secondary-text">Status</span>
                             <StatusIcon swap={swap} />
                         </div>
+                        {
+                            sourceAddress && source_network &&
+                            <div className="flex justify-between items-baseline gap-2">
+                                <span className="text-left text-secondary-text shrink-0">From address</span>
+                                <ExtendedAddress address={sourceAddress} network={source_network} shouldShowChevron={false} />
+                            </div>
+                        }
+                        {
+                            destination_address && destination_network &&
+                            <div className="flex justify-between items-baseline gap-2">
+                                <span className="text-left text-secondary-text shrink-0">To address</span>
+                                <ExtendedAddress address={destination_address} network={destination_network} shouldShowChevron={false} />
+                            </div>
+                        }
                     </div>
                 </div>
             </section>
