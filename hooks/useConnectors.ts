@@ -20,12 +20,15 @@ type InitialSnapshot = {
     seen: Set<string>;
 }
 
+const UNMERGEABLE_WALLETS = ['nova', 'nova wallet']
+
 const resolveNames = (groups: InternalConnector[][]): InternalConnector[][] => {
     const canonical = new Map<string, string>()
     const fromInstalled = new Set<string>()
     for (const group of groups) {
         for (const c of group) {
             if (!c?.name) continue
+            if (UNMERGEABLE_WALLETS.includes(c.name.toLowerCase())) continue
             const key = walletKey(c.name)
             if (c.type === 'injected' ? !fromInstalled.has(key) : !canonical.has(key)) {
                 canonical.set(key, c.name)
@@ -56,6 +59,7 @@ const resolveChainConnectors = (pool: InternalConnector[], providers: WalletProv
             const p = toProvider[chain.split(':')[0]]
             if (p && providers.some(prov => prov.name === p) && !record.variants.some(x => x.providerName === p)) record.variants.push(createRegistryConnector(record.entry!, mobile, p))
         }
+        record.variants.sort((a, b) => providers.findIndex(p => p.name === a.providerName) - providers.findIndex(p => p.name === b.providerName))
     }
     return records
 }
@@ -97,26 +101,27 @@ export function useConnectors({
     const appendedRef = useRef<InternalConnector[]>([])
 
     const initialConnectors: WalletModalConnector[] = useMemo(() => {
-        const recentNames = new Set(recentConnectors?.map(r => r.connectorName?.toLowerCase()).filter(Boolean))
-        const isRecent = (c: InternalConnector) => recentNames.has(c.name.toLowerCase())
+        const recentNames = new Set(recentConnectors?.map(r => r.connectorName ? walletKey(r.connectorName) : undefined).filter(Boolean))
+        const isRecent = (c: InternalConnector) => recentNames.has(walletKey(c.name))
         const isInstalled = (c: InternalConnector) => c.type === 'injected' && !c.isLoadable
 
         if (initialSortedRef.current?.key !== filterKey) {
             // Filter context changed (providers or search query): resort the current
             // set once and reset the appended bucket. Names are already resolved, so
             // the same wallet from different chains collapses to one tile here.
-            const recent = featuredConnectors.filter(c => isRecent(c))
-            const installed = featuredConnectors.filter(c => !isRecent(c) && isInstalled(c))
-            const rest = featuredConnectors.filter(c => !isRecent(c) && !isInstalled(c))
+            const all = [...featuredConnectors, ...additionalConnectors]
+            const recent = all.filter(c => isRecent(c))
+            const installed = all.filter(c => !isRecent(c) && isInstalled(c))
+            const rest = all.filter(c => !isRecent(c) && !isInstalled(c))
             const sorted = removeDuplicatesWithKey(
-                [...recent, ...installed, ...rest, ...additionalConnectors],
-                'name'
+                [...recent, ...installed, ...rest],
+                c => UNMERGEABLE_WALLETS.includes(c.name.toLowerCase()) ? c.name.toLowerCase() : walletKey(c.name)
             ) as InternalConnector[]
 
             initialSortedRef.current = {
                 key: filterKey,
                 list: sorted,
-                seen: new Set(sorted.map(c => c.name.toLowerCase())),
+                seen: new Set(sorted.map(c => UNMERGEABLE_WALLETS.includes(c.name.toLowerCase()) ? c.name.toLowerCase() : walletKey(c.name))),
             }
             appendedRef.current = []
         } else {
@@ -125,7 +130,7 @@ export function useConnectors({
             // rendered tiles keep their position on scroll.
             const seen = initialSortedRef.current.seen
             const appendIfNew = (c: InternalConnector) => {
-                const key = c.name.toLowerCase()
+                const key = UNMERGEABLE_WALLETS.includes(c.name.toLowerCase()) ? c.name.toLowerCase() : walletKey(c.name)
                 if (!seen.has(key)) {
                     seen.add(key)
                     appendedRef.current.push(c)
@@ -144,14 +149,15 @@ export function useConnectors({
 
         const base = [...initialSortedRef.current.list, ...appendedRef.current]
 
+        let list = base
         if (resolvedSearchResults?.length) {
-            const existingNames = new Set(base.map(c => c.name.toLowerCase()))
-            const newResults = (removeDuplicatesWithKey(resolvedSearchResults, 'name') as InternalConnector[])
-                .filter(c => !existingNames.has(c.name.toLowerCase()))
-            return withMultiChain([...base, ...newResults])
+            const existingNames = new Set(base.map(c => UNMERGEABLE_WALLETS.includes(c.name.toLowerCase()) ? c.name.toLowerCase() : walletKey(c.name)))
+            const newResults = (removeDuplicatesWithKey(resolvedSearchResults, c => UNMERGEABLE_WALLETS.includes(c.name.toLowerCase()) ? c.name.toLowerCase() : walletKey(c.name)) as InternalConnector[])
+                .filter(c => !existingNames.has(UNMERGEABLE_WALLETS.includes(c.name.toLowerCase()) ? c.name.toLowerCase() : walletKey(c.name)))
+            list = [...base, ...newResults]
         }
 
-        return withMultiChain(base)
+        return withMultiChain([...list.filter(isRecent), ...list.filter(c => !isRecent(c))])
     }, [featuredConnectors, additionalConnectors, recentConnectors, resolvedSearchResults, filterKey]);
 
     return {
