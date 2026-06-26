@@ -1,12 +1,56 @@
 import { Network } from "@/Models/Network"
 import { Wallet, WalletConnectionProvider } from "@/types/wallet";
-import { useCallback, useMemo } from "react";
-import { useWalletProviders } from "@/context/walletProviders";
+import { useCallback, useMemo, useRef, useSyncExternalStore } from "react";
+import { isMobile } from "@/lib/wallets/utils/isMobile";
+import { useSettingsState } from "@/context/settings";
+import { useWalletProvidersRegistry } from "@/context/walletProviders";
 
 export type WalletPurpose = "autofill" | "withdrawal" | "asSource"
 
+// Stable reference for SSR — `useSyncExternalStore` requires `getServerSnapshot`
+// to return the same value across calls, otherwise it triggers infinite renders.
+// Wallet providers aren't populated on the server, so an empty list is correct.
+const SSR_SNAPSHOT: WalletConnectionProvider[] = []
+const getServerSnapshot = () => SSR_SNAPSHOT
+
+/**
+ * Subscribes to the registry plus every contained store via a single
+ * `useSyncExternalStore` call. The registry already fans-out inner store
+ * notifications, so one subscribe is enough. The cached array keeps the
+ * snapshot reference stable when nothing changed, so downstream `useMemo`s
+ * stay cache-effective.
+ */
+function useAllProviderSnapshots(): WalletConnectionProvider[] {
+    const walletProvidersRegistry = useWalletProvidersRegistry()
+    const cache = useRef<WalletConnectionProvider[]>([])
+
+    const getSnapshot = useCallback(() => {
+        const entries = walletProvidersRegistry.getEntries()
+        const current = entries.map(e => e.store.getState())
+        const prev = cache.current
+        if (prev.length === current.length && prev.every((v, i) => v === current[i])) {
+            return prev
+        }
+        cache.current = current
+        return current
+    }, [walletProvidersRegistry])
+
+    return useSyncExternalStore(walletProvidersRegistry.subscribe, getSnapshot, getServerSnapshot)
+}
+
 export default function useWallet(network?: Network | undefined, purpose?: WalletPurpose) {
-    const walletProviders = useWalletProviders()
+    const allSnapshots = useAllProviderSnapshots()
+    const { networks } = useSettingsState()
+    const isMobilePlatform = isMobile()
+
+    const walletProviders = useMemo(() => allSnapshots.filter(provider =>
+        (isMobilePlatform ? !provider.unsupportedPlatforms?.includes('mobile') : !provider.unsupportedPlatforms?.includes('desktop')) &&
+        networks.some(net =>
+            provider.autofillSupportedNetworks?.includes(net.name) ||
+            provider.withdrawalSupportedNetworks?.includes(net.name) ||
+            provider.asSourceSupportedNetworks?.includes(net.name)
+        )
+    ), [allSnapshots, networks, isMobilePlatform])
 
     const provider = useMemo(() => network && resolveProvider(network, walletProviders, purpose), [network, purpose, walletProviders])
 
@@ -32,7 +76,7 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
 
     const getProvider = useCallback((network: Network, purpose: WalletPurpose) => {
         return network && resolveProvider(network, walletProviders, purpose)
-    }, [walletProviders, purpose]);
+    }, [walletProviders]);
 
     const res = useMemo(() => ({
         wallets: availableWallets,
@@ -40,10 +84,20 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
         provider,
         providers: walletProviders,
         getProvider
-    }), [wallets, provider, walletProviders, getProvider])
+    }), [availableWallets, unAvailableWallets, provider, walletProviders, getProvider])
 
     return res
 }
+
+// When `isNotAvailableCondition` is set, `resolveProvider` builds a fresh
+// wrapper object (and a fresh `requestAdditionalConnectors` closure) on every
+// call. Because `useWallet` recomputes whenever ANY provider's snapshot moves
+// (the snapshot array changes identity even if the resolved provider didn't),
+// that would hand every consumer a new `provider` reference on unrelated
+// updates and cascade re-renders. Cache the wrapper keyed weakly by the base
+// snapshot object so the same (snapshot, network, purpose) returns a stable
+// reference; a real state change produces a new snapshot → new cache entry.
+const resolvedProviderCache = new WeakMap<WalletConnectionProvider, Map<string, WalletConnectionProvider>>()
 
 const resolveProvider = (network: Network | undefined, walletProviders: WalletConnectionProvider[], purpose?: WalletPurpose) => {
     if (!purpose || !network) return
@@ -62,6 +116,11 @@ const resolveProvider = (network: Network | undefined, walletProviders: WalletCo
     }
 
     if (provider?.isNotAvailableCondition && purpose) {
+        const cacheKey = `${network.name}|${purpose}`
+        const cachedByKey = resolvedProviderCache.get(provider)
+        const cached = cachedByKey?.get(cacheKey)
+        if (cached) return cached
+
         const availableConnectors = provider.availableConnectors?.filter(connector => (provider.isNotAvailableCondition && network?.name) ? !provider.isNotAvailableCondition(connector.id, network?.name, purpose) : true)
         const additionalConnectors = provider.additionalConnectors?.filter(connector => (provider.isNotAvailableCondition && network?.name) ? !provider.isNotAvailableCondition(connector.id, network?.name, purpose) : true)
         const requestAdditionalConnectors = provider.requestAdditionalConnectors
@@ -94,6 +153,9 @@ const resolveProvider = (network: Network | undefined, walletProviders: WalletCo
             additionalConnectors,
             requestAdditionalConnectors,
         }
+        const byKey = cachedByKey ?? new Map<string, WalletConnectionProvider>()
+        byKey.set(cacheKey, resolvedProvider)
+        if (!cachedByKey) resolvedProviderCache.set(provider, byKey)
         return resolvedProvider
     }
 

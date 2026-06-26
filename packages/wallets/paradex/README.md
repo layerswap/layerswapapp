@@ -16,12 +16,14 @@ pnpm add @layerswap/wallet-paradex @layerswap/wallet-evm @layerswap/wallet-stark
 
 ```tsx
 import { LayerswapProvider, Swap } from "@layerswap/widget";
-import { createParadexProvider, createEVMProvider, createStarknetProvider } from "@layerswap/wallet-paradex";
+import { createParadexProvider } from "@layerswap/wallet-paradex";
+import { createEVMProvider } from "@layerswap/wallet-evm";
+import { createStarknetProvider } from "@layerswap/wallet-starknet";
 
 export default function Page() {
   const paradexProvider = createParadexProvider();
   const evmProvider = createEVMProvider();
-  const starknetProvider = createStarknetProvider()'
+  const starknetProvider = createStarknetProvider();
   
   return (
     <LayerswapProvider walletProviders={[evmProvider, starknetProvider, paradexProvider]}>
@@ -50,10 +52,9 @@ For detailed setup instructions, configuration options, and usage examples, see 
 ## Features
 
 - Paradex wallet connection
-- Balance checking
-- Support for both EVM and Starknet networks
+- Support for EVM-backed and Starknet-backed Paradex accounts
 - Integration with Paradex SDK
-- Multi-chain transaction support
+- Standard widget transfer-provider execution for Paradex withdrawals
 
 ## TypeScript
 
@@ -66,4 +67,3 @@ MIT
 ## Repository
 
 [GitHub](https://github.com/layerswap/layerswapapp/tree/main/packages/wallets/paradex)
-

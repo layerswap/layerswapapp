@@ -63,7 +63,7 @@ const Items: FC<ContentProps & { isScrolling: boolean; setIsScrolling: (isScroll
     }, [isSingleNetwork, rowElements]);
 
 
-    const isProvidersReady = providers.every(p => p.ready)
+    const isProvidersReady = providers.every(p => p.isStub || (typeof p.ready === 'boolean' ? p.ready : true))
 
     const scrollTimeout = useRef<any>(null);
 

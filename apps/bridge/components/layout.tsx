@@ -3,7 +3,6 @@ import { useRouter } from 'next/router';
 import Head from "next/head";
 import AppWrapper from "./AppWrapper";
 import { useEffect } from "react";
-import posthog from "posthog-js";
 import type { JSX } from 'react';
 
 type Props = {
@@ -30,7 +29,7 @@ export default function Layout({ children, themeData }: Props) {
       }
       return customUrl
     }
-    const trackPageview = () => {
+    const trackPageview = async () => {
       const customUrl = prepareUrl([
         'destNetwork', // obsolete
         'sourceExchangeName', // obsolete
@@ -43,9 +42,14 @@ export default function Layout({ children, themeData }: Props) {
         'destAddress'
       ])
 
-      posthog.capture('$pageview', {
-        custom_url: customUrl,
-      })
+      // Lazy-import so posthog-js stays out of the layout's eager chunk.
+      // `_app.js` initializes posthog on idle; if it has not initialized
+      // yet (very early visits), the capture will queue and flush once
+      // init completes.
+      try {
+        const { default: posthog } = await import('posthog-js')
+        posthog.capture('$pageview', { custom_url: customUrl })
+      } catch { /* swallow — analytics is best-effort */ }
     }
 
     trackPageview()

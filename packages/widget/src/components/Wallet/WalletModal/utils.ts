@@ -30,12 +30,7 @@ export function removeDuplicatesWithKey(arr: any[], key: string | ((item: any) =
         }
         if (!seen.has(identifier)) {
             seen.add(identifier);
-            // Only mark as multichain if there are duplicates across different providers
-            const uniqueProviders = providerMap[identifier]?.size || 0;
-            unique.push({
-                ...item,
-                isMultiChain: countMap[identifier] > 1 && uniqueProviders > 1
-            });
+            unique.push(item);
         }
     });
     return unique;

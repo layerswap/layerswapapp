@@ -1,6 +1,6 @@
 import { LayerswapProvider, LayerSwapSettings, ThemeData } from "@layerswap/widget"
 import { useRouter } from "next/router"
-import { ComponentProps, ReactNode } from "react"
+import { ComponentProps, ReactNode, useMemo } from "react"
 import { updateFormBulk } from "./utils/updateForm"
 import { removeSwapPath, setMenuPath, setSwapPath } from "./utils/updatePath"
 import { getDefaultProviders } from "@layerswap/wallets";
@@ -8,6 +8,17 @@ import { QueryParams } from "../helpers/querryHelper"
 import { logError } from "./utils/logError"
 
 type LayerswapProviderComponentProps = ComponentProps<typeof LayerswapProvider>;
+
+// Hoisted to module scope — all values are build-time constants, so a single
+// stable reference avoids recreating the providers if this is ever added to a
+// memo dependency array.
+const WALLET_CONNECT_CONFIGS = {
+    projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
+    name: 'Layerswap',
+    description: 'Layerswap App',
+    url: 'https://layerswap.io/app/',
+    icons: ['https://www.layerswap.io/app/symbol.png'],
+};
 
 type WidgetWrapperProps<T extends Record<string, unknown> = Record<string, never>> = T & {
     children: ReactNode;
@@ -34,29 +45,36 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
 }: WidgetWrapperProps<T>) => {
     const router = useRouter()
 
-    const imtblPassportConfig = typeof window !== 'undefined' ? {
-        clientId: process.env.NEXT_PUBLIC_IMMUTABLE_CLIENT_ID || '',
-        publishableKey: process.env.NEXT_PUBLIC_IMMUTABLE_PUBLISHABLE_KEY || '',
-        redirectUri: router.basePath ? `${window.location.origin}${router.basePath}/imtblRedirect` : `${window.location.origin}/imtblRedirect`,
-        logoutRedirectUri: router.basePath ? `${window.location.origin}${router.basePath}/` : `${window.location.origin}/`
-    } : undefined
-
-    const walletConnectConfigs = {
-        projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
-        name: 'Layerswap',
-        description: 'Layerswap App',
-        url: 'https://layerswap.io/app/',
-        icons: ['https://www.layerswap.io/app/symbol.png']
-    }
-
-    const defaultWalletProviders = getDefaultProviders({
-        walletConnect: walletConnectConfigs,
-        immutablePassport: imtblPassportConfig,
-        ton: {
-            tonApiKey: process.env.NEXT_PUBLIC_TON_API_KEY || '',
-            manifestUrl: 'https://layerswap.io/app/tonconnect-manifest.json'
+    const immutablePassportConfig = useMemo(() => {
+        const clientId = process.env.NEXT_PUBLIC_IMMUTABLE_CLIENT_ID
+        const publishableKey = process.env.NEXT_PUBLIC_IMMUTABLE_PUBLISHABLE_KEY
+        if (!clientId || !publishableKey) return undefined
+        if (typeof window === 'undefined') return undefined
+        const basePath = router.basePath
+        const origin = window.location.origin
+        return {
+            clientId,
+            publishableKey,
+            redirectUri: `${origin}${basePath}/imtblRedirect`,
+            logoutRedirectUri: `${origin}${basePath}/`,
         }
-    })
+    }, [router.basePath])
+
+    const tonConfig = useMemo(() => {
+        const tonApiKey = process.env.NEXT_PUBLIC_TON_API_KEY
+        if (typeof window === 'undefined') return undefined
+        const manifestUrl = `${window.location.origin}${router.basePath}/tonconnect-manifest.json`
+        return {
+            tonApiKey: tonApiKey || '',
+            manifestUrl,
+        }
+    }, [router.basePath])
+
+    const defaultWalletProviders = useMemo(() => getDefaultProviders({
+        walletConnect: WALLET_CONNECT_CONFIGS,
+        ton: tonConfig,
+        immutablePassport: immutablePassportConfig,
+    }), [tonConfig, immutablePassportConfig])
 
     const resolvedWalletProviders = walletProviders ?? defaultWalletProviders
 

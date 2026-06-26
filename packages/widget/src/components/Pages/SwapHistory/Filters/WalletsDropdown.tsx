@@ -7,6 +7,7 @@ import { Address } from '@/lib/address/Address'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/shadcn'
 import VaulDrawer from '@/components/Modal/vaulModal'
 import WalletsList from '@/components/Wallet/WalletComponents/WalletsList'
+import WalletIconView from '@/components/Wallet/WalletIconView'
 import { useAddressNameFinder } from '@/stores/addressBookStore'
 
 type WalletsDropdownProps = {
@@ -38,12 +39,11 @@ const WalletsDropdown: FC<WalletsDropdownProps> = ({ wallets, selectedAddresses,
                 const addr = new Address(address, null, w.providerName)
                 if (seen.has(addr.normalized)) continue
                 seen.add(addr.normalized)
-                const Icon = w.icon
                 out.push({
                     address,
                     label: findName(address, null, w.providerName) || w.displayName || w.providerName,
                     short: addr.toShortString(),
-                    icon: Icon ? <Icon className="w-5 h-5" /> : null,
+                    icon: <WalletIconView wallet={w} className="w-5 h-5" size={20} />,
                 })
             }
         }

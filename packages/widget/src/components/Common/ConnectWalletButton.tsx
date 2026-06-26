@@ -1,8 +1,9 @@
 import { RefreshCw } from "lucide-react";
 import { ResolveConnectorIcon } from "../Icons/ConnectorIcons";
-import { FC, useState } from "react";
+import { FC, useCallback, useRef, useState } from "react";
 import { Wallet, WalletConnectionProvider } from "@/types/wallet";
 import { useConnectModal } from "../Wallet/WalletModal";
+import { useWalletDescriptorLoader } from "@/lib/walletConnect/walletDescriptorLoader";
 import { classNames } from "@/components/utils/classNames";
 
 interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -15,9 +16,41 @@ const ConnectWalletButton: FC<Props> = ({ provider, onConnect, descriptionText, 
 
     const [isLoading, setIsLoading] = useState(false)
     const { connect } = useConnectModal()
-    const isProviderReady = typeof provider?.ready === 'boolean' ? provider.ready : true
+    const { loadAll } = useWalletDescriptorLoader()
+    // A descriptor stub isn't "initializing" — its SDK simply hasn't been
+    // requested yet. Treat it as ready-to-click so the button stays enabled
+    // (clicking opens the modal, which triggers the descriptor load) and so
+    // the hover/focus prefetch below can actually fire — disabled buttons
+    // suppress pointer events in most browsers.
+    const isStub = provider?.isStub === true
+    const isProviderReady = isStub || (typeof provider?.ready === 'boolean' ? provider.ready : true)
+
+    // Kick off the descriptor SDK download as soon as the user shows
+    // intent (mouse-enter or keyboard-focus) on the button. The await on
+    // click will then resolve against an already-in-flight (or completed)
+    // import instead of starting one cold. `loadAll` itself dedupes
+    // in-flight loads, so we can fire it cheaply on every hover.
+    // Keyed by provider id so a stub → real provider transition re-arms the
+    // prefetch for the new provider instead of staying latched on the stub.
+    const prefetchedRef = useRef<string | null>(null)
+    const prefetchDescriptors = useCallback(() => {
+        const key = provider?.id ?? '__no_provider__'
+        if (prefetchedRef.current === key) return
+        prefetchedRef.current = key
+        void loadAll()
+    }, [loadAll, provider?.id])
 
     const handleConnect = async () => {
+        if (isStub) {
+            // Descriptor not loaded yet: kick off the SDK download and open the
+            // generic modal. Once the real provider replaces the stub in the
+            // registry, a re-render hands this button the real provider and the
+            // next click connects it directly.
+            void loadAll()
+            const result = await connect()
+            if (onConnect && result) onConnect(result)
+            return
+        }
         if (!isProviderReady) return
         setIsLoading(true)
         const result = await connect(provider)
@@ -29,6 +62,9 @@ const ConnectWalletButton: FC<Props> = ({ provider, onConnect, descriptionText, 
         {...rest}
         type="button"
         onClick={handleConnect}
+        onMouseEnter={prefetchDescriptors}
+        onFocus={prefetchDescriptors}
+        onTouchStart={prefetchDescriptors}
         data-attr="connect-wallet"
         disabled={!isProviderReady || rest.disabled}
         className={classNames(`focus-ring-primary-bold py-5 px-6 bg-secondary-500 hover:bg-secondary-400 transition-colors duration-200 rounded-xl ${(isLoading || !isProviderReady) && 'cursor-progress opacity-80'} disabled:opacity-50 disabled:cursor-not-allowed`, rest.className)}

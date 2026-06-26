@@ -42,7 +42,13 @@ export const SummaryRow: FC<{
                     <div className="text-right text-primary-text">
                         <span className="cursor-pointer hover:underline flex items-center gap-2">
                             {wallet?.icon ? (
-                                <wallet.icon className="w-4 h-4 bg-secondary-700 rounded-sm" />
+                                <ImageWithFallback
+                                    alt={wallet.displayName ?? wallet.id}
+                                    className="w-4 h-4 bg-secondary-700 rounded-sm object-contain"
+                                    src={wallet.icon}
+                                    width="16"
+                                    height="16"
+                                />
                             ) : addressProviderIcon ? (
                                 <ImageWithFallback
                                     alt="Partner logo"

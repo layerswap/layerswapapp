@@ -40,29 +40,21 @@
   "license": "MIT",
   "peerDependencies": {
     "@layerswap/widget": "workspace:^",
-    "@tanstack/react-query": "catalog:",
-    "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
-    "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
     "viem": "catalog:",
-    "wagmi": "catalog:"
+    "wagmi": "catalog:",
+    "zustand": "catalog:"
   },
   "dependencies": {
     "@metamask/sdk": "^0.33.1",
     "@walletconnect/ethereum-provider": "catalog:",
-    "@walletconnect/universal-provider": "catalog:",
-    "@walletconnect/types": "catalog:",
-    "@walletconnect/utils": "catalog:",
-    "bs58": "^6.0.0",
     "ethers": "5.7.2",
     "js-sha3": "^0.8.0"
   },
   "devDependencies": {
     "@layerswap/widget": "workspace:^",
     "@tailwindcss/postcss": "^4.0.15",
-    "@types/react": "catalog:",
-    "react": "catalog:",
-    "react-dom": "catalog:",
-    "tailwindcss": "^4.0.15"
+    "tailwindcss": "^4.0.15",
+    "zustand": "catalog:"
   },
   "engines": {
     "node": ">=22"

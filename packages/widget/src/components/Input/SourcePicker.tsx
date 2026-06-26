@@ -35,10 +35,10 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, mi
 
     return <div className="flex flex-col w-full bg-secondary-500 rounded-2xl p-4 pb-3.75 space-y-6.75 group/source" onClick={setShowQuickActions} ref={parentRef}>
         <div className="grid grid-cols-9 gap-2 items-center h-7">
-            <label htmlFor="From" className="block col-span-5 font-normal text-secondary-text text-base leading-5 mt-0.5">
+            <label htmlFor="From" className="block col-span-4 font-normal text-secondary-text text-base leading-5 mt-0.5">
                 Send from
             </label>
-            <div className="col-span-4 justify-self-end">
+            <div className="col-span-5 justify-self-end">
                 <SourceWalletPicker hideManualTransfer={hideManualTransfer} />
             </div>
         </div>

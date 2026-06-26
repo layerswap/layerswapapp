@@ -59,7 +59,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
     const depositAddress = resolveDepositAddress(swapBasicData?.source_network, depositActions);
     const { destination_address: destinationAddressFromQuery } = initialSettings
 
-    const WalletIcon = wallets.find(wallet => wallet.address.toLowerCase() == swapBasicData?.destination_address?.toLowerCase())?.icon;
+    const walletIconSrc = wallets.find(wallet => wallet.address.toLowerCase() == swapBasicData?.destination_address?.toLowerCase())?.icon;
     const addressProviderIcon = destinationAddressFromQuery && partner?.is_wallet && Address.equals(destinationAddressFromQuery, swapBasicData?.destination_address!, swapBasicData?.destination_network || null) && partner?.logo
 
     const handleCopy = () => {
@@ -292,36 +292,39 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
                             <Step
                                 number={3}
                                 label={
-                                    <span className='flex flex-wrap items-center gap-x-1 gap-y-1.5 min-w-0'>
-                                        <span className='inline-flex items-center gap-1 shrink-0'>
-                                            <span>Receive</span> <span>{truncateDecimals(quote?.receive_amount ?? 0, swapBasicData?.destination_token?.precision)}</span> <span>{swapBasicData?.destination_token?.symbol}</span> <span>at</span>
-                                        </span>
-                                        {destinationNetwork}
-                                        <span className="inline-flex items-center gap-1 min-w-0 ml-1 text-sm text-secondary-text cursor-pointer hover:underline">
-                                            {WalletIcon ? (
-                                                <WalletIcon className="w-4 h-4 bg-secondary-700 rounded-sm shrink-0" />
-                                            ) : addressProviderIcon ? (
-                                                <ImageWithFallback
-                                                    alt="Partner logo"
-                                                    className="h-4 w-4 rounded-md object-contain shrink-0"
-                                                    src={partner.logo}
-                                                    width="36"
-                                                    height="36"
-                                                />
-                                            ) : (
-                                                <span className="shrink-0">
-                                                    <AddressIcon className="rounded-[4px]" address={new Address(swapBasicData.destination_address, swapBasicData?.destination_network).full} size={16} network={swapBasicData?.destination_network} />
+                                    <span className='flex items-center gap-1'>
+                                        <span>Receive</span> <span>{truncateDecimals(quote?.receive_amount ?? 0, swapBasicData?.destination_token?.precision)}</span> <span>{swapBasicData?.destination_token?.symbol}</span> <span>at</span> <span>{destinationNetwork}</span>
+                                    </span>
+                                }
+                                value={
+                                    <span className="cursor-pointer hover:underline flex items-center gap-1">
+                                        {walletIconSrc ? (
+                                            <ImageWithFallback
+                                                src={walletIconSrc}
+                                                alt="Wallet icon"
+                                                className="w-4 h-4 bg-secondary-700 rounded-sm object-contain"
+                                                width="16"
+                                                height="16"
+                                            />
+                                        ) : addressProviderIcon ? (
+                                            <ImageWithFallback
+                                                alt="Partner logo"
+                                                className="h-4 w-4 rounded-md object-contain"
+                                                src={partner.logo}
+                                                width="36"
+                                                height="36"
+                                            />
+                                        ) : (
+                                            <AddressIcon className="rounded-[4px]" address={new Address(swapBasicData.destination_address, swapBasicData?.destination_network).full} size={16} network={swapBasicData?.destination_network} />
+                                        )}
+                                        {
+                                            ((swapBasicData?.destination_network && Address.isValid(swapBasicData?.destination_address, swapBasicData?.destination_network)) ?
+                                                <span className="group/addressItem min-w-0 truncate">
+                                                    <ExtendedAddress address={swapBasicData?.destination_address} network={swapBasicData?.destination_network} shouldShowChevron={false} />
                                                 </span>
-                                            )}
-                                            {
-                                                ((swapBasicData?.destination_network && Address.isValid(swapBasicData?.destination_address, swapBasicData?.destination_network)) ?
-                                                    <span className="group/addressItem min-w-0 truncate">
-                                                        <ExtendedAddress address={swapBasicData?.destination_address} network={swapBasicData?.destination_network} shouldShowChevron={false} />
-                                                    </span>
-                                                    :
-                                                    <span className="min-w-0 truncate">{new Address(swapBasicData?.destination_address, swapBasicData?.destination_network).toShortString()}</span>)
-                                            }
-                                        </span>
+                                                :
+                                                <span className="min-w-0 truncate">{new Address(swapBasicData?.destination_address, swapBasicData?.destination_network).toShortString()}</span>)
+                                        }
                                     </span>
                                 }
                             />

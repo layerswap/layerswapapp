@@ -6,12 +6,12 @@ import {
   Wallet as DynamicWallet,
 } from "@dynamic-labs/sdk-react-core";
 import {
-  resolveWalletConnectorIcon,
   NetworkWithTokens,
 } from "@layerswap/widget";
+import { resolveWalletConnectorIcon, createReactHookConnectionAdapter } from "@layerswap/widget/internal"
 import { WalletConnectionProvider, Wallet, WalletConnectionProviderProps } from "@layerswap/widget/types"
 
-export default function useStarknet({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
+function useStarknet({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
   const name = "Starknet";
   const id = "starknet";
 
@@ -152,3 +152,6 @@ function resolveWallet(props: {
     networkIcon,
   };
 }
+
+export default useStarknet
+export const customStarknetAdapter = createReactHookConnectionAdapter(useStarknet)

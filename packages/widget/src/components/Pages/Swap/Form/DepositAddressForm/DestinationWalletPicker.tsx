@@ -11,6 +11,7 @@ import AddressIcon from "@/components/Common/AddressIcon";
 import { Address as AddressClass } from "@/lib/address/Address";
 import VaulDrawer from "@/components/Modal/vaulModal";
 import { WalletItem } from "@/components/Wallet/WalletComponents/WalletsList";
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { useAddressName } from "@/stores/addressBookStore";
 
 type DestinationWalletPickerProps = {
@@ -87,7 +88,7 @@ const DestinationWalletPicker: FC<DestinationWalletPickerProps> = ({ address, de
     }, [hasAnyWallet, destination?.name, account?.address]);
 
     const hasAddress = !!address;
-    const WalletIcon = account?.icon;
+    const walletIconSrc = account?.icon;
     const walletName = account?.displayName?.split('-')[0] || 'Connected wallet';
     const addr = hasAddress && destination ? new AddressClass(address!, destination) : undefined;
     const savedName = useAddressName(address, destination);
@@ -101,8 +102,14 @@ const DestinationWalletPicker: FC<DestinationWalletPickerProps> = ({ address, de
                 className="w-full bg-secondary-500 hover:bg-secondary-400/70 rounded-xl pl-3.5 pr-0 py-3 transition-colors flex items-center outline-hidden"
             >
                 <div className="inline-flex items-center justify-center rounded-lg h-7 w-7 overflow-hidden shrink-0 bg-secondary-400 text-primary-text">
-                    {hasAddress && WalletIcon ? (
-                        <WalletIcon className="h-7 w-7 object-contain" />
+                    {hasAddress && walletIconSrc ? (
+                        <ImageWithFallback
+                            src={walletIconSrc}
+                            alt={walletName}
+                            width="28"
+                            height="28"
+                            className="h-7 w-7 object-contain"
+                        />
                     ) : hasAddress && destination ? (
                         <AddressIcon
                             address={new AddressClass(address!, destination).full}

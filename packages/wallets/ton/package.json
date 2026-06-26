@@ -37,20 +37,18 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
-    "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
-    "@layerswap/widget": "workspace:^"
+    "@layerswap/widget": "workspace:^",
+    "zustand": "catalog:"
   },
   "dependencies": {
     "@ton/core": "^0.62.0",
     "@ton/ton": "^15.4.0",
     "@ton/crypto": "^3.3.0",
-    "@tonconnect/ui-react": "^2.3.1"
+    "@tonconnect/sdk": "^3.4.1"
   },
   "devDependencies": {
     "@layerswap/widget": "workspace:^",
-    "react": "catalog:",
-    "ton": "^13.9.0"
+    "zustand": "catalog:"
   },
   "engines": {
     "node": ">=22"
