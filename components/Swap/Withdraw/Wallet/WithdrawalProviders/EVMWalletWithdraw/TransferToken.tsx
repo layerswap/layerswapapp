@@ -6,7 +6,7 @@ import TransactionMessage from "./transactionMessage";
 import { SendTransactionButton } from "../../Common/buttons";
 import { isMobile } from "@/lib/openLink";
 import { sendTransaction, getAccount } from '@wagmi/core'
-import { DepositAction, SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
+import { SignDepositAction, SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import useWallet from "@/hooks/useWallet";
 import { useSwapDataState } from "@/context/swap";
@@ -80,7 +80,7 @@ const TransferTokenButton: FC<Props> = ({
     // no transaction. The raw JSON is passed unchanged (the domain chainId and uint256
     // message fields arrive as strings and `types` includes EIP712Domain), matching the
     // backend's typed_data exactly.
-    const signHandler = useCallback(async (signAction: DepositAction): Promise<string> => {
+    const signHandler = useCallback(async (signAction: SignDepositAction): Promise<string> => {
         if (!signAction.typed_data)
             throw new Error('Missing typed data for gasless deposit')
         if (!selectedSourceAccount?.address)

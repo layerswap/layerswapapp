@@ -1,6 +1,7 @@
-import { ComponentProps, FC, useCallback, useEffect, useMemo, useState } from "react";
+import { ComponentProps, FC, useCallback, useMemo, useState } from "react";
 import WalletIcon from "@/components/icons/WalletIcon";
 import { ActionData, TransferProps } from "./sharedTypes";
+import { isUserRejection } from "./isUserRejection";
 import SubmitButton, { SubmitButtonProps } from "@/components/buttons/submitButton";
 import useWallet from "@/components/../hooks/useWallet";
 import { useSwapDataState, useSwapDataUpdate } from "@/context/swap";
@@ -12,7 +13,7 @@ import { Network, NetworkRoute } from "@/Models/Network";
 import { useQueryState } from "@/context/query";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { useSwapTransactionStore, useGaslessAuthorizationStore } from "@/stores/swapTransactionStore";
-import LayerSwapApiClient, { BackendTransactionStatus, DepositAction, SwapBasicData, SwapDetails } from "@/lib/apiClients/layerSwapApiClient";
+import LayerSwapApiClient, { BackendTransactionStatus, DepositAction, SignDepositAction, SwapBasicData, SwapDetails } from "@/lib/apiClients/layerSwapApiClient";
 import sleep from "@/lib/wallets/utils/sleep";
 import { isDiffByPercent } from "@/components/utils/numbers";
 import posthog from "posthog-js";
@@ -21,10 +22,10 @@ import { useSelectedAccount } from "@/context/swapAccounts";
 import { resolvePriceImpactValues } from "@/lib/fees";
 import InfoIcon from "@/components/icons/InfoIcon";
 import { useGoHome } from "@/hooks/useGoHome";
-import KnownInternalNames from "@/lib/knownIds";
 import { useSettingsState } from "@/context/settings";
 import { useBalance } from "@/lib/balances/useBalance";
 import useSWRGas from "@/lib/gases/useSWRGas";
+
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData } = useSwapDataState()
     const { source_network } = swapBasicData || {}
@@ -150,9 +151,7 @@ type SendFromWalletButtonProps = Omit<ButtonWrapperProps, 'onClick'> & {
     error?: boolean;
     clearError?: () => void
     onClick: (props: TransferProps) => Promise<string | undefined>
-    // Gasless deposit: signs the `sign` deposit action's typed data and returns the
-    // signature hex (eth_signTypedData_v4). Provided by EVM withdrawal only.
-    onSign?: (signAction: DepositAction) => Promise<string>
+    onSign?: (signAction: SignDepositAction) => Promise<string>
     swapData: SwapBasicData,
     refuel: boolean
 };
@@ -263,7 +262,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             // record an empty pending marker to leave the withdraw screen (mirrors the
             // Hyperliquid flow); the backend's input tx arrives once the paymaster
             // publishes the deposit.
-            const signAction = depositActions.find(action => action.type === 'sign')
+            const signAction = depositActions.find((action): action is SignDepositAction => action.type === 'sign')
             if (signAction && onSign) {
                 if (!selectedSourceAccount?.address) {
                     throw new Error('No selected account')
@@ -429,14 +428,8 @@ const resolveTransactionData = (swapDetails: SwapDetails, deposit_actions: Depos
     }
 }
 
-const isUserRejection = (err: unknown): boolean => {
-    if (err instanceof Error && /user rejected|user denied|rejected the request/i.test(err.message)) return true
-    const code = (err as any)?.code ?? (err as any)?.cause?.code
-    return code === 4001
-}
-
 // The unix-seconds expiry (validUntil) of a sign action's authorization.
-const resolveGaslessValidBefore = (action: DepositAction): number | undefined => {
+const resolveGaslessValidBefore = (action: SignDepositAction): number | undefined => {
     if (typeof action.valid_before === 'number') return action.valid_before
     const fromTypedData = action.typed_data?.message?.validBefore
     const parsed = fromTypedData != null ? Number(fromTypedData) : NaN
@@ -453,14 +446,14 @@ const resolveGaslessValidBefore = (action: DepositAction): number | undefined =>
 //  - any other error → rethrow for the caller to surface.
 const submitGaslessAuthorization = async (args: {
     swapId: string,
-    signAction: DepositAction,
-    onSign: (signAction: DepositAction) => Promise<string>,
+    signAction: SignDepositAction,
+    onSign: (signAction: SignDepositAction) => Promise<string>,
     sourceAddress: string,
     layerswapApiClient: LayerSwapApiClient,
 }): Promise<number | undefined> => {
     const { swapId, signAction, onSign, sourceAddress, layerswapApiClient } = args
 
-    const authorize = async (action: DepositAction) => {
+    const authorize = async (action: SignDepositAction) => {
         const signature = await onSign(action)
         await layerswapApiClient.AuthorizeSwapAsync(swapId, signature)
     }
@@ -475,7 +468,7 @@ const submitGaslessAuthorization = async (args: {
         }
         if (message.includes('expired')) {
             const refreshed = await layerswapApiClient.GetDepositActionsAsync(swapId, sourceAddress)
-            const freshSignAction = refreshed?.data?.find(action => action.type === 'sign')
+            const freshSignAction = refreshed?.data?.find((action): action is SignDepositAction => action.type === 'sign')
             if (!freshSignAction?.typed_data) {
                 throw new Error('Could not refresh the gasless deposit authorization. Please try again.')
             }

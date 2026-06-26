@@ -227,7 +227,7 @@ export type EIP712TypedData = {
     message: Record<string, string | number>,
 }
 
-export type DepositAction = {
+type DepositActionBase = {
     amount: number,
     amount_in_base_units: string,
     call_data: `0x${string}` | string,
@@ -237,14 +237,21 @@ export type DepositAction = {
     to_address?: `0x${string}`,
     token: Token,
     fee_token: Token,
-    type: 'transfer' | 'manual_transfer' | 'sign',
-    // Gasless ('sign') deposit fields — EIP-3009 ReceiveWithAuthorization typed data
-    // is signed (eth_signTypedData_v4) instead of broadcasting a transaction.
-    typed_data?: EIP712TypedData,
+}
+
+export type TransferDepositAction = DepositActionBase & {
+    type: 'transfer' | 'manual_transfer',
+}
+
+export type SignDepositAction = DepositActionBase & {
+    type: 'sign',
+    typed_data: EIP712TypedData,
     valid_after?: number,
     valid_before?: number,
     nonce?: string,
 }
+
+export type DepositAction = TransferDepositAction | SignDepositAction
 
 export type Quote = {
     quote: SwapQuote,
