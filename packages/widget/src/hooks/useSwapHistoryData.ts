@@ -4,6 +4,7 @@ import LayerSwapApiClient, { SwapResponse } from '@/lib/apiClients/layerSwapApiC
 import { ApiResponse } from '@/Models/ApiResponse'
 import { SwapStatus } from '@/Models/SwapStatus'
 import { useSwapTransactionStore } from '@/stores/swapTransactionStore'
+import { useExtendedSourceSkin } from './useExtendedSourceSkin'
 
 export function useSwapHistoryData(addresses?: string[], networks?: string[]) {
     const [revalidateAll, setRevalidateAll] = useState(false)
@@ -11,6 +12,7 @@ export function useSwapHistoryData(addresses?: string[], networks?: string[]) {
     const [isLoadingLocalSwaps, setIsLoadingLocalSwaps] = useState(false)
     const { swapTransactions } = useSwapTransactionStore()
     const fetchedIdsRef = useRef<Set<string>>(new Set())
+    const skinSwap = useExtendedSourceSkin()
 
     const pendingDeposit = useSwrSwaps({
         statuses: ['PendingDeposit'],
@@ -157,9 +159,25 @@ export function useSwapHistoryData(addresses?: string[], networks?: string[]) {
         }
     }, [completed, localStorageSwaps, pendingDeposit.swaps, networks])
 
+    // Apply the extended-source skin only at the output boundary — the internal
+    // id-sets and network filtering above operate on the raw backend identity.
+    // Map the swaps arrays separately so the per-swap skin only re-runs when the
+    // arrays actually change — not on every SWR poll where only the wrapper's
+    // loading/validating flags flip (the wrapper re-spread below is cheap).
+    const skinnedPendingSwaps = useMemo(() => pendingDeposit.swaps.map(skinSwap), [pendingDeposit.swaps, skinSwap])
+    const skinnedPendingDeposit = useMemo(
+        () => ({ ...pendingDeposit, swaps: skinnedPendingSwaps }),
+        [pendingDeposit, skinnedPendingSwaps],
+    )
+    const skinnedCompletedSwaps = useMemo(() => mergedCompleted.swaps.map(skinSwap), [mergedCompleted.swaps, skinSwap])
+    const skinnedCompleted = useMemo(
+        () => ({ ...mergedCompleted, swaps: skinnedCompletedSwaps }),
+        [mergedCompleted, skinnedCompletedSwaps],
+    )
+
     return {
-        pendingDeposit,
-        completed: mergedCompleted,
+        pendingDeposit: skinnedPendingDeposit,
+        completed: skinnedCompleted,
         isLoadingAny: pendingDeposit.isLoading || completed.isLoading || isLoadingLocalSwaps,
         isValidatingAny: pendingDeposit.isValidating || completed.isValidating,
     }

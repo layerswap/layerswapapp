@@ -49,7 +49,7 @@ const logWithdrawalError = (error: unknown, ctx: { swapId?: string; fromAddress?
 export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: WithdrawPageProps) {
     const { source_network, source_token, destination_network, destination_token, destination_address } = swapBasicData
 
-    const { networks } = useSettingsState()
+    const { networks, sourceRoutes } = useSettingsState()
     const initialSettings = useInitialSettings()
     const { onWalletWithdrawalSuccess } = useWalletWithdrawalState()
     const { swapDetails, depositActionsResponse } = useSwapDataState()
@@ -141,6 +141,7 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
                 destinationNetwork: destination_network,
                 destinationToken: destination_token,
                 networks,
+                sourceRoutes,
                 sourceAddress,
                 depositAddress: destination,
                 amount: A,
@@ -172,7 +173,7 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
             }
             submittingRef.current = false
         }
-    }, [sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, networks, depositActionsResponse, swapId, swapDetails, refuel, initialSettings, wallet, createSwap, setSwapId, executeTransfer, onWalletWithdrawalSuccess, swapBasicData.requested_amount])
+    }, [sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, networks, sourceRoutes, depositActionsResponse, swapId, swapDetails, refuel, initialSettings, wallet, createSwap, setSwapId, executeTransfer, onWalletWithdrawalSuccess, swapBasicData.requested_amount])
 
     return {
         handleWithdraw,

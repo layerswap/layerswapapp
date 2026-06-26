@@ -8,7 +8,7 @@ import { AddressSelectionMode, classifyAddress } from '@layerswap/utils'
 import KnownInternalNames from '@/lib/knownIds'
 import AppSettings from '@/lib/AppSettings'
 
-const SolanaNetwork = AppSettings.ApiVersion === 'sandbox' ? KnownInternalNames.Networks.SolanaDevnet : KnownInternalNames.Networks.SolanaMainnet
+const SolanaNetwork = AppSettings.ApiVersion === 'testnet' ? KnownInternalNames.Networks.SolanaDevnet : KnownInternalNames.Networks.SolanaMainnet
 
 export const NAME_MAX = 20
 export const COUNTER_SHOW_AT = 15

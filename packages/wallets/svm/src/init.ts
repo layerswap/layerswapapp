@@ -1,5 +1,5 @@
-import { AppSettings } from '@layerswap/widget/internal'
-import { WalletAdapterNetwork } from '@solana/wallet-adapter-base'
+import { AppSettings, isMobile } from '@layerswap/widget/internal'
+import { WalletAdapterNetwork, WalletReadyState } from '@solana/wallet-adapter-base'
 import { svmAdapterManager } from './service/svmAdapterManager'
 import { SolanaWalletConnectAdapter } from './connectors/SolanaWalletConnectAdapter'
 import { getWalletConnectConfig, setWalletConnectConfig } from './service/walletConnectConfig'
@@ -33,16 +33,29 @@ export function initSvmProvider(opts: InitOptions = {}): void {
             BitgetWalletAdapter,
             TrustWalletAdapter,
             LedgerWalletAdapter,
+            WalletConnectWalletAdapter
         } = adaptersModule
-
-        const solNetwork = AppSettings.ApiVersion == 'sandbox'
+        class LoadablePhantomAdapter extends PhantomWalletAdapter {
+            get readyState() {
+                const rs = super.readyState;
+                return rs === WalletReadyState.NotDetected && isMobile() ? WalletReadyState.Loadable : rs;
+            }
+        }
+        const solNetwork = AppSettings.ApiVersion == 'testnet'
             ? WalletAdapterNetwork.Devnet
             : WalletAdapterNetwork.Mainnet
 
         const walletConnectConfigs = getWalletConnectConfig()
 
+        const wcMetdata = {
+            name: walletConnectConfigs?.name || 'Layerswap',
+            description: walletConnectConfigs?.description || 'Layerswap App',
+            url: walletConnectConfigs?.url || 'https://layerswap.io/app/',
+            icons: walletConnectConfigs?.icons || ['https://www.layerswap.io/app/symbol.png'],
+        }
+
         svmAdapterManager.register([
-            new PhantomWalletAdapter(),
+            new LoadablePhantomAdapter(),
             new NightlyWalletAdapter(),
             new SolflareWalletAdapter(),
             new BitgetWalletAdapter(),
@@ -52,14 +65,17 @@ export function initSvmProvider(opts: InitOptions = {}): void {
                 network: solNetwork,
                 options: {
                     projectId: walletConnectConfigs?.projectId,
-                    metadata: {
-                        name: walletConnectConfigs?.name || 'Layerswap',
-                        description: walletConnectConfigs?.description || 'Layerswap App',
-                        url: walletConnectConfigs?.url || 'https://layerswap.io/app/',
-                        icons: walletConnectConfigs?.icons || ['https://www.layerswap.io/app/symbol.png'],
-                    },
+                    metadata: wcMetdata,
                 },
             }),
+            new WalletConnectWalletAdapter({
+                network: solNetwork,
+                options: {
+                    projectId: walletConnectConfigs?.projectId,
+                    metadata: wcMetdata,
+                    customStoragePrefix: 'officialSolanaWalletConnect',
+                }
+            })
         ])
 
         _initialized = true

@@ -13,3 +13,5 @@ export * from "./connectModalStore"
 export * from "./createConnectionStoreFromHook"
 export * from "./useAdditionalConnectors"
 export * from "./walletProvidersRegistry"
+export * from "./useAdditionalConnectors"
+export * from './findRegistryWallet'

@@ -5,7 +5,6 @@ import { useSwapDataState } from "@/context/swap";
 import Address from "@/components/Input/Address";
 import { SwapFormValues } from "../SwapFormValues";
 import { Partner } from "@/Models/Partner";
-import SwapError from "./SwapError";
 
 type Props = {
     shouldConnectWallet: boolean,
@@ -27,7 +26,6 @@ const FormButton = ({
     partner,
 }: Props) => {
     const initialSettings = useInitialSettings();
-    const { swapError } = useSwapDataState();
     const actionDisplayName = error || initialSettings?.actionButtonText || "Next";
     const preSubmitDisabled = isSubmitting || isQuoteLoading;
 
@@ -62,7 +60,6 @@ const FormButton = ({
 
     return (
         <div className="flex flex-col gap-2 w-full">
-            {swapError ? <SwapError /> : null}
             {button}
         </div>
     );

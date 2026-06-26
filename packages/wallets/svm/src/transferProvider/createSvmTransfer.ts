@@ -61,7 +61,6 @@ export function createSvmTransfer(): TransferProvider {
             } catch (error) {
                 const e = new Error()
                 e.message = error.message
-
                 if (error.name === ActionMessageType.InsufficientFunds) {
                     e.name = ActionMessageType.InsufficientFunds
                     throw e

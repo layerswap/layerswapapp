@@ -290,7 +290,9 @@ export class EvmConnectionService {
                 && connector.id !== 'metaMaskSDK'
 
             if (wantsQrModal) {
-                setSelectedConnector?.({ ...connector, icon: iconString, qr: { state: 'loading', value: undefined }, showQrCode })
+                setSelectedConnector?.(prev => (prev && prev.id === connector.id)
+                    ? { ...connector, icon: iconString, qr: { state: 'loading', value: undefined }, showQrCode }
+                    : prev)
             }
 
             if (wantsMobileRedirect || wantsQrModal) {
@@ -298,7 +300,9 @@ export class EvmConnectionService {
                     source: wagmiDisplayUriSource(actualConnector as unknown as Connector),
                     resolveURI,
                     isMobilePlatform,
-                    onQr: (qr) => setSelectedConnector?.({ ...connector, icon: iconString, qr, showQrCode }),
+                    onQr: (qr) => setSelectedConnector?.(prev => (prev && prev.id === connector.id)
+                        ? { ...connector, icon: iconString, qr, showQrCode }
+                        : prev),
                 })
             }
 

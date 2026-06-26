@@ -14,7 +14,6 @@ import { ActionMessages } from "../messages/TransactionMessages";
 import { useTransfer } from "@/hooks/useTransfer";
 import { useRpcHealth } from "@/context/rpcHealthContext";
 import RPCUnhealthyMessage from "./RPCUnhealthyMessage";
-import SwapError from "@/components/Pages/Swap/Form/SecondaryComponents/SwapError";
 import { isExtendedSourceNetwork } from "@/lib/extendedRoutes/registry";
 import { HyperliquidWalletWithdraw } from "../WithdrawalProviders/Hyperliquid";
 
@@ -236,7 +235,6 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
     }
 
     return <div className="w-full space-y-2 flex flex-col justify-between h-full text-primary-text">
-        <SwapError />
         {
             buttonClicked &&
             <ActionMessage

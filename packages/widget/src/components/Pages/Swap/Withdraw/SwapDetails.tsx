@@ -11,7 +11,6 @@ import ManualWithdraw from './ManualWithdraw';
 import { Partner } from '@/Models';
 import { useCallbacks } from "@/context/callbackProvider";
 import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
-import { isExtendedSourceNetwork } from '@/lib/extendedRoutes/registry';
 
 type Props = {
     type: "widget" | "contained",
@@ -34,7 +33,7 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, onCancelWithd
     }, [swapDetails?.id])
 
     const resolveWithdrawScreen = () => {
-        if (swapBasicData?.use_deposit_address === true && !isExtendedSourceNetwork(swapBasicData?.source_network?.name)) {
+        if (swapBasicData?.use_deposit_address === true) {
             return <ManualWithdraw swapBasicData={swapBasicData} depositActions={depositActionsResponse} refuel={refuel} partner={partner} type={type} quote={quote} isQuoteLoading={quoteIsLoading} />
         }
         return <Withdraw type={type} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} onCancelWithdrawal={onCancelWithdrawal} partner={partner} />
