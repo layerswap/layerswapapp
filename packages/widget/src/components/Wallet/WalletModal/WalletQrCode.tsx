@@ -20,6 +20,7 @@ export const WalletQrCode: FC<{ selectedConnector: WalletModalConnector }> = ({ 
                             value={selectedConnector?.qr.value ?? ''}
                             size={220}
                             logo={selectedConnector.icon}
+                            ecLevel="M"
                         />
                         :
                         <div className="w-[220px] h-[220px] relative">
