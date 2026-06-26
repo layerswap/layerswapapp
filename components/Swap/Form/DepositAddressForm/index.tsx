@@ -229,10 +229,10 @@ const DepositAddressForm: FC<Props> = () => {
                                 {/* Deposit address + QR + fees once everything is ready */}
                                 {showDepositInfo && (
                                     <DepositAddressInfo
-                                        sourceNetwork={from?.name}
-                                        sourceToken={fromAsset?.symbol}
-                                        destinationNetwork={destination?.name}
-                                        destinationToken={toCurrency?.symbol}
+                                        sourceNetwork={from}
+                                        sourceToken={fromAsset}
+                                        destinationNetwork={destination}
+                                        destinationToken={toCurrency}
                                         destinationAddress={destination_address}
                                         refuel={!!refuel || !!swapBasicData?.refuel}
                                         depositAddress={depositAddress}
