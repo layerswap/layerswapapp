@@ -236,20 +236,11 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
 
         const slippage = useSlippageStore.getState().slippage
 
-        // Gasless deposit: when the source token supports EIP-3009 gasless deposits and
-        // we're depositing from a supported EVM wallet, the swap is created with
-        // use_gasless/use_depository so the backend returns a `sign` deposit action
-        // (signature instead of an on-chain transaction). Never for the extended-route
-        // (Hyperliquid) bridge below.
         const useGasless = depositMethod === 'wallet'
-            && from.type === NetworkType.EVM
             && !!fromCurrency.supports_gasless_deposit
             && !!sourceIsSupported
             && !!selectedSourceAccount?.address
 
-        // Extended source bridge mode (e.g. Hyperliquid): create the real backend
-        // swap (Base/USDC) for the forwarded amount (A - flat fee), via a deposit
-        // address. The HL withdrawal then funds that deposit address.
         const extendedPlan = resolveExtendedRoutePlan({
             sourceNetworkName: from.name,
             sourceTokenSymbol: fromCurrency.symbol,

@@ -75,11 +75,6 @@ const TransferTokenButton: FC<Props> = ({
         }
     }, [config, chainId, selectedSourceAccount?.address, gasData?.gas])
 
-    // Gasless deposit: sign the EIP-3009 typed data verbatim via the wallet's
-    // EIP-1193 provider (eth_signTypedData_v4). This is a signature request — no gas,
-    // no transaction. The raw JSON is passed unchanged (the domain chainId and uint256
-    // message fields arrive as strings and `types` includes EIP712Domain), matching the
-    // backend's typed_data exactly.
     const signHandler = useCallback(async (signAction: SignDepositAction): Promise<string> => {
         if (!signAction.typed_data)
             throw new Error('Missing typed data for gasless deposit')

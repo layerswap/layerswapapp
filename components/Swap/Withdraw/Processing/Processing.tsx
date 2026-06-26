@@ -22,8 +22,6 @@ import { getExplorerUrl } from '@/lib/address';
 import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
 import { SwapPhase } from '@/components/utils/resolveSwapPhase';
 import { SwapFailureReason } from '@/hooks/useSwapRetry';
-import { ErrorDisplay } from '@/components/validationError/ErrorDisplay';
-import InfoIcon from '@/components/icons/InfoIcon';
 
 const apiClient = new LayerSwapApiClient();
 
@@ -68,7 +66,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel, fail
     const { data: inputTxStatusData } = useSWR<ApiResponse<{ status: TransactionStatus }>>((transactionHash && swapInputTransaction?.status !== BackendTransactionStatus.Completed) ? [source_network?.name, transactionHash] : null, ([network, tx_id]) => apiClient.GetTransactionStatus(network, tx_id as any), { dedupingInterval: 6000 })
 
     const inputTxStatusFromApi = inputTxStatusData?.data?.status?.toLowerCase() as TransactionStatus | undefined
-    const resolved = useResolvedSwapStatus({ inputTxStatusFromApi })
+    const resolved = useResolvedSwapStatus({ inputTxStatusFromApi, gaslessAuthorizationExpired: failureReason === 'gasless_authorization_expired' })
     const { stepStatuses, generalStatus, phase, swapInputTxStatus, isRefundFlow, hidesSteps, showsFailedPanel, showsEstimatedTime } = resolved
 
     const loggedNotDetectedTxAt = useRef<number | null>(null);
@@ -88,14 +86,14 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel, fail
 
     useEffect(() => {
         if (!swapDetails?.id) return
-        if (!storedWalletTransaction) return
+        if (!storedWalletTransaction?.hash) return
         if (storedWalletTransaction.status !== swapInputTxStatus) {
             setSwapTransaction(swapDetails.id, swapInputTxStatus, storedWalletTransaction.hash)
         }
     }, [swapInputTxStatus, storedWalletTransaction, swapDetails?.id, setSwapTransaction])
 
     useEffect(() => {
-        if (swapInputTxStatus === TransactionStatus.Failed) {
+        if (swapInputTxStatus === TransactionStatus.Failed && transactionHash) {
             const err = new Error("Transaction failed")
             posthog.captureException(err, {
                 $layerswap_exception_type: "Transaction Error",
@@ -175,7 +173,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel, fail
                 name: `The transfer failed`,
                 description: <div className='flex space-x-1'>
                     <div className='space-x-1 text-primary-text'>
-                        {swapInputTxStatus === TransactionStatus.Failed ?
+                        {swapInputTxStatus === TransactionStatus.Failed && transactionHash ?
                             <div className="flex flex-col">
                                 <p>Check the transfer in the explorer</p>
                                 <LinkWithIcon
@@ -356,21 +354,6 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel, fail
         const percentage = current.length ? (completed / current.length) * 100 : 0;
         return { currentSteps: current, stepsProgressPercentage: percentage };
     }, [progressStates, stepStatuses]);
-
-    if (failureReason === 'gasless_authorization_expired') {
-        return (
-            <Widget.Content fitContent>
-                <div className="w-full min-h-102.5 h-full space-y-2 flex flex-col text-primary-text">
-                    <SwapSummary />
-                    <ErrorDisplay
-                        icon={<InfoIcon className="w-5 h-5 text-secondary-text" />}
-                        title="Something went wrong"
-                        message="We couldn’t submit your gasless deposit before the authorization expired. Please try again."
-                    />
-                </div>
-            </Widget.Content>
-        )
-    }
 
     return (
         <Widget.Content fitContent>

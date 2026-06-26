@@ -1,7 +1,14 @@
 import { ComponentProps, FC, useCallback, useMemo, useState } from "react";
 import WalletIcon from "@/components/icons/WalletIcon";
-import { ActionData, TransferProps } from "./sharedTypes";
-import { isUserRejection } from "./isUserRejection";
+import { ActionData } from "./sharedTypes";
+import {
+    DepositExecutionContext,
+    GaslessSigner,
+    WalletTransfer,
+    executeGaslessAuthorization,
+    executeWalletTransfer,
+    isSignAction,
+} from "./depositExecution";
 import SubmitButton, { SubmitButtonProps } from "@/components/buttons/submitButton";
 import useWallet from "@/components/../hooks/useWallet";
 import { useSwapDataState, useSwapDataUpdate } from "@/context/swap";
@@ -12,8 +19,8 @@ import { useConnectModal } from "@/components/WalletModal";
 import { Network, NetworkRoute } from "@/Models/Network";
 import { useQueryState } from "@/context/query";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
-import { useSwapTransactionStore, useGaslessAuthorizationStore } from "@/stores/swapTransactionStore";
-import LayerSwapApiClient, { BackendTransactionStatus, DepositAction, SignDepositAction, SwapBasicData, SwapDetails } from "@/lib/apiClients/layerSwapApiClient";
+import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
+import LayerSwapApiClient, { SwapBasicData, SwapDetails } from "@/lib/apiClients/layerSwapApiClient";
 import sleep from "@/lib/wallets/utils/sleep";
 import { isDiffByPercent } from "@/components/utils/numbers";
 import posthog from "posthog-js";
@@ -150,8 +157,8 @@ type ButtonWrapperProps = ComponentProps<typeof ButtonWrapper>;
 type SendFromWalletButtonProps = Omit<ButtonWrapperProps, 'onClick'> & {
     error?: boolean;
     clearError?: () => void
-    onClick: (props: TransferProps) => Promise<string | undefined>
-    onSign?: (signAction: SignDepositAction) => Promise<string>
+    onClick: WalletTransfer
+    onSign?: GaslessSigner
     swapData: SwapBasicData,
     refuel: boolean
 };
@@ -257,59 +264,24 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 throw new Error('No swap data')
             }
 
-            // Gasless deposit: sign the EIP-3009 typed data and POST it to /authorize
-            // instead of broadcasting a transaction. There is no user-side tx hash —
-            // record an empty pending marker to leave the withdraw screen (mirrors the
-            // Hyperliquid flow); the backend's input tx arrives once the paymaster
-            // publishes the deposit.
-            const signAction = depositActions.find((action): action is SignDepositAction => action.type === 'sign')
-            if (signAction && onSign) {
-                if (!selectedSourceAccount?.address) {
-                    throw new Error('No selected account')
-                }
-                setActionStateText("Sign in wallet")
-                let authorizedValidBefore: number | undefined
-                try {
-                    authorizedValidBefore = await submitGaslessAuthorization({
-                        swapId: swapData.id,
-                        signAction,
-                        onSign,
-                        sourceAddress: selectedSourceAccount.address,
-                        layerswapApiClient,
-                    })
-                } catch (e: any) {
-                    if (!isUserRejection(e)) {
-                        setSwapError?.(e?.response?.data?.error?.message || e?.message || 'Could not authorize the gasless deposit')
-                    }
-                    throw e
-                }
-                setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, '')
-                // Record the signature deadline so the processing screen can surface a
-                // "something went wrong, try again" state if the paymaster never publishes.
-                if (authorizedValidBefore) {
-                    useGaslessAuthorizationStore.getState().setGaslessAuthorization(swapData.id, authorizedValidBefore)
-                }
-                onWalletWithdrawalSuccess?.()
-                return
+            // Both paths share one prepared context; the deposit actions decide which
+            // executor runs — broadcast a transfer, or sign + authorize a gasless deposit.
+            const executionContext: DepositExecutionContext = {
+                swapData,
+                depositActions,
+                swapBasicData,
+                sourceAddress: selectedSourceAccount.address,
+                layerswapApiClient,
+                setActionStateText,
+                setSwapTransaction,
+                setSwapError,
+                onSuccess: () => onWalletWithdrawalSuccess?.(),
             }
 
-            const transferProps = resolveTransactionData(swapData, depositActions, swapBasicData.destination_address, swapBasicData.source_network);
-            setActionStateText("Opening Wallet")
-            const hash = await onClick(transferProps)
-            if (hash) {
-                onWalletWithdrawalSuccess?.();
-                setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, hash);
-                try {
-                    await layerswapApiClient.SwapCatchup(swapData.id, hash);
-                } catch (e) {
-                    posthog.captureException(e, {
-                        $layerswap_exception_type: "Swap Catchup Error",
-                        swapId: swapData.id,
-                        transactionHash: hash,
-                        $fromAddress: selectedSourceAccount?.address,
-                        $toAddress: swapBasicData?.destination_address
-                    });
-                }
+            if (onSign && depositActions.some(isSignAction)) {
+                await executeGaslessAuthorization(executionContext, onSign)
+            } else {
+                await executeWalletTransfer(executionContext, onClick)
             }
         }
         catch (e) {
@@ -409,72 +381,4 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             </ButtonWrapper>
         </>
     )
-}
-
-
-const resolveTransactionData = (swapDetails: SwapDetails, deposit_actions: DepositAction[], destination_address: string, source_network: Network): TransferProps => {
-    const depositAction = deposit_actions?.find(action =>
-        action.type === 'transfer');
-    if (!depositAction) {
-        throw new Error('No deposit action found')
-    }
-    return {
-        amount: depositAction.amount,
-        callData: depositAction.call_data,
-        depositAddress: depositAction.to_address,
-        sequenceNumber: swapDetails.metadata.sequence_number,
-        swapId: swapDetails.id,
-        userDestinationAddress: destination_address
-    }
-}
-
-// The unix-seconds expiry (validUntil) of a sign action's authorization.
-const resolveGaslessValidBefore = (action: SignDepositAction): number | undefined => {
-    if (typeof action.valid_before === 'number') return action.valid_before
-    const fromTypedData = action.typed_data?.message?.validBefore
-    const parsed = fromTypedData != null ? Number(fromTypedData) : NaN
-    return Number.isFinite(parsed) ? parsed : undefined
-}
-
-// Sign the gasless ('sign') deposit action and submit the signature to /authorize.
-// Returns the `valid_before` of the authorization that succeeded (so the caller can
-// detect a paymaster timeout later). Handles the authorize responses from the
-// integration doc §4:
-//  - "already authorized" → treat as success (the deposit is already in flight).
-//  - "expired" → the signature window (~30 min) lapsed; re-fetch a fresh sign action
-//    (new valid_before/nonce), re-sign and re-authorize once.
-//  - any other error → rethrow for the caller to surface.
-const submitGaslessAuthorization = async (args: {
-    swapId: string,
-    signAction: SignDepositAction,
-    onSign: (signAction: SignDepositAction) => Promise<string>,
-    sourceAddress: string,
-    layerswapApiClient: LayerSwapApiClient,
-}): Promise<number | undefined> => {
-    const { swapId, signAction, onSign, sourceAddress, layerswapApiClient } = args
-
-    const authorize = async (action: SignDepositAction) => {
-        const signature = await onSign(action)
-        await layerswapApiClient.AuthorizeSwapAsync(swapId, signature)
-    }
-
-    try {
-        await authorize(signAction)
-        return resolveGaslessValidBefore(signAction)
-    } catch (e: any) {
-        const message: string = (e?.response?.data?.error?.message || e?.message || '').toLowerCase()
-        if (message.includes('already') && message.includes('authoriz')) {
-            return resolveGaslessValidBefore(signAction)
-        }
-        if (message.includes('expired')) {
-            const refreshed = await layerswapApiClient.GetDepositActionsAsync(swapId, sourceAddress)
-            const freshSignAction = refreshed?.data?.find((action): action is SignDepositAction => action.type === 'sign')
-            if (!freshSignAction?.typed_data) {
-                throw new Error('Could not refresh the gasless deposit authorization. Please try again.')
-            }
-            await authorize(freshSignAction)
-            return resolveGaslessValidBefore(freshSignAction)
-        }
-        throw e
-    }
 }
