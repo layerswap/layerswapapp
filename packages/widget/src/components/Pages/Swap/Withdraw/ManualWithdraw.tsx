@@ -4,7 +4,7 @@ import QRIcon from '@/components/Icons/QRIcon'
 import useCopyClipboard from '@/hooks/useCopyClipboard'
 import useWallet from '@/hooks/useWallet'
 import { DepositAction, Refuel, SwapBasicData, SwapQuote } from '@/lib/apiClients/layerSwapApiClient'
-import { QRCodeSVG } from 'qrcode.react'
+import StyledQRCode from '@/components/Common/StyledQRCode'
 import { useMemo } from 'react'
 import { FC, ReactNode, useState } from 'react'
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
@@ -242,14 +242,8 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
                                                     align="start"
                                                     className="bg-secondary-300 p-2 rounded-xl z-50"
                                                 >
-                                                    <div className="bg-white p-2 rounded-xl shadow-lg">
-                                                        <QRCodeSVG
-                                                            className="rounded-lg"
-                                                            value={depositAddress || ''}
-                                                            includeMargin={true}
-                                                            size={160}
-                                                            level="H"
-                                                        />
+                                                    <div className="bg-secondary-500 p-2 rounded-xl shadow-lg">
+                                                        <StyledQRCode value={depositAddress || ''} size={160} />
                                                     </div>
                                                 </PopoverContent>
                                             </Popover>

@@ -27,6 +27,7 @@
     "@radix-ui/react-dismissable-layer": "1.1.1",
     "@walletconnect/universal-provider": "2.21.8",
     "@walletconnect/ethereum-provider": "2.21.8",
+    "@reown/appkit": "1.7.8",
     "@fuel-ts/math>bn.js": "5.2.3",
     "elliptic": "6.6.1",
     "@wagmi/connectors>@metamask/sdk": "0.33.1",

@@ -45,6 +45,7 @@ export function createSvmConnection(
 
     svmConnectionService.configure({
         setSelectedConnector: connectModalStore.setSelectedConnector,
+        getSelectedConnector: () => connectModalStore.getSnapshot().selectedConnector,
         addRecentConnector: additionalConnectorsStore.addRecentConnector,
         requestRegistryConnectors: additionalConnectorsStore.requestAdditionalConnectors,
         isMobilePlatform,

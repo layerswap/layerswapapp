@@ -28,7 +28,6 @@ import { useConnectModal } from "@/components/Wallet/WalletModal";
 // page's entry chunks.
 const Processing = lazy(() => import(/* webpackChunkName: "swap-processing" */ "../../Withdraw/Processing"))
 import ValidationError from "../SecondaryComponents/validationError";
-import SwapError from "../SecondaryComponents/SwapError";
 import { NetworkRoute, NetworkRouteToken } from "@/Models";
 
 type Props = {
@@ -299,7 +298,6 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
                                     </>
                                 )}
                                 <ValidationError />
-                                <SwapError />
                             </div >
                         </div >
                     </Widget.Content >

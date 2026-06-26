@@ -45,3 +45,4 @@ export { ErrorHandler } from '../lib/ErrorHandler';
 export type { ErrorEventType } from '../types/logEvents';
 export { useRpcHealth } from "../context/rpcHealthContext";
 export * from "../lib/walletConnect"
+export * from "../lib/extendedRoutes"

@@ -1,5 +1,6 @@
-import { NetworkWithTokens } from "@layerswap/widget/types";
+import { NetworkRoute, NetworkWithTokens } from "@layerswap/widget/types";
 import { HYPERLIQUID_ROUTES, pickHyperliquidDestination } from "./routes";
+import { realDepositAddressRoutePresent } from "@layerswap/widget/internal";
 
 export const HYPERLIQUID_USDC_SYMBOL = 'USDC'
 export const HYPERLIQUID_SPOT_TOKEN = 'USDC'
@@ -64,13 +65,20 @@ export function resolveHyperliquidConfig(
     networks: NetworkWithTokens[],
     toNetworkName?: string,
     toTokenSymbol?: string,
+    availableRoutes?: NetworkRoute[],
 ): HyperliquidConfig | undefined {
     if (!sourceNetworkName) return undefined
 
     const route = HYPERLIQUID_ROUTES[sourceNetworkName]
     if (!route) return undefined
 
-    const dest = pickHyperliquidDestination(sourceNetworkName, toNetworkName, toTokenSymbol)
+    // Must resolve to the SAME destination the backend swap was created against
+    // (registry uses the same availability fallback), so the CCTP signature is
+    // signed for the right chain.
+    const isRealRouteAvailable = availableRoutes
+        ? (real: { networkName: string; tokenSymbol: string }) => realDepositAddressRoutePresent(availableRoutes, real)
+        : undefined
+    const dest = pickHyperliquidDestination(sourceNetworkName, toNetworkName, toTokenSymbol, isRealRouteAvailable)
     if (!dest) return undefined
 
     const network = networks.find(n => n.name === sourceNetworkName)

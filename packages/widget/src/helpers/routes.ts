@@ -1,8 +1,9 @@
 import { SwapDirection, SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues"
 import AppSettings from "@/lib/AppSettings"
 import { resolveExtendedRoutePlan } from "@/lib/extendedRoutes/registry"
+import { NetworkRoute } from "@/Models"
 
-export const resolveExchangesURLForSelectedToken = (values: SwapFormValues) => {
+export const resolveExchangesURLForSelectedToken = (values: SwapFormValues, sourceRoutes?: NetworkRoute[]) => {
 
     const include_unmatched = 'true'
     const include_swaps = 'false'
@@ -11,10 +12,11 @@ export const resolveExchangesURLForSelectedToken = (values: SwapFormValues) => {
     const { from, fromAsset: fromCurrency } = values
 
     // Extended sources are unknown to the backend, so query exchanges against
-    // the real source selected by the route plan.
+    // the real source selected by the route plan (with availability fallback).
     const extendedPlan = resolveExtendedRoutePlan({
         sourceNetworkName: from?.name,
         sourceTokenSymbol: fromCurrency?.symbol,
+        availableRoutes: sourceRoutes,
     })
     const sourceNetworkName = extendedPlan?.mapping.real.networkName ?? from?.name
     const sourceTokenSymbol = extendedPlan?.mapping.real.tokenSymbol ?? fromCurrency?.symbol
@@ -51,7 +53,7 @@ export const resolveExchangeHistoricalNetworksURL = (direction: SwapDirection, {
     return null
 }
 
-export const resolveNetworkRoutesURL = (direction: SwapDirection, values: SwapFormValues, networkTypes?: string[]) => {
+export const resolveNetworkRoutesURL = (direction: SwapDirection, values: SwapFormValues, networkTypes?: string[], sourceRoutes?: NetworkRoute[]) => {
 
     const { from, to, fromAsset: fromCurrency, toAsset: toCurrency, fromExchange, toExchange, depositMethod } = values
 
@@ -70,10 +72,12 @@ export const resolveNetworkRoutesURL = (direction: SwapDirection, values: SwapFo
     const useDepositAddressSwaps = hasDepositAddress && direction === 'from'
 
     // Listing destinations for an extended source: substitute the real source
-    // selected by the route plan and force the deposit-address swap set.
+    // selected by the route plan (with availability fallback) and force the
+    // deposit-address swap set.
     const extendedPlan = direction === 'to' ? resolveExtendedRoutePlan({
         sourceNetworkName: from?.name,
         sourceTokenSymbol: fromCurrency?.symbol,
+        availableRoutes: sourceRoutes,
     }) : undefined
 
     let networkName = isCEX || unboundDestination ? undefined : selectednetwork?.name
