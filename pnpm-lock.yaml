@@ -59,11 +59,11 @@ importers:
         specifier: ^2.1.1
         version: 2.2.9(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@imtbl/config':
-        specifier: 2.20.0
-        version: 2.20.0
+        specifier: ^2.20.1
+        version: 2.20.1
       '@imtbl/passport':
-        specifier: 2.20.0
-        version: 2.20.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+        specifier: ^2.20.1
+        version: 2.20.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@metamask/sdk':
         specifier: ^0.33.1
         version: 0.33.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)
@@ -2059,31 +2059,31 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@imtbl/auth@2.20.0':
-    resolution: {integrity: sha512-mdxRE1j5Z6M8mcimqqNkglYQKdIBgHMsrNsAI7G5lVVpjrtSIqTPkwxEieGc15NfBDPwgX0vw/3lV73DBoKXgA==}
+  '@imtbl/auth@2.20.1':
+    resolution: {integrity: sha512-7pxe15/AsoV24ot5K6oNETU1exUW4+4iU1oDKKVoDtu9OvXyFaK1xPmAWevaAj0Bm1QNTxY6iY6Ot14EmZrKAg==}
 
-  '@imtbl/config@2.20.0':
-    resolution: {integrity: sha512-7DMdOheEt9A9H6V7zztUae4M0XKwDU2ddt6zUonjdc9SLyXRWMqtcUkRn7vJK/RqPINz+k1PhVTR7QDgQBl7mw==}
+  '@imtbl/config@2.20.1':
+    resolution: {integrity: sha512-P7qRLFLG/WbFC2veFfYCGN0GtTQ/6J71UDwa0ST/QW00s2swyAUNS54ttHFQnepphimbOTilgUpc/O/VANnbAg==}
     engines: {node: '>=20.11.0'}
 
-  '@imtbl/generated-clients@2.20.0':
-    resolution: {integrity: sha512-OcAyqslwJj3lQ0vBIC64BswhfswQYJXvTV3FM7JLmXaO0pvDRLVhPtNWgbgI0W91/7ekye5hycI/ZGbaJDURsg==}
+  '@imtbl/generated-clients@2.20.1':
+    resolution: {integrity: sha512-pqZHyjjJZwNkPYOtQynO3I/zgq4Ed71F0hnGaw2F+9VyvWFP7+rNU4rTMliS0dNaNhPMpIH9OFBbxyBa2BSYOw==}
     engines: {node: '>=20.11.0'}
 
-  '@imtbl/metrics@2.20.0':
-    resolution: {integrity: sha512-v3Oe95A/yfUT+zrASSoXDk680K7VocKIUwsMGE9al/o9GJnCAV05QS+iPfGphGh16Y7+fqWbIQwHAd2YhCLjGg==}
+  '@imtbl/metrics@2.20.1':
+    resolution: {integrity: sha512-kugCCz8e1oWTeE5T0yh2DmcgDGSUY4zO9TgbJsiRnbB8H86D7sPQEiMPpt+cmDUEEh4Xdlgz2oD9jxtLpPVYWQ==}
     engines: {node: '>=20.11.0'}
 
-  '@imtbl/passport@2.20.0':
-    resolution: {integrity: sha512-1bcPuAbu0/QWrHCdJsDv9yhxTPjyJRk3UJ09ZZ3Xs1Vchg6LrHcPKcfznLYumZO/Syc2q5UIEDmA2kpm6gJ6XQ==}
+  '@imtbl/passport@2.20.1':
+    resolution: {integrity: sha512-qqB9KooeqL69jGptTvtjRsiLJf1QielP7GXOs+vDL7fPAP3y8hyz1QNwYVnc0UFxLKNd3yy1OnJqkpgkL7Q77w==}
     engines: {node: '>=20.11.0'}
 
-  '@imtbl/toolkit@2.20.0':
-    resolution: {integrity: sha512-OFp4Xi60whIs4Ea7HmapaKfmt9gAVvxdRPXwZggqbb6UZAogiMlfv5CJ4wQDXlz37zvnGKfP5scbYc53y5iAMg==}
+  '@imtbl/toolkit@2.20.1':
+    resolution: {integrity: sha512-LtTy4CpX6hSSSDNOFWTG6Ny78VWx52HhKMTQRo19ETCFcW0lEH5UTEfAjjrXVGakQgbk8+fuapkFxFG+rMxJVg==}
     engines: {node: '>=20.11.0'}
 
-  '@imtbl/wallet@2.20.0':
-    resolution: {integrity: sha512-+I4TM8kS+EaggZh5Lbxk7y3C/IMd0D4Qck6hseHa0C2H1NzvY3etQct4p6uy5J4TdglgMeEI+2T+WngzC/mwfw==}
+  '@imtbl/wallet@2.20.1':
+    resolution: {integrity: sha512-Qh95lsj+xBvTQSXken4PQp05WECW+2E7OiqJalxZbIzGtewAIXb/tWCrcww8JUEclctD32tZueG5sTjM2uWL6Q==}
 
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
@@ -13279,40 +13279,40 @@ snapshots:
   '@img/sharp-win32-x64@0.34.5':
     optional: true
 
-  '@imtbl/auth@2.20.0':
+  '@imtbl/auth@2.20.1':
     dependencies:
-      '@imtbl/generated-clients': 2.20.0
-      '@imtbl/metrics': 2.20.0
+      '@imtbl/generated-clients': 2.20.1
+      '@imtbl/metrics': 2.20.1
       localforage: 1.10.0
       oidc-client-ts: 3.4.1
     transitivePeerDependencies:
       - debug
       - supports-color
 
-  '@imtbl/config@2.20.0':
+  '@imtbl/config@2.20.1':
     dependencies:
-      '@imtbl/metrics': 2.20.0
+      '@imtbl/metrics': 2.20.1
 
-  '@imtbl/generated-clients@2.20.0':
+  '@imtbl/generated-clients@2.20.1':
     dependencies:
       axios: 1.17.0
     transitivePeerDependencies:
       - debug
       - supports-color
 
-  '@imtbl/metrics@2.20.0':
+  '@imtbl/metrics@2.20.1':
     dependencies:
       global-const: 0.1.2
       lru-memorise: 0.3.0
 
-  '@imtbl/passport@2.20.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
+  '@imtbl/passport@2.20.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
     dependencies:
-      '@imtbl/auth': 2.20.0
-      '@imtbl/config': 2.20.0
-      '@imtbl/generated-clients': 2.20.0
-      '@imtbl/metrics': 2.20.0
-      '@imtbl/toolkit': 2.20.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      '@imtbl/wallet': 2.20.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+      '@imtbl/auth': 2.20.1
+      '@imtbl/config': 2.20.1
+      '@imtbl/generated-clients': 2.20.1
+      '@imtbl/metrics': 2.20.1
+      '@imtbl/toolkit': 2.20.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      '@imtbl/wallet': 2.20.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
       ethers: 6.16.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       localforage: 1.10.0
       oidc-client-ts: 3.4.1
@@ -13324,7 +13324,7 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@imtbl/toolkit@2.20.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
+  '@imtbl/toolkit@2.20.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
       '@metamask/detect-provider': 2.0.0
       axios: 1.17.0
@@ -13338,11 +13338,11 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@imtbl/wallet@2.20.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
+  '@imtbl/wallet@2.20.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
     dependencies:
-      '@imtbl/auth': 2.20.0
-      '@imtbl/generated-clients': 2.20.0
-      '@imtbl/metrics': 2.20.0
+      '@imtbl/auth': 2.20.1
+      '@imtbl/generated-clients': 2.20.1
+      '@imtbl/metrics': 2.20.1
       viem: 2.18.8(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
     transitivePeerDependencies:
       - bufferutil
