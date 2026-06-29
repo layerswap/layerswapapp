@@ -43,7 +43,10 @@ const resolveChainConnectors = (pool: InternalConnector[], providers: WalletProv
     const toProvider: Record<string, string> = { eip155: 'EVM', solana: 'Solana' }
     const mobile = isMobile()
     const records = new Map<string, { variants: InternalConnector[], entry?: WalletConnectWalletBase }>()
-    const recordFor = (name: string) => records.get(name.toLowerCase()) ?? records.set(name.toLowerCase(), { variants: [] }).get(name.toLowerCase())!
+    const recordFor = (name: string) => {
+        const k = UNMERGEABLE_WALLETS.includes(name.toLowerCase()) ? name.toLowerCase() : walletKey(name)
+        return records.get(k) ?? records.set(k, { variants: [] }).get(k)!
+    }
 
     for (const c of pool) {
         if (!c.name) continue
@@ -143,7 +146,7 @@ export function useConnectors({
         const pool = [...featuredConnectors, ...additionalConnectors, ...(resolvedSearchResults ?? [])]
         const connectorsByWallet = resolveChainConnectors(pool, featuredProviders)
         const withMultiChain = (list: InternalConnector[]): WalletModalConnector[] => list.map(c => {
-            const variants = connectorsByWallet.get(c.name.toLowerCase())?.variants ?? []
+            const variants = connectorsByWallet.get(UNMERGEABLE_WALLETS.includes(c.name.toLowerCase()) ? c.name.toLowerCase() : walletKey(c.name))?.variants ?? []
             return { ...c, variants, isMultiChain: variants.length > 1 }
         })
 
