@@ -241,7 +241,7 @@ const DepositAddressForm: FC<Props> = () => {
                                 )}
                             </div>
                             <div>
-                                <ValidationError />
+                                <ValidationError showSwapErrors />
                             </div>
                         </div>
                     </Widget.Content>
