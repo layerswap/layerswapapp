@@ -1,14 +1,14 @@
-import { FC, useCallback } from 'react'
+import { FC } from 'react'
 import { Widget } from '../Widget/Index';
 import { useSwapDataState } from '../../context/swap';
 import Withdraw from './Withdraw';
 import Processing from './Withdraw/Processing';
-import { BackendTransactionStatus } from '../../lib/apiClients/layerSwapApiClient';
-import { useSwapTransactionStore } from '../../stores/swapTransactionStore';
 import SubmitButton from '../buttons/submitButton';
 import ManualWithdraw from './Withdraw/ManualWithdraw';
 import { Partner } from '@/Models/Partner';
 import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
+import { useSwapRetry } from '@/hooks/useSwapRetry';
+import { useGaslessAuthorizationStatus } from '@/hooks/useGaslessAuthorizationStatus';
 
 type Props = {
     type: "widget" | "contained",
@@ -18,23 +18,14 @@ type Props = {
 }
 
 const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, partner, onCancelWithdrawal }) => {
-    const { swapDetails, swapBasicData, refuel, depositActionsResponse, quote, quoteIsLoading } = useSwapDataState()
+    const { swapBasicData, swapDetails, refuel, depositActionsResponse, quote, quoteIsLoading } = useSwapDataState()
 
-    const storedWalletTransaction = useSwapTransactionStore(
-        state => swapDetails?.id ? state.swapTransactions[swapDetails.id] : undefined,
-    )
+    // Polls the gasless deposit (paymaster) authorization while it's in flight; self-gates on
+    // the authorization marker, so it's a no-op for non-gasless swaps.
+    useGaslessAuthorizationStatus(swapDetails?.id)
+
     const resolved = useResolvedSwapStatus()
-
-    const removeStoredTransaction = useCallback(() => {
-        useSwapTransactionStore.getState().removeSwapTransaction(swapDetails?.id || '');
-    }, [swapDetails?.id])
-
-    const resolveWithdrawScreen = () => {
-        if (swapBasicData?.use_deposit_address === true) {
-            return <ManualWithdraw swapBasicData={swapBasicData} depositActions={depositActionsResponse} refuel={refuel} partner={partner} type={type} quote={quote} isQuoteLoading={quoteIsLoading} />
-        }
-        return <Withdraw type={type} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} onCancelWithdrawal={onCancelWithdrawal} partner={partner} />
-    }
+    const { failureReason, canRetry, retry, gaslessFailureMessage, canSwitchToStandard, switchToStandard } = useSwapRetry()
 
     if (!swapBasicData) return <>
         <div className="w-full h-[430px]">
@@ -51,16 +42,27 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, partner, onCa
     return (
         <Container type={type}>
             {
-                resolved.showWithdrawScreen ?
-                    resolveWithdrawScreen()
-                    :
-                    <div className='space-y-3 w-full h-full'>
-                        <Processing />
+                resolved.showWithdrawScreen
+                    ? swapBasicData?.use_deposit_address === true
+                        ? <ManualWithdraw swapBasicData={swapBasicData} depositActions={depositActionsResponse} refuel={refuel} partner={partner} type={type} quote={quote} isQuoteLoading={quoteIsLoading} />
+                        : <Withdraw type={type} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} onCancelWithdrawal={onCancelWithdrawal} partner={partner} />
+                    : <div className='space-y-3 w-full h-full'>
+                        <Processing failureReason={failureReason} />
                         {
-                            storedWalletTransaction?.status == BackendTransactionStatus.Failed &&
-                            <SubmitButton isDisabled={false} isSubmitting={false} onClick={removeStoredTransaction}>
-                                Try again
-                            </SubmitButton>
+                            canRetry &&
+                            <div className='space-y-2'>
+                                {gaslessFailureMessage &&
+                                    <p className='text-sm text-secondary-text px-1'>{gaslessFailureMessage}</p>
+                                }
+                                <SubmitButton isDisabled={false} isSubmitting={false} onClick={retry}>
+                                    Try again
+                                </SubmitButton>
+                                {canSwitchToStandard &&
+                                    <SubmitButton buttonStyle='secondary' isDisabled={false} isSubmitting={false} onClick={switchToStandard}>
+                                        Switch to standard transfer
+                                    </SubmitButton>
+                                }
+                            </div>
                         }
                     </div>
             }
