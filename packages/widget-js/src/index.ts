@@ -25,6 +25,7 @@ export type { SharedLib } from './runtime';
 export {
   ManifestError,
   MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64,
+  DEFAULT_MANIFEST_URL,
   verifyManifest,
   canonicalize,
   fetchManifest,

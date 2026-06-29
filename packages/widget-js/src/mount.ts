@@ -33,11 +33,13 @@ export type MountOptions = ResolveOptions & {
  * ```js
  * import { mountWidget } from '@layerswap/widget-js';
  *
+ * // Zero-config: defaults to the canonical Layerswap CDN, signature verified.
  * const handle = await mountWidget(
  *   document.getElementById('layerswap'),
  *   { config: { apiKey: 'mainnet' } },
- *   { manifest: 'https://cdn.layerswap.io/v1/manifest.json', verify: true },
  * );
+ * // …or override the source (pin a version / point at a local dev server):
+ * //   mountWidget(el, props, { manifest: 'http://127.0.0.1:3100/manifest.json', verify: false })
  * // later …
  * handle.update({ config: { apiKey: 'mainnet', theme: { … } } });
  * handle.destroy();
@@ -46,7 +48,7 @@ export type MountOptions = ResolveOptions & {
 export async function mountWidget(
   target: HTMLElement,
   props: WidgetProps,
-  options: MountOptions,
+  options: MountOptions = {},
 ): Promise<WidgetHandle> {
   if (typeof window === 'undefined') {
     throw new Error('[layerswap/widget-js] mountWidget() requires a browser environment');

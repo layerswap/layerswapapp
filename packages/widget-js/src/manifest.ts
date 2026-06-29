@@ -65,6 +65,18 @@ export type Manifest = {
 export const MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64 =
     'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAESuHFHbltz/hfcY+DzIrLq7Ixc4efHE8SLZdNg0pZZDHTfdwbqLpGk4461EgNranHLWnVsoAbyQ4IyHIVnRAVKw==';
 
+/**
+ * Canonical Layerswap CDN manifest URL — the default the loaders use when an
+ * integrator doesn't pass one. Points at the rolling `v1` channel, so hosts
+ * auto-receive forward-compatible widget updates without a redeploy.
+ *
+ * The major (`/v1/`) is pinned to this package's major version: when Layerswap
+ * cuts a breaking `/v2/`, it ships a new loader major whose default points
+ * there. Override `manifest` to pin an exact build (`…/1.5.0/manifest.json`)
+ * or to target a local dev server (`http://127.0.0.1:3100/manifest.json`).
+ */
+export const DEFAULT_MANIFEST_URL = 'https://cdn.layerswap.io/v1/manifest.json';
+
 const fromB64 = (b64: string): ArrayBuffer => {
     const bin = atob(b64);
     const buf = new Uint8Array(bin.length);

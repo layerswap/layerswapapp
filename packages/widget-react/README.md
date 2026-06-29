@@ -25,8 +25,6 @@ import { LayerswapWidget } from '@layerswap/widget-react';
 export function App() {
   return (
     <LayerswapWidget
-      manifest="https://cdn.layerswap.io/v1/manifest.json"
-      verify
       config={{ version: 'mainnet' }}
       fallback={<div>Loading widget…</div>}
       onReady={() => console.log('widget mounted')}
@@ -36,8 +34,19 @@ export function App() {
 }
 ```
 
-That's it for a default integration — the manifest layer handles updates,
-the EVM connect flow inside the widget works without further setup.
+That's it — no `manifest` needed. It defaults to the canonical Layerswap CDN
+(rolling `v1` channel) with signature verification on, so the manifest layer
+handles updates and the EVM connect flow works without further setup.
+
+Override `manifest` only to pin an exact build or target a local dev server:
+
+```tsx
+// Pin a specific immutable build:
+<LayerswapWidget manifest="https://cdn.layerswap.io/1.5.0/manifest.json" config={{ version: 'mainnet' }} />
+
+// Local widget-cdn dev server (unsigned → turn verification off):
+<LayerswapWidget manifest="http://127.0.0.1:3100/manifest.json" verify={false} config={{ version: 'mainnet' }} />
+```
 
 ## Reusing the host's wagmi config
 

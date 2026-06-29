@@ -34,16 +34,20 @@ export type LayerswapWidgetProps = RemoteWidgetProps & {
   /**
    * URL to a `manifest.json` describing the active build. The loader
    * fetches the manifest first, then the `remoteEntry` it points at.
-   * Enables atomic rollback, channel pinning, and signature
-   * verification. For local development, point this at the widget-cdn
-   * dev server's manifest (`http://127.0.0.1:3100/manifest.json`).
+   * Enables atomic rollback, channel pinning, and signature verification.
+   *
+   * Optional — defaults to the canonical Layerswap CDN (rolling `v1`
+   * channel). Override to pin an exact build (`…/1.5.0/manifest.json`) or,
+   * for local development, point at the widget-cdn dev server
+   * (`http://127.0.0.1:3100/manifest.json`).
    */
-  manifest: string;
+  manifest?: string;
   /**
-   * When true (and `manifest` is set), the loader requires a valid
-   * signature on the manifest against the baked-in public key. Manifests
-   * without a signature or with an invalid one are rejected. Default
-   * false until a real signing key is wired in CI.
+   * When true, the loader requires a valid signature on the manifest
+   * against the baked-in public key; unsigned or tampered manifests are
+   * rejected. Defaults to **true** (the default CDN endpoint is signed).
+   * Set to `false` only when pointing at an unsigned build (e.g. the local
+   * dev server).
    */
   verify?: boolean;
   /** Shown while the remote bundle is being fetched / initialized. */
