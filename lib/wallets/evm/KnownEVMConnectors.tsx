@@ -1,6 +1,5 @@
 import MetaMaskIcon from "@/components/icons/Wallets/MetaMask"
 import WalletConnectIcon from "@/components/icons/Wallets/WalletConnect"
-import BitKeep from "@/components/icons/Wallets/BitKeep"
 import RainbowIcon from "@/components/icons/Wallets/Rainbow"
 import CoinbaseIcon from "@/components/icons/Wallets/Coinbase"
 import Phantom from "@/components/icons/Wallets/Phantom"
@@ -37,10 +36,18 @@ const KnownEVMConnectors = [
     },
     {
         id: 'bitkeep',
-        icon: BitKeep
+        icon: BitGetIcon
     },
     {
         id: 'bitget',
+        icon: BitGetIcon
+    },
+    {
+        id: 'bitget wallet',
+        icon: BitGetIcon
+    },
+    {
+        id: 'com.bitget.web3',
         icon: BitGetIcon
     },
     {

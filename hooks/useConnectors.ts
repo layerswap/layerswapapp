@@ -21,22 +21,22 @@ type InitialSnapshot = {
 }
 
 const UNMERGEABLE_WALLETS = ['nova', 'nova wallet']
+const NAME_OVERRIDES: Record<string, string> = { bitget: 'Bitget Wallet' }
 
 const resolveNames = (groups: InternalConnector[][]): InternalConnector[][] => {
     const canonical = new Map<string, string>()
-    const fromInstalled = new Set<string>()
     for (const group of groups) {
         for (const c of group) {
             if (!c?.name) continue
             if (UNMERGEABLE_WALLETS.includes(c.name.toLowerCase())) continue
             const key = walletKey(c.name)
-            if (c.type === 'injected' ? !fromInstalled.has(key) : !canonical.has(key)) {
+            const current = canonical.get(key)
+            const hasSuffix = c.name.toLowerCase().trim().endsWith(' wallet')
+            if (!current || (hasSuffix && !current.toLowerCase().trim().endsWith(' wallet')))
                 canonical.set(key, c.name)
-                if (c.type === 'injected') fromInstalled.add(key)
-            }
         }
     }
-    return groups.map(group => group.map(c => c?.name ? { ...c, name: canonical.get(walletKey(c.name)) ?? c.name } : c))
+    return groups.map(group => group.map(c => c?.name ? { ...c, name: NAME_OVERRIDES[walletKey(c.name)] ?? canonical.get(walletKey(c.name)) ?? c.name } : c))
 }
 
 const resolveChainConnectors = (pool: InternalConnector[], providers: WalletProvider[]) => {
@@ -150,6 +150,11 @@ export function useConnectors({
             return { ...c, variants, isMultiChain: variants.length > 1 }
         })
 
+        const recentsFirst = (list: WalletModalConnector[]): WalletModalConnector[] => [
+            ...list.filter(isRecent).map(c => ({ ...c, isRecent: true })),
+            ...list.filter(c => !isRecent(c)),
+        ]
+
         const base = [...initialSortedRef.current.list, ...appendedRef.current]
 
         let list = base
@@ -160,7 +165,7 @@ export function useConnectors({
             list = [...base, ...newResults]
         }
 
-        return withMultiChain([...list.filter(isRecent), ...list.filter(c => !isRecent(c))])
+        return recentsFirst(withMultiChain(list))
     }, [featuredConnectors, additionalConnectors, recentConnectors, resolvedSearchResults, filterKey]);
 
     return {

@@ -474,7 +474,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                         {
                             initialConnectors.map(item => {
                                 const provider = featuredProviders.find(p => p.name === item.providerName)
-                                const isRecent = recentConnectors?.some(v => v.connectorName === item.name)
+                                const isRecent = item.isRecent
                                 return (
                                     <Connector
                                         key={item.id}

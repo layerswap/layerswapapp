@@ -29,6 +29,7 @@ export type WalletModalConnector = InternalConnector & {
     });
     showQrCode?: boolean,
     variants?: InternalConnector[],
+    isRecent?: boolean,
 }
 
 export type Wallet = {
