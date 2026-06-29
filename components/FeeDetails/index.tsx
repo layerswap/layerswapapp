@@ -20,6 +20,7 @@ import { resolveTokenUsdPrice } from '@/helpers/tokenHelper';
 import { useSelectedAccount } from '@/context/swapAccounts';
 import { DetailedEstimates } from './SwapQuote/DetailedEstimates';
 import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore';
+import { isGaslessCapableRoute } from '@/helpers/gasless';
 
 export interface SwapValues extends Omit<SwapFormValues, 'from' | 'to'> {
     from?: Network;
@@ -100,15 +101,14 @@ export const DetailsButton: FC<QuoteComponentProps> = ({ quote, reward, isQuoteL
     const gasFeeInUsd = (gasData && gasTokenPriceInUsd) ? gasData.gas * gasTokenPriceInUsd : null;
     const averageCompletionTime = quote?.avg_completion_time;
 
-    // Gasless route: the paymaster covers the source-chain gas, so the user pays nothing.
-    // Respects the user's gasless toggle, kept in sync with the Gas Fee row in DetailedEstimates.
-    const { gaslessEnabled } = useGaslessPreferenceStore()
+    const gaslessEnabled = useGaslessPreferenceStore(s => s.gaslessEnabled)
     const sourceIsSupported = !!wallet?.asSourceSupportedNetworks?.some(n => n === values.from?.name)
-    const isGasless = values.depositMethod === 'wallet'
-        && !!values.fromAsset?.supports_gasless_deposit
-        && sourceIsSupported
-        && !!selectedSourceAccount?.address
-        && gaslessEnabled
+    const isGasless = isGaslessCapableRoute({
+        depositMethod: values.depositMethod,
+        supportsGaslessDeposit: values.fromAsset?.supports_gasless_deposit,
+        sourceIsSupported,
+        sourceAddress: selectedSourceAccount?.address,
+    }) && gaslessEnabled
 
     const shouldCheckNFT = reward?.campaign_type === "for_nft_holders" && reward?.nft_contract_address;
     const { balance: nftBalance, isLoading, error } = useSWRNftBalance(

@@ -54,8 +54,12 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/swaps/${swapId}/deposit_speedup`, { transaction_id: tx_id });
     }
 
-    async AuthorizeSwapAsync(swapId: string, signature: string): Promise<ApiResponse<void>> {
-        return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/swaps/${swapId}/authorize`, { signature });
+    async AuthorizeSwapAsync(swapId: string, signature: string, signerAddress: string): Promise<ApiResponse<void>> {
+        return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/swaps/${swapId}/authorize`, { signature, signer_address: signerAddress });
+    }
+
+    async GetGaslessAuthorizationAsync(swapId: string): Promise<ApiResponse<GaslessAuthorizationResult>> {
+        return await this.AuthenticatedRequest<ApiResponse<GaslessAuthorizationResult>>("GET", `/swaps/${swapId}/authorize`);
     }
 
     async GetDepositActionsAsync(swapId: string, sourceAddress?: string): Promise<ApiResponse<DepositAction[]>> {
@@ -340,6 +344,29 @@ export enum TransactionStatus {
 export enum DepositType {
     Manual = 'manual',
     Wallet = 'wallet'
+}
+
+// Gasless deposit (paymaster) authorization lifecycle, polled via GET /swaps/{id}/authorize.
+// initiated → accepted, awaiting broadcast; published → on-chain (transaction present);
+// completed → deposit done; expired | insufficient | rejected → terminal failure.
+export type GaslessAuthorizationStatus =
+    | 'initiated'
+    | 'published'
+    | 'completed'
+    | 'expired'
+    | 'insufficient'
+    | 'rejected'
+
+export type GaslessAuthorizationTransaction = {
+    transaction_hash: string
+    status: BackendTransactionStatus | string
+    confirmations: number
+    max_confirmations: number
+}
+
+export type GaslessAuthorizationResult = {
+    status: GaslessAuthorizationStatus
+    transaction?: GaslessAuthorizationTransaction | null
 }
 
 export type Fee = {

@@ -1,12 +1,7 @@
 import { BaseError } from 'viem'
 import resolveError from '../WithdrawalProviders/EVMWalletWithdraw/resolveError'
 
-/**
- * True when an error represents the user rejecting a wallet request — a signature
- * (eth_signTypedData_v4) or a transaction. Covers viem's classified rejection (via
- * resolveError), the common provider rejection messages, and the EIP-1193 user-rejected
- * code (4001). Shared by the EVM transfer/sign button and the Hyperliquid withdrawal flow.
- */
+// True when an error is the user rejecting a wallet request (signature or transaction).
 export const isUserRejection = (err: unknown): boolean => {
     if (resolveError(err as BaseError) === 'transaction_rejected') return true
     if (err instanceof Error && /user rejected|user denied|rejected the request/i.test(err.message)) return true

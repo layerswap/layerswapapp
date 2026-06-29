@@ -67,9 +67,6 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
         useGaslessPreferenceStore.getState().clearGaslessUnavailable()
         const { destination_address, to } = values
         setWalletWihdrawDone(false)
-        if (!walletWihdrawDone) {
-            setWalletWihdrawDone(false)
-        }
 
         if (
             to &&

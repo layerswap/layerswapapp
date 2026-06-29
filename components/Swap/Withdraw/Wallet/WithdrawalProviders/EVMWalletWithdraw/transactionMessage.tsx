@@ -20,10 +20,11 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
 }) => {
     const transactionResolvedError = resolveError(transaction?.error as BaseError)
     const hasError = transaction?.isError || wait?.isError
-    const { gaslessUnavailable } = useGaslessPreferenceStore()
+    const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
+    const gaslessErrorMessage = useGaslessPreferenceStore(s => s.gaslessErrorMessage)
 
     if (gaslessUnavailable) {
-        return <ActionMessages.GaslessUnavailableMessage />
+        return <ActionMessages.GaslessUnavailableMessage message={gaslessErrorMessage ?? undefined} />
     }
     if (wait?.isPending || applyingTransaction) {
         return <ActionMessages.TransactionInProgressMessage />

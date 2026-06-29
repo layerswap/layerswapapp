@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { BackendTransactionStatus, TransactionStatus } from '../lib/apiClients/layerSwapApiClient';
+import { BackendTransactionStatus, GaslessAuthorizationStatus, GaslessAuthorizationTransaction, TransactionStatus } from '../lib/apiClients/layerSwapApiClient';
 
 export type SwapTransaction = {
     hash: string;
@@ -21,14 +21,16 @@ type SwapDepositHintClickedStore = {
 };
 
 export type GaslessAuthorization = {
-    // EIP-3009 signature expiry (unix seconds). After this passes with no input tx
-    // on the swap, the paymaster failed to publish in time and the user must retry.
+    // Signature expiry (unix seconds); fallback deadline when the authorize poll is unreachable.
     validBefore: number;
+    status?: GaslessAuthorizationStatus;
+    transaction?: GaslessAuthorizationTransaction | null;
 };
 
 type GaslessAuthorizationStore = {
     authorizations: Record<string, GaslessAuthorization>;
     setGaslessAuthorization: (Id: string, validBefore: number) => void;
+    setGaslessAuthorizationStatus: (Id: string, status: GaslessAuthorizationStatus, transaction?: GaslessAuthorizationTransaction | null) => void;
     removeGaslessAuthorization: (Id: string) => void;
 };
 
@@ -74,6 +76,18 @@ export const useGaslessAuthorizationStore = create(
                     authorizations: {
                         ...state.authorizations,
                         [Id]: { validBefore },
+                    },
+                }));
+            },
+            setGaslessAuthorizationStatus: (Id, status, transaction) => {
+                set((state) => ({
+                    authorizations: {
+                        ...state.authorizations,
+                        [Id]: {
+                            ...(state.authorizations[Id] ?? { validBefore: 0 }),
+                            status,
+                            transaction: transaction ?? state.authorizations[Id]?.transaction ?? null,
+                        },
                     },
                 }));
             },

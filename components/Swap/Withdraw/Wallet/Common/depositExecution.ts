@@ -70,10 +70,10 @@ export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, 
             layerswapApiClient,
         })
     } catch (e: any) {
-        // The user declining the signature is not a failure of the gasless route; only flag
-        // genuine errors so we can offer the standard-transfer fallback instead of a raw error.
+        // Don't flag the route unavailable when the user simply declined.
         if (!isUserRejection(e)) {
-            useGaslessPreferenceStore.getState().reportGaslessUnavailable()
+            const message = e?.response?.data?.error?.message || e?.message
+            useGaslessPreferenceStore.getState().reportGaslessUnavailable('deposit', message)
         }
         throw e
     }
@@ -122,7 +122,7 @@ const submitGaslessAuthorization = async (args: {
     const signAndAuthorize = async (action: SignDepositAction) => {
         const signature = await onSign(action)
         try {
-            await layerswapApiClient.AuthorizeSwapAsync(swapId, signature)
+            await layerswapApiClient.AuthorizeSwapAsync(swapId, signature, sourceAddress)
         } catch (e: any) {
             if (e && typeof e === 'object') e[AUTHORIZE_API_ERROR] = true
             throw e

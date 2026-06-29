@@ -8,6 +8,7 @@ import ManualWithdraw from './Withdraw/ManualWithdraw';
 import { Partner } from '@/Models/Partner';
 import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
 import { useSwapRetry } from '@/hooks/useSwapRetry';
+import { useGaslessAuthorizationStatus } from '@/hooks/useGaslessAuthorizationStatus';
 
 type Props = {
     type: "widget" | "contained",
@@ -17,10 +18,14 @@ type Props = {
 }
 
 const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, partner, onCancelWithdrawal }) => {
-    const { swapBasicData, refuel, depositActionsResponse, quote, quoteIsLoading } = useSwapDataState()
+    const { swapBasicData, swapDetails, refuel, depositActionsResponse, quote, quoteIsLoading } = useSwapDataState()
+
+    // Polls the gasless deposit (paymaster) authorization while it's in flight; self-gates on
+    // the authorization marker, so it's a no-op for non-gasless swaps.
+    useGaslessAuthorizationStatus(swapDetails?.id)
 
     const resolved = useResolvedSwapStatus()
-    const { failureReason, canRetry, retry } = useSwapRetry()
+    const { failureReason, canRetry, retry, gaslessFailureMessage, canSwitchToStandard, switchToStandard } = useSwapRetry()
 
     if (!swapBasicData) return <>
         <div className="w-full h-[430px]">
@@ -45,9 +50,19 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, partner, onCa
                         <Processing failureReason={failureReason} />
                         {
                             canRetry &&
-                            <SubmitButton isDisabled={false} isSubmitting={false} onClick={retry}>
-                                Try again
-                            </SubmitButton>
+                            <div className='space-y-2'>
+                                {gaslessFailureMessage &&
+                                    <p className='text-sm text-secondary-text px-1'>{gaslessFailureMessage}</p>
+                                }
+                                <SubmitButton isDisabled={false} isSubmitting={false} onClick={retry}>
+                                    Try again
+                                </SubmitButton>
+                                {canSwitchToStandard &&
+                                    <SubmitButton buttonStyle='secondary' isDisabled={false} isSubmitting={false} onClick={switchToStandard}>
+                                        Switch to standard transfer
+                                    </SubmitButton>
+                                }
+                            </div>
                         }
                     </div>
             }

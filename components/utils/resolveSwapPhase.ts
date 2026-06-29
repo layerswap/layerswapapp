@@ -31,7 +31,7 @@ export type ResolveSwapPhaseInput = {
     refuel: Refuel | undefined;
     inputTxStatusFromApi?: TransactionStatus;
     storedWalletTransaction?: StoredWalletTransaction;
-    gaslessAuthorizationExpired?: boolean;
+    gaslessAuthorizationFailed?: boolean;
 };
 
 export type StepStatuses = {
@@ -75,7 +75,7 @@ const NO_POLL_PHASES: ReadonlySet<SwapPhase> = new Set([
 ]);
 
 export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStatus {
-    const { swapDetails, refuel, inputTxStatusFromApi, storedWalletTransaction, gaslessAuthorizationExpired } = input;
+    const { swapDetails, refuel, inputTxStatusFromApi, storedWalletTransaction, gaslessAuthorizationFailed } = input;
 
     const inputTx = swapDetails?.transactions?.find(t => t.type === TransactionType.Input);
     const outputTx = swapDetails?.transactions?.find(t => t.type === TransactionType.Output);
@@ -86,7 +86,7 @@ export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStat
     const outputReady = !!(outputTx?.transaction_hash && outputTx?.amount);
     const refuelReady = !!(refuelTx?.transaction_hash && refuelTx?.amount);
     const refuelPending = !!refuel && !refuelReady;
-    const swapInputTxStatus = resolveSwapInputTxStatus(inputTx, inputTxStatusFromApi, gaslessAuthorizationExpired);
+    const swapInputTxStatus = resolveSwapInputTxStatus(inputTx, inputTxStatusFromApi, gaslessAuthorizationFailed);
 
     const showWithdrawScreen =
         (!swapStatus || swapStatus === SwapStatus.UserTransferPending || swapStatus === SwapStatus.Created)
@@ -306,7 +306,7 @@ const BACKEND_TO_TX_STATUS: Record<BackendTransactionStatus, TransactionStatus> 
 function resolveSwapInputTxStatus(
     swapInputTransaction: Transaction | undefined,
     inputTxStatusFromApi: TransactionStatus | undefined,
-    gaslessAuthorizationExpired: boolean | undefined,
+    gaslessAuthorizationFailed: boolean | undefined,
 ): TransactionStatus {
     if (swapInputTransaction) {
         if (
@@ -318,8 +318,8 @@ function resolveSwapInputTxStatus(
         return BACKEND_TO_TX_STATUS[swapInputTransaction.status];
     }
     if (inputTxStatusFromApi === TransactionStatus.Failed) return inputTxStatusFromApi;
-    // No published input tx and the gasless authorization lapsed: the deposit failed.
-    if (gaslessAuthorizationExpired) return TransactionStatus.Failed;
+    // Gasless deposit failed terminally with no input tx published.
+    if (gaslessAuthorizationFailed) return TransactionStatus.Failed;
     return TransactionStatus.Pending;
 }
 

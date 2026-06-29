@@ -34,6 +34,8 @@ import { useSettingsState } from "@/context/settings";
 import { useBalance } from "@/lib/balances/useBalance";
 import useSWRGas from "@/lib/gases/useSWRGas";
 
+const layerswapApiClient = new LayerSwapApiClient()
+
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData } = useSwapDataState()
     const { source_network } = swapBasicData || {}
@@ -176,11 +178,13 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const query = useQueryState()
     const goHome = useGoHome()
     const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, refuel: refuelData, setSwapError } = useSwapDataState()
-    const { gaslessUnavailable, switchToStandardTransfer } = useGaslessPreferenceStore()
+    const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
+    const gaslessFailureStage = useGaslessPreferenceStore(s => s.gaslessFailureStage)
+    const switchToStandardTransfer = useGaslessPreferenceStore(s => s.switchToStandardTransfer)
+    const clearGaslessUnavailable = useGaslessPreferenceStore(s => s.clearGaslessUnavailable)
     const { onWalletWithdrawalSuccess: onWalletWithdrawalSuccess, onCancelWithdrawal } = useWalletWithdrawalState();
     const { createSwap, setSwapId, setQuoteLoading } = useSwapDataUpdate()
     const { setSwapTransaction } = useSwapTransactionStore();
-    const layerswapApiClient = new LayerSwapApiClient()
     const selectedSourceAccount = useSelectedAccount("from", swapBasicData.source_network?.name);
     const { wallets } = useWallet(swapBasicData.source_network, 'withdrawal')
     const { networks } = useSettingsState()
@@ -209,12 +213,6 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
             setLoading(true)
             clearError?.()
-            // Retrying after a gasless failure: drop to a standard transfer and clear the prompt
-            // so createSwap below builds a regular (gas-paying) swap.
-            if (gaslessUnavailable) {
-                switchToStandardTransfer()
-                setSwapError?.(null)
-            }
             let swapData: SwapDetails | undefined = swapDetails
             let depositActions = depositActionsResponse;
 
@@ -234,8 +232,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 }
 
                 const newSwapData = await createSwap(swapValues, query).catch((e: any) => {
-                    // A gasless attempt that failed is surfaced as the "switch to standard transfer"
-                    // prompt (via the store flag), not as a raw API error.
+                    // Failed gasless attempt is surfaced as the switch prompt, not a raw API error.
                     if (useGaslessPreferenceStore.getState().gaslessUnavailable) {
                         setSwapError?.(null)
                     } else {
@@ -274,8 +271,6 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 throw new Error('No swap data')
             }
 
-            // Both paths share one prepared context; the deposit actions decide which
-            // executor runs — broadcast a transfer, or sign + authorize a gasless deposit.
             const executionContext: DepositExecutionContext = {
                 swapData,
                 depositActions,
@@ -324,6 +319,18 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         finally {
             setLoading(false)
         }
+    }
+
+    const retryGasless = () => {
+        clearGaslessUnavailable()
+        setSwapError?.(null)
+        handleClick()
+    }
+
+    const switchToStandard = () => {
+        switchToStandardTransfer()
+        setSwapError?.(null)
+        handleClick()
     }
 
     if (quoteIsLoading || loading)
@@ -381,14 +388,38 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     </div>
                 </div>
             </div>}
-            <ButtonWrapper
-                {...props}
-                isSubmitting={props.isSubmitting || loading || quoteIsLoading}
-                onClick={handleClick}
-                isDisabled={quoteIsLoading || !!quoteError}
-            >
-                {gaslessUnavailable ? 'Switch to standard transfer' : (error ? 'Try again' : 'Swap now')}
-            </ButtonWrapper>
+            {gaslessUnavailable ? (
+                <div className="space-y-2">
+                    {gaslessFailureStage === 'deposit' &&
+                        <ButtonWrapper
+                            {...props}
+                            isSubmitting={props.isSubmitting || loading || quoteIsLoading}
+                            onClick={retryGasless}
+                            isDisabled={quoteIsLoading || !!quoteError}
+                        >
+                            Try again
+                        </ButtonWrapper>
+                    }
+                    <ButtonWrapper
+                        {...props}
+                        buttonStyle={gaslessFailureStage === 'deposit' ? 'secondary' : 'filled'}
+                        isSubmitting={props.isSubmitting || loading || quoteIsLoading}
+                        onClick={switchToStandard}
+                        isDisabled={quoteIsLoading || !!quoteError}
+                    >
+                        Switch to standard transfer
+                    </ButtonWrapper>
+                </div>
+            ) : (
+                <ButtonWrapper
+                    {...props}
+                    isSubmitting={props.isSubmitting || loading || quoteIsLoading}
+                    onClick={handleClick}
+                    isDisabled={quoteIsLoading || !!quoteError}
+                >
+                    {error ? 'Try again' : 'Swap now'}
+                </ButtonWrapper>
+            )}
         </>
     )
 }

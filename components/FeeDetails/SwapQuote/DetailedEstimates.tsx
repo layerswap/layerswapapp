@@ -17,6 +17,7 @@ import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/Addres
 import shortenString from '@/components/utils/ShortenString'
 import ToggleButton from '@/components/buttons/toggleButton'
 import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore'
+import { isGaslessCapableRoute } from '@/helpers/gasless'
 
 type DetailedEstimatesProps = {
     quote: SwapQuote | undefined,
@@ -82,16 +83,17 @@ export const GasFee = ({ values, quote }: { values: SwapValues, quote: SwapQuote
     const gas = gasData?.gas
     const gasCurrencyName = gasData?.token?.symbol
 
-    const { gaslessEnabled, setGaslessEnabled } = useGaslessPreferenceStore()
+    const gaslessEnabled = useGaslessPreferenceStore(s => s.gaslessEnabled)
+    const setGaslessEnabled = useGaslessPreferenceStore(s => s.setGaslessEnabled)
 
-    // Gasless route: the paymaster covers the source-chain gas, so the user pays nothing.
-    // Capability mirrors the useGasless conditions in context/swap.tsx (minus the async
-    // contract check); "active" also respects the user's toggle.
+    // Paymaster covers source-chain gas on the gasless route.
     const sourceIsSupported = !!wallet?.asSourceSupportedNetworks?.some(n => n === values.from?.name)
-    const isGaslessCapable = values.depositMethod === 'wallet'
-        && !!values.fromAsset?.supports_gasless_deposit
-        && sourceIsSupported
-        && !!selectedSourceAccount?.address
+    const isGaslessCapable = isGaslessCapableRoute({
+        depositMethod: values.depositMethod,
+        supportsGaslessDeposit: values.fromAsset?.supports_gasless_deposit,
+        sourceIsSupported,
+        sourceAddress: selectedSourceAccount?.address,
+    })
     const isGaslessActive = isGaslessCapable && gaslessEnabled
     const gaslessToggleHint = gaslessEnabled
         ? "Turn off to send a standard transaction and pay the network fee yourself."
@@ -135,7 +137,7 @@ export const GasFee = ({ values, quote }: { values: SwapValues, quote: SwapQuote
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <div>
-                            <ToggleButton value={gaslessEnabled} onChange={setGaslessEnabled} />
+                            <ToggleButton value={gaslessEnabled} onChange={setGaslessEnabled} ariaLabel="Gasless transfer" />
                         </div>
                     </TooltipTrigger>
                     <TooltipContent className="bg-secondary-300! border-secondary-300! text-primary-text! max-w-52">
