@@ -3,6 +3,7 @@ import { ActionData } from "../../Common/sharedTypes"
 import { BaseError } from 'viem'
 import ActionMessages from "../../../messages/TransactionMessages";
 import resolveError from "./resolveError";
+import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
 
 type TransactionMessageProps = {
     wait?: ActionData,
@@ -19,7 +20,12 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
 }) => {
     const transactionResolvedError = resolveError(transaction?.error as BaseError)
     const hasError = transaction?.isError || wait?.isError
+    const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
+    const gaslessErrorMessage = useGaslessPreferenceStore(s => s.gaslessErrorMessage)
 
+    if (gaslessUnavailable) {
+        return <ActionMessages.GaslessUnavailableMessage message={gaslessErrorMessage ?? undefined} />
+    }
     if (wait?.isPending || applyingTransaction) {
         return <ActionMessages.TransactionInProgressMessage />
     }
