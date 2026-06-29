@@ -438,8 +438,9 @@ export default function useEVM(): WalletProvider {
             providerIcon,
             ready: allConnectors.length > 0,
             requestAdditionalConnectors,
+            registryWallets: walletConnectConnectors,
         }
-    }, [connectWallet, disconnectWallets, switchAccount, switchChain, isNotAvailableCondition, resolvedConnectors, activeWallet, autofillSupportedNetworks, withdrawalSupportedNetworks, asSourceSupportedNetworks, availableConnectors, additionalConnectors, name, id, providerIcon, allConnectors.length, requestAdditionalConnectors]);
+    }, [connectWallet, disconnectWallets, switchAccount, switchChain, isNotAvailableCondition, resolvedConnectors, activeWallet, autofillSupportedNetworks, withdrawalSupportedNetworks, asSourceSupportedNetworks, availableConnectors, additionalConnectors, name, id, providerIcon, allConnectors.length, requestAdditionalConnectors, walletConnectConnectors]);
 
     return provider
 }
