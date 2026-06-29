@@ -22,6 +22,7 @@ import SwapDetails from "..";
 import { useBalance } from "@/lib/balances/useBalance";
 import ContractAddressNote from "@/components/Input/Address/ContractAddressNote";
 import { useContractAddressStore } from "@/stores/contractAddressStore";
+import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
 import ContractAddressValidationCache, { ContractSourceAddressValidationCache } from "@/components/validationError/ContractAddressValidationCache";
 
 type NetworkToConnect = {
@@ -63,6 +64,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         setSwapError && setSwapError(null)
+        useGaslessPreferenceStore.getState().clearGaslessUnavailable()
         const { destination_address, to } = values
         setWalletWihdrawDone(false)
         if (!walletWihdrawDone) {

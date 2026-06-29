@@ -10,6 +10,7 @@ import { SignDepositAction, SwapBasicData } from "@/lib/apiClients/layerSwapApiC
 import { useSelectedAccount } from "@/context/swapAccounts";
 import useWallet from "@/hooks/useWallet";
 import { useSwapDataState } from "@/context/swap";
+import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
 import useSWRGas from "@/lib/gases/useSWRGas";
 import { useWalletRpcHealth } from "@/hooks/useWalletRpcHealth";
 import RPCUnhealthyMessage from "./RPCUnhealthyMessage";
@@ -31,6 +32,7 @@ const TransferTokenButton: FC<Props> = ({
     const [error, setError] = useState<any | undefined>()
     const [loading, setLoading] = useState(false)
     const { swapError } = useSwapDataState()
+    const { gaslessUnavailable } = useGaslessPreferenceStore()
 
     const selectedSourceAccount = useSelectedAccount("from", swapData.source_network.name);
     const { wallets } = useWallet(swapData.source_network, 'withdrawal')
@@ -117,7 +119,7 @@ const TransferTokenButton: FC<Props> = ({
 
     return <div className="w-full space-y-3 h-fit text-primary-text">
         {
-            (buttonClicked || swapError) ? (
+            (buttonClicked || swapError || gaslessUnavailable) ? (
                 <TransactionMessage
                     transaction={transaction}
                     applyingTransaction={!!savedTransactionHash}

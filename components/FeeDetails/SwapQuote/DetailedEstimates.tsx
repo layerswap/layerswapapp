@@ -15,6 +15,8 @@ import { Network, NetworkRouteToken } from '@/Models/Network'
 import { Address } from "@/lib/address";
 import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
 import shortenString from '@/components/utils/ShortenString'
+import ToggleButton from '@/components/buttons/toggleButton'
+import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore'
 
 type DetailedEstimatesProps = {
     quote: SwapQuote | undefined,
@@ -80,26 +82,68 @@ export const GasFee = ({ values, quote }: { values: SwapValues, quote: SwapQuote
     const gas = gasData?.gas
     const gasCurrencyName = gasData?.token?.symbol
 
-    if (!gasFeeInUsd || !gasFeeInUsd) return null
+    const { gaslessEnabled, setGaslessEnabled } = useGaslessPreferenceStore()
+
+    // Gasless route: the paymaster covers the source-chain gas, so the user pays nothing.
+    // Capability mirrors the useGasless conditions in context/swap.tsx (minus the async
+    // contract check); "active" also respects the user's toggle.
+    const sourceIsSupported = !!wallet?.asSourceSupportedNetworks?.some(n => n === values.from?.name)
+    const isGaslessCapable = values.depositMethod === 'wallet'
+        && !!values.fromAsset?.supports_gasless_deposit
+        && sourceIsSupported
+        && !!selectedSourceAccount?.address
+    const isGaslessActive = isGaslessCapable && gaslessEnabled
+    const gaslessToggleHint = gaslessEnabled
+        ? "Turn off to send a standard transaction and pay the network fee yourself."
+        : "Turn on to skip the network fee — gas is covered for you."
+
+    if (!isGaslessCapable && !gasFeeInUsd) return null
 
     return <RowWrapper title="Gas Fee">
-        {isGasLoading ? (
-            <LoadingBar />
-        ) : <div>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    {gas !== undefined && (
-                        <span className="text-sm ml-1 font-small">
-                            {displayGasFeeInUsd}
-                        </span>
-                    )}
-                </TooltipTrigger>
-                <TooltipContent className="bg-secondary-300! border-secondary-300! text-primary-text!">
-                    <span>{gas || '-'} </span>
-                    <span>{gas ? gasCurrencyName : ''}</span>
-                </TooltipContent>
-            </Tooltip>
-        </div>}
+        <div className="flex items-center gap-2">
+            {isGasLoading ? (
+                <LoadingBar />
+            ) : (
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <div className="flex items-center gap-2 text-sm ml-1 font-small">
+                            {isGaslessActive && displayGasFeeInUsd && (
+                                <span className="line-through text-primary-text-tertiary">
+                                    {displayGasFeeInUsd}
+                                </span>
+                            )}
+                            {isGaslessActive ? (
+                                <span className="text-success-foreground font-extrabold italic">Free</span>
+                            ) : (
+                                <span>{displayGasFeeInUsd ?? '-'}</span>
+                            )}
+                        </div>
+                    </TooltipTrigger>
+                    <TooltipContent className="bg-secondary-300! border-secondary-300! text-primary-text! max-w-52">
+                        {isGaslessActive ? (
+                            <span>Gasless route — the network fee is covered for you.</span>
+                        ) : (
+                            <>
+                                <span>{gas || '-'} </span>
+                                <span>{gas ? gasCurrencyName : ''}</span>
+                            </>
+                        )}
+                    </TooltipContent>
+                </Tooltip>
+            )}
+            {isGaslessCapable && (
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <div>
+                            <ToggleButton value={gaslessEnabled} onChange={setGaslessEnabled} />
+                        </div>
+                    </TooltipTrigger>
+                    <TooltipContent className="bg-secondary-300! border-secondary-300! text-primary-text! max-w-52">
+                        <span>{gaslessToggleHint}</span>
+                    </TooltipContent>
+                </Tooltip>
+            )}
+        </div>
     </RowWrapper>
 }
 

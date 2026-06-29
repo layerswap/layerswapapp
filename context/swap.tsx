@@ -21,6 +21,7 @@ import { isDepositAddressFlow, isDepositAddressSwap } from '@/helpers/swapFlow';
 import { useSelectedAccount } from './swapAccounts';
 import { Address } from '@/lib/address';
 import { useSlippageStore } from '@/stores/slippageStore';
+import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore';
 import { posthog } from 'posthog-js';
 import { resolveExtendedRoutePlan } from '@/lib/extendedRoutes/registry';
 import { buildCreateSwapParamsForExtendedRoute } from '@/lib/extendedRoutes/transforms';
@@ -124,12 +125,22 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     // overlays the extended-route (e.g. Hyperliquid) source/amount/quote on top.
     const baseSwapData = useMemo<(SwapBasicData & { refuel: boolean }) | undefined>(() => {
         if (!(swapId && data?.data?.swap)) return undefined
+        const swap = data.data.swap
+        // The swap response omits supports_gasless_deposit on the token; restore it from the
+        // route definition so gasless detection (gas display, button) survives swap creation.
+        const routeToken = sourceRoutes
+            ?.find(r => r.name === swap.source_network?.name)
+            ?.tokens?.find(t => t.symbol === swap.source_token?.symbol)
+        const source_token = routeToken?.supports_gasless_deposit != null
+            ? { ...swap.source_token, supports_gasless_deposit: routeToken.supports_gasless_deposit }
+            : swap.source_token
         return {
-            ...data.data.swap,
-            requested_amount: data.data.swap.requested_amount.toString(),
+            ...swap,
+            source_token,
+            requested_amount: swap.requested_amount.toString(),
             refuel: !!data.data.refuel,
         }
-    }, [data, swapId])
+    }, [data, swapId, sourceRoutes])
 
     const extendedSwapData = useExtendedSwapData(swapId, baseSwapData, data?.data?.quote)
 
@@ -235,11 +246,13 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         const sourceIsSupported = sourceWalletIsSupported && !isContract
 
         const slippage = useSlippageStore.getState().slippage
+        const gaslessEnabled = useGaslessPreferenceStore.getState().gaslessEnabled
 
         const useGasless = depositMethod === 'wallet'
             && !!fromCurrency.supports_gasless_deposit
             && !!sourceIsSupported
             && !!selectedSourceAccount?.address
+            && gaslessEnabled
 
         const extendedPlan = resolveExtendedRoutePlan({
             sourceNetworkName: from.name,
@@ -278,9 +291,13 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             data.slippage = slippage.toString()
         }
 
-        const swapResponse = await layerswapApiClient.CreateSwapAsync(data)
+        const swapResponse = await layerswapApiClient.CreateSwapAsync(data).catch((e) => {
+            if (useGasless) useGaslessPreferenceStore.getState().reportGaslessUnavailable()
+            throw e
+        })
 
         if (swapResponse?.error) {
+            if (useGasless) useGaslessPreferenceStore.getState().reportGaslessUnavailable()
             throw swapResponse?.error
         }
 

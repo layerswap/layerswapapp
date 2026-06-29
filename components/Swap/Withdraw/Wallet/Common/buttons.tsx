@@ -20,6 +20,7 @@ import { Network, NetworkRoute } from "@/Models/Network";
 import { useQueryState } from "@/context/query";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
+import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
 import LayerSwapApiClient, { SwapBasicData, SwapDetails } from "@/lib/apiClients/layerSwapApiClient";
 import sleep from "@/lib/wallets/utils/sleep";
 import { isDiffByPercent } from "@/components/utils/numbers";
@@ -175,6 +176,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const query = useQueryState()
     const goHome = useGoHome()
     const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, refuel: refuelData, setSwapError } = useSwapDataState()
+    const { gaslessUnavailable, switchToStandardTransfer } = useGaslessPreferenceStore()
     const { onWalletWithdrawalSuccess: onWalletWithdrawalSuccess, onCancelWithdrawal } = useWalletWithdrawalState();
     const { createSwap, setSwapId, setQuoteLoading } = useSwapDataUpdate()
     const { setSwapTransaction } = useSwapTransactionStore();
@@ -195,10 +197,6 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const priceImpactValues = useMemo(() => quote ? resolvePriceImpactValues(quote, refuel ? refuelData : undefined) : undefined, [quote, refuel]);
     const criticalMarketPriceImpact = useMemo(() => priceImpactValues?.criticalMarketPriceImpact, [priceImpactValues]);
 
-    // Gasless deposit: the source token signals EIP-3009 support and the EVM step
-    // supplied a signer. Drives the "Sign" affordance and the post-create sign branch.
-    const isGaslessCapable = !!onSign && !!swapBasicData.source_token?.supports_gasless_deposit
-
     const handleClick = async () => {
         try {
             const selectedWallet = wallets.find(w => w.id === selectedSourceAccount?.id)
@@ -211,6 +209,12 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
             setLoading(true)
             clearError?.()
+            // Retrying after a gasless failure: drop to a standard transfer and clear the prompt
+            // so createSwap below builds a regular (gas-paying) swap.
+            if (gaslessUnavailable) {
+                switchToStandardTransfer()
+                setSwapError?.(null)
+            }
             let swapData: SwapDetails | undefined = swapDetails
             let depositActions = depositActionsResponse;
 
@@ -230,7 +234,13 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 }
 
                 const newSwapData = await createSwap(swapValues, query).catch((e: any) => {
-                    setSwapError?.(e?.response?.data?.error?.message || e?.message || 'Could not create swap')
+                    // A gasless attempt that failed is surfaced as the "switch to standard transfer"
+                    // prompt (via the store flag), not as a raw API error.
+                    if (useGaslessPreferenceStore.getState().gaslessUnavailable) {
+                        setSwapError?.(null)
+                    } else {
+                        setSwapError?.(e?.response?.data?.error?.message || e?.message || 'Could not create swap')
+                    }
                     throw e
                 });
                 const newSwapId = newSwapData?.swap?.id;
@@ -377,7 +387,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 onClick={handleClick}
                 isDisabled={quoteIsLoading || !!quoteError}
             >
-                {error ? 'Try again' : (isGaslessCapable ? 'Sign & swap (no gas)' : 'Swap now')}
+                {gaslessUnavailable ? 'Switch to standard transfer' : (error ? 'Try again' : 'Swap now')}
             </ButtonWrapper>
         </>
     )

@@ -19,6 +19,7 @@ import NumFlowWithFallback from '@/components/Common/NumFlowWithFallback';
 import { resolveTokenUsdPrice } from '@/helpers/tokenHelper';
 import { useSelectedAccount } from '@/context/swapAccounts';
 import { DetailedEstimates } from './SwapQuote/DetailedEstimates';
+import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore';
 
 export interface SwapValues extends Omit<SwapFormValues, 'from' | 'to'> {
     from?: Network;
@@ -99,6 +100,16 @@ export const DetailsButton: FC<QuoteComponentProps> = ({ quote, reward, isQuoteL
     const gasFeeInUsd = (gasData && gasTokenPriceInUsd) ? gasData.gas * gasTokenPriceInUsd : null;
     const averageCompletionTime = quote?.avg_completion_time;
 
+    // Gasless route: the paymaster covers the source-chain gas, so the user pays nothing.
+    // Respects the user's gasless toggle, kept in sync with the Gas Fee row in DetailedEstimates.
+    const { gaslessEnabled } = useGaslessPreferenceStore()
+    const sourceIsSupported = !!wallet?.asSourceSupportedNetworks?.some(n => n === values.from?.name)
+    const isGasless = values.depositMethod === 'wallet'
+        && !!values.fromAsset?.supports_gasless_deposit
+        && sourceIsSupported
+        && !!selectedSourceAccount?.address
+        && gaslessEnabled
+
     const shouldCheckNFT = reward?.campaign_type === "for_nft_holders" && reward?.nft_contract_address;
     const { balance: nftBalance, isLoading, error } = useSWRNftBalance(
         destinationAddress || '',
@@ -109,7 +120,7 @@ export const DetailsButton: FC<QuoteComponentProps> = ({ quote, reward, isQuoteL
     return (
         <div className='flex items-center gap-1 space-x-3'>
             {
-                gasFeeInUsd &&
+                (gasFeeInUsd || isGasless) &&
                 <>
                     <div className={clsx(
                         "inline-flex items-center gap-1",
@@ -120,8 +131,18 @@ export const DetailsButton: FC<QuoteComponentProps> = ({ quote, reward, isQuoteL
                                 <GasIcon className='h-4 w-4 text-secondary-text' /> : <ExchangeGasIcon className='h-5 w-5 text-secondary-text' />
                             }
                         </div>
-                        <NumFlowWithFallback className="text-primary-text text-sm leading-6" value={gasFeeInUsd < 0.01 ? '0.01' : gasFeeInUsd} prefix={gasFeeInUsd < 0.01 ? '<$' : '$'} />
-
+                        {isGasless ? (
+                            <div className="flex items-center gap-1 text-sm leading-6">
+                                {gasFeeInUsd != null && (
+                                    <span className="line-through text-primary-text-tertiary">
+                                        {gasFeeInUsd < 0.01 ? '<$0.01' : `$${gasFeeInUsd.toFixed(2)}`}
+                                    </span>
+                                )}
+                                <span className="text-success-foreground font-extrabold italic">Free</span>
+                            </div>
+                        ) : (
+                            <NumFlowWithFallback className="text-primary-text text-sm leading-6" value={gasFeeInUsd! < 0.01 ? '0.01' : gasFeeInUsd!} prefix={gasFeeInUsd! < 0.01 ? '<$' : '$'} />
+                        )}
                     </div>
                     <div className="w-px h-3 bg-primary-text-tertiary rounded-2xl" />
                 </>

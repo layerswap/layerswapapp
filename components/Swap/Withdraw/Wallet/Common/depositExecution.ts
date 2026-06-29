@@ -7,6 +7,7 @@ import LayerSwapApiClient, {
     SwapDetails,
 } from "@/lib/apiClients/layerSwapApiClient";
 import { useGaslessAuthorizationStore } from "@/stores/swapTransactionStore";
+import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
 import { Network } from "@/Models/Network";
 import { TransferProps } from "./sharedTypes";
 import { isUserRejection } from "./isUserRejection";
@@ -52,7 +53,7 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
 }
 
 export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, onSign: GaslessSigner): Promise<void> => {
-    const { swapData, depositActions, sourceAddress, layerswapApiClient, setActionStateText, setSwapTransaction, setSwapError, onSuccess } = ctx
+    const { swapData, depositActions, sourceAddress, layerswapApiClient, setActionStateText, setSwapTransaction, onSuccess } = ctx
 
     const signAction = depositActions.find(isSignAction)
     if (!signAction) throw new Error('No sign action')
@@ -69,8 +70,10 @@ export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, 
             layerswapApiClient,
         })
     } catch (e: any) {
+        // The user declining the signature is not a failure of the gasless route; only flag
+        // genuine errors so we can offer the standard-transfer fallback instead of a raw error.
         if (!isUserRejection(e)) {
-            setSwapError?.(e?.response?.data?.error?.message || e?.message || 'Could not authorize the gasless deposit')
+            useGaslessPreferenceStore.getState().reportGaslessUnavailable()
         }
         throw e
     }
