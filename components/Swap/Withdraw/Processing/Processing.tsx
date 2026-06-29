@@ -136,35 +136,31 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel, fail
             },
             current: {
                 name: 'Processing your deposit',
-                description: <>
-                    {
-                        transactionHash
-                            ? <div className='flex space-x-1'>
-                                <div>
-                                    <LinkWithIcon
-                                        name={'View in explorer'}
-                                        url={getExplorerUrl(input_tx_explorer, transactionHash)}
-                                    />
-                                </div>
-                                <div>
-                                    <span>
-                                        {inputConfirmations != null && inputConfirmations > 0 && inputMaxConfirmations != null && (
-                                            <div>
-                                                <span className='whitespace-nowrap'>| Confirmations </span>
-                                                <span className="text-primary-text ml-1">
-                                                    <span>{inputConfirmations >= inputMaxConfirmations
-                                                        ? inputMaxConfirmations
-                                                        : inputConfirmations}</span>
-                                                    <span>/</span>{inputMaxConfirmations}
-                                                </span>
-                                            </div>
-                                        )}
-                                    </span>
-                                </div>
-                            </div>
-                            : null
-                    }
-                </>
+                description: transactionHash
+                    ? <div className='flex space-x-1'>
+                        <div>
+                            <LinkWithIcon
+                                name={'View in explorer'}
+                                url={getExplorerUrl(input_tx_explorer, transactionHash)}
+                            />
+                        </div>
+                        <div>
+                            <span>
+                                {inputConfirmations != null && inputConfirmations > 0 && inputMaxConfirmations != null && (
+                                    <div>
+                                        <span className='whitespace-nowrap'>| Confirmations </span>
+                                        <span className="text-primary-text ml-1">
+                                            <span>{inputConfirmations >= inputMaxConfirmations
+                                                ? inputMaxConfirmations
+                                                : inputConfirmations}</span>
+                                            <span>/</span>{inputMaxConfirmations}
+                                        </span>
+                                    </div>
+                                )}
+                            </span>
+                        </div>
+                    </div>
+                    : null
             },
             complete: {
                 name: `Deposit confirmed`,
