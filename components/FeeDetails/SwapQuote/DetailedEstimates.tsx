@@ -17,6 +17,7 @@ import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/Addres
 import shortenString from '@/components/utils/ShortenString'
 import ToggleButton from '@/components/buttons/toggleButton'
 import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore'
+import GaslessBadge from '../GaslessBadge'
 import { isGaslessCapableRoute } from '@/helpers/gasless'
 
 type DetailedEstimatesProps = {
@@ -105,31 +106,18 @@ export const GasFee = ({ values, quote }: { values: SwapValues, quote: SwapQuote
         <div className="flex items-center gap-2">
             {isGasLoading ? (
                 <LoadingBar />
+            ) : isGaslessActive ? (
+                <GaslessBadge />
             ) : (
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <div className="flex items-center gap-2 text-sm ml-1 font-small">
-                            {isGaslessActive && displayGasFeeInUsd && (
-                                <span className="line-through text-primary-text-tertiary">
-                                    {displayGasFeeInUsd}
-                                </span>
-                            )}
-                            {isGaslessActive ? (
-                                <span className="text-success-foreground font-extrabold italic">Free</span>
-                            ) : (
-                                <span>{displayGasFeeInUsd ?? '-'}</span>
-                            )}
+                            <span>{displayGasFeeInUsd ?? '-'}</span>
                         </div>
                     </TooltipTrigger>
                     <TooltipContent className="bg-secondary-300! border-secondary-300! text-primary-text! max-w-52">
-                        {isGaslessActive ? (
-                            <span>Gasless route — the network fee is covered for you.</span>
-                        ) : (
-                            <>
-                                <span>{gas || '-'} </span>
-                                <span>{gas ? gasCurrencyName : ''}</span>
-                            </>
-                        )}
+                        <span>{gas || '-'} </span>
+                        <span>{gas ? gasCurrencyName : ''}</span>
                     </TooltipContent>
                 </Tooltip>
             )}

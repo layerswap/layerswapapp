@@ -19,6 +19,7 @@ import NumFlowWithFallback from '@/components/Common/NumFlowWithFallback';
 import { resolveTokenUsdPrice } from '@/helpers/tokenHelper';
 import { useSelectedAccount } from '@/context/swapAccounts';
 import { DetailedEstimates } from './SwapQuote/DetailedEstimates';
+import GaslessBadge from './GaslessBadge';
 import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore';
 import { isGaslessCapableRoute } from '@/helpers/gasless';
 
@@ -122,28 +123,21 @@ export const DetailsButton: FC<QuoteComponentProps> = ({ quote, reward, isQuoteL
             {
                 (gasFeeInUsd || isGasless) &&
                 <>
-                    <div className={clsx(
-                        "inline-flex items-center gap-1",
-                        { "animate-pulse-strong": isQuoteLoading }
-                    )}>
-                        <div className='p-0.5'>
-                            {!values.fromExchange ?
-                                <GasIcon className='h-4 w-4 text-secondary-text' /> : <ExchangeGasIcon className='h-5 w-5 text-secondary-text' />
-                            }
-                        </div>
-                        {isGasless ? (
-                            <div className="flex items-center gap-1 text-sm leading-6">
-                                {gasFeeInUsd != null && (
-                                    <span className="line-through text-primary-text-tertiary">
-                                        {gasFeeInUsd < 0.01 ? '<$0.01' : `$${gasFeeInUsd.toFixed(2)}`}
-                                    </span>
-                                )}
-                                <span className="text-success-foreground font-extrabold italic">Free</span>
+                    {isGasless ? (
+                        <GaslessBadge className={clsx({ "animate-pulse-strong": isQuoteLoading })} />
+                    ) : (
+                        <div className={clsx(
+                            "inline-flex items-center gap-1",
+                            { "animate-pulse-strong": isQuoteLoading }
+                        )}>
+                            <div className='p-0.5'>
+                                {!values.fromExchange ?
+                                    <GasIcon className='h-4 w-4 text-secondary-text' /> : <ExchangeGasIcon className='h-5 w-5 text-secondary-text' />
+                                }
                             </div>
-                        ) : (
                             <NumFlowWithFallback className="text-primary-text text-sm leading-6" value={gasFeeInUsd! < 0.01 ? '0.01' : gasFeeInUsd!} prefix={gasFeeInUsd! < 0.01 ? '<$' : '$'} />
-                        )}
-                    </div>
+                        </div>
+                    )}
                     <div className="w-px h-3 bg-primary-text-tertiary rounded-2xl" />
                 </>
             }
