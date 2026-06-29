@@ -13,8 +13,9 @@ import { useSwapDataUpdate } from '@/context/swap';
 import SecondaryButton from '../buttons/secondaryButton';
 import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '@/helpers/querryHelper';
-import { getExplorerUrl } from '@/lib/address';
+import { Address, getExplorerUrl } from '@/lib/address';
 import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon';
+import AddressIcon from '@/components/AddressIcon';
 
 type Props = {
     swapResponse: SwapResponse
@@ -87,16 +88,22 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                         </div>
                         {
                             sourceAddress && source_network &&
-                            <div className="flex justify-between items-baseline gap-2">
+                            <div className="flex justify-between items-center gap-2">
                                 <span className="text-left text-secondary-text shrink-0">From address</span>
-                                <ExtendedAddress address={sourceAddress} network={source_network} shouldShowChevron={false} />
+                                <div className="group/addressItem flex items-center gap-2 min-w-0">
+                                    <AddressIcon address={new Address(sourceAddress, source_network).full} network={source_network} size={16} className="rounded-[4px] shrink-0" />
+                                    <ExtendedAddress address={sourceAddress} network={source_network} shouldShowChevron={false} />
+                                </div>
                             </div>
                         }
                         {
                             destination_address && destination_network &&
-                            <div className="flex justify-between items-baseline gap-2">
+                            <div className="flex justify-between items-center gap-2">
                                 <span className="text-left text-secondary-text shrink-0">To address</span>
-                                <ExtendedAddress address={destination_address} network={destination_network} shouldShowChevron={false} />
+                                <div className="group/addressItem flex items-center gap-2 min-w-0">
+                                    <AddressIcon address={new Address(destination_address, destination_network).full} network={destination_network} size={16} className="rounded-[4px] shrink-0" />
+                                    <ExtendedAddress address={destination_address} network={destination_network} shouldShowChevron={false} />
+                                </div>
                             </div>
                         }
                     </div>
