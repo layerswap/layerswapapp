@@ -10,9 +10,13 @@ import { useDepositSelection } from "../depositSelectionContext";
 import { Address } from "@/lib/address/Address";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import DestinationTokenPicker from "../DestinationTokenPicker";
-import WalletIcon from "@/components/Icons/WalletIcon";
+import { ResolveConnectorIcon } from "@/components/Icons/ConnectorIcons";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { useHyperliquidDepositOption } from "./useHyperliquidDepositOption";
+
+// Polymarket deposits aren't live yet; the card is shown disabled as a teaser.
+// Falls back to LogoPlaceholder if the remote logo fails to load.
+const POLYMARKET_LOGO = "https://polymarket.com/images/brand/icon-blue.png";
 
 type MethodCardProps = {
     icon: ReactNode;
@@ -24,6 +28,9 @@ type MethodCardProps = {
     /** Show a spinner instead of the chevron (and keep the card non-interactive)
      * while the method's availability is still resolving. */
     loading?: boolean;
+    /** When false, a disabled card keeps its normal colors (no dimming/hover
+     * reset) and only shows the not-allowed cursor. Defaults to true. */
+    dimWhenDisabled?: boolean;
 };
 
 const MethodCard: FC<MethodCardProps> = ({
@@ -34,6 +41,7 @@ const MethodCard: FC<MethodCardProps> = ({
     disabled,
     disabledReason,
     loading,
+    dimWhenDisabled = true,
 }) => {
     const nonInteractive = !!disabled || !!loading;
     return (
@@ -49,7 +57,8 @@ const MethodCard: FC<MethodCardProps> = ({
                 "bg-secondary-500 hover:bg-secondary-400/70",
                 "border border-transparent hover:border-secondary-300",
                 "focus-visible:ring-2 focus-visible:ring-primary-500/60 focus-visible:outline-none",
-                nonInteractive && "opacity-50 hover:bg-secondary-500 hover:border-transparent cursor-not-allowed",
+                nonInteractive && "cursor-not-allowed",
+                nonInteractive && dimWhenDisabled && "opacity-50 hover:bg-secondary-500 hover:border-transparent",
             )}
         >
             <div className="shrink-0 h-[46px] w-[46px] rounded-xl flex items-center justify-center border bg-secondary-700 border-secondary-400" >
@@ -132,10 +141,17 @@ const MethodPicker: FC = () => {
         ? `Connected · ${new Address(primaryWallet?.address, null, primaryWallet.providerName).toShortString()}`
         : "Connect a wallet";
 
+    const walletClusterIcon = (
+        <ResolveConnectorIcon
+            iconClassName="w-[18px] h-[18px] p-0.5 rounded-[5px] bg-secondary-800 border border-secondary-400"
+            className="grid grid-cols-2 gap-0.5"
+        />
+    );
+
     const WalletProviderIcon = primaryWallet?.icon;
     const walletCardIcon = hasWallet && WalletProviderIcon
         ? <WalletProviderIcon className="h-7 w-7" />
-        : <WalletIcon className="h-6 w-6 text-primary-text" strokeWidth={2} />;
+        : walletClusterIcon;
 
     return (
         <div className="flex flex-col gap-2 w-full">
@@ -195,9 +211,28 @@ const MethodPicker: FC = () => {
                         }
                     />
                 )}
+                {canShow("polymarket") && (
+                    <MethodCard
+                        icon={
+                            <ImageWithFallback
+                                src={POLYMARKET_LOGO}
+                                alt="Polymarket logo"
+                                height={28}
+                                width={28}
+                                className="rounded-full object-contain"
+                            />
+                        }
+                        title="Deposit from Polymarket"
+                        subtitle="Coming soon"
+                        onClick={() => { }}
+                        disabled
+                        dimWhenDisabled={false}
+                        disabledReason="Coming soon"
+                    />
+                )}
                 {canShow("wallet") && hasWallet && (
                     <MethodCard
-                        icon={<WalletIcon className="h-6 w-6 text-primary-text" strokeWidth={2} />}
+                        icon={walletClusterIcon}
                         title="More wallets"
                         subtitle="Use MetaMask, Phantom and more"
                         onClick={handleMoreWalletsClick}
