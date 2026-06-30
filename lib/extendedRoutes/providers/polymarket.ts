@@ -2,14 +2,14 @@ import { NetworkRoute, NetworkRouteToken, NetworkType, NetworkWithTokens, Token 
 import { ExtendedRouteProvider, ExtendedTokenMapping, RealRouteRef } from "../types";
 import { realDepositAddressRoutePresent } from "../availability";
 import { getPolymarketCandidates, pickPolymarketDestination, POLYMARKET_CONFIG, POLYMARKET_DISPLAY_SYMBOL, PolymarketConfig } from "@/lib/wallets/polymarket/routes";
-import { POLYMARKET_DISPLAY_NAME, POLYMARKET_LOGO, POLYMARKET_MIN_WITHDRAW_USD } from "@/lib/wallets/polymarket/constants";
+import { POLYMARKET_DISPLAY_NAME, POLYMARKET_LOGO } from "@/lib/wallets/polymarket/constants";
 
 /**
  * Polymarket extended SOURCE provider. Unlike Hyperliquid (which the backend
  * defines), Polymarket is synthesized entirely on the client from the real Polygon
- * network — see `resolveExtendedNetwork`. Its withdrawal moves pUSD out of the user's
- * Polymarket Safe through the Polymarket bridge, which pays USDC to a Layerswap
- * deposit address on Polygon; the backend then bridges to the final destination.
+ * network — see `resolveExtendedNetwork`. Its withdrawal unwraps pUSD → USDC.e 1:1 and
+ * deposits into the Layerswap Depository on Polygon (funding: 'depository'); the backend
+ * then bridges to the final destination.
  */
 
 const toMapping = (cfg: PolymarketConfig): ExtendedTokenMapping => ({
@@ -18,9 +18,8 @@ const toMapping = (cfg: PolymarketConfig): ExtendedTokenMapping => ({
     flatFee: cfg.flatFee,
     extraCompletionSeconds: cfg.arrivalSeconds,
     realDecimals: cfg.realDecimals,
-    // Bridge minimum checkout — floors the route's displayed/validated min so the form
-    // rejects below-min amounts before the withdraw step.
-    minAmount: POLYMARKET_MIN_WITHDRAW_USD,
+    // No client-imposed min/fee floor — limits come dynamically from the backend
+    // Polygon/USDC.e route (unwrap is 1:1, no slippage), as Hyperliquid's do.
 })
 
 const mappings: Record<string, Record<string, ExtendedTokenMapping>> = Object.fromEntries(

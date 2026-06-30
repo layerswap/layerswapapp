@@ -82,11 +82,7 @@ export const POLYMARKET_RELAYER_PROXY_PATH = '/api/polymarket/relay'
 
 /** Typical completion time added to the quote, in seconds. The unwrap+deposit batch
  * confirms on-chain, then the backend detects the depository deposit. */
-export const POLYMARKET_ARRIVAL_SECONDS = 120
-
-/** Minimum withdrawal (USD). Surfaced as the route's min so the form rejects below-min
- * amounts upfront. */
-export const POLYMARKET_MIN_WITHDRAW_USD = 0.1
+export const POLYMARKET_ARRIVAL_SECONDS = 5
 
 /** Deposit-wallet batch signature validity window, in seconds. */
 export const POLYMARKET_BATCH_DEADLINE_SECONDS = 600
