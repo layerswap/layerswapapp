@@ -20,7 +20,7 @@ export function useRouteValidation(quoteError?: QuoteError, hasQuote?: boolean, 
     const selectedSourceAccount = useSelectedAccount("from", from?.name);
     const initialSettings = useInitialSettings();
     const quoteErrorCode = quoteError?.response?.data?.error?.code || quoteError?.code;
-
+    const quoteErrorMessage = quoteError?.response?.data?.error?.message || quoteError?.message;
     let validationMessage: string = '';
     let validationDetails: ValidationDetails = {};
 
@@ -45,6 +45,11 @@ export function useRouteValidation(quoteError?: QuoteError, hasQuote?: boolean, 
     if (quoteErrorCode === "QUOTE_REQUIRES_NO_DEPOSIT_ADDRESS" && !isExtendedSourceNetwork(from?.name)) {
         validationDetails = { title: 'Manual swapping is not supported', type: 'warning', icon: <RouteOff className={ICON_CLASSES_WARNING} /> };
         validationMessage = `Swaps via manual transfer are not supported for this route. Please select a wallet to send from.`;
+    }
+
+    if (quoteErrorCode === "ROUTE_NOT_FOUND_ERROR" && quoteErrorMessage === "Rate not available") {
+        validationDetails = { title: 'Price impact too high', type: 'warning', icon: <RouteOff className={ICON_CLASSES_WARNING} /> };
+        validationMessage = `The price impact for this amount is too high to swap. Try a smaller amount.`;
     }
 
     const value = useMemo(() => ({

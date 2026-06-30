@@ -19,6 +19,7 @@ interface Params {
 
 export const FORM_VALIDATION_ERROR_CODES = {
     ROUTE_NOT_FOUND: "ROUTE_NOT_FOUND",
+    RATE_NOT_AVAILABLE: "RATE_NOT_AVAILABLE",
     MIN_AMOUNT_ERROR: "MIN_AMOUNT_ERROR",
     MAX_AMOUNT_ERROR: "MAX_AMOUNT_ERROR",
 }
@@ -101,7 +102,11 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
     }
 
     const quoteErrorCode = quoteError?.response?.data?.error?.code || quoteError?.code;
+    const quoteErrorMessage = quoteError?.response?.data?.error?.message || quoteError?.message;
     if (quoteError && quoteErrorCode !== "QUOTE_REQUIRES_NO_DEPOSIT_ADDRESS") {
+        if (quoteErrorCode === "ROUTE_NOT_FOUND_ERROR" && quoteErrorMessage === "Rate not available") {
+            return { message: 'Price impact too high', code: FORM_VALIDATION_ERROR_CODES.RATE_NOT_AVAILABLE };
+        }
         return { message: 'Route not found', code: FORM_VALIDATION_ERROR_CODES.ROUTE_NOT_FOUND };
     }
 

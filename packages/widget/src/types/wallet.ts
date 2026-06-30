@@ -6,7 +6,7 @@ import { NftProvider } from './nft';
 import { ContractAddressCheckerProvider } from './contract';
 import { RpcHealthCheckProvider } from './rpcHealth';
 import { ExtendedRouteProvider } from '../lib/extendedRoutes/types';
-export { type WalletModalConnector } from '@/components/Wallet/WalletModal'
+import { WalletConnectWalletBase } from '@/lib/walletConnect';
 
 export type InternalConnector = {
     name: string,
@@ -90,6 +90,12 @@ export type WalletConnectionProvider = {
      */
     transfer?: (params: TransferProps, wallet?: Wallet) => Promise<string | undefined>,
 
+    /**
+     * Signs an EIP-712 typed-data payload for a gasless (sign-to-deposit) authorization.
+     * Implemented only by providers that support gasless deposits (currently EVM).
+     */
+    signGaslessDeposit?: (params: { address: string; typedData: unknown; wallet?: Wallet }) => Promise<string>,
+
     availableConnectors?: InternalConnector[],
     additionalConnectors?: InternalConnector[],
     connectedWallets: Wallet[] | undefined,
@@ -103,6 +109,7 @@ export type WalletConnectionProvider = {
     unsupportedPlatforms?: string[],
     hideFromList?: boolean,
     ready: boolean,
+    registryWallets?: WalletConnectWalletBase[],
 
     multiStepHandlers?: MultiStepHandler[],
 }
@@ -125,7 +132,7 @@ export type BaseWalletProviderConfig = {
     transferProviders?: (() => TransferProvider) | (() => TransferProvider)[]
     contractAddressProviders?: ContractAddressCheckerProvider | ContractAddressCheckerProvider[]
     rpcHealthCheckProviders?: RpcHealthCheckProvider | RpcHealthCheckProvider[]
-} 
+}
 
 export type RequestAdditionalConnectorsParams = {
     page?: number,
@@ -137,4 +144,19 @@ export type RequestAdditionalConnectorsResult = {
     connectors: InternalConnector[],
     nextPage: number | null,
     totalCount: number,
+}
+
+export type WalletModalConnector = InternalConnector & {
+    qr?: ({
+        state: 'loading',
+        value: undefined,
+        deepLink?: undefined
+    } | {
+        state: 'fetched',
+        value: string,
+        deepLink?: string
+    });
+    showQrCode?: boolean,
+    variants?: InternalConnector[],
+    isRecent?: boolean,
 }

@@ -53,6 +53,19 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/swaps/${swapId}/deposit_speedup`, { transaction_id: tx_id });
     }
 
+    async AuthorizeSwapAsync(swapId: string, signature: string, signerAddress: string): Promise<ApiResponse<void>> {
+        return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/swaps/${swapId}/authorize`, { signature, signer_address: signerAddress });
+    }
+
+    async GetGaslessAuthorizationAsync(swapId: string): Promise<ApiResponse<GaslessAuthorizationResult>> {
+        return await this.AuthenticatedRequest<ApiResponse<GaslessAuthorizationResult>>("GET", `/swaps/${swapId}/authorize`);
+    }
+
+    async GetDepositActionsAsync(swapId: string, sourceAddress?: string): Promise<ApiResponse<DepositAction[]>> {
+        const query = sourceAddress ? `?source_address=${sourceAddress}` : "";
+        return await this.AuthenticatedRequest<ApiResponse<DepositAction[]>>("GET", `/swaps/${swapId}/deposit_actions${query}`);
+    }
+
     async GetSwapAsync(swapId: string): Promise<ApiResponse<SwapResponse>> {
         return await this.AuthenticatedRequest<ApiResponse<SwapResponse>>("GET", `/swaps/${swapId}`);
     }
@@ -139,6 +152,8 @@ export type CreateSwapParams = {
     source_exchange?: string
     destination_exchange?: string
     use_deposit_address: boolean
+    use_depository?: boolean
+    use_gasless?: boolean
     app_name?: string,
 }
 
@@ -212,7 +227,14 @@ export type SwapItem = {
     destination_exchange?: Exchange,
 }
 
-export type DepositAction = {
+export type EIP712TypedData = {
+    types: Record<string, { name: string, type: string }[]>,
+    primaryType: string,
+    domain: Record<string, string | number>,
+    message: Record<string, string | number>,
+}
+
+type DepositActionBase = {
     amount: number,
     amount_in_base_units: string,
     call_data: `0x${string}` | string,
@@ -222,8 +244,21 @@ export type DepositAction = {
     to_address?: `0x${string}`,
     token: Token,
     fee_token: Token,
+}
+
+export type TransferDepositAction = DepositActionBase & {
     type: 'transfer' | 'manual_transfer',
 }
+
+export type SignDepositAction = DepositActionBase & {
+    type: 'sign',
+    typed_data: EIP712TypedData,
+    valid_after?: number,
+    valid_before?: number,
+    nonce?: string,
+}
+
+export type DepositAction = TransferDepositAction | SignDepositAction
 
 export type Quote = {
     quote: SwapQuote,
@@ -312,6 +347,29 @@ export enum TransactionStatus {
 export enum DepositType {
     Manual = 'manual',
     Wallet = 'wallet'
+}
+
+// Gasless deposit (paymaster) authorization lifecycle, polled via GET /swaps/{id}/authorize.
+// initiated → accepted, awaiting broadcast; published → on-chain (transaction present);
+// completed → deposit done; expired | insufficient | rejected → terminal failure.
+export type GaslessAuthorizationStatus =
+    | 'initiated'
+    | 'published'
+    | 'completed'
+    | 'expired'
+    | 'insufficient'
+    | 'rejected'
+
+export type GaslessAuthorizationTransaction = {
+    transaction_hash: string
+    status: BackendTransactionStatus | string
+    confirmations: number
+    max_confirmations: number
+}
+
+export type GaslessAuthorizationResult = {
+    status: GaslessAuthorizationStatus
+    transaction?: GaslessAuthorizationTransaction | null
 }
 
 export type Fee = {

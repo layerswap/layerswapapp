@@ -294,7 +294,8 @@ export default function useSVMConnection({ networks }: WalletConnectionProviderP
         providerIcon,
         ready: wallets.length > 0,
         requestAdditionalConnectors,
-    }), [connectedWallets, connectWallet, disconnectWallet, isNotAvailableCondition, availableConnectors, additionalConnectors, commonSupportedNetworks, name, id, providerIcon, wallets.length, requestAdditionalConnectors])
+        registryWallets: walletConnectConnectors,
+    }), [connectedWallets, connectWallet, disconnectWallet, isNotAvailableCondition, availableConnectors, additionalConnectors, commonSupportedNetworks, name, id, providerIcon, wallets.length, requestAdditionalConnectors, walletConnectConnectors])
 
     return provider
 }

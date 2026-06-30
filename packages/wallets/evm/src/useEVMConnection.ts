@@ -395,6 +395,32 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
     const activeWallet = useMemo(() => resolvedConnectors.find(w => w.isActive), [resolvedConnectors])
     const providerIcon = useMemo(() => networks.find(n => ethereumNames.some(name => name === n.name))?.logo, [networks])
 
+    const signGaslessDeposit = useCallback(async ({ address, typedData, wallet }: { address: string; typedData: unknown; wallet?: Wallet }): Promise<string> => {
+        if (!typedData)
+            throw new Error('Missing typed data for gasless deposit')
+        if (!address)
+            throw new Error('No selected account')
+
+        const walletProvider = await getAccount(config).connector?.getProvider() as
+            { request?: (args: { method: string; params: any[] }) => Promise<unknown> } | undefined
+        if (!walletProvider?.request)
+            throw new Error('Wallet provider unavailable')
+
+        const deepLink = wallet?.metadata?.deepLink
+        if (isMobile() && deepLink) {
+            window.location.href = deepLink
+            await sleep(100)
+        }
+
+        const signature = await walletProvider.request({
+            method: 'eth_signTypedData_v4',
+            params: [address, JSON.stringify(typedData)],
+        })
+        if (typeof signature !== 'string')
+            throw new Error('Invalid signature returned by wallet')
+        return signature
+    }, [config])
+
     const provider: WalletConnectionProvider = useMemo(() => {
         return {
             connectWallet,
@@ -404,6 +430,7 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
             isNotAvailableCondition,
 
             transfer,
+            signGaslessDeposit,
 
             connectedWallets: resolvedConnectors,
             activeWallet,
@@ -417,8 +444,9 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
             providerIcon,
             ready: allConnectors.length > 0,
             requestAdditionalConnectors,
+            registryWallets: walletConnectConnectors,
         }
-    }, [connectWallet, disconnectWallets, switchAccount, switchChain, isNotAvailableCondition, resolvedConnectors, activeWallet, autofillSupportedNetworks, withdrawalSupportedNetworks, asSourceSupportedNetworks, availableConnectors, additionalConnectors, name, id, providerIcon, allConnectors.length, requestAdditionalConnectors]);
+    }, [connectWallet, disconnectWallets, switchAccount, switchChain, isNotAvailableCondition, resolvedConnectors, activeWallet, autofillSupportedNetworks, withdrawalSupportedNetworks, asSourceSupportedNetworks, availableConnectors, additionalConnectors, name, id, providerIcon, allConnectors.length, requestAdditionalConnectors, walletConnectConnectors, signGaslessDeposit]);
 
     return provider
 }

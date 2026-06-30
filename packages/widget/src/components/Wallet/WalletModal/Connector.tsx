@@ -17,6 +17,7 @@ const Connector: FC<Connector> = ({ connector, connectingConnector, onClick, isR
 
     const Icon = resolveWalletConnectorIcon({ connector: connector, iconUrl: connector.icon })
     const isLoading = connectingConnector?.name === connectorName
+    const isInstalled = connector.type === 'injected' && !connector.isLoadable
 
     return (
         <>
@@ -35,12 +36,16 @@ const Connector: FC<Connector> = ({ connector, connectingConnector, onClick, isR
 
                         <p className='text-base text-left truncate w-full'>{connectorName}</p>
                         {
-                            connector.type === 'injected' && !connector.isLoadable && !isRecent &&
+                            isInstalled && !isRecent &&
                             <p className='text-xs text-secondary-text font-medium'>Installed</p>
                         }
                         {
                             isRecent &&
                             <p className='text-xs text-primary-buttonTextColor font-semibold bg-primary-700 px-1 py-0.5 rounded-md'>Recent</p>
+                        }
+                        {
+                            connector.isMultiChain && !isRecent && !isInstalled &&
+                            <p className='text-xs text-secondary-text font-medium'>Multichain</p>
                         }
                     </div>
                     {

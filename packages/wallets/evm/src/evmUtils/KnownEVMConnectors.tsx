@@ -1,5 +1,5 @@
 import { Connector } from "wagmi"
-import { MetaMaskIcon, WalletConnectIcon, BitKeepIcon, RainbowIcon, CoinbaseIcon, PhantomIcon, ArgentIcon, ImtblPassportIcon, BitGetIcon, BrowserWalletIcon } from "@layerswap/widget/internal"
+import { MetaMaskIcon, WalletConnectIcon, RainbowIcon, CoinbaseIcon, PhantomIcon, ArgentIcon, ImtblPassportIcon, BitGetIcon, BrowserWalletIcon } from "@layerswap/widget/internal"
 
 const KnownEVMConnectors = [
     {
@@ -28,10 +28,18 @@ const KnownEVMConnectors = [
     },
     {
         id: 'bitkeep',
-        icon: BitKeepIcon
+        icon: BitGetIcon
     },
     {
         id: 'bitget',
+        icon: BitGetIcon
+    },
+    {
+        id: 'bitget wallet',
+        icon: BitGetIcon
+    },
+    {
+        id: 'com.bitget.web3',
         icon: BitGetIcon
     },
     {
