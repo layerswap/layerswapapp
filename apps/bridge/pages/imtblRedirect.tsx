@@ -2,7 +2,8 @@ import { THEME_COLORS } from "@layerswap/widget";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { useState } from "react";
-import { createEVMProvider, createImmutablePassportProvider, imtblPassportLoginCallback } from "@layerswap/wallets";
+import { createEVMProvider } from "@layerswap/wallets";
+import { createImmutablePassportProvider, imtblPassportLoginCallback } from "@layerswap/wallets/eager/imtbl-passport";
 import WidgetWrapper from "../components/WidgetWrapper";
 
 const ImtblRedirectPage = () => {

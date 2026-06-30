@@ -7,6 +7,7 @@ import { LayerSwapAppSettings } from "@/Models/LayerSwapAppSettings";
 import { LayerSwapSettings } from "@/Models/LayerSwapSettings";
 import ErrorFallback from "@/components/ErrorFallback";
 import { THEME_COLORS, ThemeData } from "@/Models/Theme";
+import type { WidgetConfig } from "@layerswap/widget-types";
 import { AsyncModalProvider } from "./asyncModal";
 import { IntercomProvider } from 'react-use-intercom';
 import AppSettings from "@/lib/AppSettings";
@@ -23,11 +24,15 @@ import { ResolverProviders } from "./resolverContext";
 import { ErrorProvider } from "./ErrorProvider";
 import { WalletDescriptorLoaderContext } from "@/lib/walletConnect/walletDescriptorLoader";
 
-export type LayerswapWidgetConfig = {
-    apiKey?: string;
-    version?: 'mainnet' | 'testnet'
+/**
+ * Internal config — a refinement of the public `WidgetConfig` contract
+ * (`@layerswap/widget-types`): the open `settings`/`initialValues` fields are
+ * narrowed to their precise model types here. Because this intersects the
+ * contract, the two can never structurally diverge — a drift would fail to
+ * compile.
+ */
+export type LayerswapWidgetConfig = WidgetConfig & {
     settings?: LayerSwapSettings;
-    theme?: ThemeData | null,
     initialValues?: InitialSettings,
     /** Skeleton shown while settings are being fetched (i.e. when `settings`
      * isn't supplied). Defaults to the swap-shaped `WidgetLoading`; deposit

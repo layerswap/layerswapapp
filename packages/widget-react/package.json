@@ -1,0 +1,65 @@
+{
+  "name": "@layerswap/widget-react",
+  "version": "0.1.0",
+  "description": "React component that fetches the Layerswap widget from the CDN at runtime via Module Federation. Integrators install this and nothing else.",
+  "type": "module",
+  "main": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "typings": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/esm/index.js"
+    }
+  },
+  "sideEffects": [
+    "./src/sri.ts",
+    "./dist/esm/sri.js"
+  ],
+  "files": [
+    "dist",
+    "dist/**/*"
+  ],
+  "scripts": {
+    "build": "pnpm clean && pnpm build:esm+types",
+    "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm && tsc-alias -p tsconfig.json --outDir ./dist/types",
+    "check:types": "tsc --noEmit",
+    "clean": "rimraf dist tsconfig.tsbuildinfo",
+    "dev": "tsc -p tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types --watch"
+  },
+  "author": "Layerswap",
+  "homepage": "https://github.com/layerswap/layerswapapp",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/layerswap/layerswapapp.git",
+    "directory": "packages/widget-react"
+  },
+  "keywords": [
+    "layerswap",
+    "widget",
+    "embed",
+    "cdn",
+    "module-federation"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@tanstack/react-query": "catalog:",
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0",
+    "viem": "catalog:",
+    "wagmi": "catalog:",
+    "zustand": "catalog:"
+  },
+  "dependencies": {
+    "@layerswap/widget-js": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "wagmi": "catalog:"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

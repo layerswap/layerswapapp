@@ -1,0 +1,3 @@
+# Placeholder signing material — replace with KMS-managed key before
+# pointing real integrators at this build. NEVER commit private keys.
+.keys/manifest-private.pem

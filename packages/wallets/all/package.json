@@ -10,6 +10,10 @@
     ".": {
       "types": "./dist/types/index.d.ts",
       "default": "./dist/esm/index.js"
+    },
+    "./eager/imtbl-passport": {
+      "types": "./dist/types/eager/imtblPassport.d.ts",
+      "default": "./dist/esm/eager/imtblPassport.js"
     }
   },
   "sideEffects": false,

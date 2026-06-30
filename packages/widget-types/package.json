@@ -1,0 +1,56 @@
+{
+  "name": "@layerswap/widget-types",
+  "version": "0.1.0",
+  "description": "Shared, zero-runtime TypeScript contract for the Layerswap widget: config, callbacks, theme, and prop types consumed by @layerswap/widget, @layerswap/widget-js, and @layerswap/widget-react.",
+  "type": "module",
+  "main": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "typings": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/esm/index.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "dist/**/*"
+  ],
+  "scripts": {
+    "build": "pnpm clean && pnpm build:esm+types",
+    "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm && tsc-alias -p tsconfig.json --outDir ./dist/types",
+    "check:types": "tsc --noEmit",
+    "clean": "rimraf dist tsconfig.tsbuildinfo",
+    "dev": "tsc -p tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types --watch"
+  },
+  "author": "Layerswap",
+  "homepage": "https://github.com/layerswap/layerswapapp",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/layerswap/layerswapapp.git",
+    "directory": "packages/widget-types"
+  },
+  "keywords": [
+    "layerswap",
+    "widget",
+    "types",
+    "contract"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "wagmi": "catalog:"
+  },
+  "peerDependenciesMeta": {
+    "wagmi": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "wagmi": "catalog:"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
