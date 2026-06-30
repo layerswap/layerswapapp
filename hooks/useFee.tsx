@@ -9,6 +9,7 @@ import { isDiffByPercent } from '@/components/utils/numbers'
 import { useSlippageStore } from '@/stores/slippageStore'
 import { useSettingsState } from '@/context/settings'
 import { resolveExtendedRoutePlan } from '@/lib/extendedRoutes/registry'
+import { usesDepository } from '@/lib/extendedRoutes/types'
 import { transformLimitsForExtendedRoute, transformQuoteForExtendedRoute } from '@/lib/extendedRoutes/transforms'
 import { isPositiveDecimal } from '@/lib/extendedRoutes/amounts'
 
@@ -91,7 +92,9 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
     const use_deposit_address = depositMethod === 'wallet' ? false : true
 
     // Extended source (e.g. Hyperliquid): the backend doesn't know this source,
-    // so quote/limits are fetched against the real route it maps to (bridge mode).
+    // so quote/limits are fetched against the real route it maps to. Hyperliquid uses
+    // a deposit address; Polymarket (Flow 2) funds via the Depository, so it must quote
+    // the wallet/depository path, not the deposit-address path.
     const { networks, sourceRoutes } = useSettingsState()
     const extendedPlan = useMemo(() => resolveExtendedRoutePlan({
         sourceNetworkName: from,
@@ -105,7 +108,7 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
     const isBridge = !!extendedPlan
     const effectiveFrom = isBridge ? extendedMapping!.real.networkName : from
     const effectiveFromToken = isBridge ? extendedMapping!.real.tokenSymbol : fromCurrency
-    const effectiveUseDepositAddress = extendedPlan ? true : use_deposit_address
+    const effectiveUseDepositAddress = extendedPlan ? !usesDepository(extendedMapping!.provider) : use_deposit_address
 
     const extendedNetworkObj = useMemo(() => extendedMapping ? networks.find(n => n.name === extendedMapping.extendedNetworkName) : undefined, [networks, extendedMapping])
     const extendedTokenObj = useMemo(() => extendedNetworkObj?.tokens.find(t => t.symbol === extendedMapping?.extendedTokenSymbol), [extendedNetworkObj, extendedMapping])

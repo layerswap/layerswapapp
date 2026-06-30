@@ -248,6 +248,8 @@ export default class KnownInternalNames {
 
         public static readonly HyperliquidTestnet: string = "HYPERLIQUID_TESTNET"
 
+        public static readonly PolymarketMainnet: string = "POLYMARKET_MAINNET"
+
         public static readonly MonadMainnet: string = "MONAD_MAINNET"
 
         public static readonly TempoMainnet: string = "TEMPO_MAINNET"

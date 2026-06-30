@@ -21,6 +21,10 @@ export type ExtendedTokenMapping = {
     extraCompletionSeconds: number
     /** Decimal places of the real token; used to truncate the forwarded amount. */
     realDecimals?: number
+    /** Provider-imposed minimum (source-token units) applied as a floor on the
+     * displayed/validated min, on top of the backend min + flat fee — e.g. the
+     * Polymarket bridge's minimum checkout. Optional; absent = no extra floor. */
+    minAmount?: number
 }
 
 export interface ExtendedRouteProvider {
@@ -30,6 +34,16 @@ export interface ExtendedRouteProvider {
     direction: 'source' | 'destination'
     /** Extended network names this provider owns, e.g. [HYPERLIQUID_MAINNET, HYPERLIQUID_TESTNET]. */
     extendedNetworkNames: string[]
+    /** How the real backend leg is funded. 'deposit_address' (default): the user sends
+     * to a backend-generated deposit address. 'depository': fund via the Layerswap
+     * Depository (`depositERC20`), so the withdrawal can batch the deposit into one tx.
+     * Drives `use_deposit_address`/`use_depository` on create and the quote/limits mode.
+     * Omit = 'deposit_address'. */
+    funding?: 'deposit_address' | 'depository'
+    /** When true, create() must carry a refund address on the real source network —
+     * required for routes whose backend leg contains a swap (e.g. Polymarket →
+     * Polygon/USDC.e). Omit = false. */
+    requiresRefundAddress?: boolean
     /** mappings[networkName][tokenSymbol] -> token mapping (for the primary
      * destination, used by the picker visibility check). */
     mappings: Record<string, Record<string, ExtendedTokenMapping>>
@@ -38,6 +52,15 @@ export interface ExtendedRouteProvider {
      * when the network is absent (e.g. testnet on a prod settings payload).
      */
     resolveExtendedRoute(networkName: string, allNetworks: NetworkWithTokens[]): NetworkRoute | undefined
+    /**
+     * Synthesize the extended network as a full `NetworkWithTokens` from the real
+     * base network in settings, for providers whose network the backend does NOT
+     * define (e.g. Polymarket). Injected into `settings.networks` once at inflation
+     * so the route resolver, source skin, and balance prioritization all resolve it
+     * uniformly. Returns undefined when the base network is absent. Optional — when
+     * absent (e.g. Hyperliquid, which the backend defines), nothing is injected.
+     */
+    resolveExtendedNetwork?(networkName: string, allNetworks: NetworkWithTokens[]): NetworkWithTokens | undefined
     /**
      * Resolve the mapping for a specific (extended source, token, destination).
      * Lets providers with multiple destination candidates (e.g. HL primary +
@@ -69,6 +92,11 @@ export type ExtendedRoutePlan = {
     mapping: ResolvedExtendedMapping
     sourceAmount?: string
     realAmount?: string
+}
+
+/** Single source of truth for the depository-funding default semantics. */
+export function usesDepository(provider: ExtendedRouteProvider): boolean {
+    return provider.funding === 'depository'
 }
 
 /**
