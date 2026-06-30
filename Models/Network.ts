@@ -51,6 +51,7 @@ export class Token {
     status?: 'active' | 'inactive' | 'not_found';
     source_rank?: number | undefined;
     destination_rank?: number | undefined;
+    supports_gasless_deposit?: boolean;
 }
 
 export class NetworkRouteToken extends Token {
