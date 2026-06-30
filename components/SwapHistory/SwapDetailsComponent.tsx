@@ -24,7 +24,7 @@ type Props = {
 const SwapDetails: FC<Props> = ({ swapResponse }) => {
 
     const { swap } = swapResponse
-    const { source_token, destination_token, source_network, destination_network, source_exchange, requested_amount, destination_address } = swap
+    const { source_token, destination_token, source_network, destination_network, source_exchange, requested_amount, destination_address, source_address } = swap
 
     const router = useRouter()
 
@@ -64,7 +64,6 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
     const refuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
     const refundTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refund)
-    const sourceAddress = swapInputTransaction?.from
 
     return (
         <>
@@ -86,26 +85,30 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                             <span className="text-left text-secondary-text">Status</span>
                             <StatusIcon swap={swap} />
                         </div>
-                        {
-                            sourceAddress && source_network &&
-                            <div className="flex justify-between items-center gap-2">
-                                <span className="text-left text-secondary-text shrink-0">From address</span>
-                                <div className="group/addressItem flex items-center gap-2 min-w-0">
-                                    <AddressIcon address={new Address(sourceAddress, source_network).full} network={source_network} size={16} className="rounded-[4px] shrink-0" />
-                                    <ExtendedAddress address={sourceAddress} network={source_network} shouldShowChevron={false} />
-                                </div>
-                            </div>
-                        }
-                        {
-                            destination_address && destination_network &&
-                            <div className="flex justify-between items-center gap-2">
-                                <span className="text-left text-secondary-text shrink-0">To address</span>
-                                <div className="group/addressItem flex items-center gap-2 min-w-0">
-                                    <AddressIcon address={new Address(destination_address, destination_network).full} network={destination_network} size={16} className="rounded-[4px] shrink-0" />
-                                    <ExtendedAddress address={destination_address} network={destination_network} shouldShowChevron={false} />
-                                </div>
-                            </div>
-                        }
+                        <div className="flex justify-between items-center gap-2">
+                            <span className="text-left text-secondary-text shrink-0">From address</span>
+                            {
+                                source_address && source_network ?
+                                    <div className="group/addressItem flex items-center gap-2 min-w-0">
+                                        <AddressIcon address={new Address(source_address, source_network).full} network={source_network} size={16} className="rounded-[4px] shrink-0" />
+                                        <ExtendedAddress address={source_address} network={source_network} shouldShowChevron={false} />
+                                    </div>
+                                    :
+                                    <span>-</span>
+                            }
+                        </div>
+                        <div className="flex justify-between items-center gap-2">
+                            <span className="text-left text-secondary-text shrink-0">To address</span>
+                            {
+                                destination_address && destination_network ?
+                                    <div className="group/addressItem flex items-center gap-2 min-w-0">
+                                        <AddressIcon address={new Address(destination_address, destination_network).full} network={destination_network} size={16} className="rounded-[4px] shrink-0" />
+                                        <ExtendedAddress address={destination_address} network={destination_network} shouldShowChevron={false} />
+                                    </div>
+                                    :
+                                    <span>-</span>
+                            }
+                        </div>
                     </div>
                 </div>
             </section>
