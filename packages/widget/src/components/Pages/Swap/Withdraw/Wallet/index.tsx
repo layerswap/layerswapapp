@@ -13,6 +13,7 @@ import { TransferProps } from "@/types";
 import { ActionMessage } from "./Common/actionMessage";
 import { ActionMessages } from "../messages/TransactionMessages";
 import { useTransfer } from "@/hooks/useTransfer";
+import { useGasless } from "@/hooks/useGasless";
 import { useRpcHealth } from "@/context/rpcHealthContext";
 import RPCUnhealthyMessage from "./RPCUnhealthyMessage";
 import { isExtendedSourceNetwork } from "@/lib/extendedRoutes/registry";
@@ -158,6 +159,7 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
     const { balances } = useBalance(selectedSourceAccount?.address, networkWithTokens)
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
     const { executeTransfer } = useTransfer()
+    const { signGaslessDeposit, isGaslessSupported } = useGasless()
     const rpcHealth = useRpcHealth(swapData.source_network)
 
     const clickHandler = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
@@ -230,14 +232,13 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
             throw new Error('Missing typed data for gasless deposit')
         if (!selectedSourceAccount?.address)
             throw new Error('No selected account')
-        if (!provider?.signGaslessDeposit)
-            throw new Error('Wallet provider unavailable')
-        return provider.signGaslessDeposit({
+        return signGaslessDeposit({
+            network: swapData.source_network,
             address: selectedSourceAccount.address,
             typedData: signAction.typed_data,
             wallet,
         })
-    }, [provider, selectedSourceAccount?.address, wallet])
+    }, [signGaslessDeposit, swapData.source_network, selectedSourceAccount?.address, wallet])
 
     // Show RPC health message if available and unhealthy (EVM wallets only)
     if (rpcHealth?.health.status === 'unhealthy') {
@@ -263,7 +264,7 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
             !loading &&
             <SendTransactionButton
                 onClick={clickHandler}
-                onSign={provider?.signGaslessDeposit ? signHandler : undefined}
+                onSign={isGaslessSupported(swapData.source_network) ? signHandler : undefined}
                 icon={<WalletIcon className="stroke-2 w-6 h-6" />}
                 error={!!error && buttonClicked}
                 swapData={swapData}

@@ -1,4 +1,5 @@
 import { TransferProps, TransferProvider } from './transfer';
+import { GaslessProvider } from './gasless';
 import { NetworkWithTokens } from '@/Models/Network';
 import { BalanceProvider } from './balance';
 import { GasProvider } from './gas';
@@ -55,6 +56,7 @@ export type WalletProvider = WalletWrapper & {
     gasProvider?: GasProvider | GasProvider[],
     balanceProvider?: BalanceProvider | BalanceProvider[],
     transferProvider?: (() => TransferProvider) | (() => TransferProvider)[],
+    gaslessProvider?: (() => GaslessProvider) | (() => GaslessProvider)[],
     contractAddressProvider?: ContractAddressCheckerProvider | ContractAddressCheckerProvider[],
     rpcHealthCheckProvider?: RpcHealthCheckProvider | RpcHealthCheckProvider[],
     extendedRouteProvider?: ExtendedRouteProvider | ExtendedRouteProvider[],
@@ -90,12 +92,6 @@ export type WalletConnectionProvider = {
      */
     transfer?: (params: TransferProps, wallet?: Wallet) => Promise<string | undefined>,
 
-    /**
-     * Signs an EIP-712 typed-data payload for a gasless (sign-to-deposit) authorization.
-     * Implemented only by providers that support gasless deposits (currently EVM).
-     */
-    signGaslessDeposit?: (params: { address: string; typedData: unknown; wallet?: Wallet }) => Promise<string>,
-
     availableConnectors?: InternalConnector[],
     additionalConnectors?: InternalConnector[],
     connectedWallets: Wallet[] | undefined,
@@ -130,6 +126,7 @@ export type BaseWalletProviderConfig = {
     balanceProviders?: BalanceProvider | BalanceProvider[]
     gasProviders?: GasProvider | GasProvider[]
     transferProviders?: (() => TransferProvider) | (() => TransferProvider)[]
+    gaslessProviders?: (() => GaslessProvider) | (() => GaslessProvider)[]
     contractAddressProviders?: ContractAddressCheckerProvider | ContractAddressCheckerProvider[]
     rpcHealthCheckProviders?: RpcHealthCheckProvider | RpcHealthCheckProvider[]
 }
