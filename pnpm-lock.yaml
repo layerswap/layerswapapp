@@ -247,9 +247,6 @@ importers:
       posthog-js:
         specifier: ^1.386.6
         version: 1.386.6
-      qrcode.react:
-        specifier: ^3.1.0
-        version: 3.2.0(react@18.3.1)
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -262,6 +259,9 @@ importers:
       react-hot-toast:
         specifier: ^2.2.0
         version: 2.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react-qrcode-logo:
+        specifier: 4.1.0
+        version: 4.1.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-use-intercom:
         specifier: ^2.0.0
         version: 2.1.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -9322,15 +9322,13 @@ packages:
   qr.js@0.0.0:
     resolution: {integrity: sha512-c4iYnWb+k2E+vYpRimHqSu575b1/wKl4XFeJGpFmrJQz5I88v9aY2czh7s0w36srfCM1sXgC/xpoJz5dJfq+OQ==}
 
+  qrcode-generator@2.0.4:
+    resolution: {integrity: sha512-mZSiP6RnbHl4xL2Ap5HfkjLnmxfKcPWpWe/c+5XxCuetEenqmNFf1FH/ftXPCtFG5/TDobjsjz6sSNL0Sr8Z9g==}
+
   qrcode.react@1.0.1:
     resolution: {integrity: sha512-8d3Tackk8IRLXTo67Y+c1rpaiXjoz/Dd2HpcMdW//62/x8J1Nbho14Kh8x974t9prsLHN6XqVgcnRiBGFptQmg==}
     peerDependencies:
       react: ^15.5.3 || ^16.0.0 || ^17.0.0
-
-  qrcode.react@3.2.0:
-    resolution: {integrity: sha512-YietHHltOHA4+l5na1srdaMx4sVSOjV9tamHs+mwiLWAMr6QVACRUw1Neax5CptFILcNoITctJY0Ipyn5enQ8g==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0
 
   qrcode@1.5.3:
     resolution: {integrity: sha512-puyri6ApkEHYiVl4CFzo1tDkAZ+ATcnbJrJ6RiBM1Fhctdn/ix9MTE3hRph33omisEbC/2fcfemsseiKgBPKZg==}
@@ -9493,6 +9491,12 @@ packages:
     peerDependencies:
       react: ~16
       react-dom: ~16
+
+  react-qrcode-logo@4.1.0:
+    resolution: {integrity: sha512-drcieitJFX3u66XpFn+4PxsCzrQo5nAMXsyOtiuTZCJPUQwGwysIlr14MjKbXDhBNz3iOqM8/yV5K1mllt/mTw==}
+    peerDependencies:
+      react: '>=18.0.0'
+      react-dom: '>=18.0.0'
 
   react-reconciler@0.29.2:
     resolution: {integrity: sha512-zZQqIiYgDCTP/f1N/mAR10nJGrPD2ZR+jDSEsKWJHYC7Cm2wodlwbR3upZRdC3cjIjSlTLNVyO7Iu0Yy7t2AYg==}
@@ -23041,15 +23045,13 @@ snapshots:
 
   qr.js@0.0.0: {}
 
+  qrcode-generator@2.0.4: {}
+
   qrcode.react@1.0.1(react@18.3.1):
     dependencies:
       loose-envify: 1.4.0
       prop-types: 15.8.1
       qr.js: 0.0.0
-      react: 18.3.1
-
-  qrcode.react@3.2.0(react@18.3.1):
-    dependencies:
       react: 18.3.1
 
   qrcode@1.5.3:
@@ -23266,6 +23268,12 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       webrtc-adapter: 7.7.1
+
+  react-qrcode-logo@4.1.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+    dependencies:
+      qrcode-generator: 2.0.4
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
 
   react-reconciler@0.29.2(react@18.3.1):
     dependencies:

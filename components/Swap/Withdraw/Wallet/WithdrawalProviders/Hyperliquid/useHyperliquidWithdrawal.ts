@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAccount, useConfig } from "wagmi";
 import posthog from "posthog-js";
 import { WithdrawPageProps } from "../../Common/sharedTypes";
-import resolveError from "../EVMWalletWithdraw/resolveError";
+import { isUserRejection } from "../../Common/isUserRejection";
 import { resolveHyperliquidError, StepError } from "./resolveError";
 import { useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import { useWalletWithdrawalState } from "@/context/withdrawalContext";
@@ -36,13 +36,6 @@ const logWithdrawalError = (error: unknown, ctx: { swapId?: string; fromAddress?
         $fromAddress: ctx.fromAddress,
         $toAddress: ctx.toAddress,
     })
-}
-
-const isUserRejection = (err: unknown): boolean => {
-    if (resolveError(err as any) === 'transaction_rejected') return true
-    if (err instanceof Error && /user rejected|user denied|rejected the request/i.test(err.message)) return true
-    const code = (err as any)?.code ?? (err as any)?.cause?.code
-    return code === 4001
 }
 
 /**

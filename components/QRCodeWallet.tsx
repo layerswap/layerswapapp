@@ -1,5 +1,5 @@
-import { FC, useState } from "react"
-import { QRCodeSVG } from "qrcode.react";
+import { FC } from "react"
+import StyledQRCode from "@/components/Common/StyledQRCode";
 import { classNames } from "./utils/classNames";
 import { QrCode } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "./shadcn/popover";
@@ -14,14 +14,7 @@ type QRCodeModalProps = {
 }
 
 const QRCodeModal: FC<QRCodeModalProps> = ({ qrUrl, className, iconSize, iconClassName }) => {
-    const qrCode =
-        <QRCodeSVG
-            className="rounded-lg"
-            value={qrUrl}
-            includeMargin={true}
-            size={160}
-            level={"H"}
-        />
+    const qrCode = <StyledQRCode value={qrUrl} size={160} ecLevel="H" />
 
     return (
         <>

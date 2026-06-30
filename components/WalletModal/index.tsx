@@ -1,18 +1,7 @@
 import { Context, createContext, Dispatch, ReactNode, SetStateAction, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { InternalConnector, Wallet, WalletProvider } from '../../Models/WalletProvider';
+import { Wallet, WalletProvider, WalletModalConnector } from '../../Models/WalletProvider';
 
-export type WalletModalConnector = InternalConnector & {
-    qr?: ({
-        state: 'loading',
-        value: undefined,
-        deepLink?: undefined
-    } | {
-        state: 'fetched',
-        value: string,
-        deepLink?: string
-    });
-    showQrCode?: boolean
-}
+export type { WalletModalConnector };
 
 export type ModalWalletProvider = WalletProvider & {
     isSelectedFromFilter?: boolean;
@@ -28,8 +17,8 @@ type ConnectModalContextType = {
     isWalletModalOpen?: boolean;
     selectedConnector: WalletModalConnector | undefined;
     setSelectedConnector: Dispatch<SetStateAction<WalletModalConnector | undefined>>;
-    selectedMultiChainConnector: InternalConnector | undefined;
-    setSelectedMultiChainConnector: (value: InternalConnector | undefined) => void;
+    selectedMultiChainConnector: WalletModalConnector | undefined;
+    setSelectedMultiChainConnector: (value: WalletModalConnector | undefined) => void;
     goBack: () => void;
     onFinish: (connectedWallet?: Wallet | undefined) => void;
     setOpen: (value: boolean) => void;
@@ -47,7 +36,7 @@ export function WalletModalProvider({ children }) {
 
     const [selectedProvider, setSelectedProvider] = useState<ModalWalletProvider | undefined>(undefined);
     const [selectedConnector, setSelectedConnector] = useState<WalletModalConnector | undefined>(undefined);
-    const [selectedMultiChainConnector, setSelectedMultiChainConnector] = useState<InternalConnector | undefined>(undefined)
+    const [selectedMultiChainConnector, setSelectedMultiChainConnector] = useState<WalletModalConnector | undefined>(undefined)
     const [open, setOpen] = useState(false);
     const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
     const [dismissible, setDismissible] = useState(true);

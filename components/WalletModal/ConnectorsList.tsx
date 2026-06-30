@@ -1,13 +1,13 @@
 import { FC, useCallback, useEffect, useRef, useState } from "react";
-import useWallet from "../../hooks/useWallet";
+import useWallet from "@/hooks/useWallet";
 import { useConnectModal, WalletModalConnector } from ".";
-import { InternalConnector, Wallet, WalletProvider } from "../../Models/WalletProvider";
+import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvider";
 import clsx from "clsx";
 import Connector from "./Connector";
-import { usePersistedState } from "../../hooks/usePersistedState";
-import { useConnectors } from "../../hooks/useConnectors";
-import { SearchComponent } from "../Input/Search";
-import CircularLoader from "../icons/CircularLoader";
+import { usePersistedState } from "@/hooks/usePersistedState";
+import { useConnectors } from "@/hooks/useConnectors";
+import { SearchComponent } from "@/components/Input/Search";
+import CircularLoader from "@/components/icons/CircularLoader";
 import { MultichainConnectorPicker } from "./MultichainConnectorPicker";
 import { ProviderPicker } from "./ProviderPicker";
 import { InstalledExtensionNotFound } from "./InstalledExtensionNotFound";
@@ -294,9 +294,6 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     }, [currentSearchValue, isSearching, requestCapableFeaturedProviderNamesKey])
 
     const {
-        featuredConnectors,
-        additionalConnectors,
-        resolvedSearchResults,
         initialConnectors,
     } = useConnectors({
         featuredProviders,
@@ -443,7 +440,6 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     if (selectedMultiChainConnector) {
         return <MultichainConnectorPicker
             selectedConnector={selectedMultiChainConnector}
-            allConnectors={[...featuredConnectors, ...additionalConnectors, ...(resolvedSearchResults ?? [])] as InternalConnector[]}
             providers={featuredProviders}
             connect={connect}
         />
@@ -478,7 +474,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                         {
                             initialConnectors.map(item => {
                                 const provider = featuredProviders.find(p => p.name === item.providerName)
-                                const isRecent = recentConnectors?.some(v => v.connectorName === item.name)
+                                const isRecent = item.isRecent
                                 return (
                                     <Connector
                                         key={item.id}
