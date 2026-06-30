@@ -19,6 +19,12 @@ export function isExtendedSourceNetwork(name?: string): boolean {
     return SOURCE_PROVIDERS.some(p => p.extendedNetworkNames.includes(name))
 }
 
+/** The provider that owns this network name, if any (e.g. for balance prioritization). */
+export function getExtendedProviderForNetwork(name?: string): ExtendedRouteProvider | undefined {
+    if (!name) return undefined
+    return SOURCE_PROVIDERS.find(p => p.extendedNetworkNames.includes(name))
+}
+
 export function getExtendedMapping(
     networkName?: string,
     tokenSymbol?: string,

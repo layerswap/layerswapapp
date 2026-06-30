@@ -30,15 +30,14 @@ const mappings: Record<string, Record<string, ExtendedTokenMapping>> = Object.fr
     ]),
 )
 
-// Stable identity for the synthesized network and route across renders, keyed on the
-// settings `networks` array reference (stable for the session). Without this, fresh
-// token objects each render make RoutePicker's token-resync effect loop.
 const networkCache = new WeakMap<object, Map<string, NetworkWithTokens>>()
 const routeCache = new WeakMap<object, NetworkRoute>()
 
 export const polymarketProvider: ExtendedRouteProvider = {
     id: 'polymarket',
     direction: 'source',
+    funding: 'depository',
+    requiresRefundAddress: true,
     extendedNetworkNames: Object.keys(POLYMARKET_CONFIG),
     mappings,
     resolveExtendedNetwork(networkName, allNetworks) {
@@ -53,9 +52,6 @@ export const polymarketProvider: ExtendedRouteProvider = {
         const baseToken = base.tokens?.find(t => t.symbol === POLYMARKET_DISPLAY_SYMBOL)
         if (!baseToken) return undefined
 
-        // Display identity from Polymarket; blockchain data (chain_id/node/explorer/
-        // metadata/native token) inherited from Polygon so balance reads + explorer
-        // links work against the real chain the pUSD/USDC actually lives on.
         const token: Token = { ...baseToken }
         const synthesized: NetworkWithTokens = {
             ...base,

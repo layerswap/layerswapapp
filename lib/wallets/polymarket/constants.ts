@@ -5,10 +5,10 @@ import KnownInternalNames from "@/lib/knownIds";
  *
  * Polymarket holds user funds as pUSD (its collateral token) on Polygon, inside a
  * funder wallet (deposit wallet / Safe / proxy) deterministically derived from the
- * owner EOA. The user withdraws by signing a GASLESS transfer of pUSD into a Polymarket
- * bridge address; the bridge converts pUSD→USDC and delivers it to a Layerswap deposit
- * address on Polygon, which the backend then bridges to the user's final destination.
- * (pUSD isn't self-redeemable on-chain, so the bridge is the only path to USDC.)
+ * owner EOA. Flow 2 withdrawal: the user signs ONE gasless batch that unwraps pUSD →
+ * USDC.e 1:1 via the permissionless CollateralOfframp, then deposits USDC.e into the
+ * Layerswap Depository (`depositERC20`) — all broadcast by the Polymarket relayer. The
+ * backend detects the depository `Deposited` event and bridges to the final destination.
  */
 
 /** Symbol shown for the Polymarket source token. Both the extended (Polymarket) and
@@ -27,22 +27,32 @@ export const POLYMARKET_CHAIN_ID = 137
 export const POLYMARKET_PUSD_ADDRESS = '0xC011a7E12a19f7B1f670d46F03B03f3342E82DFB' as `0x${string}`
 export const POLYMARKET_PUSD_DECIMALS = 6
 
-/** Native USDC on Polygon — the token the bridge pays out to the Layerswap deposit
- * address (`toTokenAddress` on the withdraw/quote calls). */
+/** Native USDC on Polygon. Retained for reference; `unwrap` can also target this. */
 export const POLYMARKET_USDC_ADDRESS = '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359' as `0x${string}`
 export const POLYMARKET_USDC_DECIMALS = 6
 
-/** Legacy bridged USDC.e on Polygon — some Polymarket collateral predates the pUSD
- * migration, so balances are read in both pUSD and USDC.e. */
+/** USDC.e on Polygon — Flow 2's intermediate token. pUSD unwraps to USDC.e 1:1, and
+ * some legacy Polymarket collateral is already held as USDC.e (balances read both). */
 export const POLYMARKET_USDC_E_ADDRESS = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174' as `0x${string}`
 
-/** Public Polymarket bridge API (no auth). */
-export const POLYMARKET_BRIDGE_URL = 'https://bridge.polymarket.com'
+/** Polymarket CollateralOfframp on Polygon. Permissionless 1:1 unwrap of pUSD → the
+ * asset address passed (we pass USDC.e). Verified on-chain:
+ * `unwrap(address _asset, address _to, uint256 _amount)` (nonpayable, not a proxy). */
+export const POLYMARKET_COLLATERAL_OFFRAMP = '0x2957922Eb93258b93368531d39fAcCA3B4dC5854' as `0x${string}`
 
-/** Builder code for bridge attribution (sent as the `X-Builder-Code` header). Public
- * identifier, not a secret — obtained at polymarket.com/settings?tab=builder. Optional:
- * without it the bridge still works but returns a `missing_builder_code` warning. */
-export const POLYMARKET_BUILDER_CODE = process.env.NEXT_PUBLIC_POLYMARKET_BUILDER_CODE || ''
+export const POLYMARKET_OFFRAMP_ABI = [
+    {
+        type: 'function',
+        name: 'unwrap',
+        stateMutability: 'nonpayable',
+        inputs: [
+            { name: '_asset', type: 'address' },
+            { name: '_to', type: 'address' },
+            { name: '_amount', type: 'uint256' },
+        ],
+        outputs: [],
+    },
+] as const
 
 /** Polymarket relayer base URL (used server-side by the relay proxy; the builder
  * API key never leaves the server). Overridable via `POLYMARKET_RELAYER_URL` env. */
@@ -70,22 +80,13 @@ export const POLYMARKET_DEPOSIT_WALLET_IMPLEMENTATION = '0x58CA52ebe0DadfdF531Cd
  */
 export const POLYMARKET_RELAYER_PROXY_PATH = '/api/polymarket/relay'
 
-/** Conservative slippage buffer (in source-token units) for the pUSD→USDC conversion.
- * Modeled as the extended route's `flatFee` so the quote/limits transforms work
- * unchanged. The live `/quote` is validated against this at submit time. */
-export const POLYMARKET_WITHDRAW_FEE_BUFFER = 0.1
-
-/** Typical bridge completion time added to the quote, in seconds ("instant-to-minutes"). */
+/** Typical completion time added to the quote, in seconds. The unwrap+deposit batch
+ * confirms on-chain, then the backend detects the depository deposit. */
 export const POLYMARKET_ARRIVAL_SECONDS = 120
 
-/** Bridge minimum checkout (USD) — mirrors `/supported-assets` `minCheckoutUsd` for
- * Polygon USDC. Surfaced as the route's min so the form rejects below-min amounts
- * upfront; the live value is also re-checked at withdrawal time as the source of truth. */
-export const POLYMARKET_MIN_WITHDRAW_USD = 2
-
-/** Bridge status polling cadence + ceiling. */
-export const POLYMARKET_STATUS_POLL_INTERVAL_MS = 4000
-export const POLYMARKET_STATUS_POLL_TIMEOUT_MS = 180000
+/** Minimum withdrawal (USD). Surfaced as the route's min so the form rejects below-min
+ * amounts upfront. */
+export const POLYMARKET_MIN_WITHDRAW_USD = 0.1
 
 /** Deposit-wallet batch signature validity window, in seconds. */
 export const POLYMARKET_BATCH_DEADLINE_SECONDS = 600
@@ -104,12 +105,11 @@ export type PolymarketConfig = {
     networkName: string
     /** Real backend network the withdrawal is fulfilled through (Polygon). */
     realNetworkName: string
+    /** Real backend source token. USDC.e — pUSD unwraps to it 1:1 and the depository
+     * deposit (`depositERC20`) is denominated in it. The displayed source token stays
+     * `POLYMARKET_DISPLAY_SYMBOL` ('USDC'); only the backend route uses this. */
     realTokenSymbol: string
     realDecimals: number
-    /** Bridge destination chain id (same-chain Polygon = fastest, near-zero slippage). */
-    bridgeToChainId: number
-    bridgeToTokenAddress: `0x${string}`
-    bridgeBaseUrl: string
     flatFee: number
     arrivalSeconds: number
 }
@@ -118,11 +118,8 @@ export const POLYMARKET_CONFIG: Record<string, PolymarketConfig> = {
     [KnownInternalNames.Networks.PolymarketMainnet]: {
         networkName: KnownInternalNames.Networks.PolymarketMainnet,
         realNetworkName: KnownInternalNames.Networks.PolygonMainnet,
-        realTokenSymbol: POLYMARKET_DISPLAY_SYMBOL,
+        realTokenSymbol: KnownInternalNames.Currencies.USDCe,
         realDecimals: POLYMARKET_USDC_DECIMALS,
-        bridgeToChainId: POLYMARKET_CHAIN_ID,
-        bridgeToTokenAddress: POLYMARKET_USDC_ADDRESS,
-        bridgeBaseUrl: POLYMARKET_BRIDGE_URL,
         flatFee: 0,
         arrivalSeconds: POLYMARKET_ARRIVAL_SECONDS,
     },

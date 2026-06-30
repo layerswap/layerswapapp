@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAccount, useConfig } from "wagmi";
 import { getWalletClient } from "@wagmi/core";
-import { createPublicClient, formatUnits, parseUnits, type PublicClient, type WalletClient } from "viem";
+import { createPublicClient, decodeAbiParameters, type Hex, type PublicClient, type WalletClient } from "viem";
 import posthog from "posthog-js";
 import { WithdrawPageProps } from "../../Common/sharedTypes";
 import resolveError from "../EVMWalletWithdraw/resolveError";
@@ -10,26 +10,23 @@ import { useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import { useWalletWithdrawalState } from "@/context/withdrawalContext";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import { useQueryState } from "@/context/query";
-import { useSettingsState } from "@/context/settings";
 import useWallet from "@/hooks/useWallet";
 import resolveChain from "@/lib/resolveChain";
 import { resolveFallbackTransport } from "@/lib/resolveTransports";
 import { NetworkRoute } from "@/Models/Network";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { BackendTransactionStatus, DepositAction } from "@/lib/apiClients/layerSwapApiClient";
-import { PolymarketBridgeClient } from "@/lib/apiClients/polymarketBridgeClient";
 import {
     POLYMARKET_BATCH_DEADLINE_SECONDS,
     POLYMARKET_CHAIN_ID,
     POLYMARKET_DEPLOY_POLL_INTERVAL_MS,
     POLYMARKET_DEPLOY_POLL_TIMEOUT_MS,
+    POLYMARKET_USDC_E_ADDRESS,
     resolvePolymarketConfig,
 } from "@/lib/wallets/polymarket/constants";
 import { resolvePolymarketHolding } from "@/lib/wallets/polymarket/funder";
-import { buildPusdTransferRequest } from "@/lib/wallets/polymarket/withdraw";
-import { buildDepositWalletDeployRequest, buildDepositWalletTransferRequest } from "@/lib/wallets/polymarket/depositWithdraw";
-import { getRelayerNonce, isPolymarketDeployed, submitRelayerTransaction, type RelayerSubmittable } from "@/lib/wallets/polymarket/relayerClient";
-import { useExtendedRoutesStore } from "@/stores/extendedRoutesStore";
+import { buildDepositWalletBatchRequest, buildDepositWalletDeployRequest, buildPolymarketDepositCalls } from "@/lib/wallets/polymarket/depositWithdraw";
+import { getRelayerNonce, submitRelayerTransaction, type RelayerSubmittable } from "@/lib/wallets/polymarket/relayerClient";
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 
 const PM_EXCEPTION_TYPE = 'Polymarket Withdrawal Error'
@@ -56,9 +53,36 @@ function truncateToDecimals(value: string, decimals: number): string {
     return (Math.floor(n * factor) / factor).toString()
 }
 
+type DepositoryAction = {
+    depository: `0x${string}`
+    depositCallData: Hex
+    tokenContract: string
+    amountBaseUnits: bigint
+}
+
+// depositERC20(bytes32 id, address token, address receiver, uint256 amount) — all static.
+const DEPOSIT_ERC20_PARAMS = [{ type: 'bytes32' }, { type: 'address' }, { type: 'address' }, { type: 'uint256' }] as const
+
 const DEPOSIT_ACTION_TYPES = ['transfer', 'manual_transfer']
-const getDepositAddress = (actions: DepositAction[] | undefined): string | undefined =>
-    actions?.find(a => DEPOSIT_ACTION_TYPES.includes(a.type))?.to_address
+const getDepositAction = (actions: DepositAction[] | undefined): DepositoryAction | undefined => {
+    const action = actions?.find(a => DEPOSIT_ACTION_TYPES.includes(a.type))
+    if (!action?.to_address || !action.call_data) return undefined
+    const depositCallData = action.call_data as Hex
+    // `amount_in_base_units` is msg.value (0 for ERC20); the real token amount + token are
+    // encoded in the depositERC20 calldata, so decode them — the approve/unwrap legs must
+    // pull exactly what the deposit pulls.
+    let token: string
+    let amountBaseUnits: bigint
+    try {
+        const [, decodedToken, , amount] = decodeAbiParameters(DEPOSIT_ERC20_PARAMS, `0x${depositCallData.slice(10)}` as Hex)
+        token = decodedToken as string
+        amountBaseUnits = amount as bigint
+    } catch {
+        return undefined
+    }
+    if (amountBaseUnits <= 0n) return undefined
+    return { depository: action.to_address, depositCallData, tokenContract: token, amountBaseUnits }
+}
 
 const logWithdrawalError = (error: unknown, ctx: { swapId?: string; fromAddress?: string; toAddress?: string }) => {
     posthog.captureException(error, {
@@ -79,19 +103,19 @@ const isUserRejection = (err: unknown): boolean => {
 export type PolymarketStage = 'preparing' | 'deploying' | 'awaiting_signature' | 'submitting' | undefined
 
 /**
- * Owns the Polymarket withdrawal flow. Polymarket holds collateral in a funder wallet
- * derived from the connected EOA, whose TYPE varies by account — the modern ERC-1967
- * **deposit wallet** (default), a legacy Gnosis **Safe**, or an email/Magic **proxy**.
- * We resolve which funder actually holds the funds (`resolvePolymarketHolding`) and
- * branch the signing accordingly. All paths are gasless: the user off-chain-signs;
- * the Polymarket relayer broadcasts and pays gas.
+ * Owns the Polymarket withdrawal flow (Flow 2 — permissionless, on-chain).
  *
- * Steps: (1) ensure the backend Polygon/USDC swap exists + read its deposit address;
- * (2) resolve the funder + collateral token; (3) quote + create (or reuse) a bridge
- * address paying USDC out to the deposit address; (4) deploy the funder if needed,
- * then sign the gasless transfer and submit via the relayer proxy. On success it
- * records a pending input so the Processing screen takes over (the backend detects the
- * bridge's USDC payout at the deposit address).
+ * Polymarket holds collateral as pUSD in a funder wallet derived from the connected
+ * EOA. We resolve which funder holds the funds (`resolvePolymarketHolding`) and, for
+ * the modern ERC-1967 **deposit wallet**, sign ONE gasless `Batch` that:
+ *   1. approve pUSD → CollateralOfframp, 2. unwrap pUSD → USDC.e (1:1) into the funder,
+ *   3. approve USDC.e → Layerswap Depository, 4. depositERC20 (backend-encoded calldata).
+ * A funder already holding USDC.e skips 1–2. The Polymarket relayer broadcasts and pays
+ * gas; the backend detects the depository `Deposited` event and bridges to destination.
+ *
+ * The backend swap is created with `use_depository: true` so its deposit action carries
+ * the Depository address + `depositERC20` calldata. Legacy Safe / proxy funders are not
+ * supported in this flow yet.
  */
 export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: WithdrawPageProps) {
     const { source_network, source_token, destination_network, destination_token, destination_address } = swapBasicData
@@ -130,9 +154,9 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
         setLoading(true)
         if (mountedRef.current) setStage('preparing')
 
-        // Step 1 — ensure the backend swap (Polygon/USDC) exists and resolve its deposit
-        // address, which the bridge pays USDC out to.
-        const resolveSwapAndDepositAddress = async (amount: string): Promise<{ destination: string; activeSwapId: string }> => {
+        // Step 1 — ensure the backend swap (Polygon/USDC.e via Depository) exists and
+        // read its deposit action: the Depository address + encoded depositERC20 calldata.
+        const resolveSwapAndDepositAction = async (amount: string): Promise<{ action: DepositoryAction; activeSwapId: string }> => {
             let depositActions = depositActionsResponse
             let activeSwapId = swapId
             if (!swapId || !swapDetails) {
@@ -154,9 +178,9 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
                 depositActions = newSwap.deposit_actions
             }
             if (!activeSwapId) throw new Error('Swap ID is undefined')
-            const destination = getDepositAddress(depositActions)
-            if (!destination) throw new Error('No deposit address')
-            return { destination, activeSwapId }
+            const action = getDepositAction(depositActions)
+            if (!action) throw new Error('No depository deposit action')
+            return { action, activeSwapId }
         }
 
         try {
@@ -170,8 +194,13 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
             const A = Number(amount)
             if (!Number.isFinite(A) || A <= 0) throw new Error('Invalid amount')
 
-            const bridge = new PolymarketBridgeClient(pmConfig.bridgeBaseUrl)
-            const { destination, activeSwapId } = await resolveSwapAndDepositAddress(amount)
+            const { action, activeSwapId } = await resolveSwapAndDepositAction(amount)
+
+            // The depository deposit is denominated in USDC.e — the token the funder
+            // ends up holding after unwrap. Bail if the backend returned anything else.
+            if (action.tokenContract.toLowerCase() !== POLYMARKET_USDC_E_ADDRESS.toLowerCase()) {
+                throw new Error('Unexpected depository token (expected USDC.e)')
+            }
 
             // Step 2 — resolve which derived funder holds the collateral, and in which token.
             const chain = resolveChain(source_network)
@@ -187,123 +216,67 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
                 setError(resolvePolymarketError('no polymarket account'))
                 return
             }
-            if (funder.type === 'proxy') {
-                setError({ header: 'Unsupported account', details: 'This Polymarket account (email/Magic proxy) isn’t supported yet. Use an account created with a browser wallet.' })
+            if (funder.type !== 'deposit') {
+                setError({ header: 'Unsupported account', details: 'This Polymarket account type isn’t supported for direct withdrawal yet. Withdraw via Polymarket, or use an account backed by a deposit wallet.' })
                 return
             }
 
-            const amountBaseUnits = parseUnits(amount, funder.decimals)
+            // The depository calldata already encodes this exact amount; reuse it across
+            // the approve/unwrap legs so all calls agree to the wei (pUSD↔USDC.e is 1:1).
+            const amountBaseUnits = action.amountBaseUnits
             if (funder.raw < amountBaseUnits) {
                 setError({ header: 'Insufficient balance', details: `Your available Polymarket balance (${funder.amount} ${source_token.symbol}) is below ${amount} ${source_token.symbol}.` })
                 return
             }
 
-            // Step 3 — quote the conversion and create (or reuse) the bridge address.
-            const toChainId = String(pmConfig.bridgeToChainId)
-
-            // The bridge silently ignores deposits below its minimum, stranding the
-            // funds at the bridge address — block below-min before moving anything.
-            const minUsd = await bridge.getMinCheckoutUsd(toChainId, pmConfig.bridgeToTokenAddress).catch(() => undefined)
-            if (minUsd !== undefined && A < minUsd) {
-                setError({ header: 'Amount too low', details: `Polymarket withdrawals must be at least ${minUsd} ${source_token.symbol}. You entered ${amount}.` })
-                return
-            }
-
-            const quote = await bridge.getQuote({
-                fromAmountBaseUnit: amountBaseUnits.toString(),
-                fromChainId: String(POLYMARKET_CHAIN_ID),
-                toChainId,
-                fromTokenAddress: funder.tokenAddress,
-                toTokenAddress: pmConfig.bridgeToTokenAddress,
-                recipientAddress: destination,
+            // Step 3 — assemble the batch (unwrap if holding pUSD, then approve + deposit).
+            const calls = buildPolymarketDepositCalls({
+                funderTokenAddress: funder.tokenAddress,
+                funderAddress: funder.address,
+                amountBaseUnits,
+                depository: action.depository,
+                depositCallData: action.depositCallData,
             })
-            const estimatedOut = Number(formatUnits(BigInt(quote.estToTokenBaseUnit), pmConfig.realDecimals))
-            const requiredOut = A - pmConfig.flatFee
-            if (estimatedOut < requiredOut) {
-                setError(resolvePolymarketError('quote slippage exceeds the expected range'))
-                return
-            }
 
-            const existingRecord = useExtendedRoutesStore.getState().records[activeSwapId]
-            let bridgeAddress = existingRecord?.bridgeAddress
-            if (!bridgeAddress) {
-                const addresses = await bridge.createWithdrawalAddresses({
-                    address: funder.address,
-                    toChainId,
-                    toTokenAddress: pmConfig.bridgeToTokenAddress,
-                    recipientAddr: destination,
-                })
-                bridgeAddress = addresses.address?.evm
-                if (!bridgeAddress) throw new Error('Bridge did not return an EVM withdrawal address')
-            }
-            if (existingRecord) {
-                useExtendedRoutesStore.getState().setRecord(activeSwapId, { ...existingRecord, proxyWallet: funder.address, bridgeAddress })
-            }
-
-            // Step 4 — deploy the funder if needed, then sign + submit the gasless transfer.
+            // Step 4 — deploy the funder if needed, then sign + submit the gasless batch.
             const walletClient = await getWalletClient(config, { chainId: POLYMARKET_CHAIN_ID }) as WalletClient | null
             if (!walletClient) throw new Error('Wallet client unavailable')
 
-            let request: RelayerSubmittable
-            if (funder.type === 'deposit') {
-                const code = await publicClient.getCode({ address: funder.address })
-                if (!code || code === '0x') {
-                    if (mountedRef.current) setStage('deploying')
-                    await submitRelayerTransaction(buildDepositWalletDeployRequest(sourceAddress as `0x${string}`))
-                    const deployed = await pollDeployed(publicClient, funder.address)
-                    if (!deployed) {
-                        setError({ header: 'Setting up your account', details: 'Your Polymarket wallet is being set up. Please try again in a moment.' })
-                        return
-                    }
-                }
-                const nonce = await getRelayerNonce(sourceAddress, 'WALLET')
-                const deadline = String(Math.floor(Date.now() / 1000) + POLYMARKET_BATCH_DEADLINE_SECONDS)
-                if (mountedRef.current) setStage('awaiting_signature')
-                try {
-                    request = await buildDepositWalletTransferRequest({
-                        walletClient,
-                        fromEoa: sourceAddress as `0x${string}`,
-                        depositWallet: funder.address,
-                        tokenAddress: funder.tokenAddress,
-                        bridgeAddress: bridgeAddress as `0x${string}`,
-                        amountBaseUnits,
-                        nonce,
-                        deadline,
-                    })
-                } catch (signErr) {
-                    if (isUserRejection(signErr)) { setRejected(true); return }
-                    throw signErr
-                }
-            } else {
-                // Legacy Safe funder.
-                const deployed = await isPolymarketDeployed(funder.address, 'SAFE')
+            const code = await publicClient.getCode({ address: funder.address })
+            if (!code || code === '0x') {
+                if (mountedRef.current) setStage('deploying')
+                await submitRelayerTransaction(buildDepositWalletDeployRequest(sourceAddress as `0x${string}`))
+                const deployed = await pollDeployed(publicClient, funder.address)
                 if (!deployed) {
-                    setError(resolvePolymarketError('no polymarket account'))
+                    setError({ header: 'Setting up your account', details: 'Your Polymarket wallet is being set up. Please try again in a moment.' })
                     return
                 }
-                const nonce = await getRelayerNonce(sourceAddress, 'SAFE')
-                if (mountedRef.current) setStage('awaiting_signature')
-                try {
-                    request = await buildPusdTransferRequest({
-                        walletClient,
-                        fromEoa: sourceAddress as `0x${string}`,
-                        bridgeAddress: bridgeAddress as `0x${string}`,
-                        amountBaseUnits,
-                        tokenAddress: funder.tokenAddress,
-                        nonce,
-                        metadata: `Layerswap withdrawal ${activeSwapId}`,
-                    })
-                } catch (signErr) {
-                    if (isUserRejection(signErr)) { setRejected(true); return }
-                    throw signErr
-                }
+            }
+
+            const nonce = await getRelayerNonce(sourceAddress, 'WALLET')
+            const deadline = String(Math.floor(Date.now() / 1000) + POLYMARKET_BATCH_DEADLINE_SECONDS)
+            if (mountedRef.current) setStage('awaiting_signature')
+
+            let request: RelayerSubmittable
+            try {
+                request = await buildDepositWalletBatchRequest({
+                    walletClient,
+                    fromEoa: sourceAddress as `0x${string}`,
+                    depositWallet: funder.address,
+                    calls,
+                    nonce,
+                    deadline,
+                })
+            } catch (signErr) {
+                if (isUserRejection(signErr)) { setRejected(true); return }
+                throw signErr
             }
 
             if (mountedRef.current) setStage('submitting')
             const submitResponse = await submitRelayerTransaction(request)
             if (!submitResponse?.transactionID) {
                 setError(resolvePolymarketError('Polymarket rejected the withdrawal'))
-                logWithdrawalError(new Error('Relayer returned no transactionID'), { swapId: activeSwapId, fromAddress: sourceAddress, toAddress: destination })
+                logWithdrawalError(new Error('Relayer returned no transactionID'), { swapId: activeSwapId, fromAddress: sourceAddress, toAddress: action.depository })
                 return
             }
 

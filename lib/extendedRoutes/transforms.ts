@@ -1,7 +1,7 @@
 import { Network, Token } from "@/Models/Network";
 import { CreateSwapParams, Quote } from "@/lib/apiClients/layerSwapApiClient";
 import { parseHmsString } from "@/components/utils/formatTime";
-import { ExtendedRoutePlan, ResolvedExtendedMapping } from "./types";
+import { ExtendedRoutePlan, ResolvedExtendedMapping, usesDepository } from "./types";
 import { DecimalInput, decimalToNumber, isPositiveDecimal } from "./amounts";
 
 export type ExtendedLimits = {
@@ -78,6 +78,9 @@ export type ExtendedCreateSwapParamsArgs = {
     destinationAddress: string
     referenceId?: string
     refuel?: boolean
+    /** Connected source-account address. Used as the refund address on the real source
+     * network when the provider's route requires one (e.g. Polymarket); ignored otherwise. */
+    sourceAddress?: string
 }
 
 export function buildCreateSwapParamsForExtendedRoute({
@@ -87,9 +90,13 @@ export function buildCreateSwapParamsForExtendedRoute({
     destinationAddress,
     referenceId,
     refuel,
+    sourceAddress,
 }: ExtendedCreateSwapParamsArgs): CreateSwapParams {
     if (!plan.realAmount) throw new Error('Extended route amount is missing')
     if (!isPositiveDecimal(plan.realAmount)) throw new Error('Extended route amount is invalid')
+
+    const { provider } = plan.mapping
+    const depository = usesDepository(provider)
 
     return {
         amount: plan.realAmount,
@@ -100,8 +107,9 @@ export function buildCreateSwapParamsForExtendedRoute({
         destination_address: destinationAddress,
         reference_id: referenceId,
         refuel: !!refuel,
-        use_deposit_address: true,
+        use_deposit_address: !depository,
+        use_depository: depository || undefined,
         source_address: undefined,
-        refund_address: undefined,
+        refund_address: provider.requiresRefundAddress ? sourceAddress : undefined,
     }
 }
