@@ -1,5 +1,16 @@
 # @layerswap/widget
 
+## 1.6.0
+
+### Minor Changes
+
+- Added gasless transactions
+
+### Patch Changes
+
+- Updated dependencies
+  - @layerswap/utils@1.6.0
+
 ## 1.5.0
 
 ### Minor Changes

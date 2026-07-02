@@ -1,5 +1,18 @@
 # @layerswap/wallet-paradex
 
+## 1.6.0
+
+### Minor Changes
+
+- Added gasless transactions
+
+### Patch Changes
+
+- Updated dependencies
+  - @layerswap/wallet-evm@1.6.0
+  - @layerswap/wallet-starknet@1.6.0
+  - @layerswap/widget@1.6.0
+
 ## 1.5.0
 
 ### Minor Changes
