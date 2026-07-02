@@ -5,6 +5,7 @@ import { create } from 'zustand'
 export type GaslessFailureStage = 'create' | 'deposit'
 
 type GaslessPreferenceState = {
+    // Scoped to the current swap flow — reset to default when the swap modal closes.
     gaslessEnabled: boolean
     // Transient failure markers — cleared on switch, fresh submit, or toggle.
     gaslessUnavailable: boolean
@@ -14,6 +15,7 @@ type GaslessPreferenceState = {
     reportGaslessUnavailable: (stage: GaslessFailureStage, message?: string | null) => void
     switchToStandardTransfer: () => void
     clearGaslessUnavailable: () => void
+    resetGaslessPreference: () => void
 }
 
 export const useGaslessPreferenceStore = create<GaslessPreferenceState>()((set) => ({
@@ -25,4 +27,5 @@ export const useGaslessPreferenceStore = create<GaslessPreferenceState>()((set) 
     reportGaslessUnavailable: (stage, message) => set({ gaslessUnavailable: true, gaslessFailureStage: stage, gaslessErrorMessage: message ?? null }),
     switchToStandardTransfer: () => set({ gaslessEnabled: false, gaslessUnavailable: false, gaslessFailureStage: null, gaslessErrorMessage: null }),
     clearGaslessUnavailable: () => set({ gaslessUnavailable: false, gaslessFailureStage: null, gaslessErrorMessage: null }),
+    resetGaslessPreference: () => set({ gaslessEnabled: true, gaslessUnavailable: false, gaslessFailureStage: null, gaslessErrorMessage: null }),
 }))
