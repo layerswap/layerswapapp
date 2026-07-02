@@ -3,7 +3,6 @@ import { useRouter } from "next/router";
 import { FC, useState } from "react";
 import { useIntercom } from "react-use-intercom";
 import ChatIcon from "../icons/ChatIcon";
-import DiscordLogo from "../icons/DiscordLogo";
 import GitHubLogo from "../icons/GitHubLogo";
 import SubstackLogo from "../icons/SubstackLogo";
 import TwitterLogo from "../icons/TwitterLogo";
@@ -135,11 +134,6 @@ const navigation = {
             name: 'GitHub',
             href: 'https://github.com/layerswap/layerswapapp/',
             icon: (props) => GitHubLogo(props)
-        },
-        {
-            name: 'Discord',
-            href: 'https://discord.com/invite/KhwYN35sHy/',
-            icon: (props) => DiscordLogo(props)
         },
         {
             name: 'YouTube',
