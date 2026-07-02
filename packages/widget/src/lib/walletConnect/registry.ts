@@ -3,7 +3,7 @@ import { mapWallet } from "./mapWallet"
 import type { WalletConnectWalletBase } from "./types"
 
 // Slugified names of wallets to exclude (duplicates / unwanted entries).
-const SLUGS_TO_FILTER = ['okx-wallet-1', 'ready']
+const SLUGS_TO_FILTER = ['okx-wallet-1', 'ready', 'yowallet', 'safewallet']
 
 export type ResolveOptions = {
     namespace?: string

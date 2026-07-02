@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useMemo } from "react";
-import { WalletProvider, NftProvider, BalanceProvider, GasProvider, TransferProvider, ContractAddressCheckerProvider, RpcHealthCheckProvider } from "@/types";
+import { WalletProvider, NftProvider, BalanceProvider, GasProvider, TransferProvider, GaslessProvider, ContractAddressCheckerProvider, RpcHealthCheckProvider } from "@/types";
 import { resolverService } from "@/lib/resolvers/resolverService";
 import { setExtendedRouteProviders } from "@/lib/extendedRoutes/registry";
 
@@ -18,6 +18,12 @@ export const ResolverProviders: React.FC<React.PropsWithChildren<{ walletProvide
         .map(provider => provider.transferProvider)
         .flat()
         .filter((provider): provider is (() => TransferProvider) => Boolean(provider))
+        .map(provider => provider())
+
+    const gaslessProviders = walletProviders
+        .map(provider => provider.gaslessProvider)
+        .flat()
+        .filter((provider): provider is (() => GaslessProvider) => Boolean(provider))
         .map(provider => provider())
 
     const contractAddressProviders: ContractAddressCheckerProvider[] = walletProviders
@@ -48,7 +54,7 @@ export const ResolverProviders: React.FC<React.PropsWithChildren<{ walletProvide
             .flat()
             .filter((provider): provider is NftProvider => Boolean(provider));
 
-        resolverService.setProviders(balanceProviders, gasProviders, nftProviders, transferProviders, contractAddressProviders, rpcHealthCheckProviders)
+        resolverService.setProviders(balanceProviders, gasProviders, nftProviders, transferProviders, contractAddressProviders, rpcHealthCheckProviders, gaslessProviders)
 
         // Populate the extended-route registry in the same render pass as the
         // resolvers above, so consumers that read it synchronously during render
@@ -58,7 +64,7 @@ export const ResolverProviders: React.FC<React.PropsWithChildren<{ walletProvide
         setExtendedRouteProviders(walletProviders.flatMap(p => p.extendedRouteProvider ?? []).filter(Boolean))
 
         return true;
-    }, [walletProviders, transferProviders, contractAddressProviders, rpcHealthCheckProviders]);
+    }, [walletProviders, transferProviders, gaslessProviders, contractAddressProviders, rpcHealthCheckProviders]);
 
     return (
         <ResolverContext.Provider value={{ isInitialized }}>

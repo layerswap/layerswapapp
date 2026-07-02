@@ -5,7 +5,7 @@ import { TransactionStatus } from '../lib/apiClients/layerSwapApiClient';
 import { ResolvedSwapStatus, resolveSwapPhase } from '../components/utils/resolveSwapPhase';
 import { useDepositSettings } from '../context/depositSettings';
 
-type Options = { inputTxStatusFromApi?: TransactionStatus };
+type Options = { inputTxStatusFromApi?: TransactionStatus; gaslessAuthorizationFailed?: boolean };
 
 export function useResolvedSwapStatus(opts: Options = {}): ResolvedSwapStatus {
     const { swapDetails, refuel } = useSwapDataState();
@@ -21,7 +21,9 @@ export function useResolvedSwapStatus(opts: Options = {}): ResolvedSwapStatus {
             inputTxStatusFromApi: opts.inputTxStatusFromApi,
             storedWalletTransaction,
             isDepositFlow,
+            gaslessAuthorizationFailed: opts.gaslessAuthorizationFailed,
+
         }),
-        [swapDetails, refuel, opts.inputTxStatusFromApi, storedWalletTransaction, isDepositFlow],
+        [swapDetails, refuel, opts.inputTxStatusFromApi, storedWalletTransaction, isDepositFlow, opts.gaslessAuthorizationFailed],
     );
 }

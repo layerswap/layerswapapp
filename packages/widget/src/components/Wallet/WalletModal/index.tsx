@@ -1,19 +1,8 @@
 "use client";
 import { Context, createContext, Dispatch, ReactNode, SetStateAction, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { InternalConnector, Wallet, WalletConnectionProvider } from '@/types/wallet';
+import { WalletModalConnector, Wallet, WalletConnectionProvider } from '@/types/wallet';
 
-export type WalletModalConnector = InternalConnector & {
-    qr?: ({
-        state: 'loading',
-        value: undefined,
-        deepLink?: undefined
-    } | {
-        state: 'fetched',
-        value: string,
-        deepLink?: string
-    });
-    showQrCode?: boolean
-}
+export type { WalletModalConnector };
 
 export type ModalWalletProvider = WalletConnectionProvider & {
     isSelectedFromFilter?: boolean;
@@ -34,8 +23,8 @@ type ConnectModalContextType = {
     isWalletModalOpen?: boolean;
     selectedConnector: WalletModalConnector | undefined;
     setSelectedConnector: Dispatch<SetStateAction<WalletModalConnector | undefined>>;
-    selectedMultiChainConnector: InternalConnector | undefined;
-    setSelectedMultiChainConnector: (value: InternalConnector | undefined) => void;
+    selectedMultiChainConnector: WalletModalConnector | undefined;
+    setSelectedMultiChainConnector: (value: WalletModalConnector | undefined) => void;
     goBack: () => void;
     onFinish: (connectedWallet?: Wallet | undefined) => void;
     setOpen: (value: boolean) => void;
@@ -55,7 +44,7 @@ export function WalletModalProvider({ children }) {
 
     const [selectedProvider, setSelectedProvider] = useState<ModalWalletProvider | undefined>(undefined);
     const [selectedConnector, setSelectedConnector] = useState<WalletModalConnector | undefined>(undefined);
-    const [selectedMultiChainConnector, setSelectedMultiChainConnector] = useState<InternalConnector | undefined>(undefined)
+    const [selectedMultiChainConnector, setSelectedMultiChainConnector] = useState<WalletModalConnector | undefined>(undefined)
     const [open, setOpen] = useState(false);
     const [presentation, setPresentation] = useState<ConnectPresentation>('modal');
     const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);

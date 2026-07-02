@@ -9,6 +9,7 @@ import { EVMContractAddressProvider } from "./evmContractAddressProvider";
 import { EVMRpcHealthCheckProvider } from "./rpcHealthCheckProvider";
 import { hyperliquidProvider } from "./additionalProviders/hyperliquid/hyperliquidExtendedRouteProvider";
 import { useHyperliquidTransfer } from "./additionalProviders/hyperliquid/useHyperliquidTransfer";
+import { useEVMGaslessSign } from "./gaslessProvider/useEVMGaslessSign";
 
 export type WalletConnectConfig = {
     projectId: string
@@ -35,6 +36,7 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         balanceProviders,
         gasProviders,
         transferProviders,
+        gaslessProviders,
         contractAddressProviders,
         rpcHealthCheckProviders
     } = config;
@@ -116,6 +118,13 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
         : defaultTransferProviders;
 
+    // Gasless (sign-to-deposit) is currently EVM-only; future chains register their own
+    // GaslessProvider here and the GaslessResolver picks by network — same pattern as transfers.
+    const defaultGaslessProviders = [useEVMGaslessSign];
+    const finalGaslessProviders = gaslessProviders !== undefined
+        ? (Array.isArray(gaslessProviders) ? gaslessProviders : [gaslessProviders])
+        : defaultGaslessProviders;
+
     const defaultRPCHealtCheckProviders = [new EVMRpcHealthCheckProvider()];
     const finalRPCHealtCheckProviders = rpcHealthCheckProviders !== undefined
         ? (Array.isArray(rpcHealthCheckProviders) ? rpcHealthCheckProviders : [rpcHealthCheckProviders])
@@ -128,6 +137,7 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
         transferProvider: finalTransferProviders,
+        gaslessProvider: finalGaslessProviders,
         contractAddressProvider: finalContractAddressProviders,
         rpcHealthCheckProvider: finalRPCHealtCheckProviders,
         extendedRouteProvider: [hyperliquidProvider],
@@ -174,6 +184,7 @@ export const EVMProvider: WalletProvider = {
         ),
     ],
     transferProvider: [useEVMTransfer, useHyperliquidTransfer],
+    gaslessProvider: [useEVMGaslessSign],
     contractAddressProvider: [new EVMContractAddressProvider()],
     rpcHealthCheckProvider: [new EVMRpcHealthCheckProvider()],
     extendedRouteProvider: [hyperliquidProvider],
