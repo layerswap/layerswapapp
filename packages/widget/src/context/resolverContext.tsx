@@ -1,0 +1,82 @@
+import React, { createContext, useContext, useMemo } from "react";
+import { WalletProvider, NftProvider, BalanceProvider, GasProvider, TransferProvider, GaslessProvider, ContractAddressCheckerProvider, RpcHealthCheckProvider } from "@/types";
+import { resolverService } from "@/lib/resolvers/resolverService";
+import { setExtendedRouteProviders } from "@/lib/extendedRoutes/registry";
+
+type ResolverContextType = {
+    isInitialized: boolean;
+};
+
+const ResolverContext = createContext<ResolverContextType | null>(null);
+
+export const ResolverProviders: React.FC<React.PropsWithChildren<{ walletProviders: WalletProvider[] }>> = ({
+    children,
+    walletProviders
+}) => {
+
+    const transferProviders = walletProviders
+        .map(provider => provider.transferProvider)
+        .flat()
+        .filter((provider): provider is (() => TransferProvider) => Boolean(provider))
+        .map(provider => provider())
+
+    const gaslessProviders = walletProviders
+        .map(provider => provider.gaslessProvider)
+        .flat()
+        .filter((provider): provider is (() => GaslessProvider) => Boolean(provider))
+        .map(provider => provider())
+
+    const contractAddressProviders: ContractAddressCheckerProvider[] = walletProviders
+        .map(provider => provider.contractAddressProvider)
+        .flat()
+        .filter((provider): provider is ContractAddressCheckerProvider => Boolean(provider));
+
+    const rpcHealthCheckProviders: RpcHealthCheckProvider[] = walletProviders
+        .map(provider => provider.rpcHealthCheckProvider)
+        .flat()
+        .filter((provider): provider is RpcHealthCheckProvider => Boolean(provider));
+
+    const isInitialized = useMemo(() => {
+        // Extract balance providers from wallet providers
+        const balanceProviders: BalanceProvider[] = walletProviders
+            .map(provider => provider.balanceProvider)
+            .flat()
+            .filter((provider): provider is BalanceProvider => Boolean(provider));
+
+        // Extract gas providers from wallet providers
+        const gasProviders: GasProvider[] = walletProviders
+            .map(provider => provider.gasProvider)
+            .flat()
+            .filter((provider): provider is GasProvider => Boolean(provider));
+
+        const nftProviders: NftProvider[] = walletProviders
+            .map(provider => provider.nftProvider)
+            .flat()
+            .filter((provider): provider is NftProvider => Boolean(provider));
+
+        resolverService.setProviders(balanceProviders, gasProviders, nftProviders, transferProviders, contractAddressProviders, rpcHealthCheckProviders, gaslessProviders)
+
+        // Populate the extended-route registry in the same render pass as the
+        // resolvers above, so consumers that read it synchronously during render
+        // (isExtendedSourceNetwork, resolveExtendedRoutePlan, ...) see it before
+        // children mount. Kept here (vs. an effect) for that timing; gated by the
+        // deps below so it no longer re-runs on every render.
+        setExtendedRouteProviders(walletProviders.flatMap(p => p.extendedRouteProvider ?? []).filter(Boolean))
+
+        return true;
+    }, [walletProviders, transferProviders, gaslessProviders, contractAddressProviders, rpcHealthCheckProviders]);
+
+    return (
+        <ResolverContext.Provider value={{ isInitialized }}>
+            {children}
+        </ResolverContext.Provider>
+    );
+};
+
+export const useResolvers = () => {
+    const context = useContext(ResolverContext);
+    if (!context) {
+        throw new Error('useResolvers must be used within a ResolverProvider');
+    }
+    return context;
+};

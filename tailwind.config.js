@@ -1,8 +1,14 @@
 //@ts-check
-import plugin from 'tailwindcss/plugin'
+const plugin = require('tailwindcss/plugin')
 
 module.exports = {
-  content: ["./pages/**/*.{js,ts,jsx,tsx}", "./components/**/*.{js,ts,jsx,tsx}"],
+  content: [
+    "./pages/**/*.{js,ts,jsx,tsx}",
+    "../../apps/**/*.{js,ts,jsx,tsx}",
+    "./components/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{js,ts,jsx,tsx}",
+    "../../packages/**/*.{js,ts,jsx,tsx}"
+  ],
   darkMode: 'media',
   theme: {
     extend: {
@@ -154,7 +160,7 @@ module.exports = {
         'card': '5px 5px 40px rgba(0, 0, 0, 0.2), 0px 0px 20px rgba(0, 0, 0, 0.43)',
         'accordion-open': '0 8px 32px rgba(0, 0, 0, 0.5), 0 4px 16px rgba(0, 0, 0, 0.3)',
       },
-      typography: (theme) => ({
+      typography: (/** @type {(arg0: string) => any} */ theme) => ({
         DEFAULT: {
           css: {
             h1: {
@@ -199,8 +205,6 @@ module.exports = {
     },
   },
   plugins: [
-    require("@tailwindcss/forms"),
-    require("@tailwindcss/typography"),
     require("tailwindcss-animate"),
     plugin(function ({ addVariant }) {
       // Add a `third` variant, ie. `third:pb-0`
