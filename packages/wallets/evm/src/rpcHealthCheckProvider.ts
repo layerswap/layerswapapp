@@ -37,16 +37,6 @@ function useEVMRpcHealthCheckHook(): RpcHealthCheckResult {
           ? Date.now() / 1000 - parseInt(tsHex, 16)
           : Number.POSITIVE_INFINITY
 
-      const tooSlow = latencyMs > 2000
-      const tooStale = blockAgeSec > 60
-
-      if (tooSlow || tooStale) {
-        let reason = ''
-        if (tooSlow) reason += `Wallet RPC is slow (${latencyMs.toFixed(0)}ms). `
-        if (tooStale) reason += `Latest block is stale (${blockAgeSec.toFixed(0)}s old).`
-        setHealth({ status: 'unhealthy', reason: reason.trim() })
-        return
-      }
       setHealth({ status: 'healthy', latencyMs, blockAgeSec })
     } catch (e: any) {
       const msg = e?.message || 'Unknown error from wallet RPC'

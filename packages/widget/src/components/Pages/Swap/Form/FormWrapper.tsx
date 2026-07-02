@@ -184,6 +184,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                         className="expandContainerHeight">
                         <SwapDetails type="contained" onWalletWithdrawalSuccess={() => {
                             setWalletWihdrawDone(true)
+                            useGaslessPreferenceStore.getState().resetGaslessPreference()
                             setFieldValue('amount', 0)
                             mutateBalances()
                         }} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />
