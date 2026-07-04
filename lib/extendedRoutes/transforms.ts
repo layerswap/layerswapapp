@@ -78,8 +78,6 @@ export type ExtendedCreateSwapParamsArgs = {
     destinationAddress: string
     referenceId?: string
     refuel?: boolean
-    /** Connected source-account address. Used as the refund address on the real source
-     * network when the provider's route requires one (e.g. Polymarket); ignored otherwise. */
     sourceAddress?: string
 }
 

@@ -1,6 +1,6 @@
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
-import { ExtendedRouteProvider, ExtendedTokenMapping, RealRouteRef } from "../types";
-import { realDepositAddressRoutePresent } from "../availability";
+import { ExtendedRouteProvider, ExtendedTokenMapping, RealRouteRef, requiredDepositMethod } from "../types";
+import { realRoutePresent } from "../availability";
 import { HYPERLIQUID_ROUTES, HyperliquidDestination, getHyperliquidCandidates, pickHyperliquidDestination } from "@/lib/wallets/hyperliquid/routes";
 import { HYPERLIQUID_USDC_SYMBOL } from "@/lib/wallets/hyperliquid/constants";
 
@@ -72,7 +72,7 @@ export const hyperliquidProvider: ExtendedRouteProvider = {
         // When the caller knows the backend routes, let the picker fall back past
         // destinations the backend doesn't currently offer (e.g. AVAX/Sonic).
         const isRealRouteAvailable = availableRoutes
-            ? (real: RealRouteRef) => realDepositAddressRoutePresent(availableRoutes, real)
+            ? (real: RealRouteRef) => realRoutePresent(availableRoutes, real, requiredDepositMethod(this))
             : undefined
         const dest = pickHyperliquidDestination(networkName, toNetworkName, toTokenSymbol, isRealRouteAvailable)
         if (!dest) return undefined

@@ -169,13 +169,15 @@ function useRoutes({ direction, values }: Props) {
     const { routes, isLoading } = useRoutesData<NetworkRoute>(url, defaultRoutes || [], apiClient.fetcher);
 
     const fromName = values.from?.name;
+    const toName = values.to?.name;
+    const toSymbol = values.toAsset?.symbol;
     const finalRoutes = useMemo(() => {
         // Re-add extended sources after SWR revalidation (the backend list lacks them).
-        if (direction === 'from') return mergeExtendedSourceRoutes(routes, networks);
+        if (direction === 'from') return mergeExtendedSourceRoutes(routes, networks, toName, toSymbol);
         // An extended source is a real backend destination too — exclude it from the
         // destination list when it's the selected source so it can't route to itself.
         return isExtendedSourceNetwork(fromName) ? routes.filter(r => r.name !== fromName) : routes;
-    }, [routes, direction, networks, fromName]);
+    }, [routes, direction, networks, fromName, toName, toSymbol]);
     return { routes: finalRoutes, isLoading };
 }
 

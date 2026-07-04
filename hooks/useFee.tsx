@@ -92,9 +92,7 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
     const use_deposit_address = depositMethod === 'wallet' ? false : true
 
     // Extended source (e.g. Hyperliquid): the backend doesn't know this source,
-    // so quote/limits are fetched against the real route it maps to. Hyperliquid uses
-    // a deposit address; Polymarket (Flow 2) funds via the Depository, so it must quote
-    // the wallet/depository path, not the deposit-address path.
+    // so quote/limits are fetched against the real route it maps to.
     const { networks, sourceRoutes } = useSettingsState()
     const extendedPlan = useMemo(() => resolveExtendedRoutePlan({
         sourceNetworkName: from,

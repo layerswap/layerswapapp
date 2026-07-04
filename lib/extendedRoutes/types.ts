@@ -34,15 +34,7 @@ export interface ExtendedRouteProvider {
     direction: 'source' | 'destination'
     /** Extended network names this provider owns, e.g. [HYPERLIQUID_MAINNET, HYPERLIQUID_TESTNET]. */
     extendedNetworkNames: string[]
-    /** How the real backend leg is funded. 'deposit_address' (default): the user sends
-     * to a backend-generated deposit address. 'depository': fund via the Layerswap
-     * Depository (`depositERC20`), so the withdrawal can batch the deposit into one tx.
-     * Drives `use_deposit_address`/`use_depository` on create and the quote/limits mode.
-     * Omit = 'deposit_address'. */
     funding?: 'deposit_address' | 'depository'
-    /** When true, create() must carry a refund address on the real source network —
-     * required for routes whose backend leg contains a swap (e.g. Polymarket →
-     * Polygon/USDC.e). Omit = false. */
     requiresRefundAddress?: boolean
     /** mappings[networkName][tokenSymbol] -> token mapping (for the primary
      * destination, used by the picker visibility check). */
@@ -94,9 +86,12 @@ export type ExtendedRoutePlan = {
     realAmount?: string
 }
 
-/** Single source of truth for the depository-funding default semantics. */
 export function usesDepository(provider: ExtendedRouteProvider): boolean {
     return provider.funding === 'depository'
+}
+
+export function requiredDepositMethod(provider: ExtendedRouteProvider): string {
+    return usesDepository(provider) ? 'wallet' : 'deposit_address'
 }
 
 /**

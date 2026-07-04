@@ -1,11 +1,9 @@
 import { NetworkRoute, NetworkWithTokens } from "@/Models/Network";
 import { DecimalInput, addDecimal, subtractDecimal } from "./amounts";
-import { ExtendedRoutePlan, ExtendedRouteProvider, ResolvedExtendedMapping } from "./types";
-import { realDepositAddressRoutePresent } from "./availability";
+import { ExtendedRoutePlan, ExtendedRouteProvider, ResolvedExtendedMapping, requiredDepositMethod } from "./types";
+import { realRoutePresent } from "./availability";
 import { hyperliquidProvider } from "./providers/hyperliquid";
 import { polymarketProvider } from "./providers/polymarket";
-
-export { realDepositAddressRoutePresent };
 
 // Adding a provider = one file + one entry here.
 const SOURCE_PROVIDERS: ExtendedRouteProvider[] = [hyperliquidProvider, polymarketProvider]
@@ -19,7 +17,6 @@ export function isExtendedSourceNetwork(name?: string): boolean {
     return SOURCE_PROVIDERS.some(p => p.extendedNetworkNames.includes(name))
 }
 
-/** The provider that owns this network name, if any (e.g. for balance prioritization). */
 export function getExtendedProviderForNetwork(name?: string): ExtendedRouteProvider | undefined {
     if (!name) return undefined
     return SOURCE_PROVIDERS.find(p => p.extendedNetworkNames.includes(name))
@@ -35,11 +32,9 @@ export function getExtendedMapping(
     if (!networkName || !tokenSymbol) return undefined
 
     for (const provider of SOURCE_PROVIDERS) {
-        // Prefer the provider's per-destination resolver (e.g. HL primary/fallback).
-        // `availableRoutes` lets it skip destinations the backend can't yet fulfill.
-        // Static `mappings` is the fallback for providers with a single destination.
-        const mapping = provider.resolveActiveMapping?.(networkName, tokenSymbol, toNetworkName, toTokenSymbol, availableRoutes)
-            ?? provider.mappings[networkName]?.[tokenSymbol]
+        const mapping = provider.resolveActiveMapping
+            ? provider.resolveActiveMapping(networkName, tokenSymbol, toNetworkName, toTokenSymbol, availableRoutes)
+            : provider.mappings[networkName]?.[tokenSymbol]
         if (!mapping) continue
 
         const realDecimals = mapping.realDecimals ?? 6
@@ -79,9 +74,9 @@ export function resolveExtendedRoutePlan({
 }: ResolveExtendedRoutePlanArgs): ExtendedRoutePlan | undefined {
     const mapping = getExtendedMapping(sourceNetworkName, sourceTokenSymbol, destinationNetworkName, destinationTokenSymbol, availableRoutes)
     if (!mapping) return undefined
-    // Final guard: even after fallback the chosen real route must exist on the
-    // backend, else this extended route can't be fulfilled at all.
-    if (availableRoutes && !realDepositAddressRoutePresent(availableRoutes, mapping.real)) return undefined
+    // Final guard: the chosen real route must exist on the backend with the deposit
+    // method this provider funds through, else the extended route can't be fulfilled.
+    if (availableRoutes && !realRoutePresent(availableRoutes, mapping.real, requiredDepositMethod(mapping.provider))) return undefined
 
     const hasSourceAmount = sourceAmount !== undefined && String(sourceAmount).trim() !== ''
     let realAmount: string | undefined
@@ -106,14 +101,27 @@ export function resolveExtendedRoutePlan({
  * resolving. Idempotent: skips names already present, so it is safe to call on
  * both the SSR fallback and revalidated backend data.
  */
-export function mergeExtendedSourceRoutes(routes: NetworkRoute[], networks: NetworkWithTokens[]): NetworkRoute[] {
+export function mergeExtendedSourceRoutes(
+    routes: NetworkRoute[],
+    networks: NetworkWithTokens[],
+    toNetworkName?: string,
+    toTokenSymbol?: string,
+): NetworkRoute[] {
+    const hasDestination = !!toNetworkName && !!toTokenSymbol
     const additions: NetworkRoute[] = []
     for (const provider of SOURCE_PROVIDERS) {
         for (const extendedName of provider.extendedNetworkNames) {
             // Future backend adoption = zero conflict: skip names already present.
             if (routes.some(r => r.name === extendedName)) continue
             const extendedRoute = provider.resolveExtendedRoute(extendedName, networks)
-            if (extendedRoute) additions.push(extendedRoute)
+            if (!extendedRoute) continue
+            if (!hasDestination) {
+                additions.push(extendedRoute)
+                continue
+            }
+            const tokens = extendedRoute.tokens?.filter(t => !!getExtendedMapping(extendedName, t.symbol, toNetworkName, toTokenSymbol)) ?? []
+            if (!tokens.length) continue
+            additions.push(tokens.length === extendedRoute.tokens?.length ? extendedRoute : { ...extendedRoute, tokens })
         }
     }
     return additions.length ? [...routes, ...additions] : routes

@@ -1,6 +1,6 @@
 import { NetworkRoute, NetworkRouteToken, NetworkType, NetworkWithTokens, Token } from "@/Models/Network";
-import { ExtendedRouteProvider, ExtendedTokenMapping, RealRouteRef } from "../types";
-import { realDepositAddressRoutePresent } from "../availability";
+import { ExtendedRouteProvider, ExtendedTokenMapping, RealRouteRef, requiredDepositMethod } from "../types";
+import { realRoutePresent } from "../availability";
 import { getPolymarketCandidates, pickPolymarketDestination, POLYMARKET_CONFIG, POLYMARKET_DISPLAY_SYMBOL, PolymarketConfig } from "@/lib/wallets/polymarket/routes";
 import { POLYMARKET_DISPLAY_NAME, POLYMARKET_LOGO } from "@/lib/wallets/polymarket/constants";
 
@@ -18,8 +18,6 @@ const toMapping = (cfg: PolymarketConfig): ExtendedTokenMapping => ({
     flatFee: cfg.flatFee,
     extraCompletionSeconds: cfg.arrivalSeconds,
     realDecimals: cfg.realDecimals,
-    // No client-imposed min/fee floor — limits come dynamically from the backend
-    // Polygon/USDC.e route (unwrap is 1:1, no slippage), as Hyperliquid's do.
 })
 
 const mappings: Record<string, Record<string, ExtendedTokenMapping>> = Object.fromEntries(
@@ -98,7 +96,7 @@ export const polymarketProvider: ExtendedRouteProvider = {
         if (tokenSymbol !== POLYMARKET_DISPLAY_SYMBOL) return undefined
         if (!POLYMARKET_CONFIG[networkName]) return undefined
         const isRealRouteAvailable = availableRoutes
-            ? (real: RealRouteRef) => realDepositAddressRoutePresent(availableRoutes, real)
+            ? (real: RealRouteRef) => realRoutePresent(availableRoutes, real, requiredDepositMethod(this))
             : undefined
         const cfg = pickPolymarketDestination(networkName, toNetworkName, toTokenSymbol, isRealRouteAvailable)
         if (!cfg) return undefined
