@@ -11,6 +11,7 @@ import useWallet from "@/hooks/useWallet";
 import { useUsdModeStore } from "@/stores/usdModeStore";
 import { skipNextUsdSync } from "@/hooks/useUsdTokenSync";
 import { ceilUsd, floorUsd } from "@/components/utils/formatUsdAmount";
+import { roundToDecimals } from "@/components/utils/RoundDecimals";
 
 type MinMaxProps = {
     fromCurrency: NetworkRouteToken,
@@ -46,8 +47,9 @@ const MinMax = (props: MinMaxProps) => {
     const shouldPayGasWithTheToken = (native_currency?.symbol === fromCurrency?.symbol) || !native_currency
 
     const fallbackAmount = useMemo(() => {
-        return fromCurrency.price_in_usd > 0 ? 0.01 / fromCurrency.price_in_usd : 0.01;
-    }, [fromCurrency.price_in_usd]);
+        const raw = fromCurrency.price_in_usd > 0 ? 0.01 / fromCurrency.price_in_usd : 0.01;
+        return roundToDecimals(raw, fromCurrency.decimals);
+    }, [fromCurrency.price_in_usd, fromCurrency.decimals]);
 
     let maxAllowedAmount: number = useMemo(() => {
         return resolveMaxAllowedAmount({ fromCurrency, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod, fallbackAmount }) || 0;
@@ -60,19 +62,22 @@ const MinMax = (props: MinMaxProps) => {
         return limitsMinAmount || fallbackAmount;
     }, [walletBalance, limitsMinAmount, fallbackAmount, depositMethod]);
 
-    const halfOfBalance = (walletBalance?.amount || maxAllowedAmount) ? (walletBalance?.amount || maxAllowedAmount) / 2 : 0;
+    const halfOfBalance = roundToDecimals((walletBalance?.amount || maxAllowedAmount) ? (walletBalance?.amount || maxAllowedAmount) / 2 : 0, fromCurrency.decimals);
 
     const handleSetValue = (value: string, usdValue?: string) => {
         mutateBalances()
+        const sanitizedValue = value !== '' && !isNaN(Number(value))
+            ? roundToDecimals(Number(value), fromCurrency?.decimals).toString()
+            : value
         if (isUsdMode && usdValue) {
             // Only skip sync if the amount will actually change,
             // otherwise the sync effect won't fire to clear the flag.
-            if (values.amount !== value) {
+            if (values.amount !== sanitizedValue) {
                 skipNextUsdSync();
             }
             setUsdAmount(usdValue);
         }
-        setFieldValue('amount', value, true)
+        setFieldValue('amount', sanitizedValue, true)
         onActionHover(undefined)
     }
 

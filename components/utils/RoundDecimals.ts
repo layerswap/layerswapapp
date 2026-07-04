@@ -28,6 +28,10 @@ export function truncateDecimalsToFloor(number: number, decimalPlaces: number) {
     return Math.floor(number * factor) / factor;
 }
 
+export function roundToDecimals(value: number, decimals: number | undefined) {
+    return decimals !== undefined && !isNaN(value) ? Number(value.toFixed(decimals)) : value;
+}
+
 export function findIndexOfFirstNonZeroAfterComma(number) {
     // Convert the number to a string
     let numberStr = number.toString();
