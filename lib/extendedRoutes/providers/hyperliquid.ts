@@ -2,7 +2,7 @@ import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { ExtendedRouteProvider, ExtendedTokenMapping, RealRouteRef, requiredDepositMethod } from "../types";
 import { realRoutePresent } from "../availability";
 import { HYPERLIQUID_ROUTES, HyperliquidDestination, getHyperliquidCandidates, pickHyperliquidDestination } from "@/lib/wallets/hyperliquid/routes";
-import { HYPERLIQUID_USDC_SYMBOL } from "@/lib/wallets/hyperliquid/constants";
+import { HYPERLIQUID_FUNDING, HYPERLIQUID_USDC_SYMBOL } from "@/lib/wallets/hyperliquid/constants";
 
 /**
  * Build an extended-route mapping from a chosen destination.
@@ -37,6 +37,7 @@ const routeCache = new WeakMap<object, NetworkRoute>()
 export const hyperliquidProvider: ExtendedRouteProvider = {
     id: 'hyperliquid',
     direction: 'source',
+    funding: HYPERLIQUID_FUNDING,
     extendedNetworkNames: Object.keys(HYPERLIQUID_ROUTES),
     mappings,
     resolveExtendedRoute(networkName, allNetworks) {

@@ -168,9 +168,11 @@ function useRoutes({ direction, values }: Props) {
     const defaultRoutes = direction === 'from' ? sourceRoutes : destinationRoutes;
     const { routes, isLoading } = useRoutesData<NetworkRoute>(url, defaultRoutes || [], apiClient.fetcher);
 
-    const fromName = values.from?.name;
-    const toName = values.to?.name;
-    const toSymbol = values.toAsset?.symbol;
+    // Only the opposite side's selection matters per branch; keep the other side's
+    // deps inert so selection changes don't needlessly invalidate the memo.
+    const fromName = direction === 'to' ? values.from?.name : undefined;
+    const toName = direction === 'from' ? values.to?.name : undefined;
+    const toSymbol = direction === 'from' ? values.toAsset?.symbol : undefined;
     const finalRoutes = useMemo(() => {
         // Re-add extended sources after SWR revalidation (the backend list lacks them).
         if (direction === 'from') return mergeExtendedSourceRoutes(routes, networks, toName, toSymbol);
