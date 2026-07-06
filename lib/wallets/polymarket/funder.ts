@@ -1,4 +1,4 @@
-import { erc20Abi, type PublicClient } from "viem";
+import { erc20Abi, BaseError, ContractFunctionRevertedError, type PublicClient } from "viem";
 import { derivePolymarketDepositWallet, derivePolymarketProxy, derivePolymarketSafe } from "./derive";
 import { POLYMARKET_PUSD_ADDRESS, POLYMARKET_PUSD_DECIMALS, POLYMARKET_USDC_E_ADDRESS } from "./constants";
 
@@ -66,8 +66,11 @@ export async function resolvePolymarketHolding(eoa: string, publicClient: Public
                 args: [candidate.address],
             }) as bigint
             return { candidate, token, raw }
-        } catch {
-            return { candidate, token, raw: 0n }
+        } catch (err) {
+            if (err instanceof BaseError && err.walk(e => e instanceof ContractFunctionRevertedError)) {
+                return { candidate, token, raw: 0n }
+            }
+            throw err
         }
     }))
 

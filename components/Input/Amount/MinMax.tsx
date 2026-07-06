@@ -53,7 +53,7 @@ const MinMax = (props: MinMaxProps) => {
 
     let maxAllowedAmount: number = useMemo(() => {
         return resolveMaxAllowedAmount({ fromCurrency, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod, fallbackAmount }) || 0;
-    }, [fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod, fallbackAmount])
+    }, [fromCurrency, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod, fallbackAmount])
 
     const minAmount = useMemo(() => {
         if (walletBalance && walletBalance.amount !== undefined && limitsMinAmount !== undefined && depositMethod === 'wallet') {
@@ -62,7 +62,10 @@ const MinMax = (props: MinMaxProps) => {
         return limitsMinAmount || fallbackAmount;
     }, [walletBalance, limitsMinAmount, fallbackAmount, depositMethod]);
 
-    const halfOfBalance = roundToDecimals((walletBalance?.amount || maxAllowedAmount) ? (walletBalance?.amount || maxAllowedAmount) / 2 : 0, fromCurrency.decimals);
+    const halfOfBalance = useMemo(() => {
+        const base = walletBalance?.amount || maxAllowedAmount;
+        return roundToDecimals(base ? base / 2 : 0, fromCurrency.decimals);
+    }, [walletBalance?.amount, maxAllowedAmount, fromCurrency.decimals]);
 
     const handleSetValue = (value: string, usdValue?: string) => {
         mutateBalances()

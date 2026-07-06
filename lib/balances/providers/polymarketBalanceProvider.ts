@@ -21,7 +21,7 @@ export class PolymarketBalanceProvider extends BalanceProvider {
     }
 
     fetchBalance: BalanceProvider['fetchBalance'] = async (address, network, options) => {
-        if (!network) return
+        if (!network) throw new Error("No network provided")
         const chain = resolveChain(network)
         if (!chain) throw new Error("Could not resolve chain")
 

@@ -10,6 +10,8 @@ import { DecimalInput } from "./amounts";
 
 export type RealRouteRef = { networkName: string; tokenSymbol: string }
 
+export type RealRouteAvailability = (real: RealRouteRef) => boolean
+
 export type ExtendedTokenMapping = {
     /** Token symbol on the extended network, e.g. 'USDC' on HYPERLIQUID_*. */
     extendedTokenSymbol: string

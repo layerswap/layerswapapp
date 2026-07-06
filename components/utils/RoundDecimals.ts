@@ -1,10 +1,5 @@
-export function roundDecimals(value: number, decimals: number) {
-    if (decimals === 1) {
-        decimals = 0
-    }
-    return Number(Math.ceil(Number(value + 'e' + decimals)) + 'e-' + decimals);
-}
-
+/** Display formatter: truncates to `decimals` and adds thousands separators (returns a
+ * localized string, e.g. "1,234.56"). Use for UI text, not for amount math. */
 export function truncateDecimals(value: number, decimals = 0) {
     if (value === 0) return '0';
 
@@ -23,36 +18,36 @@ export function truncateDecimals(value: number, decimals = 0) {
     });
 }
 
-export function truncateDecimalsToFloor(number: number, decimalPlaces: number) {
-    let factor = Math.pow(10, decimalPlaces);
-    return Math.floor(number * factor) / factor;
+/** Ceil to `decimals` (number in, number out). */
+export function ceilToDecimals(value: number, decimals: number): number {
+    const factor = 10 ** decimals;
+    return Math.ceil(value * factor) / factor;
 }
 
+/**
+ * Amount floor: truncates a decimal string to `decimals` with no separators (returns a
+ * plain string). String-based for the common case to avoid float precision loss, with a
+ * numeric fallback for scientific notation. Use for on-chain/transfer amounts.
+ */
+export function truncateToDecimals(value: string, decimals: number): string {
+    const v = value.trim()
+    if (/^\d+(\.\d+)?$/.test(v)) {
+        const [int, frac = ''] = v.split('.')
+        if (frac.length <= decimals) return v
+        const truncated = frac.slice(0, decimals)
+        return truncated.length ? `${int}.${truncated}` : int
+    }
+    const n = Number(v)
+    if (!Number.isFinite(n)) return v
+    const factor = 10 ** decimals
+    return (Math.floor(n * factor) / factor).toString()
+}
+
+/** Numeric round to `decimals` (number in, number out). Non-finite inputs (e.g. Infinity
+ * from a divide-by-zero price) return 0 — isNaN() misses Infinity. */
 export function roundToDecimals(value: number, decimals: number | undefined) {
-    return decimals !== undefined && !isNaN(value) ? Number(value.toFixed(decimals)) : value;
-}
-
-export function findIndexOfFirstNonZeroAfterComma(number) {
-    // Convert the number to a string
-    let numberStr = number.toString();
-
-    // Find the position of the decimal point
-    let decimalIndex = numberStr.indexOf('.');
-
-    // If there's no decimal point, return null
-    if (decimalIndex === -1) {
-        return null;
-    }
-
-    // Loop through the characters after the decimal point
-    for (let i = decimalIndex + 1; i < numberStr.length; i++) {
-        if (numberStr[i] !== '0') {
-            return i - decimalIndex; // Position after the decimal point
-        }
-    }
-
-    // If no non-zero number was found, return null
-    return null;
+    if (!Number.isFinite(value)) return 0;
+    return decimals !== undefined ? Number(value.toFixed(decimals)) : value;
 }
 
 export function isScientific(x) {

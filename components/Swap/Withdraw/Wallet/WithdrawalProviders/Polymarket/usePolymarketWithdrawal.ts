@@ -15,6 +15,7 @@ import resolveChain from "@/lib/resolveChain";
 import { resolveFallbackTransport } from "@/lib/resolveTransports";
 import { NetworkRoute } from "@/Models/Network";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
+import { truncateToDecimals } from "@/components/utils/RoundDecimals";
 import { BackendTransactionStatus, DepositAction } from "@/lib/apiClients/layerSwapApiClient";
 import {
     POLYMARKET_BATCH_DEADLINE_SECONDS,
@@ -31,27 +32,6 @@ import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 
 const PM_EXCEPTION_TYPE = 'Polymarket Withdrawal Error'
 const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
-
-/**
- * Truncate (floor) a decimal amount string to the token's precision. The displayed
- * source amount can carry sub-precision digits (float artifacts from MAX math or
- * USD-mode conversion); we floor to the token's decimals so the transferred value is
- * exact and never exceeds the user's balance. String-based for the common case to
- * avoid float precision loss, with a numeric fallback for scientific notation.
- */
-function truncateToDecimals(value: string, decimals: number): string {
-    const v = value.trim()
-    if (/^\d+(\.\d+)?$/.test(v)) {
-        const [int, frac = ''] = v.split('.')
-        if (frac.length <= decimals) return v
-        const truncated = frac.slice(0, decimals)
-        return truncated.length ? `${int}.${truncated}` : int
-    }
-    const n = Number(v)
-    if (!Number.isFinite(n)) return v
-    const factor = 10 ** decimals
-    return (Math.floor(n * factor) / factor).toString()
-}
 
 type DepositoryAction = {
     depository: `0x${string}`
@@ -149,10 +129,11 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
     const handleWithdraw = useCallback(async () => {
         if (submittingRef.current) return
         submittingRef.current = true
+        const ifMounted = (fn: () => void) => { if (mountedRef.current) fn() }
         setError(undefined)
         setRejected(false)
         setLoading(true)
-        if (mountedRef.current) setStage('preparing')
+        ifMounted(() => setStage('preparing'))
 
         // Step 1 — ensure the backend swap (Polygon/USDC.e via Depository) exists and
         // read its deposit action: the Depository address + encoded depositERC20 calldata.
@@ -204,7 +185,10 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
 
             // Step 2 — resolve which derived funder holds the collateral, and in which token.
             const chain = resolveChain(source_network)
-            if (!chain) throw new Error('Could not resolve chain')
+            if (!chain) {
+                ifMounted(() => setError({ header: 'Network unavailable', details: 'Could not connect to Polygon for this withdrawal. Please try again.' }))
+                return
+            }
             const publicClient = createPublicClient({
                 chain,
                 transport: resolveFallbackTransport(source_network.nodes),
@@ -213,11 +197,11 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
             const holding = await resolvePolymarketHolding(sourceAddress, publicClient)
             const funder = holding.primary
             if (!funder || holding.total <= 0) {
-                setError(resolvePolymarketError('no polymarket account'))
+                ifMounted(() => setError(resolvePolymarketError('no polymarket account')))
                 return
             }
             if (funder.type !== 'deposit') {
-                setError({ header: 'Unsupported account', details: 'This Polymarket account type isn’t supported for direct withdrawal yet. Withdraw via Polymarket, or use an account backed by a deposit wallet.' })
+                ifMounted(() => setError({ header: 'Unsupported account', details: 'This Polymarket account type isn’t supported for direct withdrawal yet. Withdraw via Polymarket, or use an account backed by a deposit wallet.' }))
                 return
             }
 
@@ -225,7 +209,7 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
             // the approve/unwrap legs so all calls agree to the wei (pUSD↔USDC.e is 1:1).
             const amountBaseUnits = action.amountBaseUnits
             if (funder.raw < amountBaseUnits) {
-                setError({ header: 'Insufficient balance', details: `Your available Polymarket balance (${funder.amount} ${source_token.symbol}) is below ${amount} ${source_token.symbol}.` })
+                ifMounted(() => setError({ header: 'Insufficient balance', details: `Your available Polymarket balance (${funder.amount} ${source_token.symbol}) is below ${amount} ${source_token.symbol}.` }))
                 return
             }
 
@@ -244,18 +228,18 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
 
             const code = await publicClient.getCode({ address: funder.address })
             if (!code || code === '0x') {
-                if (mountedRef.current) setStage('deploying')
+                ifMounted(() => setStage('deploying'))
                 await submitRelayerTransaction(buildDepositWalletDeployRequest(sourceAddress as `0x${string}`))
                 const deployed = await pollDeployed(publicClient, funder.address)
                 if (!deployed) {
-                    setError({ header: 'Setting up your account', details: 'Your Polymarket wallet is being set up. Please try again in a moment.' })
+                    ifMounted(() => setError({ header: 'Setting up your account', details: 'Your Polymarket wallet is being set up. Please try again in a moment.' }))
                     return
                 }
             }
 
             const nonce = await getRelayerNonce(sourceAddress, 'WALLET')
             const deadline = String(Math.floor(Date.now() / 1000) + POLYMARKET_BATCH_DEADLINE_SECONDS)
-            if (mountedRef.current) setStage('awaiting_signature')
+            ifMounted(() => setStage('awaiting_signature'))
 
             let request: RelayerSubmittable
             try {
@@ -268,14 +252,14 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
                     deadline,
                 })
             } catch (signErr) {
-                if (isUserRejection(signErr)) { setRejected(true); return }
+                if (isUserRejection(signErr)) { ifMounted(() => setRejected(true)); return }
                 throw signErr
             }
 
-            if (mountedRef.current) setStage('submitting')
+            ifMounted(() => setStage('submitting'))
             const submitResponse = await submitRelayerTransaction(request)
             if (!submitResponse?.transactionID) {
-                setError(resolvePolymarketError('Polymarket rejected the withdrawal'))
+                ifMounted(() => setError(resolvePolymarketError('Polymarket rejected the withdrawal')))
                 logWithdrawalError(new Error('Relayer returned no transactionID'), { swapId: activeSwapId, fromAddress: sourceAddress, toAddress: action.depository })
                 return
             }
@@ -284,10 +268,9 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
             onWalletWithdrawalSuccess?.()
         } catch (e) {
             logWithdrawalError(e, { swapId, fromAddress: sourceAddress })
-            setError({ header: 'Withdrawal failed', details: (e as Error)?.message || 'Unexpected error occurred.' })
+            ifMounted(() => setError({ header: 'Withdrawal failed', details: (e as Error)?.message || 'Unexpected error occurred.' }))
         } finally {
-            setLoading(false)
-            setStage(undefined)
+            ifMounted(() => { setLoading(false); setStage(undefined) })
             submittingRef.current = false
         }
     }, [pmConfig, sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, depositActionsResponse, swapId, swapDetails, refuel, query, config, createSwap, setSwapId, onWalletWithdrawalSuccess, swapBasicData.requested_amount])
@@ -298,6 +281,7 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
         while (Date.now() < deadline) {
             if (!mountedRef.current) return false
             await sleep(POLYMARKET_DEPLOY_POLL_INTERVAL_MS)
+            if (!mountedRef.current) return false
             const code = await publicClient.getCode({ address }).catch(() => undefined)
             if (code && code !== '0x') return true
         }

@@ -1,4 +1,5 @@
 import { POLYMARKET_CONFIG, POLYMARKET_DISPLAY_SYMBOL, PolymarketConfig } from "./constants";
+import type { RealRouteAvailability } from "@/lib/extendedRoutes/types";
 
 /**
  * Destination resolution for Polymarket withdrawals. v1 has a single intermediate
@@ -6,8 +7,6 @@ import { POLYMARKET_CONFIG, POLYMARKET_DISPLAY_SYMBOL, PolymarketConfig } from "
  * the Hyperliquid multi-destination fallback — but it keeps the same shape so a
  * second bridge intermediate (e.g. Arbitrum/USDC) can be added later.
  */
-
-export type RealRouteAvailability = (real: { networkName: string; tokenSymbol: string }) => boolean
 
 /** Candidate (real network, real token) refs — used by the picker visibility filter
  * ("show Polymarket iff any candidate has a real deposit-address route"). */
