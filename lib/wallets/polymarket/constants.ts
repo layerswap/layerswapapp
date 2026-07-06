@@ -11,11 +11,16 @@ import KnownInternalNames from "@/lib/knownIds";
  * backend detects the depository `Deposited` event and bridges to the final destination.
  */
 
-/** Symbol shown for the Polymarket source token. Both the extended (Polymarket) and
- * the real (Polygon) side are USDC-denominated, so this keeps the picker/skin/quote
- * transforms uniform — the pUSD nature is an implementation detail handled in the
- * balance provider and withdrawal flow. */
-export const POLYMARKET_DISPLAY_SYMBOL = 'USDC'
+/** Symbol shown for the Polymarket source token. Polymarket holds collateral as pUSD,
+ * so the picker/balance/quote surfaces read 'pUSD'. Only the shown label is pUSD — the
+ * token's chain metadata is cloned from Polygon USDC (POLYMARKET_BASE_TOKEN_SYMBOL) and
+ * the real backend route is still fulfilled in USDC.e. */
+export const POLYMARKET_DISPLAY_SYMBOL = 'pUSD'
+
+/** Real Polygon token whose metadata (logo, decimals, USD price) the synthesized
+ * Polymarket source token clones from. Must be a token the backend Polygon network
+ * actually defines — hence USDC, not the shown 'pUSD'. */
+export const POLYMARKET_BASE_TOKEN_SYMBOL = KnownInternalNames.Currencies.USDC
 
 /** Polygon — the only chain Polymarket collateral lives on, and the bridge/funder chain. */
 export const POLYMARKET_CHAIN_ID = 137
@@ -103,7 +108,7 @@ export type PolymarketConfig = {
     realNetworkName: string
     /** Real backend source token. USDC.e — pUSD unwraps to it 1:1 and the depository
      * deposit (`depositERC20`) is denominated in it. The displayed source token stays
-     * `POLYMARKET_DISPLAY_SYMBOL` ('USDC'); only the backend route uses this. */
+     * `POLYMARKET_DISPLAY_SYMBOL` ('pUSD'); only the backend route uses this. */
     realTokenSymbol: string
     realDecimals: number
     flatFee: number
