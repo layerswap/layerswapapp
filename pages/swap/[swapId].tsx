@@ -7,15 +7,16 @@ import { getThemeData } from '../../helpers/settingsHelper';
 import SwapWithdrawal from '../../components/SwapWithdrawal'
 import { encodeSettingsForSSR, inflateSettings } from '../../helpers/settingsCompression';
 import MaintananceContent from '../../components/maintanance/maintanance';
+import { resolveExtendedRouteFlags } from '../../flags';
 
-const SwapDetails = ({ settings, themeData, apiKey, swapData }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const SwapDetails = ({ settings, themeData, apiKey, swapData, featureFlags }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   LayerSwapApiClient.apiKey = apiKey
   const resolvedSettings = useMemo(() => inflateSettings(settings), [settings])
 
   if (!resolvedSettings) return <MaintananceContent />
 
   return (
-    <Layout settings={resolvedSettings} themeData={themeData}>
+    <Layout settings={resolvedSettings} themeData={themeData} featureFlags={featureFlags}>
       <SwapDataProvider initialSwapData={swapData}>
         <SwapWithdrawal />
       </SwapDataProvider >
@@ -69,13 +70,15 @@ export const getServerSideProps = async (ctx) => {
   }
 
   const themeData = await getThemeData(ctx.query)
+  const featureFlags = await resolveExtendedRouteFlags(ctx.req)
 
   return {
     props: {
       settings: encodeSettingsForSSR(settings),
       themeData,
       apiKey,
-      swapData: swapData || null
+      swapData: swapData || null,
+      featureFlags
     }
   }
 }

@@ -19,15 +19,17 @@ import WalletsProviders from "./WalletProviders";
 import { SwapAccountsProvider } from "@/context/swapAccounts";
 import posthog from "posthog-js";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
+import { ExtendedRouteFlags } from "../lib/extendedRoutes/types";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
   hideFooter?: boolean;
   settings: LayerSwapSettings;
   themeData?: ThemeData | null
+  featureFlags?: ExtendedRouteFlags
 };
 
-export default function Layout({ children, settings, themeData }: Props) {
+export default function Layout({ children, settings, themeData, featureFlags }: Props) {
   const router = useRouter();
   useEffect(() => {
     function prepareUrl(params) {
@@ -62,8 +64,8 @@ export default function Layout({ children, settings, themeData }: Props) {
   }, [])
 
   const appSettings = useMemo(
-    () => new LayerSwapAppSettings(settings),
-    [settings]
+    () => new LayerSwapAppSettings(settings, featureFlags),
+    [settings, featureFlags]
   );
 
   const query = useMemo<QueryParams>(() => ({

@@ -162,7 +162,7 @@ function filterRoutesByQuery(
 }
 
 function useRoutes({ direction, values }: Props) {
-    const { sourceRoutes, destinationRoutes, networks } = useSettingsState();
+    const { sourceRoutes, destinationRoutes, networks, extendedRouteFlags } = useSettingsState();
     const apiClient = new LayerSwapApiClient();
     const url = useMemo(() => resolveNetworkRoutesURL(direction, values, undefined, sourceRoutes), [direction, values, sourceRoutes]);
     const defaultRoutes = direction === 'from' ? sourceRoutes : destinationRoutes;
@@ -175,11 +175,11 @@ function useRoutes({ direction, values }: Props) {
     const toSymbol = direction === 'from' ? values.toAsset?.symbol : undefined;
     const finalRoutes = useMemo(() => {
         // Re-add extended sources after SWR revalidation (the backend list lacks them).
-        if (direction === 'from') return mergeExtendedSourceRoutes(routes, networks, toName, toSymbol);
+        if (direction === 'from') return mergeExtendedSourceRoutes(routes, networks, toName, toSymbol, extendedRouteFlags);
         // An extended source is a real backend destination too — exclude it from the
         // destination list when it's the selected source so it can't route to itself.
         return isExtendedSourceNetwork(fromName) ? routes.filter(r => r.name !== fromName) : routes;
-    }, [routes, direction, networks, fromName, toName, toSymbol]);
+    }, [routes, direction, networks, fromName, toName, toSymbol, extendedRouteFlags]);
     return { routes: finalRoutes, isLoading };
 }
 

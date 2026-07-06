@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAccount, useConfig } from "wagmi";
 import { getWalletClient } from "@wagmi/core";
 import { createPublicClient, decodeAbiParameters, type Hex, type PublicClient, type WalletClient } from "viem";
-import posthog from "posthog-js";
 import { WithdrawPageProps } from "../../Common/sharedTypes";
+import { createWithdrawalErrorLogger } from "../../Common/logWithdrawalError";
 import resolveError from "../EVMWalletWithdraw/resolveError";
 import { resolvePolymarketError, StepError } from "./resolveError";
 import { useSwapDataState, useSwapDataUpdate } from "@/context/swap";
@@ -13,6 +13,7 @@ import { useQueryState } from "@/context/query";
 import useWallet from "@/hooks/useWallet";
 import resolveChain from "@/lib/resolveChain";
 import { resolveFallbackTransport } from "@/lib/resolveTransports";
+import sleep from "@/lib/wallets/utils/sleep";
 import { NetworkRoute } from "@/Models/Network";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { truncateToDecimals } from "@/components/utils/RoundDecimals";
@@ -31,7 +32,7 @@ import { getRelayerNonce, submitRelayerTransaction, type RelayerSubmittable } fr
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 
 const PM_EXCEPTION_TYPE = 'Polymarket Withdrawal Error'
-const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
+const logWithdrawalError = createWithdrawalErrorLogger(PM_EXCEPTION_TYPE)
 
 type DepositoryAction = {
     depository: `0x${string}`
@@ -62,15 +63,6 @@ const getDepositAction = (actions: DepositAction[] | undefined): DepositoryActio
     }
     if (amountBaseUnits <= 0n) return undefined
     return { depository: action.to_address, depositCallData, tokenContract: token, amountBaseUnits }
-}
-
-const logWithdrawalError = (error: unknown, ctx: { swapId?: string; fromAddress?: string; toAddress?: string }) => {
-    posthog.captureException(error, {
-        $layerswap_exception_type: PM_EXCEPTION_TYPE,
-        swapId: ctx.swapId,
-        $fromAddress: ctx.fromAddress,
-        $toAddress: ctx.toAddress,
-    })
 }
 
 const isUserRejection = (err: unknown): boolean => {

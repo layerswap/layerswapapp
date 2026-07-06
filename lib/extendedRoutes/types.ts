@@ -8,6 +8,9 @@ import { DecimalInput } from "./amounts";
  * checks. See `.context/plans/extended-routes-system-hyperliquid-source-withdraw.md`.
  */
 
+/** Per-provider on/off flags, keyed by provider id (undefined ⇒ enabled). */
+export type ExtendedRouteFlags = Record<string, boolean>
+
 export type RealRouteRef = { networkName: string; tokenSymbol: string }
 
 export type RealRouteAvailability = (real: RealRouteRef) => boolean

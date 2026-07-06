@@ -13,7 +13,7 @@ import MaintananceContent from '../components/maintanance/maintanance'
 // Hoisted RegExp for swap key pattern matching (js-hoist-regexp)
 const SWAP_KEY_PATTERN = /^\/swaps\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/
 
-export default function Home({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function Home({ settings, themeData, apiKey, featureFlags }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   LayerSwapApiClient.apiKey = apiKey
   const resolvedSettings = useMemo(() => inflateSettings(settings), [settings])
 
@@ -34,7 +34,7 @@ export default function Home({ settings, themeData, apiKey }: InferGetServerSide
 
   return (
     <SWRConfig value={swrConfig}>
-      <Layout settings={resolvedSettings} themeData={themeData}>
+      <Layout settings={resolvedSettings} themeData={themeData} featureFlags={featureFlags}>
         <Swap />
       </Layout>
     </SWRConfig>

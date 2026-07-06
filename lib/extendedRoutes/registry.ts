@@ -1,6 +1,6 @@
 import { NetworkRoute, NetworkWithTokens } from "@/Models/Network";
 import { DecimalInput, addDecimal, subtractDecimal } from "./amounts";
-import { ExtendedRoutePlan, ExtendedRouteProvider, ResolvedExtendedMapping, requiredDepositMethod } from "./types";
+import { ExtendedRouteFlags, ExtendedRoutePlan, ExtendedRouteProvider, ResolvedExtendedMapping, requiredDepositMethod } from "./types";
 import { realRoutePresent } from "./availability";
 import { hyperliquidProvider } from "./providers/hyperliquid";
 import { polymarketProvider } from "./providers/polymarket";
@@ -10,6 +10,13 @@ const SOURCE_PROVIDERS: ExtendedRouteProvider[] = [hyperliquidProvider, polymark
 
 export function getSourceProviders(): ExtendedRouteProvider[] {
     return SOURCE_PROVIDERS
+}
+
+// Providers enabled by feature flags (keyed by provider id). Undefined flags ⇒ all
+// enabled, so callers without flags keep full behavior (kill-switch defaults on).
+function activeProviders(flags?: ExtendedRouteFlags): ExtendedRouteProvider[] {
+    if (!flags) return SOURCE_PROVIDERS
+    return SOURCE_PROVIDERS.filter(p => flags[p.id] !== false)
 }
 
 export function isExtendedSourceNetwork(name?: string): boolean {
@@ -106,10 +113,11 @@ export function mergeExtendedSourceRoutes(
     networks: NetworkWithTokens[],
     toNetworkName?: string,
     toTokenSymbol?: string,
+    flags?: ExtendedRouteFlags,
 ): NetworkRoute[] {
     const hasDestination = !!toNetworkName && !!toTokenSymbol
     const additions: NetworkRoute[] = []
-    for (const provider of SOURCE_PROVIDERS) {
+    for (const provider of activeProviders(flags)) {
         for (const extendedName of provider.extendedNetworkNames) {
             // Future backend adoption = zero conflict: skip names already present.
             if (routes.some(r => r.name === extendedName)) continue
@@ -136,9 +144,9 @@ export function mergeExtendedSourceRoutes(
  * a future backend entry takes precedence with zero conflict. Providers without
  * `resolveExtendedNetwork` (e.g. Hyperliquid) contribute nothing.
  */
-export function mergeExtendedSourceNetworks(networks: NetworkWithTokens[]): NetworkWithTokens[] {
+export function mergeExtendedSourceNetworks(networks: NetworkWithTokens[], flags?: ExtendedRouteFlags): NetworkWithTokens[] {
     const additions: NetworkWithTokens[] = []
-    for (const provider of SOURCE_PROVIDERS) {
+    for (const provider of activeProviders(flags)) {
         if (!provider.resolveExtendedNetwork) continue
         for (const extendedName of provider.extendedNetworkNames) {
             if (networks.some(n => n.name === extendedName)) continue

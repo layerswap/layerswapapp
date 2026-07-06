@@ -8,7 +8,7 @@ import LayerSwapApiClient from '../lib/apiClients/layerSwapApiClient';
 import { inflateSettings } from '../helpers/settingsCompression';
 import MaintananceContent from '../components/maintanance/maintanance';
 
-export default function Salon({ settings, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function Salon({ settings, apiKey, featureFlags }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     LayerSwapApiClient.apiKey = apiKey
     const router = useRouter();
     const resolvedSettings = useMemo(() => inflateSettings(settings), [settings])
@@ -35,7 +35,7 @@ export default function Salon({ settings, apiKey }: InferGetServerSidePropsType<
     if (!resolvedSettings) return <MaintananceContent />
 
     return (
-        <Layout hideFooter={true} settings={resolvedSettings}>
+        <Layout hideFooter={true} settings={resolvedSettings} featureFlags={featureFlags}>
             <div className="h-full min-h-screen flex flex-col justify-center text-secondary-text text-md font-lighter leading-6">
                 <div className='flex place-content-center mb-4'>
                     <svg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 116 116" fill="none">
