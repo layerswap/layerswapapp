@@ -220,9 +220,12 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
             const walletClient = await getWalletClient(config, { chainId: POLYMARKET_CHAIN_ID }) as WalletClient | null
             if (!walletClient) throw new Error('Wallet client unavailable')
 
-            // The email/Magic proxy funder can't be reached here — its owner key lives with
-            // Magic and can't be connected through the app's wallet connectors to sign.
-            if (funder.type === 'proxy') {
+            // Only the deposit wallet and Gnosis Safe funders can be withdrawn from here.
+            // The email/Magic `proxy` funder's owner key lives with Magic (can't be
+            // connected to sign), and an `unknown` funder is a legacy contract we detected
+            // via Polymarket's profile but can't classify/execute. Both surface the balance
+            // but aren't withdrawable — say so rather than mishandling them as a Safe.
+            if (funder.type !== 'deposit' && funder.type !== 'safe') {
                 ifMounted(() => setError({ header: 'Unsupported account', details: 'This Polymarket account type isn’t supported for direct withdrawal. Withdraw via Polymarket, or use an account backed by a browser wallet.' }))
                 return
             }

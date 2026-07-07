@@ -1,6 +1,6 @@
 import { erc20Abi, BaseError, ContractFunctionRevertedError, type PublicClient } from "viem";
 import { derivePolymarketDepositWallet, derivePolymarketProxy, derivePolymarketSafe } from "./derive";
-import { POLYMARKET_PUSD_ADDRESS, POLYMARKET_PUSD_DECIMALS, POLYMARKET_USDC_E_ADDRESS } from "./constants";
+import { POLYMARKET_GAMMA_API_URL, POLYMARKET_PROFILE_TIMEOUT_MS, POLYMARKET_PUSD_ADDRESS, POLYMARKET_PUSD_DECIMALS, POLYMARKET_USDC_E_ADDRESS } from "./constants";
 
 /**
  * Polymarket holds a user's collateral in a funder wallet derived from their owner
@@ -10,9 +10,17 @@ import { POLYMARKET_PUSD_ADDRESS, POLYMARKET_PUSD_DECIMALS, POLYMARKET_USDC_E_AD
  * balances may still be **USDC.e**. So to find a user's balance we can't assume one
  * address or one token — we derive every candidate and read both tokens, and use
  * whichever actually holds funds.
+ *
+ * Local CREATE2 derivation only reproduces addresses for the contract versions whose
+ * constants are hardcoded. Legacy account vintages use older funder contracts we can't
+ * re-derive, so those balances would be silently missed. To cover them we also ask
+ * Polymarket for the account's authoritative `proxyWallet` (`fetchPolymarketProfileWallet`)
+ * and read its balance too; when that address isn't one of the derived (classifiable)
+ * candidates it's tagged `'unknown'` — visible as balance, but not withdrawable until its
+ * funder type is supported.
  */
 
-export type PolymarketHolderType = 'deposit' | 'safe' | 'proxy'
+export type PolymarketHolderType = 'deposit' | 'safe' | 'proxy' | 'unknown'
 
 export type PolymarketCandidate = { type: PolymarketHolderType; address: `0x${string}` }
 
@@ -44,6 +52,43 @@ export function polymarketCandidates(eoa: string): PolymarketCandidate[] {
     ]
 }
 
+/**
+ * The account's authoritative funder address from Polymarket's public profile, or `null`
+ * if the owner has no Polymarket account (404) or the lookup fails. Best-effort by design:
+ * never throws, so a slow/absent Gamma API degrades gracefully to derivation-only balance
+ * discovery. Returned lowercased for case-insensitive comparison against derived addresses.
+ */
+export async function fetchPolymarketProfileWallet(eoa: string): Promise<`0x${string}` | null> {
+    try {
+        const controller = new AbortController()
+        const timer = setTimeout(() => controller.abort(), POLYMARKET_PROFILE_TIMEOUT_MS)
+        const res = await fetch(`${POLYMARKET_GAMMA_API_URL}/public-profile?address=${eoa}`, {
+            headers: { accept: 'application/json' },
+            signal: controller.signal,
+        }).finally(() => clearTimeout(timer))
+        if (!res.ok) return null // 404 = no Polymarket account for this owner
+        const data = await res.json() as { proxyWallet?: string }
+        const pw = data?.proxyWallet
+        return typeof pw === 'string' && /^0x[0-9a-fA-F]{40}$/.test(pw) ? pw.toLowerCase() as `0x${string}` : null
+    } catch {
+        return null
+    }
+}
+
+/**
+ * All funder candidates to check for an owner EOA: the locally-derived set plus, when
+ * Polymarket reports one that we can't re-derive, the authoritative profile wallet tagged
+ * `'unknown'`. Deduped by address (the profile wallet usually equals the derived `safe`).
+ */
+export async function resolvePolymarketCandidates(eoa: string): Promise<PolymarketCandidate[]> {
+    const derived = polymarketCandidates(eoa)
+    const profileWallet = await fetchPolymarketProfileWallet(eoa)
+    if (profileWallet && !derived.some(c => c.address.toLowerCase() === profileWallet)) {
+        return [{ type: 'unknown', address: profileWallet }, ...derived]
+    }
+    return derived
+}
+
 const TOKENS: { symbol: 'pUSD' | 'USDC.e'; address: `0x${string}`; decimals: number }[] = [
     { symbol: 'pUSD', address: POLYMARKET_PUSD_ADDRESS, decimals: POLYMARKET_PUSD_DECIMALS },
     { symbol: 'USDC.e', address: POLYMARKET_USDC_E_ADDRESS, decimals: 6 },
@@ -54,7 +99,7 @@ const TOKENS: { symbol: 'pUSD' | 'USDC.e'; address: `0x${string}`; decimals: num
  * are. `total` is the displayed balance; `primary` is the source a withdrawal pulls from.
  */
 export async function resolvePolymarketHolding(eoa: string, publicClient: PublicClient): Promise<PolymarketHolding> {
-    const candidates = polymarketCandidates(eoa)
+    const candidates = await resolvePolymarketCandidates(eoa)
 
     const reads = candidates.flatMap(c => TOKENS.map(t => ({ candidate: c, token: t })))
     const results = await Promise.all(reads.map(async ({ candidate, token }) => {

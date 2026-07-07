@@ -63,6 +63,16 @@ export const POLYMARKET_OFFRAMP_ABI = [
  * API key never leaves the server). Overridable via `POLYMARKET_RELAYER_URL` env. */
 export const POLYMARKET_RELAYER_URL = 'https://relayer-v2.polymarket.com'
 
+/** Polymarket public Gamma API. `GET /public-profile?address=<ownerEoa>` returns the
+ * account's authoritative `proxyWallet`. We need this because legacy account vintages
+ * use funder contracts our fixed-constant CREATE2 derivation can't reproduce, so the
+ * derived candidates miss the real balance. CORS is open (`*`), so it's read directly
+ * from the browser during balance discovery — no relayer/server hop. */
+export const POLYMARKET_GAMMA_API_URL = 'https://gamma-api.polymarket.com'
+/** Timeout for the best-effort public-profile lookup. Kept short: a slow/absent profile
+ * must never stall or break the on-chain balance read, which falls back to derivation. */
+export const POLYMARKET_PROFILE_TIMEOUT_MS = 4000
+
 /**
  * Polymarket Gnosis Safe contracts on Polygon, from `getContractConfig(137)` in
  * `@polymarket/builder-relayer-client`. Inlined so derivation/signing import only
