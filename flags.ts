@@ -1,22 +1,25 @@
-import { flag, evaluate } from 'flags/next'
+import { flag } from 'flags/next'
+import { vercelAdapter } from '@flags-sdk/vercel'
 import type { GetServerSidePropsContext } from 'next'
 import type { ExtendedRouteFlags } from '@/lib/extendedRoutes/types'
 
-// Kill switches for the client-synthesized extended source routes. Keys match the
-// provider ids in lib/extendedRoutes/registry.ts. On by default: an unset env var
-// (or a decide error) leaves the route visible; set the var to 'false' to hide it.
+// Kill switches for the client-synthesized extended source routes, backed by Vercel
+// Flags (hosted). Create these two flags in the Vercel dashboard's Flags section and
+// toggle them per-environment there — changes take effect at runtime, no redeploy.
+// `defaultValue: true` is the fallback when the service is unreachable / unauthenticated
+// (e.g. local dev without `vercel env pull`), keeping routes on by default.
 export const hyperliquidRoutesFlag = flag<boolean>({
     key: 'hyperliquid-routes',
     description: 'Show Hyperliquid extended source routes',
     defaultValue: true,
-    decide: () => process.env.FLAG_HYPERLIQUID_ROUTES !== 'false',
+    adapter: vercelAdapter(),
 })
 
 export const polymarketRoutesFlag = flag<boolean>({
     key: 'polymarket-routes',
-    description: 'Show Polymarket extended source routes',
+    description: 'Show Polymarket extended source routes (requires builder credentials)',
     defaultValue: true,
-    decide: () => process.env.FLAG_POLYMARKET_ROUTES !== 'false',
+    adapter: vercelAdapter(),
 })
 
 export const extendedRouteFlags = {
@@ -24,8 +27,26 @@ export const extendedRouteFlags = {
     polymarket: polymarketRoutesFlag,
 }
 
-// Evaluate every extended-route flag in one pass (shared header/cookie/override
-// read) — call from getServerSideProps with `context.req`.
+// Polymarket routes go through a builder-key-authed relayer proxy; without those server
+// secrets the flow can't complete, so this is a hard prerequisite ANDed on top of the
+// dashboard toggle — the route can't be enabled from the dashboard alone.
+export const hasPolymarketBuilderCreds = () =>
+    !!process.env.POLYMARKET_BUILDER_API_KEY &&
+    !!process.env.POLYMARKET_BUILDER_SECRET &&
+    !!process.env.POLYMARKET_BUILDER_PASSPHRASE
+
+// Effective Polymarket enablement = dashboard flag AND builder creds present. Shared by
+// the source-route resolver and the relayer proxy so both gate identically.
+export async function isPolymarketEnabled(req: GetServerSidePropsContext['req']): Promise<boolean> {
+    return (await polymarketRoutesFlag(req)) && hasPolymarketBuilderCreds()
+}
+
+// Resolve every extended-route flag for a request — call from getServerSideProps with
+// `context.req`.
 export async function resolveExtendedRouteFlags(req: GetServerSidePropsContext['req']): Promise<ExtendedRouteFlags> {
-    return evaluate(extendedRouteFlags, req)
+    const [hyperliquid, polymarket] = await Promise.all([
+        hyperliquidRoutesFlag(req),
+        isPolymarketEnabled(req),
+    ])
+    return { hyperliquid, polymarket }
 }

@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createHmac } from "node:crypto";
 import { POLYMARKET_RELAYER_URL } from "@/lib/wallets/polymarket/constants";
-import { polymarketRoutesFlag } from "@/flags";
+import { isPolymarketEnabled } from "@/flags";
 
 /**
  * Server-side proxy for the Polymarket relayer.
@@ -95,8 +95,9 @@ async function forward(res: NextApiResponse, url: string, init: RequestInit) {
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
         // Gate the relay behind the same kill switch as the Polymarket source routes —
-        // when the provider is off, this credential-holding proxy must refuse traffic.
-        if (!(await polymarketRoutesFlag(req))) {
+        // when the provider is off (dashboard flag) or its builder creds are missing,
+        // this credential-holding proxy must refuse traffic.
+        if (!(await isPolymarketEnabled(req))) {
             return res.status(404).json({ error: "Not found" });
         }
 

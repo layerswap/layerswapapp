@@ -37,11 +37,12 @@ export async function getServerSideProps(context) {
         networks: networkData,
         sourceExchanges: sourceExchangesData || [],
         sourceRoutes: sourceRoutes || [],
-        destinationRoutes: destinationRoutes || []
+        destinationRoutes: destinationRoutes || [],
+        featureFlags
     }
 
     return {
-        props: { settings: encodeSettingsForSSR(settings), themeData, apiKey, featureFlags }
+        props: { settings: encodeSettingsForSSR(settings), themeData, apiKey }
     }
 
 }

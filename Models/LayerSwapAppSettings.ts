@@ -5,7 +5,8 @@ import { mergeExtendedSourceNetworks, mergeExtendedSourceRoutes } from "../lib/e
 import { ExtendedRouteFlags } from "../lib/extendedRoutes/types";
 
 export class LayerSwapAppSettings {
-    constructor(settings: LayerSwapSettings, flags?: ExtendedRouteFlags) {
+    constructor(settings: LayerSwapSettings) {
+        const flags = settings.featureFlags;
 
         // Inject client-synthesized extended source networks (e.g. Polymarket) before
         // resolving routes, so the route resolver / skin / balance prioritization all

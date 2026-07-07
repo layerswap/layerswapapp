@@ -8,14 +8,14 @@ import { useMemo } from 'react'
 import { inflateSettings } from '../helpers/settingsCompression'
 import MaintananceContent from '../components/maintanance/maintanance'
 
-export default function Transactions({ settings, themeData, apiKey, featureFlags }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function Transactions({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   LayerSwapApiClient.apiKey = apiKey
   const resolvedSettings = useMemo(() => inflateSettings(settings), [settings])
 
   if (!resolvedSettings) return <MaintananceContent />
 
   return (
-    <Layout settings={resolvedSettings} themeData={themeData} featureFlags={featureFlags}>
+    <Layout settings={resolvedSettings} themeData={themeData}>
       <SwapDataProvider >
         <TransactionsHistory />
       </SwapDataProvider >
