@@ -26,7 +26,7 @@ import {
     POLYMARKET_USDC_E_ADDRESS,
     resolvePolymarketConfig,
 } from "@/lib/wallets/polymarket/constants";
-import { resolvePolymarketHolding } from "@/lib/wallets/polymarket/funder";
+import { classifyPolymarketFunder, resolvePolymarketHolding } from "@/lib/wallets/polymarket/funder";
 import { buildDepositWalletBatchRequest, buildDepositWalletDeployRequest, buildPolymarketDepositCalls } from "@/lib/wallets/polymarket/depositWithdraw";
 import { buildSafeBatchRequest } from "@/lib/wallets/polymarket/safeWithdraw";
 import { getRelayerNonce, isPolymarketDeployed, submitRelayerTransaction, type RelayerSubmittable } from "@/lib/wallets/polymarket/relayerClient";
@@ -220,12 +220,20 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
             const walletClient = await getWalletClient(config, { chainId: POLYMARKET_CHAIN_ID }) as WalletClient | null
             if (!walletClient) throw new Error('Wallet client unavailable')
 
+            // A funder surfaced via Polymarket's profile that we couldn't derive is tagged
+            // 'unknown' — classify it on-chain now (lazily, only when actually withdrawing).
+            // Legacy factory/implementation vintages still expose the DepositWallet EIP-712
+            // domain + owner, so they're drivable through the deposit path once identified.
+            let funderType = funder.type
+            if (funderType === 'unknown') {
+                funderType = await classifyPolymarketFunder(funder.address, sourceAddress, publicClient)
+            }
+
             // Only the deposit wallet and Gnosis Safe funders can be withdrawn from here.
-            // The email/Magic `proxy` funder's owner key lives with Magic (can't be
-            // connected to sign), and an `unknown` funder is a legacy contract we detected
-            // via Polymarket's profile but can't classify/execute. Both surface the balance
-            // but aren't withdrawable — say so rather than mishandling them as a Safe.
-            if (funder.type !== 'deposit' && funder.type !== 'safe') {
+            // The email/Magic `proxy` funder's owner key lives with Magic (can't be connected
+            // to sign), and a still-`unknown` funder is a contract type we can't execute.
+            // Both surface the balance but aren't withdrawable — say so rather than mishandling.
+            if (funderType !== 'deposit' && funderType !== 'safe') {
                 ifMounted(() => setError({ header: 'Unsupported account', details: 'This Polymarket account type isn’t supported for direct withdrawal. Withdraw via Polymarket, or use an account backed by a browser wallet.' }))
                 return
             }
@@ -233,7 +241,7 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
             const fromEoa = sourceAddress as `0x${string}`
             let buildRequest: () => Promise<RelayerSubmittable>
 
-            if (funder.type === 'deposit') {
+            if (funderType === 'deposit') {
                 // The deposit wallet must exist on-chain (the relayer WALLET submit doesn't
                 // deploy) — deploy via WALLET-CREATE and wait for code if it's not there yet.
                 const code = await publicClient.getCode({ address: funder.address })

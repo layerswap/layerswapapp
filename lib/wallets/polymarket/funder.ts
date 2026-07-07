@@ -75,6 +75,57 @@ export async function fetchPolymarketProfileWallet(eoa: string): Promise<`0x${st
     }
 }
 
+/** ERC-5267: reveals a contract's EIP-712 domain (name/version) without a signature. */
+const EIP5267_ABI = [{
+    type: 'function', name: 'eip712Domain', stateMutability: 'view', inputs: [],
+    outputs: [
+        { name: 'fields', type: 'bytes1' },
+        { name: 'name', type: 'string' },
+        { name: 'version', type: 'string' },
+        { name: 'chainId', type: 'uint256' },
+        { name: 'verifyingContract', type: 'address' },
+        { name: 'salt', type: 'bytes32' },
+        { name: 'extensions', type: 'uint256[]' },
+    ],
+}] as const
+
+const OWNER_ABI = [{
+    type: 'function', name: 'owner', stateMutability: 'view', inputs: [], outputs: [{ type: 'address' }],
+}] as const
+
+/** EIP-712 domain name a Polymarket deposit wallet reports via `eip712Domain()`. Its
+ * batch signature (see `buildDepositWalletBatchRequest`) uses this exact domain, so any
+ * on-chain wallet reporting it — including legacy factory/implementation vintages the
+ * local derivation can't reproduce — is drivable through the deposit-wallet path. */
+const DEPOSIT_WALLET_DOMAIN_NAME = 'DepositWallet'
+
+/**
+ * Classify a funder address we couldn't derive/classify locally by inspecting it on-chain.
+ * A deposit wallet exposes ERC-5267 `eip712Domain()` = "DepositWallet" and `owner()` = the
+ * signer; when both hold for the connected EOA it's withdrawable via the deposit-wallet path
+ * regardless of which factory/implementation version deployed it. Anything else (a Magic
+ * proxy whose owner key we don't hold, an unrecognized contract) stays `'unknown'`. Never
+ * throws — a failed probe degrades to `'unknown'` (unsupported), never a wrong classification.
+ */
+export async function classifyPolymarketFunder(
+    address: `0x${string}`,
+    eoa: string,
+    publicClient: PublicClient,
+): Promise<PolymarketHolderType> {
+    try {
+        const [domain, owner] = await Promise.all([
+            publicClient.readContract({ address, abi: EIP5267_ABI, functionName: 'eip712Domain' }).catch(() => null),
+            publicClient.readContract({ address, abi: OWNER_ABI, functionName: 'owner' }).catch(() => null),
+        ])
+        const name = Array.isArray(domain) ? domain[1] : undefined
+        const ownedByEoa = typeof owner === 'string' && owner.toLowerCase() === eoa.toLowerCase()
+        if (name === DEPOSIT_WALLET_DOMAIN_NAME && ownedByEoa) return 'deposit'
+        return 'unknown'
+    } catch {
+        return 'unknown'
+    }
+}
+
 /**
  * All funder candidates to check for an owner EOA: the locally-derived set plus, when
  * Polymarket reports one that we can't re-derive, the authoritative profile wallet tagged
