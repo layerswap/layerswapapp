@@ -1,10 +1,9 @@
 import { Command, CommandGroup, CommandItem, CommandList } from "@/components/shadcn/command";
 import { Address } from "@/lib/address";
-import FilledCheck from "@/components/icons/FilledCheck";
 import { AddressGroup, AddressItem } from ".";
 import { NetworkRoute } from "@/Models/Network";
 import { FC } from "react";
-import AddressWithIcon from "./AddressWithIcon";
+import AddressPickerItem from "./AddressPickerItem";
 import { Partner } from "@/Models/Partner";
 import { Wallet } from "@/Models/WalletProvider";
 import { BookOpen } from "lucide-react";
@@ -41,21 +40,8 @@ const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, desti
                                 const isBookEntry = !!resolveName(item.address, destination)
                                 const handleRemove = onRemove && item.group === AddressGroup.ManualAdded ? () => onRemove(item.address, isBookEntry) : undefined
                                 return (
-                                    <CommandItem key={item.address} onSelect={() => onSelectAddress(item.address, item.wallet)} className={`group/addressItem !px-3 !py-3 rounded-lg hover:bg-secondary-600 w-full transition duration-200 bg-secondary-500 ${isSelected && 'bg-secondary-400'}`}>
-                                        <div className={`flex items-center justify-between w-full`}>
-                                            <AddressWithIcon
-                                                addressItem={item}
-                                                partner={partner}
-                                                network={destination}
-                                                onRemove={handleRemove}
-                                            />
-                                            <div className="flex h-6 items-center px-1">
-                                                {
-                                                    isSelected &&
-                                                    <FilledCheck />
-                                                }
-                                            </div>
-                                        </div>
+                                    <CommandItem key={item.address} onSelect={() => onSelectAddress(item.address, item.wallet)} className="!p-0 outline-none">
+                                        <AddressPickerItem item={item} network={destination} partner={partner} selected={isSelected} onRemove={handleRemove} />
                                     </CommandItem>
                                 )
                             })}
