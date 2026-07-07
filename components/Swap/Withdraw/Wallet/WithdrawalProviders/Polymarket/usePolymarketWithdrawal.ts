@@ -28,7 +28,8 @@ import {
 } from "@/lib/wallets/polymarket/constants";
 import { resolvePolymarketHolding } from "@/lib/wallets/polymarket/funder";
 import { buildDepositWalletBatchRequest, buildDepositWalletDeployRequest, buildPolymarketDepositCalls } from "@/lib/wallets/polymarket/depositWithdraw";
-import { getRelayerNonce, submitRelayerTransaction, type RelayerSubmittable } from "@/lib/wallets/polymarket/relayerClient";
+import { buildSafeBatchRequest } from "@/lib/wallets/polymarket/safeWithdraw";
+import { getRelayerNonce, isPolymarketDeployed, submitRelayerTransaction, type RelayerSubmittable } from "@/lib/wallets/polymarket/relayerClient";
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 
 const PM_EXCEPTION_TYPE = 'Polymarket Withdrawal Error'
@@ -78,16 +79,19 @@ export type PolymarketStage = 'preparing' | 'deploying' | 'awaiting_signature' |
  * Owns the Polymarket withdrawal flow (Flow 2 — permissionless, on-chain).
  *
  * Polymarket holds collateral as pUSD in a funder wallet derived from the connected
- * EOA. We resolve which funder holds the funds (`resolvePolymarketHolding`) and, for
- * the modern ERC-1967 **deposit wallet**, sign ONE gasless `Batch` that:
+ * EOA. We resolve which funder holds the funds (`resolvePolymarketHolding`) and sign ONE
+ * gasless batch of:
  *   1. approve pUSD → CollateralOfframp, 2. unwrap pUSD → USDC.e (1:1) into the funder,
  *   3. approve USDC.e → Layerswap Depository, 4. depositERC20 (backend-encoded calldata).
  * A funder already holding USDC.e skips 1–2. The Polymarket relayer broadcasts and pays
  * gas; the backend detects the depository `Deposited` event and bridges to destination.
  *
- * The backend swap is created with `use_depository: true` so its deposit action carries
- * the Depository address + `depositERC20` calldata. Legacy Safe / proxy funders are not
- * supported in this flow yet.
+ * The batch of calls is identical across funder types; only the signing/relayer wrapping
+ * differs — the modern ERC-1967 **deposit wallet** (EIP-712 `Batch`) and the legacy Gnosis
+ * **Safe** (`MultiSend` delegatecall in a `SafeTx`). The email/Magic **proxy** funder is not
+ * supported: its owner key lives with Magic, which none of the app's wallet connectors can
+ * produce, so a proxy-funded account can't connect to sign here. The backend swap is created
+ * with `use_depository: true` so its deposit action carries the Depository + `depositERC20`.
  */
 export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: WithdrawPageProps) {
     const { source_network, source_token, destination_network, destination_token, destination_address } = swapBasicData
@@ -192,10 +196,6 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
                 ifMounted(() => setError(resolvePolymarketError('no polymarket account')))
                 return
             }
-            if (funder.type !== 'deposit') {
-                ifMounted(() => setError({ header: 'Unsupported account', details: 'This Polymarket account type isn’t supported for direct withdrawal yet. Withdraw via Polymarket, or use an account backed by a deposit wallet.' }))
-                return
-            }
 
             // The depository calldata already encodes this exact amount; reuse it across
             // the approve/unwrap legs so all calls agree to the wei (pUSD↔USDC.e is 1:1).
@@ -214,35 +214,54 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
                 depositCallData: action.depositCallData,
             })
 
-            // Step 4 — deploy the funder if needed, then sign + submit the gasless batch.
+            // Step 4 — deploy the funder if needed, then build the per-type gasless request.
+            // The calls are identical across funder types; only the signing/relayer wrapping
+            // differs (deposit → EIP-712 Batch, safe → MultiSend SafeTx, proxy → GSN rlx).
             const walletClient = await getWalletClient(config, { chainId: POLYMARKET_CHAIN_ID }) as WalletClient | null
             if (!walletClient) throw new Error('Wallet client unavailable')
 
-            const code = await publicClient.getCode({ address: funder.address })
-            if (!code || code === '0x') {
-                ifMounted(() => setStage('deploying'))
-                await submitRelayerTransaction(buildDepositWalletDeployRequest(sourceAddress as `0x${string}`))
-                const deployed = await pollDeployed(publicClient, funder.address)
-                if (!deployed) {
-                    ifMounted(() => setError({ header: 'Setting up your account', details: 'Your Polymarket wallet is being set up. Please try again in a moment.' }))
-                    return
-                }
+            // The email/Magic proxy funder can't be reached here — its owner key lives with
+            // Magic and can't be connected through the app's wallet connectors to sign.
+            if (funder.type === 'proxy') {
+                ifMounted(() => setError({ header: 'Unsupported account', details: 'This Polymarket account type isn’t supported for direct withdrawal. Withdraw via Polymarket, or use an account backed by a browser wallet.' }))
+                return
             }
 
-            const nonce = await getRelayerNonce(sourceAddress, 'WALLET')
-            const deadline = String(Math.floor(Date.now() / 1000) + POLYMARKET_BATCH_DEADLINE_SECONDS)
-            ifMounted(() => setStage('awaiting_signature'))
+            const fromEoa = sourceAddress as `0x${string}`
+            let buildRequest: () => Promise<RelayerSubmittable>
 
+            if (funder.type === 'deposit') {
+                // The deposit wallet must exist on-chain (the relayer WALLET submit doesn't
+                // deploy) — deploy via WALLET-CREATE and wait for code if it's not there yet.
+                const code = await publicClient.getCode({ address: funder.address })
+                if (!code || code === '0x') {
+                    ifMounted(() => setStage('deploying'))
+                    await submitRelayerTransaction(buildDepositWalletDeployRequest(fromEoa))
+                    const deployed = await pollDeployed(publicClient, funder.address)
+                    if (!deployed) {
+                        ifMounted(() => setError({ header: 'Setting up your account', details: 'Your Polymarket wallet is being set up. Please try again in a moment.' }))
+                        return
+                    }
+                }
+                const nonce = await getRelayerNonce(sourceAddress, 'WALLET')
+                const deadline = String(Math.floor(Date.now() / 1000) + POLYMARKET_BATCH_DEADLINE_SECONDS)
+                buildRequest = () => buildDepositWalletBatchRequest({ walletClient, fromEoa, depositWallet: funder.address, calls, nonce, deadline })
+            } else {
+                // Safe (legacy). The relayer requires it to already be deployed; a funder
+                // holding a balance effectively always is, so treat "not deployed" as "no account".
+                const deployed = await isPolymarketDeployed(funder.address, 'SAFE')
+                if (!deployed) {
+                    ifMounted(() => setError(resolvePolymarketError('no polymarket account')))
+                    return
+                }
+                const nonce = await getRelayerNonce(sourceAddress, 'SAFE')
+                buildRequest = () => buildSafeBatchRequest({ walletClient, fromEoa, safe: funder.address, calls, nonce })
+            }
+
+            ifMounted(() => setStage('awaiting_signature'))
             let request: RelayerSubmittable
             try {
-                request = await buildDepositWalletBatchRequest({
-                    walletClient,
-                    fromEoa: sourceAddress as `0x${string}`,
-                    depositWallet: funder.address,
-                    calls,
-                    nonce,
-                    deadline,
-                })
+                request = await buildRequest()
             } catch (signErr) {
                 if (isUserRejection(signErr)) { ifMounted(() => setRejected(true)); return }
                 throw signErr

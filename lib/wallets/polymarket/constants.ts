@@ -71,7 +71,9 @@ export const POLYMARKET_RELAYER_URL = 'https://relayer-v2.polymarket.com'
  */
 export const POLYMARKET_SAFE_FACTORY = '0xaacFeEa03eb1561C4e67d661e40682Bd20E3541b' as `0x${string}`
 export const POLYMARKET_SAFE_MULTISEND = '0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761' as `0x${string}`
-/** Custom proxy factory (MagicLink/email account funders). */
+/** Custom proxy factory (MagicLink/email account funders). Used only to detect proxy-held
+ * balances so we can surface an "unsupported account" message — the email/Magic owner key
+ * can't be connected through the app's wallet connectors, so proxy withdrawal isn't offered. */
 export const POLYMARKET_PROXY_FACTORY = '0xaB45c5A4B0c941a2F231C04C3f49182e1A254052' as `0x${string}`
 /** Deposit-wallet factory + implementation (the modern ERC-1967 account funder —
  * the default for current Polymarket accounts). From getContractConfig(137). */

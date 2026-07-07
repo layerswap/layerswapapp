@@ -38,7 +38,12 @@ export function buildDepositWalletDeployRequest(fromEoa: `0x${string}`): Deposit
     return { type: 'WALLET-CREATE', from: fromEoa, to: POLYMARKET_DEPOSIT_WALLET_FACTORY }
 }
 
-export type DepositWalletCallInput = { target: `0x${string}`; value?: bigint; data: Hex }
+/** A single contract call a funder executes as part of a withdrawal batch. Funder-agnostic:
+ * both the deposit-wallet `Batch` and the Safe `MultiSend` schemes consume it. */
+export type PolymarketCall = { target: `0x${string}`; value?: bigint; data: Hex }
+
+/** @deprecated alias kept for the deposit-wallet builder; use {@link PolymarketCall}. */
+export type DepositWalletCallInput = PolymarketCall
 
 export type BuildDepositBatchParams = {
     /** Connected viem wallet client (the deposit-wallet owner EOA). */
@@ -108,14 +113,14 @@ export type BuildDepositCallsParams = {
  *   USDC.e funder → [approve USDC.e→depository, depositERC20]
  * The deposit leg reuses the backend `call_data`/`to_address` verbatim (no client-side encoding).
  */
-export function buildPolymarketDepositCalls(params: BuildDepositCallsParams): DepositWalletCallInput[] {
+export function buildPolymarketDepositCalls(params: BuildDepositCallsParams): PolymarketCall[] {
     const { funderTokenAddress, funderAddress, amountBaseUnits, depository, depositCallData } = params
 
-    const approveDepository: DepositWalletCallInput = {
+    const approveDepository: PolymarketCall = {
         target: POLYMARKET_USDC_E_ADDRESS,
         data: encodeFunctionData({ abi: erc20Abi, functionName: 'approve', args: [depository, amountBaseUnits] }),
     }
-    const deposit: DepositWalletCallInput = { target: depository, data: depositCallData }
+    const deposit: PolymarketCall = { target: depository, data: depositCallData }
 
     const holdsPusd = funderTokenAddress.toLowerCase() === POLYMARKET_PUSD_ADDRESS.toLowerCase()
     if (!holdsPusd) return [approveDepository, deposit]
