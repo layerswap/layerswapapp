@@ -182,6 +182,7 @@ export type SwapBasicData = {
 export type SwapDetails = {
     id: string,
     created_date: string,
+    source_address?: string,
     status: SwapStatus,
     transactions: Transaction[]
     exchange_account_connected: boolean;
@@ -205,6 +206,7 @@ export type SwapItem = {
     destination_network: Network,
     destination_token: Token,
     destination_address: string,
+    source_address?: string,
     requested_amount: number,
     use_deposit_address: boolean
 

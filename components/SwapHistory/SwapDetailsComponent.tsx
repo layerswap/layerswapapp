@@ -13,7 +13,10 @@ import { useSwapDataUpdate } from '@/context/swap';
 import SecondaryButton from '../buttons/secondaryButton';
 import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '@/helpers/querryHelper';
-import { getExplorerUrl } from '@/lib/address';
+import { Address, getExplorerUrl } from '@/lib/address';
+import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon';
+import AddressIcon from '@/components/AddressIcon';
+import useWallet from '@/hooks/useWallet';
 
 type Props = {
     swapResponse: SwapResponse
@@ -22,11 +25,15 @@ type Props = {
 const SwapDetails: FC<Props> = ({ swapResponse }) => {
 
     const { swap } = swapResponse
-    const { source_token, destination_token, source_network, destination_network, source_exchange, requested_amount, destination_address } = swap
+    const { source_token, destination_token, source_network, destination_network, source_exchange, requested_amount, destination_address, source_address } = swap
 
     const router = useRouter()
 
     const { setSwapModalOpen, setSwapId } = useSwapDataUpdate()
+
+    const { wallets } = useWallet()
+    const sourceWallet = (source_address && source_network) ? wallets.find(w => w.addresses?.some(a => Address.equals(a, source_address, source_network))) : undefined
+    const destWallet = (destination_address && destination_network) ? wallets.find(w => w.addresses?.some(a => Address.equals(a, destination_address, destination_network))) : undefined
 
     const handleRepeatSwap = async () => {
         router.push({
@@ -83,6 +90,34 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                             <span className="text-left text-secondary-text">Status</span>
                             <StatusIcon swap={swap} />
                         </div>
+                        <div className="flex justify-between items-center gap-2">
+                            <span className="text-left text-secondary-text shrink-0">From address</span>
+                            {
+                                source_address && source_network ?
+                                    <div className="group/addressItem flex items-center gap-2 min-w-0">
+                                        {sourceWallet?.icon
+                                            ? <sourceWallet.icon className="w-4 h-4 rounded-[4px] shrink-0 bg-secondary-700" />
+                                            : <AddressIcon address={new Address(source_address, source_network).full} network={source_network} size={16} className="rounded-[4px] shrink-0" />}
+                                        <ExtendedAddress address={source_address} network={source_network} shouldShowChevron={false} />
+                                    </div>
+                                    :
+                                    <span>-</span>
+                            }
+                        </div>
+                        <div className="flex justify-between items-center gap-2">
+                            <span className="text-left text-secondary-text shrink-0">To address</span>
+                            {
+                                destination_address && destination_network ?
+                                    <div className="group/addressItem flex items-center gap-2 min-w-0">
+                                        {destWallet?.icon
+                                            ? <destWallet.icon className="w-4 h-4 rounded-[4px] shrink-0 bg-secondary-700" />
+                                            : <AddressIcon address={new Address(destination_address, destination_network).full} network={destination_network} size={16} className="rounded-[4px] shrink-0" />}
+                                        <ExtendedAddress address={destination_address} network={destination_network} shouldShowChevron={false} />
+                                    </div>
+                                    :
+                                    <span>-</span>
+                            }
+                        </div>
                     </div>
                 </div>
             </section>
@@ -101,10 +136,10 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                             <a
                                                 target="_blank"
                                                 href={getExplorerUrl(input_tx_explorer_template, swapInputTransaction.transaction_hash)}
-                                                className='flex items-center space-x-1'
+                                                className='group/addressItem flex items-center space-x-1 cursor-pointer hover:text-secondary-text transition duration-200'
                                                 rel="noopener noreferrer"
                                             >
-                                                <span>{shortenString(swapInputTransaction.transaction_hash)}</span>
+                                                <span className='group-hover/addressItem:underline'>{shortenString(swapInputTransaction.transaction_hash)}</span>
                                                 <ExternalLink className='h-4' />
                                             </a>
                                             :
@@ -125,10 +160,10 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                                                 <a
                                                                     target="_blank"
                                                                     href={getExplorerUrl(output_tx_explorer_template, refundTransaction.transaction_hash)}
-                                                                    className='flex items-center space-x-1'
+                                                                    className='group/addressItem flex items-center space-x-1 cursor-pointer hover:text-secondary-text transition duration-200'
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    <span>{shortenString(refundTransaction.transaction_hash)}</span>
+                                                                    <span className='group-hover/addressItem:underline'>{shortenString(refundTransaction.transaction_hash)}</span>
                                                                     <ExternalLink className='h-4' />
                                                                 </a>
                                                         )
@@ -148,10 +183,10 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                                                 <a
                                                                     target="_blank"
                                                                     href={getExplorerUrl(output_tx_explorer_template, swapOutputTransaction.transaction_hash)}
-                                                                    className='flex items-center space-x-1'
+                                                                    className='group/addressItem flex items-center space-x-1 cursor-pointer hover:text-secondary-text transition duration-200'
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    <span>{shortenString(swapOutputTransaction.transaction_hash)}</span>
+                                                                    <span className='group-hover/addressItem:underline'>{shortenString(swapOutputTransaction.transaction_hash)}</span>
                                                                     <ExternalLink className='h-4' />
                                                                 </a>
                                                         )
@@ -169,10 +204,10 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                                 <a
                                                     target="_blank"
                                                     href={getExplorerUrl(output_tx_explorer_template, refuelTransaction.transaction_hash)}
-                                                    className='flex items-center space-x-1'
+                                                    className='group/addressItem flex items-center space-x-1 cursor-pointer hover:text-secondary-text transition duration-200'
                                                     rel="noopener noreferrer"
                                                 >
-                                                    <span>{shortenString(refuelTransaction.transaction_hash)}</span>
+                                                    <span className='group-hover/addressItem:underline'>{shortenString(refuelTransaction.transaction_hash)}</span>
                                                     <ExternalLink className='h-4' />
                                                 </a>
                                             </>

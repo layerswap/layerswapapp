@@ -7,6 +7,7 @@ import { getThemeData } from '../../helpers/settingsHelper';
 import SwapWithdrawal from '../../components/SwapWithdrawal'
 import { encodeSettingsForSSR, inflateSettings } from '../../helpers/settingsCompression';
 import MaintananceContent from '../../components/maintanance/maintanance';
+import { resolveExtendedRouteFlags } from '../../flags';
 
 const SwapDetails = ({ settings, themeData, apiKey, swapData }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   LayerSwapApiClient.apiKey = apiKey
@@ -66,6 +67,7 @@ export const getServerSideProps = async (ctx) => {
 
   const settings = {
     networks: networkData,
+    featureFlags: await resolveExtendedRouteFlags(ctx.req),
   }
 
   const themeData = await getThemeData(ctx.query)
@@ -75,7 +77,7 @@ export const getServerSideProps = async (ctx) => {
       settings: encodeSettingsForSSR(settings),
       themeData,
       apiKey,
-      swapData: swapData || null
+      swapData: swapData || null,
     }
   }
 }

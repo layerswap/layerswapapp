@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAccount, useConfig } from "wagmi";
-import posthog from "posthog-js";
 import { WithdrawPageProps } from "../../Common/sharedTypes";
+import { createWithdrawalErrorLogger } from "../../Common/logWithdrawalError";
 import { isUserRejection } from "../../Common/isUserRejection";
 import { resolveHyperliquidError, StepError } from "./resolveError";
 import { useSwapDataState, useSwapDataUpdate } from "@/context/swap";
@@ -18,25 +18,16 @@ import { resolveHyperliquidConfig, HYPERLIQUID_DEX_SPOT, HYPERLIQUID_WITHDRAW_HE
 import { signSendToEvm, signUsdClassTransfer } from "@/lib/wallets/hyperliquid/withdraw";
 import { planWithdrawal } from "@/lib/wallets/hyperliquid/planWithdrawal";
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
-
-const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
+import sleep from "@/lib/wallets/utils/sleep";
 
 const HL_EXCEPTION_TYPE = 'Hyperliquid Withdrawal Error'
+const logWithdrawalError = createWithdrawalErrorLogger(HL_EXCEPTION_TYPE)
 
 /** Deposit-action kinds that carry the destination deposit address. */
 const DEPOSIT_ACTION_TYPES = ['transfer', 'manual_transfer']
 
 const getDepositAddress = (actions: DepositAction[] | undefined): string | undefined =>
     actions?.find(a => DEPOSIT_ACTION_TYPES.includes(a.type))?.to_address
-
-const logWithdrawalError = (error: unknown, ctx: { swapId?: string; fromAddress?: string; toAddress?: string }) => {
-    posthog.captureException(error, {
-        $layerswap_exception_type: HL_EXCEPTION_TYPE,
-        swapId: ctx.swapId,
-        $fromAddress: ctx.fromAddress,
-        $toAddress: ctx.toAddress,
-    })
-}
 
 /**
  * Owns the Hyperliquid withdrawal flow and its UI state. The flow is decomposed
