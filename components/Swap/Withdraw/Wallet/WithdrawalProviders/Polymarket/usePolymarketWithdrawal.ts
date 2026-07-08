@@ -269,7 +269,7 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
                     ifMounted(() => setError(resolvePolymarketError('no polymarket account')))
                     return
                 }
-                const nonce = await getRelayerNonce(sourceAddress, 'SAFE')
+                const nonce = await getRelayerNonce(sourceAddress, 'SAFE', basePath)
                 buildRequest = () => buildSafeBatchRequest({ walletClient, fromEoa, safe: funder.address, calls, nonce })
             }
 
