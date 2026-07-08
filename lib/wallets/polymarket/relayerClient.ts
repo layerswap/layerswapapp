@@ -86,17 +86,17 @@ async function proxyGet<T>(params: Record<string, string>, basePath: string): Pr
 /** Relayer signer type. The nonce is always keyed on the owner EOA + the funder type. */
 export type RelayerSignerType = 'SAFE' | 'PROXY' | 'WALLET'
 
-export async function getRelayerNonce(ownerEoa: string, type: RelayerSignerType, basePath = ''): Promise<string> {
+export async function getRelayerNonce(ownerEoa: string, type: RelayerSignerType, basePath: string): Promise<string> {
     const data = await proxyGet<{ nonce: string }>({ action: 'nonce', address: ownerEoa, type }, basePath)
     return data.nonce
 }
 
-export async function isPolymarketDeployed(address: string, type: RelayerSignerType, basePath = ''): Promise<boolean> {
+export async function isPolymarketDeployed(address: string, type: RelayerSignerType, basePath: string): Promise<boolean> {
     const data = await proxyGet<{ deployed: boolean }>({ action: 'deployed', address, type }, basePath)
     return !!data.deployed
 }
 
-export async function submitRelayerTransaction(request: RelayerSubmittable, basePath = ''): Promise<RelayerSubmitResponse> {
+export async function submitRelayerTransaction(request: RelayerSubmittable, basePath: string): Promise<RelayerSubmitResponse> {
     const res = await fetch(proxyPath(basePath), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -106,7 +106,7 @@ export async function submitRelayerTransaction(request: RelayerSubmittable, base
     return res.json() as Promise<RelayerSubmitResponse>
 }
 
-export async function getRelayerTransaction(id: string, basePath = ''): Promise<RelayerTransaction[]> {
+export async function getRelayerTransaction(id: string, basePath: string): Promise<RelayerTransaction[]> {
     const data = await proxyGet<RelayerTransaction[] | { transactions?: RelayerTransaction[] }>({ action: 'transaction', id }, basePath)
     return Array.isArray(data) ? data : (data.transactions ?? [])
 }
