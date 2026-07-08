@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/router";
 import { useAccount, useConfig } from "wagmi";
 import { getWalletClient } from "@wagmi/core";
 import { createPublicClient, decodeAbiParameters, type Hex, type PublicClient, type WalletClient } from "viem";
@@ -97,6 +98,9 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
     const { source_network, source_token, destination_network, destination_token, destination_address } = swapBasicData
 
     const config = useConfig()
+    // The relayer proxy is a same-origin route, so its fetch must carry the app's basePath
+    // (the app can be served under a sub-path, e.g. /app) — otherwise it 404s.
+    const basePath = useRouter().basePath || ''
     const { address: activeAddress, chain: activeChain, isConnected } = useAccount()
     const query = useQueryState()
     const { onWalletWithdrawalSuccess } = useWalletWithdrawalState()
@@ -247,20 +251,20 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
                 const code = await publicClient.getCode({ address: funder.address })
                 if (!code || code === '0x') {
                     ifMounted(() => setStage('deploying'))
-                    await submitRelayerTransaction(buildDepositWalletDeployRequest(fromEoa))
+                    await submitRelayerTransaction(buildDepositWalletDeployRequest(fromEoa), basePath)
                     const deployed = await pollDeployed(publicClient, funder.address)
                     if (!deployed) {
                         ifMounted(() => setError({ header: 'Setting up your account', details: 'Your Polymarket wallet is being set up. Please try again in a moment.' }))
                         return
                     }
                 }
-                const nonce = await getRelayerNonce(sourceAddress, 'WALLET')
+                const nonce = await getRelayerNonce(sourceAddress, 'WALLET', basePath)
                 const deadline = String(Math.floor(Date.now() / 1000) + POLYMARKET_BATCH_DEADLINE_SECONDS)
                 buildRequest = () => buildDepositWalletBatchRequest({ walletClient, fromEoa, depositWallet: funder.address, calls, nonce, deadline })
             } else {
                 // Safe (legacy). The relayer requires it to already be deployed; a funder
                 // holding a balance effectively always is, so treat "not deployed" as "no account".
-                const deployed = await isPolymarketDeployed(funder.address, 'SAFE')
+                const deployed = await isPolymarketDeployed(funder.address, 'SAFE', basePath)
                 if (!deployed) {
                     ifMounted(() => setError(resolvePolymarketError('no polymarket account')))
                     return
@@ -279,7 +283,7 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
             }
 
             ifMounted(() => setStage('submitting'))
-            const submitResponse = await submitRelayerTransaction(request)
+            const submitResponse = await submitRelayerTransaction(request, basePath)
             if (!submitResponse?.transactionID) {
                 ifMounted(() => setError(resolvePolymarketError('Polymarket rejected the withdrawal')))
                 logWithdrawalError(new Error('Relayer returned no transactionID'), { swapId: activeSwapId, fromAddress: sourceAddress, toAddress: action.depository })
@@ -295,7 +299,7 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
             ifMounted(() => { setLoading(false); setStage(undefined) })
             submittingRef.current = false
         }
-    }, [pmConfig, sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, depositActionsResponse, swapId, swapDetails, refuel, query, config, createSwap, setSwapId, onWalletWithdrawalSuccess, swapBasicData.requested_amount])
+    }, [pmConfig, sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, depositActionsResponse, swapId, swapDetails, refuel, query, config, createSwap, setSwapId, onWalletWithdrawalSuccess, swapBasicData.requested_amount, basePath])
 
     // Poll the chain until the just-deployed funder contract has code.
     async function pollDeployed(publicClient: PublicClient, address: `0x${string}`): Promise<boolean> {
