@@ -1,6 +1,7 @@
 import LayerSwapApiClient from "../lib/apiClients/layerSwapApiClient";
 import { getThemeData } from "./settingsHelper";
 import { encodeSettingsForSSR } from "./settingsCompression";
+import { resolveExtendedRouteFlags } from "../flags";
 
 export async function getServerSideProps(context) {
 
@@ -19,13 +20,15 @@ export async function getServerSideProps(context) {
         { data: sourceExchangesData },
         { data: sourceRoutes },
         { data: destinationRoutes },
-        themeData
+        themeData,
+        featureFlags
     ] = await Promise.all([
         apiClient.GetLSNetworksAsync(),
         apiClient.GetSourceExchangesAsync().catch(() => ({ data: [] })),
         apiClient.GetRoutesAsync('sources'),
         apiClient.GetRoutesAsync('destinations'),
-        getThemeData(context.query)
+        getThemeData(context.query),
+        resolveExtendedRouteFlags(context.req)
     ])
 
     if (!networkData) return
@@ -34,7 +37,8 @@ export async function getServerSideProps(context) {
         networks: networkData,
         sourceExchanges: sourceExchangesData || [],
         sourceRoutes: sourceRoutes || [],
-        destinationRoutes: destinationRoutes || []
+        destinationRoutes: destinationRoutes || [],
+        featureFlags
     }
 
     return {

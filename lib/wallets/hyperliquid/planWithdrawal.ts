@@ -1,4 +1,5 @@
 import { WithdrawableSplit } from '@/lib/apiClients/hyperliquidClient'
+import { ceilToDecimals } from '@/components/utils/RoundDecimals'
 import { HYPERLIQUID_DEX_PERP, HYPERLIQUID_DEX_SPOT } from './constants'
 
 /**
@@ -15,12 +16,6 @@ export type WithdrawalPlan =
         /** Present only when neither pool alone covered `required`: move this first. */
         transfer?: { toPerp: boolean; amount: string }
     }
-
-/** Round UP to `decimals` so a consolidated pool truly reaches the target. */
-const roundUpToDecimals = (value: number, decimals: number): number => {
-    const factor = 10 ** decimals
-    return Math.ceil(value * factor) / factor
-}
 
 /**
  * Pick the cheapest way to fund a withdrawal of `required` USDC (amount + headroom)
@@ -46,7 +41,7 @@ export function planWithdrawal(split: WithdrawableSplit, required: number, decim
     const targetCurrent = targetIsSpot ? spot : perps
     const sourceAvailable = targetIsSpot ? perps : spot
 
-    const deficit = Math.min(roundUpToDecimals(required - targetCurrent, decimals), sourceAvailable)
+    const deficit = Math.min(ceilToDecimals(required - targetCurrent, decimals), sourceAvailable)
 
     return {
         sourceDex: targetIsSpot ? HYPERLIQUID_DEX_SPOT : HYPERLIQUID_DEX_PERP,
