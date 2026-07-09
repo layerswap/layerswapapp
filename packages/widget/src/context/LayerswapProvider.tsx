@@ -20,6 +20,7 @@ import { SwapAccountsProvider } from "./swapAccounts";
 import { WalletProvider } from "@/types";
 import { ResolverProviders } from "./resolverContext";
 import { ErrorProvider } from "./ErrorProvider";
+import { setExtendedRouteProviders } from "@/lib/extendedRoutes/registry";
 
 export type LayerswapWidgetConfig = {
     apiKey?: string;
@@ -67,6 +68,8 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
     const settings = _settings || fetchedSettings
     if (!settings) return <>{loadingComponent ?? <WidgetLoading />}</>
 
+    // Populate the extended-route registry before inflating settings so LayerSwapAppSettings can synthesize extended networks (e.g. Polymarket) at construction; ResolverProviders re-sets it once mounted.
+    setExtendedRouteProviders(walletProviders.flatMap(p => p.extendedRouteProvider ?? []).filter(Boolean))
     let appSettings = new LayerSwapAppSettings(settings)
 
     return (

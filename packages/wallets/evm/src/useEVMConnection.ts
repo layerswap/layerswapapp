@@ -85,6 +85,7 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
         ...asSourceSupportedNetworks,
         KnownInternalNames.Networks.HyperliquidMainnet,
         KnownInternalNames.Networks.HyperliquidTestnet,
+        KnownInternalNames.Networks.PolymarketMainnet,
     ], [asSourceSupportedNetworks])
 
     const autofillSupportedNetworks = useMemo(() => [
@@ -92,6 +93,7 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
         KnownInternalNames.Networks.BrineMainnet,
         KnownInternalNames.Networks.HyperliquidMainnet,
         KnownInternalNames.Networks.HyperliquidTestnet,
+        KnownInternalNames.Networks.PolymarketMainnet,
     ], [asSourceSupportedNetworks])
 
     const isNotAvailableCondition = useCallback((connectorId: string | undefined, network: string | undefined, purpose?: "withdrawal" | "autofill" | "asSource") => {

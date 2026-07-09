@@ -9,6 +9,8 @@ import { EVMContractAddressProvider } from "./evmContractAddressProvider";
 import { EVMRpcHealthCheckProvider } from "./rpcHealthCheckProvider";
 import { hyperliquidProvider } from "./additionalProviders/hyperliquid/hyperliquidExtendedRouteProvider";
 import { useHyperliquidTransfer } from "./additionalProviders/hyperliquid/useHyperliquidTransfer";
+import { polymarketProvider } from "./additionalProviders/polymarket/polymarketExtendedRouteProvider";
+import { usePolymarketTransfer } from "./additionalProviders/polymarket/usePolymarketTransfer";
 import { useEVMGaslessSign } from "./gaslessProvider/useEVMGaslessSign";
 
 export type WalletConnectConfig = {
@@ -85,6 +87,10 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
             (n) => n.type === NetworkType.Hyperliquid,
             () => import("./balanceProviders").then(m => new m.HyperliquidBalanceProvider())
         ),
+        new LazyBalanceProvider(
+            (n) => n.type === NetworkType.Polymarket,
+            () => import("./balanceProviders").then(m => new m.PolymarketBalanceProvider())
+        ),
         ...moduleBalanceProviders,
     ];
     const finalBalanceProviders = balanceProviders !== undefined
@@ -111,9 +117,9 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         ? (Array.isArray(contractAddressProviders) ? contractAddressProviders : [contractAddressProviders])
         : defaultContractAddressProviders;
 
-    // Hyperliquid is a standard transferProvider (matched by NetworkType.Hyperliquid via
-    // its own supportsNetwork); useEVMTransfer only matches NetworkType.EVM, so order is safe.
-    const defaultTransferProviders = [useEVMTransfer, useHyperliquidTransfer];
+    // Hyperliquid/Polymarket are standard transferProviders (each matched by its own
+    // NetworkType via supportsNetwork); useEVMTransfer only matches NetworkType.EVM, so order is safe.
+    const defaultTransferProviders = [useEVMTransfer, useHyperliquidTransfer, usePolymarketTransfer];
     const finalTransferProviders = transferProviders !== undefined
         ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
         : defaultTransferProviders;
@@ -140,7 +146,7 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         gaslessProvider: finalGaslessProviders,
         contractAddressProvider: finalContractAddressProviders,
         rpcHealthCheckProvider: finalRPCHealtCheckProviders,
-        extendedRouteProvider: [hyperliquidProvider],
+        extendedRouteProvider: [hyperliquidProvider, polymarketProvider],
     };
 }
 
@@ -182,10 +188,14 @@ export const EVMProvider: WalletProvider = {
             (n) => n.type === NetworkType.Hyperliquid,
             () => import("./balanceProviders").then(m => new m.HyperliquidBalanceProvider())
         ),
+        new LazyBalanceProvider(
+            (n) => n.type === NetworkType.Polymarket,
+            () => import("./balanceProviders").then(m => new m.PolymarketBalanceProvider())
+        ),
     ],
-    transferProvider: [useEVMTransfer, useHyperliquidTransfer],
+    transferProvider: [useEVMTransfer, useHyperliquidTransfer, usePolymarketTransfer],
     gaslessProvider: [useEVMGaslessSign],
     contractAddressProvider: [new EVMContractAddressProvider()],
     rpcHealthCheckProvider: [new EVMRpcHealthCheckProvider()],
-    extendedRouteProvider: [hyperliquidProvider],
+    extendedRouteProvider: [hyperliquidProvider, polymarketProvider],
 };

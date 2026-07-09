@@ -8,6 +8,7 @@ import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
 import WidgetWrapper from '../../components/WidgetWrapper';
 import MaintananceContent from '../../components/maintanance/maintanance';
+import { resolveExtendedRouteFlags } from '../../flags';
 
 const SwapDetails = ({ settings, themeData, apiKey, swapData }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter()
@@ -82,6 +83,7 @@ export const getServerSideProps = async (ctx) => {
 
   const settings = {
     networks: networkData,
+    featureFlags: await resolveExtendedRouteFlags(ctx.req),
   }
 
   const themeData = await getThemeData(ctx.query)
@@ -91,7 +93,7 @@ export const getServerSideProps = async (ctx) => {
       settings: encodeSettingsForSSR(settings),
       themeData,
       apiKey,
-      swapData: swapData || null
+      swapData: swapData || null,
     }
   }
 }

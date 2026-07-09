@@ -1,8 +1,5 @@
 import { Refuel } from "../lib/apiClients/layerSwapApiClient";
 import { NetworkType } from "@layerswap/utils";
-
-// NetworkType lives in the @layerswap/utils leaf package (single source of truth);
-// re-exported here so existing `@/Models/Network` importers keep working.
 export { NetworkType };
 
 export class Network {

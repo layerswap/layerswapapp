@@ -275,6 +275,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             destinationAddress: destination_address,
             referenceId: query.externalId,
             refuel,
+            sourceAddress: selectedSourceAccount?.address,
         }) : {
             amount: amount || undefined,
             source_network: from.name,
