@@ -4,9 +4,10 @@ import { switchChain, getWalletClient } from "@wagmi/core"
 import { createPublicClient, decodeAbiParameters, type Hex, type PublicClient, type WalletClient } from "viem"
 import resolveChain from "../../evmUtils/resolveChain"
 import { resolveFallbackTransport } from "../../evmUtils/resolveTransports"
-import { resolvePolymarketHolding } from "./funder"
+import { classifyPolymarketFunder, resolvePolymarketHolding } from "./funder"
 import { buildDepositWalletBatchRequest, buildDepositWalletDeployRequest, buildPolymarketDepositCalls } from "./depositWithdraw"
-import { getRelayerNonce, submitRelayerTransaction, type RelayerSubmittable } from "./relayerClient"
+import { buildSafeBatchRequest } from "./safeWithdraw"
+import { getRelayerNonce, isPolymarketDeployed, submitRelayerTransaction, type RelayerSubmittable } from "./relayerClient"
 import {
     POLYMARKET_BATCH_DEADLINE_SECONDS,
     POLYMARKET_CHAIN_ID,
@@ -74,7 +75,9 @@ async function pollDeployed(publicClient: PublicClient, address: `0x${string}`):
  *
  * The deposit action carries the Depository address (`depositAddress`) + `depositERC20`
  * calldata (`callData`); the amount + token are decoded from that calldata so all legs agree.
- * Legacy Safe / proxy funders are not supported in this flow yet.
+ * The batch of calls is identical across funder types; only the signing/relayer wrapping differs
+ * (deposit wallet → EIP-712 `Batch`, legacy Gnosis Safe → `MultiSend` SafeTx). The email/Magic
+ * `proxy` funder is not supported — its owner key lives with Magic and can't be connected to sign.
  */
 export function createPolymarketTransferProvider(
     config: Config,
@@ -123,14 +126,12 @@ export function createPolymarketTransferProvider(
                 const { header, details } = resolvePolymarketError('no polymarket account')
                 throw fail(header, details)
             }
-            if (funder.type !== 'deposit') {
-                throw fail('Unsupported account', 'This Polymarket account type isn’t supported for direct withdrawal yet. Withdraw via Polymarket, or use an account backed by a deposit wallet.')
-            }
             if (funder.raw < amountBaseUnits) {
                 throw fail('Insufficient balance', `Your available Polymarket balance (${funder.amount} ${sourceToken.symbol}) is below the withdrawal amount.`)
             }
 
-            // Assemble the batch (unwrap if holding pUSD, then approve + deposit).
+            // Assemble the batch (unwrap if holding pUSD, then approve + deposit). The calls are
+            // identical across funder types; only the signing/relayer wrapping differs.
             const calls = buildPolymarketDepositCalls({
                 funderTokenAddress: funder.tokenAddress,
                 funderAddress: funder.address,
@@ -142,29 +143,52 @@ export function createPolymarketTransferProvider(
             const walletClient = await getWalletClient(config, { chainId: POLYMARKET_CHAIN_ID }) as WalletClient | null
             if (!walletClient) throw fail('Wallet unavailable', 'Wallet client unavailable.')
 
-            // Deploy the funder if it has no code yet, then wait for it on-chain.
-            const code = await publicClient.getCode({ address: funder.address })
-            if (!code || code === '0x') {
-                onProgress?.({ title: 'Setting up your account', description: 'Preparing your Polymarket wallet. This usually takes a few seconds…' })
-                await submitRelayerTransaction(buildDepositWalletDeployRequest(sourceAddress as `0x${string}`))
-                const deployed = await pollDeployed(publicClient, funder.address)
-                onProgress?.(undefined)
-                if (!deployed) throw fail('Setting up your account', 'Your Polymarket wallet is being set up. Please try again in a moment.')
+            // A funder surfaced via Polymarket's profile that we couldn't derive is tagged
+            // 'unknown' — classify it on-chain now (lazily, only when actually withdrawing).
+            let funderType = funder.type
+            if (funderType === 'unknown') {
+                funderType = await classifyPolymarketFunder(funder.address, sourceAddress, publicClient)
             }
 
-            const nonce = await getRelayerNonce(sourceAddress, 'WALLET')
-            const deadline = String(Math.floor(Date.now() / 1000) + POLYMARKET_BATCH_DEADLINE_SECONDS)
+            // Only the deposit wallet and Gnosis Safe funders can be withdrawn from here. The
+            // email/Magic `proxy` funder's owner key lives with Magic (can't be connected to
+            // sign), and a still-`unknown` funder is a contract type we can't execute.
+            if (funderType !== 'deposit' && funderType !== 'safe') {
+                throw fail('Unsupported account', 'This Polymarket account type isn’t supported for direct withdrawal. Withdraw via Polymarket, or use an account backed by a browser wallet.')
+            }
+
+            const fromEoa = sourceAddress as `0x${string}`
+            let buildRequest: () => Promise<RelayerSubmittable>
+
+            if (funderType === 'deposit') {
+                // The deposit wallet must exist on-chain (the relayer WALLET submit doesn't
+                // deploy) — deploy via WALLET-CREATE and wait for code if it's not there yet.
+                const code = await publicClient.getCode({ address: funder.address })
+                if (!code || code === '0x') {
+                    onProgress?.({ title: 'Setting up your account', description: 'Preparing your Polymarket wallet. This usually takes a few seconds…' })
+                    await submitRelayerTransaction(buildDepositWalletDeployRequest(fromEoa))
+                    const deployed = await pollDeployed(publicClient, funder.address)
+                    onProgress?.(undefined)
+                    if (!deployed) throw fail('Setting up your account', 'Your Polymarket wallet is being set up. Please try again in a moment.')
+                }
+                const nonce = await getRelayerNonce(sourceAddress, 'WALLET')
+                const deadline = String(Math.floor(Date.now() / 1000) + POLYMARKET_BATCH_DEADLINE_SECONDS)
+                buildRequest = () => buildDepositWalletBatchRequest({ walletClient, fromEoa, depositWallet: funder.address, calls, nonce, deadline })
+            } else {
+                // Safe (legacy). The relayer requires it to already be deployed; a funder holding
+                // a balance effectively always is, so treat "not deployed" as "no account".
+                const deployed = await isPolymarketDeployed(funder.address, 'SAFE')
+                if (!deployed) {
+                    const { header, details } = resolvePolymarketError('no polymarket account')
+                    throw fail(header, details)
+                }
+                const nonce = await getRelayerNonce(sourceAddress, 'SAFE')
+                buildRequest = () => buildSafeBatchRequest({ walletClient, fromEoa, safe: funder.address, calls, nonce })
+            }
 
             let request: RelayerSubmittable
             try {
-                request = await buildDepositWalletBatchRequest({
-                    walletClient,
-                    fromEoa: sourceAddress as `0x${string}`,
-                    depositWallet: funder.address,
-                    calls,
-                    nonce,
-                    deadline,
-                })
+                request = await buildRequest()
             } catch (signErr) {
                 if (isUserRejection(signErr)) throw rejected()
                 throw signErr
