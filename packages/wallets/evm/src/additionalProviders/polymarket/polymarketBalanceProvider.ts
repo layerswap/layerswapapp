@@ -7,10 +7,11 @@ import { resolvePolymarketHolding } from "./funder";
 import { POLYMARKET_DISPLAY_SYMBOL, POLYMARKET_PUSD_DECIMALS } from "./constants";
 
 /**
- * Polymarket balance = the user's collateral, held in a funder derived from the
- * connected owner EOA. The funder type varies (deposit wallet / Safe / proxy) and the
- * token may be pUSD or legacy USDC.e, so we derive every candidate and read both
- * tokens, reporting whatever holds funds (see `resolvePolymarketHolding`). The
+ * Polymarket balance = the user's collateral, held in a funder tied to the connected
+ * owner EOA. The funder type varies (deposit wallet / Safe / proxy / legacy) and the
+ * token may be pUSD or legacy USDC.e, so we check every locally-derived candidate plus
+ * Polymarket's authoritative profile wallet, read both tokens, and report whatever holds
+ * funds (see `resolvePolymarketHolding`). The
  * synthesized Polymarket network inherits Polygon's chain_id/nodes, so the read runs
  * against Polygon via the standard EVM public-client path.
  */
