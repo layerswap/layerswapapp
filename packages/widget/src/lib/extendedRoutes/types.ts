@@ -95,7 +95,7 @@ export function usesDepository(provider: ExtendedRouteProvider): boolean {
     return provider.funding === 'depository'
 }
 
-export function depositMethodForFunding(funding: ExtendedRouteProvider['funding']): string {
+export function depositMethodForFunding(funding: ExtendedRouteProvider['funding']): 'wallet' | 'deposit_address' {
     return funding === 'depository' ? 'wallet' : 'deposit_address'
 }
 
