@@ -18,6 +18,8 @@ import { useRpcHealth } from "@/context/rpcHealthContext";
 import RPCUnhealthyMessage from "./RPCUnhealthyMessage";
 import { isExtendedSourceNetwork } from "@/lib/extendedRoutes/registry";
 import { HyperliquidWalletWithdraw } from "../WithdrawalProviders/Hyperliquid";
+import { PolymarketWalletWithdraw } from "../WithdrawalProviders/Polymarket";
+import { NetworkType } from "@/Models/Network";
 
 type Props = {
     swapData: SwapBasicData
@@ -81,8 +83,16 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
         }
     }, [swapId])
 
-    // Extended sources (e.g. Hyperliquid) have their own withdraw flow — the chain logic
-    // comes from the wallet package's Hyperliquid TransferProvider, the UI lives here.
+    // Extended sources (Hyperliquid, Polymarket) have their own withdraw flow — the chain
+    // logic comes from the wallet package's TransferProvider, the UI lives here. Polymarket
+    // is checked first: its synthesized networks are also extended sources.
+    if (source_network?.type === NetworkType.Polymarket) {
+        return <PolymarketWalletWithdraw
+            swapId={swapId}
+            swapBasicData={swapBasicData}
+            refuel={refuel}
+        />
+    }
     if (isExtendedSourceNetwork(source_network?.name)) {
         return <HyperliquidWalletWithdraw
             swapId={swapId}

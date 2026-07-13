@@ -84,6 +84,10 @@ module.exports = (phase, { defaultConfig }) => {
           source: `/lsph/:path*`,
           destination: "https://us.i.posthog.com/:path*",
         },
+        {
+          source: `/.well-known/vercel/flags`,
+          destination: `/api/vercel/flags`,
+        },
       ];
     },
     skipTrailingSlashRedirect: true,

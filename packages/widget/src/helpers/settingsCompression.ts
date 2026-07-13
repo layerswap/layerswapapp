@@ -1,6 +1,7 @@
 import { Exchange } from "../Models/Exchange";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import { NetworkRoute, NetworkRouteToken, NetworkWithTokens } from "../Models/Network";
+import { ExtendedRouteFlags } from "../lib/extendedRoutes/types";
 import { gunzipSync, gzipSync, strFromU8, strToU8 } from "fflate";
 
 type CompactRouteToken = {
@@ -25,6 +26,7 @@ export type CompressedLayerSwapSettings = {
     sourceExchanges: Exchange[];
     sourceRoutes: CompactRoute[];
     destinationRoutes: CompactRoute[];
+    featureFlags?: ExtendedRouteFlags;
 };
 
 export type EncodedLayerSwapSettings = {
@@ -100,6 +102,7 @@ export function compactSettings(settings: LayerSwapSettings | null | undefined):
         sourceExchanges: settings.sourceExchanges || [],
         sourceRoutes: (settings.sourceRoutes || []).map(compactRoute),
         destinationRoutes: (settings.destinationRoutes || []).map(compactRoute),
+        featureFlags: settings.featureFlags,
     };
 }
 
@@ -239,5 +242,6 @@ export function inflateSettings(settings: MaybeCompressedSettings | null | undef
         sourceExchanges: settings.sourceExchanges || [],
         sourceRoutes: inflateRoutes(settings.sourceRoutes || [], networksByName),
         destinationRoutes: inflateRoutes(settings.destinationRoutes || [], networksByName),
+        featureFlags: settings.featureFlags,
     };
 }

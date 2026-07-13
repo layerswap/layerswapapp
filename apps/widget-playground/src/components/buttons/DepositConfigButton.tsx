@@ -13,6 +13,7 @@ const METHOD_LABELS: Record<DepositMethodId, string> = {
     wallet: "Wallet transfer",
     deposit_address: "Deposit address",
     hyperliquid: "Hyperliquid",
+    polymarket: "Polymarket",
 };
 const METHOD_OPTIONS = DEPOSIT_METHODS.map((m) => ({ value: m, label: METHOD_LABELS[m] }));
 
