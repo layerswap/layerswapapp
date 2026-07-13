@@ -20,7 +20,7 @@ import { SwapAccountsProvider } from "./swapAccounts";
 import { WalletProvider } from "@/types";
 import { ResolverProviders } from "./resolverContext";
 import { ErrorProvider } from "./ErrorProvider";
-import { useRegisterExtendedRouteProviders } from "@/hooks/useRegisterExtendedRouteProviders";
+import { setExtendedRouteProviders } from "@/lib/extendedRoutes/registry";
 
 export type LayerswapWidgetConfig = {
     apiKey?: string;
@@ -55,8 +55,6 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
     AppSettings.ThemeData = themeData
     if (apiKey) LayerSwapApiClient.apiKey = apiKey
 
-    useRegisterExtendedRouteProviders(walletProviders)
-
     useEffect(() => {
         if (!_settings) {
             (async () => {
@@ -70,6 +68,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
     const settings = _settings || fetchedSettings
     if (!settings) return <>{loadingComponent ?? <WidgetLoading />}</>
 
+    setExtendedRouteProviders(walletProviders.flatMap(p => p.extendedRouteProvider ?? []).filter(Boolean))
     let appSettings = new LayerSwapAppSettings(settings)
 
     return (
