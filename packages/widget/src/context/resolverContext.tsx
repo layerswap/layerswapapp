@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useMemo } from "react";
 import { WalletProvider, NftProvider, BalanceProvider, GasProvider, TransferProvider, GaslessProvider, ContractAddressCheckerProvider, RpcHealthCheckProvider } from "@/types";
 import { resolverService } from "@/lib/resolvers/resolverService";
-import { setExtendedRouteProviders } from "@/lib/extendedRoutes/registry";
 
 type ResolverContextType = {
     isInitialized: boolean;
@@ -55,13 +54,6 @@ export const ResolverProviders: React.FC<React.PropsWithChildren<{ walletProvide
             .filter((provider): provider is NftProvider => Boolean(provider));
 
         resolverService.setProviders(balanceProviders, gasProviders, nftProviders, transferProviders, contractAddressProviders, rpcHealthCheckProviders, gaslessProviders)
-
-        // Populate the extended-route registry in the same render pass as the
-        // resolvers above, so consumers that read it synchronously during render
-        // (isExtendedSourceNetwork, resolveExtendedRoutePlan, ...) see it before
-        // children mount. Kept here (vs. an effect) for that timing; gated by the
-        // deps below so it no longer re-runs on every render.
-        setExtendedRouteProviders(walletProviders.flatMap(p => p.extendedRouteProvider ?? []).filter(Boolean))
 
         return true;
     }, [walletProviders, transferProviders, gaslessProviders, contractAddressProviders, rpcHealthCheckProviders]);
