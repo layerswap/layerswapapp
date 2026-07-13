@@ -11,6 +11,7 @@ import { Address } from "@/lib/address/Address";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import DestinationTokenPicker from "../DestinationTokenPicker";
 import WalletIcon from "@/components/Icons/WalletIcon";
+import { ResolveConnectorIcon } from "@/components/Icons/ConnectorIcons";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { useExtendedDepositOption } from "./useExtendedDepositOption";
 
@@ -136,7 +137,11 @@ const MethodPicker: FC = () => {
     const WalletProviderIcon = primaryWallet?.icon;
     const walletCardIcon = hasWallet && WalletProviderIcon
         ? <WalletProviderIcon className="h-7 w-7" />
-        : <WalletIcon className="h-6 w-6 text-primary-text" strokeWidth={2} />;
+        : <ResolveConnectorIcon
+            connector={primaryWallet?.providerName}
+            iconClassName="w-[15px] h-[15px] p-px rounded bg-secondary-800 border border-secondary-400"
+            className="grid grid-cols-2 gap-0.5"
+        />;
 
     return (
         <div className="flex flex-col gap-2 w-full">
