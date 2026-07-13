@@ -60,8 +60,8 @@ export default function useBitcoin(): WalletProvider {
             const Icon = connector.icon
             const base64Icon = typeof Icon == 'string' ? Icon : Icon ? convertSvgComponentToBase64(Icon) : undefined
             setSelectedConnector({ ...internalConnector, icon: base64Icon })
-            if (account) {
-                await disconnect(config, { connector })
+            for (const connection of getConnections(config)) {
+                await disconnect(config, { connector: connection.connector })
             }
 
             if (!connector) throw new Error("Connector not found")
@@ -70,7 +70,7 @@ export default function useBitcoin(): WalletProvider {
 
             if (!result.accounts) throw new Error("No result from connector")
 
-            const address = result.accounts[0]
+            const address = result.accounts[0].address
             const network = networks.find(n => commonSupportedNetworks.includes(n.name))
             const wrongChanin = !Address.isValid(address, network)
 
@@ -97,12 +97,10 @@ export default function useBitcoin(): WalletProvider {
             return wallet
 
         } catch (e) {
-            const error = e
-            if (error.name == 'ConnectorAlreadyConnectedError') {
+            if (e?.name === 'ConnectorAlreadyConnectedError') {
                 throw new Error("Wallet is already connected");
-            } else {
-                throw new Error(e.message || e);
             }
+            throw new Error((e?.shortMessage || e?.message || 'Wallet connection failed').replace(`${e?.name}: `, '').trim())
         }
     }
 
@@ -110,12 +108,12 @@ export default function useBitcoin(): WalletProvider {
         const connections = getConnections(config)
         const connector = connections.find(c => c.connector.id === account.connector?.id)?.connector
 
-        if (!account || !connector) return undefined
+        if (!connector) return undefined
 
         const wallet = resolveWallet({
-            activeConnection: { address: account.address || '', id: connector.id },
+            activeConnection: { address: account.account?.address || '', id: connector.id },
             connector,
-            addresses: account.address ? [account.address] : [],
+            addresses: account.account?.address ? [account.account.address] : [],
             networks,
             discconnect: disconnectWallet,
             supportedNetworks: {

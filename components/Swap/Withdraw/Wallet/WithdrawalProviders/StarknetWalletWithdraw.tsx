@@ -83,7 +83,7 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> 
         return <ActionMessages.TransactionFailedMessage />
     }
     else if (error) {
-        return <ActionMessages.UexpectedErrorMessage message={error} />
+        return <ActionMessages.UnexpectedErrorMessage message={error} />
     }
     else return <></>
 }

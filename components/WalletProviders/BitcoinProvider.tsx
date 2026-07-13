@@ -1,7 +1,7 @@
 import { BigmiProvider, useConnect } from '@bigmi/react'
-import { createConfig, leather, onekey, phantom, unisat, xverse } from '@bigmi/client'
+import { createConfig, bitget, ctrl, leather, metamask, okx, onekey, unisat, xverse } from '@bigmi/client'
 import type { Connector, CreateConnectorFn } from '@bigmi/client'
-import { http, bitcoin, createClient, defineChain, Chain } from '@bigmi/core'
+import { http, bitcoin, createClient, defineChain, Chain, ChainId } from '@bigmi/core'
 import { getWallets } from '@wallet-standard/app'
 import { NetworkType, NetworkWithTokens } from '@/Models/Network'
 import { useSettingsState } from '@/context/settings'
@@ -89,17 +89,12 @@ const connectorsConfigs = [
         installLink: "https://www.xverse.app/download"
     },
     {
-        id: "app.phantom.bitcoin",
-        name: 'Phantom',
-        installLink: "https://phantom.com/download"
-    },
-    {
         id: "unisat",
         name: 'UniSat',
         installLink: "https://unisat.io/"
     },
     {
-        id: "io.xdefi.bitcoin",
+        id: "io.xdefi",
         name: 'Ctrl',
         installLink: "https://ctrl.xyz/download/"
     },
@@ -107,6 +102,11 @@ const connectorsConfigs = [
         id: "com.okex.wallet.bitcoin",
         name: 'OKX Wallet',
         installLink: "https://web3.okx.com/"
+    },
+    {
+        id: "bitget",
+        name: 'Bitget',
+        installLink: "https://web3.bitget.com/en/wallet-download"
     },
     {
         id: "so.onekey.app.wallet.bitcoin",
@@ -117,6 +117,11 @@ const connectorsConfigs = [
         id: "LeatherProvider",
         name: 'Leather',
         installLink: "https://leather.io/"
+    },
+    {
+        id: "io.metamask.bitcoin",
+        name: 'MetaMask',
+        installLink: "https://metamask.io/download/"
     },
     {
         id: "trust-bitcoin",
@@ -135,15 +140,15 @@ function createDefaultBigmiConfig(network?: NetworkWithTokens) {
     }
 
     const btcChainId = chain.id
-    const walletStandardChain = chain.testnet ? 'bitcoin:testnet' : 'bitcoin:mainnet'
     const connectors: CreateConnectorFn[] = [
-        phantom({ chainId: btcChainId }),
         xverse({ chainId: btcChainId }),
         unisat({ chainId: btcChainId }),
-        // ctrl({ chainId: btcChainId }),
-        // okx({ chainId: btcChainId }),
+        ctrl({ chainId: btcChainId }),
+        okx({ chainId: btcChainId }),
+        bitget({ chainId: btcChainId }),
         leather({ chainId: btcChainId }),
         onekey({ chainId: btcChainId }),
+        metamask({ chainId: btcChainId }),
     ]
 
     // Trust supports bitcoin:mainnet only
@@ -153,7 +158,6 @@ function createDefaultBigmiConfig(network?: NetworkWithTokens) {
             walletName: 'Trust Wallet',
             standardName: 'Trust',
             walletId: 'trust-bitcoin',
-            walletStandardChain,
             icon: convertSvgComponentToBase64(TrustIcon),
         }))
     }
@@ -170,7 +174,7 @@ function createDefaultBigmiConfig(network?: NetworkWithTokens) {
 }
 
 const bitcoinTestnet = (network: NetworkWithTokens) => defineChain({
-    id: 20000000000002,
+    id: ChainId.BITCOIN_TESTNET,
     name: 'Bitcoin Testnet',
     nativeCurrency: { name: 'Bitcoin', symbol: 'BTC', decimals: 8 },
     rpcUrls: {

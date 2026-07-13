@@ -1,15 +1,14 @@
-import { MethodNotSupportedRpcError, ProviderNotFoundError, UserRejectedRequestError } from '@bigmi/core'
+import { MethodNotSupportedRpcError, ProviderNotFoundError, UserRejectedRequestError, getAddressInfo } from '@bigmi/core'
+import type { Account, ChainId, SignPsbtParameters } from '@bigmi/core'
 import type { CreateConnectorFn } from '@bigmi/client'
 import { getWallets } from '@wallet-standard/app'
 import type { IdentifierString, Wallet, WalletAccount } from '@wallet-standard/base'
 
 type WalletStandardBitcoinParams = {
-    chainId: number
+    chainId: ChainId
     walletName: string
     walletId: string
-    /** wallet-standard registered name to match against, if it differs from the display name */
     standardName?: string
-    walletStandardChain?: IdentifierString
     icon?: string
     shimDisconnect?: boolean
 }
@@ -24,6 +23,8 @@ type BitcoinSigHash = 'ALL' | 'NONE' | 'SINGLE' | 'ALL|ANYONECANPAY' | 'NONE|ANY
 
 type AccountsChangeEvent = { accounts?: readonly WalletAccount[] }
 
+type RequestArgs = { method: string, params: SignPsbtParameters }
+
 type BitcoinSignTransactionFeature = {
     signTransaction: (...inputs: {
         psbt: Uint8Array
@@ -32,12 +33,7 @@ type BitcoinSignTransactionFeature = {
     }[]) => Promise<readonly { signedPsbt: Uint8Array }[]>
 }
 
-type SignPsbtParams = {
-    psbt: string
-    inputsToSign: readonly { signingIndexes: number[], sigHash?: number }[]
-}
-
-const feature = <T>(wallet: Wallet, name: string) => wallet.features[name as IdentifierString] as T | undefined
+const feature = <T>(wallet: Wallet, name: IdentifierString) => wallet.features[name] as T | undefined
 
 const supportsWallet = (wallet: Wallet, walletName: string, chain: IdentifierString) =>
     wallet.name.toLowerCase() === walletName.toLowerCase()
@@ -57,15 +53,25 @@ const SIGHASH_FLAGS: Record<number, BitcoinSigHash> = {
 const mapSigHash = (sigHash?: number): BitcoinSigHash | undefined =>
     sigHash === undefined ? undefined : SIGHASH_FLAGS[sigHash]
 
+const toAccount = (walletAccount: WalletAccount): Account => {
+    const { type, purpose } = getAddressInfo(walletAccount.address)
+    return {
+        address: walletAccount.address,
+        addressType: type,
+        publicKey: Buffer.from(walletAccount.publicKey).toString('hex'),
+        purpose,
+    }
+}
+
 export function walletStandardBitcoinConnector(params: WalletStandardBitcoinParams): CreateConnectorFn {
-    const { chainId, walletName, walletId, standardName = walletName, walletStandardChain = 'bitcoin:mainnet', icon: fallbackIcon, shimDisconnect = true } = params
+    const { chainId, walletName, walletId, standardName = walletName, icon: fallbackIcon, shimDisconnect = true } = params
 
     let account: WalletAccount | undefined
     let eventsOff: (() => void) | undefined
 
     const resolveWallet = (): Wallet | undefined => {
         if (typeof window === 'undefined') return undefined
-        return getWallets().get().find(w => supportsWallet(w, standardName, walletStandardChain))
+        return getWallets().get().find(w => supportsWallet(w, standardName, chainId))
     }
 
     const requireWallet = (): Wallet => {
@@ -85,11 +91,11 @@ export function walletStandardBitcoinConnector(params: WalletStandardBitcoinPara
         async getProvider() {
             if (!resolveWallet()) return undefined
             return {
-                request: (args: { method: string, params: SignPsbtParams }) => this.request(args),
+                request: (args: RequestArgs) => this.request(args),
             }
         },
 
-        async request({ method, params }: { method: string, params: SignPsbtParams }) {
+        async request({ method, params }: RequestArgs) {
             switch (method) {
                 case 'signPsbt': {
                     const wallet = requireWallet()
@@ -105,7 +111,7 @@ export function walletStandardBitcoinConnector(params: WalletStandardBitcoinPara
                             signingIndexes: input.signingIndexes,
                             sigHash: mapSigHash(input.sigHash),
                         })),
-                        chain: walletStandardChain,
+                        chain: chainId,
                     })
 
                     return Buffer.from(output.signedPsbt).toString('hex')
@@ -115,7 +121,7 @@ export function walletStandardBitcoinConnector(params: WalletStandardBitcoinPara
             }
         },
 
-        async connect(parameters?: { chainId?: number, isReconnecting?: boolean }) {
+        async connect(parameters?: { chainId?: ChainId, isReconnecting?: boolean }) {
             const wallet = requireWallet()
             const connectFeature = feature<{ connect: (input?: { purposes?: readonly ('payment' | 'ordinals')[] }) => Promise<{ accounts: readonly WalletAccount[] }> }>(wallet, BITCOIN_CONNECT)
             if (!connectFeature) throw new ProviderNotFoundError()
@@ -134,7 +140,7 @@ export function walletStandardBitcoinConnector(params: WalletStandardBitcoinPara
                             this.onDisconnect()
                         } else {
                             account = next
-                            config.emitter.emit('change', { accounts: [next.address] })
+                            config.emitter.emit('change', { accounts: [toAccount(next)] })
                         }
                     })
                 }
@@ -146,7 +152,7 @@ export function walletStandardBitcoinConnector(params: WalletStandardBitcoinPara
                     ])
                 }
 
-                return { accounts: [account.address], chainId }
+                return { accounts: [toAccount(account)], chainId }
             } catch (error) {
                 // A failed silent reconnect means authorization was revoked wallet-side;
                 // clear the shim so the next refresh doesn't prompt again.
@@ -181,7 +187,7 @@ export function walletStandardBitcoinConnector(params: WalletStandardBitcoinPara
         },
 
         async getAccounts() {
-            return requireWallet().accounts.map(a => a.address)
+            return requireWallet().accounts.map(toAccount)
         },
 
         async getChainId() {
@@ -205,7 +211,7 @@ export function walletStandardBitcoinConnector(params: WalletStandardBitcoinPara
             }
         },
 
-        async onAccountsChanged(accounts: string[]) {
+        async onAccountsChanged(accounts: Account[]) {
             if (accounts.length === 0) {
                 this.onDisconnect()
             } else {
