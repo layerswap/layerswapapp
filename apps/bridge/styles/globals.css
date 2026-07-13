@@ -94,6 +94,14 @@
   max-height: var(--radix-popper-available-height);
 }
 
+@utility autofill-secondary {
+  &:-webkit-autofill,
+  &:autofill {
+    box-shadow: inset 0 0 0 1000px var(--color-secondary-500) !important;
+    -webkit-text-fill-color: var(--color-primary-text) !important;
+  }
+}
+
 @layer utilities {
 
   /* Chrome, Safari, Edge, Opera */
