@@ -24,7 +24,7 @@ export const InstalledExtensionNotFound: FC<{
                 <div className="text-center">
                     <p className="text-base font-medium text-primary-text">{selectedConnector?.name} not detected</p>
                     <p className="text-sm font-normal text-secondary-text mt-1">
-                        Install the extension or connect with your phone
+                        {selectedConnector?.hasBrowserExtension ? "Install the extension or connect with your phone" : "Install the extension to continue"}
                     </p>
                 </div>
             </div>
