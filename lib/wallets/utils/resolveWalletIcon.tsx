@@ -5,12 +5,14 @@ import KnownEVMConnectors from "../evm/KnownEVMConnectors";
 import KnownFuelConnectors from "../fuel/KnownFuelConnectors";
 import KnownSolanaConnectors from "../solana/KnownSolanaConnectors";
 import KnownStarknetConnectors from "../starknet/KnownStarknetConnectors";
+import KnownBitcoinConnectors from "../bitcoin/KnownBitcoinConnectors";
 
 const connectors = [
     ...KnownEVMConnectors,
     ...KnownSolanaConnectors,
     ...KnownStarknetConnectors,
-    ...KnownFuelConnectors
+    ...KnownFuelConnectors,
+    ...KnownBitcoinConnectors
 ]
 
 export const resolveWalletConnectorIcon = ({ connector, address, iconUrl }: { connector?: string, address?: string, iconUrl?: string }) => {

@@ -123,11 +123,16 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: wallet, n
                     {
                         wallet &&
                         <div className="inline-flex items-center relative">
-                            <wallet.icon
-                                className={clsx('w-9 h-9 p-0.5 rounded-md bg-secondary-800', {
-                                    'w-6! h-6!': wallet.addresses.length > 1,
-                                })}
-                            />
+                            {
+                                wallet.id === 'manually_added' ?
+                                    <AddressIcon address={wallet.address} size={36} network={network} className="rounded-md bg-secondary-800" />
+                                    :
+                                    <wallet.icon
+                                        className={clsx('w-9 h-9 p-0.5 rounded-md bg-secondary-800', {
+                                            'w-6! h-6!': wallet.addresses.length > 1,
+                                        })}
+                                    />
+                            }
                             {
                                 hasNetworkIcon(wallet) && <div className="h-5 w-5 absolute -right-1 -bottom-1">
                                     <ImageWithFallback

@@ -1,16 +1,20 @@
 import { BigmiProvider, useConnect } from '@bigmi/react'
-import { createConfig, ctrl, leather, okx, onekey, phantom, unisat, xverse } from '@bigmi/client'
-import type { CreateConnectorFn } from '@bigmi/client'
+import { createConfig, leather, onekey, phantom, unisat, xverse } from '@bigmi/client'
+import type { Connector, CreateConnectorFn } from '@bigmi/client'
 import { http, bitcoin, createClient, defineChain, Chain } from '@bigmi/core'
-import { NetworkType, NetworkWithTokens } from '../../Models/Network'
-import { useSettingsState } from '../../context/settings'
-import { createContext, useContext, useEffect, useState } from 'react'
+import { getWallets } from '@wallet-standard/app'
+import { NetworkType, NetworkWithTokens } from '@/Models/Network'
+import { useSettingsState } from '@/context/settings'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { InternalConnector } from '@/Models/WalletProvider'
+import { walletStandardBitcoinConnector } from '@/lib/wallets/bitcoin/walletStandardBitcoinConnector'
+import convertSvgComponentToBase64 from '@/components/utils/convertSvgComponentToBase64'
+import TrustIcon from '@/components/icons/Wallets/Trust'
 
 export const BitcoinProvider = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
     const { networks } = useSettingsState()
     const network = networks.find(n => n.type === NetworkType.Bitcoin)
-    const config = createDefaultBigmiConfig(network)
+    const config = useMemo(() => createDefaultBigmiConfig(network), [network])
 
     return (
         <BigmiProvider config={config} reconnectOnMount={true}>
@@ -21,29 +25,44 @@ export const BitcoinProvider = ({ children }: { children: JSX.Element | JSX.Elem
     )
 }
 
+const toInternalConnector = async (connector: Connector): Promise<InternalConnector> => {
+    const provider = await connector.getProvider()
+    const isInjected = !!provider
+    const config = connectorsConfigs.find(c => c.id === connector.id)
+    return {
+        name: connector.name,
+        id: connector.id,
+        icon: connector.icon,
+        type: isInjected ? 'injected' : 'other',
+        installUrl: !isInjected ? config?.installLink : undefined,
+        extensionNotFound: !isInjected,
+        providerName: connector.name
+    }
+}
+
 const ConnectorsContext = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
     const { connectors } = useConnect()
     const [resolvedConnectors, setResolvedConnectors] = useState<InternalConnector[]>([])
 
     useEffect(() => {
-        (async () => {
-            const resolvedConnectors: InternalConnector[] = await Promise.all(connectors.map(async (connector) => {
-                const provider = await connector.getProvider()
-                const isInjected = !!provider
-                const installLink = !isInjected ? connectorsConfigs.find(c => c.id === connector.id)?.installLink : undefined
-                const internalConnector: InternalConnector = {
-                    name: connector.name,
-                    id: connector.id,
-                    icon: connector.icon,
-                    type: isInjected ? 'injected' : 'other',
-                    installUrl: installLink,
-                    extensionNotFound: !isInjected,
-                    providerName: connector.name
-                }
-                return internalConnector
-            }))
-            setResolvedConnectors(resolvedConnectors)
-        })()
+        let cancelled = false
+
+        const resolve = async () => {
+            const next = await Promise.all(connectors.map(toInternalConnector))
+            if (!cancelled) setResolvedConnectors(next)
+        }
+
+        void resolve()
+
+        const wallets = getWallets()
+        const offRegister = wallets.on('register', () => void resolve())
+        const offUnregister = wallets.on('unregister', () => void resolve())
+
+        return () => {
+            cancelled = true
+            offRegister()
+            offUnregister()
+        }
     }, [connectors])
 
     return (
@@ -98,6 +117,11 @@ const connectorsConfigs = [
         id: "LeatherProvider",
         name: 'Leather',
         installLink: "https://leather.io/"
+    },
+    {
+        id: "trust-bitcoin",
+        name: 'Trust Wallet',
+        installLink: "https://trustwallet.com/download"
     }
 ]
 
@@ -111,6 +135,7 @@ function createDefaultBigmiConfig(network?: NetworkWithTokens) {
     }
 
     const btcChainId = chain.id
+    const walletStandardChain = chain.testnet ? 'bitcoin:testnet' : 'bitcoin:mainnet'
     const connectors: CreateConnectorFn[] = [
         phantom({ chainId: btcChainId }),
         xverse({ chainId: btcChainId }),
@@ -120,6 +145,18 @@ function createDefaultBigmiConfig(network?: NetworkWithTokens) {
         leather({ chainId: btcChainId }),
         onekey({ chainId: btcChainId }),
     ]
+
+    // Trust supports bitcoin:mainnet only
+    if (!chain.testnet) {
+        connectors.push(walletStandardBitcoinConnector({
+            chainId: btcChainId,
+            walletName: 'Trust Wallet',
+            standardName: 'Trust',
+            walletId: 'trust-bitcoin',
+            walletStandardChain,
+            icon: convertSvgComponentToBase64(TrustIcon),
+        }))
+    }
 
     const config = createConfig({
         chains: [chain],

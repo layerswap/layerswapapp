@@ -58,7 +58,7 @@ export default function useBitcoin(): WalletProvider {
             const connector = connectors.find(w => w.id === internalConnector.id)
             if (!connector) throw new Error("Connector not found")
             const Icon = connector.icon
-            const base64Icon = typeof Icon == 'string' ? Icon : convertSvgComponentToBase64(Icon)
+            const base64Icon = typeof Icon == 'string' ? Icon : Icon ? convertSvgComponentToBase64(Icon) : undefined
             setSelectedConnector({ ...internalConnector, icon: base64Icon })
             if (account) {
                 await disconnect(config, { connector })
