@@ -45,10 +45,7 @@ export function useUsdTokenSync({
     const setUsdAmount = useUsdModeStore(s => s.setUsdAmount);
     const toggleMode = useUsdModeStore(s => s.toggleMode);
 
-    // usdAmount lives in a global store that outlives the form. On unmount
-    // (e.g. switching tabs, which resets the rest of the form) clear the value
-    // so it doesn't linger. The persisted isUsdMode preference is left intact.
-    useEffect(() => () => setUsdAmount(''), [setUsdAmount]);
+    useEffect(() => () => { setUsdAmount(''); didInitUsdRef.current = false; }, [setUsdAmount]);
 
     // --- Price resolution with fallback chain ---
 
@@ -75,6 +72,7 @@ export function useUsdTokenSync({
     // --- Sync coordination refs ---
 
     const prevPriceRef = useRef(sourceCurrencyPriceInUsd);
+    const prevIsUsdModeRef = useRef(isUsdMode);
     const prevTokenSymbolRef = useRef(fromCurrency?.symbol);
     const internalAmountChangeRef = useRef(false);
     const currentAmountRef = useRef(amount);
@@ -133,6 +131,10 @@ export function useUsdTokenSync({
     // Sync usdAmount when formik amount changes externally (e.g. quick action buttons).
     // The ref-based guards ensure only truly external changes trigger the sync.
     useEffect(() => {
+        const enteredUsdMode = isUsdMode && !prevIsUsdModeRef.current;
+        prevIsUsdModeRef.current = isUsdMode;
+        if (enteredUsdMode) didInitUsdRef.current = false;
+
         const isInitialSync = !didInitUsdRef.current;
         const amountChanged = prevAmountRef.current !== amount;
         prevAmountRef.current = amount;
@@ -160,10 +162,7 @@ export function useUsdTokenSync({
             didInitUsdRef.current = true;
             return;
         }
-        if (!isUsdMode) {
-            didInitUsdRef.current = true;
-            return;
-        }
+        if (!isUsdMode) return;
         // On the initial sync, keep waiting for a price — the effect re-runs
         // when it resolves (it's a dependency), completing the reconciliation.
         if (!sourceCurrencyPriceInUsd) return;
