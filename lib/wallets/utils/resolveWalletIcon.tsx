@@ -29,8 +29,8 @@ export const resolveWalletConnectorIndex = (id: string) => {
     return connectors.findIndex(c => c.id === id?.toLowerCase())
 }
 
-const AddressIconWrapper = (address: string) => (props: typeof AddressIcon) => {
-    return <AddressIcon address={address} size={24} {...props} />
+const AddressIconWrapper = (address: string) => ({ className }: { className?: string }) => {
+    return <AddressIcon address={address} className={className} />
 }
 
 const SVGIconWrapper = (iconUrl: string) => (props) => {
