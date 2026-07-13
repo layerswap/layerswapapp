@@ -114,7 +114,7 @@ export const POLYMARKET_DEPLOY_POLL_TIMEOUT_MS = 60000
  * next/image remote-host allowlisting and the SVG optimizer restriction. Can be
  * swapped for a Layerswap-CDN asset once one is added. */
 export const POLYMARKET_DISPLAY_NAME = 'Polymarket'
-export const POLYMARKET_LOGO = '/images/polymarket.png'
+export const POLYMARKET_LOGO = 'https://layerswap.io/app/images/polymarket.png'
 
 export type PolymarketConfig = {
     networkName: string
