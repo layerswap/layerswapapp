@@ -44,17 +44,17 @@ export function transformQuoteForExtendedRoute(
     sourceAmount: DecimalInput,
 ): Quote | undefined {
     if (!quote?.quote) return quote
-    const pricePerToken = extendedToken.price_in_usd ?? 1
+    const sourcePriceInUsd = extendedToken.price_in_usd || quote.quote.source_token?.price_in_usd || 0
 
     return {
         ...quote,
         quote: {
             ...quote.quote,
             source_network: extendedNetwork,
-            source_token: extendedToken,
+            source_token: { ...extendedToken, price_in_usd: sourcePriceInUsd },
             requested_amount: decimalToNumber(sourceAmount),
             total_fee: quote.quote.total_fee + mapping.flatFee,
-            total_fee_in_usd: quote.quote.total_fee_in_usd + mapping.flatFee * pricePerToken,
+            total_fee_in_usd: quote.quote.total_fee_in_usd + mapping.flatFee * sourcePriceInUsd,
             blockchain_fee: quote.quote.blockchain_fee + mapping.flatFee,
             avg_completion_time: addSecondsToHms(quote.quote.avg_completion_time, mapping.extraCompletionSeconds),
         },

@@ -184,7 +184,7 @@ export async function resolvePolymarketHolding(eoa: string, publicClient: Public
 
     const total = entries.reduce((sum, e) => sum + e.amount, 0)
     const primary = entries.reduce<PolymarketHoldingEntry | undefined>(
-        (best, e) => (!best || e.raw > best.raw ? e : best),
+        (best, e) => (!best || e.amount > best.amount ? e : best),
         undefined,
     )
 

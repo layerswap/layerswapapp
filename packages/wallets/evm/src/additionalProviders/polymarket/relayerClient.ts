@@ -1,21 +1,12 @@
-import { POLYMARKET_RELAYER_PROXY_PATH } from "./constants";
+import { POLYMARKET_RELAYER_PROXY_URL } from "./constants";
 
 /**
  * Client-side helper for the Polymarket relayer, routed through our Next.js proxy
- * (`/api/polymarket/relay`). The proxy holds the builder API key (server secret) and
- * attaches builder auth on submit; routing reads through it too avoids cross-origin
- * issues. The user's own signature (built client-side) is what actually authorizes
- * the fund movement — the builder key only authorizes use of the relayer (gas).
- *
- * The proxy path must be prefixed with the app's Next.js `basePath` (the app can be
- * served under a sub-path, e.g. `/app`) — without it a same-origin `fetch` misses the
- * deployed route and Vercel returns a platform 404. Callers pass `router.basePath`.
+ * (`POLYMARKET_RELAYER_PROXY_URL`). The proxy holds the builder API key (server secret)
+ * and attaches builder auth on submit. The user's own signature (built client-side) is
+ * what actually authorizes the fund movement — the builder key only authorizes use of
+ * the relayer (gas).
  */
-
-/** Build the proxy URL, honoring the app's Next.js basePath (empty at the domain root). */
-function proxyPath(basePath: string): string {
-    return `${basePath}${POLYMARKET_RELAYER_PROXY_PATH}`
-}
 
 /** A single call inside a deposit-wallet batch. */
 export type DepositWalletCall = { target: string; value: string; data: string }
@@ -66,19 +57,9 @@ export type RelayerSubmitResponse = {
     transactionHash?: string
 }
 
-export type RelayerTransaction = {
-    transactionID: string
-    transactionHash?: string
-    state: string
-    type?: string
-    proxyAddress?: string
-    from?: string
-    to?: string
-}
-
-async function proxyGet<T>(params: Record<string, string>, basePath: string): Promise<T> {
+async function proxyGet<T>(params: Record<string, string>): Promise<T> {
     const qs = new URLSearchParams(params).toString()
-    const res = await fetch(`${proxyPath(basePath)}?${qs}`, { method: 'GET' })
+    const res = await fetch(`${POLYMARKET_RELAYER_PROXY_URL}?${qs}`, { method: 'GET' })
     if (!res.ok) throw new Error(`Polymarket relayer (${params.action}) failed: ${res.status} ${(await res.text().catch(() => '')).slice(0, 200)}`)
     return res.json() as Promise<T>
 }
@@ -86,27 +67,22 @@ async function proxyGet<T>(params: Record<string, string>, basePath: string): Pr
 /** Relayer signer type. The nonce is always keyed on the owner EOA + the funder type. */
 export type RelayerSignerType = 'SAFE' | 'PROXY' | 'WALLET'
 
-export async function getRelayerNonce(ownerEoa: string, type: RelayerSignerType, basePath: string = ''): Promise<string> {
-    const data = await proxyGet<{ nonce: string }>({ action: 'nonce', address: ownerEoa, type }, basePath)
+export async function getRelayerNonce(ownerEoa: string, type: RelayerSignerType): Promise<string> {
+    const data = await proxyGet<{ nonce: string }>({ action: 'nonce', address: ownerEoa, type })
     return data.nonce
 }
 
-export async function isPolymarketDeployed(address: string, type: RelayerSignerType, basePath: string = ''): Promise<boolean> {
-    const data = await proxyGet<{ deployed: boolean }>({ action: 'deployed', address, type }, basePath)
+export async function isPolymarketDeployed(address: string, type: RelayerSignerType): Promise<boolean> {
+    const data = await proxyGet<{ deployed: boolean }>({ action: 'deployed', address, type })
     return !!data.deployed
 }
 
-export async function submitRelayerTransaction(request: RelayerSubmittable, basePath: string = ''): Promise<RelayerSubmitResponse> {
-    const res = await fetch(proxyPath(basePath), {
+export async function submitRelayerTransaction(request: RelayerSubmittable): Promise<RelayerSubmitResponse> {
+    const res = await fetch(POLYMARKET_RELAYER_PROXY_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'submit', request }),
     })
     if (!res.ok) throw new Error(`Polymarket relayer submit failed: ${res.status} ${(await res.text().catch(() => '')).slice(0, 300)}`)
     return res.json() as Promise<RelayerSubmitResponse>
-}
-
-export async function getRelayerTransaction(id: string, basePath: string = ''): Promise<RelayerTransaction[]> {
-    const data = await proxyGet<RelayerTransaction[] | { transactions?: RelayerTransaction[] }>({ action: 'transaction', id }, basePath)
-    return Array.isArray(data) ? data : (data.transactions ?? [])
 }

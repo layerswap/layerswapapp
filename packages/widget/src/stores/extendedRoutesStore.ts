@@ -18,12 +18,6 @@ export type ExtendedRouteRecord = {
     /** A — the amount that leaves the extended source (sendToEvmWithData amount). */
     sourceAmount: string
     createdAt: number
-    /** Polymarket: the derived Safe (proxy) wallet that holds the funds. */
-    proxyWallet?: string
-    /** Polymarket: the one-time bridge address pUSD is sent to. Persisted so a retry
-     * or reload reuses it instead of minting a new bridge address (and stranding a
-     * partial transfer). */
-    bridgeAddress?: string
 }
 
 type ExtendedRoutesStore = {

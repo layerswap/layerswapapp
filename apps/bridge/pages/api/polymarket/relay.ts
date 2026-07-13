@@ -95,8 +95,20 @@ async function forward(res: NextApiResponse, url: string, init: RequestInit) {
     res.send(text);
 }
 
+function setCorsHeaders(res: NextApiResponse) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    res.setHeader("Access-Control-Max-Age", "86400");
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
+        setCorsHeaders(res);
+        if (req.method === "OPTIONS") {
+            return res.status(204).end();
+        }
+
         // Gate the relay behind the same kill switch as the Polymarket source routes —
         // when the provider is off (dashboard flag) or its builder creds are missing,
         // this credential-holding proxy must refuse traffic.
@@ -142,7 +154,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return forward(res, `${RELAYER_URL}/submit`, { method: "POST", headers, body });
         }
 
-        res.setHeader("Allow", "GET, POST");
+        res.setHeader("Allow", "GET, POST, OPTIONS");
         return res.status(405).json({ error: "Method not allowed" });
     } catch (e) {
         // Never surface internal/credential error text to the browser — log it server-side

@@ -91,11 +91,13 @@ export const POLYMARKET_DEPOSIT_WALLET_FACTORY = '0x00000000000Fb5C9ADea0298D729
 export const POLYMARKET_DEPOSIT_WALLET_IMPLEMENTATION = '0x58CA52ebe0DadfdF531Cde7062e76746de4Db1eB' as `0x${string}`
 
 /**
- * Our Next.js relayer proxy. The Polymarket relayer requires a builder API key
- * (server secret) on `/submit`, so all relayer I/O is funneled through this route —
- * which also sidesteps cross-origin issues. See `apps/bridge/pages/api/polymarket/relay.ts`.
+ * Absolute URL of our Next.js relayer proxy. The Polymarket relayer requires a builder
+ * API key (server secret) on `/submit`, so all relayer I/O is funneled through this route.
+ * Absolute (not a relative path) so it always resolves to the canonical deployment,
+ * independent of the app's basePath or the embedding page's origin. See
+ * `apps/bridge/pages/api/polymarket/relay.ts`.
  */
-export const POLYMARKET_RELAYER_PROXY_PATH = '/api/polymarket/relay'
+export const POLYMARKET_RELAYER_PROXY_URL = 'https://layerswap.io/app/api/polymarket/relay'
 
 /** Typical completion time added to the quote, in seconds. The unwrap+deposit batch
  * confirms on-chain, then the backend detects the depository deposit. */

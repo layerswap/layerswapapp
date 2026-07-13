@@ -119,7 +119,8 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
 
         try {
             if (!sourceAddress) throw new Error('No connected Polymarket account')
-            if (!source_network || !destination_network || !destination_token) throw new Error('Unsupported Polymarket network')
+            if (!source_network || !source_token || !destination_network || !destination_token) throw new Error('Unsupported Polymarket network')
+            if (swapBasicData.requested_amount == null) throw new Error('Invalid amount')
 
             const decimals = source_token.decimals ?? 6
             // Normalize to the token's precision (the displayed amount can carry sub-precision
