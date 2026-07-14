@@ -1,5 +1,18 @@
 # @layerswap/wallet-paradex
 
+## 1.7.0
+
+### Minor Changes
+
+- Add Polymarket withdrawal
+
+### Patch Changes
+
+- Updated dependencies
+  - @layerswap/widget@1.7.0
+  - @layerswap/wallet-evm@1.7.0
+  - @layerswap/wallet-starknet@1.7.0
+
 ## 1.6.0
 
 ### Minor Changes

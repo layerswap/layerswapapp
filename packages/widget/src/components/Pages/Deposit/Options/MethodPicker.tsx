@@ -133,8 +133,7 @@ const MethodPicker: FC = () => {
         ? `Connected · ${new Address(primaryWallet?.address, null, primaryWallet.providerName).toShortString()}`
         : "Connect a wallet";
 
-    const WalletProviderIcon = primaryWallet?.icon;
-    const walletCardIcon = hasWallet && WalletProviderIcon
+    const walletCardIcon = hasWallet && primaryWallet?.icon
         ? <ImageWithFallback
             alt={primaryWallet.displayName ?? primaryWallet.id}
             className="h-7 w-7 object-contain"

@@ -1,5 +1,11 @@
 # @layerswap/utils
 
+## 1.7.0
+
+### Minor Changes
+
+- Add Polymarket withdrawal
+
 ## 1.6.0
 
 ### Minor Changes

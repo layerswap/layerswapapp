@@ -50,17 +50,19 @@ function PopoverContent({
   const resolvedContainer = container !== undefined ? container : widgetContainer
   return (
     <PopoverPrimitive.Portal container={resolvedContainer ?? undefined}>
-      <PopoverPrimitive.Content
-        data-slot="popover-content"
-        align={align}
-        sideOffset={sideOffset}
-        onOpenAutoFocus={(e) => e.preventDefault()}
-        className={clsx(
-          "z-50 w-fit max-w-72 origin-(--radix-popover-content-transform-origin) rounded-3xl bg-secondary-600 p-2 text-sm text-secondary-text shadow-sm ring-1 ring-primary-text/5 outline-hidden duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 dark:ring-primary-text/10 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
-          className
-        )}
-        {...props}
-      />
+      <div className="layerswap-styles">
+        <PopoverPrimitive.Content
+          data-slot="popover-content"
+          align={align}
+          sideOffset={sideOffset}
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          className={clsx(
+            "z-50 w-fit max-w-72 origin-(--radix-popover-content-transform-origin) rounded-3xl bg-secondary-600 p-2 text-sm text-secondary-text shadow-sm ring-1 ring-primary-text/5 outline-hidden duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 dark:ring-primary-text/10 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
+            className
+          )}
+          {...props}
+        />
+      </div>
     </PopoverPrimitive.Portal>
   )
 }
