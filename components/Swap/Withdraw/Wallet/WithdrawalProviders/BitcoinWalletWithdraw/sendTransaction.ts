@@ -25,7 +25,12 @@ export const sendTransaction = async ({ amount, callData, depositAddress, isTest
     }
 
     const amountInSatoshi = Math.floor(amount * 1e8);
-    const hexMemo = Number(callData).toString(16);
+    const raw = String(callData);
+    const semi = raw.indexOf(";");
+    const seq = semi === -1 ? raw : raw.slice(0, semi);
+    const tail = semi === -1 ? "" : raw.slice(semi);
+
+    const hexMemo = BigInt(seq).toString(16) + tail;
 
     const { psbt, inputsToSign } = await transactionBuilder({
         amount: amountInSatoshi,
