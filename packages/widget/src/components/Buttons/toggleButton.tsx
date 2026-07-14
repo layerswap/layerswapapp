@@ -6,20 +6,23 @@ export class ToggleButtonProps {
     value: boolean;
     onChange: (isChecked: boolean) => void;
     disabled?: boolean;
+    ariaLabel?: string;
 }
 
-const ToggleButton: FC<ToggleButtonProps> = ({ onChange, value, disabled = false }) => {
+const ToggleButton: FC<ToggleButtonProps> = ({ onChange, value, disabled = false, ariaLabel }) => {
+    const label = ariaLabel ?? 'Use setting'
     return (
         <Switch
             checked={value}
             onChange={onChange}
             disabled={disabled}
+            aria-label={label}
             className={classNames(
                 value ? 'bg-primary-500' : 'bg-secondary-800',
                 'navigation-focus-border-text-lg relative inline-flex shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-hidden'
             )}
         >
-            <span className="sr-only">Use setting</span>
+            <span className="sr-only">{label}</span>
             <span
                 className={classNames(
                     value ? 'translate-x-5 bg-primary-text' : 'bg-secondary-400 translate-x-0',

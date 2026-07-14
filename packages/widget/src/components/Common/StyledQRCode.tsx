@@ -5,6 +5,10 @@ type StyledQRCodeProps = {
     value: string;
     size?: number;
     logo?: string;
+    /** Error-correction level. Use "M" for wallet-connection QRs (denser data,
+     * keeps modules large enough to scan) and "H" for addresses (tolerates the
+     * center logo occluding more of the code). Defaults to "M". */
+    ecLevel?: "L" | "M" | "Q" | "H";
 };
 
 const FALLBACK_FG = "#E1E3E6";
@@ -27,7 +31,7 @@ const resolveForeground = (): string => {
  * own lifecycle (SSR-safe, no effect needed here), and a failed or slow logo
  * never blanks the code — the QR is drawn first and the logo overlaid on load.
  */
-const StyledQRCode: FC<StyledQRCodeProps> = ({ value, size = 140, logo }) => {
+const StyledQRCode: FC<StyledQRCodeProps> = ({ value, size = 140, logo, ecLevel = "M" }) => {
     const [fgColor] = useState(resolveForeground);
     const logoSize = Math.round(size * 0.25);
 
@@ -35,7 +39,7 @@ const StyledQRCode: FC<StyledQRCodeProps> = ({ value, size = 140, logo }) => {
         <QRCode
             value={value}
             size={size}
-            ecLevel="H"
+            ecLevel={ecLevel}
             quietZone={0}
             bgColor="transparent"
             fgColor={fgColor}
@@ -46,7 +50,7 @@ const StyledQRCode: FC<StyledQRCodeProps> = ({ value, size = 140, logo }) => {
             logoHeight={logoSize}
             removeQrCodeBehindLogo
             logoPadding={3}
-            logoPaddingStyle="circle"
+            logoPaddingStyle="square"
         />
     );
 };

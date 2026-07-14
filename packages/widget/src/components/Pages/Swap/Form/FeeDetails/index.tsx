@@ -25,6 +25,9 @@ const CupIcon = lazy(() =>
 );
 import { DetailedEstimates } from './SwapQuote/DetailedEstimates';
 import AverageCompletionTime from '@/components/Common/AverageCompletionTime';
+import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore';
+import { isGaslessCapableRoute } from '@/helpers/gasless';
+import GaslessBadge from './GaslessBadge';
 
 export interface SwapValues extends Omit<SwapFormValues, 'from' | 'to'> {
     from?: Network;
@@ -103,7 +106,16 @@ export const DetailsButton: FC<QuoteComponentProps> = ({ quote, reward, isQuoteL
     const gasFeeInUsd = (gasData && gasTokenPriceInUsd) ? gasData.gas * gasTokenPriceInUsd : null;
     const averageCompletionTime = quote?.avg_completion_time;
 
-    const shouldCheckNFT = reward?.campaign_type === "for_nft_holders" && !!reward?.nft_contract_address;
+    const gaslessEnabled = useGaslessPreferenceStore(s => s.gaslessEnabled)
+    const sourceIsSupported = !!wallet?.asSourceSupportedNetworks?.some(n => n === values.from?.name)
+    const isGasless = isGaslessCapableRoute({
+        depositMethod: values.depositMethod,
+        supportsGaslessDeposit: values.fromAsset?.supports_gasless_deposit,
+        sourceIsSupported,
+        sourceAddress: selectedSourceAccount?.address,
+    }) && gaslessEnabled
+
+    const shouldCheckNFT = reward?.campaign_type === "for_nft_holders" && reward?.nft_contract_address;
     const { balance: nftBalance, isLoading, error } = useSWRNftBalance(
         destinationAddress || '',
         destination,
@@ -113,22 +125,26 @@ export const DetailsButton: FC<QuoteComponentProps> = ({ quote, reward, isQuoteL
     return (
         <div className='flex items-center gap-1 space-x-3'>
             {
-                gasFeeInUsd ?
+                (gasFeeInUsd || isGasless) ?
                     <>
-                        <div className={clsx(
-                            "inline-flex items-center gap-1",
-                            { "animate-pulse-strong": isQuoteLoading }
-                        )}>
-                            <div className='p-0.5'>
-                                {!values.fromExchange ?
-                                    <GasIcon className='h-4 w-4 text-secondary-text' /> : <ExchangeGasIcon className='h-5 w-5 text-secondary-text' />
-                                }
+                        {isGasless ? (
+                            <GaslessBadge className={clsx({ "animate-pulse-strong": isQuoteLoading })} />
+                        ) : (
+                            <div className={clsx(
+                                "inline-flex items-center gap-1",
+                                { "animate-pulse-strong": isQuoteLoading }
+                            )}>
+                                <div className='p-0.5'>
+                                    {!values.fromExchange ?
+                                        <GasIcon className='h-4 w-4 text-secondary-text' /> : <ExchangeGasIcon className='h-5 w-5 text-secondary-text' />
+                                    }
+                                </div>
+                                <NumFlowWithFallback className="text-primary-text text-sm leading-6" value={gasFeeInUsd! < 0.01 ? '0.01' : gasFeeInUsd!} prefix={gasFeeInUsd! < 0.01 ? '<$' : '$'} />
                             </div>
-                            <NumFlowWithFallback className="text-primary-text text-sm leading-6" value={gasFeeInUsd < 0.01 ? '0.01' : gasFeeInUsd} prefix={gasFeeInUsd < 0.01 ? '<$' : '$'} />
-                        </div>
-
+                        )}
                         <div className="w-px h-3 bg-primary-text-tertiary rounded-2xl" />
-                    </> : null
+                    </>
+                    : null
             }
             {
                 averageCompletionTime ?

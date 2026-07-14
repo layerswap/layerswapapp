@@ -1,6 +1,6 @@
 # reviewchanges
 
-Review all changes in the current branch compared to the dev branch using specialized subagents.
+Review all changes in the current branch compared to the dev-monorepo branch using specialized subagents.
 
 ## What You Get
 
@@ -48,7 +48,7 @@ Ask for a review using the command, specifying which type you want:
 - `/reviewchanges explore` - Codebase exploration
 - `/reviewchanges general` - General purpose analysis
 
-All reviews automatically compare your current branch against the dev branch.
+All reviews automatically compare your current branch against the dev-monorepo branch.
 
 ## Report Format
 

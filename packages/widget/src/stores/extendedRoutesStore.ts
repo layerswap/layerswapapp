@@ -13,7 +13,7 @@ export type ExtendedRouteRecord = {
     extendedToken: string
     realNetwork: string
     realToken: string
-    /** HL account owner (EVM address). */
+    /** Extended source account owner (EVM address). */
     sourceAddress: string
     /** A — the amount that leaves the extended source (sendToEvmWithData amount). */
     sourceAmount: string

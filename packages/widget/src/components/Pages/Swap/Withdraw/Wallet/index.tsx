@@ -5,6 +5,7 @@ import useWallet from "@/hooks/useWallet";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import { WithdrawPageProps } from "./Common/sharedTypes";
 import { ChangeNetworkButton, ConnectWalletButton, SendTransactionButton } from "./Common/buttons";
+import { GaslessSigner } from "./Common/depositExecution";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
 import WalletIcon from "@/components/Icons/WalletIcon";
 import { useBalance } from "@/lib/balances/useBalance";
@@ -12,10 +13,13 @@ import { TransferProps } from "@/types";
 import { ActionMessage } from "./Common/actionMessage";
 import { ActionMessages } from "../messages/TransactionMessages";
 import { useTransfer } from "@/hooks/useTransfer";
+import { useGasless } from "@/hooks/useGasless";
 import { useRpcHealth } from "@/context/rpcHealthContext";
 import RPCUnhealthyMessage from "./RPCUnhealthyMessage";
 import { isExtendedSourceNetwork } from "@/lib/extendedRoutes/registry";
 import { HyperliquidWalletWithdraw } from "../WithdrawalProviders/Hyperliquid";
+import { PolymarketWalletWithdraw } from "../WithdrawalProviders/Polymarket";
+import { NetworkType } from "@/Models/Network";
 
 type Props = {
     swapData: SwapBasicData
@@ -79,8 +83,16 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
         }
     }, [swapId])
 
-    // Extended sources (e.g. Hyperliquid) have their own withdraw flow — the chain logic
-    // comes from the wallet package's Hyperliquid TransferProvider, the UI lives here.
+    // Extended sources (Hyperliquid, Polymarket) have their own withdraw flow — the chain
+    // logic comes from the wallet package's TransferProvider, the UI lives here. Polymarket
+    // is checked first: its synthesized networks are also extended sources.
+    if (source_network?.type === NetworkType.Polymarket) {
+        return <PolymarketWalletWithdraw
+            swapId={swapId}
+            swapBasicData={swapBasicData}
+            refuel={refuel}
+        />
+    }
     if (isExtendedSourceNetwork(source_network?.name)) {
         return <HyperliquidWalletWithdraw
             swapId={swapId}
@@ -157,6 +169,7 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
     const { balances } = useBalance(selectedSourceAccount?.address, networkWithTokens)
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
     const { executeTransfer } = useTransfer()
+    const { signGaslessDeposit, isGaslessSupported } = useGasless()
     const rpcHealth = useRpcHealth(swapData.source_network)
 
     const clickHandler = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
@@ -224,6 +237,19 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
         }
     }, [executeTransfer, chainId, selectedSourceAccount?.address, wallet, swapData, balances])
 
+    const signHandler: GaslessSigner = useCallback(async (signAction) => {
+        if (!signAction.typed_data)
+            throw new Error('Missing typed data for gasless deposit')
+        if (!selectedSourceAccount?.address)
+            throw new Error('No selected account')
+        return signGaslessDeposit({
+            network: swapData.source_network,
+            address: selectedSourceAccount.address,
+            typedData: signAction.typed_data,
+            wallet,
+        })
+    }, [signGaslessDeposit, swapData.source_network, selectedSourceAccount?.address, wallet])
+
     // Show RPC health message if available and unhealthy (EVM wallets only)
     if (rpcHealth?.health.status === 'unhealthy') {
         return <RPCUnhealthyMessage
@@ -248,6 +274,7 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
             !loading &&
             <SendTransactionButton
                 onClick={clickHandler}
+                onSign={isGaslessSupported(swapData.source_network) ? signHandler : undefined}
                 icon={<WalletIcon className="stroke-2 w-6 h-6" />}
                 error={!!error && buttonClicked}
                 swapData={swapData}

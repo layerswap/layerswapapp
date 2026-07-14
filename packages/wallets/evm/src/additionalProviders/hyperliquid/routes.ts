@@ -1,3 +1,4 @@
+import type { RealRouteAvailability } from "@layerswap/widget/types";
 
 /**
  * Single source of truth for Hyperliquid CCTP withdrawal routes, keyed by the
@@ -109,11 +110,6 @@ export const HYPERLIQUID_ROUTES: Record<string, HyperliquidRoute> = {
         destinations: [BASE_SEPOLIA, ARBITRUM_SEPOLIA],
     },
 }
-
-/** Predicate the picker uses to skip candidates the backend can't currently
- * fulfill. Supplied by callers that know the available backend routes (built from
- * the settings source routes); when omitted, availability isn't considered. */
-export type RealRouteAvailability = (real: { networkName: string; tokenSymbol: string }) => boolean
 
 /**
  * Pick the active destination for an HL source, walking the configured priority

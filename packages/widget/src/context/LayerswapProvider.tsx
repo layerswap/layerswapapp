@@ -96,6 +96,9 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
     const settings = _settings || fetchedSettings
     if (!settings) return <>{loadingComponent ?? <WidgetLoading />}</>
 
+    // Extended-route-provider registration is handled inside ResolverProviders'
+    // effect (see resolverContext), which runs after descriptors resolve. The
+    // former render-time call here was a duplicate and has been removed.
     let appSettings = new LayerSwapAppSettings(settings)
 
     return (

@@ -2,7 +2,6 @@ import type { ComponentType, SVGProps } from 'react'
 import {
     MetaMaskIcon,
     WalletConnectIcon,
-    BitKeepIcon,
     RainbowIcon,
     CoinbaseIcon,
     PhantomIcon,
@@ -36,7 +35,7 @@ const KNOWN: Record<string, IconComponent> = {
     walletconnect: WalletConnectIcon,
     rainbow: RainbowIcon,
     'app.rainbow': RainbowIcon,
-    bitkeep: BitKeepIcon,
+    bitkeep: BitGetIcon,
     bitget: BitGetIcon,
     coinbasewalletsdk: CoinbaseIcon,
     phantom: PhantomIcon,

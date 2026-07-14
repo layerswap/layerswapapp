@@ -1,4 +1,5 @@
 import { TransferProps, TransferProvider } from './transfer';
+import { GaslessProvider } from './gasless';
 import { NetworkWithTokens } from '@/Models/Network';
 import { BalanceProvider } from './balance';
 import { GasProvider } from './gas';
@@ -8,7 +9,7 @@ import { RpcHealthCheckProvider } from './rpcHealth';
 import type { ThemeData } from '@/Models/Theme';
 import type { StoreApi } from 'zustand/vanilla';
 import { ExtendedRouteProvider } from '../lib/extendedRoutes/types';
-export { type WalletModalConnector } from '@/components/Wallet/WalletModal'
+import { WalletConnectWalletBase } from '@/lib/walletConnect';
 
 export type InternalConnector = {
     name: string,
@@ -83,6 +84,7 @@ export type WalletProvider = WalletWrapper & {
     gasProvider?: GasProvider | GasProvider[],
     balanceProvider?: BalanceProvider | BalanceProvider[],
     transferProvider?: (() => TransferProvider) | (() => TransferProvider)[],
+    gaslessProvider?: (() => GaslessProvider) | (() => GaslessProvider)[],
     contractAddressProvider?: ContractAddressCheckerProvider | ContractAddressCheckerProvider[],
     rpcHealthCheckProvider?: RpcHealthCheckProvider | RpcHealthCheckProvider[],
     extendedRouteProvider?: ExtendedRouteProvider | ExtendedRouteProvider[],
@@ -219,9 +221,10 @@ export type BaseWalletProviderConfig = {
     balanceProviders?: BalanceProvider | BalanceProvider[]
     gasProviders?: GasProvider | GasProvider[]
     transferProviders?: (() => TransferProvider) | (() => TransferProvider)[]
+    gaslessProviders?: (() => GaslessProvider) | (() => GaslessProvider)[]
     contractAddressProviders?: ContractAddressCheckerProvider | ContractAddressCheckerProvider[]
     rpcHealthCheckProviders?: RpcHealthCheckProvider | RpcHealthCheckProvider[]
-} 
+}
 
 export type RequestAdditionalConnectorsParams = {
     page?: number,
@@ -233,4 +236,19 @@ export type RequestAdditionalConnectorsResult = {
     connectors: InternalConnector[],
     nextPage: number | null,
     totalCount: number,
+}
+
+export type WalletModalConnector = InternalConnector & {
+    qr?: ({
+        state: 'loading',
+        value: undefined,
+        deepLink?: undefined
+    } | {
+        state: 'fetched',
+        value: string,
+        deepLink?: string
+    });
+    showQrCode?: boolean,
+    variants?: InternalConnector[],
+    isRecent?: boolean,
 }

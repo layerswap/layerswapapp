@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { WalletProvider, WalletProviderDescriptor, WalletWrapper, isWalletProviderDescriptor, NftProvider, BalanceProvider, GasProvider, TransferProvider, ContractAddressCheckerProvider, RpcHealthCheckProvider } from "@/types";
+import { WalletProvider, WalletProviderDescriptor, WalletWrapper, isWalletProviderDescriptor, NftProvider, BalanceProvider, GasProvider, TransferProvider, ContractAddressCheckerProvider, RpcHealthCheckProvider, GaslessProvider } from "@/types";
 import { resolverService } from "@/lib/resolvers/resolverService";
-import { setExtendedRouteProviders } from "@/lib/extendedRoutes/registry";
+import { setExtendedRouteProviders } from "@/lib/extendedRoutes";
 
 type ResolverContextType = {
     isInitialized: boolean;
@@ -35,6 +35,12 @@ export const ResolverProviders: React.FC<React.PropsWithChildren<{
             .filter((provider): provider is (() => TransferProvider) => Boolean(provider))
             .map(provider => provider()),
             [realProviders]);
+
+        const gaslessProviders = realProviders
+            .map(provider => provider.gaslessProvider)
+            .flat()
+            .filter((provider): provider is (() => GaslessProvider) => Boolean(provider))
+            .map(provider => provider())
 
         const contractAddressProviders: ContractAddressCheckerProvider[] = useMemo(() => realProviders
             .map(provider => provider.contractAddressProvider)
@@ -72,7 +78,7 @@ export const ResolverProviders: React.FC<React.PropsWithChildren<{
         const [isInitialized, setIsInitialized] = useState(false);
 
         useEffect(() => {
-            resolverService.setProviders(balanceProviders, gasProviders, nftProviders, transferProviders, contractAddressProviders, rpcHealthCheckProviders)
+            resolverService.setProviders(balanceProviders, gasProviders, nftProviders, transferProviders, contractAddressProviders, rpcHealthCheckProviders, gaslessProviders)
 
             setExtendedRouteProviders(walletProviders.flatMap((p: WalletProvider) => p.extendedRouteProvider ?? []).filter(Boolean))
 

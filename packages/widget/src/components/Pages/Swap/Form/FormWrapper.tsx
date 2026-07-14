@@ -28,6 +28,7 @@ import { useContractAddressStore } from "@/stores/contractAddressStore";
 import UrlAddressNote from "@/components/Input/Address/UrlAddressNote";
 import { Address } from "@/lib/address/Address";
 import ContractAddressValidationCache, { ContractSourceAddressValidationCache } from "./SecondaryComponents/validationError/ContractAddressValidationCache";
+import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -67,11 +68,9 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         setSwapError && setSwapError(null)
+        useGaslessPreferenceStore.getState().clearGaslessUnavailable()
         const { destination_address, to } = values
         setWalletWihdrawDone(false)
-        if (!walletWihdrawDone) {
-            setWalletWihdrawDone(false)
-        }
 
         if (
             to &&
@@ -189,18 +188,21 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                         header='Complete the swap'
                         modalId="showSwap"
                         className="expandContainerHeight">
-                        {swapModalOpen ? (
-                            <Suspense fallback={null}>
-                                <SwapDetails type="contained" onWalletWithdrawalSuccess={() => {
-                                    setWalletWihdrawDone(true)
-                                    setFieldValue('amount', 0)
-                                    mutateBalances()
-                                }} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />
-                            </Suspense>
-                        ) : null}
-                    </VaulDrawer>
+                        {
+                            swapModalOpen ? (
+                                <Suspense fallback={null}>
+                                    <SwapDetails type="contained" onWalletWithdrawalSuccess={() => {
+                                        setWalletWihdrawDone(true)
+                                        useGaslessPreferenceStore.getState().resetGaslessPreference()
+                                        setFieldValue('amount', 0)
+                                        mutateBalances()
+                                    }} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />
+                                </Suspense>
+                            ) : null
+                        }
+                    </VaulDrawer >
                     {children}
-                    <ContractAddressValidationCache
+                    < ContractAddressValidationCache
                         source_network={values.from}
                         destination_network={values.to}
                         address={values.destination_address}
@@ -210,8 +212,9 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                         destination_network={values.to}
                     />
                 </>
-            )}
-        </Formik>
+            )
+            }
+        </Formik >
     </>
 }
 

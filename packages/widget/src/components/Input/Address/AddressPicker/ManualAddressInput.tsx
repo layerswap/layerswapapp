@@ -5,12 +5,12 @@ import { NetworkType } from "@/Models/Network";
 import FilledX from "@/components/Icons/FilledX";
 import { AddressGroup, AddressItem } from ".";
 import { Address } from "@/lib/address/Address";
-import AddressWithIcon from "./AddressWithIcon";
 import { Wallet } from "@/types/wallet";
 import { FormikHelpers } from "formik";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { useAddressName } from "@/stores/addressBookStore";
 import SaveToBookInline from "@/components/AddressBook/SaveToBookInline";
+import AddressPickerItem from "./AddressPickerItem";
 
 type AddressInput = {
     manualAddress: string,
@@ -83,7 +83,7 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
                                 handleSaveNewAddress()
                             }
                         }}
-                        className='pr-12 disabled:cursor-not-allowed grow h-12 border border-secondary-800 focus:border-primary leading-4 placeholder:text-primary-text-tertiary/80 focus:placeholder:text-left placeholder:font-normal pl-3 focus:placeholder:pl-0 placeholder:pl-8 block font-semibold w-full !bg-secondary-500 rounded-lg truncate hover:overflow-x-scroll focus:ring-0 focus:outline-hidden'
+                        className='autofill-secondary pr-12 disabled:cursor-not-allowed grow h-12 border border-secondary-800 focus:border-primary leading-4 placeholder:text-primary-text-tertiary/80 focus:placeholder:text-left placeholder:font-normal focus:placeholder:pl-0 placeholder:pl-8 block font-semibold w-full !bg-secondary-500 rounded-lg truncate hover:overflow-x-scroll focus:ring-0 focus:outline-hidden'
                     />
                     {
                         !isFocused && !manualAddress &&
@@ -111,9 +111,7 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
 
                 {
                     manualAddress && !errorMessage &&
-                    <div onClick={handleSaveNewAddress} className={`group/addressItem text-left min-h-12 cursor-pointer space-x-2 bg-secondary-600 shadow-xl flex text-sm rounded-md items-center w-full transform hover:bg-secondary-700 transition duration-200 p-3 hover:shadow-xl mt-3`}>
-                        <AddressWithIcon addressItem={addressFromList || { address: manualAddress, group: AddressGroup.ManualAdded }} partner={partner} network={destination} />
-                    </div>
+                    <AddressPickerItem item={addressFromList || { address: manualAddress, group: AddressGroup.ManualAdded }} network={destination} partner={partner} onClick={handleSaveNewAddress} className="mt-3 min-h-12" />
                 }
                 {canSaveToAddressBook && <SaveToBookInline key={manualAddress} address={manualAddress} network={destination!} />}
             </div>

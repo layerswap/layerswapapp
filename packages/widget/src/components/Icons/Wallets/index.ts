@@ -1,6 +1,5 @@
 export { default as MetaMaskIcon } from "./MetaMask"
 export { default as WalletConnectIcon } from "./WalletConnect"
-export { default as BitKeepIcon } from "./BitKeep"
 export { default as RainbowIcon } from "./Rainbow"
 export { default as CoinbaseIcon } from "./Coinbase"
 export { default as PhantomIcon } from "./Phantom"

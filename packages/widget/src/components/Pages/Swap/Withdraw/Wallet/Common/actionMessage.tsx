@@ -2,8 +2,12 @@ import { FC, useEffect } from "react"
 import { ActionMessages, ActionMessageType } from "../../messages/TransactionMessages"
 import { ErrorHandler } from "@/lib/ErrorHandler"
 import { Network } from "@/Models"
+import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore"
 
 export const ActionMessage: FC<{ error: Error | undefined, isLoading: boolean, selectedSourceAddress: string, sourceNetwork: Network }> = ({ error, isLoading, selectedSourceAddress, sourceNetwork }) => {
+
+    const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
+    const gaslessErrorMessage = useGaslessPreferenceStore(s => s.gaslessErrorMessage)
 
     useEffect(() => {
         if (error && (error?.name === ActionMessageType.UnexpectedErrorMessage
@@ -19,6 +23,9 @@ export const ActionMessage: FC<{ error: Error | undefined, isLoading: boolean, s
         }
     }, [error])
 
+    if (gaslessUnavailable) {
+        return <ActionMessages.GaslessUnavailableMessage message={gaslessErrorMessage ?? undefined} />
+    }
     if (isLoading) {
         return <ActionMessages.ConfirmActionMessage />
     }
