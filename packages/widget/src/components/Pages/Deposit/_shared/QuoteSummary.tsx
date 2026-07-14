@@ -50,11 +50,15 @@ const QuoteSummary: FC<Props> = ({
     if (isLoading) {
         return (
             <div className="w-full bg-secondary-500 rounded-2xl p-4 flex flex-col gap-1.5">
-                <Bar className="h-3.5 w-20" />
+                <div className="h-5 flex items-center">
+                    <Bar className="h-3.5 w-20" />
+                </div>
                 <div className="flex items-center justify-between gap-3">
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-col gap-0.5">
                         <Bar className="h-7 w-32" />
-                        <Bar className="h-4 w-20" />
+                        <div className="h-5 flex items-center">
+                            <Bar className="h-4 w-20" />
+                        </div>
                     </div>
                     <Bar className="h-7 w-24 rounded-full" />
                 </div>

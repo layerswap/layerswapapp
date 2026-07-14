@@ -1,5 +1,25 @@
 # @layerswap/wallets
 
+## 1.7.0
+
+### Minor Changes
+
+- Add Polymarket withdrawal
+
+### Patch Changes
+
+- Updated dependencies
+  - @layerswap/widget@1.7.0
+  - @layerswap/wallet-bitcoin@1.7.0
+  - @layerswap/wallet-evm@1.7.0
+  - @layerswap/wallet-fuel@1.7.0
+  - @layerswap/wallet-imtbl-passport@1.7.0
+  - @layerswap/wallet-paradex@1.7.0
+  - @layerswap/wallet-starknet@1.7.0
+  - @layerswap/wallet-svm@1.7.0
+  - @layerswap/wallet-ton@1.7.0
+  - @layerswap/wallet-tron@1.7.0
+
 ## 1.6.0
 
 ### Minor Changes
