@@ -2,9 +2,7 @@ import { useMemo, useRef } from "react";
 import { InternalConnector, WalletModalConnector, WalletProvider } from "@/Models/WalletProvider";
 import { removeDuplicatesWithKey } from "@/components/WalletModal/utils";
 import { walletKey } from "@/lib/wallets/utils/walletKey";
-import { getRegistryEntry, type WalletConnectWalletBase } from "@/lib/wallets/walletConnect/types";
-import { createRegistryConnector } from "@/lib/wallets/walletConnect/createRegistryConnector";
-import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
+import { NetworkType } from "@/Models/Network";
 
 type UseConnectorsParams = {
     searchValue?: string;
@@ -40,31 +38,34 @@ const resolveNames = (groups: InternalConnector[][]): InternalConnector[][] => {
 }
 
 const resolveChainConnectors = (pool: InternalConnector[], providers: WalletProvider[]) => {
-    const toProvider: Record<string, string> = { eip155: 'EVM', solana: 'Solana' }
-    const mobile = isMobile()
-    const records = new Map<string, { variants: InternalConnector[], entry?: WalletConnectWalletBase }>()
+    const records = new Map<string, { connectors: InternalConnector[], networkTypes: Set<NetworkType> }>()
     const recordFor = (name: string) => {
         const k = UNMERGEABLE_WALLETS.includes(name.toLowerCase()) ? name.toLowerCase() : walletKey(name)
-        return records.get(k) ?? records.set(k, { variants: [] }).get(k)!
+        return records.get(k) ?? records.set(k, { connectors: [], networkTypes: new Set() }).get(k)!
     }
 
     for (const c of pool) {
         if (!c.name) continue
         const record = recordFor(c.name)
-        if (c.providerName && !record.variants.some(x => x.providerName === c.providerName)) record.variants.push(c)
-        if (!record.entry) {
-            const wk = walletKey(c.name)
-            record.entry = getRegistryEntry(c) ?? providers.find(p => p.name === c.providerName)?.registryWallets?.find(r => walletKey(r.name) === wk || walletKey(r.id) === wk)
-        }
+        record.connectors.push(c)
+        for (const networkType of c.networkTypes ?? []) record.networkTypes.add(networkType)
     }
-    for (const record of records.values()) {
-        for (const chain of record.entry?.chains ?? []) {
-            const p = toProvider[chain.split(':')[0]]
-            if (p && providers.some(prov => prov.name === p) && !record.variants.some(x => x.providerName === p)) record.variants.push(createRegistryConnector(record.entry!, mobile, p))
+    const resolved = new Map<string, InternalConnector[]>()
+    for (const [key, record] of records) {
+        const variants: InternalConnector[] = []
+        for (const connector of record.connectors) {
+            if (connector.providerName && !variants.some(variant => variant.providerName === connector.providerName)) variants.push(connector)
         }
-        record.variants.sort((a, b) => providers.findIndex(p => p.name === a.providerName) - providers.findIndex(p => p.name === b.providerName))
+        const template = record.connectors.find(connector => connector.type === 'walletConnect')
+        for (const networkType of record.networkTypes) {
+            const provider = providers.find(candidate => candidate.id === networkType)
+            if (provider && template && !variants.some(variant => variant.providerName === provider.name))
+                variants.push({ ...template, providerName: provider.name, type: 'walletConnect', isLoadable: false })
+        }
+        variants.sort((a, b) => providers.findIndex(p => p.name === a.providerName) - providers.findIndex(p => p.name === b.providerName))
+        resolved.set(key, variants)
     }
-    return records
+    return resolved
 }
 
 export function useConnectors({
@@ -146,7 +147,7 @@ export function useConnectors({
         const pool = [...featuredConnectors, ...additionalConnectors, ...(resolvedSearchResults ?? [])]
         const connectorsByWallet = resolveChainConnectors(pool, featuredProviders)
         const withMultiChain = (list: InternalConnector[]): WalletModalConnector[] => list.map(c => {
-            const variants = connectorsByWallet.get(UNMERGEABLE_WALLETS.includes(c.name.toLowerCase()) ? c.name.toLowerCase() : walletKey(c.name))?.variants ?? []
+            const variants = connectorsByWallet.get(UNMERGEABLE_WALLETS.includes(c.name.toLowerCase()) ? c.name.toLowerCase() : walletKey(c.name)) ?? []
             return { ...c, variants, isMultiChain: variants.length > 1 }
         })
 

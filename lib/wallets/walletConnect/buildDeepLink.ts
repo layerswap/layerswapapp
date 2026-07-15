@@ -1,5 +1,5 @@
 import { isIOS, isMobile } from "../connectors/utils/isMobile"
-import type { WalletConnectMobile } from "./types"
+import type { WalletConnectLink } from "./types"
 
 const addWc = (url: string): string => {
     if (url.endsWith("/wc") || url.endsWith("://wc")) return url
@@ -10,7 +10,7 @@ const addWc = (url: string): string => {
 
 type BuildDeepLinkInput = {
     id: string
-    mobile: WalletConnectMobile
+    mobile: WalletConnectLink
 }
 
 /**

@@ -1,22 +1,17 @@
 import type { InternalConnector } from "@/Models/WalletProvider"
-import { WC_REGISTRY_MARKER, type RegistryAttachedConnector, type WalletConnectWalletBase } from "./types"
-
-export type RegistryConnector = RegistryAttachedConnector<InternalConnector>
+import { chainsToNetworkTypes, type WalletConnectWalletBase } from "./types"
 
 export const createRegistryConnector = (
     wallet: WalletConnectWalletBase,
     isMobilePlatform: boolean,
     providerName: string,
-): RegistryConnector => ({
-    id: wallet.id,
-    name: wallet.name,
-    icon: wallet.icon,
-    type: 'walletConnect',
-    order: wallet.order,
-    isMobileSupported: wallet.isMobileSupported,
-    hasBrowserExtension: wallet.hasBrowserExtension,
-    installUrl: wallet.installUrl,
-    extensionNotFound: wallet.hasBrowserExtension ? !isMobilePlatform : false,
-    providerName,
-    [WC_REGISTRY_MARKER]: wallet,
-})
+): InternalConnector => {
+    const { chains, ...base } = wallet
+    return {
+        ...base,
+        providerName,
+        type: 'walletConnect',
+        extensionNotFound: wallet.hasBrowserExtension ? !isMobilePlatform : false,
+        networkTypes: chainsToNetworkTypes(chains),
+    }
+}

@@ -14,7 +14,7 @@ import { useSettingsState } from "@/context/settings"
 import { useConnectModal, WalletModalConnector } from "@/components/WalletModal"
 import { isMobile } from "@/lib/wallets/connectors/utils/isMobile"
 import {
-    getRegistryEntry,
+    chainsToNetworkTypes,
     type WalletConnectWalletBase,
 } from "@/lib/wallets/walletConnect/types"
 import { walletKey } from "@/lib/wallets/utils/walletKey"
@@ -64,6 +64,7 @@ export default function useSVM(): WalletProvider {
         browseMetadata: walletConnectBrowseMetadata,
         requestAdditionalConnectors: requestRegistryConnectors,
         addRecentConnector: addWalletConnectWallet,
+        recentConnectors: recentWalletConnectConnectors,
     } = useAdditionalConnectors(SOLANA_NS)
 
     useEffect(() => {
@@ -109,26 +110,30 @@ export default function useSVM(): WalletProvider {
 
     const connectWallet = useCallback(async ({ connector }: { connector: WalletModalConnector }) => {
         let unsubscribeDisplayUri: (() => void) | undefined
-        let registry: WalletConnectWalletBase | undefined
+        let isWc = false
         try {
             const isBareWcTile = connector.name === SOLANA_WC_MODAL_NAME
             const currentWallets = walletsRef.current
             const installedAdapter = currentWallets.find(w => walletKey(w.adapter.name) === walletKey(connector.name))
             const hiddenWcAdapter = currentWallets.find(w => w.adapter.name === SOLANA_HIDDEN_WC_NAME)
 
-            let matchedRegistry = getRegistryEntry(connector)
-            if (!matchedRegistry && isMobilePlatform && installedAdapter && !isBareWcTile) {
-                matchedRegistry = await findRegistryWalletByName(requestRegistryConnectors, connector.name)
+            let matchedRegistry: WalletConnectWalletBase | undefined
+            let matched = connector.type === 'walletConnect'
+            if (!matched && isMobilePlatform && installedAdapter && !isBareWcTile) {
+                const found = await findRegistryWalletByName(requestRegistryConnectors, connector.name)
+                if (found) { matched = true; matchedRegistry = found }
             }
+            const mobile = matchedRegistry?.mobile ?? connector.mobile
 
             const useWalletConnect = isBareWcTile
                 ? !isMobilePlatform
                 : (
-                    (!!matchedRegistry && (isMobilePlatform || !installedAdapter))
+                    (matched && (isMobilePlatform || !installedAdapter))
                     || (connector.hasBrowserExtension && (connector.showQrCode || (isMobilePlatform && connector.extensionNotFound)))
-                )
+            )
 
-            registry = useWalletConnect ? matchedRegistry : undefined
+            isWc = !!useWalletConnect && matched
+            const identity = isWc ? (matchedRegistry ?? connector) : undefined
 
             const targetAdapterEntry = useWalletConnect ? hiddenWcAdapter : installedAdapter
             if (!targetAdapterEntry) throw new Error('Connector not found')
@@ -137,16 +142,13 @@ export default function useSVM(): WalletProvider {
                 try { await connectedWallet.adapter.disconnect() } catch { /* noop */ }
             }
 
-            const deeplinkRegistry = registry
-            const resolveURI = deeplinkRegistry
-                ? (uri: string) => buildDeepLink({ id: deeplinkRegistry.id, mobile: deeplinkRegistry.mobile }, uri)
-                : undefined
+            const resolveURI = (isWc && mobile) ? (uri: string) => buildDeepLink({ id: identity!.id, mobile }, uri) : undefined
 
             if (useWalletConnect && hiddenWcAdapter) {
                 const wcAdapter = hiddenWcAdapter.adapter as unknown as SolanaWalletConnectAdapter
 
                 // Track display metadata so connectedWallets can render the right name/icon after success
-                setPendingMetadataForRegistry(SOLANA_NS, registry)
+                setPendingMetadataForRegistry(SOLANA_NS, identity)
 
                 // Only pre-render the QR screen when we actually want the user to see it:
                 // - Desktop → QR modal.
@@ -177,7 +179,10 @@ export default function useSVM(): WalletProvider {
                 })
 
                 // Track recent registry wallets so they can be re-surfaced
-                if (registry) addWalletConnectWallet(registry)
+                const recentConnector = matchedRegistry
+                    ? createRegistryConnector(matchedRegistry, isMobilePlatform, name)
+                    : (isWc ? connector : undefined)
+                if (recentConnector) addWalletConnectWallet(recentConnector)
             }
 
             try {
@@ -198,18 +203,18 @@ export default function useSVM(): WalletProvider {
             const newAddress = newConnectedWallet?.adapter.publicKey?.toBase58()
 
             // Persist display metadata for reconnects after refresh
-            if (newAddress && useWalletConnect && registry) {
+            if (newAddress && isWc && identity) {
                 setDynamicWcMetadata(SOLANA_NS, newAddress, {
-                    name: registry.name,
-                    icon: registry.icon || '',
-                    id: registry.id,
+                    name: identity.name,
+                    icon: identity.icon || '',
+                    id: identity.id,
                 })
             }
 
             const resolvedAdapterName = normalizeWcName(newConnectedWallet?.adapter.name)
-            const displayId = registry?.id || (resolvedAdapterName ? String(resolvedAdapterName) : undefined)
-            const displayName = registry?.name || resolvedAdapterName
-            const displayIconRaw = registry?.icon || newConnectedWallet?.adapter.icon
+            const displayId = identity?.id || (resolvedAdapterName ? String(resolvedAdapterName) : undefined)
+            const displayName = identity?.name || resolvedAdapterName
+            const displayIconRaw = identity?.icon || newConnectedWallet?.adapter.icon
 
             const wallet: Wallet | undefined = newAddress && newConnectedWallet && displayId ? {
                 id: displayId,
@@ -231,7 +236,7 @@ export default function useSVM(): WalletProvider {
             throw mapConnectError(e)
         } finally {
             unsubscribeDisplayUri?.()
-            if (registry) clearPendingDynamicWcMetadata(SOLANA_NS)
+            if (isWc) clearPendingDynamicWcMetadata(SOLANA_NS)
         }
     }, [connectedWallet, disconnect, select, isMobilePlatform, setSelectedConnector, addWalletConnectWallet, commonSupportedNetworks, networks, name, requestRegistryConnectors])
 
@@ -253,6 +258,7 @@ export default function useSVM(): WalletProvider {
             if (adapterName === SOLANA_HIDDEN_WC_NAME) continue
             const isWcAdapter = adapterName === SOLANA_WC_MODAL_NAME
             const isInstalled = wallet.readyState === 'Installed' || wallet.readyState === 'Loadable' || adapterName === 'Coinbase Wallet'
+            const match = walletConnectConnectors.find(w => walletKey(w.name) === walletKey(adapterName) || walletKey(w.id) === walletKey(adapterName))
             const internalConnector: InternalConnector = {
                 name: adapterName,
                 id: adapterName,
@@ -264,18 +270,18 @@ export default function useSVM(): WalletProvider {
                 isLoadable: wallet.readyState === 'Loadable' && adapterName !== 'Coinbase Wallet',
                 providerName: name,
                 order: resolveWalletConnectorIndex(adapterName.toLowerCase()),
+                networkTypes: chainsToNetworkTypes(match?.chains ?? []),
+                mobile: match?.mobile,
             }
             installed.push(internalConnector)
         }
 
-        const installedKeys = new Set(installed.map(connector => walletKey(connector.name)))
         for (const reg of walletConnectConnectors) {
-            if (installedKeys.has(walletKey(reg.name)) || installedKeys.has(walletKey(reg.id))) continue
             registry.push(createRegistryConnector(reg, isMobilePlatform, name))
         }
 
-        return { availableConnectors: installed, additionalConnectors: registry }
-    }, [wallets, walletConnectConnectors, isMobilePlatform])
+        return { availableConnectors: [...installed, ...recentWalletConnectConnectors], additionalConnectors: registry }
+    }, [wallets, walletConnectConnectors, recentWalletConnectConnectors, isMobilePlatform])
 
     const isNotAvailableCondition = useCallback((connectorId: string | undefined, network: string | undefined, purpose?: "withdrawal" | "autofill" | "asSource") => {
         if (!network) return false
@@ -291,16 +297,14 @@ export default function useSVM(): WalletProvider {
 
     const requestAdditionalConnectors = useCallback(async (params: RequestAdditionalConnectorsParams = {}): Promise<RequestAdditionalConnectorsResult> => {
         const result = await requestRegistryConnectors(params)
-        const installedKeys = new Set(availableConnectors.map(connector => walletKey(connector.name)))
 
         return {
             connectors: result.connectors
-                .filter(connector => !installedKeys.has(walletKey(connector.name)) && !installedKeys.has(walletKey(connector.id)))
                 .map(connector => createRegistryConnector(connector, isMobilePlatform, name)),
             nextPage: result.nextPage,
             totalCount: result.totalCount,
         }
-    }, [requestRegistryConnectors, availableConnectors, isMobilePlatform, name])
+    }, [requestRegistryConnectors, isMobilePlatform, name])
 
     const providerIcon = useMemo(() => networks.find(n => solanaNames.some(name => name === n.name))?.logo, [networks])
 
@@ -320,8 +324,7 @@ export default function useSVM(): WalletProvider {
         providerIcon,
         ready: wallets.length > 0,
         requestAdditionalConnectors,
-        registryWallets: walletConnectConnectors,
-    }), [connectedWallets, connectWallet, disconnectWallet, isNotAvailableCondition, availableConnectors, additionalConnectors, commonSupportedNetworks, name, id, providerIcon, wallets.length, requestAdditionalConnectors, walletConnectConnectors])
+    }), [connectedWallets, connectWallet, disconnectWallet, isNotAvailableCondition, availableConnectors, additionalConnectors, commonSupportedNetworks, name, id, providerIcon, wallets.length, requestAdditionalConnectors])
 
     return provider
 }

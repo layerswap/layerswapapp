@@ -1,6 +1,7 @@
 import { WalletAccount } from 'starknet';
 import { StarknetWindowObject } from 'starknetkit';
-import type { WalletConnectWalletBase } from '@/lib/wallets/walletConnect/types';
+import type { WalletConnectLink } from '@/lib/wallets/walletConnect/types';
+import type { NetworkType } from '@/Models/Network';
 
 export type InternalConnector = {
     name: string,
@@ -15,6 +16,8 @@ export type InternalConnector = {
     hasBrowserExtension?: boolean,
     extensionNotFound: boolean,
     isLoadable?: boolean,
+    networkTypes?: NetworkType[],
+    mobile?: WalletConnectLink,
 }
 
 export type WalletModalConnector = InternalConnector & {
@@ -93,7 +96,6 @@ export type WalletProvider = {
     unsupportedPlatforms?: string[],
     ready: boolean,
     requestAdditionalConnectors?: (params?: RequestAdditionalConnectorsParams) => Promise<RequestAdditionalConnectorsResult>,
-    registryWallets?: WalletConnectWalletBase[],
 }
 
 
