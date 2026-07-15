@@ -7,9 +7,6 @@ import { NetworkType, NetworkWithTokens } from '@/Models/Network'
 import { useSettingsState } from '@/context/settings'
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { InternalConnector } from '@/Models/WalletProvider'
-import { walletStandardBitcoinConnector } from '@/lib/wallets/bitcoin/walletStandardBitcoinConnector'
-import convertSvgComponentToBase64 from '@/components/utils/convertSvgComponentToBase64'
-import TrustIcon from '@/components/icons/Wallets/Trust'
 
 export const BitcoinProvider = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
     const { networks } = useSettingsState()
@@ -151,17 +148,6 @@ function createDefaultBigmiConfig(network?: NetworkWithTokens) {
         onekey({ chainId: btcChainId }),
         metamask({ chainId: btcChainId }),
     ]
-
-    // Trust supports bitcoin:mainnet only
-    if (!chain.testnet) {
-        connectors.push(walletStandardBitcoinConnector({
-            chainId: btcChainId,
-            walletName: 'Trust Wallet',
-            standardName: 'Trust',
-            walletId: 'trust-bitcoin',
-            icon: convertSvgComponentToBase64(TrustIcon),
-        }))
-    }
 
     const config = createConfig({
         chains: [chain],
