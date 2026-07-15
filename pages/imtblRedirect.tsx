@@ -21,7 +21,7 @@ const ImtblRedirect = () => {
     }, [])
 
     return (
-        <div className="min-h-screen w-full flex flex-col items-center justify-center gap-5 p-6 text-primary-text">
+        <div className="min-h-screen w-full flex flex-col items-center justify-center gap-5 p-6 text-primary-text bg-secondary-900 sm:bg-gradient-to-b sm:from-secondary-900 sm:to-secondary-500">
             <div className="flex items-center gap-2">
                 <div className="p-3 bg-secondary-700 rounded-lg">
                     <LayerSwapLogoSmall className="w-11 h-auto" />
