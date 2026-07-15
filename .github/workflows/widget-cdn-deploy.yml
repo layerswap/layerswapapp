@@ -45,6 +45,8 @@ permissions:
   contents: read
   # Reserved for an OIDC upgrade path if the signing key moves into KMS later.
   id-token: write
+  # Lets the failure alert open/comment a GitHub issue.
+  issues: write
 
 jobs:
   deploy:
@@ -171,3 +173,34 @@ jobs:
             echo "- Channel promoted: \`${LAYERSWAP_PROMOTE}\`"
             echo "- Commit: \`${GITHUB_SHA}\`"
           } >> "$GITHUB_STEP_SUMMARY"
+
+      # A failed deploy means the live channel silently keeps serving the
+      # previous build — that must never be discovered by noticing stale
+      # behavior in the browser. Open a GitHub issue @mentioning the pusher
+      # (triggers a GitHub notification/email); if an open deploy-failure
+      # issue already exists, comment on it instead of piling up duplicates.
+      - name: Alert on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          VERSION=$(node -p "require('./packages/widget/package.json').version" 2>/dev/null || echo "?")
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          TITLE="widget-cdn deploy failed"
+          {
+            echo "@${{ github.actor }} the widget-cdn deploy failed — the live CDN channel is still serving the **previous** build."
+            echo ""
+            echo "- Version: \`${VERSION}\`"
+            echo "- Branch: \`${GITHUB_REF_NAME}\` @ \`${GITHUB_SHA::7}\`"
+            echo "- Run: ${RUN_URL}"
+            echo ""
+            echo "Most common cause: this version is already published (versions are immutable) — bump \`@layerswap/widget\` via \`pnpm changeset\` and push again."
+          } > "$RUNNER_TEMP/alert-body.md"
+          EXISTING=$(gh issue list --repo "${{ github.repository }}" --state open \
+            --search "\"${TITLE}\" in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$EXISTING" ]; then
+            gh issue comment "$EXISTING" --repo "${{ github.repository }}" --body-file "$RUNNER_TEMP/alert-body.md"
+          else
+            gh issue create --repo "${{ github.repository }}" --title "$TITLE" --body-file "$RUNNER_TEMP/alert-body.md"
+          fi

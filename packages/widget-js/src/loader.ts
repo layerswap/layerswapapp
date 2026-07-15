@@ -54,6 +54,14 @@ export async function resolveSource(): Promise<ResolvedSource> {
       throw new ManifestError('signature', 'manifest signature is missing or invalid');
     }
   }
+  // Identify the build in the console — version, commit, and build time from
+  // the (now-validated) manifest. Answers "which build is this page actually
+  // running?" without leaving the browser, e.g. when a page looks stale after
+  // a deploy: a mismatched sha here means the fix never reached the channel.
+  const provenance = [manifest.gitSha?.slice(0, 7), manifest.builtAt && `built ${manifest.builtAt}`]
+    .filter(Boolean)
+    .join(', ');
+  console.info(`[layerswap/widget-js] widget ${manifest.version}${provenance ? ` (${provenance})` : ''}`);
   // Resolve against the manifest's FINAL (post-redirect) URL, not the URL the
   // caller passed. A rolling channel URL (`/v1/manifest.json`) 302-redirects to
   // an immutable build (`/1.5.0/manifest.json`); resolving the relative
