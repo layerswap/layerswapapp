@@ -15,7 +15,14 @@ const ImtblRedirect = () => {
                 if (!authInstance) await initializeImtblAuth(router.basePath)
                 await authInstance?.loginCallback();
             } catch {
-                setHasError(true);
+                if (window.opener && window.opener !== window) {
+                    window.opener.postMessage(
+                        { source: "oidc-client", url: window.location.href, keepOpen: false },
+                        window.location.origin
+                    );
+                } else {
+                    setHasError(true);
+                }
             }
         })()
     }, [])
