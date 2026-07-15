@@ -69,6 +69,12 @@ export type RelayerSignerType = 'SAFE' | 'PROXY' | 'WALLET'
 
 export async function getRelayerNonce(ownerEoa: string, type: RelayerSignerType): Promise<string> {
     const data = await proxyGet<{ nonce: string }>({ action: 'nonce', address: ownerEoa, type })
+    // The nonce flows straight into `BigInt(nonce)` when building the withdrawal
+    // request. Guard here so a malformed relayer response surfaces a clear error
+    // rather than a cryptic `TypeError`/`SyntaxError` deep in the transfer flow.
+    if (typeof data?.nonce !== 'string' || data.nonce.length === 0) {
+        throw new Error('Polymarket relayer returned an invalid nonce')
+    }
     return data.nonce
 }
 
@@ -84,5 +90,12 @@ export async function submitRelayerTransaction(request: RelayerSubmittable): Pro
         body: JSON.stringify({ action: 'submit', request }),
     })
     if (!res.ok) throw new Error(`Polymarket relayer submit failed: ${res.status} ${(await res.text().catch(() => '')).slice(0, 300)}`)
-    return res.json() as Promise<RelayerSubmitResponse>
+    const data = await res.json()
+    // Validate the shape the `as RelayerSubmitResponse` cast would otherwise
+    // assume — a null/malformed submit response should fail loudly here rather
+    // than propagate an object that lies about its type to callers.
+    if (typeof data?.transactionID !== 'string' || typeof data?.state !== 'string') {
+        throw new Error('Polymarket relayer returned an invalid submit response')
+    }
+    return data as RelayerSubmitResponse
 }
