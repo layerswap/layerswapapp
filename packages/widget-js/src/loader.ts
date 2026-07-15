@@ -1,38 +1,47 @@
 import { fetchManifest, resolveRemoteEntry, verifyManifest, ManifestError, DEFAULT_MANIFEST_URL } from './manifest';
 import { registerChunkHashes } from './sri';
 
-export type ResolveOptions = {
-  /**
-   * URL to a `manifest.json` describing the active build. The loader fetches
-   * the manifest first, then the `remoteEntry` it points at — enabling atomic
-   * rollback, channel pinning, and signature verification.
-   *
-   * Optional — defaults to {@link DEFAULT_MANIFEST_URL} (the canonical
-   * Layerswap CDN, rolling `v1` channel). Override to pin an exact build
-   * (`…/1.5.0/manifest.json`) or to target a local dev server.
-   */
-  manifest?: string;
-  /**
-   * When true, require a valid signature on the manifest against the baked-in
-   * public key. Manifests without a signature or with an invalid one are
-   * rejected. Defaults to **true** — the default CDN endpoint is signed.
-   * Override to `false` only when pointing at an unsigned build (e.g. the
-   * local widget-cdn dev server).
-   */
-  verify?: boolean;
+export type ResolvedSource = { remoteEntry: string };
+
+/**
+ * Internal-only override, read from `globalThis`. NOT part of the public API:
+ * integrators always get the canonical signed CDN baked into this package
+ * ({@link DEFAULT_MANIFEST_URL}) and cannot repoint the loader. Layerswap's own
+ * dev harnesses (the example host, the playground) set these globals before the
+ * widget mounts to target the local unsigned dev server. Undocumented on
+ * purpose — treat it as a build/test seam, not a supported knob.
+ *
+ *   globalThis.__LAYERSWAP_WIDGET_MANIFEST__ = 'http://127.0.0.1:3100/manifest.json';
+ *   globalThis.__LAYERSWAP_WIDGET_VERIFY__ = false;
+ */
+type InternalOverrideGlobals = {
+  __LAYERSWAP_WIDGET_MANIFEST__?: unknown;
+  __LAYERSWAP_WIDGET_VERIFY__?: unknown;
 };
 
-export type ResolvedSource = { remoteEntry: string };
+function resolveConfig(): { manifestUrl: string; verify: boolean } {
+  const g = globalThis as InternalOverrideGlobals;
+  const manifestUrl =
+    typeof g.__LAYERSWAP_WIDGET_MANIFEST__ === 'string' && g.__LAYERSWAP_WIDGET_MANIFEST__
+      ? g.__LAYERSWAP_WIDGET_MANIFEST__
+      : DEFAULT_MANIFEST_URL;
+  // Fail closed: verification is on unless a harness explicitly disables it.
+  const verify = typeof g.__LAYERSWAP_WIDGET_VERIFY__ === 'boolean' ? g.__LAYERSWAP_WIDGET_VERIFY__ : true;
+  return { manifestUrl, verify };
+}
 
 /**
  * Fetch + validate the manifest and install per-chunk SRI, returning the
  * resolved remoteEntry URL. Framework-agnostic — shared by the vanilla
  * `mountWidget` and the React `LayerswapWidget` so the security-critical path
  * (signature check + SRI registration) lives in exactly one place.
+ *
+ * Takes no arguments: the manifest URL is the canonical Layerswap CDN baked
+ * into this package. (Layerswap's own dev harnesses can repoint it via the
+ * internal `__LAYERSWAP_WIDGET_*` globals — see {@link resolveConfig}.)
  */
-export async function resolveSource(options: ResolveOptions = {}): Promise<ResolvedSource> {
-  const manifestUrl = options.manifest ?? DEFAULT_MANIFEST_URL;
-  const verify = options.verify ?? true;
+export async function resolveSource(): Promise<ResolvedSource> {
+  const { manifestUrl, verify } = resolveConfig();
   // When verifying, force a revalidation so we check the freshest bytes.
   // Otherwise let the browser HTTP cache satisfy repeated mounts.
   const { manifest, url: resolvedManifestUrl } = await fetchManifest(manifestUrl, !verify);

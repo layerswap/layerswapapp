@@ -34,19 +34,15 @@ export function App() {
 }
 ```
 
-That's it — no `manifest` needed. It defaults to the canonical Layerswap CDN
-(rolling `v1` channel) with signature verification on, so the manifest layer
-handles updates and the EVM connect flow works without further setup.
+That's it — there is nothing to configure about the widget's source. It is
+always fetched from the canonical Layerswap CDN (rolling `v1` channel) baked
+into the package, with signature verification on. The manifest layer handles
+updates transparently, so integrators auto-receive forward-compatible builds
+without a redeploy and cannot repoint the widget at another origin.
 
-Override `manifest` only to pin an exact build or target a local dev server:
-
-```tsx
-// Pin a specific immutable build:
-<LayerswapWidget manifest="https://cdn.layerswap.io/1.5.0/manifest.json" config={{ version: 'mainnet' }} />
-
-// Local widget-cdn dev server (unsigned → turn verification off):
-<LayerswapWidget manifest="http://127.0.0.1:3100/manifest.json" verify={false} config={{ version: 'mainnet' }} />
-```
+To ride a different major channel (e.g. a future `/v2/`), upgrade the
+`@layerswap/widget-react` package — the source URL is pinned to the package
+version, not passed at runtime.
 
 ## Reusing the host's wagmi config
 
@@ -63,8 +59,6 @@ function App() {
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
         <LayerswapWidget
-          manifest="https://cdn.layerswap.io/v1/manifest.json"
-          verify
           wagmiConfig={wagmiConfig}
           config={{ version: 'mainnet' }}
         />
@@ -92,10 +86,12 @@ widget then shows the same physical wallet twice. Either:
 
 ## Props
 
+The widget's source (manifest URL + signature verification) is **not**
+configurable — it is baked into the package. The props below are all about the
+widget's behavior, not where it comes from.
+
 | Prop | Type | Description |
 |---|---|---|
-| `manifest` | `string` | URL to `manifest.json`. The loader fetches it, then loads the `remoteEntry` it points at. |
-| `verify` | `boolean` | Require a valid signature on the manifest. Default false until your signing pipeline is live. |
 | `config` | `LayerswapWidgetConfig` | Forwarded to the widget's `LayerswapProvider`. Includes `apiKey`, `version`, `theme`, `initialValues`, `settings`. |
 | `callbacks` | `CallbacksContextType` | `onSwapCreate`, `onSwapComplete`, `onError`, `onSwapModalStateChange`, etc. |
 | `wagmiConfig` | `wagmi/Config` | Host wagmi config the widget adopts for EVM. |
@@ -108,12 +104,13 @@ widget then shows the same physical wallet twice. Either:
 
 ## How it works
 
-1. `<LayerswapWidget>` fetches `manifest.json` from the channel URL.
+1. `<LayerswapWidget>` fetches `manifest.json` from the CDN channel URL
+   baked into `@layerswap/widget-js`.
 2. If `manifest.killSwitch === true`, refuses to load and fires
    `onError` with `ManifestError('kill-switch')`.
-3. If `verify` is set, verifies a detached ECDSA P-256 signature on the
-   manifest body against the public key baked into this package.
-   Tampered / unsigned manifests are rejected.
+3. Verifies a detached ECDSA P-256 signature on the manifest body against
+   the public key baked into this package. Tampered / unsigned manifests
+   are rejected.
 4. Calls `@module-federation/runtime` to load `manifest.remoteEntry`
    (resolved relative to the manifest URL). React, react-dom, wagmi,
    viem, react-query, zustand are registered into the MF shared scope
@@ -158,25 +155,28 @@ Notes:
 | Widget never mounts, error in console | `TypeError: fetch` etc. | Manifest URL unreachable / CORS misconfigured on the CDN. |
 | Widget never mounts | `ManifestError('parse')` | Manifest JSON missing `remoteEntry` field. |
 | Widget never mounts | `ManifestError('kill-switch')` | Operational kill-switch set on the manifest. |
-| Widget never mounts | `ManifestError('signature')` | `verify: true` with no/invalid signature. |
+| Widget never mounts | `ManifestError('signature')` | Manifest has no/invalid signature (verification is always on). |
 | Widget loads but errors at render | Component-level | Catch via `callbacks.onError`. |
 
 ## Local development
 
-Run the widget-cdn dev server (`pnpm dev` in `apps/widget-cdn`) — it
-serves both `remoteEntry.js` and an unsigned `manifest.json` at
-`http://127.0.0.1:3100`. Point `manifest` at that dev manifest (leave
-`verify` off, since the dev manifest is unsigned):
+The widget's source is fixed to the production CDN and is not overridable
+through props. For working **on the widget itself** inside this monorepo,
+the loader reads an internal, undocumented override from `globalThis` so
+Layerswap's own harnesses can target the local widget-cdn dev server:
 
-```tsx
-<LayerswapWidget
-  manifest="http://127.0.0.1:3100/manifest.json"
-  config={{ version: 'testnet' }}
-/>
+```ts
+// Set BEFORE <LayerswapWidget> mounts (e.g. at module scope). Not part of
+// the public API — a build/test seam for the monorepo only.
+globalThis.__LAYERSWAP_WIDGET_MANIFEST__ = 'http://127.0.0.1:3100/manifest.json';
+globalThis.__LAYERSWAP_WIDGET_VERIFY__ = false; // dev manifest is unsigned
 ```
 
-See `examples/widget-react-host/` in the monorepo for a runnable Vite
-host that wires `wagmiConfig` adoption and callback handlers.
+Run the widget-cdn dev server (`pnpm dev` in `apps/widget-cdn`) — it serves
+both `remoteEntry.js` and an unsigned `manifest.json` at
+`http://127.0.0.1:3100`. See `examples/widget-react-host/` for a runnable
+Vite host that sets these globals from `VITE_LAYERSWAP_MANIFEST` /
+`VITE_LAYERSWAP_VERIFY` and wires `wagmiConfig` adoption and callbacks.
 
 ## Security model
 

@@ -4,16 +4,30 @@ import { LayerswapWidget } from '@layerswap/widget-react';
 import { wagmiConfig } from './wagmi';
 import { HostWallet } from './HostWallet';
 
-// Integrators point `manifest` at the channel manifest URL. The loader
-// fetches it, honors `killSwitch`, optionally verifies the signature, then
-// loads the remote entry it points at. Defaults to the local widget-cdn dev
-// server (`pnpm dev` in apps/widget-cdn); set VITE_LAYERSWAP_MANIFEST to the
-// production URL (e.g. https://cdn.layerswap.io/v1/manifest.json).
+// Integrators do NOT configure the widget's source — it is always the
+// canonical signed Layerswap CDN baked into `@layerswap/widget-js`. This dev
+// harness is the exception: it points the loader at the local widget-cdn dev
+// server (`pnpm dev` in apps/widget-cdn) via the internal `__LAYERSWAP_WIDGET_*`
+// override globals. These are an undocumented build/test seam, not a public API.
+//
+// Defaults to the local dev server; set VITE_LAYERSWAP_MANIFEST to a production
+// URL (e.g. https://cdn.layerswap.io/v1/manifest.json). The dev server emits an
+// unsigned manifest, so verification is off unless VITE_LAYERSWAP_VERIFY=true.
 const MANIFEST_URL =
   import.meta.env.VITE_LAYERSWAP_MANIFEST ?? 'http://127.0.0.1:3100/manifest.json';
-// The dev server emits an unsigned manifest, so verification is off by
-// default. Enable it (VITE_LAYERSWAP_VERIFY=true) against a signed prod build.
 const VERIFY = import.meta.env.VITE_LAYERSWAP_VERIFY === 'true';
+
+declare global {
+  interface Window {
+    __LAYERSWAP_WIDGET_MANIFEST__?: string;
+    __LAYERSWAP_WIDGET_VERIFY__?: boolean;
+  }
+}
+
+// Set before <LayerswapWidget> mounts (module scope runs first), so the loader
+// reads them when it resolves the source.
+window.__LAYERSWAP_WIDGET_MANIFEST__ = MANIFEST_URL;
+window.__LAYERSWAP_WIDGET_VERIFY__ = VERIFY;
 
 const queryClient = new QueryClient();
 
@@ -43,8 +57,6 @@ export function App() {
           <HostWallet />
           <div style={{ width: '100%', maxWidth: 512 }}>
             <LayerswapWidget
-              manifest={MANIFEST_URL}
-              verify={VERIFY}
               config={{ version: 'mainnet' }}
               walletProvidersConfig={{ exclude: ['tron', 'fuel'] }}
               wagmiConfig={wagmiConfig}

@@ -17,7 +17,7 @@ export type {
 // Lower-level building blocks, reused by `@layerswap/widget-react` and
 // available for advanced integrators wiring their own loader.
 export { resolveSource } from './loader';
-export type { ResolveOptions, ResolvedSource } from './loader';
+export type { ResolvedSource } from './loader';
 export { initRemote, loadRemoteModule } from './runtime';
 export type { SharedLib } from './runtime';
 

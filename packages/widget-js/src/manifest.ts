@@ -66,16 +66,25 @@ export const MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64 =
     'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAESuHFHbltz/hfcY+DzIrLq7Ixc4efHE8SLZdNg0pZZDHTfdwbqLpGk4461EgNranHLWnVsoAbyQ4IyHIVnRAVKw==';
 
 /**
- * Canonical Layerswap CDN manifest URL — the default the loaders use when an
- * integrator doesn't pass one. Points at the rolling `v1` channel, so hosts
- * auto-receive forward-compatible widget updates without a redeploy.
+ * Canonical Layerswap CDN manifest URL — the fixed source the loaders always
+ * use. Integrators cannot repoint it (it is not a runtime prop); the loader
+ * reads it directly. Points at the rolling `v1` channel, so hosts auto-receive
+ * forward-compatible widget updates without a redeploy.
+ *
+ * Currently the Cloudflare Worker's `*.workers.dev` subdomain. When the
+ * `cdn.layerswap.io` custom domain is wired in `apps/widget-cdn/worker/
+ * wrangler.toml`, update this constant to `https://cdn.layerswap.io/v1/
+ * manifest.json` and publish a new `@layerswap/widget-js` — integrators pick
+ * up the new origin transitively via npm.
  *
  * The major (`/v1/`) is pinned to this package's major version: when Layerswap
  * cuts a breaking `/v2/`, it ships a new loader major whose default points
- * there. Override `manifest` to pin an exact build (`…/1.5.0/manifest.json`)
- * or to target a local dev server (`http://127.0.0.1:3100/manifest.json`).
+ * there. There is no per-call override — pinning an exact build means
+ * installing an older package version. (Layerswap's own dev harnesses can
+ * repoint the loader at a local server via the internal `__LAYERSWAP_WIDGET_*`
+ * globals — see `resolveSource` in `loader.ts`.)
  */
-export const DEFAULT_MANIFEST_URL = 'https://cdn.layerswap.io/v1/manifest.json';
+export const DEFAULT_MANIFEST_URL = 'https://layerswap-widget-cdn.layerswapcdn.workers.dev/v1/manifest.json';
 
 const fromB64 = (b64: string): ArrayBuffer => {
     const bin = atob(b64);

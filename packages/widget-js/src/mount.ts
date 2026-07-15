@@ -1,4 +1,4 @@
-import { resolveSource, type ResolveOptions } from './loader';
+import { resolveSource } from './loader';
 import { initRemote, loadRemoteModule, type SharedLib } from './runtime';
 import type { WidgetProps } from './types';
 
@@ -13,7 +13,7 @@ export type WidgetHandle = {
 /** Signature of the remote's `./mount` expose. */
 type RemoteMount = (target: HTMLElement, props: WidgetProps) => WidgetHandle;
 
-export type MountOptions = ResolveOptions & {
+export type MountOptions = {
   /**
    * Libraries to share with the remote as MF singletons. Vanilla hosts omit
    * this and the remote uses its own bundled React. React hosts that want to
@@ -33,13 +33,12 @@ export type MountOptions = ResolveOptions & {
  * ```js
  * import { mountWidget } from '@layerswap/widget-js';
  *
- * // Zero-config: defaults to the canonical Layerswap CDN, signature verified.
+ * // The widget is always fetched from the canonical Layerswap CDN baked into
+ * // this package, with its signature verified — no source configuration.
  * const handle = await mountWidget(
  *   document.getElementById('layerswap'),
  *   { config: { apiKey: 'mainnet' } },
  * );
- * // …or override the source (pin a version / point at a local dev server):
- * //   mountWidget(el, props, { manifest: 'http://127.0.0.1:3100/manifest.json', verify: false })
  * // later …
  * handle.update({ config: { apiKey: 'mainnet', theme: { … } } });
  * handle.destroy();
@@ -56,7 +55,7 @@ export async function mountWidget(
   if (!target) {
     throw new Error('[layerswap/widget-js] mountWidget(target, …) requires a DOM element');
   }
-  const { remoteEntry } = await resolveSource(options);
+  const { remoteEntry } = await resolveSource();
   initRemote(remoteEntry, options.shared);
   const mount = await loadRemoteModule<RemoteMount>('mount');
   return mount(target, props);
