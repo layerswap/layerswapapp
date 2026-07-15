@@ -5,6 +5,7 @@ import { NetworkType, NetworkWithTokens } from "@/Models/Network";
 import { classifyNodeError } from "./nodeErrorClassifier";
 import { extractErrorDetails } from "./errorUtils";
 import KnownInternalNames from "../knownIds";
+import { getExtendedProviderForNetwork } from "@/lib/extendedRoutes/registry";
 
 const SKIP_BALANCE_NETWORKS = [
     KnownInternalNames.Networks.ParadexMainnet,
@@ -93,6 +94,10 @@ export class BalanceResolver {
                 const { HyperliquidBalanceProvider } = await import("./providers/hyperliquidBalanceProvider");
                 return new HyperliquidBalanceProvider();
             }
+            case "polymarket": {
+                const { PolymarketBalanceProvider } = await import("./providers/polymarketBalanceProvider");
+                return new PolymarketBalanceProvider();
+            }
             default:
                 throw new Error(`Unsupported balance provider kind: ${kind}`);
         }
@@ -147,9 +152,11 @@ export class BalanceResolver {
             || network.name === KnownInternalNames.Networks.FuelDevnet) {
             prioritized.push("fuel");
         }
-        if (network.name === KnownInternalNames.Networks.HyperliquidMainnet
-            || network.name === KnownInternalNames.Networks.HyperliquidTestnet) {
-            prioritized.push("hyperliquid");
+        // Extended sources (Hyperliquid, Polymarket, …) declare themselves via the
+        // registry; their provider id is the matching balance-provider kind.
+        const extendedProvider = getExtendedProviderForNetwork(network.name);
+        if (extendedProvider && (allProviderKinds as string[]).includes(extendedProvider.id)) {
+            prioritized.push(extendedProvider.id as ProviderKind);
         }
 
         if (network.type === NetworkType.Solana) {
@@ -229,7 +236,8 @@ type ProviderKind =
     | "ton"
     | "tron"
     | "bitcoin"
-    | "hyperliquid";
+    | "hyperliquid"
+    | "polymarket";
 
 const allProviderKinds: ProviderKind[] = [
     "query",
@@ -241,4 +249,5 @@ const allProviderKinds: ProviderKind[] = [
     "tron",
     "bitcoin",
     "hyperliquid",
+    "polymarket",
 ];
