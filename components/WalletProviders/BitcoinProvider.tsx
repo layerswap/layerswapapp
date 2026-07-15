@@ -140,6 +140,7 @@ function createDefaultBigmiConfig(network?: NetworkWithTokens) {
     }
 
     const btcChainId = chain.id
+    // Note: Phantom was removed because @bigmi/client dropped its Phantom connector in v0.9.
     const connectors: CreateConnectorFn[] = [
         xverse({ chainId: btcChainId }),
         unisat({ chainId: btcChainId }),
