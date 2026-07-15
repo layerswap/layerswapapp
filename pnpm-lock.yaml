@@ -672,15 +672,18 @@ importers:
 
   packages/wallets/imtblPassport:
     dependencies:
-      '@imtbl/config':
-        specifier: 2.20.0
-        version: 2.20.0
-      '@imtbl/passport':
-        specifier: 2.20.0
-        version: 2.20.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+      '@imtbl/auth':
+        specifier: 2.20.2
+        version: 2.20.2
+      '@imtbl/wallet':
+        specifier: 2.20.2
+        version: 2.20.2(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
       axios:
         specifier: 'catalog:'
         version: 1.16.0
+      lucide-react:
+        specifier: ^0.379.0
+        version: 0.379.0(react@19.2.3)
     devDependencies:
       '@layerswap/widget':
         specifier: workspace:^
@@ -871,7 +874,7 @@ importers:
         version: 1.1.13(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@tronweb3/tronwallet-adapter-trust':
         specifier: ^1.0.0
-        version: 1.0.2(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+        version: 1.1.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       tronweb:
         specifier: ^6.3.0
         version: 6.3.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
@@ -2870,31 +2873,19 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@imtbl/auth@2.20.0':
-    resolution: {integrity: sha512-mdxRE1j5Z6M8mcimqqNkglYQKdIBgHMsrNsAI7G5lVVpjrtSIqTPkwxEieGc15NfBDPwgX0vw/3lV73DBoKXgA==}
+  '@imtbl/auth@2.20.2':
+    resolution: {integrity: sha512-jFL3YrhGZak5lzs/FkPzxMnTBXqdYmxNQ5fFMFQYgONoeDVw2zIEIQx/0QG6s5riTWjaD6Jo2mGU/PKFeWII0A==}
 
-  '@imtbl/config@2.20.0':
-    resolution: {integrity: sha512-7DMdOheEt9A9H6V7zztUae4M0XKwDU2ddt6zUonjdc9SLyXRWMqtcUkRn7vJK/RqPINz+k1PhVTR7QDgQBl7mw==}
+  '@imtbl/generated-clients@2.20.2':
+    resolution: {integrity: sha512-ghL3y0mwoOIH+QzwuoyBEwH+pSQaiQNeprVkYE3Dtza2hvhHnwZgUR54e16KnDE7iakJ6nzLBpC+clYMNMgoUA==}
     engines: {node: '>=20.11.0'}
 
-  '@imtbl/generated-clients@2.20.0':
-    resolution: {integrity: sha512-OcAyqslwJj3lQ0vBIC64BswhfswQYJXvTV3FM7JLmXaO0pvDRLVhPtNWgbgI0W91/7ekye5hycI/ZGbaJDURsg==}
+  '@imtbl/metrics@2.20.2':
+    resolution: {integrity: sha512-w7nQl/i/oi4xoDclQqFdrfn6EDTsNNFZbff1I4wiBpjcVb/VREHNbbT2I9sFIWHteP+VdFZe8FgHrzHL+ZywQA==}
     engines: {node: '>=20.11.0'}
 
-  '@imtbl/metrics@2.20.0':
-    resolution: {integrity: sha512-v3Oe95A/yfUT+zrASSoXDk680K7VocKIUwsMGE9al/o9GJnCAV05QS+iPfGphGh16Y7+fqWbIQwHAd2YhCLjGg==}
-    engines: {node: '>=20.11.0'}
-
-  '@imtbl/passport@2.20.0':
-    resolution: {integrity: sha512-1bcPuAbu0/QWrHCdJsDv9yhxTPjyJRk3UJ09ZZ3Xs1Vchg6LrHcPKcfznLYumZO/Syc2q5UIEDmA2kpm6gJ6XQ==}
-    engines: {node: '>=20.11.0'}
-
-  '@imtbl/toolkit@2.20.0':
-    resolution: {integrity: sha512-OFp4Xi60whIs4Ea7HmapaKfmt9gAVvxdRPXwZggqbb6UZAogiMlfv5CJ4wQDXlz37zvnGKfP5scbYc53y5iAMg==}
-    engines: {node: '>=20.11.0'}
-
-  '@imtbl/wallet@2.20.0':
-    resolution: {integrity: sha512-+I4TM8kS+EaggZh5Lbxk7y3C/IMd0D4Qck6hseHa0C2H1NzvY3etQct4p6uy5J4TdglgMeEI+2T+WngzC/mwfw==}
+  '@imtbl/wallet@2.20.2':
+    resolution: {integrity: sha512-kNKOmleUmf+BeMDHcGwJKjhXs6Pvy6aj5s4dYiTKOIn8t4AfwUfK6CWj5TOHM9PTv/o7oX5atxtnI/62sSU1VA==}
 
   '@inquirer/external-editor@1.0.3':
     resolution: {integrity: sha512-RWbSrDiYmO4LbejWY7ttpxczuwQyZLBUyygsA9Nsv95hpzUWwnNTVQmAq3xuh7vNwCp07UTmE5i11XAEExx4RA==}
@@ -2993,10 +2984,6 @@ packages:
     peerDependencies:
       '@types/react': '>=16'
       react: '>=16'
-
-  '@metamask/detect-provider@2.0.0':
-    resolution: {integrity: sha512-sFpN+TX13E9fdBDh9lvQeZdJn4qYoRb/6QF2oZZK/Pn559IhCFacPMU1rMuqyXoFQF3JSJfii2l98B87QDPeCQ==}
-    engines: {node: '>=14.0.0'}
 
   '@metamask/eth-json-rpc-provider@1.0.1':
     resolution: {integrity: sha512-whiUMPlAOrVGmX8aKYVPvlKyG4CpQXiNNyt74vE1xb5sPvmx5oA7B/kOi/JdBvhGQq97U1/AVdXEdk2zkP8qyA==}
@@ -5930,6 +5917,10 @@ packages:
     resolution: {integrity: sha512-gZExaEZwPfI9oI7qSi56p/5Zl/DEzo1JlcD3lQzz1cuz0rZmEFpIqDS2mhY4r/IwEPwilIU7lg7T8/RQDVk9gA==}
     engines: {node: '>=16', pnpm: '>=7'}
 
+  '@tronweb3/tronwallet-abstract-adapter@1.2.0':
+    resolution: {integrity: sha512-Xy3ftKnxhEEWOWG6OXoN877t4oTr4W/kuQb7LWVYdn5PNeQ90LXj7eaTu9e6624iozDRuxMix5FThtqEt5F7dA==}
+    engines: {node: '>=16', pnpm: '>=7'}
+
   '@tronweb3/tronwallet-adapter-bitkeep@1.1.7':
     resolution: {integrity: sha512-J557vdOZoZOSu4CDQO+WpaXcnmOSzHxURepnlpvhnCYHvY5cZhPKVTDI4CfxarMmryExxOXjnnomWMj6o/nY1A==}
     engines: {node: '>=16', pnpm: '>=7'}
@@ -5977,8 +5968,12 @@ packages:
     resolution: {integrity: sha512-Oq5L0FyBM+g49DCr0DYdSx8xuhiqIlKoBTPNVmCTSDoWnoZpIh0XE33Axm/4OUMO2NHFpQMvP3pFo7QIllOZ/w==}
     engines: {node: '>=16', pnpm: '>=7'}
 
-  '@tronweb3/tronwallet-adapter-trust@1.0.2':
-    resolution: {integrity: sha512-Bw1Gikor29BDzRN8lsCVk9ElviG9wRwR7egGHDYwEiwkFXb31qZXbMCFFSJvK4GZ5sQCCVWenPR6A2Te4t4WHA==}
+  '@tronweb3/tronwallet-adapter-tronlink@1.2.0':
+    resolution: {integrity: sha512-utEIJJ4lBjy7waTgohwoeaD8pM5AfQvXKZWabZP5YPiorNq//TseEr4Vy80uNco/SD1PhXpNjMYSwuCo+15J7A==}
+    engines: {node: '>=16', pnpm: '>=7'}
+
+  '@tronweb3/tronwallet-adapter-trust@1.1.0':
+    resolution: {integrity: sha512-dedOXV3+BogFDRJnDi1cqlS2NPelZmF8Z0KcmfcVqmX1eCnBVbEmRLmTIwwN4LO/WcyX7XTLQNHPfQprrMVtbA==}
     engines: {node: '>=16', pnpm: '>=7'}
 
   '@trpc/client@10.45.4':
@@ -11130,6 +11125,9 @@ packages:
   tr46@0.0.3:
     resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
 
+  tronweb@6.2.2:
+    resolution: {integrity: sha512-jRBf4+7fJ0HUVzveBi0tE21r3EygCNtbYE92T38Sxlwr/x320W2vz+dvGLOIpp4kW/CvJ4HLvtnb6U30A0V2eA==}
+
   tronweb@6.3.0:
     resolution: {integrity: sha512-5CAjDO4/KfymgjKFgnXgfKKQp0xgOn8otCBYjgYAEIpLZDKNAk14Z0dDeg0UqYuceCiyMHjW7a19Rsz8EmhAOw==}
 
@@ -13023,6 +13021,7 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - debug
+      - supports-color
       - utf-8-validate
 
   '@dynamic-labs-wallet/browser-wallet-client@0.0.211(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
@@ -13034,6 +13033,7 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - debug
+      - supports-color
       - utf-8-validate
 
   '@dynamic-labs-wallet/browser-wallet-client@0.0.217(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
@@ -13045,6 +13045,7 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - debug
+      - supports-color
       - utf-8-validate
 
   '@dynamic-labs-wallet/browser@0.0.167':
@@ -13054,32 +13055,35 @@ snapshots:
       '@dynamic-labs/sdk-api-core': 0.0.764
       '@noble/hashes': 1.7.1
       argon2id: 1.0.1
-      axios: 1.16.0
+      axios: 1.18.0
       http-errors: 2.0.0
       semver: 7.7.3
       uuid: 11.1.0
     transitivePeerDependencies:
       - debug
+      - supports-color
 
   '@dynamic-labs-wallet/core@0.0.167':
     dependencies:
       '@dynamic-labs/sdk-api-core': 0.0.764
-      axios: 1.16.0
+      axios: 1.18.0
       uuid: 11.1.0
     transitivePeerDependencies:
       - debug
+      - supports-color
 
   '@dynamic-labs-wallet/core@0.0.211(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
       '@dynamic-labs-wallet/forward-mpc-client': 0.1.3(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@dynamic-labs/logger': 4.52.5
       '@dynamic-labs/sdk-api-core': 0.0.818
-      axios: 1.16.0
+      axios: 1.18.0
       http-errors: 2.0.0
       uuid: 11.1.0
     transitivePeerDependencies:
       - bufferutil
       - debug
+      - supports-color
       - utf-8-validate
 
   '@dynamic-labs-wallet/core@0.0.217(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
@@ -13087,12 +13091,13 @@ snapshots:
       '@dynamic-labs-wallet/forward-mpc-client': 0.1.3(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@dynamic-labs/logger': 4.52.5
       '@dynamic-labs/sdk-api-core': 0.0.818
-      axios: 1.16.0
+      axios: 1.18.0
       http-errors: 2.0.0
       uuid: 11.1.0
     transitivePeerDependencies:
       - bufferutil
       - debug
+      - supports-color
       - utf-8-validate
 
   '@dynamic-labs-wallet/forward-mpc-client@0.1.3(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
@@ -13108,6 +13113,7 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - debug
+      - supports-color
       - utf-8-validate
 
   '@dynamic-labs-wallet/forward-mpc-shared@0.1.0':
@@ -13121,6 +13127,7 @@ snapshots:
       io-ts: 2.2.22(fp-ts@2.16.11)
     transitivePeerDependencies:
       - debug
+      - supports-color
 
   '@dynamic-labs/assert-package-version@4.52.5':
     dependencies:
@@ -13328,6 +13335,7 @@ snapshots:
       - bufferutil
       - debug
       - react-native
+      - supports-color
       - utf-8-validate
 
   '@dynamic-labs/solana-core@4.52.5(bufferutil@4.1.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3)(utf-8-validate@5.0.10)':
@@ -13411,6 +13419,7 @@ snapshots:
       - fastestsmallesttextencoderdecoder
       - react
       - react-dom
+      - supports-color
       - typescript
       - utf-8-validate
       - zod
@@ -13435,6 +13444,7 @@ snapshots:
       - fastestsmallesttextencoderdecoder
       - react
       - react-dom
+      - supports-color
       - typescript
       - utf-8-validate
       - viem
@@ -14502,70 +14512,38 @@ snapshots:
   '@img/sharp-win32-x64@0.34.5':
     optional: true
 
-  '@imtbl/auth@2.20.0':
+  '@imtbl/auth@2.20.2':
     dependencies:
-      '@imtbl/generated-clients': 2.20.0
-      '@imtbl/metrics': 2.20.0
+      '@imtbl/generated-clients': 2.20.2
+      '@imtbl/metrics': 2.20.2
       localforage: 1.10.0
       oidc-client-ts: 3.4.1
     transitivePeerDependencies:
       - debug
+      - supports-color
 
-  '@imtbl/config@2.20.0':
+  '@imtbl/generated-clients@2.20.2':
     dependencies:
-      '@imtbl/metrics': 2.20.0
-
-  '@imtbl/generated-clients@2.20.0':
-    dependencies:
-      axios: 1.16.0
+      axios: 1.18.0
     transitivePeerDependencies:
       - debug
+      - supports-color
 
-  '@imtbl/metrics@2.20.0':
+  '@imtbl/metrics@2.20.2':
     dependencies:
       global-const: 0.1.2
       lru-memorise: 0.3.0
 
-  '@imtbl/passport@2.20.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
+  '@imtbl/wallet@2.20.2(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
     dependencies:
-      '@imtbl/auth': 2.20.0
-      '@imtbl/config': 2.20.0
-      '@imtbl/generated-clients': 2.20.0
-      '@imtbl/metrics': 2.20.0
-      '@imtbl/toolkit': 2.20.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      '@imtbl/wallet': 2.20.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
-      ethers: 6.16.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      localforage: 1.10.0
-      oidc-client-ts: 3.4.1
-    transitivePeerDependencies:
-      - bufferutil
-      - debug
-      - typescript
-      - utf-8-validate
-      - zod
-
-  '@imtbl/toolkit@2.20.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
-    dependencies:
-      '@metamask/detect-provider': 2.0.0
-      axios: 1.16.0
-      bn.js: 5.2.3
-      enc-utils: 3.0.0
-      ethers: 6.16.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      oidc-client-ts: 3.4.1
-    transitivePeerDependencies:
-      - bufferutil
-      - debug
-      - utf-8-validate
-
-  '@imtbl/wallet@2.20.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
-    dependencies:
-      '@imtbl/auth': 2.20.0
-      '@imtbl/generated-clients': 2.20.0
-      '@imtbl/metrics': 2.20.0
+      '@imtbl/auth': 2.20.2
+      '@imtbl/generated-clients': 2.20.2
+      '@imtbl/metrics': 2.20.2
       viem: 2.18.8(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
     transitivePeerDependencies:
       - bufferutil
       - debug
+      - supports-color
       - typescript
       - utf-8-validate
       - zod
@@ -14732,8 +14710,6 @@ snapshots:
       '@types/mdx': 2.0.13
       '@types/react': 19.2.3
       react: 19.2.3
-
-  '@metamask/detect-provider@2.0.0': {}
 
   '@metamask/eth-json-rpc-provider@1.0.1':
     dependencies:
@@ -19596,6 +19572,16 @@ snapshots:
       - supports-color
       - utf-8-validate
 
+  '@tronweb3/tronwallet-abstract-adapter@1.2.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
+    dependencies:
+      eventemitter3: 4.0.7
+      tronweb: 6.2.2(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+    transitivePeerDependencies:
+      - bufferutil
+      - debug
+      - supports-color
+      - utf-8-validate
+
   '@tronweb3/tronwallet-adapter-bitkeep@1.1.7(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
       '@tronweb3/tronwallet-abstract-adapter': 1.1.10(bufferutil@4.1.0)(utf-8-validate@5.0.10)
@@ -19712,10 +19698,19 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@tronweb3/tronwallet-adapter-trust@1.0.2(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
+  '@tronweb3/tronwallet-adapter-tronlink@1.2.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
-      '@tronweb3/tronwallet-abstract-adapter': 1.1.10(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      '@tronweb3/tronwallet-adapter-tronlink': 1.1.13(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      '@tronweb3/tronwallet-abstract-adapter': 1.2.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+    transitivePeerDependencies:
+      - bufferutil
+      - debug
+      - supports-color
+      - utf-8-validate
+
+  '@tronweb3/tronwallet-adapter-trust@1.1.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@tronweb3/tronwallet-abstract-adapter': 1.2.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      '@tronweb3/tronwallet-adapter-tronlink': 1.2.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - bufferutil
       - debug
@@ -26842,6 +26837,23 @@ snapshots:
   totalist@3.0.1: {}
 
   tr46@0.0.3: {}
+
+  tronweb@6.2.2(bufferutil@4.1.0)(utf-8-validate@5.0.10):
+    dependencies:
+      '@babel/runtime': 7.26.10
+      axios: 1.18.0
+      bignumber.js: 9.1.2
+      ethereum-cryptography: 2.2.1
+      ethers: 6.13.5(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      eventemitter3: 5.0.1
+      google-protobuf: 3.21.4
+      semver: 7.7.1
+      validator: 13.15.23
+    transitivePeerDependencies:
+      - bufferutil
+      - debug
+      - supports-color
+      - utf-8-validate
 
   tronweb@6.3.0(bufferutil@4.1.0)(utf-8-validate@5.0.10):
     dependencies:

@@ -95,7 +95,7 @@ module.exports = (phase, { defaultConfig }) => {
       ];
     },
     skipTrailingSlashRedirect: true,
-    transpilePackages: ['@imtbl/passport', '@imtbl/config', '@imtbl/auth', '@imtbl/wallet', '@imtbl/metrics', '@imtbl/toolkit', '@imtbl/generated-clients', '@fuels/connectors', '@fuels/react', "@radix-ui/react-dismissable-layer", "@solana/web3.js"]
+    transpilePackages: ['@imtbl/auth', '@imtbl/wallet', '@imtbl/metrics', '@imtbl/generated-clients', '@fuels/connectors', '@fuels/react', "@radix-ui/react-dismissable-layer", "@solana/web3.js"]
   }
   if (process.env.APP_BASE_PATH) {
     nextConfig.basePath = process.env.APP_BASE_PATH

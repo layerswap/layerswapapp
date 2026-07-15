@@ -16,7 +16,8 @@ export default function TronProvider({ children }: { children: React.ReactNode }
                 okxModule,
                 bitkeepModule,
                 bybitModule,
-                gateModule
+                gateModule,
+                trustModule
             ] = await Promise.all([
                 import('@tronweb3/tronwallet-adapter-metamask-tron'),
                 import('@tronweb3/tronwallet-adapter-tronlink'),
@@ -24,6 +25,8 @@ export default function TronProvider({ children }: { children: React.ReactNode }
                 import('@tronweb3/tronwallet-adapter-bitkeep'),
                 import('@tronweb3/tronwallet-adapter-bybit'),
                 import('@tronweb3/tronwallet-adapter-gatewallet'),
+                import('@tronweb3/tronwallet-adapter-trust'),
+
             ]);
 
             if (cancelled) return;
@@ -34,7 +37,7 @@ export default function TronProvider({ children }: { children: React.ReactNode }
             const { BitKeepAdapter } = bitkeepModule;
             const { BybitWalletAdapter } = bybitModule;
             const { GateWalletAdapter } = gateModule;
-
+            const { TrustAdapter } = trustModule;
             setAdapters([
                 new MetaMaskAdapter(),
                 new TronLinkAdapter(),
@@ -42,6 +45,7 @@ export default function TronProvider({ children }: { children: React.ReactNode }
                 new BitKeepAdapter(),
                 new BybitWalletAdapter(),
                 new GateWalletAdapter(),
+                new TrustAdapter(),
             ]);
         };
 
