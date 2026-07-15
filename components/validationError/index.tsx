@@ -9,11 +9,12 @@ import { ErrorDismissButton } from './ErrorDismissButton';
 
 const ValidationError: React.FC<{ showSwapErrors?: boolean }> = ({ showSwapErrors = false }) => {
     const { routeValidation } = useValidationContext();
-    const { swapError, depositActionsError, setSwapError } = useSwapDataState();
+    const { swapError: _swapError, depositActionsError, setSwapError } = useSwapDataState();
     const { values } = useFormikContext<SwapFormValues>();
+    const swapError = showSwapErrors ? _swapError : null
 
     useEffect(() => {
-        if (showSwapErrors && swapError) setSwapError?.(null);
+        if (swapError) setSwapError?.(null);
     }, [showSwapErrors, values.from?.name, values.to?.name, values.fromAsset?.symbol, values.toAsset?.symbol, values.amount, values.fromExchange?.name, values.destination_address]);
 
     if (routeValidation.message) {
@@ -28,7 +29,7 @@ const ValidationError: React.FC<{ showSwapErrors?: boolean }> = ({ showSwapError
         );
     }
 
-    if (showSwapErrors && swapError) {
+    if (swapError) {
         return (
             <div className="mt-2">
                 <ErrorDisplay
