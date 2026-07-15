@@ -1,5 +1,5 @@
 import { BigmiProvider, useConnect } from '@bigmi/react'
-import { createConfig, bitget, ctrl, leather, metamask, okx, onekey, unisat, xverse } from '@bigmi/client'
+import { createConfig, bitget, leather, metamask, okx, onekey, unisat, xverse } from '@bigmi/client'
 import type { Connector, CreateConnectorFn } from '@bigmi/client'
 import { http, bitcoin, createClient, defineChain, Chain, ChainId } from '@bigmi/core'
 import { getWallets } from '@wallet-standard/app'
@@ -143,7 +143,6 @@ function createDefaultBigmiConfig(network?: NetworkWithTokens) {
     const connectors: CreateConnectorFn[] = [
         xverse({ chainId: btcChainId }),
         unisat({ chainId: btcChainId }),
-        ctrl({ chainId: btcChainId }),
         okx({ chainId: btcChainId }),
         bitget({ chainId: btcChainId }),
         leather({ chainId: btcChainId }),
