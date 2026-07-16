@@ -4,6 +4,7 @@ import { BitcoinGasProvider } from "./providers/bitcoinGasProvider";
 import { EVMGasProvider } from "./providers/evmGasProvider";
 import { FuelGasProvider } from "./providers/fuelGasProvider";
 import { HyperliquidGasProvider } from "./providers/hyperliquidGasProvider";
+import { LighterGasProvider } from "./providers/lighterGasProvider";
 import { SolanaGasProvider } from "./providers/solanaGasProvider";
 import { StarknetGasProvider } from "./providers/starknetGasProvider";
 import { TronGasProvider } from "./providers/tronGasProvider";
@@ -14,6 +15,7 @@ export class GasResolver {
         new StarknetGasProvider(),
         new EVMGasProvider(),
         new HyperliquidGasProvider(),
+        new LighterGasProvider(),
         new FuelGasProvider(),
         new SolanaGasProvider(),
         new TronGasProvider()

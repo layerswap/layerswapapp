@@ -87,7 +87,9 @@ export function useExtendedSwapData(
                 sourceAmount: record.sourceAmount,
                 availableRoutes: sourceRoutes,
             })
-            const mapping = plan?.mapping
+            const mapping = plan?.mapping && record.flatFee !== undefined
+                ? { ...plan.mapping, flatFee: record.flatFee }
+                : plan?.mapping
             if (mapping) {
                 quote = transformQuoteForExtendedRoute({ quote: backendQuote }, mapping, network, token, record.sourceAmount)?.quote
             }

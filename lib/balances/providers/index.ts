@@ -8,3 +8,5 @@ export { StarknetBalanceProvider } from "./starknetBalanceProvider";
 export { TonBalanceProvider } from "./tonBalanceProvider";
 export { TronBalanceProvider } from "./tronBalanceProvider";
 export { HyperliquidBalanceProvider } from "./hyperliquidBalanceProvider"
+export { PolymarketBalanceProvider } from "./polymarketBalanceProvider"
+export { LighterBalanceProvider } from "./lighterBalanceProvider"

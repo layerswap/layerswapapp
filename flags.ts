@@ -22,9 +22,17 @@ export const polymarketRoutesFlag = flag<boolean>({
     adapter: vercelAdapter(),
 })
 
+export const lighterRoutesFlag = flag<boolean>({
+    key: 'lighter-routes',
+    description: 'Show Lighter extended source routes',
+    defaultValue: true,
+    adapter: vercelAdapter(),
+})
+
 export const extendedRouteFlags = {
     hyperliquid: hyperliquidRoutesFlag,
     polymarket: polymarketRoutesFlag,
+    lighter: lighterRoutesFlag,
 }
 
 // Polymarket routes go through a builder-key-authed relayer proxy; without those server
@@ -41,12 +49,22 @@ export async function isPolymarketEnabled(req: GetServerSidePropsContext['req'])
     return (await polymarketRoutesFlag(req)) && hasPolymarketBuilderCreds()
 }
 
+// Lighter's proprietary L2 half-signature is produced server-side; every registration and
+// fast withdrawal is additionally authorized by the user's EVM wallet signature. The
+// secret authenticates short-lived relay preparation tokens and gates the signer runtime.
+export const hasLighterSignerSecret = () => !!process.env.LIGHTER_SIGNER_SECRET
+
+export async function isLighterEnabled(req: GetServerSidePropsContext['req']): Promise<boolean> {
+    return (await lighterRoutesFlag(req)) && hasLighterSignerSecret()
+}
+
 // Resolve every extended-route flag for a request — call from getServerSideProps with
 // `context.req`.
 export async function resolveExtendedRouteFlags(req: GetServerSidePropsContext['req']): Promise<ExtendedRouteFlags> {
-    const [hyperliquid, polymarket] = await Promise.all([
+    const [hyperliquid, polymarket, lighter] = await Promise.all([
         hyperliquidRoutesFlag(req),
         isPolymarketEnabled(req),
+        isLighterEnabled(req),
     ])
-    return { hyperliquid, polymarket }
+    return { hyperliquid, polymarket, lighter }
 }

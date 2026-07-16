@@ -3,6 +3,12 @@ import { Exchange } from "@/Models/Exchange";
 
 export type SwapFormValues = {
   amount?: string;
+  /** Internal-only override for extended sources whose provider fee is resolved
+   * after wallet authorization (for example, Lighter fast withdrawals). */
+  extendedRouteOverride?: {
+    realAmount: string;
+    flatFee: number;
+  };
   destination_address?: string;
   //TODO: refactor
   fromAsset?: NetworkRouteToken & { manuallySet?: boolean };

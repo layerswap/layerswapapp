@@ -4,9 +4,10 @@ import { ExtendedRouteFlags, ExtendedRoutePlan, ExtendedRouteProvider, ResolvedE
 import { realRoutePresent } from "./availability";
 import { hyperliquidProvider } from "./providers/hyperliquid";
 import { polymarketProvider } from "./providers/polymarket";
+import { lighterProvider } from "./providers/lighter";
 
 // Adding a provider = one file + one entry here.
-const SOURCE_PROVIDERS: ExtendedRouteProvider[] = [hyperliquidProvider, polymarketProvider]
+const SOURCE_PROVIDERS: ExtendedRouteProvider[] = [hyperliquidProvider, polymarketProvider, lighterProvider]
 
 export function getSourceProviders(): ExtendedRouteProvider[] {
     return SOURCE_PROVIDERS

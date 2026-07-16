@@ -17,6 +17,9 @@ export type ExtendedRouteRecord = {
     sourceAddress: string
     /** A — the amount that leaves the extended source (sendToEvmWithData amount). */
     sourceAmount: string
+    /** Actual provider fee used for this swap. Older records fall back to the
+     * route's configured estimate. */
+    flatFee?: number
     createdAt: number
     /** Polymarket: the derived Safe (proxy) wallet that holds the funds. */
     proxyWallet?: string

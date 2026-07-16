@@ -98,6 +98,10 @@ export class BalanceResolver {
                 const { PolymarketBalanceProvider } = await import("./providers/polymarketBalanceProvider");
                 return new PolymarketBalanceProvider();
             }
+            case "lighter": {
+                const { LighterBalanceProvider } = await import("./providers/lighterBalanceProvider");
+                return new LighterBalanceProvider();
+            }
             default:
                 throw new Error(`Unsupported balance provider kind: ${kind}`);
         }
@@ -237,7 +241,8 @@ type ProviderKind =
     | "tron"
     | "bitcoin"
     | "hyperliquid"
-    | "polymarket";
+    | "polymarket"
+    | "lighter";
 
 const allProviderKinds: ProviderKind[] = [
     "query",
@@ -250,4 +255,5 @@ const allProviderKinds: ProviderKind[] = [
     "bitcoin",
     "hyperliquid",
     "polymarket",
+    "lighter",
 ];

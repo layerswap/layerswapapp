@@ -48,6 +48,10 @@ const PolymarketWalletWithdraw = dynamic<WithdrawPageProps>(
     () => import('../Wallet/WithdrawalProviders/Polymarket').then(m => m.PolymarketWalletWithdraw),
     { ssr: false }
 )
+const LighterWalletWithdraw = dynamic<WithdrawPageProps>(
+    () => import('../Wallet/WithdrawalProviders/Lighter').then(m => m.LighterWalletWithdraw),
+    { ssr: false }
+)
 
 type Props = {
     swapData: SwapBasicData
@@ -131,6 +135,12 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
                 source_network?.type == NetworkType.Polymarket ? source_network.name : undefined
             ],
             component: PolymarketWalletWithdraw
+        },
+        {
+            supportedNetworks: [
+                source_network?.type == NetworkType.Lighter ? source_network.name : undefined
+            ],
+            component: LighterWalletWithdraw
         }
     ] as { supportedNetworks: (string | undefined)[]; component: ComponentType<WithdrawPageProps> }[], [source_network])
 

@@ -12,6 +12,7 @@ export enum NetworkType {
     Tron = 'tron',
     Hyperliquid = 'hyperliquid',
     Polymarket = 'polymarket',
+    Lighter = 'lighter',
 }
 
 export class Network {

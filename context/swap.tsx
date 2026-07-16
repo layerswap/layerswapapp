@@ -253,7 +253,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             sourceAddress: selectedSourceAccount?.address,
         }) && gaslessEnabled
 
-        const extendedPlan = resolveExtendedRoutePlan({
+        const resolvedExtendedPlan = resolveExtendedRoutePlan({
             sourceNetworkName: from.name,
             sourceTokenSymbol: fromCurrency.symbol,
             destinationNetworkName: to.name,
@@ -261,6 +261,16 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             sourceAmount: amount,
             availableRoutes: sourceRoutes,
         })
+        const extendedPlan = resolvedExtendedPlan && values.extendedRouteOverride
+            ? {
+                ...resolvedExtendedPlan,
+                realAmount: values.extendedRouteOverride.realAmount,
+                mapping: {
+                    ...resolvedExtendedPlan.mapping,
+                    flatFee: values.extendedRouteOverride.flatFee,
+                },
+            }
+            : resolvedExtendedPlan
         const isExtendedBridge = !!extendedPlan
 
         const data: CreateSwapParams = extendedPlan ? buildCreateSwapParamsForExtendedRoute({
@@ -316,6 +326,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
                 realToken: extendedPlan.mapping.real.tokenSymbol,
                 sourceAddress: selectedSourceAccount?.address || '',
                 sourceAmount: (amount || '').toString(),
+                flatFee: extendedPlan.mapping.flatFee,
                 createdAt: Date.now(),
             })
         }
