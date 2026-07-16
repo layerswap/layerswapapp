@@ -32,6 +32,7 @@ const routeCache = new WeakMap<object, NetworkRoute>()
 export const polymarketProvider: ExtendedRouteProvider = {
     id: 'polymarket',
     direction: 'source',
+    enabledByDefault: true,
     funding: 'depository',
     requiresRefundAddress: true,
     extendedNetworkNames: Object.keys(POLYMARKET_CONFIG),

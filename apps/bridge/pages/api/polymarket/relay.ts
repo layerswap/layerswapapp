@@ -111,9 +111,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // Gate the relay behind the same kill switch as the Polymarket source routes —
         // when the provider is off (dashboard flag) or its builder creds are missing,
-        // this credential-holding proxy must refuse traffic.
+        // this credential-holding proxy must refuse traffic. The body is machine-readable
+        // ("provider_disabled") so clients that still reach here — a stale cached bundle,
+        // or a flag flipped mid-session — can show "temporarily unavailable" copy instead
+        // of a generic failure (see the wallet package's polymarket relayerClient).
         if (!(await isPolymarketEnabled(req))) {
-            return res.status(404).json({ error: "Not found" });
+            return res.status(404).json({ error: "provider_disabled" });
         }
 
         if (req.method === "GET" || req.method === "POST") {

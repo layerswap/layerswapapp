@@ -25,6 +25,15 @@ These types and their consumers live in different files, so a change on one side
 
 Registry (WalletConnect Explorer) metadata is attached to each connector tile via the `WC_REGISTRY_MARKER` symbol and read back with `getRegistryEntry(connector)`. There is **no** `provider.registryWallets` array — that per-provider field was removed in the EVM/SVM wallet-class refactor. `splitRegistryConnectors(configured, registryWallets, …)` takes the fetched list as an argument and tags each connector; it does not read a provider field.
 
+### Extended-route flags — per-provider fail direction, resolved server-side
+
+Extended source routes (Hyperliquid, Polymarket) are gated by `ExtendedRouteFlags`, applied in `lib/extendedRoutes/registry.ts` → `activeProviders()`.
+
+- **Every `ExtendedRouteProvider` declares `enabledByDefault`** — the behavior when no resolved flag covers it. Choose by failure mode: `true` (fail-open) only for pure client-side synthesis (Hyperliquid); `false` (fail-closed) for routes with a server dependency — credentials, a gated relayer proxy — that would break the user mid-flow (Polymarket). A new provider must make this choice explicitly.
+- **Flag resolution has two paths that must stay in sync with `apps/bridge/flags.ts`:** the bridge SSR resolves via the Vercel Flags SDK and injects `settings.featureFlags`; every other client (CDN embeds, deposit integrations) gets them from `GET https://layerswap.io/app/api/flags` inside the widget's `getSettings()` (`lib/extendedRoutes/remoteFlags.ts`). Callers that resolve flags first-party pass `{ includeFeatureFlags: false }`.
+- **Polymarket's effective enablement is `isPolymarketEnabled`** (dashboard flag AND builder creds, plus a `POLYMARKET_ROUTES_OVERRIDE` env opt-in) — enforced identically by the flags endpoint and the relayer proxy. The proxy refuses with `{ "error": "provider_disabled" }`, which the wallet package's `relayerClient` maps to user-facing "temporarily unavailable" copy.
+- **Intended end state:** the LayerSwap API owns route availability in its settings/routes payload; when that lands, prefer API-provided flags and retire the bridge flags endpoint.
+
 ## Commands
 
 ```bash

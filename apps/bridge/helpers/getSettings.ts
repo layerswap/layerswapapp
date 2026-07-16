@@ -13,7 +13,9 @@ export async function getServerSideProps(context) {
 
     const app = context.query?.appName || context.query?.addressSource
     const apiKey = JSON.parse(process.env.API_KEYS || "{}")?.[app] || process.env.NEXT_PUBLIC_API_KEY
-    const settings = await getSettings(apiKey)
+    // Skip the widget's public-endpoint flags fetch — this SSR path resolves the
+    // flags first-party via the Vercel Flags SDK just below (avoids a self-HTTP call).
+    const settings = await getSettings(apiKey, { includeFeatureFlags: false })
     // Resolve extended-route kill switches server-side (Vercel Flags) and carry them into
     // the SSR settings, so LayerSwapAppSettings gates which extended providers contribute.
     const featureFlags = await resolveExtendedRouteFlags(context.req)

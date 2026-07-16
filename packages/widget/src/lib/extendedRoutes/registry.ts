@@ -19,11 +19,13 @@ export function getSourceProviders(): ExtendedRouteProvider[] {
     return sourceProviders
 }
 
-// Providers enabled by feature flags (keyed by provider id). Undefined flags ⇒ all
-// enabled, so callers without flags keep full behavior (kill-switch defaults on).
+// Providers enabled by feature flags (keyed by provider id). When flags are absent
+// (no SSR resolution and the public flags endpoint was unreachable) or lack an entry
+// for a provider, that provider's own `enabledByDefault` decides — fail-open for pure
+// client-side routes, fail-closed for ones with a server dependency (e.g. Polymarket's
+// credential-gated relayer proxy).
 function activeProviders(flags?: ExtendedRouteFlags): ExtendedRouteProvider[] {
-    if (!flags) return sourceProviders
-    return sourceProviders.filter(p => flags[p.id] !== false)
+    return sourceProviders.filter(p => flags?.[p.id] ?? p.enabledByDefault)
 }
 
 export function isExtendedSourceNetwork(name?: string): boolean {

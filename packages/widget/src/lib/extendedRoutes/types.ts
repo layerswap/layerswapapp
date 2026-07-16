@@ -8,7 +8,8 @@ import { DecimalInput } from "./amounts";
  * checks. See `.context/plans/extended-routes-system-hyperliquid-source-withdraw.md`.
  */
 
-/** Per-provider on/off flags, keyed by provider id (undefined ⇒ enabled). */
+/** Per-provider on/off flags, keyed by provider id. A missing entry (or an absent
+ * flags object) falls back to the provider's own `enabledByDefault`. */
 export type ExtendedRouteFlags = Record<string, boolean>
 
 export type RealRouteRef = { networkName: string; tokenSymbol: string }
@@ -37,6 +38,15 @@ export interface ExtendedRouteProvider {
     id: string
     /** 'destination' is designed into the types but not implemented in v1. */
     direction: 'source' | 'destination'
+    /**
+     * Whether the provider is active when no resolved flag covers it (flags absent
+     * entirely, or present but lacking this id). Choose by failure mode: `true`
+     * (fail-open) only for routes that are pure client-side synthesis; `false`
+     * (fail-closed) for routes with a server dependency (credentials, a gated
+     * relayer proxy) that would break mid-flow — those must be explicitly enabled
+     * by a resolved flag.
+     */
+    enabledByDefault: boolean
     /** Extended network names this provider owns, e.g. [HYPERLIQUID_MAINNET, HYPERLIQUID_TESTNET]. */
     extendedNetworkNames: string[]
     funding?: 'deposit_address' | 'depository'

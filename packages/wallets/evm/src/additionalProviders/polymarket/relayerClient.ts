@@ -57,10 +57,29 @@ export type RelayerSubmitResponse = {
     transactionHash?: string
 }
 
+/** Machine-readable body the proxy returns when the Polymarket kill switch is off
+ * (dashboard flag disabled or builder creds missing) — see `api/polymarket/relay.ts`. */
+const PROVIDER_DISABLED_CODE = 'provider_disabled'
+
+/** Build the error for a failed proxy response. A kill-switch refusal gets user-facing
+ * copy (`header` is what the withdrawal UI shows as the title); anything else keeps the
+ * raw status + body for diagnostics. */
+async function relayerError(res: Response, context: string): Promise<Error> {
+    const text = await res.text().catch(() => '')
+    let code: string | undefined
+    try { code = JSON.parse(text)?.error } catch { /* non-JSON body */ }
+    if (code === PROVIDER_DISABLED_CODE) {
+        const e = new Error('Polymarket withdrawals are temporarily unavailable. Please try again later.')
+        ;(e as any).header = 'Polymarket is unavailable'
+        return e
+    }
+    return new Error(`${context} failed: ${res.status} ${text.slice(0, 300)}`)
+}
+
 async function proxyGet<T>(params: Record<string, string>): Promise<T> {
     const qs = new URLSearchParams(params).toString()
     const res = await fetch(`${POLYMARKET_RELAYER_PROXY_URL}?${qs}`, { method: 'GET' })
-    if (!res.ok) throw new Error(`Polymarket relayer (${params.action}) failed: ${res.status} ${(await res.text().catch(() => '')).slice(0, 200)}`)
+    if (!res.ok) throw await relayerError(res, `Polymarket relayer (${params.action})`)
     return res.json() as Promise<T>
 }
 
@@ -89,7 +108,7 @@ export async function submitRelayerTransaction(request: RelayerSubmittable): Pro
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'submit', request }),
     })
-    if (!res.ok) throw new Error(`Polymarket relayer submit failed: ${res.status} ${(await res.text().catch(() => '')).slice(0, 300)}`)
+    if (!res.ok) throw await relayerError(res, 'Polymarket relayer submit')
     const data = await res.json()
     // Validate the shape the `as RelayerSubmitResponse` cast would otherwise
     // assume — a null/malformed submit response should fail loudly here rather
