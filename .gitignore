@@ -50,5 +50,5 @@ pr-review-report.md
 .env*
 
 # Agents
-.codex
 .agents
+.codex

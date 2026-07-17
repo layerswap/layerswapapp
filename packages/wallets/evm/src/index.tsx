@@ -199,3 +199,5 @@ export const EVMProvider: WalletProvider = {
     rpcHealthCheckProvider: [new EVMRpcHealthCheckProvider()],
     extendedRouteProvider: [hyperliquidProvider, polymarketProvider],
 };
+
+export * from "./additionalProviders/polymarket/constants"

@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createHmac } from "node:crypto";
 import { isPolymarketEnabled } from "../../../flags";
+import { validateRelaySubmitRequest } from "../../../lib/polymarket/validateRelaySubmit";
 
 /**
  * Server-side proxy for the Polymarket relayer.
@@ -14,10 +15,19 @@ import { isPolymarketEnabled } from "../../../flags";
  * The user's Safe signature (built client-side) is what authorizes the actual fund
  * movement; the builder key only authorizes use of the relayer (gas sponsorship).
  *
+ * Being public, submits are restricted to Layerswap withdrawals: the batch must be
+ * exactly the shape `buildPolymarketDepositCalls` produces (validateRelaySubmit —
+ * pure tx inspection, no swap lookup). Anything else is refused before the builder
+ * auth is spent.
+ *
  * Required env (server-only, NO `NEXT_PUBLIC_` prefix):
  *   POLYMARKET_BUILDER_API_KEY, POLYMARKET_BUILDER_SECRET, POLYMARKET_BUILDER_PASSPHRASE
  * Optional: POLYMARKET_RELAYER_URL (defaults to relayer-v2.polymarket.com).
  */
+
+// A legit submit (a 4-call SAFE batch) is well under 10KB; cap the parsed body so the
+// MultiSend decoder never sees megabytes of attacker hex.
+export const config = { api: { bodyParser: { sizeLimit: "100kb" } } };
 
 // Canonical value lives in the wallet package's polymarket constants (POLYMARKET_RELAYER_URL);
 // inlined here to keep this server route free of a cross-package import (it already mirrors the
@@ -27,6 +37,9 @@ const RELAYER_URL = (process.env.POLYMARKET_RELAYER_URL || DEFAULT_RELAYER_URL).
 
 // Mirrors the RelayerSubmittable union in the wallet package's polymarket relayerClient.
 const SUBMIT_TYPES = ["SAFE", "WALLET", "WALLET-CREATE"];
+
+// One generic message for every rejection class — no oracle for probing what passed.
+const REJECTION_MESSAGE = "This withdrawal could not be verified. Please start over and try again.";
 
 // Per-IP rate limiting. In-memory, so it's per-instance best-effort (a serverless
 // deployment with many instances weakens it); enough to stop a single client from
@@ -144,10 +157,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         if (req.method === "POST") {
-            const { action, request } = req.body ?? {};
+            const { action, request } = (typeof req.body === "object" && req.body) || {};
             if (action !== "submit") return res.status(400).json({ error: `Unsupported POST action: ${action}` });
             if (!request) return res.status(400).json({ error: "request is required" });
             if (!SUBMIT_TYPES.includes(request.type)) return res.status(400).json({ error: `Unsupported request type: ${request.type}` });
+
+            // Only Layerswap deposits get relayed on the builder credentials: the batch
+            // must be exactly the withdrawal shape — verified from the tx itself.
+            const validation = validateRelaySubmitRequest(request);
+            if (!validation.ok) {
+                console.error("[polymarket/relay] submit rejected", { type: request?.type, reason: validation.reason });
+                return res.status(403).json({ error: REJECTION_MESSAGE });
+            }
 
             const body = JSON.stringify(request);
             const headers = { "Content-Type": "application/json", ...builderHeaders("POST", "/submit", body) };

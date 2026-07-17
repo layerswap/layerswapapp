@@ -83,6 +83,11 @@ export async function submitRelayerTransaction(request: RelayerSubmittable): Pro
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'submit', request }),
     })
-    if (!res.ok) throw new Error(`Polymarket relayer submit failed: ${res.status} ${(await res.text().catch(() => '')).slice(0, 300)}`)
+    if (!res.ok) {
+        const text = await res.text().catch(() => '')
+        let message: string | undefined
+        try { message = JSON.parse(text)?.error } catch { }
+        throw new Error(message || `Polymarket relayer submit failed: ${res.status} ${text.slice(0, 300)}`)
+    }
     return res.json() as Promise<RelayerSubmitResponse>
 }
