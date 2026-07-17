@@ -20,7 +20,8 @@ import { CallbackProvider, CallbacksContextType } from "./callbackProvider";
 import { InitialSettings } from "@/Models/InitialSettings";
 import { SwapAccountsProvider } from "./swapAccounts";
 import { WalletProvider, WalletProviderDescriptor, WalletWrapper, isWalletProviderDescriptor } from "@/types";
-import { ResolverProviders } from "./resolverContext";
+import { ResolverProviders, extractExtendedRouteProviders } from "./resolverContext";
+import { setExtendedRouteProviders } from "@/lib/extendedRoutes";
 import { ErrorProvider } from "./ErrorProvider";
 import { WalletDescriptorLoaderContext } from "@/lib/walletConnect/walletDescriptorLoader";
 
@@ -55,7 +56,10 @@ export type LayerswapContextProps = {
 }
 
 const INTERCOM_APP_ID = 'h5zisg78'
-const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callbacks, config, walletProviders = [] }) => {
+// Stable identity when the prop is omitted — an inline `= []` default would
+// mint a fresh array per render and defeat the memos keyed on `walletProviders`.
+const NO_PROVIDERS: (WalletProvider | WalletWrapper | WalletProviderDescriptor)[] = []
+const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callbacks, config, walletProviders = NO_PROVIDERS }) => {
     let { apiKey, version, settings: _settings, theme, initialValues, loadingComponent, imtblPassport, tonConfigs, walletConnect } = config || {}
     const [fetchedSettings, setFetchedSettings] = useState<LayerSwapSettings | null>(null)
     // Defer Intercom script injection until the browser is idle. The provider
@@ -94,12 +98,26 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
     }, [_settings, apiKey, version])
 
     const settings = _settings || fetchedSettings
-    if (!settings) return <>{loadingComponent ?? <WidgetLoading />}</>
 
-    // Extended-route-provider registration is handled inside ResolverProviders'
-    // effect (see resolverContext), which runs after descriptors resolve. The
-    // former render-time call here was a duplicate and has been removed.
-    let appSettings = new LayerSwapAppSettings(settings)
+    // Registration is keyed on `walletProviders` alone — NOT on `settings`.
+    // A settings-only identity change must not re-run it: this eager list lacks
+    // descriptor-carried providers, so re-asserting it here would clobber the
+    // fuller registry that `ResolverProviders`' effect publishes after descriptor
+    // hydration (its deps wouldn't change, so it would never re-register). When
+    // `walletProviders` itself changes, that same effect re-fires and restores
+    // the full list post-commit.
+    const extendedRouteProviders = useMemo(() => {
+        const providers = extractExtendedRouteProviders(walletProviders)
+        setExtendedRouteProviders(providers)
+        return providers
+    }, [walletProviders])
+
+    const appSettings = useMemo(() => {
+        if (!settings) return null
+        return new LayerSwapAppSettings(settings)
+    }, [settings, extendedRouteProviders])
+
+    if (!appSettings) return <>{loadingComponent ?? <WidgetLoading />}</>
 
     return (
         <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500} shouldInitialize={intercomReady}>

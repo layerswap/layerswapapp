@@ -48,11 +48,14 @@ export function getExtendedMapping(
     if (!networkName || !tokenSymbol) return undefined
 
     for (const provider of sourceProviders) {
-        // Prefer the provider's per-destination resolver (e.g. HL primary/fallback).
-        // `availableRoutes` lets it skip destinations the backend can't yet fulfill.
-        // Static `mappings` is the fallback for providers with a single destination.
-        const mapping = provider.resolveActiveMapping?.(networkName, tokenSymbol, toNetworkName, toTokenSymbol, availableRoutes)
-            ?? provider.mappings[networkName]?.[tokenSymbol]
+        // A provider-defined resolver is authoritative: its `undefined` means
+        // "no viable route for this destination" (e.g. destination IS the
+        // intermediate, or no candidate passes availability) and must NOT fall
+        // back to the static table, which would re-enable the excluded route.
+        // Static `mappings` only serves providers without a resolver.
+        const mapping = provider.resolveActiveMapping
+            ? provider.resolveActiveMapping(networkName, tokenSymbol, toNetworkName, toTokenSymbol, availableRoutes)
+            : provider.mappings[networkName]?.[tokenSymbol]
         if (!mapping) continue
 
         const realDecimals = mapping.realDecimals ?? 6

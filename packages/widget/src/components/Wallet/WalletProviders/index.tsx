@@ -53,11 +53,6 @@ const WalletsProviders: FC<{
         [walletProviders],
     );
 
-    const providersWithConnection = useMemo(
-        () => realProviders.filter((provider): provider is WalletProvider => 'createConnection' in provider),
-        [realProviders],
-    );
-
     useEffect(() => {
         const disposers: Array<() => void> = []
         for (const p of realProviders) {

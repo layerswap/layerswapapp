@@ -145,8 +145,13 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
         }
     }, [createSwap, initialSettings, partner, swapBasicData, getProvider, settings, type, setSwapError])
 
-    const initialValues: SwapFormValues = swapBasicData ? generateSwapInitialValuesFromSwap(swapBasicData, swapBasicData.refuel, settings, type)
-        : generateSwapInitialValues(settings, initialSettings, type, connectedAutofillNetworks)
+    // Formik has no `enableReinitialize`, so this is read once at mount — memoize
+    // to keep post-mount re-renders (wallet events, balance revalidation) from
+    // rerunning the extended-route merge and per-token route-plan resolution.
+    const initialValues: SwapFormValues = useMemo(() => swapBasicData
+        ? generateSwapInitialValuesFromSwap(swapBasicData, swapBasicData.refuel, settings, type)
+        : generateSwapInitialValues(settings, initialSettings, type, connectedAutofillNetworks),
+        [swapBasicData, settings, initialSettings, type, connectedAutofillNetworks])
 
     const handleShowSwapModal = useCallback((value: boolean) => {
         setSwapModalOpen(value)
