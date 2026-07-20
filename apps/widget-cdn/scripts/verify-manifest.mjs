@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Round-trip the signed manifest in CI before we ship. Reads
-// `dist/<channel>/manifest.json` and verifies the signature against the
+// `dist/<buildId>/manifest.json` and verifies the signature against the
 // public key constant defined in the shared loader core (packages/widget-js),
 // which every loader consumes. Exits non-zero if anything is wrong — catches:
 //   - Unsigned manifests when verification is supposed to be on
@@ -14,18 +14,16 @@ import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createVerify, createPublicKey, createHash } from 'node:crypto';
+import { resolveBuildIdentity } from './build-id.mjs';
+import { ASSET_BASE, ASSET_DIRECTORY } from './cdn-layout.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const REPO_ROOT = resolve(ROOT, '..', '..');
 
-// Resolve the same version-named build directory build-manifest.mjs wrote.
-// Read from the workspace symlink (exports map hides ./package.json).
-const widgetPkg = JSON.parse(
-    readFileSync(join(ROOT, 'node_modules', '@layerswap', 'widget', 'package.json'), 'utf8'),
-);
-const VERSION = process.env.LAYERSWAP_RELEASE_VERSION || widgetPkg.version || '0.0.0';
-const MANIFEST_PATH = join(ROOT, 'dist', VERSION, 'manifest.json');
+// Resolve the same buildId-named build directory build-manifest.mjs wrote.
+const { buildId } = resolveBuildIdentity(ROOT);
+const MANIFEST_PATH = join(ROOT, 'dist', buildId, 'manifest.json');
 
 if (!existsSync(MANIFEST_PATH)) {
     console.error(`[verify-manifest] missing ${MANIFEST_PATH} — run \`pnpm build\` first.`);
@@ -33,6 +31,14 @@ if (!existsSync(MANIFEST_PATH)) {
 }
 
 const manifest = JSON.parse(readFileSync(MANIFEST_PATH, 'utf8'));
+
+if (manifest.assetBase !== ASSET_BASE) {
+    console.error(
+        `[verify-manifest] manifest assetBase ${JSON.stringify(manifest.assetBase)} `
+        + `does not match ${JSON.stringify(ASSET_BASE)}.`,
+    );
+    process.exit(3);
+}
 
 if (!manifest.signature) {
     console.error('[verify-manifest] manifest has no signature.');
@@ -101,7 +107,19 @@ if (Object.keys(chunks).length === 0) {
 }
 
 const DIST = dirname(MANIFEST_PATH);
-const actualFiles = readdirSync(DIST).filter((n) => n.endsWith('.js'));
+const ASSET_DIST = join(ROOT, 'dist', ASSET_DIRECTORY);
+const actualPaths = new Map();
+for (const dir of [DIST, ASSET_DIST]) {
+    if (!existsSync(dir)) continue;
+    for (const filename of readdirSync(dir).filter((n) => n.endsWith('.js'))) {
+        if (actualPaths.has(filename)) {
+            console.error(`[verify-manifest] duplicate JS filename across output roots: ${filename}`);
+            process.exit(7);
+        }
+        actualPaths.set(filename, join(dir, filename));
+    }
+}
+const actualFiles = [...actualPaths.keys()];
 
 const expected = new Set(Object.keys(chunks));
 const actual = new Set(actualFiles);
@@ -122,7 +140,7 @@ if (missingOnDisk.length > 0) {
 // Each listed hash must match the actual file content.
 const mismatches = [];
 for (const filename of actualFiles) {
-    const bytes = readFileSync(join(DIST, filename));
+    const bytes = readFileSync(actualPaths.get(filename));
     const digest = createHash('sha384').update(bytes).digest('base64');
     const expectedHash = chunks[filename];
     const actualHash = `sha384-${digest}`;
@@ -137,4 +155,4 @@ if (mismatches.length > 0) {
     process.exit(8);
 }
 
-console.log(`[verify-manifest] OK  version=${manifest.version}  channel=${manifest.channel}  chunks=${actualFiles.length}`);
+console.log(`[verify-manifest] OK  buildId=${manifest.buildId}  version=${manifest.version}  channel=${manifest.channel}  chunks=${actualFiles.length}`);

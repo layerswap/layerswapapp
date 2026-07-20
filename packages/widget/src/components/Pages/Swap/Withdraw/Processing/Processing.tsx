@@ -169,14 +169,12 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel, fail
                             </div>
                             <div>
                                 <span>
-                                    {swapInputTransaction && swapInputTransaction?.confirmations > 0 && (
+                                    {inputConfirmations != null && inputMaxConfirmations != null && inputConfirmations > 0 && (
                                         <div>
                                             <span className='whitespace-nowrap'>| Confirmations </span>
                                             <span className="text-primary-text ml-1">
-                                                <span>{swapInputTransaction?.confirmations >= swapInputTransaction?.max_confirmations
-                                                    ? swapInputTransaction?.max_confirmations
-                                                    : swapInputTransaction?.confirmations}</span>
-                                                <span>/</span>{swapInputTransaction?.max_confirmations}
+                                                <span>{Math.min(inputConfirmations, inputMaxConfirmations)}</span>
+                                                <span>/</span>{inputMaxConfirmations}
                                             </span>
                                         </div>
                                     )}

@@ -21,6 +21,8 @@ type InitialSnapshot = {
 
 const UNMERGEABLE_WALLETS = ['nova', 'nova wallet']
 const NAME_OVERRIDES: Record<string, string> = { bitget: 'Bitget Wallet' }
+const connectorKey = (name: string) =>
+    UNMERGEABLE_WALLETS.includes(name.toLowerCase()) ? name.toLowerCase() : walletKey(name)
 
 const resolveNames = (groups: InternalConnector[][]): InternalConnector[][] => {
     const canonical = new Map<string, string>()
@@ -43,7 +45,7 @@ const resolveChainConnectors = (pool: InternalConnector[], providers: WalletConn
     const mobile = isMobile()
     const records = new Map<string, { variants: InternalConnector[], entry?: WalletConnectWalletBase }>()
     const recordFor = (name: string) => {
-        const k = UNMERGEABLE_WALLETS.includes(name.toLowerCase()) ? name.toLowerCase() : walletKey(name)
+        const k = connectorKey(name)
         return records.get(k) ?? records.set(k, { variants: [] }).get(k)!
     }
 
@@ -101,34 +103,20 @@ export function useConnectors({
     const initialSortedRef = useRef<InitialSnapshot | null>(null)
     const appendedRef = useRef<InternalConnector[]>([])
 
-    // Live multichain membership: a wallet is multichain when the same name is
-    // exposed by more than one provider (ecosystem). This is derived from the
-    // CURRENT connector set rather than frozen into `initialSortedRef`, so it
-    // flips to `true` as late-loading ecosystems (e.g. Solana/Tron) populate
-    // their connectors after the initial snapshot was taken. Freezing it (the
-    // old behaviour) pinned an early "EVM-only" snapshot to isMultiChain=false.
-    const multiChainNames = useMemo(() => {
-        const byName = new Map<string, Set<string>>()
-        for (const c of [...featuredConnectors, ...additionalConnectors, ...(searchResults ?? [])]) {
-            if (!c?.providerName) continue
-            const key = c.name.toLowerCase()
-            let providers = byName.get(key)
-            if (!providers) {
-                providers = new Set()
-                byName.set(key, providers)
-            }
-            providers.add(c.providerName)
-        }
-        const names = new Set<string>()
-        for (const [key, providers] of byName) {
-            if (providers.size > 1) names.add(key)
-        }
-        return names
-    }, [featuredConnectors, additionalConnectors, searchResults])
-
     const initialConnectors: WalletModalConnector[] = useMemo(() => {
-        const recentNames = new Set(recentConnectors?.map(r => r.connectorName ? walletKey(r.connectorName) : undefined).filter(Boolean))
-        const isRecent = (c: InternalConnector) => recentNames.has(c.name.toLowerCase())
+        // Persisted host-origin data is untrusted at runtime even though the
+        // state is typed. Validate both the container and its entries so a
+        // legacy/colliding localStorage value cannot crash the wallet modal.
+        const storedRecentConnectors = Array.isArray(recentConnectors) ? recentConnectors : []
+        const recentNames = new Set(storedRecentConnectors.flatMap(r =>
+            r && typeof r === 'object' && typeof r.connectorName === 'string'
+                ? [connectorKey(r.connectorName)]
+                : []
+        ))
+        // Use the same identity rule as connector deduplication: canonicalize
+        // aliases such as Bitget Wallet, while preserving Nova and Nova Wallet
+        // as the intentionally separate tiles they are.
+        const isRecent = (c: InternalConnector) => recentNames.has(connectorKey(c.name))
         const isInstalled = (c: InternalConnector) => c.type === 'injected' && !c.isLoadable
 
         if (initialSortedRef.current?.key !== filterKey) {
@@ -141,13 +129,13 @@ export function useConnectors({
             const rest = all.filter(c => !isRecent(c) && !isInstalled(c))
             const sorted = removeDuplicatesWithKey(
                 [...recent, ...installed, ...rest],
-                c => UNMERGEABLE_WALLETS.includes(c.name.toLowerCase()) ? c.name.toLowerCase() : walletKey(c.name)
+                c => connectorKey(c.name)
             ) as InternalConnector[]
 
             initialSortedRef.current = {
                 key: filterKey,
                 list: sorted,
-                seen: new Set(sorted.map(c => UNMERGEABLE_WALLETS.includes(c.name.toLowerCase()) ? c.name.toLowerCase() : walletKey(c.name))),
+                seen: new Set(sorted.map(c => connectorKey(c.name))),
             }
             appendedRef.current = []
         } else {
@@ -156,7 +144,7 @@ export function useConnectors({
             // rendered tiles keep their position on scroll.
             const seen = initialSortedRef.current.seen
             const appendIfNew = (c: InternalConnector) => {
-                const key = UNMERGEABLE_WALLETS.includes(c.name.toLowerCase()) ? c.name.toLowerCase() : walletKey(c.name)
+                const key = connectorKey(c.name)
                 if (!seen.has(key)) {
                     seen.add(key)
                     appendedRef.current.push(c)
@@ -169,7 +157,7 @@ export function useConnectors({
         const pool = [...featuredConnectors, ...additionalConnectors, ...(resolvedSearchResults ?? [])]
         const connectorsByWallet = resolveChainConnectors(pool, featuredProviders)
         const withMultiChain = (list: InternalConnector[]): WalletModalConnector[] => list.map(c => {
-            const variants = connectorsByWallet.get(UNMERGEABLE_WALLETS.includes(c.name.toLowerCase()) ? c.name.toLowerCase() : walletKey(c.name))?.variants ?? []
+            const variants = connectorsByWallet.get(connectorKey(c.name))?.variants ?? []
             return { ...c, variants, isMultiChain: variants.length > 1 }
         })
 
@@ -182,14 +170,14 @@ export function useConnectors({
 
         let list = base
         if (resolvedSearchResults?.length) {
-            const existingNames = new Set(base.map(c => UNMERGEABLE_WALLETS.includes(c.name.toLowerCase()) ? c.name.toLowerCase() : walletKey(c.name)))
-            const newResults = (removeDuplicatesWithKey(resolvedSearchResults, c => UNMERGEABLE_WALLETS.includes(c.name.toLowerCase()) ? c.name.toLowerCase() : walletKey(c.name)) as InternalConnector[])
-                .filter(c => !existingNames.has(UNMERGEABLE_WALLETS.includes(c.name.toLowerCase()) ? c.name.toLowerCase() : walletKey(c.name)))
+            const existingNames = new Set(base.map(c => connectorKey(c.name)))
+            const newResults = (removeDuplicatesWithKey(resolvedSearchResults, c => connectorKey(c.name)) as InternalConnector[])
+                .filter(c => !existingNames.has(connectorKey(c.name)))
             list = [...base, ...newResults]
         }
 
         return recentsFirst(withMultiChain(list))
-    }, [featuredConnectors, additionalConnectors, recentConnectors, resolvedSearchResults, filterKey, multiChainNames]);
+    }, [featuredConnectors, additionalConnectors, recentConnectors, resolvedSearchResults, filterKey, featuredProviders]);
 
     return {
         featuredConnectors,

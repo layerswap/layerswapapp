@@ -2,10 +2,10 @@ name: widget-cdn — build, sign, deploy
 
 # Production builds of `apps/widget-cdn` go through CI so the signing key never
 # lives outside `secrets.LAYERSWAP_PRIVATE_KEY_PEM`. The build is uploaded to
-# Cloudflare R2 under an immutable per-version prefix and the rolling channel
+# Cloudflare R2 under an immutable per-build prefix and the rolling channel
 # pointer (`channels.json`) is flipped to it. The Cloudflare Worker in
 # `apps/widget-cdn/worker` serves R2 and 302-redirects `/vN/*` to the current
-# version. This workflow is the only path to a production CDN deploy.
+# build. This workflow is the only path to a production CDN deploy.
 
 on:
   push:
@@ -60,10 +60,10 @@ jobs:
       R2_BUCKET: ${{ vars.R2_BUCKET || 'layerswap-widget-cdn' }}
       # Promotion defaults to true on push; honors the dispatch toggle otherwise.
       LAYERSWAP_PROMOTE: ${{ (github.event_name == 'workflow_dispatch' && inputs.promote == false) && 'false' || 'true' }}
-      # Published versions are immutable — re-pushing the SAME @layerswap/widget
-      # version fails the upload by design. While iterating on this branch,
-      # either bump the widget patch version between pushes, or uncomment the
-      # next line to allow overwriting an existing version. Re-comment before merge.
+      # Published builds are immutable, but the buildId embeds the commit sha
+      # (see apps/widget-cdn/scripts/build-id.mjs), so every push gets a fresh
+      # prefix — only literally re-deploying the SAME commit collides. For that
+      # rare case, uncomment the next line. Re-comment afterwards.
       # ALLOW_OVERWRITE: '1'
 
     steps:
@@ -86,11 +86,23 @@ jobs:
       - name: Build workspace packages
         run: pnpm build:packages
 
+      # Exercise the release-critical build identity, deploy/rollback, SRI,
+      # public type, and Worker contracts before the signing key is staged or
+      # any artifact can be uploaded to production.
+      - name: Test widget release tooling
+        run: |
+          pnpm --filter @layerswap/widget-cdn test
+          pnpm --filter @layerswap/widget-js test
+          pnpm --filter @layerswap/widget-react check:types
+          pnpm exec tsc -p apps/widget-cdn/worker/tsconfig.json --noEmit
+
       # Build provenance stamped into the signed manifest.
       - name: Compute build metadata
         run: |
           echo "LAYERSWAP_GIT_SHA=${GITHUB_SHA}" >> "$GITHUB_ENV"
           echo "LAYERSWAP_BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
+          BUILD_ID=$(node --input-type=module -e "import { resolveBuildIdentity } from './apps/widget-cdn/scripts/build-id.mjs'; process.stdout.write(resolveBuildIdentity('./apps/widget-cdn').buildId)")
+          echo "LAYERSWAP_BUILD_ID=${BUILD_ID}" >> "$GITHUB_ENV"
 
       # Stage the signing key to a tempfile (not argv/env-dump visible). Wiped
       # at job end regardless of outcome.
@@ -122,8 +134,8 @@ jobs:
 
       # Upload the immutable build to R2 and (unless promote=false) flip the
       # rolling channel pointer. Refuses to overwrite an already-published
-      # version, so re-running a deploy for an unchanged version is a no-op
-      # error rather than a silent clobber — bump @layerswap/widget to ship.
+      # buildId, so re-running a deploy for the same commit is a no-op error
+      # rather than a silent clobber — any new commit gets a fresh buildId.
       - name: Upload to R2 + promote channel
         working-directory: apps/widget-cdn
         run: pnpm deploy:r2
@@ -158,17 +170,21 @@ jobs:
             const m = JSON.parse(require('fs').readFileSync('/tmp/manifest.json','utf8'));
             if (!m.signature) { console.error('live manifest has no signature'); process.exit(1); }
             if (m.killSwitch) { console.error('live manifest has killSwitch=true'); process.exit(1); }
+            if (m.buildId !== '${LAYERSWAP_BUILD_ID}') { console.error('live channel still on build', m.buildId, '— expected ${LAYERSWAP_BUILD_ID}'); process.exit(1); }
             if (m.version !== '${VERSION}') { console.error('live channel still on', m.version, '— expected ${VERSION}'); process.exit(1); }
-            console.log('live channel OK  version=', m.version, ' gitSha=', m.gitSha);
+            if (m.gitSha !== '${GITHUB_SHA}') { console.error('live channel still on commit', m.gitSha, '— expected ${GITHUB_SHA}'); process.exit(1); }
+            console.log('live channel OK  buildId=', m.buildId, ' version=', m.version, ' gitSha=', m.gitSha);
           "
 
       - name: Summary
         if: always()
         run: |
           VERSION=$(node -e "console.log(require('./apps/widget-cdn/node_modules/@layerswap/widget/package.json').version)" 2>/dev/null || echo "?")
+          BUILD_ID=${LAYERSWAP_BUILD_ID:-?}
           {
             echo "## widget-cdn deploy"
             echo ""
+            echo "- Build id: \`${BUILD_ID}\`"
             echo "- Version: \`${VERSION}\`"
             echo "- Channel promoted: \`${LAYERSWAP_PROMOTE}\`"
             echo "- Commit: \`${GITHUB_SHA}\`"
@@ -195,7 +211,7 @@ jobs:
             echo "- Branch: \`${GITHUB_REF_NAME}\` @ \`${GITHUB_SHA::7}\`"
             echo "- Run: ${RUN_URL}"
             echo ""
-            echo "Most common cause: this version is already published (versions are immutable) — bump \`@layerswap/widget\` via \`pnpm changeset\` and push again."
+            echo "Check the run log for the failing step. (Build ids embed the commit sha, so an immutability collision only happens when re-deploying the same commit — re-run from a new commit or set \`ALLOW_OVERWRITE=1\`.)"
           } > "$RUNNER_TEMP/alert-body.md"
           EXISTING=$(gh issue list --repo "${{ github.repository }}" --state open \
             --search "\"${TITLE}\" in:title" --json number --jq '.[0].number // empty')

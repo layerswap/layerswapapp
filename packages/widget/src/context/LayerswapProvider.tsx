@@ -32,7 +32,7 @@ import { WalletDescriptorLoaderContext } from "@/lib/walletConnect/walletDescrip
  * contract, the two can never structurally diverge — a drift would fail to
  * compile.
  */
-export type LayerswapWidgetConfig = WidgetConfig & {
+export type LayerswapWidgetConfig = WidgetConfig<ReactNode> & {
     settings?: LayerSwapSettings;
     initialValues?: InitialSettings,
     /** Skeleton shown while settings are being fetched (i.e. when `settings`

@@ -1,5 +1,3 @@
-import type { ReactNode } from 'react';
-import type { Config as WagmiConfig } from 'wagmi';
 import type { ThemeData } from './theme';
 
 /** Wallet provider ids matching what the remote's `getDefaultProviders()` emits. */
@@ -22,8 +20,12 @@ export type WalletProviderId =
  * is `WidgetConfig` intersected with precise types for the deep fields
  * (`settings`, `initialValues`) — so the two can never structurally diverge,
  * while integrators and the loaders depend only on this zero-runtime package.
+ *
+ * Framework-agnostic by construction: `TLoading` is the host's renderable type
+ * (`ReactNode` in React hosts — `@layerswap/widget-react` binds it), kept open
+ * here so this package carries no dependency on React.
  */
-export type WidgetConfig = {
+export type WidgetConfig<TLoading = never> = {
   /** Layerswap API key. */
   apiKey?: string;
   /** Network set to target. */
@@ -41,8 +43,8 @@ export type WidgetConfig = {
    * Precise type: `InitialSettings` in `@layerswap/widget`.
    */
   initialValues?: unknown;
-  /** Skeleton shown while settings load. */
-  loadingComponent?: ReactNode;
+  /** Skeleton shown while settings load (`ReactNode` in React hosts). */
+  loadingComponent?: TLoading;
   /** @deprecated Pass `walletConnectConfigs` directly to wallet provider factories. */
   walletConnect?: unknown;
   /** @deprecated Pass `imtblPassportConfig` to `createImmutablePassportProvider`. */
@@ -87,10 +89,16 @@ export type WidgetCallbacks = {
 /**
  * Props the CDN remote's widget export accepts — the shared shape forwarded by
  * the vanilla `mountWidget` and the React `LayerswapWidget`.
+ *
+ * Framework-agnostic by construction: `TWagmi` is the host's wagmi `Config`
+ * type and `TLoading` the host's renderable type. Both default to `never`, so
+ * framework-agnostic consumers cannot accidentally pass runtime-sensitive
+ * host objects; `@layerswap/widget-react` deliberately binds them to
+ * `WagmiConfig` / `ReactNode`.
  */
-export type WidgetProps = {
+export type WidgetProps<TWagmi = never, TLoading = never> = {
   /** Widget config — forwarded verbatim to `LayerswapProvider`. */
-  config?: WidgetConfig;
+  config?: WidgetConfig<TLoading>;
   /** Defaults for the bundled `getDefaultProviders()` call. */
   walletDefaults?: WalletDefaults;
   /**
@@ -108,5 +116,5 @@ export type WidgetProps = {
    * Host wagmi `Config`. When supplied, the remote's EVM provider adopts this
    * instance so the widget reads the host's connected account/chain.
    */
-  wagmiConfig?: WagmiConfig;
+  wagmiConfig?: TWagmi;
 };

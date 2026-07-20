@@ -14,18 +14,19 @@ Consumed by `@layerswap/widget-react` (React hosts) and
 
 ## Versioning model
 
-Every build is published to an **immutable, version-named prefix** in R2 and
+Every build is published to an **immutable, buildId-named prefix** in R2 and
 never overwritten. A single mutable pointer (`channels.json`) maps each rolling
-major channel to its current version, and the Worker turns that into a redirect.
+major channel to its current build, and the Worker turns that into a redirect.
 
 ```
 R2 bucket (layerswap-widget-cdn)
-├── 1.5.0/                 ← immutable build, write-once
+├── 1.5.0-abc123def456/    ← immutable build, write-once
 │   ├── manifest.json      ← signed; describes this exact build
-│   ├── remoteEntry.js
-│   └── <name>.<hash>.js   ← content-hashed chunks
-├── 1.5.1/                 ← next release, also immutable
-└── channels.json          ← the ONLY mutable object: { "v1": "1.5.0" }
+│   └── remoteEntry.js
+├── 1.5.0-fedcba654321/    ← next build, also immutable
+├── assets/                 ← shared content-addressed namespace
+│   └── <name>.<hash>.js   ← byte-identical chunks reuse one URL/object
+└── channels.json          ← the ONLY mutable object: { "v1": "1.5.0-abc123def456" }
 ```
 
 Integrators choose their risk posture by which URL they load:
@@ -33,14 +34,20 @@ Integrators choose their risk posture by which URL they load:
 | URL | Behavior |
 |---|---|
 | `…/v1/manifest.json` | **Rolling** — Worker 302-redirects to the current `v1` build. Auto-updates within ~60s of a channel flip. |
-| `…/1.5.0/manifest.json` | **Pinned** — frozen forever at that exact build. |
+| `…/1.5.0-abc123def456/manifest.json` | **Pinned** — frozen forever at that exact build. |
 
 The loader follows the redirect and resolves the relative `remoteEntry` against
-the **final** URL, so the remote and every chunk it loads anchor at the
-immutable version path. **Rollback / roll-forward is a pointer flip** — no
-rebuild, no re-upload (see `scripts/rollback-r2.mjs`).
+the **final** URL, so the remote anchors at the immutable build path. The
+remote loads its content-hashed chunks from the stable `/assets/` namespace,
+and the signed manifest registers SRI for both locations. **Rollback /
+roll-forward is a pointer flip** — no rebuild, no re-upload (see
+`scripts/rollback-r2.mjs`).
 
-The build's identity is the `@layerswap/widget` version. A breaking change to
+A build's immutable identity is its **buildId** — the `@layerswap/widget`
+version plus the git sha (`1.5.0-abc123def456`, see `scripts/build-id.mjs`) —
+because the deployed bytes also change with widget-cdn/wallets/widget-js/
+widget-react, none of which bump the widget version. The **version** remains
+the host-facing compatibility number. A breaking change to
 the embed/mount API or a required host singleton major (react/wagmi/viem) is
 what warrants cutting a new major channel (`v2`); anything backward-compatible
 ships within the existing channel.
@@ -63,15 +70,17 @@ no redirect).
 LAYERSWAP_PRIVATE_KEY_PEM=/path/to/signing-key.pem pnpm build
 ```
 
-Emits to `dist/<version>/` (e.g. `dist/1.5.0/`) — content-hashed chunks, stable
-`remoteEntry.js`, plus a `manifest.json` signed with the provided key. The
-manifest carries `version`, `channel`, `gitSha`, `builtAt`, per-chunk SHA-384
-SRI hashes, the kill switch, and the signature. Without
+Emits stable `remoteEntry.js` and the signed manifest to `dist/<buildId>/`
+(e.g. `dist/1.5.0-abc123def456/`), with content-hashed chunks in
+`dist/assets/`. The manifest carries `version`, `channel`, `buildId`, `gitSha`,
+`builtAt`, the shared `assetBase`, per-chunk SHA-384 SRI hashes, the kill
+switch, and the signature. Without
 `LAYERSWAP_PRIVATE_KEY_PEM` the manifest is emitted unsigned — fine for local
 builds, rejected by the deploy script and by integrators using `verify: true`.
 
-`LAYERSWAP_RELEASE_VERSION` overrides the version label (and therefore the
-output directory) for a one-off build.
+`LAYERSWAP_RELEASE_VERSION` overrides the version label and
+`LAYERSWAP_RELEASE_ID` the buildId (and therefore the output directory) for a
+one-off build.
 
 ```bash
 pnpm verify-manifest   # round-trip the signature against the bundled public key
@@ -81,10 +90,12 @@ pnpm verify-manifest   # round-trip the signature against the bundled public key
 
 The Worker (`worker/`) serves R2 and does the rolling-channel redirect:
 
-- `GET /vN/<path>` → reads `channels.json`, 302-redirects to `/<version>/<path>`
+- `GET /vN/<path>` → reads `channels.json`, 302-redirects to `/<buildId>/<path>`
   (short cache so flips propagate fast).
-- `GET /<version>/<path>` → serves from R2 with `immutable` caching + permissive
+- `GET /<buildId>/<path>` → serves from R2 with `immutable` caching + permissive
   CORS (chunks load `crossorigin="anonymous"` for SRI).
+- `GET /assets/<content-hashed-file>` → serves the shared immutable chunk used
+  by every build that emitted the same bytes.
 - Security headers (HSTS, nosniff, frame-deny) on every response.
 
 ```bash
@@ -95,16 +106,19 @@ pnpm worker:deploy   # wrangler deploy
 ## Deploy
 
 ```bash
-pnpm deploy:r2                  # upload dist/<version>/ to R2 + flip channel pointer
+pnpm deploy:r2                  # upload build controls + shared assets, then flip channel
 LAYERSWAP_PROMOTE=false pnpm deploy:r2   # upload only (staged release)
-ALLOW_OVERWRITE=1 pnpm deploy:r2         # re-upload an existing version (escape hatch)
+ALLOW_OVERWRITE=1 pnpm deploy:r2         # re-upload an existing build (escape hatch)
 
-# roll a channel to any already-published version (instant; no rebuild):
-node scripts/rollback-r2.mjs v1 1.4.0
+# roll a channel to any already-published build (instant; no rebuild):
+node scripts/rollback-r2.mjs v1 1.4.0-abc123def456
 ```
 
-`deploy:r2` refuses to overwrite an already-published version — published
-builds are immutable. Bump `@layerswap/widget` to ship again.
+`deploy:r2` refuses to overwrite an already-published buildId — published
+builds are immutable. It reuses content-hashed objects already present under
+`/assets/`, so unchanged chunks keep their browser cache and do not consume
+duplicate R2 storage. The buildId embeds the commit sha, so deploying from any
+new commit gets a fresh control-file prefix.
 
 ### CI deploy (production)
 

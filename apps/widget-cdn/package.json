@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "rspack serve --config rspack.config.mjs",
-    "build": "rspack build --config rspack.config.mjs --mode production && node scripts/build-manifest.mjs",
+    "build": "node scripts/prepare-build.mjs && rspack build --config rspack.config.mjs --mode production && node scripts/build-manifest.mjs",
     "verify-manifest": "node scripts/verify-manifest.mjs",
     "deploy:r2": "node scripts/deploy-r2.mjs",
     "rollback:r2": "node scripts/rollback-r2.mjs",
+    "test": "node --test scripts/*.test.mjs",
     "worker:dev": "wrangler dev --config worker/wrangler.toml",
     "worker:deploy": "wrangler deploy --config worker/wrangler.toml",
     "start": "node serve.mjs"

@@ -12,6 +12,7 @@ import {
 } from 'react';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import type { Config as WagmiConfig } from 'wagmi';
 import {
   resolveSource,
   initRemote,
@@ -24,11 +25,13 @@ import {
 export type { WalletProviderId } from '@layerswap/widget-js';
 
 /**
- * Shape of the props the CDN remote's widget export accepts — re-exported
- * from the framework-agnostic core so the React and vanilla packages stay in
+ * Shape of the props the CDN remote's widget export accepts — the shared
+ * framework-agnostic contract with its host-specific slots bound to this
+ * package's React/wagmi peers (`wagmiConfig: Config`,
+ * `loadingComponent: ReactNode`), so the React and vanilla packages stay in
  * lockstep.
  */
-export type RemoteWidgetProps = WidgetProps;
+export type RemoteWidgetProps = WidgetProps<WagmiConfig, ReactNode>;
 
 export type LayerswapWidgetProps = RemoteWidgetProps & {
   // The widget's source is not configurable: it is always fetched from the

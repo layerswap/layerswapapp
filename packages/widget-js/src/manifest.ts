@@ -19,6 +19,12 @@ export type Manifest = {
      * and humans see which compatibility channel a pinned build came from.
      */
     channel?: string;
+    /**
+     * Immutable identity of this exact build (`<version>-<gitSha12>`) — names
+     * the write-once CDN directory it lives in. Distinct from `version`, which
+     * can repeat across builds when non-widget packages change the bytes.
+     */
+    buildId?: string;
     /** Git commit the build was produced from (provenance — not security-critical). */
     gitSha?: string;
     /** ISO-8601 build timestamp (provenance). */
@@ -33,6 +39,12 @@ export type Manifest = {
      * it against the manifest's FINAL (post-redirect) URL — see `resolveSource`.
      */
     remoteEntry: string;
+    /**
+     * Manifest-relative base URL for content-addressed chunks. When omitted,
+     * chunks are expected beside `remoteEntry` for compatibility with older
+     * manifests and the local development server.
+     */
+    assetBase?: string;
     /**
      * Per-file SRI hashes for every JS chunk in the build, keyed by
      * filename (e.g. `"1499.abc12345.js": "sha384-…"`). The loader uses

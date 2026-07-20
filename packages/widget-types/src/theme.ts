@@ -1,4 +1,7 @@
-import { HTMLAttributes } from "react";
+// `csstype` is the types-only package `React.CSSProperties` itself is built
+// on (zero runtime), so this stays framework-agnostic while remaining
+// assignable to a React `style` prop.
+import type { Properties as CSSProperties } from "csstype";
 
 /**
  * Visual theme for the widget. This is the canonical definition — the widget
@@ -22,7 +25,7 @@ export type ThemeData = {
         hideTabs?: boolean,
         hideWallets?: boolean,
     }
-    cardBackgroundStyle?: HTMLAttributes<HTMLDivElement>['style']
+    cardBackgroundStyle?: CSSProperties<string | number>
     hidePoweredBy?: boolean
 }
 

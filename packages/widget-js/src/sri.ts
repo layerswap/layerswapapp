@@ -14,13 +14,19 @@
  *
  * The interception works by patching the `src` property descriptor on
  * `HTMLScriptElement.prototype`. Whenever someone sets `script.src`
- * to a URL whose origin is our CDN, we look up the filename in the
- * chunk-hash map and add `integrity` + `crossorigin="anonymous"` to
- * the element before the browser starts fetching. Patch is idempotent
- * and global — install once per page.
+ * to a URL under a registered build prefix (origin + build
+ * directory, e.g. `https://cdn.example.com/widget/1.5.0-abc123/`), we look
+ * up the filename in that build's chunk-hash map and add `integrity`
+ * + `crossorigin="anonymous"` to the element before the browser
+ * starts fetching. Patch is idempotent and global — install once per
+ * page.
  */
 
-type ChunkHashes = Record<string, string>;
+type ChunkHashes = Readonly<Record<string, string>>;
+type RegistrationOptions = {
+    /** Merge non-conflicting hashes into a shared content-addressed prefix. */
+    merge?: boolean;
+};
 
 // A well-formed SHA-384 SRI value (48 zero bytes → 64 base64 chars) that no
 // real chunk can hash to. Used to hard-fail a known-origin script that isn't
@@ -30,41 +36,101 @@ type ChunkHashes = Record<string, string>;
 const UNMATCHABLE_SRI = `sha384-${'A'.repeat(64)}`;
 
 let installed = false;
-const originHashes = new Map<string, ChunkHashes>();
+// Keyed by build prefix — origin + build directory with a trailing slash
+// (e.g. `https://cdn.example.com/widget/1.5.0-abc123/`). Keying by prefix instead of
+// origin lets several builds on the same origin coexist: promoting a channel
+// or spinning up a second loader instance registers a new prefix without
+// clobbering the hashes an older build's still-pending lazy chunks need.
+const prefixHashes = new Map<string, ChunkHashes>();
 
 /**
- * Register chunk hashes for a CDN origin. If the SRI patch hasn't
- * been installed yet, install it. Idempotent — calling twice for the
- * same origin just replaces the map (e.g. on channel switch).
+ * Register chunk hashes for a build prefix. The argument is typically the
+ * build's remoteEntry URL — its basename is stripped, so registration keys on
+ * the build directory (a bare origin falls back to `origin + '/'`). Start
+ * intercepting script URLs so Module Federation chunks automatically receive
+ * their SRI hash; the interceptor is installed only once per page. Registration
+ * is idempotent for the same prefix and hash map; a conflicting map for an
+ * immutable prefix is rejected.
+ * Pass `{ merge: true }` only for a shared content-addressed namespace: new
+ * filenames are added, while a duplicate filename with another hash is
+ * rejected as a collision.
+ * Other builds' registrations are untouched. Registrations intentionally live
+ * for the lifetime of the page: the global Module Federation runtime can
+ * request lazy chunks after an individual widget root has unmounted.
  */
-export function registerChunkHashes(originPrefix: string, hashes: ChunkHashes): void {
-    originHashes.set(normalizeOrigin(originPrefix), hashes);
+export function registerChunkHashes(
+    originPrefix: string,
+    hashes: ChunkHashes,
+    { merge = false }: RegistrationOptions = {},
+): void {
+    const prefix = normalizePrefix(originPrefix);
+    const existing = prefixHashes.get(prefix);
+    if (existing && merge) {
+        for (const [filename, hash] of Object.entries(hashes)) {
+            const registeredHash = existing[filename];
+            if (registeredHash && registeredHash !== hash) {
+                throw new Error(
+                    `[layerswap/widget-js] conflicting SRI hash for content-addressed asset: ${filename}`,
+                );
+            }
+        }
+        prefixHashes.set(prefix, Object.freeze({ ...existing, ...hashes }));
+    } else if (existing && !sameChunkHashes(existing, hashes)) {
+        // Build prefixes are immutable. Rebinding one to different signed
+        // bytes would make already-loaded runtimes and later lazy requests
+        // disagree about which build owns the URL, so fail closed.
+        throw new Error(`[layerswap/widget-js] conflicting SRI maps for immutable prefix: ${prefix}`);
+    }
+    if (!existing) prefixHashes.set(prefix, Object.freeze({ ...hashes }));
     if (!installed) installScriptSrcInterceptor();
 }
 
-function normalizeOrigin(urlOrOrigin: string): string {
+function sameChunkHashes(a: ChunkHashes, b: ChunkHashes): boolean {
+    const aKeys = Object.keys(a);
+    const bKeys = Object.keys(b);
+    return aKeys.length === bKeys.length
+        && aKeys.every((key) => Object.prototype.hasOwnProperty.call(b, key) && a[key] === b[key]);
+}
+
+function normalizePrefix(urlOrPrefix: string): string {
     try {
-        return new URL(urlOrOrigin).origin;
+        const url = new URL(urlOrPrefix);
+        // Directory portion of the pathname: strip the basename, keep the
+        // trailing slash (`/widget/1.5.0/remoteEntry.js` → `/widget/1.5.0/`).
+        const dir = url.pathname.replace(/[^/]*$/, '');
+        return url.origin + (dir || '/');
     } catch {
-        return urlOrOrigin.replace(/\/+$/, '');
+        return urlOrPrefix.replace(/\/+$/, '') + '/';
+    }
+}
+
+/**
+ * Nearest registered path ancestor for the script URL. Walking ancestors
+ * gives the longest matching prefix through direct map lookups instead of
+ * scanning every historical build registered on the page.
+ */
+function findRegisteredPrefix(url: URL): string | undefined {
+    let pathname = url.pathname;
+    while (true) {
+        const slash = pathname.lastIndexOf('/');
+        if (slash < 0) return undefined;
+        const prefix = `${url.origin}${pathname.slice(0, slash + 1)}`;
+        if (prefixHashes.has(prefix)) return prefix;
+        if (slash === 0) return undefined;
+        pathname = pathname.slice(0, slash);
     }
 }
 
 function lookupHash(scriptUrl: string): string | undefined {
-    let url: URL;
-    try {
-        url = new URL(scriptUrl, window.location.href);
-    } catch {
-        return undefined;
-    }
-    const hashes = originHashes.get(url.origin);
+    const url = safeUrl(scriptUrl);
+    if (!url) return undefined;
+    const prefix = findRegisteredPrefix(url);
+    if (!prefix) return undefined;
+    const hashes = prefixHashes.get(prefix);
     if (!hashes) return undefined;
-    // Basename-only lookup. Safe inside one Module Federation build because
-    // Rspack outputs all chunks under a single flat channel directory with
-    // unique filenames. If we ever start serving two builds with overlapping
-    // chunk basenames under the same origin (e.g. `/v1/foo.js` and
-    // `/v1.3.0/foo.js`), they'd collide here — keep the build flat or key
-    // the map by full pathname.
+    // Basename-only lookup within the matched build's map. Safe because each
+    // registered prefix maps to exactly one Module Federation build, and
+    // Rspack outputs that build's chunks with unique filenames.
     const filename = url.pathname.split('/').filter(Boolean).pop() ?? '';
     return hashes[filename];
 }
@@ -114,13 +180,14 @@ function applyIntegrityIfKnown(el: HTMLScriptElement, src: string): void {
     if (el.getAttribute('integrity')) return;
     const hash = lookupHash(src);
     if (!hash) {
-        // Unknown chunk for a known origin should be suspicious, but we
-        // can't distinguish "MF asked for an unmanifest URL" from "page
-        // has its own scripts". So we only refuse for known origins —
-        // unknown origins pass through untouched.
+        // Unknown chunk under a registered build prefix should be
+        // suspicious, but we can't distinguish "MF asked for an unmanifest
+        // URL" from "page has its own scripts". So we only refuse for
+        // registered prefixes — same-origin scripts outside any registered
+        // prefix (and unknown origins) pass through untouched.
         const url = safeUrl(src);
-        if (url && originHashes.has(url.origin)) {
-            // Known origin, unknown chunk → block. Use a syntactically valid
+        if (url && findRegisteredPrefix(url) !== undefined) {
+            // Registered prefix, unknown chunk → block. Use a syntactically valid
             // SHA-384 digest (correct length, valid base64) that no real
             // content can match. A malformed digest like "sha384-INVALID…"
             // risks being discarded as unparseable by the SRI implementation,

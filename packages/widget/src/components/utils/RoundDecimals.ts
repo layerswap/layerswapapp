@@ -18,10 +18,15 @@ export function truncateDecimals(value: number, decimals = 0) {
     });
 }
 
-/** Ceil to `decimals` (number in, number out). */
+/** Ceil to `decimals` (number in, number out). Values already representable at
+ * `decimals` pass through unchanged — a raw `Math.ceil(value * factor)` would
+ * bump them a full step up on float dust (0.1 * 1e6 === 100000.00000000001). */
 export function ceilToDecimals(value: number, decimals: number): number {
+    if (!Number.isFinite(value)) return 0;
     const factor = 10 ** decimals;
-    return Math.ceil(value * factor) / factor;
+    const nearest = Number(value.toFixed(decimals));
+    if (nearest >= value) return nearest;
+    return Number((nearest + 1 / factor).toFixed(decimals));
 }
 
 /**

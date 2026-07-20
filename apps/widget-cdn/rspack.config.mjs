@@ -1,9 +1,10 @@
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
-import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import rspack from '@rspack/core';
 import { ModuleFederationPlugin } from '@module-federation/enhanced/rspack';
+import { resolveBuildIdentity } from './scripts/build-id.mjs';
+import { ASSET_BASE, CHUNK_HASH_LENGTH } from './scripts/cdn-layout.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
@@ -39,23 +40,16 @@ const SHARED_SINGLETONS = {
   zustand: { singleton: true, requiredVersion: false, eager: false, version: depVersion('zustand') },
 };
 
-// Every build is published to an IMMUTABLE, version-named directory
-// (`dist/1.5.0/`) and uploaded to R2 under that same prefix, never
-// overwritten. The rolling major channel (`/v1/`) is a 302 redirect served by
-// the Cloudflare Worker (see `worker/`) that points at the current version for
-// that major — it is NOT a directory we emit here.
+// Every build publishes its control files to an IMMUTABLE, buildId-named
+// directory (`dist/1.7.0-abc123def456/`). Content-hashed chunks are uploaded
+// separately under the stable `/assets/` namespace so byte-identical chunks
+// keep the same URL across builds. The rolling major channel (`/v1/`) is a 302
+// redirect served by the Cloudflare Worker (see `worker/`).
 //
-// Version defaults to the `@layerswap/widget` package version (the thing that
-// actually changes); override with `LAYERSWAP_RELEASE_VERSION` for a one-off
-// build under a different label. `build-manifest.mjs` and `verify-manifest.mjs`
-// resolve the same value, so all three agree on the output directory.
-// Read straight from the workspace symlink — `@layerswap/widget`'s `exports`
-// map doesn't expose `./package.json`, so `depVersion()` (require.resolve)
-// would throw ERR_PACKAGE_PATH_NOT_EXPORTED.
-const widgetPkgVersion = JSON.parse(
-  readFileSync(path.join(__dirname, 'node_modules', '@layerswap', 'widget', 'package.json'), 'utf8'),
-).version;
-const RELEASE_VERSION = process.env.LAYERSWAP_RELEASE_VERSION || widgetPkgVersion;
+// The buildId (widget version + git sha — see `scripts/build-id.mjs`) is
+// resolved identically by `build-manifest.mjs`, `verify-manifest.mjs`, and
+// `deploy-r2.mjs`, so all four agree on the output directory.
+const { buildId: BUILD_ID } = resolveBuildIdentity(__dirname);
 
 // Dev-only: emit a minimal `manifest.json` next to `remoteEntry.js` so the
 // loader's (now sole) manifest path works against the dev server. Mirrors the
@@ -95,17 +89,20 @@ export default (env, argv) => {
     devtool: isProd ? 'source-map' : 'eval-cheap-module-source-map',
     entry: {}, // Pure remote — no app entry.
     output: {
-      // Production: dist/<version>/* — the immutable build directory uploaded
-      // verbatim to R2 under the same prefix.
+      // Production: dist/<buildId>/* — deploy-r2.mjs keeps control files under
+      // that prefix and publishes content-hashed files under /assets/.
       // Dev: keep dist/ flat (the dev-server serves whatever publicPath says).
-      path: path.resolve(__dirname, isProd ? `dist/${RELEASE_VERSION}` : 'dist'),
+      path: path.resolve(__dirname, isProd ? `dist/${BUILD_ID}` : 'dist'),
       publicPath: 'auto',
       uniqueName: 'layerswap_widget_remote',
+      hashDigestLength: CHUNK_HASH_LENGTH,
       // remoteEntry.js stays stable so loaders can find it. Everything it
       // loads (chunks) is content-hashed for far-future cache-and-forget;
       // remoteEntry.js itself takes the short-cache from vercel.json.
       filename: '[name].js',
-      chunkFilename: isProd ? '[name].[contenthash:8].js' : '[name].js',
+      chunkFilename: isProd
+        ? `${ASSET_BASE}[name].[contenthash:${CHUNK_HASH_LENGTH}].js`
+        : '[name].js',
       clean: true,
     },
     resolve: {

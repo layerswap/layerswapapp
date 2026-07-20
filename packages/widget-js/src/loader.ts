@@ -1,5 +1,5 @@
-import { fetchManifest, resolveRemoteEntry, verifyManifest, ManifestError, DEFAULT_MANIFEST_URL } from './manifest';
-import { registerChunkHashes } from './sri';
+import { fetchManifest, resolveRemoteEntry, verifyManifest, ManifestError, DEFAULT_MANIFEST_URL } from './manifest.js';
+import { registerChunkHashes } from './sri.js';
 
 export type ResolvedSource = { remoteEntry: string };
 
@@ -65,15 +65,44 @@ export async function resolveSource(): Promise<ResolvedSource> {
   // Resolve against the manifest's FINAL (post-redirect) URL, not the URL the
   // caller passed. A rolling channel URL (`/v1/manifest.json`) 302-redirects to
   // an immutable build (`/1.5.0/manifest.json`); resolving the relative
-  // `remoteEntry` against that lands the remote — and, via MF's `publicPath:
-  // 'auto'`, every chunk it loads — at the immutable `/1.5.0/` path.
+  // `remoteEntry` against that lands the remote at the immutable build path.
   const remoteEntry = resolveRemoteEntry(resolvedManifestUrl, manifest.remoteEntry);
   // Install per-chunk SRI BEFORE MF runtime starts loading scripts. Once
   // the manifest's signed body is trusted, its `chunks` map pins the bytes
   // of every JS file the browser will fetch from our origin — including
   // remoteEntry.js and every lazy chunk loaded later.
   if (manifest.chunks && Object.keys(manifest.chunks).length > 0) {
-    registerChunkHashes(remoteEntry, manifest.chunks);
+    if (manifest.assetBase) {
+      const remoteFilename = filenameFromUrl(remoteEntry);
+      const remoteHash = remoteFilename && manifest.chunks[remoteFilename];
+      // Register the immutable build prefix even when a malformed manifest
+      // omitted remoteEntry's hash. The request then fails closed as an
+      // unknown script under a protected prefix.
+      registerChunkHashes(
+        remoteEntry,
+        remoteHash && remoteFilename ? { [remoteFilename]: remoteHash } : manifest.chunks,
+      );
+
+      const assetHashes = Object.fromEntries(
+        Object.entries(manifest.chunks).filter(([filename]) => filename !== remoteFilename),
+      );
+      if (Object.keys(assetHashes).length > 0) {
+        const assetBase = resolveRemoteEntry(resolvedManifestUrl, manifest.assetBase);
+        // Every build shares this content-addressed prefix. Merge maps while
+        // rejecting the only unsafe case: one filename claiming two hashes.
+        registerChunkHashes(assetBase, assetHashes, { merge: true });
+      }
+    } else {
+      registerChunkHashes(remoteEntry, manifest.chunks);
+    }
   }
   return { remoteEntry };
+}
+
+function filenameFromUrl(value: string): string | undefined {
+  try {
+    return new URL(value).pathname.split('/').filter(Boolean).pop();
+  } catch {
+    return value.split('/').filter(Boolean).pop();
+  }
 }

@@ -77,15 +77,31 @@ export async function putObject({ client, bucket }, key, body, { contentType, ca
     );
 }
 
-export async function readChannels(ctx) {
+export async function readJsonObject(ctx, key) {
     try {
-        const res = await ctx.client.send(new GetObjectCommand({ Bucket: ctx.bucket, Key: CHANNELS_KEY }));
+        const res = await ctx.client.send(
+            new GetObjectCommand({ Bucket: ctx.bucket, Key: key }),
+        );
         const text = await res.Body.transformToString();
-        return JSON.parse(text);
+        const value = JSON.parse(text);
+        if (!value || typeof value !== 'object' || Array.isArray(value)) {
+            throw new Error(`[r2] ${key} does not contain a JSON object`);
+        }
+        return value;
     } catch (err) {
-        if (err?.$metadata?.httpStatusCode === 404 || err?.name === 'NoSuchKey') return {};
+        if (
+            err?.$metadata?.httpStatusCode === 404
+            || err?.name === 'NoSuchKey'
+            || err?.name === 'NotFound'
+        ) {
+            return undefined;
+        }
         throw err;
     }
+}
+
+export async function readChannels(ctx) {
+    return (await readJsonObject(ctx, CHANNELS_KEY)) ?? {};
 }
 
 export async function writeChannels(ctx, channels) {

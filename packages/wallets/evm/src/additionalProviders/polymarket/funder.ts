@@ -37,10 +37,10 @@ export type PolymarketHoldingEntry = {
 export type PolymarketHolding = {
     candidates: PolymarketCandidate[]
     entries: PolymarketHoldingEntry[]
-    /** Human total across all candidates/tokens — the displayed balance. */
+    /** Human total across all candidates/tokens — the displayed balance. Can exceed the
+     * executable balance: entries in a `proxy`/`unknown` funder count here but may not be
+     * withdrawable (classification happens at withdrawal time, see `selectPolymarketFunder`). */
     total: number
-    /** The single largest holding — the address/token a withdrawal should move from. */
-    primary?: PolymarketHoldingEntry
 }
 
 /** Derive all candidate funder addresses for an owner EOA, ordered modern-first. */
@@ -147,7 +147,8 @@ const TOKENS: { symbol: 'pUSD' | 'USDC.e'; address: `0x${string}`; decimals: num
 
 /**
  * Read pUSD + USDC.e across every derived funder candidate and report where the funds
- * are. `total` is the displayed balance; `primary` is the source a withdrawal pulls from.
+ * are. `total` is the displayed balance; a withdrawal picks its source from `entries`
+ * with `selectPolymarketFunder`.
  */
 export async function resolvePolymarketHolding(eoa: string, publicClient: PublicClient): Promise<PolymarketHolding> {
     const candidates = await resolvePolymarketCandidates(eoa)
@@ -180,13 +181,48 @@ export async function resolvePolymarketHolding(eoa: string, publicClient: Public
             decimals: r.token.decimals,
             raw: r.raw,
             amount: Number(r.raw) / 10 ** r.token.decimals,
-        }))
+    }))
 
     const total = entries.reduce((sum, e) => sum + e.amount, 0)
-    const primary = entries.reduce<PolymarketHoldingEntry | undefined>(
-        (best, e) => (!best || e.amount > best.amount ? e : best),
-        undefined,
-    )
+    return { candidates, entries, total }
+}
 
-    return { candidates, entries, total, primary }
+/** A holding entry whose funder type can actually be driven through a withdrawal path. */
+export type PolymarketExecutableEntry = PolymarketHoldingEntry & { type: 'deposit' | 'safe' }
+
+export type PolymarketFunderSelection = {
+    /** Entries withdrawable after classification (deposit/safe), largest-raw first. Empty
+     * means every funder holding a balance is an unsupported type (proxy/unknown). */
+    executable: PolymarketExecutableEntry[]
+    /** The largest executable entry covering `amountBaseUnits`, or `undefined` when
+     * executable entries exist but none holds enough. */
+    selected?: PolymarketExecutableEntry
+}
+
+/**
+ * Pick the funder a withdrawal should pull from: classify `'unknown'` entries on-chain
+ * (in parallel; a funder surfaced via Polymarket's profile may turn out to be a deposit
+ * wallet), keep only executable types, and select the largest entry that covers the
+ * requested amount — so an unsupported proxy holding more than a withdrawable funder
+ * never blocks a withdrawal the withdrawable funder could serve.
+ */
+export async function selectPolymarketFunder(
+    entries: PolymarketHoldingEntry[],
+    amountBaseUnits: bigint,
+    eoa: string,
+    publicClient: PublicClient,
+): Promise<PolymarketFunderSelection> {
+    const unknownAddresses = [...new Set(entries.filter(e => e.type === 'unknown').map(e => e.address))]
+    const classified = new Map(await Promise.all(unknownAddresses.map(async address =>
+        [address, await classifyPolymarketFunder(address, eoa, publicClient)] as const
+    )))
+
+    const executable = entries
+        .map(e => e.type === 'unknown' ? { ...e, type: classified.get(e.address) ?? 'unknown' } : e)
+        .filter((e): e is PolymarketExecutableEntry => e.type === 'deposit' || e.type === 'safe')
+        .sort((a, b) => (a.raw < b.raw ? 1 : a.raw > b.raw ? -1 : 0))
+
+    // Sorted largest-first, so the first entry covering the amount is the largest one.
+    const selected = executable.find(e => e.raw >= amountBaseUnits)
+    return { executable, selected }
 }

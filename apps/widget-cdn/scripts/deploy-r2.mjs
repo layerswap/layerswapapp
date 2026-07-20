@@ -1,19 +1,12 @@
 #!/usr/bin/env node
-// Upload the signed build in `dist/<version>/` to R2 under the immutable
-// `<version>/` prefix, then (unless LAYERSWAP_PROMOTE=false) flip the rolling
-// channel pointer in `channels.json` to this version.
-//
-// Immutability is enforced: if `<version>/manifest.json` already exists in the
-// bucket, the upload is refused unless ALLOW_OVERWRITE=1. Published versions
-// are forever — bump the version to ship again.
-//
-//   pnpm deploy:r2                 # upload + promote channel to this version
-//   LAYERSWAP_PROMOTE=false ...    # upload only (staged release; promote later)
-//   ALLOW_OVERWRITE=1 ...          # re-upload an existing version (escape hatch)
+// Upload signed build control files from `dist/<buildId>/` to the immutable
+// `<buildId>/` prefix and content-hashed chunks to the shared `/assets/`
+// namespace. Unless LAYERSWAP_PROMOTE=false, the rolling channel is then
+// updated in `channels.json`.
 
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
     makeClient,
     objectExists,
@@ -22,32 +15,38 @@ import {
     writeChannels,
     contentTypeFor,
 } from './r2-lib.mjs';
+import { resolveBuildIdentity } from './build-id.mjs';
+import {
+    ASSET_BASE,
+    ASSET_DIRECTORY,
+    deploymentKey,
+    isSharedAsset,
+} from './cdn-layout.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 
-// Read from the workspace symlink (exports map hides ./package.json).
-const widgetPkg = JSON.parse(
-    readFileSync(join(ROOT, 'node_modules', '@layerswap', 'widget', 'package.json'), 'utf8'),
-);
-const VERSION = process.env.LAYERSWAP_RELEASE_VERSION || widgetPkg.version || '0.0.0';
-const DIST = join(ROOT, 'dist', VERSION);
-const MANIFEST_PATH = join(DIST, 'manifest.json');
+export function validateManifestIdentity(manifest, identity) {
+    const mismatches = [
+        ['buildId', manifest.buildId, identity.buildId],
+        ['version', manifest.version, identity.version],
+        ['channel', manifest.channel, identity.channel],
+        ['gitSha', manifest.gitSha, identity.gitSha],
+        ['assetBase', manifest.assetBase, ASSET_BASE],
+    ].filter(([, actual, expected]) => actual !== expected);
 
-if (!existsSync(MANIFEST_PATH)) {
-    console.error(`[deploy-r2] missing ${MANIFEST_PATH} — run \`pnpm build\` first.`);
-    process.exit(1);
+    if (mismatches.length > 0) {
+        const details = mismatches
+            .map(
+                ([field, actual, expected]) => (
+                    `${field}: ${JSON.stringify(actual)} !== ${JSON.stringify(expected)}`
+                ),
+            )
+            .join(', ');
+        throw new Error(`[deploy-r2] manifest identity does not match this build: ${details}`);
+    }
 }
 
-const manifest = JSON.parse(readFileSync(MANIFEST_PATH, 'utf8'));
-if (!manifest.signature) {
-    console.error('[deploy-r2] refusing to deploy an UNSIGNED manifest. Build with LAYERSWAP_PRIVATE_KEY_PEM set.');
-    process.exit(1);
-}
-const channel = manifest.channel || `v${VERSION.split('.')[0]}`;
-
-// Recursively list files under DIST (the build output is flat today, but
-// recurse so nested assets survive a future config change).
 function listFiles(dir) {
     const out = [];
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -58,45 +57,153 @@ function listFiles(dir) {
     return out;
 }
 
-const ctx = makeClient();
-
-const exists = await objectExists(ctx, `${VERSION}/manifest.json`);
-if (exists && process.env.ALLOW_OVERWRITE !== '1') {
-    console.error(
-        `[deploy-r2] version ${VERSION} is already published (immutable). ` +
-        `Bump @layerswap/widget, or set ALLOW_OVERWRITE=1 to force.`,
-    );
-    process.exit(1);
+async function runWithConcurrency(items, limit, task) {
+    if (items.length === 0) return;
+    const workerCount = Math.min(Math.max(1, Math.floor(limit)), items.length);
+    let cursor = 0;
+    await Promise.all(Array.from({ length: workerCount }, async () => {
+        while (cursor < items.length) {
+            const item = items[cursor];
+            cursor += 1;
+            await task(item);
+        }
+    }));
 }
 
-const files = listFiles(DIST);
-console.log(`[deploy-r2] uploading ${files.length} file(s) to ${ctx.bucket}/${VERSION}/ …`);
+export async function deployBuild(options = {}) {
+    const root = options.root ?? ROOT;
+    const identity = options.identity ?? resolveBuildIdentity(root);
+    const env = options.env ?? process.env;
+    const logger = options.logger ?? console;
+    const createClient = options.createClient ?? makeClient;
+    const exists = options.objectExists ?? objectExists;
+    const upload = options.putObject ?? putObject;
+    const readChannelMap = options.readChannels ?? readChannels;
+    const writeChannelMap = options.writeChannels ?? writeChannels;
+    const uploadConcurrency = options.uploadConcurrency ?? 8;
+    const dist = join(root, 'dist', identity.buildId);
+    const assetDist = join(root, 'dist', ASSET_DIRECTORY);
+    const manifestPath = join(dist, 'manifest.json');
 
-for (const file of files) {
-    const rel = relative(DIST, file).split(/[\\/]/).join('/');
-    const key = `${VERSION}/${rel}`;
-    const body = readFileSync(file);
-    await putObject(ctx, key, body, {
-        contentType: contentTypeFor(rel),
-        // Immutable artifacts — the version is the cache key. The Worker sets
-        // the same header on the response; we set it on the object too so the
-        // bucket is correct even if ever served without the Worker.
-        cacheControl: 'public, max-age=31536000, immutable',
+    if (!existsSync(manifestPath)) {
+        throw new Error(`[deploy-r2] missing ${manifestPath} — run \`pnpm build\` first.`);
+    }
+
+    let manifest;
+    try {
+        manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+    } catch (err) {
+        throw new Error(
+            `[deploy-r2] failed to read manifest: ${err instanceof Error ? err.message : String(err)}`,
+        );
+    }
+    if (!manifest.signature) {
+        throw new Error(
+            '[deploy-r2] refusing to deploy an UNSIGNED manifest. '
+            + 'Build with LAYERSWAP_PRIVATE_KEY_PEM set.',
+        );
+    }
+
+    // This must run before credentials are read or an R2 client is created:
+    // stale/copied artifacts must never upload under the wrong immutable key.
+    validateManifestIdentity(manifest, identity);
+    if (!existsSync(assetDist)) {
+        throw new Error(`[deploy-r2] missing shared asset output ${assetDist} — run \`pnpm build\` first.`);
+    }
+
+    const ctx = createClient();
+    if (await exists(ctx, `${identity.buildId}/manifest.json`)) {
+        if (env.ALLOW_OVERWRITE !== '1') {
+            throw new Error(
+                `[deploy-r2] build ${identity.buildId} is already published (immutable). `
+                + 'Deploy from a new commit, or set ALLOW_OVERWRITE=1 to force.',
+            );
+        }
+    }
+
+    // Prepare and validate every key before uploading anything. The manifest
+    // is held aside and published only after every payload worker succeeds, so
+    // an interrupted upload can never make an incomplete build rollback-ready.
+    const files = [
+        ...listFiles(dist).map((file) => ({ file, root: dist, shared: false })),
+        ...(existsSync(assetDist)
+            ? listFiles(assetDist).map((file) => ({ file, root: assetDist, shared: true }))
+            : []),
+    ].sort((a, b) => a.file.localeCompare(b.file));
+
+    const publishableFiles = files.map(({ file, root: fileRoot, shared }) => {
+        const rel = relative(fileRoot, file).split(/[\\/]/).join('/');
+        if (shared && !isSharedAsset(rel)) {
+            throw new Error(`[deploy-r2] refusing non-content-hashed file in ${ASSET_DIRECTORY}/: ${rel}`);
+        }
+        return {
+            file,
+            rel,
+            shared,
+            key: shared ? deploymentKey(identity.buildId, rel) : `${identity.buildId}/${rel}`,
+        };
     });
-    console.log(`  ↑ ${key} (${body.length} bytes)`);
+    const manifestFile = publishableFiles.find(({ file }) => file === manifestPath);
+    const payloadFiles = publishableFiles.filter(({ file }) => file !== manifestPath);
+    if (!manifestFile) {
+        throw new Error(`[deploy-r2] missing ${manifestPath} from publishable files.`);
+    }
+
+    let uploaded = 0;
+    let reused = 0;
+    logger.log(`[deploy-r2] publishing ${files.length} file(s) to ${ctx.bucket} …`);
+
+    const publishFile = async ({ file, rel, shared, key }) => {
+        // A content hash is the immutable asset key. Reuse an existing object
+        // instead of storing or transferring the same chunk for every build.
+        if (shared && env.ALLOW_OVERWRITE !== '1' && await exists(ctx, key)) {
+            reused += 1;
+            logger.log(`  = ${key} (already published)`);
+            return;
+        }
+
+        const body = readFileSync(file);
+        await upload(ctx, key, body, {
+            contentType: contentTypeFor(rel),
+            cacheControl: 'public, max-age=31536000, immutable',
+        });
+        uploaded += 1;
+        logger.log(`  ↑ ${key} (${body.length} bytes)`);
+    };
+
+    await runWithConcurrency(payloadFiles, uploadConcurrency, publishFile);
+    await publishFile(manifestFile);
+
+    logger.log(
+        `[deploy-r2] published build ${identity.buildId} (${uploaded} uploaded, ${reused} reused).`,
+    );
+
+    if (env.LAYERSWAP_PROMOTE === 'false') {
+        logger.log(
+            `[deploy-r2] LAYERSWAP_PROMOTE=false — channel ${identity.channel} NOT changed. `
+            + 'Promote later with:',
+        );
+        logger.log(`            node scripts/rollback-r2.mjs ${identity.channel} ${identity.buildId}`);
+        return { uploaded, reused, promoted: false };
+    }
+
+    const channels = await readChannelMap(ctx);
+    const previous = channels[identity.channel];
+    channels[identity.channel] = identity.buildId;
+    await writeChannelMap(ctx, channels);
+    logger.log(
+        `[deploy-r2] channel ${identity.channel}: ${previous ?? '(none)'} → ${identity.buildId}`,
+    );
+    logger.log(`[deploy-r2] live at /${identity.channel}/manifest.json`);
+    return { uploaded, reused, promoted: true };
 }
 
-console.log(`[deploy-r2] uploaded version ${VERSION} (${files.length} files).`);
-
-if (process.env.LAYERSWAP_PROMOTE === 'false') {
-    console.log(`[deploy-r2] LAYERSWAP_PROMOTE=false — channel ${channel} NOT changed. Promote later with:`);
-    console.log(`            node scripts/rollback-r2.mjs ${channel} ${VERSION}`);
-    process.exit(0);
+const entryUrl = process.argv[1] ? pathToFileURL(resolve(process.argv[1])).href : undefined;
+if (entryUrl === import.meta.url) {
+    try {
+        await deployBuild();
+    } catch (err) {
+        console.error(err instanceof Error ? err.message : err);
+        process.exitCode = 1;
+    }
 }
-
-const channels = await readChannels(ctx);
-const previous = channels[channel];
-channels[channel] = VERSION;
-await writeChannels(ctx, channels);
-console.log(`[deploy-r2] channel ${channel}: ${previous ?? '(none)'} → ${VERSION}`);
-console.log(`[deploy-r2] live at /${channel}/manifest.json`);
