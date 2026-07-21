@@ -1,4 +1,5 @@
-import type { WalletProvider, WalletProviderDescriptor } from "@layerswap/widget/types"
+import type { WalletProviderDescriptor } from "@layerswap/widget/types"
+import { defineWalletDescriptor } from "./defineWalletDescriptor"
 
 // Inlined to keep this module tree-shake-safe. Paradex's runtime constants
 // live in packages/wallets/paradex/src/service/ParadexConnectionService.ts —
@@ -15,15 +16,15 @@ const PARADEX_NETWORKS = ['PARADEX_MAINNET', 'PARADEX_TESTNET']
  * is what actually moves the starknet SDK out of the host's entry chunk.
  */
 export function createParadexDescriptor(): WalletProviderDescriptor {
-    return {
-        id: 'prdx',
+    return defineWalletDescriptor({
+        id: 'paradex',
         name: 'Paradex',
         autofillSupportedNetworks: PARADEX_NETWORKS,
         withdrawalSupportedNetworks: PARADEX_NETWORKS,
         asSourceSupportedNetworks: PARADEX_NETWORKS,
-        loadProvider: async (): Promise<WalletProvider> => {
+        loadProvider: async () => {
             const mod = await import('@layerswap/wallet-paradex')
             return mod.createParadexProvider()
         },
-    }
+    })
 }

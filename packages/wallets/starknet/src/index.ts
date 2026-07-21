@@ -13,6 +13,7 @@ import { StarknetNftProvider } from "./starknetNftProvider"
 import { createStarknetTransfer } from "./transferProvider/createStarknetTransfer"
 import { createStarknetConnection } from "./service/createStarknetConnection"
 import { initStarknetProvider } from "./init"
+import { id } from "./constants"
 
 const isStarknetNetwork = (name: string) =>
     KnownInternalNames.Networks.StarkNetMainnet.includes(name) ||
@@ -23,7 +24,9 @@ export type StarknetProviderConfig = BaseWalletProviderConfig & {
     nftProviders?: NftProvider | NftProvider[]
 }
 
-export function createStarknetProvider(config: StarknetProviderConfig = {}): WalletProvider {
+// The literal id in the return type lets `defineWalletDescriptor` in
+// `@layerswap/wallets` verify it matches the descriptor id at compile time.
+export function createStarknetProvider(config: StarknetProviderConfig = {}): WalletProvider & { id: typeof id } {
     const {
         customConnection,
         balanceProviders,
@@ -71,7 +74,7 @@ export function createStarknetProvider(config: StarknetProviderConfig = {}): Wal
         : defaultTransferProviders
 
     return {
-        id: "starknet",
+        id,
         init,
         createConnection,
         gasProvider: finalGasProviders,

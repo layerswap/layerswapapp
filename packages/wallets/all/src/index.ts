@@ -50,6 +50,8 @@ import { createTronDescriptor } from "./descriptors/tron";
 
 import { WalletProvider, WalletProviderDescriptor, WalletWrapper } from "@layerswap/widget/types";
 
+export { defineWalletDescriptor } from "./descriptors/defineWalletDescriptor";
+
 export { createBitcoinDescriptor };
 export type { BitcoinProviderConfig };
 

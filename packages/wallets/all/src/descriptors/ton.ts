@@ -1,5 +1,6 @@
-import type { WalletProvider, WalletProviderDescriptor } from "@layerswap/widget/types"
+import type { WalletProviderDescriptor } from "@layerswap/widget/types"
 import type { TonClientConfig } from "@layerswap/wallet-ton"
+import { defineWalletDescriptor } from "./defineWalletDescriptor"
 
 // Inlined — see notes in ./starknet.ts on why we don't import the chain
 // package's constants (it would drag the SDK). Keep in sync with
@@ -13,15 +14,15 @@ const TON_NETWORKS = ['TON_MAINNET', 'TON_TESTNET']
  * supplied, mirroring the previous conditional in `getDefaultProviders`.
  */
 export function createTONDescriptor(tonConfigs: TonClientConfig): WalletProviderDescriptor {
-    return {
+    return defineWalletDescriptor({
         id: 'ton',
         name: 'Ton',
         autofillSupportedNetworks: TON_NETWORKS,
         withdrawalSupportedNetworks: TON_NETWORKS,
         asSourceSupportedNetworks: TON_NETWORKS,
-        loadProvider: async (): Promise<WalletProvider> => {
+        loadProvider: async () => {
             const mod = await import('@layerswap/wallet-ton')
             return mod.createTONProvider({ tonConfigs })
         },
-    }
+    })
 }

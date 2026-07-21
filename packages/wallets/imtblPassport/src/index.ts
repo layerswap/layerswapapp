@@ -1,5 +1,6 @@
 import type { WalletInitContext, WalletWrapper } from "@layerswap/widget/types"
 import { imtblPassportService } from "./service/ImtblPassportService"
+import { id } from "./constants"
 
 export type ImtblPassportConfig = {
     publishableKey: string
@@ -12,7 +13,9 @@ export type ImmutablePassportProviderConfig = {
     imtblPassportConfig?: ImtblPassportConfig
 }
 
-export function createImmutablePassportProvider(config: ImmutablePassportProviderConfig = {}): WalletWrapper {
+// The literal id in the return type lets `defineWalletDescriptor` in
+// `@layerswap/wallets` verify it matches the descriptor id at compile time.
+export function createImmutablePassportProvider(config: ImmutablePassportProviderConfig = {}): WalletWrapper & { id: typeof id } {
     const { imtblPassportConfig } = config
 
     const init = (_ctx: WalletInitContext) => {
@@ -22,7 +25,7 @@ export function createImmutablePassportProvider(config: ImmutablePassportProvide
     }
 
     return {
-        id: "imtblPassport",
+        id,
         init,
     }
 }

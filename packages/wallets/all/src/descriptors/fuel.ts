@@ -1,4 +1,5 @@
-import type { WalletProvider, WalletProviderDescriptor } from "@layerswap/widget/types"
+import type { WalletProviderDescriptor } from "@layerswap/widget/types"
+import { defineWalletDescriptor } from "./defineWalletDescriptor"
 
 const FUEL_NETWORKS = ['FUEL_MAINNET', 'FUEL_TESTNET', 'FUEL_DEVNET']
 
@@ -8,15 +9,15 @@ const FUEL_NETWORKS = ['FUEL_MAINNET', 'FUEL_TESTNET', 'FUEL_DEVNET']
  * chunk.
  */
 export function createFuelDescriptor(): WalletProviderDescriptor {
-    return {
+    return defineWalletDescriptor({
         id: 'fuel',
         name: 'Fuel',
         autofillSupportedNetworks: FUEL_NETWORKS,
         withdrawalSupportedNetworks: FUEL_NETWORKS,
         asSourceSupportedNetworks: FUEL_NETWORKS,
-        loadProvider: async (): Promise<WalletProvider> => {
+        loadProvider: async () => {
             const mod = await import('@layerswap/wallet-fuel')
             return mod.createFuelProvider()
         },
-    }
+    })
 }

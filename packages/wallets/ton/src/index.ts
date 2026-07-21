@@ -11,6 +11,7 @@ import { TonGasProvider } from "./tonGasProvider"
 import { createTonTransfer } from "./transferProvider/createTonTransfer"
 import { createTonConnection } from "./service/createTonConnection"
 import { initTonProvider } from "./init"
+import { id } from "./constants"
 
 export type TonClientConfig = {
     tonApiKey: string
@@ -21,7 +22,9 @@ export type TONProviderConfig = BaseWalletProviderConfig & {
     tonConfigs?: TonClientConfig
 }
 
-export function createTONProvider(config: TONProviderConfig = {}): WalletProvider {
+// The literal id in the return type lets `defineWalletDescriptor` in
+// `@layerswap/wallets` verify it matches the descriptor id at compile time.
+export function createTONProvider(config: TONProviderConfig = {}): WalletProvider & { id: typeof id } {
     const {
         tonConfigs,
         customConnection,
@@ -64,7 +67,7 @@ export function createTONProvider(config: TONProviderConfig = {}): WalletProvide
         : defaultTransferProviders
 
     return {
-        id: "ton",
+        id,
         init,
         createConnection,
         gasProvider: finalGasProviders,

@@ -1,4 +1,5 @@
-import type { WalletProvider, WalletProviderDescriptor } from "@layerswap/widget/types"
+import type { WalletProviderDescriptor } from "@layerswap/widget/types"
+import { defineWalletDescriptor } from "./defineWalletDescriptor"
 
 const BITCOIN_NETWORKS = ['BITCOIN_MAINNET', 'BITCOIN_TESTNET']
 
@@ -8,15 +9,15 @@ const BITCOIN_NETWORKS = ['BITCOIN_MAINNET', 'BITCOIN_TESTNET']
  * ~88 KB gzip — out of the host's entry chunk.
  */
 export function createBitcoinDescriptor(): WalletProviderDescriptor {
-    return {
+    return defineWalletDescriptor({
         id: 'bitcoin',
         name: 'Bitcoin',
         autofillSupportedNetworks: BITCOIN_NETWORKS,
         withdrawalSupportedNetworks: BITCOIN_NETWORKS,
         asSourceSupportedNetworks: BITCOIN_NETWORKS,
-        loadProvider: async (): Promise<WalletProvider> => {
+        loadProvider: async () => {
             const mod = await import('@layerswap/wallet-bitcoin')
             return mod.createBitcoinProvider()
         },
-    }
+    })
 }

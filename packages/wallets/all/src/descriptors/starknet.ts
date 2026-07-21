@@ -1,4 +1,5 @@
-import type { WalletProvider, WalletProviderDescriptor } from "@layerswap/widget/types"
+import type { WalletProviderDescriptor } from "@layerswap/widget/types"
+import { defineWalletDescriptor } from "./defineWalletDescriptor"
 
 // Inlined so this module is tree-shake-safe — importing
 // `KnownInternalNames` from `@layerswap/widget/internal` would pull a runtime
@@ -15,15 +16,15 @@ const STARKNET_NETWORKS = ['STARKNET_MAINNET', 'STARKNET_SEPOLIA', 'STARKNET_GOE
  * open).
  */
 export function createStarknetDescriptor(): WalletProviderDescriptor {
-    return {
+    return defineWalletDescriptor({
         id: 'starknet',
         name: 'Starknet',
         autofillSupportedNetworks: STARKNET_NETWORKS,
         withdrawalSupportedNetworks: STARKNET_NETWORKS,
         asSourceSupportedNetworks: STARKNET_NETWORKS,
-        loadProvider: async (): Promise<WalletProvider> => {
+        loadProvider: async () => {
             const mod = await import('@layerswap/wallet-starknet')
             return mod.createStarknetProvider()
         },
-    }
+    })
 }

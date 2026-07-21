@@ -1,4 +1,5 @@
-import type { WalletProvider, WalletProviderDescriptor } from "@layerswap/widget/types"
+import type { WalletProviderDescriptor } from "@layerswap/widget/types"
+import { defineWalletDescriptor } from "./defineWalletDescriptor"
 
 const TRON_NETWORKS = ['TRON_MAINNET', 'TRON_TESTNET']
 
@@ -9,15 +10,15 @@ const TRON_NETWORKS = ['TRON_MAINNET', 'TRON_TESTNET']
  * host's entry chunk.
  */
 export function createTronDescriptor(): WalletProviderDescriptor {
-    return {
+    return defineWalletDescriptor({
         id: 'tron',
         name: 'Tron',
         autofillSupportedNetworks: TRON_NETWORKS,
         withdrawalSupportedNetworks: TRON_NETWORKS,
         asSourceSupportedNetworks: TRON_NETWORKS,
-        loadProvider: async (): Promise<WalletProvider> => {
+        loadProvider: async () => {
             const mod = await import('@layerswap/wallet-tron')
             return mod.createTronProvider()
         },
-    }
+    })
 }

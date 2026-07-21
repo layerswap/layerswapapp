@@ -50,7 +50,8 @@
     "@layerswap/wallet-starknet": "workspace:^",
     "@layerswap/wallet-svm": "workspace:^",
     "@layerswap/wallet-ton": "workspace:^",
-    "@layerswap/wallet-tron": "workspace:^"
+    "@layerswap/wallet-tron": "workspace:^",
+    "@layerswap/widget-types": "workspace:^"
   },
   "peerDependencies": {
     "@layerswap/widget": "workspace:^",

@@ -1,5 +1,6 @@
-import type { WalletProvider, WalletProviderDescriptor, WalletWrapper } from "@layerswap/widget/types"
+import type { WalletProviderDescriptor } from "@layerswap/widget/types"
 import type { ImtblPassportConfig } from "@layerswap/wallet-imtbl-passport"
+import { defineWalletDescriptor } from "./defineWalletDescriptor"
 
 /**
  * Tree-shake-safe stand-in for `createImmutablePassportProvider`. Passport's
@@ -21,15 +22,15 @@ import type { ImtblPassportConfig } from "@layerswap/wallet-imtbl-passport"
  * users select EVM and Passport is presented as one connector among several.
  */
 export function createImmutablePassportDescriptor(imtblPassportConfig: ImtblPassportConfig): WalletProviderDescriptor {
-    return {
+    return defineWalletDescriptor({
         id: 'imtblPassport',
         name: 'Immutable Passport',
         autofillSupportedNetworks: [],
         withdrawalSupportedNetworks: [],
         asSourceSupportedNetworks: [],
-        loadProvider: async (): Promise<WalletProvider | WalletWrapper> => {
+        loadProvider: async () => {
             const mod = await import('@layerswap/wallet-imtbl-passport')
             return mod.createImmutablePassportProvider({ imtblPassportConfig })
         },
-    }
+    })
 }

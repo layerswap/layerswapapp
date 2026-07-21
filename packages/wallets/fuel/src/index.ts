@@ -10,10 +10,13 @@ import { FuelGasProvider } from "./fuelGasProvider"
 import { createFuelTransfer } from "./transferProvider/createFuelTransfer"
 import { createFuelConnection } from "./service/createFuelConnection"
 import { initFuelProvider } from "./init"
+import { id } from "./constants"
 
 export type FuelProviderConfig = BaseWalletProviderConfig
 
-export function createFuelProvider(config: FuelProviderConfig = {}): WalletProvider {
+// The literal id in the return type lets `defineWalletDescriptor` in
+// `@layerswap/wallets` verify it matches the descriptor id at compile time.
+export function createFuelProvider(config: FuelProviderConfig = {}): WalletProvider & { id: typeof id } {
     const {
         customConnection,
         balanceProviders,
@@ -50,7 +53,7 @@ export function createFuelProvider(config: FuelProviderConfig = {}): WalletProvi
         : defaultTransferProviders
 
     return {
-        id: "fuel",
+        id,
         init,
         createConnection,
         gasProvider: finalGasProviders,

@@ -1,5 +1,6 @@
-import type { WalletProvider, WalletProviderDescriptor } from "@layerswap/widget/types"
+import type { WalletProviderDescriptor } from "@layerswap/widget/types"
 import type { WalletConnectConfig } from "@layerswap/wallet-evm"
+import { defineWalletDescriptor } from "./defineWalletDescriptor"
 
 // SVM's runtime list is built dynamically from `NetworkType.Solana` networks
 // in `SvmConnectionService` — for static gating we mirror the universe of
@@ -15,15 +16,15 @@ const SVM_NETWORKS = ['SOLANA_MAINNET', 'SOLANA_TESTNET', 'SOLANA_DEVNET']
  * chunk.
  */
 export function createSVMDescriptor(walletConnectConfigs?: WalletConnectConfig): WalletProviderDescriptor {
-    return {
+    return defineWalletDescriptor({
         id: 'solana',
         name: 'Solana',
         autofillSupportedNetworks: SVM_NETWORKS,
         withdrawalSupportedNetworks: SVM_NETWORKS,
         asSourceSupportedNetworks: SVM_NETWORKS,
-        loadProvider: async (): Promise<WalletProvider> => {
+        loadProvider: async () => {
             const mod = await import('@layerswap/wallet-svm')
             return mod.createSVMProvider({ walletConnectConfigs })
         },
-    }
+    })
 }

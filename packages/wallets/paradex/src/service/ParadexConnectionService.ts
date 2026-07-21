@@ -21,14 +21,11 @@ import {
     type ConnectorAlreadyConnectedError,
 } from '@wagmi/core'
 import { useParadexActiveStore, type ParadexAccount } from './paradexActiveStore'
+import { name, paradexNames } from '../constants'
 
-export const name = 'Paradex'
-export const id = 'prdx'
+export { name, id } from '../constants'
 
-export const withdrawalSupportedNetworks = [
-    KnownInternalNames.Networks.ParadexMainnet,
-    KnownInternalNames.Networks.ParadexTestnet,
-]
+export const withdrawalSupportedNetworks = [...paradexNames]
 export const autofillSupportedNetworks = [...withdrawalSupportedNetworks]
 export const asSourceSupportedNetworks = [...withdrawalSupportedNetworks]
 

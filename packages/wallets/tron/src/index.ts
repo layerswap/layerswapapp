@@ -11,10 +11,13 @@ import { TronGasProvider } from "./tronGasProvider"
 import { createTronTransfer } from "./transferProvider/createTronTransfer"
 import { createTronConnection } from "./service/createTronConnection"
 import { initTronProvider } from "./init"
+import { id } from "./constants"
 
 export type TronProviderConfig = BaseWalletProviderConfig
 
-export function createTronProvider(config: TronProviderConfig = {}): WalletProvider {
+// The literal id in the return type lets `defineWalletDescriptor` in
+// `@layerswap/wallets` verify it matches the descriptor id at compile time.
+export function createTronProvider(config: TronProviderConfig = {}): WalletProvider & { id: typeof id } {
     const {
         customConnection,
         balanceProviders,
@@ -56,7 +59,7 @@ export function createTronProvider(config: TronProviderConfig = {}): WalletProvi
         : defaultTransferProviders
 
     return {
-        id: "tron",
+        id,
         init,
         createConnection,
         gasProvider: finalGasProviders,

@@ -102,7 +102,7 @@ widget's behavior, not where it comes from.
 | `callbacks` | `WidgetCallbacks` | `onSwapCreate`, `onSwapComplete`, `onError`, `onSwapModalStateChange`, etc. |
 | `wagmiConfig` | `wagmi/Config` | Host wagmi config the widget adopts for EVM. |
 | `walletDefaults` | `WalletDefaults` | `walletConnect` (projectId, etc.), `ton`, `immutablePassport`. |
-| `walletProvidersConfig.include` | `WalletProviderId[]` | Allowlist — keep only these chains, e.g. `['evm', 'svm']`. Applied before `exclude`. |
+| `walletProvidersConfig.include` | `WalletProviderId[]` | Allowlist — keep only these chains, e.g. `['evm', 'solana']`. Applied before `exclude`. |
 | `walletProvidersConfig.exclude` | `WalletProviderId[]` | Blocklist — drop chains from the provider list — `['tron', 'fuel']`, etc. |
 | `fallback` | `ReactNode` | Shown while loading. |
 | `onReady` | `() => void` | Fires once the widget mounts. |
