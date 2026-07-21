@@ -167,6 +167,7 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
 }
 
 export { createEvmConnection } from "./service/createEvmConnection"
+export { createHiddenWalletConnectConnector } from "./EVMProvider/Connectors"
 export { getEvmChainsConfig } from "./evmUtils/chainConfigs"
 export {
     getEvmConfig,

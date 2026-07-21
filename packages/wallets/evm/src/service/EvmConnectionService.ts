@@ -36,6 +36,7 @@ import {
     attemptGetAccount,
     computeConfiguredConnectors,
     splitRegistryConnectors,
+    supportsRegistryConnects,
     wagmiDisplayUriSource,
 } from './connectorsHelpers'
 import { useEvmStore } from './evmStore'
@@ -97,6 +98,11 @@ export class EvmConnectionService {
     }
 
     getSplitRegistryConnectors(allConnectors: readonly Connector[]): { featured: RegistryConnector[]; additional: RegistryConnector[] } {
+        // Without the hidden WalletConnect connector (e.g. host-supplied wagmi
+        // config), registry wallets cannot connect — offer none.
+        if (!supportsRegistryConnects(allConnectors)) {
+            return { featured: [], additional: [] }
+        }
         const configured = this.getConfiguredConnectors(allConnectors)
         return splitRegistryConnectors(
             configured,
@@ -183,11 +189,11 @@ export class EvmConnectionService {
 
     async requestAdditionalConnectors(params: RequestAdditionalConnectorsParams = {}): Promise<RequestAdditionalConnectorsResult> {
         const fn = this._deps.requestRegistryConnectors
-        if (!fn) {
+        const allConnectors = useEvmStore.getState().allConnectors
+        if (!fn || !supportsRegistryConnects(allConnectors)) {
             return { connectors: [], nextPage: null, totalCount: 0 }
         }
         const result = await fn(params)
-        const allConnectors = useEvmStore.getState().allConnectors
         const configured = this.getConfiguredConnectors(allConnectors)
         const additional = splitRegistryConnectors(
             configured,
@@ -255,7 +261,14 @@ export class EvmConnectionService {
                 addRecentConnector?.(registryBase)
 
                 const wcConnector = allConnectors.find(c => c.id === HIDDEN_WALLETCONNECT_ID)
-                if (!wcConnector) throw new Error('Hidden WalletConnect connector not found')
+                if (!wcConnector) {
+                    throw new Error(
+                        'Registry wallet connects require the hidden WalletConnect connector, '
+                        + 'which is missing from the wagmi config. Hosts supplying an external '
+                        + 'wagmiConfig must include createHiddenWalletConnectConnector() to '
+                        + 'enable registry wallets.',
+                    )
+                }
                 actualConnector = wcConnector as unknown as InternalConnector & LSConnector
 
                 const resolveURI = (uri: string) => buildDeepLink({ id: registryBase!.id, mobile: registryBase!.mobile }, uri)

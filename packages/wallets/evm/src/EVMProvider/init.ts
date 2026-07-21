@@ -9,7 +9,6 @@ import {
     setEvmConfigInitParams,
 } from '../service/getEvmConfig'
 import { attachWagmiSync } from '../service/syncWagmi'
-import { HIDDEN_WALLETCONNECT_ID } from '../constants'
 import type { WalletConnectConfig } from '../types'
 
 const DEFAULT_WC_CONFIG: WalletConnectConfig = {
@@ -38,9 +37,26 @@ let _initialized = false
  * call multiple times — subsequent calls are no-ops.
  */
 export function initEvmProvider(opts: InitOptions): void {
-    if (_initialized) return
-
     const { networks, walletConnectConfigs = DEFAULT_WC_CONFIG, externalWagmiConfig } = opts
+
+    if (_initialized) {
+        // Never drop a host config silently: provideExternalEvmConfig warns
+        // when a different config is already live.
+        if (externalWagmiConfig) provideExternalEvmConfig(externalWagmiConfig)
+        return
+    }
+
+    if (externalWagmiConfig) {
+        // Must run before the hasEvmConfig() check — if something already
+        // created the internal config (e.g. an early getEvmConfig() call),
+        // provideExternalEvmConfig warns instead of adopting, and we attach
+        // to whichever config is actually live so there is exactly one
+        // synced wagmi state.
+        provideExternalEvmConfig(externalWagmiConfig)
+        attachWagmiSync(getEvmConfig())
+        _initialized = true
+        return
+    }
 
     if (hasEvmConfig()) {
         attachWagmiSync(getEvmConfig())
@@ -48,15 +64,8 @@ export function initEvmProvider(opts: InitOptions): void {
         return
     }
 
-    if (externalWagmiConfig) {
-        provideExternalEvmConfig(externalWagmiConfig)
-        attachWagmiSync(externalWagmiConfig)
-        _initialized = true
-        return
-    }
-
     const { chains, transports } = getEvmChainsConfig(networks)
-    const connectors = buildEVMConnectors(HIDDEN_WALLETCONNECT_ID, walletConnectConfigs)
+    const connectors = buildEVMConnectors(walletConnectConfigs)
 
     setEvmConfigInitParams({
         chains,
