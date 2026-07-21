@@ -22,6 +22,57 @@ export const POLYMARKET_RELAYER_URL = 'https://relayer-v2.polymarket.com'
  * user-facing "temporarily unavailable" copy. */
 export const PROVIDER_DISABLED_CODE = 'provider_disabled'
 
+/**
+ * On-chain contract constants shared with the relay proxy's request validation
+ * (`apps/bridge/lib/polymarket/validateRelaySubmit.ts`). Pure literals only —
+ * client-only constants stay in `./constants`, which re-exports these for
+ * existing importers.
+ */
+
+/** pUSD (Polymarket USD) collateral token on Polygon. Verified on-chain (the funder's
+ * balance + the bridge quote both recognise this address). */
+export const POLYMARKET_PUSD_ADDRESS = '0xC011a7E12a19f7B1f670d46F03B03f3342E82DFB' as `0x${string}`
+
+/** USDC.e on Polygon — Flow 2's intermediate token. pUSD unwraps to USDC.e 1:1, and
+ * some legacy Polymarket collateral is already held as USDC.e (balances read both). */
+export const POLYMARKET_USDC_E_ADDRESS = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174' as `0x${string}`
+
+/** Polymarket CollateralOfframp on Polygon. Permissionless 1:1 unwrap of pUSD → the
+ * asset address passed (we pass USDC.e). Verified on-chain:
+ * `unwrap(address _asset, address _to, uint256 _amount)` (nonpayable, not a proxy). */
+export const POLYMARKET_COLLATERAL_OFFRAMP = '0x2957922Eb93258b93368531d39fAcCA3B4dC5854' as `0x${string}`
+
+export const POLYMARKET_OFFRAMP_ABI = [
+    {
+        type: 'function',
+        name: 'unwrap',
+        stateMutability: 'nonpayable',
+        inputs: [
+            { name: '_asset', type: 'address' },
+            { name: '_to', type: 'address' },
+            { name: '_amount', type: 'uint256' },
+        ],
+        outputs: [],
+    },
+] as const
+
+/** Polymarket Gnosis Safe MultiSend on Polygon, from `getContractConfig(137)` in
+ * `@polymarket/builder-relayer-client`. Re-verify if the SDK config changes. */
+export const POLYMARKET_SAFE_MULTISEND = '0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761' as `0x${string}`
+export const MULTISEND_ABI = [
+    {
+        type: 'function',
+        name: 'multiSend',
+        stateMutability: 'payable',
+        inputs: [{ name: 'transactions', type: 'bytes' }],
+        outputs: [],
+    },
+] as const
+
+/** Deposit-wallet factory (the modern ERC-1967 account funder — the default for
+ * current Polymarket accounts). From getContractConfig(137). */
+export const POLYMARKET_DEPOSIT_WALLET_FACTORY = '0x00000000000Fb5C9ADea0298D729A0CB3823Cc07' as `0x${string}`
+
 /** Every request `type` the relayer `/submit` accepts. */
 export const RELAYER_SUBMIT_TYPES = ['SAFE', 'WALLET', 'WALLET-CREATE'] as const
 

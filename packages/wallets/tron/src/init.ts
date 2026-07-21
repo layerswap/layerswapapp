@@ -20,6 +20,7 @@ export function initTronProvider(): void {
             bitkeepModule,
             bybitModule,
             gateModule,
+            trustModule,
         ] = await Promise.all([
             import('@tronweb3/tronwallet-adapter-metamask-tron'),
             import('@tronweb3/tronwallet-adapter-tronlink'),
@@ -27,6 +28,7 @@ export function initTronProvider(): void {
             import('@tronweb3/tronwallet-adapter-bitkeep'),
             import('@tronweb3/tronwallet-adapter-bybit'),
             import('@tronweb3/tronwallet-adapter-gatewallet'),
+            import('@tronweb3/tronwallet-adapter-trust')
         ])
 
         const { MetaMaskAdapter } = metamaskModule
@@ -35,6 +37,7 @@ export function initTronProvider(): void {
         const { BitKeepAdapter } = bitkeepModule
         const { BybitWalletAdapter } = bybitModule
         const { GateWalletAdapter } = gateModule
+        const { TrustAdapter } = trustModule
 
         tronAdapterManager.register([
             new MetaMaskAdapter(),
@@ -43,6 +46,7 @@ export function initTronProvider(): void {
             new BitKeepAdapter(),
             new BybitWalletAdapter(),
             new GateWalletAdapter(),
+            new TrustAdapter()
         ])
 
         _initialized = true

@@ -1,4 +1,6 @@
 import { THEME_COLORS } from "@layerswap/widget";
+import { ImtblPassportIcon, LayerSwapLogoSmall } from "@layerswap/widget/internal";
+import { Link2Off } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useMemo } from "react";
 import { useState } from "react";
@@ -8,6 +10,7 @@ import WidgetWrapper from "../components/WidgetWrapper";
 
 const ImtblRedirectPage = () => {
     const [loaded, setLoaded] = useState(false)
+    const [hasError, setHasError] = useState(false)
     const { basePath } = useRouter()
 
     useEffect(() => {
@@ -16,7 +19,18 @@ const ImtblRedirectPage = () => {
 
     useEffect(() => {
         if (!loaded) return
-        imtblPassportLoginCallback().catch(() => { /* swallow */ })
+        imtblPassportLoginCallback().catch(() => {
+            // Popup flow: hand the failure back to the opener so it can close
+            // this window and surface the error; standalone flow: show it here.
+            if (window.opener && window.opener !== window) {
+                window.opener.postMessage(
+                    { source: "oidc-client", url: window.location.href, keepOpen: false },
+                    window.location.origin
+                )
+            } else {
+                setHasError(true)
+            }
+        })
     }, [loaded])
 
     // Memoized so the widget's settings memos (keyed on `walletProviders`
@@ -53,8 +67,32 @@ const ImtblRedirectPage = () => {
             themeData={themeData}
             walletProviders={walletProviders}
         >
-            <div>
-                <h1>Redirecting...</h1>
+            <div className="min-h-[300px] h-full w-full flex flex-col items-center justify-center gap-5 p-6 text-primary-text bg-gradient-to-b from-secondary-900 to-secondary-500">
+                <div className="flex items-center gap-2">
+                    <div className="p-3 bg-secondary-700 rounded-lg">
+                        <LayerSwapLogoSmall className="w-11 h-auto" />
+                    </div>
+                    {hasError
+                        ? <Link2Off className="w-5 h-5 text-secondary-text" />
+                        : <div className="loader text-[3px]!" />
+                    }
+                    <div className="p-3 bg-secondary-700 rounded-lg">
+                        <ImtblPassportIcon className="w-11 h-auto" />
+                    </div>
+                </div>
+                <div className="text-center max-w-xs">
+                    {hasError ? (
+                        <>
+                            <p className="text-base font-medium text-primary-text">Couldn&apos;t complete sign in</p>
+                            <p className="text-sm font-normal text-secondary-text mt-1">Please close this window and try connecting again.</p>
+                        </>
+                    ) : (
+                        <>
+                            <p className="text-base font-medium text-primary-text">Completing sign in</p>
+                            <p className="text-sm font-normal text-secondary-text mt-1">Securely connecting your Immutable Passport. This window will close automatically.</p>
+                        </>
+                    )}
+                </div>
             </div>
         </WidgetWrapper>
     );

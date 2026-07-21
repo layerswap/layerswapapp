@@ -172,3 +172,4 @@ export {
 } from "./service/getEvmConfig"
 export { useEvmStore } from "./service/evmStore"
 export { getEthersSigner, walletClientToSigner } from "./evmUtils/ethers"
+export * from "./additionalProviders/polymarket/constants"

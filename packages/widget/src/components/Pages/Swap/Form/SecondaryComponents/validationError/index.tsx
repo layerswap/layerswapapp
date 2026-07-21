@@ -7,14 +7,15 @@ import { SwapFormValues } from '../../SwapFormValues';
 import FailIcon from '@/components/Icons/FailIcon';
 import ErrorDismissButton from './ErrorDismissButton';
 
-const ValidationError: React.FC = () => {
+const ValidationError: React.FC<{ showSwapErrors?: boolean }> = ({ showSwapErrors = false }) => {
     const { routeValidation } = useValidationContext();
-    const { swapError, depositActionsError, setSwapError } = useSwapDataState();
+    const { swapError: _swapError, depositActionsError, setSwapError } = useSwapDataState();
     const { values } = useFormikContext<SwapFormValues>();
+    const swapError = showSwapErrors ? _swapError : null
 
     useEffect(() => {
         if (swapError) setSwapError?.(null);
-    }, [values.from?.name, values.to?.name, values.fromAsset?.symbol, values.toAsset?.symbol, values.amount, values.fromExchange?.name, values.destination_address]);
+    }, [showSwapErrors, values.from?.name, values.to?.name, values.fromAsset?.symbol, values.toAsset?.symbol, values.amount, values.fromExchange?.name, values.destination_address]);
 
     if (routeValidation.message) {
         return (
@@ -41,7 +42,7 @@ const ValidationError: React.FC = () => {
         );
     }
 
-    if (depositActionsError) {
+    if (showSwapErrors && depositActionsError) {
         return (
             <div className="mt-2">
                 <ErrorDisplay

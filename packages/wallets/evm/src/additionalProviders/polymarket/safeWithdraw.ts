@@ -1,5 +1,5 @@
 import { concat, encodeFunctionData, encodePacked, hashTypedData, hexToBigInt, size, zeroAddress, type Hex, type WalletClient } from "viem";
-import { POLYMARKET_CHAIN_ID, POLYMARKET_SAFE_MULTISEND } from "./constants";
+import { MULTISEND_ABI, POLYMARKET_CHAIN_ID, POLYMARKET_SAFE_MULTISEND } from "./constants";
 import type { PolymarketCall } from "./depositWithdraw";
 import type { SafeTransactionRequest } from "./relayerClient";
 
@@ -29,16 +29,6 @@ const SAFE_TX_TYPES = {
         { name: 'nonce', type: 'uint256' },
     ],
 } as const
-
-const MULTISEND_ABI = [
-    {
-        type: 'function',
-        name: 'multiSend',
-        stateMutability: 'payable',
-        inputs: [{ name: 'transactions', type: 'bytes' }],
-        outputs: [],
-    },
-] as const
 
 // Gnosis Safe delegatecall operation for the outer SafeTx (MultiSend must be delegatecalled).
 const SAFE_OP_DELEGATECALL = 1

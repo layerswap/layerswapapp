@@ -41,9 +41,8 @@
     "zustand": "catalog:"
   },
   "dependencies": {
-    "@imtbl/config": "2.20.0",
-    "@imtbl/passport": "2.20.0",
-    "axios": "catalog:"
+    "@imtbl/auth": "2.20.2",
+    "@imtbl/wallet": "2.20.2"
   },
   "devDependencies": {
     "@layerswap/widget": "workspace:^",
