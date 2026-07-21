@@ -29,12 +29,21 @@ R2 bucket (layerswap-widget-cdn)
 └── channels.json          ← the ONLY mutable object: { "v1": "1.5.0-abc123def456" }
 ```
 
-Integrators choose their risk posture by which URL they load:
+The Worker serves two kinds of URL:
 
 | URL | Behavior |
 |---|---|
 | `…/v1/manifest.json` | **Rolling** — Worker 302-redirects to the current `v1` build. Auto-updates within ~60s of a channel flip. |
 | `…/1.5.0-abc123def456/manifest.json` | **Pinned** — frozen forever at that exact build. |
+
+Integrators don't choose between them: the manifest URL is not a public knob.
+`@layerswap/widget-js` bakes in the rolling channel URL
+(`DEFAULT_MANIFEST_URL` in `src/manifest.ts`) and `resolveSource()` takes no
+arguments, so every integrator rides the channel and picks up pointer flips
+automatically. Pinned URLs exist for Layerswap's own release mechanics
+(staged releases, rollback targets, debugging a specific build) and are only
+reachable from a loader via the internal `__LAYERSWAP_WIDGET_MANIFEST__`
+override global — a build/test seam, not a supported integrator option.
 
 The loader follows the redirect and resolves the relative `remoteEntry` against
 the **final** URL, so the remote anchors at the immutable build path. The
@@ -60,9 +69,15 @@ pnpm dev
 
 Serves the remote on `http://127.0.0.1:3100/remoteEntry.js`, plus an unsigned
 `http://127.0.0.1:3100/manifest.json` pointing at it — so the loader's manifest
-path works in dev exactly as in prod. Load it with `verify: false` (the dev
-manifest is unsigned). Dev output stays flat in `dist/` (no version directory,
-no redirect).
+path works in dev exactly as in prod. Point a dev host at it via the internal
+loader globals (set before the widget mounts; see `examples/widget-react-host`):
+
+```js
+globalThis.__LAYERSWAP_WIDGET_MANIFEST__ = 'http://127.0.0.1:3100/manifest.json';
+globalThis.__LAYERSWAP_WIDGET_VERIFY__ = false; // dev manifest is unsigned
+```
+
+Dev output stays flat in `dist/` (no version directory, no redirect).
 
 ## Production build
 
@@ -73,10 +88,13 @@ LAYERSWAP_PRIVATE_KEY_PEM=/path/to/signing-key.pem pnpm build
 Emits stable `remoteEntry.js` and the signed manifest to `dist/<buildId>/`
 (e.g. `dist/1.5.0-abc123def456/`), with content-hashed chunks in
 `dist/assets/`. The manifest carries `version`, `channel`, `buildId`, `gitSha`,
-`builtAt`, the shared `assetBase`, per-chunk SHA-384 SRI hashes, the kill
-switch, and the signature. Without
-`LAYERSWAP_PRIVATE_KEY_PEM` the manifest is emitted unsigned — fine for local
-builds, rejected by the deploy script and by integrators using `verify: true`.
+`builtAt`, a validity window (`issuedAt`/`expiresAt` — replay protection;
+verifying loaders refuse a manifest that is expired or missing `expiresAt`),
+the shared `assetBase`, per-chunk SHA-384 SRI hashes, the kill switch, and the
+signature. Without `LAYERSWAP_PRIVATE_KEY_PEM` the manifest is emitted
+unsigned — fine for local builds, rejected by the deploy script and by the
+loader (integrators always verify; only the internal
+`__LAYERSWAP_WIDGET_VERIFY__ = false` dev seam accepts unsigned manifests).
 
 `LAYERSWAP_RELEASE_VERSION` overrides the version label and
 `LAYERSWAP_RELEASE_ID` the buildId (and therefore the output directory) for a
