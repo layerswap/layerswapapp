@@ -30,7 +30,7 @@ const SAFE_TX_TYPES = {
     ],
 } as const
 
-const MULTISEND_ABI = [
+export const MULTISEND_ABI = [
     {
         type: 'function',
         name: 'multiSend',

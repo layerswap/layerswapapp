@@ -47,9 +47,14 @@ export function useRouteValidation(quoteError?: QuoteError, hasQuote?: boolean, 
         validationMessage = `Swaps via manual transfer are not supported for this route. Please select a wallet to send from.`;
     }
 
-    if (quoteErrorCode === "ROUTE_NOT_FOUND_ERROR" && quoteErrorMessage === "Rate not available") {
+    if (quoteErrorCode === "PRICE_IMPACT_TOO_HIGH") {
         validationDetails = { title: 'Price impact too high', type: 'warning', icon: <RouteOff className={ICON_CLASSES_WARNING} /> };
         validationMessage = `The price impact for this amount is too high to swap. Try a smaller amount.`;
+    }
+
+    if (quoteErrorCode === "ROUTE_NOT_FOUND_ERROR" && quoteErrorMessage === "Rate not available") {
+        validationDetails = { title: 'Rate not available', type: 'warning', icon: <RouteOff className={ICON_CLASSES_WARNING} /> };
+        validationMessage = `A rate is not available for this route or amount.`;
     }
 
     const value = useMemo(() => ({
