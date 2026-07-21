@@ -5,12 +5,14 @@ import KnownEVMConnectors from "../evm/KnownEVMConnectors";
 import KnownFuelConnectors from "../fuel/KnownFuelConnectors";
 import KnownSolanaConnectors from "../solana/KnownSolanaConnectors";
 import KnownStarknetConnectors from "../starknet/KnownStarknetConnectors";
+import KnownBitcoinConnectors from "../bitcoin/KnownBitcoinConnectors";
 
 const connectors = [
     ...KnownEVMConnectors,
     ...KnownSolanaConnectors,
     ...KnownStarknetConnectors,
-    ...KnownFuelConnectors
+    ...KnownFuelConnectors,
+    ...KnownBitcoinConnectors
 ]
 
 export const resolveWalletConnectorIcon = ({ connector, address, iconUrl }: { connector?: string, address?: string, iconUrl?: string }) => {
@@ -27,8 +29,8 @@ export const resolveWalletConnectorIndex = (id: string) => {
     return connectors.findIndex(c => c.id === id?.toLowerCase())
 }
 
-const AddressIconWrapper = (address: string) => (props: typeof AddressIcon) => {
-    return <AddressIcon address={address} size={24} {...props} />
+const AddressIconWrapper = (address: string) => ({ className }: { className?: string }) => {
+    return <AddressIcon address={address} className={className} />
 }
 
 const SVGIconWrapper = (iconUrl: string) => (props) => {

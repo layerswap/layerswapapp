@@ -49,7 +49,7 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
         const unexpectedError = transaction?.error?.['data']?.message || transaction?.error
             || wait?.error
 
-        return <ActionMessages.UexpectedErrorMessage message={unexpectedError?.message} />
+        return <ActionMessages.UnexpectedErrorMessage message={unexpectedError?.message} />
     }
     else return <></>
 }
