@@ -121,6 +121,9 @@ class SvmAdapterManager {
     private _attach(adapter: Adapter): void {
         const onConnect = () => {
             if (this._selectedName === adapter.name) {
+                // The selection is only worth restoring on the next load once
+                // it has actually connected — see select().
+                this._persistSelection(adapter.name)
                 this._setActiveFromAdapter()
             }
             this._pushWallets()
@@ -185,13 +188,22 @@ class SvmAdapterManager {
 
     select(name: string | undefined): void {
         this._selectedName = name
-        if (typeof window !== 'undefined') {
-            try {
-                if (name) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(name))
-                else window.localStorage.removeItem(STORAGE_KEY)
-            } catch { /* swallow */ }
-        }
+        const adapter = name ? this.getAdapter(name) : undefined
+        // Only a selection that actually connected is worth auto-restoring
+        // after a reload. Persist immediately when the adapter is already
+        // connected; otherwise clear the previous value and let the adapter's
+        // 'connect' event persist the name once the connect succeeds — an
+        // aborted connect must not leave a stale auto-connect target behind.
+        this._persistSelection(adapter?.connected ? name : undefined)
         this._setActiveFromAdapter()
+    }
+
+    private _persistSelection(name: string | undefined): void {
+        if (typeof window === 'undefined') return
+        try {
+            if (name) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(name))
+            else window.localStorage.removeItem(STORAGE_KEY)
+        } catch { /* swallow */ }
     }
 
     async disconnect(): Promise<void> {
@@ -199,9 +211,7 @@ class SvmAdapterManager {
         if (!adapter) return
         await adapter.disconnect()
         this._selectedName = undefined
-        if (typeof window !== 'undefined') {
-            try { window.localStorage.removeItem(STORAGE_KEY) } catch { /* swallow */ }
-        }
+        this._persistSelection(undefined)
         useSvmStore.getState()._setActive(undefined, undefined)
     }
 

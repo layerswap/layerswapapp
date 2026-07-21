@@ -41,6 +41,21 @@ export function initSvmProvider(opts: InitOptions = {}): void {
                 return rs === WalletReadyState.NotDetected && isMobile() ? WalletReadyState.Loadable : rs;
             }
         }
+        // The official adapter inherits `autoConnect() { await this.connect() }`,
+        // and its connect() opens the WalletConnect modal whenever no session
+        // exists — on the restore-selection path that's an unsolicited modal on
+        // page load (e.g. returning after session expiry). The adapter exposes
+        // no way to probe for a resumable session without that side effect, so
+        // opt it out of auto-connect entirely; reconnecting always goes through
+        // an explicit user-initiated connect(). (The pre-refactor SVMProvider
+        // gated this adapter out of auto-connect the same way; our own
+        // SolanaWalletConnectAdapter instead overrides autoConnect to resume
+        // only when a session already exists.)
+        class ManualConnectWalletConnectAdapter extends WalletConnectWalletAdapter {
+            async autoConnect(): Promise<void> {
+                // Intentionally empty — see class comment.
+            }
+        }
         const solNetwork = AppSettings.ApiVersion == 'testnet'
             ? WalletAdapterNetwork.Devnet
             : WalletAdapterNetwork.Mainnet
@@ -68,7 +83,7 @@ export function initSvmProvider(opts: InitOptions = {}): void {
                     metadata: wcMetdata,
                 },
             }),
-            new WalletConnectWalletAdapter({
+            new ManualConnectWalletConnectAdapter({
                 network: solNetwork,
                 options: {
                     projectId: walletConnectConfigs?.projectId,
