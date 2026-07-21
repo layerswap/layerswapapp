@@ -1,7 +1,8 @@
+import { useMemo } from 'react'
 import useSWR from 'swr'
 import LayerSwapApiClient, { Quote } from '../lib/apiClients/layerSwapApiClient'
 import { ApiResponse } from '../Models/ApiResponse'
-import { buildQuoteUrl } from './useFee'
+import { buildQuoteUrl, validDestinationAddress } from './useFee'
 import { SwapFormValues } from '@/components/DTOs/SwapFormValues'
 
 type AutoSlippageTestProps = {
@@ -12,6 +13,11 @@ const apiClient = new LayerSwapApiClient()
 
 export function useAutoSlippageTest({ values, shouldTest }: AutoSlippageTestProps) {
 
+    const validatedDestinationAddress = useMemo(
+        () => validDestinationAddress(values.destination_address, values.to),
+        [values.destination_address, values.to],
+    )
+
     const autoSlippageTestURL = shouldTest
         ? buildQuoteUrl({
             sourceNetwork: values.from?.name ?? '',
@@ -21,6 +27,7 @@ export function useAutoSlippageTest({ values, shouldTest }: AutoSlippageTestProp
             amount: values.amount ?? '',
             refuel: !!values.refuel,
             useDepositAddress: values.depositMethod !== 'wallet',
+            destinationAddress: validatedDestinationAddress,
         })
         : null
 

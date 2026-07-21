@@ -47,12 +47,13 @@ const DepositQuoteDetails: FC<DepositQuoteDetailsProps> = ({
     const [isOpen, setIsOpen] = useState(false);
     const [showCalculator, setShowCalculator] = useState(false);
 
-    // Reset the expansion state when the source route changes so a fresh
-    // collapsed preview is shown instead of a stale open calculator.
+    // Reset the expansion state when either leg of the route changes so a fresh
+    // collapsed preview is shown instead of a stale open calculator. Address
+    // changes are intentionally excluded so typing doesn't collapse the drawer.
     useEffect(() => {
         setIsOpen(false);
         setShowCalculator(false);
-    }, [sourceNetwork?.name, sourceToken?.symbol]);
+    }, [sourceNetwork?.name, sourceToken?.symbol, destinationNetwork?.name, destinationToken?.symbol]);
 
     // Stable handler so the Accordion subtree doesn't re-render on every SWR poll.
     const handleAccordionChange = useCallback((v: string) => {
@@ -193,6 +194,7 @@ const DepositQuoteDetails: FC<DepositQuoteDetailsProps> = ({
             sourceToken={sourceToken}
             destinationNetwork={destinationNetwork}
             destinationToken={destinationToken}
+            destinationAddress={destinationAddress}
             refuel={refuel}
         />
         </>

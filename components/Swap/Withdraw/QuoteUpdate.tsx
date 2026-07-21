@@ -1,7 +1,7 @@
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import AlertIcon from "@/components/icons/AlertIcon";
 import { useAsyncModal } from "@/context/asyncModal";
-import { getLimits } from "@/hooks/useFee";
+import { getLimits, validDestinationAddress } from "@/hooks/useFee";
 import { FC } from "react";
 
 interface QuoteUpdatedProps {
@@ -58,7 +58,8 @@ export async function handleLimitsUpdate(params: {
         destinationNetwork: swapValues.to?.name,
         destinationToken: swapValues.toAsset?.symbol,
         useDepositAddress: swapValues.depositMethod == 'deposit_address',
-        refuel: params.swapValues.refuel
+        refuel: params.swapValues.refuel,
+        destinationAddress: validDestinationAddress(swapValues.destination_address, swapValues.to)
     });
 
     const requestedAmount = parseFloat(swapValues.amount || "0");
