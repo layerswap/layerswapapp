@@ -13,6 +13,9 @@ import { usesDepository } from '@/lib/extendedRoutes/types'
 import { transformLimitsForExtendedRoute, transformQuoteForExtendedRoute } from '@/lib/extendedRoutes/transforms'
 import { isPositiveDecimal } from '@/lib/extendedRoutes/amounts'
 import { LayerswapApiClient } from '@/lib/apiClients';
+import { useSelectedAccount } from '@/context/swapAccounts'
+import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore'
+import { isGaslessCapableRoute } from '@/helpers/gasless'
 
 const apiClient = new LayerswapApiClient()
 
@@ -112,6 +115,17 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
     const extendedNetworkObj = useMemo(() => extendedMapping ? networks.find(n => n.name === extendedMapping.extendedNetworkName) : undefined, [networks, extendedMapping])
     const extendedTokenObj = useMemo(() => extendedNetworkObj?.tokens.find(t => t.symbol === extendedMapping?.extendedTokenSymbol), [extendedNetworkObj, extendedMapping])
 
+    // Mirror the swap-create gasless gate so quote/limits reflect the gasless route.
+    const gaslessEnabled = useGaslessPreferenceStore(s => s.gaslessEnabled)
+    const selectedSourceAccount = useSelectedAccount("from", from)
+    const sourceRouteToken = useMemo(() => sourceRoutes?.find(r => r.name === from)?.tokens?.find(t => t.symbol === fromCurrency), [sourceRoutes, from, fromCurrency])
+    const useGasless = !isBridge && gaslessEnabled && isGaslessCapableRoute({
+        depositMethod,
+        supportsGaslessDeposit: sourceRouteToken?.supports_gasless_deposit,
+        sourceIsSupported: !!selectedSourceAccount?.walletAsSourceSupportedNetworks?.some(n => n === from),
+        sourceAddress: selectedSourceAccount?.address,
+    })
+
     const limitsURL = (!skipLimits && from && to && depositMethod && toCurrency && fromCurrency) ?
         buildLimitsUrl({
             sourceNetwork: effectiveFrom!,
@@ -119,7 +133,8 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
             destinationNetwork: to!,
             destinationToken: toCurrency!,
             useDepositAddress: effectiveUseDepositAddress,
-            refuel
+            refuel,
+            useGasless,
         }) : null
 
     const { data: amountRange, mutate: mutateLimits, isValidating: limitsValidating } = useSWR<ApiResponse<{
@@ -147,6 +162,7 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
             refuel: !!refuel,
             useDepositAddress: effectiveUseDepositAddress,
             slippage,
+            useGasless,
         })
         : null
 
@@ -271,6 +287,7 @@ export type QuoteUrlArgs = {
     refuel: boolean
     useDepositAddress: boolean
     slippage?: number
+    useGasless?: boolean
 }
 
 export function buildQuoteUrl(args: QuoteUrlArgs): string {
@@ -283,6 +300,7 @@ export function buildQuoteUrl(args: QuoteUrlArgs): string {
         refuel,
         useDepositAddress,
         slippage,
+        useGasless,
     } = args
 
     const params = new URLSearchParams({
@@ -297,6 +315,10 @@ export function buildQuoteUrl(args: QuoteUrlArgs): string {
 
     if (slippage !== undefined) {
         params.append('slippage', String(slippage))
+    }
+
+    if (useGasless) {
+        params.append('use_gasless', 'true')
     }
 
     return `/quote?${params.toString()}`
@@ -337,6 +359,7 @@ interface LimitsQueryOptions {
     destinationToken?: string;
     useDepositAddress?: boolean;
     refuel?: boolean;
+    useGasless?: boolean;
 }
 
 export function buildLimitsUrl({
@@ -345,7 +368,8 @@ export function buildLimitsUrl({
     destinationNetwork,
     destinationToken,
     useDepositAddress,
-    refuel = false
+    refuel = false,
+    useGasless = false
 }: LimitsQueryOptions): string {
 
     if (!sourceNetwork || !sourceToken || !destinationNetwork || !destinationToken) {
@@ -360,6 +384,10 @@ export function buildLimitsUrl({
         use_deposit_address: useDepositAddress ? 'true' : 'false',
         refuel: String(!!refuel),
     });
+
+    if (useGasless) {
+        params.append('use_gasless', 'true');
+    }
 
     return `/limits?${params.toString()}`;
 }

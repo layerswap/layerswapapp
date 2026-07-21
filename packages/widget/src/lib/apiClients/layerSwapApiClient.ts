@@ -11,6 +11,7 @@ import { ErrorHandler } from "@/lib/ErrorHandler";
 
 const IGNORED_API_ERROR_CODES = [
     'ROUTE_NOT_FOUND_ERROR',
+    'PRICE_IMPACT_TOO_HIGH',
     'GREATER_THAN_MAX_ERROR',
     'LESS_THAN_MIN_ERROR'
 ];
