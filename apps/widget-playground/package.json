@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "check:types": "tsc --noEmit"
   },
   "dependencies": {
     "@dynamic-labs/ethereum": "^4.19.7",

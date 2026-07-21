@@ -1,7 +1,11 @@
-import { NetworkWithTokens } from "@layerswap/utils"
-import { NetworkRoute } from "@layerswap/wallet-core/types"
+import { NetworkRoute, NetworkWithTokens, realRoutePresent } from "@layerswap/utils"
+import { depositMethodForFunding } from "@layerswap/wallet-core/types"
 import { HYPERLIQUID_ROUTES, pickHyperliquidDestination } from "./routes";
-import { realDepositAddressRoutePresent } from "@layerswap/utils";
+
+/** How the real backend leg is funded. The provider and the CCTP config resolver
+ * below must derive the deposit method from this same value, or their destination
+ * picks could diverge. */
+export const HYPERLIQUID_FUNDING = 'deposit_address' as const
 
 export const HYPERLIQUID_USDC_SYMBOL = 'USDC'
 export const HYPERLIQUID_SPOT_TOKEN = 'USDC'
@@ -77,7 +81,7 @@ export function resolveHyperliquidConfig(
     // (registry uses the same availability fallback), so the CCTP signature is
     // signed for the right chain.
     const isRealRouteAvailable = availableRoutes
-        ? (real: { networkName: string; tokenSymbol: string }) => realDepositAddressRoutePresent(availableRoutes, real)
+        ? (real: { networkName: string; tokenSymbol: string }) => realRoutePresent(availableRoutes, real, depositMethodForFunding(HYPERLIQUID_FUNDING))
         : undefined
     const dest = pickHyperliquidDestination(sourceNetworkName, toNetworkName, toTokenSymbol, isRealRouteAvailable)
     if (!dest) return undefined

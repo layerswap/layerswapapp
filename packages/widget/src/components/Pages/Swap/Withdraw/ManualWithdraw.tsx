@@ -243,7 +243,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
                                                     className="bg-secondary-300 p-2 rounded-xl z-50"
                                                 >
                                                     <div className="bg-secondary-500 p-2 rounded-xl shadow-lg">
-                                                        <StyledQRCode value={depositAddress || ''} size={160} />
+                                                        <StyledQRCode value={depositAddress || ''} size={160} ecLevel="H" />
                                                     </div>
                                                 </PopoverContent>
                                             </Popover>

@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useEffect, useMemo, useRef } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { StoreApi } from "zustand/vanilla";
 import type { NetworkWithTokens } from "@layerswap/utils";
 import {
@@ -17,6 +17,7 @@ type RegistryEntry = { id: string; store: StoreApi<WalletConnectionProvider> }
 type ProviderEntry = WalletProvider | WalletWrapper | WalletProviderDescriptor
 
 const WalletProvidersContext = createContext<WalletProvidersRegistry | null>(null)
+const WalletProvidersReadyContext = createContext(false)
 
 export function useWalletProvidersRegistry(): WalletProvidersRegistry {
     const registry = useContext(WalletProvidersContext)
@@ -24,8 +25,13 @@ export function useWalletProvidersRegistry(): WalletProvidersRegistry {
     return registry
 }
 
+export function useWalletProvidersReady(): boolean {
+    return useContext(WalletProvidersReadyContext)
+}
+
 export const WalletProvidersRegistryProvider: React.FC<React.PropsWithChildren & { networks: NetworkWithTokens[], walletProviders: ProviderEntry[], }> = ({ children, networks, walletProviders }) => {
     const walletProvidersRegistry = useMemo(() => createWalletProvidersRegistry(), [])
+    const [isInitialized, setIsInitialized] = useState(false)
 
     // Per-id caches: keep real connections alive across re-renders so that
     // a descriptor finishing its load doesn't tear down peer providers.
@@ -72,6 +78,7 @@ export const WalletProvidersRegistryProvider: React.FC<React.PropsWithChildren &
         }
 
         walletProvidersRegistry.setEntries(entries)
+        setIsInitialized(true)
         // Network changes update committed stores in the effect below.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [walletProviders, walletProvidersRegistry])
@@ -90,7 +97,9 @@ export const WalletProvidersRegistryProvider: React.FC<React.PropsWithChildren &
 
     return (
         <WalletProvidersContext.Provider value={walletProvidersRegistry}>
-            {children}
+            <WalletProvidersReadyContext.Provider value={isInitialized}>
+                {children}
+            </WalletProvidersReadyContext.Provider>
         </WalletProvidersContext.Provider>
     )
 }

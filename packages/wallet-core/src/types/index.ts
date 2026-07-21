@@ -24,6 +24,7 @@ export type {
 } from "@/types/provider";
 export { BalanceProvider } from "@/types/balance";
 export type { GasProvider, GasWithToken } from "@/types/gas";
+export type { GaslessProvider, GaslessSignParams } from "@/types/gasless";
 export { LazyBalanceProvider, LazyGasProvider } from "@/types/lazyProviders";
 export type {
     TransferProps,
@@ -56,11 +57,15 @@ export type {
 export type {
     DecimalInput,
     DepositRouteRef,
+    RealRouteRef,
+    RealRouteAvailability,
+    ExtendedRouteFlags,
     ExtendedTokenMapping,
     ExtendedRouteProvider,
     ResolvedExtendedMapping,
     ExtendedRoutePlan,
 } from "@/types/extendedRoutes";
+export { usesDepository, depositMethodForFunding, requiredDepositMethod } from "@/types/extendedRoutes";
 export { ActionMessageType } from "@/types/actionMessage";
 
 export { NetworkRoute, NetworkRouteToken } from "@layerswap/utils";

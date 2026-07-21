@@ -60,6 +60,7 @@ export class Token {
     precision: number;
     listing_date: string;
     status?: 'active' | 'inactive' | 'not_found';
+    supports_gasless_deposit?: boolean;
     source_rank?: number | undefined;
     destination_rank?: number | undefined;
 }
@@ -107,5 +108,6 @@ export enum NetworkType {
     Fuel = 'fuel',
     Bitcoin = 'bitcoin',
     Tron = 'tron',
-    Hyperliquid = 'hyperliquid'
+    Hyperliquid = 'hyperliquid',
+    Polymarket = 'polymarket'
 }

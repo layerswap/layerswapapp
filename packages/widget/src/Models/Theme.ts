@@ -1,6 +1,8 @@
-import type { ThemeData } from "@layerswap/utils";
-
-export type { ThemeData, ThemeColor, StatusColor } from "@layerswap/utils";
+// Theme types are defined in the shared, zero-runtime contract package so the
+// widget and the loader packages share one source of truth. Re-exported here
+// to keep existing `@/Models/Theme` imports working unchanged.
+export type { ThemeData, ThemeColor, StatusColor } from "@layerswap/widget-types";
+import type { ThemeData } from "@layerswap/widget-types";
 
 export const THEME_COLORS: { [key: string]: ThemeData } = {
     "light": {

@@ -161,6 +161,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
             dismissible={dismissible}
         >
             <Drawer.Portal>
+                <div className="layerswap-styles">
                 {isMobile ? (
                     dismissible ? (
                         <Drawer.Close asChild>
@@ -274,6 +275,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                     </div>
                     {!isMobile && <VaulFooter snapElement={snapElement} mode={mode} />}
                 </Drawer.Content>
+                </div>
             </Drawer.Portal>
         </Drawer.Root>
     );

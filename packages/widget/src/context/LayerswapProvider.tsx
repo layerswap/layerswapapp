@@ -7,6 +7,7 @@ import { LayerSwapAppSettings } from "@/Models/LayerSwapAppSettings";
 import { LayerSwapSettings } from "@/Models/LayerSwapSettings";
 import ErrorFallback from "@/components/ErrorFallback";
 import { THEME_COLORS, ThemeData } from "@/Models/Theme";
+import type { WidgetConfig } from "@layerswap/widget-types";
 import { AsyncModalProvider } from "./asyncModal";
 import { IntercomProvider } from 'react-use-intercom';
 import AppSettings from "@/lib/AppSettings";
@@ -20,18 +21,23 @@ import { InitialSettings } from "@/Models/InitialSettings";
 import { SwapAccountsProvider } from "./swapAccounts";
 import { WalletProvider, WalletWrapper } from "@/types"
 import { WalletProviderDescriptor, isWalletProviderDescriptor } from "@layerswap/wallet-core/types"
-import { ResolverProviders } from "./resolverContext";
+import { ResolverProviders, extractExtendedRouteProviders } from "./resolverContext";
+import { setExtendedRouteProviders } from "@/lib/extendedRoutes";
 import { ErrorProvider } from "./ErrorProvider";
 import { WalletDescriptorLoaderContext } from "@layerswap/wallet-core";
 import { registerWidgetErrorLogger } from "@/lib/ErrorHandler";
 
 registerWidgetErrorLogger();
 
-export type LayerswapWidgetConfig = {
-    apiKey?: string;
-    version?: 'mainnet' | 'testnet'
+/**
+ * Internal config — a refinement of the public `WidgetConfig` contract
+ * (`@layerswap/widget-types`): the open `settings`/`initialValues` fields are
+ * narrowed to their precise model types here. Because this intersects the
+ * contract, the two can never structurally diverge — a drift would fail to
+ * compile.
+ */
+export type LayerswapWidgetConfig = WidgetConfig<ReactNode> & {
     settings?: LayerSwapSettings;
-    theme?: ThemeData | null,
     initialValues?: InitialSettings,
     /** Skeleton shown while settings are being fetched (i.e. when `settings`
      * isn't supplied). Defaults to the swap-shaped `WidgetLoading`; deposit
@@ -54,9 +60,39 @@ export type LayerswapContextProps = {
 }
 
 const INTERCOM_APP_ID = 'h5zisg78'
-const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callbacks, config, walletProviders = [] }) => {
+// Stable identity when the prop is omitted — an inline `= []` default would
+// mint a fresh array per render and defeat the memos keyed on `walletProviders`.
+const NO_PROVIDERS: (WalletProvider | WalletWrapper | WalletProviderDescriptor)[] = []
+
+// Core widget state is process-global (LayerSwapApiClient.apiKey, AppSettings,
+// the extended-route registry, resolverService), so two live widget roots
+// would silently rewrite one another's API key, settings, and providers.
+// Until that state is instance-scoped, enforce one live LayerswapProvider per
+// page: the second concurrent instance renders an explicit failure instead of
+// cross-contaminating the first.
+let liveProviderInstances = 0
+
+const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callbacks, config, walletProviders = NO_PROVIDERS }) => {
     let { apiKey, version, settings: _settings, theme, initialValues, loadingComponent, imtblPassport, tonConfigs, walletConnect } = config || {}
     const [fetchedSettings, setFetchedSettings] = useState<LayerSwapSettings | null>(null)
+    const [duplicateMount, setDuplicateMount] = useState(false)
+
+    // Registered in an effect (not render) so StrictMode's mount → cleanup →
+    // remount cycle balances out and abandoned renders never count.
+    useEffect(() => {
+        liveProviderInstances++
+        if (liveProviderInstances > 1) {
+            console.error(
+                '[layerswap/widget] Multiple LayerswapProvider instances detected. '
+                + 'The widget keeps process-global state, so only one widget root may be live per page. '
+                + 'This instance will not render; destroy the existing widget first.',
+            )
+            setDuplicateMount(true)
+        }
+        return () => {
+            liveProviderInstances--
+        }
+    }, [])
     // Defer Intercom script injection until the browser is idle. The provider
     // stays mounted so its context is always available (no remount of any
     // subtree); only the network/parse cost of the third-party widget is
@@ -93,9 +129,41 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
     }, [_settings, apiKey, version])
 
     const settings = _settings || fetchedSettings
-    if (!settings) return <>{loadingComponent ?? <WidgetLoading />}</>
 
-    let appSettings = new LayerSwapAppSettings(settings)
+    // Deliberate render-phase write: the registry must be populated before the
+    // `appSettings` memo below runs (`mergeExtendedSourceNetworks` reads it), and
+    // a post-commit effect is too late for the first settings object. Safe
+    // because the assignment is idempotent and keyed on `walletProviders`, and
+    // the single-live-instance guard above rules out a concurrent provider
+    // publishing a different list.
+    //
+    // Registration is keyed on `walletProviders` alone — NOT on `settings`.
+    // A settings-only identity change must not re-run it: this eager list lacks
+    // descriptor-carried providers, so re-asserting it here would clobber the
+    // fuller registry that `ResolverProviders`' effect publishes after descriptor
+    // hydration (its deps wouldn't change, so it would never re-register). When
+    // `walletProviders` itself changes, that same effect re-fires and restores
+    // the full list post-commit.
+    const extendedRouteProviders = useMemo(() => {
+        const providers = extractExtendedRouteProviders(walletProviders)
+        setExtendedRouteProviders(providers)
+        return providers
+    }, [walletProviders])
+
+    const appSettings = useMemo(() => {
+        if (!settings) return null
+        return new LayerSwapAppSettings(settings)
+    }, [settings, extendedRouteProviders])
+
+    if (duplicateMount) {
+        return (
+            <div role="alert" style={{ padding: '1rem', textAlign: 'center' }}>
+                <p>{'Only one Layerswap widget can be live per page.'}</p>
+            </div>
+        )
+    }
+
+    if (!appSettings) return <>{loadingComponent ?? <WidgetLoading />}</>
 
     return (
         <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500} shouldInitialize={intercomReady}>

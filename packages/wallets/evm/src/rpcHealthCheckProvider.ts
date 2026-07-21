@@ -3,6 +3,49 @@ import type { AddEthereumChainParams, RpcHealth, RpcHealthCheckProvider, RpcHeal
 import { NetworkType } from "@layerswap/utils"
 import { useEvmStore } from './service/evmStore'
 
+// wagmi's `Connector.getProvider()` returns `Promise<unknown>` (the base
+// interface can't know which wallet's provider you'll get). Narrow it to the
+// EIP-1193 surface we actually use so `request(...)` is typed instead of `any`.
+type Eip1193Provider = {
+    request: (args: { method: string; params?: unknown[] }) => Promise<any>
+}
+
+const RPC_PROBE_TIMEOUT_MS = 8000
+
+// Wallet in-app browsers (Rainbow, MetaMask mobile, etc.) and some WalletConnect
+// sessions don't proxy arbitrary read methods like `eth_getBlockByNumber`; they
+// reject with an "unsupported method" / "unauthorized" error that says nothing
+// about RPC health. Treating those as unhealthy would show the (non-actionable)
+// "add RPC" prompt inside wallet browsers even when the RPC is perfectly fine.
+const UNSUPPORTED_METHOD_CODES = [
+    4200, // EIP-1193: Unsupported Method
+    4100, // EIP-1193: Unauthorized
+    -32601, // JSON-RPC: Method not found
+    -32004, // JSON-RPC: Method not supported
+]
+const UNSUPPORTED_METHOD_MESSAGES = [
+    'not supported',
+    'method not found',
+    'unsupported method',
+    'unauthorized',
+    'does not exist',
+    'not available',
+]
+
+function isMethodUnsupportedError(e: any): boolean {
+    if (UNSUPPORTED_METHOD_CODES.includes(e?.code)) return true
+    const msg = String(e?.message ?? '').toLowerCase()
+    return UNSUPPORTED_METHOD_MESSAGES.some((m) => msg.includes(m))
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+    let timer: ReturnType<typeof setTimeout>
+    const timeout = new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(message)), ms)
+    })
+    return Promise.race([promise, timeout]).finally(() => clearTimeout(timer))
+}
+
 const INITIAL_SNAPSHOT: RpcHealthCheckSnapshot = Object.freeze({
     health: { status: undefined } as RpcHealth,
     isSuggestingRpc: false,
@@ -31,14 +74,18 @@ function createStore(): RpcHealthCheckStore {
         if (!connector || !isConnected) return
 
         try {
-            const provider: any = await connector.getProvider()
+            const provider = (await connector.getProvider()) as Eip1193Provider | null
             if (!provider || typeof provider.request !== 'function') return
 
             const start = performance.now()
-            const latestBlock = await provider.request({
-                method: 'eth_getBlockByNumber',
-                params: ['latest', false],
-            })
+            const latestBlock = await withTimeout(
+                provider.request({
+                    method: 'eth_getBlockByNumber',
+                    params: ['latest', false],
+                }),
+                RPC_PROBE_TIMEOUT_MS,
+                'Wallet RPC timed out',
+            )
             const latencyMs = performance.now() - start
 
             const tsHex = latestBlock?.timestamp
@@ -58,6 +105,12 @@ function createStore(): RpcHealthCheckStore {
             }
             setSnapshot({ health: { status: 'healthy', latencyMs, blockAgeSec } satisfies RpcHealth })
         } catch (e: any) {
+            // A wallet declining to serve the read method isn't an RPC health signal —
+            // leave status "unknown" so we don't prompt the user to add an RPC.
+            if (isMethodUnsupportedError(e)) {
+                setSnapshot({ health: { status: undefined } satisfies RpcHealth })
+                return
+            }
             const msg = e?.message || 'Unknown error from wallet RPC'
             setSnapshot({ health: { status: 'unhealthy', reason: msg } satisfies RpcHealth })
         }
@@ -71,7 +124,7 @@ function createStore(): RpcHealthCheckStore {
 
         setSnapshot({ isSuggestingRpc: true })
         try {
-            const provider: any = await connector.getProvider()
+            const provider = (await connector.getProvider()) as Eip1193Provider | null
             if (!provider || typeof provider.request !== 'function') {
                 return { success: false, error: 'No wallet provider available' }
             }

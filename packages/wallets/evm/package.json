@@ -1,6 +1,6 @@
 {
   "name": "@layerswap/wallet-evm",
-  "version": "1.5.0",
+  "version": "1.7.0",
   "description": "EVM Wallet Provider for Layerswap Widget",
   "type": "module",
   "main": "dist/esm/index.js",
@@ -10,6 +10,10 @@
     ".": {
       "types": "./dist/types/index.d.ts",
       "default": "./dist/esm/index.js"
+    },
+    "./polymarket-protocol": {
+      "types": "./dist/types/additionalProviders/polymarket/protocol.d.ts",
+      "default": "./dist/esm/additionalProviders/polymarket/protocol.js"
     }
   },
   "sideEffects": false,

@@ -47,16 +47,16 @@ export default function Page() {
 }
 ```
 
-Render the Layerswap Widget with the wallet providers you want to enable. Only the providers you include are bundled (tree-shakeable).
+Render the Layerswap Widget with the wallet providers you want to enable. Only EVM is wired eagerly; every other chain is a lazy descriptor whose SDK is dynamic-imported when the user first opens the connect modal, so it stays out of your entry chunk.
 
 ```tsx
 import { LayerswapProvider, Swap } from "@layerswap/widget";
 import {
   createEVMProvider,
-  createStarknetProvider,
-  createSVMProvider,
-  createTONProvider,
-  createTronProvider,
+  createStarknetDescriptor,
+  createSVMDescriptor,
+  createTONDescriptor,
+  createTronDescriptor,
 } from "@layerswap/wallets";
 
 export default function Page() {
@@ -73,21 +73,15 @@ export default function Page() {
     createEVMProvider({
       walletConnectConfigs
     }),
-    createStarknetProvider({
-      walletConnectConfigs
+    createStarknetDescriptor(),
+    createSVMDescriptor(walletConnectConfigs),
+    createTONDescriptor({
+      tonApiKey: "your-ton-api-key",
+      manifestUrl: "https://your-app.com/tonconnect-manifest.json"
     }),
-    createSVMProvider({
-      walletConnectConfigs
-    }),
-    createTONProvider({
-      tonConfigs: {
-        tonApiKey: "your-ton-api-key",
-        manifestUrl: "https://your-app.com/tonconnect-manifest.json"
-      }
-    }),
-    createTronProvider(),
+    createTronDescriptor(),
   ];
-  
+
   return (
     <LayerswapProvider walletProviders={walletProviders}>
       <Swap />
@@ -98,21 +92,32 @@ export default function Page() {
 
 ## Usage by network
 
-All provider factories are exported from `@layerswap/wallets`:
+Exported from the `@layerswap/wallets` root:
 
-- EVM (Ethereum, L2s): `createEVMProvider()`
-- Starknet: `createStarknetProvider()`
-- Solana: `createSVMProvider()`
-- TON: `createTONProvider()`
-- Tron: `createTronProvider()`
-- Fuel: `createFuelProvider()`
-- Bitcoin: `createBitcoinProvider()`
-- Paradex: `createParadexProvider()`
-- Immutable Passport: `createImmutablePassportProvider()`
-- Loopring (module): `createLoopringModule()` - use with `createEVMProvider()`
-- zkSync (module): `createZkSyncModule()` - use with `createEVMProvider()`
+- EVM (Ethereum, L2s): `createEVMProvider()` — eager
+- Starknet: `createStarknetDescriptor()`
+- Solana: `createSVMDescriptor()`
+- TON: `createTONDescriptor()`
+- Tron: `createTronDescriptor()`
+- Fuel: `createFuelDescriptor()`
+- Bitcoin: `createBitcoinDescriptor()`
+- Paradex: `createParadexDescriptor()`
+- Immutable Passport: `createImmutablePassportDescriptor()`
 
-You can mix and match any subset depending on your app needs.
+You can mix and match any subset depending on your app needs. If you need the eager (non-descriptor) factory for a chain, import it directly from that chain's package, e.g. `import { createStarknetProvider } from "@layerswap/wallet-starknet"`.
+
+### Eager Immutable Passport subpath
+
+`createImmutablePassportProvider` and `imtblPassportLoginCallback` are intentionally not exported from the package root — a static root import would pull `@imtbl/sdk` (~993 KB Brotli) into every consumer's bundle. Import them from the dedicated subpath, and only from chunks that genuinely need them eagerly (e.g. an OAuth callback page):
+
+```tsx
+import {
+  createImmutablePassportProvider,
+  imtblPassportLoginCallback,
+} from "@layerswap/wallets/eager/imtbl-passport";
+```
+
+For the common case, use the lazy descriptor via `getDefaultProviders({ immutablePassport })` or `createImmutablePassportDescriptor()` instead.
 
 ## Included packages
 

@@ -1,10 +1,11 @@
 import { create } from 'zustand'
+import type { Auth } from '@imtbl/auth'
 
 export type ImtblPassportStoreState = {
     ready: boolean
-    instance: unknown | undefined
+    instance: Auth | undefined
 
-    _setInstance: (instance: unknown | undefined) => void
+    _setInstance: (instance: Auth | undefined) => void
 }
 
 export const useImtblPassportStore = create<ImtblPassportStoreState>()((set) => ({

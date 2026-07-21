@@ -1,8 +1,7 @@
 import { HYPERLIQUID_ROUTES, HyperliquidDestination, getHyperliquidCandidates, pickHyperliquidDestination } from "./routes";
-import { HYPERLIQUID_USDC_SYMBOL } from "./constants";
-import { ExtendedRouteProvider, ExtendedTokenMapping, NetworkRoute, NetworkRouteToken, DepositRouteRef } from "@layerswap/wallet-core/types";
-import { realDepositAddressRoutePresent } from "@layerswap/utils";
-
+import { HYPERLIQUID_FUNDING, HYPERLIQUID_USDC_SYMBOL } from "./constants";
+import { NetworkRoute, NetworkRouteToken, realRoutePresent } from "@layerswap/utils";
+import { DepositRouteRef, ExtendedRouteProvider, ExtendedTokenMapping, RealRouteRef, requiredDepositMethod } from "@layerswap/wallet-core/types";
 
 /**
  * Build an extended-route mapping from a chosen destination.
@@ -37,6 +36,10 @@ const routeCache = new WeakMap<object, NetworkRoute>()
 export const hyperliquidProvider: ExtendedRouteProvider = {
     id: 'hyperliquid',
     direction: 'source',
+    // Pure client-side synthesis over backend-defined networks — safe to fail open
+    // when no resolved flag reaches the client.
+    enabledByDefault: true,
+    funding: HYPERLIQUID_FUNDING,
     extendedNetworkNames: Object.keys(HYPERLIQUID_ROUTES),
     mappings,
     resolveExtendedRoute(networkName, allNetworks) {
@@ -72,7 +75,7 @@ export const hyperliquidProvider: ExtendedRouteProvider = {
         // When the caller knows the backend routes, let the picker fall back past
         // destinations the backend doesn't currently offer (e.g. AVAX/Sonic).
         const isRealRouteAvailable = availableRoutes
-            ? (real: DepositRouteRef) => realDepositAddressRoutePresent(availableRoutes, real)
+            ? (real: RealRouteRef) => realRoutePresent(availableRoutes, real, requiredDepositMethod(this))
             : undefined
         const dest = pickHyperliquidDestination(networkName, toNetworkName, toTokenSymbol, isRealRouteAvailable)
         if (!dest) return undefined

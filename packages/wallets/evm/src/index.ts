@@ -1,6 +1,6 @@
 import type { WalletConnectionStore, WalletConnectionProviderProps } from "@layerswap/wallet-core/types"
 import type { WalletProvider, WalletInitContext } from "@layerswap/wallet-core/types"
-import { NetworkType } from "@layerswap/utils"
+import { KnownInternalNames, NetworkType } from "@layerswap/utils"
 import { LazyBalanceProvider, LazyGasProvider } from "@layerswap/wallet-core/types"
 import { createEvmConnection } from "./service/createEvmConnection"
 import { initEvmProvider } from "./EVMProvider/init"
@@ -10,6 +10,12 @@ import { EVMRpcHealthCheckProvider } from "./rpcHealthCheckProvider"
 import type { EVMProviderConfig, WalletConnectConfig } from "./types"
 import { hyperliquidProvider } from "./additionalProviders/hyperliquid/hyperliquidExtendedRouteProvider"
 import { createHyperliquidTransfer } from "./additionalProviders/hyperliquid/createHyperliquidTransferProvider"
+import { getEvmConfig } from "./service/getEvmConfig"
+import type { Network } from "@layerswap/utils"
+import type { TransferProvider, GaslessProvider } from "@layerswap/wallet-core/types"
+import { createPolymarketTransferProvider } from "./additionalProviders/polymarket/createPolymarketTransferProvider"
+import { polymarketProvider } from "./additionalProviders/polymarket/polymarketExtendedRouteProvider"
+import { createEVMGaslessProvider } from "./gaslessProvider/createEVMGaslessProvider"
 
 export type { EVMProviderConfig, WalletConnectConfig }
 
@@ -21,6 +27,7 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         balanceProviders,
         gasProviders,
         transferProviders,
+        gaslessProviders,
         contractAddressProviders,
         rpcHealthCheckProviders,
         wagmiConfig,
@@ -66,6 +73,10 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
             (n) => n.type === NetworkType.Hyperliquid,
             () => import("./balanceProviders").then(m => new m.HyperliquidBalanceProvider())
         ),
+        new LazyBalanceProvider(
+            (n) => n.name === KnownInternalNames.Networks.PolymarketMainnet,
+            () => import("./balanceProviders").then(m => new m.PolymarketBalanceProvider())
+        ),
         ...moduleBalanceProviders,
     ]
     const finalBalanceProviders = balanceProviders !== undefined
@@ -92,10 +103,42 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         ? (Array.isArray(contractAddressProviders) ? contractAddressProviders : [contractAddressProviders])
         : defaultContractAddressProviders
 
-    const defaultTransferProviders = [createEvmTransfer, createHyperliquidTransfer]
+    // These factories are invoked during render (ResolverProviders), before
+    // createConnection → initEvmProvider has run, so getEvmConfig() must be
+    // resolved at method-call time — never at factory time.
+    const defaultTransferProviders = [
+        createEvmTransfer,
+        createHyperliquidTransfer,
+        (): TransferProvider => {
+            const supportsNetwork = (n: Network) => n.name === KnownInternalNames.Networks.PolymarketMainnet
+            return {
+                supportsNetwork,
+                executeTransfer(params, wallet, onProgress) {
+                    return createPolymarketTransferProvider(getEvmConfig(), supportsNetwork)
+                        .executeTransfer(params, wallet, onProgress)
+                },
+            }
+        },
+    ]
     const finalTransferProviders = transferProviders !== undefined
         ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
         : defaultTransferProviders
+
+    const defaultGaslessProviders = [
+        (): GaslessProvider => {
+            const supportsNetwork = (n: Network) => n.type === NetworkType.EVM && !!n.token
+            return {
+                supportsNetwork,
+                signGaslessDeposit(params) {
+                    return createEVMGaslessProvider(getEvmConfig(), supportsNetwork)
+                        .signGaslessDeposit(params)
+                },
+            }
+        },
+    ]
+    const finalGaslessProviders = gaslessProviders !== undefined
+        ? (Array.isArray(gaslessProviders) ? gaslessProviders : [gaslessProviders])
+        : defaultGaslessProviders
 
     const defaultRPCHealthCheckProviders = [new EVMRpcHealthCheckProvider()]
     const finalRPCHealthCheckProviders = rpcHealthCheckProviders !== undefined
@@ -109,9 +152,10 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
         transferProvider: finalTransferProviders,
+        gaslessProvider: finalGaslessProviders,
         contractAddressProvider: finalContractAddressProviders,
         rpcHealthCheckProvider: finalRPCHealthCheckProviders,
-        extendedRouteProvider: [hyperliquidProvider]
+        extendedRouteProvider: [hyperliquidProvider, polymarketProvider],
     }
 }
 
@@ -125,3 +169,4 @@ export {
 } from "./service/getEvmConfig"
 export { useEvmStore } from "./service/evmStore"
 export { getEthersSigner, walletClientToSigner } from "./evmUtils/ethers"
+export * from "./additionalProviders/polymarket/constants"

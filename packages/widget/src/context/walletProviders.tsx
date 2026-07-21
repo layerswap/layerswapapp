@@ -13,6 +13,8 @@ import { filterSourceNetworks } from "@/helpers/filterSourceNetworks";
 import type { WalletProvider, WalletWrapper } from "@/types"
 import type { WalletProviderDescriptor } from "@layerswap/wallet-core/types"
 
+export { useWalletProvidersReady } from "@layerswap/wallet-core"
+
 const ConnectorsList = lazy(() => import("@/components/Wallet/WalletModal/ConnectorsList"));
 
 // Shown while the connectors chunk loads on first modal open, so a slow chunk

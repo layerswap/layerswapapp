@@ -12,6 +12,11 @@ import type { DepositRouteRef } from "@layerswap/utils";
 export type DecimalInput = string | number
 
 export type { DepositRouteRef }
+export type RealRouteRef = DepositRouteRef
+export type RealRouteAvailability = (real: RealRouteRef) => boolean
+
+/** Per-provider on/off flags, keyed by provider id. */
+export type ExtendedRouteFlags = Record<string, boolean>
 
 export type ExtendedTokenMapping = {
     /** Token symbol on the extended network, e.g. 'USDC' on HYPERLIQUID_*. */
@@ -24,6 +29,8 @@ export type ExtendedTokenMapping = {
     extraCompletionSeconds: number
     /** Decimal places of the real token; used to truncate the forwarded amount. */
     realDecimals?: number
+    /** Optional provider-imposed lower bound for the displayed source amount. */
+    minAmount?: number
 }
 
 export interface ExtendedRouteProvider {
@@ -31,6 +38,12 @@ export interface ExtendedRouteProvider {
     id: string
     /** 'destination' is designed into the types but not implemented in v1. */
     direction: 'source' | 'destination'
+    /** Default state when no remote feature flag is available for this provider. */
+    enabledByDefault: boolean
+    /** How the real backend leg is funded. */
+    funding?: 'deposit_address' | 'depository'
+    /** Whether the backend swap needs the source address for refunds. */
+    requiresRefundAddress?: boolean
     /** Extended network names this provider owns, e.g. [HYPERLIQUID_MAINNET, HYPERLIQUID_TESTNET]. */
     extendedNetworkNames: string[]
     /** mappings[networkName][tokenSymbol] -> token mapping (for the primary
@@ -41,6 +54,8 @@ export interface ExtendedRouteProvider {
      * when the network is absent (e.g. testnet on a prod settings payload).
      */
     resolveExtendedRoute(networkName: string, allNetworks: NetworkWithTokens[]): NetworkRoute | undefined
+    /** Optionally synthesize a network absent from the backend settings. */
+    resolveExtendedNetwork?(networkName: string, allNetworks: NetworkWithTokens[]): NetworkWithTokens | undefined
     /**
      * Resolve the mapping for a specific (extended source, token, destination).
      * Lets providers with multiple destination candidates (e.g. HL primary +
@@ -57,6 +72,18 @@ export interface ExtendedRouteProvider {
      * the primary `mappings[…][…].real`.
      */
     getRealCandidates?(networkName: string, tokenSymbol: string): DepositRouteRef[]
+}
+
+export function usesDepository(provider: ExtendedRouteProvider): boolean {
+    return provider.funding === 'depository'
+}
+
+export function depositMethodForFunding(funding: ExtendedRouteProvider['funding']): 'wallet' | 'deposit_address' {
+    return funding === 'depository' ? 'wallet' : 'deposit_address'
+}
+
+export function requiredDepositMethod(provider: ExtendedRouteProvider): string {
+    return depositMethodForFunding(provider.funding)
 }
 
 export type ResolvedExtendedMapping = ExtendedTokenMapping & {

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import TwitterLogo from "./Icons/TwitterLogo";
-import DiscordLogo from "./Icons/DiscordLogo";
 import GitHubLogo from "./Icons/GitHubLogo";
 import YoutubeLogo from "./Icons/YoutubeLogo";
 
@@ -21,14 +20,6 @@ const GLobalFooter = () => {
                 href: 'https://x.com/layerswap',
                 icon: () => (
                     <TwitterLogo className="h-6 w-6" aria-hidden="true" />
-                ),
-                sendEvent: true
-            },
-            {
-                name: 'Discord',
-                href: 'https://discord.gg/layerswap',
-                icon: () => (
-                    <DiscordLogo className="h-6 w-6" aria-hidden="true" />
                 ),
                 sendEvent: true
             },

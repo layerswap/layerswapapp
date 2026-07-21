@@ -56,6 +56,7 @@ const DepositAddressInfo: FC<DepositAddressInfoProps> = ({
                                 value={depositAddress}
                                 size={140}
                                 logo={sourceNetwork?.logo}
+                                ecLevel="H"
                             />
                         )}
                     </div>

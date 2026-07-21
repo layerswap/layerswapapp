@@ -1,6 +1,6 @@
 {
   "name": "@layerswap/widget",
-  "version": "1.5.0",
+  "version": "1.7.0",
   "description": "Streamline your asset transaction experience with Layerswap Widget across 60+ blockchains and 15+ exchanges.",
   "type": "module",
   "main": "dist/esm/index.js",
@@ -65,9 +65,10 @@
     }
   },
   "dependencies": {
-    "@headlessui/react": "^2.1.1",
     "@layerswap/utils": "workspace:^",
     "@layerswap/wallet-core": "workspace:^",
+    "@layerswap/widget-types": "workspace:^",
+    "@headlessui/react": "^2.1.1",
     "@number-flow/react": "^0.5.10",
     "@radix-ui/react-checkbox": "^1.1.5",
     "@radix-ui/react-context-menu": "^1.0.0",

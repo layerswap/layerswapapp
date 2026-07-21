@@ -2,7 +2,6 @@ import { BookOpen, BookUser, Gift, Map, ScrollText, LibraryIcon, Shield, Users, 
 import { FC, useState } from "react";
 import { useIntercom } from "react-use-intercom";
 import ChatIcon from "../Icons/ChatIcon";
-import DiscordLogo from "../Icons/DiscordLogo";
 import GitHubLogo from "../Icons/GitHubLogo";
 import SubstackLogo from "../Icons/SubstackLogo";
 import TwitterLogo from "../Icons/TwitterLogo";
@@ -110,11 +109,6 @@ const navigation = {
             name: 'GitHub',
             href: 'https://github.com/layerswap/layerswapapp/',
             icon: (props) => GitHubLogo(props)
-        },
-        {
-            name: 'Discord',
-            href: 'https://discord.com/invite/KhwYN35sHy/',
-            icon: (props) => DiscordLogo(props)
         },
         {
             name: 'YouTube',

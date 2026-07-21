@@ -5,6 +5,7 @@ import { NftProvider } from './nft';
 import { ContractAddressCheckerProvider } from './contract';
 import { RpcHealthCheckProvider } from './rpcHealth';
 import { ExtendedRouteProvider } from './extendedRoutes';
+import { GaslessProvider } from './gasless';
 import type {
     InternalConnector,
     WalletConnectionProviderProps,
@@ -23,6 +24,8 @@ export type WalletModalConnector = InternalConnector & {
         deepLink?: string
     });
     showQrCode?: boolean
+    variants?: InternalConnector[]
+    isRecent?: boolean
 }
 
 export type WalletWrapperProps = {
@@ -63,6 +66,7 @@ export type WalletProvider = WalletWrapper & {
     gasProvider?: GasProvider | GasProvider[],
     balanceProvider?: BalanceProvider | BalanceProvider[],
     transferProvider?: (() => TransferProvider) | (() => TransferProvider)[],
+    gaslessProvider?: (() => GaslessProvider) | (() => GaslessProvider)[],
     contractAddressProvider?: ContractAddressCheckerProvider | ContractAddressCheckerProvider[],
     rpcHealthCheckProvider?: RpcHealthCheckProvider | RpcHealthCheckProvider[],
     extendedRouteProvider?: ExtendedRouteProvider | ExtendedRouteProvider[],
@@ -85,6 +89,7 @@ export type BaseWalletProviderConfig = {
     balanceProviders?: BalanceProvider | BalanceProvider[]
     gasProviders?: GasProvider | GasProvider[]
     transferProviders?: (() => TransferProvider) | (() => TransferProvider)[]
+    gaslessProviders?: (() => GaslessProvider) | (() => GaslessProvider)[]
     contractAddressProviders?: ContractAddressCheckerProvider | ContractAddressCheckerProvider[]
     rpcHealthCheckProviders?: RpcHealthCheckProvider | RpcHealthCheckProvider[]
 }

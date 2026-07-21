@@ -40,7 +40,6 @@ export type { JsonRpcRequest, JsonRpcError, JsonRpcResponse } from "@/jsonRpcCli
 export { insertIfNotExists } from "@/insertIfNotExists";
 export { default as NetworkSettings, GasCalculation } from "@/NetworkSettings";
 export { default as AppSettings } from "@/AppSettings";
-export type { ThemeData, ThemeColor, StatusColor } from "@/theme";
 export type { AvailableSourceNetworkTypes } from "@/types";
 export { ErrorHandler, setErrorLogger } from "@/errorHandler";
 export { SwapStatus } from "@/SwapStatus";
@@ -60,5 +59,5 @@ export type {
     ErrorEventType,
     SwapStatusEvent,
 } from "@/logEvents";
-export { realDepositAddressRoutePresent } from "@/extendedRouteAvailability";
+export { realDepositAddressRoutePresent, realRoutePresent } from "@/extendedRouteAvailability";
 export type { DepositRouteRef } from "@/extendedRouteAvailability";

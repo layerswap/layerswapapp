@@ -34,8 +34,8 @@ const SwapSummary: FC = () => {
     if (hideFrom && account) {
         sourceAccountAddress = account;
     }
-    else if (swapInputTransaction?.from) {
-        sourceAccountAddress = swapInputTransaction?.from;
+    else if (swapDetails?.source_address) {
+        sourceAccountAddress = swapDetails.source_address;
     }
     else if (selectedSourceAccount?.address) {
         sourceAccountAddress = selectedSourceAccount.address;

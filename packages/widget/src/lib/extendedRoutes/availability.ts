@@ -1,1 +1,1 @@
-export { realDepositAddressRoutePresent } from "@layerswap/utils";
+export { realDepositAddressRoutePresent, realRoutePresent } from "@layerswap/utils";

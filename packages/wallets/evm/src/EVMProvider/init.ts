@@ -35,7 +35,8 @@ let _initialized = false
 export function initEvmProvider(opts: InitOptions): void {
     if (_initialized) return
 
-    const { networks, walletConnectConfigs = DEFAULT_WC_CONFIG, externalWagmiConfig } = opts
+    const { networks, walletConnectConfigs, externalWagmiConfig } = opts
+    const resolvedWalletConnectConfigs = walletConnectConfigs?.projectId ? walletConnectConfigs : DEFAULT_WC_CONFIG
 
     if (hasEvmConfig()) {
         attachWagmiSync(getEvmConfig())
@@ -51,7 +52,7 @@ export function initEvmProvider(opts: InitOptions): void {
     }
 
     const { chains, transports } = getEvmChainsConfig(networks)
-    const connectors = buildEVMConnectors(HIDDEN_WALLETCONNECT_ID, walletConnectConfigs)
+    const connectors = buildEVMConnectors(HIDDEN_WALLETCONNECT_ID, resolvedWalletConnectConfigs)
 
     setEvmConfigInitParams({
         chains,

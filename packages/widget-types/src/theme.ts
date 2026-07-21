@@ -1,5 +1,13 @@
-import type { Properties } from "csstype";
+// `csstype` is the types-only package `React.CSSProperties` itself is built
+// on (zero runtime), so this stays framework-agnostic while remaining
+// assignable to a React `style` prop.
+import type { Properties as CSSProperties } from "csstype";
 
+/**
+ * Visual theme for the widget. This is the canonical definition — the widget
+ * package (`@layerswap/widget`) re-exports it, and the loader packages consume
+ * it through this contract, so there is a single source of truth.
+ */
 export type ThemeData = {
     buttonTextColor?: string,
     logo?: string,
@@ -17,7 +25,7 @@ export type ThemeData = {
         hideTabs?: boolean,
         hideWallets?: boolean,
     }
-    cardBackgroundStyle?: Properties<string | number>
+    cardBackgroundStyle?: CSSProperties<string | number>
     hidePoweredBy?: boolean
 }
 

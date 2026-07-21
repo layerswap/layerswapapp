@@ -1,9 +1,10 @@
 import { useFormikContext } from "formik";
-import React, { FC, useEffect, useRef } from "react";
+import React, { FC, useEffect } from "react";
 import { Network } from "@/Models/Network";
 import { useInitialSettings } from "@/context/settings";
 import useWallet from "@/hooks/useWallet";
 import { WalletConnectionProvider } from "@layerswap/wallet-core/types"
+import { useWalletProvidersReady } from "@/context/walletProviders";
 import { SwapFormValues } from "../../SwapFormValues";
 
 const depositMethods = [
@@ -24,32 +25,28 @@ const DepositMethodComponent: FC = () => {
     } = useFormikContext<SwapFormValues>();
     const { depositMethod: defaultDepositMethod, hideDepositMethod } = useInitialSettings()
     const { from, depositMethod, fromExchange, fromAsset } = values
-    const { provider, providers } = useWallet(from, 'withdrawal')
-    const registryReady = providers.length > 0
+    const { provider } = useWallet(from, 'withdrawal')
+    const providersReady = useWalletProvidersReady()
     const name = 'depositMethod'
 
     const menuItems = from && GenerateDepositMethodMenuItems(from, depositMethods, provider)
 
     const defaultMethod = menuItems?.find(i => i.id === defaultDepositMethod)
-    const menuItemsRef = useRef<DepositMethod[] | undefined>(undefined)
-    menuItemsRef.current = menuItems
 
     useEffect(() => {
-        const first = menuItemsRef.current?.[0]?.id
         if (fromExchange) {
             setFieldValue(name, 'deposit_address', true)
             return
         }
-        if (!registryReady) return
-        if (defaultMethod) {
-            setFieldValue(name, defaultMethod?.id, true)
-            return
-        }
-        if (!(menuItems?.find(i => i.id === depositMethod))) {
-            setFieldValue(name, first, true)
-            return
-        }
-    }, [from, fromExchange, fromAsset, registryReady])
+        if (!providersReady) return
+        // A currently-valid selection (e.g. the user's explicit pick in
+        // SourceWalletPicker) always wins; the integrator default and the
+        // first-item fallback only fill in a missing or invalid value. The
+        // effect re-runs on every provider snapshot movement, so re-asserting
+        // the default here would silently revert the user's choice.
+        if (menuItems?.find(i => i.id === depositMethod)) return
+        setFieldValue(name, defaultMethod ? defaultMethod.id : menuItems?.[0]?.id, true)
+    }, [from, fromExchange, fromAsset, provider, providersReady])
 
     const hasOptions = Number(menuItems?.length) > 1 && !fromExchange
 

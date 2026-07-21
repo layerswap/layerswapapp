@@ -215,7 +215,7 @@ export function FamilyDrawer({
       {mounted &&
         typeof document !== "undefined" &&
         createPortal(
-          <div className="fd">
+          <div className="fd layerswap-styles">
             <div
               className="fd-overlay"
               data-visible={visible}

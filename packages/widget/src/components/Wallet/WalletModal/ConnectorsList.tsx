@@ -351,9 +351,6 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     }, [currentSearchValue, isSearching, requestCapableFeaturedProviderNamesKey])
 
     const {
-        featuredConnectors,
-        additionalConnectors,
-        resolvedSearchResults,
         initialConnectors,
     } = useConnectors({
         featuredProviders,
@@ -500,7 +497,6 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     if (selectedMultiChainConnector) {
         return <MultichainConnectorPicker
             selectedConnector={selectedMultiChainConnector}
-            allConnectors={[...featuredConnectors, ...additionalConnectors, ...(resolvedSearchResults ?? [])] as InternalConnector[]}
             providers={featuredProviders}
             connect={connect}
         />
@@ -536,7 +532,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                         {
                             initialConnectors.map(item => {
                                 const provider = featuredProviders.find(p => p.name === item.providerName)
-                                const isRecent = recentConnectors?.some(v => v.connectorName === item.name)
+                                const isRecent = item.isRecent
                                 return (
                                     <Connector
                                         key={item.id}

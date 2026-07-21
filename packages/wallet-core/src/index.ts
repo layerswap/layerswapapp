@@ -18,7 +18,7 @@ export {
 } from "@/lib/walletConnect";
 export type { DisplayUriSource, RegistryConnector, WalletConnectWalletBase } from "@/lib/walletConnect";
 export { useConnectors } from "@/hooks/useConnectors";
-export { WalletProvidersRegistryProvider, useWalletProvidersRegistry } from "@/context/WalletProvidersRegistryProvider";
+export { WalletProvidersRegistryProvider, useWalletProvidersRegistry, useWalletProvidersReady } from "@/context/WalletProvidersRegistryProvider";
 export { walletKey } from "@/walletKey";
 export type { WalletConnectWallet } from "@/Models/WalletConnectWallet";
 

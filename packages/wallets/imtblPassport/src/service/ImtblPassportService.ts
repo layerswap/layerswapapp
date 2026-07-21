@@ -1,9 +1,11 @@
+import type { Auth } from '@imtbl/auth'
 import type { ImtblPassportConfig } from '..'
 import { useImtblPassportStore } from './imtblPassportStore'
 
 export class ImtblPassportService {
     private _config: ImtblPassportConfig | undefined
     private _initializing: Promise<void> | undefined
+    private _evmConnected = false
 
     setConfig(config: ImtblPassportConfig | undefined): void {
         this._config = config
@@ -13,10 +15,10 @@ export class ImtblPassportService {
         return useImtblPassportStore.getState().instance !== undefined
     }
 
-    getInstance(): unknown {
+    getInstance(): Auth {
         const instance = useImtblPassportStore.getState().instance
         if (!instance) {
-            throw new Error('Passport instance requested before initialization')
+            throw new Error('Passport auth instance requested before initialization')
         }
         return instance
     }
@@ -34,39 +36,58 @@ export class ImtblPassportService {
 
     private async _doInitialize(config: ImtblPassportConfig | undefined): Promise<void> {
         const { publishableKey, clientId, redirectUri, logoutRedirectUri } = config || {}
-        if (!publishableKey || !clientId || !redirectUri || !logoutRedirectUri) return
+        // publishableKey is not required by the Auth SDK — it is only sniffed
+        // below to pick the sandbox vs production Passport domain.
+        if (!clientId || !redirectUri || !logoutRedirectUri) return
 
-        const passport = await import('@imtbl/passport')
-        const sdkConfig = await import('@imtbl/config')
+        const { Auth } = await import('@imtbl/auth')
+        const isSandbox = publishableKey?.includes('pk_imapik-test') === true
+        const passportDomain = isSandbox
+            ? 'https://passport.sandbox.immutable.com'
+            : 'https://passport.immutable.com'
 
-        const instance = new passport.Passport({
-            baseConfig: {
-                environment: publishableKey.includes('pk_imapik-test')
-                    ? sdkConfig.Environment.SANDBOX
-                    : sdkConfig.Environment.PRODUCTION,
-                publishableKey,
-            },
+        const instance = new Auth({
             clientId,
-            audience: 'platform_api',
-            scope: 'openid offline_access email transact',
             redirectUri,
+            popupRedirectUri: redirectUri,
             logoutRedirectUri,
             logoutMode: 'silent',
+            audience: 'platform_api',
+            scope: 'openid offline_access email transact',
+            authenticationDomain: 'https://auth.immutable.com',
+            passportDomain,
         })
 
         useImtblPassportStore.getState()._setInstance(instance)
     }
 
     async ensureEvmConnected(): Promise<void> {
+        const clientId = this._config?.clientId
+        if (this._evmConnected || !clientId) return
+        this._evmConnected = true
+
         if (!this.hasInstance()) await this.initialize()
-        const instance = this.getInstance() as { connectEvm: () => Promise<unknown> | unknown }
-        await instance.connectEvm()
+        const auth = this.getInstance()
+
+        const { connectWallet, IMMUTABLE_ZKEVM_MAINNET_CHAIN, IMMUTABLE_ZKEVM_TESTNET_CHAIN } = await import('@imtbl/wallet')
+        const isSandbox = this._config?.publishableKey?.includes('pk_imapik-test') === true
+        const selectedChain = isSandbox ? IMMUTABLE_ZKEVM_TESTNET_CHAIN : IMMUTABLE_ZKEVM_MAINNET_CHAIN
+        await connectWallet({
+            clientId,
+            chains: [selectedChain],
+            initialChainId: selectedChain.chainId,
+            getUser: async (forceRefresh, options) => {
+                if (forceRefresh) return auth.forceUserRefresh()
+                if (options?.silent) return auth.getUser()
+                return auth.getUserOrLogin()
+            },
+            announceProvider: true, // EIP-6963
+        })
     }
 
     async loginCallback(): Promise<void> {
         if (!this.hasInstance()) await this.initialize()
-        const instance = this.getInstance() as { loginCallback: () => Promise<void> | void }
-        await instance.loginCallback()
+        await this.getInstance().loginCallback()
     }
 }
 

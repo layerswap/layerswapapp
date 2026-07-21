@@ -95,6 +95,20 @@ stories/        # Storybook stories
 | Other chains | @ton/ton, @tronweb3/*, @fuel-ts/*, @imtbl/sdk, @paradex/sdk |
 | Analytics | PostHog |
 
+## Merge Safety
+
+Most conflicts in this repo are **semantic (silent)**: two branches edit *different* files — a shared type/contract on one side, a consumer or a newly-added sibling on the other — so git merges cleanly with no `<<<<<<<` markers, but the result fails to typecheck or double-executes at runtime. **A clean merge is not a correct merge.**
+
+**After every merge/rebase, run `pnpm check:types` (or `pnpm build`) before committing** — for silent conflicts, the type errors are the real conflict report. Then watch for these recurring categories (each one bit us in the widget-CDN merge):
+
+- **Contract changed on one side.** A refactor changes a shared type (component → `string`, `T[]` → a union) while the other branch keeps consuming the old shape. Fix the consumer to the *new* contract using the migrating branch's helper — not a local cast or patch.
+- **New sibling written against the old pattern.** One branch adds a feature (a field, a list extraction) using the pre-refactor idiom while the other branch rewrote that idiom. Make the newcomer follow the pattern its siblings now use.
+- **Relocated responsibility → duplicated logic.** A refactor moves work (render → effect, hook → service); the merge keeps *both* copies so it runs twice. Delete the copy the refactor superseded rather than making both compile.
+- **Rename / delete collisions.** One branch renames or deletes a symbol/file (a rebrand, a moved export) while the other still references it. After merging, grep for references to anything renamed or removed.
+- **Hand-resolution slips.** When a file genuinely conflicts, resolve it *whole* — don't keep one side's function body with the other side's return-type annotation or imports. Confirm a function's declared type still matches what its body returns.
+
+Package-specific contracts that are especially prone to the above live in the nested `CLAUDE.md` for that package (e.g. `packages/widget/CLAUDE.md`).
+
 ## PR Review System
 
 This project includes specialized review tooling in `.cursor/agents/`. For comprehensive reviews, read `.cursor/agents/pr-review-coordinator.md` which orchestrates 6 parallel reviewers (architecture, bugs, performance, quality, react, security). For quick single-perspective reviews, use `.cursor/agents/pr-reviewer.md`.

@@ -14,9 +14,13 @@ type RouteLike = {
  * actually be bridged through it. Used both as the plan-resolution guard and as
  * the per-candidate availability check that drives destination fallback.
  */
-export function realDepositAddressRoutePresent(routes: RouteLike[], real: DepositRouteRef): boolean {
+export function realRoutePresent(routes: RouteLike[], real: DepositRouteRef, depositMethod: string): boolean {
     return routes.some(r =>
         r.name === real.networkName
-        && r.deposit_methods?.includes('deposit_address')
+        && r.deposit_methods?.includes(depositMethod)
         && r.tokens?.some(t => t.symbol === real.tokenSymbol && t.status === 'active'))
+}
+
+export function realDepositAddressRoutePresent(routes: RouteLike[], real: DepositRouteRef): boolean {
+    return realRoutePresent(routes, real, 'deposit_address')
 }
