@@ -42,6 +42,12 @@ export type RpcHealthCheckResult = RpcHealthCheckSnapshot & {
 /**
  * External-store contract for RPC health checks. Replaces the previous
  * `useRpcHealthCheck` hook. The widget consumes via `useSyncExternalStore`.
+ *
+ * Stores are shared singletons (see `createStore` below), so any upstream
+ * resources must be managed inside `subscribe` — acquired when the first
+ * listener subscribes, released when the last one unsubscribes — never via a
+ * per-consumer teardown method, which one consumer could use to kill the
+ * store for everyone else.
  */
 export type RpcHealthCheckStore = {
   subscribe(listener: () => void): () => void
@@ -52,7 +58,6 @@ export type RpcHealthCheckStore = {
     rpcUrl: string,
     chainDetails: Omit<AddEthereumChainParams, 'chainId' | 'rpcUrls'>
   ): Promise<SuggestRpcResult>
-  destroy?(): void
 }
 
 export interface RpcHealthCheckProvider {

@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useMemo, useSyncExternalStore } from 'react'
+import { useMemo, useSyncExternalStore } from 'react'
 import { Network } from '@/Models/Network'
 import type { RpcHealthCheckResult, RpcHealthCheckStore } from '@/types/rpcHealth'
 import { resolverService } from '@/lib/resolvers/resolverService'
@@ -18,8 +18,6 @@ export function useRpcHealth(network: Network): RpcHealthCheckResult | null {
         () => provider?.createStore() ?? null,
         [provider],
     )
-
-    useEffect(() => () => store?.destroy?.(), [store])
 
     const snapshot = useSyncExternalStore(
         store?.subscribe ?? noopSubscribe,

@@ -63,6 +63,7 @@ function createStore(): RpcHealthCheckStore {
     const listeners = new Set<() => void>()
     let lastConnectorId: string | undefined
     let lastIsConnected = false
+    let unsubEvm: (() => void) | null = null
 
     const setSnapshot = (next: Partial<RpcHealthCheckSnapshot>) => {
         snapshot = { ...snapshot, ...next }
@@ -161,20 +162,40 @@ function createStore(): RpcHealthCheckStore {
         })
     }
 
-    // Auto-check when the active connector or connectedness changes.
-    const unsubEvm = useEvmStore.subscribe(() => {
+    // Auto-check when the active connector or connectedness changes. The
+    // upstream subscription only lives while someone is listening (first
+    // subscriber starts it, last unsubscriber stops it), so consumer
+    // mount/unmount cycles — including StrictMode's — can't leave the store
+    // dead. The evm-store listener only reacts to changes, so on start we
+    // also catch up: if a wallet is already connected, check right away.
+    const startAutoCheck = () => {
+        unsubEvm = useEvmStore.subscribe(() => {
+            const { connector, isConnected } = getActiveConnector()
+            const connectorId = connector?.id
+            if (connectorId === lastConnectorId && isConnected === lastIsConnected) return
+            lastConnectorId = connectorId
+            lastIsConnected = isConnected
+            if (connector && isConnected) void check()
+        })
         const { connector, isConnected } = getActiveConnector()
-        const connectorId = connector?.id
-        if (connectorId === lastConnectorId && isConnected === lastIsConnected) return
-        lastConnectorId = connectorId
+        lastConnectorId = connector?.id
         lastIsConnected = isConnected
         if (connector && isConnected) void check()
-    })
+    }
+
+    const stopAutoCheck = () => {
+        unsubEvm?.()
+        unsubEvm = null
+    }
 
     return {
         subscribe(listener) {
+            if (listeners.size === 0) startAutoCheck()
             listeners.add(listener)
-            return () => listeners.delete(listener)
+            return () => {
+                listeners.delete(listener)
+                if (listeners.size === 0) stopAutoCheck()
+            }
         },
         getSnapshot() {
             return snapshot
@@ -182,10 +203,6 @@ function createStore(): RpcHealthCheckStore {
         checkManually: check,
         suggestRpc,
         suggestRpcForCurrentChain,
-        destroy() {
-            unsubEvm()
-            listeners.clear()
-        },
     }
 }
 
