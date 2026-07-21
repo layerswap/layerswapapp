@@ -1,4 +1,5 @@
 import WalletIcon from "@/components/icons/WalletIcon"
+import AddressIcon from "@/components/AddressIcon"
 import { useLabeledAddress } from "@/stores/addressBookStore"
 import useWallet from "@/hooks/useWallet"
 import ConnectButton from "@/components/buttons/connectButton"
@@ -46,9 +47,16 @@ const WalletsHeaderWalletsList = ({ wallets }: { wallets: Wallet[] }) => {
 type WalletsIconsProps = {
     wallets: {
         id: string;
+        address: string;
         displayName?: string;
         icon: (props: any) => React.JSX.Element;
     }[]
+}
+const WalletsIcon = ({ item }: { item: WalletsIconsProps['wallets'][number] }) => {
+    return item.id === 'manually_added' ?
+        <AddressIcon address={item.address} size={24} className="rounded-md border-2 border-secondary-600 bg-secondary-700 shrink-0" />
+        :
+        <item.icon className="rounded-md border-2 border-secondary-600 bg-secondary-700 shrink-0 h-6 w-6" />
 }
 export const WalletsIcons = ({ wallets }: WalletsIconsProps) => {
 
@@ -61,11 +69,11 @@ export const WalletsIcons = ({ wallets }: WalletsIconsProps) => {
         <div className="-space-x-2 flex" aria-label="Connected wallets">
             {
                 firstWallet?.displayName &&
-                <firstWallet.icon className="rounded-md border-2 border-secondary-600 bg-secondary-700 shrink-0 h-6 w-6" />
+                <WalletsIcon item={firstWallet} />
             }
             {
                 secondWallet?.displayName &&
-                <secondWallet.icon className="rounded-md border-2 border-secondary-600 bg-secondary-700 shrink-0 h-6 w-6" />
+                <WalletsIcon item={secondWallet} />
             }
             {
                 uniqueWallets.length > 2 &&

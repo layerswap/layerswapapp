@@ -15,6 +15,7 @@ import { isPositiveDecimal } from '@/lib/extendedRoutes/amounts'
 import { useSelectedAccount } from '@/context/swapAccounts'
 import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore'
 import { isGaslessCapableRoute } from '@/helpers/gasless'
+import { isValidAddress } from '@/lib/address'
 
 const apiClient = new LayerswapApiClient()
 
@@ -62,6 +63,7 @@ type Props = {
     amount: string | number | undefined
     refuel: boolean | undefined
     depositMethod: "wallet" | "deposit_address" | undefined
+    destinationAddress?: string
 }
 type Options = {
     skipLimits?: boolean
@@ -69,7 +71,7 @@ type Options = {
 }
 
 export function useQuoteData(formValues: Props | undefined, options: Options = { skipLimits: false, refreshInterval: 20000 }): UseQuoteData {
-    const { fromCurrency, toCurrency, from, to, amount, refuel, depositMethod } = formValues || {}
+    const { fromCurrency, toCurrency, from, to, amount, refuel, depositMethod, destinationAddress } = formValues || {}
     const { skipLimits, refreshInterval } = options
 
     const [debouncedAmount, setDebouncedAmount] = useState(amount)
@@ -134,6 +136,7 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
             useDepositAddress: effectiveUseDepositAddress,
             refuel,
             useGasless,
+            destinationAddress,
         }) : null
 
     const { data: amountRange, mutate: mutateLimits, isValidating: limitsValidating } = useSWR<ApiResponse<{
@@ -162,6 +165,7 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
             useDepositAddress: effectiveUseDepositAddress,
             slippage,
             useGasless,
+            destinationAddress,
         })
         : null
 
@@ -253,6 +257,13 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
     }
 }
 
+// The quote/limits address param is optional — include it only once it's a
+// valid address for the destination network, so partially typed or
+// query-prefilled garbage never changes the SWR key or hits the API.
+export function validDestinationAddress(address: string | undefined, network: { name: string } | undefined | null): string | undefined {
+    return address && isValidAddress(address, network) ? address : undefined
+}
+
 export function transformFormValuesToQuoteArgs(values: SwapFormValues): Props | undefined {
     return {
         amount: values.amount,
@@ -262,6 +273,7 @@ export function transformFormValuesToQuoteArgs(values: SwapFormValues): Props | 
         to: values.to?.name,
         toCurrency: values.toAsset?.symbol,
         refuel: values.refuel,
+        destinationAddress: validDestinationAddress(values.destination_address, values.to),
     }
 }
 
@@ -274,6 +286,7 @@ export function transformSwapDataToQuoteArgs(swapData: SwapBasicData | undefined
         fromCurrency: swapData?.source_token.symbol,
         to: swapData?.destination_network.name,
         toCurrency: swapData?.destination_token.symbol,
+        destinationAddress: validDestinationAddress(swapData?.destination_address, swapData?.destination_network),
     }
 }
 
@@ -287,6 +300,7 @@ export type QuoteUrlArgs = {
     useDepositAddress: boolean
     slippage?: number
     useGasless?: boolean
+    destinationAddress?: string
 }
 
 export function buildQuoteUrl(args: QuoteUrlArgs): string {
@@ -300,6 +314,7 @@ export function buildQuoteUrl(args: QuoteUrlArgs): string {
         useDepositAddress,
         slippage,
         useGasless,
+        destinationAddress,
     } = args
 
     const params = new URLSearchParams({
@@ -320,12 +335,16 @@ export function buildQuoteUrl(args: QuoteUrlArgs): string {
         params.append('use_gasless', 'true')
     }
 
+    if (destinationAddress) {
+        params.append('destination_address', destinationAddress)
+    }
+
     return `/quote?${params.toString()}`
 }
 
 export const getLimits = async (swapValues: LimitsQueryOptions) => {
     const apiClient = new LayerswapApiClient()
-    const { sourceToken, sourceNetwork, destinationNetwork, destinationToken, refuel, useDepositAddress } = swapValues || {}
+    const { sourceToken, sourceNetwork, destinationNetwork, destinationToken, refuel, useDepositAddress, destinationAddress } = swapValues || {}
 
     if (!sourceNetwork || !destinationNetwork || !useDepositAddress || !destinationToken || !sourceToken)
         return { minAllowedAmount: undefined, maxAllowedAmount: undefined }
@@ -336,7 +355,8 @@ export const getLimits = async (swapValues: LimitsQueryOptions) => {
         destinationNetwork,
         destinationToken,
         useDepositAddress,
-        refuel
+        refuel,
+        destinationAddress
     })
 
     const response = await apiClient.fetcher(url) as ApiResponse<{
@@ -360,6 +380,7 @@ interface LimitsQueryOptions {
     useDepositAddress?: boolean;
     refuel?: boolean;
     useGasless?: boolean;
+    destinationAddress?: string;
 }
 
 export function buildLimitsUrl({
@@ -369,7 +390,8 @@ export function buildLimitsUrl({
     destinationToken,
     useDepositAddress,
     refuel = false,
-    useGasless = false
+    useGasless = false,
+    destinationAddress
 }: LimitsQueryOptions): string {
 
     if (!sourceNetwork || !sourceToken || !destinationNetwork || !destinationToken) {
@@ -387,6 +409,10 @@ export function buildLimitsUrl({
 
     if (useGasless) {
         params.append('use_gasless', 'true');
+    }
+
+    if (destinationAddress) {
+        params.append('destination_address', destinationAddress);
     }
 
     return `/limits?${params.toString()}`;
