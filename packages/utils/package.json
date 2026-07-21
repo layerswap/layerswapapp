@@ -1,6 +1,6 @@
 {
   "name": "@layerswap/utils",
-  "version": "1.5.0",
+  "version": "1.7.0",
   "description": "Shared internal utilities for Layerswap Widget (address validation & formatting)",
   "type": "module",
   "main": "dist/esm/index.js",
@@ -37,7 +37,6 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@ton/core": "^0.62.0",
     "bitcoin-address-validation": "^3.0.0",
     "bn.js": "^5.2.2",
     "bs58": "^6.0.0",

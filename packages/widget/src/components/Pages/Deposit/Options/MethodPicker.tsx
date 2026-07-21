@@ -12,7 +12,7 @@ import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import DestinationTokenPicker from "../DestinationTokenPicker";
 import WalletIcon from "@/components/Icons/WalletIcon";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
-import { useHyperliquidDepositOption } from "./useHyperliquidDepositOption";
+import { useExtendedDepositOption } from "./useExtendedDepositOption";
 
 type MethodCardProps = {
     icon: ReactNode;
@@ -72,19 +72,20 @@ const MethodPicker: FC = () => {
     const { destination, destinationToken } = useDepositSelection();
     const selectSourceAccount = useSelectSwapAccount("from");
     const { methods } = useDepositSettings();
-    const hyperliquid = useHyperliquidDepositOption();
+    const hyperliquid = useExtendedDepositOption("hyperliquid");
+    const polymarket = useExtendedDepositOption("polymarket");
 
     const canShow = (m: DepositMethodId) => methods.includes(m);
     const primaryWallet = wallets[0];
     const hasWallet = !!primaryWallet;
     const destinationReady = !!destination && !!destinationToken;
-    // Render the card whenever Hyperliquid is configured; its enabled/loading
-    // state (not its presence) reflects reachability, so it never flashes away.
-    const showHyperliquid = hyperliquid.present && canShow("hyperliquid");
-    // Surface the connected wallet's withdrawable HL balance once it resolves.
-    const hyperliquidBalanceLabel = (hyperliquid.compatibleWalletBalance != null && hyperliquid.compatibleWalletBalance > 0) && hyperliquid.token
-        ? `Balance: ${truncateDecimals(hyperliquid.compatibleWalletBalance, hyperliquid.token.precision)} ${hyperliquid.token.symbol}`
-        : undefined;
+    // Extended-source shortcuts (e.g. Hyperliquid, Polymarket). Each card renders
+    // whenever its source is configured; its enabled/loading state (not its
+    // presence) reflects reachability, so it never flashes away.
+    const extendedSources: { id: DepositMethodId; option: ReturnType<typeof useExtendedDepositOption> }[] = [
+        { id: "hyperliquid", option: hyperliquid },
+        { id: "polymarket", option: polymarket },
+    ];
 
     const handleWalletClick = () => {
         if (!destinationReady) return;
@@ -112,15 +113,15 @@ const MethodPicker: FC = () => {
         push("wallet-connect");
     };
 
-    const handleHyperliquidClick = () => {
-        if (!destinationReady || !hyperliquid.available || !hyperliquid.hlNetworkName) return;
-        setPresetSourceNetwork(hyperliquid.hlNetworkName);
+    const handleExtendedClick = (option: ReturnType<typeof useExtendedDepositOption>) => {
+        if (!destinationReady || !option.available || !option.networkName) return;
+        setPresetSourceNetwork(option.networkName);
         // Skip straight to the amount step with the already-connected wallet — but
-        // only when we don't positively know its Hyperliquid balance is below the
-        // minimum deposit. If it can't cover the minimum, route through connect so
-        // the user can pick a funded wallet, then continue the normal flow.
-        if (hyperliquid.compatibleWallet && !hyperliquid.compatibleWalletBelowMinimum) {
-            selectSourceAccount(hyperliquid.compatibleWallet);
+        // only when we don't positively know its balance is below the minimum
+        // deposit. If it can't cover the minimum, route through connect so the user
+        // can pick a funded wallet, then continue the normal flow.
+        if (option.compatibleWallet && !option.compatibleWalletBelowMinimum) {
+            selectSourceAccount(option.compatibleWallet);
             push("wallet-amount");
             return;
         }
@@ -132,8 +133,7 @@ const MethodPicker: FC = () => {
         ? `Connected · ${new Address(primaryWallet?.address, null, primaryWallet.providerName).toShortString()}`
         : "Connect a wallet";
 
-    const WalletProviderIcon = primaryWallet?.icon;
-    const walletCardIcon = hasWallet && WalletProviderIcon
+    const walletCardIcon = hasWallet && primaryWallet?.icon
         ? <ImageWithFallback
             alt={primaryWallet.displayName ?? primaryWallet.id}
             className="h-7 w-7 object-contain"
@@ -172,35 +172,43 @@ const MethodPicker: FC = () => {
                         disabledReason="Pick a destination first"
                     />
                 )}
-                {showHyperliquid && (
-                    <MethodCard
-                        icon={
-                            <ImageWithFallback
-                                src={hyperliquid.network?.logo}
-                                alt="Hyperliquid logo"
-                                height={28}
-                                width={28}
-                                className="rounded-full object-contain"
-                            />
-                        }
-                        title="Deposit from Hyperliquid"
-                        subtitle={
-                            hyperliquid.loading
-                                ? "Checking availability…"
-                                : hyperliquid.available
-                                    ? (hyperliquidBalanceLabel ?? "From your Hyperliquid balance")
-                                    : "Not available for this destination"
-                        }
-                        onClick={handleHyperliquidClick}
-                        loading={hyperliquid.loading}
-                        disabled={hyperliquid.loading || !hyperliquid.available || !destinationReady}
-                        disabledReason={
-                            !destinationReady
-                                ? "Pick a destination first"
-                                : "Hyperliquid can't reach this destination"
-                        }
-                    />
-                )}
+                {extendedSources.map(({ id, option }) => {
+                    if (!(option.present && canShow(id))) return null;
+                    const name = option.network?.display_name ?? "";
+                    const balanceLabel = (option.compatibleWalletBalance != null && option.compatibleWalletBalance > 0) && option.token
+                        ? `Balance: ${truncateDecimals(option.compatibleWalletBalance, option.token.precision)} ${option.token.symbol}`
+                        : undefined;
+                    return (
+                        <MethodCard
+                            key={id}
+                            icon={
+                                <ImageWithFallback
+                                    src={option.network?.logo}
+                                    alt={`${name} logo`}
+                                    height={28}
+                                    width={28}
+                                    className="rounded-full object-contain"
+                                />
+                            }
+                            title={`Deposit from ${name}`}
+                            subtitle={
+                                option.loading
+                                    ? "Checking availability…"
+                                    : option.available
+                                        ? (balanceLabel ?? `From your ${name} balance`)
+                                        : "Not available for this destination"
+                            }
+                            onClick={() => handleExtendedClick(option)}
+                            loading={option.loading}
+                            disabled={option.loading || !option.available || !destinationReady}
+                            disabledReason={
+                                !destinationReady
+                                    ? "Pick a destination first"
+                                    : `${name} can't reach this destination`
+                            }
+                        />
+                    );
+                })}
                 {canShow("wallet") && hasWallet && (
                     <MethodCard
                         icon={<WalletIcon className="h-6 w-6 text-primary-text" strokeWidth={2} />}

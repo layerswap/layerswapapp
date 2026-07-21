@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { BackendTransactionStatus, TransactionStatus } from '../lib/apiClients/layerSwapApiClient';
+import { BackendTransactionStatus, GaslessAuthorizationStatus, GaslessAuthorizationTransaction, TransactionStatus } from '../lib/apiClients/layerSwapApiClient';
 
 export type SwapTransaction = {
     hash: string;
@@ -18,6 +18,20 @@ type SwapTransactionStore = {
 type SwapDepositHintClickedStore = {
     swapTransactions: Record<string, boolean>;
     setSwapDepositHintClicked: (Id: string) => void;
+};
+
+export type GaslessAuthorization = {
+    // Signature expiry (unix seconds); fallback deadline when the authorize poll is unreachable.
+    validBefore: number;
+    status?: GaslessAuthorizationStatus;
+    transaction?: GaslessAuthorizationTransaction | null;
+};
+
+type GaslessAuthorizationStore = {
+    authorizations: Record<string, GaslessAuthorization>;
+    setGaslessAuthorization: (Id: string, validBefore: number) => void;
+    setGaslessAuthorizationStatus: (Id: string, status: GaslessAuthorizationStatus, transaction?: GaslessAuthorizationTransaction | null) => void;
+    removeGaslessAuthorization: (Id: string) => void;
 };
 
 
@@ -48,6 +62,51 @@ export const useSwapTransactionStore = create(
         }),
         {
             name: 'swapTransactions',
+            storage: createJSONStorage(() => localStorage),
+        }
+    ),
+)
+
+export const useGaslessAuthorizationStore = create(
+    persist<GaslessAuthorizationStore>(
+        (set) => ({
+            authorizations: {},
+            setGaslessAuthorization: (Id, validBefore) => {
+                set((state) => ({
+                    authorizations: {
+                        ...state.authorizations,
+                        [Id]: { validBefore },
+                    },
+                }));
+            },
+            setGaslessAuthorizationStatus: (Id, status, transaction) => {
+                set((state) => {
+                    // A late poll response must not resurrect an authorization that
+                    // retry cleanup already removed — recreating it with validBefore: 0
+                    // would immediately re-expire the fresh attempt.
+                    const current = state.authorizations[Id];
+                    if (!current) return state;
+                    return {
+                        authorizations: {
+                            ...state.authorizations,
+                            [Id]: {
+                                ...current,
+                                status,
+                                transaction: transaction ?? current.transaction ?? null,
+                            },
+                        },
+                    };
+                });
+            },
+            removeGaslessAuthorization: (Id) => {
+                set((state) => {
+                    const { [Id]: _removed, ...remaining } = state.authorizations;
+                    return { authorizations: remaining };
+                });
+            },
+        }),
+        {
+            name: 'gaslessAuthorizations',
             storage: createJSONStorage(() => localStorage),
         }
     ),

@@ -1,18 +1,20 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { WalletProvider, WalletProviderDescriptor, WalletWrapper, isWalletProviderDescriptor, NftProvider, BalanceProvider, GasProvider, TransferProvider, ContractAddressCheckerProvider, RpcHealthCheckProvider } from "@/types";
+import React, { useEffect, useMemo } from "react";
+import { WalletProvider, WalletProviderDescriptor, WalletWrapper, isWalletProviderDescriptor, NftProvider, BalanceProvider, GasProvider, TransferProvider, ContractAddressCheckerProvider, RpcHealthCheckProvider, GaslessProvider } from "@/types";
 import { resolverService } from "@/lib/resolvers/resolverService";
-import { setExtendedRouteProviders } from "@/lib/extendedRoutes/registry";
+import { setExtendedRouteProviders } from "@/lib/extendedRoutes";
+import { ExtendedRouteProvider } from "@/lib/extendedRoutes/types";
 
-type ResolverContextType = {
-    isInitialized: boolean;
-};
-
-const ResolverContext = createContext<ResolverContextType | null>(null);
-
-const isWalletProviderWithResolvers = (
+export const isWalletProviderWithResolvers = (
     p: WalletProvider | WalletWrapper | WalletProviderDescriptor
 ): p is WalletProvider =>
     !isWalletProviderDescriptor(p) && 'createConnection' in p
+
+export const extractExtendedRouteProviders = (
+    providers: (WalletProvider | WalletWrapper | WalletProviderDescriptor)[]
+): ExtendedRouteProvider[] =>
+    providers
+        .filter(isWalletProviderWithResolvers)
+        .flatMap(p => p.extendedRouteProvider ?? [])
 
 export const ResolverProviders: React.FC<React.PropsWithChildren<{
     walletProviders: (WalletProvider | WalletWrapper | WalletProviderDescriptor)[]
@@ -33,6 +35,13 @@ export const ResolverProviders: React.FC<React.PropsWithChildren<{
             .map(provider => provider.transferProvider)
             .flat()
             .filter((provider): provider is (() => TransferProvider) => Boolean(provider))
+            .map(provider => provider()),
+            [realProviders]);
+
+        const gaslessProviders = useMemo(() => realProviders
+            .map(provider => provider.gaslessProvider)
+            .flat()
+            .filter((provider): provider is (() => GaslessProvider) => Boolean(provider))
             .map(provider => provider()),
             [realProviders]);
 
@@ -66,30 +75,14 @@ export const ResolverProviders: React.FC<React.PropsWithChildren<{
             .filter((provider): provider is NftProvider => Boolean(provider)),
             [realProviders]);
 
-        // Tracks whether the resolver registry has been wired up at least once.
-        // Flipped from inside the effect so consumers gate on a real post-commit
-        // signal rather than a synchronous always-true constant.
-        const [isInitialized, setIsInitialized] = useState(false);
-
+        // No ready-signal here: components gating on provider availability use
+        // `useWalletProvidersReady()`, which tracks the wallet-connection
+        // registry they actually read (see `WalletProvidersProvider`).
         useEffect(() => {
-            resolverService.setProviders(balanceProviders, gasProviders, nftProviders, transferProviders, contractAddressProviders, rpcHealthCheckProviders)
+            resolverService.setProviders(balanceProviders, gasProviders, nftProviders, transferProviders, contractAddressProviders, rpcHealthCheckProviders, gaslessProviders)
 
-            setExtendedRouteProviders(walletProviders.flatMap((p: WalletProvider) => p.extendedRouteProvider ?? []).filter(Boolean))
+            setExtendedRouteProviders(extractExtendedRouteProviders(walletProviders))
+        }, [walletProviders, balanceProviders, gasProviders, nftProviders, transferProviders, contractAddressProviders, rpcHealthCheckProviders, gaslessProviders]);
 
-            setIsInitialized(true);
-        }, [walletProviders, balanceProviders, gasProviders, nftProviders, transferProviders, contractAddressProviders, rpcHealthCheckProviders]);
-
-        return (
-            <ResolverContext.Provider value={{ isInitialized }}>
-                {children}
-            </ResolverContext.Provider>
-        );
+        return <>{children}</>;
     };
-
-export const useResolvers = () => {
-    const context = useContext(ResolverContext);
-    if (!context) {
-        throw new Error('useResolvers must be used within a ResolverProvider');
-    }
-    return context;
-};

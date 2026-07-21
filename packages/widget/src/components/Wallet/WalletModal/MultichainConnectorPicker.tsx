@@ -6,12 +6,11 @@ import WalletIcon from "@/components/Icons/WalletIcon";
 
 type MultichainConnectorModalProps = {
     selectedConnector: WalletModalConnector,
-    allConnectors: InternalConnector[],
     providers: WalletConnectionProvider[],
     connect: (connector: InternalConnector, provider: WalletConnectionProvider) => Promise<void>
 }
 
-export const MultichainConnectorPicker: FC<MultichainConnectorModalProps> = ({ selectedConnector, allConnectors, providers, connect }) => {
+export const MultichainConnectorPicker: FC<MultichainConnectorModalProps> = ({ selectedConnector, providers, connect }) => {
     const iconSrc = selectedConnector.icon
     return (
         <div className="flex flex-col justify-between h-full min-h-80">
@@ -38,25 +37,14 @@ export const MultichainConnectorPicker: FC<MultichainConnectorModalProps> = ({ s
 
             <div className="flex flex-col gap-2 w-full">
                 {
-                    Array.from(
-                        allConnectors
-                            .filter(c => c?.name === selectedConnector.name)
-                            .reduce((map, connector) => {
-                                if (!connector?.providerName) return map;
-                                if (!map.has(connector.providerName)) {
-                                    map.set(connector.providerName, connector);
-                                }
-                                return map;
-                            }, new Map<string, typeof allConnectors[0]>())
-                            .values()
-                    ).map((connector, index) => {
+                    (selectedConnector.variants ?? []).map((connector, index) => {
                         const provider = providers.find(p => p.name === connector?.providerName)
                         return (
                             <button
                                 type="button"
                                 key={index}
                                 onClick={async () => {
-                                    await connect(connector!, provider!)
+                                    if (provider) await connect(connector, provider)
                                 }}
                                 className="w-full h-fit flex items-center gap-3 bg-secondary-500 hover:bg-secondary-400 transition-colors duration-200 rounded-xl p-3"
                             >

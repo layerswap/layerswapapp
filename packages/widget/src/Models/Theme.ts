@@ -1,44 +1,8 @@
-import { HTMLAttributes } from "react";
-
-export type ThemeData = {
-    buttonTextColor?: string,
-    logo?: string,
-    tertiary?: string,
-    primary?: ThemeColor,
-    secondary?: ThemeColor,
-    warning?: StatusColor,
-    error?: StatusColor,
-    success?: StatusColor,
-    borderRadius?: 'none' | 'small' | 'medium' | 'large' | 'extraLarge' | 'default',
-    enablePortal?: boolean,
-    enableWideVersion?: boolean,
-    header?: {
-        hideMenu?: boolean,
-        hideTabs?: boolean,
-        hideWallets?: boolean,
-    }
-    cardBackgroundStyle?: HTMLAttributes<HTMLDivElement>['style']
-    hidePoweredBy?: boolean
-}
-
-export type ThemeColor = {
-    DEFAULT: string;
-    100: string;
-    200: string;
-    300: string;
-    400: string;
-    500: string;
-    600: string;
-    700: string;
-    800: string;
-    900: string;
-    text: string,
-}
-
-export type StatusColor = {
-    Foreground: string;
-    Background: string;
-}
+// Theme types are defined in the shared, zero-runtime contract package so the
+// widget and the loader packages share one source of truth. Re-exported here
+// to keep existing `@/Models/Theme` imports working unchanged.
+export type { ThemeData, ThemeColor, StatusColor } from "@layerswap/widget-types";
+import type { ThemeData } from "@layerswap/widget-types";
 
 export const THEME_COLORS: { [key: string]: ThemeData } = {
     "light": {

@@ -28,6 +28,7 @@ import { useContractAddressStore } from "@/stores/contractAddressStore";
 import UrlAddressNote from "@/components/Input/Address/UrlAddressNote";
 import { Address } from "@/lib/address/Address";
 import ContractAddressValidationCache, { ContractSourceAddressValidationCache } from "./SecondaryComponents/validationError/ContractAddressValidationCache";
+import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -67,11 +68,9 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         setSwapError && setSwapError(null)
+        useGaslessPreferenceStore.getState().clearGaslessUnavailable()
         const { destination_address, to } = values
         setWalletWihdrawDone(false)
-        if (!walletWihdrawDone) {
-            setWalletWihdrawDone(false)
-        }
 
         if (
             to &&
@@ -146,8 +145,13 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
         }
     }, [createSwap, initialSettings, partner, swapBasicData, getProvider, settings, type, setSwapError])
 
-    const initialValues: SwapFormValues = swapBasicData ? generateSwapInitialValuesFromSwap(swapBasicData, swapBasicData.refuel, settings, type)
-        : generateSwapInitialValues(settings, initialSettings, type, connectedAutofillNetworks)
+    // Formik has no `enableReinitialize`, so this is read once at mount — memoize
+    // to keep post-mount re-renders (wallet events, balance revalidation) from
+    // rerunning the extended-route merge and per-token route-plan resolution.
+    const initialValues: SwapFormValues = useMemo(() => swapBasicData
+        ? generateSwapInitialValuesFromSwap(swapBasicData, swapBasicData.refuel, settings, type)
+        : generateSwapInitialValues(settings, initialSettings, type, connectedAutofillNetworks),
+        [swapBasicData, settings, initialSettings, type, connectedAutofillNetworks])
 
     const handleShowSwapModal = useCallback((value: boolean) => {
         setSwapModalOpen(value)
@@ -189,18 +193,21 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                         header='Complete the swap'
                         modalId="showSwap"
                         className="expandContainerHeight">
-                        {swapModalOpen ? (
-                            <Suspense fallback={null}>
-                                <SwapDetails type="contained" onWalletWithdrawalSuccess={() => {
-                                    setWalletWihdrawDone(true)
-                                    setFieldValue('amount', 0)
-                                    mutateBalances()
-                                }} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />
-                            </Suspense>
-                        ) : null}
-                    </VaulDrawer>
+                        {
+                            swapModalOpen ? (
+                                <Suspense fallback={null}>
+                                    <SwapDetails type="contained" onWalletWithdrawalSuccess={() => {
+                                        setWalletWihdrawDone(true)
+                                        useGaslessPreferenceStore.getState().resetGaslessPreference()
+                                        setFieldValue('amount', 0)
+                                        mutateBalances()
+                                    }} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />
+                                </Suspense>
+                            ) : null
+                        }
+                    </VaulDrawer >
                     {children}
-                    <ContractAddressValidationCache
+                    < ContractAddressValidationCache
                         source_network={values.from}
                         destination_network={values.to}
                         address={values.destination_address}
@@ -210,8 +217,9 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                         destination_network={values.to}
                     />
                 </>
-            )}
-        </Formik>
+            )
+            }
+        </Formik >
     </>
 }
 

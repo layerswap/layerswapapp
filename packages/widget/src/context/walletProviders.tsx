@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, lazy, Suspense, useContext, useEffect, useMemo, useRef } from "react";
+import React, { createContext, lazy, Suspense, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { StoreApi } from "zustand/vanilla";
 import { WalletConnectionProvider, WalletConnectionStore, WalletProvider, WalletProviderDescriptor, WalletWrapper, isWalletProviderDescriptor } from "@/types";
 import { useSettingsState } from "./settings";
@@ -35,6 +35,12 @@ export function useWalletProvidersRegistry(): WalletProvidersRegistry {
     return registry
 }
 
+const WalletProvidersReadyContext = createContext<boolean>(false)
+
+export function useWalletProvidersReady(): boolean {
+    return useContext(WalletProvidersReadyContext)
+}
+
 type ProviderEntry = WalletProvider | WalletWrapper | WalletProviderDescriptor
 
 export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walletProviders: ProviderEntry[] }> = ({ children, walletProviders }) => {
@@ -50,6 +56,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
     // a descriptor finishing its load doesn't tear down peer providers.
     const connectionsRef = useRef<Map<string, WalletConnectionStore>>(new Map())
     const stubsRef = useRef<Map<string, StoreApi<WalletConnectionProvider>>>(new Map())
+    const [isInitialized, setIsInitialized] = useState(false)
 
     useEffect(() => {
         const seenIds = new Set<string>()
@@ -91,8 +98,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
         }
 
         walletProvidersRegistry.setEntries(entries)
-        // Network changes update committed stores in the effect below.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        setIsInitialized(true)
     }, [walletProviders, walletProvidersRegistry])
 
     useEffect(() => () => {
@@ -137,6 +143,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
 
     return (
         <WalletProvidersRegistryContext.Provider value={walletProvidersRegistry}>
+            <WalletProvidersReadyContext.Provider value={isInitialized}>
             {children}
             <VaulDrawer
                 show={open && presentation === 'modal'}
@@ -172,6 +179,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
                     ) : null}
                 </VaulDrawer.Snap>
             </VaulDrawer>
+            </WalletProvidersReadyContext.Provider>
         </WalletProvidersRegistryContext.Provider>
     );
 };

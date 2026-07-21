@@ -14,7 +14,7 @@ type QRCodeModalProps = {
 }
 
 const QRCodeModal: FC<QRCodeModalProps> = ({ qrUrl, className, iconSize, iconClassName }) => {
-    const qrCode = <StyledQRCode value={qrUrl} size={160} />
+    const qrCode = <StyledQRCode value={qrUrl} size={160} ecLevel="H" />
 
     return (
         <>

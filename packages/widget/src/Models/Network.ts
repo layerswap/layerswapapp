@@ -1,8 +1,5 @@
 import { Refuel } from "../lib/apiClients/layerSwapApiClient";
 import { NetworkType } from "@layerswap/utils";
-
-// NetworkType lives in the @layerswap/utils leaf package (single source of truth);
-// re-exported here so existing `@/Models/Network` importers keep working.
 export { NetworkType };
 
 export class Network {
@@ -43,6 +40,7 @@ export class Token {
     status?: 'active' | 'inactive' | 'not_found';
     source_rank?: number | undefined;
     destination_rank?: number | undefined;
+    supports_gasless_deposit?: boolean;
 }
 
 export class NetworkRouteToken extends Token {

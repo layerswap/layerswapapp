@@ -8,7 +8,13 @@ import { DecimalInput } from "./amounts";
  * checks. See `.context/plans/extended-routes-system-hyperliquid-source-withdraw.md`.
  */
 
+/** Per-provider on/off flags, keyed by provider id. A missing entry (or an absent
+ * flags object) falls back to the provider's own `enabledByDefault`. */
+export type ExtendedRouteFlags = Record<string, boolean>
+
 export type RealRouteRef = { networkName: string; tokenSymbol: string }
+
+export type RealRouteAvailability = (real: RealRouteRef) => boolean
 
 export type ExtendedTokenMapping = {
     /** Token symbol on the extended network, e.g. 'USDC' on HYPERLIQUID_*. */
@@ -21,6 +27,10 @@ export type ExtendedTokenMapping = {
     extraCompletionSeconds: number
     /** Decimal places of the real token; used to truncate the forwarded amount. */
     realDecimals?: number
+    /** Provider-imposed minimum (source-token units) applied as a floor on the
+     * displayed/validated min, on top of the backend min + flat fee — e.g. the
+     * Polymarket bridge's minimum checkout. Optional; absent = no extra floor. */
+    minAmount?: number
 }
 
 export interface ExtendedRouteProvider {
@@ -28,8 +38,19 @@ export interface ExtendedRouteProvider {
     id: string
     /** 'destination' is designed into the types but not implemented in v1. */
     direction: 'source' | 'destination'
+    /**
+     * Whether the provider is active when no resolved flag covers it (flags absent
+     * entirely, or present but lacking this id). Choose by failure mode: `true`
+     * (fail-open) only for routes that are pure client-side synthesis; `false`
+     * (fail-closed) for routes with a server dependency (credentials, a gated
+     * relayer proxy) that would break mid-flow — those must be explicitly enabled
+     * by a resolved flag.
+     */
+    enabledByDefault: boolean
     /** Extended network names this provider owns, e.g. [HYPERLIQUID_MAINNET, HYPERLIQUID_TESTNET]. */
     extendedNetworkNames: string[]
+    funding?: 'deposit_address' | 'depository'
+    requiresRefundAddress?: boolean
     /** mappings[networkName][tokenSymbol] -> token mapping (for the primary
      * destination, used by the picker visibility check). */
     mappings: Record<string, Record<string, ExtendedTokenMapping>>
@@ -38,6 +59,15 @@ export interface ExtendedRouteProvider {
      * when the network is absent (e.g. testnet on a prod settings payload).
      */
     resolveExtendedRoute(networkName: string, allNetworks: NetworkWithTokens[]): NetworkRoute | undefined
+    /**
+     * Synthesize the extended network as a full `NetworkWithTokens` from the real
+     * base network in settings, for providers whose network the backend does NOT
+     * define (e.g. Polymarket). Injected into `settings.networks` once at inflation
+     * so the route resolver, source skin, and balance prioritization all resolve it
+     * uniformly. Returns undefined when the base network is absent. Optional — when
+     * absent (e.g. Hyperliquid, which the backend defines), nothing is injected.
+     */
+    resolveExtendedNetwork?(networkName: string, allNetworks: NetworkWithTokens[]): NetworkWithTokens | undefined
     /**
      * Resolve the mapping for a specific (extended source, token, destination).
      * Lets providers with multiple destination candidates (e.g. HL primary +
@@ -69,6 +99,18 @@ export type ExtendedRoutePlan = {
     mapping: ResolvedExtendedMapping
     sourceAmount?: string
     realAmount?: string
+}
+
+export function usesDepository(provider: ExtendedRouteProvider): boolean {
+    return provider.funding === 'depository'
+}
+
+export function depositMethodForFunding(funding: ExtendedRouteProvider['funding']): 'wallet' | 'deposit_address' {
+    return funding === 'depository' ? 'wallet' : 'deposit_address'
+}
+
+export function requiredDepositMethod(provider: ExtendedRouteProvider): string {
+    return depositMethodForFunding(provider.funding)
 }
 
 /**

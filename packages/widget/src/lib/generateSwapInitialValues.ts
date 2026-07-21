@@ -3,13 +3,23 @@ import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
 import { Address } from "./address/Address";
 import { SwapBasicData } from "./apiClients/layerSwapApiClient";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
+import { mergeExtendedSourceRoutes } from "./extendedRoutes/registry";
 
 export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: InitialSettings, type: 'cross-chain' | 'exchange' | 'deposit-address', connectedAutofillNetworks?: Set<string>): SwapFormValues {
     const { destination_address, amount, fromAsset, toAsset, from, to, lockFromAsset, lockToAsset, depositMethod, fromExchange } = queryParams
-    const { sourceExchanges, sourceRoutes, destinationRoutes } = settings || {}
+    const { sourceExchanges, sourceRoutes: backendSourceRoutes, destinationRoutes, networks, extendedRouteFlags } = settings || {}
+
+    // Resolve the raw query params to canonical settings names before the merge:
+    // provider resolvers (e.g. the self-swap exclusion in pickPolymarketDestination)
+    // compare exact-case, so passing `?to=polygon_mainnet` through unresolved would
+    // keep an extended source available for its own intermediate.
+    let destinationNetwork = destinationRoutes.find(l => l.name.toUpperCase() === to?.toUpperCase())
+    const canonicalToAsset = destinationNetwork?.tokens?.find(c => c?.symbol?.toUpperCase() === toAsset?.toUpperCase())
+
+    const sourceRoutes = mergeExtendedSourceRoutes(backendSourceRoutes, networks, destinationNetwork?.name, canonicalToAsset?.symbol, extendedRouteFlags)
 
     const lockedSourceCurrency = lockFromAsset ?
-        sourceRoutes.find(l => l.name === to)
+        sourceRoutes.find(l => l.name === from)
             ?.tokens?.find(c => c?.symbol?.toUpperCase() === fromAsset?.toUpperCase())
         : undefined
     const lockedDestinationCurrency = lockToAsset ?
@@ -18,7 +28,6 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
         : undefined
 
     const sourceNetwork = sourceRoutes.find(l => l.name.toUpperCase() === from?.toUpperCase())
-    let destinationNetwork = destinationRoutes.find(l => l.name.toUpperCase() === to?.toUpperCase())
 
     // Deposit-address flow defaults to the top-ranked destination so the user
     // lands on a populated form — but only when a wallet is already connected.

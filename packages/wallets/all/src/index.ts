@@ -18,16 +18,18 @@ import type { FuelProviderConfig } from "@layerswap/wallet-fuel";
 import { createFuelDescriptor } from "./descriptors/fuel";
 
 // `createImmutablePassportProvider` is intentionally NOT statically imported
-// here for the default-providers code path. Calling it pulls
-// `ImtblPassportService`, which in turn dynamic-imports `@imtbl/sdk` and
-// related chunks (~993 KB Brotli on the bridge) — the network waterfall on
-// the deploy showed all of that hitting the home page even though Passport
-// is only needed at the connect-modal level. `imtblRedirect.tsx` still
-// needs the eager imports for the OAuth callback, so we keep the named
-// re-exports below pointing at the chain package; that page's own chunk
-// will include them, the home page's chunk no longer will because nothing
-// eager references them.
-import { createImmutablePassportProvider, imtblPassportLoginCallback } from "@layerswap/wallet-imtbl-passport";
+// here. Calling it pulls `ImtblPassportService`, which in turn dynamic-
+// imports `@imtbl/sdk` and related chunks (~993 KB Brotli) — even though
+// Passport is only needed at the connect-modal level, a static import
+// at the package root drags the SDK into every consumer's bundle
+// (including the CDN remote).
+//
+// Pages that genuinely need the eager value imports (e.g. an OAuth
+// callback page) should reach for them via
+//   `import { createImmutablePassportProvider, imtblPassportLoginCallback }
+//      from "@layerswap/wallets/eager/imtbl-passport"`
+// — that subpath isolates the static graph so the cost stays in the
+// chunks that actually use it.
 import type { ImmutablePassportProviderConfig, ImtblPassportConfig } from "@layerswap/wallet-imtbl-passport";
 import { createImmutablePassportDescriptor } from "./descriptors/imtblPassport";
 
@@ -57,8 +59,10 @@ export type { EVMProviderConfig, WalletConnectConfig };
 export { createFuelDescriptor };
 export type { FuelProviderConfig };
 
-export { createImmutablePassportProvider, imtblPassportLoginCallback, createImmutablePassportDescriptor };
+export { createImmutablePassportDescriptor };
 export type { ImmutablePassportProviderConfig, ImtblPassportConfig };
+// For eager `createImmutablePassportProvider` / `imtblPassportLoginCallback`
+// see the dedicated subpath: `@layerswap/wallets/eager/imtbl-passport`.
 
 export { createParadexDescriptor };
 export type { ParadexProviderConfig };

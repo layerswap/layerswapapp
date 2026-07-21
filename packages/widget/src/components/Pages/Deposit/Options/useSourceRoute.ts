@@ -9,8 +9,8 @@ export const pickSourceToken = (route?: NetworkRoute): NetworkRouteToken | undef
     route?.tokens?.find(t => t.symbol === PREFERRED_SOURCE_TOKEN_SYMBOL) ?? route?.tokens?.[0];
 
 export function useMergedSourceRoutes(): NetworkRoute[] {
-    const { sourceRoutes, networks } = useSettingsState();
-    return useMemo(() => mergeExtendedSourceRoutes(sourceRoutes ?? [], networks), [sourceRoutes, networks]);
+    const { sourceRoutes, networks, extendedRouteFlags } = useSettingsState();
+    return useMemo(() => mergeExtendedSourceRoutes(sourceRoutes ?? [], networks, undefined, undefined, extendedRouteFlags), [sourceRoutes, networks, extendedRouteFlags]);
 }
 
 export function useSourceRoute(
