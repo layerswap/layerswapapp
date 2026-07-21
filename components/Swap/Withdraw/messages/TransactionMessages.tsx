@@ -65,7 +65,7 @@ const GaslessUnavailableMessage: FC<{ message?: string }> = ({ message }) => {
         details={message || `Gasless transfers aren't available for this route right now. Switch to a standard transfer to continue — you'll pay the network fee yourself.`} />
 }
 
-const UexpectedErrorMessage: FC<{ message: string }> = ({ message }) => {
+const UnexpectedErrorMessage: FC<{ message: string }> = ({ message }) => {
     return <WalletUnknownError />
 }
 
@@ -78,7 +78,7 @@ const ActionMessages = {
     TransactionFailedMessage,
     SwapErrorMessage,
     GaslessUnavailableMessage,
-    UexpectedErrorMessage,
+    UnexpectedErrorMessage,
     DifferentAccountsNotAllowedError
 }
 

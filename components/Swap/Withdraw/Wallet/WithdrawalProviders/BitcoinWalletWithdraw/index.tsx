@@ -70,7 +70,8 @@ export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData
         }
         catch (e) {
             setLoading(false)
-            setTransactionErrorMessage(e.message)
+            const message = typeof e === 'string' ? e : e.message
+            setTransactionErrorMessage(message)
             throw e
         }
     }, [source_network, source_token, selectedSourceAccount, connector, rpcClient, isTestnet])
@@ -115,11 +116,11 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined, so
     else if (error && error.includes('User rejected the request.')) {
         return <ActionMessages.TransactionRejectedMessage />
     }
-    else if (error && error.includes('Insufficient balance.')) {
+    else if (error && (error.includes('Insufficient balance.') || error.includes('Insufficient funds'))) {
         return <ActionMessages.InsufficientFundsMessage />
     }
     else if (error) {
-        return <ActionMessages.UexpectedErrorMessage message={error} />
+        return <ActionMessages.UnexpectedErrorMessage message={error} />
     }
     else return <></>
 }

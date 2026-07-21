@@ -1,16 +1,17 @@
 import { BigmiProvider, useConnect } from '@bigmi/react'
-import { createConfig, ctrl, leather, okx, onekey, phantom, unisat, xverse } from '@bigmi/client'
-import type { CreateConnectorFn } from '@bigmi/client'
-import { http, bitcoin, createClient, defineChain, Chain } from '@bigmi/core'
-import { NetworkType, NetworkWithTokens } from '../../Models/Network'
-import { useSettingsState } from '../../context/settings'
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createConfig, bitget, ctrl, leather, metamask, okx, onekey, unisat, xverse } from '@bigmi/client'
+import type { Connector, CreateConnectorFn } from '@bigmi/client'
+import { http, bitcoin, createClient, defineChain, Chain, ChainId } from '@bigmi/core'
+import { getWallets } from '@wallet-standard/app'
+import { NetworkType, NetworkWithTokens } from '@/Models/Network'
+import { useSettingsState } from '@/context/settings'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { InternalConnector } from '@/Models/WalletProvider'
 
 export const BitcoinProvider = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
     const { networks } = useSettingsState()
     const network = networks.find(n => n.type === NetworkType.Bitcoin)
-    const config = createDefaultBigmiConfig(network)
+    const config = useMemo(() => createDefaultBigmiConfig(network), [network])
 
     return (
         <BigmiProvider config={config} reconnectOnMount={true}>
@@ -21,29 +22,44 @@ export const BitcoinProvider = ({ children }: { children: JSX.Element | JSX.Elem
     )
 }
 
+const toInternalConnector = async (connector: Connector): Promise<InternalConnector> => {
+    const provider = await connector.getProvider()
+    const isInjected = !!provider
+    const config = connectorsConfigs.find(c => c.id === connector.id)
+    return {
+        name: connector.name,
+        id: connector.id,
+        icon: connector.icon,
+        type: isInjected ? 'injected' : 'other',
+        installUrl: !isInjected ? config?.installLink : undefined,
+        extensionNotFound: !isInjected,
+        providerName: connector.name
+    }
+}
+
 const ConnectorsContext = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
     const { connectors } = useConnect()
     const [resolvedConnectors, setResolvedConnectors] = useState<InternalConnector[]>([])
 
     useEffect(() => {
-        (async () => {
-            const resolvedConnectors: InternalConnector[] = await Promise.all(connectors.map(async (connector) => {
-                const provider = await connector.getProvider()
-                const isInjected = !!provider
-                const installLink = !isInjected ? connectorsConfigs.find(c => c.id === connector.id)?.installLink : undefined
-                const internalConnector: InternalConnector = {
-                    name: connector.name,
-                    id: connector.id,
-                    icon: connector.icon,
-                    type: isInjected ? 'injected' : 'other',
-                    installUrl: installLink,
-                    extensionNotFound: !isInjected,
-                    providerName: connector.name
-                }
-                return internalConnector
-            }))
-            setResolvedConnectors(resolvedConnectors)
-        })()
+        let cancelled = false
+
+        const resolve = async () => {
+            const next = await Promise.all(connectors.map(toInternalConnector))
+            if (!cancelled) setResolvedConnectors(next)
+        }
+
+        void resolve()
+
+        const wallets = getWallets()
+        const offRegister = wallets.on('register', () => void resolve())
+        const offUnregister = wallets.on('unregister', () => void resolve())
+
+        return () => {
+            cancelled = true
+            offRegister()
+            offUnregister()
+        }
     }, [connectors])
 
     return (
@@ -70,17 +86,12 @@ const connectorsConfigs = [
         installLink: "https://www.xverse.app/download"
     },
     {
-        id: "app.phantom.bitcoin",
-        name: 'Phantom',
-        installLink: "https://phantom.com/download"
-    },
-    {
         id: "unisat",
         name: 'UniSat',
         installLink: "https://unisat.io/"
     },
     {
-        id: "io.xdefi.bitcoin",
+        id: "io.xdefi",
         name: 'Ctrl',
         installLink: "https://ctrl.xyz/download/"
     },
@@ -88,6 +99,11 @@ const connectorsConfigs = [
         id: "com.okex.wallet.bitcoin",
         name: 'OKX Wallet',
         installLink: "https://web3.okx.com/"
+    },
+    {
+        id: "bitget",
+        name: 'Bitget',
+        installLink: "https://web3.bitget.com/en/wallet-download"
     },
     {
         id: "so.onekey.app.wallet.bitcoin",
@@ -98,6 +114,16 @@ const connectorsConfigs = [
         id: "LeatherProvider",
         name: 'Leather',
         installLink: "https://leather.io/"
+    },
+    {
+        id: "io.metamask.bitcoin",
+        name: 'MetaMask',
+        installLink: "https://metamask.io/download/"
+    },
+    {
+        id: "trust-bitcoin",
+        name: 'Trust Wallet',
+        installLink: "https://trustwallet.com/download"
     }
 ]
 
@@ -111,14 +137,16 @@ function createDefaultBigmiConfig(network?: NetworkWithTokens) {
     }
 
     const btcChainId = chain.id
+    // Note: Phantom was removed because @bigmi/client dropped its Phantom connector in v0.9.
     const connectors: CreateConnectorFn[] = [
-        phantom({ chainId: btcChainId }),
         xverse({ chainId: btcChainId }),
         unisat({ chainId: btcChainId }),
-        // ctrl({ chainId: btcChainId }),
-        // okx({ chainId: btcChainId }),
+        ctrl({ chainId: btcChainId }),
+        okx({ chainId: btcChainId }),
+        bitget({ chainId: btcChainId }),
         leather({ chainId: btcChainId }),
         onekey({ chainId: btcChainId }),
+        metamask({ chainId: btcChainId }),
     ]
 
     const config = createConfig({
@@ -133,7 +161,7 @@ function createDefaultBigmiConfig(network?: NetworkWithTokens) {
 }
 
 const bitcoinTestnet = (network: NetworkWithTokens) => defineChain({
-    id: 20000000000002,
+    id: ChainId.BITCOIN_TESTNET,
     name: 'Bitcoin Testnet',
     nativeCurrency: { name: 'Bitcoin', symbol: 'BTC', decimals: 8 },
     rpcUrls: {

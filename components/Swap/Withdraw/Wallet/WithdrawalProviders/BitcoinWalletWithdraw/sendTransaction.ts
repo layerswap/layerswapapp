@@ -25,7 +25,12 @@ export const sendTransaction = async ({ amount, callData, depositAddress, isTest
     }
 
     const amountInSatoshi = Math.floor(amount * 1e8);
-    const hexMemo = Number(callData).toString(16);
+    const raw = String(callData);
+    const semi = raw.indexOf(";");
+    const seq = semi === -1 ? raw : raw.slice(0, semi);
+    const tail = semi === -1 ? "" : raw.slice(semi);
+
+    const hexMemo = BigInt(seq).toString(16) + tail;
 
     const { psbt, inputsToSign } = await transactionBuilder({
         amount: amountInSatoshi,
@@ -52,7 +57,15 @@ export const sendTransaction = async ({ amount, callData, depositAddress, isTest
         }
     })
 
-    const signedPsbt = Psbt.fromHex(signature).finalizeAllInputs()
+    const signedPsbt = Psbt.fromHex(signature)
+
+    // Some wallets (e.g. MetaMask) return an already-finalized PSBT; only finalize inputs that still need it
+    signedPsbt.data.inputs.forEach((input, index) => {
+        if (!input.finalScriptSig && !input.finalScriptWitness) {
+            signedPsbt.finalizeInput(index)
+        }
+    })
+
     const tx = signedPsbt.extractTransaction()
     const txHex = tx.toHex();
 

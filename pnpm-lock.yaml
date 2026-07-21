@@ -23,6 +23,7 @@ overrides:
   ws@>=7.0.0 <7.5.11: 7.5.11
   postcss: '>=8.5.10 <9'
   react-router@>=7.0.0 <7.15.1: 7.15.1
+  '@noble/hashes@>=1.7.0 <1.8.0': 1.8.0
 
 importers:
 
@@ -32,14 +33,14 @@ importers:
         specifier: ^0.2.2
         version: 0.2.2
       '@bigmi/client':
-        specifier: ^0.3.1
-        version: 0.3.1(@tanstack/query-core@5.90.20)(@types/react@18.3.28)(bs58@5.0.0)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@18.3.1))
+        specifier: ^0.10.0
+        version: 0.10.0(@tanstack/query-core@5.90.20)(@types/react@18.3.28)(bs58@5.0.0)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@18.3.1))
       '@bigmi/core':
-        specifier: ^0.3.1
-        version: 0.3.1(@types/react@18.3.28)(bs58@5.0.0)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@18.3.1))
+        specifier: ^0.9.0
+        version: 0.9.0(@types/react@18.3.28)(bs58@5.0.0)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@18.3.1))
       '@bigmi/react':
-        specifier: ^0.3.1
-        version: 0.3.1(@tanstack/query-core@5.90.20)(@tanstack/react-query@5.90.21(react@18.3.1))(@types/react@18.3.28)(bs58@5.0.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@18.3.1))
+        specifier: ^0.9.0
+        version: 0.9.0(@tanstack/query-core@5.90.20)(@tanstack/react-query@5.90.21(react@18.3.1))(@types/react@18.3.28)(bs58@5.0.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@18.3.1))
       '@bitcoinerlab/secp256k1':
         specifier: ^1.2.0
         version: 1.2.0
@@ -61,12 +62,12 @@ importers:
       '@headlessui/react':
         specifier: ^2.1.1
         version: 2.2.9(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@imtbl/config':
-        specifier: 2.20.0
-        version: 2.20.0
-      '@imtbl/passport':
-        specifier: 2.20.0
-        version: 2.20.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+      '@imtbl/auth':
+        specifier: 2.20.2
+        version: 2.20.2
+      '@imtbl/wallet':
+        specifier: 2.20.2
+        version: 2.20.2(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@metamask/sdk':
         specifier: ^0.33.1
         version: 0.33.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)
@@ -182,8 +183,8 @@ importers:
         specifier: ^1.1.12
         version: 1.1.13(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@tronweb3/tronwallet-adapter-trust':
-        specifier: ^1.0.0
-        version: 1.0.2(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+        specifier: ^1.1.0
+        version: 1.1.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@uidotdev/usehooks':
         specifier: ^2.4.1
         version: 2.4.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -193,6 +194,9 @@ importers:
       '@vercel/speed-insights':
         specifier: ^1.3.1
         version: 1.3.1(next@15.5.18(@babel/core@7.29.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+      '@wallet-standard/app':
+        specifier: 1.1.0
+        version: 1.1.0
       axios:
         specifier: ^1.16.0
         version: 1.17.0
@@ -341,6 +345,9 @@ importers:
       '@types/react':
         specifier: 18.x
         version: 18.3.28
+      '@wallet-standard/base':
+        specifier: 1.1.0
+        version: 1.1.0
       '@web3-react/types':
         specifier: ^6.0.7
         version: 6.0.7
@@ -1026,18 +1033,18 @@ packages:
   '@badrap/bar-of-progress@0.2.2':
     resolution: {integrity: sha512-Ig7MdFQM3OA7Ror5UB1ZutXNZFwxh6YExZvcd6EZloOgcXUR8PKNLH2wUVoeh92NMPnPWr6J/l9Mp+f3z7O7MQ==}
 
-  '@bigmi/client@0.3.1':
-    resolution: {integrity: sha512-7VLRMuOSJtV72VhWSEk7b2FLAGzPvSr1s3aBPobYdndMqrkt1UF9b+2IudkRinsRKetuV8uaH1DtWsyrYCXGKg==}
+  '@bigmi/client@0.10.0':
+    resolution: {integrity: sha512-fjswLQdq9jXgtZn6cBtzbxk+S6QN1ajXN2OzEOkgY4dE7hRPsanvSs3H3s3hmmTnS+QleVEcD+s5+raHZqwnuQ==}
     peerDependencies:
       '@tanstack/query-core': '>=5.68.0'
 
-  '@bigmi/core@0.3.1':
-    resolution: {integrity: sha512-KU2KZJmyHPtw7m9sTfOWZ2gQaE8iONpLajmh4gCZfscZIRiL1LddqWkLuFIoFNfY0jbJmvqX46leLUw5YIOVDw==}
+  '@bigmi/core@0.9.0':
+    resolution: {integrity: sha512-jMYZ9fx4+gSVl+VongD7ZCZsPahKjAFEodsRPz3QI15DC3o1ISfcji1Srwc1uQtPKmjq3da2ERugIQamW0CVmg==}
     peerDependencies:
       bs58: ^6.0.0
 
-  '@bigmi/react@0.3.1':
-    resolution: {integrity: sha512-+evNAsf/TNAGuSLwToQEyqX++FddLCqRBGKnRhmnk5WZJuOUtr+LwpjDFkGu2PNSMbbIFd8eprysMhVIGnEM3w==}
+  '@bigmi/react@0.9.0':
+    resolution: {integrity: sha512-d+9RiAmZWhZzIApEt3bJWZE7O5truCkkuga2Zci+igCwegNwKcKrBZPT9hZTuloKpU8tMH7MT/GfkO57kO+Ajw==}
     peerDependencies:
       '@tanstack/react-query': '>=5.68.0'
       react: ^18.0.0 || ^19.0.0
@@ -2230,31 +2237,19 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@imtbl/auth@2.20.0':
-    resolution: {integrity: sha512-mdxRE1j5Z6M8mcimqqNkglYQKdIBgHMsrNsAI7G5lVVpjrtSIqTPkwxEieGc15NfBDPwgX0vw/3lV73DBoKXgA==}
+  '@imtbl/auth@2.20.2':
+    resolution: {integrity: sha512-jFL3YrhGZak5lzs/FkPzxMnTBXqdYmxNQ5fFMFQYgONoeDVw2zIEIQx/0QG6s5riTWjaD6Jo2mGU/PKFeWII0A==}
 
-  '@imtbl/config@2.20.0':
-    resolution: {integrity: sha512-7DMdOheEt9A9H6V7zztUae4M0XKwDU2ddt6zUonjdc9SLyXRWMqtcUkRn7vJK/RqPINz+k1PhVTR7QDgQBl7mw==}
+  '@imtbl/generated-clients@2.20.2':
+    resolution: {integrity: sha512-ghL3y0mwoOIH+QzwuoyBEwH+pSQaiQNeprVkYE3Dtza2hvhHnwZgUR54e16KnDE7iakJ6nzLBpC+clYMNMgoUA==}
     engines: {node: '>=20.11.0'}
 
-  '@imtbl/generated-clients@2.20.0':
-    resolution: {integrity: sha512-OcAyqslwJj3lQ0vBIC64BswhfswQYJXvTV3FM7JLmXaO0pvDRLVhPtNWgbgI0W91/7ekye5hycI/ZGbaJDURsg==}
+  '@imtbl/metrics@2.20.2':
+    resolution: {integrity: sha512-w7nQl/i/oi4xoDclQqFdrfn6EDTsNNFZbff1I4wiBpjcVb/VREHNbbT2I9sFIWHteP+VdFZe8FgHrzHL+ZywQA==}
     engines: {node: '>=20.11.0'}
 
-  '@imtbl/metrics@2.20.0':
-    resolution: {integrity: sha512-v3Oe95A/yfUT+zrASSoXDk680K7VocKIUwsMGE9al/o9GJnCAV05QS+iPfGphGh16Y7+fqWbIQwHAd2YhCLjGg==}
-    engines: {node: '>=20.11.0'}
-
-  '@imtbl/passport@2.20.0':
-    resolution: {integrity: sha512-1bcPuAbu0/QWrHCdJsDv9yhxTPjyJRk3UJ09ZZ3Xs1Vchg6LrHcPKcfznLYumZO/Syc2q5UIEDmA2kpm6gJ6XQ==}
-    engines: {node: '>=20.11.0'}
-
-  '@imtbl/toolkit@2.20.0':
-    resolution: {integrity: sha512-OFp4Xi60whIs4Ea7HmapaKfmt9gAVvxdRPXwZggqbb6UZAogiMlfv5CJ4wQDXlz37zvnGKfP5scbYc53y5iAMg==}
-    engines: {node: '>=20.11.0'}
-
-  '@imtbl/wallet@2.20.0':
-    resolution: {integrity: sha512-+I4TM8kS+EaggZh5Lbxk7y3C/IMd0D4Qck6hseHa0C2H1NzvY3etQct4p6uy5J4TdglgMeEI+2T+WngzC/mwfw==}
+  '@imtbl/wallet@2.20.2':
+    resolution: {integrity: sha512-kNKOmleUmf+BeMDHcGwJKjhXs6Pvy6aj5s4dYiTKOIn8t4AfwUfK6CWj5TOHM9PTv/o7oX5atxtnI/62sSU1VA==}
 
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
@@ -2353,10 +2348,6 @@ packages:
     peerDependencies:
       '@types/react': '>=16'
       react: '>=16'
-
-  '@metamask/detect-provider@2.0.0':
-    resolution: {integrity: sha512-sFpN+TX13E9fdBDh9lvQeZdJn4qYoRb/6QF2oZZK/Pn559IhCFacPMU1rMuqyXoFQF3JSJfii2l98B87QDPeCQ==}
-    engines: {node: '>=14.0.0'}
 
   '@metamask/eth-json-rpc-provider@1.0.1':
     resolution: {integrity: sha512-whiUMPlAOrVGmX8aKYVPvlKyG4CpQXiNNyt74vE1xb5sPvmx5oA7B/kOi/JdBvhGQq97U1/AVdXEdk2zkP8qyA==}
@@ -2596,18 +2587,6 @@ packages:
 
   '@noble/hashes@1.6.1':
     resolution: {integrity: sha512-pq5D8h10hHBjyqX+cfBm0i8JUXJ0UhczFc4r74zbuT9XgewFo2E3J1cOaGtdZynILNmQ685YWGzGE1Zv6io50w==}
-    engines: {node: ^14.21.3 || >=16}
-
-  '@noble/hashes@1.7.0':
-    resolution: {integrity: sha512-HXydb0DgzTpDPwbVeDGCG1gIu7X6+AuU6Zl6av/E/KG8LMsvPntvq+w17CHRpKBmN6Ybdrt1eP3k4cj8DJa78w==}
-    engines: {node: ^14.21.3 || >=16}
-
-  '@noble/hashes@1.7.1':
-    resolution: {integrity: sha512-B8XBPsn4vT/KJAGqDzbwztd+6Yte3P4V7iafm24bxgDe/mlRuK6xmWPuCNrKt2vDafZ8MfJLlchDG/vYafQEjQ==}
-    engines: {node: ^14.21.3 || >=16}
-
-  '@noble/hashes@1.7.2':
-    resolution: {integrity: sha512-biZ0NUSxyjLLqo6KxEJ1b+C2NAx0wtDoFvCaXHGgUkeHzf3Xc1xKumFKREuT7f7DARNZ/slvYUwFG6B0f2b6hQ==}
     engines: {node: ^14.21.3 || >=16}
 
   '@noble/hashes@1.8.0':
@@ -5180,6 +5159,10 @@ packages:
     resolution: {integrity: sha512-Sv1FUo5A1fNgc2oZ2LMJ7SmA5TpW5MSWTNjnWJ8t6Z+aRfLbc/s8nkPPLqm0YfR+Sa80sLhMfqJsJzYf73ynMg==}
     engines: {node: '>=16', pnpm: '>=7'}
 
+  '@tronweb3/tronwallet-abstract-adapter@1.2.0':
+    resolution: {integrity: sha512-Xy3ftKnxhEEWOWG6OXoN877t4oTr4W/kuQb7LWVYdn5PNeQ90LXj7eaTu9e6624iozDRuxMix5FThtqEt5F7dA==}
+    engines: {node: '>=16', pnpm: '>=7'}
+
   '@tronweb3/tronwallet-adapter-bitkeep@1.1.7':
     resolution: {integrity: sha512-J557vdOZoZOSu4CDQO+WpaXcnmOSzHxURepnlpvhnCYHvY5cZhPKVTDI4CfxarMmryExxOXjnnomWMj6o/nY1A==}
     engines: {node: '>=16', pnpm: '>=7'}
@@ -5227,8 +5210,12 @@ packages:
     resolution: {integrity: sha512-Oq5L0FyBM+g49DCr0DYdSx8xuhiqIlKoBTPNVmCTSDoWnoZpIh0XE33Axm/4OUMO2NHFpQMvP3pFo7QIllOZ/w==}
     engines: {node: '>=16', pnpm: '>=7'}
 
-  '@tronweb3/tronwallet-adapter-trust@1.0.2':
-    resolution: {integrity: sha512-Bw1Gikor29BDzRN8lsCVk9ElviG9wRwR7egGHDYwEiwkFXb31qZXbMCFFSJvK4GZ5sQCCVWenPR6A2Te4t4WHA==}
+  '@tronweb3/tronwallet-adapter-tronlink@1.2.0':
+    resolution: {integrity: sha512-utEIJJ4lBjy7waTgohwoeaD8pM5AfQvXKZWabZP5YPiorNq//TseEr4Vy80uNco/SD1PhXpNjMYSwuCo+15J7A==}
+    engines: {node: '>=16', pnpm: '>=7'}
+
+  '@tronweb3/tronwallet-adapter-trust@1.1.0':
+    resolution: {integrity: sha512-dedOXV3+BogFDRJnDi1cqlS2NPelZmF8Z0KcmfcVqmX1eCnBVbEmRLmTIwwN4LO/WcyX7XTLQNHPfQprrMVtbA==}
     engines: {node: '>=16', pnpm: '>=7'}
 
   '@trpc/client@10.45.4':
@@ -11367,8 +11354,8 @@ packages:
       use-sync-external-store:
         optional: true
 
-  zustand@5.0.11:
-    resolution: {integrity: sha512-fdZY+dk7zn/vbWNCYmzZULHRrss0jx5pPFiOuMZ/5HJN6Yv3u+1Wswy/4MpZEkEGhtNH+pwxZB8OKgUBPzYAGg==}
+  zustand@5.0.14:
+    resolution: {integrity: sha512-/8tAspM5LMPr28b3fwLYrtdj77ECpfZviaP75CMTnwO8ISyaE4GDIG/9rDDYq/cH9D2Xw2A2RXglLInmVBQB/g==}
     engines: {node: '>=12.20.0'}
     peerDependencies:
       '@types/react': '>=18.0.0'
@@ -12200,12 +12187,14 @@ snapshots:
 
   '@badrap/bar-of-progress@0.2.2': {}
 
-  '@bigmi/client@0.3.1(@tanstack/query-core@5.90.20)(@types/react@18.3.28)(bs58@5.0.0)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@18.3.1))':
+  '@bigmi/client@0.10.0(@tanstack/query-core@5.90.20)(@types/react@18.3.28)(bs58@5.0.0)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@18.3.1))':
     dependencies:
-      '@bigmi/core': 0.3.1(@types/react@18.3.28)(bs58@5.0.0)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@18.3.1))
+      '@bigmi/core': 0.9.0(@types/react@18.3.28)(bs58@5.0.0)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@18.3.1))
       '@tanstack/query-core': 5.90.20
+      '@wallet-standard/app': 1.1.0
+      '@wallet-standard/base': 1.1.0
       eventemitter3: 5.0.4
-      zustand: 5.0.11(@types/react@18.3.28)(react@18.3.1)(use-sync-external-store@1.4.0(react@18.3.1))
+      zustand: 5.0.14(@types/react@18.3.28)(react@18.3.1)(use-sync-external-store@1.4.0(react@18.3.1))
     transitivePeerDependencies:
       - '@types/react'
       - bs58
@@ -12214,14 +12203,14 @@ snapshots:
       - typescript
       - use-sync-external-store
 
-  '@bigmi/core@0.3.1(@types/react@18.3.28)(bs58@5.0.0)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@18.3.1))':
+  '@bigmi/core@0.9.0(@types/react@18.3.28)(bs58@5.0.0)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@18.3.1))':
     dependencies:
       '@noble/hashes': 1.8.0
       bech32: 2.0.0
       bitcoinjs-lib: 7.0.1(typescript@5.9.3)
       bs58: 5.0.0
       eventemitter3: 5.0.4
-      zustand: 5.0.11(@types/react@18.3.28)(react@18.3.1)(use-sync-external-store@1.4.0(react@18.3.1))
+      zustand: 5.0.14(@types/react@18.3.28)(react@18.3.1)(use-sync-external-store@1.4.0(react@18.3.1))
     transitivePeerDependencies:
       - '@types/react'
       - immer
@@ -12229,10 +12218,10 @@ snapshots:
       - typescript
       - use-sync-external-store
 
-  '@bigmi/react@0.3.1(@tanstack/query-core@5.90.20)(@tanstack/react-query@5.90.21(react@18.3.1))(@types/react@18.3.28)(bs58@5.0.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@18.3.1))':
+  '@bigmi/react@0.9.0(@tanstack/query-core@5.90.20)(@tanstack/react-query@5.90.21(react@18.3.1))(@types/react@18.3.28)(bs58@5.0.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@18.3.1))':
     dependencies:
-      '@bigmi/client': 0.3.1(@tanstack/query-core@5.90.20)(@types/react@18.3.28)(bs58@5.0.0)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@18.3.1))
-      '@bigmi/core': 0.3.1(@types/react@18.3.28)(bs58@5.0.0)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@18.3.1))
+      '@bigmi/client': 0.10.0(@tanstack/query-core@5.90.20)(@types/react@18.3.28)(bs58@5.0.0)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@18.3.1))
+      '@bigmi/core': 0.9.0(@types/react@18.3.28)(bs58@5.0.0)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@18.3.1))
       '@tanstack/react-query': 5.90.21(react@18.3.1)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
@@ -13388,7 +13377,7 @@ snapshots:
       '@fuel-ts/crypto': 0.101.3(vitest@3.0.9(@types/debug@4.1.12)(@types/node@22.19.11)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.22.4)(yaml@2.8.4))
       '@fuel-ts/errors': 0.101.3
       '@fuel-ts/utils': 0.101.3(vitest@3.0.9(@types/debug@4.1.12)(@types/node@22.19.11)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.22.4)(yaml@2.8.4))
-      '@noble/hashes': 1.7.1
+      '@noble/hashes': 1.8.0
     transitivePeerDependencies:
       - vitest
 
@@ -13414,7 +13403,7 @@ snapshots:
     dependencies:
       '@fuel-ts/errors': 0.101.3
       '@fuel-ts/utils': 0.101.3(vitest@3.0.9(@types/debug@4.1.12)(@types/node@22.19.11)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.22.4)(yaml@2.8.4))
-      '@noble/hashes': 1.7.1
+      '@noble/hashes': 1.8.0
     transitivePeerDependencies:
       - vitest
 
@@ -13426,7 +13415,7 @@ snapshots:
     dependencies:
       '@fuel-ts/crypto': 0.101.3(vitest@3.0.9(@types/debug@4.1.12)(@types/node@22.19.11)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.22.4)(yaml@2.8.4))
       '@fuel-ts/utils': 0.101.3(vitest@3.0.9(@types/debug@4.1.12)(@types/node@22.19.11)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.22.4)(yaml@2.8.4))
-      '@noble/hashes': 1.7.1
+      '@noble/hashes': 1.8.0
     transitivePeerDependencies:
       - vitest
 
@@ -13664,70 +13653,33 @@ snapshots:
   '@img/sharp-win32-x64@0.34.5':
     optional: true
 
-  '@imtbl/auth@2.20.0':
+  '@imtbl/auth@2.20.2':
     dependencies:
-      '@imtbl/generated-clients': 2.20.0
-      '@imtbl/metrics': 2.20.0
+      '@imtbl/generated-clients': 2.20.2
+      '@imtbl/metrics': 2.20.2
       localforage: 1.10.0
       oidc-client-ts: 3.4.1
     transitivePeerDependencies:
       - debug
       - supports-color
 
-  '@imtbl/config@2.20.0':
-    dependencies:
-      '@imtbl/metrics': 2.20.0
-
-  '@imtbl/generated-clients@2.20.0':
+  '@imtbl/generated-clients@2.20.2':
     dependencies:
       axios: 1.17.0
     transitivePeerDependencies:
       - debug
       - supports-color
 
-  '@imtbl/metrics@2.20.0':
+  '@imtbl/metrics@2.20.2':
     dependencies:
       global-const: 0.1.2
       lru-memorise: 0.3.0
 
-  '@imtbl/passport@2.20.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
+  '@imtbl/wallet@2.20.2(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
     dependencies:
-      '@imtbl/auth': 2.20.0
-      '@imtbl/config': 2.20.0
-      '@imtbl/generated-clients': 2.20.0
-      '@imtbl/metrics': 2.20.0
-      '@imtbl/toolkit': 2.20.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      '@imtbl/wallet': 2.20.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
-      ethers: 6.16.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      localforage: 1.10.0
-      oidc-client-ts: 3.4.1
-    transitivePeerDependencies:
-      - bufferutil
-      - debug
-      - supports-color
-      - typescript
-      - utf-8-validate
-      - zod
-
-  '@imtbl/toolkit@2.20.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
-    dependencies:
-      '@metamask/detect-provider': 2.0.0
-      axios: 1.17.0
-      bn.js: 5.2.3
-      enc-utils: 3.0.0
-      ethers: 6.16.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      oidc-client-ts: 3.4.1
-    transitivePeerDependencies:
-      - bufferutil
-      - debug
-      - supports-color
-      - utf-8-validate
-
-  '@imtbl/wallet@2.20.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
-    dependencies:
-      '@imtbl/auth': 2.20.0
-      '@imtbl/generated-clients': 2.20.0
-      '@imtbl/metrics': 2.20.0
+      '@imtbl/auth': 2.20.2
+      '@imtbl/generated-clients': 2.20.2
+      '@imtbl/metrics': 2.20.2
       viem: 2.18.8(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
     transitivePeerDependencies:
       - bufferutil
@@ -13893,8 +13845,6 @@ snapshots:
       '@types/mdx': 2.0.13
       '@types/react': 18.3.28
       react: 18.3.1
-
-  '@metamask/detect-provider@2.0.0': {}
 
   '@metamask/eth-json-rpc-provider@1.0.1':
     dependencies:
@@ -14154,15 +14104,15 @@ snapshots:
 
   '@noble/curves@1.8.0':
     dependencies:
-      '@noble/hashes': 1.7.0
+      '@noble/hashes': 1.8.0
 
   '@noble/curves@1.8.1':
     dependencies:
-      '@noble/hashes': 1.7.1
+      '@noble/hashes': 1.8.0
 
   '@noble/curves@1.8.2':
     dependencies:
-      '@noble/hashes': 1.7.2
+      '@noble/hashes': 1.8.0
 
   '@noble/curves@1.9.1':
     dependencies:
@@ -14189,12 +14139,6 @@ snapshots:
   '@noble/hashes@1.6.0': {}
 
   '@noble/hashes@1.6.1': {}
-
-  '@noble/hashes@1.7.0': {}
-
-  '@noble/hashes@1.7.1': {}
-
-  '@noble/hashes@1.7.2': {}
 
   '@noble/hashes@1.8.0': {}
 
@@ -15400,7 +15344,7 @@ snapshots:
       suspend-react: 0.1.3(react@18.3.1)
       three: 0.184.0
       use-sync-external-store: 1.6.0(react@18.3.1)
-      zustand: 5.0.11(@types/react@18.3.28)(react@18.3.1)(use-sync-external-store@1.6.0(react@18.3.1))
+      zustand: 5.0.14(@types/react@18.3.28)(react@18.3.1)(use-sync-external-store@1.6.0(react@18.3.1))
     optionalDependencies:
       react-dom: 18.3.1(react@18.3.1)
       react-native: 0.85.3(@babel/core@7.29.7)(@types/react@18.3.28)(bufferutil@4.1.0)(react@18.3.1)(utf-8-validate@5.0.10)
@@ -15787,7 +15731,7 @@ snapshots:
   '@scure/bip32@1.6.2':
     dependencies:
       '@noble/curves': 1.8.2
-      '@noble/hashes': 1.7.2
+      '@noble/hashes': 1.8.0
       '@scure/base': 1.2.6
 
   '@scure/bip32@1.7.0':
@@ -15803,7 +15747,7 @@ snapshots:
 
   '@scure/bip39@1.5.4':
     dependencies:
-      '@noble/hashes': 1.7.2
+      '@noble/hashes': 1.8.0
       '@scure/base': 1.2.6
 
   '@scure/bip39@1.6.0':
@@ -17706,6 +17650,16 @@ snapshots:
       - supports-color
       - utf-8-validate
 
+  '@tronweb3/tronwallet-abstract-adapter@1.2.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
+    dependencies:
+      eventemitter3: 4.0.7
+      tronweb: 6.2.2(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+    transitivePeerDependencies:
+      - bufferutil
+      - debug
+      - supports-color
+      - utf-8-validate
+
   '@tronweb3/tronwallet-adapter-bitkeep@1.1.7(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
       '@tronweb3/tronwallet-abstract-adapter': 1.1.10(bufferutil@4.1.0)(utf-8-validate@5.0.10)
@@ -17822,10 +17776,19 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@tronweb3/tronwallet-adapter-trust@1.0.2(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
+  '@tronweb3/tronwallet-adapter-tronlink@1.2.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
-      '@tronweb3/tronwallet-abstract-adapter': 1.1.10(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      '@tronweb3/tronwallet-adapter-tronlink': 1.1.13(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      '@tronweb3/tronwallet-abstract-adapter': 1.2.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+    transitivePeerDependencies:
+      - bufferutil
+      - debug
+      - supports-color
+      - utf-8-validate
+
+  '@tronweb3/tronwallet-adapter-trust@1.1.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@tronweb3/tronwallet-abstract-adapter': 1.2.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      '@tronweb3/tronwallet-adapter-tronlink': 1.2.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - bufferutil
       - debug
@@ -18641,7 +18604,7 @@ snapshots:
   '@walletconnect/relay-auth@1.1.0':
     dependencies:
       '@noble/curves': 1.8.0
-      '@noble/hashes': 1.7.0
+      '@noble/hashes': 1.8.0
       '@walletconnect/safe-json': 1.0.2
       '@walletconnect/time': 1.0.2
       uint8arrays: 3.1.1
@@ -18922,7 +18885,7 @@ snapshots:
     dependencies:
       '@noble/ciphers': 1.2.1
       '@noble/curves': 1.8.1
-      '@noble/hashes': 1.7.1
+      '@noble/hashes': 1.8.0
       '@walletconnect/jsonrpc-utils': 1.0.8
       '@walletconnect/keyvaluestorage': 1.1.1(@react-native-async-storage/async-storage@1.24.0(react-native@0.85.3(@babel/core@7.29.7)(@types/react@18.3.28)(bufferutil@4.1.0)(react@18.3.1)(utf-8-validate@5.0.10)))(@vercel/functions@3.7.5(ws@8.21.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)))
       '@walletconnect/relay-api': 1.0.11
@@ -20708,8 +20671,8 @@ snapshots:
       '@typescript-eslint/parser': 8.56.1(eslint@8.49.0)(typescript@5.9.3)
       eslint: 8.49.0
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@8.49.0)
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.56.1(eslint@8.49.0)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@8.49.0)
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.56.1(eslint@8.49.0)(typescript@5.9.3))(eslint@8.49.0))(eslint@8.49.0)
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.56.1(eslint@8.49.0)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.56.1(eslint@8.49.0)(typescript@5.9.3))(eslint@8.49.0))(eslint@8.49.0))(eslint@8.49.0)
       eslint-plugin-jsx-a11y: 6.10.2(eslint@8.49.0)
       eslint-plugin-react: 7.37.5(eslint@8.49.0)
       eslint-plugin-react-hooks: 5.2.0(eslint@8.49.0)
@@ -20728,7 +20691,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0)(eslint@8.49.0):
+  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.56.1(eslint@8.49.0)(typescript@5.9.3))(eslint@8.49.0))(eslint@8.49.0):
     dependencies:
       '@nolyfill/is-core-module': 1.0.39
       debug: 4.4.3
@@ -20739,22 +20702,22 @@ snapshots:
       tinyglobby: 0.2.15
       unrs-resolver: 1.11.1
     optionalDependencies:
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.56.1(eslint@8.49.0)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@8.49.0)
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.56.1(eslint@8.49.0)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.56.1(eslint@8.49.0)(typescript@5.9.3))(eslint@8.49.0))(eslint@8.49.0))(eslint@8.49.0)
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.56.1(eslint@8.49.0)(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@8.49.0):
+  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.56.1(eslint@8.49.0)(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.56.1(eslint@8.49.0)(typescript@5.9.3))(eslint@8.49.0))(eslint@8.49.0))(eslint@8.49.0):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
       '@typescript-eslint/parser': 8.56.1(eslint@8.49.0)(typescript@5.9.3)
       eslint: 8.49.0
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@8.49.0)
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.56.1(eslint@8.49.0)(typescript@5.9.3))(eslint@8.49.0))(eslint@8.49.0)
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.56.1(eslint@8.49.0)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@8.49.0):
+  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.56.1(eslint@8.49.0)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.56.1(eslint@8.49.0)(typescript@5.9.3))(eslint@8.49.0))(eslint@8.49.0))(eslint@8.49.0):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.9
@@ -20765,7 +20728,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 8.49.0
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.56.1(eslint@8.49.0)(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@8.49.0)
+      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.56.1(eslint@8.49.0)(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.56.1(eslint@8.49.0)(typescript@5.9.3))(eslint@8.49.0))(eslint@8.49.0))(eslint@8.49.0)
       hasown: 2.0.4
       is-core-module: 2.16.1
       is-glob: 4.0.3
@@ -25065,7 +25028,7 @@ snapshots:
   viem@2.23.2(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76):
     dependencies:
       '@noble/curves': 1.8.1
-      '@noble/hashes': 1.7.1
+      '@noble/hashes': 1.8.0
       '@scure/bip32': 1.6.2
       '@scure/bip39': 1.5.4
       abitype: 1.0.8(typescript@5.9.3)(zod@3.25.76)
@@ -25561,13 +25524,13 @@ snapshots:
       react: 18.3.1
       use-sync-external-store: 1.4.0(react@18.3.1)
 
-  zustand@5.0.11(@types/react@18.3.28)(react@18.3.1)(use-sync-external-store@1.4.0(react@18.3.1)):
+  zustand@5.0.14(@types/react@18.3.28)(react@18.3.1)(use-sync-external-store@1.4.0(react@18.3.1)):
     optionalDependencies:
       '@types/react': 18.3.28
       react: 18.3.1
       use-sync-external-store: 1.4.0(react@18.3.1)
 
-  zustand@5.0.11(@types/react@18.3.28)(react@18.3.1)(use-sync-external-store@1.6.0(react@18.3.1)):
+  zustand@5.0.14(@types/react@18.3.28)(react@18.3.1)(use-sync-external-store@1.6.0(react@18.3.1)):
     optionalDependencies:
       '@types/react': 18.3.28
       react: 18.3.1
