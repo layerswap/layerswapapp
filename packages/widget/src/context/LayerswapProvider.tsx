@@ -248,6 +248,32 @@ const DescriptorHydrationBoundary: FC<{
         await Promise.all(pending)
     }, [walletProviders, loadById])
 
+    // Phase-2 trigger: descriptors whose chain SDK left a persisted-session
+    // marker (declared via `hasPersistedSession` — a cheap localStorage sniff
+    // that never loads the SDK) hydrate shortly after mount, so restored
+    // sessions surface without the user opening the connect modal (the
+    // phase-1 `loadAll` trigger). Deferred to idle so the chunk fetch doesn't
+    // compete with first paint and initial data fetching.
+    useEffect(() => {
+        if (typeof window === 'undefined') return
+        const withSessions = walletProviders.filter((p): p is WalletProviderDescriptor =>
+            isWalletProviderDescriptor(p)
+            && !loadedByIdRef.current.has(p.id)
+            && p.hasPersistedSession?.() === true
+        )
+        if (withSessions.length === 0) return
+        const run = () => { withSessions.forEach(p => { void loadById(p.id) }) }
+        // `typeof` guard because Safari still lacks requestIdleCallback.
+        const hasIdle = typeof window.requestIdleCallback === 'function'
+        const handle = hasIdle
+            ? window.requestIdleCallback(run, { timeout: 2000 })
+            : window.setTimeout(run, 200)
+        return () => {
+            if (hasIdle) window.cancelIdleCallback(handle)
+            else window.clearTimeout(handle)
+        }
+    }, [walletProviders, loadById])
+
     const loaderValue = useMemo(() => ({ loadById, loadAll }), [loadById, loadAll])
 
     return (

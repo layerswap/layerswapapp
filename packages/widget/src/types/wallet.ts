@@ -109,6 +109,15 @@ export type WalletProviderDescriptor = {
     asSourceSupportedNetworks?: string[],
     unsupportedPlatforms?: string[],
     hideFromList?: boolean,
+    /**
+     * Cheap, dependency-free probe: does this chain's SDK have a persisted
+     * session marker (e.g. a localStorage key) suggesting a wallet could be
+     * silently restored? When true, the descriptor is hydrated right after
+     * mount so the restored session surfaces without the user opening the
+     * connect modal. MUST NOT import the chain SDK to answer — inline the
+     * storage key literal, like the network-id lists above.
+     */
+    hasPersistedSession?: () => boolean,
     loadProvider: () => Promise<WalletProvider | WalletWrapper>,
 }
 

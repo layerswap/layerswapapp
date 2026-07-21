@@ -1,6 +1,7 @@
 import type { WalletProviderDescriptor } from "@layerswap/widget/types"
 import type { WalletConnectConfig } from "@layerswap/wallet-evm"
 import { defineWalletDescriptor } from "./defineWalletDescriptor"
+import { hasStorageKey } from "./persistedSession"
 
 // SVM's runtime list is built dynamically from `NetworkType.Solana` networks
 // in `SvmConnectionService` — for static gating we mirror the universe of
@@ -22,6 +23,10 @@ export function createSVMDescriptor(walletConnectConfigs?: WalletConnectConfig):
         autofillSupportedNetworks: SVM_NETWORKS,
         withdrawalSupportedNetworks: SVM_NETWORKS,
         asSourceSupportedNetworks: SVM_NETWORKS,
+        // `STORAGE_KEY` in wallet-svm's svmAdapterManager — persisted only
+        // after a selection actually connected, so it's a reliable
+        // restorable-session hint.
+        hasPersistedSession: () => hasStorageKey('walletAdapterPreviouslySelectedName'),
         loadProvider: async () => {
             const mod = await import('@layerswap/wallet-svm')
             return mod.createSVMProvider({ walletConnectConfigs })
