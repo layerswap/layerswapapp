@@ -42,6 +42,31 @@ export async function rollbackChannel(options) {
         );
     }
 
+    // Verifying loaders fail closed on manifests past `expiresAt` (replay
+    // protection), so pointing the channel at an expired build would brick
+    // every new mount. Re-publish (re-sign) the target build instead.
+    if (typeof manifest.expiresAt === 'string') {
+        const expiresMs = Date.parse(manifest.expiresAt);
+        const dayMs = 24 * 60 * 60 * 1000;
+        if (!Number.isNaN(expiresMs) && expiresMs <= Date.now()) {
+            throw new Error(
+                `[rollback-r2] build ${buildId} expired at ${manifest.expiresAt} — loaders will refuse it. `
+                + 'Re-publish that build (re-signing refreshes its validity window) and retry.',
+            );
+        }
+        if (!Number.isNaN(expiresMs) && expiresMs - Date.now() < 3 * dayMs) {
+            logger.warn(
+                `[rollback-r2] warning: build ${buildId} expires ${manifest.expiresAt} (<3 days). `
+                + 'Plan a re-publish before then or new mounts will start failing.',
+            );
+        }
+    } else {
+        logger.warn(
+            `[rollback-r2] warning: build ${buildId} has no expiresAt — verifying loaders reject `
+            + 'manifests without a validity window. Re-publish it with a current pipeline.',
+        );
+    }
+
     const channels = await readChannelMap(ctx);
     const previous = channels[channel];
     if (previous === buildId) {

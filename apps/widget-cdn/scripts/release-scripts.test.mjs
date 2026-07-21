@@ -7,7 +7,7 @@ import { deployBuild } from './deploy-r2.mjs';
 import { ASSET_BASE, deploymentKey } from './cdn-layout.mjs';
 import { rollbackChannel } from './rollback-r2.mjs';
 
-const silentLogger = { log() {} };
+const silentLogger = { log() {}, warn() {} };
 
 function deployFixture(t, identity, manifestOverrides = {}) {
     const root = mkdtempSync(join(tmpdir(), 'layerswap-deploy-r2-'));
@@ -168,6 +168,49 @@ test('rollback rejects a missing target without changing the channel', async () 
         /is not published/,
     );
     assert.equal(writes, 0);
+});
+
+test('rollback rejects an expired target build', async () => {
+    let writes = 0;
+    await assert.rejects(
+        rollbackChannel({
+            channel: 'v1',
+            buildId: '1.7.0-0123456789ab',
+            ctx: {},
+            logger: silentLogger,
+            readManifest: async () => ({
+                buildId: '1.7.0-0123456789ab',
+                channel: 'v1',
+                expiresAt: new Date(Date.now() - 1000).toISOString(),
+            }),
+            readChannelMap: async () => ({}),
+            writeChannelMap: async () => { writes += 1; },
+        }),
+        /expired at/,
+    );
+    assert.equal(writes, 0);
+});
+
+test('rollback warns but proceeds for a near-expiry target build', async () => {
+    const warnings = [];
+    const writes = [];
+    const result = await rollbackChannel({
+        channel: 'v1',
+        buildId: '1.7.0-0123456789ab',
+        ctx: {},
+        logger: { log() {}, warn(msg) { warnings.push(msg); } },
+        readManifest: async () => ({
+            buildId: '1.7.0-0123456789ab',
+            channel: 'v1',
+            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        }),
+        readChannelMap: async () => ({ v1: '1.6.0-aaaaaaaaaaaa' }),
+        writeChannelMap: async (_ctx, channels) => writes.push({ ...channels }),
+    });
+    assert.equal(result.changed, true);
+    assert.equal(writes.length, 1);
+    assert.equal(warnings.length, 1);
+    assert.match(warnings[0], /expires/);
 });
 
 test('rollback rejects a build from another major channel', async () => {

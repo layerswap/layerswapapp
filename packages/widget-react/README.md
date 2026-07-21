@@ -11,11 +11,12 @@ bundle** — your app installs only this thin loader.
 pnpm add @layerswap/widget-react
 ```
 
-`react`, `react-dom`, `wagmi`, `viem`, `@tanstack/react-query`, and `zustand`
-are declared as peer dependencies; pnpm/npm will dedupe them to the host
-app's existing copy. `@layerswap/widget` is an **optional** peer-dep that
-provides typed `LayerswapWidgetConfig` and `CallbacksContextType` for IDE
-support — install it as a devDep if you want fully-typed config.
+`react` and `react-dom` are required peer dependencies — they are the only
+libraries the loader shares with the remote (see "How it works"). `wagmi` is
+an **optional**, types-only peer: install it if you pass a `wagmiConfig`
+prop. Everything else the widget needs ships inside the CDN remote. Config
+and callback prop types are bundled with this package (re-exported from
+`@layerswap/widget-types`), so no extra package is needed for typed config.
 
 ## Quick start
 
@@ -39,6 +40,11 @@ always fetched from the canonical Layerswap CDN (rolling `v1` channel) baked
 into the package, with signature verification on. The manifest layer handles
 updates transparently, so integrators auto-receive forward-compatible builds
 without a redeploy and cannot repoint the widget at another origin.
+
+Works in the Next.js App Router out of the box: the component declares
+`"use client"`, renders `fallback` during server prerender/hydration, and
+only starts the browser-only loader after hydration — no `next/dynamic`
+wrapper needed.
 
 To ride a different major channel (e.g. a future `/v2/`), upgrade the
 `@layerswap/widget-react` package — the source URL is pinned to the package
@@ -92,12 +98,12 @@ widget's behavior, not where it comes from.
 
 | Prop | Type | Description |
 |---|---|---|
-| `config` | `LayerswapWidgetConfig` | Forwarded to the widget's `LayerswapProvider`. Includes `apiKey`, `version`, `theme`, `initialValues`, `settings`. |
-| `callbacks` | `CallbacksContextType` | `onSwapCreate`, `onSwapComplete`, `onError`, `onSwapModalStateChange`, etc. |
+| `config` | `WidgetConfig` (from `@layerswap/widget-types`, re-exported here) | Forwarded to the widget's `LayerswapProvider`. Includes `apiKey`, `version`, `theme`, `initialValues`, `settings`. |
+| `callbacks` | `WidgetCallbacks` | `onSwapCreate`, `onSwapComplete`, `onError`, `onSwapModalStateChange`, etc. |
 | `wagmiConfig` | `wagmi/Config` | Host wagmi config the widget adopts for EVM. |
-| `walletDefaults` | `DefaultWalletConfig` | `walletConnect` (projectId, etc.), `ton`, `immutablePassport`. |
-| `walletProvidersConfig.include` | `string[]` | Allowlist — keep only these chains, e.g. `['evm', 'svm']`. Applied before `exclude`. |
-| `walletProvidersConfig.exclude` | `string[]` | Blocklist — drop chains from the provider list — `['tron', 'fuel']`, etc. |
+| `walletDefaults` | `WalletDefaults` | `walletConnect` (projectId, etc.), `ton`, `immutablePassport`. |
+| `walletProvidersConfig.include` | `WalletProviderId[]` | Allowlist — keep only these chains, e.g. `['evm', 'svm']`. Applied before `exclude`. |
+| `walletProvidersConfig.exclude` | `WalletProviderId[]` | Blocklist — drop chains from the provider list — `['tron', 'fuel']`, etc. |
 | `fallback` | `ReactNode` | Shown while loading. |
 | `onReady` | `() => void` | Fires once the widget mounts. |
 | `onError` | `(err) => void` | Fires on load/render failure; receives a `ManifestError` for manifest issues. |
@@ -112,9 +118,11 @@ widget's behavior, not where it comes from.
    the public key baked into this package. Tampered / unsigned manifests
    are rejected.
 4. Calls `@module-federation/runtime` to load `manifest.remoteEntry`
-   (resolved relative to the manifest URL). React, react-dom, wagmi,
-   viem, react-query, zustand are registered into the MF shared scope
-   from the host so the remote uses those instances.
+   (resolved relative to the manifest URL). React and react-dom are
+   registered into the MF shared scope from the host as singletons
+   (React 18/19 required) so the remote reuses the host's instances.
+   Everything else (wagmi, viem, react-query, zustand, wallet SDKs)
+   is bundled inside the remote.
 5. The remote's exposed `./Widget` component is rendered via
    `React.lazy` inside the host's React tree.
 
@@ -123,16 +131,20 @@ accordingly.
 
 ## Recommended Content Security Policy
 
-The widget is served from a known origin (`cdn.layerswap.io` by default).
-A tight CSP that allowlists exactly that origin plus the LayerSwap API
+The widget is served from the fixed origin baked into this package release —
+currently `https://layerswap-widget-cdn.layerswapcdn.workers.dev` (the
+`DEFAULT_MANIFEST_URL` in `@layerswap/widget-js`; if a future release moves
+to a custom domain such as `cdn.layerswap.io`, this section moves with it).
+A tight CSP that allowlists exactly that origin plus the LayerSwap endpoints
 gives integrators the smallest blast radius if the supply chain is ever
 compromised:
 
 ```
 Content-Security-Policy:
   default-src 'self';
-  script-src   'self' https://cdn.layerswap.io;
-  connect-src  'self' https://cdn.layerswap.io https://api.layerswap.io
+  script-src   'self' https://layerswap-widget-cdn.layerswapcdn.workers.dev;
+  connect-src  'self' https://layerswap-widget-cdn.layerswapcdn.workers.dev
+               https://api.layerswap.io https://layerswap.io
                https://*.walletconnect.com https://*.walletconnect.org;
   style-src    'self' 'unsafe-inline';
   img-src      'self' data: https:;
@@ -141,12 +153,19 @@ Content-Security-Policy:
 ```
 
 Notes:
+- The CDN origin appears in both `script-src` (remoteEntry + chunks) and
+  `connect-src` (manifest fetch).
+- `https://layerswap.io` in `connect-src` covers the extended-route feature
+  flags endpoint (`/app/api/flags`) and the Polymarket relayer proxy
+  (`/app/api/polymarket/relay`) — without it those routes are disabled or
+  fail at withdrawal time.
 - `'unsafe-inline'` for `style-src` is required because the widget injects
   styles via `style-loader` at runtime. Removing this requires a build
   change in `apps/widget-cdn`.
 - `connect-src` includes WalletConnect relays — without them, WC v2
   connections fail.
-- Add any additional RPC endpoints your wagmi `transports` use.
+- Add any additional RPC endpoints your wagmi `transports` use, plus the
+  default public RPC endpoints of the chains you enable.
 
 ## Failure modes
 
@@ -156,6 +175,7 @@ Notes:
 | Widget never mounts | `ManifestError('parse')` | Manifest JSON missing `remoteEntry` field. |
 | Widget never mounts | `ManifestError('kill-switch')` | Operational kill-switch set on the manifest. |
 | Widget never mounts | `ManifestError('signature')` | Manifest has no/invalid signature (verification is always on). |
+| Widget never mounts | `ManifestError('stale')` | Manifest expired (or carries no validity window) — replay protection refuses possibly-rolled-back builds. Layerswap re-publishing the channel resolves it. |
 | Widget loads but errors at render | Component-level | Catch via `callbacks.onError`. |
 
 ## Local development

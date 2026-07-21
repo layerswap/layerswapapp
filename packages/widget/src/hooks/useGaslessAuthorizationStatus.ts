@@ -35,6 +35,11 @@ export function useGaslessAuthorizationStatus(swapId: string | undefined): void 
     useEffect(() => {
         const result = data?.data
         if (swapId && result?.status) {
+            // Skip responses that arrive after the authorization was removed
+            // (e.g. retry cleanup while this poll was in flight); the store
+            // also refuses to recreate a removed entry.
+            const current = useGaslessAuthorizationStore.getState().authorizations[swapId]
+            if (!current) return
             setStatus(swapId, result.status, result.transaction)
         }
     }, [swapId, data, setStatus])

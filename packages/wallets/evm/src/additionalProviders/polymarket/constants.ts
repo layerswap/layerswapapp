@@ -59,9 +59,9 @@ export const POLYMARKET_OFFRAMP_ABI = [
     },
 ] as const
 
-/** Polymarket relayer base URL (used server-side by the relay proxy; the builder
- * API key never leaves the server). Overridable via `POLYMARKET_RELAYER_URL` env. */
-export const POLYMARKET_RELAYER_URL = 'https://relayer-v2.polymarket.com'
+/** Polymarket relayer base URL — canonical value lives in the shared protocol
+ * module (`./protocol`), re-exported here for existing importers. */
+export { POLYMARKET_RELAYER_URL } from './protocol'
 
 /** Polymarket public Gamma API. `GET /public-profile?address=<ownerEoa>` returns the
  * account's authoritative `proxyWallet`. We need this because legacy account vintages

@@ -29,6 +29,26 @@ export type Manifest = {
     gitSha?: string;
     /** ISO-8601 build timestamp (provenance). */
     builtAt?: string;
+    /** ISO-8601 signing timestamp — start of this manifest's validity window. */
+    issuedAt?: string;
+    /**
+     * ISO-8601 end of the manifest's validity window. Replay protection: a
+     * signature and SRI prove authenticity and byte integrity but not
+     * freshness — without an enforced expiry, an attacker who can replay
+     * CDN/R2 responses could serve an older valid build indefinitely,
+     * reviving a fixed vulnerability or bypassing a newer kill switch.
+     *
+     * Availability policy (explicit, so an outage is never a reason to accept
+     * an expired security policy): verifying loaders REQUIRE this field and
+     * fail closed once `expiresAt` (+5 min clock skew) passes — the widget
+     * refuses to load and surfaces `ManifestError('stale')`. The publish
+     * pipeline signs a 30-day window (`LAYERSWAP_MANIFEST_TTL_DAYS`) while
+     * deploys happen far more often; if the channel ever approaches expiry,
+     * re-publishing (re-signing) the same build restores freshness. Already
+     *-running pages are unaffected (their code is loaded); only new mounts
+     * fail.
+     */
+    expiresAt?: string;
     /**
      * Absolute or manifest-relative URL to the remoteEntry.js.
      *
@@ -194,10 +214,28 @@ export function resolveRemoteEntry(manifestUrl: string, remoteEntry: string): st
 }
 
 export class ManifestError extends Error {
-    constructor(public readonly reason: 'fetch' | 'parse' | 'signature' | 'kill-switch', message: string) {
+    constructor(public readonly reason: 'fetch' | 'parse' | 'signature' | 'kill-switch' | 'stale', message: string) {
         super(message);
         this.name = 'ManifestError';
     }
+}
+
+/** Allowance for host/CDN clock disagreement when judging freshness. */
+export const MANIFEST_CLOCK_SKEW_MS = 5 * 60 * 1000;
+
+/**
+ * Judge a manifest's freshness at `nowMs`. Pure — the loader turns non-fresh
+ * results into `ManifestError('stale')` when signature verification is on.
+ *
+ * `missing-expiry` is distinct from `expired` so verifying loaders can reject
+ * manifests signed without a validity window: accepting them would let a
+ * replayed pre-expiry manifest bypass freshness forever.
+ */
+export function manifestFreshness(manifest: Manifest, nowMs: number): 'fresh' | 'missing-expiry' | 'expired' {
+    if (typeof manifest.expiresAt !== 'string') return 'missing-expiry';
+    const expiresMs = Date.parse(manifest.expiresAt);
+    if (Number.isNaN(expiresMs)) return 'missing-expiry';
+    return nowMs > expiresMs + MANIFEST_CLOCK_SKEW_MS ? 'expired' : 'fresh';
 }
 
 /** A fetched manifest plus the URL it was ultimately served from. */

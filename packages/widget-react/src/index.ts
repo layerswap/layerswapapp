@@ -1,5 +1,5 @@
-export { LayerswapWidget } from './LayerswapWidget';
-export type { LayerswapWidgetProps, RemoteWidgetProps } from './LayerswapWidget';
+export { LayerswapWidget } from './LayerswapWidget.js';
+export type { LayerswapWidgetProps, RemoteWidgetProps } from './LayerswapWidget.js';
 // Manifest format + error type live in the framework-agnostic core.
 export type { Manifest } from '@layerswap/widget-js';
 export { ManifestError } from '@layerswap/widget-js';

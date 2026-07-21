@@ -1,9 +1,12 @@
+'use client';
+
 import {
   ComponentType,
   ReactNode,
   Suspense,
   lazy,
   useMemo,
+  useState,
   useEffect,
   useRef,
   useCallback,
@@ -102,25 +105,24 @@ function buildLoader(): () => Promise<{ default: WidgetComponent }> {
 /**
  * Host-side React loader for the CDN-delivered Layerswap widget.
  *
- * This is a browser-only component — it fetches the remote bundle and inits the
- * Module Federation runtime, both of which require browser globals. In Next.js,
- * import it via `next/dynamic` with `{ ssr: false }` so it never renders on the
- * server:
- *
- * ```ts
- * const LayerswapWidget = dynamic(
- *   () => import('@layerswap/widget-react').then(m => m.LayerswapWidget),
- *   { ssr: false },
- * );
- * ```
+ * Safe to import from anywhere in Next.js — the file declares `"use client"`,
+ * so App Router Server Components can render it directly. Because Client
+ * Components are still pre-rendered to HTML on the server, the component
+ * renders `fallback` until hydration completes and only then starts the
+ * browser-only work (manifest fetch, Module Federation init).
  */
 export function LayerswapWidget(props: LayerswapWidgetProps) {
   const { fallback, onReady, onError, ...rest } = props;
 
-  // De-dup guard lives on the parent (which persists across `LazyWidget`
-  // recreation) rather than inside `ReadySignal`, so `onReady` fires exactly
-  // once per physical `LayerswapWidget` mount even if the Suspense subtree
-  // re-resolves.
+  // Hydration gate: `mounted` is false during SSR/prerender and the first
+  // client render, so server HTML and hydration output agree, and the
+  // browser-only loader never runs outside the browser.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  // De-dup guard lives on the parent (which persists across Suspense
+  // re-resolution) rather than inside `ReadySignal`, so `onReady` fires
+  // exactly once per physical `LayerswapWidget` mount.
   const onReadyFiredRef = useRef(false);
   const stableOnReady = useCallback(() => {
     if (onReadyFiredRef.current) return;
@@ -128,9 +130,14 @@ export function LayerswapWidget(props: LayerswapWidgetProps) {
     onReady?.();
   }, [onReady]);
 
-  // The remote source is fixed (baked-in CDN), so the lazy factory is built
-  // once for the life of the component.
+  // Per-mount, not module scope: `lazy()` caches a rejected loader promise
+  // forever, so a module-level instance would turn one transient CDN failure
+  // into a page-lifetime one. A fresh `lazy()` per mount lets the integrator
+  // recover by remounting; dedup of the underlying fetch is handled by
+  // `resolveSource()`'s single-flight, which never caches failures.
   const LazyWidget = useMemo(() => lazy(buildLoader()), []);
+
+  if (!mounted) return <>{fallback ?? null}</>;
 
   return (
     <WidgetErrorBoundary fallback={fallback ?? null} onError={onError}>

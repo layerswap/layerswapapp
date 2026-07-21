@@ -1,4 +1,4 @@
-import { fetchManifest, resolveRemoteEntry, verifyManifest, ManifestError, DEFAULT_MANIFEST_URL } from './manifest.js';
+import { fetchManifest, resolveRemoteEntry, verifyManifest, manifestFreshness, ManifestError, DEFAULT_MANIFEST_URL } from './manifest.js';
 import { registerChunkHashes } from './sri.js';
 
 export type ResolvedSource = { remoteEntry: string };
@@ -39,9 +39,43 @@ function resolveConfig(): { manifestUrl: string; verify: boolean } {
  * Takes no arguments: the manifest URL is the canonical Layerswap CDN baked
  * into this package. (Layerswap's own dev harnesses can repoint it via the
  * internal `__LAYERSWAP_WIDGET_*` globals — see {@link resolveConfig}.)
+ *
+ * Single-flight: concurrent mounts share one fetch + signature verification +
+ * SRI registration. A successful resolution is reused for a short window
+ * ({@link RESOLVE_REUSE_MS}) rather than forever, so mounts on a long-lived
+ * page still re-check the manifest (and its kill switch) reasonably soon.
+ * Failures are never cached.
  */
-export async function resolveSource(): Promise<ResolvedSource> {
+export function resolveSource(): Promise<ResolvedSource> {
   const { manifestUrl, verify } = resolveConfig();
+  const key = `${verify ? 'v' : 'u'}:${manifestUrl}`;
+  const now = Date.now();
+  const cached = pendingResolves.get(key);
+  if (cached && (cached.settledAt === undefined || now - cached.settledAt < RESOLVE_REUSE_MS)) {
+    return cached.promise;
+  }
+  const entry: PendingResolve = {
+    promise: resolveSourceOnce(manifestUrl, verify).then(
+      (result) => {
+        entry.settledAt = Date.now();
+        return result;
+      },
+      (error) => {
+        pendingResolves.delete(key);
+        throw error;
+      },
+    ),
+  };
+  pendingResolves.set(key, entry);
+  return entry.promise;
+}
+
+const RESOLVE_REUSE_MS = 60_000;
+
+type PendingResolve = { promise: Promise<ResolvedSource>; settledAt?: number };
+const pendingResolves = new Map<string, PendingResolve>();
+
+async function resolveSourceOnce(manifestUrl: string, verify: boolean): Promise<ResolvedSource> {
   // When verifying, force a revalidation so we check the freshest bytes.
   // Otherwise let the browser HTTP cache satisfy repeated mounts.
   const { manifest, url: resolvedManifestUrl } = await fetchManifest(manifestUrl, !verify);
@@ -52,6 +86,19 @@ export async function resolveSource(): Promise<ResolvedSource> {
     const ok = await verifyManifest(manifest);
     if (!ok) {
       throw new ManifestError('signature', 'manifest signature is missing or invalid');
+    }
+    // Freshness is only meaningful once the signed body is trusted (an
+    // attacker controls unverified fields anyway) — and it is REQUIRED then:
+    // a valid-but-stale manifest is exactly the replay this check exists to
+    // stop. See `Manifest.expiresAt` for the availability policy.
+    const freshness = manifestFreshness(manifest, Date.now());
+    if (freshness !== 'fresh') {
+      throw new ManifestError(
+        'stale',
+        freshness === 'expired'
+          ? `manifest expired at ${manifest.expiresAt} — refusing a possibly replayed build`
+          : 'manifest carries no valid expiresAt — refusing to trust it indefinitely',
+      );
     }
   }
   // Identify the build in the console — version, commit, and build time from

@@ -10,6 +10,10 @@
     ".": {
       "types": "./dist/types/index.d.ts",
       "default": "./dist/esm/index.js"
+    },
+    "./polymarket-protocol": {
+      "types": "./dist/types/additionalProviders/polymarket/protocol.d.ts",
+      "default": "./dist/esm/additionalProviders/polymarket/protocol.js"
     }
   },
   "sideEffects": false,

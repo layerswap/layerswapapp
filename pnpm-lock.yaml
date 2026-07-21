@@ -130,6 +130,9 @@ importers:
       '@flags-sdk/vercel':
         specifier: ^1.4.3
         version: 1.4.5(@aws-sdk/credential-provider-web-identity@3.972.63)(flags@4.2.0(next@15.5.18(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(next@15.5.18(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(ws@8.21.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
+      '@layerswap/wallet-evm':
+        specifier: workspace:^
+        version: link:../../packages/wallets/evm
       '@layerswap/wallets':
         specifier: workspace:^
         version: link:../../packages/wallets/all
@@ -354,6 +357,9 @@ importers:
       '@layerswap/widget':
         specifier: workspace:^
         version: link:../../packages/widget
+      '@layerswap/widget-types':
+        specifier: workspace:^
+        version: link:../../packages/widget-types
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.90.11(react@19.2.3)

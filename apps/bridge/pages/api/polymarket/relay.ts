@@ -1,5 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createHmac } from "node:crypto";
+import {
+    POLYMARKET_RELAYER_URL,
+    PROVIDER_DISABLED_CODE,
+    isRelayerSubmittable,
+} from "@layerswap/wallet-evm/polymarket-protocol";
 import { isPolymarketEnabled } from "../../../flags";
 
 /**
@@ -19,14 +24,11 @@ import { isPolymarketEnabled } from "../../../flags";
  * Optional: POLYMARKET_RELAYER_URL (defaults to relayer-v2.polymarket.com).
  */
 
-// Canonical value lives in the wallet package's polymarket constants (POLYMARKET_RELAYER_URL);
-// inlined here to keep this server route free of a cross-package import (it already mirrors the
-// relayer request union). Overridable via env.
-const DEFAULT_RELAYER_URL = "https://relayer-v2.polymarket.com";
-const RELAYER_URL = (process.env.POLYMARKET_RELAYER_URL || DEFAULT_RELAYER_URL).replace(/\/+$/, "");
-
-// Mirrors the RelayerSubmittable union in the wallet package's polymarket relayerClient.
-const SUBMIT_TYPES = ["SAFE", "WALLET", "WALLET-CREATE"];
+// Default URL, submit-type union, and type guard come from the shared protocol
+// module (`@layerswap/wallet-evm/polymarket-protocol`) — the same module the
+// browser-side relayerClient imports, so the two sides cannot drift. The subpath
+// is dependency-free, so this server route pulls none of the wallet runtime.
+const RELAYER_URL = (process.env.POLYMARKET_RELAYER_URL || POLYMARKET_RELAYER_URL).replace(/\/+$/, "");
 
 // Per-IP rate limiting. In-memory, so it's per-instance best-effort (a serverless
 // deployment with many instances weakens it); enough to stop a single client from
@@ -116,7 +118,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // or a flag flipped mid-session — can show "temporarily unavailable" copy instead
         // of a generic failure (see the wallet package's polymarket relayerClient).
         if (!(await isPolymarketEnabled(req))) {
-            return res.status(404).json({ error: "provider_disabled" });
+            return res.status(404).json({ error: PROVIDER_DISABLED_CODE });
         }
 
         if (req.method === "GET" || req.method === "POST") {
@@ -150,7 +152,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const { action, request } = req.body ?? {};
             if (action !== "submit") return res.status(400).json({ error: `Unsupported POST action: ${action}` });
             if (!request) return res.status(400).json({ error: "request is required" });
-            if (!SUBMIT_TYPES.includes(request.type)) return res.status(400).json({ error: `Unsupported request type: ${request.type}` });
+            if (!isRelayerSubmittable(request)) return res.status(400).json({ error: `Unsupported request type: ${request?.type}` });
 
             const body = JSON.stringify(request);
             const headers = { "Content-Type": "application/json", ...builderHeaders("POST", "/submit", body) };

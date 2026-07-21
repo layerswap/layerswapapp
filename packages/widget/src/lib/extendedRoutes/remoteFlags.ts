@@ -10,7 +10,13 @@ import { ExtendedRouteFlags } from "./types";
  */
 export const EXTENDED_ROUTE_FLAGS_URL = 'https://layerswap.io/app/api/flags'
 
-const FLAGS_FETCH_TIMEOUT_MS = 5_000
+// Deliberately much shorter than a typical API budget: this request runs in
+// the same Promise.all as the core settings fetches, so its deadline is the
+// most the OPTIONAL flags lookup can keep the widget skeleton visible after
+// all required settings are ready. On timeout we return undefined and the
+// registry falls back to each provider's `enabledByDefault` (fail-closed for
+// credential-bearing routes), so a slow flags endpoint degrades safely.
+const FLAGS_FETCH_TIMEOUT_MS = 1_500
 
 /**
  * Fetch the extended-route kill switches for clients with no SSR flag resolution

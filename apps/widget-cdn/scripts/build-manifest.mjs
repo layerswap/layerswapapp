@@ -30,6 +30,16 @@ const { version, channel, gitSha, buildId } = resolveBuildIdentity(ROOT);
 // Build time — provenance only; the signature covers integrity.
 const builtAt = process.env.LAYERSWAP_BUILD_TIME || new Date().toISOString();
 
+// Validity window — replay protection. Verifying loaders REQUIRE expiresAt
+// and fail closed past it (+5 min skew), so a replayed older-but-valid
+// manifest cannot revive a fixed vulnerability or bypass a newer kill switch
+// indefinitely. 30 days >> the deploy cadence; if a channel ever nears
+// expiry without a deploy, re-run the publish (re-sign the same build).
+const ttlDays = Number(process.env.LAYERSWAP_MANIFEST_TTL_DAYS) || 30;
+const issuedAtMs = Date.now();
+const issuedAt = new Date(issuedAtMs).toISOString();
+const expiresAt = new Date(issuedAtMs + ttlDays * 24 * 60 * 60 * 1000).toISOString();
+
 // Build output lives in the immutable, buildId-named directory — must match
 // rspack.config.mjs (`dist/${BUILD_ID}`).
 const DIST = join(ROOT, 'dist', buildId);
@@ -102,6 +112,8 @@ const manifest = {
     buildId,
     gitSha,
     builtAt,
+    issuedAt,
+    expiresAt,
     remoteEntry,
     assetBase: ASSET_BASE,
     chunks,

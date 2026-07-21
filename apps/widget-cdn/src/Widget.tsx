@@ -1,4 +1,4 @@
-import { FC, useMemo } from 'react';
+import { FC, ReactNode, useMemo } from 'react';
 import {
   LayerswapProvider,
   Swap,
@@ -10,57 +10,29 @@ import {
   createEVMProvider,
   type DefaultWalletConfig,
 } from '@layerswap/wallets';
+import type { WidgetProps as SharedWidgetProps } from '@layerswap/widget-types';
 import type { Config as WagmiConfig } from 'wagmi';
 import '@layerswap/widget/index.css';
 
+/** Wallet provider ids matching what `getDefaultProviders()` emits. */
+export type { WalletProviderId } from '@layerswap/widget-types';
+
 /**
- * Known wallet provider ids matching what `getDefaultProviders()` emits.
- * Exposed for type-safe `exclude` lists.
+ * Props this remote accepts: the shared public contract from
+ * `@layerswap/widget-types` (the same shape the vanilla and React loaders
+ * forward) with its open slots bound to this app's precise internal types.
+ * Deriving it — rather than redeclaring it — keeps the remote and the loaders
+ * structurally locked together.
  */
-export type WalletProviderId =
-  | 'evm'
-  | 'starknet'
-  | 'fuel'
-  | 'paradex'
-  | 'bitcoin'
-  | 'ton'
-  | 'svm'
-  | 'tron'
-  | 'imtblPassport';
+export type WidgetProps = SharedWidgetProps<
+  WagmiConfig,
+  ReactNode,
+  LayerswapWidgetConfig,
+  DefaultWalletConfig,
+  CallbacksContextType
+>;
 
-export type WalletProvidersConfig = {
-  /**
-   * Allowlist — keep only these provider ids. When omitted, all default
-   * providers are kept. Applied before `exclude`, so the two can be
-   * combined (include a broad set, then subtract a few).
-   */
-  include?: WalletProviderId[];
-  /** Blocklist — drop these provider ids from the set. */
-  exclude?: WalletProviderId[];
-};
-
-export type WidgetProps = {
-  config?: LayerswapWidgetConfig;
-  walletDefaults?: DefaultWalletConfig;
-  /**
-   * Filter/customize the wallet provider set built by
-   * `getDefaultProviders()`. Today supports `exclude`; per-chain overrides
-   * can be added here without breaking the integrator API.
-   */
-  walletProvidersConfig?: WalletProvidersConfig;
-  /**
-   * Widget-level event callbacks (onSwapCreate, onSwapComplete, onError, …).
-   * Forwarded verbatim to `LayerswapProvider`'s `callbacks` prop.
-   */
-  callbacks?: CallbacksContextType;
-  /**
-   * Host's wagmi `Config`. When passed, the EVM wallet provider adopts it
-   * via `createEVMProvider({ wagmiConfig })` so the widget's EVM state
-   * (account, chain, signer) tracks the host's existing wagmi store
-   * instead of constructing its own.
-   */
-  wagmiConfig?: WagmiConfig;
-};
+export type WalletProvidersConfig = NonNullable<WidgetProps['walletProvidersConfig']>;
 
 const Widget: FC<WidgetProps> = ({ config, walletDefaults, walletProvidersConfig, callbacks, wagmiConfig }) => {
   const walletProviders = useMemo(() => {

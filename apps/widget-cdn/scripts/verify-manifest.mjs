@@ -45,6 +45,19 @@ if (!manifest.signature) {
     process.exit(3);
 }
 
+// Verifying loaders REQUIRE a valid future expiresAt (replay protection) —
+// shipping a manifest without one, or with a too-short window, would brick
+// or soon brick every new mount.
+const expiresMs = Date.parse(manifest.expiresAt ?? '');
+if (Number.isNaN(expiresMs)) {
+    console.error('[verify-manifest] manifest has no valid `expiresAt` — verifying loaders will reject it.');
+    process.exit(3);
+}
+if (expiresMs <= Date.now()) {
+    console.error(`[verify-manifest] manifest already expired at ${manifest.expiresAt}.`);
+    process.exit(3);
+}
+
 // Pull the public key from the shared loader core (widget-js) so we verify
 // against the same constant every loader uses. If the key has been rotated
 // in source but the signer is still using the old one, this catches it.

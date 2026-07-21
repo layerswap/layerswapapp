@@ -17,4 +17,3 @@ const BitGetIcon = (props: SVGProps<SVGSVGElement>) => {
 }
 
 export default BitGetIcon
-

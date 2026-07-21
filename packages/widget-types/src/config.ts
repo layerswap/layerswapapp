@@ -95,12 +95,25 @@ export type WidgetCallbacks = {
  * framework-agnostic consumers cannot accidentally pass runtime-sensitive
  * host objects; `@layerswap/widget-react` deliberately binds them to
  * `WagmiConfig` / `ReactNode`.
+ *
+ * The remaining parameters let the CDN remote consume this same shape with
+ * its precise internal types (`TConfig` = `LayerswapWidgetConfig`,
+ * `TWalletDefaults` = `DefaultWalletConfig`, `TCallbacks` =
+ * `CallbacksContextType`) instead of redeclaring the contract — so the public
+ * and internal prop shapes cannot structurally diverge. Their defaults are
+ * the open, integrator-facing types.
  */
-export type WidgetProps<TWagmi = never, TLoading = never> = {
+export type WidgetProps<
+  TWagmi = never,
+  TLoading = never,
+  TConfig = WidgetConfig<TLoading>,
+  TWalletDefaults = WalletDefaults,
+  TCallbacks = WidgetCallbacks,
+> = {
   /** Widget config — forwarded verbatim to `LayerswapProvider`. */
-  config?: WidgetConfig<TLoading>;
+  config?: TConfig;
   /** Defaults for the bundled `getDefaultProviders()` call. */
-  walletDefaults?: WalletDefaults;
+  walletDefaults?: TWalletDefaults;
   /**
    * Filter the wallet provider set built inside the remote. `include` is an
    * allowlist (applied first); `exclude` subtracts from it. Chains left out
@@ -111,7 +124,7 @@ export type WidgetProps<TWagmi = never, TLoading = never> = {
     exclude?: Array<WalletProviderId>;
   };
   /** Widget-level event callbacks. */
-  callbacks?: WidgetCallbacks;
+  callbacks?: TCallbacks;
   /**
    * Host wagmi `Config`. When supplied, the remote's EVM provider adopts this
    * instance so the widget reads the host's connected account/chain.

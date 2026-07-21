@@ -1,6 +1,6 @@
-import { resolveSource } from './loader';
-import { initRemote, loadRemoteModule, type SharedLib } from './runtime';
-import type { WidgetProps } from './types';
+import { resolveSource } from './loader.js';
+import { initRemote, loadRemoteModule, type SharedLib } from './runtime.js';
+import type { WidgetProps } from './types.js';
 
 /** Handle returned by `mountWidget` for updating props or tearing down. */
 export type WidgetHandle = {

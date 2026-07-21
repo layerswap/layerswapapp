@@ -1,4 +1,5 @@
 import { POLYMARKET_RELAYER_PROXY_URL } from "./constants";
+import { PROVIDER_DISABLED_CODE, type RelayerSubmittable, type RelayerSubmitResponse } from "./protocol";
 
 /**
  * Client-side helper for the Polymarket relayer, routed through our Next.js proxy
@@ -6,60 +7,19 @@ import { POLYMARKET_RELAYER_PROXY_URL } from "./constants";
  * and attaches builder auth on submit. The user's own signature (built client-side) is
  * what actually authorizes the fund movement — the builder key only authorizes use of
  * the relayer (gas).
+ *
+ * The request/response shapes live in `./protocol` — the shared module both this
+ * client and the server proxy (`apps/bridge/pages/api/polymarket/relay.ts`) import,
+ * so the two sides cannot drift.
  */
-
-/** A single call inside a deposit-wallet batch. */
-export type DepositWalletCall = { target: string; value: string; data: string }
-
-/** Gnosis-Safe relayer request (`/submit`). */
-export type SafeTransactionRequest = {
-    type: 'SAFE'
-    from: string
-    to: string
-    proxyWallet: string
-    data: string
-    nonce: string
-    signature: string
-    signatureParams: {
-        gasPrice: string
-        operation: string
-        safeTxnGas: string
-        baseGas: string
-        gasToken: string
-        refundReceiver: string
-    }
-    metadata?: string
-}
-
-/** Deposit-wallet batch relayer request (`/submit`). */
-export type DepositWalletBatchRequest = {
-    type: 'WALLET'
-    from: string
-    to: string
-    nonce: string
-    signature: string
-    depositWalletParams: { depositWallet: string; deadline: string; calls: DepositWalletCall[] }
-}
-
-/** Deposit-wallet deploy request (`/submit`, no signature). */
-export type DepositWalletCreateRequest = {
-    type: 'WALLET-CREATE'
-    from: string
-    to: string
-}
-
-/** Anything the relayer `/submit` accepts. The proxy just forwards the JSON. */
-export type RelayerSubmittable = SafeTransactionRequest | DepositWalletBatchRequest | DepositWalletCreateRequest
-
-export type RelayerSubmitResponse = {
-    transactionID: string
-    state: string
-    transactionHash?: string
-}
-
-/** Machine-readable body the proxy returns when the Polymarket kill switch is off
- * (dashboard flag disabled or builder creds missing) — see `api/polymarket/relay.ts`. */
-const PROVIDER_DISABLED_CODE = 'provider_disabled'
+export type {
+    DepositWalletCall,
+    SafeTransactionRequest,
+    DepositWalletBatchRequest,
+    DepositWalletCreateRequest,
+    RelayerSubmittable,
+    RelayerSubmitResponse,
+} from "./protocol";
 
 /** Build the error for a failed proxy response. A kill-switch refusal gets user-facing
  * copy (`header` is what the withdrawal UI shows as the title); anything else keeps the

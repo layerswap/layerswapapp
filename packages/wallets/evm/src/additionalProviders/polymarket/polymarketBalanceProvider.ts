@@ -33,10 +33,14 @@ export class PolymarketBalanceProvider extends BalanceProvider {
 
         const holding = await resolvePolymarketHolding(address, publicClient)
 
+        // Report the EXECUTABLE capacity, not `holding.total`: a withdrawal pulls from
+        // one deposit/safe funder, so aggregating every funder (including unsupported
+        // proxy/unknown ones) would let the form validate an amount no single funder
+        // can serve — e.g. show 100 while balances of 60 + 40 cap a withdrawal at 60.
         const balances: TokenBalance[] = [{
             network: network.name,
             token: POLYMARKET_DISPLAY_SYMBOL,
-            amount: holding.total,
+            amount: holding.maxExecutable,
             decimals: POLYMARKET_PUSD_DECIMALS,
             isNativeCurrency: false,
             request_time: new Date().toJSON(),

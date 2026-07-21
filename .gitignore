@@ -46,5 +46,5 @@ storybook-static/*
 next-env.d.ts
 
 # PR Review Report
-pr-review-report.md 
+pr-review-report.md
 .env*
