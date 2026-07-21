@@ -282,28 +282,23 @@ const DescriptorHydrationBoundary: FC<{
 
     // Phase-2 trigger: descriptors whose chain SDK left a persisted-session
     // marker (declared via `hasPersistedSession` — a cheap localStorage sniff
-    // that never loads the SDK) hydrate shortly after mount, so restored
+    // that never loads the SDK) hydrate immediately on mount, so restored
     // sessions surface without the user opening the connect modal (the
-    // phase-1 `loadAll` trigger). Deferred to idle so the chunk fetch doesn't
-    // compete with first paint and initial data fetching.
+    // phase-1 `loadAll` trigger). No idle deferral: effects already run after
+    // first paint, only descriptors with an actual session marker load
+    // (usually zero or one, and their wallet is user-visible state the page
+    // is incomplete without), and the connect gate treats these stubs as
+    // initializing — every deferred millisecond here is a millisecond the
+    // swap form's connect affordances stay in their loading state.
     useEffect(() => {
         if (typeof window === 'undefined') return
-        const withSessions = walletProviders.filter((p): p is WalletProviderDescriptor =>
-            isWalletProviderDescriptor(p)
-            && !loadedByIdRef.current.has(p.id)
-            && p.hasPersistedSession?.() === true
-        )
-        if (withSessions.length === 0) return
-        const run = () => { withSessions.forEach(p => { void loadById(p.id) }) }
-        // `typeof` guard because Safari still lacks requestIdleCallback.
-        const hasIdle = typeof window.requestIdleCallback === 'function'
-        const handle = hasIdle
-            ? window.requestIdleCallback(run, { timeout: 2000 })
-            : window.setTimeout(run, 200)
-        return () => {
-            if (hasIdle) window.cancelIdleCallback(handle)
-            else window.clearTimeout(handle)
-        }
+        walletProviders.forEach(p => {
+            if (isWalletProviderDescriptor(p)
+                && !loadedByIdRef.current.has(p.id)
+                && p.hasPersistedSession?.() === true) {
+                void loadById(p.id)
+            }
+        })
     }, [walletProviders, loadById])
 
     const loaderValue = useMemo(() => ({ loadById, loadAll }), [loadById, loadAll])

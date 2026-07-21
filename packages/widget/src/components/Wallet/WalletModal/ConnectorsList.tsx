@@ -18,6 +18,7 @@ import CircularLoader from "@/components/Icons/CircularLoader";
 import { useConnectors } from "@/hooks/useConnectors";
 import { useWalletProvidersRegistry } from "@/context/walletProviders";
 import { useWalletDescriptorLoader } from "@/lib/walletConnect/walletDescriptorLoader";
+import { isProviderConnectReady } from "@/hooks/useProvidersConnectReady";
 
 type ProviderPaginationState = {
     loaded: boolean;
@@ -583,7 +584,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                                         onClick={() => provider && connect(item, provider)}
                                         connectingConnector={selectedConnector}
                                         isRecent={isRecent}
-                                        isProviderReady={provider?.isStub || (typeof provider?.ready === 'boolean' ? provider.ready : true)}
+                                        isProviderReady={isProviderConnectReady(provider)}
                                     />
                                 )
                             })

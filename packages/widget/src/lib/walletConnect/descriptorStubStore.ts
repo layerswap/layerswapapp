@@ -26,5 +26,6 @@ export function createDescriptorStubStore(
         connectWallet: () => undefined,
         ready: false,
         isStub: true,
+        pendingSessionRestore: d.hasPersistedSession?.() === true,
     }))
 }

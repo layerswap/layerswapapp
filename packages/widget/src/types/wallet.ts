@@ -205,6 +205,15 @@ export type WalletConnectionProvider = {
      * initializing" (show a spinner, keep disabled).
      */
     isStub?: boolean,
+    /**
+     * Stub-only: the descriptor's `hasPersistedSession` probe matched, so this
+     * provider is auto-hydrated right after mount and a wallet is likely about
+     * to be restored. Connect gates should treat such a stub as still
+     * initializing (like a live provider with `ready: false`), not as
+     * ready-to-click — otherwise the connect button flashes enabled in the
+     * window between registry publish and hydration.
+     */
+    pendingSessionRestore?: boolean,
 
     multiStepHandlers?: MultiStepHandler[],
 }

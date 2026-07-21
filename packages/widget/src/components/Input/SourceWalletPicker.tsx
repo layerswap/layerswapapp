@@ -1,6 +1,7 @@
 import { useFormikContext } from "formik";
 import { Dispatch, FC, SetStateAction, useCallback, useState } from "react";
 import useWallet from "@/hooks/useWallet";
+import useProvidersConnectReady from "@/hooks/useProvidersConnectReady";
 import { ChevronDown, CircleHelp, QrCode } from "lucide-react";
 import VaulDrawer, { ModalFooterPortal } from "@/components/Modal/vaulModal";
 import { SelectAccountProps, Wallet } from "@/types/wallet";
@@ -263,14 +264,7 @@ export const FormSourceWalletButton: FC<{ isDisabled?: boolean }> = ({ isDisable
 
 const Connect: FC<{ connectFn?: () => Promise<Wallet | undefined | void>; setMountWalletPortal?: Dispatch<SetStateAction<boolean>>; isDisabled?: boolean }> = ({ connectFn, setMountWalletPortal, isDisabled }) => {
     const { connect } = useConnectModal()
-    const { providers } = useWallet()
-
-    // Unloaded descriptor stubs report `ready: false`, but opening the modal is
-    // exactly what triggers their load (`loadAll` on modal open). Gating the
-    // connect button on stub readiness would deadlock: the disabled button can
-    // never open the modal that would make the stubs ready. So only real
-    // providers that are still initializing keep the button disabled.
-    const isProvidersReady = providers.every(p => p.isStub || (typeof p.ready === 'boolean' ? p.ready : true))
+    const isProvidersReady = useProvidersConnectReady()
 
     const connectWallet = async () => {
         setMountWalletPortal && setMountWalletPortal(true)

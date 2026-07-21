@@ -8,6 +8,7 @@ import { useRecentNetworksStore } from "@/stores/recentRoutesStore";
 import { useSelectorState } from "@/components/Select/Selector/Index";
 import NavigatableList, { NavigatableItem } from "@/components/NavigatableList";
 import useWallet from "@/hooks/useWallet";
+import useProvidersConnectReady from "@/hooks/useProvidersConnectReady";
 import ConnectWalletButton from "@/components/Common/ConnectWalletButton";
 import { CurrencySelectItemDisplay } from "./Routes";
 import { SelectItem } from "@/components/Select/Selector/SelectItem";
@@ -47,7 +48,7 @@ export const FlatContent: FC<Props> = ({
     const [isScrolling, setIsScrolling] = useState(false);
     const scrollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
     const recentRoutes = useRecentNetworksStore(s => s.recentRoutes);
-    const { wallets, providers } = useWallet();
+    const { wallets } = useWallet();
     const { shouldFocus } = useSelectorState();
 
     const items = useMemo(() => {
@@ -85,7 +86,7 @@ export const FlatContent: FC<Props> = ({
         };
     }, []);
 
-    const isProvidersReady = providers.every(p => p.ready);
+    const isProvidersReady = useProvidersConnectReady();
     const virtualItems = virtualizer.getVirtualItems();
 
     return (
