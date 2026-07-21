@@ -1,8 +1,11 @@
 import { TransferProvider, TransferProps, Network, ActionMessageType, Wallet } from "@layerswap/widget/types"
+import { isMobile } from "@layerswap/widget/internal"
+import { isWalletInfoRemote } from "@tonconnect/sdk"
 import { transactionBuilder } from "./transactionBuilder"
 import { waitForTransaction } from "./waitForTransaction"
 import { createTonClient } from "../client"
 import { getTonApiKey, getTonConnect } from "../service/getTonConnect"
+import { useTonStore } from "../service/tonStore"
 
 export function createTonTransfer(): TransferProvider {
     return {
@@ -33,7 +36,9 @@ export function createTonTransfer(): TransferProvider {
                     tonApiKey,
                 )
 
-                const res = await tonConnect.sendTransaction(transaction)
+                const res = await tonConnect.sendTransaction(transaction, {
+                    onRequestSent: openWalletAppForConfirmation,
+                })
                 const tonClient = createTonClient(tonApiKey)
 
                 const tx = await waitForTransaction(res.boc, tonClient)
@@ -59,5 +64,33 @@ export function createTonTransfer(): TransferProvider {
                 }
             }
         },
+    }
+}
+
+/**
+ * The headless SDK's `sendTransaction` only posts the request to the bridge —
+ * unlike `tonConnectUI.sendTransaction` it renders no confirmation UI and
+ * doesn't deep-link into the wallet. On mobile bridge (http) sessions the
+ * wallet app must be foregrounded to show its confirmation screen, so mirror
+ * the connect flow's deep-linking once the request is on the bridge. Injected
+ * sessions surface their own in-page confirmation and need no redirect.
+ */
+function openWalletAppForConfirmation(): void {
+    if (!isMobile()) return
+    const tonConnect = getTonConnect()
+    if (tonConnect.wallet?.provider !== 'http') return
+
+    const { wallets, tonWallet } = useTonStore.getState()
+    const walletInfo = wallets.find(w => w.appName === tonWallet?.appName)
+    if (!walletInfo || !isWalletInfoRemote(walletInfo)) return
+
+    // Prefer the wallet's native scheme (launches the app directly); fall back
+    // to the universal link for wallets that don't publish one.
+    const link = walletInfo.deepLink || walletInfo.universalLink
+    if (!link) return
+    try {
+        window.location.href = link
+    } catch {
+        // Best-effort — the user can still open the wallet app manually.
     }
 }
