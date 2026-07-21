@@ -61,12 +61,12 @@ importers:
       '@headlessui/react':
         specifier: ^2.1.1
         version: 2.2.9(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@imtbl/config':
-        specifier: 2.20.0
-        version: 2.20.0
-      '@imtbl/passport':
-        specifier: 2.20.0
-        version: 2.20.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+      '@imtbl/auth':
+        specifier: 2.20.2
+        version: 2.20.2
+      '@imtbl/wallet':
+        specifier: 2.20.2
+        version: 2.20.2(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@metamask/sdk':
         specifier: ^0.33.1
         version: 0.33.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)
@@ -182,8 +182,8 @@ importers:
         specifier: ^1.1.12
         version: 1.1.13(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@tronweb3/tronwallet-adapter-trust':
-        specifier: ^1.0.0
-        version: 1.0.2(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+        specifier: ^1.1.0
+        version: 1.1.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@uidotdev/usehooks':
         specifier: ^2.4.1
         version: 2.4.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -2230,31 +2230,19 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@imtbl/auth@2.20.0':
-    resolution: {integrity: sha512-mdxRE1j5Z6M8mcimqqNkglYQKdIBgHMsrNsAI7G5lVVpjrtSIqTPkwxEieGc15NfBDPwgX0vw/3lV73DBoKXgA==}
+  '@imtbl/auth@2.20.2':
+    resolution: {integrity: sha512-jFL3YrhGZak5lzs/FkPzxMnTBXqdYmxNQ5fFMFQYgONoeDVw2zIEIQx/0QG6s5riTWjaD6Jo2mGU/PKFeWII0A==}
 
-  '@imtbl/config@2.20.0':
-    resolution: {integrity: sha512-7DMdOheEt9A9H6V7zztUae4M0XKwDU2ddt6zUonjdc9SLyXRWMqtcUkRn7vJK/RqPINz+k1PhVTR7QDgQBl7mw==}
+  '@imtbl/generated-clients@2.20.2':
+    resolution: {integrity: sha512-ghL3y0mwoOIH+QzwuoyBEwH+pSQaiQNeprVkYE3Dtza2hvhHnwZgUR54e16KnDE7iakJ6nzLBpC+clYMNMgoUA==}
     engines: {node: '>=20.11.0'}
 
-  '@imtbl/generated-clients@2.20.0':
-    resolution: {integrity: sha512-OcAyqslwJj3lQ0vBIC64BswhfswQYJXvTV3FM7JLmXaO0pvDRLVhPtNWgbgI0W91/7ekye5hycI/ZGbaJDURsg==}
+  '@imtbl/metrics@2.20.2':
+    resolution: {integrity: sha512-w7nQl/i/oi4xoDclQqFdrfn6EDTsNNFZbff1I4wiBpjcVb/VREHNbbT2I9sFIWHteP+VdFZe8FgHrzHL+ZywQA==}
     engines: {node: '>=20.11.0'}
 
-  '@imtbl/metrics@2.20.0':
-    resolution: {integrity: sha512-v3Oe95A/yfUT+zrASSoXDk680K7VocKIUwsMGE9al/o9GJnCAV05QS+iPfGphGh16Y7+fqWbIQwHAd2YhCLjGg==}
-    engines: {node: '>=20.11.0'}
-
-  '@imtbl/passport@2.20.0':
-    resolution: {integrity: sha512-1bcPuAbu0/QWrHCdJsDv9yhxTPjyJRk3UJ09ZZ3Xs1Vchg6LrHcPKcfznLYumZO/Syc2q5UIEDmA2kpm6gJ6XQ==}
-    engines: {node: '>=20.11.0'}
-
-  '@imtbl/toolkit@2.20.0':
-    resolution: {integrity: sha512-OFp4Xi60whIs4Ea7HmapaKfmt9gAVvxdRPXwZggqbb6UZAogiMlfv5CJ4wQDXlz37zvnGKfP5scbYc53y5iAMg==}
-    engines: {node: '>=20.11.0'}
-
-  '@imtbl/wallet@2.20.0':
-    resolution: {integrity: sha512-+I4TM8kS+EaggZh5Lbxk7y3C/IMd0D4Qck6hseHa0C2H1NzvY3etQct4p6uy5J4TdglgMeEI+2T+WngzC/mwfw==}
+  '@imtbl/wallet@2.20.2':
+    resolution: {integrity: sha512-kNKOmleUmf+BeMDHcGwJKjhXs6Pvy6aj5s4dYiTKOIn8t4AfwUfK6CWj5TOHM9PTv/o7oX5atxtnI/62sSU1VA==}
 
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
@@ -2353,10 +2341,6 @@ packages:
     peerDependencies:
       '@types/react': '>=16'
       react: '>=16'
-
-  '@metamask/detect-provider@2.0.0':
-    resolution: {integrity: sha512-sFpN+TX13E9fdBDh9lvQeZdJn4qYoRb/6QF2oZZK/Pn559IhCFacPMU1rMuqyXoFQF3JSJfii2l98B87QDPeCQ==}
-    engines: {node: '>=14.0.0'}
 
   '@metamask/eth-json-rpc-provider@1.0.1':
     resolution: {integrity: sha512-whiUMPlAOrVGmX8aKYVPvlKyG4CpQXiNNyt74vE1xb5sPvmx5oA7B/kOi/JdBvhGQq97U1/AVdXEdk2zkP8qyA==}
@@ -5180,6 +5164,10 @@ packages:
     resolution: {integrity: sha512-Sv1FUo5A1fNgc2oZ2LMJ7SmA5TpW5MSWTNjnWJ8t6Z+aRfLbc/s8nkPPLqm0YfR+Sa80sLhMfqJsJzYf73ynMg==}
     engines: {node: '>=16', pnpm: '>=7'}
 
+  '@tronweb3/tronwallet-abstract-adapter@1.2.0':
+    resolution: {integrity: sha512-Xy3ftKnxhEEWOWG6OXoN877t4oTr4W/kuQb7LWVYdn5PNeQ90LXj7eaTu9e6624iozDRuxMix5FThtqEt5F7dA==}
+    engines: {node: '>=16', pnpm: '>=7'}
+
   '@tronweb3/tronwallet-adapter-bitkeep@1.1.7':
     resolution: {integrity: sha512-J557vdOZoZOSu4CDQO+WpaXcnmOSzHxURepnlpvhnCYHvY5cZhPKVTDI4CfxarMmryExxOXjnnomWMj6o/nY1A==}
     engines: {node: '>=16', pnpm: '>=7'}
@@ -5227,8 +5215,12 @@ packages:
     resolution: {integrity: sha512-Oq5L0FyBM+g49DCr0DYdSx8xuhiqIlKoBTPNVmCTSDoWnoZpIh0XE33Axm/4OUMO2NHFpQMvP3pFo7QIllOZ/w==}
     engines: {node: '>=16', pnpm: '>=7'}
 
-  '@tronweb3/tronwallet-adapter-trust@1.0.2':
-    resolution: {integrity: sha512-Bw1Gikor29BDzRN8lsCVk9ElviG9wRwR7egGHDYwEiwkFXb31qZXbMCFFSJvK4GZ5sQCCVWenPR6A2Te4t4WHA==}
+  '@tronweb3/tronwallet-adapter-tronlink@1.2.0':
+    resolution: {integrity: sha512-utEIJJ4lBjy7waTgohwoeaD8pM5AfQvXKZWabZP5YPiorNq//TseEr4Vy80uNco/SD1PhXpNjMYSwuCo+15J7A==}
+    engines: {node: '>=16', pnpm: '>=7'}
+
+  '@tronweb3/tronwallet-adapter-trust@1.1.0':
+    resolution: {integrity: sha512-dedOXV3+BogFDRJnDi1cqlS2NPelZmF8Z0KcmfcVqmX1eCnBVbEmRLmTIwwN4LO/WcyX7XTLQNHPfQprrMVtbA==}
     engines: {node: '>=16', pnpm: '>=7'}
 
   '@trpc/client@10.45.4':
@@ -13664,70 +13656,33 @@ snapshots:
   '@img/sharp-win32-x64@0.34.5':
     optional: true
 
-  '@imtbl/auth@2.20.0':
+  '@imtbl/auth@2.20.2':
     dependencies:
-      '@imtbl/generated-clients': 2.20.0
-      '@imtbl/metrics': 2.20.0
+      '@imtbl/generated-clients': 2.20.2
+      '@imtbl/metrics': 2.20.2
       localforage: 1.10.0
       oidc-client-ts: 3.4.1
     transitivePeerDependencies:
       - debug
       - supports-color
 
-  '@imtbl/config@2.20.0':
-    dependencies:
-      '@imtbl/metrics': 2.20.0
-
-  '@imtbl/generated-clients@2.20.0':
+  '@imtbl/generated-clients@2.20.2':
     dependencies:
       axios: 1.17.0
     transitivePeerDependencies:
       - debug
       - supports-color
 
-  '@imtbl/metrics@2.20.0':
+  '@imtbl/metrics@2.20.2':
     dependencies:
       global-const: 0.1.2
       lru-memorise: 0.3.0
 
-  '@imtbl/passport@2.20.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
+  '@imtbl/wallet@2.20.2(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
     dependencies:
-      '@imtbl/auth': 2.20.0
-      '@imtbl/config': 2.20.0
-      '@imtbl/generated-clients': 2.20.0
-      '@imtbl/metrics': 2.20.0
-      '@imtbl/toolkit': 2.20.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      '@imtbl/wallet': 2.20.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
-      ethers: 6.16.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      localforage: 1.10.0
-      oidc-client-ts: 3.4.1
-    transitivePeerDependencies:
-      - bufferutil
-      - debug
-      - supports-color
-      - typescript
-      - utf-8-validate
-      - zod
-
-  '@imtbl/toolkit@2.20.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
-    dependencies:
-      '@metamask/detect-provider': 2.0.0
-      axios: 1.17.0
-      bn.js: 5.2.3
-      enc-utils: 3.0.0
-      ethers: 6.16.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      oidc-client-ts: 3.4.1
-    transitivePeerDependencies:
-      - bufferutil
-      - debug
-      - supports-color
-      - utf-8-validate
-
-  '@imtbl/wallet@2.20.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)':
-    dependencies:
-      '@imtbl/auth': 2.20.0
-      '@imtbl/generated-clients': 2.20.0
-      '@imtbl/metrics': 2.20.0
+      '@imtbl/auth': 2.20.2
+      '@imtbl/generated-clients': 2.20.2
+      '@imtbl/metrics': 2.20.2
       viem: 2.18.8(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
     transitivePeerDependencies:
       - bufferutil
@@ -13893,8 +13848,6 @@ snapshots:
       '@types/mdx': 2.0.13
       '@types/react': 18.3.28
       react: 18.3.1
-
-  '@metamask/detect-provider@2.0.0': {}
 
   '@metamask/eth-json-rpc-provider@1.0.1':
     dependencies:
@@ -17706,6 +17659,16 @@ snapshots:
       - supports-color
       - utf-8-validate
 
+  '@tronweb3/tronwallet-abstract-adapter@1.2.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
+    dependencies:
+      eventemitter3: 4.0.7
+      tronweb: 6.2.2(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+    transitivePeerDependencies:
+      - bufferutil
+      - debug
+      - supports-color
+      - utf-8-validate
+
   '@tronweb3/tronwallet-adapter-bitkeep@1.1.7(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
       '@tronweb3/tronwallet-abstract-adapter': 1.1.10(bufferutil@4.1.0)(utf-8-validate@5.0.10)
@@ -17822,10 +17785,19 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@tronweb3/tronwallet-adapter-trust@1.0.2(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
+  '@tronweb3/tronwallet-adapter-tronlink@1.2.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
-      '@tronweb3/tronwallet-abstract-adapter': 1.1.10(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      '@tronweb3/tronwallet-adapter-tronlink': 1.1.13(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      '@tronweb3/tronwallet-abstract-adapter': 1.2.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+    transitivePeerDependencies:
+      - bufferutil
+      - debug
+      - supports-color
+      - utf-8-validate
+
+  '@tronweb3/tronwallet-adapter-trust@1.1.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@tronweb3/tronwallet-abstract-adapter': 1.2.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      '@tronweb3/tronwallet-adapter-tronlink': 1.2.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - bufferutil
       - debug
