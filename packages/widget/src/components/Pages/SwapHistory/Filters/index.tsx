@@ -4,7 +4,7 @@ import NetworksDropdown from './NetworksDropdown'
 import ClearAllButton from './ClearAllButton'
 import { FilterNetworkOption } from './types'
 import { SearchComponent } from '@/components/Input/Search'
-import { Wallet } from '@/types/wallet'
+import { Wallet } from "@layerswap/wallet-core/types"
 
 type FiltersProps = {
     searchQuery: string

@@ -1,6 +1,7 @@
-import { NetworkRoute, NetworkWithTokens } from "@layerswap/widget/types";
+import { NetworkWithTokens } from "@layerswap/utils"
+import { NetworkRoute } from "@layerswap/wallet-core/types"
 import { HYPERLIQUID_ROUTES, pickHyperliquidDestination } from "./routes";
-import { realDepositAddressRoutePresent } from "@layerswap/widget/internal";
+import { realDepositAddressRoutePresent } from "@layerswap/utils";
 
 export const HYPERLIQUID_USDC_SYMBOL = 'USDC'
 export const HYPERLIQUID_SPOT_TOKEN = 'USDC'

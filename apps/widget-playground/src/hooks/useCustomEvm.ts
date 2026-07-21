@@ -1,9 +1,11 @@
 import { useAccount, useSwitchAccount } from "wagmi";
 import { useCallback, useEffect, useMemo } from "react";
 import { useUserWallets, useDynamicContext, dynamicEvents, Wallet as DynamicWallet, } from "@dynamic-labs/sdk-react-core";
-import { useSettingsState, NetworkWithTokens, NetworkType } from "@layerswap/widget";
-import { resolveWalletConnectorIcon, createReactHookConnectionAdapter } from "@layerswap/widget/internal";
-import { Wallet, InternalConnector, WalletConnectionProvider } from "@layerswap/widget/types";
+import { useSettingsState } from "@layerswap/widget";
+import { NetworkWithTokens, NetworkType } from "@layerswap/utils";
+import { resolveWalletConnectorIcon } from "@layerswap/widget/internal";
+import { createReactHookConnectionAdapter } from "@layerswap/wallet-core";
+import { Wallet, InternalConnector, WalletConnectionProvider } from "@layerswap/wallet-core/types";
 
 export default function useEVM(): WalletConnectionProvider {
     const name = "EVM";

@@ -1,6 +1,4 @@
-import { KnownInternalNames } from '@layerswap/widget/internal'
-
-const SPECIFIC_NETWORKS_BY_CONNECTOR: { id: string; supportedNetworks: string[] }[] = [
+import { KnownInternalNames } from "@layerswap/utils";const SPECIFIC_NETWORKS_BY_CONNECTOR: { id: string; supportedNetworks: string[] }[] = [
     {
         id: 'com.immutable.passport',
         supportedNetworks: [

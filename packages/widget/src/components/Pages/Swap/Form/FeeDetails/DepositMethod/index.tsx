@@ -3,7 +3,7 @@ import React, { FC, useEffect, useRef } from "react";
 import { Network } from "@/Models/Network";
 import { useInitialSettings } from "@/context/settings";
 import useWallet from "@/hooks/useWallet";
-import { WalletConnectionProvider } from "@/types/wallet";
+import { WalletConnectionProvider } from "@layerswap/wallet-core/types"
 import { SwapFormValues } from "../../SwapFormValues";
 
 const depositMethods = [
@@ -24,7 +24,8 @@ const DepositMethodComponent: FC = () => {
     } = useFormikContext<SwapFormValues>();
     const { depositMethod: defaultDepositMethod, hideDepositMethod } = useInitialSettings()
     const { from, depositMethod, fromExchange, fromAsset } = values
-    const { provider } = useWallet(from, 'withdrawal')
+    const { provider, providers } = useWallet(from, 'withdrawal')
+    const registryReady = providers.length > 0
     const name = 'depositMethod'
 
     const menuItems = from && GenerateDepositMethodMenuItems(from, depositMethods, provider)
@@ -39,15 +40,16 @@ const DepositMethodComponent: FC = () => {
             setFieldValue(name, 'deposit_address', true)
             return
         }
-        else if (defaultMethod) {
+        if (!registryReady) return
+        if (defaultMethod) {
             setFieldValue(name, defaultMethod?.id, true)
             return
         }
-        else if (!(menuItems?.find(i => i.id === depositMethod))) {
+        if (!(menuItems?.find(i => i.id === depositMethod))) {
             setFieldValue(name, first, true)
             return
         }
-    }, [from, fromExchange, fromAsset])
+    }, [from, fromExchange, fromAsset, registryReady])
 
     const hasOptions = Number(menuItems?.length) > 1 && !fromExchange
 

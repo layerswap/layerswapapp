@@ -3,7 +3,7 @@ import { Dispatch, FC, SetStateAction, useCallback, useState } from "react";
 import useWallet from "@/hooks/useWallet";
 import { ChevronDown, CircleHelp, QrCode } from "lucide-react";
 import VaulDrawer, { ModalFooterPortal } from "@/components/Modal/vaulModal";
-import { SelectAccountProps, Wallet } from "@/types/wallet";
+import { SelectAccountProps, Wallet } from "@layerswap/wallet-core/types"
 import WalletIcon from "@/components/Icons/WalletIcon";
 import WalletIconView from "@/components/Wallet/WalletIconView";
 import SubmitButton from "@/components/Buttons/submitButton";

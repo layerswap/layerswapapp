@@ -1,5 +1,5 @@
 import type { Config } from '@wagmi/core'
-import type { Network } from '@layerswap/widget/types'
+import type { Network } from "@layerswap/utils"
 import { getEvmChainsConfig } from '../evmUtils/chainConfigs'
 import { buildEVMConnectors } from './Connectors'
 import {
@@ -23,11 +23,6 @@ const DEFAULT_WC_CONFIG: WalletConnectConfig = {
 type InitOptions = {
     networks: Network[]
     walletConnectConfigs?: WalletConnectConfig
-    /**
-     * Optionally adopt an externally-created wagmi Config (e.g. the host
-     * app already mounts `<WagmiProvider>`). When omitted, EVM creates its
-     * own config from `networks` + default connectors.
-     */
     externalWagmiConfig?: Config | null
 }
 

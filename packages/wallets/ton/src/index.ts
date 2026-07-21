@@ -1,12 +1,7 @@
-import type {
-    WalletProvider,
-    WalletConnectionStore,
-    WalletInitContext,
-    WalletConnectionProviderProps,
-    BaseWalletProviderConfig,
-} from "@layerswap/widget/types"
-import { LazyBalanceProvider } from "@layerswap/widget/types"
-import { KnownInternalNames } from "@layerswap/widget/internal"
+import type { WalletConnectionStore, WalletConnectionProviderProps } from "@layerswap/wallet-core/types"
+import type { WalletProvider, WalletInitContext, BaseWalletProviderConfig } from "@layerswap/wallet-core/types"
+import { LazyBalanceProvider } from "@layerswap/wallet-core/types"
+import { KnownInternalNames } from "@layerswap/utils";
 import { TonGasProvider } from "./tonGasProvider"
 import { createTonTransfer } from "./transferProvider/createTonTransfer"
 import { createTonConnection } from "./service/createTonConnection"

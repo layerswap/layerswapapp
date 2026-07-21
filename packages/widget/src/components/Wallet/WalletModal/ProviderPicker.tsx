@@ -1,5 +1,5 @@
 import { FC, useEffect, useMemo, useState } from "react";
-import { WalletConnectionProvider } from "@/types/wallet";
+import { WalletConnectionProvider } from "@layerswap/wallet-core/types"
 import clsx from "clsx";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
 import { Checkbox } from "@/components/shadcn/checkbox";

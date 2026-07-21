@@ -1,4 +1,5 @@
-import type { WalletProvider, WalletProviderDescriptor } from "@layerswap/widget/types"
+import type { WalletProviderDescriptor } from "@layerswap/wallet-core/types"
+import type { WalletProvider } from "@layerswap/wallet-core/types"
 import type { WalletConnectConfig } from "@layerswap/wallet-evm"
 
 // SVM's runtime list is built dynamically from `NetworkType.Solana` networks

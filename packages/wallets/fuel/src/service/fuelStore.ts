@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { Fuel, FuelConnector } from '@fuel-ts/account'
-import type { Wallet } from '@layerswap/widget/types'
+import type { Wallet } from "@layerswap/wallet-core/types"
 
 export type FuelStoreState = {
     connectors: readonly FuelConnector[]

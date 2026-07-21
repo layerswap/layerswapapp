@@ -1,10 +1,5 @@
-import type {
-    MultiStepHandler,
-    NetworkWithTokens,
-    WalletConnectionProvider,
-    WalletConnectionProviderProps,
-    WalletConnectionStore,
-} from '@layerswap/widget/types'
+import type { NetworkWithTokens } from "@layerswap/utils"
+import type { MultiStepHandler, WalletConnectionProvider, WalletConnectionProviderProps, WalletConnectionStore } from "@layerswap/wallet-core/types"
 import { createStore } from 'zustand/vanilla'
 import { createStarknetTransfer } from '../transferProvider/createStarknetTransfer'
 import { starknetConnectionService } from './StarknetConnectionService'

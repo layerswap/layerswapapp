@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
-import { Wallet } from '@/types/wallet'
+import { Wallet } from "@layerswap/wallet-core/types"
 
 type Args = {
     wallets: Wallet[]

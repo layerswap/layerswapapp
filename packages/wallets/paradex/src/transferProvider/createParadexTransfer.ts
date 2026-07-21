@@ -7,8 +7,10 @@
 // signer would bind to a different, empty config. Keep usage limited to these
 // documented, package-root exports.
 import { getEthersSigner, getEvmConfig } from '@layerswap/wallet-evm'
-import { KnownInternalNames } from '@layerswap/widget/internal'
-import { ActionMessageType, type Network, type TransferProvider, type TransferProps, type Wallet } from '@layerswap/widget/types'
+import { KnownInternalNames } from "@layerswap/utils";
+import type { Network } from "@layerswap/utils"
+import type { Wallet } from "@layerswap/wallet-core/types"
+import { ActionMessageType, type TransferProvider, type TransferProps } from "@layerswap/wallet-core/types"
 import { getChainId, switchChain } from '@wagmi/core'
 import AuthorizeEthereum from '../Authorize/Ethereum'
 import { AuthorizeStarknet } from '../Authorize/Starknet'

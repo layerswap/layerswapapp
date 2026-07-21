@@ -1,4 +1,5 @@
-import { TransferProvider, TransferProps, NetworkType, Network, ActionMessageType } from "@layerswap/widget/types"
+import { NetworkType, Network } from "@layerswap/utils"
+import { TransferProvider, TransferProps, ActionMessageType } from "@layerswap/wallet-core/types"
 import { configureAndSendCurrentTransaction } from "./transactionSender"
 import { svmAdapterManager } from "../service/svmAdapterManager"
 

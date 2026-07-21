@@ -5,7 +5,7 @@ import ConnectButton from "@/components/Buttons/connectButton"
 import { useState } from "react"
 import WalletsList from "./WalletsList"
 import VaulDrawer from "@/components/Modal/vaulModal"
-import { Wallet } from "@/types/wallet"
+import { Wallet } from "@layerswap/wallet-core/types"
 import { Address } from "@/lib/address/Address"
 import { useLabeledAddress } from "@/stores/addressBookStore"
 

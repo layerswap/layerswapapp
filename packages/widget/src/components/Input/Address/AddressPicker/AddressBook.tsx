@@ -6,7 +6,7 @@ import { NetworkRoute } from "@/Models/Network";
 import { FC } from "react";
 import AddressWithIcon from "./AddressWithIcon";
 import { Partner } from "@/Models/Partner";
-import { Wallet } from "@/types/wallet";
+import { Wallet } from "@layerswap/wallet-core/types"
 import { BookOpen } from "lucide-react";
 import { useAddressNameFinder } from "@/stores/addressBookStore";
 

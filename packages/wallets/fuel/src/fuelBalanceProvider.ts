@@ -1,5 +1,5 @@
-import { retryWithExponentialBackoff, fetchWithTimeout, KnownInternalNames, formatUnits } from "@layerswap/widget/internal";
-import { BalanceProvider, TokenBalance } from "@layerswap/widget/types";
+import { retryWithExponentialBackoff, fetchWithTimeout, KnownInternalNames, formatUnits } from "@layerswap/utils";
+import { BalanceProvider, TokenBalance } from "@layerswap/wallet-core/types";
 
 export class FuelBalanceProvider extends BalanceProvider {
     supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {

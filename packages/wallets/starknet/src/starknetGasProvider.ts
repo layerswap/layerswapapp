@@ -1,10 +1,11 @@
-import { KnownInternalNames, formatUnits } from "@layerswap/widget/internal";
+import { NetworkType, formatUnits } from "@layerswap/utils";
 import { CallData, cairo, type Call, type EstimateFeeResponseOverhead } from "starknet";
-import { GasProvider, GasProps, Network } from "@layerswap/widget/types";
+import { Network } from "@layerswap/utils"
+import { GasProvider, GasProps } from "@layerswap/wallet-core/types"
 
 export class StarknetGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {
-        return (KnownInternalNames.Networks.StarkNetMainnet.includes(network.name) || KnownInternalNames.Networks.StarkNetGoerli.includes(network.name) || KnownInternalNames.Networks.StarkNetSepolia.includes(network.name))
+        return network.type === NetworkType.Starknet
     }
 
     getGas = async ({ network, token, wallet, amount }: GasProps) => {

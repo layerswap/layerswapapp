@@ -3,10 +3,9 @@ import useWallet from '@/hooks/useWallet';
 import { Address } from '@/lib/address/Address';
 import { getKey, useBalanceStore } from '@/stores/balanceStore';
 import { useManualDestAddressesStore } from '@/stores/manualDestAddressesStore';
-import { Wallet, WalletConnectionProvider } from '@/types/wallet';
+import { Wallet, WalletConnectionProvider } from "@layerswap/wallet-core/types"
 import { SwapDirection } from '@/exports';
-import { convertSvgComponentToBase64 } from '@/lib/wallets/utils/convertSvgComponentToBase64';
-import AddressIcon from '@/components/Common/AddressIcon';
+import { addressIconDataUrl } from '@/lib/addressIconDataUrl';
 
 export type { ManualDestAddress } from '@/stores/manualDestAddressesStore';
 
@@ -269,6 +268,6 @@ function ResolveManualSwapAccount(provider: WalletConnectionProvider, address: s
         id: 'manually_added',
         displayName: "Manual",
         addresses: [address],
-        icon: convertSvgComponentToBase64(<AddressIcon className="p-0.5" address={address} size={20} />),
+        icon: addressIconDataUrl(address, 20),
     };
 }

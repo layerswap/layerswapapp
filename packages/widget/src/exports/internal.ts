@@ -22,20 +22,7 @@ export { useSelectedAccount, useSelectSwapAccount, useSwapAccounts, useLatestSou
 export { default as useWallet } from "@/hooks/useWallet"
 export * from "../lib/apiClients"
 export * from "../lib/formatUnits"
-// Explicit re-exports (not `export * from "../stores"`): the wildcard meant any
-// store added to ../stores/index.ts was silently published to every consuming
-// wallet package, turning incidental store-shape changes into cross-package
-// breaking changes. Keep this list intentional and minimal. Today only
-// `useWalletStore` is consumed by wallet-package source (Fuel/Paradex); the
-// rest are exposed for host-app integrations. Prefer adding stable accessor
-// functions over widening this surface.
-export { useWalletStore } from "../stores/walletStore"
-export { useSlippageStore } from "../stores/slippageStore"
-export { useSwapTransactionStore, useSwapDepositHintClicked, type SwapTransaction } from "../stores/swapTransactionStore"
-export { useRecentNetworksStore, type RoutesHistory } from "../stores/recentRoutesStore"
-export { useBalanceStore, selectResolvedSortingBalances, getKey, type BalanceEntry } from "../stores/balanceStore"
-export { useRouteTokenSwitchStore } from "../stores/routeTokenSwitchStore"
-export { useManualDestAddressesStore, type ManualDestAddress } from "../stores/manualDestAddressesStore"
+export * from "../stores"
 export { default as ShortenString } from "../components/utils/ShortenString"
 export { Address } from "../lib/address/Address"
 export { getExplorerUrl } from "../lib/address/explorerUrl"
@@ -44,5 +31,5 @@ export { useWalletProvidersList } from "../components/Wallet/WalletProviders"
 export { ErrorHandler } from '../lib/ErrorHandler';
 export type { ErrorEventType } from '../types/logEvents';
 export { useRpcHealth } from "../context/rpcHealthContext";
-export * from "../lib/walletConnect"
 export * from "../lib/extendedRoutes"
+export * from "@layerswap/wallet-core"

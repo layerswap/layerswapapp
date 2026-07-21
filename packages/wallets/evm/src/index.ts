@@ -1,11 +1,7 @@
-import type {
-    WalletProvider,
-    WalletConnectionStore,
-    WalletInitContext,
-    WalletConnectionProviderProps,
-} from "@layerswap/widget/types"
-import { LazyBalanceProvider, LazyGasProvider, NetworkType } from "@layerswap/widget/types"
-import { KnownInternalNames } from "@layerswap/widget/internal"
+import type { WalletConnectionStore, WalletConnectionProviderProps } from "@layerswap/wallet-core/types"
+import type { WalletProvider, WalletInitContext } from "@layerswap/wallet-core/types"
+import { NetworkType } from "@layerswap/utils"
+import { LazyBalanceProvider, LazyGasProvider } from "@layerswap/wallet-core/types"
 import { createEvmConnection } from "./service/createEvmConnection"
 import { initEvmProvider } from "./EVMProvider/init"
 import { createEvmTransfer } from "./transferProvider/createEvmTransfer"
@@ -67,7 +63,7 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
             () => import("./balanceProviders").then(m => new m.EVMBalanceProvider())
         ),
         new LazyBalanceProvider(
-            (n) => n.name === KnownInternalNames.Networks.HyperliquidMainnet || n.name === KnownInternalNames.Networks.HyperliquidTestnet,
+            (n) => n.type === NetworkType.Hyperliquid,
             () => import("./balanceProviders").then(m => new m.HyperliquidBalanceProvider())
         ),
         ...moduleBalanceProviders,

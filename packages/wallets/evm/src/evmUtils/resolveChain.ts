@@ -1,6 +1,6 @@
 import { defineChain, parseGwei } from "viem";
-import { Network } from "@layerswap/widget/types";
-import { ErrorHandler, NetworkSettings } from "@layerswap/widget/internal";
+import { Network } from "@layerswap/utils"
+import { ErrorHandler, NetworkSettings } from "@layerswap/utils";
 
 export default function resolveChain(network: Network) {
 

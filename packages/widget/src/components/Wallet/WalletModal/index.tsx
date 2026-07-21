@@ -1,20 +1,9 @@
 "use client";
 import { Context, createContext, Dispatch, ReactNode, SetStateAction, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { InternalConnector, Wallet, WalletConnectionProvider } from '@/types/wallet';
-import { connectModalStore } from '@/lib/walletConnect/connectModalStore';
+import { InternalConnector, Wallet, WalletConnectionProvider, WalletModalConnector } from "@layerswap/wallet-core/types"
+import { connectModalStore } from '@layerswap/wallet-core';
 
-export type WalletModalConnector = InternalConnector & {
-    qr?: ({
-        state: 'loading',
-        value: undefined,
-        deepLink?: undefined
-    } | {
-        state: 'fetched',
-        value: string,
-        deepLink?: string
-    });
-    showQrCode?: boolean
-}
+export type { WalletModalConnector } from "@layerswap/wallet-core/types"
 
 export type ModalWalletProvider = WalletConnectionProvider & {
     isSelectedFromFilter?: boolean;

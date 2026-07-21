@@ -4,7 +4,7 @@ import HistorySummary from '../HistorySummary'
 import SwapDetails from '../SwapDetailsComponent'
 import { SwapResponse } from '@/lib/apiClients/layerSwapApiClient'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/shadcn'
-import { Wallet } from '@/types'
+import { Wallet } from "@layerswap/wallet-core/types"
 
 type SearchResultProps = {
     isLoading: boolean

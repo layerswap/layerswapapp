@@ -351,6 +351,12 @@ importers:
       '@dynamic-labs/wagmi-connector':
         specifier: ^4.19.7
         version: 4.52.5(8d4378372d2de373658d3a6a6c1a0bcb)
+      '@layerswap/utils':
+        specifier: workspace:^
+        version: link:../../packages/utils
+      '@layerswap/wallet-core':
+        specifier: workspace:^
+        version: link:../../packages/wallet-core
       '@layerswap/wallets':
         specifier: workspace:^
         version: link:../../packages/wallets/all
@@ -484,6 +490,9 @@ importers:
       bs58:
         specifier: ^6.0.0
         version: 6.0.0
+      csstype:
+        specifier: ^3.2.3
+        version: 3.2.3
       js-sha3:
         specifier: ^0.8.0
         version: 0.8.0
@@ -497,6 +506,34 @@ importers:
       typescript:
         specifier: ^5.9.2
         version: 5.9.3
+
+  packages/wallet-core:
+    dependencies:
+      '@layerswap/utils':
+        specifier: workspace:^
+        version: link:../utils
+    devDependencies:
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.3
+      react:
+        specifier: 'catalog:'
+        version: 19.2.3
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.2.3(react@19.2.3)
+      rimraf:
+        specifier: ^5.0.0
+        version: 5.0.10
+      tsc-alias:
+        specifier: ^1.8.16
+        version: 1.8.16
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.3
+      zustand:
+        specifier: 'catalog:'
+        version: 4.5.7(@types/react@19.2.3)(react@19.2.3)
 
   packages/wallets/all:
     dependencies:
@@ -528,9 +565,9 @@ importers:
         specifier: workspace:^
         version: link:../tron
     devDependencies:
-      '@layerswap/widget':
+      '@layerswap/wallet-core':
         specifier: workspace:^
-        version: link:../../widget
+        version: link:../../wallet-core
 
   packages/wallets/bitcoin:
     dependencies:
@@ -553,9 +590,12 @@ importers:
       '@bigmi/core':
         specifier: ^0.6.4
         version: 0.6.5(@types/react@19.2.3)(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.3))
-      '@layerswap/widget':
+      '@layerswap/utils':
         specifier: workspace:^
-        version: link:../../widget
+        version: link:../../utils
+      '@layerswap/wallet-core':
+        specifier: workspace:^
+        version: link:../../wallet-core
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(react@19.2.3)
@@ -575,9 +615,12 @@ importers:
         specifier: ^0.8.0
         version: 0.8.0
     devDependencies:
-      '@layerswap/widget':
+      '@layerswap/utils':
         specifier: workspace:^
-        version: link:../../widget
+        version: link:../../utils
+      '@layerswap/wallet-core':
+        specifier: workspace:^
+        version: link:../../wallet-core
       '@tailwindcss/postcss':
         specifier: ^4.0.15
         version: 4.0.15
@@ -606,9 +649,12 @@ importers:
         specifier: ^4.8.1
         version: 4.8.3(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     devDependencies:
-      '@layerswap/widget':
+      '@layerswap/utils':
         specifier: workspace:^
-        version: link:../../widget
+        version: link:../../utils
+      '@layerswap/wallet-core':
+        specifier: workspace:^
+        version: link:../../wallet-core
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(react@19.2.3)
@@ -621,13 +667,13 @@ importers:
       '@imtbl/passport':
         specifier: 2.20.0
         version: 2.20.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+      '@layerswap/wallet-core':
+        specifier: workspace:^
+        version: link:../../wallet-core
       axios:
         specifier: 'catalog:'
         version: 1.16.0
     devDependencies:
-      '@layerswap/widget':
-        specifier: workspace:^
-        version: link:../../widget
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(react@19.2.3)
@@ -644,15 +690,18 @@ importers:
         specifier: 'catalog:'
         version: 8.9.2
     devDependencies:
+      '@layerswap/utils':
+        specifier: workspace:^
+        version: link:../../utils
+      '@layerswap/wallet-core':
+        specifier: workspace:^
+        version: link:../../wallet-core
       '@layerswap/wallet-evm':
         specifier: workspace:^
         version: link:../evm
       '@layerswap/wallet-starknet':
         specifier: workspace:^
         version: link:../starknet
-      '@layerswap/widget':
-        specifier: workspace:^
-        version: link:../../widget
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(react@19.2.3)
@@ -681,9 +730,12 @@ importers:
         specifier: ^3.4.3
         version: 3.4.3(@radix-ui/react-slot@1.2.4(@types/react@19.2.3)(react@19.2.3))(@scure/bip39@1.6.0)(@types/react@19.2.3)(bufferutil@4.1.0)(class-variance-authority@0.7.1)(clsx@2.1.1)(framer-motion@12.26.2(@emotion/is-prop-valid@0.8.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(i18next@23.4.6)(react-i18next@13.5.0(i18next@23.4.6)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-router-dom@6.30.3(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(starknet@8.9.2)(swr@2.3.8(react@19.2.3))(tailwind-merge@3.4.0)(tailwindcss-animate@1.0.7(tailwindcss@4.0.15))(tailwindcss@4.0.15)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.0.5)
     devDependencies:
-      '@layerswap/widget':
+      '@layerswap/utils':
         specifier: workspace:^
-        version: link:../../widget
+        version: link:../../utils
+      '@layerswap/wallet-core':
+        specifier: workspace:^
+        version: link:../../wallet-core
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(react@19.2.3)
@@ -724,9 +776,12 @@ importers:
         specifier: ^6.0.0
         version: 6.0.0
     devDependencies:
-      '@layerswap/widget':
+      '@layerswap/utils':
         specifier: workspace:^
-        version: link:../../widget
+        version: link:../../utils
+      '@layerswap/wallet-core':
+        specifier: workspace:^
+        version: link:../../wallet-core
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(react@19.2.3)
@@ -746,9 +801,12 @@ importers:
         specifier: ^3.4.1
         version: 3.4.1
     devDependencies:
-      '@layerswap/widget':
+      '@layerswap/utils':
         specifier: workspace:^
-        version: link:../../widget
+        version: link:../../utils
+      '@layerswap/wallet-core':
+        specifier: workspace:^
+        version: link:../../wallet-core
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(react@19.2.3)
@@ -780,9 +838,12 @@ importers:
         specifier: ^6.3.0
         version: 6.3.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     devDependencies:
-      '@layerswap/widget':
+      '@layerswap/utils':
         specifier: workspace:^
-        version: link:../../widget
+        version: link:../../utils
+      '@layerswap/wallet-core':
+        specifier: workspace:^
+        version: link:../../wallet-core
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(react@19.2.3)
@@ -795,6 +856,9 @@ importers:
       '@layerswap/utils':
         specifier: workspace:^
         version: link:../utils
+      '@layerswap/wallet-core':
+        specifier: workspace:^
+        version: link:../wallet-core
       '@number-flow/react':
         specifier: ^0.5.10
         version: 0.5.10(react-dom@19.2.3(react@19.2.3))(react@19.2.3)

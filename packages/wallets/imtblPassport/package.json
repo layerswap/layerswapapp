@@ -37,16 +37,15 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@layerswap/widget": "workspace:^",
     "zustand": "catalog:"
   },
   "dependencies": {
     "@imtbl/config": "2.20.0",
     "@imtbl/passport": "2.20.0",
-    "axios": "catalog:"
+    "axios": "catalog:",
+    "@layerswap/wallet-core": "workspace:^"
   },
   "devDependencies": {
-    "@layerswap/widget": "workspace:^",
     "zustand": "catalog:"
   },
   "engines": {

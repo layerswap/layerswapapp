@@ -1,18 +1,9 @@
-import type {
-    InternalConnector,
-    RequestAdditionalConnectorsParams,
-    RequestAdditionalConnectorsResult,
-    Wallet,
-    WalletConnectionProvider,
-    NetworkWithTokens,
-} from '@layerswap/widget/types'
-import {
-    Address,
-    KnownInternalNames,
-    sleep,
-    getRegistryEntry,
-    useWalletStore,
-} from '@layerswap/widget/internal'
+import type { NetworkWithTokens } from "@layerswap/utils"
+import type { InternalConnector, RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult, Wallet, WalletConnectionProvider } from "@layerswap/wallet-core/types"
+import { sleep } from "@layerswap/utils"
+import { getRegistryEntry } from "@layerswap/wallet-core"
+import { KnownInternalNames } from "@layerswap/utils";
+import { Address } from "@layerswap/utils"
 import { getEvmConfig, walletClientToSigner } from '@layerswap/wallet-evm'
 import {
     getChainId,
@@ -21,6 +12,7 @@ import {
     type ConnectorAlreadyConnectedError,
 } from '@wagmi/core'
 import { useParadexActiveStore, type ParadexAccount } from './paradexActiveStore'
+import { paradexAccountStore, type ParadexAccountMap } from './paradexAccountStore'
 
 export const name = 'Paradex'
 export const id = 'prdx'
@@ -33,8 +25,6 @@ export const autofillSupportedNetworks = [...withdrawalSupportedNetworks]
 export const asSourceSupportedNetworks = [...withdrawalSupportedNetworks]
 
 type Account = ParadexAccount
-
-type ParadexAccountMap = { [key: string]: string }
 
 type RuntimeDeps = {
     setSelectedConnector?: (connector: unknown) => void
@@ -90,15 +80,15 @@ export class ParadexConnectionService {
     }
 
     private getParadexAccounts(): ParadexAccountMap {
-        return useWalletStore.getState().paradexAccounts ?? {}
+        return paradexAccountStore.getState().paradexAccounts
     }
 
     private addParadexAccount(payload: { l1Address: string; paradexAddress: string }): void {
-        useWalletStore.getState().addParadexAccount(payload)
+        paradexAccountStore.getState().addParadexAccount(payload)
     }
 
     private removeParadexAccount(address: string): void {
-        useWalletStore.getState().removeParadexAccount(address)
+        paradexAccountStore.getState().removeParadexAccount(address)
     }
 
     private getSelectedAccount(): Account | undefined {

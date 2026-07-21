@@ -2,7 +2,7 @@ import type { Config } from '@wagmi/core'
 import type {
     BaseWalletProviderConfig,
     WalletProviderModule,
-} from "@layerswap/widget/types"
+} from "@layerswap/wallet-core/types"
 
 export type WalletConnectConfig = {
     projectId: string
@@ -16,9 +16,9 @@ export type EVMProviderConfig = BaseWalletProviderConfig & {
     walletConnectConfigs?: WalletConnectConfig
     walletProviderModules?: WalletProviderModule[]
     /**
-     * Optional externally-created wagmi Config. When set, the EVM package
-     * adopts it instead of creating its own. Connectors, chains, transports,
-     * and reconnect lifecycle become the host's responsibility.
+     * Lets an embedding host intentionally share its existing wagmi config
+     * with Layerswap. Omit this when the host and Layerswap need independent
+     * wallet sessions.
      */
     wagmiConfig?: Config
 }

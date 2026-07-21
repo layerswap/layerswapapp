@@ -1,16 +1,15 @@
 'use client'
 import { FC, ReactNode, createElement, useEffect, useMemo, createContext, useContext } from "react"
-import { ThemeData } from "@/Models/Theme"
 import { WalletProvidersProvider } from "@/context/walletProviders";
 import { WalletModalProvider } from "../WalletModal";
-import { WalletProvider, WalletProviderDescriptor, WalletWrapper, isWalletProviderDescriptor } from "@/types"
+import { WalletProvider, WalletWrapper } from "@/types"
+import { WalletProviderDescriptor, isWalletProviderDescriptor } from "@layerswap/wallet-core/types"
 
 const DynamicProviderWrapper: FC<{
     providers: WalletWrapper[],
     children: ReactNode,
-    themeData: ThemeData,
     appName: string | undefined
-}> = ({ providers, children, themeData, appName }) => {
+}> = ({ providers, children, appName }) => {
     const createNestedProviders = (providers: WalletWrapper[], currentChildren: ReactNode): ReactNode => {
         if (providers.length === 0) return currentChildren;
 
@@ -20,7 +19,7 @@ const DynamicProviderWrapper: FC<{
             return createNestedProviders(remainingProviders, currentChildren);
         }
 
-        const wrapperProps = { children: createNestedProviders(remainingProviders, currentChildren), themeData, appName };
+        const wrapperProps = { children: createNestedProviders(remainingProviders, currentChildren), appName };
 
         return createElement(currentProvider.wrapper, wrapperProps);
     };
@@ -43,19 +42,13 @@ const DynamicProviderWrapper: FC<{
  */
 const WalletsProviders: FC<{
     children: ReactNode,
-    themeData: ThemeData,
     appName: string | undefined,
     walletProviders: (WalletProvider | WalletWrapper | WalletProviderDescriptor)[]
-}> = ({ children, themeData, appName, walletProviders }) => {
+}> = ({ children, appName, walletProviders }) => {
 
     const realProviders = useMemo(
         () => walletProviders.filter((p): p is WalletProvider | WalletWrapper => !isWalletProviderDescriptor(p)),
         [walletProviders],
-    );
-
-    const providersWithConnection = useMemo(
-        () => realProviders.filter((provider): provider is WalletProvider => 'createConnection' in provider),
-        [realProviders],
     );
 
     useEffect(() => {
@@ -63,12 +56,12 @@ const WalletsProviders: FC<{
         for (const p of realProviders) {
             const init = (p as WalletWrapper).init
             if (typeof init === 'function') {
-                const dispose = init({ themeData, appName })
+                const dispose = init({ appName })
                 if (typeof dispose === 'function') disposers.push(dispose)
             }
         }
         return () => disposers.forEach(d => { try { d() } catch { /* swallow */ } })
-        // themeData/appName are stable per LayerswapProvider mount.
+        // appName is stable per LayerswapProvider mount.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [realProviders])
 
@@ -77,7 +70,6 @@ const WalletsProviders: FC<{
             <WalletModalProvider>
                 <DynamicProviderWrapper
                     providers={realProviders}
-                    themeData={themeData}
                     appName={appName}
                 >
                     <WalletProvidersProvider walletProviders={walletProviders}>

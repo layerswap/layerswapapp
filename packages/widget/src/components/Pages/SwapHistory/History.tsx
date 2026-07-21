@@ -16,7 +16,7 @@ import { SwapDataProvider, SwapDataStateContext } from '@/context/swap';
 import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import { useHistoryFilters } from '@/hooks/useHistoryFilters';
 import { useSwapByTransactionHash } from '@/hooks/useSwapByTransactionHash';
-import { Wallet } from '@/types/wallet';
+import { Wallet } from "@layerswap/wallet-core/types"
 import { FilterNetworkOption } from './Filters/types';
 import { SwapResponse } from '@/lib/apiClients/layerSwapApiClient';
 import Filters from './Filters';

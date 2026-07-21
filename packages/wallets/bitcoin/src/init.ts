@@ -1,5 +1,5 @@
-import type { NetworkWithTokens } from '@layerswap/widget/types'
-import { NetworkType } from '@layerswap/widget/types'
+import type { NetworkWithTokens } from "@layerswap/utils"
+import { NetworkType } from "@layerswap/utils"
 import { ensureBitcoinConfig, hasBitcoinConfig, resetBitcoinConfig } from './service/getBitcoinConfig'
 import { attachBitcoinSync } from './service/syncBitcoin'
 

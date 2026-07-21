@@ -8,10 +8,4 @@ export class LayerSwapSettings {
     destinationRoutes?: NetworkRoute[];
 }
 
-export type AvailableSourceNetworkTypes = {
-    all: true
-    networks?: never
-} | {
-    all: false
-    networks: string[]
-}
+export type { AvailableSourceNetworkTypes } from "@layerswap/utils";

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { WalletProvider, WalletProviderDescriptor, WalletWrapper, isWalletProviderDescriptor, NftProvider, BalanceProvider, GasProvider, TransferProvider, ContractAddressCheckerProvider, RpcHealthCheckProvider } from "@/types";
+import { WalletProvider, WalletWrapper, NftProvider, BalanceProvider, GasProvider, TransferProvider, ContractAddressCheckerProvider, RpcHealthCheckProvider } from "@/types"
+import { WalletProviderDescriptor, isWalletProviderDescriptor } from "@layerswap/wallet-core/types"
 import { resolverService } from "@/lib/resolvers/resolverService";
 import { setExtendedRouteProviders } from "@/lib/extendedRoutes/registry";
 

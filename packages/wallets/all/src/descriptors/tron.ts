@@ -1,4 +1,5 @@
-import type { WalletProvider, WalletProviderDescriptor } from "@layerswap/widget/types"
+import type { WalletProviderDescriptor } from "@layerswap/wallet-core/types"
+import type { WalletProvider } from "@layerswap/wallet-core/types"
 
 const TRON_NETWORKS = ['TRON_MAINNET', 'TRON_TESTNET']
 

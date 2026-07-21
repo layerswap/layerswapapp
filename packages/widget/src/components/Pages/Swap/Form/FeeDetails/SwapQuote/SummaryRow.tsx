@@ -1,6 +1,6 @@
 import { FC, useMemo } from 'react'
 import { ChevronDown } from 'lucide-react'
-import { Wallet } from '@/types/wallet'
+import { Wallet } from "@layerswap/wallet-core/types"
 import { SwapValues } from '..'
 import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
 import { DetailsButton } from '..'

@@ -1,6 +1,6 @@
 import { AccountInterface } from 'starknet';
 import * as Paradex from "@paradex/sdk";
-import { AppSettings } from '@layerswap/widget/internal';
+import { AppSettings } from "@layerswap/utils";
 
 export async function AuthorizeStarknet(starknetAccount: AccountInterface) {
     const config = await Paradex.Config.fetch(AppSettings.ApiVersion === "testnet" ? 'testnet' : 'prod'); ///TODO: check environment may be mainnet

@@ -1,7 +1,7 @@
 import { providers } from 'ethers'
 import * as Paradex from "@paradex/sdk";
 import { TypedData } from '../lib/types';
-import { AppSettings } from '@layerswap/widget/internal';
+import { AppSettings } from "@layerswap/utils";
 
 export default async function AuhorizeEthereum(ethersSigner: providers.JsonRpcSigner) {
     const environment = AppSettings.ApiVersion === 'testnet' ? 'testnet' : 'prod'

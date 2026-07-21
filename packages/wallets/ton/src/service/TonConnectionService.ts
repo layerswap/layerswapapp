@@ -1,11 +1,8 @@
-import type {
-    InternalConnector,
-    NetworkWithTokens,
-    Wallet,
-    WalletConnectionProvider,
-    WalletModalConnector,
-} from '@layerswap/widget/types'
-import { connectModalStore, walletIconResolver } from '@layerswap/widget/internal'
+import type { NetworkWithTokens } from "@layerswap/utils"
+import type { InternalConnector, Wallet, WalletConnectionProvider } from "@layerswap/wallet-core/types"
+import type { WalletModalConnector } from "@layerswap/wallet-core/types"
+import { connectModalStore } from "@layerswap/wallet-core"
+import { resolveWalletIconString } from "@layerswap/wallet-core"
 import {
     isWalletInfoCurrentlyInjected,
     isWalletInfoInjectable,
@@ -65,7 +62,8 @@ export class TonConnectionService {
             console.warn('[TON] Failed to parse wallet address:', snapshot.address, e)
             return undefined
         }
-        const walletId = snapshot.walletName || snapshot.appName
+        const walletInfo = useTonStore.getState().wallets.find(w => w.appName.toLowerCase() === snapshot.appName?.toLowerCase())
+        const walletId = walletInfo?.name || snapshot.walletName || snapshot.appName
         if (!walletId) return undefined
 
         return {
@@ -75,7 +73,10 @@ export class TonConnectionService {
             address: normalizedAddress,
             providerName: PROVIDER_NAME,
             isActive: true,
-            icon: walletIconResolver(PROVIDER_NAME, snapshot.imageUrl || normalizedAddress),
+            icon: resolveWalletIconString({
+                id: walletInfo?.appName ?? snapshot.appName ?? walletId,
+                iconUrl: walletInfo?.imageUrl ?? snapshot.imageUrl,
+            }),
             disconnect: () => this.disconnectWallets(),
             withdrawalSupportedNetworks: tonNames,
             autofillSupportedNetworks: tonNames,
@@ -123,13 +124,9 @@ export class TonConnectionService {
         const connectionResultPromise = new Promise<TonWallet>((resolve, reject) => {
             unsubscribeStatus = tonConnect.onStatusChange(
                 (wallet) => {
-                    if (wallet) {
-                        resolve(wallet)
-                    }
+                    if (wallet) resolve(wallet)
                 },
-                (err) => {
-                    reject(err)
-                },
+                reject,
             )
             unsubscribeModal = connectModalStore.subscribe(() => {
                 const modal = connectModalStore.getSnapshot()
@@ -174,7 +171,7 @@ export class TonConnectionService {
             } else if (isWalletInfoInjectable(walletInfo)) {
                 // Injectable but not currently injected → tell the UI the extension is missing.
                 setSelectedConnector?.({ ...connector, extensionNotFound: true })
-                throw new Error(`${walletInfo.name} extension is not installed`)
+                throw new Error(`${connector.name} extension is not installed`)
             } else {
                 throw new Error('Unsupported TON wallet connection source')
             }

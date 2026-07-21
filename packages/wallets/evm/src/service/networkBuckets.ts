@@ -1,7 +1,5 @@
-import { NetworkType, type NetworkWithTokens } from '@layerswap/widget/types'
-import { KnownInternalNames } from '@layerswap/widget/internal'
-
-export type EvmNetworkBuckets = {
+import { NetworkType, type NetworkWithTokens } from "@layerswap/utils"
+import { KnownInternalNames } from "@layerswap/utils";export type EvmNetworkBuckets = {
     asSource: string[]
     withdrawal: string[]
     autofill: string[]

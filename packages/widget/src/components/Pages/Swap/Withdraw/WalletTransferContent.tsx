@@ -5,7 +5,7 @@ import AddressWithIcon from '@/components/Input/Address/AddressPicker/AddressWit
 import { AddressGroup } from '@/components/Input/Address/AddressPicker';
 import { truncateDecimals } from '@/components/utils/RoundDecimals';
 import VaulDrawer from '@/components/Modal/vaulModal';
-import { SelectAccountProps } from '@/types/wallet';
+import { SelectAccountProps } from "@layerswap/wallet-core/types"
 import { useSettingsState } from '@/context/settings';
 import WalletsList from '@/components/Wallet/WalletComponents/WalletsList';
 import { SwapBasicData } from '@/lib/apiClients/layerSwapApiClient';

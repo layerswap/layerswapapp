@@ -1,4 +1,5 @@
-import { NetworkType, type TransferProvider } from '@layerswap/widget/types'
+import { NetworkType } from "@layerswap/utils"
+import type { TransferProvider } from "@layerswap/wallet-core/types"
 import { getEvmConfig } from '../service/getEvmConfig'
 import { createEVMTransferProvider } from './createEVMTransferProvider'
 import { transactionBuilder } from './transactionBuilder'

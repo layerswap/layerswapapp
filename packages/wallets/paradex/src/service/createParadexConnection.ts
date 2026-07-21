@@ -1,13 +1,6 @@
-import type {
-    NetworkWithTokens,
-    WalletConnectionProvider,
-    WalletConnectionProviderProps,
-    WalletConnectionStore,
-} from '@layerswap/widget/types'
-import {
-    connectModalStore,
-    useWalletStore,
-} from '@layerswap/widget/internal'
+import type { NetworkWithTokens } from "@layerswap/utils"
+import type { WalletConnectionProvider, WalletConnectionProviderProps, WalletConnectionStore } from "@layerswap/wallet-core/types"
+import { connectModalStore } from "@layerswap/wallet-core"
 import { createStore } from 'zustand/vanilla'
 import {
     asSourceSupportedNetworks,
@@ -18,6 +11,7 @@ import {
     withdrawalSupportedNetworks,
 } from './ParadexConnectionService'
 import { useParadexActiveStore } from './paradexActiveStore'
+import { paradexAccountStore } from './paradexAccountStore'
 
 /**
  * Vanilla external-store factory for the Paradex wallet connection. Replaces
@@ -48,7 +42,7 @@ export function createParadexConnection(
     const computeSnapshot = (): WalletConnectionProvider => {
         const evmSnapshot = peerProviders?.getById('evm')
         const starknetSnapshot = peerProviders?.getById('starknet')
-        const paradexAccounts = useWalletStore.getState().paradexAccounts
+        const paradexAccounts = paradexAccountStore.getState().paradexAccounts
         const selectedAccount = useParadexActiveStore.getState().selectedAccount
 
         const inputs: SnapshotInputs = {
@@ -103,7 +97,7 @@ export function createParadexConnection(
     }
 
     const unsubs: (() => void)[] = [
-        useWalletStore.subscribe(sync),
+        paradexAccountStore.subscribe(sync),
         useParadexActiveStore.subscribe(sync),
     ]
     if (peerProviders) {

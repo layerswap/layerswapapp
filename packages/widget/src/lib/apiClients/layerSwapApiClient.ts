@@ -1,3 +1,4 @@
+import type { Refuel } from "@layerswap/utils";
 import { SwapStatus } from "../../Models/SwapStatus";
 import AppSettings from "../AppSettings";
 import { InitializeUnauthInstance, InitializeAuthInstance } from "../axiosInterceptor"
@@ -149,12 +150,7 @@ export type SwapResponse = {
     refuel?: Refuel,
 }
 
-export type Refuel = {
-    network: Network
-    token: Token,
-    amount: number,
-    amount_in_usd: number
-}
+export type { Refuel } from "@layerswap/utils"
 
 export type SwapBasicData = {
     source_network: Network,

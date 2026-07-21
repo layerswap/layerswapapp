@@ -1,12 +1,7 @@
-import type {
-    WalletProvider,
-    WalletConnectionStore,
-    WalletInitContext,
-    WalletConnectionProviderProps,
-    BaseWalletProviderConfig,
-} from "@layerswap/widget/types"
-import { LazyBalanceProvider } from "@layerswap/widget/types"
-import { KnownInternalNames } from "@layerswap/widget/internal"
+import type { WalletConnectionStore, WalletConnectionProviderProps } from "@layerswap/wallet-core/types"
+import type { WalletProvider, WalletInitContext, BaseWalletProviderConfig } from "@layerswap/wallet-core/types"
+import { LazyBalanceProvider } from "@layerswap/wallet-core/types"
+import { KnownInternalNames } from "@layerswap/utils";
 import { TronGasProvider } from "./tronGasProvider"
 import { createTronTransfer } from "./transferProvider/createTronTransfer"
 import { createTronConnection } from "./service/createTronConnection"
@@ -67,3 +62,4 @@ export function createTronProvider(config: TronProviderConfig = {}): WalletProvi
 
 export { createTronConnection } from "./service/createTronConnection"
 export { useTronStore } from "./service/tronStore"
+export { tronAdapterManager } from "./service/tronAdapterManager"

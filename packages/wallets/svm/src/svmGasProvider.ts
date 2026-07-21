@@ -1,6 +1,7 @@
-import { GasProps, Network, NetworkType, GasProvider } from "@layerswap/widget/types";
+import { Network, NetworkType } from "@layerswap/utils"
+import { GasProps, GasProvider } from "@layerswap/wallet-core/types"
 import { transactionBuilderForGas } from "./utils";
-import { ErrorHandler, formatUnits } from "@layerswap/widget/internal";
+import { ErrorHandler, formatUnits } from "@layerswap/utils";
 
 export class SolanaGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {

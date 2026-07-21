@@ -1,10 +1,5 @@
-import type {
-    WalletProvider,
-    WalletConnectionStore,
-    WalletInitContext,
-    WalletConnectionProviderProps,
-    BaseWalletProviderConfig,
-} from "@layerswap/widget/types"
+import type { WalletConnectionStore, WalletConnectionProviderProps } from "@layerswap/wallet-core/types"
+import type { WalletProvider, WalletInitContext, BaseWalletProviderConfig } from "@layerswap/wallet-core/types"
 import { BitcoinGasProvider } from "./bitcoinGasProvider"
 import { BitcoinBalanceProvider } from "./bitcoinBalanceProvider"
 import { createBitcoinTransfer } from "./transferProvider/createBitcoinTransfer"

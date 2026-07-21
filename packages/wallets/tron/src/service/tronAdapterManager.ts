@@ -65,7 +65,11 @@ class TronAdapterManager {
         return this.getAdapter(this._selectedName)
     }
 
-    select(name: string): void {
+    getSelectedName(): string | undefined {
+        return this._selectedName
+    }
+
+    select(name: string | undefined): void {
         this._selectedName = name
     }
 

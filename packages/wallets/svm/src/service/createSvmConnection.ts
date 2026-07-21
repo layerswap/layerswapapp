@@ -1,15 +1,7 @@
-import type {
-    MultiStepHandler,
-    NetworkWithTokens,
-    WalletConnectionProvider,
-    WalletConnectionProviderProps,
-    WalletConnectionStore,
-} from '@layerswap/widget/types'
-import {
-    connectModalStore,
-    getAdditionalConnectorsStore,
-    isMobile,
-} from '@layerswap/widget/internal'
+import type { NetworkWithTokens } from "@layerswap/utils"
+import type { MultiStepHandler, WalletConnectionProvider, WalletConnectionProviderProps, WalletConnectionStore } from "@layerswap/wallet-core/types"
+import { isMobile } from "@layerswap/utils"
+import { connectModalStore, getAdditionalConnectorsStore } from "@layerswap/wallet-core"
 import { createStore } from 'zustand/vanilla'
 import { id as PROVIDER_ID } from '../constants'
 import { createSvmTransfer } from '../transferProvider/createSvmTransfer'

@@ -1,4 +1,5 @@
-import type { WalletProvider, WalletProviderDescriptor } from "@layerswap/widget/types"
+import type { WalletProviderDescriptor } from "@layerswap/wallet-core/types"
+import type { WalletProvider } from "@layerswap/wallet-core/types"
 
 const FUEL_NETWORKS = ['FUEL_MAINNET', 'FUEL_TESTNET', 'FUEL_DEVNET']
 

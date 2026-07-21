@@ -37,7 +37,8 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@layerswap/widget": "workspace:^",
+    "@layerswap/wallet-core": "workspace:^",
+    "@layerswap/utils": "workspace:^",
     "@wagmi/core": "catalog:",
     "wagmi": "catalog:",
     "viem": "catalog:",
@@ -51,7 +52,8 @@
     "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
-    "@layerswap/widget": "workspace:^",
+    "@layerswap/wallet-core": "workspace:^",
+    "@layerswap/utils": "workspace:^",
     "zustand": "catalog:"
   },
   "engines": {

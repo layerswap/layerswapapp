@@ -1,11 +1,7 @@
-import type {
-    WalletProvider,
-    WalletConnectionStore,
-    WalletInitContext,
-    WalletConnectionProviderProps,
-    BaseWalletProviderConfig,
-} from "@layerswap/widget/types"
-import { LazyGasProvider, NetworkType } from "@layerswap/widget/types"
+import type { WalletConnectionStore, WalletConnectionProviderProps } from "@layerswap/wallet-core/types"
+import type { WalletProvider, WalletInitContext, BaseWalletProviderConfig } from "@layerswap/wallet-core/types"
+import { NetworkType } from "@layerswap/utils"
+import { LazyGasProvider } from "@layerswap/wallet-core/types"
 import { SolanaBalanceProvider } from "./svmBalanceProvider"
 import { createSvmTransfer } from "./transferProvider/createSvmTransfer"
 import { createSvmConnection } from "./service/createSvmConnection"

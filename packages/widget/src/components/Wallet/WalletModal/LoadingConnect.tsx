@@ -4,7 +4,7 @@ import { Link2Off, RotateCw } from "lucide-react";
 import LayerSwapLogoSmall from "@/components/Icons/layerSwapLogoSmall";
 import WalletIcon from "@/components/Icons/WalletIcon";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
-import { isMobile } from "@/lib/wallets/utils/isMobile";
+import { isMobile } from "@layerswap/utils";
 
 export const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalConnector, connectionError: string | undefined }> = ({ onRetry, selectedConnector, connectionError }) => {
     const connectorIconSrc = selectedConnector.icon

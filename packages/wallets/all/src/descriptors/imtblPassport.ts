@@ -1,4 +1,5 @@
-import type { WalletProvider, WalletProviderDescriptor, WalletWrapper } from "@layerswap/widget/types"
+import type { WalletProviderDescriptor } from "@layerswap/wallet-core/types"
+import type { WalletProvider, WalletWrapper } from "@layerswap/wallet-core/types"
 import type { ImtblPassportConfig } from "@layerswap/wallet-imtbl-passport"
 
 /**

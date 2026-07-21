@@ -1,4 +1,5 @@
-import type { WalletProvider, WalletProviderDescriptor } from "@layerswap/widget/types"
+import type { WalletProviderDescriptor } from "@layerswap/wallet-core/types"
+import type { WalletProvider } from "@layerswap/wallet-core/types"
 
 // Inlined to keep this module tree-shake-safe. Paradex's runtime constants
 // live in packages/wallets/paradex/src/service/ParadexConnectionService.ts —

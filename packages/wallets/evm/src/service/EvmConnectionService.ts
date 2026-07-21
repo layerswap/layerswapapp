@@ -1,12 +1,7 @@
-import type {
-    InternalConnector,
-    NetworkWithTokens,
-    RequestAdditionalConnectorsParams,
-    RequestAdditionalConnectorsResult,
-    Wallet,
-    WalletModalConnector,
-} from '@layerswap/widget/types'
-import type { RegistryConnector } from '@layerswap/widget/internal'
+import type { NetworkWithTokens } from "@layerswap/utils"
+import type { InternalConnector, RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult, Wallet } from "@layerswap/wallet-core/types"
+import type { WalletModalConnector } from "@layerswap/wallet-core/types"
+import type { RegistryConnector } from "@layerswap/wallet-core"
 import type { Connector } from 'wagmi'
 import {
     connect,
@@ -15,16 +10,7 @@ import {
     switchAccount as wagmiSwitchAccount,
     type Connection,
 } from '@wagmi/core'
-import {
-    buildDeepLink,
-    clearPendingDynamicWcMetadata,
-    getRegistryEntry,
-    mapConnectError,
-    setDynamicWcMetadata,
-    setPendingMetadataForRegistry,
-    subscribeDisplayUri,
-    type WalletConnectWalletBase,
-} from '@layerswap/widget/internal'
+import { buildDeepLink, clearPendingDynamicWcMetadata, getRegistryEntry, mapConnectError, setDynamicWcMetadata, setPendingMetadataForRegistry, subscribeDisplayUri, type WalletConnectWalletBase } from "@layerswap/wallet-core"
 import { evmConnectorNameResolver, resolveEVMWalletConnectorIcon } from '../evmUtils'
 import { name as PROVIDER_NAME, HIDDEN_WALLETCONNECT_ID } from '../constants'
 import type { LSConnector } from '../connectors/types'

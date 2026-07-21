@@ -1,4 +1,5 @@
-import type { WalletProvider, WalletProviderDescriptor } from "@layerswap/widget/types"
+import type { WalletProviderDescriptor } from "@layerswap/wallet-core/types"
+import type { WalletProvider } from "@layerswap/wallet-core/types"
 import type { TonClientConfig } from "@layerswap/wallet-ton"
 
 // Inlined — see notes in ./starknet.ts on why we don't import the chain

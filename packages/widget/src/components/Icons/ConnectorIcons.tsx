@@ -1,8 +1,5 @@
 import { Suspense, lazy } from "react";
-import MetaMaskIcon from "./Wallets/MetaMask";
-import WalletConnectIcon from "./Wallets/WalletConnect";
-import RainbowIcon from "./Wallets/Rainbow";
-import Phantom from "./Wallets/Phantom";
+import { KnownWalletIcon } from "./KnownWalletIcon";
 
 // All chain-specific icon sets (Starknet, TON, Solana, Fuel, Tron, Bitcoin)
 // live in a lazy chunk. They are only displayed when the user is looking
@@ -21,10 +18,10 @@ const IconsWrapper = ({ children, className }: { children: React.ReactNode, clas
 
 const DefaultEvmIcons = ({ iconClassName, className }: { iconClassName: string; className?: string }) => (
     <IconsWrapper className={className}>
-        <MetaMaskIcon className={iconClassName} />
-        <WalletConnectIcon className={iconClassName} />
-        <RainbowIcon className={iconClassName} />
-        <Phantom className={iconClassName} />
+        <KnownWalletIcon id="metamask" className={iconClassName} />
+        <KnownWalletIcon id="walletconnect" className={iconClassName} />
+        <KnownWalletIcon id="rainbow" className={iconClassName} />
+        <KnownWalletIcon id="phantom" className={iconClassName} />
     </IconsWrapper>
 );
 

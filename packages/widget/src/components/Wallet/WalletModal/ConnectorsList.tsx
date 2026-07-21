@@ -1,13 +1,13 @@
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useWallet from "@/hooks/useWallet";
 import { useConnectModal, WalletModalConnector } from ".";
-import { InternalConnector, Wallet, WalletConnectionProvider } from "@/types/wallet";
+import { InternalConnector, Wallet, WalletConnectionProvider } from "@layerswap/wallet-core/types"
 import clsx from "clsx";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
 import Connector from "./Connector";
 import { usePersistedState } from "@/hooks/usePersistedState";
 import { SearchComponent } from "@/components/Input/Search";
-import { isMobile } from "@/lib/wallets/utils/isMobile";
+import { isMobile } from "@layerswap/utils";
 import AppSettings from "@/lib/AppSettings";
 import { MultichainConnectorPicker } from "./MultichainConnectorPicker";
 import { ProviderPicker } from "./ProviderPicker";
@@ -15,9 +15,8 @@ import { InstalledExtensionNotFound } from "./InstalledExtensionNotFound";
 import { WalletQrCode } from "./WalletQrCode";
 import { LoadingConnect } from "./LoadingConnect";
 import CircularLoader from "@/components/Icons/CircularLoader";
-import { useConnectors } from "@/hooks/useConnectors";
-import { useWalletProvidersRegistry } from "@/context/walletProviders";
-import { useWalletDescriptorLoader } from "@/lib/walletConnect/walletDescriptorLoader";
+import { useConnectors } from "@layerswap/wallet-core";
+import { useWalletDescriptorLoader, useWalletProvidersRegistry } from "@layerswap/wallet-core";
 
 type ProviderPaginationState = {
     loaded: boolean;

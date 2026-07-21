@@ -17,14 +17,6 @@ export function setEvmConfigInitParams(params: EvmConfigInitParams): void {
     _initParams = params
 }
 
-/**
- * Adopt an externally-created wagmi Config (e.g. one already owned by the host
- * app's <WagmiProvider>) instead of having the EVM package create its own.
- *
- * Must be called before getEvmConfig() / EVMHydrator first runs. After the
- * internal config is created, this is a no-op + warning to avoid silent
- * dual-config state.
- */
 export function provideExternalEvmConfig(cfg: Config): void {
     if (_config && _config !== cfg) {
         // eslint-disable-next-line no-console
@@ -51,8 +43,8 @@ export function getEvmConfig(): Config {
     // discovery on `hasHydrated()` — both seeded initial providers and the mipd
     // subscriber early-return until rehydrate runs. `hydrate(...).onMount()`
     // rehydrates persistence, appends `mipd.getProviders()` into the connector
-    // store, and then calls `reconnect(config)`. Skipped for external configs —
-    // the host owns this lifecycle for those.
+    // store, and then calls `reconnect(config)`. An embedding host owns this
+    // lifecycle when it provides the config.
     if (!_external && typeof window !== 'undefined') {
         hydrate(_config, { reconnectOnMount: true }).onMount().catch(() => { /* swallow */ })
     }

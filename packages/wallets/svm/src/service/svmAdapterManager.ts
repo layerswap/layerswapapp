@@ -183,6 +183,10 @@ class SvmAdapterManager {
         return adapter
     }
 
+    getSelectedName(): string | undefined {
+        return this._selectedName
+    }
+
     select(name: string | undefined): void {
         this._selectedName = name
         if (typeof window !== 'undefined') {

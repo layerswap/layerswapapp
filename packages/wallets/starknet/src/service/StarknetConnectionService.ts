@@ -1,10 +1,6 @@
-import type {
-    InternalConnector,
-    NetworkWithTokens,
-    Wallet,
-    WalletConnectionProvider,
-} from '@layerswap/widget/types'
-import { KnownInternalNames, walletIconResolver } from '@layerswap/widget/internal'
+import { NetworkType, type NetworkWithTokens } from "@layerswap/utils"
+import type { InternalConnector, Wallet, WalletConnectionProvider } from "@layerswap/wallet-core/types"
+import { walletIconResolver } from "@layerswap/wallet-core";
 import type { Connector } from '@starknet-react/core'
 import { name as PROVIDER_NAME, id as PROVIDER_ID, starknetNames } from '../constants'
 import { resolveStarknetWalletIcon } from '../utils'
@@ -95,7 +91,7 @@ export async function resolveStarknetWallet(props: ResolveStarknetWalletProps): 
             isActive: true,
             withdrawalSupportedNetworks,
             disconnect: () => disconnectWallets(),
-            networkIcon: starknetNames.includes(network?.name || '') ? network?.logo : undefined,
+            networkIcon: network?.type === NetworkType.Starknet ? network?.logo : undefined,
             autofillSupportedNetworks,
             asSourceSupportedNetworks,
         }
@@ -107,14 +103,19 @@ export async function resolveStarknetWallet(props: ResolveStarknetWalletProps): 
     }
 }
 
-type RuntimeDeps = {
-    isMainnet?: boolean
+function toStarknetChainHex(chainId: string | null | undefined): string | undefined {
+    if (!chainId) return undefined
+    if (chainId.startsWith('0x') || chainId.startsWith('0X')) return chainId.toLowerCase()
+    let hex = ''
+    for (let i = 0; i < chainId.length; i++) {
+        hex += chainId.charCodeAt(i).toString(16).padStart(2, '0')
+    }
+    return `0x${hex}`
 }
 
 export class StarknetConnectionService {
     private _networks: NetworkWithTokens[] = []
     private _networksKey = ''
-    private _deps: RuntimeDeps = {}
     private _restoreTimer: number | undefined
     private _restoringStoredWallets = false
     private _restoreAttempts = 0
@@ -124,21 +125,16 @@ export class StarknetConnectionService {
         const key = networks.map(n => n.name).join('|')
         if (this._networksKey === key) return
         this._networks = networks
-        this._deps.isMainnet = networks?.some(network => network.name === KnownInternalNames.Networks.StarkNetMainnet)
         this._networksKey = key
         this.requestStoredWalletHydration()
     }
 
     getStarknetNetwork(): NetworkWithTokens | undefined {
-        return this._networks.find(n =>
-            n.name === KnownInternalNames.Networks.StarkNetMainnet
-            || n.name === KnownInternalNames.Networks.StarkNetSepolia
-            || n.name === KnownInternalNames.Networks.StarkNetGoerli,
-        )
+        return this._networks.find(n => n.type === NetworkType.Starknet)
     }
 
     getProviderIcon(): string | undefined {
-        return this._networks.find(n => starknetNames.some(name => name === n.name))?.logo
+        return this.getStarknetNetwork()?.logo
     }
 
     private connectorIsAvailable(connector: Connector): boolean {
@@ -275,31 +271,31 @@ export class StarknetConnectionService {
 
         let result = await starknetConnector.connect({})
 
-        const walletChain = `0x${result?.chainId?.toString(16)}`
-        const isWalletOnMainnet = walletChain === '0x534e5f4d41494e'
-        const isMainnet = this._deps.isMainnet ?? false
-        const wrongChain = isWalletOnMainnet !== isMainnet
         const starknetNetwork = this.getStarknetNetwork()
         if (!starknetNetwork) throw new Error('Starknet network not found')
+
+        const walletChain = `0x${result?.chainId?.toString(16)}`
+        const expectedChain = toStarknetChainHex(starknetNetwork.chain_id)
+        const wrongChain = !!expectedChain && walletChain !== expectedChain
+        const networkDisplayName = starknetNetwork.display_name || starknetNetwork.name
 
         if (result?.account && wrongChain) {
             const wallet = (starknetConnector as any)?._wallet || (starknetConnector as any)?.wallet
             if (wallet?.request) {
-                const targetChainId = isMainnet ? 'SN_MAIN' : 'SN_SEPOLIA'
                 try {
                     await wallet.request({
                         type: 'wallet_switchStarknetChain',
-                        params: { chainId: targetChainId },
+                        params: { chainId: expectedChain },
                     })
                     result = await starknetConnector.connect({})
                 } catch (switchError) {
                     console.log('Chain switch failed:', switchError)
                     await this.disconnectWallets(connector?.name, result?.account)
-                    throw new Error(`Failed to switch network. Please switch manually to ${isMainnet ? 'Mainnet' : 'Sepolia'} in your wallet.`)
+                    throw new Error(`Failed to switch network. Please switch manually to ${networkDisplayName} in your wallet.`)
                 }
             } else {
                 await this.disconnectWallets(connector?.name, result?.account)
-                throw new Error(`Please switch the network in your wallet to ${isMainnet ? 'Mainnet' : 'Sepolia'} and connect again.`)
+                throw new Error(`Please switch the network in your wallet to ${networkDisplayName} and connect again.`)
             }
         }
 

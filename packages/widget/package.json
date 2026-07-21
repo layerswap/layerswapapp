@@ -67,6 +67,7 @@
   "dependencies": {
     "@headlessui/react": "^2.1.1",
     "@layerswap/utils": "workspace:^",
+    "@layerswap/wallet-core": "workspace:^",
     "@number-flow/react": "^0.5.10",
     "@radix-ui/react-checkbox": "^1.1.5",
     "@radix-ui/react-context-menu": "^1.0.0",

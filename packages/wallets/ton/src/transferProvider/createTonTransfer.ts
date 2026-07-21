@@ -1,4 +1,6 @@
-import { TransferProvider, TransferProps, Network, ActionMessageType, Wallet } from "@layerswap/widget/types"
+import { Network } from "@layerswap/utils"
+import { Wallet } from "@layerswap/wallet-core/types"
+import { TransferProvider, TransferProps, ActionMessageType } from "@layerswap/wallet-core/types"
 import { transactionBuilder } from "./transactionBuilder"
 import { waitForTransaction } from "./waitForTransaction"
 import { createTonClient } from "../client"

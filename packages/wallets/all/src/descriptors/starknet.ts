@@ -1,10 +1,10 @@
-import type { WalletProvider, WalletProviderDescriptor } from "@layerswap/widget/types"
+import type { WalletProviderDescriptor } from "@layerswap/wallet-core/types"
+import type { WalletProvider } from "@layerswap/wallet-core/types"
 
-// Inlined so this module is tree-shake-safe — importing
-// `KnownInternalNames` from `@layerswap/widget/internal` would pull a runtime
-// barrel that defeats lazy-loading. Keep in sync with
-// packages/wallets/starknet/src/constants.ts (single source of truth lives
-// inside the chain package; this is the descriptor mirror).
+// Inlined so this module is tree-shake-safe — importing `KnownInternalNames`
+// from @layerswap/utils would pull a runtime barrel that defeats lazy-loading.
+// Keep in sync with packages/wallets/starknet/src/constants.ts (single source
+// of truth lives inside the chain package; this is the descriptor mirror).
 const STARKNET_NETWORKS = ['STARKNET_MAINNET', 'STARKNET_SEPOLIA', 'STARKNET_GOERLI']
 
 /**

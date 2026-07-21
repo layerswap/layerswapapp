@@ -1,11 +1,7 @@
-import type {
-    InternalConnector,
-    NetworkWithTokens,
-    Wallet,
-    WalletConnectionProvider,
-    WalletModalConnector,
-} from '@layerswap/widget/types'
-import { walletIconResolver } from '@layerswap/widget/internal'
+import type { NetworkWithTokens } from "@layerswap/utils"
+import type { InternalConnector, Wallet, WalletConnectionProvider } from "@layerswap/wallet-core/types"
+import type { WalletModalConnector } from "@layerswap/wallet-core/types"
+import { getKnownConnectorIconBase64, normalizeIconSrc } from "@layerswap/wallet-core"
 import { name as PROVIDER_NAME, id as PROVIDER_ID, tronNames } from '../constants'
 import { tronAdapterManager } from './tronAdapterManager'
 import { type TronWalletSnapshot, useTronStore } from './tronStore'
@@ -31,9 +27,8 @@ export class TronConnectionService {
 
     getAvailableConnectors(): InternalConnector[] {
         const wallets = useTronStore.getState().wallets
-        return wallets.map(wallet => {
+        return wallets.filter(wallet => wallet.state !== 'Loading').map(wallet => {
             const adapterName = wallet.name
-            const isLoading = wallet.state === 'Loading'
             const isNotInstalled = wallet.state === 'NotFound'
 
             return {
@@ -43,7 +38,7 @@ export class TronConnectionService {
                 type: isNotInstalled ? 'other' : 'injected',
                 installUrl: wallet.url,
                 extensionNotFound: isNotInstalled,
-                isLoadable: isLoading,
+                isLoadable: false,
                 providerName: PROVIDER_NAME,
             }
         })
@@ -59,7 +54,7 @@ export class TronConnectionService {
             networkIcon: this.getNetworkLogo(),
             providerName: PROVIDER_NAME,
             isActive: true,
-            icon: walletIconResolver(address, snapshot.icon),
+            icon: getKnownConnectorIconBase64(snapshot.name) ?? normalizeIconSrc(snapshot.icon),
             disconnect: () => this.disconnectWallets(),
             autofillSupportedNetworks: tronNames,
             withdrawalSupportedNetworks: tronNames,
@@ -80,6 +75,7 @@ export class TronConnectionService {
         const target = wallets.find(w => w.name === connector.name)
         if (!target) throw new Error('Connector not found')
 
+        const prevSelectedName = tronAdapterManager.getSelectedName()
         try {
             tronAdapterManager.select(target.name)
             await tronAdapterManager.connect()
@@ -88,6 +84,7 @@ export class TronConnectionService {
             const snapshot = updatedWallets.find(w => w.name === activeWalletName) ?? target
             return this.resolveWallet(snapshot, activeAddress)
         } catch (e: any) {
+            tronAdapterManager.select(prevSelectedName)
             throw new Error(e?.message || e)
         }
     }

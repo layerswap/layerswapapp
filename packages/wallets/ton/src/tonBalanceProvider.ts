@@ -1,6 +1,7 @@
-import { KnownInternalNames, insertIfNotExists, formatUnits, retryWithExponentialBackoff, AppSettings } from "@layerswap/widget/internal";
+import { KnownInternalNames, insertIfNotExists, formatUnits, retryWithExponentialBackoff, AppSettings } from "@layerswap/utils";
 import { createTonClient } from "./client";
-import { BalanceProvider, TokenBalance, Network, Token } from "@layerswap/widget/types";
+import { Network, Token } from "@layerswap/utils"
+import { BalanceProvider, TokenBalance } from "@layerswap/wallet-core/types"
 import { TonClient } from "@ton/ton";
 
 export class TonBalanceProvider extends BalanceProvider {

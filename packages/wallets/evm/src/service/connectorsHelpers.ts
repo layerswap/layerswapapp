@@ -1,15 +1,10 @@
 import type { Connector } from 'wagmi'
 import type { CreateConnectorFn, Config } from '@wagmi/core'
 import { getAccount } from '@wagmi/core'
-import {
-    createRegistryConnector,
-    DisplayUriSource,
-    getKnownConnectorIconBase64,
-    sleep,
-    type RegistryConnector,
-    type WalletConnectWalletBase,
-} from '@layerswap/widget/internal'
-import type { InternalConnector } from '@layerswap/widget/types'
+import { sleep } from "@layerswap/utils"
+import { createRegistryConnector, DisplayUriSource, type RegistryConnector, type WalletConnectWalletBase } from "@layerswap/wallet-core"
+import { getKnownConnectorIconBase64 } from "@layerswap/wallet-core"
+import type { InternalConnector } from "@layerswap/wallet-core/types"
 import { evmConnectorNameResolver } from '../evmUtils'
 import KnownEVMConnectorIds from '../evmUtils/knownConnectorIds'
 import { explicitInjectedProviderDetected } from '../connectors/explicitInjectedProviderDetected'

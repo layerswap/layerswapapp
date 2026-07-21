@@ -1,5 +1,6 @@
-import { Network, GasProvider } from "@layerswap/widget/types";
-import { KnownInternalNames } from "@layerswap/widget/internal";
+import { Network } from "@layerswap/utils"
+import { GasProvider } from "@layerswap/wallet-core/types"
+import { KnownInternalNames } from "@layerswap/utils";
 
 export class TonGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {

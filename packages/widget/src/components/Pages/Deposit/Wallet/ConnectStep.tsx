@@ -1,7 +1,7 @@
 import { FC, useCallback, useEffect } from "react";
 import ConnectorsList from "@/components/Wallet/WalletModal/ConnectorsList";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
-import { Wallet } from "@/types/wallet";
+import { Wallet } from "@layerswap/wallet-core/types"
 import { useDepositStep } from "../depositStepContext";
 import { useDepositSelection } from "../depositSelectionContext";
 import { useSelectSwapAccount } from "@/context/swapAccounts";

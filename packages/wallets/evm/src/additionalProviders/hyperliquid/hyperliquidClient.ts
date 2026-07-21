@@ -1,4 +1,4 @@
-import { fetchWithTimeout, retry } from "@layerswap/widget/internal";
+import { fetchWithTimeout, retry } from "@layerswap/utils";
 
 interface ClearinghouseState {
     assetPositions: {

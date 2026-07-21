@@ -2,8 +2,9 @@ import { multicall, getBalance, GetBalanceReturnType, createConfig } from '@wagm
 import { Chain, formatUnits, PublicClient, erc20Abi } from "viem"
 import resolveChain from "../evmUtils/resolveChain"
 import BalanceGetterAbi from "../jsons/BALANCEGETTERABI.json"
-import { KnownInternalNames } from "@layerswap/widget/internal";
-import { BalanceProvider, TokenBalance, NetworkType, NetworkWithTokens, Token, Network } from "@layerswap/widget/types"
+import { KnownInternalNames } from "@layerswap/utils";
+import { NetworkType, NetworkWithTokens, Token, Network } from "@layerswap/utils"
+import { BalanceProvider, TokenBalance } from "@layerswap/wallet-core/types"
 import { resolveFallbackTransport } from "../evmUtils/resolveTransports"
 
 const nativeBalanceSkip = [

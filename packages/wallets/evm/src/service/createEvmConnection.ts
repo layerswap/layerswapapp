@@ -1,15 +1,7 @@
-import type {
-    WalletConnectionProvider,
-    WalletConnectionProviderProps,
-    WalletConnectionStore,
-    MultiStepHandler,
-    NetworkWithTokens,
-} from '@layerswap/widget/types'
-import {
-    connectModalStore,
-    getAdditionalConnectorsStore,
-    isMobile,
-} from '@layerswap/widget/internal'
+import type { NetworkWithTokens } from "@layerswap/utils"
+import type { WalletConnectionProvider, WalletConnectionProviderProps, WalletConnectionStore, MultiStepHandler } from "@layerswap/wallet-core/types"
+import { isMobile } from "@layerswap/utils"
+import { connectModalStore, getAdditionalConnectorsStore } from "@layerswap/wallet-core"
 import { createStore } from 'zustand/vanilla'
 import { ethereumNames, id as PROVIDER_ID, name as PROVIDER_NAME } from '../constants'
 import { createEvmTransfer } from '../transferProvider/createEvmTransfer'
