@@ -22,6 +22,7 @@ export function createParadexDescriptor(): WalletProviderDescriptor {
         autofillSupportedNetworks: PARADEX_NETWORKS,
         withdrawalSupportedNetworks: PARADEX_NETWORKS,
         asSourceSupportedNetworks: PARADEX_NETWORKS,
+        hideFromList: true,
         loadProvider: async () => {
             const mod = await import('@layerswap/wallet-paradex')
             return mod.createParadexProvider()
