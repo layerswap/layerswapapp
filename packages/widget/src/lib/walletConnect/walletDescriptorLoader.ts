@@ -5,6 +5,10 @@ import { createContext, useContext } from "react"
  * the descriptor has already been loaded (or if id refers to an eager
  * provider). Exposed by `LayerswapProvider`; consumed by the connect modal
  * to hydrate descriptors on demand.
+ *
+ * Never rejects: load failures are logged and absorbed (the descriptor stays
+ * pending and a later call retries), so callers that need the live provider
+ * must re-check its state in the registry after awaiting.
  */
 export type WalletDescriptorLoader = (id: string) => Promise<void>
 

@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/next';
 import { IntercomProvider } from 'react-use-intercom';
+import { markPostHogReady } from '../lib/posthog';
 
 const INTERCOM_APP_ID = 'h5zisg78'
 
@@ -41,13 +42,18 @@ function App({ Component, pageProps }) {
   }, [])
 
   // PostHog is initialized on idle (or shortly after if rIC is unavailable).
-  // Nothing in this app uses @posthog/react's hooks/provider — captures go
-  // through the imperative `posthog.capture()` API from logError/layout/404,
-  // so we can dynamic-import the SDK and drop ~165 KB of eager JS.
+  // Nothing in this app uses @posthog/react's hooks/provider, so we can
+  // dynamic-import the SDK and drop ~165 KB of eager JS. Captures elsewhere
+  // in the app must go through `lib/posthog`'s `capture()` — posthog-js
+  // drops (does not queue) captures fired before init, and that helper
+  // holds them until `markPostHogReady` is called below.
   useEffect(() => {
     if (typeof window === 'undefined') return
     const key = process.env.NEXT_PUBLIC_POSTHOG_KEY
-    if (!key) return
+    if (!key) {
+      markPostHogReady(null)
+      return
+    }
 
     const idle = window.requestIdleCallback ?? ((cb) => window.setTimeout(cb, 200))
     const cancel = window.cancelIdleCallback ?? window.clearTimeout
@@ -73,6 +79,7 @@ function App({ Component, pageProps }) {
           return event
         },
       })
+      markPostHogReady(posthog)
     }, { timeout: 5000 })
 
     return () => cancel?.(id)

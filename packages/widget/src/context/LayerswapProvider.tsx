@@ -71,6 +71,8 @@ let liveProviderInstances = 0
 const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callbacks, config, walletProviders = NO_PROVIDERS }) => {
     let { apiKey, version, settings: _settings, theme, initialValues, loadingComponent, imtblPassport, tonConfigs, walletConnect } = config || {}
     const [fetchedSettings, setFetchedSettings] = useState<LayerSwapSettings | null>(null)
+    const [settingsError, setSettingsError] = useState<Error | null>(null)
+    const [settingsFetchAttempt, setSettingsFetchAttempt] = useState(0)
     const [duplicateMount, setDuplicateMount] = useState(false)
 
     // Registered in an effect (not render) so StrictMode's mount → cleanup →
@@ -106,6 +108,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
     useEffect(() => {
         if (_settings) {
             setFetchedSettings(null)
+            setSettingsError(null)
             return
         }
 
@@ -114,15 +117,27 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
         const settingsApiKey = apiKey || AppSettings.LayerswapApiKeys[apiVersion]
 
         void (async () => {
-            const fetchedSettings = await getSettings(settingsApiKey)
-            if (!fetchedSettings) throw new Error('Failed to fetch settings')
-            if (!cancelled) setFetchedSettings(fetchedSettings)
+            // Failures land in state, not a throw — an async throw here is an
+            // unhandled rejection the ErrorBoundary never sees, leaving the
+            // widget on the loading skeleton forever.
+            try {
+                const fetchedSettings = await getSettings(settingsApiKey)
+                if (!fetchedSettings) throw new Error('Failed to fetch settings')
+                if (!cancelled) setFetchedSettings(fetchedSettings)
+            } catch (error) {
+                if (!cancelled) setSettingsError(error instanceof Error ? error : new Error(String(error)))
+            }
         })()
 
         return () => {
             cancelled = true
         }
-    }, [_settings, apiKey, version])
+    }, [_settings, apiKey, version, settingsFetchAttempt])
+
+    const retrySettingsFetch = useCallback(() => {
+        setSettingsError(null)
+        setSettingsFetchAttempt(attempt => attempt + 1)
+    }, [])
 
     const settings = _settings || fetchedSettings
 
@@ -156,6 +171,17 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
             <div role="alert" style={{ padding: '1rem', textAlign: 'center' }}>
                 <p>{'Only one Layerswap widget can be live per page.'}</p>
             </div>
+        )
+    }
+
+    // The error state has no ErrorBoundary above it (the boundary lives in the
+    // settings-gated tree below), so render the same fallback directly.
+    // Intercom context is required by ErrorFallback's support button.
+    if (settingsError && !settings) {
+        return (
+            <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500} shouldInitialize={intercomReady}>
+                <ErrorFallback error={settingsError} resetErrorBoundary={retrySettingsFetch} />
+            </IntercomProvider>
         )
     }
 
@@ -234,6 +260,12 @@ const DescriptorHydrationBoundary: FC<{
                 next.set(id, real)
                 return next
             })
+        }).catch(error => {
+            // Absorb the failure so fire-and-forget callers (`void loadById`,
+            // `loadAll`'s Promise.all) never produce an unhandled rejection.
+            // The in-flight slot is cleared below and `loadedById` stays
+            // unset, so the next trigger retries the import.
+            console.error(`[layerswap/widget] Failed to load wallet provider "${id}"`, error)
         }).finally(() => {
             inflightRef.current.delete(id)
         })

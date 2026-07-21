@@ -4,6 +4,7 @@ import Head from "next/head";
 import AppWrapper from "./AppWrapper";
 import { useEffect } from "react";
 import type { JSX } from 'react';
+import { capture } from "../lib/posthog";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -29,30 +30,22 @@ export default function Layout({ children, themeData }: Props) {
       }
       return customUrl
     }
-    const trackPageview = async () => {
-      const customUrl = prepareUrl([
-        'destNetwork', // obsolete
-        'sourceExchangeName', // obsolete
-        'addressSource', // obsolete
-        'from',
-        'to',
-        'appName',
-        'asset',
-        'amount',
-        'destAddress'
-      ])
+    const customUrl = prepareUrl([
+      'destNetwork', // obsolete
+      'sourceExchangeName', // obsolete
+      'addressSource', // obsolete
+      'from',
+      'to',
+      'appName',
+      'asset',
+      'amount',
+      'destAddress'
+    ])
 
-      // Lazy-import so posthog-js stays out of the layout's eager chunk.
-      // `_app.js` initializes posthog on idle; if it has not initialized
-      // yet (very early visits), the capture will queue and flush once
-      // init completes.
-      try {
-        const { default: posthog } = await import('posthog-js')
-        posthog.capture('$pageview', { custom_url: customUrl })
-      } catch { /* swallow — analytics is best-effort */ }
-    }
-
-    trackPageview()
+    // This fires before `_app.js`'s idle-time posthog init, and posthog-js
+    // drops pre-init captures — `capture` from lib/posthog holds the event
+    // until init completes, keeping posthog-js out of this eager chunk.
+    capture('$pageview', { custom_url: customUrl })
   }, [])
 
   return (<>

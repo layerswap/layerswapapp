@@ -51,6 +51,9 @@ export async function getSettings(apiKey: string, options?: GetSettingsOptions) 
         return settings
     }
     catch (error) {
+        // Keep the non-throwing contract (public export, also used in SSR),
+        // but never swallow silently — callers only see a falsy result.
+        console.error('[layerswap/widget] Failed to fetch settings', error)
         return null
     }
 }

@@ -96,7 +96,10 @@ export function initSvmProvider(opts: InitOptions = {}): void {
         _initialized = true
     })()
 
-    _loadPromise.catch(() => {
+    _loadPromise.catch((error) => {
+        // Reset so the next init call retries; without the log a failed
+        // adapter import leaves Solana silently missing from the modal.
+        console.error('[layerswap/wallets] Solana provider initialization failed', error)
         _loadPromise = null
     })
 }

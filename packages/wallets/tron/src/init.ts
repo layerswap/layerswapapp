@@ -52,7 +52,10 @@ export function initTronProvider(): void {
         _initialized = true
     })()
 
-    _loadPromise.catch(() => {
+    _loadPromise.catch((error) => {
+        // Reset so the next init call retries; without the log a failed
+        // adapter import leaves Tron silently missing from the modal.
+        console.error('[layerswap/wallets] Tron provider initialization failed', error)
         _loadPromise = null
     })
 }

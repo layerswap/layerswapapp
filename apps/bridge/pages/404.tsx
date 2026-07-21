@@ -5,16 +5,17 @@ import { Home } from "lucide-react";
 import NotFoundIcon from "../components/Icons/NotFoundIcon";
 import { useRouter } from "next/router";
 import { useIntercom } from "react-use-intercom";
+import { capture } from "../lib/posthog";
 export default function Custom404() {
     useEffect(() => {
-        // Lazy-loaded so the 404 page itself doesn't pull posthog-js into the
-        // bundle. The import only runs when this page renders.
-        import("posthog-js").then(({ default: posthog }) => {
-            posthog.capture("404", {
-                name: "404",
-                path: typeof window !== 'undefined' ? window.location.pathname : undefined,
-            });
-        }).catch(() => { /* swallow — analytics is best-effort */ });
+        // 404s usually render before `_app.js`'s idle-time posthog init, and
+        // posthog-js drops pre-init captures — `capture` from lib/posthog
+        // holds the event until init completes, keeping posthog-js out of
+        // this page's bundle.
+        capture("404", {
+            name: "404",
+            path: window.location.pathname,
+        });
     }, []);
 
     const router = useRouter()
