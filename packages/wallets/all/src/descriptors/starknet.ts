@@ -2,19 +2,14 @@ import type { WalletProviderDescriptor } from "@layerswap/widget/types"
 import { defineWalletDescriptor } from "./defineWalletDescriptor"
 import { readStorageJson } from "./persistedSession"
 
-// Inlined so this module is tree-shake-safe — importing
-// `KnownInternalNames` from `@layerswap/widget/internal` would pull a runtime
-// barrel that defeats lazy-loading. Keep in sync with
-// packages/wallets/starknet/src/constants.ts (single source of truth lives
-// inside the chain package; this is the descriptor mirror).
+// Inlined — importing `KnownInternalNames` pulls a runtime barrel that
+// defeats lazy-loading. Keep in sync with packages/wallets/starknet/src/constants.ts.
 const STARKNET_NETWORKS = ['STARKNET_MAINNET', 'STARKNET_SEPOLIA', 'STARKNET_GOERLI']
 
 /**
- * Tree-shake-safe stand-in for `createStarknetProvider`. Keeps Starknet UI
- * gating (`autofillSupportedNetworks` etc.) static so route filtering still
- * works on first paint, and lazy-loads `@layerswap/wallet-starknet` only
- * when the host calls `loadProvider()` (typically on first connect-modal
- * open).
+ * Tree-shake-safe stand-in for `createStarknetProvider` — defers
+ * `@layerswap/wallet-starknet` (`starknet`, starknetkit) out of the host's
+ * entry chunk.
  */
 export function createStarknetDescriptor(): WalletProviderDescriptor {
     return defineWalletDescriptor({
@@ -23,10 +18,9 @@ export function createStarknetDescriptor(): WalletProviderDescriptor {
         autofillSupportedNetworks: STARKNET_NETWORKS,
         withdrawalSupportedNetworks: STARKNET_NETWORKS,
         asSourceSupportedNetworks: STARKNET_NETWORKS,
-        // wallet-starknet's persisted zustand store (`ls-starknet-accounts`).
-        // The key exists for every visitor once the store hydrates, so check
-        // the partialized payload for actual account state instead of mere
-        // key presence.
+        // Key presence isn't a session signal — any write to wallet-starknet's
+        // store creates `ls-starknet-accounts`, even with empty state.
+        // Hydrate eagerly only when actual account state exists.
         hasPersistedSession: () => {
             const persisted = readStorageJson('ls-starknet-accounts') as
                 | { state?: { starknetAccounts?: Record<string, string>, activeWalletAddress?: string } }
