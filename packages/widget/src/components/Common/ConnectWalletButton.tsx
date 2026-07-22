@@ -4,6 +4,7 @@ import { FC, useCallback, useRef, useState } from "react";
 import { Wallet, WalletConnectionProvider } from "@layerswap/wallet-core/types"
 import { useConnectModal } from "../Wallet/WalletModal";
 import { useWalletDescriptorLoader } from "@layerswap/wallet-core";
+import { isProviderConnectReady } from "@/hooks/useProvidersConnectReady";
 import { classNames } from "@/components/utils/classNames";
 
 interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -23,7 +24,7 @@ const ConnectWalletButton: FC<Props> = ({ provider, onConnect, descriptionText, 
     // the hover/focus prefetch below can actually fire — disabled buttons
     // suppress pointer events in most browsers.
     const isStub = provider?.isStub === true
-    const isProviderReady = isStub || (typeof provider?.ready === 'boolean' ? provider.ready : true)
+    const isProviderReady = isProviderConnectReady(provider)
 
     // Kick off the descriptor SDK download as soon as the user shows
     // intent (mouse-enter or keyboard-focus) on the button. The await on

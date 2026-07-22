@@ -84,6 +84,8 @@ export type WalletProviderDescriptor = {
     asSourceSupportedNetworks?: string[],
     unsupportedPlatforms?: string[],
     hideFromList?: boolean,
+    /** Cheap persisted-session probe used to hydrate a descriptor on mount. */
+    hasPersistedSession?: () => boolean,
     loadProvider: () => Promise<WalletProvider | WalletWrapper>,
 }
 
@@ -135,6 +137,8 @@ export type WalletConnectionProvider = {
      * initializing" (show a spinner, keep disabled).
      */
     isStub?: boolean,
+    /** A stub with a persisted session that is being hydrated automatically. */
+    pendingSessionRestore?: boolean,
 
     multiStepHandlers?: MultiStepHandler[],
 }

@@ -3,10 +3,13 @@ import type { WalletProvider, BaseWalletProviderConfig } from "@layerswap/wallet
 import { ParadexBalanceProvider } from "./paradexBalanceProvider"
 import { createParadexConnection } from "./service/createParadexConnection"
 import { createParadexTransfer } from "./transferProvider/createParadexTransfer"
+import { id } from "./constants"
 
 export type ParadexProviderConfig = BaseWalletProviderConfig
 
-export function createParadexProvider(config: ParadexProviderConfig = {}): WalletProvider {
+// The literal id in the return type lets `defineWalletDescriptor` in
+// `@layerswap/wallets` verify it matches the descriptor id at compile time.
+export function createParadexProvider(config: ParadexProviderConfig = {}): WalletProvider & { id: typeof id } {
     const {
         customConnection,
         balanceProviders,
@@ -36,7 +39,7 @@ export function createParadexProvider(config: ParadexProviderConfig = {}): Walle
         : defaultTransferProviders
 
     return {
-        id: "paradex",
+        id,
         createConnection,
         gasProvider: finalGasProviders,
         transferProvider: finalTransferProviders,

@@ -1,6 +1,7 @@
 import type { WalletProviderDescriptor } from "@layerswap/wallet-core/types"
-import type { WalletProvider } from "@layerswap/wallet-core/types"
 import type { TonClientConfig } from "@layerswap/wallet-ton"
+import { defineWalletDescriptor } from "./defineWalletDescriptor"
+import { hasStorageKey } from "./persistedSession"
 
 // Inlined — see notes in ./starknet.ts on why we don't import the chain
 // package's constants (it would drag the SDK). Keep in sync with
@@ -14,15 +15,18 @@ const TON_NETWORKS = ['TON_MAINNET', 'TON_TESTNET']
  * supplied, mirroring the previous conditional in `getDefaultProviders`.
  */
 export function createTONDescriptor(tonConfigs: TonClientConfig): WalletProviderDescriptor {
-    return {
+    return defineWalletDescriptor({
         id: 'ton',
         name: 'Ton',
         autofillSupportedNetworks: TON_NETWORKS,
         withdrawalSupportedNetworks: TON_NETWORKS,
         asSourceSupportedNetworks: TON_NETWORKS,
-        loadProvider: async (): Promise<WalletProvider> => {
+        // @tonconnect/sdk's connection storage key — holds both injected and
+        // http (bridge) sessions that restoreConnection() can resume.
+        hasPersistedSession: () => hasStorageKey('ton-connect-storage_bridge-connection'),
+        loadProvider: async () => {
             const mod = await import('@layerswap/wallet-ton')
             return mod.createTONProvider({ tonConfigs })
         },
-    }
+    })
 }

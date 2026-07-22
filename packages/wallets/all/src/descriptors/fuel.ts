@@ -1,5 +1,6 @@
 import type { WalletProviderDescriptor } from "@layerswap/wallet-core/types"
-import type { WalletProvider } from "@layerswap/wallet-core/types"
+import { defineWalletDescriptor } from "./defineWalletDescriptor"
+import { hasStorageKey } from "./persistedSession"
 
 const FUEL_NETWORKS = ['FUEL_MAINNET', 'FUEL_TESTNET', 'FUEL_DEVNET']
 
@@ -9,15 +10,19 @@ const FUEL_NETWORKS = ['FUEL_MAINNET', 'FUEL_TESTNET', 'FUEL_DEVNET']
  * chunk.
  */
 export function createFuelDescriptor(): WalletProviderDescriptor {
-    return {
+    return defineWalletDescriptor({
         id: 'fuel',
         name: 'Fuel',
         autofillSupportedNetworks: FUEL_NETWORKS,
         withdrawalSupportedNetworks: FUEL_NETWORKS,
         asSourceSupportedNetworks: FUEL_NETWORKS,
-        loadProvider: async (): Promise<WalletProvider> => {
+        // `Fuel.STORAGE_KEY` in @fuel-ts/account — written once a fuel
+        // connector was detected as installed, so hydration only triggers
+        // for users who actually have a Fuel-family extension.
+        hasPersistedSession: () => hasStorageKey('fuel-current-connector'),
+        loadProvider: async () => {
             const mod = await import('@layerswap/wallet-fuel')
             return mod.createFuelProvider()
         },
-    }
+    })
 }

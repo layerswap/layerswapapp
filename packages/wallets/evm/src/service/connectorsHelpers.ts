@@ -32,6 +32,16 @@ export const wagmiDisplayUriSource = (connector: Connector): DisplayUriSource =>
     },
 })
 
+/**
+ * Registry-wallet connects (deep links / per-wallet QR) are executed through
+ * the package's custom hidden WalletConnect connector. When the wagmi config
+ * doesn't contain it — e.g. a host-supplied external config built without
+ * `createHiddenWalletConnectConnector` — registry wallets must not be offered
+ * at all, since every tap would fail at connect time.
+ */
+export const supportsRegistryConnects = (allConnectors: readonly Connector[]): boolean =>
+    allConnectors.some(c => c.id === HIDDEN_WALLETCONNECT_ID)
+
 export const isFeaturedRegistryWallet = (wallet: WalletConnectWalletBase): boolean => (
     featuredWalletsIds.includes(wallet.id.toLowerCase())
     || featuredWalletsIds.some(featuredId => wallet.name.toLowerCase().includes(featuredId))

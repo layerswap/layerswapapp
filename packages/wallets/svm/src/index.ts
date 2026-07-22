@@ -6,6 +6,7 @@ import { SolanaBalanceProvider } from "./svmBalanceProvider"
 import { createSvmTransfer } from "./transferProvider/createSvmTransfer"
 import { createSvmConnection } from "./service/createSvmConnection"
 import { initSvmProvider } from "./init"
+import { id } from "./constants"
 
 export type WalletConnectConfig = {
     projectId: string
@@ -19,7 +20,9 @@ export type SVMProviderConfig = BaseWalletProviderConfig & {
     walletConnectConfigs?: WalletConnectConfig
 }
 
-export function createSVMProvider(config: SVMProviderConfig = {}): WalletProvider {
+// The literal id in the return type lets `defineWalletDescriptor` in
+// `@layerswap/wallets` verify it matches the descriptor id at compile time.
+export function createSVMProvider(config: SVMProviderConfig = {}): WalletProvider & { id: typeof id } {
     const {
         walletConnectConfigs,
         customConnection,
@@ -62,7 +65,7 @@ export function createSVMProvider(config: SVMProviderConfig = {}): WalletProvide
         : defaultTransferProviders
 
     return {
-        id: "solana",
+        id,
         init,
         createConnection,
         gasProvider: finalGasProviders,

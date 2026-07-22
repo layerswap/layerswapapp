@@ -1,6 +1,12 @@
 import type { ThemeData } from './theme';
 
-/** Wallet provider ids matching what the remote's `getDefaultProviders()` emits. */
+/**
+ * Wallet provider ids matching what the remote's `getDefaultProviders()`
+ * emits. Enforced at compile time: `@layerswap/wallets` builds every default
+ * descriptor through `defineWalletDescriptor`, which requires its id to be a
+ * member of this union AND to equal the id of the provider it hydrates into.
+ * Note the id for Solana is `'solana'` (the chain), not `'svm'`.
+ */
 export type WalletProviderId =
   | 'evm'
   | 'starknet'
@@ -8,7 +14,7 @@ export type WalletProviderId =
   | 'paradex'
   | 'bitcoin'
   | 'ton'
-  | 'svm'
+  | 'solana'
   | 'tron'
   | 'imtblPassport';
 

@@ -17,9 +17,13 @@ import { createPolymarketTransferProvider } from "./additionalProviders/polymark
 import { polymarketProvider } from "./additionalProviders/polymarket/polymarketExtendedRouteProvider"
 import { createEVMGaslessProvider } from "./gaslessProvider/createEVMGaslessProvider"
 
+import { id } from "./constants"
+
 export type { EVMProviderConfig, WalletConnectConfig }
 
-export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvider {
+// The literal id in the return type lets `defineWalletDescriptor` in
+// `@layerswap/wallets` verify it matches the descriptor id at compile time.
+export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvider & { id: typeof id } {
     const {
         walletConnectConfigs,
         walletProviderModules,
@@ -146,7 +150,7 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         : defaultRPCHealthCheckProviders
 
     return {
-        id: "evm",
+        id,
         init,
         createConnection,
         gasProvider: finalGasProviders,
@@ -160,6 +164,7 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
 }
 
 export { createEvmConnection } from "./service/createEvmConnection"
+export { createHiddenWalletConnectConnector } from "./EVMProvider/Connectors"
 export { getEvmChainsConfig } from "./evmUtils/chainConfigs"
 export {
     getEvmConfig,

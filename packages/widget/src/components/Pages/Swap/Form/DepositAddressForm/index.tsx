@@ -5,6 +5,7 @@ import { Widget } from "@/components/Widget/Index";
 import { Partner } from "@/Models/Partner";
 import { useValidationContext } from "@/context/validationContext";
 import useWallet from "@/hooks/useWallet";
+import useProvidersConnectReady from "@/hooks/useProvidersConnectReady";
 import { SwapStatus } from "@/Models/SwapStatus";
 import { Address as AddressClass } from "@/lib/address/Address";
 import useAutoSourceRoute from "@/hooks/useAutoSourceRoute";
@@ -68,17 +69,12 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
 
     const { isAutoSourceUpdating } = useAutoSourceRoute();
 
-    const { wallets, providers } = useWallet();
+    const { wallets } = useWallet();
     const hasWallet = wallets.length > 0;
-    // Each provider exposes a `ready` flag that flips true once its connectors
-    // have hydrated (e.g. wagmi finishes auto-reconnect, starknet enumerates
-    // injected wallets, solana wallet-adapter populates). Until every provider
-    // is ready, `wallets` may be empty even though a persisted wallet is about
-    // to appear — opening the connect modal in that window would just slide it
-    // back out a moment later. Descriptor stubs are intentionally `ready: false`
-    // until their bundle loads on demand, so they're excluded here — otherwise
-    // an unloaded stub would keep this gate false forever and deadlock the form.
-    const providersReady = providers.every(p => p.isStub || (typeof p.ready === 'boolean' ? p.ready : true));
+    // Until every live provider is ready (wagmi auto-reconnect, starknet
+    // enumeration, etc.), `wallets` may be empty even though a persisted wallet
+    // is about to appear — so keep showing the loading state in that window.
+    const providersReady = useProvidersConnectReady();
     const { connect, isWalletModalOpen, cancel } = useConnectModal();
     const settings = useSettingsState();
     const initialSettings = useInitialSettings();

@@ -44,7 +44,7 @@ const Widget: FC<WidgetProps> = ({ config, walletDefaults, walletProvidersConfig
     const included = walletProvidersConfig?.include;
     if (included && included.length > 0) {
       const keep = new Set<string>(included);
-      providers = providers.filter((p) => keep.has((p as { id?: string }).id ?? ''));
+      providers = providers.filter((p) => keep.has(p.id));
     }
 
     // Blocklist — drop the requested ids. Applied after `include` so the two
@@ -52,7 +52,7 @@ const Widget: FC<WidgetProps> = ({ config, walletDefaults, walletProvidersConfig
     const excluded = walletProvidersConfig?.exclude;
     if (excluded && excluded.length > 0) {
       const drop = new Set<string>(excluded);
-      providers = providers.filter((p) => !drop.has((p as { id?: string }).id ?? ''));
+      providers = providers.filter((p) => !drop.has(p.id));
     }
 
     if (wagmiConfig) {
@@ -60,7 +60,7 @@ const Widget: FC<WidgetProps> = ({ config, walletDefaults, walletProvidersConfig
       // config so the widget tracks the host's account/chain. Only do this
       // when EVM is actually in the resolved set — respect the include/exclude
       // lists literally rather than force-injecting EVM.
-      const evmIndex = providers.findIndex((p) => (p as { id?: string }).id === 'evm');
+      const evmIndex = providers.findIndex((p) => p.id === 'evm');
       if (evmIndex >= 0) {
         providers[evmIndex] = createEVMProvider({
           walletConnectConfigs: walletDefaults?.walletConnect,

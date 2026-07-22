@@ -5,10 +5,13 @@ import { BitcoinBalanceProvider } from "./bitcoinBalanceProvider"
 import { createBitcoinTransfer } from "./transferProvider/createBitcoinTransfer"
 import { createBitcoinConnection } from "./service/createBitcoinConnection"
 import { initBitcoinProvider } from "./init"
+import { id } from "./constants"
 
 export type BitcoinProviderConfig = BaseWalletProviderConfig
 
-export function createBitcoinProvider(config: BitcoinProviderConfig = {}): WalletProvider {
+// The literal id in the return type lets `defineWalletDescriptor` in
+// `@layerswap/wallets` verify it matches the descriptor id at compile time.
+export function createBitcoinProvider(config: BitcoinProviderConfig = {}): WalletProvider & { id: typeof id } {
     const {
         customConnection,
         balanceProviders,
@@ -46,7 +49,7 @@ export function createBitcoinProvider(config: BitcoinProviderConfig = {}): Walle
         : defaultTransferProviders
 
     return {
-        id: "bitcoin",
+        id,
         init,
         createConnection,
         gasProvider: finalGasProviders,

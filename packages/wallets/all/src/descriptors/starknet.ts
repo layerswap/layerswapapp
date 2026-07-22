@@ -1,5 +1,6 @@
 import type { WalletProviderDescriptor } from "@layerswap/wallet-core/types"
-import type { WalletProvider } from "@layerswap/wallet-core/types"
+import { defineWalletDescriptor } from "./defineWalletDescriptor"
+import { readStorageJson } from "./persistedSession"
 
 // Inlined so this module is tree-shake-safe — importing `KnownInternalNames`
 // from @layerswap/utils would pull a runtime barrel that defeats lazy-loading.
@@ -15,15 +16,26 @@ const STARKNET_NETWORKS = ['STARKNET_MAINNET', 'STARKNET_SEPOLIA', 'STARKNET_GOE
  * open).
  */
 export function createStarknetDescriptor(): WalletProviderDescriptor {
-    return {
+    return defineWalletDescriptor({
         id: 'starknet',
         name: 'Starknet',
         autofillSupportedNetworks: STARKNET_NETWORKS,
         withdrawalSupportedNetworks: STARKNET_NETWORKS,
         asSourceSupportedNetworks: STARKNET_NETWORKS,
-        loadProvider: async (): Promise<WalletProvider> => {
+        // wallet-starknet's persisted zustand store (`ls-starknet-accounts`).
+        // The key exists for every visitor once the store hydrates, so check
+        // the partialized payload for actual account state instead of mere
+        // key presence.
+        hasPersistedSession: () => {
+            const persisted = readStorageJson('ls-starknet-accounts') as
+                | { state?: { starknetAccounts?: Record<string, string>, activeWalletAddress?: string } }
+                | undefined
+            const state = persisted?.state
+            return !!state?.activeWalletAddress || Object.keys(state?.starknetAccounts ?? {}).length > 0
+        },
+        loadProvider: async () => {
             const mod = await import('@layerswap/wallet-starknet')
             return mod.createStarknetProvider()
         },
-    }
+    })
 }
