@@ -3,6 +3,7 @@ import type {
     NetworkWithTokens,
     Wallet,
     WalletConnectionProvider,
+    WalletConnectionService,
 } from '@layerswap/widget/types'
 import { sleep } from '@layerswap/widget/internal'
 import type { FuelConnector } from '@fuel-ts/account'
@@ -12,7 +13,7 @@ import { BAKO_STATE } from '../connectors/bako-safe/Bako'
 import { resolveFuelWalletConnectorIcon } from '../utils'
 import { useFuelStore } from './fuelStore'
 
-export class FuelConnectionService {
+export class FuelConnectionService implements WalletConnectionService {
     private _networks: NetworkWithTokens[] = []
     private _networksKey = ''
     // `connectWallet` mutates the module-global `BAKO_STATE.{state.last_req,

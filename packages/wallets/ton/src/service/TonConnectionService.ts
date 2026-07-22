@@ -3,6 +3,7 @@ import type {
     NetworkWithTokens,
     Wallet,
     WalletConnectionProvider,
+    WalletConnectionService,
     WalletModalConnector,
 } from '@layerswap/widget/types'
 import { connectModalStore, walletIconResolver } from '@layerswap/widget/internal'
@@ -25,7 +26,7 @@ type RuntimeDeps = {
     isMobilePlatform?: boolean
 }
 
-export class TonConnectionService {
+export class TonConnectionService implements WalletConnectionService<RuntimeDeps> {
     private _networks: NetworkWithTokens[] = []
     private _networksKey = ''
     private _deps: RuntimeDeps = {}

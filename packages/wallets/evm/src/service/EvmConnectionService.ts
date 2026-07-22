@@ -4,6 +4,7 @@ import type {
     RequestAdditionalConnectorsParams,
     RequestAdditionalConnectorsResult,
     Wallet,
+    WalletConnectionService,
     WalletModalConnector,
 } from '@layerswap/widget/types'
 import type { RegistryConnector } from '@layerswap/widget/internal'
@@ -59,7 +60,7 @@ type RuntimeDeps = {
     isMobilePlatform?: boolean
 }
 
-export class EvmConnectionService {
+export class EvmConnectionService implements WalletConnectionService<RuntimeDeps> {
     private _networks: NetworkWithTokens[] = []
     private _buckets: EvmNetworkBuckets = { asSource: [], withdrawal: [], autofill: [] }
     private _networksKey = ''

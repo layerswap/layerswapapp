@@ -244,6 +244,35 @@ export type BaseWalletProviderConfig = {
     rpcHealthCheckProviders?: RpcHealthCheckProvider | RpcHealthCheckProvider[]
 }
 
+/** WalletConnect project metadata shared by the chain packages that open WalletConnect sessions (EVM, SVM). */
+export type WalletConnectConfig = {
+    projectId: string
+    name: string
+    description: string
+    url: string
+    icons: string[]
+}
+
+/**
+ * Contract every per-chain `*ConnectionService` class must satisfy so a
+ * missing/renamed method fails at compile time instead of breaking its
+ * `create*Connection` factory at runtime. Members beyond this core
+ * (`buildProvider`, `getConnectedWallets`, chain-specific getters) vary per
+ * chain and stay on the concrete class.
+ *
+ * `TDeps` is the shape accepted by `configure` for services that receive
+ * runtime dependencies (peer-provider registry, connect-modal setters).
+ */
+export interface WalletConnectionService<TDeps = unknown> {
+    /** Cache the settings-provided network list; must no-op when the list is unchanged. */
+    setNetworks(networks: NetworkWithTokens[]): void
+    /** Inject runtime dependencies that aren't known at construction time. */
+    configure?(deps: TDeps): void
+    /** Connect one of the service's connectors, resolving to the connected wallet. */
+    connectWallet(props: { connector: InternalConnector }): Promise<Wallet | undefined>
+    disconnectWallets?(): Promise<void>
+}
+
 export type RequestAdditionalConnectorsParams = {
     page?: number,
     pageSize?: number,

@@ -3,6 +3,7 @@ import type {
     NetworkWithTokens,
     Wallet,
     WalletConnectionProvider,
+    WalletConnectionService,
 } from '@layerswap/widget/types'
 import { KnownInternalNames, walletIconResolver } from '@layerswap/widget/internal'
 import type { Connector } from '@starknet-react/core'
@@ -111,7 +112,7 @@ type RuntimeDeps = {
     isMainnet?: boolean
 }
 
-export class StarknetConnectionService {
+export class StarknetConnectionService implements WalletConnectionService {
     private _networks: NetworkWithTokens[] = []
     private _networksKey = ''
     private _deps: RuntimeDeps = {}

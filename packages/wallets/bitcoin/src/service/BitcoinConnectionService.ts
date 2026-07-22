@@ -3,6 +3,7 @@ import type {
     NetworkWithTokens,
     Wallet,
     WalletConnectionProvider,
+    WalletConnectionService,
 } from '@layerswap/widget/types'
 import {
     KnownInternalNames,
@@ -27,7 +28,7 @@ type RuntimeDeps = {
     setSelectedConnector?: (connector: unknown) => void
 }
 
-export class BitcoinConnectionService {
+export class BitcoinConnectionService implements WalletConnectionService<RuntimeDeps> {
     private _networks: NetworkWithTokens[] = []
     private _networksKey = ''
     private _deps: RuntimeDeps = {}

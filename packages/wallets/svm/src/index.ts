@@ -4,6 +4,7 @@ import type {
     WalletInitContext,
     WalletConnectionProviderProps,
     BaseWalletProviderConfig,
+    WalletConnectConfig,
 } from "@layerswap/widget/types"
 import { LazyGasProvider, NetworkType } from "@layerswap/widget/types"
 import { SolanaBalanceProvider } from "./svmBalanceProvider"
@@ -12,13 +13,7 @@ import { createSvmConnection } from "./service/createSvmConnection"
 import { initSvmProvider } from "./init"
 import { id } from "./constants"
 
-export type WalletConnectConfig = {
-    projectId: string
-    name: string
-    description: string
-    url: string
-    icons: string[]
-}
+export type { WalletConnectConfig }
 
 export type SVMProviderConfig = BaseWalletProviderConfig & {
     walletConnectConfigs?: WalletConnectConfig

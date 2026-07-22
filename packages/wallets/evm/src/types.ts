@@ -1,16 +1,11 @@
 import type { Config } from '@wagmi/core'
 import type {
     BaseWalletProviderConfig,
+    WalletConnectConfig,
     WalletProviderModule,
 } from "@layerswap/widget/types"
 
-export type WalletConnectConfig = {
-    projectId: string
-    name: string
-    description: string
-    url: string
-    icons: string[]
-}
+export type { WalletConnectConfig }
 
 export type EVMProviderConfig = BaseWalletProviderConfig & {
     walletConnectConfigs?: WalletConnectConfig

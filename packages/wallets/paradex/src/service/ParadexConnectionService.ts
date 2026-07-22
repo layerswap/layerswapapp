@@ -4,6 +4,7 @@ import type {
     RequestAdditionalConnectorsResult,
     Wallet,
     WalletConnectionProvider,
+    WalletConnectionService,
     NetworkWithTokens,
 } from '@layerswap/widget/types'
 import {
@@ -11,7 +12,6 @@ import {
     KnownInternalNames,
     sleep,
     getRegistryEntry,
-    useWalletStore,
 } from '@layerswap/widget/internal'
 import { getEvmConfig, walletClientToSigner } from '@layerswap/wallet-evm'
 import {
@@ -20,7 +20,8 @@ import {
     switchChain,
     type ConnectorAlreadyConnectedError,
 } from '@wagmi/core'
-import { useParadexActiveStore, type ParadexAccount } from './paradexActiveStore'
+import type { ParadexAccount } from './paradexActiveStore'
+import { ParadexAccountMapper, type ParadexAccountMap } from './ParadexAccountMapper'
 import { name, paradexNames } from '../constants'
 
 export { name, id } from '../constants'
@@ -30,8 +31,6 @@ export const autofillSupportedNetworks = [...withdrawalSupportedNetworks]
 export const asSourceSupportedNetworks = [...withdrawalSupportedNetworks]
 
 type Account = ParadexAccount
-
-type ParadexAccountMap = { [key: string]: string }
 
 type RuntimeDeps = {
     setSelectedConnector?: (connector: unknown) => void
@@ -62,10 +61,16 @@ type ResolveWalletsListProps = {
     networkIcon?: string
 }
 
-export class ParadexConnectionService {
+/**
+ * Connection/flow orchestration for Paradex: coordinates the backing
+ * EVM/Starknet providers and drives the Paradex SDK authorization flows.
+ * L1 ↔ Paradex account bookkeeping lives in {@link ParadexAccountMapper}.
+ */
+export class ParadexConnectionService implements WalletConnectionService<RuntimeDeps> {
     private _networks: NetworkWithTokens[] = []
     private _networksKey = ''
     private _deps: RuntimeDeps = {}
+    private readonly _accounts = new ParadexAccountMapper()
 
     setNetworks(networks: NetworkWithTokens[]): void {
         const key = networks.map(n => n.name).join('|')
@@ -86,58 +91,8 @@ export class ParadexConnectionService {
         return this._deps.getProviderById?.('starknet') ?? EMPTY_PROVIDER
     }
 
-    private getParadexAccounts(): ParadexAccountMap {
-        return useWalletStore.getState().paradexAccounts ?? {}
-    }
-
-    private addParadexAccount(payload: { l1Address: string; paradexAddress: string }): void {
-        useWalletStore.getState().addParadexAccount(payload)
-    }
-
-    private removeParadexAccount(address: string): void {
-        useWalletStore.getState().removeParadexAccount(address)
-    }
-
-    private getSelectedAccount(): Account | undefined {
-        return useParadexActiveStore.getState().selectedAccount
-    }
-
-    private setSelectedAccount(account: Account | undefined): void {
-        useParadexActiveStore.getState().setSelectedAccount(account)
-    }
-
     getActiveConnection(): Account | undefined {
-        const paradexAccounts = this.getParadexAccounts()
-        if (!paradexAccounts) return undefined
-        const l1Addresses = Object.keys(paradexAccounts)
-        const evmProvider = this.getEvmProvider()
-        const starknetProvider = this.getStarknetProvider()
-        const selected = this.getSelectedAccount()
-        const selectedProvider = selected
-            ? (selected.providerName === 'EVM' ? evmProvider : starknetProvider)
-            : undefined
-        const selectedAvailable = selected
-            && selectedProvider?.connectedWallets?.some(w =>
-                w.id === selected.id
-                && w.addresses.some(wa => wa.toLowerCase() === selected.l1Address.toLowerCase()),
-            )
-        if (selectedAvailable) return selected
-
-        const evmWallet = evmProvider.connectedWallets?.find(w =>
-            w.addresses.some(wa => l1Addresses.some(pa => pa.toLowerCase() === wa.toLowerCase())),
-        )
-        const starknetWallet = starknetProvider.connectedWallets?.find(w =>
-            w.addresses.some(wa => l1Addresses.some(pa => pa.toLowerCase() === wa.toLowerCase())),
-        )
-        const defaultWallet = evmWallet || starknetWallet
-        if (!defaultWallet) return undefined
-        return {
-            id: defaultWallet.id,
-            providerName: defaultWallet.providerName as 'Starknet' | 'EVM',
-            l1Address: defaultWallet.addresses.find(wa =>
-                l1Addresses.some(pa => pa.toLowerCase() === wa.toLowerCase()),
-            )!,
-        }
+        return this._accounts.resolveActiveConnection(this.getEvmProvider(), this.getStarknetProvider())
     }
 
     getParadexNetwork(): NetworkWithTokens | undefined {
@@ -194,19 +149,8 @@ export class ParadexConnectionService {
         paradexAccounts,
         networkIcon,
     }: ResolveSingleWalletProps): Wallet | undefined {
-        const paradexAddress = paradexAccounts?.[l1Account?.toLowerCase()]
+        const paradexAddress = this._accounts.findParadexAddress(l1Account, paradexAccounts)
         if (!paradexAddress) return undefined
-
-        // The mapping is persisted in localStorage; a tampered/corrupted entry
-        // must never be used to derive the trading account. Paradex addresses are
-        // Starknet field elements (0x + up to 64 hex chars) — reject anything else
-        // and drop the bad entry so it isn't retried.
-        const isValidParadexAddress = /^0x[0-9a-fA-F]{1,64}$/.test(paradexAddress)
-        if (!isValidParadexAddress) {
-            console.error(`[Paradex] Address integrity check failed for ${l1Account}; removing entry`)
-            this.removeParadexAccount(l1Account)
-            return undefined
-        }
 
         const wallet = provider.connectedWallets?.find(w =>
             w.id === walletId && w.addresses.some(wa => wa.toLowerCase() === l1Account.toLowerCase()),
@@ -231,7 +175,7 @@ export class ParadexConnectionService {
             displayName,
             address: paradexAddress,
             addresses: [paradexAddress],
-            disconnect: () => this.removeParadexAccount(l1Account),
+            disconnect: () => this._accounts.removeAccount(l1Account),
             networkIcon,
         }
     }
@@ -252,7 +196,7 @@ export class ParadexConnectionService {
     }
 
     getConnectedWallets(): Wallet[] {
-        const paradexAccounts = this.getParadexAccounts()
+        const paradexAccounts = this._accounts.getAccounts()
         const evmProvider = this.getEvmProvider()
         const starknetProvider = this.getStarknetProvider()
         if (!paradexAccounts) return []
@@ -265,7 +209,7 @@ export class ParadexConnectionService {
 
     getActiveWallet(): Wallet | undefined {
         const activeConnection = this.getActiveConnection()
-        const paradexAccounts = this.getParadexAccounts()
+        const paradexAccounts = this._accounts.getAccounts()
         const evmProvider = this.getEvmProvider()
         const starknetProvider = this.getStarknetProvider()
         if (!activeConnection || !paradexAccounts) return undefined
@@ -286,7 +230,7 @@ export class ParadexConnectionService {
         const { setSelectedConnector } = this._deps
         const evmProvider = this.getEvmProvider()
         const starknetProvider = this.getStarknetProvider()
-        const existingAccounts = this.getParadexAccounts()
+        const existingAccounts = this._accounts.getAccounts()
 
         if (!evmProvider || !starknetProvider) {
             throw new Error('EVM/Starknet providers not configured')
@@ -335,12 +279,12 @@ export class ParadexConnectionService {
                     const paradexAccount = await authorizeEthereum(ethersSigner)
                     const paradexAddress = paradexAccount.getAddress()
 
-                    this.addParadexAccount({ l1Address: connectionResult.address, paradexAddress })
+                    this._accounts.addAccount({ l1Address: connectionResult.address, paradexAddress })
                     accounts = { [connectionResult.address.toLowerCase()]: paradexAddress }
                 } else {
                     accounts = { [connectionResult.address.toLowerCase()]: existingAccounts[connectionResult.address.toLowerCase()] }
                 }
-                this.setSelectedAccount({
+                this._accounts.setSelectedAccount({
                     l1Address: connectionResult.address,
                     id: connectionResult.id,
                     providerName: 'EVM',
@@ -365,12 +309,12 @@ export class ParadexConnectionService {
                     const paradexAccount = await AuthorizeStarknet(snAccount as any)
                     const paradexAddress = paradexAccount.getAddress()
 
-                    this.addParadexAccount({ l1Address: connectionResult.address, paradexAddress })
+                    this._accounts.addAccount({ l1Address: connectionResult.address, paradexAddress })
                     accounts = { [connectionResult.address.toLowerCase()]: paradexAddress }
                 } else {
                     accounts = { [connectionResult.address.toLowerCase()]: existingAccounts[connectionResult.address.toLowerCase()] }
                 }
-                this.setSelectedAccount({
+                this._accounts.setSelectedAccount({
                     l1Address: connectionResult.address,
                     id: connectionResult.id,
                     providerName: 'Starknet',
@@ -401,7 +345,7 @@ export class ParadexConnectionService {
         const providers = [evmProvider, starknetProvider]
         const paradexProvider = providers.find(p => p?.connectedWallets?.find(w => w.id === wallet.id))
         if (paradexProvider?.name && wallet.metadata?.l1Address) {
-            this.setSelectedAccount({
+            this._accounts.setSelectedAccount({
                 l1Address: wallet.metadata.l1Address,
                 id: wallet.id,
                 providerName: paradexProvider.name as 'Starknet' | 'EVM',

@@ -6,6 +6,7 @@ import type {
     Wallet,
     WalletModalConnector,
     WalletConnectionProvider,
+    WalletConnectionService,
 } from '@layerswap/widget/types'
 import { NetworkType } from '@layerswap/widget/types'
 import {
@@ -68,7 +69,7 @@ function resolveSupportedNetworks(supportedNetworks: string[], connectorId: stri
     return result
 }
 
-export class SvmConnectionService {
+export class SvmConnectionService implements WalletConnectionService<RuntimeDeps> {
     private _networks: NetworkWithTokens[] = []
     private _supported: string[] = []
     private _networksKey = ''
