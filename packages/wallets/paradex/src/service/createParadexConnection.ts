@@ -1,14 +1,13 @@
 import type {
     NetworkWithTokens,
-    WalletConnectionProvider,
     WalletConnectionProviderProps,
     WalletConnectionStore,
 } from '@layerswap/widget/types'
 import {
     connectModalStore,
+    createMemoizedConnectionStore,
     useWalletStore,
 } from '@layerswap/widget/internal'
-import { createStore } from 'zustand/vanilla'
 import {
     asSourceSupportedNetworks,
     autofillSupportedNetworks,
@@ -35,40 +34,15 @@ export function createParadexConnection(
         getProviderById: id => peerProviders?.getById(id),
     })
 
-    type SnapshotInputs = {
-        evmSnapshot: unknown
-        starknetSnapshot: unknown
-        paradexAccounts: unknown
-        selectedAccount: unknown
-        networks: NetworkWithTokens[]
-    }
-    let lastInputs: SnapshotInputs | null = null
-    let lastSnapshot: WalletConnectionProvider | null = null
-
-    const computeSnapshot = (): WalletConnectionProvider => {
-        const evmSnapshot = peerProviders?.getById('evm')
-        const starknetSnapshot = peerProviders?.getById('starknet')
-        const paradexAccounts = useWalletStore.getState().paradexAccounts
-        const selectedAccount = useParadexActiveStore.getState().selectedAccount
-
-        const inputs: SnapshotInputs = {
-            evmSnapshot,
-            starknetSnapshot,
-            paradexAccounts,
-            selectedAccount,
+    return createMemoizedConnectionStore({
+        computeInputs: () => ({
+            evmSnapshot: peerProviders?.getById('evm'),
+            starknetSnapshot: peerProviders?.getById('starknet'),
+            paradexAccounts: useWalletStore.getState().paradexAccounts,
+            selectedAccount: useParadexActiveStore.getState().selectedAccount,
             networks,
-        }
-        if (lastInputs
-            && lastInputs.evmSnapshot === inputs.evmSnapshot
-            && lastInputs.starknetSnapshot === inputs.starknetSnapshot
-            && lastInputs.paradexAccounts === inputs.paradexAccounts
-            && lastInputs.selectedAccount === inputs.selectedAccount
-            && lastInputs.networks === inputs.networks
-            && lastSnapshot) {
-            return lastSnapshot
-        }
-
-        const snapshot: WalletConnectionProvider = {
+        }),
+        buildSnapshot: () => ({
             connectWallet: paradexConnectionService.connectWallet.bind(paradexConnectionService),
             switchAccount: paradexConnectionService.switchAccount.bind(paradexConnectionService),
             requestAdditionalConnectors: paradexConnectionService.requestAdditionalConnectors.bind(paradexConnectionService),
@@ -87,38 +61,20 @@ export function createParadexConnection(
             providerIcon: paradexConnectionService.getProviderIcon(),
             hideFromList: true,
             ready: paradexConnectionService.isReady(),
-        }
-
-        lastInputs = inputs
-        lastSnapshot = snapshot
-        return snapshot
-    }
-
-    const store = createStore<WalletConnectionProvider>(() => computeSnapshot())
-
-    const sync = () => {
-        const next = computeSnapshot()
-        if (store.getState() === next) return
-        store.setState(next, true)
-    }
-
-    const unsubs: (() => void)[] = [
-        useWalletStore.subscribe(sync),
-        useParadexActiveStore.subscribe(sync),
-    ]
-    if (peerProviders) {
-        unsubs.push(peerProviders.subscribe(sync))
-    }
-
-    return {
-        store,
-        updateProps(nextProps) {
+        }),
+        subscribe: sync => {
+            const unsubs = [
+                useWalletStore.subscribe(sync),
+                useParadexActiveStore.subscribe(sync),
+            ]
+            if (peerProviders) {
+                unsubs.push(peerProviders.subscribe(sync))
+            }
+            return unsubs
+        },
+        onUpdateProps: nextProps => {
             networks = nextProps.networks
             paradexConnectionService.setNetworks(networks)
-            sync()
         },
-        destroy() {
-            unsubs.forEach(u => u())
-        },
-    }
+    })
 }
