@@ -3,6 +3,7 @@ import { useFormikContext } from "formik";
 import { ChevronDown, Plus, Wallet } from "lucide-react";
 import { Network, NetworkRoute, NetworkRouteToken, Token } from "@/Models/Network";
 import useWallet from "@/hooks/useWallet";
+import useProvidersConnectReady from "@/hooks/useProvidersConnectReady";
 import { useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { SwapFormValues } from "../SwapFormValues";
@@ -76,16 +77,21 @@ const DestinationWalletPicker: FC<DestinationWalletPickerProps> = ({ address, de
     // track the destination we last auto-prompted for so dismissing without
     // connecting doesn't keep re-firing. Skipped when no wallet is connected
     // at all — the form's non-dismissable connect modal handles that case.
+    // Gated on provider readiness: firing before the destination's provider
+    // has hydrated would open the modal unscoped and, because the prompted-for
+    // ref is already set, never retry scoped once the provider is ready.
     const hasAnyWallet = allWallets.length > 0;
+    const providersReady = useProvidersConnectReady();
     const lastAutoPromptedForRef = useRef<string | undefined>(undefined);
     useEffect(() => {
         if (!hasAnyWallet) return;
         if (!destination) return;
         if (account?.address) return;
+        if (!providersReady) return;
         if (lastAutoPromptedForRef.current === destination.name) return;
         lastAutoPromptedForRef.current = destination.name;
         handleConnect();
-    }, [hasAnyWallet, destination?.name, account?.address]);
+    }, [hasAnyWallet, destination?.name, account?.address, providersReady]);
 
     const hasAddress = !!address;
     const walletIconSrc = account?.icon;

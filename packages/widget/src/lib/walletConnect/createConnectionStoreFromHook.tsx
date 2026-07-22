@@ -8,18 +8,27 @@ import type {
 } from '@/types/wallet'
 
 /**
- * Shallow one-level equality over the provider's own keys. The wrapped legacy
- * hooks usually return a freshly-constructed object each render, so reference
- * equality is always false; comparing fields avoids broadcasting a store update
- * (and re-rendering every `useSyncExternalStore` subscriber) when nothing
- * meaningful actually changed.
+ * Shallow equality over the provider's own keys, with array fields compared
+ * element-by-element. The wrapped legacy hooks usually return a
+ * freshly-constructed object each render — and freshly-constructed arrays for
+ * fields like `connectedWallets` — so reference equality is always false;
+ * comparing fields (and array elements by identity) avoids broadcasting a
+ * store update (and re-rendering every `useSyncExternalStore` subscriber)
+ * when nothing meaningful actually changed.
  */
 function shallowEqualProvider(a: WalletConnectionProvider, b: WalletConnectionProvider): boolean {
     if (a === b) return true
     const aKeys = Object.keys(a) as (keyof WalletConnectionProvider)[]
     const bKeys = Object.keys(b) as (keyof WalletConnectionProvider)[]
     if (aKeys.length !== bKeys.length) return false
-    return aKeys.every(key => a[key] === b[key])
+    return aKeys.every(key => {
+        const av = a[key], bv = b[key]
+        if (av === bv) return true
+        if (Array.isArray(av) && Array.isArray(bv)) {
+            return av.length === bv.length && av.every((item, i) => item === bv[i])
+        }
+        return false
+    })
 }
 
 const EMPTY_PROVIDER: WalletConnectionProvider = Object.freeze({
