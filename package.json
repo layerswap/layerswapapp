@@ -41,7 +41,8 @@
     "ws@>=8.0.0 <8.21.0": "8.21.0",
     "ws@>=7.0.0 <7.5.11": "7.5.11",
     "postcss": ">=8.5.10 <9",
-    "react-router@>=7.0.0 <7.15.1": "7.15.1"
+    "react-router@>=7.0.0 <7.15.1": "7.15.1",
+    "@noble/hashes@>=1.7.0 <1.8.0": "1.8.0"
   },
   "scripts": {
     "dev": "pnpm --filter @layerswap/bridge dev",

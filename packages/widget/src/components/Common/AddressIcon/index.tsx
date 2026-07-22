@@ -7,7 +7,7 @@ import { useAddressName } from "@/stores/addressBookStore";
 
 type Props = {
     address: string;
-    size: number;
+    size?: number;
     className?: string;
     network?: { name: string } | null;
     providerName?: string;
@@ -17,14 +17,15 @@ const AddressIcon: FC<Props> = ({ address, size, className, network, providerNam
     const ref = useRef<HTMLDivElement>(null)
     const savedName = useAddressName(address, network, providerName)
     const saved = !!savedName
+    const renderSize = size ?? 24
     // Mirror the connected-wallet network badge (≈0.5 of the icon, poking out the corner).
-    const badgeSize = Math.max(9, Math.round(size * 0.5))
-    const badgeOffset = Math.max(1, Math.round(size * 0.08))
+    const badgeSize = Math.max(9, Math.round(renderSize * 0.5))
+    const badgeOffset = Math.max(1, Math.round(renderSize * 0.08))
 
     useEffect(() => {
         if (address && ref.current) {
             ref.current.innerHTML = "";
-            const iconElement = Jazzicon(size, parseInt(address.slice(2, 10), 16))
+            const iconElement = Jazzicon(renderSize, parseInt(address.slice(2, 10), 16))
             if (iconElement) {
                 iconElement.style.display = 'block'
                 iconElement.style.width = "100%"
@@ -33,10 +34,10 @@ const AddressIcon: FC<Props> = ({ address, size, className, network, providerNam
                 ref.current.appendChild(iconElement);
             }
         }
-    }, [address, size]);
+    }, [address, renderSize]);
 
     return (
-        <div className={cn("relative rounded-md", className)} style={{ width: size, height: size }}>
+        <div className={cn("relative rounded-md", className)} style={size ? { width: size, height: size } : undefined}>
             <div className="absolute inset-0 overflow-hidden rounded-[inherit]">
                 <div className="absolute inset-0" ref={ref as any} />
             </div>

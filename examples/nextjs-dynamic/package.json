@@ -10,9 +10,9 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@bigmi/client": "^0.6.1",
-    "@bigmi/core": "^0.6.1",
-    "@bigmi/react": "^0.6.1",
+    "@bigmi/client": "^0.10.0",
+    "@bigmi/core": "^0.9.0",
+    "@bigmi/react": "^0.9.0",
     "@dynamic-labs/ethereum": "^4.14.0",
     "@dynamic-labs/sdk-react-core": "^4.14.0",
     "@dynamic-labs/starknet": "^4.41.1",

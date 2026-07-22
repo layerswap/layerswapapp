@@ -1,8 +1,11 @@
 import {
+    bitget,
     createConfig,
+    ctrl,
     leather,
+    metamask,
+    okx,
     onekey,
-    phantom,
     reconnect,
     unisat,
     xverse,
@@ -35,12 +38,16 @@ export function ensureBitcoinConfig(network: NetworkWithTokens | undefined): Con
         : bitcoin
 
     const btcChainId = chain.id
+    // Note: Phantom was removed because @bigmi/client dropped its Phantom connector in v0.9.
     const connectors: CreateConnectorFn[] = [
-        phantom({ chainId: btcChainId }),
         xverse({ chainId: btcChainId }),
         unisat({ chainId: btcChainId }),
+        ctrl({ chainId: btcChainId }),
+        okx({ chainId: btcChainId }),
+        bitget({ chainId: btcChainId }),
         leather({ chainId: btcChainId }),
         onekey({ chainId: btcChainId }),
+        metamask({ chainId: btcChainId }),
     ]
 
     _config = createConfig({

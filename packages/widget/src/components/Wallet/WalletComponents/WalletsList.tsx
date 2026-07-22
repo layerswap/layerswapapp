@@ -61,9 +61,9 @@ const WalletsList: FC<Props> = (props) => {
                 wallets.length > 0 &&
                 <div className="flex flex-col justify-start space-y-3">
                     {
-                        wallets.map((wallet, index) => <WalletItem
-                            key={`${index}${wallet.providerName}`}
-                            account={wallet}
+                        wallets.map((item, index) => <WalletItem
+                            key={`${index}${item.providerName}`}
+                            account={item}
                             selectable={selectable}
                             token={token}
                             network={network}
@@ -86,54 +86,72 @@ type WalletItemProps = {
     onWalletSelect?: (props: SelectAccountProps) => void;
     isCompatible?: boolean;
 }
-export const WalletItem: FC<WalletItemProps> = ({ selectable, account: wallet, network, onWalletSelect, token, selectedAddress, isCompatible = true }) => {
+export const WalletItem: FC<WalletItemProps> = ({ selectable, account: item, network, onWalletSelect, token, selectedAddress, isCompatible = true }) => {
     const { networks } = useSettingsState()
     const balanceNetwork = token ? networks.find(n => n.name === network?.name && n.tokens.some(t => t.symbol === token.symbol)) : undefined
 
     const { balances, isLoading: isBalanceLoading } = useBalance(
-        isCompatible ? wallet.address : undefined,
+        isCompatible ? item.address : undefined,
         isCompatible ? balanceNetwork : undefined
     )
 
     const walletBalance = balances?.find(b => b?.token === token?.symbol)
 
-    const isSelected = selectable && (wallet.addresses.length == 1 && wallet.address == selectedAddress)
+    const isSelected = selectable && (item.addresses.length == 1 && item.address == selectedAddress)
     const walletBalanceAmount = walletBalance?.amount !== undefined ? truncateDecimals(walletBalance.amount, token?.precision) : ''
 
     const [saveAddress, setSaveAddress] = useState<string | null>(null)
-    const saveType = network?.type ?? (wallet.providerName ? wallet.providerName.toLowerCase() as NetworkType : undefined)
-    const supportedNetworks = getWithdrawalSupportedNetworks(wallet)
+    const saveType = network?.type ?? (item.providerName ? item.providerName.toLowerCase() as NetworkType : undefined)
+    const supportedNetworks = getWithdrawalSupportedNetworks(item)
     const saveInDrawer = !(selectable && onWalletSelect && network)
+
+    // The row hosts nested interactive elements (disconnect tooltip button,
+    // ExtendedAddress popover trigger), so it must not be a <button> itself —
+    // <button> inside <button> is invalid HTML and breaks hydration.
+    const rowIsClickable = !!(selectable && item.addresses.length == 1 && onWalletSelect)
+    const handleRowSelect = () => rowIsClickable && onWalletSelect({
+        providerName: item.providerName,
+        walletId: item.id,
+        address: item.address
+    })
 
     return (
         <div className="rounded-md outline-hidden text-primary-tex">
-            <button
-                type="button"
-                onClick={() => (selectable && wallet.addresses.length == 1 && onWalletSelect) && onWalletSelect({
-                    providerName: wallet.providerName,
-                    walletId: wallet.id,
-                    address: wallet.address
-                })}
+            <div
+                role={rowIsClickable ? 'button' : undefined}
+                tabIndex={rowIsClickable ? 0 : undefined}
+                onClick={handleRowSelect}
+                onKeyDown={rowIsClickable ? (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        handleRowSelect()
+                    }
+                } : undefined}
                 className={clsx('w-full relative items-center justify-between gap-2 flex rounded-lg outline-hidden bg-secondary-500 text-primary-text p-3 group/addressItem', {
-                    'hover:bg-secondary-400 cursor-pointer': selectable && wallet.addresses.length == 1,
-                    'bg-secondary-600 py-2': wallet.addresses.length > 1
+                    'hover:bg-secondary-400 cursor-pointer': selectable && item.addresses.length == 1,
+                    'bg-secondary-600 py-2': item.addresses.length > 1
                 })}>
 
                 <div className="flex space-x-2 items-center grow">
                     {
-                        wallet &&
+                        item &&
                         <div className="inline-flex items-center relative">
-                            <WalletIconView
-                                wallet={wallet}
-                                size={36}
-                                className={clsx('w-9 h-9 p-0.5 rounded-md bg-secondary-800', {
-                                    'w-6! h-6!': wallet.addresses.length > 1,
-                                })}
-                            />
                             {
-                                hasNetworkIcon(wallet) && <div className="h-5 w-5 absolute -right-1 -bottom-1">
+                                item.icon ?
+                                    <WalletIconView
+                                        wallet={item}
+                                        size={36}
+                                        className={clsx('w-9 h-9 p-0.5 rounded-md bg-secondary-800', {
+                                            'w-6! h-6!': item.addresses.length > 1,
+                                        })}
+                                    />
+                                    :
+                                    <AddressIcon address={item.address} size={36} network={network} className="rounded-md bg-secondary-800" />
+                            }
+                            {
+                                hasNetworkIcon(item) && <div className="h-5 w-5 absolute -right-1 -bottom-1">
                                     <ImageWithFallback
-                                        src={wallet?.networkIcon || ''}
+                                        src={item?.networkIcon || ''}
                                         alt="Wallet default network icon"
                                         height="20"
                                         width="20"
@@ -145,30 +163,30 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: wallet, n
                         </div>
                     }
                     {
-                        wallet.addresses.length > 1 ?
+                        item.addresses.length > 1 ?
                             <div className="text-sm">
-                                {wallet.displayName}
+                                {item.displayName}
                             </div>
                             :
                             <div className="w-full inline-flex items-center justify-between grow">
                                 <div>
                                     {
-                                        !isLoading(wallet) && wallet.address &&
+                                        !isLoading(item) && item.address &&
                                         <ExtendedAddress
-                                            address={wallet.address}
+                                            address={item.address}
                                             network={network}
-                                            providerName={wallet.providerName}
-                                            title={wallet.displayName?.split("-")[0]}
-                                            description={wallet.providerName}
-                                            logo={wallet.icon}
+                                            providerName={item.providerName}
+                                            title={item.displayName?.split("-")[0]}
+                                            description={item.providerName}
+                                            logo={item.icon}
                                             showDetails
                                             addressClassNames="font-normal text-sm"
-                                            onDisconnect={() => hasDisconnect(wallet) && wallet.disconnect()}
-                                            onSaveRequest={saveInDrawer ? () => setSaveAddress(wallet.address) : undefined}
+                                            onDisconnect={() => hasDisconnect(item) && item.disconnect()}
+                                            onSaveRequest={saveInDrawer ? () => setSaveAddress(item.address) : undefined}
                                         />
                                     }
                                     <p className="text-xs text-secondary-text text-start">
-                                        {wallet.displayName}
+                                        {item.displayName}
                                     </p>
                                 </div>
                                 {
@@ -195,10 +213,10 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: wallet, n
                     }
                 </div>
                 {
-                    !selectable && hasDisconnect(wallet) &&
+                    !selectable && hasDisconnect(item) &&
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <button type="button" onClick={wallet.disconnect} className="text-xs text-secondary-text hover:text-primary-text rounded-full p-1.5 bg-secondary-700 transition-colors duration-200 ">
+                            <button type="button" onClick={item.disconnect} className="text-xs text-secondary-text hover:text-primary-text rounded-full p-1.5 bg-secondary-700 transition-colors duration-200 ">
                                 <Unplug className="h-3.5 w-3.5" />
                             </button>
                         </TooltipTrigger>
@@ -213,16 +231,16 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: wallet, n
                         <FilledCheck />
                     </div>
                 }
-            </button>
+            </div>
             {
-                wallet.addresses.length > 1 &&
+                item.addresses.length > 1 &&
                 <div className='w-full grow py-1 mt-1 bg-secondary-500 rounded-lg' >
                     {
-                        wallet.addresses.map((address, index) => <NestedWalletAddress
+                        item.addresses.map((address, index) => <NestedWalletAddress
                             key={index}
                             address={address}
                             selectable={selectable}
-                            wallet={wallet}
+                            item={item}
                             network={network}
                             onWalletSelect={onWalletSelect}
                             selectedAddress={selectedAddress}
@@ -263,14 +281,14 @@ type NestedWalletAddressProps = {
     selectable?: boolean,
     token?: Token;
     network?: Network;
-    wallet: AccountIdentity | Wallet,
+    item: AccountIdentity | Wallet,
     onWalletSelect?: (props: SelectAccountProps) => void;
     selectedAddress: string | undefined;
     isCompatible?: boolean;
     onSaveToBook?: (address: string) => void;
 }
 
-const NestedWalletAddress: FC<NestedWalletAddressProps> = ({ selectable, address, network, onWalletSelect, token, wallet, selectedAddress, isCompatible, onSaveToBook }) => {
+const NestedWalletAddress: FC<NestedWalletAddressProps> = ({ selectable, address, network, onWalletSelect, token, item, selectedAddress, isCompatible, onSaveToBook }) => {
     const { networks } = useSettingsState()
     const balanceNetwork = token ? networks.find(n => n.name === network?.name && n.tokens.some(t => t.symbol === token.symbol)) : undefined
     const { balances, isLoading: isBalanceLoading } = useBalance(
@@ -282,14 +300,26 @@ const NestedWalletAddress: FC<NestedWalletAddressProps> = ({ selectable, address
     const nestedWalletBalance = balances?.find(b => b?.token === token?.symbol)
     const nestedWalletBalanceAmount = nestedWalletBalance?.amount !== undefined ? truncateDecimals(nestedWalletBalance.amount, token?.precision) : ''
 
+    // Not a <button>: ExtendedAddress inside renders its own trigger button,
+    // and nested buttons are invalid HTML (hydration error).
+    const rowIsClickable = !!(selectable && onWalletSelect)
+    const handleRowSelect = () => rowIsClickable && onWalletSelect({
+        providerName: item.providerName,
+        walletId: item.id,
+        address: address
+    })
+
     return (
-        <button
-            type="button"
-            onClick={() => (selectable && onWalletSelect) && onWalletSelect({
-                providerName: wallet.providerName,
-                walletId: wallet.id,
-                address: address
-            })}
+        <div
+            role={rowIsClickable ? 'button' : undefined}
+            tabIndex={rowIsClickable ? 0 : undefined}
+            onClick={handleRowSelect}
+            onKeyDown={rowIsClickable ? (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    handleRowSelect()
+                }
+            } : undefined}
             className={clsx('flex w-full justify-between gap-3 items-center pl-6 pr-4 py-2 group/addressItem', {
                 'hover:bg-secondary-400 cursor-pointer': selectable
             })}
@@ -305,17 +335,17 @@ const NestedWalletAddress: FC<NestedWalletAddressProps> = ({ selectable, address
 
                 <div>
                     {
-                        !isLoading(wallet) && address &&
+                        !isLoading(item) && address &&
                         <ExtendedAddress
                             address={address}
                             network={network}
-                            providerName={wallet.providerName}
+                            providerName={item.providerName}
                             addressClassNames="font-normal text-sm"
-                            onDisconnect={() => hasDisconnect(wallet) && wallet?.disconnect()}
+                            onDisconnect={() => hasDisconnect(item) && item?.disconnect()}
 
-                            title={wallet.displayName?.split("-")[0]}
-                            description={wallet.providerName}
-                            logo={wallet.icon}
+                            title={item.displayName?.split("-")[0]}
+                            description={item.providerName}
+                            logo={item.icon}
                             showDetails
                             onSaveRequest={onSaveToBook ? () => onSaveToBook(address) : undefined}
                         />
@@ -347,7 +377,7 @@ const NestedWalletAddress: FC<NestedWalletAddressProps> = ({ selectable, address
                     </div>
                 }
             </div>
-        </button>
+        </div>
     )
 
 }

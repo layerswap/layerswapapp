@@ -1,7 +1,7 @@
-import { Dispatch, FC, SetStateAction, memo, useState } from "react";
+import { Dispatch, FC, SetStateAction, memo, useMemo, useState } from "react";
 import { ArrowDown } from "lucide-react";
 import { Network, Token } from "@/Models/Network";
-import { useQuoteData } from "@/hooks/useFee";
+import { useQuoteData, validDestinationAddress } from "@/hooks/useFee";
 import NumFlowWithFallback from "@/components/Common/NumFlowWithFallback";
 import TokenChainBadge from "@/components/Pages/Deposit/_shared/TokenChainBadge";
 import VaulDrawer from "@/components/Modal/vaulModal";
@@ -13,6 +13,7 @@ type FeeCalculatorProps = {
     sourceToken: Token | undefined;
     destinationNetwork: Network | undefined;
     destinationToken: Token | undefined;
+    destinationAddress: string | undefined;
     refuel: boolean;
 };
 
@@ -52,9 +53,15 @@ const FeeCalculator: FC<FeeCalculatorProps> = ({
     sourceToken,
     destinationNetwork,
     destinationToken,
+    destinationAddress,
     refuel,
 }) => {
     const [amount, setAmount] = useState('');
+
+    const validatedDestinationAddress = useMemo(
+        () => validDestinationAddress(destinationAddress, destinationNetwork),
+        [destinationAddress, destinationNetwork],
+    );
 
     const { quote, isQuoteLoading, isDebouncing } = useQuoteData(
         {
@@ -65,6 +72,7 @@ const FeeCalculator: FC<FeeCalculatorProps> = ({
             amount,
             refuel,
             depositMethod: 'deposit_address',
+            destinationAddress: validatedDestinationAddress,
         },
         { skipLimits: true },
     );
