@@ -1,5 +1,5 @@
 import type { NetworkWithTokens } from "@layerswap/utils"
-import type { InternalConnector, Wallet, WalletConnectionProvider } from "@layerswap/wallet-core/types"
+import type { InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types"
 import { KnownInternalNames } from "@layerswap/utils";
 import { walletIconResolver } from "@layerswap/wallet-core";
 import {
@@ -21,7 +21,7 @@ type RuntimeDeps = {
     setSelectedConnector?: (connector: unknown) => void
 }
 
-export class BitcoinConnectionService {
+export class BitcoinConnectionService implements WalletConnectionService<RuntimeDeps> {
     private _networks: NetworkWithTokens[] = []
     private _networksKey = ''
     private _deps: RuntimeDeps = {}

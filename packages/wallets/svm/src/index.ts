@@ -1,4 +1,4 @@
-import type { WalletConnectionStore, WalletConnectionProviderProps } from "@layerswap/wallet-core/types"
+import type { WalletConnectionStore, WalletConnectionProviderProps, WalletConnectConfig } from "@layerswap/wallet-core/types"
 import type { WalletProvider, WalletInitContext, BaseWalletProviderConfig } from "@layerswap/wallet-core/types"
 import { NetworkType } from "@layerswap/utils"
 import { LazyGasProvider } from "@layerswap/wallet-core/types"
@@ -8,13 +8,7 @@ import { createSvmConnection } from "./service/createSvmConnection"
 import { initSvmProvider } from "./init"
 import { id } from "./constants"
 
-export type WalletConnectConfig = {
-    projectId: string
-    name: string
-    description: string
-    url: string
-    icons: string[]
-}
+export type { WalletConnectConfig }
 
 export type SVMProviderConfig = BaseWalletProviderConfig & {
     walletConnectConfigs?: WalletConnectConfig

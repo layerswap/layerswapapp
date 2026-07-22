@@ -1,12 +1,12 @@
 import type { NetworkWithTokens } from "@layerswap/utils"
-import type { InternalConnector, Wallet, WalletConnectionProvider } from "@layerswap/wallet-core/types"
+import type { InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types"
 import type { WalletModalConnector } from "@layerswap/wallet-core/types"
 import { getKnownConnectorIconBase64, normalizeIconSrc } from "@layerswap/wallet-core"
 import { name as PROVIDER_NAME, id as PROVIDER_ID, tronNames } from '../constants'
 import { tronAdapterManager } from './tronAdapterManager'
 import { type TronWalletSnapshot, useTronStore } from './tronStore'
 
-export class TronConnectionService {
+export class TronConnectionService implements WalletConnectionService {
     private _networks: NetworkWithTokens[] = []
     private _networksKey = ''
 

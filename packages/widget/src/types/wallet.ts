@@ -4,6 +4,7 @@ export type {
     WalletConnectionProvider,
     WalletConnectionProviderProps,
     WalletConnectionStore,
+    WalletConnectionService,
     WalletProviderStoreRegistry,
     WalletProviderDescriptor,
     MultiStepHandler,

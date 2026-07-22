@@ -97,11 +97,18 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     // pagination), otherwise the full connector resolve/dedupe/sort pipeline
     // reruns on every render while the modal is open.
     const filteredProviders = useMemo(() => providers.filter(p => !p.hideFromList), [providers])
-    const resolvedSelectedProvider = useMemo(() => (
-        selectedProvider && !selectedProvider.isSelectedFromFilter
-            ? filteredProviders.find(p => p.name === selectedProvider.name) || selectedProvider
-            : selectedProvider
-    ), [selectedProvider, filteredProviders])
+    // `selectedProvider` is a snapshot frozen at connect() time, so it must be
+    // re-resolved against the LIVE provider list — and against `providers`,
+    // not `filteredProviders`: scoped connects can target hidden-from-list
+    // providers (e.g. Paradex), which `filteredProviders` never contains. When
+    // such a modal opened before the provider (or its peers) published their
+    // connectors, the frozen snapshot would keep the list empty until the
+    // modal was closed and reopened.
+     const resolvedSelectedProvider = useMemo(() => (
+         selectedProvider && !selectedProvider.isSelectedFromFilter
+             ? providers.find(p => p.name === selectedProvider.name) || selectedProvider
+             : selectedProvider
+     ), [selectedProvider, providers])
     const featuredProviders = useMemo(() => (
         selectedProviderNames.length > 0
             ? filteredProviders.filter(p => selectedProviderNames.includes(p.name))

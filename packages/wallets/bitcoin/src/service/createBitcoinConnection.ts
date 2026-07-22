@@ -1,7 +1,6 @@
 import type { NetworkWithTokens } from "@layerswap/utils"
-import type { MultiStepHandler, WalletConnectionProvider, WalletConnectionProviderProps, WalletConnectionStore } from "@layerswap/wallet-core/types"
-import { connectModalStore } from "@layerswap/wallet-core"
-import { createStore } from 'zustand/vanilla'
+import type { MultiStepHandler, WalletConnectionProviderProps, WalletConnectionStore } from "@layerswap/wallet-core/types"
+import { connectModalStore, createMemoizedConnectionStore } from "@layerswap/wallet-core"
 import { createBitcoinTransfer } from '../transferProvider/createBitcoinTransfer'
 import { bitcoinConnectionService } from './BitcoinConnectionService'
 import { useBitcoinStore } from './bitcoinStore'
@@ -29,64 +28,27 @@ export function createBitcoinConnection(
     const transferProvider = createBitcoinTransfer()
     const transfer = transferProvider.executeTransfer
 
-    type SnapshotInputs = {
-        account: unknown
-        resolvedConnectors: unknown
-        ready: unknown
-        networks: NetworkWithTokens[]
-    }
-    let lastInputs: SnapshotInputs | null = null
-    let lastSnapshot: WalletConnectionProvider | null = null
-
-    const computeSnapshot = (): WalletConnectionProvider => {
-        const state = useBitcoinStore.getState()
-        const inputs: SnapshotInputs = {
-            account: state.account,
-            resolvedConnectors: state.resolvedConnectors,
-            ready: state.ready,
-            networks,
-        }
-        if (lastInputs
-            && lastInputs.account === inputs.account
-            && lastInputs.resolvedConnectors === inputs.resolvedConnectors
-            && lastInputs.ready === inputs.ready
-            && lastInputs.networks === inputs.networks
-            && lastSnapshot) {
-            return lastSnapshot
-        }
-
-        const snapshot: WalletConnectionProvider = {
+    return createMemoizedConnectionStore({
+        computeInputs: () => {
+            const state = useBitcoinStore.getState()
+            return {
+                account: state.account,
+                resolvedConnectors: state.resolvedConnectors,
+                ready: state.ready,
+                networks,
+            }
+        },
+        buildSnapshot: () => ({
             ...bitcoinConnectionService.buildProvider(),
             transfer,
             multiStepHandlers: extraMultiStepHandlers,
-        }
-
-        lastInputs = inputs
-        lastSnapshot = snapshot
-        return snapshot
-    }
-
-    const store = createStore<WalletConnectionProvider>(() => computeSnapshot())
-
-    const sync = () => {
-        const next = computeSnapshot()
-        if (store.getState() === next) return
-        store.setState(next, true)
-    }
-
-    const unsubs: (() => void)[] = [
-        useBitcoinStore.subscribe(sync),
-    ]
-
-    return {
-        store,
-        updateProps(nextProps) {
+        }),
+        subscribe: sync => [
+            useBitcoinStore.subscribe(sync),
+        ],
+        onUpdateProps: nextProps => {
             networks = nextProps.networks
             bitcoinConnectionService.setNetworks(networks)
-            sync()
         },
-        destroy() {
-            unsubs.forEach(u => u())
-        },
-    }
+    })
 }

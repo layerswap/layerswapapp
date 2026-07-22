@@ -101,6 +101,18 @@ export type WalletConnectionProviderProps = {
     walletProvidersRegistry?: WalletProviderStoreRegistry
 }
 
+/**
+ * Contract shared by the per-chain connection services. Concrete services can
+ * expose additional chain-specific methods, but every connection factory can
+ * rely on this core lifecycle and connect surface.
+ */
+export interface WalletConnectionService<TDeps = unknown> {
+    setNetworks(networks: NetworkWithTokens[]): void
+    configure?(deps: TDeps): void
+    connectWallet(props: { connector: InternalConnector }): Promise<Wallet | undefined>
+    disconnectWallets?(): Promise<void>
+}
+
 export type WalletConnectionProvider = {
     connectWallet: (props?: { connector?: InternalConnector }) => Promise<Wallet | undefined> | undefined,
     disconnectWallets?: () => Promise<void> | undefined | void,
@@ -164,4 +176,13 @@ export type RequestAdditionalConnectorsResult = {
     connectors: InternalConnector[],
     nextPage: number | null,
     totalCount: number,
+}
+
+/** Shared WalletConnect project metadata for EVM and Solana packages. */
+export type WalletConnectConfig = {
+    projectId: string
+    name: string
+    description: string
+    url: string
+    icons: string[]
 }

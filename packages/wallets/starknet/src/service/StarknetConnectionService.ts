@@ -1,5 +1,5 @@
 import { NetworkType, type NetworkWithTokens } from "@layerswap/utils"
-import type { InternalConnector, Wallet, WalletConnectionProvider } from "@layerswap/wallet-core/types"
+import type { InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types"
 import { walletIconResolver } from "@layerswap/wallet-core";
 import type { Connector } from '@starknet-react/core'
 import { name as PROVIDER_NAME, id as PROVIDER_ID, starknetNames } from '../constants'
@@ -113,7 +113,7 @@ function toStarknetChainHex(chainId: string | null | undefined): string | undefi
     return `0x${hex}`
 }
 
-export class StarknetConnectionService {
+export class StarknetConnectionService implements WalletConnectionService {
     private _networks: NetworkWithTokens[] = []
     private _networksKey = ''
     private _restoreTimer: number | undefined

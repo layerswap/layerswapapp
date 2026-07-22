@@ -1,8 +1,7 @@
 import type { NetworkWithTokens } from "@layerswap/utils"
 import type { MultiStepHandler, WalletConnectionProvider, WalletConnectionProviderProps, WalletConnectionStore } from "@layerswap/wallet-core/types"
 import { isMobile } from "@layerswap/utils"
-import { connectModalStore, getAdditionalConnectorsStore } from "@layerswap/wallet-core"
-import { createStore } from 'zustand/vanilla'
+import { connectModalStore, createMemoizedConnectionStore, getAdditionalConnectorsStore } from "@layerswap/wallet-core"
 import { id as PROVIDER_ID } from '../constants'
 import { createSvmTransfer } from '../transferProvider/createSvmTransfer'
 import { getWalletConnectConfig } from './walletConnectConfig'
@@ -46,88 +45,49 @@ export function createSvmConnection(
     const transferProvider = createSvmTransfer()
     const transfer = transferProvider.executeTransfer
 
-    type SnapshotInputs = {
-        wallets: unknown
-        activeWalletName: unknown
-        activeAddress: unknown
-        ready: unknown
-        browseConnectors: unknown
-        networks: NetworkWithTokens[]
-    }
-    let lastInputs: SnapshotInputs | null = null
-    let lastSnapshot: WalletConnectionProvider | null = null
-
-    const computeSnapshot = (): WalletConnectionProvider => {
-        const svm = useSvmStore.getState()
-        const additional = additionalConnectorsStore.getSnapshot()
-        const inputs: SnapshotInputs = {
-            wallets: svm.wallets,
-            activeWalletName: svm.activeWalletName,
-            activeAddress: svm.activeAddress,
-            ready: svm.ready,
-            browseConnectors: additional.browseConnectors,
-            networks,
-        }
-        if (lastInputs
-            && lastInputs.wallets === inputs.wallets
-            && lastInputs.activeWalletName === inputs.activeWalletName
-            && lastInputs.activeAddress === inputs.activeAddress
-            && lastInputs.ready === inputs.ready
-            && lastInputs.browseConnectors === inputs.browseConnectors
-            && lastInputs.networks === inputs.networks
-            && lastSnapshot) {
-            return lastSnapshot
-        }
-
-        // Pass current browse connectors to the service via configure so the
-        // build path stays a pure read — no writes to upstream stores from
-        // inside getSnapshot (would loop the widget's recompute effect).
-        svmConnectionService.configure({ registryConnectors: additional.browseConnectors })
-
-        const snapshot: WalletConnectionProvider = {
-            ...svmConnectionService.buildProvider(),
-            transfer,
-            multiStepHandlers: extraMultiStepHandlers,
-        }
-
-        lastInputs = inputs
-        lastSnapshot = snapshot
-        return snapshot
-    }
-
-    const store = createStore<WalletConnectionProvider>(() => computeSnapshot())
-
-    const sync = () => {
-        const next = computeSnapshot()
-        if (store.getState() === next) return
-        store.setState(next, true)
-    }
-
-    const unsubs: (() => void)[] = [
-        useSvmStore.subscribe(sync),
-        additionalConnectorsStore.subscribe(sync),
-        connectModalStore.subscribe(() => {
-            const modal = connectModalStore.getSnapshot()
-            if (modal.isWalletModalOpen && !additionalConnectorsStore.getSnapshot().browseMetadata.loaded) {
-                additionalConnectorsStore
-                    .requestAdditionalConnectors({ page: 1, pageSize: 40 })
-                    .catch(error => console.warn('Failed to load Solana WalletConnect wallets registry', error))
+    return createMemoizedConnectionStore({
+        computeInputs: () => {
+            const svm = useSvmStore.getState()
+            const additional = additionalConnectorsStore.getSnapshot()
+            return {
+                wallets: svm.wallets,
+                activeWalletName: svm.activeWalletName,
+                activeAddress: svm.activeAddress,
+                ready: svm.ready,
+                browseConnectors: additional.browseConnectors,
+                networks,
             }
-            if (modal.isWalletModalOpen) {
-                svmConnectionService.warmUpWalletConnect()
-            }
-        }),
-    ]
+        },
+        buildSnapshot: inputs => {
+            // Pass current browse connectors to the service via configure so the
+            // build path stays a pure read — no writes to upstream stores from
+            // inside getSnapshot (would loop the widget's recompute effect).
+            svmConnectionService.configure({ registryConnectors: inputs.browseConnectors })
 
-    return {
-        store,
-        updateProps(nextProps) {
+            return {
+                ...svmConnectionService.buildProvider(),
+                transfer,
+                multiStepHandlers: extraMultiStepHandlers,
+            }
+        },
+        subscribe: sync => [
+            useSvmStore.subscribe(sync),
+            additionalConnectorsStore.subscribe(sync),
+            connectModalStore.subscribe(() => {
+                const modal = connectModalStore.getSnapshot()
+                if (modal.isWalletModalOpen && !additionalConnectorsStore.getSnapshot().browseMetadata.loaded) {
+                    additionalConnectorsStore
+                        .requestAdditionalConnectors({ page: 1, pageSize: 40 })
+                        .catch(error => console.warn('Failed to load Solana WalletConnect wallets registry', error))
+                }
+                if (modal.isWalletModalOpen) {
+                    svmConnectionService.warmUpWalletConnect()
+                }
+            }),
+        ],
+        onUpdateProps: nextProps => {
             networks = nextProps.networks
             svmConnectionService.setNetworks(networks)
-            sync()
         },
-        destroy() {
-            unsubs.forEach(u => u())
-        },
-    }
+    })
 }

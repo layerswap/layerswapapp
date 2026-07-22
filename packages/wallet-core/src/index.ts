@@ -10,6 +10,7 @@ export {
     getDynamicWcMetadata,
     getPendingDynamicWcMetadata,
     clearPendingDynamicWcMetadata,
+    createMemoizedConnectionStore,
     setDynamicWcMetadata,
     setPendingMetadataForRegistry,
     getAdditionalConnectorsStore,

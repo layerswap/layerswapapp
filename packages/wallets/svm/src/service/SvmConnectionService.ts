@@ -1,5 +1,5 @@
 import type { NetworkWithTokens } from "@layerswap/utils"
-import type { InternalConnector, RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult, Wallet, WalletConnectionProvider } from "@layerswap/wallet-core/types"
+import type { InternalConnector, RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult, Wallet, WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types"
 import type { WalletModalConnector } from "@layerswap/wallet-core/types"
 import { NetworkType } from "@layerswap/utils"
 import { buildDeepLink, clearPendingDynamicWcMetadata, createRegistryConnector, getDynamicWcMetadata, getPendingDynamicWcMetadata, getRegistryEntry, mapConnectError, setDynamicWcMetadata, setPendingMetadataForRegistry, subscribeDisplayUri, walletKey, type WalletConnectWalletBase } from "@layerswap/wallet-core"
@@ -49,7 +49,7 @@ function resolveSupportedNetworks(supportedNetworks: string[], connectorId: stri
     return result
 }
 
-export class SvmConnectionService {
+export class SvmConnectionService implements WalletConnectionService<RuntimeDeps> {
     private _networks: NetworkWithTokens[] = []
     private _supported: string[] = []
     private _networksKey = ''

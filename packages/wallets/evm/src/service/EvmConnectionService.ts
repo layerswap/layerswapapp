@@ -1,5 +1,5 @@
 import type { NetworkWithTokens } from "@layerswap/utils"
-import type { InternalConnector, RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult, Wallet } from "@layerswap/wallet-core/types"
+import type { InternalConnector, RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult, Wallet, WalletConnectionService } from "@layerswap/wallet-core/types"
 import type { WalletModalConnector } from "@layerswap/wallet-core/types"
 import type { RegistryConnector } from "@layerswap/wallet-core"
 import type { Connector } from 'wagmi'
@@ -45,7 +45,7 @@ type RuntimeDeps = {
     isMobilePlatform?: boolean
 }
 
-export class EvmConnectionService {
+export class EvmConnectionService implements WalletConnectionService<RuntimeDeps> {
     private _networks: NetworkWithTokens[] = []
     private _buckets: EvmNetworkBuckets = { asSource: [], withdrawal: [], autofill: [] }
     private _networksKey = ''

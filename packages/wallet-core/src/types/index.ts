@@ -2,6 +2,7 @@ export type {
     InternalConnector,
     Wallet,
     WalletConnectionStore,
+    WalletConnectionService,
     WalletProviderStoreRegistry,
     WalletProviderDescriptor,
     WalletConnectionProviderProps,
@@ -10,6 +11,7 @@ export type {
     SelectAccountProps,
     RequestAdditionalConnectorsParams,
     RequestAdditionalConnectorsResult,
+    WalletConnectConfig,
 } from "@/types/wallet";
 export { isWalletProviderDescriptor } from "@/types/wallet";
 

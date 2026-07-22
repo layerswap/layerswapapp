@@ -130,8 +130,20 @@ function createStore(namespace: string, projectId: string): AdditionalConnectors
     let snapshot: AdditionalConnectorsSnapshot = EMPTY_SNAPSHOT
     const listeners = new Set<() => void>()
 
+    // Snapshot inputs behind the last emit. Downstream connection snapshots
+    // (EVM/SVM) compare `browseConnectors` by identity, so rebuilding the
+    // array when neither the cached pages nor the recents changed would
+    // falsely invalidate their memoization.
+    let lastPages: readonly PageCacheEntry[] = []
+    let lastRecents: readonly WalletConnectWalletBase[] = state.recents
+
     const computeSnapshot = (): AdditionalConnectorsSnapshot => {
         const cachedBrowsePages = listCachedPages(namespace, '')
+        const pagesUnchanged = cachedBrowsePages.length === lastPages.length
+            && cachedBrowsePages.every((page, i) => page === lastPages[i])
+        if (pagesUnchanged && state.recents === lastRecents) return snapshot
+        lastPages = cachedBrowsePages
+        lastRecents = state.recents
         const connectors = cachedBrowsePages.flatMap(page => page.result.wallets)
         const browseConnectors = mergeRecents(state.recents, connectors)
         const lastPage = cachedBrowsePages[cachedBrowsePages.length - 1]
@@ -146,7 +158,9 @@ function createStore(namespace: string, projectId: string): AdditionalConnectors
     }
 
     const emit = () => {
-        snapshot = computeSnapshot()
+        const next = computeSnapshot()
+        if (next === snapshot) return
+        snapshot = next
         listeners.forEach(l => l())
     }
 
