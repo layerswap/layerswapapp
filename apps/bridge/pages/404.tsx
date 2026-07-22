@@ -1,16 +1,20 @@
 import { useCallback, useEffect } from "react";
 import MessageComponent from "../components/MessageComponent"
 import Navbar from "../components/navbar"
-import posthog from "posthog-js"
 import { Home } from "lucide-react";
 import NotFoundIcon from "../components/Icons/NotFoundIcon";
 import { useRouter } from "next/router";
 import { useIntercom } from "react-use-intercom";
+import { capture } from "../lib/posthog";
 export default function Custom404() {
     useEffect(() => {
-        posthog.capture("404", {
+        // 404s usually render before `_app.js`'s idle-time posthog init, and
+        // posthog-js drops pre-init captures — `capture` from lib/posthog
+        // holds the event until init completes, keeping posthog-js out of
+        // this page's bundle.
+        capture("404", {
             name: "404",
-            path: typeof window !== 'undefined' ? window.location.pathname : undefined,
+            path: window.location.pathname,
         });
     }, []);
 

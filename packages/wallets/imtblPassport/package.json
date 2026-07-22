@@ -37,21 +37,16 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
-    "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
-    "@layerswap/widget": "workspace:^"
+    "@layerswap/widget": "workspace:^",
+    "zustand": "catalog:"
   },
   "dependencies": {
     "@imtbl/auth": "2.20.2",
-    "@imtbl/wallet": "2.20.2",
-    "axios": "catalog:",
-    "lucide-react": "^0.379.0"
+    "@imtbl/wallet": "2.20.2"
   },
   "devDependencies": {
     "@layerswap/widget": "workspace:^",
-    "@types/react": "catalog:",
-    "react": "catalog:",
-    "react-dom": "catalog:"
+    "zustand": "catalog:"
   },
   "engines": {
     "node": ">=22"

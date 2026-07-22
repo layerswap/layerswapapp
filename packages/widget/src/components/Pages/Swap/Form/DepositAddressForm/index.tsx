@@ -1,10 +1,11 @@
-import { FC, ReactNode, useEffect, useMemo, useRef } from "react";
+import { FC, ReactNode, Suspense, lazy, useEffect, useMemo, useRef } from "react";
 import { Form, useFormikContext } from "formik";
 import { Loader2 } from "lucide-react";
 import { Widget } from "@/components/Widget/Index";
 import { Partner } from "@/Models/Partner";
 import { useValidationContext } from "@/context/validationContext";
 import useWallet from "@/hooks/useWallet";
+import useProvidersConnectReady from "@/hooks/useProvidersConnectReady";
 import { SwapStatus } from "@/Models/SwapStatus";
 import { Address as AddressClass } from "@/lib/address/Address";
 import useAutoSourceRoute from "@/hooks/useAutoSourceRoute";
@@ -21,7 +22,12 @@ import DepositAddressFormButton from "./DepositAddressFormButton";
 import { resolveDepositAddress } from "@/helpers/depositActions";
 import { SwapFormValues } from "../SwapFormValues";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
-import Processing from "../../Withdraw/Processing";
+// `Processing` is the post-deposit progress UI. It only renders when the
+// user has already submitted a swap and is mid-flow — on first paint of
+// `/` it is always inactive. Lazy-loading keeps the Withdraw component
+// graph (transferProcessing, multi-step wallet UI, etc.) out of the home
+// page's entry chunks.
+const Processing = lazy(() => import(/* webpackChunkName: "swap-processing" */ "../../Withdraw/Processing"))
 import ValidationError from "../SecondaryComponents/validationError";
 import { NetworkRoute, NetworkRouteToken } from "@/Models";
 
@@ -63,15 +69,12 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
 
     const { isAutoSourceUpdating } = useAutoSourceRoute();
 
-    const { wallets, providers } = useWallet();
+    const { wallets } = useWallet();
     const hasWallet = wallets.length > 0;
-    // Each provider exposes a `ready` flag that flips true once its connectors
-    // have hydrated (e.g. wagmi finishes auto-reconnect, starknet enumerates
-    // injected wallets, solana wallet-adapter populates). Until every provider
-    // is ready, `wallets` may be empty even though a persisted wallet is about
-    // to appear — opening the connect modal in that window would just slide it
-    // back out a moment later.
-    const providersReady = providers.every(p => p.ready);
+    // Until every live provider is ready (wagmi auto-reconnect, starknet
+    // enumeration, etc.), `wallets` may be empty even though a persisted wallet
+    // is about to appear — so keep showing the loading state in that window.
+    const providersReady = useProvidersConnectReady();
     const { connect, isWalletModalOpen, cancel } = useConnectModal();
     const settings = useSettingsState();
     const initialSettings = useInitialSettings();
@@ -218,7 +221,9 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
         <>
             <Form className="h-full grow flex flex-col flex-1 justify-between w-full gap-3">
                 {isProcessing ? (
-                    <Processing />
+                    <Suspense fallback={null}>
+                        <Processing />
+                    </Suspense>
                 ) : (
                     <Widget.Content>
                         <div className="w-full flex flex-col justify-between flex-1 relative min-h-60">

@@ -175,7 +175,13 @@ const AddressButton = ({ address, network, wallet, addressProviderIcon }: { addr
             <div className="flex bg-secondary-400 text-primary-text items-center justify-center rounded-md h-7 w-7 overflow-hidden">
                 {
                     wallet?.icon ? (
-                        <wallet.icon className="h-7 w-7 object-contain" />
+                        <ImageWithFallback
+                            alt={wallet.displayName ?? wallet.id}
+                            className="h-7 w-7 object-contain"
+                            src={wallet.icon}
+                            width="28"
+                            height="28"
+                        />
                     ) : addressProviderIcon ? (<ImageWithFallback
                         alt="Partner logo"
                         className="rounded-md object-contain h-7 w-7"

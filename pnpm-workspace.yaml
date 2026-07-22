@@ -1,10 +1,12 @@
 packages:
   - packages/**
   - apps/*
+  - examples/widget-react-host
 
 catalog:
   '@tanstack/react-query': 5.90.11
   '@types/react': 19.2.3
+  '@types/react-dom': 19.2.3
   '@wagmi/connectors': 5.7.7
   '@wagmi/core': 2.16.4
   '@walletconnect/ethereum-provider': 2.21.8
@@ -19,3 +21,13 @@ catalog:
   wagmi: 2.14.11
   zustand: ^4.5.7
   starknet: ^8.5.2
+
+# Forces a single resolved version of @types/react across the workspace.
+# Without this, `apps/explorer` or any new package that requests React 18
+# types can hoist a second copy alongside catalog's 19.2.3, and tsc's type
+# resolution becomes order-dependent — the widget build on Vercel resolved
+# the wrong copy (bigint not assignable to React 18's ReactNode). Override
+# guarantees one version reaches tsc no matter what a dep declares.
+overrides:
+  '@types/react': 19.2.3
+  '@types/react-dom': 19.2.3

@@ -8,5 +8,11 @@ export * from "./mapWallet"
 export * from "./registry"
 export * from './subscribeDisplayUri'
 export * from "./types"
+export * from "./additionalConnectorsStore"
+export * from "./connectModalStore"
+export * from "./createConnectionStoreFromHook"
+export * from "./createMemoizedConnectionStore"
+export * from "./useAdditionalConnectors"
+export * from "./walletProvidersRegistry"
 export * from "./useAdditionalConnectors"
 export * from './findRegistryWallet'

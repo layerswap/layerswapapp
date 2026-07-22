@@ -32,6 +32,10 @@ const routeCache = new WeakMap<object, NetworkRoute>()
 export const polymarketProvider: ExtendedRouteProvider = {
     id: 'polymarket',
     direction: 'source',
+    // Fail closed: withdrawal depends on the gated relayer proxy and builder
+    // creds, so when no resolved flag covers this provider (flags endpoint
+    // unreachable) the route must stay hidden rather than break mid-flow.
+    enabledByDefault: false,
     funding: 'depository',
     requiresRefundAddress: true,
     extendedNetworkNames: Object.keys(POLYMARKET_CONFIG),

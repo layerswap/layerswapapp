@@ -16,6 +16,29 @@ function PopoverTrigger({
   return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />
 }
 
+/**
+ * Reads `#widget` lazily after mount.
+ *
+ * Radix Portal defaults to `document.body`. The widget's Tailwind
+ * utilities are scoped to `.layerswap-styles` (postcss-prefixwrap), so a
+ * popover portaled to body picks up none of them — no z-index, no
+ * background — and looks like the trigger did nothing. Defaulting to
+ * `#widget` (always inside `.layerswap-styles`, also the target the
+ * wallet drawer uses) keeps every popover in-scope by default. Callers
+ * that need a different target can still pass `container` explicitly.
+ */
+function useWidgetContainer(): HTMLElement | null {
+  const [el, setEl] = React.useState<HTMLElement | null>(null)
+  // useLayoutEffect runs synchronously after DOM mutation, before paint, so
+  // the portal resolves to `#widget` before the popover is first painted —
+  // avoiding the body→#widget remount flash a passive effect would cause.
+  // This component never renders server-side, so the SSR warning is moot.
+  React.useLayoutEffect(() => {
+    setEl(document.getElementById('widget'))
+  }, [])
+  return el
+}
+
 function PopoverContent({
   className,
   align = "center",
@@ -23,8 +46,10 @@ function PopoverContent({
   container,
   ...props
 }: React.ComponentProps<typeof PopoverPrimitive.Content> & { container?: HTMLElement | null }) {
+  const widgetContainer = useWidgetContainer()
+  const resolvedContainer = container !== undefined ? container : widgetContainer
   return (
-    <PopoverPrimitive.Portal container={container ?? undefined}>
+    <PopoverPrimitive.Portal container={resolvedContainer ?? undefined}>
       <div className="layerswap-styles">
         <PopoverPrimitive.Content
           data-slot="popover-content"

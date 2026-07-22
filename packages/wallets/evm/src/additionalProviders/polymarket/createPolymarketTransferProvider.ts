@@ -4,7 +4,7 @@ import { switchChain, getWalletClient } from "@wagmi/core"
 import { createPublicClient, decodeAbiParameters, type Hex, type PublicClient, type WalletClient } from "viem"
 import resolveChain from "../../evmUtils/resolveChain"
 import { resolveFallbackTransport } from "../../evmUtils/resolveTransports"
-import { classifyPolymarketFunder, resolvePolymarketHolding } from "./funder"
+import { resolvePolymarketHolding, selectPolymarketFunder } from "./funder"
 import { buildDepositWalletBatchRequest, buildDepositWalletDeployRequest, buildPolymarketDepositCalls } from "./depositWithdraw"
 import { buildSafeBatchRequest } from "./safeWithdraw"
 import { getRelayerNonce, isPolymarketDeployed, submitRelayerTransaction, type RelayerSubmittable } from "./relayerClient"
@@ -121,13 +121,23 @@ export function createPolymarketTransferProvider(
             }) as PublicClient
 
             const holding = await resolvePolymarketHolding(sourceAddress, publicClient)
-            const funder = holding.primary
-            if (!funder || holding.total <= 0) {
+            if (holding.entries.length === 0 || holding.total <= 0) {
                 const { header, details } = resolvePolymarketError('no polymarket account')
                 throw fail(header, details)
             }
-            if (funder.raw < amountBaseUnits) {
-                throw fail('Insufficient balance', `Your available Polymarket balance (${funder.amount} ${sourceToken.symbol}) is below the withdrawal amount.`)
+
+            // Pick the source: classify 'unknown' funders on-chain, then take the largest
+            // withdrawable (deposit/safe) entry that covers the amount — a bigger balance in
+            // an unsupported proxy/unknown funder must not block a withdrawal a supported
+            // funder could serve. The email/Magic `proxy` funder's owner key lives with Magic
+            // (can't be connected to sign); a still-`unknown` funder we can't execute.
+            const { executable, selected: funder } = await selectPolymarketFunder(holding.entries, amountBaseUnits, sourceAddress, publicClient)
+            if (executable.length === 0) {
+                throw fail('Unsupported account', 'This Polymarket account type isn’t supported for direct withdrawal. Withdraw via Polymarket, or use an account backed by a browser wallet.')
+            }
+            if (!funder) {
+                const largest = executable[0]
+                throw fail('Insufficient balance', `Your available Polymarket balance (${largest.amount} ${sourceToken.symbol}) is below the withdrawal amount.`)
             }
 
             // Assemble the batch (unwrap if holding pUSD, then approve + deposit). The calls are
@@ -143,24 +153,10 @@ export function createPolymarketTransferProvider(
             const walletClient = await getWalletClient(config, { chainId: POLYMARKET_CHAIN_ID }) as WalletClient | null
             if (!walletClient) throw fail('Wallet unavailable', 'Wallet client unavailable.')
 
-            // A funder surfaced via Polymarket's profile that we couldn't derive is tagged
-            // 'unknown' — classify it on-chain now (lazily, only when actually withdrawing).
-            let funderType = funder.type
-            if (funderType === 'unknown') {
-                funderType = await classifyPolymarketFunder(funder.address, sourceAddress, publicClient)
-            }
-
-            // Only the deposit wallet and Gnosis Safe funders can be withdrawn from here. The
-            // email/Magic `proxy` funder's owner key lives with Magic (can't be connected to
-            // sign), and a still-`unknown` funder is a contract type we can't execute.
-            if (funderType !== 'deposit' && funderType !== 'safe') {
-                throw fail('Unsupported account', 'This Polymarket account type isn’t supported for direct withdrawal. Withdraw via Polymarket, or use an account backed by a browser wallet.')
-            }
-
             const fromEoa = sourceAddress as `0x${string}`
             let buildRequest: () => Promise<RelayerSubmittable>
 
-            if (funderType === 'deposit') {
+            if (funder.type === 'deposit') {
                 // The deposit wallet must exist on-chain (the relayer WALLET submit doesn't
                 // deploy) — deploy via WALLET-CREATE and wait for code if it's not there yet.
                 const code = await publicClient.getCode({ address: funder.address })

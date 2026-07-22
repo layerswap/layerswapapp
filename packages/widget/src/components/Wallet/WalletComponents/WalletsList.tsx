@@ -1,5 +1,6 @@
 import { Plus, Unplug } from "lucide-react";
 import AddressIcon from "@/components/Common/AddressIcon";
+import WalletIconView from "@/components/Wallet/WalletIconView";
 import { SelectAccountProps, Wallet, WalletConnectionProvider } from "@/types/wallet";
 import { FC, HTMLAttributes, useCallback, useState } from "react";
 import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
@@ -104,15 +105,28 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: item, net
     const supportedNetworks = getWithdrawalSupportedNetworks(item)
     const saveInDrawer = !(selectable && onWalletSelect && network)
 
+    // The row hosts nested interactive elements (disconnect tooltip button,
+    // ExtendedAddress popover trigger), so it must not be a <button> itself —
+    // <button> inside <button> is invalid HTML and breaks hydration.
+    const rowIsClickable = !!(selectable && item.addresses.length == 1 && onWalletSelect)
+    const handleRowSelect = () => rowIsClickable && onWalletSelect({
+        providerName: item.providerName,
+        walletId: item.id,
+        address: item.address
+    })
+
     return (
         <div className="rounded-md outline-hidden text-primary-tex">
-            <button
-                type="button"
-                onClick={() => (selectable && item.addresses.length == 1 && onWalletSelect) && onWalletSelect({
-                    providerName: item.providerName,
-                    walletId: item.id,
-                    address: item.address
-                })}
+            <div
+                role={rowIsClickable ? 'button' : undefined}
+                tabIndex={rowIsClickable ? 0 : undefined}
+                onClick={handleRowSelect}
+                onKeyDown={rowIsClickable ? (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        handleRowSelect()
+                    }
+                } : undefined}
                 className={clsx('w-full relative items-center justify-between gap-2 flex rounded-lg outline-hidden bg-secondary-500 text-primary-text p-3 group/addressItem', {
                     'hover:bg-secondary-400 cursor-pointer': selectable && item.addresses.length == 1,
                     'bg-secondary-600 py-2': item.addresses.length > 1
@@ -123,14 +137,16 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: item, net
                         item &&
                         <div className="inline-flex items-center relative">
                             {
-                                item.id === 'manually_added' ?
-                                    <AddressIcon address={item.address} size={36} network={network} className="rounded-md bg-secondary-800" />
-                                    :
-                                    <item.icon
+                                item.icon ?
+                                    <WalletIconView
+                                        wallet={item}
+                                        size={36}
                                         className={clsx('w-9 h-9 p-0.5 rounded-md bg-secondary-800', {
                                             'w-6! h-6!': item.addresses.length > 1,
                                         })}
                                     />
+                                    :
+                                    <AddressIcon address={item.address} size={36} network={network} className="rounded-md bg-secondary-800" />
                             }
                             {
                                 hasNetworkIcon(item) && <div className="h-5 w-5 absolute -right-1 -bottom-1">
@@ -215,7 +231,7 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: item, net
                         <FilledCheck />
                     </div>
                 }
-            </button>
+            </div>
             {
                 item.addresses.length > 1 &&
                 <div className='w-full grow py-1 mt-1 bg-secondary-500 rounded-lg' >
@@ -284,14 +300,26 @@ const NestedWalletAddress: FC<NestedWalletAddressProps> = ({ selectable, address
     const nestedWalletBalance = balances?.find(b => b?.token === token?.symbol)
     const nestedWalletBalanceAmount = nestedWalletBalance?.amount !== undefined ? truncateDecimals(nestedWalletBalance.amount, token?.precision) : ''
 
+    // Not a <button>: ExtendedAddress inside renders its own trigger button,
+    // and nested buttons are invalid HTML (hydration error).
+    const rowIsClickable = !!(selectable && onWalletSelect)
+    const handleRowSelect = () => rowIsClickable && onWalletSelect({
+        providerName: item.providerName,
+        walletId: item.id,
+        address: address
+    })
+
     return (
-        <button
-            type="button"
-            onClick={() => (selectable && onWalletSelect) && onWalletSelect({
-                providerName: item.providerName,
-                walletId: item.id,
-                address: address
-            })}
+        <div
+            role={rowIsClickable ? 'button' : undefined}
+            tabIndex={rowIsClickable ? 0 : undefined}
+            onClick={handleRowSelect}
+            onKeyDown={rowIsClickable ? (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    handleRowSelect()
+                }
+            } : undefined}
             className={clsx('flex w-full justify-between gap-3 items-center pl-6 pr-4 py-2 group/addressItem', {
                 'hover:bg-secondary-400 cursor-pointer': selectable
             })}
@@ -349,7 +377,7 @@ const NestedWalletAddress: FC<NestedWalletAddressProps> = ({ selectable, address
                     </div>
                 }
             </div>
-        </button>
+        </div>
     )
 
 }

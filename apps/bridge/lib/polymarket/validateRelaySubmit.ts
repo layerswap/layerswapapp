@@ -1,4 +1,4 @@
-import { decodeAbiParameters, decodeFunctionData, erc20Abi, size, zeroAddress, type Hex } from "viem";
+import { decodeAbiParameters, decodeFunctionData, erc20Abi, size, toFunctionSelector, zeroAddress, type Hex } from "viem";
 import {
     MULTISEND_ABI,
     POLYMARKET_COLLATERAL_OFFRAMP,
@@ -7,7 +7,7 @@ import {
     POLYMARKET_PUSD_ADDRESS,
     POLYMARKET_SAFE_MULTISEND,
     POLYMARKET_USDC_E_ADDRESS,
-} from "@layerswap/wallet-evm";
+} from "@layerswap/wallet-evm/polymarket-protocol";
 
 /**
  * Validation of relayer `/submit` requests (pure, no I/O). The relay proxy is public
@@ -30,6 +30,11 @@ const MAX_CALLS = 4
 
 // depositERC20(bytes32 id, address token, address receiver, uint256 amount) — all static.
 const DEPOSIT_ERC20_PARAMS = [{ type: 'bytes32' }, { type: 'address' }, { type: 'address' }, { type: 'uint256' }] as const
+// The deposit target is backend-resolved per swap (deliberately not pinned), so the selector
+// is the only thing tying the last leg to depositERC20. Without it, an attacker-chosen target +
+// any 4-byte selector over the same static layout would pass, turning the sponsored relay into
+// an arbitrary gas-funded call.
+const DEPOSIT_ERC20_SELECTOR = toFunctionSelector('depositERC20(bytes32,address,address,uint256)')
 
 type DecodedCall = { target: string; data: Hex }
 
@@ -90,6 +95,7 @@ function validateDepositCalls(calls: DecodedCall[], funder: string): CallsVerdic
 
     const deposit = calls[calls.length - 1]
     if (deposit.data.length !== 10 + 4 * 64) return { ok: false, reason: 'unexpected deposit calldata length' }
+    if (deposit.data.slice(0, 10).toLowerCase() !== DEPOSIT_ERC20_SELECTOR) return { ok: false, reason: 'deposit selector is not depositERC20' }
     let depositToken: string
     let depositAmount: bigint
     try {

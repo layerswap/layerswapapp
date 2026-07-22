@@ -6,6 +6,7 @@ import { ChevronDown, Plus } from "lucide-react";
 import { WalletItem } from "@/components/Wallet/WalletComponents/WalletsList";
 import { Network, NetworkRoute, Token } from "@/Models/Network";
 import WalletIcon from "@/components/Icons/WalletIcon";
+import WalletIconView from "@/components/Wallet/WalletIconView";
 import ConnectButton from "@/components/Buttons/connectButton";
 import { WalletsIcons } from "@/components/Wallet/WalletComponents/ConnectedWallets";
 import { useFormikContext } from "formik";
@@ -97,7 +98,7 @@ const AccountsPickerButton: FC<{ accounts: AccountIdentity[], network: NetworkRo
             {
                 accounts.length === 1 ?
                     <div className="flex gap-2 items-center text-sm text-secondary-text">
-                        <firstWallet.icon className='h-5 w-5' />
+                        <WalletIconView wallet={firstWallet} className='h-5 w-5' size={20} />
                         {
                             firstWallet.address &&
                             <p className="truncate max-w-[90px]">{accountLabel}</p>

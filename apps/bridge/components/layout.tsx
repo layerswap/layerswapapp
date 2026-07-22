@@ -3,8 +3,8 @@ import { useRouter } from 'next/router';
 import Head from "next/head";
 import AppWrapper from "./AppWrapper";
 import { useEffect } from "react";
-import posthog from "posthog-js";
 import type { JSX } from 'react';
+import { capture } from "../lib/posthog";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -30,25 +30,22 @@ export default function Layout({ children, themeData }: Props) {
       }
       return customUrl
     }
-    const trackPageview = () => {
-      const customUrl = prepareUrl([
-        'destNetwork', // obsolete
-        'sourceExchangeName', // obsolete
-        'addressSource', // obsolete
-        'from',
-        'to',
-        'appName',
-        'asset',
-        'amount',
-        'destAddress'
-      ])
+    const customUrl = prepareUrl([
+      'destNetwork', // obsolete
+      'sourceExchangeName', // obsolete
+      'addressSource', // obsolete
+      'from',
+      'to',
+      'appName',
+      'asset',
+      'amount',
+      'destAddress'
+    ])
 
-      posthog.capture('$pageview', {
-        custom_url: customUrl,
-      })
-    }
-
-    trackPageview()
+    // This fires before `_app.js`'s idle-time posthog init, and posthog-js
+    // drops pre-init captures — `capture` from lib/posthog holds the event
+    // until init completes, keeping posthog-js out of this eager chunk.
+    capture('$pageview', { custom_url: customUrl })
   }, [])
 
   return (<>

@@ -3,6 +3,7 @@ import { useFormikContext } from "formik";
 import { ChevronDown, Plus, Wallet } from "lucide-react";
 import { Network, NetworkRoute, NetworkRouteToken, Token } from "@/Models/Network";
 import useWallet from "@/hooks/useWallet";
+import useProvidersConnectReady from "@/hooks/useProvidersConnectReady";
 import { useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { SwapFormValues } from "../SwapFormValues";
@@ -11,6 +12,7 @@ import AddressIcon from "@/components/Common/AddressIcon";
 import { Address as AddressClass } from "@/lib/address/Address";
 import VaulDrawer from "@/components/Modal/vaulModal";
 import { WalletItem } from "@/components/Wallet/WalletComponents/WalletsList";
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { useAddressName } from "@/stores/addressBookStore";
 
 type DestinationWalletPickerProps = {
@@ -75,19 +77,24 @@ const DestinationWalletPicker: FC<DestinationWalletPickerProps> = ({ address, de
     // track the destination we last auto-prompted for so dismissing without
     // connecting doesn't keep re-firing. Skipped when no wallet is connected
     // at all — the form's non-dismissable connect modal handles that case.
+    // Gated on provider readiness: firing before the destination's provider
+    // has hydrated would open the modal unscoped and, because the prompted-for
+    // ref is already set, never retry scoped once the provider is ready.
     const hasAnyWallet = allWallets.length > 0;
+    const providersReady = useProvidersConnectReady();
     const lastAutoPromptedForRef = useRef<string | undefined>(undefined);
     useEffect(() => {
         if (!hasAnyWallet) return;
         if (!destination) return;
         if (account?.address) return;
+        if (!providersReady) return;
         if (lastAutoPromptedForRef.current === destination.name) return;
         lastAutoPromptedForRef.current = destination.name;
         handleConnect();
-    }, [hasAnyWallet, destination?.name, account?.address]);
+    }, [hasAnyWallet, destination?.name, account?.address, providersReady]);
 
     const hasAddress = !!address;
-    const WalletIcon = account?.icon;
+    const walletIconSrc = account?.icon;
     const walletName = account?.displayName?.split('-')[0] || 'Connected wallet';
     const addr = hasAddress && destination ? new AddressClass(address!, destination) : undefined;
     const savedName = useAddressName(address, destination);
@@ -101,8 +108,14 @@ const DestinationWalletPicker: FC<DestinationWalletPickerProps> = ({ address, de
                 className="w-full bg-secondary-500 hover:bg-secondary-400/70 rounded-xl pl-3.5 pr-0 py-3 transition-colors flex items-center outline-hidden"
             >
                 <div className="inline-flex items-center justify-center rounded-lg h-7 w-7 overflow-hidden shrink-0 bg-secondary-400 text-primary-text">
-                    {hasAddress && WalletIcon ? (
-                        <WalletIcon className="h-7 w-7 object-contain" />
+                    {hasAddress && walletIconSrc ? (
+                        <ImageWithFallback
+                            src={walletIconSrc}
+                            alt={walletName}
+                            width="28"
+                            height="28"
+                            className="h-7 w-7 object-contain"
+                        />
                     ) : hasAddress && destination ? (
                         <AddressIcon
                             address={new AddressClass(address!, destination).full}

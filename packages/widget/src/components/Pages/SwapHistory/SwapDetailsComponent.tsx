@@ -18,6 +18,7 @@ import { getExplorerUrl } from '@/lib/address/explorerUrl';
 import useWallet from '@/hooks/useWallet';
 import { Address } from '@/lib/address/Address';
 import AddressIcon from '@/components/Common/AddressIcon';
+import WalletIconView from '@/components/Wallet/WalletIconView';
 import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon';
 
 type Props = {
@@ -111,7 +112,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                 source_address && source_network ?
                                     <div className="group/addressItem flex items-center gap-2 min-w-0">
                                         {sourceWallet?.icon
-                                            ? <sourceWallet.icon className="w-4 h-4 rounded-[4px] shrink-0 bg-secondary-700" />
+                                            ? <WalletIconView wallet={sourceWallet} size={16} className="w-4 h-4 rounded-[4px] shrink-0 bg-secondary-700" />
                                             : <AddressIcon address={new Address(source_address, source_network).full} network={source_network} size={16} className="rounded-[4px] shrink-0" />}
                                         <ExtendedAddress address={source_address} network={source_network} shouldShowChevron={false} />
                                     </div>
@@ -125,7 +126,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                 destination_address && destination_network ?
                                     <div className="group/addressItem flex items-center gap-2 min-w-0">
                                         {destWallet?.icon
-                                            ? <destWallet.icon className="w-4 h-4 rounded-[4px] shrink-0 bg-secondary-700" />
+                                            ? <WalletIconView wallet={destWallet} size={16} className="w-4 h-4 rounded-[4px] shrink-0 bg-secondary-700" />
                                             : <AddressIcon address={new Address(destination_address, destination_network).full} network={destination_network} size={16} className="rounded-[4px] shrink-0" />}
                                         <ExtendedAddress address={destination_address} network={destination_network} shouldShowChevron={false} />
                                     </div>

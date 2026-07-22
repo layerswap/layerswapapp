@@ -1,12 +1,13 @@
 import { FC } from "react";
 import { WalletModalConnector } from ".";
 import { Link2Off, RotateCw } from "lucide-react";
-import { resolveWalletConnectorIcon } from "@/lib/wallets/utils/resolveWalletIcon";
 import LayerSwapLogoSmall from "@/components/Icons/layerSwapLogoSmall";
+import WalletIcon from "@/components/Icons/WalletIcon";
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { isMobile } from "@/lib/wallets/utils/isMobile";
 
 export const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalConnector, connectionError: string | undefined }> = ({ onRetry, selectedConnector, connectionError }) => {
-    const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector, iconUrl: selectedConnector.icon });
+    const connectorIconSrc = selectedConnector.icon
     const isMobilePlatform = isMobile();
 
     return (
@@ -26,7 +27,17 @@ export const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: Wallet
                                     <div className="loader text-[3px]!" />
                             }
                             <div className="p-3 bg-secondary-700 rounded-lg">
-                                <ConnectorIcon className="w-11 h-auto" />
+                                {connectorIconSrc ? (
+                                    <ImageWithFallback
+                                        src={connectorIconSrc}
+                                        alt={selectedConnector.name}
+                                        width="44"
+                                        height="44"
+                                        className="w-11 h-auto object-contain"
+                                    />
+                                ) : (
+                                    <WalletIcon className="w-11 h-auto" />
+                                )}
                             </div>
                         </div>
                         <div className="text-center">

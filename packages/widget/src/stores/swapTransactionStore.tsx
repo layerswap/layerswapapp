@@ -80,16 +80,23 @@ export const useGaslessAuthorizationStore = create(
                 }));
             },
             setGaslessAuthorizationStatus: (Id, status, transaction) => {
-                set((state) => ({
-                    authorizations: {
-                        ...state.authorizations,
-                        [Id]: {
-                            ...(state.authorizations[Id] ?? { validBefore: 0 }),
-                            status,
-                            transaction: transaction ?? state.authorizations[Id]?.transaction ?? null,
+                set((state) => {
+                    // A late poll response must not resurrect an authorization that
+                    // retry cleanup already removed — recreating it with validBefore: 0
+                    // would immediately re-expire the fresh attempt.
+                    const current = state.authorizations[Id];
+                    if (!current) return state;
+                    return {
+                        authorizations: {
+                            ...state.authorizations,
+                            [Id]: {
+                                ...current,
+                                status,
+                                transaction: transaction ?? current.transaction ?? null,
+                            },
                         },
-                    },
-                }));
+                    };
+                });
             },
             removeGaslessAuthorization: (Id) => {
                 set((state) => {

@@ -19,11 +19,13 @@ export function getSourceProviders(): ExtendedRouteProvider[] {
     return sourceProviders
 }
 
-// Providers enabled by feature flags (keyed by provider id). Undefined flags ⇒ all
-// enabled, so callers without flags keep full behavior (kill-switch defaults on).
+// Providers enabled by feature flags (keyed by provider id). When flags are absent
+// (no SSR resolution and the public flags endpoint was unreachable) or lack an entry
+// for a provider, that provider's own `enabledByDefault` decides — fail-open for pure
+// client-side routes, fail-closed for ones with a server dependency (e.g. Polymarket's
+// credential-gated relayer proxy).
 function activeProviders(flags?: ExtendedRouteFlags): ExtendedRouteProvider[] {
-    if (!flags) return sourceProviders
-    return sourceProviders.filter(p => flags[p.id] !== false)
+    return sourceProviders.filter(p => flags?.[p.id] ?? p.enabledByDefault)
 }
 
 export function isExtendedSourceNetwork(name?: string): boolean {
@@ -46,11 +48,14 @@ export function getExtendedMapping(
     if (!networkName || !tokenSymbol) return undefined
 
     for (const provider of sourceProviders) {
-        // Prefer the provider's per-destination resolver (e.g. HL primary/fallback).
-        // `availableRoutes` lets it skip destinations the backend can't yet fulfill.
-        // Static `mappings` is the fallback for providers with a single destination.
-        const mapping = provider.resolveActiveMapping?.(networkName, tokenSymbol, toNetworkName, toTokenSymbol, availableRoutes)
-            ?? provider.mappings[networkName]?.[tokenSymbol]
+        // A provider-defined resolver is authoritative: its `undefined` means
+        // "no viable route for this destination" (e.g. destination IS the
+        // intermediate, or no candidate passes availability) and must NOT fall
+        // back to the static table, which would re-enable the excluded route.
+        // Static `mappings` only serves providers without a resolver.
+        const mapping = provider.resolveActiveMapping
+            ? provider.resolveActiveMapping(networkName, tokenSymbol, toNetworkName, toTokenSymbol, availableRoutes)
+            : provider.mappings[networkName]?.[tokenSymbol]
         if (!mapping) continue
 
         const realDecimals = mapping.realDecimals ?? 6

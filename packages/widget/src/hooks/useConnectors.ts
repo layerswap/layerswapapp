@@ -21,6 +21,8 @@ type InitialSnapshot = {
 
 const UNMERGEABLE_WALLETS = ['nova', 'nova wallet']
 const NAME_OVERRIDES: Record<string, string> = { bitget: 'Bitget Wallet' }
+const connectorKey = (name: string) =>
+    UNMERGEABLE_WALLETS.includes(name.toLowerCase()) ? name.toLowerCase() : walletKey(name)
 
 const resolveNames = (groups: InternalConnector[][]): InternalConnector[][] => {
     const canonical = new Map<string, string>()
@@ -43,7 +45,7 @@ const resolveChainConnectors = (pool: InternalConnector[], providers: WalletConn
     const mobile = isMobile()
     const records = new Map<string, { variants: InternalConnector[], entry?: WalletConnectWalletBase }>()
     const recordFor = (name: string) => {
-        const k = UNMERGEABLE_WALLETS.includes(name.toLowerCase()) ? name.toLowerCase() : walletKey(name)
+        const k = connectorKey(name)
         return records.get(k) ?? records.set(k, { variants: [] }).get(k)!
     }
 
@@ -52,8 +54,7 @@ const resolveChainConnectors = (pool: InternalConnector[], providers: WalletConn
         const record = recordFor(c.name)
         if (c.providerName && !record.variants.some(x => x.providerName === c.providerName)) record.variants.push(c)
         if (!record.entry) {
-            const wk = walletKey(c.name)
-            record.entry = getRegistryEntry(c) ?? providers.find(p => p.name === c.providerName)?.registryWallets?.find(r => walletKey(r.name) === wk || walletKey(r.id) === wk)
+            record.entry = getRegistryEntry(c)
         }
     }
     for (const record of records.values()) {
@@ -103,8 +104,19 @@ export function useConnectors({
     const appendedRef = useRef<InternalConnector[]>([])
 
     const initialConnectors: WalletModalConnector[] = useMemo(() => {
-        const recentNames = new Set(recentConnectors?.map(r => r.connectorName ? walletKey(r.connectorName) : undefined).filter(Boolean))
-        const isRecent = (c: InternalConnector) => recentNames.has(walletKey(c.name))
+        // Persisted host-origin data is untrusted at runtime even though the
+        // state is typed. Validate both the container and its entries so a
+        // legacy/colliding localStorage value cannot crash the wallet modal.
+        const storedRecentConnectors = Array.isArray(recentConnectors) ? recentConnectors : []
+        const recentNames = new Set(storedRecentConnectors.flatMap(r =>
+            r && typeof r === 'object' && typeof r.connectorName === 'string'
+                ? [connectorKey(r.connectorName)]
+                : []
+        ))
+        // Use the same identity rule as connector deduplication: canonicalize
+        // aliases such as Bitget Wallet, while preserving Nova and Nova Wallet
+        // as the intentionally separate tiles they are.
+        const isRecent = (c: InternalConnector) => recentNames.has(connectorKey(c.name))
         const isInstalled = (c: InternalConnector) => c.type === 'injected' && !c.isLoadable
 
         if (initialSortedRef.current?.key !== filterKey) {
@@ -117,13 +129,13 @@ export function useConnectors({
             const rest = all.filter(c => !isRecent(c) && !isInstalled(c))
             const sorted = removeDuplicatesWithKey(
                 [...recent, ...installed, ...rest],
-                c => UNMERGEABLE_WALLETS.includes(c.name.toLowerCase()) ? c.name.toLowerCase() : walletKey(c.name)
+                c => connectorKey(c.name)
             ) as InternalConnector[]
 
             initialSortedRef.current = {
                 key: filterKey,
                 list: sorted,
-                seen: new Set(sorted.map(c => UNMERGEABLE_WALLETS.includes(c.name.toLowerCase()) ? c.name.toLowerCase() : walletKey(c.name))),
+                seen: new Set(sorted.map(c => connectorKey(c.name))),
             }
             appendedRef.current = []
         } else {
@@ -132,7 +144,7 @@ export function useConnectors({
             // rendered tiles keep their position on scroll.
             const seen = initialSortedRef.current.seen
             const appendIfNew = (c: InternalConnector) => {
-                const key = UNMERGEABLE_WALLETS.includes(c.name.toLowerCase()) ? c.name.toLowerCase() : walletKey(c.name)
+                const key = connectorKey(c.name)
                 if (!seen.has(key)) {
                     seen.add(key)
                     appendedRef.current.push(c)
@@ -145,7 +157,7 @@ export function useConnectors({
         const pool = [...featuredConnectors, ...additionalConnectors, ...(resolvedSearchResults ?? [])]
         const connectorsByWallet = resolveChainConnectors(pool, featuredProviders)
         const withMultiChain = (list: InternalConnector[]): WalletModalConnector[] => list.map(c => {
-            const variants = connectorsByWallet.get(UNMERGEABLE_WALLETS.includes(c.name.toLowerCase()) ? c.name.toLowerCase() : walletKey(c.name))?.variants ?? []
+            const variants = connectorsByWallet.get(connectorKey(c.name))?.variants ?? []
             return { ...c, variants, isMultiChain: variants.length > 1 }
         })
 
@@ -158,14 +170,14 @@ export function useConnectors({
 
         let list = base
         if (resolvedSearchResults?.length) {
-            const existingNames = new Set(base.map(c => UNMERGEABLE_WALLETS.includes(c.name.toLowerCase()) ? c.name.toLowerCase() : walletKey(c.name)))
-            const newResults = (removeDuplicatesWithKey(resolvedSearchResults, c => UNMERGEABLE_WALLETS.includes(c.name.toLowerCase()) ? c.name.toLowerCase() : walletKey(c.name)) as InternalConnector[])
-                .filter(c => !existingNames.has(UNMERGEABLE_WALLETS.includes(c.name.toLowerCase()) ? c.name.toLowerCase() : walletKey(c.name)))
+            const existingNames = new Set(base.map(c => connectorKey(c.name)))
+            const newResults = (removeDuplicatesWithKey(resolvedSearchResults, c => connectorKey(c.name)) as InternalConnector[])
+                .filter(c => !existingNames.has(connectorKey(c.name)))
             list = [...base, ...newResults]
         }
 
         return recentsFirst(withMultiChain(list))
-    }, [featuredConnectors, additionalConnectors, recentConnectors, resolvedSearchResults, filterKey]);
+    }, [featuredConnectors, additionalConnectors, recentConnectors, resolvedSearchResults, filterKey, featuredProviders]);
 
     return {
         featuredConnectors,

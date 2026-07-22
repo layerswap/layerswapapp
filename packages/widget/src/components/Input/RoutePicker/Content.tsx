@@ -6,6 +6,7 @@ import Row from "./Rows";
 import { LayoutGroup, motion } from "framer-motion";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import useWallet from "@/hooks/useWallet";
+import useProvidersConnectReady from "@/hooks/useProvidersConnectReady";
 import ConnectWalletButton from "@/components/Common/ConnectWalletButton";
 import { SwapDirection } from "@/components/Pages/Swap/Form/SwapFormValues";
 import clsx from "clsx";
@@ -39,7 +40,7 @@ export const Content: FC<ContentProps> = (props) => {
 const Items: FC<ContentProps & { isScrolling: boolean; setIsScrolling: (isScrolling: boolean) => void; }> = ({ searchQuery, setSearchQuery, rowElements, selectedToken, selectedRoute, direction, onSelect, isScrolling, setIsScrolling, hideTokenSwitch, hideBalances, hideConnectButton }) => {
     const parentRef = useRef<HTMLDivElement>(null)
     const [openValues, setOpenValues] = useState<string[]>(selectedRoute ? [selectedRoute] : [])
-    const { wallets, providers } = useWallet()
+    const { wallets } = useWallet()
     const { shouldFocus } = useSelectorState();
 
     const isSingleNetwork = useMemo(() => {
@@ -63,7 +64,7 @@ const Items: FC<ContentProps & { isScrolling: boolean; setIsScrolling: (isScroll
     }, [isSingleNetwork, rowElements]);
 
 
-    const isProvidersReady = providers.every(p => p.ready)
+    const isProvidersReady = useProvidersConnectReady()
 
     const scrollTimeout = useRef<any>(null);
 

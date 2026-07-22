@@ -1,5 +1,5 @@
-import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { useWalletProviders } from "@/context/walletProviders";
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useWalletProvidersRegistry } from "@/context/walletProviders";
 
 export type DepositStep =
     | "method-picker"
@@ -46,7 +46,17 @@ export function DepositStepProvider({ children }: { children: ReactNode }) {
     // so the method picker would only ever show the deposit-address card. Skip it
     // entirely: open straight on the deposit address and root the stack there, so
     // there is no step to go back to (the header hides the back button).
-    const hasWalletMethods = useWalletProviders().length > 0;
+    //
+    // Entries are published in WalletProvidersProvider's post-commit effect, so a
+    // plain render-time read would start false and only correct itself on some
+    // unrelated ancestor re-render — resetting the step stack mid-flow. Subscribe
+    // to the registry instead, so the flip happens as soon as entries land.
+    const registry = useWalletProvidersRegistry();
+    const hasWalletMethods = useSyncExternalStore(
+        registry.subscribe,
+        () => registry.getEntries().length > 0,
+        () => false,
+    );
     const rootStep: DepositStep = hasWalletMethods ? "method-picker" : "transfer-crypto";
 
     const [stack, setStack] = useState<DepositStep[]>([rootStep]);

@@ -14,7 +14,13 @@ import { InitialSettings } from "@/Models/InitialSettings";
 import VaulDrawer from "@/components/Modal/vaulModal";
 import { useBalance } from "@/lib/balances/useBalance";
 import { useSelectedAccount } from "@/context/swapAccounts";
-import SwapDetails from "../Withdraw/SwapDetails";
+// SwapDetails is the post-submit modal content. It transitively imports every
+// Withdraw component (Withdraw, Processing, ManualWithdraw, Summary, Wallet
+// button common, ...) which was the root of the ~100 KB Withdraw leak onto
+// /. Wrapping in React.lazy moves that whole graph into its own chunk that
+// only downloads when the user actually submits a swap and the drawer opens.
+import { Suspense, lazy } from "react"
+const SwapDetails = lazy(() => import("../Withdraw/SwapDetails"))
 import { SwapFormValues } from "./SwapFormValues";
 import { useCallbacks } from "@/context/callbackProvider";
 import ContractAddressNote from "@/components/Input/Address/ContractAddressNote";
@@ -139,8 +145,13 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
         }
     }, [createSwap, initialSettings, partner, swapBasicData, getProvider, settings, type, setSwapError])
 
-    const initialValues: SwapFormValues = swapBasicData ? generateSwapInitialValuesFromSwap(swapBasicData, swapBasicData.refuel, settings, type)
-        : generateSwapInitialValues(settings, initialSettings, type, connectedAutofillNetworks)
+    // Formik has no `enableReinitialize`, so this is read once at mount — memoize
+    // to keep post-mount re-renders (wallet events, balance revalidation) from
+    // rerunning the extended-route merge and per-token route-plan resolution.
+    const initialValues: SwapFormValues = useMemo(() => swapBasicData
+        ? generateSwapInitialValuesFromSwap(swapBasicData, swapBasicData.refuel, settings, type)
+        : generateSwapInitialValues(settings, initialSettings, type, connectedAutofillNetworks),
+        [swapBasicData, settings, initialSettings, type, connectedAutofillNetworks])
 
     const handleShowSwapModal = useCallback((value: boolean) => {
         setSwapModalOpen(value)
@@ -182,15 +193,21 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                         header='Complete the swap'
                         modalId="showSwap"
                         className="expandContainerHeight">
-                        <SwapDetails type="contained" onWalletWithdrawalSuccess={() => {
-                            setWalletWihdrawDone(true)
-                            useGaslessPreferenceStore.getState().resetGaslessPreference()
-                            setFieldValue('amount', 0)
-                            mutateBalances()
-                        }} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />
-                    </VaulDrawer>
+                        {
+                            swapModalOpen ? (
+                                <Suspense fallback={null}>
+                                    <SwapDetails type="contained" onWalletWithdrawalSuccess={() => {
+                                        setWalletWihdrawDone(true)
+                                        useGaslessPreferenceStore.getState().resetGaslessPreference()
+                                        setFieldValue('amount', 0)
+                                        mutateBalances()
+                                    }} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />
+                                </Suspense>
+                            ) : null
+                        }
+                    </VaulDrawer >
                     {children}
-                    <ContractAddressValidationCache
+                    < ContractAddressValidationCache
                         source_network={values.from}
                         destination_network={values.to}
                         address={values.destination_address}
@@ -200,8 +217,9 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                         destination_network={values.to}
                     />
                 </>
-            )}
-        </Formik>
+            )
+            }
+        </Formik >
     </>
 }
 

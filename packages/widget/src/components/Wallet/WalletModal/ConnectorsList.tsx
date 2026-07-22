@@ -16,6 +16,9 @@ import { WalletQrCode } from "./WalletQrCode";
 import { LoadingConnect } from "./LoadingConnect";
 import CircularLoader from "@/components/Icons/CircularLoader";
 import { useConnectors } from "@/hooks/useConnectors";
+import { useWalletProvidersRegistry } from "@/context/walletProviders";
+import { useWalletDescriptorLoader } from "@/lib/walletConnect/walletDescriptorLoader";
+import { isProviderConnectReady } from "@/hooks/useProvidersConnectReady";
 
 type ProviderPaginationState = {
     loaded: boolean;
@@ -71,6 +74,8 @@ const canRequestAdditionalConnectors = (provider: WalletConnectionProvider): pro
 
 const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { providers } = useWallet();
+    const registry = useWalletProvidersRegistry()
+    const { loadAll, loadById } = useWalletDescriptorLoader()
     const { setSelectedConnector, selectedProvider, setSelectedProvider, selectedConnector, selectedMultiChainConnector, setSelectedMultiChainConnector } = useConnectModal()
     let [recentConnectors, setRecentConnectors] = usePersistedState<({ providerName?: string, connectorName?: string }[])>([], 'recentConnectors', 'localStorage');
     const [connectionError, setConnectionError] = useState<string | undefined>(undefined);
@@ -86,13 +91,30 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
     const { isMobile: isMobileSize } = useWindowDimensions()
 
-    const filteredProviders = providers.filter(p => !p.hideFromList)
     const [selectedProviderNames, setSelectedProviderNames] = useState<string[]>([])
 
-    const resolvedSelectedProvider = selectedProvider && !selectedProvider.isSelectedFromFilter
-        ? filteredProviders.find(p => p.name === selectedProvider.name) || selectedProvider
-        : selectedProvider;
-    const featuredProviders = selectedProviderNames.length > 0 ? filteredProviders.filter(p => selectedProviderNames.includes(p.name)) : (resolvedSelectedProvider ? [resolvedSelectedProvider] : filteredProviders)
+    // These lists feed `useConnectors`' memo deps — keep their identity stable
+    // across unrelated local-state renders (search keystrokes, scroll flags,
+    // pagination), otherwise the full connector resolve/dedupe/sort pipeline
+    // reruns on every render while the modal is open.
+    const filteredProviders = useMemo(() => providers.filter(p => !p.hideFromList), [providers])
+    // `selectedProvider` is a snapshot frozen at connect() time, so it must be
+    // re-resolved against the LIVE provider list — and against `providers`,
+    // not `filteredProviders`: scoped connects can target hidden-from-list
+    // providers (e.g. Paradex), which `filteredProviders` never contains. When
+    // such a modal opened before the provider (or its peers) published their
+    // connectors, the frozen snapshot would keep the list empty until the
+    // modal was closed and reopened.
+    const resolvedSelectedProvider = useMemo(() => (
+        selectedProvider && !selectedProvider.isSelectedFromFilter
+            ? providers.find(p => p.name === selectedProvider.name) || selectedProvider
+            : selectedProvider
+    ), [selectedProvider, providers])
+    const featuredProviders = useMemo(() => (
+        selectedProviderNames.length > 0
+            ? filteredProviders.filter(p => selectedProviderNames.includes(p.name))
+            : (resolvedSelectedProvider ? [resolvedSelectedProvider] : filteredProviders)
+    ), [selectedProviderNames, filteredProviders, resolvedSelectedProvider])
     const requestCapableFeaturedProviderNamesKey = featuredProviders
         .filter(canRequestAdditionalConnectors)
         .map(provider => provider.name)
@@ -126,6 +148,57 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         return () => clearTimeout(scrollTimeout.current as any);
     }, []);
 
+    // Reads CURRENT store state (not a render snapshot) to decide whether a
+    // wallet is exposed by more than one ecosystem.
+    const liveMultiChain = useCallback((name: string) => {
+        const lower = name.toLowerCase()
+        const providersWith = registry.getEntries().filter(e =>
+            e.store.getState().availableConnectors?.some(c => c.name.toLowerCase() === lower)
+        )
+        return providersWith.length > 1
+    }, [registry])
+
+    // Resolves once every provider has finished loading (no stubs left, all
+    // real providers `ready`), bounded by `timeoutMs` so a never-ready ecosystem
+    // can't hang the connect. `loadAll()` only imports lazy descriptor modules;
+    // we then wait for the stores to actually publish their connectors.
+    const awaitProvidersSettled = useCallback(async (timeoutMs = 1200) => {
+        await loadAll()
+        const settled = () => registry.getEntries().every(e => {
+            const s = e.store.getState()
+            return !s.isStub && s.ready
+        })
+        if (settled()) return
+        await new Promise<void>(resolve => {
+            let unsub = () => { }
+            const finish = () => { clearTimeout(timer); unsub(); resolve() }
+            const timer = setTimeout(finish, timeoutMs)
+            unsub = registry.subscribe(() => { if (settled()) finish() })
+        })
+    }, [loadAll, registry])
+
+    // A tile can point at a provider that is still a descriptor stub (e.g. a
+    // multichain variant synthesized from registry metadata before its
+    // ecosystem chunk loaded). The stub's `connectWallet` is a no-op, so
+    // trigger the descriptor load and wait — bounded, so a failed chunk
+    // import can't hang the connect flow — for the live store to replace the
+    // stub in the registry and report `ready`.
+    const awaitLiveProvider = useCallback(async (providerId: string, timeoutMs = 5000): Promise<WalletConnectionProvider | undefined> => {
+        void loadById(providerId)
+        const live = () => {
+            const state = registry.getEntries().find(e => e.id === providerId)?.store.getState()
+            return state && !state.isStub && state.ready ? state : undefined
+        }
+        const current = live()
+        if (current) return current
+        return new Promise(resolve => {
+            let unsub = () => { }
+            const finish = () => { clearTimeout(timer); unsub(); resolve(live()) }
+            const timer = setTimeout(finish, timeoutMs)
+            unsub = registry.subscribe(() => { if (live()) finish() })
+        })
+    }, [loadById, registry])
+
     const connect = async (connector: WalletModalConnector, provider: WalletConnectionProvider) => {
         try {
             setConnectionError(undefined)
@@ -133,14 +206,42 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 setSelectedMultiChainConnector(connector)
                 return;
             }
+            // Multi-ecosystem wallets (e.g. MetaMask: EVM + Solana + Tron) surface
+            // their non-EVM connectors only after late-loading providers settle.
+            // If a wallet is clicked while any provider is still loading, the
+            // `isMultiChain` flag may not be final yet — wait (bounded) and
+            // re-check before committing to a single-ecosystem connect, so we
+            // don't skip the ecosystem picker. Scoped to injected/standard
+            // connectors (the only kind that can be multi-ecosystem) so
+            // WalletConnect/registry wallets are never delayed.
+            const providersStillLoading = registry.getEntries().some(e => {
+                const s = e.store.getState()
+                return s.isStub || !s.ready
+            })
+            if (connector?.type === 'injected' && providersStillLoading && !liveMultiChain(connector.name)) {
+                setSelectedConnector(connector)
+                await awaitProvidersSettled()
+                if (liveMultiChain(connector.name)) {
+                    setSelectedConnector(undefined)
+                    setSelectedMultiChainConnector(connector)
+                    return
+                }
+            }
             setSelectedConnector(connector)
             if (connector?.hasBrowserExtension !== false && connector.extensionNotFound && !connector?.showQrCode && !isMobilePlatfrom) return
-            if (!provider.ready) {
+            // Never call `connectWallet` on a stub — it's a metadata-only
+            // no-op that would surface as "Connection didn't complete".
+            // Hydrate the real provider first and connect through it.
+            let liveProvider = provider
+            if (provider.isStub) {
+                liveProvider = await awaitLiveProvider(provider.id) ?? provider
+            }
+            if (liveProvider.isStub || !liveProvider.ready) {
                 setConnectionError("Wallet provider is still initializing. Please wait a moment and try again.")
                 return
             }
 
-            const result = provider?.connectWallet && await provider.connectWallet({ connector })
+            const result = liveProvider.connectWallet && await liveProvider.connectWallet({ connector })
 
             if (result && connector && provider) {
                 setRecentConnectors((prev) => {
@@ -304,7 +405,10 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         filteredProviders,
         searchValue,
         recentConnectors,
-        searchResults: isSearching ? searchResults : [],
+        // `undefined` (not a fresh `[]`) while idle — a new array identity
+        // every render would invalidate useConnectors' memos even though
+        // nothing changed.
+        searchResults: isSearching ? searchResults : undefined,
     });
 
     const activePaginationByProvider = isSearching ? searchPaginationByProvider : browsePaginationByProvider
@@ -487,7 +591,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                                         onClick={() => provider && connect(item, provider)}
                                         connectingConnector={selectedConnector}
                                         isRecent={isRecent}
-                                        isProviderReady={typeof provider?.ready === 'boolean' ? provider.ready : true}
+                                        isProviderReady={isProviderConnectReady(provider)}
                                     />
                                 )
                             })

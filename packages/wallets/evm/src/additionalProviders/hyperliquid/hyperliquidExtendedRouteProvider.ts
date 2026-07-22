@@ -36,6 +36,9 @@ const routeCache = new WeakMap<object, NetworkRoute>()
 export const hyperliquidProvider: ExtendedRouteProvider = {
     id: 'hyperliquid',
     direction: 'source',
+    // Pure client-side synthesis over backend-defined networks — safe to fail open
+    // when no resolved flag reaches the client.
+    enabledByDefault: true,
     funding: HYPERLIQUID_FUNDING,
     extendedNetworkNames: Object.keys(HYPERLIQUID_ROUTES),
     mappings,

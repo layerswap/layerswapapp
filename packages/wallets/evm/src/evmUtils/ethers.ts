@@ -1,9 +1,7 @@
-import {
-    useWalletClient
-} from 'wagmi'
+import { getWalletClient } from '@wagmi/core'
 import { providers } from 'ethers'
-import { WalletClient } from 'viem'
-import { useMemo } from 'react'
+import type { WalletClient } from 'viem'
+import { getEvmConfig, hasEvmConfig } from '../service/getEvmConfig'
 
 export function walletClientToSigner(walletClient: WalletClient) {
     const { account, chain, transport } = walletClient
@@ -24,11 +22,17 @@ export function walletClientToSigner(walletClient: WalletClient) {
     return signer
 }
 
-/** Hook to convert a viem Wallet Client to an ethers.js Signer. */
-export function useEthersSigner({ chainId }: { chainId?: number } = {}) {
-    const { data: walletClient } = useWalletClient({ chainId })
-    return useMemo(
-        () => (walletClient ? walletClientToSigner(walletClient) : undefined),
-        [walletClient],
-    )
+/**
+ * Imperative replacement for `useEthersSigner`. Resolves to an ethers v5
+ * Signer for the active EVM wallet on the requested chain, or `undefined`
+ * if no wallet is connected.
+ */
+export async function getEthersSigner({ chainId }: { chainId?: number } = {}) {
+    if (!hasEvmConfig()) return undefined
+    try {
+        const client = await getWalletClient(getEvmConfig(), { chainId })
+        return client ? walletClientToSigner(client as WalletClient) : undefined
+    } catch {
+        return undefined
+    }
 }

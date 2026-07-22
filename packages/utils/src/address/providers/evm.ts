@@ -39,7 +39,8 @@ export class EVMAddressUtilsProvider implements AddressUtilsProvider {
 
     supportsNetwork(network: Network): boolean {
         return (network.type === NetworkType.EVM && !!network.token)
-            || (KnownInternalNames.Networks.HyperliquidMainnet.includes(network.name) || KnownInternalNames.Networks.HyperliquidTestnet.includes(network.name))
+            || KnownInternalNames.Networks.HyperliquidMainnet.includes(network.name)
+            || KnownInternalNames.Networks.HyperliquidTestnet.includes(network.name)
             || KnownInternalNames.Networks.PolymarketMainnet.includes(network.name);
     }
 

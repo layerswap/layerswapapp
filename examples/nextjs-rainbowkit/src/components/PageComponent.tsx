@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useMemo, useState } from "react";
 import { Swap, DepositComponent, LayerswapProvider, LayerSwapSettings, ThemeData } from '@layerswap/widget'
 import { createEVMProvider } from "@layerswap/wallet-evm"
 import "@layerswap/widget/index.css"
@@ -33,8 +33,10 @@ const PageComponent: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
 type WidgetType = "swap" | "deposit";
 
 const Comp: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
+    // Memoize so the provider isn't recreated on every render (which would tear
+    // down and re-init the wallet connection, disconnecting the active wallet).
+    const walletProviders = useMemo(() => [createEVMProvider({ walletConnectConfigs: walletConnect, wagmiConfig: config })], [])
     const [widgetType, setWidgetType] = useState<WidgetType>("swap");
-    const walletProviders = [createEVMProvider({ walletConnectConfigs: walletConnect })]
 
     return (<div className="h-screen flex flex-col items-center justify-center gap-4">
         <h1 className="text-2xl font-bold text-white text-center">Layerswap Widget with RainbowKit Example</h1>

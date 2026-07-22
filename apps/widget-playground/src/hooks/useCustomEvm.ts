@@ -1,7 +1,8 @@
 import { useAccount, useSwitchAccount } from "wagmi";
 import { useCallback, useEffect, useMemo } from "react";
 import { useUserWallets, useDynamicContext, dynamicEvents, Wallet as DynamicWallet, } from "@dynamic-labs/sdk-react-core";
-import { resolveWalletConnectorIcon, useSettingsState, NetworkWithTokens, NetworkType } from "@layerswap/widget";
+import { useSettingsState, NetworkWithTokens, NetworkType } from "@layerswap/widget";
+import { resolveWalletConnectorIcon, createReactHookConnectionAdapter } from "@layerswap/widget/internal";
 import { Wallet, InternalConnector, WalletConnectionProvider } from "@layerswap/widget/types";
 
 export default function useEVM(): WalletConnectionProvider {
@@ -116,7 +117,6 @@ export default function useEVM(): WalletConnectionProvider {
         connectWallet,
         activeWallet: connectedWallets.find((w) => w.isActive),
         connectedWallets,
-        // availableWalletsForConnect,
         asSourceSupportedNetworks: supportedNetworks.asSource,
         autofillSupportedNetworks: supportedNetworks.autofill,
         withdrawalSupportedNetworks: supportedNetworks.withdrawal,
@@ -126,6 +126,10 @@ export default function useEVM(): WalletConnectionProvider {
         ready: activeConnectors.length > 0,
     };
 }
+
+/** Bridge for the new external-store contract. Pair `customEvmAdapter.createConnection`
+ *  with a `<customEvmAdapter.Hydrator networks={...} />` mounted somewhere in the React tree. */
+export const customEvmAdapter = createReactHookConnectionAdapter(useEVM)
 
 /** Reusable helper to turn a DynamicWallet + context into our `Wallet` shape */
 function resolveWallet(props: {
@@ -157,7 +161,7 @@ function resolveWallet(props: {
         addresses: [address],
         displayName,
         providerName,
-        icon: resolveWalletConnectorIcon({ connector: connectorName, address }),
+        icon: resolveWalletConnectorIcon({ connector: { id: connectorName, name: connectorName, providerName } }),
         disconnect: () => disconnect(),
         asSourceSupportedNetworks: supportedNetworks.asSource,
         autofillSupportedNetworks: supportedNetworks.autofill,

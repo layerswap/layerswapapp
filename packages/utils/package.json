@@ -37,7 +37,6 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@ton/core": "^0.62.0",
     "bitcoin-address-validation": "^3.0.0",
     "bn.js": "^5.2.2",
     "bs58": "^6.0.0",

@@ -1,5 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createHmac } from "node:crypto";
+import {
+    POLYMARKET_RELAYER_URL,
+    PROVIDER_DISABLED_CODE,
+    isRelayerSubmittable,
+} from "@layerswap/wallet-evm/polymarket-protocol";
 import { isPolymarketEnabled } from "../../../flags";
 import { validateRelaySubmitRequest } from "../../../lib/polymarket/validateRelaySubmit";
 
@@ -32,11 +37,7 @@ export const config = { api: { bodyParser: { sizeLimit: "100kb" } } };
 // Canonical value lives in the wallet package's polymarket constants (POLYMARKET_RELAYER_URL);
 // inlined here to keep this server route free of a cross-package import (it already mirrors the
 // relayer request union). Overridable via env.
-const DEFAULT_RELAYER_URL = "https://relayer-v2.polymarket.com";
-const RELAYER_URL = (process.env.POLYMARKET_RELAYER_URL || DEFAULT_RELAYER_URL).replace(/\/+$/, "");
-
-// Mirrors the RelayerSubmittable union in the wallet package's polymarket relayerClient.
-const SUBMIT_TYPES = ["SAFE", "WALLET", "WALLET-CREATE"];
+const RELAYER_URL = (process.env.POLYMARKET_RELAYER_URL || POLYMARKET_RELAYER_URL).replace(/\/+$/, "");
 
 // One generic message for every rejection class — no oracle for probing what passed.
 const REJECTION_MESSAGE = "This withdrawal could not be verified. Please start over and try again.";
@@ -124,9 +125,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // Gate the relay behind the same kill switch as the Polymarket source routes —
         // when the provider is off (dashboard flag) or its builder creds are missing,
-        // this credential-holding proxy must refuse traffic.
+        // this credential-holding proxy must refuse traffic. The body is machine-readable
+        // ("provider_disabled") so clients that still reach here — a stale cached bundle,
+        // or a flag flipped mid-session — can show "temporarily unavailable" copy instead
+        // of a generic failure (see the wallet package's polymarket relayerClient).
         if (!(await isPolymarketEnabled(req))) {
-            return res.status(404).json({ error: "Not found" });
+            return res.status(404).json({ error: PROVIDER_DISABLED_CODE });
         }
 
         if (req.method === "GET" || req.method === "POST") {
@@ -160,7 +164,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const { action, request } = (typeof req.body === "object" && req.body) || {};
             if (action !== "submit") return res.status(400).json({ error: `Unsupported POST action: ${action}` });
             if (!request) return res.status(400).json({ error: "request is required" });
-            if (!SUBMIT_TYPES.includes(request.type)) return res.status(400).json({ error: `Unsupported request type: ${request.type}` });
+            if (!isRelayerSubmittable(request)) return res.status(400).json({ error: `Unsupported request type: ${request?.type}` });
 
             // Only Layerswap deposits get relayed on the builder credentials: the batch
             // must be exactly the withdrawal shape — verified from the tx itself.

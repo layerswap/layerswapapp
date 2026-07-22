@@ -2,7 +2,8 @@ import { ButtonHTMLAttributes, DetailedHTMLProps, FC } from "react";
 import { WalletModalConnector } from ".";
 import { InternalConnector } from "@/types/wallet";
 import { Loader } from "lucide-react";
-import { resolveWalletConnectorIcon } from "@/lib/wallets/utils/resolveWalletIcon";
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
+import WalletIcon from "@/components/Icons/WalletIcon";
 
 type Connector = DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> & {
     connector: InternalConnector,
@@ -15,7 +16,7 @@ type Connector = DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTML
 const Connector: FC<Connector> = ({ connector, connectingConnector, onClick, isRecent, isProviderReady = true, ...props }) => {
     const connectorName = connector?.name
 
-    const Icon = resolveWalletConnectorIcon({ connector: connector, iconUrl: connector.icon })
+    const iconSrc = connector.icon
     const isLoading = connectingConnector?.name === connectorName
     const isInstalled = connector.type === 'injected' && !connector.isLoadable
 
@@ -30,7 +31,17 @@ const Connector: FC<Connector> = ({ connector, connectingConnector, onClick, isR
             >
                 <div className="flex gap-2.5 items-center font-medium w-full">
                     <div className="w-11">
-                        <Icon className="w-11 h-auto p-0.5 rounded-[10px] bg-secondary-800" />
+                        {iconSrc ? (
+                            <ImageWithFallback
+                                src={iconSrc}
+                                alt={connectorName}
+                                width="44"
+                                height="44"
+                                className="w-11 h-auto p-0.5 rounded-[10px] bg-secondary-800 object-contain"
+                            />
+                        ) : (
+                            <WalletIcon className="w-11 h-auto p-0.5 rounded-[10px] bg-secondary-800" />
+                        )}
                     </div>
                     <div className='flex flex-col items-start justify-center col-start-2 col-span-3 min-h-[40px] truncate'>
 

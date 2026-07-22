@@ -1,14 +1,15 @@
 import { FC } from "react";
 import { WalletModalConnector } from ".";
 import { Download, ScanLine } from "lucide-react";
-import { resolveWalletConnectorIcon } from "@/lib/wallets/utils/resolveWalletIcon";
 import LayerSwapLogoSmall from "@/components/Icons/layerSwapLogoSmall";
+import WalletIcon from "@/components/Icons/WalletIcon";
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 
 export const InstalledExtensionNotFound: FC<{
     selectedConnector: WalletModalConnector | undefined,
     onConnect: (connector: WalletModalConnector) => void
 }> = ({ selectedConnector, onConnect }) => {
-    const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector, iconUrl: selectedConnector?.icon });
+    const connectorIconSrc = selectedConnector?.icon
     return <div className='w-full h-full flex flex-col justify-between'>
         <div className="flex grow items-center justify-center">
             <div className="flex-col flex items-center gap-4">
@@ -18,7 +19,17 @@ export const InstalledExtensionNotFound: FC<{
                     </div>
                     <div className="w-8 border-t border-dashed border-secondary-400" />
                     <div className="p-3 bg-secondary-700 rounded-lg">
-                        <ConnectorIcon className="w-11 h-auto" />
+                        {connectorIconSrc ? (
+                            <ImageWithFallback
+                                src={connectorIconSrc}
+                                alt={selectedConnector?.name || ''}
+                                width="44"
+                                height="44"
+                                className="w-11 h-auto object-contain"
+                            />
+                        ) : (
+                            <WalletIcon className="w-11 h-auto" />
+                        )}
                     </div>
                 </div>
                 <div className="text-center">

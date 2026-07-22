@@ -1,8 +1,10 @@
 "use client";
 import { Context, createContext, Dispatch, ReactNode, SetStateAction, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { WalletModalConnector, Wallet, WalletConnectionProvider } from '@/types/wallet';
+import { InternalConnector, Wallet, WalletConnectionProvider, WalletModalConnector } from '@/types/wallet';
+import { connectModalStore } from '@/lib/walletConnect/connectModalStore';
 
 export type { WalletModalConnector };
+
 
 export type ModalWalletProvider = WalletConnectionProvider & {
     isSelectedFromFilter?: boolean;
@@ -116,7 +118,18 @@ export function WalletModalProvider({ children }) {
             setPresentation('modal')
         }
         setIsWalletModalOpen(open)
+        connectModalStore._syncOpen(open)
     }, [open])
+
+    useEffect(() => {
+        connectModalStore._syncSelectedConnector(selectedConnector)
+    }, [selectedConnector])
+
+    useEffect(() => {
+        return connectModalStore._registerWriter((connector) => {
+            setSelectedConnector(connector as WalletModalConnector | undefined)
+        })
+    }, [setSelectedConnector])
 
     const contextValue = useMemo(() => ({
         connect, cancel, selectedProvider, setSelectedProvider,
