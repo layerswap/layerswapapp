@@ -27,7 +27,7 @@ const DestinationWalletPicker = (props: AddressTriggerProps) => {
                     <div className="inline-flex items-center relative px-0.5">
                         <ResolvedIcon addressItem={addressItem} partner={partner} wallet={connectedWallet} destination={destination} />
                     </div>
-                    <div className="text-secondary-text truncate max-w-[90px]">{label}</div>
+                    <div className="text-secondary-text truncate max-w-[110px]">{label}</div>
                     <div className="w-4 h-4 items-center flex text-secondary-text">
                         <ChevronDown className="h-4 w-4" aria-hidden="true" />
                     </div>
