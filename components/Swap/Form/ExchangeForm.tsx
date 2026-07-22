@@ -18,7 +18,6 @@ import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
 import MinMax from "@/components/Input/Amount/MinMax";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useValidationContext } from "@/context/validationContext";
-import useWallet from "@/hooks/useWallet";
 import clsx from "clsx";
 import { useSwapDataState } from "@/context/swap";
 import { useClickOutside } from "@/hooks/useClickOutside";
@@ -40,9 +39,6 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
     const { fromAsset: fromCurrency, from, to: destination, destination_address, amount, toAsset: toCurrency } = values || {};
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
     const [actionTempValue, setActionTempValue] = useState<number | undefined>(undefined)
-
-    const { wallets } = useWallet();
-    const wallet = wallets.find(wallet => wallet.address.toLowerCase() == destination_address?.toLowerCase());
 
     const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
@@ -85,7 +81,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                         return <div className="hover:bg-secondary-300 bg-secondary-500 rounded-2xl p-3 h-13">
                                             {
                                                 addressItem ? <>
-                                                    <AddressButton address={addressItem.address} network={destination} wallet={wallet} addressProviderIcon={addressProviderIcon} />
+                                                    <AddressButton address={addressItem.address} network={destination} wallet={addressItem.wallet} addressProviderIcon={addressProviderIcon} />
                                                 </>
                                                     : destination_address ? <>
                                                         <AddressButton address={destination_address} network={destination} />
