@@ -17,7 +17,7 @@ export const walletIconResolver = (address: string | undefined, iconUrl: string 
 }
 
 const AddressIconWrapper = (address: string) => (props: typeof AddressIcon) => {
-    return <AddressIcon address={address} size={24} {...props} />
+    return <AddressIcon address={address} {...props} />
 }
 
 const SVGIconWrapper = (iconUrl: string) => (props) => {

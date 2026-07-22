@@ -21,28 +21,15 @@ export default function useBitcoinConnection({ networks }: WalletConnectionProvi
     const { setSelectedConnector } = useConnectModal()
 
     const config = useConfig()
-    const { account, connector } = useAccount()
+    const account = useAccount()
 
-    const disconnectWallet = async (connectorName: string) => {
-        try {
-            const connector = connectors.find(w => w.name.toLowerCase() === connectorName.toLowerCase())
-            await disconnect(config, { connector })
+    const disconnectWallets = async () => {
+        for (const connection of config.state.connections.values()) {
+            const connector = connectors.find(c => c.id === connection.connector.id)
+            if (connector) await disconnect(config, { connector }).catch(console.log)
         }
-        catch (e) {
-            //TODO: handle error
-            console.log(e)
-        }
-    }
-
-    const disconnectWallets = () => {
-        try {
-            connectors.forEach(async (connector) => {
-                await disconnect(config, { connector })
-            })
-        }
-        catch (e) {
-            //TODO: handle error
-            console.log(e)
+        if (config.state.connections.size > 0) {
+            config.setState(x => ({ ...x, connections: new Map(), current: null, status: 'disconnected' }))
         }
     }
 
@@ -51,13 +38,9 @@ export default function useBitcoinConnection({ networks }: WalletConnectionProvi
             const connector = connectors.find(w => w.id === internalConnector.id)
             if (!connector) throw new Error("Connector not found")
             const Icon = connector.icon
-            const base64Icon = typeof Icon == 'string' ? Icon : convertSvgComponentToBase64(Icon)
+            const base64Icon = typeof Icon == 'string' ? Icon : Icon ? convertSvgComponentToBase64(Icon) : undefined
             setSelectedConnector({ ...internalConnector, icon: base64Icon })
-            if (account) {
-                await disconnect(config, { connector })
-            }
-
-            if (!connector) throw new Error("Connector not found")
+            await disconnectWallets()
 
             const result = await connectAsync({ connector: connector as any });
 
@@ -80,7 +63,7 @@ export default function useBitcoinConnection({ networks }: WalletConnectionProvi
                 connector,
                 addresses: [address],
                 networks,
-                discconnect: disconnectWallet,
+                discconnect: disconnectWallets,
                 supportedNetworks: {
                     asSource: commonSupportedNetworks,
                     autofill: commonSupportedNetworks,
@@ -91,26 +74,27 @@ export default function useBitcoinConnection({ networks }: WalletConnectionProvi
             return wallet
 
         } catch (e) {
-            const error = e
-            if (error.name == 'ConnectorAlreadyConnectedError') {
+            if (e?.name === 'ConnectorAlreadyConnectedError') {
                 throw new Error("Wallet is already connected");
-            } else {
-                throw new Error(e.message || e);
             }
+            throw new Error((e?.shortMessage || e?.message || 'Wallet connection failed').replace(`${e?.name}: `, '').trim())
         }
     }
 
     const { executeTransfer: transfer } = useBitcoinTransfer()
 
     const resolvedWallet = useMemo(() => {
-        if (!account || !connector) return undefined
+        if (!account) return undefined
+        const connector = connectors.find(c => c.id === account.connector?.id)
+
+        if (!connector) return undefined
 
         const wallet = resolveWallet({
-            activeConnection: { address: account?.address || '', id: connector.id },
+            activeConnection: { address: account.account?.address || '', id: connector.id },
             connector,
-            addresses: account?.address ? [account.address] : [],
+            addresses: account?.account?.address ? [account.account.address] : [],
             networks,
-            discconnect: disconnectWallet,
+            discconnect: disconnectWallets,
             supportedNetworks: {
                 asSource: commonSupportedNetworks,
                 autofill: commonSupportedNetworks,
@@ -157,7 +141,7 @@ type ResolveWalletProps = {
         address: string
     } | undefined,
     addresses: string[],
-    discconnect: (connectorName: string) => Promise<void>,
+    discconnect: () => Promise<void>,
     supportedNetworks: {
         asSource: string[],
         autofill: string[],
@@ -184,7 +168,7 @@ const resolveWallet = (props: ResolveWalletProps): Wallet | undefined => {
         displayName: walletname,
         providerName,
         icon: walletIconResolver(addresses[0], connector.icon),
-        disconnect: () => discconnect(connector.name),
+        disconnect: () => discconnect(),
         asSourceSupportedNetworks: supportedNetworks.asSource,
         autofillSupportedNetworks: supportedNetworks.autofill,
         withdrawalSupportedNetworks: supportedNetworks.withdrawal,
