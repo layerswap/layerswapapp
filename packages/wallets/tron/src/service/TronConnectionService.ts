@@ -1,7 +1,7 @@
 import type { NetworkWithTokens } from "@layerswap/utils"
 import type { InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types"
 import type { WalletModalConnector } from "@layerswap/wallet-core/types"
-import { getKnownConnectorIconBase64, normalizeIconSrc } from "@layerswap/wallet-core"
+import { getEip6963Providers, getKnownConnectorIconBase64, normalizeIconSrc } from "@layerswap/wallet-core"
 import { name as PROVIDER_NAME, id as PROVIDER_ID, tronNames } from '../constants'
 import { tronAdapterManager } from './tronAdapterManager'
 import { type TronWalletSnapshot, useTronStore } from './tronStore'
@@ -27,9 +27,13 @@ export class TronConnectionService implements WalletConnectionService {
 
     getAvailableConnectors(): InternalConnector[] {
         const wallets = useTronStore.getState().wallets
-        return wallets.filter(wallet => wallet.state !== 'Loading').map(wallet => {
+        return wallets.map(wallet => {
             const adapterName = wallet.name
-            const isNotInstalled = wallet.state === 'NotFound'
+            const isLoading = wallet.state === 'Loading'
+            const eip6963Providers = getEip6963Providers()
+            const isMetaMaskMissing = adapterName === 'MetaMask' && !eip6963Providers.some(provider => provider.info.rdns === 'io.metamask')
+            const isTronLinkMissing = adapterName === 'TronLink' && !eip6963Providers.some(provider => provider.info.rdns === 'org.tronlink.www')
+            const isNotInstalled = wallet.state === 'NotFound' || isMetaMaskMissing || isTronLinkMissing
 
             return {
                 id: adapterName,
@@ -38,7 +42,7 @@ export class TronConnectionService implements WalletConnectionService {
                 type: isNotInstalled ? 'other' : 'injected',
                 installUrl: wallet.url,
                 extensionNotFound: isNotInstalled,
-                isLoadable: false,
+                isLoadable: isLoading,
                 providerName: PROVIDER_NAME,
             }
         })

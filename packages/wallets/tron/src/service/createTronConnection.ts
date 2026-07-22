@@ -1,6 +1,6 @@
 import type { NetworkWithTokens } from "@layerswap/utils"
 import type { MultiStepHandler, WalletConnectionProviderProps, WalletConnectionStore } from "@layerswap/wallet-core/types"
-import { createMemoizedConnectionStore } from "@layerswap/wallet-core"
+import { createMemoizedConnectionStore, getEip6963Providers, subscribeEip6963Providers } from "@layerswap/wallet-core"
 import { createTronTransfer } from '../transferProvider/createTronTransfer'
 import { tronConnectionService } from './TronConnectionService'
 import { useTronStore } from './tronStore'
@@ -34,6 +34,7 @@ export function createTronConnection(
                 activeAddress: state.activeAddress,
                 ready: state.ready,
                 networks,
+                eip6963Providers: getEip6963Providers(),
             }
         },
         buildSnapshot: () => ({
@@ -43,6 +44,7 @@ export function createTronConnection(
         }),
         subscribe: sync => [
             useTronStore.subscribe(sync),
+            subscribeEip6963Providers(sync),
         ],
         onUpdateProps: nextProps => {
             networks = nextProps.networks

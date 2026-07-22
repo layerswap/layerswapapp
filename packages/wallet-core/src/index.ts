@@ -30,3 +30,5 @@ export { extractErrorDetails } from "@/balances/errorUtils";
 export type { ErrorDetails } from "@/balances/errorUtils";
 export { classifyNodeError } from "@/balances/nodeErrorClassifier";
 export type { NodeErrorCategory } from "@/balances/nodeErrorClassifier";
+export { getEip6963Providers, subscribeEip6963Providers } from "@/lib/eip6963Providers";
+export type { Eip6963Provider } from "@/lib/eip6963Providers";

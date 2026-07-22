@@ -1,5 +1,5 @@
 "use client";
-import React, { lazy, Suspense, useEffect } from "react";
+import React, { lazy, Suspense, useEffect, useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import clsx from "clsx";
 import { WalletProvidersRegistryProvider, useWalletProvidersRegistry, useWalletDescriptorLoader } from "@layerswap/wallet-core";
@@ -26,6 +26,23 @@ const ConnectorsListFallback: React.FC = () => (
 );
 
 type ProviderEntry = WalletProvider | WalletWrapper | WalletProviderDescriptor
+type WalletProvidersRegistry = ReturnType<typeof useWalletProvidersRegistry>
+
+const waitForProvidersSettled = async (loadAll: () => Promise<void>, registry: WalletProvidersRegistry) => {
+    await loadAll()
+    const settled = () => registry.getEntries().every(entry => {
+        const provider = entry.store.getState()
+        return !provider.isStub && provider.ready
+    })
+    if (settled()) return
+
+    await new Promise<void>(resolve => {
+        let unsubscribe = () => { }
+        const finish = () => { clearTimeout(timer); unsubscribe(); resolve() }
+        const timer = setTimeout(finish, 1200)
+        unsubscribe = registry.subscribe(() => { if (settled()) finish() })
+    })
+}
 
 export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walletProviders: ProviderEntry[] }> = ({ children, walletProviders }) => {
     const settings = useSettingsState();
@@ -44,6 +61,7 @@ const ConnectModalHost: React.FC<{ settings: ReturnType<typeof useSettingsState>
     const walletProvidersRegistry = useWalletProvidersRegistry();
     const { goBack, onFinish, open, setOpen, presentation, selectedConnector, selectedMultiChainConnector, dismissible, topContent, fullHeight, hideHeader } = useConnectModal()
     const { loadAll } = useWalletDescriptorLoader()
+    const [isConnectorsListReady, setIsConnectorsListReady] = useState(false)
 
     // `AvailableSourceNetworkTypes` is read by `helpers/routes.ts` to decide
     // which source-network types are reachable. It depends on each provider's
@@ -70,7 +88,15 @@ const ConnectModalHost: React.FC<{ settings: ReturnType<typeof useSettingsState>
     // connect modal opens. Later phases can add finer-grained triggers
     // (idle prefetch of connected families, swap-page hydration, etc.).
     useEffect(() => {
-        if (open) void loadAll()
+        let active = true
+        if (!open) {
+            setIsConnectorsListReady(false)
+            return () => { active = false }
+        }
+        setIsConnectorsListReady(false)
+        void waitForProvidersSettled(loadAll, walletProvidersRegistry)
+            .then(() => { if (active) setIsConnectorsListReady(true) })
+        return () => { active = false }
     }, [open, loadAll])
 
     return (
@@ -100,9 +126,11 @@ const ConnectModalHost: React.FC<{ settings: ReturnType<typeof useSettingsState>
                     <div className="flex flex-col gap-3 h-full">
                         {!selectedConnector && !selectedMultiChainConnector ? topContent : null}
                         <div className="flex-1 min-h-0">
-                            <Suspense fallback={<ConnectorsListFallback />}>
-                                <ConnectorsList onFinish={onFinish} />
-                            </Suspense>
+                            {isConnectorsListReady ? (
+                                <Suspense fallback={<ConnectorsListFallback />}>
+                                    <ConnectorsList onFinish={onFinish} />
+                                </Suspense>
+                            ) : <ConnectorsListFallback />}
                         </div>
                     </div>
                 ) : null}
