@@ -4,7 +4,7 @@ import type {
     WalletConnectionProviderProps,
     WalletConnectionStore,
 } from '@layerswap/widget/types'
-import { createMemoizedConnectionStore } from '@layerswap/widget/internal'
+import { createMemoizedConnectionStore, getEip6963Providers, subscribeEip6963Providers } from '@layerswap/widget/internal'
 import { createTronTransfer } from '../transferProvider/createTronTransfer'
 import { tronConnectionService } from './TronConnectionService'
 import { useTronStore } from './tronStore'
@@ -38,6 +38,7 @@ export function createTronConnection(
                 activeAddress: state.activeAddress,
                 ready: state.ready,
                 networks,
+                eip6963Providers: getEip6963Providers(),
             }
         },
         buildSnapshot: () => ({
@@ -47,6 +48,7 @@ export function createTronConnection(
         }),
         subscribe: sync => [
             useTronStore.subscribe(sync),
+            subscribeEip6963Providers(sync),
         ],
         onUpdateProps: nextProps => {
             networks = nextProps.networks
