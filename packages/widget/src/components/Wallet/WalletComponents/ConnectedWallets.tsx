@@ -8,6 +8,7 @@ import VaulDrawer from "@/components/Modal/vaulModal"
 import { Wallet } from "@layerswap/wallet-core/types"
 import { Address } from "@/lib/address/Address"
 import { useLabeledAddress } from "@/stores/addressBookStore"
+import AddressIcon from "@/components/Common/AddressIcon"
 
 export const WalletsHeader = () => {
     const { wallets } = useWallet()

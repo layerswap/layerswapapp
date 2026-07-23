@@ -58,7 +58,15 @@ export const sendTransaction = async ({ amount, callData, depositAddress, isTest
         }
     })
 
-    const signedPsbt = Psbt.fromHex(signature).finalizeAllInputs()
+    const signedPsbt = Psbt.fromHex(signature)
+
+    // Some wallets (e.g. MetaMask) return an already-finalized PSBT; only finalize inputs that still need it
+    signedPsbt.data.inputs.forEach((input, index) => {
+        if (!input.finalScriptSig && !input.finalScriptWitness) {
+            signedPsbt.finalizeInput(index)
+        }
+    })
+
     const tx = signedPsbt.extractTransaction()
     const txHex = tx.toHex();
 

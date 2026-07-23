@@ -15,9 +15,8 @@
   },
   "dependencies": {
     "@badrap/bar-of-progress": "^0.2.2",
-    "@bigmi/client": "^0.6.1",
-    "@bigmi/core": "^0.6.1",
-    "@bigmi/react": "^0.6.1",
+    "@bigmi/client": "^0.10.0",
+    "@bigmi/core": "^0.9.0",
     "@flags-sdk/vercel": "^1.4.3",
     "@layerswap/wallet-evm": "workspace:^",
     "@layerswap/wallets": "workspace:^",

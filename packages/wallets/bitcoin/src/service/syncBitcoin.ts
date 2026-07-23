@@ -5,6 +5,7 @@ import {
     watchAccount,
     watchConnectors,
 } from '@bigmi/client'
+import { getWallets } from '@wallet-standard/app'
 import type { InternalConnector } from "@layerswap/wallet-core/types"
 import { snapshotFromBitcoinAccount, useBitcoinStore } from './bitcoinStore'
 import { connectorsConfigs } from './connectorsConfigs'
@@ -59,11 +60,26 @@ export function attachBitcoinSync(config: Config): () => void {
         },
     })
 
+    // Wallet-standard wallets (e.g. Trust) announce themselves after page load,
+    // outside bigmi's watchConnectors — re-resolve on registry events.
+    const walletsRegistry = getWallets()
+    const reResolve = () => {
+        const current = getConnectors(config)
+        useBitcoinStore.getState()._setAllConnectors(current)
+        resolveConnectors(current).then((resolved) => {
+            if (!disposed) useBitcoinStore.getState()._setResolvedConnectors(resolved)
+        })
+    }
+    const offRegister = walletsRegistry.on('register', reResolve)
+    const offUnregister = walletsRegistry.on('unregister', reResolve)
+
     _dispose = () => {
         if (disposed) return
         disposed = true
         unwatchAccount()
         unwatchConnectors()
+        offRegister()
+        offUnregister()
         _dispose = null
         _config = null
     }

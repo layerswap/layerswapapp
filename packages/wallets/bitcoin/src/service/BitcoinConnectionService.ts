@@ -5,7 +5,6 @@ import { walletIconResolver } from "@layerswap/wallet-core";
 import {
     connect,
     disconnect,
-    getAccount,
     getConnectors,
     type Connector,
 } from '@bigmi/client'
@@ -68,7 +67,7 @@ export class BitcoinConnectionService implements WalletConnectionService<Runtime
             displayName: `${connector.name} - Bitcoin`,
             providerName: PROVIDER_NAME,
             icon: walletIconResolver(address, connector.icon),
-            disconnect: () => this.disconnectWallet(connector.name),
+            disconnect: () => this.disconnectWallets(),
             asSourceSupportedNetworks: supported,
             autofillSupportedNetworks: supported,
             withdrawalSupportedNetworks: supported,
@@ -87,27 +86,16 @@ export class BitcoinConnectionService implements WalletConnectionService<Runtime
         return wallet ? [wallet] : []
     }
 
-    async disconnectWallet(connectorName: string): Promise<void> {
-        try {
-            const config = getBitcoinConfig()
-            const connector = getConnectors(config).find(c => c.name.toLowerCase() === connectorName.toLowerCase())
-            await disconnect(config, { connector })
-        } catch (e) {
-            // Disconnect is best-effort — log but do not rethrow.
-            const msg = e instanceof Error ? e.message : String(e)
-            console.error(`[Bitcoin] Failed to disconnect ${connectorName}: ${msg}`)
-        }
-    }
-
     async disconnectWallets(): Promise<void> {
-        try {
-            const config = getBitcoinConfig()
-            await Promise.all(
-                getConnectors(config).map((connector) => disconnect(config, { connector })),
-            )
-        } catch (e) {
-            const msg = e instanceof Error ? e.message : String(e)
-            console.error(`[Bitcoin] Failed to disconnect wallets: ${msg}`)
+        const config = getBitcoinConfig()
+        // Disconnect only live connections; some connectors leave stale bigmi
+        // state behind, so force-reset it afterwards.
+        for (const connection of config.state.connections.values()) {
+            const connector = getConnectors(config).find(c => c.id === connection.connector.id)
+            if (connector) await disconnect(config, { connector }).catch(console.log)
+        }
+        if (config.state.connections.size > 0) {
+            config.setState(x => ({ ...x, connections: new Map(), current: null, status: 'disconnected' }))
         }
     }
 
@@ -121,9 +109,7 @@ export class BitcoinConnectionService implements WalletConnectionService<Runtime
             const iconString = typeof connector.icon === 'string' ? connector.icon : undefined
             setSelectedConnector?.({ ...internalConnector, icon: iconString })
 
-            if (getAccount(config).account) {
-                await disconnect(config, { connector })
-            }
+            await this.disconnectWallets()
 
             const result = await connect(config, { connector })
             if (!result.accounts) throw new Error('No result from connector')
@@ -144,7 +130,7 @@ export class BitcoinConnectionService implements WalletConnectionService<Runtime
             if (e?.name === 'ConnectorAlreadyConnectedError') {
                 throw new Error('Wallet is already connected')
             }
-            throw new Error(e?.message || e)
+            throw new Error((e?.shortMessage || e?.message || 'Wallet connection failed').replace(`${e?.name}: `, '').trim())
         }
     }
 

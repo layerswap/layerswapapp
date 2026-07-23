@@ -1,9 +1,7 @@
 /**
- * Helpers for descriptor `hasPersistedSession` probes. Each descriptor
- * inlines its chain SDK's storage-key literal (importing the SDK's constant
- * would drag the SDK into the entry chunk — the whole point of descriptors
- * is deferring that). Keep the literals in sync with the keys noted at each
- * call site.
+ * Probe helpers for descriptor `hasPersistedSession`. Storage-key literals
+ * are inlined at each call site — importing an SDK's key constant would drag
+ * in the SDK that descriptors exist to defer.
  */
 export function hasStorageKey(key: string): boolean {
     if (typeof window === 'undefined') return false

@@ -11,7 +11,7 @@ import useWallet from "@/hooks/useWallet";
 import { useUsdModeStore } from "@/stores/usdModeStore";
 import { skipNextUsdSync } from "@/hooks/useUsdTokenSync";
 import { ceilUsd, floorUsd } from "@/components/utils/formatUsdAmount";
-import { ceilToDecimals, roundToDecimals, truncateToDecimals } from "@/components/utils/RoundDecimals";
+import { ceilToDecimals, roundToDecimals, truncateToDecimals, isScientific } from "@/components/utils/RoundDecimals";
 
 type MinMaxProps = {
     fromCurrency: NetworkRouteToken,
@@ -70,8 +70,11 @@ const MinMax = (props: MinMaxProps) => {
 
     const handleSetValue = (value: string, usdValue?: string) => {
         mutateBalances()
+        const rounded = roundToDecimals(Number(value), fromCurrency?.decimals)
         const sanitizedValue = value !== '' && !isNaN(Number(value))
-            ? roundToDecimals(Number(value), fromCurrency?.decimals).toString()
+            ? (isScientific(rounded)
+                ? rounded.toFixed(fromCurrency?.decimals ?? 0).replace(/\.?0+$/, '')
+                : rounded.toString())
             : value
         if (isUsdMode && usdValue) {
             // Only skip sync if the amount will actually change,

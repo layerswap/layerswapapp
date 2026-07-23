@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
-import LayerSwapApiClient, { Quote, SwapBasicData, SwapQuote } from '../lib/apiClients/layerSwapApiClient'
+import { Quote, SwapBasicData, SwapQuote } from '../lib/apiClients/layerSwapApiClient'
 import { ApiResponse } from '../Models/ApiResponse'
 import { create } from 'zustand';
 import { isDiffByPercent } from '@/components/utils/numbers'
@@ -13,6 +13,10 @@ import { usesDepository } from '@/lib/extendedRoutes/types'
 import { transformLimitsForExtendedRoute, transformQuoteForExtendedRoute } from '@/lib/extendedRoutes/transforms'
 import { isPositiveDecimal } from '@/lib/extendedRoutes/amounts'
 import { LayerswapApiClient } from '@/lib/apiClients';
+import { useSelectedAccount } from '@/context/swapAccounts'
+import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore'
+import { isGaslessCapableRoute } from '@/helpers/gasless'
+import { Address } from '@/lib/address/Address';
 
 const apiClient = new LayerswapApiClient()
 
@@ -60,6 +64,7 @@ type Props = {
     amount: string | number | undefined
     refuel: boolean | undefined
     depositMethod: "wallet" | "deposit_address" | undefined
+    destinationAddress?: string
 }
 type Options = {
     skipLimits?: boolean
@@ -67,7 +72,7 @@ type Options = {
 }
 
 export function useQuoteData(formValues: Props | undefined, options: Options = { skipLimits: false, refreshInterval: 20000 }): UseQuoteData {
-    const { fromCurrency, toCurrency, from, to, amount, refuel, depositMethod } = formValues || {}
+    const { fromCurrency, toCurrency, from, to, amount, refuel, depositMethod, destinationAddress } = formValues || {}
     const { skipLimits, refreshInterval } = options
 
     const [debouncedAmount, setDebouncedAmount] = useState(amount)
@@ -112,6 +117,17 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
     const extendedNetworkObj = useMemo(() => extendedMapping ? networks.find(n => n.name === extendedMapping.extendedNetworkName) : undefined, [networks, extendedMapping])
     const extendedTokenObj = useMemo(() => extendedNetworkObj?.tokens.find(t => t.symbol === extendedMapping?.extendedTokenSymbol), [extendedNetworkObj, extendedMapping])
 
+    // Mirror the swap-create gasless gate so quote/limits reflect the gasless route.
+    const gaslessEnabled = useGaslessPreferenceStore(s => s.gaslessEnabled)
+    const selectedSourceAccount = useSelectedAccount("from", from)
+    const sourceRouteToken = useMemo(() => sourceRoutes?.find(r => r.name === from)?.tokens?.find(t => t.symbol === fromCurrency), [sourceRoutes, from, fromCurrency])
+    const useGasless = !isBridge && gaslessEnabled && isGaslessCapableRoute({
+        depositMethod,
+        supportsGaslessDeposit: sourceRouteToken?.supports_gasless_deposit,
+        sourceIsSupported: !!selectedSourceAccount?.walletAsSourceSupportedNetworks?.some(n => n === from),
+        sourceAddress: selectedSourceAccount?.address,
+    })
+
     const limitsURL = (!skipLimits && from && to && depositMethod && toCurrency && fromCurrency) ?
         buildLimitsUrl({
             sourceNetwork: effectiveFrom!,
@@ -119,7 +135,9 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
             destinationNetwork: to!,
             destinationToken: toCurrency!,
             useDepositAddress: effectiveUseDepositAddress,
-            refuel
+            refuel,
+            useGasless,
+            destinationAddress,
         }) : null
 
     const { data: amountRange, mutate: mutateLimits, isValidating: limitsValidating } = useSWR<ApiResponse<{
@@ -147,6 +165,8 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
             refuel: !!refuel,
             useDepositAddress: effectiveUseDepositAddress,
             slippage,
+            useGasless,
+            destinationAddress,
         })
         : null
 
@@ -238,6 +258,10 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
     }
 }
 
+export function validDestinationAddress(address: string | undefined, network: { name: string } | undefined | null): string | undefined {
+    return address && Address.isValid(address, network) ? address : undefined
+}
+
 export function transformFormValuesToQuoteArgs(values: SwapFormValues): Props | undefined {
     return {
         amount: values.amount,
@@ -247,6 +271,7 @@ export function transformFormValuesToQuoteArgs(values: SwapFormValues): Props | 
         to: values.to?.name,
         toCurrency: values.toAsset?.symbol,
         refuel: values.refuel,
+        destinationAddress: validDestinationAddress(values.destination_address, values.to),
     }
 }
 
@@ -259,6 +284,7 @@ export function transformSwapDataToQuoteArgs(swapData: SwapBasicData | undefined
         fromCurrency: swapData?.source_token.symbol,
         to: swapData?.destination_network.name,
         toCurrency: swapData?.destination_token.symbol,
+        destinationAddress: validDestinationAddress(swapData?.destination_address, swapData?.destination_network),
     }
 }
 
@@ -271,6 +297,8 @@ export type QuoteUrlArgs = {
     refuel: boolean
     useDepositAddress: boolean
     slippage?: number
+    useGasless?: boolean
+    destinationAddress?: string
 }
 
 export function buildQuoteUrl(args: QuoteUrlArgs): string {
@@ -283,6 +311,8 @@ export function buildQuoteUrl(args: QuoteUrlArgs): string {
         refuel,
         useDepositAddress,
         slippage,
+        useGasless,
+        destinationAddress,
     } = args
 
     const params = new URLSearchParams({
@@ -299,11 +329,19 @@ export function buildQuoteUrl(args: QuoteUrlArgs): string {
         params.append('slippage', String(slippage))
     }
 
+    if (useGasless) {
+        params.append('use_gasless', 'true')
+    }
+
+    if (destinationAddress) {
+        params.append('destination_address', destinationAddress)
+    }
+
     return `/quote?${params.toString()}`
 }
 
 export const getLimits = async (swapValues: LimitsQueryOptions) => {
-    const { sourceToken, sourceNetwork, destinationNetwork, destinationToken, refuel, useDepositAddress } = swapValues || {}
+    const { sourceToken, sourceNetwork, destinationNetwork, destinationToken, refuel, useDepositAddress, destinationAddress } = swapValues || {}
 
     if (!sourceNetwork || !destinationNetwork || !useDepositAddress || !destinationToken || !sourceToken)
         return { minAllowedAmount: undefined, maxAllowedAmount: undefined }
@@ -314,7 +352,8 @@ export const getLimits = async (swapValues: LimitsQueryOptions) => {
         destinationNetwork,
         destinationToken,
         useDepositAddress,
-        refuel
+        refuel,
+        destinationAddress
     })
 
     const response = await apiClient.fetcher(url) as ApiResponse<{
@@ -337,6 +376,8 @@ interface LimitsQueryOptions {
     destinationToken?: string;
     useDepositAddress?: boolean;
     refuel?: boolean;
+    useGasless?: boolean;
+    destinationAddress?: string;
 }
 
 export function buildLimitsUrl({
@@ -345,7 +386,9 @@ export function buildLimitsUrl({
     destinationNetwork,
     destinationToken,
     useDepositAddress,
-    refuel = false
+    refuel = false,
+    useGasless = false,
+    destinationAddress
 }: LimitsQueryOptions): string {
 
     if (!sourceNetwork || !sourceToken || !destinationNetwork || !destinationToken) {
@@ -360,6 +403,14 @@ export function buildLimitsUrl({
         use_deposit_address: useDepositAddress ? 'true' : 'false',
         refuel: String(!!refuel),
     });
+
+    if (useGasless) {
+        params.append('use_gasless', 'true');
+    }
+
+    if (destinationAddress) {
+        params.append('destination_address', destinationAddress);
+    }
 
     return `/limits?${params.toString()}`;
 }

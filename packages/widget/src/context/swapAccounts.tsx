@@ -5,7 +5,6 @@ import { getKey, useBalanceStore } from '@/stores/balanceStore';
 import { useManualDestAddressesStore } from '@/stores/manualDestAddressesStore';
 import { Wallet, WalletConnectionProvider } from "@layerswap/wallet-core/types"
 import { SwapDirection } from '@/exports';
-import { addressIconDataUrl } from '@/lib/addressIconDataUrl';
 
 export type { ManualDestAddress } from '@/stores/manualDestAddressesStore';
 
@@ -268,6 +267,7 @@ function ResolveManualSwapAccount(provider: WalletConnectionProvider, address: s
         id: 'manually_added',
         displayName: "Manual",
         addresses: [address],
-        icon: addressIconDataUrl(address, 20),
+        // Address icons are rendered live by consumers. Generating one here
+        // regresses the manual-address crash fixed in dev-monorepo.
     };
 }

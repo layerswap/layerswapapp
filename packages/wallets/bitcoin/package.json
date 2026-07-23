@@ -37,21 +37,22 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@bigmi/client": "^0.6.4",
-    "@bigmi/core": "^0.6.4",
+    "@bigmi/client": "^0.10.0",
+    "@bigmi/core": "^0.9.0",
     "@layerswap/wallet-core": "workspace:^",
     "@layerswap/utils": "workspace:^",
     "zustand": "catalog:"
   },
   "dependencies": {
     "@bitcoinerlab/secp256k1": "^1.2.0",
+    "@wallet-standard/app": "^1.1.1",
     "axios": "catalog:",
     "bitcoin-address-validation": "^3.0.0",
     "bitcoinjs-lib": "^7.0.0"
   },
   "devDependencies": {
-    "@bigmi/client": "^0.6.4",
-    "@bigmi/core": "^0.6.4",
+    "@bigmi/client": "^0.10.0",
+    "@bigmi/core": "^0.9.0",
     "@layerswap/wallet-core": "workspace:^",
     "@layerswap/utils": "workspace:^",
     "zustand": "catalog:"

@@ -2,19 +2,14 @@ import type { WalletProviderDescriptor } from "@layerswap/wallet-core/types"
 import { defineWalletDescriptor } from "./defineWalletDescriptor"
 import { readStorageJson } from "./persistedSession"
 
-// Inlined to keep this module tree-shake-safe. Paradex's runtime constants
-// live in packages/wallets/paradex/src/service/ParadexConnectionService.ts —
-// importing them would drag the chain SDK (which transitively pulls
-// `starknet` + `@starkware-industries/starkware-crypto-utils`, ~884 KB
-// parsed on `apps/bridge`). Keep these literals in sync with the
+// Inlined — importing Paradex's runtime constants drags `starknet` (~884 KB
+// parsed) into the host entry chunk. Keep in sync with the
 // `ParadexMainnet`/`ParadexTestnet` entries in widget's `knownIds.ts`.
 const PARADEX_NETWORKS = ['PARADEX_MAINNET', 'PARADEX_TESTNET']
 
 /**
- * Tree-shake-safe stand-in for `createParadexProvider`. Paradex is an
- * EVM + Starknet hybrid wallet whose static graph reaches `@paradex/sdk` →
- * `starknet` → `@starkware-industries/starkware-crypto-utils`. Deferring it
- * is what actually moves the starknet SDK out of the host's entry chunk.
+ * Tree-shake-safe stand-in for `createParadexProvider` — defers
+ * `@paradex/sdk` → `starknet` out of the host's entry chunk.
  */
 export function createParadexDescriptor(): WalletProviderDescriptor {
     return defineWalletDescriptor({
@@ -24,13 +19,9 @@ export function createParadexDescriptor(): WalletProviderDescriptor {
         withdrawalSupportedNetworks: PARADEX_NETWORKS,
         asSourceSupportedNetworks: PARADEX_NETWORKS,
         hideFromList: true,
-        // Widget's persisted wallet store (`ls-paradex-accounts`, see
-        // packages/widget/src/stores/walletStore.ts). The key exists for every
-        // visitor once the store hydrates, so check the partialized payload
-        // for actual L1 → Paradex account mappings instead of key presence.
-        // Without this probe a refreshed page never hydrates the Paradex
-        // provider, so its restored wallet stays invisible until the user
-        // opens the connect modal.
+        // Key presence isn't a session signal — any write to widget's
+        // walletStore creates `ls-paradex-accounts`, even with no accounts.
+        // Hydrate eagerly only when actual L1 → Paradex mappings exist.
         hasPersistedSession: () => {
             const persisted = readStorageJson('ls-paradex-accounts') as
                 | { state?: { paradexAccounts?: Record<string, string> } }
