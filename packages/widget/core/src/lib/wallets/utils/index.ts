@@ -5,3 +5,4 @@ import sleep from "./sleep"
 export { sleep }
 export * from "./isMobile"
 export * from './walletKey'
+export * from "./eip6963Providers"

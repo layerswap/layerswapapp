@@ -1,5 +1,6 @@
 import type { WalletProviderDescriptor } from "@layerswap/widget/types"
 import { defineWalletDescriptor } from "./defineWalletDescriptor"
+import { readStorageJson } from "./persistedSession"
 
 const TRON_NETWORKS = ['TRON_MAINNET', 'TRON_TESTNET']
 
@@ -16,6 +17,7 @@ export function createTronDescriptor(): WalletProviderDescriptor {
         autofillSupportedNetworks: TRON_NETWORKS,
         withdrawalSupportedNetworks: TRON_NETWORKS,
         asSourceSupportedNetworks: TRON_NETWORKS,
+        hasPersistedSession: () => typeof readStorageJson('tronAdapterName') === 'string',
         loadProvider: async () => {
             const mod = await import('@layerswap/wallet-tron')
             return mod.createTronProvider()
