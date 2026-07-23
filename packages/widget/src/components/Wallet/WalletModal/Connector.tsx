@@ -37,10 +37,10 @@ const Connector: FC<Connector> = ({ connector, connectingConnector, onClick, isR
                                 alt={connectorName}
                                 width="44"
                                 height="44"
-                                className="w-11 h-auto p-0.5 rounded-[10px] bg-secondary-800 object-contain"
+                                className="w-11 h-11 p-0.5 rounded-[10px] bg-secondary-800 object-contain"
                             />
                         ) : (
-                            <WalletIcon className="w-11 h-auto p-0.5 rounded-[10px] bg-secondary-800" />
+                            <WalletIcon className="w-11 h-11 p-0.5 rounded-[10px] bg-secondary-800" />
                         )}
                     </div>
                     <div className='flex flex-col items-start justify-center col-start-2 col-span-3 min-h-[40px] truncate'>
