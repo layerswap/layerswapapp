@@ -17,10 +17,6 @@ on:
       - 'apps/widget-cdn/**'
       - 'packages/widget/**'
       - 'packages/wallets/**'
-      - 'packages/widget-react/**'
-      # widget-js holds the manifest signing public key — a rotation there must
-      # trigger a rebuild+resign or the signature won't match.
-      - 'packages/widget-js/**'
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
       - '.github/workflows/widget-cdn-deploy.yml'
@@ -201,7 +197,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          VERSION=$(node -p "require('./packages/widget/package.json').version" 2>/dev/null || echo "?")
+          VERSION=$(node -p "require('./packages/widget/core/package.json').version" 2>/dev/null || echo "?")
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           TITLE="widget-cdn deploy failed"
           {

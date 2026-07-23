@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 // Round-trip the signed manifest in CI before we ship. Reads
 // `dist/<buildId>/manifest.json` and verifies the signature against the
-// public key constant defined in the shared loader core (packages/widget-js),
+// public key constant defined in the shared loader core (packages/widget/js),
 // which every loader consumes. Exits non-zero if anything is wrong — catches:
 //   - Unsigned manifests when verification is supposed to be on
 //   - Drift between the build-time canonicalization and the loaders'
 //   - Wrong-key situations (key in CI doesn't match the bundled public key)
 //
 // Same canonical encoding as the shared loader core
-// (packages/widget-js/src/manifest.ts).
+// (packages/widget/js/src/manifest.ts).
 
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -61,7 +61,7 @@ if (expiresMs <= Date.now()) {
 // Pull the public key from the shared loader core (widget-js) so we verify
 // against the same constant every loader uses. If the key has been rotated
 // in source but the signer is still using the old one, this catches it.
-const MANIFEST_SRC = join(REPO_ROOT, 'packages', 'widget-js', 'src', 'manifest.ts');
+const MANIFEST_SRC = join(REPO_ROOT, 'packages', 'widget', 'js', 'src', 'manifest.ts');
 const src = readFileSync(MANIFEST_SRC, 'utf8');
 const m = src.match(/MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64\s*=\s*['"]([A-Za-z0-9+/=]+)['"]/);
 if (!m) {
@@ -74,7 +74,7 @@ const publicKey = createPublicKey({ key: pubDer, format: 'der', type: 'spki' });
 
 // Deterministic JSON: sorts object keys recursively at every level. Must
 // match `canonicalize` in the shared loader core
-// (packages/widget-js/src/manifest.ts) and the signer in build-manifest.mjs
+// (packages/widget/js/src/manifest.ts) and the signer in build-manifest.mjs
 // byte-for-byte. The array form of
 // JSON.stringify is an allowlist applied to every nested object and would
 // drop the entire `chunks` map from the signed bytes.

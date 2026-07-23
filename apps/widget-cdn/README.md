@@ -151,7 +151,7 @@ rarely changes).
 
 | Secret | Value |
 |---|---|
-| `LAYERSWAP_PRIVATE_KEY_PEM` | ECDSA P-256 private key (PEM). Its public half is baked into `@layerswap/widget-js/src/manifest.ts`. |
+| `LAYERSWAP_PRIVATE_KEY_PEM` | ECDSA P-256 private key (PEM). Its public half is baked into `packages/widget/js/src/manifest.ts`. |
 | `R2_ACCOUNT_ID` | Cloudflare account id. |
 | `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` | R2 **Account** API token (Object Read & Write) credentials. |
 | `CLOUDFLARE_API_TOKEN` | *(optional)* Only if CI deploys the Worker. |
@@ -176,7 +176,7 @@ rarely changes).
    openssl ecparam -name prime256v1 -genkey -noout -out .keys/manifest-private.pem
    openssl ec -in .keys/manifest-private.pem -pubout -outform DER | base64 | tr -d '\n'
    ```
-   Put the base64 SPKI into `packages/widget-js/src/manifest.ts`
+   Put the base64 SPKI into `packages/widget/js/src/manifest.ts`
    (`MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64`) and `.keys/manifest-public.b64.txt`,
    and the private PEM into the `LAYERSWAP_PRIVATE_KEY_PEM` secret.
 
@@ -186,7 +186,7 @@ The public key constant in `@layerswap/widget-js` is the trust anchor. Rotate:
 
 1. Generate a new keypair.
 2. Update `MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64` in
-   `packages/widget-js/src/manifest.ts` (+ `.keys/manifest-public.b64.txt`).
+   `packages/widget/js/src/manifest.ts` (+ `.keys/manifest-public.b64.txt`).
 3. Publish a new `@layerswap/widget-js` (and `-react`) version so integrators
    pin the new key.
 4. Update `LAYERSWAP_PRIVATE_KEY_PEM` in GitHub Secrets; redeploy.

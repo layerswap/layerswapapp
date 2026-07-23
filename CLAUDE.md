@@ -107,7 +107,7 @@ Most conflicts in this repo are **semantic (silent)**: two branches edit *differ
 - **Rename / delete collisions.** One branch renames or deletes a symbol/file (a rebrand, a moved export) while the other still references it. After merging, grep for references to anything renamed or removed.
 - **Hand-resolution slips.** When a file genuinely conflicts, resolve it *whole* — don't keep one side's function body with the other side's return-type annotation or imports. Confirm a function's declared type still matches what its body returns.
 
-Package-specific contracts that are especially prone to the above live in the nested `CLAUDE.md` for that package (e.g. `packages/widget/CLAUDE.md`).
+Package-specific contracts that are especially prone to the above live in the nested `CLAUDE.md` for that package (e.g. `packages/widget/core/CLAUDE.md`).
 
 ## PR Review System
 

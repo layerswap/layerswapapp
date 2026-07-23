@@ -44,7 +44,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/layerswap/layerswapapp.git",
-    "directory": "packages/widget"
+    "directory": "packages/widget/core"
   },
   "keywords": [
     "layerswap",
