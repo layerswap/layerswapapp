@@ -832,10 +832,10 @@ importers:
       '@imtbl/wallet':
         specifier: 2.20.2
         version: 2.20.2(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+    devDependencies:
       '@layerswap/wallet-core':
         specifier: workspace:^
         version: link:../../wallet-core
-    devDependencies:
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(react@19.2.3)

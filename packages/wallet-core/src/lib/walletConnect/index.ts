@@ -14,7 +14,6 @@ export * from "./createConnectionStoreFromHook"
 export * from "./createMemoizedConnectionStore"
 export * from "./useAdditionalConnectors"
 export * from "./walletProvidersRegistry"
-export * from "./useAdditionalConnectors"
 export * from './findRegistryWallet'
 export * from "./walletDescriptorLoader"
 export * from "./descriptorStubStore"
