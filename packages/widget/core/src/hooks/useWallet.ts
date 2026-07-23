@@ -1,3 +1,4 @@
+"use client"
 import { Network } from "@/Models/Network"
 import { Wallet, WalletConnectionProvider } from "@/types/wallet";
 import { useCallback, useMemo, useRef, useSyncExternalStore } from "react";

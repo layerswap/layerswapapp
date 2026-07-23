@@ -1,3 +1,4 @@
+"use client"
 import { ComponentType } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
