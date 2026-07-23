@@ -5,6 +5,7 @@ import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { useSettingsState } from "@/context/settings";
 import { useMemo } from "react";
 import { useSyncProviders } from "../connectors/useSyncProviders";
+import { walletKey } from "../utils/walletKey";
 
 export default function useTron(): WalletProvider {
     const commonSupportedNetworks = [
@@ -48,7 +49,7 @@ export default function useTron(): WalletProvider {
     }
 
     const connectWallet = async ({ connector }: { connector: InternalConnector }) => {
-        const tronConnector = wallets.find(w => w.adapter.name === connector.name)
+        const tronConnector = wallets.find(w => w.adapter.name === connector.id) ?? wallets.find(w => walletKey(w.adapter.name) === walletKey(connector.name))
         if (!tronConnector) throw new Error('Connector not found')
         try {
             select(tronConnector.adapter.name)
