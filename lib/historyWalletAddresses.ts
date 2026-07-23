@@ -20,7 +20,7 @@ export function getHistoryWalletAddresses(wallets: Wallet[], networks: NetworkFo
     const addresses: HistoryWalletAddress[] = []
 
     for (const wallet of wallets) {
-        const network = networks.find(item => item.chain_id === wallet.chainId) ?? null
+        const network = networks.find(item => item.chain_id == wallet.chainId) ?? null
 
         for (const rawAddress of wallet.addresses) {
             const address = new Address(rawAddress, network, wallet.providerName).normalized
