@@ -58,12 +58,13 @@ const WalletsDropdown: FC<WalletsDropdownProps> = ({ wallets, addresses, selecte
                         {rows.map(({ address, label, short, icon }) => {
                             const checked = selectedAddresses.includes(address)
                             const isLimitReached = selectedAddresses.length >= MAX_HISTORY_ADDRESSES
+                            const isLastRequiredSelection = addresses.length > MAX_HISTORY_ADDRESSES && checked && selectedAddresses.length === 1
 
                             return (
                                 <CheckboxRow
                                     key={address}
                                     checked={checked}
-                                    disabled={!checked && isLimitReached}
+                                    disabled={(!checked && isLimitReached) || isLastRequiredSelection}
                                     onToggle={() => toggle(address)}
                                     icon={icon}
                                     label={label}

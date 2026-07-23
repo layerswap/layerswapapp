@@ -48,13 +48,14 @@ const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
 
     const {
         searchQuery, setSearchQuery,
-        walletAddresses, walletSelectionCustomized, toggleWalletAddress,
+        walletAddresses, selectedWalletAddrs, walletSelectionCustomized, toggleWalletAddress,
         networkNames, toggleNetworkName,
         clearFilters,
         filtersActive,
     } = useHistoryFilters({ addresses: historyAddressValues })
 
-    const { pendingDeposit, completed, isLoadingAny, isValidatingAny } = useSwapHistoryData(walletAddresses, networkNames)
+    const effectiveAddresses = selectedWalletAddrs ?? historyAddressValues
+    const { pendingDeposit, completed, isLoadingAny, isValidatingAny } = useSwapHistoryData(effectiveAddresses, networkNames)
     const search = useSwapByTransactionHash(searchQuery)
 
     const networkOptions = useMemo<FilterNetworkOption[]>(() =>
@@ -96,7 +97,7 @@ const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
             {filtersNode}
             {historyWalletAddresses.length > MAX_HISTORY_ADDRESSES ? (
                 <p className="pb-3 text-sm text-secondary-text">
-                    Showing swaps for {walletAddresses.length} of {historyWalletAddresses.length} connected wallet addresses. Select wallets to change which addresses are included.
+                    Showing swaps for {effectiveAddresses.length} of {historyWalletAddresses.length} connected wallet addresses. Select wallets to change which addresses are included.
                 </p>
             ) : null}
             <div className="flex-1 min-h-0">

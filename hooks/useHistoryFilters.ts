@@ -14,6 +14,7 @@ export function useHistoryFilters({ addresses }: Args) {
         () => addresses.slice(0, MAX_HISTORY_ADDRESSES),
         [addresses]
     )
+    const hasAddressLimit = addresses.length > MAX_HISTORY_ADDRESSES
 
     const knownAddresses = useMemo(() => new Set(addresses), [addresses])
 
@@ -27,19 +28,24 @@ export function useHistoryFilters({ addresses }: Args) {
         })
     }, [knownAddresses])
 
-    const walletAddresses = useMemo(() => {
-        if (customWalletAddresses === null) return defaultWalletAddresses
-        return customWalletAddresses.filter(address => knownAddresses.has(address))
-    }, [customWalletAddresses, defaultWalletAddresses, knownAddresses])
+    const selectedWalletAddrs = useMemo<string[] | null>(() => {
+        if (customWalletAddresses !== null)
+            return customWalletAddresses.filter(address => knownAddresses.has(address))
+
+        return hasAddressLimit ? defaultWalletAddresses : null
+    }, [customWalletAddresses, defaultWalletAddresses, hasAddressLimit, knownAddresses])
+
+    const walletAddresses = selectedWalletAddrs ?? []
 
     const toggleWalletAddress = useCallback((address: string) => {
         if (!knownAddresses.has(address)) return
 
         setCustomWalletAddresses(current => {
-            const selected = (current ?? defaultWalletAddresses)
+            const selected = (current ?? (hasAddressLimit ? defaultWalletAddresses : []))
                 .filter(item => knownAddresses.has(item))
 
             if (selected.includes(address)) {
+                if (hasAddressLimit && selected.length === 1) return selected
                 const next = selected.filter(item => item !== address)
                 return next.length > 0 ? next : null
             }
@@ -47,7 +53,7 @@ export function useHistoryFilters({ addresses }: Args) {
             if (selected.length >= MAX_HISTORY_ADDRESSES) return selected
             return [...selected, address]
         })
-    }, [defaultWalletAddresses, knownAddresses])
+    }, [defaultWalletAddresses, hasAddressLimit, knownAddresses])
 
     const toggleNetworkName = useCallback((name: string) => {
         setNetworkNames(prev =>
@@ -69,6 +75,7 @@ export function useHistoryFilters({ addresses }: Args) {
         searchQuery,
         setSearchQuery,
         walletAddresses,
+        selectedWalletAddrs,
         walletSelectionCustomized: customWalletAddresses !== null,
         toggleWalletAddress,
         networkNames,
