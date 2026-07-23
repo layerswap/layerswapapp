@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
-import type { RequestAdditionalConnectorsParams } from '@/Models/WalletProvider'
+import type { InternalConnector, RequestAdditionalConnectorsParams } from '@/Models/WalletProvider'
 import { resolveWalletConnectWallets } from './registry'
 import type { WalletConnectWalletBase } from './types'
 
@@ -64,13 +64,6 @@ const listCachedPages = (namespace: string, query: string): PageCacheEntry[] => 
         .sort((left, right) => left.page - right.page)
 }
 
-const mergeRecents = (recents: WalletConnectWalletBase[], connectors: WalletConnectWalletBase[]) => {
-    if (recents.length === 0) return connectors
-
-    const recentIds = new Set(recents.map(connector => connector.id.toLowerCase()))
-    return [...recents, ...connectors.filter(connector => !recentIds.has(connector.id.toLowerCase()))]
-}
-
 async function fetchAdditionalConnectorsPage(namespace: string, params: Required<RequestAdditionalConnectorsParams>) {
     const query = normalizeQuery(params.query)
     const pageKey = getPageKey(params.page, params.pageSize)
@@ -120,7 +113,7 @@ async function fetchAdditionalConnectorsPage(namespace: string, params: Required
 }
 
 export function useAdditionalConnectors(namespace: string) {
-    const [recents, setRecents] = useState<WalletConnectWalletBase[]>([])
+    const [recentConnectors, setRecentConnectors] = useState<InternalConnector[]>([])
     const [browseVersion, setBrowseVersion] = useState(0)
 
     const requestAdditionalConnectors = useCallback(async (params: RequestAdditionalConnectorsParams = {}): Promise<WalletConnectRequestResult> => {
@@ -143,8 +136,8 @@ export function useAdditionalConnectors(namespace: string) {
         }
     }, [namespace])
 
-    const addRecentConnector = useCallback((connector: WalletConnectWalletBase) => {
-        setRecents(previous => {
+    const addRecentConnector = useCallback((connector: InternalConnector) => {
+        setRecentConnectors(previous => {
             const deduped = previous.filter(item => item.id.toLowerCase() !== connector.id.toLowerCase())
             return [connector, ...deduped]
         })
@@ -153,9 +146,8 @@ export function useAdditionalConnectors(namespace: string) {
     const cachedBrowsePages = useMemo(() => listCachedPages(namespace, ''), [namespace, browseVersion])
 
     const browseConnectors = useMemo(() => {
-        const connectors = cachedBrowsePages.flatMap(page => page.result.wallets)
-        return mergeRecents(recents, connectors)
-    }, [cachedBrowsePages, recents])
+        return cachedBrowsePages.flatMap(page => page.result.wallets)
+    }, [cachedBrowsePages])
 
     const browseMetadata = useMemo(() => {
         const lastPage = cachedBrowsePages[cachedBrowsePages.length - 1]
@@ -171,5 +163,6 @@ export function useAdditionalConnectors(namespace: string) {
         browseMetadata,
         requestAdditionalConnectors,
         addRecentConnector,
+        recentConnectors,
     }
 }

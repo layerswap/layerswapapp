@@ -1,9 +1,6 @@
-export type WalletConnectMobile = {
-    native?: string | null
-    universal?: string | null
-}
+import { NetworkType } from "@/Models/Network"
 
-export type WalletConnectDesktop = {
+export type WalletConnectLink = {
     native?: string | null
     universal?: string | null
 }
@@ -18,8 +15,8 @@ export type WalletConnectWalletBase = {
     name: string
     icon: string
     rdns?: string
-    mobile: WalletConnectMobile
-    desktop?: WalletConnectDesktop
+    mobile: WalletConnectLink
+    desktop?: WalletConnectLink
     chains: string[]
     hasBrowserExtension: boolean
     installUrl?: string
@@ -44,18 +41,16 @@ export type QrCodeState =
     | { state: 'loading'; value: undefined; deepLink?: undefined }
     | { state: 'fetched'; value: string; deepLink?: string }
 
-/**
- * Marker attached to UI connector tiles that originated from the WalletConnect
- * wallet registry (i.e. not a locally-installed adapter/connector). Both chains
- * use this to decide whether to route a connect through the QR / deep-link path.
- */
-export const WC_REGISTRY_MARKER = Symbol('wcRegistry')
-
-export type RegistryAttachedConnector<T> = T & {
-    [WC_REGISTRY_MARKER]?: WalletConnectWalletBase
+const CAIP_NAMESPACE_TO_NETWORK_TYPE: Record<string, NetworkType> = {
+    eip155: NetworkType.EVM,
+    solana: NetworkType.Solana,
 }
 
-export const getRegistryEntry = (c: unknown): WalletConnectWalletBase | undefined => {
-    if (!c || typeof c !== 'object') return undefined
-    return (c as Record<symbol, WalletConnectWalletBase | undefined>)[WC_REGISTRY_MARKER]
+export const chainsToNetworkTypes = (chains: string[] | undefined): NetworkType[] => {
+    const types = new Set<NetworkType>()
+    for (const chain of chains ?? []) {
+        const networkType = CAIP_NAMESPACE_TO_NETWORK_TYPE[chain.split(':')[0]]
+        if (networkType) types.add(networkType)
+    }
+    return [...types]
 }

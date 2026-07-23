@@ -20,7 +20,6 @@ import { useSettingsState } from "../../../context/settings"
 import { Address } from "@/lib/address"
 import sleep from "../utils/sleep"
 import { useActiveParadexAccount } from "@/components/WalletProviders/ActiveParadexAccount"
-import { getRegistryEntry } from "@/lib/wallets/walletConnect/types"
 
 const withdrawalSupportedNetworks = [
     KnownInternalNames.Networks.ParadexMainnet,
@@ -59,7 +58,7 @@ export default function useParadex(): WalletProvider {
 
         try {
             setSelectedConnector(connector)
-            const isRegistryEvmConnector = !!getRegistryEntry(connector)
+            const isRegistryEvmConnector = connector.type === 'walletConnect' && !!connector.mobile
             const isEvm = isRegistryEvmConnector
                 || evmProvider.availableConnectors?.find(w => w.id === connector.id)
                 || evmProvider.additionalConnectors?.find(w => w.id === connector.id)

@@ -30,14 +30,14 @@ import {
 } from "@/lib/wallets/walletConnect/dynamicMetadata"
 import {
     DynamicWcMetadata,
-    getRegistryEntry,
+    chainsToNetworkTypes,
     type WalletConnectWalletBase,
 } from "@/lib/wallets/walletConnect/types"
 import { buildDeepLink } from "@/lib/wallets/walletConnect/buildDeepLink"
 import { subscribeDisplayUri, type DisplayUriSource } from "@/lib/wallets/walletConnect/subscribeDisplayUri"
 import { mapConnectError } from "@/lib/wallets/walletConnect/mapConnectError"
 import { useAdditionalConnectors } from "@/lib/wallets/walletConnect/useAdditionalConnectors"
-import { createRegistryConnector, type RegistryConnector } from "@/lib/wallets/walletConnect/createRegistryConnector"
+import { createRegistryConnector } from "@/lib/wallets/walletConnect/createRegistryConnector"
 
 const EVM_NS = 'eip155'
 
@@ -74,20 +74,11 @@ const isFeaturedRegistryWallet = (wallet: WalletConnectWalletBase) => (
 )
 
 const splitRegistryConnectors = (
-    configuredConnectors: InternalConnector[],
     registryWallets: WalletConnectWalletBase[],
     isMobilePlatform: boolean,
     providerName: string
 ) => {
-    const existingConnectorKeys = new Set(
-        configuredConnectors.flatMap(connector => [connector.id.toLowerCase(), connector.name.toLowerCase()])
-    )
-
-    return registryWallets.reduce<{ featured: RegistryConnector[], additional: RegistryConnector[] }>((acc, wallet) => {
-        if (existingConnectorKeys.has(wallet.id.toLowerCase()) || existingConnectorKeys.has(wallet.name.toLowerCase())) {
-            return acc
-        }
-
+    return registryWallets.reduce<{ featured: InternalConnector[], additional: InternalConnector[] }>((acc, wallet) => {
         const connector = createRegistryConnector(wallet, isMobilePlatform, providerName)
 
         if (isFeaturedRegistryWallet(wallet)) {
@@ -159,6 +150,7 @@ export default function useEVM(): WalletProvider {
         browseMetadata: walletConnectBrowseMetadata,
         requestAdditionalConnectors: requestRegistryConnectors,
         addRecentConnector: addWalletConnectWallet,
+        recentConnectors: recentWalletConnectConnectors,
     } = useAdditionalConnectors(EVM_NS)
 
     useEffect(() => {
@@ -213,51 +205,51 @@ export default function useEVM(): WalletProvider {
                     installUrl: walletConnectWallet?.installUrl,
                     hasBrowserExtension: walletConnectWallet?.hasBrowserExtension,
                     extensionNotFound: walletConnectWallet?.hasBrowserExtension ? (type == 'walletConnect' && !isMobilePlatform) : false,
-                    providerName: name
+                    providerName: name,
+                    networkTypes: chainsToNetworkTypes(walletConnectWallet?.chains ?? []),
+                    mobile: walletConnectWallet?.mobile,
                 }
             })
     }, [allConnectors, walletConnectConnectors, isMobilePlatform, name])
 
     const { featured: featuredDynamicConnectors, additional: additionalConnectors } = useMemo(() => {
-        return splitRegistryConnectors(configuredConnectors, walletConnectConnectors, isMobilePlatform, name)
-    }, [configuredConnectors, walletConnectConnectors, isMobilePlatform, name])
+        return splitRegistryConnectors(walletConnectConnectors, isMobilePlatform, name)
+    }, [walletConnectConnectors, isMobilePlatform, name])
 
     const availableConnectors = useMemo(() => {
-        return [...configuredConnectors, ...featuredDynamicConnectors]
-    }, [configuredConnectors, featuredDynamicConnectors])
+        return [...configuredConnectors, ...featuredDynamicConnectors, ...recentWalletConnectConnectors]
+    }, [configuredConnectors, featuredDynamicConnectors, recentWalletConnectConnectors])
 
     const requestAdditionalConnectors = useCallback(async (params: RequestAdditionalConnectorsParams = {}): Promise<RequestAdditionalConnectorsResult> => {
         const result = await requestRegistryConnectors(params)
         return {
-            connectors: splitRegistryConnectors(configuredConnectors, result.connectors, isMobilePlatform, name).additional,
+            connectors: splitRegistryConnectors(result.connectors, isMobilePlatform, name).additional,
             nextPage: result.nextPage,
             totalCount: result.totalCount,
         }
-    }, [configuredConnectors, requestRegistryConnectors, isMobilePlatform, name])
+    }, [requestRegistryConnectors, isMobilePlatform, name])
 
     const connectWallet = useCallback(async (props: { connector: WalletModalConnector }) => {
         let unsubscribeDisplayUri: (() => void) | undefined
-        let registryBase = undefined as ReturnType<typeof getRegistryEntry>
+        const internalConnector = props?.connector;
+        const isRegistry = !!internalConnector && internalConnector.type === 'walletConnect' && !!internalConnector.mobile
         try {
-            const internalConnector = props?.connector;
             if (!internalConnector) return;
             let connector = availableConnectors.find(w => w.id === internalConnector.id) as InternalConnector & LSConnector
             let actualConnector = connector
 
-            registryBase = getRegistryEntry(internalConnector) ?? getRegistryEntry(connector)
-
-            if (registryBase) {
-                addWalletConnectWallet(registryBase)
+            if (isRegistry) {
+                addWalletConnectWallet(internalConnector)
 
                 const wcConnector = allConnectors.find(c => c.id === HIDDEN_WALLETCONNECT_ID)
                 if (!wcConnector) throw new Error("Hidden WalletConnect connector not found")
                 actualConnector = wcConnector as InternalConnector & LSConnector
 
-                const resolveURI = (uri: string) => buildDeepLink({ id: registryBase!.id, mobile: registryBase!.mobile }, uri)
+                const resolveURI = (uri: string) => buildDeepLink({ id: internalConnector.id, mobile: internalConnector.mobile! }, uri)
                 connector = Object.assign({}, wcConnector, {
-                    id: registryBase.id,
-                    name: registryBase.name,
-                    icon: registryBase.icon,
+                    id: internalConnector.id,
+                    name: internalConnector.name,
+                    icon: internalConnector.icon,
                     type: 'other',
                     isMobileSupported: true,
                     resolveURI,
@@ -303,7 +295,7 @@ export default function useEVM(): WalletProvider {
             // Always prime pending metadata for registry-origin connects so the
             // `connectedWallets` re-render that happens between connect start and
             // address resolution can render the right wallet name/icon.
-            const pendingMetadata = setPendingMetadataForRegistry(EVM_NS, registryBase)
+            const pendingMetadata = setPendingMetadataForRegistry(EVM_NS, isRegistry ? internalConnector : undefined)
 
             try {
                 await connectAsync({ connector: actualConnector });
@@ -314,7 +306,7 @@ export default function useEVM(): WalletProvider {
 
             const activeAccount = await attemptGetAccount(config)
 
-            if (registryBase && pendingMetadata && activeAccount.address) {
+            if (isRegistry && pendingMetadata && activeAccount.address) {
                 setDynamicWalletMetadata(activeAccount.address, pendingMetadata)
             }
             clearPendingDynamicWcMetadata(EVM_NS)
@@ -357,7 +349,7 @@ export default function useEVM(): WalletProvider {
             throw mapConnectError(e)
         } finally {
             unsubscribeDisplayUri?.()
-            if (registryBase) clearPendingDynamicWcMetadata(EVM_NS)
+            if (isRegistry) clearPendingDynamicWcMetadata(EVM_NS)
         }
     }, [availableConnectors, disconnectAsync, networks, asSourceSupportedNetworks, autofillSupportedNetworks, withdrawalSupportedNetworks, name, config, addWalletConnectWallet, allConnectors, connectAsync, isMobilePlatform, setSelectedConnector, disconnectWallet])
 
@@ -440,9 +432,8 @@ export default function useEVM(): WalletProvider {
             providerIcon,
             ready: allConnectors.length > 0,
             requestAdditionalConnectors,
-            registryWallets: walletConnectConnectors,
         }
-    }, [connectWallet, disconnectWallets, switchAccount, switchChain, isNotAvailableCondition, resolvedConnectors, activeWallet, autofillSupportedNetworks, withdrawalSupportedNetworks, asSourceSupportedNetworks, availableConnectors, additionalConnectors, name, id, providerIcon, allConnectors.length, requestAdditionalConnectors, walletConnectConnectors]);
+    }, [connectWallet, disconnectWallets, switchAccount, switchChain, isNotAvailableCondition, resolvedConnectors, activeWallet, autofillSupportedNetworks, withdrawalSupportedNetworks, asSourceSupportedNetworks, availableConnectors, additionalConnectors, name, id, providerIcon, allConnectors.length, requestAdditionalConnectors]);
 
     return provider
 }
