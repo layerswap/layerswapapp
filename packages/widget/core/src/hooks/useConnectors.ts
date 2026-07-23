@@ -21,7 +21,7 @@ type InitialSnapshot = {
 
 const UNMERGEABLE_WALLETS = ['nova', 'nova wallet']
 const NAME_OVERRIDES: Record<string, string> = { bitget: 'Bitget Wallet' }
-const connectorKey = (name: string) =>
+export const connectorKey = (name: string) =>
     UNMERGEABLE_WALLETS.includes(name.toLowerCase()) ? name.toLowerCase() : walletKey(name)
 
 const resolveNames = (groups: InternalConnector[][]): InternalConnector[][] => {

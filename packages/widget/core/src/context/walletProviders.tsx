@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, lazy, Suspense, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { createContext, lazy, Suspense, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { StoreApi } from "zustand/vanilla";
 import { WalletConnectionProvider, WalletConnectionStore, WalletProvider, WalletProviderDescriptor, WalletWrapper, isWalletProviderDescriptor } from "@/types";
 import { useSettingsState } from "./settings";
@@ -39,6 +39,27 @@ const WalletProvidersReadyContext = createContext<boolean>(false)
 
 export function useWalletProvidersReady(): boolean {
     return useContext(WalletProvidersReadyContext)
+}
+
+/** Synchronous check: true when every provider is a ready, non-stub live provider. */
+export function areWalletProvidersSettled(registry: WalletProvidersRegistry): boolean {
+    return registry.getEntries().every(entry => {
+        const provider = entry.store.getState()
+        return !provider.isStub && provider.ready
+    })
+}
+
+/**
+ * React subscription hook. True only after the provider registry has been
+ * published and every descriptor has been replaced by a ready live provider.
+ */
+export function useWalletProvidersSettled(): boolean {
+    const registryInitialized = useWalletProvidersReady()
+    const registry = useWalletProvidersRegistry()
+    const getSnapshot = useCallback(() => areWalletProvidersSettled(registry), [registry])
+    const providersSettled = useSyncExternalStore(registry.subscribe, getSnapshot, () => false)
+
+    return registryInitialized && providersSettled
 }
 
 type ProviderEntry = WalletProvider | WalletWrapper | WalletProviderDescriptor
