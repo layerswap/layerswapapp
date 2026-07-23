@@ -78,7 +78,7 @@ export class TronConnectionService implements WalletConnectionService {
 
     async connectWallet({ connector }: { connector: WalletModalConnector }): Promise<Wallet | undefined> {
         const { wallets } = useTronStore.getState()
-        const target = wallets.find(w => w.name === connector.name)
+        const target = wallets.find(w => w.name === connector.id)
         if (!target) throw new Error('Connector not found')
 
         try {

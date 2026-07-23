@@ -1,8 +1,8 @@
-import { Plus, Unplug } from "lucide-react";
+import { ChevronDown, Plus, Unplug } from "lucide-react";
 import AddressIcon from "@/components/Common/AddressIcon";
 import WalletIconView from "@/components/Wallet/WalletIconView";
 import { SelectAccountProps, Wallet, WalletConnectionProvider } from "@/types/wallet";
-import { FC, HTMLAttributes, useCallback, useState } from "react";
+import { FC, useCallback, useState } from "react";
 import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
 import { clsx } from 'clsx';
 import { useConnectModal } from "../WalletModal";
@@ -108,28 +108,38 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: item, net
     // The row hosts nested interactive elements (disconnect tooltip button,
     // ExtendedAddress popover trigger), so it must not be a <button> itself —
     // <button> inside <button> is invalid HTML and breaks hydration.
-    const rowIsClickable = !!(selectable && item.addresses.length == 1 && onWalletSelect)
-    const handleRowSelect = () => rowIsClickable && onWalletSelect({
-        providerName: item.providerName,
-        walletId: item.id,
-        address: item.address
-    })
+    const isMulti = item.addresses.length > 1
+    const [isExpanded, setIsExpanded] = useState(true)
+
+    const rowIsClickable = !!(selectable && !isMulti && onWalletSelect)
+    const isInteractive = rowIsClickable || isMulti
+    const handleHeaderClick = () => {
+        if (selectable && !isMulti && onWalletSelect) {
+            onWalletSelect({
+                providerName: item.providerName,
+                walletId: item.id,
+                address: item.address,
+            })
+        } else if (isMulti) {
+            setIsExpanded(prev => !prev)
+        }
+    }
 
     return (
         <div className="rounded-md outline-hidden text-primary-tex">
             <div
-                role={rowIsClickable ? 'button' : undefined}
-                tabIndex={rowIsClickable ? 0 : undefined}
-                onClick={handleRowSelect}
-                onKeyDown={rowIsClickable ? (e) => {
+                role={isInteractive ? 'button' : undefined}
+                tabIndex={isInteractive ? 0 : undefined}
+                onClick={handleHeaderClick}
+                onKeyDown={isInteractive ? (e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault()
-                        handleRowSelect()
+                        handleHeaderClick()
                     }
                 } : undefined}
                 className={clsx('w-full relative items-center justify-between gap-2 flex rounded-lg outline-hidden bg-secondary-500 text-primary-text p-3 group/addressItem', {
-                    'hover:bg-secondary-400 cursor-pointer': selectable && item.addresses.length == 1,
-                    'bg-secondary-600 py-2': item.addresses.length > 1
+                    'hover:bg-secondary-400 cursor-pointer': isInteractive,
+                    'bg-secondary-500': isMulti
                 })}>
 
                 <div className="flex space-x-2 items-center grow">
@@ -141,9 +151,7 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: item, net
                                     <WalletIconView
                                         wallet={item}
                                         size={36}
-                                        className={clsx('w-9 h-9 p-0.5 rounded-md bg-secondary-800', {
-                                            'w-6! h-6!': item.addresses.length > 1,
-                                        })}
+                                        className='w-9 h-9 p-0.5 rounded-md bg-secondary-800'
                                     />
                                     :
                                     <AddressIcon address={item.address} size={36} network={network} className="rounded-md bg-secondary-800" />
@@ -163,9 +171,14 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: item, net
                         </div>
                     }
                     {
-                        item.addresses.length > 1 ?
-                            <div className="text-sm">
-                                {item.displayName}
+                        isMulti ?
+                            <div className="grow">
+                                <p className="text-sm font-medium text-start">
+                                    {item.addresses.length} accounts
+                                </p>
+                                <p className="text-xs text-secondary-text text-start">
+                                    {item.displayName}
+                                </p>
                             </div>
                             :
                             <div className="w-full inline-flex items-center justify-between grow">
@@ -216,7 +229,7 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: item, net
                     !selectable && hasDisconnect(item) &&
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <button type="button" onClick={item.disconnect} className="text-xs text-secondary-text hover:text-primary-text rounded-full p-1.5 bg-secondary-700 transition-colors duration-200 ">
+                            <button type="button" onClick={(e) => { e.stopPropagation(); item.disconnect() }} className="text-xs text-secondary-text hover:text-primary-text rounded-full p-1.5 bg-secondary-700 transition-colors duration-200">
                                 <Unplug className="h-3.5 w-3.5" />
                             </button>
                         </TooltipTrigger>
@@ -226,6 +239,12 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: item, net
                     </Tooltip>
                 }
                 {
+                    isMulti &&
+                    <ChevronDown className={clsx('h-4 w-4 text-secondary-text transition-all duration-200', {
+                        'rotate-180': isExpanded
+                    })} />
+                }
+                {
                     isSelected &&
                     <div className="flex h-6 items-center px-1">
                         <FilledCheck />
@@ -233,8 +252,8 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: item, net
                 }
             </div>
             {
-                item.addresses.length > 1 &&
-                <div className='w-full grow py-1 mt-1 bg-secondary-500 rounded-lg' >
+                isMulti && isExpanded &&
+                <div className='w-full grow mt-1 bg-secondary-500 rounded-lg overflow-hidden' >
                     {
                         item.addresses.map((address, index) => <NestedWalletAddress
                             key={index}
