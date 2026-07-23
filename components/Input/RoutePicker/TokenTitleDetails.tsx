@@ -60,7 +60,7 @@ export const TokenTitleWithBalance = ({ item, route, tokenbalance, usdAmount }: 
                 <TokenInfoIcon
                     item={item}
                     route={route}
-                    className={`hidden xs:block min-w-0 overflow-hidden ${hasAmount ? "max-w-[90px]" : ""} transition-all duration-300 opacity-0 group-hover:opacity-100 data-[popover-open=true]:opacity-100 data-[tooltip-open=true]:opacity-100 data-[popover-open=true]:delay-0 data-[tooltip-open=true]:delay-0 group-hover:delay-400 pointer-events-none group-hover:pointer-events-auto data-[popover-open=true]:pointer-events-auto data-[tooltip-open=true]:pointer-events-auto`}
+                    className={`hidden xs:block min-w-0 overflow-hidden ${hasAmount ? "max-w-[90px]" : ""} transition-all duration-300 opacity-0 group-hover:opacity-100 data-[popover-open=true]:opacity-100 data-[tooltip-open=true]:opacity-100 data-[popover-open=true]:delay-0 data-[tooltip-open=true]:delay-0 group-hover:delay-225 pointer-events-none group-hover:pointer-events-auto data-[popover-open=true]:pointer-events-auto data-[tooltip-open=true]:pointer-events-auto`}
                 />
             </div>
             {hasAmount && (
