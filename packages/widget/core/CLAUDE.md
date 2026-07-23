@@ -1,4 +1,4 @@
-# CLAUDE.md — `packages/widget`
+# CLAUDE.md — `packages/widget/core`
 
 Widget-specific conventions. See the repo-root `CLAUDE.md` for project-wide guidance and the **Merge Safety** checklist (these contracts are common casualties of silent semantic conflicts — verify with `pnpm check:types` after merges).
 

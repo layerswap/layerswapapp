@@ -136,7 +136,7 @@ importers:
         version: link:../../packages/wallets/all
       '@layerswap/widget':
         specifier: workspace:^
-        version: link:../../packages/widget
+        version: link:../../packages/widget/core
       '@posthog/react':
         specifier: 1.4.0
         version: 1.4.0(@types/react@19.2.3)(posthog-js@1.390.2)(react@19.2.3)
@@ -263,7 +263,7 @@ importers:
     dependencies:
       '@layerswap/widget':
         specifier: workspace:^
-        version: link:../../packages/widget
+        version: link:../../packages/widget/core
       '@radix-ui/react-accordion':
         specifier: ^1.1.2
         version: 1.2.12(@types/react-dom@19.2.3(@types/react@19.2.3))(@types/react@19.2.3)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -354,10 +354,10 @@ importers:
         version: link:../../packages/wallets/all
       '@layerswap/widget':
         specifier: workspace:^
-        version: link:../../packages/widget
+        version: link:../../packages/widget/core
       '@layerswap/widget-types':
         specifier: workspace:^
-        version: link:../../packages/widget-types
+        version: link:../../packages/widget/types
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.90.11(react@19.2.3)
@@ -472,7 +472,7 @@ importers:
         version: link:../../packages/wallets/all
       '@layerswap/widget':
         specifier: workspace:^
-        version: link:../../packages/widget
+        version: link:../../packages/widget/core
       '@radix-ui/react-accordion':
         specifier: ^1.2.11
         version: 1.2.12(@types/react-dom@19.2.3(@types/react@19.2.3))(@types/react@19.2.3)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -590,7 +590,7 @@ importers:
     dependencies:
       '@layerswap/widget-react':
         specifier: workspace:^
-        version: link:../../packages/widget-react
+        version: link:../../packages/widget/react
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.90.11(react@19.2.3)
@@ -685,11 +685,11 @@ importers:
         version: link:../tron
       '@layerswap/widget-types':
         specifier: workspace:^
-        version: link:../../widget-types
+        version: link:../../widget/types
     devDependencies:
       '@layerswap/widget':
         specifier: workspace:^
-        version: link:../../widget
+        version: link:../../widget/core
 
   packages/wallets/bitcoin:
     dependencies:
@@ -717,7 +717,7 @@ importers:
         version: 0.9.0(@types/react@19.2.3)(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.3))
       '@layerswap/widget':
         specifier: workspace:^
-        version: link:../../widget
+        version: link:../../widget/core
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(react@19.2.3)
@@ -739,7 +739,7 @@ importers:
     devDependencies:
       '@layerswap/widget':
         specifier: workspace:^
-        version: link:../../widget
+        version: link:../../widget/core
       '@tailwindcss/postcss':
         specifier: ^4.0.15
         version: 4.0.15
@@ -770,7 +770,7 @@ importers:
     devDependencies:
       '@layerswap/widget':
         specifier: workspace:^
-        version: link:../../widget
+        version: link:../../widget/core
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(react@19.2.3)
@@ -786,7 +786,7 @@ importers:
     devDependencies:
       '@layerswap/widget':
         specifier: workspace:^
-        version: link:../../widget
+        version: link:../../widget/core
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(react@19.2.3)
@@ -811,7 +811,7 @@ importers:
         version: link:../starknet
       '@layerswap/widget':
         specifier: workspace:^
-        version: link:../../widget
+        version: link:../../widget/core
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(react@19.2.3)
@@ -842,7 +842,7 @@ importers:
     devDependencies:
       '@layerswap/widget':
         specifier: workspace:^
-        version: link:../../widget
+        version: link:../../widget/core
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(react@19.2.3)
@@ -885,7 +885,7 @@ importers:
     devDependencies:
       '@layerswap/widget':
         specifier: workspace:^
-        version: link:../../widget
+        version: link:../../widget/core
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(react@19.2.3)
@@ -907,7 +907,7 @@ importers:
     devDependencies:
       '@layerswap/widget':
         specifier: workspace:^
-        version: link:../../widget
+        version: link:../../widget/core
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(react@19.2.3)
@@ -941,22 +941,22 @@ importers:
     devDependencies:
       '@layerswap/widget':
         specifier: workspace:^
-        version: link:../../widget
+        version: link:../../widget/core
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(react@19.2.3)
 
-  packages/widget:
+  packages/widget/core:
     dependencies:
       '@headlessui/react':
         specifier: ^2.1.1
         version: 2.2.9(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@layerswap/utils':
         specifier: workspace:^
-        version: link:../utils
+        version: link:../../utils
       '@layerswap/widget-types':
         specifier: workspace:^
-        version: link:../widget-types
+        version: link:../types
       '@number-flow/react':
         specifier: ^0.5.10
         version: 0.5.10(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -1085,20 +1085,20 @@ importers:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(react@19.2.3)
 
-  packages/widget-js:
+  packages/widget/js:
     dependencies:
       '@layerswap/widget-types':
         specifier: workspace:^
-        version: link:../widget-types
+        version: link:../types
       '@module-federation/runtime':
         specifier: ^0.9.0
         version: 0.9.1
 
-  packages/widget-react:
+  packages/widget/react:
     dependencies:
       '@layerswap/widget-js':
         specifier: workspace:^
-        version: link:../widget-js
+        version: link:../js
     devDependencies:
       '@types/react':
         specifier: 'catalog:'
@@ -1113,7 +1113,7 @@ importers:
         specifier: 'catalog:'
         version: 2.14.11(@tanstack/query-core@5.90.16)(@tanstack/react-query@5.90.16(react@19.2.3))(@types/react@19.2.3)(bufferutil@4.1.0)(react@19.2.3)(typescript@5.9.3)(utf-8-validate@5.0.10)(viem@2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11))(zod@4.1.11)
 
-  packages/widget-types:
+  packages/widget/types:
     dependencies:
       csstype:
         specifier: ^3.1.3
