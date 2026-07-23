@@ -77,7 +77,7 @@ const ImtblRedirectPage = () => {
                         : <div className="loader text-[3px]!" />
                     }
                     <div className="p-3 bg-secondary-700 rounded-lg">
-                        <ImtblPassportIcon className="w-11 h-auto" />
+                        <ImtblPassportIcon className="w-11 h-11" />
                     </div>
                 </div>
                 <div className="text-center max-w-xs">

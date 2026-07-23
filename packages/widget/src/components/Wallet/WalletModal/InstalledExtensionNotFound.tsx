@@ -25,10 +25,10 @@ export const InstalledExtensionNotFound: FC<{
                                 alt={selectedConnector?.name || ''}
                                 width="44"
                                 height="44"
-                                className="w-11 h-auto object-contain"
+                                className="w-11 h-11 object-contain"
                             />
                         ) : (
-                            <WalletIcon className="w-11 h-auto" />
+                            <WalletIcon className="w-11 h-11" />
                         )}
                     </div>
                 </div>
