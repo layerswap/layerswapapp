@@ -27,10 +27,6 @@ export const POLYMARKET_CHAIN_ID = 137
 
 export const POLYMARKET_PUSD_DECIMALS = 6
 
-/** Native USDC on Polygon. Retained for reference; `unwrap` can also target this. */
-export const POLYMARKET_USDC_ADDRESS = '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359' as `0x${string}`
-export const POLYMARKET_USDC_DECIMALS = 6
-
 /** On-chain contract constants shared with the relay proxy's server-side request
  * validation — canonical values live in the shared protocol module (`./protocol`),
  * re-exported here for existing importers (same pattern as POLYMARKET_RELAYER_URL). */
@@ -115,7 +111,7 @@ export const POLYMARKET_CONFIG: Record<string, PolymarketConfig> = {
         networkName: KnownInternalNames.Networks.PolymarketMainnet,
         realNetworkName: KnownInternalNames.Networks.PolygonMainnet,
         realTokenSymbol: KnownInternalNames.Currencies.USDCe,
-        realDecimals: POLYMARKET_USDC_DECIMALS,
+        realDecimals: POLYMARKET_PUSD_DECIMALS,
         flatFee: 0,
         arrivalSeconds: POLYMARKET_ARRIVAL_SECONDS,
     },
