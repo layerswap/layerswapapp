@@ -1,0 +1,54 @@
+{
+  "name": "@layerswap/widget-js",
+  "version": "0.1.0",
+  "description": "Framework-agnostic loader that fetches the Layerswap widget from the CDN at runtime via Module Federation and mounts it into any DOM element. No framework required.",
+  "type": "module",
+  "main": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "typings": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/esm/index.js"
+    }
+  },
+  "sideEffects": [
+    "./src/sri.ts",
+    "./dist/esm/sri.js"
+  ],
+  "files": [
+    "dist",
+    "dist/**/*"
+  ],
+  "scripts": {
+    "build": "pnpm clean && pnpm build:esm+types",
+    "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm && tsc-alias -p tsconfig.json --outDir ./dist/types",
+    "check:types": "tsc --noEmit",
+    "test": "pnpm build && node --test tests/*.test.mjs",
+    "clean": "rimraf dist tsconfig.tsbuildinfo",
+    "dev": "tsc -p tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types --watch"
+  },
+  "author": "Layerswap",
+  "homepage": "https://github.com/layerswap/layerswapapp",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/layerswap/layerswapapp.git",
+    "directory": "packages/widget/js"
+  },
+  "keywords": [
+    "layerswap",
+    "widget",
+    "embed",
+    "cdn",
+    "module-federation",
+    "vanilla"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@layerswap/widget-types": "workspace:^",
+    "@module-federation/runtime": "^0.9.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

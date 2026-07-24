@@ -1,4 +1,33 @@
 import { snapshotFromTronAdapter, useTronStore, type TronAdapter, type TronTransaction, type TronSignedTransaction } from './tronStore'
+const SELECTED_ADAPTER_KEY = 'tronAdapterName'
+
+const readSelectedAdapter = (): string | undefined => {
+    if (typeof window === 'undefined') return undefined
+
+    try {
+        const storedName = window.localStorage.getItem(SELECTED_ADAPTER_KEY)
+        if (!storedName) return undefined
+
+        const parsedName: unknown = JSON.parse(storedName)
+        return typeof parsedName === 'string' ? parsedName : undefined
+    } catch {
+        return undefined
+    }
+}
+
+const persistSelectedAdapter = (name: string | undefined): void => {
+    if (typeof window === 'undefined') return
+
+    try {
+        if (name) {
+            window.localStorage.setItem(SELECTED_ADAPTER_KEY, JSON.stringify(name))
+        } else {
+            window.localStorage.removeItem(SELECTED_ADAPTER_KEY)
+        }
+    } catch {
+        // Wallet state still works when storage is unavailable.
+    }
+}
 
 class TronAdapterManager {
     private _adapters: TronAdapter[] = []
@@ -8,22 +37,31 @@ class TronAdapterManager {
     register(adapters: TronAdapter[]): void {
         this.dispose()
         this._adapters = adapters
+
+        const selectedName = readSelectedAdapter()
+        if (selectedName && this.getAdapter(selectedName)) {
+            this._selectedName = selectedName
+        } else if (selectedName) {
+            persistSelectedAdapter(undefined)
+        }
+
         for (const adapter of adapters) {
             this._attach(adapter)
         }
+        this._restoreSelectedAdapter()
         this._pushWallets()
     }
 
     private _attach(adapter: TronAdapter): void {
         const onConnect = (address: string) => {
             if (this._selectedName === adapter.name) {
-                useTronStore.getState()._setActive(adapter.name, address || undefined)
+                const connectedAddress = address || adapter.address || undefined
+                useTronStore.getState()._setActive(adapter.name, connectedAddress)
             }
             this._pushWallets()
         }
         const onDisconnect = () => {
             if (this._selectedName === adapter.name) {
-                this._selectedName = undefined
                 useTronStore.getState()._setActive(undefined, undefined)
             }
             this._pushWallets()
@@ -51,6 +89,13 @@ class TronAdapterManager {
         })
     }
 
+    private _restoreSelectedAdapter(): void {
+        const adapter = this.getActiveAdapter()
+        if (!adapter?.connected || !adapter.address) return
+
+        useTronStore.getState()._setActive(adapter.name, adapter.address)
+    }
+
     private _pushWallets(): void {
         const wallets = this._adapters.map(snapshotFromTronAdapter)
         useTronStore.getState()._setWallets(wallets)
@@ -65,26 +110,44 @@ class TronAdapterManager {
         return this.getAdapter(this._selectedName)
     }
 
-    getSelectedName(): string | undefined {
-        return this._selectedName
+    getConnectedAdapter(): TronAdapter | undefined {
+        return this._adapters.find(adapter => adapter.connected)
     }
 
-    select(name: string | undefined): void {
+    select(name: string): void {
         this._selectedName = name
+        persistSelectedAdapter(name)
     }
 
     async connect(): Promise<void> {
         const adapter = this.getActiveAdapter()
         if (!adapter) throw new Error('No Tron wallet selected')
-        await adapter.connect()
+        try {
+            await adapter.connect()
+
+            if (adapter.connected && adapter.address) {
+                useTronStore.getState()._setActive(adapter.name, adapter.address)
+                this._pushWallets()
+            }
+        } catch (error) {
+            persistSelectedAdapter(undefined)
+            this._selectedName = undefined
+            useTronStore.getState()._setActive(undefined, undefined)
+            throw error
+        }
     }
 
     async disconnect(): Promise<void> {
         const adapter = this.getActiveAdapter()
-        if (!adapter) return
-        await adapter.disconnect()
-        this._selectedName = undefined
-        useTronStore.getState()._setActive(undefined, undefined)
+        persistSelectedAdapter(undefined)
+
+        try {
+            await adapter?.disconnect()
+        } finally {
+            this._selectedName = undefined
+            useTronStore.getState()._setActive(undefined, undefined)
+            this._pushWallets()
+        }
     }
 
     async signTransaction(transaction: TronTransaction): Promise<TronSignedTransaction> {

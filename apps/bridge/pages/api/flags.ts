@@ -4,7 +4,7 @@ import { resolveExtendedRouteFlags } from "../../flags";
 /**
  * Public flags endpoint for clients that have no SSR flag resolution — the CDN
  * React/vanilla embeds and deposit integrations fetch this from the widget's
- * `getSettings()` (see `packages/widget/src/lib/extendedRoutes/remoteFlags.ts`).
+ * `getSettings()` (see `packages/widget/core/src/lib/extendedRoutes/remoteFlags.ts`).
  *
  * Returns the same `ExtendedRouteFlags` the bridge injects into its SSR settings,
  * resolved through `resolveExtendedRouteFlags` — so an embed reads exactly the

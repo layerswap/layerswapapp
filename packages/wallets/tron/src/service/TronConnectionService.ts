@@ -1,7 +1,6 @@
 import type { NetworkWithTokens } from "@layerswap/utils"
-import type { InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types"
-import type { WalletModalConnector } from "@layerswap/wallet-core/types"
-import { getEip6963Providers, getKnownConnectorIconBase64, normalizeIconSrc } from "@layerswap/wallet-core"
+import type { InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionService, WalletModalConnector } from "@layerswap/wallet-core/types"
+import { walletIconResolver, getEip6963Providers, walletKey } from "@layerswap/wallet-core"
 import { name as PROVIDER_NAME, id as PROVIDER_ID, tronNames } from '../constants'
 import { tronAdapterManager } from './tronAdapterManager'
 import { type TronWalletSnapshot, useTronStore } from './tronStore'
@@ -58,7 +57,7 @@ export class TronConnectionService implements WalletConnectionService {
             networkIcon: this.getNetworkLogo(),
             providerName: PROVIDER_NAME,
             isActive: true,
-            icon: getKnownConnectorIconBase64(snapshot.name) ?? normalizeIconSrc(snapshot.icon),
+            icon: walletIconResolver(address, snapshot.icon),
             disconnect: () => this.disconnectWallets(),
             autofillSupportedNetworks: tronNames,
             withdrawalSupportedNetworks: tronNames,
@@ -76,19 +75,19 @@ export class TronConnectionService implements WalletConnectionService {
 
     async connectWallet({ connector }: { connector: WalletModalConnector }): Promise<Wallet | undefined> {
         const { wallets } = useTronStore.getState()
-        const target = wallets.find(w => w.name === connector.name)
+        const target = wallets.find(w => w.name === connector.id)
+            ?? wallets.find(w => walletKey(w.name) === walletKey(connector.name))
         if (!target) throw new Error('Connector not found')
 
-        const prevSelectedName = tronAdapterManager.getSelectedName()
         try {
             tronAdapterManager.select(target.name)
             await tronAdapterManager.connect()
 
-            const { wallets: updatedWallets, activeWalletName, activeAddress } = useTronStore.getState()
-            const snapshot = updatedWallets.find(w => w.name === activeWalletName) ?? target
-            return this.resolveWallet(snapshot, activeAddress)
+            const connectedAdapter = tronAdapterManager.getConnectedAdapter()
+            const { wallets: updatedWallets } = useTronStore.getState()
+            const snapshot = updatedWallets.find(w => w.name === connectedAdapter?.name) ?? target
+            return this.resolveWallet(snapshot, connectedAdapter?.address ?? undefined)
         } catch (e: any) {
-            tronAdapterManager.select(prevSelectedName)
             throw new Error(e?.message || e)
         }
     }
