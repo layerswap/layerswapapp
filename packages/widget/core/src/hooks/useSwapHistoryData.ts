@@ -5,6 +5,7 @@ import { ApiResponse } from '@/Models/ApiResponse'
 import { SwapStatus } from '@/Models/SwapStatus'
 import { useSwapTransactionStore } from '@/stores/swapTransactionStore'
 import { useExtendedSourceSkin } from './useExtendedSourceSkin'
+import { Address } from '@/lib/address/Address'
 
 export function useSwapHistoryData(addresses?: string[], networks?: string[]) {
     const [revalidateAll, setRevalidateAll] = useState(false)
@@ -137,9 +138,11 @@ export function useSwapHistoryData(addresses?: string[], networks?: string[]) {
         const pendingIds = new Set(pendingDeposit.swaps.map(s => s.swap.id))
 
         const networkSet = networks && networks.length > 0 ? new Set(networks) : null
+        const selectedAddressSet = addresses ? new Set(addresses) : null
 
         for (const swap of localStorageSwaps) {
             if (completedIds.has(swap.swap.id) || pendingIds.has(swap.swap.id)) continue
+            if (selectedAddressSet && !matchesSelectedAddress(swap, selectedAddressSet)) continue
             if (
                 networkSet &&
                 !networkSet.has(swap.swap.source_network.name) &&
@@ -157,7 +160,7 @@ export function useSwapHistoryData(addresses?: string[], networks?: string[]) {
             ...completed,
             swaps: allCompletedSwaps,
         }
-    }, [completed, localStorageSwaps, pendingDeposit.swaps, networks])
+    }, [completed, localStorageSwaps, pendingDeposit.swaps, networks, addresses])
 
     // Apply the extended-source skin only at the output boundary — the internal
     // id-sets and network filtering above operate on the raw backend identity.
@@ -183,4 +186,13 @@ export function useSwapHistoryData(addresses?: string[], networks?: string[]) {
     }
 }
 
+function matchesSelectedAddress(swapResponse: SwapResponse, selectedAddresses: Set<string>) {
+    const { source_address, source_network, destination_address, destination_network } = swapResponse.swap
 
+    const sourceAddress = source_address
+        ? new Address(source_address, source_network).normalized
+        : null
+    const destinationAddress = new Address(destination_address, destination_network).normalized
+
+    return selectedAddresses.has(sourceAddress ?? '') || selectedAddresses.has(destinationAddress)
+}

@@ -11,7 +11,6 @@ import SwapDetails from "./SwapDetailsComponent"
 import { useSettingsState } from "@/context/settings";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/shadcn/accordion";
 import { useSwapHistoryData } from "@/hooks/useSwapHistoryData";
-import { Address } from "@/lib/address/Address";
 import { SwapDataProvider, SwapDataStateContext } from '@/context/swap';
 import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import { useHistoryFilters } from '@/hooks/useHistoryFilters';
@@ -24,6 +23,7 @@ import { shouldDisplay } from './Filters/filterSwaps';
 import NoMatches from './Filters/NoMatches';
 import SearchResult from './Filters/SearchResult';
 import AppSettings from '@/lib/AppSettings';
+import { getHistoryWalletAddresses, MAX_HISTORY_ADDRESSES } from '@/lib/historyWalletAddresses';
 
 type ListProps = {
     statuses?: string | number;
@@ -35,35 +35,25 @@ const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
     const { networks } = useSettingsState()
     const { wallets } = useWallet()
 
+    const historyWalletAddresses = useMemo(
+        () => getHistoryWalletAddresses(wallets, networks),
+        [wallets, networks]
+    )
+
+    const historyAddressValues = useMemo(
+        () => historyWalletAddresses.map(item => item.address),
+        [historyWalletAddresses]
+    )
+
     const {
         searchQuery, setSearchQuery,
-        walletAddresses, selectedWalletAddrs, toggleWalletAddress,
+        walletAddresses, selectedWalletAddrs, walletSelectionCustomized, toggleWalletAddress,
         networkNames, toggleNetworkName,
         clearFilters,
         filtersActive,
-    } = useHistoryFilters({ wallets })
+    } = useHistoryFilters({ addresses: historyAddressValues })
 
-    const { allAddresses, normalizedByRaw } = useMemo(() => {
-        const all = new Set<string>()
-        const map = new Map<string, string>()
-        for (const w of wallets) {
-            const network = networks.find(n => n.chain_id == w.chainId) || null
-            for (const addr of w.addresses) {
-                const normalized = new Address(addr, network, w.providerName).normalized
-                all.add(normalized)
-                map.set(addr, normalized)
-            }
-        }
-        return { allAddresses: Array.from(all), normalizedByRaw: map }
-    }, [wallets, networks])
-
-    const effectiveAddresses = useMemo(() => {
-        if (!selectedWalletAddrs || selectedWalletAddrs.length === 0) return allAddresses
-        const out = new Set<string>()
-        for (const a of selectedWalletAddrs) out.add(normalizedByRaw.get(a) ?? a)
-        return Array.from(out)
-    }, [selectedWalletAddrs, allAddresses, normalizedByRaw])
-
+    const effectiveAddresses = selectedWalletAddrs ?? historyAddressValues
     const { pendingDeposit, completed, isLoadingAny, isValidatingAny } = useSwapHistoryData(effectiveAddresses, networkNames)
     const search = useSwapByTransactionHash(searchQuery)
 
@@ -79,18 +69,21 @@ const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             walletAddresses={walletAddresses}
+            walletSelectionCustomized={walletSelectionCustomized}
             toggleWalletAddress={toggleWalletAddress}
             networkNames={networkNames}
             toggleNetworkName={toggleNetworkName}
             wallets={wallets}
+            historyWalletAddresses={historyWalletAddresses}
             networks={networkOptions}
             onClearAll={clearFilters}
         />
     ), [
         wallets,
+        historyWalletAddresses,
         networkOptions,
         searchQuery, setSearchQuery,
-        walletAddresses, toggleWalletAddress,
+        walletAddresses, walletSelectionCustomized, toggleWalletAddress,
         networkNames, toggleNetworkName,
         clearFilters,
     ])
@@ -101,6 +94,11 @@ const Comp: FC<ListProps> = ({ onNewTransferClick }) => {
     return (
         <div className="relative flex flex-col h-full min-h-0">
             {filtersNode}
+            {historyWalletAddresses.length > MAX_HISTORY_ADDRESSES ? (
+                <p className="pb-3 text-sm text-secondary-text">
+                    Showing swaps for {effectiveAddresses.length} of {historyWalletAddresses.length} connected wallet addresses. Select wallets to change which addresses are included.
+                </p>
+            ) : null}
             <div className="flex-1 min-h-0">
                 <SwapsList
                     search={search}

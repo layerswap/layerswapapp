@@ -5,15 +5,18 @@ import ClearAllButton from './ClearAllButton'
 import { FilterNetworkOption } from './types'
 import { SearchComponent } from '@/components/Input/Search'
 import { Wallet } from "@layerswap/wallet-core/types"
+import { HistoryWalletAddress } from '@/lib/historyWalletAddresses'
 
 type FiltersProps = {
     searchQuery: string
     setSearchQuery: (v: string) => void
     walletAddresses: string[]
+    walletSelectionCustomized: boolean
     toggleWalletAddress: (address: string) => void
     networkNames: string[]
     toggleNetworkName: (name: string) => void
     wallets: Wallet[]
+    historyWalletAddresses: HistoryWalletAddress[]
     networks: FilterNetworkOption[]
     onClearAll: () => void
 }
@@ -22,16 +25,16 @@ const Filters: FC<FiltersProps> = ({
     searchQuery,
     setSearchQuery,
     walletAddresses,
+    walletSelectionCustomized,
     toggleWalletAddress,
     networkNames,
     toggleNetworkName,
     wallets,
+    historyWalletAddresses,
     networks,
     onClearAll,
 }) => {
-    const hasAny =
-        walletAddresses.length > 0 ||
-        networkNames.length > 0
+    const hasAny = walletSelectionCustomized || networkNames.length > 0
 
     return (
         <div className="space-y-2 pb-3">
@@ -44,6 +47,7 @@ const Filters: FC<FiltersProps> = ({
             <div className="flex flex-wrap items-center gap-2">
                 <WalletsDropdown
                     wallets={wallets}
+                    addresses={historyWalletAddresses}
                     selectedAddresses={walletAddresses}
                     toggle={toggleWalletAddress}
                     count={walletAddresses.length}

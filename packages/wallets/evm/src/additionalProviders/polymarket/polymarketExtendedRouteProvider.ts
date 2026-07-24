@@ -1,7 +1,7 @@
 import { NetworkRoute, NetworkRouteToken, NetworkType, NetworkWithTokens, Token, realRoutePresent } from "@layerswap/utils";
 import { ExtendedRouteProvider, ExtendedTokenMapping, RealRouteRef, requiredDepositMethod } from "@layerswap/wallet-core/types";
 import { getPolymarketCandidates, pickPolymarketDestination, POLYMARKET_CONFIG, POLYMARKET_DISPLAY_SYMBOL, PolymarketConfig } from "./routes";
-import { POLYMARKET_BASE_TOKEN_SYMBOL, POLYMARKET_DISPLAY_NAME, POLYMARKET_LOGO } from "./constants";
+import { POLYMARKET_BASE_TOKEN_SYMBOL, POLYMARKET_DISPLAY_NAME, POLYMARKET_LOGO, POLYMARKET_PUSD_ADDRESS } from "./constants";
 
 /**
  * Polymarket extended SOURCE provider. Unlike Hyperliquid (which the backend
@@ -52,7 +52,12 @@ export const polymarketProvider: ExtendedRouteProvider = {
         const baseToken = base.tokens?.find(t => t.symbol === POLYMARKET_BASE_TOKEN_SYMBOL)
         if (!baseToken) return undefined
 
-        const token: Token = { ...baseToken, symbol: POLYMARKET_DISPLAY_SYMBOL, display_asset: POLYMARKET_DISPLAY_SYMBOL }
+        const token: Token = {
+            ...baseToken,
+            symbol: POLYMARKET_DISPLAY_SYMBOL,
+            display_asset: POLYMARKET_DISPLAY_SYMBOL,
+            contract: POLYMARKET_PUSD_ADDRESS,
+        }
         const synthesized: NetworkWithTokens = {
             ...base,
             name: networkName,

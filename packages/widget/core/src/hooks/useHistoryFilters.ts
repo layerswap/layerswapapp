@@ -1,20 +1,60 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Wallet } from "@layerswap/wallet-core/types"
+import { MAX_HISTORY_ADDRESSES } from '@/lib/historyWalletAddresses'
 
 type Args = {
-    wallets: Wallet[]
+    addresses: string[]
 }
 
-export function useHistoryFilters({ wallets }: Args) {
+export function useHistoryFilters({ addresses }: Args) {
     const [searchQuery, setSearchQuery] = useState('')
-    const [walletAddresses, setWalletAddresses] = useState<string[]>([])
+    const [customWalletAddresses, setCustomWalletAddresses] = useState<string[] | null>(null)
     const [networkNames, setNetworkNames] = useState<string[]>([])
 
+    const defaultWalletAddresses = useMemo(
+        () => addresses.slice(0, MAX_HISTORY_ADDRESSES),
+        [addresses]
+    )
+    const hasAddressLimit = addresses.length > MAX_HISTORY_ADDRESSES
+
+    const knownAddresses = useMemo(() => new Set(addresses), [addresses])
+
+    useEffect(() => {
+        setCustomWalletAddresses(current => {
+            if (current === null) return null
+
+            const next = current.filter(address => knownAddresses.has(address))
+            if (next.length === 0) return null
+            return next.length === current.length ? current : next
+        })
+    }, [knownAddresses])
+
+    const selectedWalletAddrs = useMemo<string[] | null>(() => {
+        if (customWalletAddresses !== null)
+            return customWalletAddresses.filter(address => knownAddresses.has(address))
+
+        return hasAddressLimit ? defaultWalletAddresses : null
+    }, [customWalletAddresses, defaultWalletAddresses, hasAddressLimit, knownAddresses])
+
+    const walletAddresses = selectedWalletAddrs ?? []
+
     const toggleWalletAddress = useCallback((address: string) => {
-        setWalletAddresses(prev =>
-            prev.includes(address) ? prev.filter(x => x !== address) : [...prev, address]
-        )
-    }, [])
+        if (!knownAddresses.has(address)) return
+
+        setCustomWalletAddresses(current => {
+            const selected = (current ?? (hasAddressLimit ? defaultWalletAddresses : []))
+                .filter(item => knownAddresses.has(item))
+
+            if (selected.includes(address)) {
+                if (hasAddressLimit && selected.length === 1) return selected
+                const next = selected.filter(item => item !== address)
+                return next.length > 0 ? next : null
+            }
+
+            if (selected.length >= MAX_HISTORY_ADDRESSES) return selected
+            return [...selected, address]
+        })
+    }, [defaultWalletAddresses, hasAddressLimit, knownAddresses])
 
     const toggleNetworkName = useCallback((name: string) => {
         setNetworkNames(prev =>
@@ -24,23 +64,12 @@ export function useHistoryFilters({ wallets }: Args) {
 
     const clearFilters = useCallback(() => {
         setSearchQuery('')
-        setWalletAddresses([])
+        setCustomWalletAddresses(null)
         setNetworkNames([])
     }, [])
 
-    const knownAddresses = useMemo(() => {
-        const s = new Set<string>()
-        for (const w of wallets) for (const a of w.addresses) s.add(a)
-        return s
-    }, [wallets])
-
-    const selectedWalletAddrs = useMemo<string[] | null>(() => {
-        const addrs = walletAddresses.filter(a => knownAddresses.has(a))
-        return addrs.length > 0 ? addrs : null
-    }, [walletAddresses, knownAddresses])
-
     const filtersActive =
-        (selectedWalletAddrs?.length ?? 0) > 0 ||
+        customWalletAddresses !== null ||
         networkNames.length > 0
 
     return {
@@ -48,6 +77,7 @@ export function useHistoryFilters({ wallets }: Args) {
         setSearchQuery,
         walletAddresses,
         selectedWalletAddrs,
+        walletSelectionCustomized: customWalletAddresses !== null,
         toggleWalletAddress,
         networkNames,
         toggleNetworkName,

@@ -1,3 +1,4 @@
+import { unisat } from '@/connectors/unisat'
 import {
     bitget,
     createConfig,
@@ -7,12 +8,11 @@ import {
     okx,
     onekey,
     reconnect,
-    unisat,
     xverse,
     type Config,
     type CreateConnectorFn,
 } from '@bigmi/client'
-import { bitcoin, createClient, defineChain, http, ChainId, type Chain } from '@bigmi/core'
+import { bitcoin, createClient, defineChain, http, ChainId } from '@bigmi/core'
 import type { NetworkWithTokens } from "@layerswap/utils"
 
 let _config: Config | null = null
