@@ -1,10 +1,10 @@
 import Erc20Abi from './jsons/ERC20.json'
-import { KnownInternalNames, insertIfNotExists, formatUnits } from "@layerswap/widget/internal";
-import { BalanceProvider, TokenBalance } from "@layerswap/widget/types";
+import { NetworkType, insertIfNotExists, formatUnits } from "@layerswap/utils";
+import { BalanceProvider, TokenBalance } from "@layerswap/wallet-core/types";
 
 export class StarknetBalanceProvider extends BalanceProvider {
     supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
-        return (KnownInternalNames.Networks.StarkNetMainnet.includes(network.name) || KnownInternalNames.Networks.StarkNetGoerli.includes(network.name) || KnownInternalNames.Networks.StarkNetSepolia.includes(network.name))
+        return network.type === NetworkType.Starknet
     }
 
     fetchBalance: BalanceProvider['fetchBalance'] = async (address, network) => {

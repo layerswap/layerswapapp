@@ -19,11 +19,15 @@ import WalletsProviders from "@/components/Wallet/WalletProviders";
 import { CallbackProvider, CallbacksContextType } from "./callbackProvider";
 import { InitialSettings } from "@/Models/InitialSettings";
 import { SwapAccountsProvider } from "./swapAccounts";
-import { WalletProvider, WalletProviderDescriptor, WalletWrapper, isWalletProviderDescriptor } from "@/types";
+import type { WalletProvider, WalletProviderDescriptor, WalletWrapper } from "@layerswap/wallet-core/types"
+import { isWalletProviderDescriptor } from "@layerswap/wallet-core/types"
 import { ResolverProviders, extractExtendedRouteProviders } from "./resolverContext";
 import { setExtendedRouteProviders } from "@/lib/extendedRoutes";
 import { ErrorProvider } from "./ErrorProvider";
-import { WalletDescriptorLoaderContext } from "@/lib/walletConnect/walletDescriptorLoader";
+import { WalletDescriptorLoaderContext } from "@layerswap/wallet-core";
+import { registerWidgetErrorLogger } from "@/lib/ErrorHandler";
+
+registerWidgetErrorLogger();
 
 /**
  * Internal config — a refinement of the public `WidgetConfig` contract
@@ -197,7 +201,6 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
                                 {(resolvedProviders) => (
                                     <WalletsProviders
                                         appName={initialValues?.appName}
-                                        themeData={themeData}
                                         walletProviders={resolvedProviders}
                                     >
                                         <ResolverProviders walletProviders={resolvedProviders}>

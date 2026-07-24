@@ -1,6 +1,6 @@
 import { HYPERLIQUID_USDC_SYMBOL, HYPERLIQUID_WITHDRAW_HEADROOM } from "./constants";
-import { KnownInternalNames } from "@layerswap/widget/internal";
-import { GasProps, GasProvider, GasWithToken, Network } from "@layerswap/widget/types";
+import { Network, NetworkType } from "@layerswap/utils"
+import { GasProps, GasProvider, GasWithToken } from "@layerswap/wallet-core/types"
 
 /**
  * Headroom HL reserves for the `sendToEvmWithData` HyperCore-side processing, in
@@ -12,8 +12,7 @@ import { GasProps, GasProvider, GasWithToken, Network } from "@layerswap/widget/
  */
 export class HyperliquidGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {
-        return network.name === KnownInternalNames.Networks.HyperliquidMainnet
-            || network.name === KnownInternalNames.Networks.HyperliquidTestnet
+        return network.type === NetworkType.Hyperliquid
     }
 
     getGas = async ({ token }: GasProps): Promise<GasWithToken | undefined> => {

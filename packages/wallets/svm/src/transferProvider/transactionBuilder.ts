@@ -4,9 +4,8 @@ import {
     TransactionExpiredBlockheightExceededError,
     VersionedTransactionResponse,
 } from "@solana/web3.js";
-import { retry, sleep } from "@layerswap/widget/internal";
-
-type TransactionSenderAndConfirmationWaiterArgs = {
+import { sleep } from "@layerswap/utils"
+import { retry } from "@layerswap/utils";type TransactionSenderAndConfirmationWaiterArgs = {
     connection: Connection;
     serializedTransaction: Buffer;
     blockhashWithExpiryBlockHeight: BlockhashWithExpiryBlockHeight;

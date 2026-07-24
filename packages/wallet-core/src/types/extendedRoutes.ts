@@ -1,0 +1,111 @@
+import { NetworkRoute, NetworkWithTokens } from "@layerswap/utils";
+import type { DepositRouteRef } from "@layerswap/utils";
+
+/**
+ * Extended routes are swap routes the client can execute even though the
+ * backend's `/sources` & `/destinations` don't list them. Each is described by
+ * a provider file and wired through the registry — no scattered `if (network)`
+ * checks. See `.context/plans/extended-routes-system-hyperliquid-source-withdraw.md`.
+ */
+
+/** Decimal-ish input accepted by the amount converters. */
+export type DecimalInput = string | number
+
+export type { DepositRouteRef }
+export type RealRouteRef = DepositRouteRef
+export type RealRouteAvailability = (real: RealRouteRef) => boolean
+
+/** Per-provider on/off flags, keyed by provider id. */
+export type ExtendedRouteFlags = Record<string, boolean>
+
+export type ExtendedTokenMapping = {
+    /** Token symbol on the extended network, e.g. 'USDC' on HYPERLIQUID_*. */
+    extendedTokenSymbol: string
+    /** The real backend route this extended token is fulfilled through. */
+    real: DepositRouteRef
+    /** Flat fee charged on top of the backend route, in source-token units. */
+    flatFee: number
+    /** Extra completion time added to the backend quote, in seconds. */
+    extraCompletionSeconds: number
+    /** Decimal places of the real token; used to truncate the forwarded amount. */
+    realDecimals?: number
+    /** Optional provider-imposed lower bound for the displayed source amount. */
+    minAmount?: number
+}
+
+export interface ExtendedRouteProvider {
+    /** Stable id, e.g. 'hyperliquid'. */
+    id: string
+    /** 'destination' is designed into the types but not implemented in v1. */
+    direction: 'source' | 'destination'
+    /** Default state when no remote feature flag is available for this provider. */
+    enabledByDefault: boolean
+    /** How the real backend leg is funded. */
+    funding?: 'deposit_address' | 'depository'
+    /** Whether the backend swap needs the source address for refunds. */
+    requiresRefundAddress?: boolean
+    /** Extended network names this provider owns, e.g. [HYPERLIQUID_MAINNET, HYPERLIQUID_TESTNET]. */
+    extendedNetworkNames: string[]
+    /** mappings[networkName][tokenSymbol] -> token mapping (for the primary
+     * destination, used by the picker visibility check). */
+    mappings: Record<string, Record<string, ExtendedTokenMapping>>
+    /**
+     * Build an injectable NetworkRoute from settings.networks. Returns undefined
+     * when the network is absent (e.g. testnet on a prod settings payload).
+     */
+    resolveExtendedRoute(networkName: string, allNetworks: NetworkWithTokens[]): NetworkRoute | undefined
+    /** Optionally synthesize a network absent from the backend settings. */
+    resolveExtendedNetwork?(networkName: string, allNetworks: NetworkWithTokens[]): NetworkWithTokens | undefined
+    /**
+     * Resolve the mapping for a specific (extended source, token, destination).
+     * Lets providers with multiple destination candidates (e.g. HL primary +
+     * fallback) pick the right one based on the user's selected destination.
+     * `availableRoutes`, when supplied, lets the provider skip candidates whose
+     * real route the backend can't currently fulfill (availability fallback).
+     * Optional — if absent, the registry uses the static `mappings` entry.
+     */
+    resolveActiveMapping?(networkName: string, tokenSymbol: string, toNetworkName?: string, toTokenSymbol?: string, availableRoutes?: NetworkRoute[]): ExtendedTokenMapping | undefined
+    /**
+     * Real (network, token) candidates for an extended (source, token) pair.
+     * The picker uses this to show the extended source iff AT LEAST ONE
+     * candidate has a backend deposit-address route. Optional — defaults to
+     * the primary `mappings[…][…].real`.
+     */
+    getRealCandidates?(networkName: string, tokenSymbol: string): DepositRouteRef[]
+}
+
+export function usesDepository(provider: ExtendedRouteProvider): boolean {
+    return provider.funding === 'depository'
+}
+
+export function depositMethodForFunding(funding: ExtendedRouteProvider['funding']): 'wallet' | 'deposit_address' {
+    return funding === 'depository' ? 'wallet' : 'deposit_address'
+}
+
+export function requiredDepositMethod(provider: ExtendedRouteProvider): string {
+    return depositMethodForFunding(provider.funding)
+}
+
+export type ResolvedExtendedMapping = ExtendedTokenMapping & {
+    provider: ExtendedRouteProvider
+    extendedNetworkName: string
+    /** A - flatFee, truncated to the real token's decimals (what arrives at the deposit address). */
+    toRealAmount(sourceAmount: DecimalInput): string
+    /** realAmount + flatFee (what must leave the extended source). */
+    toSourceAmount(realAmount: DecimalInput): string
+}
+
+export type ExtendedRoutePlan = {
+    mapping: ResolvedExtendedMapping
+    sourceAmount?: string
+    realAmount?: string
+}
+
+/**
+ * Destination-side semantics (no v1 provider, designed for later):
+ * an extended destination D maps to real destination R; the backend swap
+ * delivers to the user's own address on R, then a provider-supplied
+ * completion-step component executes the post-hop (e.g. deposit into a
+ * destination protocol's contract). The registry/quote/creation seams branch by `direction`, so adding
+ * it later means a new provider + one completion-step dispatch.
+ */

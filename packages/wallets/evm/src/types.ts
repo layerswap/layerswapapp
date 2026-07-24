@@ -3,7 +3,7 @@ import type {
     BaseWalletProviderConfig,
     WalletConnectConfig,
     WalletProviderModule,
-} from "@layerswap/widget/types"
+} from "@layerswap/wallet-core/types"
 
 export type { WalletConnectConfig }
 

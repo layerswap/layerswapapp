@@ -11,7 +11,7 @@ import AddressBook from "./AddressBook";
 import AddressButton from "./AddressButton";
 import { useInitialSettings } from "@/context/settings";
 import ConnectedWallets, { NotCompatibleWallets } from "./ConnectedWallets";
-import { Wallet } from "@/types/wallet";
+import { Wallet } from "@layerswap/wallet-core/types"
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import VaulDrawer from "@/components/Modal/vaulModal";
 import { useManualDestAddresses, useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts";

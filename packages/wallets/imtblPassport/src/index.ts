@@ -1,4 +1,4 @@
-import type { WalletInitContext, WalletWrapper } from "@layerswap/widget/types"
+import type { WalletInitContext, WalletWrapper } from "@layerswap/wallet-core/types"
 import { imtblPassportService } from "./service/ImtblPassportService"
 import { id } from "./constants"
 

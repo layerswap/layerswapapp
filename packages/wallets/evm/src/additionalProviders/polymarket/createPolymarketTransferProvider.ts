@@ -1,4 +1,5 @@
-import { TransferProvider, TransferProps, TransferProgress, Network, ActionMessageType } from "@layerswap/widget/types"
+import { Network } from "@layerswap/utils"
+import { TransferProvider, TransferProps, TransferProgress, ActionMessageType } from "@layerswap/wallet-core/types"
 import { Config } from "wagmi"
 import { switchChain, getWalletClient } from "@wagmi/core"
 import { createPublicClient, decodeAbiParameters, type Hex, type PublicClient, type WalletClient } from "viem"

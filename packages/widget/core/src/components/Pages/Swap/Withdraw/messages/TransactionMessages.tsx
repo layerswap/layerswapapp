@@ -1,3 +1,4 @@
+import { ActionMessageType } from "@layerswap/wallet-core/types";
 import { FC } from "react"
 import WalletMessage, { WalletUnknownError } from "./Message"
 import { Address } from "@/lib/address/Address"
@@ -82,13 +83,4 @@ export const ActionMessages = {
     DifferentAccountsNotAllowedError
 }
 
-export enum ActionMessageType {
-    ConfirmTransaction = 'ConfirmTransaction',
-    TransactionInProgress = 'TransactionInProgress',
-    InsufficientFunds = 'InsufficientFunds',
-    TransactionRejected = 'TransactionRejected',
-    WaletMismatch = 'WaletMismatch',
-    TransactionFailed = 'TransactionFailed',
-    UnexpectedErrorMessage = 'UnexpectedErrorMessage',
-    DifferentAccountsNotAllowedError = 'DifferentAccountsNotAllowedError',
-}
+export { ActionMessageType } from "@layerswap/wallet-core/types"

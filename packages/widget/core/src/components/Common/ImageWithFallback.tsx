@@ -1,7 +1,7 @@
 "use client";
 import React, { forwardRef, useCallback, useEffect, useState } from "react";
 import LogoPlaceholder from "../Icons/LogoPlaceholder";
-import { normalizeIconSrc } from "@/lib/wallets/utils/knownConnectorIcons";
+import { normalizeIconSrc } from "@layerswap/wallet-core";
 
 // Some wallet adapters expose `icon` as raw inline SVG markup rather than a
 // `data:` URI. Handed straight to `<img src>` the browser treats it as a

@@ -37,7 +37,8 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@layerswap/widget": "workspace:^",
+    "@layerswap/wallet-core": "workspace:^",
+    "@layerswap/utils": "workspace:^",
     "zustand": "catalog:"
   },
   "dependencies": {
@@ -54,7 +55,8 @@
     "bs58": "^6.0.0"
   },
   "devDependencies": {
-    "@layerswap/widget": "workspace:^",
+    "@layerswap/wallet-core": "workspace:^",
+    "@layerswap/utils": "workspace:^",
     "zustand": "catalog:"
   },
   "engines": {

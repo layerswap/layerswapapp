@@ -1,9 +1,5 @@
-import type {
-    WalletProvider,
-    WalletConnectionStore,
-    WalletConnectionProviderProps,
-    BaseWalletProviderConfig,
-} from "@layerswap/widget/types"
+import type { WalletConnectionStore, WalletConnectionProviderProps } from "@layerswap/wallet-core/types"
+import type { WalletProvider, BaseWalletProviderConfig } from "@layerswap/wallet-core/types"
 import { ParadexBalanceProvider } from "./paradexBalanceProvider"
 import { createParadexConnection } from "./service/createParadexConnection"
 import { createParadexTransfer } from "./transferProvider/createParadexTransfer"

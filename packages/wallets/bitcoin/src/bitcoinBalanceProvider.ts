@@ -1,5 +1,5 @@
-import { TokenBalance, BalanceProvider } from "@layerswap/widget/types";
-import { KnownInternalNames, retry } from "@layerswap/widget/internal";
+import { TokenBalance, BalanceProvider } from "@layerswap/wallet-core/types";
+import { KnownInternalNames, retry } from "@layerswap/utils";
 import axios from "axios";
 
 interface Utxo {

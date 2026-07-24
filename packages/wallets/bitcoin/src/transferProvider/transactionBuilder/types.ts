@@ -1,4 +1,4 @@
-import { JsonRpcClient } from "@layerswap/widget/internal";
+import { JsonRpcClient } from "@layerswap/utils";
 import { BtcRpcRequestFn, Chain, Client, Transport } from "@bigmi/core";
 
 export type TransactionBuilderParams = {

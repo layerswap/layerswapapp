@@ -37,7 +37,8 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@layerswap/widget": "workspace:^",
+    "@layerswap/wallet-core": "workspace:^",
+    "@layerswap/utils": "workspace:^",
     "zustand": "catalog:"
   },
   "dependencies": {
@@ -47,7 +48,8 @@
     "@tonconnect/sdk": "^3.4.1"
   },
   "devDependencies": {
-    "@layerswap/widget": "workspace:^",
+    "@layerswap/wallet-core": "workspace:^",
+    "@layerswap/utils": "workspace:^",
     "zustand": "catalog:"
   },
   "engines": {

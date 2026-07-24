@@ -7,7 +7,7 @@ import { depositMethodForFunding } from "@/lib/extendedRoutes/types";
 import { getKey, useBalanceStore } from "@/stores/balanceStore";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
-import { Wallet } from "@/types/wallet";
+import { Wallet } from "@layerswap/wallet-core/types"
 import { useDepositSelection } from "../depositSelectionContext";
 import { useDepositSettings } from "@/context/depositSettings";
 import { DepositMethodId } from "../depositMethods";

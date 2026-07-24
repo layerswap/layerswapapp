@@ -1,9 +1,9 @@
 import { RefreshCw } from "lucide-react";
 import { ResolveConnectorIcon } from "../Icons/ConnectorIcons";
 import { FC, useCallback, useRef, useState } from "react";
-import { Wallet, WalletConnectionProvider } from "@/types/wallet";
+import { Wallet, WalletConnectionProvider } from "@layerswap/wallet-core/types"
 import { useConnectModal } from "../Wallet/WalletModal";
-import { useWalletDescriptorLoader } from "@/lib/walletConnect/walletDescriptorLoader";
+import { useWalletDescriptorLoader } from "@layerswap/wallet-core";
 import { isProviderConnectReady } from "@/hooks/useProvidersConnectReady";
 import { classNames } from "@/components/utils/classNames";
 

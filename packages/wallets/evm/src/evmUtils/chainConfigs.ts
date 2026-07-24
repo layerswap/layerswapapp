@@ -1,5 +1,5 @@
-import { NetworkSettings } from "@layerswap/widget/internal";
-import { Network, NetworkType } from "@layerswap/widget/types";
+import { NetworkSettings } from "@layerswap/utils";
+import { Network, NetworkType } from "@layerswap/utils"
 import { Chain, http, fallback } from 'viem';
 import resolveChain from "./resolveChain";
 

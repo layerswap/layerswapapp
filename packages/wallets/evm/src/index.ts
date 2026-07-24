@@ -1,11 +1,7 @@
-import type {
-    WalletProvider,
-    WalletConnectionStore,
-    WalletInitContext,
-    WalletConnectionProviderProps,
-} from "@layerswap/widget/types"
-import { LazyBalanceProvider, LazyGasProvider, NetworkType } from "@layerswap/widget/types"
-import { KnownInternalNames } from "@layerswap/widget/internal"
+import type { WalletConnectionStore, WalletConnectionProviderProps } from "@layerswap/wallet-core/types"
+import type { WalletProvider, WalletInitContext } from "@layerswap/wallet-core/types"
+import { KnownInternalNames, NetworkType } from "@layerswap/utils"
+import { LazyBalanceProvider, LazyGasProvider } from "@layerswap/wallet-core/types"
 import { createEvmConnection } from "./service/createEvmConnection"
 import { initEvmProvider } from "./EVMProvider/init"
 import { createEvmTransfer } from "./transferProvider/createEvmTransfer"
@@ -15,7 +11,8 @@ import type { EVMProviderConfig, WalletConnectConfig } from "./types"
 import { hyperliquidProvider } from "./additionalProviders/hyperliquid/hyperliquidExtendedRouteProvider"
 import { createHyperliquidTransfer } from "./additionalProviders/hyperliquid/createHyperliquidTransferProvider"
 import { getEvmConfig } from "./service/getEvmConfig"
-import type { Network, TransferProvider, GaslessProvider } from "@layerswap/widget/types"
+import type { Network } from "@layerswap/utils"
+import type { TransferProvider, GaslessProvider } from "@layerswap/wallet-core/types"
 import { createPolymarketTransferProvider } from "./additionalProviders/polymarket/createPolymarketTransferProvider"
 import { polymarketProvider } from "./additionalProviders/polymarket/polymarketExtendedRouteProvider"
 import { createEVMGaslessProvider } from "./gaslessProvider/createEVMGaslessProvider"
@@ -77,7 +74,7 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
             () => import("./balanceProviders").then(m => new m.EVMBalanceProvider())
         ),
         new LazyBalanceProvider(
-            (n) => n.name === KnownInternalNames.Networks.HyperliquidMainnet || n.name === KnownInternalNames.Networks.HyperliquidTestnet,
+            (n) => n.type === NetworkType.Hyperliquid,
             () => import("./balanceProviders").then(m => new m.HyperliquidBalanceProvider())
         ),
         new LazyBalanceProvider(

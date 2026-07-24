@@ -1,30 +1,10 @@
-import type {
-    InternalConnector,
-    NetworkWithTokens,
-    RequestAdditionalConnectorsParams,
-    RequestAdditionalConnectorsResult,
-    Wallet,
-    WalletModalConnector,
-    WalletConnectionProvider,
-    WalletConnectionService,
-} from '@layerswap/widget/types'
-import { NetworkType } from '@layerswap/widget/types'
-import {
-    buildDeepLink,
-    clearPendingDynamicWcMetadata,
-    createRegistryConnector,
-    findRegistryWalletByName,
-    getDynamicWcMetadata,
-    getPendingDynamicWcMetadata,
-    getRegistryEntry,
-    mapConnectError,
-    resolveWalletConnectorIcon,
-    setDynamicWcMetadata,
-    setPendingMetadataForRegistry,
-    subscribeDisplayUri,
-    walletKey,
-    type WalletConnectWalletBase,
-} from '@layerswap/widget/internal'
+import type { NetworkWithTokens } from "@layerswap/utils"
+import type { InternalConnector, RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult, Wallet, WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types"
+import type { WalletModalConnector } from "@layerswap/wallet-core/types"
+import { NetworkType } from "@layerswap/utils"
+import { buildDeepLink, clearPendingDynamicWcMetadata, createRegistryConnector, getDynamicWcMetadata, getPendingDynamicWcMetadata, getRegistryEntry, mapConnectError, setDynamicWcMetadata, setPendingMetadataForRegistry, subscribeDisplayUri, walletKey, type WalletConnectWalletBase } from "@layerswap/wallet-core"
+import { findRegistryWalletByName } from "@layerswap/wallet-core"
+import { resolveWalletConnectorIcon } from "@layerswap/wallet-core"
 import { name as PROVIDER_NAME, id as PROVIDER_ID, solanaNames } from '../constants'
 import { resolveSolanaWalletConnectorIcon } from '../utils'
 import { SolanaWalletConnectAdapter } from '../connectors/SolanaWalletConnectAdapter'
@@ -237,6 +217,7 @@ export class SvmConnectionService implements WalletConnectionService<RuntimeDeps
             if (current && current.id === connector.id) setSelectedConnector?.(next)
         }
 
+        const prevSelectedName = svmAdapterManager.getSelectedName()
         try {
             const isBareWcTile = connector.name === SOLANA_WC_MODAL_NAME
 
@@ -339,7 +320,7 @@ export class SvmConnectionService implements WalletConnectionService<RuntimeDeps
                 address: newAddress,
                 displayName: `${displayName} - Solana`,
                 providerName: PROVIDER_NAME,
-                icon: resolveWalletConnectorIcon({ connector: displayId, address: newAddress, iconUrl: displayIconRaw }),
+                icon: resolveWalletConnectorIcon({ address: newAddress, iconUrl: displayIconRaw }),
                 disconnect: () => this.disconnectWallet(),
                 isActive: true,
                 addresses: [newAddress],
@@ -350,6 +331,7 @@ export class SvmConnectionService implements WalletConnectionService<RuntimeDeps
             }
             return wallet
         } catch (e) {
+            svmAdapterManager.select(prevSelectedName)
             throw mapConnectError(e)
         } finally {
             unsubscribeDisplayUri?.()

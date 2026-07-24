@@ -1,18 +1,9 @@
-import type {
-    InternalConnector,
-    RequestAdditionalConnectorsParams,
-    RequestAdditionalConnectorsResult,
-    Wallet,
-    WalletConnectionProvider,
-    WalletConnectionService,
-    NetworkWithTokens,
-} from '@layerswap/widget/types'
-import {
-    Address,
-    KnownInternalNames,
-    sleep,
-    getRegistryEntry,
-} from '@layerswap/widget/internal'
+import type { NetworkWithTokens } from "@layerswap/utils"
+import type { InternalConnector, RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult, Wallet, WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types"
+import { sleep } from "@layerswap/utils"
+import { getRegistryEntry } from "@layerswap/wallet-core"
+import { KnownInternalNames } from "@layerswap/utils";
+import { Address } from "@layerswap/utils"
 import { getEvmConfig, walletClientToSigner } from '@layerswap/wallet-evm'
 import {
     getChainId,

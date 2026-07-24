@@ -1,10 +1,6 @@
-import type {
-    MultiStepHandler,
-    NetworkWithTokens,
-    WalletConnectionProviderProps,
-    WalletConnectionStore,
-} from '@layerswap/widget/types'
-import { createMemoizedConnectionStore, getEip6963Providers, subscribeEip6963Providers } from '@layerswap/widget/internal'
+import type { NetworkWithTokens } from "@layerswap/utils"
+import type { MultiStepHandler, WalletConnectionProviderProps, WalletConnectionStore } from "@layerswap/wallet-core/types"
+import { createMemoizedConnectionStore, getEip6963Providers, subscribeEip6963Providers } from "@layerswap/wallet-core"
 import { createTronTransfer } from '../transferProvider/createTronTransfer'
 import { tronConnectionService } from './TronConnectionService'
 import { useTronStore } from './tronStore'

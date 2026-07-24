@@ -1,6 +1,6 @@
-import { GaslessProvider, GaslessSignParams, Network } from "@layerswap/widget/types"
+import { Network, isMobile } from "@layerswap/utils"
+import { GaslessProvider, GaslessSignParams } from "@layerswap/wallet-core/types"
 import { getAccount, Config } from '@wagmi/core'
-import { isMobile } from "@layerswap/widget/internal"
 
 export function createEVMGaslessProvider(
     config: Config,

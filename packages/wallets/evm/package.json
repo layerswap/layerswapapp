@@ -43,7 +43,8 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@layerswap/widget": "workspace:^",
+    "@layerswap/wallet-core": "workspace:^",
+    "@layerswap/utils": "workspace:^",
     "viem": "catalog:",
     "wagmi": "catalog:",
     "zustand": "catalog:"
@@ -55,7 +56,8 @@
     "js-sha3": "^0.8.0"
   },
   "devDependencies": {
-    "@layerswap/widget": "workspace:^",
+    "@layerswap/wallet-core": "workspace:^",
+    "@layerswap/utils": "workspace:^",
     "@tailwindcss/postcss": "^4.0.15",
     "tailwindcss": "^4.0.15",
     "zustand": "catalog:"

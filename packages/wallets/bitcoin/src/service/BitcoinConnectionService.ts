@@ -1,21 +1,14 @@
-import type {
-    InternalConnector,
-    NetworkWithTokens,
-    Wallet,
-    WalletConnectionProvider,
-    WalletConnectionService,
-} from '@layerswap/widget/types'
-import {
-    KnownInternalNames,
-    walletIconResolver,
-} from '@layerswap/widget/internal'
+import type { NetworkWithTokens } from "@layerswap/utils"
+import type { InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types"
+import { KnownInternalNames } from "@layerswap/utils";
+import { walletIconResolver } from "@layerswap/wallet-core";
 import {
     connect,
     disconnect,
     getConnectors,
     type Connector,
 } from '@bigmi/client'
-import { NetworkType } from '@layerswap/widget/types'
+import { NetworkType } from "@layerswap/utils"
 import { name as PROVIDER_NAME, id as PROVIDER_ID, bitcoinNames } from '../constants'
 import { isBitcoinAddressValid } from '../utils/isValidAddress'
 import { getBitcoinConfig, hasBitcoinConfig } from './getBitcoinConfig'

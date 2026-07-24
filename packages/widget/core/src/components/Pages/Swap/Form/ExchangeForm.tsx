@@ -18,7 +18,7 @@ import clsx from "clsx";
 import { useSwapDataState } from "@/context/swap";
 import { useClickOutside } from "@/hooks/useClickOutside";
 import { Network } from "@/Models/Network";
-import { Wallet } from "@/types/wallet";
+import { Wallet } from "@layerswap/wallet-core/types"
 import { SwapFormValues } from "./SwapFormValues";
 import { useCallbacks } from "@/context/callbackProvider";
 import QuoteDetails from "./FeeDetails";

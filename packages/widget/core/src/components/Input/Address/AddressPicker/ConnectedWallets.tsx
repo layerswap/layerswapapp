@@ -1,9 +1,8 @@
-
 import { ChevronDown, Plus, RefreshCw } from "lucide-react";
 import { Network } from "@/Models/Network";
 import { FC, useState } from "react";
 import ResizablePanel from "@/components/Common/ResizablePanel";
-import { SelectAccountProps, Wallet, WalletConnectionProvider } from "@/types/wallet";
+import { SelectAccountProps, Wallet, WalletConnectionProvider } from "@layerswap/wallet-core/types"
 import WalletIcon from "@/components/Icons/WalletIcon";
 import WalletIconView from "@/components/Wallet/WalletIconView";
 import { WalletItem } from "@/components/Wallet/WalletComponents/WalletsList";

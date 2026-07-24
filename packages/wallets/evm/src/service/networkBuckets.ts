@@ -1,5 +1,4 @@
-import { NetworkType, type NetworkWithTokens } from '@layerswap/widget/types'
-import { KnownInternalNames } from '@layerswap/widget/internal'
+import { KnownInternalNames, NetworkType, type NetworkWithTokens } from '@layerswap/utils'
 import { HYPERLIQUID_ROUTES } from '../additionalProviders/hyperliquid/routes'
 import { POLYMARKET_CONFIG } from '../additionalProviders/polymarket/constants'
 

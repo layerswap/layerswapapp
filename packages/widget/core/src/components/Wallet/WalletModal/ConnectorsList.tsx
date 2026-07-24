@@ -1,13 +1,13 @@
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useWallet from "@/hooks/useWallet";
 import { useConnectModal, WalletModalConnector } from ".";
-import { InternalConnector, Wallet, WalletConnectionProvider } from "@/types/wallet";
+import { InternalConnector, Wallet, WalletConnectionProvider } from "@layerswap/wallet-core/types"
 import clsx from "clsx";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
 import Connector from "./Connector";
 import { usePersistedState } from "@/hooks/usePersistedState";
 import { SearchComponent } from "@/components/Input/Search";
-import { isMobile } from "@/lib/wallets/utils/isMobile";
+import { isMobile } from "@layerswap/utils";
 import AppSettings from "@/lib/AppSettings";
 import { MultichainConnectorPicker } from "./MultichainConnectorPicker";
 import { ProviderPicker } from "./ProviderPicker";
@@ -15,9 +15,8 @@ import { InstalledExtensionNotFound } from "./InstalledExtensionNotFound";
 import { WalletQrCode } from "./WalletQrCode";
 import { LoadingConnect } from "./LoadingConnect";
 import CircularLoader from "@/components/Icons/CircularLoader";
-import { useConnectors } from "@/hooks/useConnectors";
-import { useWalletProvidersRegistry } from "@/context/walletProviders";
-import { useWalletDescriptorLoader } from "@/lib/walletConnect/walletDescriptorLoader";
+import { useConnectors } from "@layerswap/wallet-core";
+import { useWalletDescriptorLoader, useWalletProvidersRegistry } from "@layerswap/wallet-core";
 import { isProviderConnectReady } from "@/hooks/useProvidersConnectReady";
 
 type ProviderPaginationState = {
@@ -105,11 +104,11 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     // such a modal opened before the provider (or its peers) published their
     // connectors, the frozen snapshot would keep the list empty until the
     // modal was closed and reopened.
-    const resolvedSelectedProvider = useMemo(() => (
-        selectedProvider && !selectedProvider.isSelectedFromFilter
-            ? providers.find(p => p.name === selectedProvider.name) || selectedProvider
-            : selectedProvider
-    ), [selectedProvider, providers])
+     const resolvedSelectedProvider = useMemo(() => (
+         selectedProvider && !selectedProvider.isSelectedFromFilter
+             ? providers.find(p => p.name === selectedProvider.name) || selectedProvider
+             : selectedProvider
+     ), [selectedProvider, providers])
     const featuredProviders = useMemo(() => (
         selectedProviderNames.length > 0
             ? filteredProviders.filter(p => selectedProviderNames.includes(p.name))

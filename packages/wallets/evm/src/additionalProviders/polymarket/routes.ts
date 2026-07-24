@@ -1,5 +1,5 @@
 import { POLYMARKET_CONFIG, POLYMARKET_DISPLAY_SYMBOL, PolymarketConfig } from "./constants";
-import type { RealRouteAvailability } from "@layerswap/widget/types";
+import type { RealRouteAvailability } from "@layerswap/wallet-core/types";
 
 /**
  * Destination resolution for Polymarket withdrawals. v1 has a single intermediate

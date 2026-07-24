@@ -1,5 +1,6 @@
-import { TokenBalance, NetworkType, BalanceProvider } from "@layerswap/widget/types";
-import { insertIfNotExists, fetchWithTimeout, formatUnits } from "@layerswap/widget/internal";
+import { NetworkType } from "@layerswap/utils"
+import { TokenBalance, BalanceProvider } from "@layerswap/wallet-core/types"
+import { insertIfNotExists, fetchWithTimeout, formatUnits } from "@layerswap/utils";
 
 export class SolanaBalanceProvider extends BalanceProvider {
     supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {

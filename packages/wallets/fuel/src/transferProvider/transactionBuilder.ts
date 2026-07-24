@@ -1,4 +1,4 @@
-import { TransferProps } from "@layerswap/widget/types"
+import { TransferProps } from "@layerswap/wallet-core/types"
 import { Account, coinQuantityfy, CoinQuantityLike, ScriptTransactionRequest } from 'fuels';
 
 export const transactionBuilder = async (params: { fuelWallet: Account, callData: TransferProps['callData'] }) => {

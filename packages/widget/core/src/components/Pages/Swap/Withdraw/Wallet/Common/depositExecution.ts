@@ -7,7 +7,7 @@ import LayerSwapApiClient, {
 } from "@/lib/apiClients/layerSwapApiClient";
 import { useGaslessAuthorizationStore } from "@/stores/swapTransactionStore";
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
-import { Wallet } from "@/types/wallet";
+import type { Wallet } from "@layerswap/wallet-core/types";
 import { isUserRejection } from "./isUserRejection";
 import { TransferProps } from "@/types/transfer";
 import { ErrorHandler } from "@/lib/ErrorHandler";

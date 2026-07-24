@@ -1,5 +1,5 @@
-import { AppSettings, KnownInternalNames } from "@layerswap/widget/internal";
-import { BalanceProvider, TokenBalance } from "@layerswap/widget/types";
+import { AppSettings, KnownInternalNames } from "@layerswap/utils";
+import { BalanceProvider, TokenBalance } from "@layerswap/wallet-core/types";
 import * as Paradex from "@paradex/sdk";
 
 export class ParadexBalanceProvider extends BalanceProvider {

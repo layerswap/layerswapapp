@@ -54,7 +54,7 @@
     "@layerswap/widget-types": "workspace:^"
   },
   "peerDependencies": {
-    "@layerswap/widget": "workspace:^",
+    "@layerswap/wallet-core": "workspace:^",
     "@tanstack/react-query": "catalog:",
     "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
     "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
@@ -68,6 +68,6 @@
     "url": "https://github.com/layerswap/layerswapapp/issues"
   },
   "devDependencies": {
-    "@layerswap/widget": "workspace:^"
+    "@layerswap/wallet-core": "workspace:^"
   }
 }

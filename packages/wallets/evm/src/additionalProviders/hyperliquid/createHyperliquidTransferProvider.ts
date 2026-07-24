@@ -1,5 +1,5 @@
-import { TransferProvider, TransferProps, TransferProgress, ActionMessageType } from "@layerswap/widget/types"
-import { KnownInternalNames } from "@layerswap/widget/internal"
+import { TransferProvider, TransferProps, TransferProgress, ActionMessageType } from "@layerswap/wallet-core/types"
+import { NetworkType } from "@layerswap/utils"
 import { switchChain } from "@wagmi/core"
 import { getEvmConfig } from "../../service/getEvmConfig"
 import { HyperliquidClient } from "./hyperliquidClient"
@@ -64,8 +64,7 @@ const resolveConfig = (params: TransferProps): HyperliquidConfig | undefined =>
  */
 export function createHyperliquidTransfer(): TransferProvider {
     const supportsNetwork = (network: Parameters<TransferProvider['supportsNetwork']>[0]) =>
-        network.name === KnownInternalNames.Networks.HyperliquidMainnet
-        || network.name === KnownInternalNames.Networks.HyperliquidTestnet
+        network.type === NetworkType.Hyperliquid
 
     return {
         supportsNetwork,

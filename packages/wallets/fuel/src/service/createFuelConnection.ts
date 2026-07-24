@@ -1,10 +1,6 @@
-import type {
-    MultiStepHandler,
-    NetworkWithTokens,
-    WalletConnectionProviderProps,
-    WalletConnectionStore,
-} from '@layerswap/widget/types'
-import { createMemoizedConnectionStore } from '@layerswap/widget/internal'
+import type { NetworkWithTokens } from "@layerswap/utils"
+import type { MultiStepHandler, WalletConnectionProviderProps, WalletConnectionStore } from "@layerswap/wallet-core/types"
+import { createMemoizedConnectionStore } from "@layerswap/wallet-core"
 import { createFuelTransfer } from '../transferProvider/createFuelTransfer'
 import { fuelConnectionService } from './FuelConnectionService'
 import { useFuelStore } from './fuelStore'

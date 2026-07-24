@@ -1,4 +1,4 @@
-import { Wallet } from "@/types/wallet"
+import type { Wallet } from "@layerswap/wallet-core/types"
 import { Address } from "./address/Address"
 
 export const MAX_HISTORY_ADDRESSES = 6

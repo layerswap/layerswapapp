@@ -1,6 +1,6 @@
 import { walletConnect as customWalletConnect } from "../connectors/resolveConnectors/walletConnect"
 import { coinbaseWallet, metaMask, walletConnect } from "@wagmi/connectors";
-import { isMobile } from "@layerswap/widget/internal";
+import { isMobile } from "@layerswap/utils"
 import { browserInjected } from "../connectors/browserInjected";
 import type { CreateConnectorFn } from "wagmi";
 import { HIDDEN_WALLETCONNECT_ID } from "../constants"
@@ -29,9 +29,10 @@ export const createHiddenWalletConnectConnector = (
 export const buildEVMConnectors = (
     walletConnectConfigs: WalletConnectConfig,
 ): readonly CreateConnectorFn[] => {
+    const isMobilePlatform = isMobile()
     const walletConnectConnector = walletConnect({
         projectId: walletConnectConfigs.projectId,
-        showQrModal: isMobile(),
+        showQrModal: isMobilePlatform,
         customStoragePrefix: 'walletConnect',
     })
     const hiddenWalletConnectConnector = createHiddenWalletConnectConnector(walletConnectConfigs)

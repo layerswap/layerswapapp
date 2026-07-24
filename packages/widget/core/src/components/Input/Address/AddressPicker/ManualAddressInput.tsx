@@ -5,7 +5,7 @@ import { NetworkType } from "@/Models/Network";
 import FilledX from "@/components/Icons/FilledX";
 import { AddressGroup, AddressItem } from ".";
 import { Address } from "@/lib/address/Address";
-import { Wallet } from "@/types/wallet";
+import { Wallet } from "@layerswap/wallet-core/types"
 import { FormikHelpers } from "formik";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { useAddressName } from "@/stores/addressBookStore";

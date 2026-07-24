@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { WalletModalConnector } from ".";
-import { InternalConnector, WalletConnectionProvider } from "@/types/wallet";
+import { InternalConnector, WalletConnectionProvider } from "@layerswap/wallet-core/types"
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import WalletIcon from "@/components/Icons/WalletIcon";
 

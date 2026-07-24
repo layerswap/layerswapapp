@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import { useWalletProvidersRegistry } from "@/context/walletProviders";
+import { useWalletProvidersRegistry } from "@layerswap/wallet-core";
 
 export type DepositStep =
     | "method-picker"

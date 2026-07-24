@@ -1,6 +1,6 @@
 import { ButtonHTMLAttributes, DetailedHTMLProps, FC } from "react";
 import { WalletModalConnector } from ".";
-import { InternalConnector } from "@/types/wallet";
+import { InternalConnector } from "@layerswap/wallet-core/types"
 import { Loader } from "lucide-react";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import WalletIcon from "@/components/Icons/WalletIcon";

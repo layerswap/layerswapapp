@@ -37,7 +37,7 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@layerswap/widget": "workspace:^",
+    "@layerswap/wallet-core": "workspace:^",
     "zustand": "catalog:"
   },
   "dependencies": {
@@ -45,7 +45,7 @@
     "@imtbl/wallet": "2.20.2"
   },
   "devDependencies": {
-    "@layerswap/widget": "workspace:^",
+    "@layerswap/wallet-core": "workspace:^",
     "zustand": "catalog:"
   },
   "engines": {

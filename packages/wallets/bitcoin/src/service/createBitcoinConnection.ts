@@ -1,10 +1,6 @@
-import type {
-    MultiStepHandler,
-    NetworkWithTokens,
-    WalletConnectionProviderProps,
-    WalletConnectionStore,
-} from '@layerswap/widget/types'
-import { connectModalStore, createMemoizedConnectionStore } from '@layerswap/widget/internal'
+import type { NetworkWithTokens } from "@layerswap/utils"
+import type { MultiStepHandler, WalletConnectionProviderProps, WalletConnectionStore } from "@layerswap/wallet-core/types"
+import { connectModalStore, createMemoizedConnectionStore } from "@layerswap/wallet-core"
 import { createBitcoinTransfer } from '../transferProvider/createBitcoinTransfer'
 import { bitcoinConnectionService } from './BitcoinConnectionService'
 import { useBitcoinStore } from './bitcoinStore'

@@ -13,7 +13,7 @@ import {
     type CreateConnectorFn,
 } from '@bigmi/client'
 import { bitcoin, createClient, defineChain, http, ChainId } from '@bigmi/core'
-import type { NetworkWithTokens } from '@layerswap/widget/types'
+import type { NetworkWithTokens } from "@layerswap/utils"
 
 let _config: Config | null = null
 let _configKey: string | null = null

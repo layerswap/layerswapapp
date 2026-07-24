@@ -1,10 +1,7 @@
-import type {
-    MultiStepHandler,
-    NetworkWithTokens,
-    WalletConnectionProviderProps,
-    WalletConnectionStore,
-} from '@layerswap/widget/types'
-import { connectModalStore, createMemoizedConnectionStore, isMobile } from '@layerswap/widget/internal'
+import type { NetworkWithTokens } from "@layerswap/utils"
+import type { MultiStepHandler, WalletConnectionProviderProps, WalletConnectionStore } from "@layerswap/wallet-core/types"
+import { isMobile } from "@layerswap/utils"
+import { connectModalStore, createMemoizedConnectionStore } from "@layerswap/wallet-core"
 import { createTonTransfer } from '../transferProvider/createTonTransfer'
 import { tonConnectionService } from './TonConnectionService'
 import { useTonStore } from './tonStore'

@@ -1,5 +1,5 @@
-import { KnownInternalNames } from "@layerswap/widget/internal";
-import { BalanceProvider, TokenBalance } from "@layerswap/widget/types";
+import { NetworkType } from "@layerswap/utils";
+import { BalanceProvider, TokenBalance } from "@layerswap/wallet-core/types";
 import { resolveHyperliquidNodeUrl, HYPERLIQUID_USDC_SYMBOL } from "./constants";
 import { HyperliquidClient } from "./hyperliquidClient";
 
@@ -12,8 +12,7 @@ export class HyperliquidBalanceProvider extends BalanceProvider {
     }
 
     supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
-        return network.name === KnownInternalNames.Networks.HyperliquidMainnet ||
-            network.name === KnownInternalNames.Networks.HyperliquidTestnet;
+        return network.type === NetworkType.Hyperliquid;
     }
 
     fetchBalance: BalanceProvider['fetchBalance'] = async (address, network, options) => {

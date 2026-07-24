@@ -6,7 +6,6 @@ export { NetworkSettings }
 export { insertIfNotExists } from "../lib/balances/helpers"
 export * from "../lib/retry"
 export { fetchWithTimeout } from "../lib/fetchWithTimeout"
-export * from "../lib/wallets/utils";
 export { default as AppSettings } from "../lib/AppSettings";
 export { usePersistedState } from "../hooks/usePersistedState";
 export { useSettingsState } from "../context/settings";
@@ -22,14 +21,6 @@ export { useSelectedAccount, useSelectSwapAccount, useSwapAccounts, useLatestSou
 export { default as useWallet } from "@/hooks/useWallet"
 export * from "../lib/apiClients"
 export * from "../lib/formatUnits"
-// Explicit re-exports (not `export * from "../stores"`): the wildcard meant any
-// store added to ../stores/index.ts was silently published to every consuming
-// wallet package, turning incidental store-shape changes into cross-package
-// breaking changes. Keep this list intentional and minimal. Today only
-// `useWalletStore` is consumed by wallet-package source (Fuel/Paradex); the
-// rest are exposed for host-app integrations. Prefer adding stable accessor
-// functions over widening this surface.
-export { useWalletStore } from "../stores/walletStore"
 export { useSlippageStore } from "../stores/slippageStore"
 export { useSwapTransactionStore, useSwapDepositHintClicked, type SwapTransaction } from "../stores/swapTransactionStore"
 export { useRecentNetworksStore, type RoutesHistory } from "../stores/recentRoutesStore"
@@ -44,5 +35,45 @@ export { useWalletProvidersList } from "../components/Wallet/WalletProviders"
 export { ErrorHandler } from '../lib/ErrorHandler';
 export type { ErrorEventType } from '../types/logEvents';
 export { useRpcHealth } from "../context/rpcHealthContext";
-export * from "../lib/walletConnect"
 export * from "../lib/extendedRoutes"
+export {
+    connectModalStore,
+    buildDeepLink,
+    createRegistryConnector,
+    createReactHookConnectionAdapter,
+    findRegistryWalletByName,
+    subscribeDisplayUri,
+    getRegistryEntry,
+    mapConnectError,
+    getDynamicWcMetadata,
+    getPendingDynamicWcMetadata,
+    clearPendingDynamicWcMetadata,
+    createMemoizedConnectionStore,
+    setDynamicWcMetadata,
+    setPendingMetadataForRegistry,
+    getAdditionalConnectorsStore,
+    useWalletDescriptorLoader,
+    WalletDescriptorLoaderContext,
+    useConnectors,
+    WalletProvidersRegistryProvider,
+    useWalletProvidersRegistry,
+    useWalletProvidersReady,
+    walletKey,
+    getKnownConnectorIconBase64,
+    normalizeIconSrc,
+    resolveWalletConnectorIcon,
+    walletIconResolver,
+    extractErrorDetails,
+    classifyNodeError,
+    getEip6963Providers,
+    subscribeEip6963Providers,
+} from "@layerswap/wallet-core"
+export type {
+    DisplayUriSource,
+    RegistryConnector,
+    WalletConnectWalletBase,
+    WalletConnectWallet,
+    ErrorDetails,
+    NodeErrorCategory,
+    Eip6963Provider,
+} from "@layerswap/wallet-core"

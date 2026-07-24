@@ -1,5 +1,4 @@
-import type { RealRouteAvailability } from "@layerswap/widget/types";
-
+import type { RealRouteAvailability } from "@layerswap/wallet-core/types";
 /**
  * Single source of truth for Hyperliquid CCTP withdrawal routes, keyed by the
  * Hyperliquid source network. Each source carries an ordered list of
@@ -11,9 +10,7 @@ import type { RealRouteAvailability } from "@layerswap/widget/types";
  * Adding/switching a destination = one entry in `destinations`.
  */
 
-import { KnownInternalNames } from "@layerswap/widget/internal"
-
-/** Per-destination CCTP params + economics. Different chains can have different
+import { KnownInternalNames } from "@layerswap/utils";/** Per-destination CCTP params + economics. Different chains can have different
  * forwarding fees, arrival times, decimals, and signature chain ids. */
 export type HyperliquidDestination = {
     /** Real backend network the withdrawal is fulfilled through. */

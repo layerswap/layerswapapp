@@ -1,7 +1,7 @@
 import { HYPERLIQUID_ROUTES, HyperliquidDestination, getHyperliquidCandidates, pickHyperliquidDestination } from "./routes";
 import { HYPERLIQUID_FUNDING, HYPERLIQUID_USDC_SYMBOL } from "./constants";
-import { ExtendedRouteProvider, ExtendedTokenMapping, NetworkRoute, NetworkRouteToken, RealRouteRef, requiredDepositMethod } from "@layerswap/widget/types";
-import { realRoutePresent } from "@layerswap/widget/internal";
+import { NetworkRoute, NetworkRouteToken, realRoutePresent } from "@layerswap/utils";
+import { DepositRouteRef, ExtendedRouteProvider, ExtendedTokenMapping, RealRouteRef, requiredDepositMethod } from "@layerswap/wallet-core/types";
 
 /**
  * Build an extended-route mapping from a chosen destination.
@@ -81,7 +81,7 @@ export const hyperliquidProvider: ExtendedRouteProvider = {
         if (!dest) return undefined
         return toMapping(dest)
     },
-    getRealCandidates(networkName, tokenSymbol): RealRouteRef[] {
+    getRealCandidates(networkName, tokenSymbol): DepositRouteRef[] {
         if (tokenSymbol !== HYPERLIQUID_USDC_SYMBOL) return []
         return getHyperliquidCandidates(networkName)
     },

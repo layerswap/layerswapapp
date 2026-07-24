@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import useWallet from "./useWallet"
 import { useWalletProvidersReady } from "@/context/walletProviders"
-import type { WalletConnectionProvider } from "@/types/wallet"
+import type { WalletConnectionProvider } from "@layerswap/wallet-core/types"
 
 /**
  * Whether a provider is ready enough for its connect affordance to be enabled.

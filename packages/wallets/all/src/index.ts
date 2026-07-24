@@ -48,7 +48,7 @@ import { createTONDescriptor } from "./descriptors/ton";
 import type { TronProviderConfig } from "@layerswap/wallet-tron";
 import { createTronDescriptor } from "./descriptors/tron";
 
-import { WalletProvider, WalletProviderDescriptor, WalletWrapper } from "@layerswap/widget/types";
+import { WalletProviderDescriptor, WalletProvider, WalletWrapper } from "@layerswap/wallet-core/types"
 
 export { defineWalletDescriptor } from "./descriptors/defineWalletDescriptor";
 
@@ -106,7 +106,7 @@ export type DefaultWalletConfig = {
  * @example
  * ```tsx
  * import { getDefaultProviders } from "@layerswap/wallets";
- * import { LayerswapProvider, Swap } from "@layerswap/widget";
+ * import { LayerswapProvider, Swap } from the widget package;
  *
  * const walletProviders = getDefaultProviders({
  *   walletConnect: {

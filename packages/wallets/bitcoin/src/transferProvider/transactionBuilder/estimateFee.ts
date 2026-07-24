@@ -1,4 +1,4 @@
-import { JsonRpcClient } from '@layerswap/widget/internal';
+import { JsonRpcClient } from "@layerswap/utils";
 import axios from 'axios';
 import { Psbt } from 'bitcoinjs-lib'
 

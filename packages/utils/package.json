@@ -37,9 +37,11 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "@layerswap/widget-types": "workspace:^",
     "bitcoin-address-validation": "^3.0.0",
     "bn.js": "^5.2.2",
     "bs58": "^6.0.0",
+    "csstype": "^3.2.3",
     "js-sha3": "^0.8.0"
   },
   "devDependencies": {

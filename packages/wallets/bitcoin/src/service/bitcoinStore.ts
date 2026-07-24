@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { GetAccountReturnType, Connector } from '@bigmi/client'
-import type { InternalConnector } from '@layerswap/widget/types'
+import type { InternalConnector } from "@layerswap/wallet-core/types"
 
 export type BitcoinAccountSnapshot = {
     address?: string

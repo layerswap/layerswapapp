@@ -1,4 +1,4 @@
-import type { WalletProviderDescriptor } from "@layerswap/widget/types"
+import type { WalletProviderDescriptor } from "@layerswap/wallet-core/types"
 import type { TonClientConfig } from "@layerswap/wallet-ton"
 import { defineWalletDescriptor } from "./defineWalletDescriptor"
 import { hasStorageKey } from "./persistedSession"

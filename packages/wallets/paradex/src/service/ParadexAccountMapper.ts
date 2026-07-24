@@ -1,6 +1,6 @@
-import type { WalletConnectionProvider } from '@layerswap/widget/types'
-import { useWalletStore } from '@layerswap/widget/internal'
+import type { WalletConnectionProvider } from '@layerswap/wallet-core/types'
 import { useParadexActiveStore, type ParadexAccount } from './paradexActiveStore'
+import { paradexAccountStore } from './paradexAccountStore'
 
 export type ParadexAccountMap = { [l1Address: string]: string }
 
@@ -12,15 +12,15 @@ export type ParadexAccountMap = { [l1Address: string]: string }
  */
 export class ParadexAccountMapper {
     getAccounts(): ParadexAccountMap {
-        return useWalletStore.getState().paradexAccounts ?? {}
+        return paradexAccountStore.getState().paradexAccounts ?? {}
     }
 
     addAccount(payload: { l1Address: string; paradexAddress: string }): void {
-        useWalletStore.getState().addParadexAccount(payload)
+        paradexAccountStore.getState().addParadexAccount(payload)
     }
 
     removeAccount(l1Address: string): void {
-        useWalletStore.getState().removeParadexAccount(l1Address)
+        paradexAccountStore.getState().removeParadexAccount(l1Address)
     }
 
     getSelectedAccount(): ParadexAccount | undefined {

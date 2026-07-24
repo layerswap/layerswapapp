@@ -1,11 +1,6 @@
-import type {
-    InternalConnector,
-    NetworkWithTokens,
-    Wallet,
-    WalletConnectionProvider,
-    WalletConnectionService,
-} from '@layerswap/widget/types'
-import { sleep } from '@layerswap/widget/internal'
+import type { NetworkWithTokens } from "@layerswap/utils"
+import type { InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types"
+import { sleep } from "@layerswap/utils"
 import type { FuelConnector } from '@fuel-ts/account'
 import { Address } from '@fuel-ts/address'
 import { name as PROVIDER_NAME, id as PROVIDER_ID, commonSupportedNetworks } from '../constants'
