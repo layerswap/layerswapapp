@@ -4,6 +4,7 @@ import { FC, useCallback, useRef, useState } from "react";
 import { Wallet, WalletConnectionProvider } from "@/types/wallet";
 import { useConnectModal } from "../Wallet/WalletModal";
 import { useWalletDescriptorLoader } from "@/lib/walletConnect/walletDescriptorLoader";
+import { ensureRegistryBrowseLoaded } from "@/lib/walletConnect/additionalConnectorsStore";
 import { isProviderConnectReady } from "@/hooks/useProvidersConnectReady";
 import { classNames } from "@/components/utils/classNames";
 
@@ -26,19 +27,21 @@ const ConnectWalletButton: FC<Props> = ({ provider, onConnect, descriptionText, 
     const isStub = provider?.isStub === true
     const isProviderReady = isProviderConnectReady(provider)
 
-    // Kick off the descriptor SDK download as soon as the user shows
-    // intent (mouse-enter or keyboard-focus) on the button. The await on
-    // click will then resolve against an already-in-flight (or completed)
-    // import instead of starting one cold. `loadAll` itself dedupes
-    // in-flight loads, so we can fire it cheaply on every hover.
-    // Keyed by provider id so a stub → real provider transition re-arms the
-    // prefetch for the new provider instead of staying latched on the stub.
+    // Kick off the descriptor SDK downloads AND the page-1 WalletConnect
+    // registry fetches as soon as the user shows intent (mouse-enter or
+    // keyboard-focus) on the button. The await on click will then resolve
+    // against already-in-flight (or completed) work instead of starting it
+    // cold. Both helpers dedupe in-flight loads, so firing on every hover is
+    // cheap. Keyed by provider id so a stub → real provider transition
+    // re-arms the prefetch for the new provider instead of staying latched
+    // on the stub.
     const prefetchedRef = useRef<string | null>(null)
     const prefetchDescriptors = useCallback(() => {
         const key = provider?.id ?? '__no_provider__'
         if (prefetchedRef.current === key) return
         prefetchedRef.current = key
-        void loadAll()
+        ensureRegistryBrowseLoaded()
+        void loadAll().then(() => ensureRegistryBrowseLoaded())
     }, [loadAll, provider?.id])
 
     const handleConnect = async () => {

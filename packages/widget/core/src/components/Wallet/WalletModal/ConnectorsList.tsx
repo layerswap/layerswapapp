@@ -15,9 +15,15 @@ import { InstalledExtensionNotFound } from "./InstalledExtensionNotFound";
 import { WalletQrCode } from "./WalletQrCode";
 import { LoadingConnect } from "./LoadingConnect";
 import CircularLoader from "@/components/Icons/CircularLoader";
-import { useConnectors } from "@/hooks/useConnectors";
+import { connectorKey, resolveChainConnectors, useConnectors } from "@/hooks/useConnectors";
 import { useWalletProvidersRegistry } from "@/context/walletProviders";
 import { useWalletDescriptorLoader } from "@/lib/walletConnect/walletDescriptorLoader";
+import {
+    ensureRegistryBrowseLoaded,
+    getInstantiatedAdditionalConnectorsStores,
+    subscribeAdditionalConnectorsStores,
+    useRegistryBrowseStatuses,
+} from "@/lib/walletConnect";
 import { isProviderConnectReady } from "@/hooks/useProvidersConnectReady";
 
 type ProviderPaginationState = {
@@ -148,34 +154,67 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         return () => clearTimeout(scrollTimeout.current as any);
     }, []);
 
-    // Reads CURRENT store state (not a render snapshot) to decide whether a
-    // wallet is exposed by more than one ecosystem.
-    const liveMultiChain = useCallback((name: string) => {
-        const lower = name.toLowerCase()
-        const providersWith = registry.getEntries().filter(e =>
-            e.store.getState().availableConnectors?.some(c => c.name.toLowerCase() === lower)
-        )
-        return providersWith.length > 1
+    // Reads CURRENT store state (not a render snapshot) to resolve a wallet's
+    // per-ecosystem variants, using the same resolver as the tile grid
+    // (provider `availableConnectors`/`additionalConnectors` scan + registry
+    // `chains` synthesis) so click-time decisions and rendered variants can't
+    // disagree. Scoped to the providers the modal is currently featuring, so
+    // a scoped connect (single-ecosystem modal) never offers foreign
+    // ecosystems.
+    const getLiveVariants = useCallback((connector: WalletModalConnector) => {
+        const allowedNames = new Set(featuredProvidersRef.current.map(p => p.name))
+        const states = registry.getEntries()
+            .map(e => e.store.getState())
+            .filter(s => allowedNames.has(s.name))
+        const pool = [
+            connector,
+            ...states.flatMap(s =>
+                [...(s.availableConnectors ?? []), ...(s.additionalConnectors ?? [])]
+                    .map(c => ({ ...c, providerName: s.name }))
+            ),
+        ]
+        return resolveChainConnectors(pool, states).get(connectorKey(connector.name))?.variants ?? []
     }, [registry])
 
-    // Resolves once every provider has finished loading (no stubs left, all
-    // real providers `ready`), bounded by `timeoutMs` so a never-ready ecosystem
-    // can't hang the connect. `loadAll()` only imports lazy descriptor modules;
-    // we then wait for the stores to actually publish their connectors.
-    const awaitProvidersSettled = useCallback(async (timeoutMs = 1200) => {
+    // Registry (WalletConnect API) wallets are a list source of their own:
+    // provider `ready` does NOT cover the page-1 browse fetch, so "settled"
+    // must check it separately or multichain evidence carried only by registry
+    // `chains` metadata is invisible at decision time.
+    const registrySettled = useCallback(() => (
+        getInstantiatedAdditionalConnectorsStores().every(s => {
+            const status = s.getSnapshot().browseMetadata.status
+            return status === 'ready' || status === 'error'
+        })
+    ), [])
+
+    // Resolves once every list source has finished loading: no descriptor
+    // stubs left, all real providers `ready`, and every namespace's page-1
+    // registry fetch settled (loaded or failed) — bounded by `timeoutMs` so a
+    // never-ready ecosystem or a hanging API can't hang the connect.
+    // `loadAll()` only imports lazy descriptor modules; we then wait for the
+    // stores to actually publish their connectors. `ensureRegistryBrowseLoaded`
+    // is re-fired on every registry event because provider hydration can
+    // instantiate NEW namespace stores mid-wait, and their fetches must be
+    // triggered for `registrySettled` to ever become true.
+    const awaitProvidersSettled = useCallback(async (timeoutMs = 3000) => {
         await loadAll()
+        ensureRegistryBrowseLoaded()
         const settled = () => registry.getEntries().every(e => {
             const s = e.store.getState()
             return !s.isStub && s.ready
-        })
+        }) && registrySettled()
         if (settled()) return
         await new Promise<void>(resolve => {
-            let unsub = () => { }
-            const finish = () => { clearTimeout(timer); unsub(); resolve() }
+            let unsubs: (() => void)[] = []
+            const finish = () => { clearTimeout(timer); unsubs.forEach(u => u()); resolve() }
             const timer = setTimeout(finish, timeoutMs)
-            unsub = registry.subscribe(() => { if (settled()) finish() })
+            const check = () => {
+                ensureRegistryBrowseLoaded()
+                if (settled()) finish()
+            }
+            unsubs = [registry.subscribe(check), subscribeAdditionalConnectorsStores(check)]
         })
-    }, [loadAll, registry])
+    }, [loadAll, registry, registrySettled])
 
     // A tile can point at a provider that is still a descriptor stub (e.g. a
     // multichain variant synthesized from registry metadata before its
@@ -207,23 +246,28 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 return;
             }
             // Multi-ecosystem wallets (e.g. MetaMask: EVM + Solana + Tron) surface
-            // their non-EVM connectors only after late-loading providers settle.
-            // If a wallet is clicked while any provider is still loading, the
-            // `isMultiChain` flag may not be final yet — wait (bounded) and
-            // re-check before committing to a single-ecosystem connect, so we
-            // don't skip the ecosystem picker. Scoped to injected/standard
-            // connectors (the only kind that can be multi-ecosystem) so
-            // WalletConnect/registry wallets are never delayed.
-            const providersStillLoading = registry.getEntries().some(e => {
+            // their non-EVM connectors only after late-loading providers settle,
+            // and registry `chains` evidence only after the WalletConnect API
+            // fetch lands. If a wallet is clicked while any source is still
+            // loading, the `isMultiChain` flag may not be final yet — wait
+            // (bounded) and re-check before committing to a single-ecosystem
+            // connect, so we don't skip the ecosystem picker. Scoped to
+            // injected/standard connectors (the only kind that can be
+            // multi-ecosystem) so WalletConnect/registry wallets are never
+            // delayed.
+            const sourcesStillLoading = registry.getEntries().some(e => {
                 const s = e.store.getState()
                 return s.isStub || !s.ready
-            })
-            if (connector?.type === 'injected' && providersStillLoading && !liveMultiChain(connector.name)) {
+            }) || !registrySettled()
+            if (connector?.type === 'injected' && sourcesStillLoading && getLiveVariants(connector).length < 2) {
                 setSelectedConnector(connector)
                 await awaitProvidersSettled()
-                if (liveMultiChain(connector.name)) {
+                const settledVariants = getLiveVariants(connector)
+                if (settledVariants.length > 1) {
                     setSelectedConnector(undefined)
-                    setSelectedMultiChainConnector(connector)
+                    // Carry the freshly-resolved variants: the click-time
+                    // connector froze a pre-settle (possibly EVM-only) list.
+                    setSelectedMultiChainConnector({ ...connector, variants: settledVariants, isMultiChain: true })
                     return
                 }
             }
@@ -415,6 +459,28 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     const anyProviderHasMore = featuredProviders.some(provider => activePaginationByProvider[provider.name]?.nextPage != null)
     const anyProviderLoadingMore = featuredProviders.some(provider => activePaginationByProvider[provider.name]?.isLoading)
 
+    // The tile grid is fed by several async sources (ecosystem SDK hydration,
+    // per-namespace WalletConnect registry fetches), so tiles keep appending
+    // for a while after the modal opens. Surface that visibly — a loading tail
+    // while any source is pending, a retry row if a registry fetch failed —
+    // instead of letting the list silently read as complete. The tail is
+    // bounded: a permanently-broken source (failed SDK chunk) must not spin
+    // forever.
+    const { anyLoading: registryLoading, anyError: registryError } = useRegistryBrowseStatuses()
+    const providersLoading = featuredProviders.some(p => p.isStub === true || p.ready === false)
+    const sourcesLoading = providersLoading || registryLoading
+    const [sourcesLoadingExpired, setSourcesLoadingExpired] = useState(false)
+    useEffect(() => {
+        if (!sourcesLoading || sourcesLoadingExpired) return
+        const timer = setTimeout(() => setSourcesLoadingExpired(true), 8000)
+        return () => clearTimeout(timer)
+    }, [sourcesLoading, sourcesLoadingExpired])
+    const showSourcesLoadingTail = sourcesLoading && !sourcesLoadingExpired
+    const retryRegistry = () => {
+        setSourcesLoadingExpired(false)
+        ensureRegistryBrowseLoaded()
+    }
+
     const loadMoreInFlightRef = useRef(false)
 
     const loadMore = useCallback(async () => {
@@ -546,8 +612,16 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     }
 
     if (selectedMultiChainConnector) {
+        // `selectedMultiChainConnector` is a snapshot frozen at click time —
+        // its `variants` can miss ecosystems that settled afterwards. Re-derive
+        // from the live pool and keep whichever version knows more, so the
+        // picker gains rows as late providers/registry fetches land.
+        const liveVariants = getLiveVariants(selectedMultiChainConnector)
+        const pickerConnector = liveVariants.length > (selectedMultiChainConnector.variants?.length ?? 0)
+            ? { ...selectedMultiChainConnector, variants: liveVariants }
+            : selectedMultiChainConnector
         return <MultichainConnectorPicker
-            selectedConnector={selectedMultiChainConnector}
+            selectedConnector={pickerConnector}
             providers={featuredProviders}
             connect={connect}
         />
@@ -597,9 +671,21 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                             })
                         }
                     </div>
-                    {(anyProviderHasMore || anyProviderLoadingMore) && (
+                    {(anyProviderHasMore || anyProviderLoadingMore || showSourcesLoadingTail) && (
                         <div ref={loadMoreTriggerRef} className="col-span-2 flex justify-center items-center pt-2.5">
                             <CircularLoader className="w-8 h-8 animate-spin" />
+                        </div>
+                    )}
+                    {registryError && !showSourcesLoadingTail && (
+                        <div className="col-span-2 flex justify-center items-center gap-1.5 pt-2.5 pb-1">
+                            <p className="text-sm text-secondary-text">Some wallets couldn&apos;t be loaded.</p>
+                            <button
+                                type="button"
+                                onClick={retryRegistry}
+                                className="text-sm text-primary-text underline hover:no-underline"
+                            >
+                                <span>Retry</span>
+                            </button>
                         </div>
                     )}
                 </div>

@@ -13,6 +13,7 @@ import { filterSourceNetworks } from "@/helpers/filterSourceNetworks";
 import { createWalletProvidersRegistry, type WalletProvidersRegistry } from "@/lib/walletConnect/walletProvidersRegistry";
 import { createDescriptorStubStore } from "@/lib/walletConnect/descriptorStubStore";
 import { useWalletDescriptorLoader } from "@/lib/walletConnect/walletDescriptorLoader";
+import { ensureRegistryBrowseLoaded } from "@/lib/walletConnect/additionalConnectorsStore";
 import clsx from "clsx";
 
 const ConnectorsList = lazy(() => import("@/components/Wallet/WalletModal/ConnectorsList"));
@@ -135,10 +136,15 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
     }, [settings, networks, isMobilePlatform, walletProvidersRegistry])
 
     // Phase-1 trigger: hydrate every pending descriptor the first time the
-    // connect modal opens. Later phases can add finer-grained triggers
-    // (idle prefetch of connected families, swap-page hydration, etc.).
+    // connect modal opens, and warm the page-1 WalletConnect registry fetch
+    // for every namespace store — twice, because descriptor hydration
+    // instantiates stores that didn't exist when the modal opened. Later
+    // phases can add finer-grained triggers (idle prefetch of connected
+    // families, swap-page hydration, etc.).
     useEffect(() => {
-        if (open) void loadAll()
+        if (!open) return
+        ensureRegistryBrowseLoaded()
+        void loadAll().then(() => ensureRegistryBrowseLoaded())
     }, [open, loadAll])
 
     return (

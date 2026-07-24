@@ -119,10 +119,10 @@ export function createEvmConnection(
             additionalConnectorsStore.subscribe(sync),
             connectModalStore.subscribe(() => {
                 const modal = connectModalStore.getSnapshot()
-                if (modal.isWalletModalOpen && !additionalConnectorsStore.getSnapshot().browseMetadata.loaded) {
-                    additionalConnectorsStore
-                        .requestAdditionalConnectors({ page: 1, pageSize: 40 })
-                        .catch(error => console.warn('Failed to load WalletConnect wallets registry', error))
+                if (modal.isWalletModalOpen) {
+                    // Deduped + status-tracked (loading/error) so the widget's
+                    // settle gate and loading tail observe this fetch.
+                    void additionalConnectorsStore.ensureBrowseLoaded()
                 }
             }),
         ],

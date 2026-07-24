@@ -21,7 +21,7 @@ type InitialSnapshot = {
 
 const UNMERGEABLE_WALLETS = ['nova', 'nova wallet']
 const NAME_OVERRIDES: Record<string, string> = { bitget: 'Bitget Wallet' }
-const connectorKey = (name: string) =>
+export const connectorKey = (name: string) =>
     UNMERGEABLE_WALLETS.includes(name.toLowerCase()) ? name.toLowerCase() : walletKey(name)
 
 const resolveNames = (groups: InternalConnector[][]): InternalConnector[][] => {
@@ -40,7 +40,14 @@ const resolveNames = (groups: InternalConnector[][]): InternalConnector[][] => {
     return groups.map(group => group.map(c => c?.name ? { ...c, name: NAME_OVERRIDES[walletKey(c.name)] ?? canonical.get(walletKey(c.name)) ?? c.name } : c))
 }
 
-const resolveChainConnectors = (pool: InternalConnector[], providers: WalletConnectionProvider[]) => {
+// Groups a connector pool by wallet identity and resolves each wallet's
+// per-ecosystem variants: one variant per provider that exposes the wallet,
+// plus variants synthesized from the WalletConnect registry entry's `chains`
+// metadata for ecosystems whose provider is present but hasn't (yet) listed
+// the wallet itself. This is the single source of truth for "is this wallet
+// multichain" — the tile badge, the click-time re-check in ConnectorsList,
+// and the ecosystem picker must all derive from it so they can't disagree.
+export const resolveChainConnectors = (pool: InternalConnector[], providers: WalletConnectionProvider[]) => {
     const toProvider: Record<string, string> = { eip155: 'EVM', solana: 'Solana' }
     const mobile = isMobile()
     const records = new Map<string, { variants: InternalConnector[], entry?: WalletConnectWalletBase }>()
