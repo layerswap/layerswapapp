@@ -1,0 +1,282 @@
+import { ChevronRight } from "lucide-react"
+import { classNames } from "../utils/classNames"
+
+export const SwapHistoryComponentSceleton = () => {
+
+  return <div className="animate-pulse">
+    <div className=" mb-10 ">
+      <div className="-mx-4 mt-10 sm:-mx-6 md:mx-0 md:rounded-lg ">
+        <table className="min-w-full divide-y divide-secondary-500">
+          <thead>
+            <tr>
+              <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-500 sm:pl-6">
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="hidden lg:block">
+                    <div className="h-2 w-8 bg-slate-700 rounded-sm col-span-1"></div>
+                  </div>
+                </div>
+              </th>
+              <th
+                scope="col"
+                className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
+              >
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="h-2 w-8 bg-slate-700 rounded-sm col-span-1"></div>
+                </div>
+              </th>
+              <th
+                scope="col"
+                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-500 "
+              >
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="h-2 w-8 bg-slate-700 rounded-sm col-span-1"></div>
+                </div>
+              </th>
+              <th
+                scope="col"
+                className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
+              >
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="h-2 w-16 bg-slate-700 rounded-sm col-span-1"></div>
+                </div>
+              </th>
+              <th
+                scope="col"
+                className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
+              >
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="h-2 w-16 bg-slate-700 rounded-sm col-span-1"></div>
+                </div>
+              </th>
+
+              <th
+                scope="col"
+                className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-500 lg:table-cell"
+              >
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="h-2 w-8 bg-slate-700 rounded-sm col-span-1"></div>
+                </div>
+              </th>
+              <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="h-2 w-8 bg-slate-700 rounded-sm col-span-1"></div>
+                </div>
+              </th>
+              <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
+
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {[...Array(5)]?.map((item, index) => (
+              <tr key={index}>
+                <td
+                  className={classNames(
+                    index === 0 ? '' : 'border-t border-secondary-500',
+                    'relative py-4 pl-4 sm:pl-6 pr-3 text-sm'
+                  )}
+                >
+                  <div className="text-primary-text hidden lg:block">
+                    <div className="grid grid-cols-1 gap-4">
+                      <div className="h-2 w-16 bg-slate-700 rounded-sm col-span-1"></div>
+                    </div>
+                  </div>
+                  {index !== 0 ? <div className="absolute right-0 left-6 -top-px h-px bg-secondary-500" /> : null}
+                </td>
+                <td
+                  className={classNames(
+                    index === 0 ? '' : 'border-t border-secondary-500',
+                    'hidden px-3 py-3.5 text-sm text-primary-text lg:table-cell'
+                  )}
+                >
+                  <div className="flex space-x-2">
+                    <div className="rounded-full bg-slate-700 h-4 w-4"></div>
+                    <div className="grid grid-cols-4 items-center">
+                      <div className="h-2 w-16 bg-slate-700 rounded-sm col-span-3"></div>
+                    </div>
+                  </div>
+
+                </td>
+                <td
+                  className={classNames(
+                    index === 0 ? '' : 'border-t border-secondary-500',
+                    'px-3 py-3.5 text-sm text-primary-text table-cell'
+                  )}
+                >
+                  <div className="flex space-x-2">
+                    <div className="rounded-full bg-slate-700 h-4 w-4"></div>
+                    <div className="grid grid-cols-4 items-center">
+                      <div className="h-2 w-16 bg-slate-700 rounded-sm col-span-3"></div>
+                    </div>
+                  </div>
+                </td>
+                <td
+                  className={classNames(
+                    index === 0 ? '' : 'border-t border-secondary-500',
+                    'hidden px-3 py-3.5 text-sm text-primary-text lg:table-cell'
+                  )}
+                >
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="h-2 w-16 bg-slate-700 rounded-sm col-span-1"></div>
+                  </div>
+                </td>
+                <td
+                  className={classNames(
+                    index === 0 ? '' : 'border-t border-secondary-500',
+                    'relative px-3 py-3.5 text-sm text-primary-text'
+                  )}
+                >
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="h-2 w-16 bg-slate-700 rounded-sm col-span-1"></div>
+                  </div>
+                </td>
+                <td
+                  className={classNames(
+                    index === 0 ? '' : 'border-t border-secondary-500',
+                    'px-3 py-3.5 text-sm text-primary-text  hidden lg:table-cell'
+                  )}
+                >
+                  <div className="flex space-x-2">
+                    <div className="rounded-sm bg-slate-700 h-2 w-2"></div>
+                    <div className="grid grid-cols-1 items-center">
+                      <div className="h-2 w-16 bg-slate-700 rounded-sm col-span-1"></div>
+                    </div>
+                  </div>
+                </td>
+                <td
+                  className={classNames(
+                    index === 0 ? '' : 'border-t border-secondary-500',
+                    'px-3 py-3.5 text-sm text-primary-text  hidden lg:table-cell'
+                  )}
+                >
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="h-2 w-12 bg-slate-700 rounded-sm col-span-1"></div>
+                    <div className="h-2 w-8 bg-slate-700 rounded-sm col-span-1"></div>
+                  </div>
+                </td>
+                <td
+                  className={classNames(
+                    index === 0 ? '' : 'border-t border-secondary-500',
+                    'px-3 py-3.5 text-sm text-primary-text  hidden lg:table-cell'
+                  )}
+                >
+                  <div className="grid grid-cols-1 gap-4">
+                    <ChevronRight className="h-5 w-5 text-slate-700" />
+                  </div>
+                </td>
+
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+}
+
+export const SwapDetailsComponentSceleton = () => {
+  return <div className="animate-pulse"><div className="w-full grid grid-flow-row">
+    <div className="rounded-md bg-secondary-700 w-full grid grid-flow-row">
+      <div className="items-center block text-base font-lighter leading-6 text-secondary-text">
+        <div className="flex justify-between items-baseline">
+          <div className="h-2 m-2 w-1/4 bg-slate-400 rounded-sm col-span-1"></div>
+          <div className="h-2 m-2 w-1/4 bg-slate-700 rounded-sm col-span-1"></div>
+        </div>
+        {[...Array(8)]?.map((item, index) => (
+          <div key={index}>
+            <hr className='horizontal-gradient my-1' />
+            <div className="flex justify-between items-baseline">
+              <div className="h-2.5 m-2 w-1/4 bg-slate-700 rounded-full col-span-1"></div>
+              <div className="h-2 m-2 w-1/4 bg-slate-700 rounded-sm col-span-1"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+  </div>
+}
+
+export const DocInFrameSceleton = () => {
+  return <div className="shadow-sm rounded-md w-full mx-auto px-2 md:px-4">
+    <div className="animate-pulse flex space-x-4">
+      <div className="flex-1 items-center space-y-6 py-1 content-start">
+        <div className="h-4 mx-auto w-1/2 place-self-center justify-self-center self-center bg-slate-700 rounded-sm mb-4"></div>
+        <div className="space-y-6">
+          {[...Array(8)]?.map((item, index) =>
+            <div className="space-y-4"
+              key={index}
+            >
+              <div className="grid grid-cols-3 gap-3">
+                <div className="h-2 bg-slate-700 rounded-sm col-span-2"></div>
+                <div className="h-2 bg-slate-700 rounded-sm col-span-1"></div>
+              </div>
+              <div className="h-2 bg-slate-700 rounded-sm"></div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+export const ExchangesComponentSceleton = () => {
+
+  return <>
+    {[...Array(12)]?.map((item, index) =>
+      <div
+        key={index}
+        className="animate-pulse bg-secondary-700 select-none rounded-lg py-5 px-3">
+        <div className="flex justify-between space-x-4 md:space-x-16 px-3">
+          <div className="flex space-x-2">
+            <div className="rounded-md bg-slate-700 h-8 w-8"></div>
+            <div className="grid grid-cols-5">
+              <div className="h-2 w-20 bg-slate-700 rounded-sm col-span-3"></div>
+            </div>
+          </div>
+
+          <div className="rounded-sm bg-slate-700 h-8 w-20 place-self-end py-3 px-4"></div>
+        </div>
+      </div>
+    )}
+  </>
+
+}
+
+export const RewardsComponentSceleton = () => {
+  return (
+    <div className="space-y-5">
+      <div className="space-y-4">
+        <div className="rounded-md w-full bg-gray-500 animate-pulse h-12" />
+        <div className="rounded-lg w-full h-[calc(5rem+2px)] bg-gray-500 animate-pulse" />
+      </div>
+
+      <div className="rounded-lg bg-secondary-700 animate-pulse h-[calc(5.75rem+2px)] w-full">
+        <div className="relative w-full p-3">
+          <div className="flex justify-start">
+            <div className="h-5 w-11 bg-gray-500 animate-pulse rounded-md" />
+          </div>
+          <div className="flex items-center justify-between w-full mt-1 space-x-2">
+            <div className="flex flex-col w-full gap-2">
+              <div className="relative h-4 w-full overflow-hidden rounded-full bg-primary animate-pulse" />
+              <div className="h-5 w-11 bg-gray-500 animate-pulse rounded-md" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export const RewardsComponentLeaderboardSceleton = () => {
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-start">
+        <div className="rounded-md w-25 bg-gray-500 h-5 animate-pulse" />
+      </div>
+      <div className="rounded-md w-full bg-gray-500 animate-pulse h-10" />
+      <div className="animate-pulse rounded-lg bg-gray-500 w-full h-[calc(9.75rem+2px)]" />
+    </div>
+  )
+}

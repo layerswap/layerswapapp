@@ -1,0 +1,92 @@
+import CancelIcon from "../Icons/CancelIcon";
+import DelayIcon from "../Icons/DelayIcon";
+import FailIcon from "../Icons/FailIcon";
+import SuccessIcon from "../Icons/SuccessIcon";
+import type { JSX } from 'react';
+type iconStyle = 'red' | 'green' | 'yellow' | 'gray'
+
+class MessageComponentProps {
+    children: JSX.Element | JSX.Element[];
+    center?: boolean
+    icon?: iconStyle
+}
+
+function constructIcons(icon: iconStyle) {
+
+    let iconStyle: JSX.Element
+
+    switch (icon) {
+        case 'red':
+            iconStyle = <FailIcon />;
+            break;
+        case 'green':
+            iconStyle = <SuccessIcon />;
+            break;
+        case 'yellow':
+            iconStyle = <DelayIcon />
+            break
+        case 'gray':
+            iconStyle = CancelIcon
+            break
+    }
+    return iconStyle
+}
+
+const MessageComponent = ({ children }) => {
+    return <div className="w-full flex flex-col h-full justify-between pt-6 min-h-full">
+        {children}
+    </div>
+}
+
+const Content = ({ children, icon, center }: MessageComponentProps) => {
+    return (
+        center ?
+            <div className='flex flex-col self-center grow w-full'>
+                <div className='flex self-center grow w-full'>
+                    <div className='flex flex-col space-y-8 self-center w-full'>
+                        {
+                            icon ?
+                                <div className='flex place-content-center'>{constructIcons(icon)}</div>
+                                : null
+                        }
+                        {children}
+                    </div>
+                </div>
+            </div>
+            :
+            <div className='space-y-3'>
+                {
+                    icon ?
+                        <div className='flex place-content-center'>{constructIcons(icon)}</div>
+                        : null
+                }
+                {children}
+            </div>
+    )
+}
+
+const Header = ({ children, className }: { children: React.ReactNode; className?: string }) => {
+    return <div className={`md:text-3xl text-lg font-bold text-primary-text leading-6 text-center ${className}`}>
+        {children}
+    </div>
+}
+
+const Description = ({ children }) => {
+    return <div className="text-base font-medium space-y-6 text-secondary-text text-center mb-6">
+        {children}
+    </div>
+}
+
+const Buttons = ({ children }) => {
+    return <div className="space-y-3">
+        {children}
+    </div>
+}
+
+MessageComponent.Content = Content
+MessageComponent.Header = Header
+MessageComponent.Description = Description
+MessageComponent.Buttons = Buttons
+
+export default MessageComponent
+
