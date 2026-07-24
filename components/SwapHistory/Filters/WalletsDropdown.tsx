@@ -3,6 +3,7 @@ import { ChevronDown, Settings2 } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '../../shadcn/popover'
 import { Wallet } from '@/Models/WalletProvider'
 import { Address } from '@/lib/address'
+import { HistoryWalletAddress, MAX_HISTORY_ADDRESSES } from '@/lib/historyWalletAddresses'
 import CheckboxRow from './CheckboxRow'
 import { filterChipClasses } from './chipStyles'
 import VaulDrawer from '../../modal/vaulModal'
@@ -11,6 +12,7 @@ import { useAddressNameFinder } from '@/stores/addressBookStore'
 
 type WalletsDropdownProps = {
     wallets: Wallet[]
+    addresses: HistoryWalletAddress[]
     selectedAddresses: string[]
     toggle: (address: string) => void
     count: number
@@ -23,32 +25,24 @@ type Row = {
     icon: React.ReactNode
 }
 
-const WalletsDropdown: FC<WalletsDropdownProps> = ({ wallets, selectedAddresses, toggle, count }) => {
+const WalletsDropdown: FC<WalletsDropdownProps> = ({ wallets, addresses, selectedAddresses, toggle, count }) => {
     const [open, setOpen] = useState(false)
     const [manageOpen, setManageOpen] = useState(false)
     const disabled = wallets.length === 0
     const label = count > 0 ? `Wallets (${count})` : 'Wallets'
     const findName = useAddressNameFinder()
 
-    const rows = useMemo<Row[]>(() => {
-        const seen = new Set<string>()
-        const out: Row[] = []
-        for (const w of wallets) {
-            for (const address of w.addresses) {
-                const addr = new Address(address, null, w.providerName)
-                if (seen.has(addr.normalized)) continue
-                seen.add(addr.normalized)
-                const Icon = w.icon
-                out.push({
-                    address,
-                    label: findName(address, null, w.providerName) || w.displayName || w.providerName,
-                    short: addr.toShortString(),
-                    icon: Icon ? <Icon className="w-5 h-5" /> : null,
-                })
-            }
+    const rows = useMemo<Row[]>(() => addresses.map(({ address, rawAddress, wallet, network }) => {
+        const addr = new Address(rawAddress, network, wallet.providerName)
+        const Icon = wallet.icon
+
+        return {
+            address,
+            label: findName(rawAddress, network, wallet.providerName) || wallet.displayName || wallet.providerName,
+            short: addr.toShortString(),
+            icon: Icon ? <Icon className="w-5 h-5" /> : null,
         }
-        return out
-    }, [wallets, findName])
+    }), [addresses, findName])
 
     return (
         <>
@@ -61,17 +55,25 @@ const WalletsDropdown: FC<WalletsDropdownProps> = ({ wallets, selectedAddresses,
                 </PopoverTrigger>
                 <PopoverContent align="start" className="p-1 w-64 overflow-hidden">
                     <div className="max-h-72 overflow-y-auto styled-scroll">
-                        {rows.map(({ address, label, short, icon }) => (
-                            <CheckboxRow
-                                key={address}
-                                checked={selectedAddresses.includes(address)}
-                                onToggle={() => toggle(address)}
-                                icon={icon}
-                                label={label}
-                                sublabel={short}
-                            />
-                        ))}
+                        {rows.map(({ address, label, short, icon }) => {
+                            const checked = selectedAddresses.includes(address)
+                            const isLimitReached = selectedAddresses.length >= MAX_HISTORY_ADDRESSES
+                            const isLastRequiredSelection = addresses.length > MAX_HISTORY_ADDRESSES && checked && selectedAddresses.length === 1
+
+                            return (
+                                <CheckboxRow
+                                    key={address}
+                                    checked={checked}
+                                    disabled={(!checked && isLimitReached) || isLastRequiredSelection}
+                                    onToggle={() => toggle(address)}
+                                    icon={icon}
+                                    label={label}
+                                    sublabel={short}
+                                />
+                            )
+                        })}
                     </div>
+                    <p className="px-3 py-2 text-xs text-secondary-text">Select up to {MAX_HISTORY_ADDRESSES} addresses</p>
                     {wallets.length > 0 && rows.length > 0 ? (
                         <div className="mx-3 my-1 h-px bg-secondary-400" />
                     ) : null}
