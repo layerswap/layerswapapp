@@ -5,7 +5,7 @@ import { ApiResponse } from '@/Models/ApiResponse'
 import { SwapStatus } from '@/Models/SwapStatus'
 import { useSwapTransactionStore } from '@/stores/swapTransactionStore'
 import { useExtendedSourceSkin } from './useExtendedSourceSkin'
-import { Address } from '@/lib/address'
+import { Address } from '@/lib/address/Address'
 
 export function useSwapHistoryData(addresses?: string[], networks?: string[]) {
     const [revalidateAll, setRevalidateAll] = useState(false)
