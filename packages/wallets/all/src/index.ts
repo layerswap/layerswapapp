@@ -106,7 +106,7 @@ export type DefaultWalletConfig = {
  * @example
  * ```tsx
  * import { getDefaultProviders } from "@layerswap/wallets";
- * import { LayerswapProvider, Swap } from the widget package;
+ * import { LayerswapProvider, Swap } from "@layerswap/widget";
  *
  * const walletProviders = getDefaultProviders({
  *   walletConnect: {

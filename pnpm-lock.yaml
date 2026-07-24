@@ -678,9 +678,6 @@ importers:
       react:
         specifier: 'catalog:'
         version: 19.2.3
-      react-dom:
-        specifier: 'catalog:'
-        version: 19.2.3(react@19.2.3)
       rimraf:
         specifier: ^5.0.0
         version: 5.0.10
