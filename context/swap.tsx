@@ -1,4 +1,4 @@
-import { Context, useCallback, useEffect, useState, createContext, useContext, useMemo } from 'react'
+import { Context, useCallback, useEffect, useState, createContext, useContext, useMemo, useRef } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, DepositAction, SwapBasicData, SwapQuote, Refuel, SwapDetails, TransactionType } from '@/lib/apiClients/layerSwapApiClient';
 import { NextRouter, useRouter } from 'next/router';
@@ -8,6 +8,7 @@ import { ApiResponse } from '../Models/ApiResponse';
 import { Partner } from '../Models/Partner';
 import { ApiError } from '../Models/ApiError';
 import { resolveSwapPhase } from '../components/utils/resolveSwapPhase';
+import { resolveSwapPollingInterval, SWAP_POLL_DEDUPE_MS } from '@/lib/polling/swapPollingPolicy';
 import { useSwapTransactionStore } from '../stores/swapTransactionStore';
 import { Wallet } from '../Models/WalletProvider';
 import useWallet from '../hooks/useWallet';
@@ -38,7 +39,6 @@ export type UpdateSwapInterface = {
     createSwap: (values: SwapFormValues, query: QueryParams, partner?: Partner) => Promise<SwapResponse>,
     setCodeRequested: (codeSubmitted: boolean) => void;
     setQuoteLoading: (value: boolean) => void;
-    setInterval: (value: number) => void,
     mutateSwap: KeyedMutator<ApiResponse<SwapResponse>>
     setDepositAddressIsFromAccount: (value: boolean) => void,
     setWithdrawType: (value: WithdrawType) => void
@@ -119,8 +119,38 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
 
     const layerswapApiClient = new LayerSwapApiClient()
     const swap_details_endpoint = `/swaps/${swapId}?exclude_deposit_actions=true`
-    const [interval, setInterval] = useState(0)
-    const { data, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval, dedupingInterval: interval || 1000, fallbackData: initialSwapData ? { data: initialSwapData } : undefined })
+
+    // Adaptive polling: burst-and-decay driven by swapPollingPolicy. The refreshInterval
+    // callback identity must stay stable across renders (SWR resets its refresh loop when it
+    // changes), so mutable inputs go through a ref — except the tx-submit timestamp, whose
+    // identity change is intentional: it discards the stale slow timer and re-enters hot polling.
+    const lastChangeRef = useRef<{ fingerprint?: string, at: number }>({ at: Date.now() })
+    const storedWalletTransaction = useSwapTransactionStore(
+        state => swapId ? state.swapTransactions[swapId] : undefined,
+    )
+
+    const computeRefreshInterval = useCallback((latestData?: ApiResponse<SwapResponse>) => {
+        const swap = latestData?.data?.swap
+        // No usable payload (still loading, or an API error envelope): returning 0 here would
+        // permanently stop SWR's refresh loop (a 0 from the function form never reschedules),
+        // so keep it alive until a real payload arrives — slower when the API is erroring.
+        if (!swap?.status) return latestData?.error ? 5000 : 1000
+        const { phase } = resolveSwapPhase({
+            swapDetails: swap,
+            refuel: latestData?.data?.refuel,
+            storedWalletTransaction,
+        })
+        return resolveSwapPollingInterval({
+            phase,
+            now: Date.now(),
+            lastChangeAt: lastChangeRef.current.at,
+            txSubmittedAt: storedWalletTransaction?.timestamp,
+            avgCompletionTime: latestData?.data?.quote?.avg_completion_time,
+            isDepositAddressFlow: swap.use_deposit_address,
+        })
+    }, [storedWalletTransaction?.timestamp])
+
+    const { data, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: computeRefreshInterval, dedupingInterval: SWAP_POLL_DEDUPE_MS, fallbackData: initialSwapData ? { data: initialSwapData } : undefined })
 
     const baseSwapData = useMemo<(SwapBasicData & { refuel: boolean }) | undefined>(() => {
         if (!(swapId && data?.data?.swap)) return undefined
@@ -194,27 +224,34 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const depositActionsResponse = depositActions?.data
     const depositActionsError = depositActionsSwrError ? (depositActionsSwrError?.response?.data?.error?.message || 'Could not generate deposit address.') : undefined
 
-    const currentSwap = data?.data?.swap
-    const storedWalletTransaction = useSwapTransactionStore(
-        state => currentSwap?.id ? state.swapTransactions[currentSwap.id] : undefined,
-    )
-    const pollingIntervalMs = useMemo(
-        () => resolveSwapPhase({
-            swapDetails: currentSwap,
-            refuel: data?.data?.refuel,
-            storedWalletTransaction,
-        }).pollingIntervalMs,
-        [currentSwap, data?.data?.refuel, storedWalletTransaction],
-    )
-
+    // Track when the swap payload last changed — any movement restarts the hot polling window.
     useEffect(() => {
-        if (!currentSwap?.status) {
-            setInterval(0)
-            return () => setInterval(0)
+        const fingerprint = swapDataFingerprint(data?.data)
+        if (fingerprint !== lastChangeRef.current.fingerprint) {
+            lastChangeRef.current = { fingerprint, at: Date.now() }
         }
-        setInterval(pollingIntervalMs)
-        return () => setInterval(0)
-    }, [pollingIntervalMs, currentSwap?.status])
+    }, [data])
+
+    // The race starts the moment the user's withdrawal tx is submitted — poll immediately
+    // instead of waiting for the next scheduled tick. Skip txs persisted from a previous
+    // session: on reload they'd just duplicate SWR's initial fetch (it still feeds
+    // computeRefreshInterval via txSubmittedAt, so nothing else is lost).
+    const mountedAtRef = useRef(Date.now())
+    useEffect(() => {
+        if (!swapId || !storedWalletTransaction) return
+        if (storedWalletTransaction.timestamp < mountedAtRef.current) return
+        mutate()
+    }, [storedWalletTransaction?.timestamp, swapId])
+
+    // SWR pauses polling in hidden tabs; refresh as soon as the user comes back.
+    useEffect(() => {
+        if (!swapId) return
+        const onVisibilityChange = () => {
+            if (document.visibilityState === 'visible') mutate()
+        }
+        document.addEventListener('visibilitychange', onVisibilityChange)
+        return () => document.removeEventListener('visibilitychange', onVisibilityChange)
+    }, [swapId, mutate])
 
     useEffect(() => {
         if (!swapId)
@@ -339,7 +376,6 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const updateFns = useMemo<UpdateSwapInterface>(() => ({
         createSwap,
         setCodeRequested,
-        setInterval,
         mutateSwap: mutate,
         setDepositAddressIsFromAccount,
         setWithdrawType,
@@ -394,6 +430,17 @@ export function useSwapDataUpdate() {
     }
 
     return updateFns;
+}
+
+const swapDataFingerprint = (response: SwapResponse | undefined): string | undefined => {
+    const swap = response?.swap
+    if (!swap) return undefined
+    return [
+        swap.status,
+        // Confirmed-state boolean, not the raw counter — confirmations climb on every block,
+        // and counting each one as a payload change would re-arm hot polling indefinitely.
+        ...(swap.transactions?.map(t => `${t.type}:${t.status}:${t.confirmations >= t.max_confirmations}:${t.transaction_hash}`) ?? []),
+    ].join('|')
 }
 
 const WalletIsSupportedForSource = ({ sourceNetwork, sourceWallet }: { sourceWallet: Wallet | undefined, sourceNetwork: Network | undefined }) => {
