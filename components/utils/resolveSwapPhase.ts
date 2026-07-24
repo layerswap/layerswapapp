@@ -49,7 +49,6 @@ export type ResolvedSwapStatus = {
     inputReady: boolean;
     outputReady: boolean;
     showWithdrawScreen: boolean;
-    pollingIntervalMs: number;
     swapInputTxStatus: TransactionStatus;
     isRefundFlow: boolean;
     hidesSteps: boolean;
@@ -57,21 +56,12 @@ export type ResolvedSwapStatus = {
     showsEstimatedTime: boolean;
 };
 
-const TERMINAL_PHASES: ReadonlySet<SwapPhase> = new Set([
+export const TERMINAL_PHASES: ReadonlySet<SwapPhase> = new Set([
     SwapPhase.Completed,
     SwapPhase.Failed,
     SwapPhase.Expired,
     SwapPhase.Cancelled,
     SwapPhase.Refunded,
-]);
-
-const NO_POLL_PHASES: ReadonlySet<SwapPhase> = new Set([
-    SwapPhase.Completed,
-    SwapPhase.Failed,
-    SwapPhase.Expired,
-    SwapPhase.Cancelled,
-    SwapPhase.Refunded,
-    SwapPhase.Delayed,
 ]);
 
 export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStatus {
@@ -124,7 +114,6 @@ export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStat
     });
 
     const isTerminal = TERMINAL_PHASES.has(phase);
-    const pollingIntervalMs = NO_POLL_PHASES.has(phase) ? 0 : 1000;
 
     const isRefundFlow = phase === SwapPhase.PendingRefund || phase === SwapPhase.Refunded;
     const hidesSteps = phase === SwapPhase.Cancelled || phase === SwapPhase.Expired;
@@ -139,7 +128,6 @@ export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStat
         inputReady,
         outputReady,
         showWithdrawScreen,
-        pollingIntervalMs,
         swapInputTxStatus,
         isRefundFlow,
         hidesSteps,
