@@ -32,10 +32,6 @@ export const POLYMARKET_CHAIN_ID = 137
 export const POLYMARKET_PUSD_ADDRESS = '0xC011a7E12a19f7B1f670d46F03B03f3342E82DFB' as `0x${string}`
 export const POLYMARKET_PUSD_DECIMALS = 6
 
-/** Native USDC on Polygon. Retained for reference; `unwrap` can also target this. */
-export const POLYMARKET_USDC_ADDRESS = '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359' as `0x${string}`
-export const POLYMARKET_USDC_DECIMALS = 6
-
 /** USDC.e on Polygon — Flow 2's intermediate token. pUSD unwraps to USDC.e 1:1, and
  * some legacy Polymarket collateral is already held as USDC.e (balances read both). */
 export const POLYMARKET_USDC_E_ADDRESS = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174' as `0x${string}`
@@ -132,7 +128,7 @@ export const POLYMARKET_CONFIG: Record<string, PolymarketConfig> = {
         networkName: KnownInternalNames.Networks.PolymarketMainnet,
         realNetworkName: KnownInternalNames.Networks.PolygonMainnet,
         realTokenSymbol: KnownInternalNames.Currencies.USDCe,
-        realDecimals: POLYMARKET_USDC_DECIMALS,
+        realDecimals: POLYMARKET_PUSD_DECIMALS,
         flatFee: 0,
         arrivalSeconds: POLYMARKET_ARRIVAL_SECONDS,
     },
