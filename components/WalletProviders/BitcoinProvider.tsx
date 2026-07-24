@@ -1,5 +1,5 @@
 import { BigmiProvider, useConnect } from '@bigmi/react'
-import { createConfig, bitget, ctrl, leather, metamask, okx, onekey, unisat, xverse } from '@bigmi/client'
+import { createConfig, bitget, ctrl, leather, metamask, okx, onekey, xverse } from '@bigmi/client'
 import type { Connector, CreateConnectorFn } from '@bigmi/client'
 import { http, bitcoin, createClient, defineChain, Chain, ChainId } from '@bigmi/core'
 import { getWallets } from '@wallet-standard/app'
@@ -7,6 +7,7 @@ import { NetworkType, NetworkWithTokens } from '@/Models/Network'
 import { useSettingsState } from '@/context/settings'
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { InternalConnector } from '@/Models/WalletProvider'
+import { unisat } from '@/lib/wallets/bitcoin/connectors/unisat'
 
 export const BitcoinProvider = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
     const { networks } = useSettingsState()
