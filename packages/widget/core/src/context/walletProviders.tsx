@@ -42,6 +42,21 @@ export function useWalletProvidersReady(): boolean {
     return useContext(WalletProvidersReadyContext)
 }
 
+const HasConfiguredWalletProvidersContext = createContext<boolean>(false)
+
+/**
+ * Whether the integrator configured any wallet-connection providers. Unlike the
+ * registry (populated in a post-commit effect) this is derived from the
+ * `walletProviders` prop during render, so it is correct on the very first
+ * render and during SSR. Use it for decisions that only need "is wallet
+ * connection available at all" (e.g. the deposit flow's root step); decisions
+ * that need hydrated provider details must still gate on
+ * `useWalletProvidersReady()`.
+ */
+export function useHasConfiguredWalletProviders(): boolean {
+    return useContext(HasConfiguredWalletProvidersContext)
+}
+
 type ProviderEntry = WalletProvider | WalletWrapper | WalletProviderDescriptor
 
 export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walletProviders: ProviderEntry[] }> = ({ children, walletProviders }) => {
@@ -52,6 +67,14 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
 
     const walletProvidersRegistry = useMemo(() => createWalletProvidersRegistry(), [])
     const { loadAll } = useWalletDescriptorLoader()
+
+    // Mirrors exactly which providers will produce a registry entry below
+    // (descriptors get stubs; real providers need `createConnection`), but is
+    // available at render time — before the effect publishes the entries.
+    const hasConfiguredProviders = useMemo(
+        () => walletProviders.some(p => isWalletProviderDescriptor(p) || !!(p as WalletProvider).createConnection),
+        [walletProviders]
+    )
 
     // Per-id caches: keep real connections alive across re-renders so that
     // a descriptor finishing its load doesn't tear down peer providers.
@@ -150,6 +173,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
     return (
         <WalletProvidersRegistryContext.Provider value={walletProvidersRegistry}>
             <WalletProvidersReadyContext.Provider value={isInitialized}>
+            <HasConfiguredWalletProvidersContext.Provider value={hasConfiguredProviders}>
             {children}
             <VaulDrawer
                 show={open && presentation === 'modal'}
@@ -185,6 +209,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
                     ) : null}
                 </VaulDrawer.Snap>
             </VaulDrawer>
+            </HasConfiguredWalletProvidersContext.Provider>
             </WalletProvidersReadyContext.Provider>
         </WalletProvidersRegistryContext.Provider>
     );
