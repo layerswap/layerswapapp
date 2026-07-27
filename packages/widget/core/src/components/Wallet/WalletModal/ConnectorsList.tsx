@@ -47,7 +47,17 @@ const ConnectorsList: FC<{
         onFinish,
     })
 
-    const isListVisible = !selectedConnector && !selectedMultiChainConnector
+    const {
+        blockListWhileLoading,
+        registryError,
+        retryRegistry,
+        showSourcesLoadingTail,
+    } = useConnectorSourcesStatus(featuredProviders)
+
+    // While the skeleton gate blocks the browser, the load-more sentinel isn't
+    // mounted — folding the gate into `isListVisible` makes the observer
+    // re-attach when the gate lifts.
+    const isListVisible = !selectedConnector && !selectedMultiChainConnector && !blockListWhileLoading
     const {
         anyProviderHasMore,
         anyProviderLoadingMore,
@@ -69,12 +79,6 @@ const ConnectorsList: FC<{
         // array identity.
         searchResults: isSearching ? searchResults : undefined,
     })
-
-    const {
-        registryError,
-        retryRegistry,
-        showSourcesLoadingTail,
-    } = useConnectorSourcesStatus(featuredProviders)
 
     if (
         selectedConnector?.extensionNotFound
@@ -137,6 +141,7 @@ const ConnectorsList: FC<{
                 selectedConnector={pickerConnector}
                 providers={featuredProviders}
                 connect={connect}
+                isLoadingMore={showSourcesLoadingTail}
             />
         )
     }
@@ -145,6 +150,7 @@ const ConnectorsList: FC<{
         <ConnectorsBrowser
             anyProviderHasMore={anyProviderHasMore}
             anyProviderLoadingMore={anyProviderLoadingMore}
+            blockListWhileLoading={blockListWhileLoading}
             connect={connect}
             connectors={initialConnectors}
             featuredProviders={featuredProviders}
