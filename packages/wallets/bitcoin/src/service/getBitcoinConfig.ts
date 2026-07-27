@@ -1,4 +1,3 @@
-import { unisat } from '@/connectors/unisat'
 import {
     bitget,
     createConfig,
@@ -9,6 +8,7 @@ import {
     onekey,
     reconnect,
     xverse,
+    unisat,
     type Config,
     type CreateConnectorFn,
 } from '@bigmi/client'
