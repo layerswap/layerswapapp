@@ -33,8 +33,8 @@ importers:
         specifier: ^0.2.2
         version: 0.2.2
       '@bigmi/client':
-        specifier: ^0.10.0
-        version: 0.10.0(@tanstack/query-core@5.90.20)(@types/react@18.3.28)(bs58@5.0.0)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@18.3.1))
+        specifier: ^0.10.1
+        version: 0.10.1(@tanstack/query-core@5.90.20)(@types/react@18.3.28)(bs58@5.0.0)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@18.3.1))
       '@bigmi/core':
         specifier: ^0.9.0
         version: 0.9.0(@types/react@18.3.28)(bs58@5.0.0)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@18.3.1))
@@ -1035,6 +1035,11 @@ packages:
 
   '@bigmi/client@0.10.0':
     resolution: {integrity: sha512-fjswLQdq9jXgtZn6cBtzbxk+S6QN1ajXN2OzEOkgY4dE7hRPsanvSs3H3s3hmmTnS+QleVEcD+s5+raHZqwnuQ==}
+    peerDependencies:
+      '@tanstack/query-core': '>=5.68.0'
+
+  '@bigmi/client@0.10.1':
+    resolution: {integrity: sha512-oU5IzogIVS8QQiV+ZjyWgTnhN16qiGWQfQRbvqhAeFJGuQ/mdEqOBRrFoTqUEmGah/xZnrAbNskC13a+tTAiFg==}
     peerDependencies:
       '@tanstack/query-core': '>=5.68.0'
 
@@ -5745,9 +5750,17 @@ packages:
     resolution: {integrity: sha512-3CijvrO9utx598kjr45hTbbeeykQrQfKmSnxeWOgU25TOEpvcipD/bYDQWIqUv1Oc6KK4YStokSMu/FBNecGUQ==}
     engines: {node: '>=16'}
 
+  '@wallet-standard/app@1.1.1':
+    resolution: {integrity: sha512-WDGwoByhP5gwHH01r5EaLgQdLVkACPCdOMQhmhn8rsm10h/siSgTorShzBxrn0ExSPof+Lu+C3TfgqBrPa1xoQ==}
+    engines: {node: '>=22'}
+
   '@wallet-standard/base@1.1.0':
     resolution: {integrity: sha512-DJDQhjKmSNVLKWItoKThJS+CsJQjR9AOBOirBVT1F9YpRyC9oYHE+ZnSf8y8bxUphtKqdQMPVQ2mHohYdRvDVQ==}
     engines: {node: '>=16'}
+
+  '@wallet-standard/base@1.1.1':
+    resolution: {integrity: sha512-gggIHTtxicF9XFMQ12DkfS6NAG92Ak795JeSA7f2whAQ6Y3AkMWWuCMxSZXG2NIPN42kEaZSNVjqMsJRaJRxMQ==}
+    engines: {node: '>=22'}
 
   '@wallet-standard/core@1.1.1':
     resolution: {integrity: sha512-5Xmjc6+Oe0hcPfVc5n8F77NVLwx1JVAoCVgQpLyv/43/bhtIif+Gx3WUrDlaSDoM8i2kA2xd6YoFbHCxs+e0zA==}
@@ -12203,6 +12216,22 @@ snapshots:
       - typescript
       - use-sync-external-store
 
+  '@bigmi/client@0.10.1(@tanstack/query-core@5.90.20)(@types/react@18.3.28)(bs58@5.0.0)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@18.3.1))':
+    dependencies:
+      '@bigmi/core': 0.9.0(@types/react@18.3.28)(bs58@5.0.0)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@18.3.1))
+      '@tanstack/query-core': 5.90.20
+      '@wallet-standard/app': 1.1.1
+      '@wallet-standard/base': 1.1.1
+      eventemitter3: 5.0.4
+      zustand: 5.0.14(@types/react@18.3.28)(react@18.3.1)(use-sync-external-store@1.4.0(react@18.3.1))
+    transitivePeerDependencies:
+      - '@types/react'
+      - bs58
+      - immer
+      - react
+      - typescript
+      - use-sync-external-store
+
   '@bigmi/core@0.9.0(@types/react@18.3.28)(bs58@5.0.0)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@18.3.1))':
     dependencies:
       '@noble/hashes': 1.8.0
@@ -18357,7 +18386,13 @@ snapshots:
     dependencies:
       '@wallet-standard/base': 1.1.0
 
+  '@wallet-standard/app@1.1.1':
+    dependencies:
+      '@wallet-standard/base': 1.1.1
+
   '@wallet-standard/base@1.1.0': {}
+
+  '@wallet-standard/base@1.1.1': {}
 
   '@wallet-standard/core@1.1.1':
     dependencies:
