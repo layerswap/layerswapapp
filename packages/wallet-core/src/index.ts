@@ -14,11 +14,15 @@ export {
     setDynamicWcMetadata,
     setPendingMetadataForRegistry,
     getAdditionalConnectorsStore,
+    getInstantiatedAdditionalConnectorsStores,
+    subscribeAdditionalConnectorsStores,
+    ensureRegistryBrowseLoaded,
+    useRegistryBrowseStatuses,
     useWalletDescriptorLoader,
     WalletDescriptorLoaderContext,
 } from "@/lib/walletConnect";
 export type { DisplayUriSource, RegistryConnector, WalletConnectWalletBase } from "@/lib/walletConnect";
-export { useConnectors } from "@/hooks/useConnectors";
+export { useConnectors, connectorKey, resolveChainConnectors } from "@/hooks/useConnectors";
 export { WalletProvidersRegistryProvider, useWalletProvidersRegistry, useWalletProvidersReady } from "@/context/WalletProvidersRegistryProvider";
 export { walletKey } from "@/walletKey";
 export type { WalletConnectWallet } from "@/Models/WalletConnectWallet";

@@ -168,7 +168,6 @@ export function unisat(
       }
     },
     async getProvider() {
-      debugger
       const internalProvider = await this.getInternalProvider()
       if (!internalProvider) {
         return

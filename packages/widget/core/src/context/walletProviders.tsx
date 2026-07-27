@@ -2,7 +2,7 @@
 import React, { lazy, Suspense, useEffect } from "react";
 import { ChevronLeft } from "lucide-react";
 import clsx from "clsx";
-import { WalletProvidersRegistryProvider, useWalletProvidersRegistry, useWalletDescriptorLoader } from "@layerswap/wallet-core";
+import { ensureRegistryBrowseLoaded, WalletProvidersRegistryProvider, useWalletProvidersRegistry, useWalletDescriptorLoader } from "@layerswap/wallet-core";
 import { isMobile } from "@layerswap/utils";
 import { useSettingsState } from "./settings";
 import VaulDrawer from "@/components/Modal/vaulModal";
@@ -64,8 +64,16 @@ const ConnectModalHost: React.FC<{ settings: ReturnType<typeof useSettingsState>
         return walletProvidersRegistry.subscribe(recompute)
     }, [settings, networks, isMobilePlatform, walletProvidersRegistry])
 
+    // Phase-1 trigger: hydrate every pending descriptor the first time the
+    // connect modal opens, and warm the page-1 WalletConnect registry fetch
+    // for every namespace store — twice, because descriptor hydration
+    // instantiates stores that didn't exist when the modal opened. Later
+    // phases can add finer-grained triggers (idle prefetch of connected
+    // families, swap-page hydration, etc.).
     useEffect(() => {
-        if (open) void loadAll()
+        if (!open) return
+        ensureRegistryBrowseLoaded()
+        void loadAll().then(() => ensureRegistryBrowseLoaded())
     }, [open, loadAll])
 
     return (
