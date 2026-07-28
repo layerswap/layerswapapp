@@ -1,6 +1,8 @@
 import { TransferProvider, TransferProps, NetworkType, Network, ActionMessageType } from "@layerswap/widget/types"
+import type { Connection, Transaction } from "@solana/web3.js"
 import { configureAndSendCurrentTransaction } from "./transactionSender"
 import { svmAdapterManager } from "../service/svmAdapterManager"
+import { nativeTransfer, tokenTransfer } from "./transferTransaction"
 
 export function createSvmTransfer(): TransferProvider {
     return {
@@ -15,37 +17,24 @@ export function createSvmTransfer(): TransferProvider {
             }
             const signTransaction = signer.signTransaction.bind(signer)
 
-            const { callData, network, token, amount, balances } = params
-
-            const { Connection, Transaction, LAMPORTS_PER_SOL } = await import("@solana/web3.js")
-
-            const connection = new Connection(network.node_url, "confirmed")
-            const arrayBufferCallData = Uint8Array.from(atob(callData), c => c.charCodeAt(0))
-            const transaction = Transaction.from(arrayBufferCallData)
+            const { Connection, LAMPORTS_PER_SOL } = await import("@solana/web3.js")
+            const connection = new Connection(params.network.node_url, "confirmed")
 
             try {
-                const feeInLamports = await transaction.getEstimatedFee(connection)
-                const feeInSol = (feeInLamports || 0) / LAMPORTS_PER_SOL
+                const transaction = params.token.contract
+                    ? await tokenTransfer({
+                        params,
+                        connection,
+                        sourceOwner: signer.publicKey,
+                    })
+                    : await nativeTransfer(params.callData)
 
-                const nativeTokenBalance = balances?.find(b => b.token == network?.token?.symbol)
-                const tokenbalanceData = balances?.find(b => b.token == token?.symbol)
-                const tokenBalanceAmount = tokenbalanceData?.amount
-                const nativeTokenBalanceAmount = nativeTokenBalance?.amount
-
-                const insufficientTokensArr: string[] = []
-
-                if (network?.token && (Number(nativeTokenBalanceAmount) < feeInSol || isNaN(Number(nativeTokenBalanceAmount)))) {
-                    insufficientTokensArr.push(network.token?.symbol)
-                }
-                if (network?.token?.symbol !== token?.symbol && amount && token?.symbol && Number(tokenBalanceAmount) < amount) {
-                    insufficientTokensArr.push(token?.symbol)
-                }
-
-                if (insufficientTokensArr.length > 0) {
-                    const e = new Error(`Insufficient balance for: ${insufficientTokensArr.join(', ')}`)
-                    e.name = ActionMessageType.InsufficientFunds
-                    throw e
-                }
+                await validateTransferBalances(
+                    params,
+                    transaction,
+                    connection,
+                    LAMPORTS_PER_SOL,
+                )
 
                 const signature = await configureAndSendCurrentTransaction(
                     transaction,
@@ -59,19 +48,65 @@ export function createSvmTransfer(): TransferProvider {
 
                 return signature
             } catch (error) {
-                const e = new Error()
-                e.message = error.message
-                if (error.name === ActionMessageType.InsufficientFunds) {
-                    e.name = ActionMessageType.InsufficientFunds
-                    throw e
-                } else if (error.message === "User rejected the request.") {
-                    e.name = ActionMessageType.TransactionRejected
-                    throw e
-                } else {
-                    e.name = ActionMessageType.UnexpectedErrorMessage
-                    throw e
-                }
+                throw toTransferError(error)
             }
         }
     }
+}
+
+const validateTransferBalances = async (
+    params: TransferProps,
+    transaction: Transaction,
+    connection: Connection,
+    lamportsPerSol: number,
+) => {
+    const { amount, balances, network, token } = params
+    const feeInLamports = await transaction.getEstimatedFee(connection)
+    const feeInSol = (feeInLamports || 0) / lamportsPerSol
+
+    const nativeTokenBalance = balances?.find(
+        balance => balance.token === network.token?.symbol
+    )?.amount
+    const selectedTokenBalance = balances?.find(
+        balance => balance.token === token.symbol
+    )?.amount
+    const insufficientTokens: string[] = []
+
+    if (
+        network.token
+        && (
+            Number(nativeTokenBalance) < feeInSol
+            || Number.isNaN(Number(nativeTokenBalance))
+        )
+    ) {
+        insufficientTokens.push(network.token.symbol)
+    }
+    if (
+        network.token?.symbol !== token.symbol
+        && amount
+        && Number(selectedTokenBalance) < amount
+    ) {
+        insufficientTokens.push(token.symbol)
+    }
+
+    if (insufficientTokens.length > 0) {
+        const error = new Error(`Insufficient balance for: ${insufficientTokens.join(', ')}`)
+        error.name = ActionMessageType.InsufficientFunds
+        throw error
+    }
+}
+
+const toTransferError = (error: unknown): Error => {
+    const message = error instanceof Error ? error.message : String(error)
+    const transferError = new Error(message)
+
+    if (error instanceof Error && error.name === ActionMessageType.InsufficientFunds) {
+        transferError.name = ActionMessageType.InsufficientFunds
+    } else if (message === "User rejected the request.") {
+        transferError.name = ActionMessageType.TransactionRejected
+    } else {
+        transferError.name = ActionMessageType.UnexpectedErrorMessage
+    }
+
+    return transferError
 }

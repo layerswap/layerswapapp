@@ -95,6 +95,7 @@ const resolveTransactionData = (swapDetails: SwapDetails, deposit_actions: Depos
     }
     return {
         amount: depositAction.amount,
+        amountInBaseUnits: depositAction.amount_in_base_units,
         callData: depositAction.call_data,
         depositAddress: depositAction.to_address,
         sequenceNumber: swapDetails.metadata.sequence_number,
