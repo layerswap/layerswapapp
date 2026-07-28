@@ -10,9 +10,6 @@
     "check:types": "tsc --noEmit"
   },
   "dependencies": {
-    "@dynamic-labs/ethereum": "^4.19.7",
-    "@dynamic-labs/sdk-react-core": "^4.19.7",
-    "@dynamic-labs/wagmi-connector": "^4.19.7",
     "@layerswap/wallets": "workspace:^",
     "@layerswap/widget": "workspace:^",
     "@radix-ui/react-accordion": "^1.2.11",
@@ -33,7 +30,6 @@
     "lucide-react": "^0.379.0",
     "next": "15.5.22",
     "radix-ui": "^1.4.3",
-    "posthog-js": "^1.386.6",
     "react": "catalog:",
     "react-dom": "catalog:",
     "tailwind-merge": "^3.3.0",
