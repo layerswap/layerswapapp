@@ -34,6 +34,7 @@ export type WalletProviderId =
 export type WidgetConfig<TLoading = never> = {
   /** Layerswap API key. */
   apiKey?: string;
+  apiUri?: string;
   /** Network set to target. */
   version?: 'mainnet' | 'testnet';
   /** Visual theme overrides. */

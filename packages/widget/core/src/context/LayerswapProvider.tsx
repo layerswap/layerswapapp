@@ -6,7 +6,7 @@ import { SettingsProvider } from "./settings";
 import { LayerSwapAppSettings } from "@/Models/LayerSwapAppSettings";
 import { LayerSwapSettings } from "@/Models/LayerSwapSettings";
 import ErrorFallback from "@/components/ErrorFallback";
-import { THEME_COLORS, ThemeData } from "@/Models/Theme";
+import { THEME_COLORS } from "@/Models/Theme";
 import type { WidgetConfig } from "@layerswap/widget-types";
 import { AsyncModalProvider } from "./asyncModal";
 import { IntercomProvider } from 'react-use-intercom';
@@ -69,7 +69,7 @@ const NO_PROVIDERS: (WalletProvider | WalletWrapper | WalletProviderDescriptor)[
 let liveProviderInstances = 0
 
 const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callbacks, config, walletProviders = NO_PROVIDERS }) => {
-    let { apiKey, version, settings: _settings, theme, initialValues, loadingComponent, imtblPassport, tonConfigs, walletConnect } = config || {}
+    let { apiKey, version, settings: _settings, theme, initialValues, loadingComponent, apiUri, imtblPassport, tonConfigs, walletConnect } = config || {}
     const [fetchedSettings, setFetchedSettings] = useState<LayerSwapSettings | null>(null)
     const [settingsError, setSettingsError] = useState<Error | null>(null)
     const [settingsFetchAttempt, setSettingsFetchAttempt] = useState(0)
@@ -99,6 +99,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
     const themeData = useMemo(() => ({ ...THEME_COLORS['default'], ...(theme ?? {}) }), [theme])
     // Legacy globals are read synchronously by descendants during render.
     AppSettings.ApiVersion = version || AppSettings.ApiVersion
+    AppSettings.LayerswapApiUri = apiUri || AppSettings.LayerswapApiUri
     AppSettings.ImtblPassportConfig = imtblPassport
     AppSettings.TonClientConfig = tonConfigs || AppSettings.TonClientConfig
     AppSettings.WalletConnectConfig = walletConnect || AppSettings.WalletConnectConfig
@@ -132,7 +133,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
         return () => {
             cancelled = true
         }
-    }, [_settings, apiKey, version, settingsFetchAttempt])
+    }, [_settings, apiKey, version, settingsFetchAttempt, apiUri])
 
     const retrySettingsFetch = useCallback(() => {
         setSettingsError(null)

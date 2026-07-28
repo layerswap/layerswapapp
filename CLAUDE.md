@@ -13,11 +13,8 @@ pnpm install      # Install dependencies
 pnpm dev          # Start dev server
 pnpm build        # Production build
 pnpm lint         # ESLint (next/core-web-vitals + custom JSX literal plugin)
-pnpm storybook    # Component docs on port 6006
 ANALYZE=true pnpm build  # Bundle analysis
 ```
-
-No unit test framework is configured. Storybook is used for component documentation.
 
 ## Environment Variables
 
@@ -79,7 +76,6 @@ Models/         # TypeScript interfaces (Network, Token, Route, Exchange, SwapSt
 pages/          # Next.js pages (index, swap/[swapId], transactions, campaigns)
 stores/         # Zustand stores (wallet, balance, slippage, routes, transactions)
 styles/         # Global CSS
-stories/        # Storybook stories
 ```
 
 ## Key Dependencies

@@ -20,6 +20,10 @@ const WALLET_CONNECT_CONFIGS = {
     icons: ['https://www.layerswap.io/app/symbol.png'],
 };
 
+const INTERNAL_CONFIG = {
+    apiUri: process.env.NEXT_PUBLIC_LS_API,
+};
+
 type WidgetWrapperProps<T extends Record<string, unknown> = Record<string, never>> = T & {
     children: ReactNode;
     settings?: LayerSwapSettings;
@@ -94,6 +98,7 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
 
     const baseConfig: LayerswapProviderComponentProps['config'] = {
         theme: baseTheme,
+        apiUri: INTERNAL_CONFIG.apiUri,
         ...(apiKey ? { apiKey } : {}),
         ...(settings ? { settings } : {}),
         ...(initialValues ? { initialValues } : {}),
