@@ -31,21 +31,3 @@ catalog:
 overrides:
   '@types/react': 19.2.3
   '@types/react-dom': 19.2.3
-
-# Known-unfixable advisories, accepted after review (2026-07). Re-check when
-# bumping the parent dependency named below.
-auditConfig:
-  ignoreGhsas:
-    # bigint-buffer buffer overflow — no patched release exists. Reaches us only
-    # through @dynamic-labs → @solana/spl-token in apps/widget-playground.
-    - GHSA-3gc7-fjrx-p6mg
-    # valibot ReDoS / flatten() throw — fixed only in valibot 1.2+/1.4.2, but
-    # @mysten/sui 1.x (pinned by @dynamic-labs/sui-core) requires valibot 0.36.
-    # Fix requires @mysten/sui 2.x. widget-playground only.
-    - GHSA-vqpr-j7v3-hqw9
-    - GHSA-5qjj-4xww-7phc
-    # elliptic risky-primitive advisory — no patched release; already on latest 6.6.1.
-    - GHSA-848j-6mx2-7j84
-    # brace-expansion OOM DoS — patched only in v5.0.8; minimatch@3 (eslint,
-    # dev-only) cannot take v5. Re-check if a 1.x/2.x backport is released.
-    - GHSA-mh99-v99m-4gvg
