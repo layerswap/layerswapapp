@@ -38,7 +38,7 @@
   "license": "MIT",
   "dependencies": {
     "bitcoin-address-validation": "^3.0.0",
-    "bn.js": "^5.2.2",
+    "bn.js": "^5.2.3",
     "bs58": "^6.0.0",
     "js-sha3": "^0.8.0"
   },
