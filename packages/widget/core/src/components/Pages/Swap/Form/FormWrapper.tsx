@@ -20,6 +20,7 @@ import { useSelectedAccount } from "@/context/swapAccounts";
 // /. Wrapping in React.lazy moves that whole graph into its own chunk that
 // only downloads when the user actually submits a swap and the drawer opens.
 import { Suspense, lazy } from "react"
+import { SwapDetailsSceleton } from "@/components/Common/Sceletons"
 const SwapDetails = lazy(() => import("../Withdraw/SwapDetails"))
 import { SwapFormValues } from "./SwapFormValues";
 import { useCallbacks } from "@/context/callbackProvider";
@@ -195,7 +196,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                         className="expandContainerHeight">
                         {
                             swapModalOpen ? (
-                                <Suspense fallback={null}>
+                                <Suspense fallback={<SwapDetailsSceleton />}>
                                     <SwapDetails type="contained" onWalletWithdrawalSuccess={() => {
                                         setWalletWihdrawDone(true)
                                         useGaslessPreferenceStore.getState().resetGaslessPreference()
