@@ -1,0 +1,15 @@
+{
+  "name": "eslint-plugin-no-conditional-literals-in-jsx",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node tests.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^8.49.0"
+  }
+}

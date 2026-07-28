@@ -1,0 +1,32 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.1.1/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "fixed": [
+    [
+      "@layerswap/widget",
+      "@layerswap/wallet-*",
+      "@layerswap/wallets",
+      "@layerswap/utils"
+    ]
+  ],
+  "linked": [],
+  "access": "public",
+  "baseBranch": "dev-monorepo",
+  "updateInternalDependencies": "patch",
+  "privatePackages": {
+    "version": true,
+    "tag": false
+  },
+  "ignore": [
+    "@layerswap/bridge",
+    "widget-playground",
+    "layerswap-explorer"
+  ],
+  "snapshot": {
+    "useCalculatedVersion": true
+  },
+  "___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH": {
+    "onlyUpdatePeerDependentsWhenOutOfRange": true
+  }
+}
