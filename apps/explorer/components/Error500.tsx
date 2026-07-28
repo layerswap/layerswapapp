@@ -15,7 +15,7 @@ const Error500 = () => {
                 </div>
                 <h1 className="mt-5 text-[36px] font-bold text-primary-text lg:text-[50px]">500 - Oops</h1>
                 <p className="text-primary-text my-5 lg:text-lg">Something went wrong. Try to refresh this page or <br /> feel free to contact us if the problem presists.</p>
-                <Link href={'http://discord.gg/layerswap'} target="_blank" className="w-1/2 px-5 py-2 text-sm tracking-wide text-primary-text transition-colors duration-200 bg-primary-500 rounded-lg shrink-0 sm:w-auto hover:bg-primary-500/80">
+                <Link href={'https://layerswap.io/help'} target="_blank" className="w-1/2 px-5 py-2 text-sm tracking-wide text-primary-text transition-colors duration-200 bg-primary-500 rounded-lg shrink-0 sm:w-auto hover:bg-primary-500/80">
                     Contact support
                 </Link>
             </div>
