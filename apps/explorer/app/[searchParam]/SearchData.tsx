@@ -12,10 +12,11 @@ interface SearchDataProps {
     searchParam: string;
 }
 
+const apiClient = new LayerswapApiClient();
+
 export default function SearchData({ searchParam }: SearchDataProps) {
     const basePath = process.env.NEXT_PUBLIC_APP_BASE_PATH;
 
-    const apiClient = new LayerswapApiClient();
 
     const getKey = (pageIndex: number, previousPageData: ApiResponse<SwapData[]> | null) => {
         if (previousPageData && (!previousPageData.data || previousPageData.data.length === 0)) return null;

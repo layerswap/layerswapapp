@@ -12,10 +12,9 @@ import { SwapData, Swap, TransactionType } from "@/models/Swap";
 import { LayerswapApiClient } from '@layerswap/widget/internal'
 import { formatAmount } from "@/helpers/formatAmount";
 
+const apiClient = new LayerswapApiClient()
+
 export default function DataTable() {
-    const apiClient = new LayerswapApiClient()
-
-
     const { data, error, isLoading } = useSWR<ApiResponse<SwapData[]>>(`/explorer?version=${process.env.NEXT_PUBLIC_API_VERSION}&statuses=1&statuses=4&compact=true`, apiClient.fetcher, { dedupingInterval: 60000 });
     const swapsData = data?.data?.map(d => d.swap);
     const router = useRouter();
