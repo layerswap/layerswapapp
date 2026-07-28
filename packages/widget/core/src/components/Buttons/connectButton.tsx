@@ -1,0 +1,30 @@
+import { ReactNode } from "react";
+import useWallet from "../../hooks/useWallet";
+import { useConnectModal } from "../Wallet/WalletModal";
+
+const ConnectButton = ({
+    children,
+    className,
+}: {
+    children: ReactNode;
+    className?: string;
+}) => {
+    const { providers } = useWallet();
+    const filteredProviders = providers.filter(p => !!p.autofillSupportedNetworks)
+    const { connect } = useConnectModal()
+
+    return (
+        <button
+            onClick={async () => { await connect() }}
+            data-attr="connect-wallet"
+            type="button"
+            aria-label="Connect wallet"
+            disabled={filteredProviders.length == 0}
+            className={`${className} disabled:opacity-50 disabled:cursor-not-allowed enabled:active:animate-press-down`}
+        >
+            {children}
+        </button>
+    )
+};
+
+export default ConnectButton;

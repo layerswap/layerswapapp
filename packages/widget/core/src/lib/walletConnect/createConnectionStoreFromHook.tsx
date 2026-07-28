@@ -1,0 +1,102 @@
+'use client'
+import { useLayoutEffect, type FC } from 'react'
+import { createStore } from 'zustand/vanilla'
+import type {
+    WalletConnectionProvider,
+    WalletConnectionProviderProps,
+    WalletConnectionStore,
+} from '@/types/wallet'
+
+/**
+ * Shallow equality over the provider's own keys, with array fields compared
+ * element-by-element. The wrapped legacy hooks usually return a
+ * freshly-constructed object each render — and freshly-constructed arrays for
+ * fields like `connectedWallets` — so reference equality is always false;
+ * comparing fields (and array elements by identity) avoids broadcasting a
+ * store update (and re-rendering every `useSyncExternalStore` subscriber)
+ * when nothing meaningful actually changed.
+ */
+function shallowEqualProvider(a: WalletConnectionProvider, b: WalletConnectionProvider): boolean {
+    if (a === b) return true
+    const aKeys = Object.keys(a) as (keyof WalletConnectionProvider)[]
+    const bKeys = Object.keys(b) as (keyof WalletConnectionProvider)[]
+    if (aKeys.length !== bKeys.length) return false
+    return aKeys.every(key => {
+        const av = a[key], bv = b[key]
+        if (av === bv) return true
+        if (Array.isArray(av) && Array.isArray(bv)) {
+            return av.length === bv.length && av.every((item, i) => item === bv[i])
+        }
+        return false
+    })
+}
+
+const EMPTY_PROVIDER: WalletConnectionProvider = Object.freeze({
+    connectWallet: () => undefined,
+    connectedWallets: undefined,
+    activeWallet: undefined,
+    withdrawalSupportedNetworks: [],
+    name: '',
+    id: '',
+    ready: false,
+})
+
+export type ReactHookConnectionAdapter = {
+    /**
+     * Render this inside the package's `wrapper` component. It calls the
+     * underlying hook and mirrors its value into the external store.
+     */
+    Hydrator: FC<WalletConnectionProviderProps>
+    /** Pass this as `WalletProvider.createConnection`. */
+    createConnection: (props: WalletConnectionProviderProps) => WalletConnectionStore
+}
+
+/**
+ * Bridges a legacy React-hook-shaped connection provider to the new
+ * external-store contract. Used by wallet packages whose upstream
+ * libraries require React (TonConnectUI, StarknetReact, etc.).
+ *
+ * Usage per package:
+ *   const adapter = createReactHookConnectionAdapter(useXxxConnection)
+ *   // inside wrapper: <adapter.Hydrator networks={networksFromSettings} />
+ *   // in factory:    createConnection: adapter.createConnection
+ */
+export function createReactHookConnectionAdapter(
+    useConnection: (props: WalletConnectionProviderProps) => WalletConnectionProvider,
+): ReactHookConnectionAdapter {
+    const store = createStore<WalletConnectionProvider>(() => EMPTY_PROVIDER)
+
+    const Hydrator: FC<WalletConnectionProviderProps> = (props) => {
+        const value = useConnection(props)
+        // Layout effect so the store commits in the same frame as the render
+        // that produced `value` — a passive effect would let a subscriber paint
+        // against the previous snapshot (one-frame-stale wallet UI / tearing).
+        // The `[value]` dep + shallow compare prevent a write (and the
+        // subscriber re-render storm) on every parent render.
+        useLayoutEffect(() => {
+            if (shallowEqualProvider(store.getState(), value)) return
+            store.setState(value, true)
+        }, [value])
+        // Reset the shared store when the Hydrator unmounts so a widget remount
+        // (e.g. via `widgetRenderKey`) doesn't briefly surface the previous
+        // session's wallet as connected before the hook re-fires.
+        useLayoutEffect(() => {
+            return () => { store.setState(EMPTY_PROVIDER, true) }
+        }, [])
+        return null
+    }
+
+    const createConnection = (_props: WalletConnectionProviderProps): WalletConnectionStore => ({
+        store,
+        updateProps() {
+            // Networks propagate via the Hydrator's props. No-op here.
+        },
+        destroy() {
+            // Reset to the empty snapshot so a clean remount doesn't inherit the
+            // previous session's wallet state from this singleton store.
+            store.setState(EMPTY_PROVIDER, true)
+        },
+    })
+
+    return { Hydrator, createConnection }
+}
