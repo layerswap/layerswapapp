@@ -5,7 +5,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-
 export function shortenAddress(address: string) {
   if (address?.startsWith('ronin:')) {
     var stringAddress = address.replace('ronin:', '')
@@ -23,13 +22,6 @@ export function shortenAddress(address: string) {
     return `${address?.substring(0, 20)}...${address?.substring(address?.length - 10, address?.length)}`
   }
 }
-export const shortenEmail = (email = '') => {
-  const [name, domain] = email.split('@');
-  const { length: len } = name;
-  const maskedName = name?.[0] + '...' + name[len - 1];
-  const maskedEmail = maskedName + '@' + domain;
-  return maskedEmail;
-};
 
 export function shortenHash(address: string) {
   if (address?.length < 13)

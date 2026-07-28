@@ -211,7 +211,7 @@ textarea:disabled::placeholder {
 }
 
 .link-underline-black {
-  background-image: linear-gradient(transparent, transparent), linear-gradient(rgb(209 213 219 / var(--tw-text-opacity)), rgb(209 213 219 / var(--tw-text-opacity)))
+  background-image: linear-gradient(transparent, transparent), linear-gradient(rgb(209 213 219), rgb(209 213 219))
 }
 
 .link-underline:hover {
