@@ -10,12 +10,18 @@ interface SwapListViewProps {
     swaps: Swap[];
     destinationAddress?: string;
     basePath?: string;
+    onLoadMore?: () => void;
+    isLoadingMore?: boolean;
+    isReachingEnd?: boolean;
 }
 
 export default function SwapListView({
     swaps,
     destinationAddress,
     basePath,
+    onLoadMore,
+    isLoadingMore = false,
+    isReachingEnd = true,
 }: SwapListViewProps) {
     const router = useRouter();
     const pathname = usePathname();
@@ -27,7 +33,7 @@ export default function SwapListView({
         <div className="px-4 sm:px-6 lg:px-8 w-full">
             {/* Back Button */}
             {!isHomePage && (
-                <div className="hidden lg:block w-fit mb-1 hover:bg-secondary-600 hover:text-accent-foreground rounded ring-offset-background transition-colors -ml-5">
+                <div className="hidden xl:block w-fit mb-1 hover:bg-secondary-600 hover:text-accent-foreground rounded ring-offset-background transition-colors -ml-5">
                     <BackBtn />
                 </div>
             )}
@@ -96,6 +102,18 @@ export default function SwapListView({
                         </div>
                     </div>
                 </div>
+
+                {!isReachingEnd && onLoadMore && (
+                    <div className="flex justify-center py-4">
+                        <button
+                            onClick={onLoadMore}
+                            disabled={isLoadingMore}
+                            className="px-4 py-2 text-sm font-medium text-primary-text bg-secondary-500 hover:bg-secondary-400 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isLoadingMore ? 'Loading...' : 'Load more'}
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

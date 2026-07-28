@@ -52,8 +52,8 @@ export default function SwapTableRow({
             <td className="whitespace-nowrap px-3 py-2 text-sm text-primary-text">
                 <div className="flex flex-row">
                     <div className="flex flex-col items-start">
-                        <span className="text-sm md:text-base font-normal text-secondary-text mb-1">Token:</span>
-                        <span className="text-sm md:text-base font-normal text-secondary-text min-w-[70px]">Source:</span>
+                        <span className="text-sm md:text-base font-normal text-secondary-text place-items-end mb-1">Token:</span>
+                        <span className="text-sm md:text-base font-normal text-secondary-text place-items-end min-w-[70px]">Source:</span>
                     </div>
                     <div className="flex flex-col">
                         {/* Token Row */}
@@ -87,7 +87,7 @@ export default function SwapTableRow({
                             </div>
                             <div className="mx-2 text-primary-text">
                                 <Link
-                                    href={source_network?.transaction_explorer_template?.replace('{0}', inputTransaction.from || '') || '#'}
+                                    href={source_network?.transaction_explorer_template?.replace('{0}', swap.source_address || inputTransaction.from || '') || '#'}
                                     onClick={stopPropagation}
                                     target="_blank"
                                     className="hover:text-gray-300 inline-flex items-center w-fit"
@@ -106,8 +106,8 @@ export default function SwapTableRow({
             <td className="whitespace-nowrap px-3 py-2 text-sm text-primary-text">
                 <div className="flex flex-row">
                     <div className="flex flex-col items-start">
-                        <span className="text-sm md:text-base font-normal text-secondary-text mb-1">Token:</span>
-                        <span className="text-sm md:text-base font-normal text-secondary-text min-w-[70px]">Destination:</span>
+                        <span className="text-sm md:text-base font-normal text-secondary-text place-items-end mb-1">Token:</span>
+                        <span className="text-sm md:text-base font-normal text-secondary-text place-items-end min-w-[70px]">Destination:</span>
                     </div>
                     <div className="flex flex-col">
                         {/* Token Row */}

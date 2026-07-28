@@ -1,7 +1,7 @@
 "use client"
 import { ApiResponse } from '@layerswap/widget/types'
 import useSWR from "swr"
-import { ChevronRight } from "lucide-react";
+import { CheckCircle2, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import LoadingBlocks from "@/components/LoadingBlocks";
@@ -11,13 +11,12 @@ import Error500 from "@/components/Error500";
 import { SwapData, Swap, TransactionType } from "@/models/Swap";
 import { LayerswapApiClient } from '@layerswap/widget/internal'
 import { formatAmount } from "@/helpers/formatAmount";
-import { CheckCircleFilled } from "@/components/icons/CheckCircleFilled";
 
 export default function DataTable() {
     const apiClient = new LayerswapApiClient()
 
 
-    const { data, error, isLoading } = useSWR<ApiResponse<SwapData[]>>(`/explorer?version=${process.env.NEXT_PUBLIC_API_VERSION}&statuses=1&statuses=4`, apiClient.fetcher, { dedupingInterval: 60000 });
+    const { data, error, isLoading } = useSWR<ApiResponse<SwapData[]>>(`/explorer?version=${process.env.NEXT_PUBLIC_API_VERSION}&statuses=1&statuses=4&compact=true`, apiClient.fetcher, { dedupingInterval: 60000 });
     const swapsData = data?.data?.map(d => d.swap);
     const router = useRouter();
 
@@ -27,7 +26,7 @@ export default function DataTable() {
     return (
         <div className="px-4 sm:px-6 lg:px-8 w-full">
             <div className="mt-8 flow-root">
-                <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8 h-full max-h-[60dvh] 2xl:max-h-[70dvh] dataTable">
+                <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8 h-full max-h-[55vh] 2xl:max-h-[65vh] dataTable">
                     <div className="inline-block h-screen min-w-full pb-2 align-middle sm:px-6 lg:px-8">
                         <div className="shadow ring-1 ring-white/5 sm:rounded-lg">
                             <table className="min-w-full divide-y divide-secondary-500 relative">
@@ -170,7 +169,7 @@ export function DestTxStatus(swap: Swap) {
     const input_transaction = swap?.transactions?.find(t => t?.type == TransactionType.Input);
     if (swapStatus == SwapStatus.LsTransferPending) {
         return <div className="flex items-center space-x-1 px-2 py-1 rounded-lg text-warning-foreground bg-warning-background">
-            <span className="w-3 h-3 rounded-full bg-warning-foreground"></span>
+            <span className="w-3.5 h-3.5 rounded-full bg-warning-foreground"></span>
             <span className="font-medium md:text-sm text-base">In Progress</span>
         </div>
     } else if (swapStatus == SwapStatus.Failed && input_transaction) {
@@ -183,7 +182,7 @@ export function DestTxStatus(swap: Swap) {
         </div>
     } else if (swapStatus == SwapStatus.Completed) {
         return <div className="flex items-center space-x-1 px-2 py-1 rounded-lg text-success-foreground bg-success-background">
-            <CheckCircleFilled className="w-3.5 h-3.5" />
+            <CheckCircle2 className="w-3.5 h-3.5 text-success-foreground" />
             <span className="font-medium md:text-sm text-base">Completed</span>
         </div>
     }

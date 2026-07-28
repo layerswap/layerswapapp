@@ -1,6 +1,6 @@
 "use client";
 
-import useSWR from "swr";
+import useSWRInfinite from "swr/infinite";
 import { ApiResponse } from '@layerswap/widget/types';
 import { LayerswapApiClient } from '@layerswap/widget/internal';
 import { SwapData, TransactionType } from "@/models/Swap";
@@ -16,14 +16,25 @@ export default function SearchData({ searchParam }: SearchDataProps) {
     const basePath = process.env.NEXT_PUBLIC_APP_BASE_PATH;
 
     const apiClient = new LayerswapApiClient();
-    const { data, error, isLoading } = useSWR<ApiResponse<SwapData[]>>(
-        `/explorer/${searchParam}?version=${process.env.NEXT_PUBLIC_API_VERSION}`,
+
+    const getKey = (pageIndex: number, previousPageData: ApiResponse<SwapData[]> | null) => {
+        if (previousPageData && (!previousPageData.data || previousPageData.data.length === 0)) return null;
+        return `/explorer/${searchParam}?version=${process.env.NEXT_PUBLIC_API_VERSION}&page=${pageIndex + 1}&statuses=Completed&statuses=PendingWithdrawal&statuses=PendingRefund&statuses=Refunded`;
+    };
+
+    const { data, error, isLoading, size, setSize, isValidating } = useSWRInfinite<ApiResponse<SwapData[]>>(
+        getKey,
         apiClient.fetcher,
-        { dedupingInterval: 60000 }
+        { dedupingInterval: 60000, revalidateFirstPage: false }
     );
 
+    const allData = data ? data.flatMap(d => d?.data || []) : [];
+    const lastPage = data?.[data.length - 1];
+    const isLoadingMore = isValidating && size > 1;
+    const isReachingEnd = !!data && (!lastPage?.data || lastPage.data.length === 0);
+
     // Extract data from response
-    const swapData = data?.data?.[0];
+    const swapData = allData[0];
     const swap = swapData?.swap;
     const quote = swapData?.quote;
     const refuel = swapData?.refuel;
@@ -35,20 +46,20 @@ export default function SearchData({ searchParam }: SearchDataProps) {
     const refundedTransaction = swap?.transactions?.find(t => t?.type === TransactionType.Refunded);
 
     // Filter swaps that have input transactions (for list view)
-    const filteredSwaps = data?.data
-        ?.filter(s => s?.swap?.transactions?.some(t => t?.type === TransactionType.Input))
-        ?.map(s => s?.swap)
-        ?.filter(Boolean) || [];
+    const filteredSwaps = allData
+        .filter(s => s?.swap?.transactions?.some(t => t?.type === TransactionType.Input))
+        .map(s => s?.swap)
+        .filter(Boolean);
 
     // Check if data is empty
-    const isEmptyData = data?.data?.every(s => !s?.swap?.transactions?.length);
+    const isEmptyData = !!data && allData.every(s => !s?.swap?.transactions?.length);
 
     // Handle error and empty states
     if (error || isEmptyData) return <NotFound />;
     if (isLoading) return <LoadingBlocks />;
 
     // Multiple swaps found - show list view
-    const hasMultipleSwaps = Number(data?.data?.length) > 1;
+    const hasMultipleSwaps = allData.length > 1;
 
     if (hasMultipleSwaps) {
         return (
@@ -56,6 +67,9 @@ export default function SearchData({ searchParam }: SearchDataProps) {
                 swaps={filteredSwaps}
                 destinationAddress={swap?.destination_address}
                 basePath={basePath}
+                onLoadMore={() => setSize(size + 1)}
+                isLoadingMore={isLoadingMore}
+                isReachingEnd={isReachingEnd}
             />
         );
     }

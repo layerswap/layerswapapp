@@ -1,8 +1,16 @@
 /** @type {import('next').NextConfig} */
+
+const REMOTE_PATTERNS = [
+    { protocol: 'https', hostname: 'cdn.layerswap.io', },
+    { protocol: 'https', hostname: 'cdn.layerswap.cloud', },
+    { protocol: 'https', hostname: 'devlslayerswapbridgesa.blob.core.windows.net', },
+    { protocol: 'https', hostname: 'prodlslayerswapbridgesa.blob.core.windows.net', },
+]
+
 const nextConfig = {
     reactStrictMode: true,
     images: {
-        domains: ['prodlslayerswapbridgesa.blob.core.windows.net', 'devlslayerswapbridgesa.blob.core.windows.net', 'cdn.layerswap.io', 'cdn.layerswap.cloud'],
+        remotePatterns: REMOTE_PATTERNS,
     },
     transpilePackages: ['@layerswap/widget'],
 }

@@ -20,7 +20,7 @@ export default function Header() {
                     </div>
                 </div>
             }
-            <nav className={`mx-auto max-w-6xl pt-6 px-4 lg:px-8 flex flex-col ${pathname !== '/' ? 'grid-rows-2' : 'grid-rows-1'}`} aria-label="Global">
+            <nav className={`mx-auto max-w-6xl pt-6 px-6 lg:px-8 flex flex-col ${pathname !== '/' ? 'grid-rows-2' : 'grid-rows-1'}`} aria-label="Global">
                 <div className='flex justify-between'>
                     <Link href="/" className="-m-1.5 p-1.5">
                         <LayerswapExplorerLogo className="h-14 w-auto text-primary-logoColor" />
