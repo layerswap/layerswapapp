@@ -52,6 +52,6 @@
     "mini-css-extract-plugin": "^2.9.2",
     "style-loader": "^4.0.0",
     "typescript": "^5.9.2",
-    "wrangler": "^3.90.0"
+    "wrangler": "^4.0.0"
   }
 }
