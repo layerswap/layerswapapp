@@ -1,26 +1,24 @@
+# Layerswap UI
 
-<br />
-<div align="left">
-  <h1 align="left">UI for Layerswap web application</h1>
-</div>
- 
-This repository contains implementation of Layerswap UI
+Layerswap's web interface and supporting packages for cross-chain token transfers.
 
- 
+## Local development
 
-### Run locally
+Requires Node.js 24 and pnpm 10.
 
+Create `.env.local`:
 
-  ```sh
-  pnpm install
-  pnpm dev
-  ```
+```env
+NEXT_PUBLIC_LS_API=https://api-dev.layerswap.cloud/
+NEXT_PUBLIC_API_KEY=testnet
+```
 
- 
-### Required environment variables
+Then install dependencies and start the bridge app:
 
-  ```yaml
-  NEXT_PUBLIC_LS_API = https://api-dev.layerswap.cloud/
-  NEXT_PUBLIC_API_KEY = mainnet #sandbox for testnets
-  ```
+```bash
+pnpm install
+pnpm build:packages
+pnpm dev
+```
 
+Use `mainnet` instead of `testnet` for mainnets.

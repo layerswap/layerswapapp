@@ -1,0 +1,94 @@
+import { FC, useState } from 'react'
+import clsx from 'clsx'
+import { BookmarkPlus } from 'lucide-react'
+import FilledX from '@/components/Icons/FilledX'
+import { useAddressBookStore, NAME_MAX, COUNTER_SHOW_AT } from '@/stores/addressBookStore'
+import { NetworkType } from '@/Models/Network'
+import SecondaryButton from '../Buttons/secondaryButton'
+import { addressSelectionType, AddressSelectionMode } from '@layerswap/utils'
+
+export const SaveToBookNameForm: FC<{ address: string, network: { name?: string, type: NetworkType }, onDone: () => void, compact?: boolean }> = ({ address, network, onDone, compact }) => {
+    const addAddress = useAddressBookStore(s => s.addAddress)
+    const [name, setName] = useState('')
+
+    const trimmed = name.trim()
+    const len = trimmed.length
+    const isValid = len > 0 && len <= NAME_MAX
+
+    const confirm = () => {
+        if (!isValid) return
+        let networks: string[] | undefined
+        if (addressSelectionType(network.type) === AddressSelectionMode.Networks && network.name) {
+            networks = [network.name]
+        }
+        addAddress({ name: trimmed, address, networkTypes: [network.type], networks })
+        onDone()
+    }
+
+    return (
+        <div className={clsx('w-full', compact ? 'space-y-1.5' : 'mt-2 space-y-2')}>
+            <div className="relative w-full">
+                <input
+                    type="text"
+                    autoFocus
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    onKeyDown={e => {
+                        if (e.key === 'Enter') { e.preventDefault(); confirm() }
+                        if (e.key === 'Escape') onDone()
+                    }}
+                    placeholder="Name this address"
+                    autoComplete="off"
+                    className={clsx(
+                        'pr-20 w-full text-base rounded-lg border truncate hover:overflow-x-scroll focus:border-primary focus:ring-0 focus:outline-hidden',
+                        compact
+                            ? 'pl-3 h-9 bg-secondary-300 border-transparent placeholder:text-secondary-text'
+                            : 'h-12 leading-4 font-semibold border-secondary-800 !bg-secondary-500 placeholder:text-primary-text-tertiary/80 placeholder:font-normal'
+                    )}
+                />
+                <div className={clsx('absolute top-1/2 -translate-y-1/2 flex items-center gap-2', compact ? 'right-2' : 'right-3')}>
+                    {len > COUNTER_SHOW_AT && (
+                        <span className={clsx('text-xs tabular-nums', len > NAME_MAX ? 'text-error-foreground' : 'text-secondary-text')}>
+                            {len} / {NAME_MAX}
+                        </span>
+                    )}
+                    <button type="button" onClick={onDone} aria-label="Cancel" className="text-secondary-text hover:text-primary-text transition">
+                        <FilledX className={compact ? 'h-4 w-4' : 'h-5 w-5'} />
+                    </button>
+                </div>
+            </div>
+            <button
+                type="button"
+                onClick={confirm}
+                disabled={!isValid}
+                className={clsx(
+                    'w-full rounded-lg bg-primary text-primary-buttonTextColor hover:brightness-110 disabled:text-secondary-text disabled:cursor-not-allowed transition',
+                    compact
+                        ? 'h-9 text-sm font-medium disabled:bg-secondary-300'
+                        : 'h-12 text-base font-semibold disabled:bg-secondary-500'
+                )}
+            >
+                Save
+            </button>
+        </div>
+    )
+}
+
+const SaveToBookInline: FC<{ address: string, network: { name?: string, type: NetworkType } }> = ({ address, network }) => {
+    const [editing, setEditing] = useState(false)
+
+    if (!editing) {
+        return (
+            <SecondaryButton onClick={() => setEditing(true)} size="lg" className="mt-2 w-full">
+                <span className="flex items-center justify-center gap-2">
+                    <BookmarkPlus className="h-4 w-4" />
+                    <span>Save to address book</span>
+                </span>
+            </SecondaryButton>
+        )
+    }
+
+    return <SaveToBookNameForm address={address} network={network} onDone={() => setEditing(false)} />
+}
+
+export default SaveToBookInline
