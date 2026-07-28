@@ -11,6 +11,7 @@ import { useCallbacks } from "@/context/callbackProvider";
 import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
 import { useSwapRetry } from '@/hooks/useSwapRetry';
 import { useGaslessAuthorizationStatus } from '@/hooks/useGaslessAuthorizationStatus';
+import { SwapDetailsSceleton } from '@/components/Common/Sceletons';
 
 type Props = {
     type: "widget" | "contained",
@@ -30,17 +31,7 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, partner, onCa
     const resolved = useResolvedSwapStatus()
     const { failureReason, canRetry, retry, gaslessFailureMessage, canSwitchToStandard, switchToStandard } = useSwapRetry()
 
-    if (!swapBasicData) return <>
-        <div className="w-full h-[430px]">
-            <div className="animate-pulse flex space-x-4">
-                <div className="flex-1 space-y-6 py-1">
-                    <div className="h-32 bg-secondary-700 rounded-lg"></div>
-                    <div className="h-40 bg-secondary-700 rounded-lg"></div>
-                    <div className="h-12 bg-secondary-700 rounded-lg"></div>
-                </div>
-            </div>
-        </div>
-    </>
+    if (!swapBasicData) return <SwapDetailsSceleton />
 
     return (
         <Container type={type} goBack={onBackClick}>
