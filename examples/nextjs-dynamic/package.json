@@ -10,7 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@bigmi/client": "^0.10.0",
+    "@bigmi/client": "^0.10.1",
     "@bigmi/core": "^0.9.0",
     "@bigmi/react": "^0.9.0",
     "@dynamic-labs/ethereum": "^4.14.0",

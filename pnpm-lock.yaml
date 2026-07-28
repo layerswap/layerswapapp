@@ -120,8 +120,8 @@ importers:
         specifier: ^0.2.2
         version: 0.2.2
       '@bigmi/client':
-        specifier: ^0.10.0
-        version: 0.10.0(@tanstack/query-core@5.90.16)(@types/react@19.2.3)(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.3))
+        specifier: ^0.10.1
+        version: 0.10.1(@tanstack/query-core@5.90.16)(@types/react@19.2.3)(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.3))
       '@bigmi/core':
         specifier: ^0.9.0
         version: 0.9.0(@types/react@19.2.3)(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.3))
@@ -710,8 +710,8 @@ importers:
         version: 7.0.1(typescript@5.9.3)
     devDependencies:
       '@bigmi/client':
-        specifier: ^0.10.0
-        version: 0.10.0(@tanstack/query-core@5.90.16)(@types/react@19.2.3)(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.3))
+        specifier: ^0.10.1
+        version: 0.10.1(@tanstack/query-core@5.90.16)(@types/react@19.2.3)(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.3))
       '@bigmi/core':
         specifier: ^0.9.0
         version: 0.9.0(@types/react@19.2.3)(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.3))
@@ -1921,11 +1921,6 @@ packages:
 
   '@base-org/account@1.1.1':
     resolution: {integrity: sha512-IfVJPrDPhHfqXRDb89472hXkpvJuQQR7FDI9isLPHEqSYt/45whIoBxSPgZ0ssTt379VhQo4+87PWI1DoLSfAQ==}
-
-  '@bigmi/client@0.10.0':
-    resolution: {integrity: sha512-fjswLQdq9jXgtZn6cBtzbxk+S6QN1ajXN2OzEOkgY4dE7hRPsanvSs3H3s3hmmTnS+QleVEcD+s5+raHZqwnuQ==}
-    peerDependencies:
-      '@tanstack/query-core': '>=5.68.0'
 
   '@bigmi/client@0.10.1':
     resolution: {integrity: sha512-oU5IzogIVS8QQiV+ZjyWgTnhN16qiGWQfQRbvqhAeFJGuQ/mdEqOBRrFoTqUEmGah/xZnrAbNskC13a+tTAiFg==}
@@ -7400,10 +7395,6 @@ packages:
         optional: true
       typescript:
         optional: true
-
-  '@wallet-standard/app@1.1.1':
-    resolution: {integrity: sha512-WDGwoByhP5gwHH01r5EaLgQdLVkACPCdOMQhmhn8rsm10h/siSgTorShzBxrn0ExSPof+Lu+C3TfgqBrPa1xoQ==}
-    engines: {node: '>=22'}
 
   '@wallet-standard/app@1.1.1':
     resolution: {integrity: sha512-WDGwoByhP5gwHH01r5EaLgQdLVkACPCdOMQhmhn8rsm10h/siSgTorShzBxrn0ExSPof+Lu+C3TfgqBrPa1xoQ==}
@@ -14532,12 +14523,12 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@bigmi/client@0.10.0(@tanstack/query-core@5.90.16)(@types/react@19.2.3)(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.3))':
+  '@bigmi/client@0.10.1(@tanstack/query-core@5.90.16)(@types/react@19.2.3)(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.3))':
     dependencies:
       '@bigmi/core': 0.9.0(@types/react@19.2.3)(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.3))
       '@tanstack/query-core': 5.90.16
       '@wallet-standard/app': 1.1.1
-      '@wallet-standard/base': 1.1.0
+      '@wallet-standard/base': 1.1.1
       eventemitter3: 5.0.4
       zustand: 5.0.14(@types/react@19.2.3)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3))
     transitivePeerDependencies:
@@ -14827,7 +14818,7 @@ snapshots:
     dependencies:
       '@noble/hashes': 1.8.0
       clsx: 1.2.1
-      eventemitter3: 5.0.1
+      eventemitter3: 5.0.4
       preact: 10.28.2
       viem: 2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11)
     transitivePeerDependencies:
@@ -22629,10 +22620,6 @@ snapshots:
       - immer
       - react
       - use-sync-external-store
-
-  '@wallet-standard/app@1.1.1':
-    dependencies:
-      '@wallet-standard/base': 1.1.1
 
   '@wallet-standard/app@1.1.1':
     dependencies:
