@@ -1,10 +1,20 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { formatUnits, getAddress, isAddress, parseUnits, verifyMessage, type Hex } from "viem";
-import { isLighterEnabled } from "@/flags";
-import { resolveLighterNodeUrl } from "@/lib/wallets/lighter/constants";
-import { LIGHTER_FAST_WITHDRAW_MIN_USDC, LIGHTER_ROUTES, LIGHTER_USDC_MIN_TRANSFER_USDC } from "@/lib/wallets/lighter/routes";
-import { LighterApiError, LighterClient, isLighterOk, lighterAccountIndex, type LighterAccount } from "@/lib/apiClients/lighterClient";
+import {
+    LIGHTER_FAST_WITHDRAW_MIN_USDC,
+    LIGHTER_USDC_DECIMALS,
+    LIGHTER_USDC_MIN_TRANSFER_USDC,
+    LighterApiError,
+    LighterClient,
+    isLighterOk,
+    lighterAccountIndex,
+    resolveLighterChain,
+    resolveLighterNodeUrl,
+    type LighterAccount,
+    type LighterChain,
+} from "@layerswap/wallet-evm/lighter-protocol";
+import { isLighterEnabled } from "../../../flags";
 import {
     attachL1Signature,
     createAuthToken,
@@ -14,13 +24,13 @@ import {
     signFastWithdrawalTransfer,
     LighterSdkNotConfiguredError,
     type DerivedApiKey,
-} from "@/lib/wallets/lighter/server/signer";
+} from "../../../lib/lighter/server/signer";
 
 const RATE_WINDOW_MS = 60_000;
 const POST_LIMIT = 20;
 const GET_LIMIT = 150;
 const TOKEN_TTL_MS = 10 * 60_000;
-const USDC_DECIMALS = 6;
+const USDC_DECIMALS = LIGHTER_USDC_DECIMALS;
 const REGISTRATION_POLL_ATTEMPTS = 10;
 const REGISTRATION_POLL_INTERVAL_MS = 750;
 // 253 is the conventional read-only SDK slot and 255 is Lighter's default/all-
@@ -151,8 +161,8 @@ function resolveNodeUrl(network: string): string {
     return nodeUrl;
 }
 
-function resolveChain(network: string): string {
-    const chain = LIGHTER_ROUTES[network]?.lighterChain;
+function resolveChain(network: string): LighterChain {
+    const chain = network ? resolveLighterChain(network) : undefined;
     if (!chain) throw new RelayError(400, "Unsupported Lighter network");
     return chain;
 }
@@ -229,7 +239,7 @@ async function getFastWithdrawalTerms(params: {
     accountIndex: number;
     apiKey: DerivedApiKey;
     nodeUrl: string;
-    chain: string;
+    chain: LighterChain;
     netAmount?: bigint;
     grossAmount?: bigint;
     maxFee?: bigint;

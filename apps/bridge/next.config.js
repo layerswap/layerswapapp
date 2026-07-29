@@ -80,8 +80,8 @@ module.exports = (phase, { defaultConfig }) => {
     productionBrowserSourceMaps: true,
     outputFileTracingIncludes: {
       '/api/lighter/relay': [
-        './lib/wallets/lighter/server/lighter-signer.wasm',
-        './lib/wallets/lighter/server/wasm_exec.js',
+        './lib/lighter/server/lighter-signer.wasm',
+        './lib/lighter/server/wasm_exec.js',
       ],
     },
     async rewrites() {

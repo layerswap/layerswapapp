@@ -49,5 +49,6 @@ export enum NetworkType {
     Bitcoin = 'bitcoin',
     Tron = 'tron',
     Hyperliquid = 'hyperliquid',
-    Polymarket = 'polymarket'
+    Polymarket = 'polymarket',
+    Lighter = 'lighter'
 }

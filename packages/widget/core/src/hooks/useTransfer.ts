@@ -1,5 +1,5 @@
 import { resolverService } from "@/lib/resolvers/resolverService";
-import { TransferProps, TransferProgress, Wallet } from "@/types";
+import { AuthorizeWithdrawalProps, TransferProps, TransferProgress, Wallet, WithdrawalAuthorization } from "@/types";
 import { useCallback } from "react";
 
 export function useTransfer() {
@@ -8,5 +8,11 @@ export function useTransfer() {
         return transferResolver.executeTransfer(params, wallet, onProgress);
     }, []);
 
-    return { executeTransfer };
+    // Resolves to undefined when the source's provider needs no pre-swap authorization.
+    const authorizeWithdrawal = useCallback(async (params: AuthorizeWithdrawalProps, wallet?: Wallet, onProgress?: (info: TransferProgress | undefined) => void): Promise<WithdrawalAuthorization | undefined> => {
+        const transferResolver = resolverService.getTransferResolver();
+        return transferResolver.authorizeWithdrawal(params, wallet, onProgress);
+    }, []);
+
+    return { executeTransfer, authorizeWithdrawal };
 }

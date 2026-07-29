@@ -2,6 +2,7 @@ import { NetworkType, type NetworkWithTokens } from '@layerswap/widget/types'
 import { KnownInternalNames } from '@layerswap/widget/internal'
 import { HYPERLIQUID_ROUTES } from '../additionalProviders/hyperliquid/routes'
 import { POLYMARKET_CONFIG } from '../additionalProviders/polymarket/constants'
+import { LIGHTER_NETWORKS } from '../additionalProviders/lighter/protocol'
 
 export type EvmNetworkBuckets = {
     asSource: string[]
@@ -16,6 +17,7 @@ export type EvmNetworkBuckets = {
 const extendedWithdrawalNetworks = [
     ...Object.keys(HYPERLIQUID_ROUTES),
     ...Object.keys(POLYMARKET_CONFIG),
+    ...Object.keys(LIGHTER_NETWORKS),
 ]
 
 export function computeEvmNetworkBuckets(networks: NetworkWithTokens[]): EvmNetworkBuckets {

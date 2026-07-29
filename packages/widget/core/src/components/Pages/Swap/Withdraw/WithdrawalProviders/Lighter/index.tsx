@@ -1,17 +1,17 @@
 import { FC } from "react";
 import { Loader2 } from "lucide-react";
-import { WithdrawPageProps } from "../../Common/sharedTypes";
-import { ButtonWrapper, ConnectWalletButton } from "../../Common/buttons";
-import WalletMessage from "../../../messages/Message";
-import ActionMessages from "../../../messages/TransactionMessages";
-import WalletIcon from "@/components/icons/WalletIcon";
-import { Address } from "@/lib/address";
 import { useLighterWithdrawal } from "./useLighterWithdrawal";
+import { WithdrawPageProps } from "../../Wallet/Common/sharedTypes";
+import WalletMessage from "../../messages/Message";
+import { ButtonWrapper, ConnectWalletButton } from "../../Wallet/Common/buttons";
+import { ActionMessages } from "../../messages/TransactionMessages";
+import { Address } from "@/lib/address/Address";
+import WalletIcon from "@/components/Icons/WalletIcon";
 
 export const LighterWalletWithdraw: FC<WithdrawPageProps> = (props) => {
     const { source_network } = props.swapBasicData
     const {
-        handleWithdraw, loading, registering, signingWithdrawal, error, rejected,
+        handleWithdraw, loading, progress, error, rejected,
         isConnected, wallet, activeAddress, sourceAddress,
     } = useLighterWithdrawal(props)
 
@@ -29,8 +29,8 @@ export const LighterWalletWithdraw: FC<WithdrawPageProps> = (props) => {
     return <div className="w-full space-y-3 text-primary-text">
         {error && <WalletMessage status="error" header={error.header} details={error.details} />}
         {rejected && <ActionMessages.TransactionRejectedMessage />}
-        {registering && <WalletMessage status="pending" header="Approve Lighter setup" details="Sign the message to register your Lighter signing key for this wallet. This is a one-time, gasless authorization — you'll approve the withdrawal next." />}
-        {signingWithdrawal && <WalletMessage status="pending" header="Approve Lighter withdrawal" details="Sign Lighter’s withdrawal message. It binds this withdrawal to the Layerswap deposit address and does not send an Ethereum transaction." />}
+        {/* Provider-surfaced signing step (one-time Lighter setup, then the withdrawal itself). */}
+        {progress && <WalletMessage status="pending" header={progress.title} details={progress.description ?? ''} />}
         {!loading &&
             <ButtonWrapper
                 onClick={handleWithdraw}
@@ -41,7 +41,7 @@ export const LighterWalletWithdraw: FC<WithdrawPageProps> = (props) => {
         }
         {loading &&
             <ButtonWrapper isSubmitting isDisabled icon={<Loader2 className="h-6 w-6 animate-spin" />}>
-                {registering ? 'Setting up' : signingWithdrawal ? 'Awaiting signature' : 'Withdrawing'}
+                {progress ? 'Awaiting signature' : 'Withdrawing'}
             </ButtonWrapper>
         }
     </div>

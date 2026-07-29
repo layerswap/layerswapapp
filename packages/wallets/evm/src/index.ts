@@ -18,6 +18,9 @@ import { getEvmConfig } from "./service/getEvmConfig"
 import type { Network, TransferProvider, GaslessProvider } from "@layerswap/widget/types"
 import { createPolymarketTransferProvider } from "./additionalProviders/polymarket/createPolymarketTransferProvider"
 import { polymarketProvider } from "./additionalProviders/polymarket/polymarketExtendedRouteProvider"
+import { createLighterTransferProvider } from "./additionalProviders/lighter/createLighterTransferProvider"
+import { lighterProvider } from "./additionalProviders/lighter/lighterExtendedRouteProvider"
+import { isLighterNetwork } from "./additionalProviders/lighter/protocol"
 import { createEVMGaslessProvider } from "./gaslessProvider/createEVMGaslessProvider"
 
 import { id } from "./constants"
@@ -84,6 +87,10 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
             (n) => n.name === KnownInternalNames.Networks.PolymarketMainnet,
             () => import("./balanceProviders").then(m => new m.PolymarketBalanceProvider())
         ),
+        new LazyBalanceProvider(
+            (n) => isLighterNetwork(n.name),
+            () => import("./balanceProviders").then(m => new m.LighterBalanceProvider())
+        ),
         ...moduleBalanceProviders,
     ]
     const finalBalanceProviders = balanceProviders !== undefined
@@ -98,6 +105,10 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         new LazyGasProvider(
             (n) => n.type === NetworkType.Hyperliquid && !!n.token,
             () => import("./gasProviders").then(m => new m.HyperliquidGasProvider())
+        ),
+        new LazyGasProvider(
+            (n) => n.type === NetworkType.Lighter && !!n.token,
+            () => import("./gasProviders").then(m => new m.LighterGasProvider())
         ),
         ...moduleGasProviders,
     ]
@@ -123,6 +134,20 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
                 executeTransfer(params, wallet, onProgress) {
                     return createPolymarketTransferProvider(getEvmConfig(), supportsNetwork)
                         .executeTransfer(params, wallet, onProgress)
+                },
+            }
+        },
+        (): TransferProvider => {
+            const supportsNetwork = (n: Network) => isLighterNetwork(n.name)
+            return {
+                supportsNetwork,
+                executeTransfer(params, wallet, onProgress) {
+                    return createLighterTransferProvider(getEvmConfig(), supportsNetwork)
+                        .executeTransfer(params, wallet, onProgress)
+                },
+                authorizeWithdrawal(params, wallet, onProgress) {
+                    return createLighterTransferProvider(getEvmConfig(), supportsNetwork)
+                        .authorizeWithdrawal!(params, wallet, onProgress)
                 },
             }
         },
@@ -162,7 +187,7 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         gaslessProvider: finalGaslessProviders,
         contractAddressProvider: finalContractAddressProviders,
         rpcHealthCheckProvider: finalRPCHealthCheckProviders,
-        extendedRouteProvider: [hyperliquidProvider, polymarketProvider],
+        extendedRouteProvider: [hyperliquidProvider, polymarketProvider, lighterProvider],
     }
 }
 

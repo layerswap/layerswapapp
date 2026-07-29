@@ -75,17 +75,19 @@ const MethodPicker: FC = () => {
     const { methods } = useDepositSettings();
     const hyperliquid = useExtendedDepositOption("hyperliquid");
     const polymarket = useExtendedDepositOption("polymarket");
+    const lighter = useExtendedDepositOption("lighter");
 
     const canShow = (m: DepositMethodId) => methods.includes(m);
     const primaryWallet = wallets[0];
     const hasWallet = !!primaryWallet;
     const destinationReady = !!destination && !!destinationToken;
-    // Extended-source shortcuts (e.g. Hyperliquid, Polymarket). Each card renders
+    // Extended-source shortcuts (Hyperliquid, Polymarket, Lighter). Each card renders
     // whenever its source is configured; its enabled/loading state (not its
     // presence) reflects reachability, so it never flashes away.
     const extendedSources: { id: DepositMethodId; option: ReturnType<typeof useExtendedDepositOption> }[] = [
         { id: "hyperliquid", option: hyperliquid },
         { id: "polymarket", option: polymarket },
+        { id: "lighter", option: lighter },
     ];
 
     const handleWalletClick = () => {

@@ -1,9 +1,36 @@
 # Lighter extended source
 
-Lighter is exposed as a client-synthesized source network in `lib/extendedRoutes/`.
-The real backend leg is funded through a Layerswap deposit address on Arbitrum
-(Arbitrum Sepolia in sandbox): Lighter's fast-withdraw bridge releases USDC to
-that address, then the normal Layerswap route completes the destination leg.
+Lighter is exposed as a client-synthesized source network via the
+`ExtendedRouteProvider` in `./lighterExtendedRouteProvider.ts`, registered from this
+package's `createEVMProvider`. The real backend leg is funded through a Layerswap
+deposit address on Arbitrum (Arbitrum Sepolia in sandbox): Lighter's fast-withdraw
+bridge releases USDC to that address, then the normal Layerswap route completes the
+destination leg.
+
+## Where the pieces live
+
+Same split as Polymarket — chain logic in this package, UI in the widget, server
+secrets in the bridge app:
+
+| Concern | Location |
+| --- | --- |
+| Route/network synthesis | `./lighterExtendedRouteProvider.ts` |
+| Static config, node-url allowlist, limits | `./constants.ts` → `./protocol.ts` |
+| Node API client | `./lighterClient.ts` |
+| Relay proxy client (browser) | `./relayClient.ts` |
+| Withdrawal chain logic + wallet signing | `./createLighterTransferProvider.ts` |
+| Balance / gas | `./lighterBalanceProvider.ts`, `./lighterGasProvider.ts` |
+| Withdrawal UI + swap creation | `packages/widget/core/src/components/Pages/Swap/Withdraw/WithdrawalProviders/Lighter/` |
+| Relay route + WASM signer | `apps/bridge/pages/api/lighter/relay.ts`, `apps/bridge/lib/lighter/server/` |
+
+`./protocol.ts` is deliberately dependency-free and is what the bridge relay imports
+(via the `@layerswap/wallet-evm/lighter-protocol` subpath), so the browser and server
+sides of the protocol cannot drift and the widget bundle never reaches the API route.
+
+Because Lighter's fee is only knowable after wallet authorization, the flow is split
+across the two `TransferProvider` entry points: `authorizeWithdrawal` (pre-swap —
+register + preflight, returns the firm quote) and `executeTransfer` (post-swap — bind
+the sealed quote to the deposit address, sign, submit).
 
 Base and Avalanche are Lighter CCTP **deposit** entry paths. They are not
 destinations of `/api/v1/fastwithdraw`; Lighter's current app describes that flow
@@ -84,10 +111,10 @@ the current official Lighter SDK and API instead.
 Lighter's L2 Schnorr/Poseidon signer is loaded server-side through the official Go
 WASM interface; no browser or npm signer is used.
 
-Files:
+Files (in the bridge app, since the loader resolves them from its `process.cwd()`):
 
-- `server/lighter-signer.wasm`
-- `server/wasm_exec.js`
+- `apps/bridge/lib/lighter/server/lighter-signer.wasm`
+- `apps/bridge/lib/lighter/server/wasm_exec.js`
 
 They were built/copied from `elliottech/lighter-go` commit
 `c26ac340ce5d2e237c555949b6ab0927bd09e0df` with Go 1.24.4:
@@ -102,12 +129,14 @@ SHA-256:
 - `lighter-signer.wasm`: `d384fbd184feab4c3c06c25e696b1c69abe5b514c8fd7bf4fa4e08e9a401bcb9`
 - `wasm_exec.js`: `0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14`
 
-`next.config.js` includes both files in the relay route's output-file trace.
+`apps/bridge/next.config.js` includes both files in the relay route's output-file trace.
 
 ## Configuration and production boundary
 
 The relay requires `LIGHTER_SIGNER_SECRET`; the `lighter-routes` feature flag must
-also be enabled. In sandbox use:
+also be enabled. That flag fails CLOSED (it gates a credential-bearing route), so
+local dev without `vercel env pull` opts in with `LIGHTER_ROUTES_OVERRIDE=true` —
+which still cannot bypass the signer-secret prerequisite. In sandbox use:
 
 ```yaml
 NEXT_PUBLIC_API_KEY: sandbox

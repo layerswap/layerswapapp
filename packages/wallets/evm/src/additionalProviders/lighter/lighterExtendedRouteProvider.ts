@@ -1,8 +1,15 @@
-import { NetworkRoute, NetworkRouteToken, NetworkType, NetworkWithTokens, Token } from "@/Models/Network";
-import { ExtendedRouteProvider, ExtendedTokenMapping, RealRouteRef, requiredDepositMethod } from "../types";
-import { realRoutePresent } from "../availability";
-import { LIGHTER_ROUTES, LighterDestination, getLighterCandidates, pickLighterDestination } from "@/lib/wallets/lighter/routes";
-import { LIGHTER_BASE_TOKEN_SYMBOL, LIGHTER_CONFIG, LIGHTER_DISPLAY_NAME, LIGHTER_FUNDING, LIGHTER_LOGO, LIGHTER_USDC_SYMBOL } from "@/lib/wallets/lighter/constants";
+import { NetworkRoute, NetworkRouteToken, NetworkType, NetworkWithTokens, Token, ExtendedRouteProvider, ExtendedTokenMapping, RealRouteRef, requiredDepositMethod } from "@layerswap/widget/types";
+import { realRoutePresent } from "@layerswap/widget/internal";
+import { LIGHTER_ROUTES, LighterDestination, getLighterCandidates, pickLighterDestination } from "./routes";
+import { LIGHTER_BASE_TOKEN_SYMBOL, LIGHTER_CONFIG, LIGHTER_DISPLAY_NAME, LIGHTER_FUNDING, LIGHTER_LOGO, LIGHTER_USDC_SYMBOL } from "./constants";
+
+/**
+ * Lighter extended SOURCE provider. Like Polymarket (and unlike Hyperliquid, which the
+ * backend defines), the Lighter network is synthesized entirely on the client from the
+ * real Arbitrum network — see `resolveExtendedNetwork`. Its withdrawal is a fast-withdraw
+ * that releases USDC to a Layerswap deposit address on Arbitrum (funding:
+ * 'deposit_address'); the backend then bridges to the final destination.
+ */
 
 const toMapping = (dest: LighterDestination): ExtendedTokenMapping => ({
     extendedTokenSymbol: LIGHTER_USDC_SYMBOL,
@@ -14,10 +21,12 @@ const toMapping = (dest: LighterDestination): ExtendedTokenMapping => ({
 })
 
 const mappings: Record<string, Record<string, ExtendedTokenMapping>> = Object.fromEntries(
-    Object.entries(LIGHTER_ROUTES).map(([lighterNetwork, route]) => [
-        lighterNetwork,
-        { [LIGHTER_USDC_SYMBOL]: toMapping(route.destinations[0]) },
-    ]),
+    Object.entries(LIGHTER_ROUTES)
+        .filter(([, route]) => !!route.destinations.length)
+        .map(([lighterNetwork, route]) => [
+            lighterNetwork,
+            { [LIGHTER_USDC_SYMBOL]: toMapping(route.destinations[0]) },
+        ]),
 )
 
 const networkCache = new WeakMap<object, Map<string, NetworkWithTokens>>()
@@ -26,8 +35,13 @@ const routeCache = new WeakMap<object, NetworkRoute>()
 export const lighterProvider: ExtendedRouteProvider = {
     id: 'lighter',
     direction: 'source',
+    // Fail closed: the flow runs through the credential-gated relay proxy (the Lighter
+    // L2 signature is produced server-side behind LIGHTER_SIGNER_SECRET), so when no
+    // resolved flag covers this provider (flags endpoint unreachable) the route must
+    // stay hidden rather than break mid-flow.
+    enabledByDefault: false,
     funding: LIGHTER_FUNDING,
-    extendedNetworkNames: Object.keys(LIGHTER_ROUTES),
+    extendedNetworkNames: Object.keys(mappings),
     mappings,
     resolveExtendedNetwork(networkName, allNetworks) {
         const cfg = LIGHTER_CONFIG[networkName]

@@ -1,21 +1,26 @@
 import path from "node:path";
 import { readFile } from "node:fs/promises";
 import { parseUnits } from "viem";
-import { SignedLighterTx } from "@/lib/apiClients/lighterClient";
+import {
+    LIGHTER_PERPS_ROUTE_TYPE,
+    LIGHTER_PROTOCOL_CHAIN_ID,
+    LIGHTER_USDC_ASSET_INDEX,
+    LIGHTER_USDC_DECIMALS,
+    type LighterChain,
+    type SignedLighterTx,
+} from "@layerswap/wallet-evm/lighter-protocol";
 
 // SERVER-ONLY. Loads the vendored official Lighter signer WASM (built from
 // elliottech/lighter-go `wasm/main.go`) via Node's WebAssembly + Go's wasm_exec glue.
-// No npm dependency — two vendored files: lighter-signer.wasm + wasm_exec.js. See ../README.md.
+// No npm dependency — two vendored files: lighter-signer.wasm + wasm_exec.js. Both are
+// listed in this app's `next.config.js` outputFileTracingIncludes for the relay route.
+// Protocol constants are shared with the browser flow via the package's
+// `lighter-protocol` subpath so the two sides cannot drift.
 
-const WASM_DIR = path.join(process.cwd(), "lib/wallets/lighter/server");
+const WASM_DIR = path.join(process.cwd(), "lib/lighter/server");
 const WASM_FILE = path.join(WASM_DIR, "lighter-signer.wasm");
 
-// Lighter protocol constants (not EVM chain IDs). Confirmed against lighter-go
-// and the live testnet assetDetails response.
-export const LIGHTER_USDC_ASSET_INDEX = 3;
-export const LIGHTER_PERPS_ROUTE_TYPE = 0;
-const LIGHTER_CHAIN_ID: Record<string, number> = { Mainnet: 304, Testnet: 300 };
-const USDC_DECIMALS = 6;
+const USDC_DECIMALS = LIGHTER_USDC_DECIMALS;
 const SKIP_NONCE = 0;
 
 export class LighterSdkNotConfiguredError extends Error {
@@ -134,14 +139,14 @@ export async function resolveApiKey(l1Address: string, accountIndex: number, req
     return { ...pair, apiKeyIndex };
 }
 
-async function withClient(nodeUrl: string, apiKey: DerivedApiKey, chain: string, accountIndex: number): Promise<LighterWasm> {
+async function withClient(nodeUrl: string, apiKey: DerivedApiKey, chain: LighterChain, accountIndex: number): Promise<LighterWasm> {
     const wasm = await loadWasm();
-    const chainId = LIGHTER_CHAIN_ID[chain] ?? LIGHTER_CHAIN_ID.Testnet;
+    const chainId = LIGHTER_PROTOCOL_CHAIN_ID[chain] ?? LIGHTER_PROTOCOL_CHAIN_ID.Testnet;
     unwrap(wasm.CreateClient(nodeUrl, apiKey.privateKey, chainId, apiKey.apiKeyIndex, accountIndex));
     return wasm;
 }
 
-export async function createAuthToken(nodeUrl: string, chain: string, accountIndex: number, apiKey: DerivedApiKey): Promise<string> {
+export async function createAuthToken(nodeUrl: string, chain: LighterChain, accountIndex: number, apiKey: DerivedApiKey): Promise<string> {
     const wasm = await withClient(nodeUrl, apiKey, chain, accountIndex);
     const deadline = Math.floor(Date.now() / 1000) + 10 * 60;
     return unwrap(wasm.CreateAuthToken(deadline, apiKey.apiKeyIndex, accountIndex)).authToken;
@@ -149,7 +154,7 @@ export async function createAuthToken(nodeUrl: string, chain: string, accountInd
 
 export type SignFastWithdrawalTransferParams = {
     nodeUrl: string;
-    chain: string;
+    chain: LighterChain;
     accountIndex: number;
     apiKey: DerivedApiKey;
     nonce: number;
@@ -195,7 +200,7 @@ export async function signFastWithdrawalTransfer(params: SignFastWithdrawalTrans
 
 export type SignChangePubKeyParams = {
     nodeUrl: string;
-    chain: string;
+    chain: LighterChain;
     accountIndex: number;
     apiKey: DerivedApiKey;
     nonce: number;

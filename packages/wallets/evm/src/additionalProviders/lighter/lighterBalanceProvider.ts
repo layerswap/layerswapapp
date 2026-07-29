@@ -1,8 +1,6 @@
-import { TokenBalance } from "../../../Models/Balance";
-import KnownInternalNames from "../../knownIds";
-import { LighterClient } from "../../apiClients/lighterClient";
-import { LIGHTER_USDC_SYMBOL, resolveLighterNodeUrl } from "../../wallets/lighter/constants";
-import { BalanceProvider } from "@/Models/BalanceProvider";
+import { BalanceProvider, TokenBalance } from "@layerswap/widget/types";
+import { LighterClient } from "./lighterClient";
+import { LIGHTER_USDC_SYMBOL, isLighterNetwork, resolveLighterNodeUrl } from "./constants";
 
 export class LighterBalanceProvider extends BalanceProvider {
     private client: LighterClient;
@@ -13,13 +11,14 @@ export class LighterBalanceProvider extends BalanceProvider {
     }
 
     supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
-        return network.name === KnownInternalNames.Networks.LighterMainnet ||
-            network.name === KnownInternalNames.Networks.LighterTestnet;
+        return isLighterNetwork(network.name);
     }
 
     fetchBalance: BalanceProvider['fetchBalance'] = async (address, network, options) => {
         if (!network?.tokens && !network.token) return;
 
+        // Route the settings `node_url` through the same allowlist the withdrawal flow
+        // uses — an attacker-controlled override could otherwise feed forged balances.
         const nodeUrl = resolveLighterNodeUrl(network.name, network.node_url);
         if (!nodeUrl) return;
 

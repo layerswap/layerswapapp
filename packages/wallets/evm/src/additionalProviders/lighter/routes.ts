@@ -1,5 +1,14 @@
-import KnownInternalNames from "@/lib/knownIds";
-import type { RealRouteAvailability } from "@/lib/extendedRoutes/types";
+import { KnownInternalNames } from "@layerswap/widget/internal";
+import type { RealRouteAvailability } from "@layerswap/widget/types";
+import {
+    LIGHTER_FAST_WITHDRAW_MIN_USDC,
+    LIGHTER_MAINNET_NETWORK,
+    LIGHTER_NETWORKS,
+    LIGHTER_QUOTED_FAST_WITHDRAW_FEE_USDC,
+    LIGHTER_TESTNET_NETWORK,
+    LIGHTER_USDC_DECIMALS,
+    type LighterChain,
+} from "./protocol";
 
 export type LighterDestination = {
     realNetworkName: string
@@ -11,27 +20,18 @@ export type LighterDestination = {
 }
 
 export type LighterRoute = {
-    lighterChain: 'Mainnet' | 'Testnet'
+    lighterChain: LighterChain
     defaultNodeUrl: string
     destinations: LighterDestination[]
 }
 
-const MAINNET_NODE = "https://mainnet.zklighter.elliot.ai"
-const TESTNET_NODE = "https://testnet.zklighter.elliot.ai"
-
 // Lighter fast withdrawals are paid out by its Arbitrum bridge. Base and
 // Avalanche are supported CCTP *deposit* entry paths, not fast-withdraw
-// destinations. Lighter only reveals the account-specific fast-withdraw fee
-// after authorization, so this is an initial quote estimate. The exact fee is
-// confirmed before swap creation and persisted with the resulting swap.
-export const LIGHTER_QUOTED_FAST_WITHDRAW_FEE_USDC = 1
-export const LIGHTER_FAST_WITHDRAW_MIN_USDC = 4
-export const LIGHTER_USDC_MIN_TRANSFER_USDC = 1
-
+// destinations.
 const ARBITRUM_MAINNET: LighterDestination = {
     realNetworkName: KnownInternalNames.Networks.ArbitrumMainnet,
-    realTokenSymbol: 'USDC',
-    realDecimals: 6,
+    realTokenSymbol: KnownInternalNames.Currencies.USDC,
+    realDecimals: LIGHTER_USDC_DECIMALS,
     flatFee: LIGHTER_QUOTED_FAST_WITHDRAW_FEE_USDC,
     // Lighter applies its 4 USDC fast-withdraw minimum to the total entered
     // amount; the bridge transfer receives that amount minus the live fee.
@@ -40,25 +40,24 @@ const ARBITRUM_MAINNET: LighterDestination = {
 }
 const ARBITRUM_SEPOLIA: LighterDestination = {
     realNetworkName: KnownInternalNames.Networks.ArbitrumSepolia,
-    realTokenSymbol: 'USDC',
-    realDecimals: 6,
+    realTokenSymbol: KnownInternalNames.Currencies.USDC,
+    realDecimals: LIGHTER_USDC_DECIMALS,
     flatFee: LIGHTER_QUOTED_FAST_WITHDRAW_FEE_USDC,
     minAmount: LIGHTER_FAST_WITHDRAW_MIN_USDC,
     arrivalSeconds: 30,
 }
 
-export const LIGHTER_ROUTES: Record<string, LighterRoute> = {
-    [KnownInternalNames.Networks.LighterMainnet]: {
-        lighterChain: 'Mainnet',
-        defaultNodeUrl: MAINNET_NODE,
-        destinations: [ARBITRUM_MAINNET],
-    },
-    [KnownInternalNames.Networks.LighterTestnet]: {
-        lighterChain: 'Testnet',
-        defaultNodeUrl: TESTNET_NODE,
-        destinations: [ARBITRUM_SEPOLIA],
-    },
+const DESTINATIONS: Record<string, LighterDestination[]> = {
+    [LIGHTER_MAINNET_NETWORK]: [ARBITRUM_MAINNET],
+    [LIGHTER_TESTNET_NETWORK]: [ARBITRUM_SEPOLIA],
 }
+
+export const LIGHTER_ROUTES: Record<string, LighterRoute> = Object.fromEntries(
+    Object.entries(LIGHTER_NETWORKS).map(([networkName, network]) => [
+        networkName,
+        { ...network, destinations: DESTINATIONS[networkName] ?? [] },
+    ]),
+)
 
 export function pickLighterDestination(
     lighterNetworkName: string | undefined,

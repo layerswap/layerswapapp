@@ -19,6 +19,7 @@ import RPCUnhealthyMessage from "./RPCUnhealthyMessage";
 import { isExtendedSourceNetwork } from "@/lib/extendedRoutes/registry";
 import { HyperliquidWalletWithdraw } from "../WithdrawalProviders/Hyperliquid";
 import { PolymarketWalletWithdraw } from "../WithdrawalProviders/Polymarket";
+import { LighterWalletWithdraw } from "../WithdrawalProviders/Lighter";
 import { NetworkType } from "@/Models/Network";
 
 type Props = {
@@ -83,11 +84,20 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
         }
     }, [swapId])
 
-    // Extended sources (Hyperliquid, Polymarket) have their own withdraw flow — the chain
-    // logic comes from the wallet package's TransferProvider, the UI lives here. Polymarket
-    // is checked first: its synthesized networks are also extended sources.
+    // Extended sources (Hyperliquid, Polymarket, Lighter) have their own withdraw flow —
+    // the chain logic comes from the wallet package's TransferProvider, the UI lives here.
+    // The type-specific checks come first: every synthesized network is ALSO an extended
+    // source, so the `isExtendedSourceNetwork` fallback below would otherwise hand a
+    // Polymarket or Lighter swap to the Hyperliquid flow.
     if (source_network?.type === NetworkType.Polymarket) {
         return <PolymarketWalletWithdraw
+            swapId={swapId}
+            swapBasicData={swapBasicData}
+            refuel={refuel}
+        />
+    }
+    if (source_network?.type === NetworkType.Lighter) {
+        return <LighterWalletWithdraw
             swapId={swapId}
             swapBasicData={swapBasicData}
             refuel={refuel}

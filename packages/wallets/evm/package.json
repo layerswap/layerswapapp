@@ -14,6 +14,10 @@
     "./polymarket-protocol": {
       "types": "./dist/types/additionalProviders/polymarket/protocol.d.ts",
       "default": "./dist/esm/additionalProviders/polymarket/protocol.js"
+    },
+    "./lighter-protocol": {
+      "types": "./dist/types/additionalProviders/lighter/protocol.d.ts",
+      "default": "./dist/esm/additionalProviders/lighter/protocol.js"
     }
   },
   "sideEffects": false,

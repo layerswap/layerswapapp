@@ -30,8 +30,12 @@ export const polymarketRoutesFlag = flag<boolean>({
 
 export const lighterRoutesFlag = flag<boolean>({
     key: 'lighter-routes',
-    description: 'Show Lighter extended source routes',
-    defaultValue: true,
+    description: 'Show Lighter extended source routes (requires the relay signer secret)',
+    // Fail CLOSED, like Polymarket: the withdrawal runs through the credential-gated
+    // relay proxy (Lighter's L2 signature is produced server-side behind
+    // LIGHTER_SIGNER_SECRET), so losing the flag service must not silently re-enable it.
+    // Local dev without `vercel env pull` opts in via LIGHTER_ROUTES_OVERRIDE=true.
+    defaultValue: false,
     adapter: vercelAdapter(),
 })
 
@@ -61,11 +65,19 @@ export async function isPolymarketEnabled(req: GetServerSidePropsContext['req'])
 
 // Lighter's proprietary L2 half-signature is produced server-side; every registration and
 // fast withdrawal is additionally authorized by the user's EVM wallet signature. The
-// secret authenticates short-lived relay preparation tokens and gates the signer runtime.
+// secret authenticates short-lived relay preparation tokens and gates the signer runtime,
+// so it is a hard prerequisite ANDed on top of the dashboard toggle — the route can't be
+// enabled from the dashboard alone.
 export const hasLighterSignerSecret = () => !!process.env.LIGHTER_SIGNER_SECRET
 
+// Effective Lighter enablement = (dashboard flag OR explicit env opt-in) AND the signer
+// secret. Shared by the source-route resolver, the public flags endpoint, and the relay
+// proxy so all three gate identically. The env override exists because the flag fails
+// closed — it lets local dev / non-Vercel environments turn the route on with intent,
+// but never bypasses the secret prerequisite.
 export async function isLighterEnabled(req: GetServerSidePropsContext['req']): Promise<boolean> {
-    return (await lighterRoutesFlag(req)) && hasLighterSignerSecret()
+    const flagOn = (await lighterRoutesFlag(req)) || process.env.LIGHTER_ROUTES_OVERRIDE === 'true'
+    return flagOn && hasLighterSignerSecret()
 }
 
 // Resolve every extended-route flag for a request — call from getServerSideProps with
