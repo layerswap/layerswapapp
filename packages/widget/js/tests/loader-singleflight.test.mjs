@@ -17,6 +17,7 @@ globalThis.fetch = async () => {
     ok: true,
     url: 'https://cdn.example/1.7.0-0123456789ab/manifest.json',
     json: async () => ({
+      protocolMajor: 1,
       version: '1.7.0',
       remoteEntry: './remoteEntry.js',
     }),

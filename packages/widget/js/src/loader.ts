@@ -1,5 +1,6 @@
 import { fetchManifest, resolveRemoteEntry, verifyManifest, manifestFreshness, ManifestError, DEFAULT_MANIFEST_URL } from './manifest.js';
 import { registerChunkHashes } from './sri.js';
+import { WIDGET_PROTOCOL_MAJOR, widgetProtocolMajorOf } from '@layerswap/widget-types';
 
 export type ResolvedSource = { remoteEntry: string };
 
@@ -100,6 +101,13 @@ async function resolveSourceOnce(manifestUrl: string, verify: boolean): Promise<
           : 'manifest carries no valid expiresAt — refusing to trust it indefinitely',
       );
     }
+  }
+  const remoteProtocolMajor = widgetProtocolMajorOf(manifest);
+  if (remoteProtocolMajor !== WIDGET_PROTOCOL_MAJOR) {
+    throw new ManifestError(
+      'incompatible',
+      `widget protocol v${String(remoteProtocolMajor)} is incompatible with loader v${WIDGET_PROTOCOL_MAJOR}`,
+    );
   }
   // Identify the build in the console — version, commit, and build time from
   // the (now-validated) manifest. Answers "which build is this page actually

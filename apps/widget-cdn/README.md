@@ -38,13 +38,13 @@ The Worker serves two kinds of URL:
 | URL | Behavior |
 |---|---|
 | `…/v1/manifest.json` | **Rolling** — Worker 302-redirects to the current `v1` build. Auto-updates within ~60s of a channel flip. |
-| `…/1.5.0-abc123def456/manifest.json` | **Pinned** — frozen forever at that exact build. |
+| `…/1.5.0-abc123def456/manifest.json` | **Immutable** — exact build used for staging, rollback, and debugging. Its signed validity window still expires. |
 
 Integrators don't choose between them: the manifest URL is not a public knob.
 `@layerswap/widget-js` bakes in the rolling channel URL
 (`DEFAULT_MANIFEST_URL` in `src/manifest.ts`) and `resolveSource()` takes no
 arguments, so every integrator rides the channel and picks up pointer flips
-automatically. Pinned URLs exist for Layerswap's own release mechanics
+automatically. Immutable URLs exist for Layerswap's own release mechanics
 (staged releases, rollback targets, debugging a specific build) and are only
 reachable from a loader via the internal `__LAYERSWAP_WIDGET_MANIFEST__`
 override global — a build/test seam, not a supported integrator option.
@@ -60,11 +60,12 @@ re-upload (see `scripts/rollback-r2.mjs` or `scripts/rollback-azure.mjs`).
 A build's immutable identity is its **buildId** — the `@layerswap/widget`
 version plus the git sha (`1.5.0-abc123def456`, see `scripts/build-id.mjs`) —
 because the deployed bytes also change with widget-cdn/wallets/widget-js/
-widget-react, none of which bump the widget version. The **version** remains
-the host-facing compatibility number. A breaking change to
-the embed/mount API or a required host singleton major (react/wagmi/viem) is
-what warrants cutting a new major channel (`v2`); anything backward-compatible
-ships within the existing channel.
+widget-react, none of which bump the widget version. The manifest's
+**protocolMajor** is the host-facing compatibility boundary and selects the
+channel independently from the core implementation version. A breaking change
+to the manifest, embed/mount API, exposed modules, or a required host runtime is
+what warrants protocol `2`, loader package major `2`, and `/v2/`; compatible
+changes continue rolling within `/v1/`.
 
 ## Dev
 
@@ -129,7 +130,7 @@ pnpm worker:deploy   # wrangler deploy
 ## Deploy
 
 ```bash
-pnpm deploy:r2                  # upload build controls + shared assets, then flip channel
+pnpm deploy:r2                  # local default: upload and promote
 LAYERSWAP_PROMOTE=false pnpm deploy:r2   # upload only (staged release)
 ALLOW_OVERWRITE=1 pnpm deploy:r2         # re-upload an existing build (escape hatch)
 
@@ -146,11 +147,31 @@ new commit gets a fresh control-file prefix.
 ### CI deploy (production)
 
 Production deploys go through `.github/workflows/widget-cdn-deploy.yml`. The
-signing key never leaves CI. The workflow: builds + signs → verifies the
-signature against the bundled public key → uploads the immutable build to R2 →
-flips the channel pointer → smoke-tests the live channel. The Worker is
-deployed separately (manually, or via the `deploy_worker` dispatch input — it
-rarely changes).
+signing key never leaves CI. A main push builds, signs, verifies, uploads, and
+smoke-tests an immutable candidate without changing a channel. Promote it in a
+separate `workflow_dispatch` run by entering the reported `buildId` and its
+channel; that job validates the existing target, flips the pointer, and
+smoke-tests the live channel. The Worker is deployed separately and rarely
+changes.
+
+### Azure Blob cache and retention policy
+
+Azure promotion overwrites only `/<channel>/manifest.json`. It is published
+with `Cache-Control: no-store, max-age=0` so new page loads observe a pointer
+change without a CDN purge. Immutable build controls and content-addressed
+assets remain `public, max-age=31536000, immutable`.
+
+If Azure Front Door or another company CDN sits in front of Blob Storage, its
+route for `*/manifest.json` must honor the origin header or have caching
+disabled. Build and asset routes should keep long-lived caching.
+
+Do not apply an age-only delete policy to `/assets/`: chunks are shared between
+builds. Cleanup must retain every current supported-major build plus rollback
+targets, mark the assets referenced by their manifests, and delete only
+unreferenced assets after a grace period. Azure lifecycle rules are suitable
+for old channel-blob versions and unpromoted candidates; reference-aware build
+cleanup should be a separate scheduled job once production retention periods
+are chosen.
 
 #### Required GitHub secrets
 

@@ -11,7 +11,7 @@
     "rollback:r2": "node scripts/rollback-r2.mjs",
     "deploy:azure": "node scripts/deploy-azure.mjs",
     "rollback:azure": "node scripts/rollback-azure.mjs",
-    "test": "node --test scripts/*.test.mjs",
+    "test": "pnpm --filter @layerswap/widget-types build && node --test scripts/*.test.mjs",
     "worker:dev": "wrangler dev --config worker/wrangler.toml",
     "worker:deploy": "wrangler deploy --config worker/wrangler.toml",
     "start": "node serve.mjs",

@@ -1,9 +1,9 @@
 // Vanilla, framework-agnostic mount API — the primary entry point.
-export { mountWidget } from './mount.js';
-export type { WidgetHandle, MountOptions } from './mount.js';
+export { mountWidget } from "./mount.js";
+export type { WidgetHandle, MountOptions } from "./mount.js";
 
-// Shared widget prop/config/theme contract, re-exported from the zero-runtime
-// `@layerswap/widget-types` package (the single source of truth).
+// Shared widget prop/config/theme and protocol contract, re-exported from
+// `@layerswap/widget-types` (the single source of truth).
 export type {
   WidgetProps,
   WidgetConfig,
@@ -12,14 +12,15 @@ export type {
   WalletProviderId,
   ThemeData,
   ThemeColor,
-} from '@layerswap/widget-types';
+} from "@layerswap/widget-types";
+export { WIDGET_PROTOCOL_MAJOR } from "@layerswap/widget-types";
 
 // Lower-level building blocks, reused by `@layerswap/widget-react` and
 // available for advanced integrators wiring their own loader.
-export { resolveSource } from './loader.js';
-export type { ResolvedSource } from './loader.js';
-export { initRemote, loadRemoteModule } from './runtime.js';
-export type { SharedLib } from './runtime.js';
+export { resolveSource } from "./loader.js";
+export type { ResolvedSource } from "./loader.js";
+export { initRemote, loadRemoteModule } from "./runtime.js";
+export type { SharedLib } from "./runtime.js";
 
 // Manifest format + verification primitives.
 export {
@@ -32,8 +33,8 @@ export {
   canonicalize,
   fetchManifest,
   resolveRemoteEntry,
-} from './manifest.js';
-export type { Manifest, FetchedManifest } from './manifest.js';
+} from "./manifest.js";
+export type { Manifest, FetchedManifest } from "./manifest.js";
 
 // Runtime SRI interceptor.
-export { registerChunkHashes } from './sri.js';
+export { registerChunkHashes } from "./sri.js";

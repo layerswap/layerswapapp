@@ -140,8 +140,9 @@ export async function writeChannelManifest(ctx, channel, manifest) {
     Buffer.from(JSON.stringify(manifest, null, 2)),
     {
       contentType: "application/json; charset=utf-8",
-      // Same propagation target as the current Worker's short-lived 302.
-      cacheControl: "public, max-age=60, must-revalidate",
+      // This is the only mutable public object. New page loads must observe a
+      // promotion immediately; immutable build files carry the long cache.
+      cacheControl: "no-store, max-age=0",
     },
   );
 }

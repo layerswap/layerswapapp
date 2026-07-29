@@ -11,15 +11,16 @@
 //     deployed bytes WITHOUT bumping `@layerswap/widget` — keying immutability
 //     on the version alone made every such deploy collide with the previously
 //     published prefix.
-//   - `channel` — the rolling COMPATIBILITY pointer (`v<major>` of the widget
-//     version). The Worker 302-redirects `/v1/*` to whatever buildId
+//   - `channel` — the rolling COMPATIBILITY pointer (`v<protocol major>`).
+//     The Worker 302-redirects `/v1/*` to whatever buildId
 //     `channels.json` currently maps it to.
 //
-// `version` stays the `@layerswap/widget` version — the host-facing
-// compatibility number stamped into the manifest.
+// `version` stays the `@layerswap/widget` implementation version stamped into
+// the manifest. It does not select a CDN channel.
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { WIDGET_PROTOCOL_MAJOR } from '@layerswap/widget-types';
 
 const VERSION_RE = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
 // `assets` is the shared content-addressed namespace and cannot also name a
@@ -41,7 +42,7 @@ export function resolveBuildIdentity(root) {
     if (!VERSION_RE.test(version)) {
         throw new Error(`[build-id] invalid release version: ${JSON.stringify(version)}`);
     }
-    const channel = `v${version.split('.')[0]}`;
+    const channel = `v${WIDGET_PROTOCOL_MAJOR}`;
     const gitSha = process.env.LAYERSWAP_GIT_SHA || process.env.GITHUB_SHA || 'local';
     const buildId = process.env.LAYERSWAP_RELEASE_ID || `${version}-${gitSha.slice(0, 12)}`;
     if (!isValidBuildId(buildId)) {

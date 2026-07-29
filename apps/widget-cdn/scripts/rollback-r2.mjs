@@ -12,6 +12,7 @@ import {
     writeChannels,
 } from './r2-lib.mjs';
 import { isValidBuildId } from './build-id.mjs';
+import { WIDGET_PROTOCOL_MAJOR, widgetProtocolMajorOf } from '@layerswap/widget-types';
 
 export async function rollbackChannel(options) {
     const {
@@ -35,10 +36,17 @@ export async function rollbackChannel(options) {
             `[rollback-r2] build ${buildId} is not published (no ${manifestKey} in bucket).`,
         );
     }
-    if (manifest.buildId !== buildId || manifest.channel !== channel) {
+    const protocolMajor = widgetProtocolMajorOf(manifest);
+    if (
+        manifest.buildId !== buildId
+        || manifest.channel !== channel
+        || protocolMajor !== WIDGET_PROTOCOL_MAJOR
+    ) {
         throw new Error(
             `[rollback-r2] ${buildId} identifies build ${manifest.buildId ?? '(unknown)'} `
-            + `on ${manifest.channel ?? '(unknown)'}, not ${channel}.`,
+            + `on ${manifest.channel ?? '(unknown)'} with protocol `
+            + `${String(protocolMajor)}; expected ${channel} with protocol `
+            + `${WIDGET_PROTOCOL_MAJOR}.`,
         );
     }
 

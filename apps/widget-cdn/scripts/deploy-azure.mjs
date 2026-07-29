@@ -18,6 +18,7 @@ import {
   writeChannelManifest,
 } from "./azure-lib.mjs";
 import { resolveBuildIdentity } from "./build-id.mjs";
+import { WIDGET_PROTOCOL_MAJOR } from "@layerswap/widget-types";
 import {
   ASSET_BASE,
   ASSET_DIRECTORY,
@@ -32,6 +33,7 @@ const ROOT = resolve(__dirname, "..");
 export function validateAzureManifest(manifest, identity) {
   const mismatches = [
     ["buildId", manifest.buildId, identity.buildId],
+    ["protocolMajor", manifest.protocolMajor, WIDGET_PROTOCOL_MAJOR],
     ["version", manifest.version, identity.version],
     ["channel", manifest.channel, identity.channel],
     ["gitSha", manifest.gitSha, identity.gitSha],

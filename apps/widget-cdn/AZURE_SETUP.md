@@ -130,7 +130,11 @@ pnpm --filter @layerswap/widget-cdn deploy:azure
 ```
 
 The command uploads immutable objects first, publishes the immutable manifest
-last, then copies the signed manifest to `v1/manifest.json`.
+last, then copies the signed manifest to `v1/manifest.json`. The channel blob
+is written with `Cache-Control: no-store, max-age=0`; immutable build files and
+shared assets retain their one-year immutable cache policy. If Front Door or
+another CDN is later added, configure the manifest route to honor the origin
+header or disable caching for `*/manifest.json`.
 
 Upload without changing `v1`:
 

@@ -8,6 +8,11 @@
       "@layerswap/wallet-*",
       "@layerswap/wallets",
       "@layerswap/utils"
+    ],
+    [
+      "@layerswap/widget-react",
+      "@layerswap/widget-js",
+      "@layerswap/widget-types"
     ]
   ],
   "linked": [],
@@ -18,11 +23,7 @@
     "version": true,
     "tag": false
   },
-  "ignore": [
-    "@layerswap/bridge",
-    "widget-playground",
-    "layerswap-explorer"
-  ],
+  "ignore": ["@layerswap/bridge", "widget-playground", "layerswap-explorer"],
   "snapshot": {
     "useCalculatedVersion": true
   },

@@ -46,9 +46,15 @@ Works in the Next.js App Router out of the box: the component declares
 only starts the browser-only loader after hydration — no `next/dynamic`
 wrapper needed.
 
-To ride a different major channel (e.g. a future `/v2/`), upgrade the
-`@layerswap/widget-react` package — the source URL is pinned to the package
-version, not passed at runtime.
+The npm package major selects the CDN protocol major:
+
+```text
+@layerswap/widget-react@1.x → /v1/manifest.json
+@layerswap/widget-react@2.x → /v2/manifest.json
+```
+
+Minor and patch widget builds roll forward within that major without an
+integrator redeploy. Exact CDN builds are not a public pinning API.
 
 ## Reusing the host's wagmi config
 
@@ -176,6 +182,7 @@ Notes:
 | Widget never mounts | `ManifestError('kill-switch')` | Operational kill-switch set on the manifest. |
 | Widget never mounts | `ManifestError('signature')` | Manifest has no/invalid signature (verification is always on). |
 | Widget never mounts | `ManifestError('stale')` | Manifest expired (or carries no validity window) — replay protection refuses possibly-rolled-back builds. Layerswap re-publishing the channel resolves it. |
+| Widget never mounts | `ManifestError('incompatible')` | Manifest protocol major does not match this loader package major. |
 | Widget loads but errors at render | Component-level | Catch via `callbacks.onError`. |
 
 ## Local development

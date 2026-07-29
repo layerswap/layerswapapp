@@ -1,4 +1,4 @@
-import type { ThemeData } from './theme';
+import type { ThemeData } from "./theme";
 
 /**
  * Wallet provider ids matching what the remote's `getDefaultProviders()`
@@ -8,15 +8,15 @@ import type { ThemeData } from './theme';
  * Note the id for Solana is `'solana'` (the chain), not `'svm'`.
  */
 export type WalletProviderId =
-  | 'evm'
-  | 'starknet'
-  | 'fuel'
-  | 'paradex'
-  | 'bitcoin'
-  | 'ton'
-  | 'solana'
-  | 'tron'
-  | 'imtblPassport';
+  | "evm"
+  | "starknet"
+  | "fuel"
+  | "paradex"
+  | "bitcoin"
+  | "ton"
+  | "solana"
+  | "tron"
+  | "imtblPassport";
 
 /**
  * Public widget configuration contract.
@@ -25,7 +25,7 @@ export type WalletProviderId =
  * (`@layerswap/widget`) refines it internally — its `LayerswapWidgetConfig`
  * is `WidgetConfig` intersected with precise types for the deep fields
  * (`settings`, `initialValues`) — so the two can never structurally diverge,
- * while integrators and the loaders depend only on this zero-runtime package.
+ * while integrators and the loaders depend only on this lightweight package.
  *
  * Framework-agnostic by construction: `TLoading` is the host's renderable type
  * (`ReactNode` in React hosts — `@layerswap/widget-react` binds it), kept open
@@ -36,7 +36,7 @@ export type WidgetConfig<TLoading = never> = {
   apiKey?: string;
   apiUri?: string;
   /** Network set to target. */
-  version?: 'mainnet' | 'testnet';
+  version?: "mainnet" | "testnet";
   /** Visual theme overrides. */
   theme?: ThemeData | null;
   /**

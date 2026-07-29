@@ -11,6 +11,10 @@ import {
 } from "./azure-lib.mjs";
 import { isValidBuildId } from "./build-id.mjs";
 import { remoteEntryForBuild } from "./cdn-layout.mjs";
+import {
+  WIDGET_PROTOCOL_MAJOR,
+  widgetProtocolMajorOf,
+} from "@layerswap/widget-types";
 
 export async function rollbackAzureChannel(options) {
   const {
@@ -34,9 +38,11 @@ export async function rollbackAzureChannel(options) {
         `(no ${manifestKey} in container).`,
     );
   }
+  const protocolMajor = widgetProtocolMajorOf(manifest);
   if (
     manifest.buildId !== buildId ||
     manifest.channel !== channel ||
+    protocolMajor !== WIDGET_PROTOCOL_MAJOR ||
     manifest.remoteEntry !== remoteEntryForBuild(buildId)
   ) {
     throw new Error(
@@ -81,7 +87,7 @@ export async function rollbackAzureChannel(options) {
       `${current?.buildId ?? "(none)"} → ${buildId}`,
   );
   logger.log(
-    "[rollback-azure] propagates within ~60s (channel manifest cache).",
+    "[rollback-azure] channel manifest is no-store; any upstream CDN must honor that header.",
   );
   return { changed: true, previous: current?.buildId };
 }

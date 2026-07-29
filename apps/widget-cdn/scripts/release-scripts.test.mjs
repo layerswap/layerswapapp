@@ -15,6 +15,7 @@ function deployFixture(t, identity, manifestOverrides = {}) {
     mkdirSync(dist, { recursive: true });
     writeFileSync(join(dist, 'manifest.json'), JSON.stringify({
         ...identity,
+        protocolMajor: 1,
         remoteEntry: './remoteEntry.js',
         assetBase: ASSET_BASE,
         chunks: {},
@@ -137,14 +138,17 @@ test('deploy uploads payloads concurrently and publishes the manifest last', asy
     assert.equal(completedKeys.at(-1), `${identity.buildId}/manifest.json`);
 });
 
-test('rollback updates a channel only for a matching published manifest', async () => {
+test('rollback accepts a matching signed legacy channel manifest', async () => {
     const writes = [];
     const result = await rollbackChannel({
         channel: 'v1',
         buildId: '1.7.0-0123456789ab',
         ctx: {},
         logger: silentLogger,
-        readManifest: async () => ({ buildId: '1.7.0-0123456789ab', channel: 'v1' }),
+        readManifest: async () => ({
+            buildId: '1.7.0-0123456789ab',
+            channel: 'v1',
+        }),
         readChannelMap: async () => ({ v1: '1.6.0-aaaaaaaaaaaa' }),
         writeChannelMap: async (_ctx, channels) => writes.push({ ...channels }),
     });
@@ -181,6 +185,7 @@ test('rollback rejects an expired target build', async () => {
             readManifest: async () => ({
                 buildId: '1.7.0-0123456789ab',
                 channel: 'v1',
+                protocolMajor: 1,
                 expiresAt: new Date(Date.now() - 1000).toISOString(),
             }),
             readChannelMap: async () => ({}),
@@ -202,6 +207,7 @@ test('rollback warns but proceeds for a near-expiry target build', async () => {
         readManifest: async () => ({
             buildId: '1.7.0-0123456789ab',
             channel: 'v1',
+            protocolMajor: 1,
             expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         }),
         readChannelMap: async () => ({ v1: '1.6.0-aaaaaaaaaaaa' }),
@@ -221,11 +227,15 @@ test('rollback rejects a build from another major channel', async () => {
             buildId: '2.0.0-0123456789ab',
             ctx: {},
             logger: silentLogger,
-            readManifest: async () => ({ buildId: '2.0.0-0123456789ab', channel: 'v2' }),
+            readManifest: async () => ({
+                buildId: '2.0.0-0123456789ab',
+                channel: 'v2',
+                protocolMajor: 2,
+            }),
             readChannelMap: async () => ({}),
             writeChannelMap: async () => { writes += 1; },
         }),
-        /on v2, not v1/,
+        /on v2 with protocol 2; expected v1 with protocol 1/,
     );
     assert.equal(writes, 0);
 });

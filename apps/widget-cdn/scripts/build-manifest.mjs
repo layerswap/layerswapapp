@@ -17,6 +17,7 @@ import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createSign, createPrivateKey, createHash } from 'node:crypto';
+import { WIDGET_PROTOCOL_MAJOR } from '@layerswap/widget-types';
 import { resolveBuildIdentity } from './build-id.mjs';
 import { ASSET_BASE, ASSET_DIRECTORY, remoteEntryForBuild } from './cdn-layout.mjs';
 
@@ -108,6 +109,7 @@ function canonicalJSON(value) {
 const chunks = collectChunks([DIST, ASSET_DIST]);
 
 const manifest = {
+    protocolMajor: WIDGET_PROTOCOL_MAJOR,
     version,
     channel,
     buildId,

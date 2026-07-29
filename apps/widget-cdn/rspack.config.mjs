@@ -5,6 +5,7 @@ import rspack from '@rspack/core';
 import { ModuleFederationPlugin } from '@module-federation/enhanced/rspack';
 import { resolveBuildIdentity } from './scripts/build-id.mjs';
 import { ASSET_BASE, CHUNK_HASH_LENGTH } from './scripts/cdn-layout.mjs';
+import { WIDGET_PROTOCOL_MAJOR } from '@layerswap/widget-types';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
@@ -66,6 +67,7 @@ const devManifestPlugin = {
         },
         () => {
           const manifest = {
+            protocolMajor: WIDGET_PROTOCOL_MAJOR,
             version: '0.0.0-dev',
             remoteEntry: './remoteEntry.js',
             chunks: {},

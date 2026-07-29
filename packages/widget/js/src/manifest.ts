@@ -1,3 +1,5 @@
+import { WIDGET_PROTOCOL_MAJOR } from '@layerswap/widget-types';
+
 /**
  * Manifest format published at `/<channel>/manifest.json` by the CDN.
  *
@@ -11,12 +13,12 @@
  * of the manifest with `signature` itself set to `null`. See `verifyManifest`.
  */
 export type Manifest = {
-    /** Semver of the build this manifest describes (the `@layerswap/widget` version). */
+    /** Loader/remote compatibility boundary. Must match WIDGET_PROTOCOL_MAJOR. */
+    protocolMajor: number;
+    /** Implementation semver of the `@layerswap/widget` package in this build. */
     version: string;
     /**
-     * Major channel this build belongs to, e.g. `"v1"`. Informational — the
-     * loader fetches whatever manifest URL it's given; this field lets tooling
-     * and humans see which compatibility channel a pinned build came from.
+     * Major protocol channel this build belongs to, e.g. `"v1"`.
      */
     channel?: string;
     /**
@@ -90,9 +92,8 @@ export type Manifest = {
  * Rotating this key requires a version bump of `@layerswap/widget-js`;
  * integrators pin it transitively via npm SRI.
  *
- * Current key: generated 2026-06 (pre-KMS). Before a 1.0 release, regenerate
- * in a KMS/HSM and update this constant plus the GitHub secret
- * `LAYERSWAP_PRIVATE_KEY_PEM`.
+ * Current key: generated 2026-06 (pre-KMS). A future KMS/HSM migration must
+ * update this constant plus the GitHub secret `LAYERSWAP_PRIVATE_KEY_PEM`.
  */
 export const MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64 =
     'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAESuHFHbltz/hfcY+DzIrLq7Ixc4efHE8SLZdNg0pZZDHTfdwbqLpGk4461EgNranHLWnVsoAbyQ4IyHIVnRAVKw==';
@@ -109,14 +110,13 @@ export const MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64 =
  * manifest.json` and publish a new `@layerswap/widget-js` — integrators pick
  * up the new origin transitively via npm.
  *
- * The major (`/v1/`) is pinned to this package's major version: when Layerswap
- * cuts a breaking `/v2/`, it ships a new loader major whose default points
- * there. There is no per-call override — pinning an exact build means
- * installing an older package version. (Layerswap's own dev harnesses can
- * repoint the loader at a local server via the internal `__LAYERSWAP_WIDGET_*`
- * globals — see `resolveSource` in `loader.ts`.)
+ * The channel major is the shared widget protocol major. A breaking `/v2/`
+ * ships with loader package major 2. Exact build pinning is intentionally not
+ * a public loader feature. Layerswap's own dev harnesses can repoint the
+ * loader via the internal globals described in `loader.ts`.
  */
-export const DEFAULT_MANIFEST_URL = 'https://layerswap-widget-cdn.layerswapcdn.workers.dev/v1/manifest.json';
+export const DEFAULT_MANIFEST_URL =
+    `https://layerswap-widget-cdn.layerswapcdn.workers.dev/v${WIDGET_PROTOCOL_MAJOR}/manifest.json`;
 
 const fromB64 = (b64: string): ArrayBuffer => {
     const bin = atob(b64);
@@ -214,7 +214,10 @@ export function resolveRemoteEntry(manifestUrl: string, remoteEntry: string): st
 }
 
 export class ManifestError extends Error {
-    constructor(public readonly reason: 'fetch' | 'parse' | 'signature' | 'kill-switch' | 'stale', message: string) {
+    constructor(
+        public readonly reason: 'fetch' | 'parse' | 'signature' | 'kill-switch' | 'stale' | 'incompatible',
+        message: string,
+    ) {
         super(message);
         this.name = 'ManifestError';
     }

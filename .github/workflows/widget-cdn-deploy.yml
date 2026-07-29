@@ -3,7 +3,7 @@ name: widget-cdn — build, sign, deploy
 # Production builds of `apps/widget-cdn` go through CI so the signing key never
 # lives outside `secrets.LAYERSWAP_PRIVATE_KEY_PEM`. The build is uploaded to
 # Cloudflare R2 under an immutable per-build prefix and the rolling channel
-# pointer (`channels.json`) is flipped to it. The Cloudflare Worker in
+# pointer (`channels.json`) can be promoted to it in a separate dispatch. The Cloudflare Worker in
 # `apps/widget-cdn/worker` serves R2 and 302-redirects `/vN/*` to the current
 # build. This workflow is the only path to a production CDN deploy.
 
@@ -14,21 +14,26 @@ on:
     # just `main`) once the CDN is verified end-to-end.
     branches: [main, babkenmes/widget-cdn-delivery]
     paths:
-      - 'apps/widget-cdn/**'
-      - 'packages/widget/**'
-      - 'packages/wallets/**'
-      - 'pnpm-lock.yaml'
-      - 'pnpm-workspace.yaml'
-      - '.github/workflows/widget-cdn-deploy.yml'
+      - "apps/widget-cdn/**"
+      - "packages/widget/**"
+      - "packages/wallets/**"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/widget-cdn-deploy.yml"
   workflow_dispatch:
     inputs:
-      promote:
-        description: 'Flip the rolling channel to this build (uncheck to upload only)'
-        type: boolean
+      promote_build_id:
+        description: "Existing immutable buildId to promote; leave empty to build/upload a candidate"
+        type: string
         required: false
-        default: true
+        default: ""
+      promote_channel:
+        description: "Compatibility channel for promote_build_id"
+        type: string
+        required: false
+        default: "v1"
       deploy_worker:
-        description: 'Also deploy the Cloudflare Worker (edge router)'
+        description: "Also deploy the Cloudflare Worker (edge router)"
         type: boolean
         required: false
         default: false
@@ -46,6 +51,7 @@ permissions:
 
 jobs:
   deploy:
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.promote_build_id == '' }}
     runs-on: ubuntu-latest
     environment: widget-cdn-production
     env:
@@ -54,8 +60,9 @@ jobs:
       R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
       R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
       R2_BUCKET: ${{ vars.R2_BUCKET || 'layerswap-widget-cdn' }}
-      # Promotion defaults to true on push; honors the dispatch toggle otherwise.
-      LAYERSWAP_PROMOTE: ${{ (github.event_name == 'workflow_dispatch' && inputs.promote == false) && 'false' || 'true' }}
+      # Upload and promotion are deliberately separate. Main pushes publish an
+      # immutable candidate; a later dispatch promotes its existing buildId.
+      LAYERSWAP_PROMOTE: "false"
       # Published builds are immutable, but the buildId embeds the commit sha
       # (see apps/widget-cdn/scripts/build-id.mjs), so every push gets a fresh
       # prefix — only literally re-deploying the SAME commit collides. For that
@@ -128,11 +135,11 @@ jobs:
         working-directory: apps/widget-cdn
         run: pnpm verify-manifest
 
-      # Upload the immutable build to R2 and (unless promote=false) flip the
-      # rolling channel pointer. Refuses to overwrite an already-published
+      # Upload the immutable candidate without touching a rolling channel.
+      # Refuses to overwrite an already-published
       # buildId, so re-running a deploy for the same commit is a no-op error
       # rather than a silent clobber — any new commit gets a fresh buildId.
-      - name: Upload to R2 + promote channel
+      - name: Upload candidate to R2
         working-directory: apps/widget-cdn
         run: pnpm deploy:r2
 
@@ -150,26 +157,25 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
         run: pnpm worker:deploy
 
-      # End-to-end check against the live CDN: the rolling channel resolves,
-      # the manifest is reachable with CORS, signed, and kill-switch off.
-      - name: Smoke-test the live channel
-        if: ${{ env.LAYERSWAP_PROMOTE != 'false' && vars.CDN_BASE_URL != '' }}
+      # End-to-end check against the immutable candidate before it is eligible
+      # for promotion.
+      - name: Smoke-test the uploaded candidate
+        if: ${{ vars.CDN_BASE_URL != '' }}
         run: |
           set -euo pipefail
           VERSION=$(node -e "console.log(require('./apps/widget-cdn/node_modules/@layerswap/widget/package.json').version)")
-          CHANNEL="v${VERSION%%.*}"
-          MANIFEST_URL="${{ vars.CDN_BASE_URL }}/${CHANNEL}/manifest.json"
-          echo "Fetching (following redirects) $MANIFEST_URL"
+          MANIFEST_URL="${{ vars.CDN_BASE_URL }}/${LAYERSWAP_BUILD_ID}/manifest.json"
+          echo "Fetching $MANIFEST_URL"
           curl -fsSL -L -H "Origin: https://example.com" -D /tmp/headers "$MANIFEST_URL" -o /tmp/manifest.json
           grep -i 'access-control-allow-origin' /tmp/headers || { echo "::error::CDN missing CORS header"; exit 1; }
           node -e "
             const m = JSON.parse(require('fs').readFileSync('/tmp/manifest.json','utf8'));
             if (!m.signature) { console.error('live manifest has no signature'); process.exit(1); }
             if (m.killSwitch) { console.error('live manifest has killSwitch=true'); process.exit(1); }
-            if (m.buildId !== '${LAYERSWAP_BUILD_ID}') { console.error('live channel still on build', m.buildId, '— expected ${LAYERSWAP_BUILD_ID}'); process.exit(1); }
-            if (m.version !== '${VERSION}') { console.error('live channel still on', m.version, '— expected ${VERSION}'); process.exit(1); }
-            if (m.gitSha !== '${GITHUB_SHA}') { console.error('live channel still on commit', m.gitSha, '— expected ${GITHUB_SHA}'); process.exit(1); }
-            console.log('live channel OK  buildId=', m.buildId, ' version=', m.version, ' gitSha=', m.gitSha);
+            if (m.buildId !== '${LAYERSWAP_BUILD_ID}') { console.error('candidate has build', m.buildId, '— expected ${LAYERSWAP_BUILD_ID}'); process.exit(1); }
+            if (m.version !== '${VERSION}') { console.error('candidate has version', m.version, '— expected ${VERSION}'); process.exit(1); }
+            if (m.gitSha !== '${GITHUB_SHA}') { console.error('candidate has commit', m.gitSha, '— expected ${GITHUB_SHA}'); process.exit(1); }
+            console.log('candidate OK  buildId=', m.buildId, ' version=', m.version, ' gitSha=', m.gitSha);
           "
 
       - name: Summary
@@ -182,7 +188,7 @@ jobs:
             echo ""
             echo "- Build id: \`${BUILD_ID}\`"
             echo "- Version: \`${VERSION}\`"
-            echo "- Channel promoted: \`${LAYERSWAP_PROMOTE}\`"
+            echo "- Channel promoted: \`false\` (candidate only)"
             echo "- Commit: \`${GITHUB_SHA}\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -216,3 +222,66 @@ jobs:
           else
             gh issue create --repo "${{ github.repository }}" --title "$TITLE" --body-file "$RUNNER_TEMP/alert-body.md"
           fi
+
+  promote:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.promote_build_id != '' }}
+    runs-on: ubuntu-latest
+    environment: widget-cdn-production
+    env:
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_BUCKET: ${{ vars.R2_BUCKET || 'layerswap-widget-cdn' }}
+      PROMOTE_BUILD_ID: ${{ inputs.promote_build_id }}
+      PROMOTE_CHANNEL: ${{ inputs.promote_channel }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared widget protocol
+        run: pnpm --filter @layerswap/widget-types build
+
+      # rollback-r2 is also the promotion primitive: it validates that the
+      # immutable target exists, belongs to the requested protocol channel,
+      # and has a usable validity window before changing channels.json.
+      - name: Promote existing candidate
+        working-directory: apps/widget-cdn
+        run: node scripts/rollback-r2.mjs "$PROMOTE_CHANNEL" "$PROMOTE_BUILD_ID"
+
+      - name: Smoke-test promoted channel
+        if: ${{ vars.CDN_BASE_URL != '' }}
+        run: |
+          set -euo pipefail
+          MANIFEST_URL="${{ vars.CDN_BASE_URL }}/${PROMOTE_CHANNEL}/manifest.json"
+          curl -fsSL -L -H "Origin: https://example.com" -D /tmp/headers "$MANIFEST_URL" -o /tmp/manifest.json
+          grep -i 'access-control-allow-origin' /tmp/headers || { echo "::error::CDN missing CORS header"; exit 1; }
+          node -e "
+            const m = JSON.parse(require('fs').readFileSync('/tmp/manifest.json','utf8'));
+            const expectedProtocol = Number(process.env.PROMOTE_CHANNEL.slice(1));
+            const actualProtocol = m.protocolMajor ?? Number(String(m.channel).slice(1));
+            if (!m.signature) { console.error('live manifest has no signature'); process.exit(1); }
+            if (m.killSwitch) { console.error('live manifest has killSwitch=true'); process.exit(1); }
+            if (m.buildId !== process.env.PROMOTE_BUILD_ID) { console.error('live channel has', m.buildId, '— expected', process.env.PROMOTE_BUILD_ID); process.exit(1); }
+            if (actualProtocol !== expectedProtocol) { console.error('live protocol is', actualProtocol, '— expected', expectedProtocol); process.exit(1); }
+            console.log('promotion OK  channel=', process.env.PROMOTE_CHANNEL, ' buildId=', m.buildId);
+          "
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## widget-cdn promotion"
+            echo ""
+            echo "- Channel: \`${PROMOTE_CHANNEL}\`"
+            echo "- Build id: \`${PROMOTE_BUILD_ID}\`"
+          } >> "$GITHUB_STEP_SUMMARY"

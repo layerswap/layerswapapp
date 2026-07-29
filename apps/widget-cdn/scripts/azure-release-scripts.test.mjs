@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
-import { putObject } from "./azure-lib.mjs";
+import { putObject, writeChannelManifest } from "./azure-lib.mjs";
 import { deployAzureBuild } from "./deploy-azure.mjs";
 import { rollbackAzureChannel } from "./rollback-azure.mjs";
 import { ASSET_BASE, remoteEntryForBuild } from "./cdn-layout.mjs";
@@ -52,6 +52,32 @@ test("Azure Blob PUT uses Entra auth, encoded keys, and blob HTTP properties", a
   );
 });
 
+test("Azure channel manifests disable browser and edge caching", async (t) => {
+  const originalFetch = globalThis.fetch;
+  t.after(() => {
+    globalThis.fetch = originalFetch;
+  });
+  let request;
+  globalThis.fetch = async (url, init) => {
+    request = { url, init };
+    return new Response(null, { status: 201 });
+  };
+
+  await writeChannelManifest(
+    {
+      endpoint: "https://test.blob.core.windows.net",
+      containerName: "widget-cdn",
+      accessToken: "short-lived-token",
+    },
+    "v1",
+    { protocolMajor: 1, buildId: "1.7.0-0123456789ab" },
+  );
+
+  assert.match(request.url, /\/v1\/manifest\.json$/);
+  const headers = new Headers(request.init.headers);
+  assert.equal(headers.get("x-ms-blob-cache-control"), "no-store, max-age=0");
+});
+
 function deployFixture(t, identity, manifestOverrides = {}) {
   const root = mkdtempSync(join(tmpdir(), "layerswap-deploy-azure-"));
   const dist = join(root, "dist", identity.buildId);
@@ -60,6 +86,7 @@ function deployFixture(t, identity, manifestOverrides = {}) {
     join(dist, "manifest.json"),
     JSON.stringify({
       ...identity,
+      protocolMajor: 1,
       remoteEntry: remoteEntryForBuild(identity.buildId),
       assetBase: ASSET_BASE,
       chunks: {},
@@ -215,6 +242,7 @@ test("Azure rollback rejects a manifest that cannot resolve from the channel pat
       readManifest: async () => ({
         buildId,
         channel: "v1",
+        protocolMajor: 1,
         remoteEntry: "./remoteEntry.js",
       }),
       writeManifest: async () => {
