@@ -100,6 +100,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
     // Legacy globals are read synchronously by descendants during render.
     AppSettings.ApiVersion = version || AppSettings.ApiVersion
     AppSettings.LayerswapApiUri = apiUri || AppSettings.LayerswapApiUri
+    LayerSwapApiClient.apiBaseEndpoint = AppSettings.LayerswapApiUri
     AppSettings.ImtblPassportConfig = imtblPassport
     AppSettings.TonClientConfig = tonConfigs || AppSettings.TonClientConfig
     AppSettings.WalletConnectConfig = walletConnect || AppSettings.WalletConnectConfig
