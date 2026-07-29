@@ -25,9 +25,6 @@ export type TransferProps = {
     /** Exact decimal amount string, for sources that must sign the amount verbatim
      *  (precision-exact) rather than re-deriving it from `amount`. Optional. */
     amountExact?: string
-    /** Exact integer amount in the token's smallest unit. Used by account-based
-     *  chains such as Solana to avoid reconstructing base units from a JS number. */
-    amountInBaseUnits?: string
     /** Backend source routes (from settings). Routed sources (e.g. Hyperliquid CCTP)
      *  use these to resolve the SAME destination the swap was created/priced against,
      *  so availability-based fallback can't diverge between pricing and signing. Optional. */

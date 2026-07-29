@@ -2,7 +2,6 @@ import { TransferProvider, TransferProps, NetworkType, Network, ActionMessageTyp
 import type { Connection, Transaction } from "@solana/web3.js"
 import { configureAndSendCurrentTransaction } from "./transactionSender"
 import { svmAdapterManager } from "../service/svmAdapterManager"
-import { nativeTransfer, tokenTransfer } from "./transferTransaction"
 
 export function createSvmTransfer(): TransferProvider {
     return {
@@ -21,13 +20,7 @@ export function createSvmTransfer(): TransferProvider {
             const connection = new Connection(params.network.node_url, "confirmed")
 
             try {
-                const transaction = params.token.contract
-                    ? await tokenTransfer({
-                        params,
-                        connection,
-                        sourceOwner: signer.publicKey,
-                    })
-                    : await nativeTransfer(params.callData)
+                const transaction = await deserializeTransaction(params.callData)
 
                 await validateTransferBalances(
                     params,
@@ -110,3 +103,9 @@ const toTransferError = (error: unknown): Error => {
 
     return transferError
 }
+
+const deserializeTransaction = async (callData: string): Promise<Transaction> => {
+    const { Transaction } = await import("@solana/web3.js");
+    const bytes = Uint8Array.from(atob(callData), character => character.charCodeAt(0));
+    return Transaction.from(bytes);
+};

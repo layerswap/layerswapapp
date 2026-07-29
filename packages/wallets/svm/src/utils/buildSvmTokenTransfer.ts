@@ -101,12 +101,3 @@ export async function getTokenProgramId(
 
     return programId;
 }
-
-export function transactionInvokesProgram(
-    transaction: Transaction,
-    programId: PublicKey,
-): boolean {
-    return transaction.instructions.some(instruction =>
-        instruction.programId.equals(programId)
-    );
-}
