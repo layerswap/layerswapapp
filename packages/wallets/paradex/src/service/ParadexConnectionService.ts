@@ -11,7 +11,6 @@ import {
     Address,
     KnownInternalNames,
     sleep,
-    getRegistryEntry,
 } from '@layerswap/widget/internal'
 import { getEvmConfig, walletClientToSigner } from '@layerswap/wallet-evm'
 import {
@@ -238,7 +237,7 @@ export class ParadexConnectionService implements WalletConnectionService<Runtime
 
         try {
             setSelectedConnector?.(connector)
-            const isRegistryEvmConnector = !!getRegistryEntry(connector)
+            const isRegistryEvmConnector = connector.type === 'walletConnect' && !!connector.mobile
             const isEvm = isRegistryEvmConnector
                 || evmProvider.availableConnectors?.find(w => w.id === connector.id)
                 || evmProvider.additionalConnectors?.find(w => w.id === connector.id)

@@ -27,7 +27,7 @@ Wallet connections/stubs are published to the registry in `WalletProvidersProvid
 
 ### WalletConnect registry entries — per-connector, not per-provider
 
-Registry (WalletConnect Explorer) metadata is attached to each connector tile via the `WC_REGISTRY_MARKER` symbol and read back with `getRegistryEntry(connector)`. There is **no** `provider.registryWallets` array — that per-provider field was removed in the EVM/SVM wallet-class refactor. `splitRegistryConnectors(configured, registryWallets, …)` takes the fetched list as an argument and tags each connector; it does not read a provider field.
+Registry (WalletConnect Explorer) metadata is flattened onto each connector tile: `networkTypes` declares its supported ecosystems and `mobile` carries its deep-link metadata. There is **no** `provider.registryWallets` array — that per-provider field was removed in the EVM/SVM wallet-class refactor. `splitRegistryConnectors(registryWallets, …)` takes the fetched list as an argument and returns flat connector snapshots; it does not read a provider field.
 
 ### Extended-route flags — per-provider fail direction, resolved server-side
 

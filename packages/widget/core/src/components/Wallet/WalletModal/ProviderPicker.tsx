@@ -1,25 +1,19 @@
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useMemo, useState } from "react";
 import { WalletConnectionProvider } from "@/types/wallet";
 import clsx from "clsx";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
 import { Checkbox } from "@/components/shadcn/checkbox";
 import MenuIcon from "@/components/Icons/MenuIcon";
+import { useDrawerContext } from "@/components/Modal/vaul/context";
 
 export const ProviderPicker: FC<{ providers: WalletConnectionProvider[], selectedProviderNames: string[], setSelectedProviderNames: (providerNames: string[]) => void }> = ({ providers, selectedProviderNames, setSelectedProviderNames }) => {
     const values = useMemo(() => providers.map(p => p.name).sort(), [providers])
     const [open, setOpen] = useState(false)
-    // Radix portals to document.body by default, which sits outside both the
-    // React root container and the `.layerswap-styles` prefix scope. Outside
-    // the React root, native pointer events never reach React's synthetic event
-    // system, so the wallet drawer's DismissableLayer reads a click inside the
-    // popover as an "outside" click and dismisses itself; outside the prefix
-    // scope, the popover also renders unstyled. Portal into `#widget` (read
-    // lazily on open, like vaulModal does for the drawer) to fix both.
-    const [container, setContainer] = useState<HTMLElement | null>(null)
-    useEffect(() => {
-        if (!open) return
-        setContainer(document.getElementById('widget'))
-    }, [open])
+    // `modal` means the drawer is portaled to body (mobile), so PopoverContent's
+    // `#widget` default would land outside it — under the overlay and inside the
+    // modal's pointer-events guard, making the trigger look dead.
+    const { drawerRef, modal } = useDrawerContext()
+    const container = modal ? drawerRef.current : undefined
 
     const onSelect = (item: string) => {
         if (selectedProviderNames.includes(item)) {
@@ -36,7 +30,7 @@ export const ProviderPicker: FC<{ providers: WalletConnectionProvider[], selecte
     }
 
     return (
-        <Popover open={open} onOpenChange={() => setOpen(!open)}>
+        <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger
                 className={clsx('p-2 border border-secondary-500 rounded-lg bg-secondary-600 hover:brightness-125  relative overflow-visible z-50', {
                     'bg-secondary-300! brightness-125': selectedProviderNames.length > 0,

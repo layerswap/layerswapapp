@@ -46,6 +46,7 @@ export function createEvmConnection(
         addRecentConnector: additionalConnectorsStore.addRecentConnector,
         requestRegistryConnectors: additionalConnectorsStore.requestAdditionalConnectors,
         registryConnectors: additionalConnectorsStore.getSnapshot().browseConnectors,
+        recentConnectors: additionalConnectorsStore.getSnapshot().recentConnectors,
         isMobilePlatform,
     })
 
@@ -62,12 +63,14 @@ export function createEvmConnection(
                 wagmiAccount: evmState.wagmiAccount,
                 selectedAddress: evmState.selectedAddress,
                 browseConnectors: additionalState.browseConnectors,
+                recentConnectors: additionalState.recentConnectors,
                 networks,
             }
         },
         buildSnapshot: inputs => {
             evmConnectionService.configure({
                 registryConnectors: inputs.browseConnectors,
+                recentConnectors: inputs.recentConnectors,
             })
 
             const { wagmiAccount, selectedAddress, allConnectors, connections } = inputs

@@ -1,6 +1,6 @@
 import { TransferProps, TransferProvider } from './transfer';
 import { GaslessProvider } from './gasless';
-import { NetworkWithTokens } from '@/Models/Network';
+import { NetworkType, NetworkWithTokens } from '@/Models/Network';
 import { BalanceProvider } from './balance';
 import { GasProvider } from './gas';
 import { NftProvider } from './nft';
@@ -9,7 +9,7 @@ import { RpcHealthCheckProvider } from './rpcHealth';
 import type { ThemeData } from '@/Models/Theme';
 import type { StoreApi } from 'zustand/vanilla';
 import { ExtendedRouteProvider } from '../lib/extendedRoutes/types';
-import { WalletConnectWalletBase } from '@/lib/walletConnect';
+import { WalletConnectLink } from '@/lib/walletConnect';
 
 export type InternalConnector = {
     name: string,
@@ -24,6 +24,8 @@ export type InternalConnector = {
     hasBrowserExtension?: boolean,
     extensionNotFound?: boolean,
     isLoadable?: boolean,
+    networkTypes?: NetworkType[],
+    mobile?: WalletConnectLink,
 }
 
 export type Wallet = {

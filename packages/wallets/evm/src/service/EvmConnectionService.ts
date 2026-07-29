@@ -7,7 +7,6 @@ import type {
     WalletConnectionService,
     WalletModalConnector,
 } from '@layerswap/widget/types'
-import type { RegistryConnector } from '@layerswap/widget/internal'
 import type { Connector } from 'wagmi'
 import {
     connect,
@@ -19,7 +18,6 @@ import {
 import {
     buildDeepLink,
     clearPendingDynamicWcMetadata,
-    getRegistryEntry,
     mapConnectError,
     setDynamicWcMetadata,
     setPendingMetadataForRegistry,
@@ -54,9 +52,10 @@ type RegistryRequestFn = (params?: RequestAdditionalConnectorsParams) => Promise
 
 type RuntimeDeps = {
     setSelectedConnector?: (connector: unknown) => void
-    addRecentConnector?: (wallet: WalletConnectWalletBase) => void
+    addRecentConnector?: (connector: InternalConnector) => void
     requestRegistryConnectors?: RegistryRequestFn
     registryConnectors?: readonly WalletConnectWalletBase[]
+    recentConnectors?: readonly InternalConnector[]
     isMobilePlatform?: boolean
 }
 
@@ -98,15 +97,13 @@ export class EvmConnectionService implements WalletConnectionService<RuntimeDeps
         })
     }
 
-    getSplitRegistryConnectors(allConnectors: readonly Connector[]): { featured: RegistryConnector[]; additional: RegistryConnector[] } {
+    getSplitRegistryConnectors(allConnectors: readonly Connector[]): { featured: InternalConnector[]; additional: InternalConnector[] } {
         // Without the hidden WalletConnect connector (e.g. host-supplied wagmi
         // config), registry wallets cannot connect — offer none.
         if (!supportsRegistryConnects(allConnectors)) {
             return { featured: [], additional: [] }
         }
-        const configured = this.getConfiguredConnectors(allConnectors)
         return splitRegistryConnectors(
-            configured,
             [...(this._deps.registryConnectors ?? [])],
             this._deps.isMobilePlatform ?? false,
             PROVIDER_NAME,
@@ -116,10 +113,10 @@ export class EvmConnectionService implements WalletConnectionService<RuntimeDeps
     getAvailableConnectors(allConnectors: readonly Connector[]): InternalConnector[] {
         const configured = this.getConfiguredConnectors(allConnectors)
         const { featured } = this.getSplitRegistryConnectors(allConnectors)
-        return [...configured, ...featured]
+        return [...configured, ...featured, ...(this._deps.recentConnectors ?? [])]
     }
 
-    getAdditionalConnectors(allConnectors: readonly Connector[]): RegistryConnector[] {
+    getAdditionalConnectors(allConnectors: readonly Connector[]): InternalConnector[] {
         return this.getSplitRegistryConnectors(allConnectors).additional
     }
 
@@ -195,9 +192,7 @@ export class EvmConnectionService implements WalletConnectionService<RuntimeDeps
             return { connectors: [], nextPage: null, totalCount: 0 }
         }
         const result = await fn(params)
-        const configured = this.getConfiguredConnectors(allConnectors)
         const additional = splitRegistryConnectors(
-            configured,
             result.connectors,
             this._deps.isMobilePlatform ?? false,
             PROVIDER_NAME,
@@ -248,18 +243,16 @@ export class EvmConnectionService implements WalletConnectionService<RuntimeDeps
         const availableConnectors = this.getAvailableConnectors(allConnectors)
 
         let unsubscribeDisplayUri: (() => void) | undefined
-        let registryBase = undefined as ReturnType<typeof getRegistryEntry>
+        const internalConnector = props?.connector
+        const isRegistry = !!internalConnector && internalConnector.type === 'walletConnect' && !!internalConnector.mobile
 
         try {
-            const internalConnector = props?.connector
             if (!internalConnector) return
             let connector = availableConnectors.find(w => w.id === internalConnector.id) as InternalConnector & LSConnector
             let actualConnector = connector
 
-            registryBase = getRegistryEntry(internalConnector) ?? getRegistryEntry(connector)
-
-            if (registryBase) {
-                addRecentConnector?.(registryBase)
+            if (isRegistry) {
+                addRecentConnector?.(internalConnector)
 
                 const wcConnector = allConnectors.find(c => c.id === HIDDEN_WALLETCONNECT_ID)
                 if (!wcConnector) {
@@ -272,11 +265,11 @@ export class EvmConnectionService implements WalletConnectionService<RuntimeDeps
                 }
                 actualConnector = wcConnector as unknown as InternalConnector & LSConnector
 
-                const resolveURI = (uri: string) => buildDeepLink({ id: registryBase!.id, mobile: registryBase!.mobile }, uri)
+                const resolveURI = (uri: string) => buildDeepLink({ id: internalConnector.id, mobile: internalConnector.mobile! }, uri)
                 connector = Object.assign({}, wcConnector, {
-                    id: registryBase.id,
-                    name: registryBase.name,
-                    icon: registryBase.icon,
+                    id: internalConnector.id,
+                    name: internalConnector.name,
+                    icon: internalConnector.icon,
                     type: 'other',
                     isMobileSupported: true,
                     resolveURI,
@@ -323,7 +316,7 @@ export class EvmConnectionService implements WalletConnectionService<RuntimeDeps
             // Always prime pending metadata for registry-origin connects so the
             // `connectedWallets` re-render that happens between connect start and
             // address resolution can render the right wallet name/icon.
-            const pendingMetadata = setPendingMetadataForRegistry(EVM_NS, registryBase)
+            const pendingMetadata = setPendingMetadataForRegistry(EVM_NS, isRegistry ? internalConnector : undefined)
 
             try {
                 await connect(config, { connector: actualConnector as unknown as Connector })
@@ -334,7 +327,7 @@ export class EvmConnectionService implements WalletConnectionService<RuntimeDeps
 
             const activeAccount = await attemptGetAccount(config)
 
-            if (registryBase && pendingMetadata && activeAccount.address) {
+            if (isRegistry && pendingMetadata && activeAccount.address) {
                 setDynamicWcMetadata(EVM_NS, activeAccount.address, pendingMetadata)
             }
             clearPendingDynamicWcMetadata(EVM_NS)
@@ -391,7 +384,7 @@ export class EvmConnectionService implements WalletConnectionService<RuntimeDeps
             throw mapConnectError(e)
         } finally {
             unsubscribeDisplayUri?.()
-            if (registryBase) clearPendingDynamicWcMetadata(EVM_NS)
+            if (isRegistry) clearPendingDynamicWcMetadata(EVM_NS)
         }
     }
 }
