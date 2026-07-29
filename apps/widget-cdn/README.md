@@ -12,6 +12,10 @@ runtime delivery, plus the Cloudflare **Worker + R2** edge that serves it.
 Consumed by `@layerswap/widget-react` (React hosts) and
 `@layerswap/widget-js` (framework-agnostic hosts).
 
+Azure Blob Storage migration is being developed side-by-side with the current
+production R2 path. See [AZURE_SETUP.md](./AZURE_SETUP.md) for the personal
+sandbox setup and `deploy:azure` / `rollback:azure` commands.
+
 ## Versioning model
 
 Every build is published to an **immutable, buildId-named prefix** in R2 and
@@ -45,12 +49,13 @@ automatically. Pinned URLs exist for Layerswap's own release mechanics
 reachable from a loader via the internal `__LAYERSWAP_WIDGET_MANIFEST__`
 override global — a build/test seam, not a supported integrator option.
 
-The loader follows the redirect and resolves the relative `remoteEntry` against
-the **final** URL, so the remote anchors at the immutable build path. The
-remote loads its content-hashed chunks from the stable `/assets/` namespace,
-and the signed manifest registers SRI for both locations. **Rollback /
-roll-forward is a pointer flip** — no rebuild, no re-upload (see
-`scripts/rollback-r2.mjs`).
+The manifest uses a build-addressed relative `remoteEntry` (for example
+`../1.5.0-abc123def456/remoteEntry.js`), so the remote anchors at the immutable
+build path whether the manifest arrives through the Worker's redirect or from
+an Azure rolling-channel blob. The remote loads its content-hashed chunks from
+the stable `/assets/` namespace, and the signed manifest registers SRI for both
+locations. **Rollback / roll-forward is a pointer flip** — no rebuild, no
+re-upload (see `scripts/rollback-r2.mjs` or `scripts/rollback-azure.mjs`).
 
 A build's immutable identity is its **buildId** — the `@layerswap/widget`
 version plus the git sha (`1.5.0-abc123def456`, see `scripts/build-id.mjs`) —

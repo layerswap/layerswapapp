@@ -1,0 +1,122 @@
+name: widget-cdn — Azure sandbox deploy
+
+# Branch-only personal-account validation. Production remains on the R2
+# workflow until the production Azure identity and migration compatibility
+# are ready.
+on:
+  push:
+    branches:
+      - codex/widget-cdn-azure-sandbox
+  workflow_dispatch:
+    inputs:
+      promote:
+        description: "Publish this build to the rolling v1 channel"
+        type: boolean
+        required: false
+        default: true
+
+concurrency:
+  group: widget-cdn-azure-sandbox
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      # These identify the isolated personal Azure sandbox; they are not
+      # credentials. Authentication is a short-lived, branch-scoped OIDC token.
+      AZURE_CLIENT_ID: 69ca1ebc-8381-4b6d-864a-497053bdd827
+      AZURE_TENANT_ID: 8e8e42bf-64ee-4057-99ab-8288126d4ebb
+      AZURE_SUBSCRIPTION_ID: f60908b5-2c18-438c-89c5-510a01d2a802
+      AZURE_STORAGE_ACCOUNT: layerswapcdntest
+      AZURE_STORAGE_CONTAINER: widget-cdn
+      LAYERSWAP_PROMOTE: ${{ github.event_name != 'workflow_dispatch' || inputs.promote != false }}
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build workspace packages
+        run: pnpm build:packages
+
+      - name: Test widget release tooling
+        run: |
+          pnpm --filter @layerswap/widget-cdn test
+          pnpm --filter @layerswap/widget-js test
+          pnpm --filter @layerswap/widget-react check:types
+
+      - name: Compute build metadata
+        run: |
+          echo "LAYERSWAP_GIT_SHA=${GITHUB_SHA}" >> "$GITHUB_ENV"
+          echo "LAYERSWAP_BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
+          BUILD_ID=$(node --input-type=module -e "import { resolveBuildIdentity } from './apps/widget-cdn/scripts/build-id.mjs'; process.stdout.write(resolveBuildIdentity('./apps/widget-cdn').buildId)")
+          echo "LAYERSWAP_BUILD_ID=${BUILD_ID}" >> "$GITHUB_ENV"
+
+      # Generate a new sandbox-only key for every run. The Blob delivery path
+      # can be tested without storing or exposing the production signing key.
+      - name: Generate ephemeral sandbox signing key
+        id: key
+        run: |
+          umask 077
+          KEY_PATH="$RUNNER_TEMP/layerswap-azure-test-signing.pem"
+          openssl ecparam -name prime256v1 -genkey -noout -out "$KEY_PATH"
+          echo "key-path=$KEY_PATH" >> "$GITHUB_OUTPUT"
+
+      - name: Build signed sandbox artifact
+        working-directory: apps/widget-cdn
+        env:
+          LAYERSWAP_PRIVATE_KEY_PEM: ${{ steps.key.outputs.key-path }}
+        run: pnpm build
+
+      - name: Log in to personal Azure with OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ env.AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Upload to Azure Blob Storage and promote channel
+        working-directory: apps/widget-cdn
+        run: pnpm deploy:azure
+
+      - name: Wipe sandbox signing key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/layerswap-azure-test-signing.pem"
+
+      - name: Smoke-test the public Blob channel
+        if: ${{ env.LAYERSWAP_PROMOTE != 'false' }}
+        run: |
+          set -euo pipefail
+          BASE_URL="https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_STORAGE_CONTAINER}"
+          MANIFEST_URL="${BASE_URL}/v1/manifest.json"
+          curl -fsSL -H "Origin: https://example.com" -D /tmp/headers \
+            "$MANIFEST_URL" -o /tmp/manifest.json
+          grep -i 'access-control-allow-origin' /tmp/headers \
+            || { echo "::error::Azure Blob CORS header is missing"; exit 1; }
+          node -e "
+            const m = JSON.parse(require('fs').readFileSync('/tmp/manifest.json','utf8'));
+            if (!m.signature) throw new Error('manifest has no sandbox signature');
+            if (m.buildId !== '${LAYERSWAP_BUILD_ID}') {
+              throw new Error('channel has ' + m.buildId + ', expected ${LAYERSWAP_BUILD_ID}');
+            }
+            const remote = new URL(m.remoteEntry, '${MANIFEST_URL}').href;
+            if (!remote.includes('/${LAYERSWAP_BUILD_ID}/remoteEntry.js')) {
+              throw new Error('remoteEntry is not immutable: ' + remote);
+            }
+            console.log('Azure channel OK', { buildId: m.buildId, remote });
+          "

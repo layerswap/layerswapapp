@@ -18,7 +18,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createSign, createPrivateKey, createHash } from 'node:crypto';
 import { resolveBuildIdentity } from './build-id.mjs';
-import { ASSET_BASE, ASSET_DIRECTORY } from './cdn-layout.mjs';
+import { ASSET_BASE, ASSET_DIRECTORY, remoteEntryForBuild } from './cdn-layout.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -54,10 +54,11 @@ if (!existsSync(ASSET_DIST)) {
     process.exit(1);
 }
 
-// remoteEntry.js sits at the build-directory root by Rspack config. Kept
-// origin-relative so the same signed manifest works whether served at its
-// version path or reached via the rolling-channel redirect.
-const remoteEntry = './remoteEntry.js';
+// This resolves to the immutable build prefix from BOTH publication paths:
+//   /<buildId>/manifest.json (immutable) and /<channel>/manifest.json (rolling).
+// Cloudflare's existing redirect still lands at the same URL, while Azure can
+// promote by copying this signed manifest directly to the rolling path.
+const remoteEntry = remoteEntryForBuild(buildId);
 
 // Hash every JS file in the build directory and record under the
 // filename. The browser will use these via SRI when MF loads the scripts.

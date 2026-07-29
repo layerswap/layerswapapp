@@ -52,11 +52,11 @@ export type Manifest = {
     /**
      * Absolute or manifest-relative URL to the remoteEntry.js.
      *
-     * Kept origin-relative (`"./remoteEntry.js"`) so the same signed bytes work
-     * whether the manifest is fetched directly at its immutable version path
-     * (`/1.5.0/manifest.json`) or reached via a rolling-channel redirect
-     * (`/v1/manifest.json` → 302 → `/1.5.0/manifest.json`). The loader resolves
-     * it against the manifest's FINAL (post-redirect) URL — see `resolveSource`.
+     * Production builds use a build-addressed relative URL such as
+     * `"../1.5.0-abc123def456/remoteEntry.js"`. The same signed bytes therefore
+     * work at the immutable path (`/<buildId>/manifest.json`), behind the
+     * existing rolling-channel redirect, or copied directly to
+     * `/v1/manifest.json` by Azure promotion.
      */
     remoteEntry: string;
     /**
@@ -243,10 +243,9 @@ export type FetchedManifest = {
     manifest: Manifest;
     /**
      * The FINAL URL the manifest was served from, after any HTTP redirects.
-     * When a rolling channel (`/v1/manifest.json`) 302-redirects to an
-     * immutable build (`/1.5.0/manifest.json`), this is the latter — so
-     * resolving the relative `remoteEntry` against it anchors the remote (and
-     * every chunk it loads) at the immutable version path, not the channel root.
+     * The remoteEntry is build-addressed in production, so it anchors at the
+     * immutable build whether the manifest was redirected there or served
+     * directly from the rolling Azure channel path.
      */
     url: string;
 };

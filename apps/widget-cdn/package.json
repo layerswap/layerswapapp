@@ -9,6 +9,8 @@
     "verify-manifest": "node scripts/verify-manifest.mjs",
     "deploy:r2": "node scripts/deploy-r2.mjs",
     "rollback:r2": "node scripts/rollback-r2.mjs",
+    "deploy:azure": "node scripts/deploy-azure.mjs",
+    "rollback:azure": "node scripts/rollback-azure.mjs",
     "test": "node --test scripts/*.test.mjs",
     "worker:dev": "wrangler dev --config worker/wrangler.toml",
     "worker:deploy": "wrangler deploy --config worker/wrangler.toml",
