@@ -1,6 +1,6 @@
-import { Connection, PublicKey, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js";
-import { createAssociatedTokenAccountInstruction, createTransferInstruction, getAccount, getAssociatedTokenAddress } from '@solana/spl-token';
+import { Connection, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { Network, Token } from "@layerswap/widget/types";
+import { buildSvmTokenTransfer } from "./buildSvmTokenTransfer";
 
 export const transactionBuilderForGas = async (network: Network, token: Token, walletPublicKey: PublicKey, recipientAddress?: string | undefined) => {
 
@@ -11,44 +11,21 @@ export const transactionBuilderForGas = async (network: Network, token: Token, w
     const recipientPublicKey = new PublicKey(recipientAddress || new Array(32).fill(0));
 
     if (token.contract) {
-        const sourceToken = new PublicKey(token?.contract);
-
-        const transactionInstructions: TransactionInstruction[] = [];
-        const associatedTokenFrom = await getAssociatedTokenAddress(
-            sourceToken,
-            walletPublicKey
-        );
-        const fromAccount = await getAccount(connection, associatedTokenFrom);
-        const associatedTokenTo = await getAssociatedTokenAddress(
-            sourceToken,
-            recipientPublicKey
-        );
-
-        if (!(await connection.getAccountInfo(associatedTokenTo))) {
-            transactionInstructions.push(
-                createAssociatedTokenAccountInstruction(
-                    walletPublicKey,
-                    associatedTokenTo,
-                    recipientPublicKey,
-                    sourceToken
-                )
-            );
-        }
-        transactionInstructions.push(
-            createTransferInstruction(
-                fromAccount.address,
-                associatedTokenTo,
-                walletPublicKey,
-                2000000 * Math.pow(10, Number(token?.decimals))
-            )
-        );
+        const sourceToken = new PublicKey(token.contract);
+        const transferAmount = 2_000_000n * 10n ** BigInt(Number(token.decimals));
+        const transaction = await buildSvmTokenTransfer({
+            connection,
+            sourceOwner: walletPublicKey,
+            destinationOwner: recipientPublicKey,
+            mint: sourceToken,
+            amountInBaseUnits: transferAmount,
+            decimals: Number(token.decimals),
+        });
         const result = await connection.getLatestBlockhash()
 
-        const transaction = new Transaction({
-            feePayer: walletPublicKey,
-            blockhash: result.blockhash,
-            lastValidBlockHeight: result.lastValidBlockHeight
-        }).add(...transactionInstructions);
+        transaction.recentBlockhash = result.blockhash;
+        transaction.lastValidBlockHeight = result.lastValidBlockHeight;
+        transaction.feePayer = walletPublicKey;
 
         return transaction
     }
