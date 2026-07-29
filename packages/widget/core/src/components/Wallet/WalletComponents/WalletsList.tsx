@@ -151,7 +151,7 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: item, net
                                     <WalletIconView
                                         wallet={item}
                                         size={36}
-                                        className='w-9 h-9 p-0.5 rounded-md bg-secondary-800'
+                                        className='p-0.5 rounded-md bg-secondary-800'
                                     />
                                     :
                                     <AddressIcon address={item.address} size={36} network={network} className="rounded-md bg-secondary-800" />
