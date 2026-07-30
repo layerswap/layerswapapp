@@ -54,7 +54,8 @@ export default function AssetsTable({ assets }: { assets: AnalyticsAsset[] }) {
         const copy = [...rows];
         copy.sort((a, b) => {
             const d = metric(b, sortKey) - metric(a, sortKey);
-            return sortDir === "desc" ? d : -d;
+            const directed = sortDir === "desc" ? d : -d;
+            return directed || a.asset.localeCompare(b.asset);
         });
         return copy;
     }, [rows, sortKey, sortDir]);
@@ -68,15 +69,16 @@ export default function AssetsTable({ assets }: { assets: AnalyticsAsset[] }) {
     };
 
     const caret = (key: SortKey) => (key === sortKey ? (sortDir === "desc" ? " ↓" : " ↑") : "");
-    const colColor = (key: SortKey) => (key === sortKey ? "#e1e3e6" : "#768093");
+    const ariaSort = (key: SortKey): "ascending" | "descending" | "none" =>
+        key === sortKey ? (sortDir === "desc" ? "descending" : "ascending") : "none";
 
     const th = "px-[10px] py-2 text-[11.5px] font-semibold tracking-[0.04em]";
     const sortBtn = (key: SortKey, label: string) => (
         <button
             type="button"
             onClick={() => toggle(key)}
-            className="bg-transparent border-0 cursor-pointer font-semibold text-[11.5px] tracking-[0.04em]"
-            style={{ color: colColor(key) }}
+            aria-label={`Sort by ${label.toLowerCase()}`}
+            className={`cursor-pointer border-0 bg-transparent text-[11.5px] font-semibold tracking-[0.04em] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-400 ${key === sortKey ? "text-primary-text" : "text-primary-text-tertiary"}`}
         >
             {label}
             {caret(key)}
@@ -84,10 +86,10 @@ export default function AssetsTable({ assets }: { assets: AnalyticsAsset[] }) {
     );
 
     return (
-        <div className="bg-[#171f31] border border-[#283247] rounded-2xl p-[18px_20px_8px] shadow-[0_1px_2px_rgba(0,0,0,.28)]">
+        <div className="rounded-2xl border border-secondary-300 bg-secondary-500 p-[18px_20px_8px] shadow-card">
             <div className="flex items-baseline justify-between gap-3 mb-1.5">
-                <span className="text-[15px] font-semibold text-[#e1e3e6]">Assets</span>
-                <span className="text-[12.5px] text-[#768093]">
+                <span className="text-[15px] font-semibold text-primary-text">Assets</span>
+                <span className="text-[12.5px] text-primary-text-tertiary">
                     {rows.length} {rows.length === 1 ? "asset" : "assets"}
                 </span>
             </div>
@@ -95,64 +97,65 @@ export default function AssetsTable({ assets }: { assets: AnalyticsAsset[] }) {
                 <table className="w-full border-collapse min-w-[640px]">
                     <thead>
                         <tr>
-                            <th className={`${th} w-[44px] text-left text-[#768093]`}>#</th>
-                            <th className={`${th} text-left text-[#768093]`}>ASSET</th>
-                            <th className={`${th} text-right`}>{sortBtn("vol", "VOLUME")}</th>
-                            <th className={`${th} text-right`}>{sortBtn("in", "INFLOW")}</th>
-                            <th className={`${th} text-right`}>{sortBtn("out", "OUTFLOW")}</th>
-                            <th className={`${th} w-[184px] text-left text-[#768093]`}>SHARE OF VOLUME</th>
-                            <th className={`${th} text-right`}>{sortBtn("tx", "TXNS")}</th>
+                            <th scope="col" className={`${th} w-[44px] text-left text-primary-text-tertiary`}>#</th>
+                            <th scope="col" className={`${th} text-left text-primary-text-tertiary`}>ASSET</th>
+                            <th scope="col" aria-sort={ariaSort("vol")} className={`${th} text-right`}>{sortBtn("vol", "VOLUME")}</th>
+                            <th scope="col" aria-sort={ariaSort("in")} className={`${th} text-right`}>{sortBtn("in", "INFLOW")}</th>
+                            <th scope="col" aria-sort={ariaSort("out")} className={`${th} text-right`}>{sortBtn("out", "OUTFLOW")}</th>
+                            <th scope="col" className={`${th} w-[184px] text-left text-primary-text-tertiary`}>SHARE OF VOLUME</th>
+                            <th scope="col" aria-sort={ariaSort("tx")} className={`${th} text-right`}>{sortBtn("tx", "TRANSFERS")}</th>
                         </tr>
                     </thead>
                     <tbody>
                         {sorted.length === 0 && (
                             <tr>
-                                <td colSpan={7} className="px-[10px] py-6 text-center text-[13px] text-[#768093]">
+                                <td colSpan={7} className="px-[10px] py-6 text-center text-[13px] text-primary-text-tertiary">
                                     No asset activity in this range.
                                 </td>
                             </tr>
                         )}
                         {sorted.map((r, i) => {
                             const share = totalVol > 0 ? (r.vol / totalVol) * 100 : 0;
+                            const shareWidth = share > 0 ? Math.max(2, share) : 0;
                             return (
-                                <tr key={r.asset} className="border-t border-[#1f283d] hover:bg-[#0f1c3a] transition-colors">
-                                    <td className="px-[10px] py-[11px] text-[#768093] text-[13px] tabular-nums">{i + 1}</td>
+                                <tr key={r.asset} className="border-t border-secondary-400 transition-colors hover:bg-secondary">
+                                    <td className="px-[10px] py-[11px] text-[13px] tabular-nums text-primary-text-tertiary">{i + 1}</td>
                                     <td className="px-[10px] py-[11px]">
                                         <span className="flex items-center gap-[11px] min-w-0">
                                             {r.logo ? (
                                                 <Image src={r.logo} alt={r.asset} width={24} height={24} decoding="async" className="rounded-full shrink-0" />
                                             ) : (
-                                                <span className="w-6 h-6 rounded-full bg-[#283247] shrink-0" />
+                                                <span className="h-6 w-6 shrink-0 rounded-full bg-secondary-300" />
                                             )}
-                                            <span className="text-[14px] font-semibold text-[#e1e3e6]">{r.asset}</span>
+                                            <span className="text-[14px] font-semibold text-primary-text">{r.asset}</span>
                                         </span>
                                     </td>
-                                    <td className="px-[10px] py-[11px] text-right text-[14px] text-[#e1e3e6] tabular-nums">{fmtUsd(r.vol)}</td>
+                                    <td className="px-[10px] py-[11px] text-right text-[14px] tabular-nums text-primary-text">{fmtUsd(r.vol)}</td>
                                     <td className="px-[10px] py-[11px] text-right text-[13.5px] tabular-nums" style={{ color: FLOW_COLORS.inflow }}>{fmtUsd(r.inUsd)}</td>
                                     <td className="px-[10px] py-[11px] text-right text-[13.5px] tabular-nums" style={{ color: FLOW_COLORS.outflow }}>{fmtUsd(r.outUsd)}</td>
                                     <td className="px-[10px] py-[11px]">
                                         <div className="flex items-center gap-2.5">
-                                            <div className="flex-1 h-[6px] rounded-full bg-[#0e1524] overflow-hidden">
-                                                <div className="h-full rounded-full bg-[#3c4861]" style={{ width: `${Math.max(2, share)}%` }} />
+                                            <div className="h-[6px] flex-1 overflow-hidden rounded-full bg-secondary-700">
+                                                <div className="h-full rounded-full bg-secondary-100" style={{ width: `${shareWidth}%` }} />
                                             </div>
-                                            <span className="text-[11.5px] text-[#768093] tabular-nums w-10 text-right">{share.toFixed(1)}%</span>
+                                            <span className="w-10 text-right text-[11.5px] tabular-nums text-primary-text-tertiary">{share.toFixed(1)}%</span>
                                         </div>
                                     </td>
-                                    <td className="px-[10px] py-[11px] text-right text-[13.5px] text-[#e1e3e6] tabular-nums">{fmtNum(r.txns)}</td>
+                                    <td className="px-[10px] py-[11px] text-right text-[13.5px] tabular-nums text-primary-text">{fmtNum(r.txns)}</td>
                                 </tr>
                             );
                         })}
                     </tbody>
                     {sorted.length > 0 && (
                         <tfoot>
-                            <tr className="border-t border-[#283247]">
+                            <tr className="border-t border-secondary-300">
                                 <td className="px-[10px] py-[13px]" />
-                                <td className="px-[10px] py-[13px] text-[13px] font-semibold text-[#a3adc2]">Total</td>
-                                <td className="px-[10px] py-[13px] text-right text-[14px] font-semibold text-[#e1e3e6] tabular-nums">{fmtUsd(totals.vol)}</td>
+                                <td className="px-[10px] py-[13px] text-[13px] font-semibold text-secondary-text">Total</td>
+                                <td className="px-[10px] py-[13px] text-right text-[14px] font-semibold tabular-nums text-primary-text">{fmtUsd(totals.vol)}</td>
                                 <td className="px-[10px] py-[13px] text-right text-[13.5px] font-semibold tabular-nums" style={{ color: FLOW_COLORS.inflow }}>{fmtUsd(totals.inUsd)}</td>
                                 <td className="px-[10px] py-[13px] text-right text-[13.5px] font-semibold tabular-nums" style={{ color: FLOW_COLORS.outflow }}>{fmtUsd(totals.outUsd)}</td>
                                 <td className="px-[10px] py-[13px]" />
-                                <td className="px-[10px] py-[13px] text-right text-[13.5px] font-semibold text-[#e1e3e6] tabular-nums">{fmtNum(totals.txns)}</td>
+                                <td className="px-[10px] py-[13px] text-right text-[13.5px] font-semibold tabular-nums text-primary-text">{fmtNum(totals.txns)}</td>
                             </tr>
                         </tfoot>
                     )}

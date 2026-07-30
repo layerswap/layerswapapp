@@ -19,7 +19,11 @@ export default function RangeTabs({
     disabled?: boolean;
 }) {
     return (
-        <div className="flex items-center gap-1 bg-[#171f31] border border-[#283247] rounded-[13px] p-1">
+        <div
+            className="flex w-full items-center gap-1 rounded-[13px] border border-secondary-300 bg-secondary-500 p-1 sm:w-auto"
+            role="group"
+            aria-label="Analytics period"
+        >
             {ANALYTICS_PERIODS.map((p) => {
                 const active = p === value;
                 return (
@@ -29,9 +33,9 @@ export default function RangeTabs({
                         disabled={disabled}
                         onClick={() => onChange(p)}
                         aria-pressed={active}
-                        className={`px-3 py-1.5 rounded-[9px] text-[13px] font-semibold tabular-nums transition-colors disabled:opacity-60 ${active
-                            ? "bg-[#0e1524] text-[#e1e3e6]"
-                            : "text-[#a3adc2] hover:text-[#e1e3e6]"
+                        className={`flex-1 rounded-[9px] px-3 py-1.5 text-[13px] font-semibold tabular-nums transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-400 disabled:opacity-60 sm:flex-none ${active
+                            ? "bg-secondary-700 text-primary-text"
+                            : "text-secondary-text hover:text-primary-text"
                             }`}
                     >
                         {LABELS[p]}

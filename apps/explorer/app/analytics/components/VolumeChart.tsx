@@ -7,6 +7,7 @@ import {
     CartesianGrid,
     ResponsiveContainer,
     Tooltip,
+    TooltipContentProps,
     XAxis,
     YAxis,
 } from "recharts";
@@ -21,37 +22,53 @@ type Row = {
     outflow: number;
 };
 
-const AXIS_TICK = { fontSize: 11, fill: "#768093" };
-const GRID_STROKE = "#1f283d";
+const AXIS_TICK = { fontSize: 11, fill: "var(--color-primary-text-tertiary)" };
+const GRID_STROKE = "var(--color-secondary-400)";
 
 function LegendDot({ color, label }: { color: string; label: string }) {
     return (
-        <span className="flex items-center gap-[7px] text-[12.5px] text-[#a3adc2]">
-            <span className="w-[9px] h-[9px] rounded-[2px]" style={{ background: color }} />
+        <span className="flex items-center gap-[7px] text-[12.5px] text-secondary-text">
+            <span className="h-[9px] w-[9px] rounded-[2px]" style={{ background: color }} />
             {label}
         </span>
     );
 }
 
-function ChartTooltip({ active, payload, label, basis }: any) {
-    if (!active || !payload || !payload.length) return null;
-    const fmt = basis === "tx" ? (v: number) => fmtNum(v) : (v: number) => fmtUsdFull(v);
-    const total = payload.reduce((s: number, p: any) => s + (+p.value || 0), 0);
+function ChartTooltip({
+    active,
+    payload,
+    label,
+    basis,
+}: TooltipContentProps<number, string> & { basis: Basis }) {
+    if (!active || payload.length === 0) return null;
+
+    const formatter =
+        basis === "tx" ? (value: number) => fmtNum(value) : (value: number) => fmtUsdFull(value);
+    const total = payload.reduce((sum, entry) => sum + Number(entry.value ?? 0), 0);
+
     return (
-        <div className="bg-[#0e1524] border border-[#283247] rounded-[10px] px-3 py-[9px] min-w-[154px] shadow-[0_8px_24px_rgba(0,0,0,.5)] pointer-events-none">
-            <div className="text-[11.5px] text-[#a3adc2] mb-[7px]">{label}</div>
-            {payload.map((p: any, i: number) => (
-                <div key={i} className="flex items-center justify-between gap-4 text-[12.5px] mb-1">
-                    <span className="flex items-center gap-[7px] text-[#a3adc2]">
-                        <span className="w-[9px] h-[9px] rounded-[2px]" style={{ background: p.color || p.fill }} />
-                        {p.name}
+        <div className="pointer-events-none min-w-[168px] rounded-[10px] border border-secondary-300 bg-secondary-700 px-3 py-2.5 shadow-accordion-open">
+            <p className="mb-2 text-[11.5px] text-secondary-text">{label}</p>
+            {payload.map((entry) => (
+                <div
+                    key={String(entry.dataKey)}
+                    className="mb-1 flex items-center justify-between gap-5 text-xs"
+                >
+                    <span className="flex items-center gap-[7px] text-secondary-text">
+                        <span
+                            className="h-[9px] w-[9px] rounded-[2px]"
+                            style={{ background: entry.color ?? entry.fill }}
+                        />
+                        {entry.name}
                     </span>
-                    <span className="text-[#e1e3e6] font-semibold tabular-nums">{fmt(p.value)}</span>
+                    <span className="font-semibold tabular-nums text-primary-text">
+                        {formatter(Number(entry.value ?? 0))}
+                    </span>
                 </div>
             ))}
-            <div className="flex items-center justify-between gap-4 text-[12.5px] border-t border-[#283247] pt-1.5 mt-0.5">
-                <span className="text-[#a3adc2]">Total</span>
-                <span className="text-white font-semibold tabular-nums">{fmt(total)}</span>
+            <div className="mt-2 flex items-center justify-between gap-5 border-t border-secondary-300 pt-1.5 text-xs">
+                <span className="text-secondary-text">Total</span>
+                <span className="font-semibold tabular-nums text-primary-text">{formatter(total)}</span>
             </div>
         </div>
     );
@@ -66,64 +83,86 @@ export default function VolumeChart({
 }) {
     const [basis, setBasis] = useState<Basis>("usd");
     const [mounted, setMounted] = useState(false);
+
     useEffect(() => setMounted(true), []);
 
     const rows: Row[] = useMemo(
         () =>
-            timeline.map((t) => ({
-                label: bucketLabel(t.bucket_start, range.bucket_size),
-                inflow: basis === "tx" ? t.inflow_transfer_count : t.inflow_amount_in_usd,
-                outflow: basis === "tx" ? t.outflow_transfer_count : t.outflow_amount_in_usd,
+            timeline.map((point) => ({
+                label: bucketLabel(point.bucket_start, range.bucket_size),
+                inflow:
+                    basis === "tx"
+                        ? point.inflow_transfer_count
+                        : point.inflow_amount_in_usd,
+                outflow:
+                    basis === "tx"
+                        ? point.outflow_transfer_count
+                        : point.outflow_amount_in_usd,
             })),
-        [timeline, range.bucket_size, basis]
+        [basis, range.bucket_size, timeline]
     );
 
-    const hasData = rows.some((r) => r.inflow > 0 || r.outflow > 0);
-    const axisFmt = basis === "tx" ? axisNum : axisUsd;
+    const hasData = rows.some((row) => row.inflow > 0 || row.outflow > 0);
+    const axisFormatter = basis === "tx" ? axisNum : axisUsd;
 
     return (
-        <div className="bg-[#171f31] border border-[#283247] rounded-2xl p-[18px_20px_14px] shadow-[0_1px_2px_rgba(0,0,0,.28)]">
-            <div className="flex items-center justify-between gap-3 flex-wrap mb-2">
+        <section className="rounded-2xl border border-secondary-300 bg-secondary-500 p-[18px_14px_14px] shadow-card sm:p-[18px_20px_14px]">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-baseline gap-3">
-                    <span className="text-[15px] font-semibold text-[#e1e3e6]">Volume over time</span>
-                    <span className="text-[12.5px] text-[#768093]">
-                        {basis === "tx" ? "Transfers" : "USD"} · per {range.bucket_size}
+                    <h2 className="text-[15px] font-semibold text-primary-text">
+                        Volume over time
+                    </h2>
+                    <span className="text-[12.5px] text-primary-text-tertiary">
+                        {`${basis === "tx" ? "Transfers" : "USD"} · per ${range.bucket_size}`}
                     </span>
                 </div>
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-4">
+                <div className="flex flex-wrap items-center gap-4">
+                    <div className="flex items-center gap-4" aria-label="Chart legend">
                         <LegendDot color={FLOW_COLORS.inflow} label="Inflow" />
                         <LegendDot color={FLOW_COLORS.outflow} label="Outflow" />
                     </div>
-                    <div className="flex items-center gap-1 bg-[#0e1524] border border-[#283247] rounded-[10px] p-1">
-                        {(["usd", "tx"] as Basis[]).map((b) => (
+                    <div className="flex items-center gap-1 rounded-[10px] border border-secondary-300 bg-secondary-700 p-1" role="group" aria-label="Chart metric">
+                        {(["usd", "tx"] as Basis[]).map((metric) => (
                             <button
-                                key={b}
+                                key={metric}
                                 type="button"
-                                onClick={() => setBasis(b)}
-                                aria-pressed={basis === b}
-                                className={`px-2.5 py-1 rounded-[7px] text-[12px] font-semibold transition-colors ${basis === b ? "bg-[#171f31] text-[#e1e3e6]" : "text-[#768093] hover:text-[#a3adc2]"
+                                onClick={() => setBasis(metric)}
+                                aria-pressed={basis === metric}
+                                className={`rounded-[7px] px-2.5 py-1 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-400 ${basis === metric
+                                    ? "bg-secondary-500 text-primary-text"
+                                    : "text-primary-text-tertiary hover:text-secondary-text"
                                     }`}
                             >
-                                {b === "usd" ? "Volume" : "Transactions"}
+                                {metric === "usd" ? "Volume" : "Transfers"}
                             </button>
                         ))}
                     </div>
                 </div>
             </div>
-            <div className="h-[300px] mt-0.5">
+
+            <div className="h-[276px] w-full">
                 {!mounted ? (
-                    <div className="h-full flex items-center justify-center text-[13px] text-[#768093]">
-                        Loading chart…
-                    </div>
+                    <div className="h-full animate-pulse rounded-xl bg-secondary-600" />
                 ) : !hasData ? (
-                    <div className="h-full flex items-center justify-center text-[13px] text-[#768093]">
-                        No volume in this range.
+                    <div className="flex h-full items-center justify-center text-[13px] text-primary-text-tertiary">
+                        {basis === "tx"
+                            ? "No completed transfers in this range."
+                            : "No volume in this range."}
                     </div>
                 ) : (
-                    <ResponsiveContainer width="100%" height="100%" debounce={1}>
-                        <BarChart data={rows} margin={{ top: 10, right: 10, left: 0, bottom: 0 }} barCategoryGap="18%" maxBarSize={86}>
-                            <CartesianGrid vertical={false} stroke={GRID_STROKE} strokeWidth={1} />
+                    <ResponsiveContainer width="100%" height="100%" debounce={50}>
+                        <BarChart
+                            accessibilityLayer
+                            data={rows}
+                            margin={{ top: 12, right: 12, left: 0, bottom: 0 }}
+                            barCategoryGap="18%"
+                            maxBarSize={28}
+                        >
+                            <CartesianGrid
+                                vertical={false}
+                                stroke={GRID_STROKE}
+                                strokeWidth={1}
+                            />
                             <XAxis
                                 dataKey="label"
                                 tickLine={false}
@@ -138,20 +177,36 @@ export default function VolumeChart({
                                 axisLine={false}
                                 width={56}
                                 tick={AXIS_TICK}
-                                tickFormatter={axisFmt}
-                                allowDecimals={false}
+                                tickFormatter={axisFormatter}
+                                allowDecimals={basis !== "tx"}
                             />
                             <Tooltip
-                                cursor={{ fill: "rgba(255,255,255,0.045)" }}
-                                content={(p: any) => <ChartTooltip {...p} basis={basis} />}
+                                cursor={{
+                                    fill: "var(--color-secondary-400)",
+                                    fillOpacity: 0.45,
+                                }}
+                                content={(props) => <ChartTooltip {...props} basis={basis} />}
                                 isAnimationActive={false}
                             />
-                            <Bar dataKey="inflow" name="Inflow" stackId="v" fill={FLOW_COLORS.inflow} isAnimationActive={false} />
-                            <Bar dataKey="outflow" name="Outflow" stackId="v" fill={FLOW_COLORS.outflow} radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                            <Bar
+                                dataKey="inflow"
+                                name="Inflow"
+                                stackId="volume"
+                                fill={FLOW_COLORS.inflow}
+                                isAnimationActive={false}
+                            />
+                            <Bar
+                                dataKey="outflow"
+                                name="Outflow"
+                                stackId="volume"
+                                fill={FLOW_COLORS.outflow}
+                                radius={[4, 4, 0, 0]}
+                                isAnimationActive={false}
+                            />
                         </BarChart>
                     </ResponsiveContainer>
                 )}
             </div>
-        </div>
+        </section>
     );
 }

@@ -3,6 +3,11 @@ import Analytics from "./Analytics";
 
 export const metadata = {
     title: "Analytics | Layerswap Explorer",
+    description:
+        "Compare completed transfer volume, network flows, and asset activity across Layerswap.",
+    alternates: {
+        canonical: "https://layerswap.io/explorer/analytics",
+    },
 };
 
 export default function AnalyticsPage() {

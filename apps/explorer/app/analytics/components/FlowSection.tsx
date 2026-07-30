@@ -19,31 +19,33 @@ function FlowColumn({
     return (
         <div className="flex-1 min-w-0">
             <div className="flex items-baseline justify-between gap-2 mb-3">
-                <span className="text-[13.5px] font-semibold text-[#e1e3e6]">{title}</span>
-                <span className="text-[11.5px] text-[#768093]">{subtitle}</span>
+                <span className="text-[13.5px] font-semibold text-primary-text">{title}</span>
+                <span className="text-[11.5px] text-primary-text-tertiary">{subtitle}</span>
             </div>
             {rows.length === 0 ? (
-                <div className="text-[13px] text-[#768093] py-4">No activity in this range.</div>
+                <div className="py-4 text-[13px] text-primary-text-tertiary">No activity in this range.</div>
             ) : (
                 <div className="flex flex-col gap-2.5">
                     {rows.map((r) => {
-                        const pct = (r.amount_in_usd / max) * 100;
+                        const share = (r.amount_in_usd / max) * 100;
+                        const barWidth = share > 0 ? Math.max(2, share) : 0;
                         return (
                             <div key={r.network.name} className="flex items-center gap-3">
                                 <NetworkBadge network={r.network} size={22} />
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center justify-between gap-2 mb-1">
-                                        <span className="text-[13px] text-[#e1e3e6] truncate">{r.network.display_name}</span>
-                                        <span className="text-[12.5px] text-[#a3adc2] tabular-nums shrink-0">
+                                        <span className="truncate text-[13px] text-primary-text">{r.network.display_name}</span>
+                                        <span className="shrink-0 text-[12.5px] tabular-nums text-secondary-text">
                                             {fmtUsd(r.amount_in_usd)}
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <div className="flex-1 h-[6px] rounded-full bg-[#0e1524] overflow-hidden">
-                                            <div className="h-full rounded-full" style={{ width: `${Math.max(2, pct)}%`, background: color }} />
+                                        <div className="h-[6px] flex-1 overflow-hidden rounded-full bg-secondary-700">
+                                            <div className="h-full rounded-full" style={{ width: `${barWidth}%`, background: color }} />
                                         </div>
-                                        <span className="text-[11px] text-[#768093] tabular-nums shrink-0 w-16 text-right">
-                                            {fmtNum(r.transfer_count)} txns
+                                        <span className="w-16 shrink-0 text-right text-[11px] tabular-nums text-primary-text-tertiary">
+                                            {fmtNum(r.transfer_count)}
+                                            <span className="sr-only"> transfers</span>
                                         </span>
                                     </div>
                                 </div>
@@ -67,24 +69,24 @@ export default function FlowSection({
 }) {
     const name = network?.display_name ?? "this network";
     return (
-        <div className="bg-[#171f31] border border-[#283247] rounded-2xl p-[18px_20px] shadow-[0_1px_2px_rgba(0,0,0,.28)]">
+        <div className="rounded-2xl border border-secondary-300 bg-secondary-500 p-[18px_20px] shadow-card">
             <div className="flex flex-col gap-[3px] mb-4">
-                <span className="text-[15px] font-semibold text-[#e1e3e6]">Flow by network</span>
-                <span className="text-[12.5px] text-[#a3adc2]">
+                <span className="text-[15px] font-semibold text-primary-text">Flow by network</span>
+                <span className="text-[12.5px] text-secondary-text">
                     Where {name}&rsquo;s volume comes from and goes to
                 </span>
             </div>
             <div className="flex flex-col md:flex-row gap-8">
                 <FlowColumn
                     title="Sources"
-                    subtitle="inflow · from"
+                    subtitle="Inflow · from"
                     rows={sourceChains}
                     color={FLOW_COLORS.inflow}
                 />
-                <div className="hidden md:block w-px bg-[#1f283d] self-stretch" />
+                <div className="hidden w-px self-stretch bg-secondary-400 md:block" />
                 <FlowColumn
                     title="Destinations"
-                    subtitle="outflow · to"
+                    subtitle="Outflow · to"
                     rows={destinationChains}
                     color={FLOW_COLORS.outflow}
                 />
