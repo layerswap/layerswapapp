@@ -1,4 +1,5 @@
-import { TransferProvider, TransferProps, TransferProgress, ActionMessageType } from "@layerswap/wallet-core/types"
+import { ActionMessageType } from "@layerswap/ui-kit/types";
+import { TransferProvider, TransferProps, TransferProgress } from "@layerswap/utils";
 import { NetworkType } from "@layerswap/utils"
 import { switchChain } from "@wagmi/core"
 import { getEvmConfig } from "../../service/getEvmConfig"

@@ -10,8 +10,7 @@ import { useDepositSelection } from "../depositSelectionContext";
 import { Address } from "@/lib/address/Address";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import DestinationTokenPicker from "../DestinationTokenPicker";
-import WalletIcon from "@/components/Icons/WalletIcon";
-import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
+import { ImageWithFallback, WalletIcon } from "@layerswap/ui-kit/ui";
 import { useExtendedDepositOption } from "./useExtendedDepositOption";
 
 type MethodCardProps = {

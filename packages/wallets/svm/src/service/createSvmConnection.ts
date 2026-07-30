@@ -1,11 +1,10 @@
-import type { NetworkWithTokens } from "@layerswap/utils"
-import type { MultiStepHandler, WalletConnectionProvider, WalletConnectionProviderProps, WalletConnectionStore } from "@layerswap/wallet-core/types"
+import type { MultiStepHandler, WalletConnectionProvider, WalletConnectionProviderProps, WalletConnectionStore, WalletModalConnector } from "@layerswap/ui-kit/types"
 import { isMobile } from "@layerswap/utils"
-import { connectModalStore, createMemoizedConnectionStore, getAdditionalConnectorsStore } from "@layerswap/wallet-core"
+import { connectModalStore, createMemoizedConnectionStore, getAdditionalConnectorsStore, type AppNetworkAdapter } from "@layerswap/ui-kit"
 import { id as PROVIDER_ID } from '../constants'
 import { createSvmTransfer } from '../transferProvider/createSvmTransfer'
 import { getWalletConnectConfig } from './walletConnectConfig'
-import { svmConnectionService } from './SvmConnectionService'
+import { SvmConnectionService } from './SvmConnectionService'
 import { useSvmStore } from './svmStore'
 
 const SVM_NS = PROVIDER_ID
@@ -18,15 +17,17 @@ type CreateSvmConnectionOptions = {
  * Vanilla external-store factory for the Solana wallet connection. Replaces
  * the old `useSvmConnection` hook.
  */
-export function createSvmConnection(
-    initialProps: WalletConnectionProviderProps,
+export function createSvmConnection<Network>(
+    initialProps: WalletConnectionProviderProps<Network>,
     options: CreateSvmConnectionOptions = {},
-): WalletConnectionStore {
+): WalletConnectionStore<Network> {
     const { extraMultiStepHandlers = [] } = options
     const isMobilePlatform = isMobile()
 
-    let networks: NetworkWithTokens[] = initialProps.networks
-    svmConnectionService.setNetworks(networks)
+    let networks = initialProps.networks
+    let networkAdapter = initialProps.networkAdapter
+    const svmConnectionService = new SvmConnectionService<Network>()
+    svmConnectionService.setNetworks(networks, networkAdapter)
 
     const walletConnectConfig = getWalletConnectConfig()
     const additionalConnectorsStore = getAdditionalConnectorsStore(
@@ -36,7 +37,7 @@ export function createSvmConnection(
 
     svmConnectionService.configure({
         setSelectedConnector: connectModalStore.setSelectedConnector,
-        getSelectedConnector: () => connectModalStore.getSnapshot().selectedConnector,
+        getSelectedConnector: () => connectModalStore.getSnapshot().selectedConnector as WalletModalConnector | undefined,
         addRecentConnector: additionalConnectorsStore.addRecentConnector,
         requestRegistryConnectors: additionalConnectorsStore.requestAdditionalConnectors,
         isMobilePlatform,
@@ -85,7 +86,8 @@ export function createSvmConnection(
         ],
         onUpdateProps: nextProps => {
             networks = nextProps.networks
-            svmConnectionService.setNetworks(networks)
+            networkAdapter = nextProps.networkAdapter
+            svmConnectionService.setNetworks(networks, networkAdapter)
         },
     })
 }

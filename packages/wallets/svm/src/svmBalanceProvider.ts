@@ -1,5 +1,5 @@
 import { NetworkType } from "@layerswap/utils"
-import { TokenBalance, BalanceProvider } from "@layerswap/wallet-core/types"
+import { TokenBalance, BalanceProvider } from "@layerswap/utils";
 import { insertIfNotExists, fetchWithTimeout, formatUnits } from "@layerswap/utils";
 
 export class SolanaBalanceProvider extends BalanceProvider {

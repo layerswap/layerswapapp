@@ -1,6 +1,4 @@
-import { KnownInternalNames, NetworkType, type NetworkWithTokens } from '@layerswap/utils'
-import { HYPERLIQUID_ROUTES } from '../additionalProviders/hyperliquid/routes'
-import { POLYMARKET_CONFIG } from '../additionalProviders/polymarket/constants'
+import type { AppNetworkAdapter } from '@layerswap/ui-kit'
 
 export type EvmNetworkBuckets = {
     asSource: string[]
@@ -8,29 +6,36 @@ export type EvmNetworkBuckets = {
     autofill: string[]
 }
 
-// Extended sources are withdrawal-capable through this package's EVM wallets.
-// Derived from the providers' own route configs so a network added there
-// automatically gets wallet-withdrawal support — a hand-maintained copy here
-// would silently hide the wallet-funded route for any name it misses.
-const extendedWithdrawalNetworks = [
-    ...Object.keys(HYPERLIQUID_ROUTES),
-    ...Object.keys(POLYMARKET_CONFIG),
-]
+export type EvmAdditionalSupportedNetworks = {
+    asSource: readonly string[]
+    withdrawal: readonly string[]
+    autofill: readonly string[]
+}
 
-export function computeEvmNetworkBuckets(networks: NetworkWithTokens[]): EvmNetworkBuckets {
+const emptyAdditionalSupportedNetworks: EvmAdditionalSupportedNetworks = {
+    asSource: [],
+    withdrawal: [],
+    autofill: [],
+}
+
+export function computeEvmNetworkBuckets<Network>(
+    networks: Network[],
+    networkAdapter: AppNetworkAdapter<Network>,
+    additionalSupportedNetworks: EvmAdditionalSupportedNetworks = emptyAdditionalSupportedNetworks,
+): EvmNetworkBuckets {
     const asSource = [
-        ...networks.filter(n => n.type === NetworkType.EVM).map(n => n.name),
-        KnownInternalNames.Networks.LoopringGoerli,
-        KnownInternalNames.Networks.LoopringMainnet,
-        KnownInternalNames.Networks.LoopringSepolia,
+        ...networks
+            .filter(network => networkAdapter.isEvmNetwork(network))
+            .map(network => networkAdapter.getId(network)),
+        ...additionalSupportedNetworks.asSource,
     ]
     const withdrawal = [
         ...asSource,
-        ...extendedWithdrawalNetworks,
+        ...additionalSupportedNetworks.withdrawal,
     ]
     const autofill = [
         ...withdrawal,
-        KnownInternalNames.Networks.BrineMainnet
+        ...additionalSupportedNetworks.autofill,
     ]
     return { asSource, withdrawal, autofill }
 }

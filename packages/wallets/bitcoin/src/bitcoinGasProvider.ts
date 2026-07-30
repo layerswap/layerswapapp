@@ -1,7 +1,7 @@
 import { buildPsbt } from "./transferProvider/transactionBuilder/buildPsbt";
 import { JsonRpcClient, KnownInternalNames, formatUnits, ErrorHandler } from "@layerswap/utils";
 import { Network } from "@layerswap/utils"
-import { GasProps, GasWithToken, GasProvider } from "@layerswap/wallet-core/types"
+import { GasProps, GasWithToken, GasProvider } from "@layerswap/utils";
 
 export class BitcoinGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {

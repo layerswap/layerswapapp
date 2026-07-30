@@ -1,6 +1,6 @@
 import { FC, useMemo } from "react"
 import { ExternalLink } from "lucide-react"
-import CopyButton from "@/components/Buttons/copyButton"
+import { CopyButton } from "@layerswap/ui-kit/ui";
 import AddressIcon from "@/components/Common/AddressIcon"
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues"
 import { Partner } from "@/Models"

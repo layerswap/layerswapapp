@@ -6,7 +6,7 @@ import WalletMessage from "../../messages/Message";
 import { ButtonWrapper, ConnectWalletButton } from "../../Wallet/Common/buttons";
 import { ActionMessages } from "../../messages/TransactionMessages";
 import { Address } from "@/lib/address/Address";
-import WalletIcon from "@/components/Icons/WalletIcon";
+import { WalletIcon } from "@layerswap/ui-kit/ui";
 
 export const PolymarketWalletWithdraw: FC<WithdrawPageProps> = (props) => {
     const { source_network } = props.swapBasicData

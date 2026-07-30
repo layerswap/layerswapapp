@@ -1,7 +1,7 @@
-import type { WalletConnectionStore, WalletConnectionProviderProps, WalletConnectConfig } from "@layerswap/wallet-core/types"
-import type { WalletProvider, WalletInitContext, BaseWalletProviderConfig } from "@layerswap/wallet-core/types"
-import { NetworkType } from "@layerswap/utils"
-import { LazyGasProvider } from "@layerswap/wallet-core/types"
+import type { WalletConnectionStore, WalletConnectionProviderProps, WalletConnectConfig } from "@layerswap/ui-kit/types"
+import type { WalletProvider, WalletInitContext, BaseWalletProviderConfig } from "@layerswap/ui-kit/types"
+import { NetworkType, type NetworkWithTokens } from "@layerswap/utils"
+import { LazyGasProvider } from "@layerswap/utils";
 import { SolanaBalanceProvider } from "./svmBalanceProvider"
 import { createSvmTransfer } from "./transferProvider/createSvmTransfer"
 import { createSvmConnection } from "./service/createSvmConnection"
@@ -10,13 +10,15 @@ import { id } from "./constants"
 
 export type { WalletConnectConfig }
 
-export type SVMProviderConfig = BaseWalletProviderConfig & {
+export type SVMProviderConfig<Network = NetworkWithTokens> = BaseWalletProviderConfig<Network> & {
     walletConnectConfigs?: WalletConnectConfig
 }
 
 // The literal id in the return type lets `defineWalletDescriptor` in
 // `@layerswap/wallets` verify it matches the descriptor id at compile time.
-export function createSVMProvider(config: SVMProviderConfig = {}): WalletProvider & { id: typeof id } {
+export function createSVMProvider<Network = NetworkWithTokens>(
+    config: SVMProviderConfig<Network> = {},
+): WalletProvider<Network> & { id: typeof id } {
     const {
         walletConnectConfigs,
         customConnection,
@@ -30,7 +32,7 @@ export function createSVMProvider(config: SVMProviderConfig = {}): WalletProvide
         // No-op disposer; init is idempotent across remounts.
     }
 
-    const createConnection = (props: WalletConnectionProviderProps): WalletConnectionStore => {
+    const createConnection = (props: WalletConnectionProviderProps<Network>): WalletConnectionStore<Network> => {
         initSvmProvider({ walletConnectConfigs })
         if (customConnection) {
             return customConnection(props)

@@ -1,8 +1,7 @@
 import { FC, useMemo } from "react";
 import { Copy, Check } from "lucide-react";
-import StyledQRCode from "@/components/Common/StyledQRCode";
+import { StyledQRCode, useCopyClipboard } from "@layerswap/ui-kit/ui";
 import { AnimatePresence, motion } from "framer-motion";
-import useCopyClipboard from "@/hooks/useCopyClipboard";
 import { Network, Token } from "@/Models/Network";
 import DepositQuoteDetails from "./DepositQuoteDetails";
 

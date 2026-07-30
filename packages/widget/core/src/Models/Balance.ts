@@ -1,1 +1,1 @@
-export type { GasProps, TokenBalanceError, TokenBalance, NetworkBalance } from "@layerswap/wallet-core/types";
+export type { GasProps, TokenBalanceError, TokenBalance, NetworkBalance } from "@layerswap/utils";

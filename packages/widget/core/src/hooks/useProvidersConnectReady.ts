@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import useWallet from "./useWallet"
 import { useWalletProvidersReady } from "@/context/walletProviders"
-import type { WalletConnectionProvider } from "@layerswap/wallet-core/types"
+import { isProviderConnectReady } from "@layerswap/ui-kit/ui"
 
 /**
  * Whether a provider is ready enough for its connect affordance to be enabled.
@@ -13,11 +13,6 @@ import type { WalletConnectionProvider } from "@layerswap/wallet-core/types"
  * auto-reconnect in flight) report not-ready. `ready` is defensively treated
  * as true when a provider store never sets it.
  */
-export function isProviderConnectReady(provider: WalletConnectionProvider | undefined): boolean {
-    if (!provider) return true
-    return provider.isStub === true || (typeof provider.ready === 'boolean' ? provider.ready : true)
-}
-
 // Upper bound on how long session-bearing stubs may hold the connect gate
 // closed. Normally the stub is replaced by the real provider (whose own
 // `ready` flag takes over) well within this; the deadline only matters when

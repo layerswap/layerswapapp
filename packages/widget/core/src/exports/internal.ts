@@ -7,10 +7,9 @@ export { insertIfNotExists } from "../lib/balances/helpers"
 export * from "../lib/retry"
 export { fetchWithTimeout } from "../lib/fetchWithTimeout"
 export { default as AppSettings } from "../lib/AppSettings";
-export { usePersistedState } from "../hooks/usePersistedState";
+export { ImageWithFallback, usePersistedState } from "@layerswap/ui-kit/ui";
 export { useSettingsState } from "../context/settings";
 export * from "../components/Icons"
-export { ImageWithFallback } from "../components/Common/ImageWithFallback"
 export * from "../components/shadcn"
 export { default as WalletMessage } from "../components/Pages/Swap/Withdraw/messages/Message"
 export * from "../components/Buttons"
@@ -36,44 +35,7 @@ export { ErrorHandler } from '../lib/ErrorHandler';
 export type { ErrorEventType } from '../types/logEvents';
 export { useRpcHealth } from "../context/rpcHealthContext";
 export * from "../lib/extendedRoutes"
-export {
-    connectModalStore,
-    buildDeepLink,
-    createRegistryConnector,
-    createReactHookConnectionAdapter,
-    findRegistryWalletByName,
-    subscribeDisplayUri,
-    getRegistryEntry,
-    mapConnectError,
-    getDynamicWcMetadata,
-    getPendingDynamicWcMetadata,
-    clearPendingDynamicWcMetadata,
-    createMemoizedConnectionStore,
-    setDynamicWcMetadata,
-    setPendingMetadataForRegistry,
-    getAdditionalConnectorsStore,
-    useWalletDescriptorLoader,
-    WalletDescriptorLoaderContext,
-    useConnectors,
-    WalletProvidersRegistryProvider,
-    useWalletProvidersRegistry,
-    useWalletProvidersReady,
-    walletKey,
-    getKnownConnectorIconBase64,
-    normalizeIconSrc,
-    resolveWalletConnectorIcon,
-    walletIconResolver,
-    extractErrorDetails,
-    classifyNodeError,
-    getEip6963Providers,
-    subscribeEip6963Providers,
-} from "@layerswap/wallet-core"
-export type {
-    DisplayUriSource,
-    RegistryConnector,
-    WalletConnectWalletBase,
-    WalletConnectWallet,
-    ErrorDetails,
-    NodeErrorCategory,
-    Eip6963Provider,
-} from "@layerswap/wallet-core"
+export { connectModalStore, buildDeepLink, createRegistryConnector, createReactHookConnectionAdapter, findRegistryWalletByName, subscribeDisplayUri, getRegistryEntry, mapConnectError, getDynamicWcMetadata, getPendingDynamicWcMetadata, clearPendingDynamicWcMetadata, createMemoizedConnectionStore, setDynamicWcMetadata, setPendingMetadataForRegistry, getAdditionalConnectorsStore, useWalletDescriptorLoader, WalletDescriptorLoaderContext, useConnectors, WalletProvidersRegistryProvider, useWalletProvidersRegistry, useWalletProvidersReady, walletKey, getKnownConnectorIconBase64, normalizeIconSrc, resolveWalletConnectorIcon, walletIconResolver, getEip6963Providers, subscribeEip6963Providers } from "@layerswap/ui-kit";
+export { extractErrorDetails, classifyNodeError } from "@layerswap/utils";
+export type { DisplayUriSource, RegistryConnector, WalletConnectWalletBase, WalletConnectWallet, Eip6963Provider } from "@layerswap/ui-kit";
+export type { ErrorDetails, NodeErrorCategory } from "@layerswap/utils";

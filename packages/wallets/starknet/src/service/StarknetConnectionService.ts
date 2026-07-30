@@ -1,8 +1,8 @@
-import { NetworkType, type NetworkWithTokens } from "@layerswap/utils"
-import type { InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types"
-import { walletIconResolver } from "@layerswap/wallet-core";
+import type { WalletConnectionProvider, WalletConnectionService } from "@layerswap/ui-kit/types";
+import type { InternalConnector, Wallet } from "@layerswap/utils";
+import { walletIconResolver, type AppNetworkAdapter } from "@layerswap/ui-kit";
 import type { Connector } from '@starknet-react/core'
-import { name as PROVIDER_NAME, id as PROVIDER_ID, starknetNames } from '../constants'
+import { name as PROVIDER_NAME, id as PROVIDER_ID } from '../constants'
 import { resolveStarknetWalletIcon } from '../utils'
 import { starknetConnectorManager } from './starknetConnectorManager'
 import { useStarknetStore } from './starknetStore'
@@ -33,12 +33,20 @@ const connectorsConfigs = [
 type ResolveStarknetWalletProps = {
     name: string
     connector: Connector
-    network: NetworkWithTokens | undefined
+    network: StarknetNetwork | undefined
     disconnectWallets: () => Promise<void>
     address: string
     withdrawalSupportedNetworks: string[]
     autofillSupportedNetworks?: string[]
     asSourceSupportedNetworks?: string[]
+}
+
+type StarknetNetwork = {
+    id: string
+    displayName: string
+    chainId: string | number | null | undefined
+    rpcUrl: string | undefined
+    icon: string | undefined
 }
 
 /**
@@ -64,10 +72,10 @@ function assertSecureRpcUrl(url: string | undefined): asserts url is string {
 export async function resolveStarknetWallet(props: ResolveStarknetWalletProps): Promise<Wallet | null> {
     const { name, connector, network, disconnectWallets, address, withdrawalSupportedNetworks, autofillSupportedNetworks, asSourceSupportedNetworks } = props
     try {
-        const walletChain = network?.chain_id
-        assertSecureRpcUrl(network?.node_url)
-        const { RpcProvider, WalletAccount } = await import('starknet')
-        const rpcProvider = new RpcProvider({ nodeUrl: network!.node_url })
+    const walletChain = network?.chainId
+    assertSecureRpcUrl(network?.rpcUrl)
+    const { RpcProvider, WalletAccount } = await import('starknet')
+    const rpcProvider = new RpcProvider({ nodeUrl: network!.rpcUrl })
 
         const walletAccount = new WalletAccount({ provider: rpcProvider, walletProvider: (connector as any).wallet, address })
 
@@ -91,7 +99,7 @@ export async function resolveStarknetWallet(props: ResolveStarknetWalletProps): 
             isActive: true,
             withdrawalSupportedNetworks,
             disconnect: () => disconnectWallets(),
-            networkIcon: network?.type === NetworkType.Starknet ? network?.logo : undefined,
+            networkIcon: network?.icon,
             autofillSupportedNetworks,
             asSourceSupportedNetworks,
         }
@@ -113,28 +121,38 @@ function toStarknetChainHex(chainId: string | null | undefined): string | undefi
     return `0x${hex}`
 }
 
-export class StarknetConnectionService implements WalletConnectionService {
-    private _networks: NetworkWithTokens[] = []
+export class StarknetConnectionService<Network> implements WalletConnectionService<never, Network> {
+    private _networks: Network[] = []
+    private _networkAdapter: AppNetworkAdapter<Network> | undefined
     private _networksKey = ''
     private _restoreTimer: number | undefined
     private _restoringStoredWallets = false
     private _restoreAttempts = 0
     private readonly _maxRestoreAttempts = 20
 
-    setNetworks(networks: NetworkWithTokens[]): void {
-        const key = networks.map(n => n.name).join('|')
+    setNetworks(networks: Network[], networkAdapter: AppNetworkAdapter<Network>): void {
+        const key = networks.map(network => networkAdapter.getId(network)).join('|')
         if (this._networksKey === key) return
         this._networks = networks
+        this._networkAdapter = networkAdapter
         this._networksKey = key
         this.requestStoredWalletHydration()
     }
 
-    getStarknetNetwork(): NetworkWithTokens | undefined {
-        return this._networks.find(n => n.type === NetworkType.Starknet)
+    getStarknetNetwork(): StarknetNetwork | undefined {
+        const network = this._networks.find(item => this._networkAdapter?.isStarknetNetwork(item))
+        if (!network || !this._networkAdapter) return undefined
+        return {
+            id: this._networkAdapter.getId(network),
+            displayName: this._networkAdapter.getDisplayName(network),
+            chainId: this._networkAdapter.getChainId(network),
+            rpcUrl: this._networkAdapter.getRpcUrls(network)[0],
+            icon: this._networkAdapter.getIcon(network),
+        }
     }
 
     getProviderIcon(): string | undefined {
-        return this.getStarknetNetwork()?.logo
+        return this.getStarknetNetwork()?.icon
     }
 
     private connectorIsAvailable(connector: Connector): boolean {
@@ -275,9 +293,9 @@ export class StarknetConnectionService implements WalletConnectionService {
         if (!starknetNetwork) throw new Error('Starknet network not found')
 
         const walletChain = `0x${result?.chainId?.toString(16)}`
-        const expectedChain = toStarknetChainHex(starknetNetwork.chain_id)
+        const expectedChain = toStarknetChainHex(String(starknetNetwork.chainId ?? ''))
         const wrongChain = !!expectedChain && walletChain !== expectedChain
-        const networkDisplayName = starknetNetwork.display_name || starknetNetwork.name
+        const networkDisplayName = starknetNetwork.displayName || starknetNetwork.id
 
         if (result?.account && wrongChain) {
             const wallet = (starknetConnector as any)?._wallet || (starknetConnector as any)?.wallet
@@ -308,9 +326,9 @@ export class StarknetConnectionService implements WalletConnectionService {
             network: starknetNetwork,
             disconnectWallets: () => this.disconnectWallets(starknetConnector.id, result?.account),
             address: result.account,
-            withdrawalSupportedNetworks: starknetNames,
-            autofillSupportedNetworks: starknetNames,
-            asSourceSupportedNetworks: starknetNames,
+            withdrawalSupportedNetworks: this.getSupportedNetworks(),
+            autofillSupportedNetworks: this.getSupportedNetworks(),
+            asSourceSupportedNetworks: this.getSupportedNetworks(),
         })
 
         store.addAccount(starknetConnector.id, result.account)
@@ -343,9 +361,9 @@ export class StarknetConnectionService implements WalletConnectionService {
                 connector,
                 network: starknetNetwork,
                 disconnectWallets: () => starknetConnectorManager.disconnectAll().then(() => useStarknetStore.getState().removeAccount(address)),
-                withdrawalSupportedNetworks: starknetNames,
-                autofillSupportedNetworks: starknetNames,
-                asSourceSupportedNetworks: starknetNames,
+                withdrawalSupportedNetworks: this.getSupportedNetworks(),
+                autofillSupportedNetworks: this.getSupportedNetworks(),
+                asSourceSupportedNetworks: this.getSupportedNetworks(),
                 address,
             })
             if (wallet?.address) {
@@ -364,9 +382,9 @@ export class StarknetConnectionService implements WalletConnectionService {
 
             connectedWallets,
             activeWallet,
-            withdrawalSupportedNetworks: starknetNames,
-            autofillSupportedNetworks: starknetNames,
-            asSourceSupportedNetworks: starknetNames,
+            withdrawalSupportedNetworks: this.getSupportedNetworks(),
+            autofillSupportedNetworks: this.getSupportedNetworks(),
+            asSourceSupportedNetworks: this.getSupportedNetworks(),
             availableConnectors: this.getAvailableConnectors(),
             name: PROVIDER_NAME,
             id: PROVIDER_ID,
@@ -374,6 +392,10 @@ export class StarknetConnectionService implements WalletConnectionService {
             ready: useStarknetStore.getState().ready,
         }
     }
-}
 
-export const starknetConnectionService = new StarknetConnectionService()
+    private getSupportedNetworks(): string[] {
+        return this._networkAdapter
+            ? this._networks.filter(network => this._networkAdapter?.isStarknetNetwork(network)).map(network => this._networkAdapter!.getId(network))
+            : []
+    }
+}

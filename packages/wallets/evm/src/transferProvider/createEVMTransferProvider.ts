@@ -1,5 +1,6 @@
 import { Network } from "@layerswap/utils"
-import { TransferProvider, TransferProps, ActionMessageType } from "@layerswap/wallet-core/types"
+import { ActionMessageType } from "@layerswap/ui-kit/types";
+import { TransferProvider, TransferProps } from "@layerswap/utils";
 import { sendTransaction, Config } from '@wagmi/core'
 import { BaseError } from "viem"
 import { isMobile } from "@layerswap/utils"

@@ -6,7 +6,7 @@ import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/Addres
 import AddressBookEntryForm, { AddressBookEntryFormProps } from './AddressBookEntryForm'
 import NetworkLogoStack from './NetworkLogoStack'
 import { useAddressScope } from './useAddressScope'
-import { SearchComponent } from '@/components/Input/Search'
+import { SearchComponent } from "@layerswap/ui-kit/ui";
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/shadcn/popover'
 import { useFormWizardaUpdate } from '@/context/formWizardProvider'
 import AddressIcon from '../Common/AddressIcon'

@@ -1,4 +1,4 @@
-import { TokenBalance, BalanceProvider } from "@layerswap/wallet-core/types";
+import { TokenBalance, BalanceProvider } from "@layerswap/utils";
 import { KnownInternalNames, retry } from "@layerswap/utils";
 import axios from "axios";
 

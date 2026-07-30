@@ -1,4 +1,4 @@
-import { buildDeepLink } from "@layerswap/wallet-core"
+import { buildDeepLink } from "@layerswap/ui-kit"
 import {
     ChainNotConfiguredError,
     type Connector,

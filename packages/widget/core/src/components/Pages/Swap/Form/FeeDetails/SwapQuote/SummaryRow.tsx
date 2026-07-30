@@ -1,6 +1,6 @@
 import { FC, useMemo } from 'react'
 import { ChevronDown } from 'lucide-react'
-import { Wallet } from "@layerswap/wallet-core/types"
+import { Wallet } from "@layerswap/utils";
 import { SwapValues } from '..'
 import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
 import { DetailsButton } from '..'
@@ -10,7 +10,7 @@ import { Slippage } from '../Slippage'
 import { GasFee } from './DetailedEstimates'
 import NumFlowWithFallback from '@/components/Common/NumFlowWithFallback'
 import { Partner } from '@/Models/Partner'
-import { ImageWithFallback } from '@/components/Common/ImageWithFallback'
+import { ImageWithFallback } from "@layerswap/ui-kit/ui";
 import { useInitialSettings } from '@/context/settings'
 import { Address } from '@/lib/address/Address'
 import { useDepositSettings } from '@/context/depositSettings'

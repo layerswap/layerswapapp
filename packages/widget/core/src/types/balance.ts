@@ -1,1 +1,1 @@
-export { BalanceProvider } from "@layerswap/wallet-core/types";
+export { BalanceProvider } from "@layerswap/utils";

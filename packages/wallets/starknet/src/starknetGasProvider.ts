@@ -1,7 +1,7 @@
 import { NetworkType, formatUnits } from "@layerswap/utils";
 import { CallData, cairo, type Call, type EstimateFeeResponseOverhead } from "starknet";
 import { Network } from "@layerswap/utils"
-import { GasProvider, GasProps } from "@layerswap/wallet-core/types"
+import { GasProvider, GasProps } from "@layerswap/utils";
 
 export class StarknetGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {

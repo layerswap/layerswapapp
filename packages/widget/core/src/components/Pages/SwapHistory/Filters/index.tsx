@@ -3,8 +3,8 @@ import WalletsDropdown from './WalletsDropdown'
 import NetworksDropdown from './NetworksDropdown'
 import ClearAllButton from './ClearAllButton'
 import { FilterNetworkOption } from './types'
-import { SearchComponent } from '@/components/Input/Search'
-import { Wallet } from "@layerswap/wallet-core/types"
+import { SearchComponent } from "@layerswap/ui-kit/ui";
+import { Wallet } from "@layerswap/utils";
 import { HistoryWalletAddress } from '@/lib/historyWalletAddresses'
 
 type FiltersProps = {

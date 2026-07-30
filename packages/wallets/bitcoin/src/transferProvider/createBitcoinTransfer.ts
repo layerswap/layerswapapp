@@ -1,5 +1,6 @@
 import { NetworkType, Network } from "@layerswap/utils"
-import { TransferProvider, TransferProps, ActionMessageType } from "@layerswap/wallet-core/types"
+import { ActionMessageType } from "@layerswap/ui-kit/types";
+import { TransferProvider, TransferProps } from "@layerswap/utils";
 import { getAccount } from '@bigmi/client'
 import { JsonRpcClient, KnownInternalNames } from "@layerswap/utils";
 import { sendTransaction } from "./sendTransaction"

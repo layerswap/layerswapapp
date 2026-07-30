@@ -2,7 +2,7 @@ import { NetworkBalance, TokenBalance } from "@/Models/Balance";
 import { BalanceProvider } from "@/types/balance";
 import { NetworkWithTokens } from "@/Models/Network";
 import { ErrorHandler } from "@/lib/ErrorHandler";
-import { classifyNodeError, extractErrorDetails } from "@layerswap/wallet-core";
+import { classifyNodeError, extractErrorDetails } from "@layerswap/utils";
 import KnownInternalNames from "../knownIds";
 
 const SKIP_BALANCE_NETWORKS = [

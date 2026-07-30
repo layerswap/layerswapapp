@@ -39,7 +39,7 @@
   "peerDependencies": {
     "@layerswap/wallet-evm": "workspace:^",
     "@layerswap/wallet-starknet": "workspace:^",
-    "@layerswap/wallet-core": "workspace:^",
+    "@layerswap/ui-kit": "workspace:^",
     "@layerswap/utils": "workspace:^",
     "@wagmi/core": "catalog:",
     "zustand": "catalog:"
@@ -52,7 +52,7 @@
   "devDependencies": {
     "@layerswap/wallet-evm": "workspace:^",
     "@layerswap/wallet-starknet": "workspace:^",
-    "@layerswap/wallet-core": "workspace:^",
+    "@layerswap/ui-kit": "workspace:^",
     "@layerswap/utils": "workspace:^",
     "zustand": "catalog:"
   },

@@ -1,6 +1,4 @@
 import { validate, Network } from 'bitcoin-address-validation';
-import { Network as LsNetwork } from "@layerswap/utils"
-export const isBitcoinAddressValid = (address: string, network: LsNetwork) => {
-    const isTestnet = network.name.toLowerCase().includes("testnet");
+export const isBitcoinAddressValid = (address: string, isTestnet: boolean) => {
     return validate(address, isTestnet ? Network.testnet : Network.mainnet);
 }

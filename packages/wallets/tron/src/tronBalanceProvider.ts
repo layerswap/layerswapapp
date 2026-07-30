@@ -1,6 +1,6 @@
 import { KnownInternalNames, insertIfNotExists, formatUnits } from "@layerswap/utils";
 import { Network, Token } from "@layerswap/utils"
-import { BalanceProvider, TokenBalance } from "@layerswap/wallet-core/types"
+import { BalanceProvider, TokenBalance } from "@layerswap/utils";
 import { TronWeb } from 'tronweb'
 
 export class TronBalanceProvider extends BalanceProvider {

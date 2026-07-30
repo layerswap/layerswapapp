@@ -1,1 +1,1 @@
-export type { NftBalanceProps, NftProvider } from "@layerswap/wallet-core/types";
+export type { NftBalanceProps, NftProvider } from "@layerswap/utils";

@@ -1,5 +1,6 @@
 import { Network } from "@layerswap/utils"
-import { TransferProvider, TransferProps, ActionMessageType } from "@layerswap/wallet-core/types"
+import { ActionMessageType } from "@layerswap/ui-kit/types";
+import { TransferProvider, TransferProps } from "@layerswap/utils";
 import { Provider } from '@fuel-ts/account'
 import { transactionBuilder } from "./transactionBuilder"
 import { KnownInternalNames } from "@layerswap/utils";

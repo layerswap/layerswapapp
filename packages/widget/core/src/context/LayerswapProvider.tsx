@@ -19,12 +19,12 @@ import WalletsProviders from "@/components/Wallet/WalletProviders";
 import { CallbackProvider, CallbacksContextType } from "./callbackProvider";
 import { InitialSettings } from "@/Models/InitialSettings";
 import { SwapAccountsProvider } from "./swapAccounts";
-import type { WalletProvider, WalletProviderDescriptor, WalletWrapper } from "@layerswap/wallet-core/types"
-import { isWalletProviderDescriptor } from "@layerswap/wallet-core/types"
+import type { WalletProvider, WalletProviderDescriptor, WalletWrapper } from "@layerswap/ui-kit/types"
+import { isWalletProviderDescriptor } from "@layerswap/ui-kit/types"
 import { ResolverProviders, extractExtendedRouteProviders } from "./resolverContext";
 import { setExtendedRouteProviders } from "@/lib/extendedRoutes";
 import { ErrorProvider } from "./ErrorProvider";
-import { WalletDescriptorLoaderContext } from "@layerswap/wallet-core";
+import { WalletDescriptorLoaderContext } from "@layerswap/ui-kit";
 import { registerWidgetErrorLogger } from "@/lib/ErrorHandler";
 
 registerWidgetErrorLogger();

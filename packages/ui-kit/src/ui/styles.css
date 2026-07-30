@@ -1,0 +1,81 @@
+@import "tailwindcss/theme" layer(theme) theme(reference inline);
+@import "tailwindcss/utilities" layer(utilities);
+@plugin "tailwindcss-animate";
+@source "./";
+
+@custom-variant scrollbar (&::-webkit-scrollbar);
+@custom-variant scrollbar-thumb (&::-webkit-scrollbar-thumb);
+
+@theme inline reference {
+  --color-primary: rgb(var(--ls-colors-primary, 204, 45, 93));
+  --color-primary-700: rgb(var(--ls-colors-primary-700, 143, 23, 59));
+  --color-primary-text: rgb(var(--ls-colors-primary-text, 225, 227, 230));
+  --color-primary-text-tertiary: rgb(var(--ls-colors-text-tertiary, 118, 128, 147));
+  --color-primary-buttonTextColor: rgb(var(--ls-colors-buttonTextColor, 228, 229, 240));
+  --color-secondary-200: rgb(var(--ls-colors-secondary-200, 52, 63, 87));
+  --color-secondary-300: rgb(var(--ls-colors-secondary-300, 40, 50, 71));
+  --color-secondary-400: rgb(var(--ls-colors-secondary-400, 31, 40, 61));
+  --color-secondary-500: rgb(var(--ls-colors-secondary-500, 23, 31, 49));
+  --color-secondary-600: rgb(var(--ls-colors-secondary-600, 18, 25, 41));
+  --color-secondary-700: rgb(var(--ls-colors-secondary-700, 14, 21, 36));
+  --color-secondary-800: rgb(var(--ls-colors-secondary-800, 11, 17, 31));
+  --color-secondary-text: rgb(var(--ls-colors-secondary-text, 163, 173, 194));
+  --color-tertiary: rgb(var(--ls-colors-text-tertiary, 118, 128, 147));
+  --color-ring: var(--ring, rgb(var(--ls-colors-primary-text, 225, 227, 230)));
+  --radius-none: var(--ls-border-radius-none, 0px);
+  --radius-xs: var(--ls-border-radius-xs, 2px);
+  --radius-sm: var(--ls-border-radius-sm, 4px);
+  --radius-md: var(--ls-border-radius-md, 6px);
+  --radius-lg: var(--ls-border-radius-lg, 8px);
+  --radius-xl: var(--ls-border-radius-xl, 12px);
+  --radius-2xl: var(--ls-border-radius-2xl, 16px);
+  --radius-3xl: var(--ls-border-radius-3xl, 24px);
+  --radius-full: var(--ls-border-radius-full, 9999px);
+  --radius: var(--ls-border-radius-default, var(--ls-border-radius-sm, 8px));
+}
+
+.styled-scroll {
+  @apply scrollbar:w-1.5! scrollbar:h-1.5! scrollbar:bg-secondary-500 scrollbar:absolute scrollbar-thumb:rounded-sm! scrollbar-thumb:bg-slate-500/50!;
+}
+
+.styled-scroll::-webkit-scrollbar {
+  position: absolute;
+}
+
+.loader, .loader:before, .loader:after {
+  border-radius: 50%;
+  width: 2.5em;
+  height: 2.5em;
+  animation-fill-mode: both;
+  animation: bblFadInOut 1.8s infinite ease-in-out;
+}
+
+.loader {
+  color: #fff;
+  font-size: 7px;
+  position: relative;
+  text-indent: -9999em;
+  transform: translateZ(0);
+  animation-delay: -0.16s;
+}
+
+.loader:before,
+.loader:after {
+  content: '';
+  position: absolute;
+  top: 0;
+}
+
+.loader:before {
+  left: -3.5em;
+  animation-delay: -0.32s;
+}
+
+.loader:after {
+  left: 3.5em;
+}
+
+@keyframes bblFadInOut {
+  0%, 80%, 100% { box-shadow: 0 2.5em 0 -1.3em }
+  40% { box-shadow: 0 2.5em 0 0 }
+}

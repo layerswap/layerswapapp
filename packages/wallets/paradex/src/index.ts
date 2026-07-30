@@ -1,15 +1,18 @@
-import type { WalletConnectionStore, WalletConnectionProviderProps } from "@layerswap/wallet-core/types"
-import type { WalletProvider, BaseWalletProviderConfig } from "@layerswap/wallet-core/types"
+import type { WalletConnectionStore, WalletConnectionProviderProps } from "@layerswap/ui-kit/types"
+import type { WalletProvider, BaseWalletProviderConfig } from "@layerswap/ui-kit/types"
 import { ParadexBalanceProvider } from "./paradexBalanceProvider"
 import { createParadexConnection } from "./service/createParadexConnection"
 import { createParadexTransfer } from "./transferProvider/createParadexTransfer"
 import { id } from "./constants"
+import type { NetworkWithTokens } from "@layerswap/utils"
 
-export type ParadexProviderConfig = BaseWalletProviderConfig
+export type ParadexProviderConfig<Network = NetworkWithTokens> = BaseWalletProviderConfig<Network>
 
 // The literal id in the return type lets `defineWalletDescriptor` in
 // `@layerswap/wallets` verify it matches the descriptor id at compile time.
-export function createParadexProvider(config: ParadexProviderConfig = {}): WalletProvider & { id: typeof id } {
+export function createParadexProvider<Network = NetworkWithTokens>(
+    config: ParadexProviderConfig<Network> = {},
+): WalletProvider<Network> & { id: typeof id } {
     const {
         customConnection,
         balanceProviders,
@@ -17,7 +20,7 @@ export function createParadexProvider(config: ParadexProviderConfig = {}): Walle
         transferProviders,
     } = config
 
-    const createConnection = (props: WalletConnectionProviderProps): WalletConnectionStore => {
+    const createConnection = (props: WalletConnectionProviderProps<Network>): WalletConnectionStore<Network> => {
         if (customConnection) {
             return customConnection(props)
         }

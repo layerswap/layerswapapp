@@ -1,15 +1,17 @@
-import type { NetworkWithTokens } from "@layerswap/utils"
-import type { InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types"
+import type { WalletConnectionProvider, WalletConnectionService } from "@layerswap/ui-kit/types";
+import type { InternalConnector, Wallet } from "@layerswap/utils";
+import type { AppNetworkAdapter } from "@layerswap/ui-kit"
 import { sleep } from "@layerswap/utils"
 import type { FuelConnector } from '@fuel-ts/account'
 import { Address } from '@fuel-ts/address'
-import { name as PROVIDER_NAME, id as PROVIDER_ID, commonSupportedNetworks } from '../constants'
+import { name as PROVIDER_NAME, id as PROVIDER_ID } from '../constants'
 import { BAKO_STATE } from '../connectors/bako-safe/Bako'
 import { resolveFuelWalletConnectorIcon } from '../utils'
 import { useFuelStore } from './fuelStore'
 
-export class FuelConnectionService implements WalletConnectionService {
-    private _networks: NetworkWithTokens[] = []
+export class FuelConnectionService<Network> implements WalletConnectionService<never, Network> {
+    private _networks: Network[] = []
+    private _networkAdapter: AppNetworkAdapter<Network> | undefined
     private _networksKey = ''
     // `connectWallet` mutates the module-global `BAKO_STATE.{state.last_req,
     // period_durtion}` while connecting. Rapid double-clicks or a retry firing
@@ -17,10 +19,11 @@ export class FuelConnectionService implements WalletConnectionService {
     // connects through this promise so they run one-at-a-time.
     private _connectQueue: Promise<unknown> = Promise.resolve()
 
-    setNetworks(networks: NetworkWithTokens[]): void {
-        const key = networks.map(n => n.name).join('|')
+    setNetworks(networks: Network[], networkAdapter: AppNetworkAdapter<Network>): void {
+        const key = networks.map(network => networkAdapter.getId(network)).join('|')
         if (this._networksKey === key) return
         this._networks = networks
+        this._networkAdapter = networkAdapter
         this._networksKey = key
     }
 
@@ -36,8 +39,16 @@ export class FuelConnectionService implements WalletConnectionService {
         return useFuelStore.getState().connectedWallets
     }
 
+    private getSupportedNetworks(): string[] {
+        return this._networks
+            .filter(network => this._networkAdapter?.isFuelNetwork(network))
+            .map(network => this._networkAdapter?.getId(network))
+            .filter((id): id is string => !!id)
+    }
+
     getNetworkIcon(): string | undefined {
-        return this._networks.find(n => commonSupportedNetworks.some(name => name === n.name))?.logo
+        const network = this._networks.find(item => this._networkAdapter?.isFuelNetwork(item))
+        return network && this._networkAdapter ? this._networkAdapter.getIcon(network) : undefined
     }
 
     // Connector icons come either as a URL string or as a { dark, light } pair
@@ -87,9 +98,9 @@ export class FuelConnectionService implements WalletConnectionService {
             displayName: `${connector.name} - Fuel`,
             providerName: PROVIDER_NAME,
             icon: resolveFuelWalletConnectorIcon({ connector: connector.name, address, iconUrl: icon }),
-            autofillSupportedNetworks: commonSupportedNetworks,
-            withdrawalSupportedNetworks: commonSupportedNetworks,
-            asSourceSupportedNetworks: commonSupportedNetworks,
+            autofillSupportedNetworks: this.getSupportedNetworks(),
+            withdrawalSupportedNetworks: this.getSupportedNetworks(),
+            asSourceSupportedNetworks: this.getSupportedNetworks(),
             networkIcon: this.getNetworkIcon(),
         }
     }
@@ -220,9 +231,9 @@ export class FuelConnectionService implements WalletConnectionService {
             switchChain: this.switchChain.bind(this),
 
             availableConnectors: this.getAvailableConnectors(),
-            autofillSupportedNetworks: commonSupportedNetworks,
-            withdrawalSupportedNetworks: commonSupportedNetworks,
-            asSourceSupportedNetworks: commonSupportedNetworks,
+            autofillSupportedNetworks: this.getSupportedNetworks(),
+            withdrawalSupportedNetworks: this.getSupportedNetworks(),
+            asSourceSupportedNetworks: this.getSupportedNetworks(),
             activeWallet: connectedWallets[0],
             connectedWallets,
             name: PROVIDER_NAME,
@@ -231,5 +242,3 @@ export class FuelConnectionService implements WalletConnectionService {
         }
     }
 }
-
-export const fuelConnectionService = new FuelConnectionService()

@@ -1,6 +1,6 @@
 import { FC, useState } from 'react'
 import { SwapResponse, TransactionType } from '@/lib/apiClients/layerSwapApiClient';
-import CopyButton from '@/components/Buttons/copyButton';
+import { CopyButton } from "@layerswap/ui-kit/ui";
 import StatusIcon from './StatusIcons';
 import { ExternalLink } from 'lucide-react';
 import isGuid from '@/components/utils/isGuid';

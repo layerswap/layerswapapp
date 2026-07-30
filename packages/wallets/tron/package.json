@@ -37,7 +37,7 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@layerswap/wallet-core": "workspace:^",
+    "@layerswap/ui-kit": "workspace:^",
     "@layerswap/utils": "workspace:^",
     "zustand": "catalog:"
   },
@@ -52,7 +52,7 @@
     "tronweb": "^6.3.0"
   },
   "devDependencies": {
-    "@layerswap/wallet-core": "workspace:^",
+    "@layerswap/ui-kit": "workspace:^",
     "@layerswap/utils": "workspace:^",
     "zustand": "catalog:"
   },

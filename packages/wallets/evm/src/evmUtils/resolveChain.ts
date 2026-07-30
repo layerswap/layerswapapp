@@ -1,72 +1,106 @@
-import { defineChain, parseGwei } from "viem";
-import { Network } from "@layerswap/utils"
-import { ErrorHandler, NetworkSettings } from "@layerswap/utils";
+import { ErrorHandler, NetworkSettings, type Network } from "@layerswap/utils"
+import type { AppNetworkAdapter } from "@layerswap/ui-kit"
+import { defineChain } from "viem"
 
-export default function resolveChain(network: Network) {
+type ChainDefinitionInput = {
+    id: number
+    settingsId: string
+    displayName: string
+    nativeCurrency?: {
+        symbol: string
+        decimals: number
+    }
+    rpcUrls: readonly string[]
+    transactionExplorerTemplate?: string
+    multicallAddress?: string
+    source: unknown
+}
 
-    const nativeCurrency = network.token;
-    const blockExplorersBaseURL =
-        network.transaction_explorer_template ?
-            new URL(network.transaction_explorer_template).origin
-            : null
+function resolveChainDefinition(input: ChainDefinitionInput) {
+    const blockExplorerUrl = input.transactionExplorerTemplate
+        ? new URL(input.transactionExplorerTemplate).origin
+        : null
 
-    const metadata = network.metadata
-    const { evm_multicall_contract } = metadata || {}
-
-    if (!nativeCurrency) {
-        const error = new Error(`UI Settings error: could not find native currency for ${network.name} ${JSON.stringify(network)} %0A`);
+    if (!input.nativeCurrency) {
+        const error = new Error(`UI Settings error: could not find native currency for ${input.settingsId} ${JSON.stringify(input.source)} %0A`)
         ErrorHandler({
             type: "ChainError",
             message: error.message,
             name: error.name,
             stack: error.stack,
-            cause: error.cause
+            cause: error.cause,
         })
         return
     }
 
-    const res = defineChain({
-        id: Number(network.chain_id),
-        name: network.display_name,
+    const chain = defineChain({
+        id: input.id,
+        name: input.displayName,
         nativeCurrency: {
-            name: nativeCurrency.symbol,
-            symbol: nativeCurrency.symbol,
-            decimals: nativeCurrency.decimals
+            name: input.nativeCurrency.symbol,
+            symbol: input.nativeCurrency.symbol,
+            decimals: input.nativeCurrency.decimals,
         },
         rpcUrls: {
-            default: {
-                http: network.nodes?.length > 0 ? network.nodes : [network.node_url],
-            },
-            public: {
-                http: network.nodes?.length > 0 ? network.nodes : [network.node_url],
-            },
+            default: { http: [...input.rpcUrls] },
+            public: { http: [...input.rpcUrls] },
         },
-        ...(blockExplorersBaseURL ? {
+        ...(blockExplorerUrl ? {
             blockExplorers: {
                 default: {
-                    name: 'name',
-                    url: blockExplorersBaseURL,
+                    name: "name",
+                    url: blockExplorerUrl,
                 },
-            }
+            },
         } : {}),
         contracts: {
-            ...(evm_multicall_contract ? {
+            ...(input.multicallAddress ? {
                 multicall3: {
-                    address: evm_multicall_contract as `0x${string}`
-                }
+                    address: input.multicallAddress as `0x${string}`,
+                },
             } : {}),
         },
     })
 
-    const baseFeeMultiplier = NetworkSettings.KnownSettings[network.name]?.BaseFeeMultiplier ?? 1.2
-
+    const baseFeeMultiplier = NetworkSettings.KnownSettings[input.settingsId]?.BaseFeeMultiplier ?? 1.2
     if (baseFeeMultiplier) {
-        res.fees = {
-            ...res.fees,
-            baseFeeMultiplier: () => {
-                return baseFeeMultiplier
-            },
+        chain.fees = {
+            ...chain.fees,
+            baseFeeMultiplier: () => baseFeeMultiplier,
         }
     }
-    return res
+
+    return chain
+}
+
+export default function resolveChain(network: Network) {
+    return resolveChainDefinition({
+        id: Number(network.chain_id),
+        settingsId: network.name,
+        displayName: network.display_name,
+        nativeCurrency: network.token,
+        rpcUrls: network.nodes?.length > 0 ? network.nodes : [network.node_url],
+        transactionExplorerTemplate: network.transaction_explorer_template,
+        multicallAddress: network.metadata?.evm_multicall_contract ?? undefined,
+        source: network,
+    })
+}
+
+export function resolveAdapterChain<Network>(
+    network: Network,
+    networkAdapter: AppNetworkAdapter<Network>,
+) {
+    const rpcUrls = networkAdapter.getRpcUrls(network)
+    if (rpcUrls.length === 0) return
+
+    return resolveChainDefinition({
+        id: Number(networkAdapter.getChainId(network)),
+        settingsId: networkAdapter.getId(network),
+        displayName: networkAdapter.getDisplayName(network),
+        nativeCurrency: networkAdapter.getNativeCurrency(network),
+        rpcUrls,
+        transactionExplorerTemplate: networkAdapter.getTransactionExplorerUrl(network),
+        multicallAddress: networkAdapter.getMulticallAddress?.(network),
+        source: network,
+    })
 }

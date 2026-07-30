@@ -1,11 +1,11 @@
 import { FC } from 'react'
-import WalletIcon from '@/components/Icons/WalletIcon';
+import { WalletIcon } from "@layerswap/ui-kit/ui";
 import useWallet from '@/hooks/useWallet';
 import AddressWithIcon from '@/components/Input/Address/AddressPicker/AddressWithIcon';
 import { AddressGroup } from '@/components/Input/Address/AddressPicker';
 import { truncateDecimals } from '@/components/utils/RoundDecimals';
 import VaulDrawer from '@/components/Modal/vaulModal';
-import { SelectAccountProps } from "@layerswap/wallet-core/types"
+import { SelectAccountProps } from "@layerswap/ui-kit/types"
 import { useSettingsState } from '@/context/settings';
 import WalletsList from '@/components/Wallet/WalletComponents/WalletsList';
 import { SwapBasicData } from '@/lib/apiClients/layerSwapApiClient';

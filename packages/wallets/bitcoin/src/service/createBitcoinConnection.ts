@@ -1,8 +1,7 @@
-import type { NetworkWithTokens } from "@layerswap/utils"
-import type { MultiStepHandler, WalletConnectionProviderProps, WalletConnectionStore } from "@layerswap/wallet-core/types"
-import { connectModalStore, createMemoizedConnectionStore } from "@layerswap/wallet-core"
+import type { MultiStepHandler, WalletConnectionProviderProps, WalletConnectionStore } from "@layerswap/ui-kit/types"
+import { connectModalStore, createMemoizedConnectionStore } from "@layerswap/ui-kit"
 import { createBitcoinTransfer } from '../transferProvider/createBitcoinTransfer'
-import { bitcoinConnectionService } from './BitcoinConnectionService'
+import { BitcoinConnectionService } from './BitcoinConnectionService'
 import { useBitcoinStore } from './bitcoinStore'
 
 type CreateBitcoinConnectionOptions = {
@@ -13,14 +12,16 @@ type CreateBitcoinConnectionOptions = {
  * Vanilla external-store factory for the Bitcoin wallet connection. Replaces the
  * old `useBitcoinConnection` hook.
  */
-export function createBitcoinConnection(
-    initialProps: WalletConnectionProviderProps,
+export function createBitcoinConnection<Network>(
+    initialProps: WalletConnectionProviderProps<Network>,
     options: CreateBitcoinConnectionOptions = {},
-): WalletConnectionStore {
+): WalletConnectionStore<Network> {
     const { extraMultiStepHandlers = [] } = options
 
-    let networks: NetworkWithTokens[] = initialProps.networks
-    bitcoinConnectionService.setNetworks(networks)
+    let networks = initialProps.networks
+    let networkAdapter = initialProps.networkAdapter
+    const bitcoinConnectionService = new BitcoinConnectionService<Network>()
+    bitcoinConnectionService.setNetworks(networks, networkAdapter)
     bitcoinConnectionService.configure({
         setSelectedConnector: connectModalStore.setSelectedConnector,
     })
@@ -48,7 +49,8 @@ export function createBitcoinConnection(
         ],
         onUpdateProps: nextProps => {
             networks = nextProps.networks
-            bitcoinConnectionService.setNetworks(networks)
+            networkAdapter = nextProps.networkAdapter
+            bitcoinConnectionService.setNetworks(networks, networkAdapter)
         },
     })
 }

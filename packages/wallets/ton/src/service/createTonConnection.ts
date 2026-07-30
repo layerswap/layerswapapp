@@ -1,9 +1,8 @@
-import type { NetworkWithTokens } from "@layerswap/utils"
-import type { MultiStepHandler, WalletConnectionProviderProps, WalletConnectionStore } from "@layerswap/wallet-core/types"
+import type { MultiStepHandler, WalletConnectionProviderProps, WalletConnectionStore } from "@layerswap/ui-kit/types"
 import { isMobile } from "@layerswap/utils"
-import { connectModalStore, createMemoizedConnectionStore } from "@layerswap/wallet-core"
+import { connectModalStore, createMemoizedConnectionStore } from "@layerswap/ui-kit"
 import { createTonTransfer } from '../transferProvider/createTonTransfer'
-import { tonConnectionService } from './TonConnectionService'
+import { TonConnectionService } from './TonConnectionService'
 import { useTonStore } from './tonStore'
 
 type CreateTonConnectionOptions = {
@@ -14,15 +13,17 @@ type CreateTonConnectionOptions = {
  * Vanilla external-store factory for the TON wallet connection. Replaces the
  * old `useTonConnection` hook. The widget consumes this via `useSyncExternalStore`.
  */
-export function createTonConnection(
-    initialProps: WalletConnectionProviderProps,
+export function createTonConnection<Network>(
+    initialProps: WalletConnectionProviderProps<Network>,
     options: CreateTonConnectionOptions = {},
-): WalletConnectionStore {
+): WalletConnectionStore<Network> {
     const { extraMultiStepHandlers = [] } = options
     const isMobilePlatform = isMobile()
 
-    let networks: NetworkWithTokens[] = initialProps.networks
-    tonConnectionService.setNetworks(networks)
+    let networks = initialProps.networks
+    let networkAdapter = initialProps.networkAdapter
+    const tonConnectionService = new TonConnectionService<Network>()
+    tonConnectionService.setNetworks(networks, networkAdapter)
     tonConnectionService.configure({
         setSelectedConnector: connectModalStore.setSelectedConnector,
         isMobilePlatform,
@@ -51,7 +52,8 @@ export function createTonConnection(
         ],
         onUpdateProps: nextProps => {
             networks = nextProps.networks
-            tonConnectionService.setNetworks(networks)
+            networkAdapter = nextProps.networkAdapter
+            tonConnectionService.setNetworks(networks, networkAdapter)
         },
     })
 }

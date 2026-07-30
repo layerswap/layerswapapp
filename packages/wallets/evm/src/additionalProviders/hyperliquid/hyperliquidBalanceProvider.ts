@@ -1,5 +1,5 @@
 import { NetworkType } from "@layerswap/utils";
-import { BalanceProvider, TokenBalance } from "@layerswap/wallet-core/types";
+import { BalanceProvider, TokenBalance } from "@layerswap/utils";
 import { resolveHyperliquidNodeUrl, HYPERLIQUID_USDC_SYMBOL } from "./constants";
 import { HyperliquidClient } from "./hyperliquidClient";
 

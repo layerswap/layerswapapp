@@ -2,22 +2,23 @@
 import React, { lazy, Suspense, useEffect } from "react";
 import { ChevronLeft } from "lucide-react";
 import clsx from "clsx";
-import { ensureRegistryBrowseLoaded, WalletProvidersRegistryProvider, useWalletProvidersRegistry, useWalletDescriptorLoader } from "@layerswap/wallet-core";
+import { ensureRegistryBrowseLoaded, WalletProvidersRegistryProvider, useWalletProvidersRegistry, useWalletDescriptorLoader } from "@layerswap/ui-kit";
 import { isMobile } from "@layerswap/utils";
 import { useSettingsState } from "./settings";
 import VaulDrawer from "@/components/Modal/vaulModal";
 import IconButton from "@/components/Buttons/iconButton";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import AppSettings from "@/lib/AppSettings";
+import { walletNetworkAdapter } from "@/lib/walletNetworkAdapter";
 import { filterSourceNetworks } from "@/helpers/filterSourceNetworks";
-import type { WalletProvider, WalletProviderDescriptor, WalletWrapper } from "@layerswap/wallet-core/types"
+import useWallet from "@/hooks/useWallet";
+import LayerSwapLogoSmall from "@/components/Icons/layerSwapLogoSmall";
+import type { WalletProvider, WalletProviderDescriptor, WalletWrapper } from "@layerswap/ui-kit/types"
 
-export { useWalletProvidersReady } from "@layerswap/wallet-core"
+export { useWalletProvidersReady } from "@layerswap/ui-kit"
 
-const ConnectorsList = lazy(() => import("@/components/Wallet/WalletModal/ConnectorsList"));
+const ConnectorsList = lazy(() => import("@layerswap/ui-kit/ui").then(module => ({ default: module.ConnectorsList })));
 
-// Shown while the connectors chunk loads on first modal open, so a slow chunk
-// fetch surfaces a spinner instead of falling through to the error boundary.
 const ConnectorsListFallback: React.FC = () => (
     <div className="flex h-full w-full items-center justify-center py-10">
         <div className="loader text-[3px]!" />
@@ -29,7 +30,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
     const settings = useSettingsState();
     const { networks } = settings;
     return (
-        <WalletProvidersRegistryProvider networks={networks} walletProviders={walletProviders}>
+        <WalletProvidersRegistryProvider networks={networks} networkAdapter={walletNetworkAdapter} walletProviders={walletProviders}>
             {children}
             <ConnectModalHost settings={settings} />
         </WalletProvidersRegistryProvider>
@@ -40,6 +41,7 @@ const ConnectModalHost: React.FC<{ settings: ReturnType<typeof useSettingsState>
     const { networks } = settings;
     const isMobilePlatform = isMobile();
     const walletProvidersRegistry = useWalletProvidersRegistry();
+    const { providers } = useWallet()
     const { goBack, onFinish, open, setOpen, presentation, selectedConnector, selectedMultiChainConnector, dismissible, topContent, fullHeight, hideHeader } = useConnectModal()
     const { loadAll } = useWalletDescriptorLoader()
 
@@ -104,7 +106,12 @@ const ConnectModalHost: React.FC<{ settings: ReturnType<typeof useSettingsState>
                         {!selectedConnector && !selectedMultiChainConnector ? topContent : null}
                         <div className="flex-1 min-h-0">
                             <Suspense fallback={<ConnectorsListFallback />}>
-                                <ConnectorsList onFinish={onFinish} />
+                                <ConnectorsList
+                                    providers={providers}
+                                    onFinish={onFinish}
+                                    theme={AppSettings.ThemeData}
+                                    brandMark={<LayerSwapLogoSmall className="w-11 h-auto" />}
+                                />
                             </Suspense>
                         </div>
                     </div>

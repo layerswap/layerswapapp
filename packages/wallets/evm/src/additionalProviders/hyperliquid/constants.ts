@@ -1,5 +1,5 @@
 import { NetworkRoute, NetworkWithTokens, realRoutePresent } from "@layerswap/utils"
-import { depositMethodForFunding } from "@layerswap/wallet-core/types"
+import { depositMethodForFunding } from "@layerswap/utils";
 import { HYPERLIQUID_ROUTES, pickHyperliquidDestination } from "./routes";
 
 /** How the real backend leg is funded. The provider and the CCTP config resolver

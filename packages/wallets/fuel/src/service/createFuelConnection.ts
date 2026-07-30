@@ -1,8 +1,8 @@
-import type { NetworkWithTokens } from "@layerswap/utils"
-import type { MultiStepHandler, WalletConnectionProviderProps, WalletConnectionStore } from "@layerswap/wallet-core/types"
-import { createMemoizedConnectionStore } from "@layerswap/wallet-core"
+import type { MultiStepHandler, WalletConnectionProviderProps, WalletConnectionStore } from "@layerswap/ui-kit/types"
+import { createMemoizedConnectionStore } from "@layerswap/ui-kit"
 import { createFuelTransfer } from '../transferProvider/createFuelTransfer'
-import { fuelConnectionService } from './FuelConnectionService'
+import { FuelConnectionService } from './FuelConnectionService'
+import { registerFuelWalletSynchronizer } from './syncFuel'
 import { useFuelStore } from './fuelStore'
 
 type CreateFuelConnectionOptions = {
@@ -13,14 +13,19 @@ type CreateFuelConnectionOptions = {
  * Vanilla external-store factory for the Fuel wallet connection. Replaces the
  * old `useFuelConnection` hook.
  */
-export function createFuelConnection(
-    initialProps: WalletConnectionProviderProps,
+export function createFuelConnection<Network>(
+    initialProps: WalletConnectionProviderProps<Network>,
     options: CreateFuelConnectionOptions = {},
-): WalletConnectionStore {
+): WalletConnectionStore<Network> {
     const { extraMultiStepHandlers = [] } = options
 
-    let networks: NetworkWithTokens[] = initialProps.networks
-    fuelConnectionService.setNetworks(networks)
+    let networks = initialProps.networks
+    let networkAdapter = initialProps.networkAdapter
+    const fuelConnectionService = new FuelConnectionService<Network>()
+    fuelConnectionService.setNetworks(networks, networkAdapter)
+    const unregisterWalletSynchronizer = registerFuelWalletSynchronizer(
+        () => fuelConnectionService.syncConnectedWallets()
+    )
 
     const transferProvider = createFuelTransfer()
     const transfer = transferProvider.executeTransfer
@@ -46,7 +51,9 @@ export function createFuelConnection(
         ],
         onUpdateProps: nextProps => {
             networks = nextProps.networks
-            fuelConnectionService.setNetworks(networks)
+            networkAdapter = nextProps.networkAdapter
+            fuelConnectionService.setNetworks(networks, networkAdapter)
         },
+        onDestroy: unregisterWalletSynchronizer,
     })
 }

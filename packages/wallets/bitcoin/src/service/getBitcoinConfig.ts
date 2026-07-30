@@ -1,20 +1,6 @@
 import { unisat } from '@/connectors/unisat'
-import {
-    bitget,
-    createConfig,
-    ctrl,
-    leather,
-    metamask,
-    okx,
-    onekey,
-    reconnect,
-    xverse,
-    type Config,
-    type CreateConnectorFn,
-} from '@bigmi/client'
+import { bitget, createConfig, ctrl, leather, metamask, okx, onekey, reconnect, xverse, type Config, type CreateConnectorFn, } from '@bigmi/client'
 import { bitcoin, createClient, defineChain, http, ChainId } from '@bigmi/core'
-import type { NetworkWithTokens } from "@layerswap/utils"
-
 let _config: Config | null = null
 let _configKey: string | null = null
 
@@ -29,11 +15,16 @@ export function hasBitcoinConfig(): boolean {
     return _config !== null
 }
 
-export function ensureBitcoinConfig(network: NetworkWithTokens | undefined): Config {
+type BitcoinNetworkConfig = {
+    id: string
+    rpcUrl?: string
+}
+
+export function ensureBitcoinConfig(network: BitcoinNetworkConfig | undefined): Config {
     const nextConfigKey = getNetworkConfigKey(network)
     if (_config && _configKey === nextConfigKey) return _config
 
-    const chain = network?.name.toLowerCase().includes('testnet')
+    const chain = network?.id.toLowerCase().includes('testnet')
         ? bitcoinTestnet(network)
         : bitcoin
 
@@ -71,20 +62,20 @@ export function resetBitcoinConfig(): void {
     _configKey = null
 }
 
-function getNetworkConfigKey(network: NetworkWithTokens | undefined): string {
+function getNetworkConfigKey(network: BitcoinNetworkConfig | undefined): string {
     return [
-        network?.name ?? 'bitcoin-mainnet',
-        network?.node_url ?? '',
+        network?.id ?? 'bitcoin-mainnet',
+        network?.rpcUrl ?? '',
     ].join('|')
 }
 
-const bitcoinTestnet = (network: NetworkWithTokens) => defineChain({
+const bitcoinTestnet = (network: BitcoinNetworkConfig) => defineChain({
     id: ChainId.BITCOIN_TESTNET,
     name: 'Bitcoin Testnet',
     nativeCurrency: { name: 'Bitcoin', symbol: 'BTC', decimals: 8 },
     rpcUrls: {
         default: {
-            http: [network.node_url],
+            http: network.rpcUrl ? [network.rpcUrl] : [],
         },
     },
     testnet: true,

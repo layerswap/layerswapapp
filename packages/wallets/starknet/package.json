@@ -37,7 +37,7 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@layerswap/wallet-core": "workspace:^",
+    "@layerswap/ui-kit": "workspace:^",
     "@layerswap/utils": "workspace:^",
     "zustand": "catalog:"
   },
@@ -51,7 +51,7 @@
     "starknetkit": "^3.4.3"
   },
   "devDependencies": {
-    "@layerswap/wallet-core": "workspace:^",
+    "@layerswap/ui-kit": "workspace:^",
     "@layerswap/utils": "workspace:^",
     "zustand": "catalog:"
   },

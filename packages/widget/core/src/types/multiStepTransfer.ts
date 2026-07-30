@@ -1,1 +1,1 @@
-export type { MultiStepTransferState, MultiStepTransferProvider, MultiStepTransferParams } from "@layerswap/wallet-core/types";
+export type { MultiStepTransferState, MultiStepTransferProvider, MultiStepTransferParams } from "@layerswap/ui-kit/types";

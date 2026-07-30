@@ -1,1 +1,1 @@
-export { LazyBalanceProvider, LazyGasProvider } from "@layerswap/wallet-core/types";
+export { LazyBalanceProvider, LazyGasProvider } from "@layerswap/utils";

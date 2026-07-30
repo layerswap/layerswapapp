@@ -1,10 +1,21 @@
 import { Fuel, FuelConnectorEventTypes } from '@fuel-ts/account'
-import { fuelConnectionService } from './FuelConnectionService'
 import { useFuelStore } from './fuelStore'
 
 let _attached = false
 let _dispose: (() => void) | null = null
 let _fuel: Fuel | null = null
+const walletSynchronizers = new Set<() => Promise<void>>()
+
+export function registerFuelWalletSynchronizer(sync: () => Promise<void>): () => void {
+    walletSynchronizers.add(sync)
+    return () => {
+        walletSynchronizers.delete(sync)
+    }
+}
+
+async function syncConnectedWallets(): Promise<void> {
+    await Promise.allSettled([...walletSynchronizers].map(sync => sync()))
+}
 
 export function attachFuelSync(fuel: Fuel): () => void {
     if (_fuel === fuel && _dispose) return _dispose
@@ -24,10 +35,10 @@ export function attachFuelSync(fuel: Fuel): () => void {
     }
 
     const onConnection = () => {
-        fuelConnectionService.syncConnectedWallets().catch(() => { /* swallow */ })
+        syncConnectedWallets().catch(() => { /* swallow */ })
     }
     const onCurrentConnector = () => {
-        fuelConnectionService.syncConnectedWallets().catch(() => { /* swallow */ })
+        syncConnectedWallets().catch(() => { /* swallow */ })
     }
 
     let perConnectorDisposers: Array<() => void> = []
@@ -38,7 +49,7 @@ export function attachFuelSync(fuel: Fuel): () => void {
 
         for (const c of connectors) {
             const handler = async () => {
-                await fuelConnectionService.syncConnectedWallets()
+                await syncConnectedWallets()
             }
             c.on(FuelConnectorEventTypes.currentNetwork, handler)
             perConnectorDisposers.push(() => c.off(FuelConnectorEventTypes.currentNetwork, handler))
@@ -49,8 +60,9 @@ export function attachFuelSync(fuel: Fuel): () => void {
     // flags reveal. Shared by initial population, bounded re-detection and
     // the window-focus refresh below.
     const refreshAll = () => refreshConnectors()
-        .then(() => fuelConnectionService.syncConnectedWallets())
+        .then(() => syncConnectedWallets())
         .catch(() => { /* swallow */ })
+    const onConnectors = () => { void refreshAll() }
 
     let retryTimers: ReturnType<typeof setTimeout>[] = []
     const onWindowFocus = () => { void refreshAll() }
@@ -59,7 +71,7 @@ export function attachFuelSync(fuel: Fuel): () => void {
     const dispose = () => {
         if (disposed) return
         disposed = true
-        fuel.off(FuelConnectorEventTypes.connectors, refreshConnectors)
+        fuel.off(FuelConnectorEventTypes.connectors, onConnectors)
         fuel.off(FuelConnectorEventTypes.connection, onConnection)
         fuel.off(FuelConnectorEventTypes.currentConnector, onCurrentConnector)
         perConnectorDisposers.forEach(fn => fn())
@@ -73,7 +85,7 @@ export function attachFuelSync(fuel: Fuel): () => void {
         _fuel = null
     }
     try {
-        fuel.on(FuelConnectorEventTypes.connectors, refreshConnectors)
+        fuel.on(FuelConnectorEventTypes.connectors, onConnectors)
         fuel.on(FuelConnectorEventTypes.connection, onConnection)
         fuel.on(FuelConnectorEventTypes.currentConnector, onCurrentConnector)
     } catch (error) {

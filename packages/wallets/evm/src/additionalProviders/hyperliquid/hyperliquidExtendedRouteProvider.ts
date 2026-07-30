@@ -1,7 +1,7 @@
 import { HYPERLIQUID_ROUTES, HyperliquidDestination, getHyperliquidCandidates, pickHyperliquidDestination } from "./routes";
 import { HYPERLIQUID_FUNDING, HYPERLIQUID_USDC_SYMBOL } from "./constants";
 import { NetworkRoute, NetworkRouteToken, realRoutePresent } from "@layerswap/utils";
-import { DepositRouteRef, ExtendedRouteProvider, ExtendedTokenMapping, RealRouteRef, requiredDepositMethod } from "@layerswap/wallet-core/types";
+import { DepositRouteRef, ExtendedRouteProvider, ExtendedTokenMapping, RealRouteRef, requiredDepositMethod } from "@layerswap/utils";
 
 /**
  * Build an extended-route mapping from a chosen destination.

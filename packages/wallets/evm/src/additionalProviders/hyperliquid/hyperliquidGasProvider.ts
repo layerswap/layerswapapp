@@ -1,6 +1,6 @@
 import { HYPERLIQUID_USDC_SYMBOL, HYPERLIQUID_WITHDRAW_HEADROOM } from "./constants";
 import { Network, NetworkType } from "@layerswap/utils"
-import { GasProps, GasProvider, GasWithToken } from "@layerswap/wallet-core/types"
+import { GasProps, GasProvider, GasWithToken } from "@layerswap/utils";
 
 /**
  * Headroom HL reserves for the `sendToEvmWithData` HyperCore-side processing, in

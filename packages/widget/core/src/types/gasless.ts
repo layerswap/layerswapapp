@@ -1,1 +1,1 @@
-export type { GaslessProvider, GaslessSignParams } from '@layerswap/wallet-core/types'
+export type { GaslessProvider, GaslessSignParams } from '@layerswap/utils';

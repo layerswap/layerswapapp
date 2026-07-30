@@ -5,7 +5,7 @@ import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '@/Models/ApiResponse';
 import { Partner } from '@/Models/Partner';
 import { ApiError } from '@/Models/ApiError';
-import { Wallet } from "@layerswap/wallet-core/types"
+import { Wallet } from "@layerswap/utils";
 import useWallet from '@/hooks/useWallet';
 import { Network } from '@/Models/Network';
 import { useSettingsState } from './settings';

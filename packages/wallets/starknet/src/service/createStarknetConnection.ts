@@ -1,8 +1,7 @@
-import type { NetworkWithTokens } from "@layerswap/utils"
-import type { MultiStepHandler, WalletConnectionProviderProps, WalletConnectionStore } from "@layerswap/wallet-core/types"
-import { createMemoizedConnectionStore } from "@layerswap/wallet-core"
+import type { MultiStepHandler, WalletConnectionProviderProps, WalletConnectionStore } from "@layerswap/ui-kit/types"
+import { createMemoizedConnectionStore, type AppNetworkAdapter } from "@layerswap/ui-kit"
 import { createStarknetTransfer } from '../transferProvider/createStarknetTransfer'
-import { starknetConnectionService } from './StarknetConnectionService'
+import { StarknetConnectionService } from './StarknetConnectionService'
 import { useStarknetStore } from './starknetStore'
 
 type CreateStarknetConnectionOptions = {
@@ -13,14 +12,16 @@ type CreateStarknetConnectionOptions = {
  * Vanilla external-store factory for the Starknet wallet connection. Replaces the
  * old `useStarknetConnection` hook.
  */
-export function createStarknetConnection(
-    initialProps: WalletConnectionProviderProps,
+export function createStarknetConnection<Network>(
+    initialProps: WalletConnectionProviderProps<Network>,
     options: CreateStarknetConnectionOptions = {},
-): WalletConnectionStore {
+): WalletConnectionStore<Network> {
     const { extraMultiStepHandlers = [] } = options
 
-    let networks: NetworkWithTokens[] = initialProps.networks
-    starknetConnectionService.setNetworks(networks)
+    let networks = initialProps.networks
+    let networkAdapter = initialProps.networkAdapter
+    const starknetConnectionService = new StarknetConnectionService<Network>()
+    starknetConnectionService.setNetworks(networks, networkAdapter)
 
     const transferProvider = createStarknetTransfer()
     const transfer = transferProvider.executeTransfer
@@ -46,7 +47,8 @@ export function createStarknetConnection(
         ],
         onUpdateProps: nextProps => {
             networks = nextProps.networks
-            starknetConnectionService.setNetworks(networks)
+            networkAdapter = nextProps.networkAdapter
+            starknetConnectionService.setNetworks(networks, networkAdapter)
         },
         // This store owns the module-level Starknet hydration lifecycle.
         onDestroy: () => starknetConnectionService.dispose(),

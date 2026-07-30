@@ -61,3 +61,20 @@ export type {
 } from "@/logEvents";
 export { realDepositAddressRoutePresent, realRoutePresent } from "@/extendedRouteAvailability";
 export type { DepositRouteRef } from "@/extendedRouteAvailability";
+
+export type { InternalConnector, Wallet } from "@/resolvers/walletModels";
+export type { GasProps, TokenBalanceError, TokenBalance, NetworkBalance } from "@/resolvers/balanceModels";
+export { BalanceProvider } from "@/resolvers/balance";
+export type { GasProvider, GasWithToken } from "@/resolvers/gas";
+export type { TransferProps, TransferProgress, TransferProvider, TransferProviderHook } from "@/resolvers/transfer";
+export type { NftBalanceProps, NftProvider } from "@/resolvers/nft";
+export type { ContractAddressCheckerProvider } from "@/resolvers/contract";
+export type { GaslessSignParams, GaslessProvider } from "@/resolvers/gasless";
+export type { RpcHealth, AddEthereumChainParams, SuggestRpcResult, RpcHealthCheckSnapshot, RpcHealthCheckResult, RpcHealthCheckStore, RpcHealthCheckProvider } from "@/resolvers/rpcHealth";
+export { LazyBalanceProvider, LazyGasProvider } from "@/resolvers/lazyProviders";
+export type { DecimalInput, RealRouteRef, RealRouteAvailability, ExtendedRouteFlags, ExtendedTokenMapping, ExtendedRouteProvider, ResolvedExtendedMapping, ExtendedRoutePlan } from "@/resolvers/extendedRoutes";
+export { usesDepository, depositMethodForFunding, requiredDepositMethod } from "@/resolvers/extendedRoutes";
+export { extractErrorDetails } from "@/resolvers/errorUtils";
+export type { ErrorDetails } from "@/resolvers/errorUtils";
+export { classifyNodeError } from "@/resolvers/nodeErrorClassifier";
+export type { NodeErrorCategory } from "@/resolvers/nodeErrorClassifier";

@@ -1,4 +1,4 @@
-import { TransferProps } from "@layerswap/wallet-core/types"
+import { TransferProps } from "@layerswap/utils";
 import { parseEther } from "viem"
 import { EVMGasProvider } from "../gasProviders"
 

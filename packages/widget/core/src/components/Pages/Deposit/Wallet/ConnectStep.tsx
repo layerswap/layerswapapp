@@ -1,12 +1,14 @@
 import { FC, useCallback, useEffect } from "react";
-import ConnectorsList from "@/components/Wallet/WalletModal/ConnectorsList";
+import { ConnectorsList } from "@layerswap/ui-kit/ui";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
-import { Wallet } from "@layerswap/wallet-core/types"
+import { Wallet } from "@layerswap/utils";
 import { useDepositStep } from "../depositStepContext";
 import { useDepositSelection } from "../depositSelectionContext";
 import { useSelectSwapAccount } from "@/context/swapAccounts";
 import useWallet from "@/hooks/useWallet";
 import { isExtendedSourceNetwork } from "@/lib/extendedRoutes/registry";
+import AppSettings from "@/lib/AppSettings";
+import LayerSwapLogoSmall from "@/components/Icons/layerSwapLogoSmall";
 
 /**
  * Inline presentation of the wallet-connect UI, rendered as a deposit step so
@@ -65,7 +67,12 @@ const ConnectStep: FC = () => {
 
     return (
         <div className="openpicker flex flex-col min-h-0 w-full h-[373px]">
-            <ConnectorsList onFinish={handleFinish} />
+            <ConnectorsList
+                providers={providers}
+                onFinish={handleFinish}
+                theme={AppSettings.ThemeData}
+                brandMark={<LayerSwapLogoSmall className="w-11 h-auto" />}
+            />
         </div>
     );
 };

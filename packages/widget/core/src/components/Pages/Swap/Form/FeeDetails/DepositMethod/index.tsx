@@ -3,7 +3,7 @@ import React, { FC, useEffect } from "react";
 import { Network } from "@/Models/Network";
 import { useInitialSettings } from "@/context/settings";
 import useWallet from "@/hooks/useWallet";
-import { WalletConnectionProvider } from "@layerswap/wallet-core/types"
+import { WalletConnectionProvider } from "@layerswap/ui-kit/types"
 import { useWalletProvidersReady } from "@/context/walletProviders";
 import { SwapFormValues } from "../../SwapFormValues";
 

@@ -1,1 +1,1 @@
-export type { ContractAddressCheckerProvider } from "@layerswap/wallet-core/types";
+export type { ContractAddressCheckerProvider } from "@layerswap/utils";

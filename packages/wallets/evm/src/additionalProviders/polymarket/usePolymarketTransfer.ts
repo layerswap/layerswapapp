@@ -1,5 +1,5 @@
 import { Network, KnownInternalNames } from "@layerswap/utils"
-import { TransferProvider } from "@layerswap/wallet-core/types"
+import { TransferProvider } from "@layerswap/utils";
 import { useConfig } from "wagmi"
 import { createPolymarketTransferProvider } from "./createPolymarketTransferProvider"
 

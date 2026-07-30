@@ -1,6 +1,6 @@
 import { FC } from 'react'
 import clsx from 'clsx'
-import { ImageWithFallback } from '@/components/Common/ImageWithFallback'
+import { ImageWithFallback } from "@layerswap/ui-kit/ui";
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/shadcn/tooltip'
 import type { ScopeItem } from './useAddressScope'
 

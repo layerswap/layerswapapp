@@ -1,1 +1,1 @@
-export type { GasProvider, GasWithToken } from "@layerswap/wallet-core/types";
+export type { GasProvider, GasWithToken } from "@layerswap/utils";

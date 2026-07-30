@@ -1,4 +1,4 @@
-import type { WalletProvider, WalletProviderDescriptor, WalletWrapper } from "@layerswap/wallet-core/types"
+import type { WalletProvider, WalletProviderDescriptor, WalletWrapper } from "@layerswap/ui-kit/types"
 import type { WalletProviderId } from "@layerswap/widget-types"
 
 /**

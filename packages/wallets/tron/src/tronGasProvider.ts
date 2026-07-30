@@ -1,6 +1,6 @@
 import { KnownInternalNames, formatUnits } from "@layerswap/utils";
 import { Network } from "@layerswap/utils"
-import { GasProvider, GasProps } from "@layerswap/wallet-core/types"
+import { GasProvider, GasProps } from "@layerswap/utils";
 
 export class TronGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {

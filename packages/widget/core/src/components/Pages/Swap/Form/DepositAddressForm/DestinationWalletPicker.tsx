@@ -7,12 +7,12 @@ import useProvidersConnectReady from "@/hooks/useProvidersConnectReady";
 import { useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { SwapFormValues } from "../SwapFormValues";
-import { SelectAccountProps } from "@layerswap/wallet-core/types"
+import { SelectAccountProps } from "@layerswap/ui-kit/types"
 import AddressIcon from "@/components/Common/AddressIcon";
 import { Address as AddressClass } from "@/lib/address/Address";
 import VaulDrawer from "@/components/Modal/vaulModal";
 import { WalletItem } from "@/components/Wallet/WalletComponents/WalletsList";
-import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
+import { ImageWithFallback } from "@layerswap/ui-kit/ui";
 import { useAddressName } from "@/stores/addressBookStore";
 
 type DestinationWalletPickerProps = {

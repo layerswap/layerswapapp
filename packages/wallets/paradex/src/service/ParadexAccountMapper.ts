@@ -1,4 +1,4 @@
-import type { WalletConnectionProvider } from '@layerswap/wallet-core/types'
+import type { WalletConnectionProvider } from '@layerswap/ui-kit/types'
 import { useParadexActiveStore, type ParadexAccount } from './paradexActiveStore'
 import { paradexAccountStore } from './paradexAccountStore'
 

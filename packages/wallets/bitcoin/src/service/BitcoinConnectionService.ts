@@ -1,34 +1,34 @@
-import type { NetworkWithTokens } from "@layerswap/utils"
-import type { InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types"
-import { KnownInternalNames } from "@layerswap/utils";
-import { walletIconResolver } from "@layerswap/wallet-core";
+import type { WalletConnectionProvider, WalletConnectionService, WalletModalConnector } from "@layerswap/ui-kit/types";
+import type { InternalConnector, Wallet } from "@layerswap/utils";
+import { walletIconResolver, type AppNetworkAdapter } from "@layerswap/ui-kit";
 import {
     connect,
     disconnect,
     getConnectors,
     type Connector,
 } from '@bigmi/client'
-import { NetworkType } from "@layerswap/utils"
-import { name as PROVIDER_NAME, id as PROVIDER_ID, bitcoinNames } from '../constants'
+import { name as PROVIDER_NAME, id as PROVIDER_ID } from '../constants'
 import { isBitcoinAddressValid } from '../utils/isValidAddress'
 import { getBitcoinConfig, hasBitcoinConfig } from './getBitcoinConfig'
 import { useBitcoinStore } from './bitcoinStore'
 
-type ConnectorSelection = { selectedConnector: unknown }
+type ConnectorSelection = { selectedConnector: WalletModalConnector | undefined }
 
 type RuntimeDeps = {
     setSelectedConnector?: (connector: unknown) => void
 }
 
-export class BitcoinConnectionService implements WalletConnectionService<RuntimeDeps> {
-    private _networks: NetworkWithTokens[] = []
+export class BitcoinConnectionService<Network> implements WalletConnectionService<RuntimeDeps, Network> {
+    private _networks: Network[] = []
+    private _networkAdapter: AppNetworkAdapter<Network> | undefined
     private _networksKey = ''
     private _deps: RuntimeDeps = {}
 
-    setNetworks(networks: NetworkWithTokens[]): void {
-        const key = networks.map(n => n.name).join('|')
+    setNetworks(networks: Network[], networkAdapter: AppNetworkAdapter<Network>): void {
+        const key = networks.map(network => networkAdapter.getId(network)).join('|')
         if (this._networksKey === key) return
         this._networks = networks
+        this._networkAdapter = networkAdapter
         this._networksKey = key
     }
 
@@ -38,17 +38,19 @@ export class BitcoinConnectionService implements WalletConnectionService<Runtime
 
     getCommonSupportedNetworks(): string[] {
         return this._networks
-            .filter(network => network.type === NetworkType.Bitcoin)
-            .map(l => l.name)
+            .filter(network => this._networkAdapter?.isBitcoinNetwork(network))
+            .map(network => this._networkAdapter?.getId(network))
+            .filter((id): id is string => !!id)
     }
 
     getProviderIcon(): string | undefined {
         const supported = this.getCommonSupportedNetworks()
-        return this._networks.find(n => supported.some(name => name === n.name))?.logo
+        const network = this._networks.find(item => supported.includes(this._networkAdapter?.getId(item) ?? ''))
+        return network && this._networkAdapter ? this._networkAdapter.getIcon(network) : undefined
     }
 
     getNetworkIcon(): string | undefined {
-        return this._networks.find(n => bitcoinNames.some(name => name === n.name))?.logo
+        return this.getProviderIcon()
     }
 
     getAvailableConnectors(): InternalConnector[] {
@@ -116,13 +118,14 @@ export class BitcoinConnectionService implements WalletConnectionService<Runtime
 
             const address = result.accounts[0].address
             const supported = this.getCommonSupportedNetworks()
-            const network = this._networks.find(n => supported.includes(n.name))
+            const network = this._networks.find(item => supported.includes(this._networkAdapter?.getId(item) ?? ''))
             if (!network) throw new Error('Network not found')
 
-            if (address && !isBitcoinAddressValid(address, network)) {
+            const networkId = this._networkAdapter?.getId(network).toLowerCase() ?? ''
+            const isTestnet = networkId.includes('testnet') || networkId.includes('signet')
+            if (address && !isBitcoinAddressValid(address, isTestnet)) {
                 await disconnect(config, { connector })
-                const isMainnet = network.name === KnownInternalNames.Networks.BitcoinMainnet
-                throw new Error(`Please switch the network in your wallet to ${isMainnet ? 'Mainnet' : 'Testnet'} and click connect again`)
+                throw new Error(`Please switch the network in your wallet to ${isTestnet ? 'Testnet' : 'Mainnet'} and click connect again`)
             }
 
             return this.resolveWallet(connector, address)
@@ -158,5 +161,4 @@ export class BitcoinConnectionService implements WalletConnectionService<Runtime
     }
 }
 
-export const bitcoinConnectionService = new BitcoinConnectionService()
 export type { ConnectorSelection }

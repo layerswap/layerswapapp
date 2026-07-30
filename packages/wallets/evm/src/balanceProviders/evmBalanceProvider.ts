@@ -4,7 +4,7 @@ import resolveChain from "../evmUtils/resolveChain"
 import BalanceGetterAbi from "../jsons/BALANCEGETTERABI.json"
 import { KnownInternalNames } from "@layerswap/utils";
 import { NetworkType, NetworkWithTokens, Token, Network } from "@layerswap/utils"
-import { BalanceProvider, TokenBalance } from "@layerswap/wallet-core/types"
+import { BalanceProvider, TokenBalance } from "@layerswap/utils";
 import { resolveFallbackTransport } from "../evmUtils/resolveTransports"
 
 const nativeBalanceSkip = [

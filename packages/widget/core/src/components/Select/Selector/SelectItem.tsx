@@ -1,4 +1,4 @@
-import { ImageWithFallback } from '@/components/Common/ImageWithFallback';
+import { ImageWithFallback } from "@layerswap/ui-kit/ui";
 import clsx from 'clsx';
 import { ReactNode } from 'react';
 import type { JSX } from 'react';

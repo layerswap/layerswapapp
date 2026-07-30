@@ -1,5 +1,5 @@
 import { Network } from "@layerswap/utils"
-import { GasProvider } from "@layerswap/wallet-core/types"
+import { GasProvider } from "@layerswap/utils";
 import { KnownInternalNames } from "@layerswap/utils";
 
 export class TonGasProvider implements GasProvider {

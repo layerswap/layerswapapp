@@ -1,5 +1,5 @@
 import { AvailableSourceNetworkTypes, LayerSwapSettings } from "@/Models";
-import { WalletConnectionProvider } from "@layerswap/wallet-core/types"
+import { WalletConnectionProvider } from "@layerswap/ui-kit/types"
 
 
 export function filterSourceNetworks(settings: LayerSwapSettings, walletProviders: WalletConnectionProvider[]): AvailableSourceNetworkTypes {

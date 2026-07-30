@@ -1,13 +1,8 @@
 import type { Config } from '@wagmi/core'
-import type { Network } from "@layerswap/utils"
+import type { AppNetworkAdapter } from "@layerswap/ui-kit"
 import { getEvmChainsConfig } from '../evmUtils/chainConfigs'
 import { buildEVMConnectors } from './Connectors'
-import {
-    getEvmConfig,
-    hasEvmConfig,
-    provideExternalEvmConfig,
-    setEvmConfigInitParams,
-} from '../service/getEvmConfig'
+import { getEvmConfig, hasEvmConfig, provideExternalEvmConfig, setEvmConfigInitParams, } from '../service/getEvmConfig'
 import { attachWagmiSync } from '../service/syncWagmi'
 import type { WalletConnectConfig } from '../types'
 
@@ -19,8 +14,9 @@ const DEFAULT_WC_CONFIG: WalletConnectConfig = {
     icons: ['https://www.layerswap.app/favicon.ico'],
 }
 
-type InitOptions = {
+type InitOptions<Network> = {
     networks: Network[]
+    networkAdapter: AppNetworkAdapter<Network>
     walletConnectConfigs?: WalletConnectConfig
     externalWagmiConfig?: Config | null
 }
@@ -31,8 +27,8 @@ let _initialized = false
  * One-shot initialization of the EVM wagmi config and store sync. Safe to
  * call multiple times — subsequent calls are no-ops.
  */
-export function initEvmProvider(opts: InitOptions): void {
-    const { networks, walletConnectConfigs, externalWagmiConfig } = opts
+export function initEvmProvider<Network>(opts: InitOptions<Network>): void {
+    const { networks, networkAdapter, walletConnectConfigs, externalWagmiConfig } = opts
     const resolvedWalletConnectConfigs = walletConnectConfigs?.projectId ? walletConnectConfigs : DEFAULT_WC_CONFIG
 
     if (_initialized) {
@@ -60,7 +56,7 @@ export function initEvmProvider(opts: InitOptions): void {
         return
     }
 
-    const { chains, transports } = getEvmChainsConfig(networks)
+    const { chains, transports } = getEvmChainsConfig(networks, networkAdapter)
     const connectors = buildEVMConnectors(resolvedWalletConnectConfigs)
 
     setEvmConfigInitParams({
