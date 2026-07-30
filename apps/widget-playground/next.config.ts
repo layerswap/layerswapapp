@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
     return config
   },
   reactStrictMode: true,
+  experimental: {
+    // TypeScript 7 is the native compiler and ships no JS compiler API, so
+    // Next has to shell out to `tsc` for the build's type-check step.
+    useTypeScriptCli: true,
+  },
 };
 
 export default nextConfig;

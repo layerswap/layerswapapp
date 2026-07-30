@@ -64,6 +64,9 @@ module.exports = (phase, { defaultConfig }) => {
     },
     reactStrictMode: true,
     experimental: {
+      // TypeScript 7 is the native compiler and ships no JS compiler API, so
+      // Next has to shell out to `tsc` for the build's type-check step.
+      useTypeScriptCli: true,
       optimizePackageImports: [
         'lucide-react',
         '@radix-ui/react-checkbox',
