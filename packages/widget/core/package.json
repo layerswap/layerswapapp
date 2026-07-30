@@ -102,6 +102,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.0.15",
+    "@types/node": "^24.5.1",
     "@types/react": "catalog:",
     "chromatic": "^6.24.1",
     "esbuild-plugin-path-alias": "^1.0.7",

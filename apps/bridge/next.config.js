@@ -73,6 +73,9 @@ module.exports = (phase, { defaultConfig }) => {
         '@radix-ui/react-tooltip',
       ],
     },
+    turbopack: {},
+    // Only reached under `next build --webpack`, which the `analyze` script
+    // needs because @next/bundle-analyzer skips Turbopack builds.
     webpack: config => {
       config.resolve.fallback = { fs: false, net: false, tls: false };
       return config;
