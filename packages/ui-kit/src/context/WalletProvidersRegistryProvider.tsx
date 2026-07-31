@@ -13,6 +13,7 @@ type ProviderEntry<Network> = WalletProvider<Network> | WalletWrapper | WalletPr
 
 const WalletProvidersContext = createContext<WalletProvidersRegistry | null>(null)
 const WalletProvidersReadyContext = createContext(false)
+const HasConfiguredWalletProvidersContext = createContext(false)
 
 export function useWalletProvidersRegistry(): WalletProvidersRegistry {
     const registry = useContext(WalletProvidersContext)
@@ -22,6 +23,10 @@ export function useWalletProvidersRegistry(): WalletProvidersRegistry {
 
 export function useWalletProvidersReady(): boolean {
     return useContext(WalletProvidersReadyContext)
+}
+
+export function useHasConfiguredWalletProviders(): boolean {
+    return useContext(HasConfiguredWalletProvidersContext)
 }
 
 export function WalletProvidersRegistryProvider<Network>({
@@ -36,6 +41,13 @@ export function WalletProvidersRegistryProvider<Network>({
 }>) {
     const walletProvidersRegistry = useMemo(() => createWalletProvidersRegistry(), [])
     const [isInitialized, setIsInitialized] = useState(false)
+    const hasConfiguredProviders = useMemo(
+        () => walletProviders.some(
+            provider => isWalletProviderDescriptor(provider)
+                || !!(provider as WalletProvider<Network>).createConnection
+        ),
+        [walletProviders]
+    )
 
     // Per-id caches: keep real connections alive across re-renders so that
     // a descriptor finishing its load doesn't tear down peer providers.
@@ -106,7 +118,9 @@ export function WalletProvidersRegistryProvider<Network>({
     return (
         <WalletProvidersContext.Provider value={walletProvidersRegistry}>
             <WalletProvidersReadyContext.Provider value={isInitialized}>
-                {children}
+                <HasConfiguredWalletProvidersContext.Provider value={hasConfiguredProviders}>
+                    {children}
+                </HasConfiguredWalletProvidersContext.Provider>
             </WalletProvidersReadyContext.Provider>
         </WalletProvidersContext.Provider>
     )

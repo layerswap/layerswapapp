@@ -61,7 +61,7 @@ const Search = () => {
                 <button
                     disabled={!searchParam}
                     onClick={handleSearch}
-                    className="disabled:bg-primary-text-tertiary disabled:hover:text-primary-text rounded-lg bg-primary-500 shadow-lg p-2 hover:bg-primary-700 hover:text-primary-text active:scale-90 duration-200 transition-all font-sans text-xs text-primary-text"
+                    className="disabled:bg-primary-text-tertiary/70 disabled:hover:text-primary-text rounded-lg bg-primary-500 shadow-lg p-2 hover:bg-primary-700 hover:text-primary-text active:scale-90 duration-200 transition-all font-sans text-xs text-primary-text"
                 >
                     <SearchIcon className="h-5 w-5" />
                 </button>

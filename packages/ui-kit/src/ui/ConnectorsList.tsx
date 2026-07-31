@@ -58,7 +58,17 @@ export const ConnectorsList: FC<ConnectorsListProps> = ({
         onFinish,
     })
 
-    const isListVisible = !selectedConnector && !selectedMultiChainConnector
+    const {
+        blockListWhileLoading,
+        registryError,
+        retryRegistry,
+        showSourcesLoadingTail,
+    } = useConnectorSourcesStatus(featuredProviders)
+
+    // While the skeleton gate blocks the browser, the load-more sentinel isn't
+    // mounted — folding the gate into `isListVisible` makes the observer
+    // re-attach when the gate lifts.
+    const isListVisible = !selectedConnector && !selectedMultiChainConnector && !blockListWhileLoading
     const {
         anyProviderHasMore,
         anyProviderLoadingMore,
@@ -78,12 +88,6 @@ export const ConnectorsList: FC<ConnectorsListProps> = ({
         recentConnectors,
         searchResults: isSearching ? searchResults : undefined,
     })
-
-    const {
-        registryError,
-        retryRegistry,
-        showSourcesLoadingTail,
-    } = useConnectorSourcesStatus(featuredProviders)
 
     let content: ReactNode
 
@@ -138,6 +142,7 @@ export const ConnectorsList: FC<ConnectorsListProps> = ({
                 selectedConnector={pickerConnector}
                 providers={featuredProviders}
                 connect={connect}
+                isLoadingMore={showSourcesLoadingTail}
             />
         )
     } else {
@@ -145,6 +150,7 @@ export const ConnectorsList: FC<ConnectorsListProps> = ({
             <ConnectorsBrowser
                 anyProviderHasMore={anyProviderHasMore}
                 anyProviderLoadingMore={anyProviderLoadingMore}
+                blockListWhileLoading={blockListWhileLoading}
                 connect={connect}
                 connectors={initialConnectors}
                 featuredProviders={featuredProviders}

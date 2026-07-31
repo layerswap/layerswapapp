@@ -198,6 +198,18 @@ export const SwapDetailsComponentSceleton = () => {
   </div>
 }
 
+export const SwapDetailsSceleton = () => {
+  return <div className="w-full">
+    <div className="animate-pulse flex space-x-4">
+      <div className="flex-1 space-y-3 py-1">
+        <div className="h-32 bg-secondary-500 rounded-lg"></div>
+        <div className="h-40 bg-secondary-500 rounded-lg"></div>
+        <div className="h-12 bg-secondary-500 rounded-lg"></div>
+      </div>
+    </div>
+  </div>
+}
+
 export const DocInFrameSceleton = () => {
   return <div className="shadow-sm rounded-md w-full mx-auto px-2 md:px-4">
     <div className="animate-pulse flex space-x-4">

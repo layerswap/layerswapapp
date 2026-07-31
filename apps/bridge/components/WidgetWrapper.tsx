@@ -94,6 +94,7 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
 
     const baseConfig: LayerswapProviderComponentProps['config'] = {
         theme: baseTheme,
+        apiUri: process.env.NEXT_PUBLIC_LS_API,
         ...(apiKey ? { apiKey } : {}),
         ...(settings ? { settings } : {}),
         ...(initialValues ? { initialValues } : {}),

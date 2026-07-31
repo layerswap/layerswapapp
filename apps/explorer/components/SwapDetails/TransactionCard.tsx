@@ -1,5 +1,6 @@
 "use client";
 
+import { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import CopyButton from "../buttons/copyButton";
@@ -19,11 +20,13 @@ interface TransactionCardProps {
     networkName?: string;
     exchangeLogo?: string;
     exchangeName?: string;
+    fromAddress?: string;
     accountExplorerUrl?: string;
     txExplorerUrl?: string;
     showConfirmations?: boolean;
     isPending?: boolean;
     isRefunded?: boolean;
+    children?: ReactNode;
 }
 
 export default function TransactionCard({
@@ -38,26 +41,29 @@ export default function TransactionCard({
     networkName,
     exchangeLogo,
     exchangeName,
+    fromAddress,
     accountExplorerUrl,
     txExplorerUrl,
     showConfirmations = false,
     isPending = false,
     isRefunded = false,
+    children,
 }: TransactionCardProps) {
+    const isSource = title === "From";
     const displayTransaction = transaction || refundedTransaction;
     const displayAmount = amount ?? displayTransaction?.amount;
     const hasAmount = displayAmount !== undefined && displayAmount !== null;
 
     return (
-        <div className="rounded-md w-full lg:p-6 grid gap-y-3 text-primary-text relative">
+        <div className={`rounded-md w-full p-6 grid gap-y-3 text-primary-text bg-secondary-700 border-secondary-400 border-t-4 shadow-lg ${isSource ? 'items-baseline lg:max-w-[50%] rounded-t-lg' : 'relative'}`}>
+            {isPending && <span className="pendingAnim"></span>}
 
             <div className="flex items-center text-primary-text">
                 <div className={`mr-2 text-2xl font-medium ${titleClassName}`}>{title}</div>
             </div>
 
 
-            <div className="rounded-lg w-full grid text-primary-text bg-secondary-500 shadow-lg relative border-secondary-400 border-t-4 divide-y divide-secondary-400">
-                {isPending && <span className="pendingAnim"></span>}
+            <div className="rounded-md w-full grid text-primary-text bg-secondary-500 shadow-lg relative border-secondary-400 border divide-y divide-secondary-400">
                 {/* Asset & Network Row */}
                 <div className="flex justify-around">
                     <div className="flex-1 p-4 whitespace-nowrap">
@@ -130,11 +136,11 @@ export default function TransactionCard({
                                     className="hover:text-secondary-text w-fit contents items-center"
                                 >
                                     <span className="break-all link link-underline link-underline-black">
-                                        {title === "From" ? displayTransaction?.from : displayTransaction?.to}
+                                        {title === "From" ? (fromAddress || displayTransaction?.from) : displayTransaction?.to}
                                     </span>
                                 </Link>
                                 <CopyButton
-                                    toCopy={title === "From" ? displayTransaction?.from : displayTransaction?.to}
+                                    toCopy={title === "From" ? (fromAddress || displayTransaction?.from) : displayTransaction?.to}
                                     iconHeight={16}
                                     iconClassName="order-2"
                                     iconWidth={16}
@@ -156,9 +162,9 @@ export default function TransactionCard({
                                 <Link
                                     href={txExplorerUrl || '#'}
                                     target="_blank"
-                                    className="hover:text-secondary-text w-fit contents items-center"
+                                    className="hover:text-secondary-text w-fit contents items-center second-link"
                                 >
-                                    <span className="break-all">
+                                    <span className="break-all link link-underline link-underline-black">
                                         {shortenAddress(transaction.transaction_hash)}
                                     </span>
                                 </Link>
@@ -188,6 +194,7 @@ export default function TransactionCard({
                     </div>
                 )}
             </div>
+            {children}
         </div>
     );
 }

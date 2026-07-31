@@ -11,6 +11,7 @@ import { Address } from "@/lib/address/Address";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import DestinationTokenPicker from "../DestinationTokenPicker";
 import { ImageWithFallback, WalletIcon } from "@layerswap/ui-kit/ui";
+import { ResolveConnectorIcon } from "@/components/Icons/ConnectorIcons";
 import { useExtendedDepositOption } from "./useExtendedDepositOption";
 
 type MethodCardProps = {
@@ -140,7 +141,11 @@ const MethodPicker: FC = () => {
             width="28"
             height="28"
         />
-        : <WalletIcon className="h-6 w-6 text-primary-text" strokeWidth={2} />;
+        : <ResolveConnectorIcon
+            connector={primaryWallet?.providerName}
+            iconClassName="w-[15px] h-[15px] p-px rounded bg-secondary-800 border border-secondary-400"
+            className="grid grid-cols-2 gap-0.5"
+        />;
 
     return (
         <div className="flex flex-col gap-2 w-full">

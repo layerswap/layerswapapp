@@ -66,41 +66,48 @@ export default function SwapStatusHeader({
         </TooltipProvider>
     );
 
+    if (status === SwapStatus.Completed && outputTransaction) {
+        return (
+            <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-y-1 mb-4">
+                <StatusIcon swap={status} />
+                <div className="flex items-center flex-wrap gap-x-2 sm:gap-x-0 gap-y-0.5">
+                    <span className="whitespace-nowrap">
+                        <span className="text-secondary-300 mx-1 hidden sm:inline">|</span>
+                        <span className="text-primary-text-tertiary align-bottom">Date:</span>
+                        <span className="text-primary-text align-bottom ml-0.5"><DateDisplay /></span>
+                    </span>
+                    <span className="whitespace-nowrap">
+                        <span className="text-secondary-300 mx-1 hidden sm:inline">|</span>
+                        <span className="text-primary-text-tertiary">Duration:</span>
+                        <span className="text-primary-text ml-0.5">{getTimeDifferenceFromNow(inputTransaction.timestamp, outputTransaction.timestamp)}</span>
+                    </span>
+                    <span className="whitespace-nowrap">
+                        <span className="text-secondary-300 mx-1 hidden sm:inline">|</span>
+                        <span className="text-primary-text-tertiary">Cost:</span>
+                        <span className="text-primary-text ml-0.5">{truncateDecimals(totalFee, sourceTokenPrecision)} {sourceTokenSymbol}</span>
+                    </span>
+                </div>
+            </div>
+        );
+    }
+
+    if (status !== SwapStatus.Completed) {
+        return (
+            <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-y-1">
+                <StatusIcon swap={status} />
+                <div className="flex items-center flex-wrap">
+                    <span className="text-secondary-300 mx-1 hidden sm:inline">|</span>
+                    <span className="whitespace-nowrap text-primary-text-tertiary align-bottom">Date:</span>
+                    <span className="whitespace-nowrap text-primary-text align-bottom"><DateDisplay /></span>
+                    <span className="text-primary-text-tertiary ml-1">({getTimeDifferenceFromNow(inputTransaction.timestamp, new Date().toString())} ago)</span>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-2 mb-4 text-base md:text-xl">
+        <div className="flex sm:flex-row">
             <StatusIcon swap={status} />
-            <span className="text-secondary-300 mx-1 hidden lg:block">|</span>
-            <div className="gap-1 flex flex-row items-center">
-                <p className="whitespace-nowrap text-primary-text-tertiary">Date:</p>
-                <div className="whitespace-nowrap text-primary-text"><DateDisplay /></div>
-            </div>
-            <span className="text-secondary-300 mx-1 hidden lg:block">|</span>
-            <div className=" gap-1 flex flex-row items-center text-primary-text">
-                <p className="whitespace-nowrap text-primary-text-tertiary">Duration:</p>
-                {outputTransaction ? (
-                    <p>
-                        {getTimeDifferenceFromNow(inputTransaction.timestamp, outputTransaction.timestamp)}
-                    </p>
-                )
-                    : (
-                        <p>
-                            {getTimeDifferenceFromNow(inputTransaction.timestamp, new Date().toString())} ago
-                        </p>
-                    )}
-            </div>
-            {
-                totalFee && (
-                    <>
-                        <span className="text-secondary-300 mx-1 hidden lg:block">|</span>
-                        <div className="gap-1 flex flex-row items-center">
-                            <p className="text-primary-text-tertiary">Cost:</p>
-                            <p className="text-primary-text">
-                                {truncateDecimals(totalFee, sourceTokenPrecision)} {sourceTokenSymbol}
-                            </p>
-                        </div>
-                    </>
-                )
-            }
         </div>
     );
 }

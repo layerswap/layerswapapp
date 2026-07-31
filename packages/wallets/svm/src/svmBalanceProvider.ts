@@ -1,6 +1,4 @@
-import { NetworkType } from "@layerswap/utils"
-import { TokenBalance, BalanceProvider } from "@layerswap/utils";
-import { insertIfNotExists, fetchWithTimeout, formatUnits } from "@layerswap/utils";
+import { NetworkType, BalanceProvider, insertIfNotExists, fetchWithTimeout, formatUnits } from "@layerswap/utils";
 
 export class SolanaBalanceProvider extends BalanceProvider {
     supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
@@ -11,13 +9,12 @@ export class SolanaBalanceProvider extends BalanceProvider {
         if (!address) return
 
         const tokens = insertIfNotExists(network.tokens || [], network.token)
-        const { PublicKey, Connection } = await import("@solana/web3.js")
+        const [{ PublicKey, Connection }, { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID }] = await Promise.all([
+            import("@solana/web3.js"),
+            import("@solana/spl-token"),
+        ]);
         class SolanaConnection extends Connection { }
-        const { getAssociatedTokenAddress } = await import('@solana/spl-token');
         const walletPublicKey = new PublicKey(address)
-        let balances: TokenBalance[] = []
-
-        if (!network?.tokens || !walletPublicKey) return
 
         const connection = new SolanaConnection(
             `${network.node_url}`,
@@ -29,53 +26,57 @@ export class SolanaBalanceProvider extends BalanceProvider {
             }
         );
 
-        async function getTokenBalanceWeb3(connection: SolanaConnection, tokenAccount) {
-            try {
-                const info = await connection.getTokenAccountBalance(tokenAccount);
-                return info?.value?.uiAmount;
-            } catch (error) {
-                if (error.message && error.message.includes("could not find account")) {
-                    return 0;
-                }
-                throw error;
+        const [nativeBalance, legacyAccounts, token2022Accounts] = await Promise.all([
+            connection.getBalance(walletPublicKey),
+            connection.getParsedTokenAccountsByOwner(walletPublicKey, {
+                programId: TOKEN_PROGRAM_ID,
+            }),
+            connection.getParsedTokenAccountsByOwner(walletPublicKey, {
+                programId: TOKEN_2022_PROGRAM_ID,
+            }),
+        ]);
+
+        const balancesByMint = new Map<string, number>();
+        for (const { account } of [...legacyAccounts.value, ...token2022Accounts.value]) {
+            const { mint, tokenAmount } = account.data.parsed.info;
+            const amount = Number(tokenAmount.uiAmountString);
+            if (Number.isFinite(amount)) {
+                balancesByMint.set(mint, (balancesByMint.get(mint) ?? 0) + amount);
             }
         }
 
-        for (const token of tokens) {
+        return tokens.map(token => {
             try {
-                let result: number | null = null
-                if (token.contract) {
-                    const sourceToken = new PublicKey(token?.contract!);
-                    const associatedTokenFrom = await getAssociatedTokenAddress(
-                        sourceToken,
-                        walletPublicKey
-                    );
-                    if (!associatedTokenFrom) return
-                    result = await getTokenBalanceWeb3(connection, associatedTokenFrom)
-                } else {
-                    const res = await connection.getBalance(walletPublicKey)
-                    if (res != null && !isNaN(res)) result = Number(formatUnits(BigInt(Number(res)), token.decimals))
-                }
+                const result = token.contract
+                    ? balancesByMint.get(new PublicKey(token.contract).toBase58()) ?? 0
+                    : Number(formatUnits(BigInt(nativeBalance), token.decimals));
 
-                if (result != null && !isNaN(result)) {
-                    const balance = {
+                if (Number.isFinite(result)) {
+                    return {
                         network: network.name,
                         token: token.symbol,
                         amount: result,
                         request_time: new Date().toJSON(),
                         decimals: Number(token?.decimals),
-                        isNativeCurrency: false
-                    }
-
-                    balances.push(balance)
+                        isNativeCurrency: !token.contract,
+                    };
                 }
 
+                return this.resolveTokenBalanceFetchError(
+                    new Error(`Invalid balance returned for ${token.symbol}`),
+                    token,
+                    network,
+                    !token.contract,
+                );
             }
-            catch (e) {
-                balances.push(this.resolveTokenBalanceFetchError(e, token, network))
+            catch (error) {
+                return this.resolveTokenBalanceFetchError(
+                    error instanceof Error ? error : new Error(String(error)),
+                    token,
+                    network,
+                    !token.contract,
+                );
             }
-        }
-
-        return balances
+        })
     }
 }

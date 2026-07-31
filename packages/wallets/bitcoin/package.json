@@ -37,7 +37,7 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@bigmi/client": "^0.10.0",
+    "@bigmi/client": "^0.10.1",
     "@bigmi/core": "^0.9.0",
     "@layerswap/ui-kit": "workspace:^",
     "@layerswap/utils": "workspace:^",
@@ -51,7 +51,7 @@
     "bitcoinjs-lib": "^7.0.0"
   },
   "devDependencies": {
-    "@bigmi/client": "^0.10.0",
+    "@bigmi/client": "^0.10.1",
     "@bigmi/core": "^0.9.0",
     "@layerswap/ui-kit": "workspace:^",
     "@layerswap/utils": "workspace:^",

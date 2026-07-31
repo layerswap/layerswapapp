@@ -9,11 +9,13 @@ import { isProviderConnectReady } from "../shared/isProviderConnectReady";
 import type { WalletConnectionProvider, WalletModalConnector, } from "@/types";
 import Connector from "../Connector";
 import { ProviderPicker } from "../ProviderPicker";
+import { ConnectorsListSkeleton } from "./ConnectorsListSkeleton";
 import { useScrollActivity } from "./useScrollActivity";
 
 type ConnectorsBrowserProps = {
     anyProviderHasMore: boolean;
     anyProviderLoadingMore: boolean;
+    blockListWhileLoading: boolean;
     connect: (
         connector: WalletModalConnector,
         provider: WalletConnectionProvider
@@ -35,6 +37,7 @@ type ConnectorsBrowserProps = {
 export function ConnectorsBrowser({
     anyProviderHasMore,
     anyProviderLoadingMore,
+    blockListWhileLoading,
     connect,
     connectors,
     featuredProviders,
@@ -89,43 +92,49 @@ export function ConnectorsBrowser({
                     }
                 )}
             >
-                <div className="grid grid-cols-2 gap-2">
-                    {connectors.map(connector => {
-                        const provider = providerByName.get(connector.providerName)
-                        return (
-                            <Connector
-                                key={connector.id}
-                                connector={connector}
-                                onClick={() => {
-                                    if (provider) void connect(connector, provider)
-                                }}
-                                isRecent={connector.isRecent}
-                                isProviderReady={isProviderConnectReady(provider)}
-                            />
-                        )
-                    })}
-                </div>
-                {showLoadingTail && (
-                    <div
-                        ref={loadMoreTriggerRef}
-                        className="col-span-2 flex justify-center items-center pt-2.5"
-                    >
-                        <CircularLoader className="w-8 h-8 animate-spin" />
-                    </div>
-                )}
-                {registryError && !showSourcesLoadingTail && (
-                    <div className="col-span-2 flex justify-center items-center gap-1.5 pt-2.5 pb-1">
-                        <p className="text-sm text-secondary-text">
-                            Some wallets couldn&apos;t be loaded.
-                        </p>
-                        <button
-                            type="button"
-                            onClick={retryRegistry}
-                            className="text-sm text-primary-text underline hover:no-underline"
-                        >
-                            Retry
-                        </button>
-                    </div>
+                {blockListWhileLoading ? (
+                    <ConnectorsListSkeleton />
+                ) : (
+                    <>
+                        <div className="grid grid-cols-2 gap-2">
+                            {connectors.map(connector => {
+                                const provider = providerByName.get(connector.providerName)
+                                return (
+                                    <Connector
+                                        key={connector.id}
+                                        connector={connector}
+                                        onClick={() => {
+                                            if (provider) void connect(connector, provider)
+                                        }}
+                                        isRecent={connector.isRecent}
+                                        isProviderReady={isProviderConnectReady(provider)}
+                                    />
+                                )
+                            })}
+                        </div>
+                        {showLoadingTail && (
+                            <div
+                                ref={loadMoreTriggerRef}
+                                className="col-span-2 flex justify-center items-center pt-2.5"
+                            >
+                                <CircularLoader className="w-8 h-8 animate-spin" />
+                            </div>
+                        )}
+                        {registryError && !showSourcesLoadingTail && (
+                            <div className="col-span-2 flex justify-center items-center gap-1.5 pt-2.5 pb-1">
+                                <p className="text-sm text-secondary-text">
+                                    Some wallets couldn&apos;t be loaded.
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={retryRegistry}
+                                    className="text-sm text-primary-text underline hover:no-underline"
+                                >
+                                    Retry
+                                </button>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
         </div>

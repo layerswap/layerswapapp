@@ -3,14 +3,19 @@ import type { WalletConnectionProvider, WalletModalConnector } from "@/types";
 import type { InternalConnector } from "@layerswap/utils";
 import { ImageWithFallback } from "./shared/ImageWithFallback";
 import WalletIcon from "./shared/WalletIcon";
+import CircularLoader from "./shared/CircularLoader";
 
 type MultichainConnectorModalProps = {
     selectedConnector: WalletModalConnector,
     providers: WalletConnectionProvider[],
     connect: (connector: InternalConnector, provider: WalletConnectionProvider) => Promise<void>
+    /** True while ecosystem SDKs / registry fetches are still settling — more
+     * variant rows may append, so show an explicit loading affordance instead
+     * of letting rows pop in silently. */
+    isLoadingMore?: boolean
 }
 
-export const MultichainConnectorPicker: FC<MultichainConnectorModalProps> = ({ selectedConnector, providers, connect }) => {
+export const MultichainConnectorPicker: FC<MultichainConnectorModalProps> = ({ selectedConnector, providers, connect, isLoadingMore }) => {
     const iconSrc = selectedConnector.icon
     return (
         <div className="flex flex-col justify-between h-full min-h-80">
@@ -65,6 +70,12 @@ export const MultichainConnectorPicker: FC<MultichainConnectorModalProps> = ({ s
                         )
                     })
                 }
+                {isLoadingMore && (
+                    <div className="w-full flex items-center justify-center gap-2 p-3">
+                        <CircularLoader className="w-5 h-5 animate-spin" />
+                        <p className="text-sm text-secondary-text">Checking for more networks...</p>
+                    </div>
+                )}
             </div>
         </div>
     )

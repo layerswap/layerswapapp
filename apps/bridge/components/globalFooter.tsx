@@ -42,7 +42,7 @@ const GLobalFooter = () => {
 
     return (
         <>
-            <footer className="z-0 hidden md:block fixed bottom-0 py-4 w-full px-6 lg:px-8 mt-auto">
+            <footer className="z-[-10] hidden md:block fixed bottom-0 py-4 w-full px-6 lg:px-8 mt-auto">
                 <div className="flex justify-between items-center w-full px-6">
                     <div className="px-6">
                         <div className="flex mt-3 md:mt-0 gap-6">

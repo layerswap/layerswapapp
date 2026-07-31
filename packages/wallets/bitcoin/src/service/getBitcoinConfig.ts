@@ -1,5 +1,17 @@
-import { unisat } from '@/connectors/unisat'
-import { bitget, createConfig, ctrl, leather, metamask, okx, onekey, reconnect, xverse, type Config, type CreateConnectorFn, } from '@bigmi/client'
+import {
+    bitget,
+    createConfig,
+    ctrl,
+    leather,
+    metamask,
+    okx,
+    onekey,
+    reconnect,
+    xverse,
+    unisat,
+    type Config,
+    type CreateConnectorFn,
+} from '@bigmi/client'
 import { bitcoin, createClient, defineChain, http, ChainId } from '@bigmi/core'
 let _config: Config | null = null
 let _configKey: string | null = null

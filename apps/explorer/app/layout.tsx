@@ -3,12 +3,21 @@ import './globals.css'
 import Footer from '@/components/Footer'
 import Script from 'next/script'
 
+const basePath = (process.env.NEXT_PUBLIC_APP_BASE_PATH || '').replace(/\/$/, '')
+const faviconPath = (name: string) => `${basePath}/favicon/${name}`
+
 export const metadata = {
   title: 'Layerswap Explorer: All the Transactions in One Place',
   description: 'Layerswap Explorer provides a detailed view of all transactions going through Layerswap. Search by address or txn to get the information you need.',
   icons: {
-    apple: '/favicon/apple-touch-icon.png',
+    icon: [
+      { url: faviconPath('favicon.ico'), sizes: '32x32' },
+      { url: faviconPath('favicon.svg'), type: 'image/svg+xml' },
+      { url: faviconPath('favicon-96x96.png'), sizes: '96x96', type: 'image/png' },
+    ],
+    apple: { url: faviconPath('apple-touch-icon.png'), sizes: '180x180' },
   },
+  manifest: faviconPath('site.webmanifest'),
   alternates: {
     canonical: 'https://layerswap.io/explorer/',
   },
