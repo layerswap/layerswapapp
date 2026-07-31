@@ -30,6 +30,3 @@ export type {
 export { ActionMessageType } from "@/types/actionMessage";
 export type { AppNetworkAdapter } from "@/types/network";
 export { defineNetworkAdapter } from "@/types/network";
-
-export { NetworkRoute, NetworkRouteToken } from "@layerswap/utils";
-export type { Refuel } from "@layerswap/utils";

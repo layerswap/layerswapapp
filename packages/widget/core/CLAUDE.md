@@ -6,11 +6,13 @@ Widget-specific conventions. See the repo-root `CLAUDE.md` for project-wide guid
 
 These types and their consumers live in different files, so a change on one side breaks the other without a git conflict marker. Follow the canonical helper.
 
-The contract types themselves are defined in `@layerswap/ui-kit` (import from `@layerswap/ui-kit/types`); the widget's `@/types` files are intentional backward-compat re-export shims feeding the public `@layerswap/widget/types` subpath. Add or change contract types **in ui-kit, never in the widget shims** — chain packages resolve the contract from ui-kit and will never see widget-local additions.
+Wallet connection/provider contracts are defined in `@layerswap/ui-kit` (import from `@layerswap/ui-kit/types`); the widget's `@/types` files are intentional backward-compat re-export shims feeding the public `@layerswap/widget/types` subpath. Add or change those contracts **in ui-kit, never in the widget shims** — chain packages resolve them from ui-kit and will never see widget-local additions.
+
+Wallet data models (`Wallet`, `InternalConnector`, network/resolver models) live in `@layerswap/utils` and must be imported from there. UI-kit consumes those models but does not re-export them.
 
 ### Wallet icons — `Wallet.icon` is a `string` URL, not a component
 
-`Wallet.icon` (and `InternalConnector.icon`) is a URL / `data:` URI (`icon?: string`) — both types defined in `@layerswap/ui-kit/types`. It is **not** a React component.
+`Wallet.icon` (and `InternalConnector.icon`) is a URL / `data:` URI (`icon?: string`) — both types are defined in `@layerswap/utils`. It is **not** a React component.
 
 - **Render wallet icons via `@/components/Wallet/WalletIconView`** — it wraps `ImageWithFallback` and falls back to `AddressIcon`/`WalletIcon` when no icon URL is present.
 - For a custom fallback (e.g. a network-aware `AddressIcon`), guard on `wallet?.icon` and render `WalletIconView` (or `ImageWithFallback` directly, as in `SummaryRow.tsx`) in the truthy branch.
