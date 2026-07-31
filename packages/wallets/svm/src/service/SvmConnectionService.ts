@@ -4,7 +4,7 @@ import type { WalletModalConnector } from "@layerswap/ui-kit/types"
 import { buildDeepLink, clearPendingDynamicWcMetadata, createRegistryConnector, getDynamicWcMetadata, getPendingDynamicWcMetadata, getRegistryEntry, mapConnectError, setDynamicWcMetadata, setPendingMetadataForRegistry, subscribeDisplayUri, walletKey, type AppNetworkAdapter, type WalletConnectWalletBase } from "@layerswap/ui-kit"
 import { findRegistryWalletByName } from "@layerswap/ui-kit"
 import { resolveWalletConnectorIcon } from "@layerswap/ui-kit"
-import { name as PROVIDER_NAME, id as PROVIDER_ID, solanaNames } from '../constants'
+import { name as PROVIDER_NAME, id as PROVIDER_ID } from '../constants'
 import { resolveSolanaWalletConnectorIcon } from '../utils'
 import { SolanaWalletConnectAdapter } from '../connectors/SolanaWalletConnectAdapter'
 import { svmAdapterManager } from './svmAdapterManager'
@@ -36,16 +36,10 @@ const networkSupport: Record<string, string[]> = {
 }
 
 function resolveSupportedNetworks(supportedNetworks: string[], connectorId: string): string[] {
-    const result: string[] = []
-    supportedNetworks.forEach((network) => {
-        const lowerCaseName = network.split('_')[0].toLowerCase()
-        if (lowerCaseName === 'solana') {
-            result.push(network)
-        } else if (networkSupport[lowerCaseName] && networkSupport[lowerCaseName].includes(connectorId?.toLowerCase())) {
-            result.push(network)
-        }
+    return supportedNetworks.filter((network) => {
+        const restrictedToConnectors = networkSupport[network.split('_')[0].toLowerCase()]
+        return !restrictedToConnectors || restrictedToConnectors.includes(connectorId?.toLowerCase())
     })
-    return result
 }
 
 export class SvmConnectionService<Network> implements WalletConnectionService<RuntimeDeps, Network> {
@@ -73,10 +67,7 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
     }
 
     getProviderIcon(): string | undefined {
-        const network = this._networks.find(item => {
-            const id = this._networkAdapter?.getId(item)
-            return id ? solanaNames.includes(id) : false
-        })
+        const network = this._networks.find(item => this._networkAdapter?.isSolanaNetwork(item))
         return network && this._networkAdapter ? this._networkAdapter.getIcon(network) : undefined
     }
 
