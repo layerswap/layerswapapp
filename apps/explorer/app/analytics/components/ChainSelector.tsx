@@ -129,7 +129,7 @@ export default function ChainSelector({
                         </div>
                         <div
                             id={listboxId}
-                            className="max-h-[328px] overflow-y-auto flex flex-col gap-0.5"
+                            className="max-h-[328px] overflow-y-auto flex flex-col gap-0.5 styled-scroll"
                             role="listbox"
                             aria-label="Networks"
                         >

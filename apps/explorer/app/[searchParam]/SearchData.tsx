@@ -15,9 +15,6 @@ interface SearchDataProps {
 const apiClient = new LayerswapApiClient();
 
 export default function SearchData({ searchParam }: SearchDataProps) {
-    const basePath = process.env.NEXT_PUBLIC_APP_BASE_PATH;
-
-
     const getKey = (pageIndex: number, previousPageData: ApiResponse<SwapData[]> | null) => {
         if (previousPageData && (!previousPageData.data || previousPageData.data.length === 0)) return null;
         return `/explorer/${searchParam}?version=${process.env.NEXT_PUBLIC_API_VERSION}&page=${pageIndex + 1}&statuses=Completed&statuses=PendingWithdrawal&statuses=PendingRefund&statuses=Refunded`;
@@ -57,7 +54,7 @@ export default function SearchData({ searchParam }: SearchDataProps) {
 
     // Handle error and empty states
     if (error || isEmptyData) return <NotFound />;
-    if (isLoading) return <LoadingBlocks />;
+    if (isLoading) return <LoadingBlocks variant="swap" />;
 
     // Multiple swaps found - show list view
     const hasMultipleSwaps = allData.length > 1;
@@ -67,7 +64,6 @@ export default function SearchData({ searchParam }: SearchDataProps) {
             <SwapListView
                 swaps={filteredSwaps}
                 destinationAddress={swap?.destination_address}
-                basePath={basePath}
                 onLoadMore={() => setSize(size + 1)}
                 isLoadingMore={isLoadingMore}
                 isReachingEnd={isReachingEnd}

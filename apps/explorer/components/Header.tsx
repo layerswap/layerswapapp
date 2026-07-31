@@ -14,8 +14,8 @@ export default function Header() {
     const isSearchPage = !isHome && !isAnalytics
     const internalLinkClass = (active: boolean) =>
         `rounded-lg px-2 py-1 text-sm transition-colors sm:px-3 sm:py-2 sm:text-base ${active
-            ? 'bg-secondary-500 text-primary-text'
-            : 'text-secondary-text hover:text-primary-text'
+            ? 'bg-secondary-300 text-primary-text'
+            : 'text-secondary-text hover:bg-secondary-500 hover:text-primary-text'
         }`
 
     return (
@@ -23,8 +23,8 @@ export default function Header() {
             {
                 version === 'sandbox' &&
                 <div className='px-6 lg:px-8'>
-                    <div className="h-0.5 bg-[#D95E1B] rounded-full " />
-                    <div className="absolute -top-0.5 right-[calc(50%-68px)] bg-[#D95E1B] py-0.5 px-10 rounded-b-md text-xs scale-75 text-primary-text">
+                    <div className="h-0.5 rounded-full bg-warning-foreground" />
+                    <div className="absolute -top-0.5 right-[calc(50%-68px)] rounded-b-md bg-warning-foreground px-10 py-0.5 text-xs text-secondary-900 scale-75">
                         TESTNET
                     </div>
                 </div>
@@ -50,10 +50,10 @@ export default function Header() {
                             Analytics
                         </Link>
                         <span className="mx-1 hidden h-5 w-px bg-secondary-300 sm:block" aria-hidden="true" />
-                        <Link target='_blank' href={'https://layerswap.io/'} className='px-2 sm:px-3 py-1 sm:py-2 hover:opacity-70 flex items-center gap-1 text-primary-text text-sm sm:text-base transition-all duration-200'>
+                        <Link target='_blank' href={'https://layerswap.io/'} className='flex items-center gap-1 rounded-lg px-2 py-1 text-sm text-secondary-text transition-colors hover:bg-secondary-500 hover:text-primary-text sm:px-3 sm:py-2 sm:text-base'>
                             <span>App</span>
                         </Link>
-                        <Link target='_blank' href={'https://docs.layerswap.io/'} className='hidden px-2 sm:px-3 py-1 sm:py-2 hover:opacity-70 sm:flex items-center gap-1 text-primary-text text-sm sm:text-base transition-all duration-200'>
+                        <Link target='_blank' href={'https://docs.layerswap.io/'} className='hidden items-center gap-1 rounded-lg px-2 py-1 text-sm text-secondary-text transition-colors hover:bg-secondary-500 hover:text-primary-text sm:flex sm:px-3 sm:py-2 sm:text-base'>
                             <span>Docs</span>
                         </Link>
                     </div>
