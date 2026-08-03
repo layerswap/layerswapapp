@@ -1,6 +1,6 @@
 import { ReactNode, SVGProps } from "react";
+import { CheckCircle2 } from "lucide-react";
 import { SwapStatus } from "../../models/SwapStatus";
-import { CheckCircleFilled } from "../icons/CheckCircleFilled";
 
 type StatusVariant = 'success' | 'warning' | 'error';
 
@@ -14,7 +14,7 @@ const STATUS_CONFIG: Record<string, StatusConfig> = {
   [SwapStatus.Completed]: {
     label: "Completed",
     variant: "success",
-    icon: CheckCircleFilled,
+    icon: CheckCircle2,
   },
   [SwapStatus.Failed]: {
     label: "Failed",
@@ -68,15 +68,15 @@ export default function StatusIcon({ swap }: { swap: string | undefined }) {
   const Icon = icon;
 
   return (
-    <div className={`inline-flex items-center space-x-1 sm:space-x-1.5 px-2 py-1 rounded-lg w-max ${VARIANT_STYLES[variant]}`}>
-      {Icon && <Icon className="w-3.5 h-3.5 sm:w-5 sm:h-5" />}
-      <span className="font-medium text-sm md:text-xl">{label}</span>
+    <div className={`inline-flex items-center space-x-1 px-2 py-1 rounded-lg w-max ${VARIANT_STYLES[variant]}`}>
+      {Icon && <Icon className="w-3.5 h-3.5" />}
+      <span className="font-medium md:text-sm text-base">{label}</span>
     </div>
   );
 }
 
 function PendingDot() {
-  return <span className="w-3 h-3 rounded-full bg-warning-foreground" />;
+  return <span className="w-3.5 h-3.5 rounded-full bg-warning-foreground" />;
 }
 
 export function GreyIcon() {

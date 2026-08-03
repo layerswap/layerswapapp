@@ -21,7 +21,6 @@ import { useSelectedAccount } from "@/context/swapAccounts";
 // only downloads when the user actually submits a swap and the drawer opens.
 import { Suspense, lazy } from "react"
 import { SwapDetailsSceleton } from "@/components/Common/Sceletons"
-const SwapDetails = lazy(() => import("../Withdraw/SwapDetails"))
 import { SwapFormValues } from "./SwapFormValues";
 import { useCallbacks } from "@/context/callbackProvider";
 import ContractAddressNote from "@/components/Input/Address/ContractAddressNote";
@@ -30,6 +29,7 @@ import UrlAddressNote from "@/components/Input/Address/UrlAddressNote";
 import { Address } from "@/lib/address/Address";
 import ContractAddressValidationCache, { ContractSourceAddressValidationCache } from "./SecondaryComponents/validationError/ContractAddressValidationCache";
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
+const SwapDetails = lazy(() => import("../Withdraw/SwapDetails"))
 
 type NetworkToConnect = {
     DisplayName: string;

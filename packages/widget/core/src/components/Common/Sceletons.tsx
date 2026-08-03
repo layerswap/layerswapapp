@@ -199,9 +199,9 @@ export const SwapDetailsComponentSceleton = () => {
 }
 
 export const SwapDetailsSceleton = () => {
-  return <div className="w-full h-[430px]">
+  return <div className="w-full">
     <div className="animate-pulse flex space-x-4">
-      <div className="flex-1 space-y-6 py-1">
+      <div className="flex-1 space-y-3 py-1">
         <div className="h-32 bg-secondary-500 rounded-lg"></div>
         <div className="h-40 bg-secondary-500 rounded-lg"></div>
         <div className="h-12 bg-secondary-500 rounded-lg"></div>
