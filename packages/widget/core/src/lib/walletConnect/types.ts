@@ -1,4 +1,4 @@
-import { NetworkType } from '@/Models/Network'
+import type { NetworkType } from '@/Models/Network'
 
 export type WalletConnectLink = {
     native?: string | null
@@ -43,8 +43,8 @@ export type QrCodeState =
     | { state: 'fetched'; value: string; deepLink?: string }
 
 const CAIP_NAMESPACE_TO_NETWORK_TYPE: Record<string, NetworkType> = {
-    eip155: NetworkType.EVM,
-    solana: NetworkType.Solana,
+    eip155: 'evm' as NetworkType,
+    solana: 'solana' as NetworkType,
 }
 
 export const chainsToNetworkTypes = (chains: string[] | undefined): NetworkType[] => {

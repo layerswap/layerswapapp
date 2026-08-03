@@ -119,6 +119,7 @@ export function computeConfiguredConnectors({
 
             return {
                 ...w,
+                source: 'configured' as const,
                 order: resolveEVMConnectorOrder(w.id),
                 type,
                 isMobileSupported: isWalletConnectSupported,

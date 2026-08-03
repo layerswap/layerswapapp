@@ -9,6 +9,7 @@ import type {
 } from '@layerswap/widget/types'
 import {
     Address,
+    isWalletConnectRegistryConnector,
     KnownInternalNames,
     sleep,
 } from '@layerswap/widget/internal'
@@ -237,7 +238,7 @@ export class ParadexConnectionService implements WalletConnectionService<Runtime
 
         try {
             setSelectedConnector?.(connector)
-            const isRegistryEvmConnector = connector.type === 'walletConnect' && !!connector.mobile
+            const isRegistryEvmConnector = isWalletConnectRegistryConnector(connector)
             const isEvm = isRegistryEvmConnector
                 || evmProvider.availableConnectors?.find(w => w.id === connector.id)
                 || evmProvider.additionalConnectors?.find(w => w.id === connector.id)

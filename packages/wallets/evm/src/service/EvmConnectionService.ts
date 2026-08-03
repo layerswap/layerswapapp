@@ -18,6 +18,7 @@ import {
 import {
     buildDeepLink,
     clearPendingDynamicWcMetadata,
+    isWalletConnectRegistryConnector,
     mapConnectError,
     setDynamicWcMetadata,
     setPendingMetadataForRegistry,
@@ -112,8 +113,10 @@ export class EvmConnectionService implements WalletConnectionService<RuntimeDeps
 
     getAvailableConnectors(allConnectors: readonly Connector[]): InternalConnector[] {
         const configured = this.getConfiguredConnectors(allConnectors)
+        const supportsRegistry = supportsRegistryConnects(allConnectors)
         const { featured } = this.getSplitRegistryConnectors(allConnectors)
-        return [...configured, ...featured, ...(this._deps.recentConnectors ?? [])]
+        const recent = supportsRegistry ? (this._deps.recentConnectors ?? []) : []
+        return [...configured, ...featured, ...recent]
     }
 
     getAdditionalConnectors(allConnectors: readonly Connector[]): InternalConnector[] {
@@ -244,7 +247,7 @@ export class EvmConnectionService implements WalletConnectionService<RuntimeDeps
 
         let unsubscribeDisplayUri: (() => void) | undefined
         const internalConnector = props?.connector
-        const isRegistry = !!internalConnector && internalConnector.type === 'walletConnect' && !!internalConnector.mobile
+        const isRegistry = isWalletConnectRegistryConnector(internalConnector)
 
         try {
             if (!internalConnector) return
@@ -313,7 +316,7 @@ export class EvmConnectionService implements WalletConnectionService<RuntimeDeps
                 })
             }
 
-            // Always prime pending metadata for registry-origin connects so the
+            // Always prime pending metadata for registry-sourced connects so the
             // `connectedWallets` re-render that happens between connect start and
             // address resolution can render the right wallet name/icon.
             const pendingMetadata = setPendingMetadataForRegistry(EVM_NS, isRegistry ? internalConnector : undefined)

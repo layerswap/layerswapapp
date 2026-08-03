@@ -17,6 +17,7 @@ import {
     findRegistryWalletByName,
     getDynamicWcMetadata,
     getPendingDynamicWcMetadata,
+    isWalletConnectRegistryConnector,
     mapConnectError,
     resolveWalletConnectorIcon,
     setDynamicWcMetadata,
@@ -118,6 +119,7 @@ export class SvmConnectionService implements WalletConnectionService<RuntimeDeps
             installed.push({
                 name: adapterName,
                 id: adapterName,
+                source: 'configured',
                 icon: resolveSolanaWalletConnectorIcon({ connector: adapterName, iconUrl: wallet.icon }),
                 type: isInstalled ? 'injected' : 'other',
                 installUrl: wallet.url,
@@ -256,7 +258,7 @@ export class SvmConnectionService implements WalletConnectionService<RuntimeDeps
             // on mobile still needs its registry entry resolved on demand so we
             // can deeplink into its app instead of rendering a desktop QR.
             let matchedRegistry: WalletConnectWalletBase | undefined
-            let matched = connector.type === 'walletConnect'
+            let matched = isWalletConnectRegistryConnector(connector)
             if (!matched && isMobilePlatform && installedAdapter && !isBareWcTile && requestRegistryConnectors) {
                 const found = await findRegistryWalletByName(requestRegistryConnectors, connector.name)
                 if (found) {
@@ -402,6 +404,11 @@ export class SvmConnectionService implements WalletConnectionService<RuntimeDeps
             asSourceSupportedNetworks: this._supported,
             name: PROVIDER_NAME,
             id: PROVIDER_ID,
+            capabilities: {
+                walletConnectRegistry: {
+                    networkTypes: [NetworkType.Solana],
+                },
+            },
             providerIcon: this.getProviderIcon(),
             ready: useSvmStore.getState().ready,
             requestAdditionalConnectors: this.requestAdditionalConnectors.bind(this),

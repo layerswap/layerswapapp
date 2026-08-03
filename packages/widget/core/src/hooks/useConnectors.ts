@@ -1,8 +1,10 @@
 import { useMemo, useRef } from "react";
 import { InternalConnector, WalletConnectionProvider, WalletModalConnector } from "@/types/wallet";
-import { removeDuplicatesWithKey } from "@/components/Wallet/WalletModal/utils";
-import { walletKey } from "@/lib/wallets/utils/walletKey";
+import { removeDuplicatesWithKey } from "@/components/Wallet/WalletModal/utils.js";
+import { walletKey } from "@/lib/wallets/utils/walletKey.js";
 import { NetworkType } from "@/Models/Network";
+import { isWalletConnectRegistryConnector } from "@/lib/walletConnect/connectorSource.js";
+import { getProvidersForWalletConnectNetworkType } from "@/lib/walletConnect/providerCapabilities.js";
 
 type UseConnectorsParams = {
     searchValue?: string;
@@ -58,11 +60,13 @@ export const resolveChainConnectors = (pool: InternalConnector[], providers: Wal
         for (const connector of record.connectors) {
             if (connector.providerName && !variants.some(variant => variant.providerName === connector.providerName)) variants.push(connector)
         }
-        const template = record.connectors.find(connector => connector.type === 'walletConnect')
+        const template = record.connectors.find(isWalletConnectRegistryConnector)
         for (const networkType of record.networkTypes) {
-            const provider = providers.find(candidate => candidate.id === networkType)
-            if (provider && template && !variants.some(variant => variant.providerName === provider.name)) {
-                variants.push({ ...template, providerName: provider.name, type: 'walletConnect', isLoadable: false })
+            const matchingProviders = getProvidersForWalletConnectNetworkType(providers, networkType)
+            for (const provider of matchingProviders) {
+                if (template && !variants.some(variant => variant.providerName === provider.name)) {
+                    variants.push({ ...template, providerName: provider.name, isLoadable: false })
+                }
             }
         }
         variants.sort((a, b) => providers.findIndex(p => p.name === a.providerName) - providers.findIndex(p => p.name === b.providerName))

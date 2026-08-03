@@ -26,6 +26,16 @@ export type InternalConnector = {
     isLoadable?: boolean,
     networkTypes?: NetworkType[],
     mobile?: WalletConnectLink,
+    /**
+     * Describes where the connector definition came from. Configured connectors
+     * use their provider-owned transport; registry connectors are metadata-backed
+     * definitions whose execution strategy is selected separately from `type`.
+     *
+     * Optional for backwards compatibility: an omitted source is treated as a
+     * configured connector. Never infer this from `type`, `mobile`, or other
+     * presentation metadata.
+     */
+    source?: 'configured' | 'registry',
 }
 
 export type Wallet = {
@@ -75,6 +85,16 @@ export type WalletProviderStoreRegistry = {
     subscribe(listener: () => void): () => void
 }
 
+export type WalletProviderCapabilities = {
+    /**
+     * WalletConnect registry ecosystems this provider can execute. This is
+     * intentionally separate from concrete route/transfer network support.
+     */
+    walletConnectRegistry?: {
+        networkTypes: readonly NetworkType[]
+    }
+}
+
 export type WalletProvider = WalletWrapper & {
     /**
      * Vanilla external-store factory for connection state. Replaces the old
@@ -105,6 +125,7 @@ export type WalletProvider = WalletWrapper & {
 export type WalletProviderDescriptor = {
     id: string,
     name?: string,
+    capabilities?: WalletProviderCapabilities,
     providerIcon?: string,
     autofillSupportedNetworks?: string[],
     withdrawalSupportedNetworks?: string[],
@@ -194,6 +215,7 @@ export type WalletConnectionProvider = {
     asSourceSupportedNetworks?: string[],
     name: string,
     id: string,
+    capabilities?: WalletProviderCapabilities,
     providerIcon?: string,
     unsupportedPlatforms?: string[],
     hideFromList?: boolean,
