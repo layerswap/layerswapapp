@@ -9,5 +9,5 @@
       "main": true
     }
   },
-  "ignoreCommand": "bash -c 'cd ../.. && git diff --quiet HEAD^ HEAD -- examples/widget-react-host packages pnpm-lock.yaml pnpm-workspace.yaml || exit 1'"
+  "ignoreCommand": "bash -c 'cd ../.. && git diff --quiet HEAD^ HEAD -- examples/widget-react-host packages || exit 1'"
 }
