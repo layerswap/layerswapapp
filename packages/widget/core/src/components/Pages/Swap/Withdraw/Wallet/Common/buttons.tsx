@@ -87,10 +87,14 @@ export const ChangeNetworkMessage: FC<{ data: ActionData, network: string }> = (
         />
     }
     else if (data.isError) {
+        const error = data.error as (Error & { shortMessage?: string, cause?: { shortMessage?: string } }) | null
+        const reason = error?.cause?.shortMessage ?? error?.shortMessage
         return <WalletMessage
             status="error"
             header='Network switch failed'
-            details={`Please try again or switch your wallet network manually to ${network}`}
+            details={reason
+                ? `${reason} Please try again or switch your wallet network manually to ${network}.`
+                : `Please try again or switch your wallet network manually to ${network}`}
         />
     }
 }

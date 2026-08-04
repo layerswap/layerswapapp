@@ -113,6 +113,12 @@ The widget's EVM wallet provider adopts the host's `Config` via
 nested `<WagmiProvider>`, no second connect flow — the widget reads the
 host's connected account/chain through the same `Config` instance.
 
+You only need to declare the chains **your own app** uses — the widget
+appends every Layerswap-supported EVM chain (with its transports) to the
+adopted config at init, so network switching and transfers work on chains
+you didn't list. Your chain order is preserved, and your transports win
+for chains you did configure.
+
 **Gotcha:** wagmi v2 defaults `multiInjectedProviderDiscovery: true`,
 which auto-registers an EIP-6963 connector for every announced injected
 provider alongside any bare connector you declared. With both an
