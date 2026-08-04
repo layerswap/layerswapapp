@@ -53,7 +53,7 @@ test('the manifest source is fixed by the loader and single-flighted across conc
   try {
     const [a, b, c] = await Promise.all([resolveSource(), resolveSource(), resolveSource()]);
     assert.equal(fetchCount, before + 1);
-    assert.equal(requestedManifestUrl, 'https://layerswap-widget-cdn.layerswapcdn.workers.dev/v1/manifest.json');
+    assert.equal(requestedManifestUrl, 'https://layerswapcdntest.blob.core.windows.net/widget-cdn/v1/manifest.json');
     assert.equal(a.remoteEntry, b.remoteEntry);
     assert.equal(b.remoteEntry, c.remoteEntry);
   } finally {
