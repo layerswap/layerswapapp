@@ -67,37 +67,29 @@ jobs:
           BUILD_ID=$(node --input-type=module -e "import { resolveBuildIdentity } from './apps/widget-cdn/scripts/build-id.mjs'; process.stdout.write(resolveBuildIdentity('./apps/widget-cdn').buildId)")
           echo "LAYERSWAP_BUILD_ID=${BUILD_ID}" >> "$GITHUB_ENV"
 
-      # Generate a new sandbox-only key for every run. The Blob delivery path
-      # can be tested without storing or exposing the production signing key.
-      - name: Generate ephemeral sandbox signing key
+      # Use the same stable signing identity as the published loader. Rotating
+      # this key during a normal deploy would break every existing installation.
+      - name: Materialize manifest signing key
         id: key
+        env:
+          PRIVATE_KEY_PEM: ${{ secrets.LAYERSWAP_PRIVATE_KEY_PEM }}
         run: |
+          if [ -z "$PRIVATE_KEY_PEM" ]; then
+            echo "::error::LAYERSWAP_PRIVATE_KEY_PEM is not configured"
+            exit 1
+          fi
           umask 077
           KEY_PATH="$RUNNER_TEMP/layerswap-azure-test-signing.pem"
-          openssl ecparam -name prime256v1 -genkey -noout -out "$KEY_PATH"
-          PUBLIC_KEY=$(openssl ec -in "$KEY_PATH" -pubout -outform DER 2>/dev/null | base64 | tr -d '\n')
+          printf '%s' "$PRIVATE_KEY_PEM" > "$KEY_PATH"
           echo "key-path=$KEY_PATH" >> "$GITHUB_OUTPUT"
-          echo "public-key=$PUBLIC_KEY" >> "$GITHUB_OUTPUT"
-
-          {
-            echo "### Azure sandbox manifest public key"
-            echo
-            echo "Copy this value into \`MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64\` to verify this deployment locally:"
-            echo
-            echo '```text'
-            echo "$PUBLIC_KEY"
-            echo '```'
-            echo
-            echo "This key is ephemeral and changes on every sandbox deployment."
-          } >> "$GITHUB_STEP_SUMMARY"
-
-          echo "::notice title=Azure sandbox manifest public key::$PUBLIC_KEY"
 
       - name: Build signed sandbox artifact
         working-directory: apps/widget-cdn
         env:
           LAYERSWAP_PRIVATE_KEY_PEM: ${{ steps.key.outputs.key-path }}
-        run: pnpm build
+        run: |
+          pnpm build
+          pnpm verify-manifest
 
       - name: Log in to personal Azure with OIDC
         uses: azure/login@v2
