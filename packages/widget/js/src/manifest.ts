@@ -96,7 +96,7 @@ export type Manifest = {
  * update this constant plus the GitHub secret `LAYERSWAP_PRIVATE_KEY_PEM`.
  */
 export const MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64 =
-    'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAESuHFHbltz/hfcY+DzIrLq7Ixc4efHE8SLZdNg0pZZDHTfdwbqLpGk4461EgNranHLWnVsoAbyQ4IyHIVnRAVKw==';
+    'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEfNBeyO8end9fs+S+OJ2KmLuRvTG2E/tcDdoQ4CKCf96MAn1eKZC58qV5UrAgpizQoae4EwvfeJlPxHGubj6uoA==';
 
 /**
  * Canonical Layerswap CDN manifest URL — the fixed source the loaders always
