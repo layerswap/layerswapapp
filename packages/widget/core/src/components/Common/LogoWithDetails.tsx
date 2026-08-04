@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { CopyButton } from "@layerswap/ui-kit/ui";
+import { CopyButton } from "@layerswap/ui-kit/components";
 import LayerSwapLogo from "../Icons/layerSwapLogo";
 import { Paperclip } from 'lucide-react'
 import { renderToString } from 'react-dom/server'

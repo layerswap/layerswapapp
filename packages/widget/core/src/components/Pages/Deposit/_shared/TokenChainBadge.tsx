@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { ImageWithFallback } from "@layerswap/ui-kit/ui";
+import { ImageWithFallback } from "@layerswap/ui-kit/components";
 
 type TokenChainBadgeProps = {
     tokenLogo?: string;

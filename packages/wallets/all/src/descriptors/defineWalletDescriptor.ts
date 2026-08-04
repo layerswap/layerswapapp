@@ -1,6 +1,10 @@
 import type { WalletProvider, WalletProviderDescriptor, WalletWrapper } from "@layerswap/ui-kit/types"
 import type { WalletProviderId } from "@layerswap/widget-types"
 
+export type DescriptorNetworkOptions = {
+    supportedNetworks?: string[]
+}
+
 /**
  * Identity helper that pins a default descriptor's `id` at the type level:
  *

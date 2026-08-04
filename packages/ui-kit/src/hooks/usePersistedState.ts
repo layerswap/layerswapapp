@@ -1,5 +1,5 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react"
-import { checkStorageIsAvailable, type storageType } from "./storageAvailable"
+import { checkStorageIsAvailable, type storageType } from "@/lib/storageAvailable"
 
 type PersistedState<T> = [T, Dispatch<SetStateAction<T>>]
 

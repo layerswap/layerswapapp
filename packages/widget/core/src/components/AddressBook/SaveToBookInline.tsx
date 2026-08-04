@@ -1,7 +1,7 @@
 import { FC, useState } from 'react'
 import clsx from 'clsx'
 import { BookmarkPlus } from 'lucide-react'
-import { FilledX } from "@layerswap/ui-kit/ui";
+import { FilledX } from "@layerswap/ui-kit/components";
 import { useAddressBookStore, NAME_MAX, COUNTER_SHOW_AT } from '@/stores/addressBookStore'
 import { NetworkType } from '@/Models/Network'
 import SecondaryButton from '../Buttons/secondaryButton'

@@ -3,7 +3,7 @@ import WalletsDropdown from './WalletsDropdown'
 import NetworksDropdown from './NetworksDropdown'
 import ClearAllButton from './ClearAllButton'
 import { FilterNetworkOption } from './types'
-import { SearchComponent } from "@layerswap/ui-kit/ui";
+import { SearchComponent } from "@layerswap/ui-kit/components";
 import { Wallet } from "@layerswap/utils";
 import { HistoryWalletAddress } from '@/lib/historyWalletAddresses'
 

@@ -10,7 +10,7 @@ import { Slippage } from '../Slippage'
 import { GasFee } from './DetailedEstimates'
 import NumFlowWithFallback from '@/components/Common/NumFlowWithFallback'
 import { Partner } from '@/Models/Partner'
-import { ImageWithFallback } from "@layerswap/ui-kit/ui";
+import { ImageWithFallback } from "@layerswap/ui-kit/components";
 import { useInitialSettings } from '@/context/settings'
 import { Address } from '@/lib/address/Address'
 import { useDepositSettings } from '@/context/depositSettings'

@@ -15,11 +15,11 @@
       "types": "./dist/types/types/index.d.ts",
       "default": "./dist/esm/types/index.js"
     },
-    "./ui": {
-      "types": "./dist/types/ui/index.d.ts",
-      "default": "./dist/esm/ui/index.js"
-    },
-    "./styles.css": "./dist/styles.css"
+    "./styles.css": "./dist/styles.css",
+    "./components": {
+      "types": "./dist/types/components/index.d.ts",
+      "default": "./dist/esm/components/index.js"
+    }
   },
   "sideEffects": [
     "./dist/styles.css"
@@ -31,7 +31,7 @@
   "scripts": {
     "build": "pnpm run clean && pnpm run build:esm+types && pnpm run build:styles",
     "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm && tsc-alias -p tsconfig.json --outDir ./dist/types",
-    "build:styles": "postcss ./src/ui/styles.css -o dist/styles.css --config postcss.config.cjs --env production",
+    "build:styles": "postcss ./src/components/styles.css -o dist/styles.css --config postcss.config.cjs --env production",
     "check:types": "tsc --noEmit",
     "clean": "rimraf dist tsconfig.tsbuildinfo"
   },

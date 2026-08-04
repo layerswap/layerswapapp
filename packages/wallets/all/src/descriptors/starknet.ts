@@ -1,5 +1,5 @@
 import type { WalletProviderDescriptor } from "@layerswap/ui-kit/types"
-import { defineWalletDescriptor } from "./defineWalletDescriptor"
+import { defineWalletDescriptor, type DescriptorNetworkOptions } from "./defineWalletDescriptor"
 import { readStorageJson } from "./persistedSession"
 
 // Inlined — importing `KnownInternalNames` pulls a runtime barrel that
@@ -11,13 +11,14 @@ const STARKNET_NETWORKS = ['STARKNET_MAINNET', 'STARKNET_SEPOLIA', 'STARKNET_GOE
  * `@layerswap/wallet-starknet` (`starknet`, starknetkit) out of the host's
  * entry chunk.
  */
-export function createStarknetDescriptor(): WalletProviderDescriptor {
+export function createStarknetDescriptor(options?: DescriptorNetworkOptions): WalletProviderDescriptor {
+    const supportedNetworks = options?.supportedNetworks ?? STARKNET_NETWORKS
     return defineWalletDescriptor({
         id: 'starknet',
         name: 'Starknet',
-        autofillSupportedNetworks: STARKNET_NETWORKS,
-        withdrawalSupportedNetworks: STARKNET_NETWORKS,
-        asSourceSupportedNetworks: STARKNET_NETWORKS,
+        autofillSupportedNetworks: supportedNetworks,
+        withdrawalSupportedNetworks: supportedNetworks,
+        asSourceSupportedNetworks: supportedNetworks,
         // Key presence isn't a session signal — any write to wallet-starknet's
         // store creates `ls-starknet-accounts`, even with empty state.
         // Hydrate eagerly only when actual account state exists.

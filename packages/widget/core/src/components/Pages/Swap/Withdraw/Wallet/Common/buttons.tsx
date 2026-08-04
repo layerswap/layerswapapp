@@ -1,5 +1,5 @@
 import { ComponentProps, FC, useCallback, useMemo, useState } from "react";
-import { WalletIcon } from "@layerswap/ui-kit/ui";
+import { WalletIcon } from "@layerswap/ui-kit/components";
 import { ActionData } from "./sharedTypes";
 import SubmitButton, { SubmitButtonProps } from "@/components/Buttons/submitButton";
 import useWallet from "@/hooks/useWallet";

@@ -1,13 +1,13 @@
 "use client";
 import { Context, createContext, type Dispatch, type ReactNode, type SetStateAction, useCallback, useContext, useEffect, useMemo, useState, } from "react"
 import { connectModalStore } from "@layerswap/ui-kit"
-import * as UiKit from "@layerswap/ui-kit/ui"
-import type { ModalWalletProvider } from "@layerswap/ui-kit/ui"
+import * as UiKit from "@layerswap/ui-kit/components"
+import type { ModalWalletProvider } from "@layerswap/ui-kit/components"
 import type { WalletConnectionProvider, WalletModalConnector } from "@layerswap/ui-kit/types";
 import type { Wallet } from "@layerswap/utils";
 
 export type { WalletModalConnector } from "@layerswap/ui-kit/types"
-export type { ModalWalletProvider } from "@layerswap/ui-kit/ui"
+export type { ModalWalletProvider } from "@layerswap/ui-kit/components"
 
 export type ConnectPresentation = "modal" | "inline"
 

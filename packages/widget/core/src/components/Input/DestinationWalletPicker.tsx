@@ -3,7 +3,7 @@ import { ChevronDown, PlusIcon } from "lucide-react";
 import { AddressGroup, AddressItem, AddressTriggerProps } from "./Address/AddressPicker";
 import { Partner } from "@/Models/Partner";
 import { Wallet } from "@layerswap/utils";
-import { ImageWithFallback } from "@layerswap/ui-kit/ui";
+import { ImageWithFallback } from "@layerswap/ui-kit/components";
 import WalletIconView from "@/components/Wallet/WalletIconView";
 import clsx from 'clsx';
 import { useNamedAddress } from "@/stores/addressBookStore";

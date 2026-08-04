@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 @config '../../tailwind.config.js';
-@source "../../../../ui-kit/src/ui/shared";
+@source "../../../../ui-kit/src/components";
 @import '@layerswap/ui-kit/styles.css';
 
 /*

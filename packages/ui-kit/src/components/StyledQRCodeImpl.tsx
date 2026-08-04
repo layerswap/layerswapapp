@@ -1,6 +1,6 @@
 import { useState, type FC } from "react"
 import { QRCode } from "react-qrcode-logo"
-import { useOptionalWalletUi } from "../internal/WalletUiContext"
+import { useOptionalWalletUi } from "./internal/WalletUiContext"
 
 export type StyledQRCodeProps = {
     value: string

@@ -10,7 +10,7 @@ import { useDepositSelection } from "../depositSelectionContext";
 import { Address } from "@/lib/address/Address";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import DestinationTokenPicker from "../DestinationTokenPicker";
-import { ImageWithFallback, WalletIcon } from "@layerswap/ui-kit/ui";
+import { ImageWithFallback, WalletIcon } from "@layerswap/ui-kit/components";
 import { ResolveConnectorIcon } from "@/components/Icons/ConnectorIcons";
 import { useExtendedDepositOption } from "./useExtendedDepositOption";
 

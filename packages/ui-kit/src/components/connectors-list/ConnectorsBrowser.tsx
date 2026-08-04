@@ -1,11 +1,11 @@
 import { useMemo } from "react";
 import type { Dispatch, RefObject, SetStateAction, } from "react";
 import clsx from "clsx";
-import CircularLoader from "../shared/CircularLoader";
-import { SearchComponent } from "../shared/Search";
+import CircularLoader from "../CircularLoader";
+import { SearchComponent } from "../Search";
 import { useWalletUi } from "../internal/WalletUiContext";
-import useWindowDimensions from "../shared/useWindowDimensions";
-import { isProviderConnectReady } from "../shared/isProviderConnectReady";
+import useWindowDimensions from "@/hooks/useWindowDimensions";
+import { isProviderConnectReady } from "@/lib/walletConnect/isProviderConnectReady";
 import type { WalletConnectionProvider, WalletModalConnector, } from "@/types";
 import Connector from "../Connector";
 import { ProviderPicker } from "../ProviderPicker";

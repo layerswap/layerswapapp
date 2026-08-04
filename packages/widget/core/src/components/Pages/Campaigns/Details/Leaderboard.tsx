@@ -7,7 +7,7 @@ import { ApiResponse } from "@/Models/ApiResponse"
 import ClickTooltip from "@/components/Common/ClickTooltip"
 import { truncateDecimals } from "@/components/utils/RoundDecimals"
 import AddressIcon from "@/components/Common/AddressIcon";
-import { ImageWithFallback } from "@layerswap/ui-kit/ui";
+import { ImageWithFallback } from "@layerswap/ui-kit/components";
 import { useSelectedAccount } from "@/context/swapAccounts"
 import { useWallet } from "@/exports"
 import VaulDrawer from "@/components/Modal/vaulModal";

@@ -3,8 +3,8 @@ import { Check } from "lucide-react"
 import { useState, type FC, type ReactNode } from "react"
 import clsx from "clsx"
 import CopyIcon from "./CopyIcon"
-import useCopyClipboard from "./useCopyClipboard"
-import { useOptionalWalletUi } from "../internal/WalletUiContext"
+import useCopyClipboard from "@/hooks/useCopyClipboard"
+import { useOptionalWalletUi } from "./internal/WalletUiContext"
 
 interface CopyButtonProps {
     className?: string

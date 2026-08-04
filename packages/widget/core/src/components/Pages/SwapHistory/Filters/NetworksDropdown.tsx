@@ -4,7 +4,7 @@ import CheckboxRow from './CheckboxRow'
 import { filterChipClasses } from './chipStyles'
 import { FilterNetworkOption } from './types'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/shadcn'
-import { ImageWithFallback, SearchComponent } from "@layerswap/ui-kit/ui";
+import { ImageWithFallback, SearchComponent } from "@layerswap/ui-kit/components";
 
 type NetworksDropdownProps = {
     networks: FilterNetworkOption[]

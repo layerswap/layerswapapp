@@ -6,7 +6,7 @@ import { TokenBalance } from "@/Models/Balance";
 import { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components//shadcn/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components//shadcn/tooltip";
-import { ImageWithFallback } from "@layerswap/ui-kit/ui";
+import { ImageWithFallback } from "@layerswap/ui-kit/components";
 
 type TokenTitleWithBalanceProps = {
     item: NetworkRouteToken;

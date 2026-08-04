@@ -1,9 +1,9 @@
 import { FC } from "react";
 import type { WalletModalConnector } from "@/types";
-import StyledQRCode from "./shared/StyledQRCode";
-import CopyButton from "./shared/CopyButton";
-import { ImageWithFallback } from "./shared/ImageWithFallback";
-import WalletIcon from "./shared/WalletIcon";
+import StyledQRCode from "./StyledQRCode";
+import CopyButton from "./CopyButton";
+import { ImageWithFallback } from "./ImageWithFallback";
+import WalletIcon from "./WalletIcon";
 
 export const WalletQrCode: FC<{ selectedConnector: WalletModalConnector }> = ({ selectedConnector }) => {
     const connectorIconSrc = selectedConnector.icon

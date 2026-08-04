@@ -20,10 +20,18 @@ export {
     useRegistryBrowseStatuses,
     useWalletDescriptorLoader,
     WalletDescriptorLoaderContext,
+    isProviderConnectReady,
 } from "@/lib/walletConnect";
 export type { DisplayUriSource, RegistryConnector, WalletConnectWalletBase } from "@/lib/walletConnect";
 export { useConnectors, connectorKey, resolveChainConnectors } from "@/hooks/useConnectors";
-export { WalletProvidersRegistryProvider, useHasConfiguredWalletProviders, useWalletProvidersRegistry, useWalletProvidersReady } from "@/context/WalletProvidersRegistryProvider";
+export { useWalletProviderSnapshots } from "@/hooks/useWalletProviderSnapshots";
+export { useProvidersConnectReady } from "@/hooks/useProvidersConnectReady";
+export { usePersistedState } from "@/hooks/usePersistedState";
+export { default as useCopyClipboard } from "@/hooks/useCopyClipboard";
+export { default as useWindowDimensions } from "@/hooks/useWindowDimensions";
+export { checkStorageIsAvailable } from "@/lib/storageAvailable";
+export type { storageType } from "@/lib/storageAvailable";
+export { WalletProvidersRegistryProvider, DescriptorHydrationBoundary, useHasConfiguredWalletProviders, useWalletProvidersRegistry, useWalletProvidersReady } from "@/context/WalletProvidersRegistryProvider";
 export { walletKey } from "@/walletKey";
 export type { WalletConnectWallet } from "@/types/WalletConnectWallet";
 

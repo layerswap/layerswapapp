@@ -3,7 +3,7 @@ import { useFormikContext } from "formik";
 import { ChevronDown, Plus, Wallet } from "lucide-react";
 import { Network, NetworkRoute, NetworkRouteToken, Token } from "@/Models/Network";
 import useWallet from "@/hooks/useWallet";
-import useProvidersConnectReady from "@/hooks/useProvidersConnectReady";
+import { useProvidersConnectReady } from "@layerswap/ui-kit";
 import { useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { SwapFormValues } from "../SwapFormValues";
@@ -12,7 +12,7 @@ import AddressIcon from "@/components/Common/AddressIcon";
 import { Address as AddressClass } from "@/lib/address/Address";
 import VaulDrawer from "@/components/Modal/vaulModal";
 import { WalletItem } from "@/components/Wallet/WalletComponents/WalletsList";
-import { ImageWithFallback } from "@layerswap/ui-kit/ui";
+import { ImageWithFallback } from "@layerswap/ui-kit/components";
 import { useAddressName } from "@/stores/addressBookStore";
 
 type DestinationWalletPickerProps = {

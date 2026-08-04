@@ -2,7 +2,7 @@
 import { FC } from 'react'
 import { clsx } from 'clsx'
 import AddressIcon from '@/components/Common/AddressIcon'
-import { ImageWithFallback, WalletIcon } from "@layerswap/ui-kit/ui";
+import { ImageWithFallback, WalletIcon } from "@layerswap/ui-kit/components";
 import type { Wallet } from "@layerswap/utils";
 
 type Props = {

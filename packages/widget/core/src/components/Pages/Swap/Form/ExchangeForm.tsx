@@ -24,7 +24,7 @@ import { useCallbacks } from "@/context/callbackProvider";
 import QuoteDetails from "./FeeDetails";
 import DepositMethodComponent from "./FeeDetails/DepositMethod";
 import { AddressGroup } from "@/components/Input/Address/AddressPicker";
-import { ImageWithFallback } from "@layerswap/ui-kit/ui";
+import { ImageWithFallback } from "@layerswap/ui-kit/components";
 import { ExchangeReceiveAmount } from "@/components/Input/Amount/ExchangeReceiveAmount";
 import AddressIcon from "@/components/Common/AddressIcon";
 

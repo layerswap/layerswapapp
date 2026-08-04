@@ -7,7 +7,8 @@ export { insertIfNotExists } from "../lib/balances/helpers"
 export * from "../lib/retry"
 export { fetchWithTimeout } from "../lib/fetchWithTimeout"
 export { default as AppSettings } from "../lib/AppSettings";
-export { ImageWithFallback, usePersistedState } from "@layerswap/ui-kit/ui";
+export { ImageWithFallback } from "@layerswap/ui-kit/components";
+export { usePersistedState } from "@layerswap/ui-kit";
 export { useSettingsState } from "../context/settings";
 export * from "../components/Icons"
 export * from "../components/shadcn"

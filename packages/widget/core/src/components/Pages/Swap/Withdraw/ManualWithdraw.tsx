@@ -1,4 +1,5 @@
-import { CopyButton, ImageWithFallback, StyledQRCode, useCopyClipboard } from "@layerswap/ui-kit/ui";
+import { CopyButton, ImageWithFallback, StyledQRCode } from "@layerswap/ui-kit/components";
+import { useCopyClipboard } from "@layerswap/ui-kit";
 import QRIcon from '@/components/Icons/QRIcon'
 import useWallet from '@/hooks/useWallet'
 import { DepositAction, Refuel, SwapBasicData, SwapQuote } from '@/lib/apiClients/layerSwapApiClient'

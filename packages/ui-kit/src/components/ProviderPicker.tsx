@@ -4,7 +4,7 @@ import { Check } from "lucide-react";
 import { FC, useMemo, useState } from "react";
 import type { WalletConnectionProvider } from "@/types"
 import clsx from "clsx";
-import ProviderFilterIcon from "./shared/ProviderFilterIcon";
+import ProviderFilterIcon from "./ProviderFilterIcon";
 import { useWalletUi } from "./internal/WalletUiContext";
 
 export const ProviderPicker: FC<{ providers: WalletConnectionProvider[], selectedProviderNames: string[], setSelectedProviderNames: (providerNames: string[]) => void }> = ({ providers, selectedProviderNames, setSelectedProviderNames }) => {

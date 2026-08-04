@@ -3,7 +3,7 @@ import { ButtonWrapper } from "./Common/buttons";
 import { AddEthereumChainParams, SuggestRpcResult } from "@/types/rpcHealth";
 import FailIcon from "@/components/Icons/FailIcon";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
-import { useCopyClipboard } from "@layerswap/ui-kit/ui";
+import { useCopyClipboard } from "@layerswap/ui-kit";
 import { Check, CopyIcon } from "lucide-react";
 import { Network } from "@/Models/Network";
 

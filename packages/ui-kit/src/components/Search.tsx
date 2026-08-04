@@ -1,4 +1,4 @@
-import useWindowDimensions from "./useWindowDimensions"
+import useWindowDimensions from "@/hooks/useWindowDimensions"
 import { DetailedHTMLProps, InputHTMLAttributes, useEffect, useRef, useState } from "react"
 import FilledX from "./FilledX"
 import SearchIcon from "./SearchIcon"

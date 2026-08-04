@@ -1,5 +1,5 @@
 import { FC, useCallback, useEffect } from "react";
-import { ConnectorsList } from "@layerswap/ui-kit/ui";
+import { ConnectorsList } from "@layerswap/ui-kit/components";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { Wallet } from "@layerswap/utils";
 import { useDepositStep } from "../depositStepContext";

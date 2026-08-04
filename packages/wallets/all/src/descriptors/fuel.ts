@@ -1,5 +1,5 @@
 import type { WalletProviderDescriptor } from "@layerswap/ui-kit/types"
-import { defineWalletDescriptor } from "./defineWalletDescriptor"
+import { defineWalletDescriptor, type DescriptorNetworkOptions } from "./defineWalletDescriptor"
 import { hasStorageKey } from "./persistedSession"
 
 const FUEL_NETWORKS = ['FUEL_MAINNET', 'FUEL_TESTNET', 'FUEL_DEVNET']
@@ -9,13 +9,14 @@ const FUEL_NETWORKS = ['FUEL_MAINNET', 'FUEL_TESTNET', 'FUEL_DEVNET']
  * `@fuels/vm-asm` — ~373 KB parsed / ~116 KB gzip — out of the host's entry
  * chunk.
  */
-export function createFuelDescriptor(): WalletProviderDescriptor {
+export function createFuelDescriptor(options?: DescriptorNetworkOptions): WalletProviderDescriptor {
+    const supportedNetworks = options?.supportedNetworks ?? FUEL_NETWORKS
     return defineWalletDescriptor({
         id: 'fuel',
         name: 'Fuel',
-        autofillSupportedNetworks: FUEL_NETWORKS,
-        withdrawalSupportedNetworks: FUEL_NETWORKS,
-        asSourceSupportedNetworks: FUEL_NETWORKS,
+        autofillSupportedNetworks: supportedNetworks,
+        withdrawalSupportedNetworks: supportedNetworks,
+        asSourceSupportedNetworks: supportedNetworks,
         // `Fuel.STORAGE_KEY` in @fuel-ts/account — written once a fuel
         // connector was detected as installed, so hydration only triggers
         // for users who actually have a Fuel-family extension.

@@ -2,7 +2,7 @@ import { MenuIcon } from "lucide-react";
 import ColorSchema from "./ColorSchema";
 import AppSettings from "../lib/AppSettings";
 import { FC } from "react";
-import { WalletIcon } from "@layerswap/ui-kit/ui";
+import { WalletIcon } from "@layerswap/ui-kit/components";
 import { PoweredByFooter } from "./Widget/Footer";
 import clsx from "clsx";
 export const WidgetLoading: FC = () => {

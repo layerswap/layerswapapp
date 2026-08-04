@@ -4,7 +4,7 @@ import { FC, useState } from "react";
 import ResizablePanel from "@/components/Common/ResizablePanel";
 import { SelectAccountProps, WalletConnectionProvider } from "@layerswap/ui-kit/types";
 import { Wallet } from "@layerswap/utils";
-import { WalletIcon } from "@layerswap/ui-kit/ui";
+import { WalletIcon } from "@layerswap/ui-kit/components";
 import WalletIconView from "@/components/Wallet/WalletIconView";
 import { WalletItem } from "@/components/Wallet/WalletComponents/WalletsList";
 import { useConnectModal } from "@/components/Wallet/WalletModal";

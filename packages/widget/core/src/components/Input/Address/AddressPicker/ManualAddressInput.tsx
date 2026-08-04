@@ -2,7 +2,7 @@ import { ChangeEvent, FC, useCallback, useState } from "react";
 import { Pencil } from "lucide-react";
 import { Partner } from "@/Models/Partner";
 import { NetworkType } from "@/Models/Network";
-import { FilledX } from "@layerswap/ui-kit/ui";
+import { FilledX } from "@layerswap/ui-kit/components";
 import { AddressGroup, AddressItem } from ".";
 import { Address } from "@/lib/address/Address";
 import { Wallet } from "@layerswap/utils";

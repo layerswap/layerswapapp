@@ -1,5 +1,5 @@
 import { FC } from "react"
-import { StyledQRCode } from "@layerswap/ui-kit/ui";
+import { StyledQRCode } from "@layerswap/ui-kit/components";
 import { classNames } from "../utils/classNames";
 import { QrCode } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";

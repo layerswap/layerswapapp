@@ -2,7 +2,7 @@ import { FC, useState } from 'react'
 import { ChevronDown, Globe } from 'lucide-react'
 import clsx from 'clsx'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/shadcn/popover'
-import { ImageWithFallback, SearchComponent } from "@layerswap/ui-kit/ui";
+import { ImageWithFallback, SearchComponent } from "@layerswap/ui-kit/components";
 import { useDrawerContext } from '../Modal/vaul/context'
 import CheckboxRow from '../Pages/SwapHistory/Filters/CheckboxRow'
 

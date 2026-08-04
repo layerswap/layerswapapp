@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { usePersistedState } from "../shared/usePersistedState";
+import { usePersistedState } from "@/hooks/usePersistedState";
 import { isMobile } from "@layerswap/utils";
 import type { WalletConnectionProvider, WalletModalConnector } from "@/types";
 import type { Wallet } from "@layerswap/utils";

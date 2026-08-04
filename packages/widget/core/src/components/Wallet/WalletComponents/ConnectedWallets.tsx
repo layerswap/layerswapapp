@@ -1,4 +1,4 @@
-import { WalletIcon } from "@layerswap/ui-kit/ui";
+import { WalletIcon } from "@layerswap/ui-kit/components";
 import WalletIconView from "@/components/Wallet/WalletIconView"
 import useWallet from "@/hooks/useWallet"
 import ConnectButton from "@/components/Buttons/connectButton"

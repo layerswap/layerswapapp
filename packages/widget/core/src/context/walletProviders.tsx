@@ -17,7 +17,7 @@ import type { WalletProvider, WalletProviderDescriptor, WalletWrapper } from "@l
 
 export { useWalletProvidersReady } from "@layerswap/ui-kit"
 
-const ConnectorsList = lazy(() => import("@layerswap/ui-kit/ui").then(module => ({ default: module.ConnectorsList })));
+const ConnectorsList = lazy(() => import("@layerswap/ui-kit/components").then(module => ({ default: module.ConnectorsList })));
 
 const ConnectorsListFallback: React.FC = () => (
     <div className="flex h-full w-full items-center justify-center py-10">

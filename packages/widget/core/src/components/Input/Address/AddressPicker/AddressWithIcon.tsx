@@ -4,7 +4,8 @@ import { Copy, Check, ChevronDown, WalletIcon, Pencil, Link2, SquareArrowOutUpRi
 import { Partner } from "@/Models/Partner";
 import { Network, NetworkType } from "@/Models/Network";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components//shadcn/popover";
-import { ImageWithFallback, useCopyClipboard } from "@layerswap/ui-kit/ui";
+import { ImageWithFallback } from "@layerswap/ui-kit/components";
+import { useCopyClipboard } from "@layerswap/ui-kit";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import clsx from "clsx";
 import shortenString from "@/components/utils/ShortenString";

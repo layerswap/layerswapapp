@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, Coins, Send } from "lucide-react";
 import clsx from "clsx";
 import DepositTabIcon from "@/components/Icons/DepositTabIcon";
-import { WalletIcon } from "@layerswap/ui-kit/ui";
+import { WalletIcon } from "@layerswap/ui-kit/components";
 
 type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
 

@@ -1,4 +1,4 @@
-import type { WalletConnectionProvider } from "@/types"
+import type { WalletConnectionProvider } from "@/types/wallet"
 
 export function isProviderConnectReady(provider: WalletConnectionProvider | undefined): boolean {
     if (!provider) return true

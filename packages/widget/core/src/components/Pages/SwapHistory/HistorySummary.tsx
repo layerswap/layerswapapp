@@ -9,7 +9,7 @@ import StatusIcon from "./StatusIcons"
 import { FC } from "react"
 import { SwapStatus } from "@/Models/SwapStatus";
 import { Wallet } from "@layerswap/utils";
-import { ImageWithFallback } from "@layerswap/ui-kit/ui";
+import { ImageWithFallback } from "@layerswap/ui-kit/components";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip"
 import { truncateDecimals } from "@/components/utils/RoundDecimals"
 

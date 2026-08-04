@@ -5,7 +5,7 @@ import { WalletConnectionProvider } from "@layerswap/ui-kit/types";
 import { Wallet } from "@layerswap/utils";
 import { useConnectModal } from "../Wallet/WalletModal";
 import { ensureRegistryBrowseLoaded, useWalletDescriptorLoader } from "@layerswap/ui-kit";
-import { isProviderConnectReady } from "@layerswap/ui-kit/ui";
+import { isProviderConnectReady } from "@layerswap/ui-kit";
 import { classNames } from "@/components/utils/classNames";
 
 interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {

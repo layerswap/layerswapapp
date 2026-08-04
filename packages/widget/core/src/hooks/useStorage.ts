@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { checkStorageIsAvailable, type storageType } from "@layerswap/ui-kit/ui";
+import { checkStorageIsAvailable, type storageType } from "@layerswap/ui-kit";
 
 type UseStorageReturnValue = {
   getItem: (key: string, type?: storageType) => string;

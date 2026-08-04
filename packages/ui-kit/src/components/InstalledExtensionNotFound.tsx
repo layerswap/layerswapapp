@@ -2,8 +2,8 @@ import { FC } from "react";
 import type { WalletModalConnector } from "@/types";
 import { Download, ScanLine } from "lucide-react";
 import { BrandMark } from "./internal/WalletUiContext";
-import { ImageWithFallback } from "./shared/ImageWithFallback";
-import WalletIcon from "./shared/WalletIcon";
+import { ImageWithFallback } from "./ImageWithFallback";
+import WalletIcon from "./WalletIcon";
 
 export const InstalledExtensionNotFound: FC<{
     selectedConnector: WalletModalConnector | undefined,

@@ -12,7 +12,7 @@ import FilledCheck from "@/components/Icons/FilledCheck";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import { useSettingsState } from "@/context/settings";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
-import { ImageWithFallback } from "@layerswap/ui-kit/ui";
+import { ImageWithFallback } from "@layerswap/ui-kit/components";
 import { AccountIdentity, useSelectedAccount } from "@/context/swapAccounts";
 import { useBalance } from "@/lib/balances/useBalance";
 import VaulDrawer from "@/components/Modal/vaulModal";
