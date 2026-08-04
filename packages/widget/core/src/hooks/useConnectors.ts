@@ -1,9 +1,9 @@
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { InternalConnector, WalletConnectionProvider, WalletModalConnector } from "@/types/wallet";
 import { removeDuplicatesWithKey } from "@/components/Wallet/WalletModal/utils";
 import { walletKey } from "@/lib/wallets/utils/walletKey";
 import { isMobile } from "@/lib/wallets/utils/isMobile";
-import { createRegistryConnector, getRegistryEntry, WalletConnectWalletBase } from "@/lib/walletConnect";
+import { createRegistryConnector, getInstantiatedAdditionalConnectorsStores, getRegistryEntry, WalletConnectWalletBase } from "@/lib/walletConnect";
 
 type UseConnectorsParams = {
     searchValue?: string;
@@ -40,6 +40,37 @@ const resolveNames = (groups: InternalConnector[][]): InternalConnector[][] => {
     return groups.map(group => group.map(c => c?.name ? { ...c, name: NAME_OVERRIDES[walletKey(c.name)] ?? canonical.get(walletKey(c.name)) ?? c.name } : c))
 }
 
+const NATIVE_WALLET_NAMES = [
+    'Nightly', 'Phantom', 'Solflare', 'Bitget Wallet', 'Trust Wallet', 'Ledger',
+    'Coinbase Wallet', 'Xverse', 'Ctrl Wallet', 'OKX Wallet', 'OneKey', 'Leather', 'MetaMask',
+]
+
+const nativeWalletEntries = new Map<string, WalletConnectWalletBase>()
+let nativeWalletLoad: Promise<unknown> | null = null
+
+const loadNativeWalletEntries = () => {
+    if (nativeWalletLoad) return nativeWalletLoad
+    const stores = getInstantiatedAdditionalConnectorsStores()
+    if (!stores.length || !stores.every(store => store.getSnapshot().browseMetadata.loaded)) return null
+
+    const downloaded = stores.flatMap(store => store.getSnapshot().browseConnectors)
+    nativeWalletLoad = Promise.all(NATIVE_WALLET_NAMES.map(name => {
+        const key = walletKey(name)
+        const known = downloaded.find(wallet => walletKey(wallet.name) === key)
+        if (known) {
+            nativeWalletEntries.set(key, known)
+            return undefined
+        }
+        return stores[0].requestAdditionalConnectors({ query: name, pageSize: 5 })
+            .then(({ connectors }) => {
+                const match = connectors.find(wallet => walletKey(wallet.name) === key)
+                if (match) nativeWalletEntries.set(key, match)
+            })
+            .catch(() => undefined)
+    }))
+    return nativeWalletLoad
+}
+
 // Groups a connector pool by wallet identity and resolves each wallet's
 // per-ecosystem variants: one variant per provider that exposes the wallet,
 // plus variants synthesized from the WalletConnect registry entry's `chains`
@@ -50,10 +81,10 @@ const resolveNames = (groups: InternalConnector[][]): InternalConnector[][] => {
 export const resolveChainConnectors = (pool: InternalConnector[], providers: WalletConnectionProvider[]) => {
     const toProvider: Record<string, string> = { eip155: 'EVM', solana: 'Solana' }
     const mobile = isMobile()
-    const records = new Map<string, { variants: InternalConnector[], entry?: WalletConnectWalletBase }>()
+    const records = new Map<string, { name: string, variants: InternalConnector[], entry?: WalletConnectWalletBase }>()
     const recordFor = (name: string) => {
         const k = connectorKey(name)
-        return records.get(k) ?? records.set(k, { variants: [] }).get(k)!
+        return records.get(k) ?? records.set(k, { name, variants: [] }).get(k)!
     }
 
     for (const c of pool) {
@@ -65,6 +96,9 @@ export const resolveChainConnectors = (pool: InternalConnector[], providers: Wal
         }
     }
     for (const record of records.values()) {
+        if (!record.entry && !UNMERGEABLE_WALLETS.includes(record.name.toLowerCase())) {
+            record.entry = nativeWalletEntries.get(walletKey(record.name))
+        }
         for (const chain of record.entry?.chains ?? []) {
             const p = toProvider[chain.split(':')[0]]
             if (p && providers.some(prov => prov.name === p) && !record.variants.some(x => x.providerName === p)) record.variants.push(createRegistryConnector(record.entry!, mobile, p))
@@ -109,6 +143,11 @@ export function useConnectors({
 
     const initialSortedRef = useRef<InitialSnapshot | null>(null)
     const appendedRef = useRef<InternalConnector[]>([])
+
+    const [nativeEntriesVersion, setNativeEntriesVersion] = useState(0)
+    useEffect(() => {
+        void loadNativeWalletEntries()?.then(() => setNativeEntriesVersion(version => version + 1))
+    }, [featuredConnectors, additionalConnectors])
 
     const initialConnectors: WalletModalConnector[] = useMemo(() => {
         // Persisted host-origin data is untrusted at runtime even though the
@@ -184,7 +223,7 @@ export function useConnectors({
         }
 
         return recentsFirst(withMultiChain(list))
-    }, [featuredConnectors, additionalConnectors, recentConnectors, resolvedSearchResults, filterKey, featuredProviders]);
+    }, [featuredConnectors, additionalConnectors, recentConnectors, resolvedSearchResults, filterKey, featuredProviders, nativeEntriesVersion]);
 
     return {
         featuredConnectors,
