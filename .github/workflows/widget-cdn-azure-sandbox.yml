@@ -75,7 +75,23 @@ jobs:
           umask 077
           KEY_PATH="$RUNNER_TEMP/layerswap-azure-test-signing.pem"
           openssl ecparam -name prime256v1 -genkey -noout -out "$KEY_PATH"
+          PUBLIC_KEY=$(openssl ec -in "$KEY_PATH" -pubout -outform DER 2>/dev/null | base64 | tr -d '\n')
           echo "key-path=$KEY_PATH" >> "$GITHUB_OUTPUT"
+          echo "public-key=$PUBLIC_KEY" >> "$GITHUB_OUTPUT"
+
+          {
+            echo "### Azure sandbox manifest public key"
+            echo
+            echo "Copy this value into \`MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64\` to verify this deployment locally:"
+            echo
+            echo '```text'
+            echo "$PUBLIC_KEY"
+            echo '```'
+            echo
+            echo "This key is ephemeral and changes on every sandbox deployment."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          echo "::notice title=Azure sandbox manifest public key::$PUBLIC_KEY"
 
       - name: Build signed sandbox artifact
         working-directory: apps/widget-cdn
