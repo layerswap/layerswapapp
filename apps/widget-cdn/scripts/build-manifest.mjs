@@ -57,8 +57,8 @@ if (!existsSync(ASSET_DIST)) {
 
 // This resolves to the immutable build prefix from BOTH publication paths:
 //   /<buildId>/manifest.json (immutable) and /<channel>/manifest.json (rolling).
-// Cloudflare's existing redirect still lands at the same URL, while Azure can
-// promote by copying this signed manifest directly to the rolling path.
+// Promotion copies this signed manifest directly to the rolling path, and the
+// relative remoteEntry anchors at the immutable build either way.
 const remoteEntry = remoteEntryForBuild(buildId);
 
 // Hash every JS file in the build directory and record under the

@@ -37,7 +37,7 @@ export type Manifest = {
      * ISO-8601 end of the manifest's validity window. Replay protection: a
      * signature and SRI prove authenticity and byte integrity but not
      * freshness — without an enforced expiry, an attacker who can replay
-     * CDN/R2 responses could serve an older valid build indefinitely,
+     * CDN/storage responses could serve an older valid build indefinitely,
      * reviving a fixed vulnerability or bypassing a newer kill switch.
      *
      * Availability policy (explicit, so an outage is never a reason to accept
@@ -104,11 +104,11 @@ export const MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64 =
  * reads it directly. Points at the rolling `v1` channel, so hosts auto-receive
  * forward-compatible widget updates without a redeploy.
  *
- * Currently the Cloudflare Worker's `*.workers.dev` subdomain. When the
- * `cdn.layerswap.io` custom domain is wired in `apps/widget-cdn/worker/
- * wrangler.toml`, update this constant to `https://cdn.layerswap.io/v1/
- * manifest.json` and publish a new `@layerswap/widget-js` — integrators pick
- * up the new origin transitively via npm.
+ * Currently the Azure Blob Storage endpoint. When a custom domain such as
+ * `cdn.layerswap.io` fronts the storage account (e.g. via Azure Front Door),
+ * update this constant to `https://cdn.layerswap.io/v1/manifest.json` and
+ * publish a new `@layerswap/widget-js` — integrators pick up the new origin
+ * transitively via npm.
  *
  * The channel major is the shared widget protocol major. A breaking `/v2/`
  * ships with loader package major 2. Exact build pinning is intentionally not

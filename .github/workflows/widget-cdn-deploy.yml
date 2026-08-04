@@ -1,81 +1,87 @@
-name: widget-cdn — build, sign, deploy
+name: widget-cdn — deploy
 
-# Production builds of `apps/widget-cdn` go through CI so the signing key never
-# lives outside `secrets.LAYERSWAP_PRIVATE_KEY_PEM`. The build is uploaded to
-# Cloudflare R2 under an immutable per-build prefix and the rolling channel
-# pointer (`channels.json`) can be promoted to it in a separate dispatch. The Cloudflare Worker in
-# `apps/widget-cdn/worker` serves R2 and 302-redirects `/vN/*` to the current
-# build. This workflow is the only path to a production CDN deploy.
+# Azure Blob Storage is the only CDN deploy path. The target is a GitHub
+# ENVIRONMENT (Settings → Environments), which carries the Azure identity as
+# environment VARIABLES and the manifest signing key as an environment SECRET:
+#
+#   variables: AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID,
+#              AZURE_STORAGE_ACCOUNT, AZURE_STORAGE_CONTAINER (optional,
+#              default widget-cdn), CDN_BASE_URL (optional, for a custom
+#              domain / Front Door; defaults to the Blob endpoint)
+#   secrets:   LAYERSWAP_PRIVATE_KEY_PEM (each environment gets its OWN
+#              keypair — the production key must never exist at repo level)
+#
+#   - widget-cdn-azure-sandbox: the personal-account sandbox. Its identifiers
+#     (not credentials) are hardcoded as fallbacks below, so it works before
+#     the environment has any variables configured.
+#   - widget-cdn-production: drop-in — fails with a clear error until a repo
+#     admin creates the production Azure identity/storage account and fills in
+#     the environment. Dispatches only from the default branch.
+#
+# A push deploys to the sandbox. Production is workflow_dispatch with
+# environment=widget-cdn-production; add required reviewers to that
+# environment so the deploy pauses for approval ("Review deployments").
+#
+# When this branch moves to the default branch, update the push trigger below.
 
 on:
   push:
-    # `babkenmes/widget-cdn-delivery` is temporary — for testing the full
-    # deploy pipeline on the feature branch before merging. Remove it (leaving
-    # just `main`) once the CDN is verified end-to-end.
-    branches: [main, babkenmes/widget-cdn-delivery]
-    paths:
-      - "apps/widget-cdn/**"
-      - "packages/widget/**"
-      - "packages/wallets/**"
-      - "pnpm-lock.yaml"
-      - "pnpm-workspace.yaml"
-      - ".github/workflows/widget-cdn-deploy.yml"
+    branches:
+      - codex/widget-cdn-azure-sandbox
   workflow_dispatch:
     inputs:
-      promote_build_id:
-        description: "Existing immutable buildId to promote; leave empty to build/upload a candidate"
-        type: string
-        required: false
-        default: ""
-      promote_channel:
-        description: "Compatibility channel for promote_build_id"
-        type: string
-        required: false
-        default: "v1"
-      deploy_worker:
-        description: "Also deploy the Cloudflare Worker (edge router)"
+      environment:
+        description: "Deployment target (GitHub environment)"
+        type: choice
+        options: [widget-cdn-azure-sandbox, widget-cdn-production]
+        default: widget-cdn-azure-sandbox
+      promote:
+        description: "Publish this build to the rolling v1 channel"
         type: boolean
         required: false
-        default: false
+        default: true
 
 concurrency:
-  group: widget-cdn-${{ github.ref }}
+  group: widget-cdn-deploy-${{ inputs.environment || 'widget-cdn-azure-sandbox' }}
   cancel-in-progress: false
 
 permissions:
   contents: read
-  # Reserved for an OIDC upgrade path if the signing key moves into KMS later.
   id-token: write
-  # Lets the failure alert open/comment a GitHub issue.
-  issues: write
 
 jobs:
   deploy:
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.promote_build_id == '' }}
     runs-on: ubuntu-latest
-    environment: widget-cdn-production
+    # Required reviewers on this environment turn every deploy into an
+    # approvable step; the cleanup workflow's apply job shares the same gate.
+    environment: ${{ inputs.environment || 'widget-cdn-azure-sandbox' }}
     env:
-      # R2 credentials (an R2 API token scoped to the bucket) + endpoint.
-      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-      R2_BUCKET: ${{ vars.R2_BUCKET || 'layerswap-widget-cdn' }}
-      # Upload and promotion are deliberately separate. Main pushes publish an
-      # immutable candidate; a later dispatch promotes its existing buildId.
-      LAYERSWAP_PROMOTE: "false"
-      # Published builds are immutable, but the buildId embeds the commit sha
-      # (see apps/widget-cdn/scripts/build-id.mjs), so every push gets a fresh
-      # prefix — only literally re-deploying the SAME commit collides. For that
-      # rare case, uncomment the next line. Re-comment afterwards.
-      # ALLOW_OVERWRITE: '1'
+      DEPLOY_TARGET: ${{ inputs.environment || 'widget-cdn-azure-sandbox' }}
+      LAYERSWAP_PROMOTE: ${{ github.event_name != 'workflow_dispatch' || inputs.promote != false }}
 
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
-      # No `version:` — let the action read it from package.json's
-      # `packageManager` field, so CI tracks the repo's pinned pnpm exactly.
+      - name: Resolve deployment target
+        env:
+          RAW_AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+          RAW_AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+          RAW_AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          RAW_AZURE_STORAGE_ACCOUNT: ${{ vars.AZURE_STORAGE_ACCOUNT }}
+          RAW_AZURE_STORAGE_CONTAINER: ${{ vars.AZURE_STORAGE_CONTAINER }}
+          RAW_CDN_BASE_URL: ${{ vars.CDN_BASE_URL }}
+        run: |
+          set -euo pipefail
+          # Production must ship code that has landed on the default branch.
+          if [ "$DEPLOY_TARGET" = "widget-cdn-production" ] \
+            && [ "$GITHUB_REF_NAME" != "${{ github.event.repository.default_branch }}" ]; then
+            echo "::error::Refusing to deploy '$GITHUB_REF_NAME' to production — dispatch from '${{ github.event.repository.default_branch }}'."
+            exit 1
+          fi
+          bash .github/scripts/resolve-widget-cdn-env.sh
+
       - uses: pnpm/action-setup@v6
 
       - uses: actions/setup-node@v5
@@ -89,17 +95,12 @@ jobs:
       - name: Build workspace packages
         run: pnpm build:packages
 
-      # Exercise the release-critical build identity, deploy/rollback, SRI,
-      # public type, and Worker contracts before the signing key is staged or
-      # any artifact can be uploaded to production.
       - name: Test widget release tooling
         run: |
           pnpm --filter @layerswap/widget-cdn test
           pnpm --filter @layerswap/widget-js test
           pnpm --filter @layerswap/widget-react check:types
-          pnpm exec tsc -p apps/widget-cdn/worker/tsconfig.json --noEmit
 
-      # Build provenance stamped into the signed manifest.
       - name: Compute build metadata
         run: |
           echo "LAYERSWAP_GIT_SHA=${GITHUB_SHA}" >> "$GITHUB_ENV"
@@ -107,181 +108,76 @@ jobs:
           BUILD_ID=$(node --input-type=module -e "import { resolveBuildIdentity } from './apps/widget-cdn/scripts/build-id.mjs'; process.stdout.write(resolveBuildIdentity('./apps/widget-cdn').buildId)")
           echo "LAYERSWAP_BUILD_ID=${BUILD_ID}" >> "$GITHUB_ENV"
 
-      # Stage the signing key to a tempfile (not argv/env-dump visible). Wiped
-      # at job end regardless of outcome.
-      - name: Stage signing key
+      # The signing key is the target environment's own secret. Rotating a key
+      # during a normal deploy would break every existing installation pinned
+      # to its public half.
+      - name: Materialize manifest signing key
         id: key
         env:
-          PEM: ${{ secrets.LAYERSWAP_PRIVATE_KEY_PEM }}
+          PRIVATE_KEY_PEM: ${{ secrets.LAYERSWAP_PRIVATE_KEY_PEM }}
         run: |
-          if [ -z "$PEM" ]; then
-            echo "::error::secrets.LAYERSWAP_PRIVATE_KEY_PEM is not set."
+          if [ -z "$PRIVATE_KEY_PEM" ]; then
+            echo "::error::LAYERSWAP_PRIVATE_KEY_PEM is not configured for environment '$DEPLOY_TARGET'"
             exit 1
           fi
           umask 077
           KEY_PATH="$RUNNER_TEMP/layerswap-signing.pem"
-          printf '%s\n' "$PEM" > "$KEY_PATH"
+          printf '%s' "$PRIVATE_KEY_PEM" > "$KEY_PATH"
           echo "key-path=$KEY_PATH" >> "$GITHUB_OUTPUT"
 
-      - name: Build + sign widget-cdn
+      - name: Build signed artifact
         working-directory: apps/widget-cdn
         env:
           LAYERSWAP_PRIVATE_KEY_PEM: ${{ steps.key.outputs.key-path }}
-        run: pnpm build
+        run: |
+          pnpm build
+          pnpm verify-manifest
 
-      # Round-trip the signature against the public key bundled into the loader
-      # core. Fails the deploy on a key mismatch before anything ships.
-      - name: Verify signature against bundled public key
-        working-directory: apps/widget-cdn
-        run: pnpm verify-manifest
+      - name: Log in to Azure with OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ env.AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
 
-      # Upload the immutable candidate without touching a rolling channel.
-      # Refuses to overwrite an already-published
-      # buildId, so re-running a deploy for the same commit is a no-op error
-      # rather than a silent clobber — any new commit gets a fresh buildId.
-      - name: Upload candidate to R2
+      - name: Upload to Azure Blob Storage and promote channel
         working-directory: apps/widget-cdn
-        run: pnpm deploy:r2
+        run: pnpm deploy:azure
 
       - name: Wipe signing key from runner
         if: always()
         run: rm -f "$RUNNER_TEMP/layerswap-signing.pem"
 
-      # Optional: deploy the edge Worker. Only needed when worker code changes;
-      # off by default on push, opt-in via workflow_dispatch.
-      - name: Deploy Cloudflare Worker
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_worker == true }}
-        working-directory: apps/widget-cdn
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-        run: pnpm worker:deploy
-
-      # End-to-end check against the immutable candidate before it is eligible
-      # for promotion.
-      - name: Smoke-test the uploaded candidate
-        if: ${{ vars.CDN_BASE_URL != '' }}
+      - name: Smoke-test the public Blob channel
+        if: ${{ env.LAYERSWAP_PROMOTE != 'false' }}
         run: |
           set -euo pipefail
-          VERSION=$(node -e "console.log(require('./apps/widget-cdn/node_modules/@layerswap/widget/package.json').version)")
-          MANIFEST_URL="${{ vars.CDN_BASE_URL }}/${LAYERSWAP_BUILD_ID}/manifest.json"
-          echo "Fetching $MANIFEST_URL"
-          curl -fsSL -L -H "Origin: https://example.com" -D /tmp/headers "$MANIFEST_URL" -o /tmp/manifest.json
-          grep -i 'access-control-allow-origin' /tmp/headers || { echo "::error::CDN missing CORS header"; exit 1; }
+          MANIFEST_URL="${CDN_BASE_URL}/v1/manifest.json"
+          curl -fsSL -H "Origin: https://example.com" -D /tmp/headers \
+            "$MANIFEST_URL" -o /tmp/manifest.json
+          grep -i 'access-control-allow-origin' /tmp/headers \
+            || { echo "::error::Azure Blob CORS header is missing"; exit 1; }
           node -e "
             const m = JSON.parse(require('fs').readFileSync('/tmp/manifest.json','utf8'));
-            if (!m.signature) { console.error('live manifest has no signature'); process.exit(1); }
-            if (m.killSwitch) { console.error('live manifest has killSwitch=true'); process.exit(1); }
-            if (m.buildId !== '${LAYERSWAP_BUILD_ID}') { console.error('candidate has build', m.buildId, '— expected ${LAYERSWAP_BUILD_ID}'); process.exit(1); }
-            if (m.version !== '${VERSION}') { console.error('candidate has version', m.version, '— expected ${VERSION}'); process.exit(1); }
-            if (m.gitSha !== '${GITHUB_SHA}') { console.error('candidate has commit', m.gitSha, '— expected ${GITHUB_SHA}'); process.exit(1); }
-            console.log('candidate OK  buildId=', m.buildId, ' version=', m.version, ' gitSha=', m.gitSha);
+            if (!m.signature) throw new Error('manifest has no signature');
+            if (m.buildId !== '${LAYERSWAP_BUILD_ID}') {
+              throw new Error('channel has ' + m.buildId + ', expected ${LAYERSWAP_BUILD_ID}');
+            }
+            const remote = new URL(m.remoteEntry, '${MANIFEST_URL}').href;
+            if (!remote.includes('/${LAYERSWAP_BUILD_ID}/remoteEntry.js')) {
+              throw new Error('remoteEntry is not immutable: ' + remote);
+            }
+            console.log('Azure channel OK', { buildId: m.buildId, remote });
           "
 
       - name: Summary
         if: always()
         run: |
-          VERSION=$(node -e "console.log(require('./apps/widget-cdn/node_modules/@layerswap/widget/package.json').version)" 2>/dev/null || echo "?")
-          BUILD_ID=${LAYERSWAP_BUILD_ID:-?}
           {
             echo "## widget-cdn deploy"
             echo ""
-            echo "- Build id: \`${BUILD_ID}\`"
-            echo "- Version: \`${VERSION}\`"
-            echo "- Channel promoted: \`false\` (candidate only)"
+            echo "- Target: \`${DEPLOY_TARGET}\`"
+            echo "- Build id: \`${LAYERSWAP_BUILD_ID:-?}\`"
+            echo "- Promoted: \`${LAYERSWAP_PROMOTE}\`"
             echo "- Commit: \`${GITHUB_SHA}\`"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      # A failed deploy means the live channel silently keeps serving the
-      # previous build — that must never be discovered by noticing stale
-      # behavior in the browser. Open a GitHub issue @mentioning the pusher
-      # (triggers a GitHub notification/email); if an open deploy-failure
-      # issue already exists, comment on it instead of piling up duplicates.
-      - name: Alert on failure
-        if: failure()
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          VERSION=$(node -p "require('./packages/widget/core/package.json').version" 2>/dev/null || echo "?")
-          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          TITLE="widget-cdn deploy failed"
-          {
-            echo "@${{ github.actor }} the widget-cdn deploy failed — the live CDN channel is still serving the **previous** build."
-            echo ""
-            echo "- Version: \`${VERSION}\`"
-            echo "- Branch: \`${GITHUB_REF_NAME}\` @ \`${GITHUB_SHA::7}\`"
-            echo "- Run: ${RUN_URL}"
-            echo ""
-            echo "Check the run log for the failing step. (Build ids embed the commit sha, so an immutability collision only happens when re-deploying the same commit — re-run from a new commit or set \`ALLOW_OVERWRITE=1\`.)"
-          } > "$RUNNER_TEMP/alert-body.md"
-          EXISTING=$(gh issue list --repo "${{ github.repository }}" --state open \
-            --search "\"${TITLE}\" in:title" --json number --jq '.[0].number // empty')
-          if [ -n "$EXISTING" ]; then
-            gh issue comment "$EXISTING" --repo "${{ github.repository }}" --body-file "$RUNNER_TEMP/alert-body.md"
-          else
-            gh issue create --repo "${{ github.repository }}" --title "$TITLE" --body-file "$RUNNER_TEMP/alert-body.md"
-          fi
-
-  promote:
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.promote_build_id != '' }}
-    runs-on: ubuntu-latest
-    environment: widget-cdn-production
-    env:
-      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-      R2_BUCKET: ${{ vars.R2_BUCKET || 'layerswap-widget-cdn' }}
-      PROMOTE_BUILD_ID: ${{ inputs.promote_build_id }}
-      PROMOTE_CHANNEL: ${{ inputs.promote_channel }}
-
-    steps:
-      - uses: actions/checkout@v5
-
-      - uses: pnpm/action-setup@v6
-
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 20
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build shared widget protocol
-        run: pnpm --filter @layerswap/widget-types build
-
-      # rollback-r2 is also the promotion primitive: it validates that the
-      # immutable target exists, belongs to the requested protocol channel,
-      # and has a usable validity window before changing channels.json.
-      - name: Promote existing candidate
-        working-directory: apps/widget-cdn
-        run: node scripts/rollback-r2.mjs "$PROMOTE_CHANNEL" "$PROMOTE_BUILD_ID"
-
-      - name: Smoke-test promoted channel
-        if: ${{ vars.CDN_BASE_URL != '' }}
-        run: |
-          set -euo pipefail
-          MANIFEST_URL="${{ vars.CDN_BASE_URL }}/${PROMOTE_CHANNEL}/manifest.json"
-          curl -fsSL -L -H "Origin: https://example.com" -D /tmp/headers "$MANIFEST_URL" -o /tmp/manifest.json
-          grep -i 'access-control-allow-origin' /tmp/headers || { echo "::error::CDN missing CORS header"; exit 1; }
-          node -e "
-            const m = JSON.parse(require('fs').readFileSync('/tmp/manifest.json','utf8'));
-            const expectedProtocol = Number(process.env.PROMOTE_CHANNEL.slice(1));
-            const actualProtocol = m.protocolMajor ?? Number(String(m.channel).slice(1));
-            if (!m.signature) { console.error('live manifest has no signature'); process.exit(1); }
-            if (m.killSwitch) { console.error('live manifest has killSwitch=true'); process.exit(1); }
-            if (m.buildId !== process.env.PROMOTE_BUILD_ID) { console.error('live channel has', m.buildId, '— expected', process.env.PROMOTE_BUILD_ID); process.exit(1); }
-            if (actualProtocol !== expectedProtocol) { console.error('live protocol is', actualProtocol, '— expected', expectedProtocol); process.exit(1); }
-            console.log('promotion OK  channel=', process.env.PROMOTE_CHANNEL, ' buildId=', m.buildId);
-          "
-
-      - name: Summary
-        if: always()
-        run: |
-          {
-            echo "## widget-cdn promotion"
-            echo ""
-            echo "- Channel: \`${PROMOTE_CHANNEL}\`"
-            echo "- Build id: \`${PROMOTE_BUILD_ID}\`"
           } >> "$GITHUB_STEP_SUMMARY"

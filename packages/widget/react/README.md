@@ -166,7 +166,7 @@ accordingly.
 ## Recommended Content Security Policy
 
 The widget is served from the fixed origin baked into this package release —
-currently `https://layerswap-widget-cdn.layerswapcdn.workers.dev` (the
+currently `https://layerswapcdntest.blob.core.windows.net` (the
 `WIDGET_MANIFEST_URL` in `@layerswap/widget-js`; if a future release moves
 to a custom domain such as `cdn.layerswap.io`, this section moves with it).
 A tight CSP that allowlists exactly that origin plus the LayerSwap endpoints
@@ -176,8 +176,8 @@ compromised:
 ```
 Content-Security-Policy:
   default-src 'self';
-  script-src   'self' https://layerswap-widget-cdn.layerswapcdn.workers.dev;
-  connect-src  'self' https://layerswap-widget-cdn.layerswapcdn.workers.dev
+  script-src   'self' https://layerswapcdntest.blob.core.windows.net;
+  connect-src  'self' https://layerswapcdntest.blob.core.windows.net
                https://api.layerswap.io https://layerswap.io
                https://*.walletconnect.com https://*.walletconnect.org;
   style-src    'self' 'unsafe-inline';

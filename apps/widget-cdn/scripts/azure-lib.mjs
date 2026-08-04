@@ -79,12 +79,16 @@ function objectUrl(ctx, key) {
   return `${ctx.endpoint}/${container}/${encodedKey}`;
 }
 
-async function blobRequest(ctx, key, init = {}) {
+async function authorizedFetch(ctx, url, init = {}) {
   const headers = new Headers(init.headers);
   headers.set("Authorization", `Bearer ${ctx.accessToken}`);
   headers.set("x-ms-date", new Date().toUTCString());
   headers.set("x-ms-version", "2023-11-03");
-  return fetch(objectUrl(ctx, key), { ...init, headers });
+  return fetch(url, { ...init, headers });
+}
+
+async function blobRequest(ctx, key, init = {}) {
+  return authorizedFetch(ctx, objectUrl(ctx, key), init);
 }
 
 async function throwResponseError(operation, key, response) {
@@ -93,6 +97,55 @@ async function throwResponseError(operation, key, response) {
     `[azure] ${operation} ${key} failed with ${response.status} ${response.statusText}` +
       `${message ? `: ${message}` : ""}`,
   );
+}
+
+// The List Blobs response is XML; only <Name> and <Last-Modified> are needed,
+// so a scoped regex parse avoids pulling in an XML dependency.
+function decodeXml(text) {
+  return text
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, "&");
+}
+
+export async function listObjects(ctx, { prefix } = {}) {
+  const results = [];
+  let marker;
+  do {
+    const params = new URLSearchParams({ restype: "container", comp: "list" });
+    if (prefix) params.set("prefix", prefix);
+    if (marker) params.set("marker", marker);
+    const url = `${ctx.endpoint}/${encodeURIComponent(ctx.containerName)}?${params}`;
+    const response = await authorizedFetch(ctx, url);
+    if (!response.ok) {
+      await throwResponseError("LIST", prefix ?? "(container)", response);
+    }
+    const xml = await response.text();
+    for (const blob of xml.match(/<Blob>[\s\S]*?<\/Blob>/g) ?? []) {
+      const name = blob.match(/<Name>([\s\S]*?)<\/Name>/)?.[1];
+      if (!name) continue;
+      const lastModified = blob.match(
+        /<Last-Modified>([\s\S]*?)<\/Last-Modified>/,
+      )?.[1];
+      results.push({
+        key: decodeXml(name),
+        lastModified: lastModified ? new Date(lastModified) : undefined,
+      });
+    }
+    const nextMarker = xml.match(/<NextMarker>([\s\S]*?)<\/NextMarker>/)?.[1];
+    marker = nextMarker ? decodeXml(nextMarker) : undefined;
+  } while (marker);
+  return results;
+}
+
+export async function deleteObject(ctx, key) {
+  const response = await blobRequest(ctx, key, { method: "DELETE" });
+  // Idempotent: an already-deleted blob is not an error for cleanup.
+  if (response.status === 404) return false;
+  if (!response.ok) await throwResponseError("DELETE", key, response);
+  return true;
 }
 
 export async function objectExists(ctx, key) {

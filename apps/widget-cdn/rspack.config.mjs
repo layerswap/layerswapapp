@@ -44,12 +44,12 @@ const SHARED_SINGLETONS = {
 // Every build publishes its control files to an IMMUTABLE, buildId-named
 // directory (`dist/1.7.0-abc123def456/`). Content-hashed chunks are uploaded
 // separately under the stable `/assets/` namespace so byte-identical chunks
-// keep the same URL across builds. The rolling major channel (`/v1/`) is a 302
-// redirect served by the Cloudflare Worker (see `worker/`).
+// keep the same URL across builds. The rolling major channel (`/v1/`) is the
+// signed manifest copied to `/<channel>/manifest.json` at promotion.
 //
 // The buildId (widget version + git sha — see `scripts/build-id.mjs`) is
 // resolved identically by `build-manifest.mjs`, `verify-manifest.mjs`, and
-// `deploy-r2.mjs`, so all four agree on the output directory.
+// `deploy-azure.mjs`, so all four agree on the output directory.
 const { buildId: BUILD_ID } = resolveBuildIdentity(__dirname);
 
 // Dev-only: emit a minimal `manifest.json` next to `remoteEntry.js` so the
@@ -91,8 +91,8 @@ export default (env, argv) => {
     devtool: isProd ? 'source-map' : 'eval-cheap-module-source-map',
     entry: {}, // Pure remote — no app entry.
     output: {
-      // Production: dist/<buildId>/* — deploy-r2.mjs keeps control files under
-      // that prefix and publishes content-hashed files under /assets/.
+      // Production: dist/<buildId>/* — deploy-azure.mjs keeps control files
+      // under that prefix and publishes content-hashed files under /assets/.
       // Dev: keep dist/ flat (the dev-server serves whatever publicPath says).
       path: path.resolve(__dirname, isProd ? `dist/${BUILD_ID}` : 'dist'),
       publicPath: 'auto',

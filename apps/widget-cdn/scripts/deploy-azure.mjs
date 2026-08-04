@@ -4,7 +4,7 @@
 // Immutable build controls live at /<buildId>/ and content-hashed chunks live
 // in /assets/. Promotion atomically copies the same signed manifest to
 // /<channel>/manifest.json; its build-addressed remoteEntry keeps all code on
-// immutable URLs without needing a Cloudflare Worker or Azure Function.
+// immutable URLs without needing any edge redirect service.
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";

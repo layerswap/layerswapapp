@@ -6,9 +6,24 @@ import test from "node:test";
 import { putObject, writeChannelManifest } from "./azure-lib.mjs";
 import { deployAzureBuild } from "./deploy-azure.mjs";
 import { rollbackAzureChannel } from "./rollback-azure.mjs";
-import { ASSET_BASE, remoteEntryForBuild } from "./cdn-layout.mjs";
+import {
+  ASSET_BASE,
+  deploymentKey,
+  remoteEntryForBuild,
+} from "./cdn-layout.mjs";
 
 const silentLogger = { log() {}, warn() {} };
+
+test("content-hashed chunks use the shared asset namespace", () => {
+  assert.equal(
+    deploymentKey("1.7.0-0123456789ab", "837.0123456789abcdef.js"),
+    "assets/837.0123456789abcdef.js",
+  );
+  assert.equal(
+    deploymentKey("1.7.0-0123456789ab", "remoteEntry.js"),
+    "1.7.0-0123456789ab/remoteEntry.js",
+  );
+});
 
 test("Azure Blob PUT uses Entra auth, encoded keys, and blob HTTP properties", async (t) => {
   const originalFetch = globalThis.fetch;

@@ -182,9 +182,11 @@ host environment variables or globals to bypass that boundary.
 
 ## 10. GitHub Actions branch sandbox
 
-After local delivery works, `.github/workflows/widget-cdn-azure-sandbox.yml`
-deploys this feature branch to the personal account through OIDC. It does not
-require a GitHub environment or stored Azure/signing secret.
+After local delivery works, `.github/workflows/widget-cdn-deploy.yml` deploys
+this feature branch to the personal account through OIDC (its default target
+is the `widget-cdn-azure-sandbox` GitHub environment; the sandbox identifiers
+are inline fallbacks, so only the `LAYERSWAP_PRIVATE_KEY_PEM` signing secret
+is required).
 
 In Azure Portal:
 
@@ -220,5 +222,3 @@ Front Door and preferably a private Blob origin. The final rollout also needs:
 - GitHub Actions OIDC instead of a developer's Azure CLI session.
 - The production manifest signing key/KMS.
 - A stable custom domain such as `cdn.layerswap.io`.
-- A transition redirect for loaders that still contain the old `workers.dev`
-  URL.
