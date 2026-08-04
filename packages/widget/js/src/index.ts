@@ -1,6 +1,6 @@
 // Vanilla, framework-agnostic mount API — the primary entry point.
-export { mountWidget } from "./mount.js";
-export type { WidgetHandle, MountOptions } from "./mount.js";
+export { mountWidget, mountDepositWidget } from "./mount.js";
+export type { WidgetHandle, DepositWidgetHandle, MountOptions } from "./mount.js";
 
 // Shared widget prop/config/theme and protocol contract, re-exported from
 // `@layerswap/widget-types` (the single source of truth).
@@ -10,6 +10,10 @@ export type {
   WidgetCallbacks,
   WalletDefaults,
   WalletProviderId,
+  DepositWidgetProps,
+  DepositConfig,
+  DepositMethodId,
+  SupportedDestination,
   ThemeData,
   ThemeColor,
 } from "@layerswap/widget-types";

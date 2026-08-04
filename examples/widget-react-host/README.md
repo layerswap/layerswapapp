@@ -16,6 +16,12 @@ from its built-in production channel, then loads the `remoteEntry.js` it points
 at and mounts the widget. The host cannot replace the manifest URL or disable
 verification.
 
+The page has two tabs: **Swap** mounts `LayerswapWidget` (the full swap form)
+and **Deposit** mounts `LayerswapDepositWidget` (the fixed-destination funding
+flow, pointed at a demo Base USDC/ETH recipient). They are tabs rather than
+side-by-side because only one Layerswap widget may be live per page — the
+widget keeps process-global state.
+
 ## What's in the host bundle
 
 Only `@layerswap/widget-react` (a few KB plus `@module-federation/runtime`).

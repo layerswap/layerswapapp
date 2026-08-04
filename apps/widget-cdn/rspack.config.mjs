@@ -203,6 +203,12 @@ export default (env, argv) => {
           // Imperative mount entry for framework-agnostic hosts. Owns its own
           // React root so non-React pages can embed it without a host framework.
           './mount': './src/mount.tsx',
+          // Deposit widget: fixed-destination funding flow. Same pairing —
+          // React hosts consume the component, vanilla hosts the mount.
+          // Additive expose: older loaders never request it, so this rolls
+          // within protocol v1.
+          './DepositWidget': './src/DepositWidget.tsx',
+          './mountDeposit': './src/mountDeposit.tsx',
         },
         shared: SHARED_SINGLETONS,
         // Disable MF's dev-only live-reload bridge. With the remote consumed

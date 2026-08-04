@@ -6,4 +6,8 @@ export type {
   WidgetProps,
   WalletDefaults,
   WalletProviderId,
+  DepositWidgetProps,
+  DepositConfig,
+  DepositMethodId,
+  SupportedDestination,
 } from './config';

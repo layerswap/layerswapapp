@@ -56,6 +56,34 @@ The npm package major selects the CDN protocol major:
 Minor and patch widget builds roll forward within that major without an
 integrator redeploy. Exact CDN builds are not a public pinning API.
 
+## Deposit widget
+
+`LayerswapDepositWidget` renders the deposit flow instead of the full swap
+form: you fix the destination (one network, its allowed tokens, and the
+recipient address) and the end user only picks a funding source. Delivered
+through the same verified manifest + Module Federation pipeline as
+`LayerswapWidget`, and it accepts all of the same props plus the
+deposit-specific ones (`DepositConfig` in `@layerswap/widget-types`).
+
+```tsx
+import { LayerswapDepositWidget } from '@layerswap/widget-react';
+
+export function DepositPage() {
+  return (
+    <LayerswapDepositWidget
+      config={{ version: 'mainnet' }}
+      destination={{ network: 'BASE_MAINNET', tokens: ['USDC'] }}
+      destinationAddress="0x…"
+      fallback={<div>Loading widget…</div>}
+    />
+  );
+}
+```
+
+Only one Layerswap widget (of either kind) may be live per page — the widget
+keeps process-global state. Vanilla hosts use `mountDepositWidget` from
+`@layerswap/widget-js` the same way they use `mountWidget`.
+
 ## Reusing the host's wagmi config
 
 If your app already runs wagmi, pass its `Config` to the widget so EVM

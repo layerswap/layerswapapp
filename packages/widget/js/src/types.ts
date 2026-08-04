@@ -7,4 +7,8 @@ export type {
   WidgetCallbacks,
   WalletDefaults,
   WalletProviderId,
+  DepositWidgetProps,
+  DepositConfig,
+  DepositMethodId,
+  SupportedDestination,
 } from "@layerswap/widget-types";

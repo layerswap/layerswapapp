@@ -5,7 +5,8 @@ runtime delivery, plus the Cloudflare **Worker + R2** edge that serves it.
 
 - `name`: `layerswap_widget`
 - `filename`: `remoteEntry.js`
-- `exposes`: `./Widget`, `./mount`
+- `exposes`: `./Widget`, `./mount` (swap widget), `./DepositWidget`,
+  `./mountDeposit` (deposit widget — fixed-destination funding flow)
 - Shared singletons: `react`, `react-dom`, `wagmi`, `viem`,
   `@tanstack/react-query`, `zustand`
 

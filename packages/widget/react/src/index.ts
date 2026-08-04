@@ -1,5 +1,7 @@
 export { LayerswapWidget } from './LayerswapWidget.js';
 export type { LayerswapWidgetProps, RemoteWidgetProps } from './LayerswapWidget.js';
+export { LayerswapDepositWidget } from './LayerswapDepositWidget.js';
+export type { LayerswapDepositWidgetProps, RemoteDepositWidgetProps } from './LayerswapDepositWidget.js';
 // Manifest format + error type live in the framework-agnostic core.
 export type { Manifest } from '@layerswap/widget-js';
 export { ManifestError } from '@layerswap/widget-js';
@@ -14,14 +16,19 @@ import type { Config as WagmiConfig } from 'wagmi';
 import type {
   WidgetConfig as SharedWidgetConfig,
   WidgetProps as SharedWidgetProps,
+  DepositWidgetProps as SharedDepositWidgetProps,
 } from '@layerswap/widget-js';
 
 export type WidgetConfig = SharedWidgetConfig<ReactNode>;
 export type WidgetProps = SharedWidgetProps<WagmiConfig, ReactNode>;
+export type DepositWidgetProps = SharedDepositWidgetProps<WagmiConfig, ReactNode>;
 export type {
   WidgetCallbacks,
   WalletDefaults,
   WalletProviderId,
+  DepositConfig,
+  DepositMethodId,
+  SupportedDestination,
   ThemeData,
   ThemeColor,
 } from '@layerswap/widget-js';
