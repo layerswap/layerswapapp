@@ -1,5 +1,5 @@
 {
-  "name": "layerswap-explorer",
+  "name": "@layerswap/explorer",
   "version": "0.1.0",
   "private": true,
   "scripts": {
