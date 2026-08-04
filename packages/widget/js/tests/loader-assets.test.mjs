@@ -24,8 +24,15 @@ class FakeScriptElement {
 
 globalThis.window = { location: { href: 'https://host.example/page' } };
 globalThis.HTMLScriptElement = FakeScriptElement;
-globalThis.__LAYERSWAP_WIDGET_MANIFEST__ = 'https://cdn.example/v1/manifest.json';
-globalThis.__LAYERSWAP_WIDGET_VERIFY__ = false;
+Object.defineProperty(globalThis, 'crypto', {
+  configurable: true,
+  value: {
+    subtle: {
+      importKey: async () => ({}),
+      verify: async () => true,
+    },
+  },
+});
 
 const remoteHash = `sha384-${'J'.repeat(64)}`;
 const assetHash = `sha384-${'K'.repeat(64)}`;
@@ -36,6 +43,8 @@ globalThis.fetch = async () => ({
     protocolMajor: 1,
     version: '1.7.0',
     remoteEntry: './remoteEntry.js',
+    expiresAt: '2999-01-01T00:00:00.000Z',
+    signature: 'AA==',
     assetBase: '../assets/',
     chunks: {
       'remoteEntry.js': remoteHash,

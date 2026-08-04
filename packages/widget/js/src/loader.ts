@@ -1,35 +1,8 @@
-import { fetchManifest, resolveRemoteEntry, verifyManifest, manifestFreshness, ManifestError, DEFAULT_MANIFEST_URL } from './manifest.js';
+import { fetchManifest, resolveRemoteEntry, verifyManifest, manifestFreshness, ManifestError, WIDGET_MANIFEST_URL } from './manifest.js';
 import { registerChunkHashes } from './sri.js';
 import { WIDGET_PROTOCOL_MAJOR, widgetProtocolMajorOf } from '@layerswap/widget-types';
 
 export type ResolvedSource = { remoteEntry: string };
-
-/**
- * Internal-only override, read from `globalThis`. NOT part of the public API:
- * integrators always get the canonical signed CDN baked into this package
- * ({@link DEFAULT_MANIFEST_URL}) and cannot repoint the loader. Layerswap's own
- * dev harnesses (the example host, the playground) set these globals before the
- * widget mounts to target the local unsigned dev server. Undocumented on
- * purpose — treat it as a build/test seam, not a supported knob.
- *
- *   globalThis.__LAYERSWAP_WIDGET_MANIFEST__ = 'http://127.0.0.1:3100/manifest.json';
- *   globalThis.__LAYERSWAP_WIDGET_VERIFY__ = false;
- */
-type InternalOverrideGlobals = {
-  __LAYERSWAP_WIDGET_MANIFEST__?: unknown;
-  __LAYERSWAP_WIDGET_VERIFY__?: unknown;
-};
-
-function resolveConfig(): { manifestUrl: string; verify: boolean } {
-  const g = globalThis as InternalOverrideGlobals;
-  const manifestUrl =
-    typeof g.__LAYERSWAP_WIDGET_MANIFEST__ === 'string' && g.__LAYERSWAP_WIDGET_MANIFEST__
-      ? g.__LAYERSWAP_WIDGET_MANIFEST__
-      : DEFAULT_MANIFEST_URL;
-  // Fail closed: verification is on unless a harness explicitly disables it.
-  const verify = typeof g.__LAYERSWAP_WIDGET_VERIFY__ === 'boolean' ? g.__LAYERSWAP_WIDGET_VERIFY__ : true;
-  return { manifestUrl, verify };
-}
 
 /**
  * Fetch + validate the manifest and install per-chunk SRI, returning the
@@ -37,9 +10,8 @@ function resolveConfig(): { manifestUrl: string; verify: boolean } {
  * `mountWidget` and the React `LayerswapWidget` so the security-critical path
  * (signature check + SRI registration) lives in exactly one place.
  *
- * Takes no arguments: the manifest URL is the canonical Layerswap CDN baked
- * into this package. (Layerswap's own dev harnesses can repoint it via the
- * internal `__LAYERSWAP_WIDGET_*` globals — see {@link resolveConfig}.)
+ * Takes no arguments: the manifest URL and verification policy are fixed in
+ * this package. Hosts cannot repoint the loader or disable verification.
  *
  * Single-flight: concurrent mounts share one fetch + signature verification +
  * SRI registration. A successful resolution is reused for a short window
@@ -48,59 +20,54 @@ function resolveConfig(): { manifestUrl: string; verify: boolean } {
  * Failures are never cached.
  */
 export function resolveSource(): Promise<ResolvedSource> {
-  const { manifestUrl, verify } = resolveConfig();
-  const key = `${verify ? 'v' : 'u'}:${manifestUrl}`;
   const now = Date.now();
-  const cached = pendingResolves.get(key);
+  const cached = pendingResolve;
   if (cached && (cached.settledAt === undefined || now - cached.settledAt < RESOLVE_REUSE_MS)) {
     return cached.promise;
   }
   const entry: PendingResolve = {
-    promise: resolveSourceOnce(manifestUrl, verify).then(
+    promise: resolveSourceOnce().then(
       (result) => {
         entry.settledAt = Date.now();
         return result;
       },
       (error) => {
-        pendingResolves.delete(key);
+        if (pendingResolve === entry) pendingResolve = undefined;
         throw error;
       },
     ),
   };
-  pendingResolves.set(key, entry);
+  pendingResolve = entry;
   return entry.promise;
 }
 
 const RESOLVE_REUSE_MS = 60_000;
 
 type PendingResolve = { promise: Promise<ResolvedSource>; settledAt?: number };
-const pendingResolves = new Map<string, PendingResolve>();
+let pendingResolve: PendingResolve | undefined;
 
-async function resolveSourceOnce(manifestUrl: string, verify: boolean): Promise<ResolvedSource> {
-  // When verifying, force a revalidation so we check the freshest bytes.
-  // Otherwise let the browser HTTP cache satisfy repeated mounts.
-  const { manifest, url: resolvedManifestUrl } = await fetchManifest(manifestUrl, !verify);
+async function resolveSourceOnce(): Promise<ResolvedSource> {
+  // Force a revalidation so we always verify the freshest manifest bytes.
+  const { manifest, url: resolvedManifestUrl } = await fetchManifest(WIDGET_MANIFEST_URL);
   if (manifest.killSwitch) {
     throw new ManifestError('kill-switch', 'manifest kill switch is set — refusing to load remote');
   }
-  if (verify) {
-    const ok = await verifyManifest(manifest);
-    if (!ok) {
-      throw new ManifestError('signature', 'manifest signature is missing or invalid');
-    }
-    // Freshness is only meaningful once the signed body is trusted (an
-    // attacker controls unverified fields anyway) — and it is REQUIRED then:
-    // a valid-but-stale manifest is exactly the replay this check exists to
-    // stop. See `Manifest.expiresAt` for the availability policy.
-    const freshness = manifestFreshness(manifest, Date.now());
-    if (freshness !== 'fresh') {
-      throw new ManifestError(
-        'stale',
-        freshness === 'expired'
-          ? `manifest expired at ${manifest.expiresAt} — refusing a possibly replayed build`
-          : 'manifest carries no valid expiresAt — refusing to trust it indefinitely',
-      );
-    }
+  const ok = await verifyManifest(manifest);
+  if (!ok) {
+    throw new ManifestError('signature', 'manifest signature is missing or invalid');
+  }
+  // Freshness is only meaningful once the signed body is trusted (an
+  // attacker controls unverified fields anyway) — and it is REQUIRED then:
+  // a valid-but-stale manifest is exactly the replay this check exists to
+  // stop. See `Manifest.expiresAt` for the availability policy.
+  const freshness = manifestFreshness(manifest, Date.now());
+  if (freshness !== 'fresh') {
+    throw new ManifestError(
+      'stale',
+      freshness === 'expired'
+        ? `manifest expired at ${manifest.expiresAt} — refusing a possibly replayed build`
+        : 'manifest carries no valid expiresAt — refusing to trust it indefinitely',
+    );
   }
   const remoteProtocolMajor = widgetProtocolMajorOf(manifest);
   if (remoteProtocolMajor !== WIDGET_PROTOCOL_MAJOR) {

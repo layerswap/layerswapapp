@@ -174,17 +174,11 @@ node -e "
 "
 ```
 
-Then run the internal React host against Azure with signature verification
-disabled for this temporary key:
-
-```bash
-VITE_LAYERSWAP_MANIFEST="$WIDGET_AZURE_BASE/v1/manifest.json" \
-VITE_LAYERSWAP_VERIFY=false \
-pnpm --filter widget-react-host-example dev -- \
-  --host 127.0.0.1 --port 3001 --no-open
-```
-
-Open `http://127.0.0.1:3001`.
+The published React/JS loaders cannot be repointed at this sandbox: their
+manifest URL and signature verification policy are fixed inside
+`@layerswap/widget-js`. Browser integration testing requires a loader build
+whose internal `WIDGET_MANIFEST_URL` and trust anchor target the sandbox; do not add
+host environment variables or globals to bypass that boundary.
 
 ## 10. GitHub Actions branch sandbox
 

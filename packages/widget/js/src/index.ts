@@ -27,7 +27,7 @@ export {
   ManifestError,
   MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64,
   MANIFEST_CLOCK_SKEW_MS,
-  DEFAULT_MANIFEST_URL,
+  WIDGET_MANIFEST_URL,
   verifyManifest,
   manifestFreshness,
   canonicalize,

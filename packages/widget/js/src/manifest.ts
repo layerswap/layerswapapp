@@ -112,11 +112,10 @@ export const MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64 =
  *
  * The channel major is the shared widget protocol major. A breaking `/v2/`
  * ships with loader package major 2. Exact build pinning is intentionally not
- * a public loader feature. Layerswap's own dev harnesses can repoint the
- * loader via the internal globals described in `loader.ts`.
+ * a public loader feature.
  */
-export const DEFAULT_MANIFEST_URL =
-    `https://layerswap-widget-cdn.layerswapcdn.workers.dev/v${WIDGET_PROTOCOL_MAJOR}/manifest.json`;
+export const WIDGET_MANIFEST_URL =
+    `https://layerswapcdntest.blob.core.windows.net/widget-cdn/v${WIDGET_PROTOCOL_MAJOR}/manifest.json`;
 
 const fromB64 = (b64: string): ArrayBuffer => {
     const bin = atob(b64);

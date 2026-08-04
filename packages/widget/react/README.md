@@ -139,7 +139,7 @@ accordingly.
 
 The widget is served from the fixed origin baked into this package release —
 currently `https://layerswap-widget-cdn.layerswapcdn.workers.dev` (the
-`DEFAULT_MANIFEST_URL` in `@layerswap/widget-js`; if a future release moves
+`WIDGET_MANIFEST_URL` in `@layerswap/widget-js`; if a future release moves
 to a custom domain such as `cdn.layerswap.io`, this section moves with it).
 A tight CSP that allowlists exactly that origin plus the LayerSwap endpoints
 gives integrators the smallest blast radius if the supply chain is ever
@@ -187,23 +187,11 @@ Notes:
 
 ## Local development
 
-The widget's source is fixed to the production CDN and is not overridable
-through props. For working **on the widget itself** inside this monorepo,
-the loader reads an internal, undocumented override from `globalThis` so
-Layerswap's own harnesses can target the local widget-cdn dev server:
-
-```ts
-// Set BEFORE <LayerswapWidget> mounts (e.g. at module scope). Not part of
-// the public API — a build/test seam for the monorepo only.
-globalThis.__LAYERSWAP_WIDGET_MANIFEST__ = 'http://127.0.0.1:3100/manifest.json';
-globalThis.__LAYERSWAP_WIDGET_VERIFY__ = false; // dev manifest is unsigned
-```
-
-Run the widget-cdn dev server (`pnpm dev` in `apps/widget-cdn`) — it serves
-both `remoteEntry.js` and an unsigned `manifest.json` at
-`http://127.0.0.1:3100`. See `examples/widget-react-host/` for a runnable
-Vite host that sets these globals from `VITE_LAYERSWAP_MANIFEST` /
-`VITE_LAYERSWAP_VERIFY` and wires `wagmiConfig` adoption and callbacks.
+The widget source and signature verification policy are owned entirely by
+`@layerswap/widget-js`. They cannot be changed through props, environment
+variables, or globals. The runnable Vite host in
+`examples/widget-react-host/` therefore exercises the same signed production
+channel as an integrator.
 
 ## Security model
 
