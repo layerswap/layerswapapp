@@ -63,6 +63,7 @@ function createStore(): RpcHealthCheckStore {
     const listeners = new Set<() => void>()
     let lastConnectorId: string | undefined
     let lastIsConnected = false
+    let lastChainId: number | undefined
     let unsubEvm: (() => void) | null = null
 
     const setSnapshot = (next: Partial<RpcHealthCheckSnapshot>) => {
@@ -78,8 +79,15 @@ function createStore(): RpcHealthCheckStore {
     }
 
     const check = async () => {
-        const { connector, isConnected } = getActiveConnector()
+        const { connector, isConnected, chainId } = getActiveConnector()
         if (!connector || !isConnected) return
+
+        // The probe is async — the wallet can switch chain (or connector) while it's
+        // in flight, and a verdict for the old chain must not be stamped onto the new one.
+        const isCurrent = () => {
+            const now = getActiveConnector()
+            return now.connector?.id === connector.id && now.chainId === chainId
+        }
 
         try {
             const provider = (await connector.getProvider()) as Eip1193Provider | null
@@ -95,6 +103,7 @@ function createStore(): RpcHealthCheckStore {
                 'Wallet RPC timed out',
             )
             const latencyMs = performance.now() - start
+            if (!isCurrent()) return
 
             const tsHex = latestBlock?.timestamp
             const blockAgeSec = tsHex != null
@@ -113,6 +122,7 @@ function createStore(): RpcHealthCheckStore {
             }
             setSnapshot({ health: { status: 'healthy', latencyMs, blockAgeSec } satisfies RpcHealth })
         } catch (e: any) {
+            if (!isCurrent()) return
             // A wallet declining to serve the read method isn't an RPC health signal —
             // leave status "unknown" so we don't prompt the user to add an RPC.
             if (isMethodUnsupportedError(e)) {
@@ -162,7 +172,7 @@ function createStore(): RpcHealthCheckStore {
         })
     }
 
-    // Auto-check when the active connector or connectedness changes. The
+    // Auto-check when the active connector, connectedness, or chain changes. The
     // upstream subscription only lives while someone is listening (first
     // subscriber starts it, last unsubscriber stops it), so consumer
     // mount/unmount cycles — including StrictMode's — can't leave the store
@@ -170,16 +180,24 @@ function createStore(): RpcHealthCheckStore {
     // also catch up: if a wallet is already connected, check right away.
     const startAutoCheck = () => {
         unsubEvm = useEvmStore.subscribe(() => {
-            const { connector, isConnected } = getActiveConnector()
+            const { connector, isConnected, chainId } = getActiveConnector()
             const connectorId = connector?.id
-            if (connectorId === lastConnectorId && isConnected === lastIsConnected) return
+            if (connectorId === lastConnectorId && isConnected === lastIsConnected && chainId === lastChainId) return
             lastConnectorId = connectorId
             lastIsConnected = isConnected
+            lastChainId = chainId
+            // The previous verdict belongs to the old connector/chain — drop back to
+            // "unknown" (banner hidden) until the fresh probe for this chain resolves.
+            setSnapshot({ health: { status: undefined } satisfies RpcHealth })
             if (connector && isConnected) void check()
         })
-        const { connector, isConnected } = getActiveConnector()
+        const { connector, isConnected, chainId } = getActiveConnector()
+        if (connector?.id !== lastConnectorId || chainId !== lastChainId) {
+            setSnapshot({ health: { status: undefined } satisfies RpcHealth })
+        }
         lastConnectorId = connector?.id
         lastIsConnected = isConnected
+        lastChainId = chainId
         if (connector && isConnected) void check()
     }
 
