@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { WagmiProvider } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { LayerswapWidget, LayerswapDepositWidget } from '@layerswap/widget-react';
+import type { LayerswapWidgetProps, LayerswapDepositWidgetProps } from '@layerswap/widget-react';
 import { wagmiConfig } from './wagmi';
 import { HostWallet } from './HostWallet';
 
@@ -10,6 +11,34 @@ const queryClient = new QueryClient();
 // Demo recipient for the deposit tab. A real integrator supplies their own
 // deposit address here — the deposit widget never asks the end user for it.
 const DEPOSIT_DEMO_ADDRESS = '0x2fc617e933a52713247ce25730f6695920b3befe';
+
+// Keep object/function props referentially stable — the widget memoizes its
+// wallet-provider setup on these by identity, so fresh inline literals on
+// every host render would needlessly rebuild wallet providers. Hoist them
+// (or useMemo/useCallback them if they depend on host state).
+const WIDGET_CONFIG: LayerswapWidgetProps['config'] = { version: 'mainnet' };
+const WALLET_PROVIDERS_CONFIG: LayerswapWidgetProps['walletProvidersConfig'] = {
+  exclude: ['tron', 'fuel'],
+};
+const DEPOSIT_DESTINATION: LayerswapDepositWidgetProps['destination'] = {
+  network: 'BASE_MAINNET',
+  tokens: ['USDC', 'ETH'],
+};
+const SWAP_CALLBACKS: LayerswapWidgetProps['callbacks'] = {
+  onSwapCreate: (swap) => console.log('[host] swap created', swap),
+  onSwapComplete: (swap) => console.log('[host] swap complete', swap),
+  onError: (err) => console.warn('[host] widget error', err),
+  onSwapModalStateChange: (open) => console.log('[host] swap modal', open),
+};
+const DEPOSIT_CALLBACKS: LayerswapDepositWidgetProps['callbacks'] = {
+  onSwapCreate: (swap) => console.log('[host] deposit swap created', swap),
+  onSwapComplete: (swap) => console.log('[host] deposit complete', swap),
+  onError: (err) => console.warn('[host] deposit widget error', err),
+};
+const onWidgetReady = () => console.log('[embed] widget ready');
+const onWidgetLoadError = (err: unknown) => console.error('[embed] failed to load', err);
+const onDepositWidgetReady = () => console.log('[embed] deposit widget ready');
+const onDepositWidgetLoadError = (err: unknown) => console.error('[embed] failed to load', err);
 
 type WidgetTab = 'swap' | 'deposit';
 
@@ -72,34 +101,25 @@ export function App() {
           <div style={{ width: '100%', maxWidth: 512 }}>
             {tab === 'swap' ? (
               <LayerswapWidget
-                config={{ version: 'mainnet' }}
-                walletProvidersConfig={{ exclude: ['tron', 'fuel'] }}
+                config={WIDGET_CONFIG}
+                walletProvidersConfig={WALLET_PROVIDERS_CONFIG}
                 wagmiConfig={wagmiConfig}
-                callbacks={{
-                  onSwapCreate: (swap) => console.log('[host] swap created', swap),
-                  onSwapComplete: (swap) => console.log('[host] swap complete', swap),
-                  onError: (err) => console.warn('[host] widget error', err),
-                  onSwapModalStateChange: (open) => console.log('[host] swap modal', open),
-                }}
+                callbacks={SWAP_CALLBACKS}
                 fallback={loadingFallback}
-                onReady={() => console.log('[embed] widget ready')}
-                onError={(err) => console.error('[embed] failed to load', err)}
+                onReady={onWidgetReady}
+                onError={onWidgetLoadError}
               />
             ) : (
               <LayerswapDepositWidget
-                config={{ version: 'mainnet' }}
-                destination={{ network: 'BASE_MAINNET', tokens: ['USDC', 'ETH'] }}
+                config={WIDGET_CONFIG}
+                destination={DEPOSIT_DESTINATION}
                 destinationAddress={DEPOSIT_DEMO_ADDRESS}
-                walletProvidersConfig={{ exclude: ['tron', 'fuel'] }}
+                walletProvidersConfig={WALLET_PROVIDERS_CONFIG}
                 wagmiConfig={wagmiConfig}
-                callbacks={{
-                  onSwapCreate: (swap) => console.log('[host] deposit swap created', swap),
-                  onSwapComplete: (swap) => console.log('[host] deposit complete', swap),
-                  onError: (err) => console.warn('[host] deposit widget error', err),
-                }}
+                callbacks={DEPOSIT_CALLBACKS}
                 fallback={loadingFallback}
-                onReady={() => console.log('[embed] deposit widget ready')}
-                onError={(err) => console.error('[embed] failed to load', err)}
+                onReady={onDepositWidgetReady}
+                onError={onDepositWidgetLoadError}
               />
             )}
           </div>
