@@ -25,6 +25,7 @@
     "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm && tsc-alias -p tsconfig.json --outDir ./dist/types",
     "check:types": "tsc --noEmit && tsc --project tsconfig.type-tests.json --noEmit",
     "clean": "rimraf dist tsconfig.tsbuildinfo",
+    "prepublishOnly": "node ../js/scripts/assert-production-origin.mjs",
     "dev": "tsc -p tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types --watch",
     "test": "pnpm build && node --test tests/*.test.mjs"
   },
