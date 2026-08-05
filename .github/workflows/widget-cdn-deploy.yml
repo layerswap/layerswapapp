@@ -18,16 +18,25 @@ name: widget-cdn — deploy
 #     admin creates the production Azure identity/storage account and fills in
 #     the environment. Dispatches only from the default branch.
 #
-# A push deploys to the sandbox. Production is workflow_dispatch with
-# environment=widget-cdn-production; add required reviewers to that
-# environment so the deploy pauses for approval ("Review deployments").
-#
-# When this branch moves to the default branch, update the push trigger below.
+# A push to dev that touches the widget build graph deploys to the sandbox.
+# The sandbox environment has required reviewers, so every push deploy pauses
+# for approval ("Review deployments") before touching storage — nothing ships
+# unreviewed. Production is workflow_dispatch with
+# environment=widget-cdn-production and its own required reviewers.
 
 on:
   push:
     branches:
+      - dev
+      # Pre-merge sandbox deploys — remove once this PR lands on dev.
       - codex/widget-cdn-azure-sandbox
+    paths:
+      - 'apps/widget-cdn/**'
+      - 'packages/**'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/widget-cdn-deploy.yml'
+      - '.github/scripts/resolve-widget-cdn-env.sh'
   workflow_dispatch:
     inputs:
       environment:
