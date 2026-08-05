@@ -46,9 +46,43 @@ Works in the Next.js App Router out of the box: the component declares
 only starts the browser-only loader after hydration — no `next/dynamic`
 wrapper needed.
 
-To ride a different major channel (e.g. a future `/v2/`), upgrade the
-`@layerswap/widget-react` package — the source URL is pinned to the package
-version, not passed at runtime.
+The npm package major selects the CDN protocol major:
+
+```text
+@layerswap/widget-react@1.x → /v1/manifest.json
+@layerswap/widget-react@2.x → /v2/manifest.json
+```
+
+Minor and patch widget builds roll forward within that major without an
+integrator redeploy. Exact CDN builds are not a public pinning API.
+
+## Deposit widget
+
+`LayerswapDepositWidget` renders the deposit flow instead of the full swap
+form: you fix the destination (one network, its allowed tokens, and the
+recipient address) and the end user only picks a funding source. Delivered
+through the same verified manifest + Module Federation pipeline as
+`LayerswapWidget`, and it accepts all of the same props plus the
+deposit-specific ones (`DepositConfig` in `@layerswap/widget-types`).
+
+```tsx
+import { LayerswapDepositWidget } from '@layerswap/widget-react';
+
+export function DepositPage() {
+  return (
+    <LayerswapDepositWidget
+      config={{ version: 'mainnet' }}
+      destination={{ network: 'BASE_MAINNET', tokens: ['USDC'] }}
+      destinationAddress="0x…"
+      fallback={<div>Loading widget…</div>}
+    />
+  );
+}
+```
+
+Only one Layerswap widget (of either kind) may be live per page — the widget
+keeps process-global state. Vanilla hosts use `mountDepositWidget` from
+`@layerswap/widget-js` the same way they use `mountWidget`.
 
 ## Reusing the host's wagmi config
 
@@ -78,6 +112,12 @@ The widget's EVM wallet provider adopts the host's `Config` via
 `createEVMProvider({ wagmiConfig })` and subscribes to its store. No
 nested `<WagmiProvider>`, no second connect flow — the widget reads the
 host's connected account/chain through the same `Config` instance.
+
+You only need to declare the chains **your own app** uses — the widget
+appends every Layerswap-supported EVM chain (with its transports) to the
+adopted config at init, so network switching and transfers work on chains
+you didn't list. Your chain order is preserved, and your transports win
+for chains you did configure.
 
 **Gotcha:** wagmi v2 defaults `multiInjectedProviderDiscovery: true`,
 which auto-registers an EIP-6963 connector for every announced injected
@@ -132,8 +172,8 @@ accordingly.
 ## Recommended Content Security Policy
 
 The widget is served from the fixed origin baked into this package release —
-currently `https://layerswap-widget-cdn.layerswapcdn.workers.dev` (the
-`DEFAULT_MANIFEST_URL` in `@layerswap/widget-js`; if a future release moves
+currently `https://layerswapcdntest.blob.core.windows.net` (the
+`WIDGET_MANIFEST_URL` in `@layerswap/widget-js`; if a future release moves
 to a custom domain such as `cdn.layerswap.io`, this section moves with it).
 A tight CSP that allowlists exactly that origin plus the LayerSwap endpoints
 gives integrators the smallest blast radius if the supply chain is ever
@@ -142,8 +182,8 @@ compromised:
 ```
 Content-Security-Policy:
   default-src 'self';
-  script-src   'self' https://layerswap-widget-cdn.layerswapcdn.workers.dev;
-  connect-src  'self' https://layerswap-widget-cdn.layerswapcdn.workers.dev
+  script-src   'self' https://layerswapcdntest.blob.core.windows.net;
+  connect-src  'self' https://layerswapcdntest.blob.core.windows.net
                https://api.layerswap.io https://layerswap.io
                https://*.walletconnect.com https://*.walletconnect.org;
   style-src    'self' 'unsafe-inline';
@@ -176,27 +216,16 @@ Notes:
 | Widget never mounts | `ManifestError('kill-switch')` | Operational kill-switch set on the manifest. |
 | Widget never mounts | `ManifestError('signature')` | Manifest has no/invalid signature (verification is always on). |
 | Widget never mounts | `ManifestError('stale')` | Manifest expired (or carries no validity window) — replay protection refuses possibly-rolled-back builds. Layerswap re-publishing the channel resolves it. |
+| Widget never mounts | `ManifestError('incompatible')` | Manifest protocol major does not match this loader package major. |
 | Widget loads but errors at render | Component-level | Catch via `callbacks.onError`. |
 
 ## Local development
 
-The widget's source is fixed to the production CDN and is not overridable
-through props. For working **on the widget itself** inside this monorepo,
-the loader reads an internal, undocumented override from `globalThis` so
-Layerswap's own harnesses can target the local widget-cdn dev server:
-
-```ts
-// Set BEFORE <LayerswapWidget> mounts (e.g. at module scope). Not part of
-// the public API — a build/test seam for the monorepo only.
-globalThis.__LAYERSWAP_WIDGET_MANIFEST__ = 'http://127.0.0.1:3100/manifest.json';
-globalThis.__LAYERSWAP_WIDGET_VERIFY__ = false; // dev manifest is unsigned
-```
-
-Run the widget-cdn dev server (`pnpm dev` in `apps/widget-cdn`) — it serves
-both `remoteEntry.js` and an unsigned `manifest.json` at
-`http://127.0.0.1:3100`. See `examples/widget-react-host/` for a runnable
-Vite host that sets these globals from `VITE_LAYERSWAP_MANIFEST` /
-`VITE_LAYERSWAP_VERIFY` and wires `wagmiConfig` adoption and callbacks.
+The widget source and signature verification policy are owned entirely by
+`@layerswap/widget-js`. They cannot be changed through props, environment
+variables, or globals. The runnable Vite host in
+`examples/widget-react-host/` therefore exercises the same signed production
+channel as an integrator.
 
 ## Security model
 
