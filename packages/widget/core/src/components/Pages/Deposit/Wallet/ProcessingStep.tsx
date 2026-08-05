@@ -1,8 +1,13 @@
-import { FC } from "react";
-import SwapDetails from "@/components/Pages/Swap/Withdraw/SwapDetails";
+import { FC, Suspense, lazy } from "react";
+import { SwapDetailsSceleton } from "@/components/Common/Sceletons";
 import { Partner } from "@/Models/Partner";
 import { useDepositStep, useReportCloseLock } from "../depositStepContext";
 import { useResolvedSwapStatus } from "@/hooks/useResolvedSwapStatus";
+
+// SwapDetails transitively imports the whole Swap-processing subtree; loading
+// it lazily (as FormWrapper already does) keeps it out of the Deposit exposes'
+// sync bundle, which is nearly at the CDN bundle-budget gate.
+const SwapDetails = lazy(() => import("@/components/Pages/Swap/Withdraw/SwapDetails"));
 
 type Props = {
     partner?: Partner;
@@ -26,11 +31,13 @@ const ProcessingStep: FC<Props> = ({ partner }) => {
 
     return (
         <div className="w-full h-full flex-1 min-h-0 flex flex-col">
-            <SwapDetails
-                type="contained"
-                partner={partner}
-                onCancelWithdrawal={back}
-            />
+            <Suspense fallback={<SwapDetailsSceleton />}>
+                <SwapDetails
+                    type="contained"
+                    partner={partner}
+                    onCancelWithdrawal={back}
+                />
+            </Suspense>
         </div>
     );
 };
