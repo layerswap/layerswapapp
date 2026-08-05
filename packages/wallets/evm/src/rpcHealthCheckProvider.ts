@@ -78,16 +78,22 @@ function createStore(): RpcHealthCheckStore {
         return { connector, isConnected, chainId: state.wagmiAccount.chainId }
     }
 
+    // Monotonic probe generation. Comparing connector/chain ids can't tell two
+    // in-flight probes for the *same* chain apart (a fast A→B→A flip-flop), so
+    // an older probe resolving late could overwrite a fresher verdict. Every
+    // context change and every newly started probe bumps the generation; a
+    // probe's verdict counts only while its generation is still the latest.
+    let probeGeneration = 0
+
     const check = async () => {
-        const { connector, isConnected, chainId } = getActiveConnector()
+        const { connector, isConnected } = getActiveConnector()
         if (!connector || !isConnected) return
 
-        // The probe is async — the wallet can switch chain (or connector) while it's
-        // in flight, and a verdict for the old chain must not be stamped onto the new one.
-        const isCurrent = () => {
-            const now = getActiveConnector()
-            return now.connector?.id === connector.id && now.chainId === chainId
-        }
+        // Claim a generation synchronously, before any await — any context change
+        // (chain switch, disconnect) or a fresher probe starting invalidates this
+        // one, even if this one happens to resolve later.
+        const myGeneration = ++probeGeneration
+        const isCurrent = () => probeGeneration === myGeneration
 
         try {
             const provider = (await connector.getProvider()) as Eip1193Provider | null
@@ -186,13 +192,16 @@ function createStore(): RpcHealthCheckStore {
             lastConnectorId = connectorId
             lastIsConnected = isConnected
             lastChainId = chainId
-            // The previous verdict belongs to the old connector/chain — drop back to
-            // "unknown" (banner hidden) until the fresh probe for this chain resolves.
+            // The previous verdict belongs to the old connector/chain — invalidate
+            // any probe still in flight and drop back to "unknown" (banner hidden)
+            // until the fresh probe for this chain resolves.
+            probeGeneration++
             setSnapshot({ health: { status: undefined } satisfies RpcHealth })
             if (connector && isConnected) void check()
         })
         const { connector, isConnected, chainId } = getActiveConnector()
         if (connector?.id !== lastConnectorId || chainId !== lastChainId) {
+            probeGeneration++
             setSnapshot({ health: { status: undefined } satisfies RpcHealth })
         }
         lastConnectorId = connector?.id
