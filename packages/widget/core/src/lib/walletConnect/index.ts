@@ -9,6 +9,7 @@ export * from "./registry"
 export * from './subscribeDisplayUri'
 export * from "./types"
 export * from "./additionalConnectorsStore"
+export * from "./registryEntryIndex"
 export * from "./connectModalStore"
 export * from "./createConnectionStoreFromHook"
 export * from "./createMemoizedConnectionStore"

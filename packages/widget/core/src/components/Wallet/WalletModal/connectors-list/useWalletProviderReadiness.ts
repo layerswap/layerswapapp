@@ -3,14 +3,10 @@ import { useWalletProvidersRegistry } from "@/context/walletProviders";
 import { connectorKey, resolveChainConnectors } from "@/hooks/useConnectors";
 import { useWalletDescriptorLoader } from "@/lib/walletConnect/walletDescriptorLoader";
 import {
-    ensureRegistryBrowseLoaded,
-    getInstantiatedAdditionalConnectorsStores,
-    subscribeAdditionalConnectorsStores,
+    ensureRegistryBrowseLoaded, getInstantiatedAdditionalConnectorsStores, getRegistryEntryByName,
+    hasPendingRegistryEntryLookups, subscribeAdditionalConnectorsStores, subscribeRegistryEntryIndex,
 } from "@/lib/walletConnect";
-import type {
-    WalletConnectionProvider,
-    WalletModalConnector,
-} from "@/types/wallet";
+import type { WalletConnectionProvider, WalletModalConnector, } from "@/types/wallet";
 
 export function useWalletProviderReadiness(
     featuredProviders: WalletConnectionProvider[]
@@ -40,7 +36,7 @@ export function useWalletProviderReadiness(
             )),
         ]
 
-        return resolveChainConnectors(connectorPool, providerStates)
+        return resolveChainConnectors(connectorPool, providerStates, getRegistryEntryByName)
             .get(connectorKey(connector.name))
             ?.variants ?? []
     }, [registry])
@@ -49,7 +45,7 @@ export function useWalletProviderReadiness(
         getInstantiatedAdditionalConnectorsStores().every(store => {
             const status = store.getSnapshot().browseMetadata.status
             return status === "ready" || status === "error"
-        })
+        }) && !hasPendingRegistryEntryLookups()
     ), [])
 
     const areSourcesStillLoading = useCallback(() => (
@@ -90,6 +86,7 @@ export function useWalletProviderReadiness(
             unsubscribe = [
                 registry.subscribe(check),
                 subscribeAdditionalConnectorsStores(check),
+                subscribeRegistryEntryIndex(check),
             ]
         })
     }, [isRegistrySettled, loadAll, registry])
