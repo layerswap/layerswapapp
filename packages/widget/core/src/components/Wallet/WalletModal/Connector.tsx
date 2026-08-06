@@ -30,7 +30,7 @@ const Connector: FC<Connector> = ({ connector, connectingConnector, onClick, isR
                 {...props}
             >
                 <div className="flex gap-2.5 items-center font-medium w-full">
-                    <div className="w-11">
+                    <div className="w-11 shrink-0">
                         {iconSrc ? (
                             <ImageWithFallback
                                 src={iconSrc}

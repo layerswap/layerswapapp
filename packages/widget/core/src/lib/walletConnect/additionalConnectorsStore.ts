@@ -1,6 +1,6 @@
 import { resolveWalletConnectWallets } from './registry'
 import type { WalletConnectWalletBase } from './types'
-import type { RequestAdditionalConnectorsParams } from '@/types'
+import type { InternalConnector, RequestAdditionalConnectorsParams } from '@/types'
 
 type PageCacheEntry = {
     page: number
@@ -55,12 +55,6 @@ const getPageKey = (page: number, pageSize: number) => `${page}:${pageSize}`
 const listCachedPages = (namespace: string, query: string): PageCacheEntry[] =>
     Array.from(getQueryCache(namespace, query).values()).sort((l, r) => l.page - r.page)
 
-const mergeRecents = (recents: WalletConnectWalletBase[], connectors: WalletConnectWalletBase[]) => {
-    if (recents.length === 0) return connectors
-    const recentIds = new Set(recents.map(c => c.id.toLowerCase()))
-    return [...recents, ...connectors.filter(c => !recentIds.has(c.id.toLowerCase()))]
-}
-
 async function fetchAdditionalConnectorsPage(
     namespace: string,
     params: Required<RequestAdditionalConnectorsParams & { projectId: string }>,
@@ -111,6 +105,7 @@ export type RegistryBrowseStatus = 'idle' | 'loading' | 'ready' | 'error'
 
 export type AdditionalConnectorsSnapshot = {
     browseConnectors: readonly WalletConnectWalletBase[]
+    recentConnectors: readonly InternalConnector[]
     browseMetadata: { loaded: boolean; nextPage: number | null; totalCount: number; status: RegistryBrowseStatus }
 }
 
@@ -126,32 +121,33 @@ export type AdditionalConnectorsStore = {
      * hover/modal-open/settle-check; after a failure the next call retries.
      */
     ensureBrowseLoaded(): Promise<void>
-    addRecentConnector(connector: WalletConnectWalletBase): void
+    addRecentConnector(connector: InternalConnector): void
 }
 
 type InternalState = {
-    recents: WalletConnectWalletBase[]
+    recentConnectors: InternalConnector[]
     browseVersion: number
     browseStatus: RegistryBrowseStatus
 }
 
 const EMPTY_SNAPSHOT: AdditionalConnectorsSnapshot = Object.freeze({
     browseConnectors: Object.freeze([]) as readonly WalletConnectWalletBase[],
+    recentConnectors: Object.freeze([]) as readonly InternalConnector[],
     browseMetadata: Object.freeze({ loaded: false, nextPage: null, totalCount: 0, status: 'idle' as RegistryBrowseStatus }),
 })
 
 function createStore(namespace: string, projectId: string): AdditionalConnectorsStore {
-    let state: InternalState = { recents: [], browseVersion: 0, browseStatus: 'idle' }
+    let state: InternalState = { recentConnectors: [], browseVersion: 0, browseStatus: 'idle' }
     let snapshot: AdditionalConnectorsSnapshot = EMPTY_SNAPSHOT
     let ensureInFlight: Promise<void> | null = null
     const listeners = new Set<() => void>()
 
     // Snapshot inputs behind the last emit. Downstream connection snapshots
-    // (EVM/SVM) compare `browseConnectors` by identity, so rebuilding the
-    // array when neither the cached pages nor the recents changed would
+    // (EVM/SVM) compare connector arrays by identity, so rebuilding them
+    // when neither the cached pages nor the recents changed would
     // falsely invalidate their memoization.
     let lastPages: readonly PageCacheEntry[] = []
-    let lastRecents: readonly WalletConnectWalletBase[] = state.recents
+    let lastRecentConnectors: readonly InternalConnector[] = state.recentConnectors
     let lastStatus: RegistryBrowseStatus = 'idle'
 
     const computeSnapshot = (): AdditionalConnectorsSnapshot => {
@@ -162,15 +158,15 @@ function createStore(namespace: string, projectId: string): AdditionalConnectors
         const status: RegistryBrowseStatus = cachedBrowsePages.length > 0 ? 'ready' : state.browseStatus
         const pagesUnchanged = cachedBrowsePages.length === lastPages.length
             && cachedBrowsePages.every((page, i) => page === lastPages[i])
-        if (pagesUnchanged && state.recents === lastRecents && status === lastStatus) return snapshot
+        if (pagesUnchanged && state.recentConnectors === lastRecentConnectors && status === lastStatus) return snapshot
         lastPages = cachedBrowsePages
-        lastRecents = state.recents
+        lastRecentConnectors = state.recentConnectors
         lastStatus = status
         const connectors = cachedBrowsePages.flatMap(page => page.result.wallets)
-        const browseConnectors = mergeRecents(state.recents, connectors)
         const lastPage = cachedBrowsePages[cachedBrowsePages.length - 1]
         return {
-            browseConnectors,
+            browseConnectors: connectors,
+            recentConnectors: state.recentConnectors,
             browseMetadata: {
                 loaded: cachedBrowsePages.length > 0,
                 nextPage: lastPage?.result.nextPage ?? null,
@@ -246,10 +242,10 @@ function createStore(namespace: string, projectId: string): AdditionalConnectors
             return ensureInFlight
         },
         addRecentConnector(connector) {
-            const deduped = state.recents.filter(
+            const deduped = state.recentConnectors.filter(
                 item => item.id.toLowerCase() !== connector.id.toLowerCase(),
             )
-            state = { ...state, recents: [connector, ...deduped] }
+            state = { ...state, recentConnectors: [connector, ...deduped] }
             emit()
         },
     }

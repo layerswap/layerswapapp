@@ -15,6 +15,7 @@ export function createDescriptorStubStore(
     return createStore<WalletConnectionProvider>(() => ({
         id: d.id,
         name: d.name ?? d.id,
+        capabilities: d.capabilities,
         providerIcon: d.providerIcon,
         autofillSupportedNetworks: d.autofillSupportedNetworks,
         withdrawalSupportedNetworks: d.withdrawalSupportedNetworks ?? [],
