@@ -130,7 +130,7 @@ export function walletConnect(parameters: Params) {
         type: type,
         deepLink: mobile.native || mobile.universal,
         icon: icon,
-        resolveURI: (uri: string) => getResolveUri(id, uri, mobile),
+        resolveURI: (uri: string) => getResolveUri(id, name, uri, mobile),
         async setup() {
             const provider = await this.getProvider().catch(() => null)
             if (!provider) return
@@ -486,11 +486,12 @@ export function walletConnect(parameters: Params) {
 
 function getResolveUri(
     id: string,
+    name: string,
     uri: string,
     mobile: {
         native: string,
         universal: string,
     },
 ): string {
-    return buildDeepLink({ id, mobile }, uri)
+    return buildDeepLink({ id, name, mobile }, uri)
 }

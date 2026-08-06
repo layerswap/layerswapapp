@@ -1,9 +1,7 @@
+import { BLOCKED_REGISTRY_SLUGS } from "@/lib/wallets/catalog"
 import { fetchWallets, chainsForNamespace } from "./api"
 import { mapWallet } from "./mapWallet"
 import type { WalletConnectWalletBase } from "./types"
-
-// Slugified names of wallets to exclude (duplicates / unwanted entries).
-const SLUGS_TO_FILTER = ['okx-wallet-1', 'ready', 'yowallet', 'safewallet']
 
 export type ResolveOptions = {
     namespace?: string
@@ -34,7 +32,7 @@ export async function resolveWalletConnectWallets(opts: ResolveOptions = {}): Pr
 
     const wallets = response.data
         .map((wallet) => mapWallet(wallet, projectId))
-        .filter(w => !SLUGS_TO_FILTER.includes(w.id))
+        .filter(w => !BLOCKED_REGISTRY_SLUGS.includes(w.slug))
 
     return {
         wallets,

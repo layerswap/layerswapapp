@@ -26,7 +26,7 @@ import {
     subscribeDisplayUri,
     type WalletConnectWalletBase,
 } from '@layerswap/widget/internal'
-import { evmConnectorNameResolver, resolveEVMWalletConnectorIcon } from '../evmUtils'
+import { resolveEVMWalletConnectorIcon } from '../evmUtils'
 import { name as PROVIDER_NAME, HIDDEN_WALLETCONNECT_ID } from '../constants'
 import type { LSConnector } from '../connectors/types'
 import { getEvmConfig } from './getEvmConfig'
@@ -36,7 +36,7 @@ import { resolveWallet } from './resolveWallet'
 import {
     attemptGetAccount,
     computeConfiguredConnectors,
-    splitRegistryConnectors,
+    splitRegistryWallets,
     supportsRegistryConnects,
     wagmiDisplayUriSource,
 } from './connectorsHelpers'
@@ -91,11 +91,7 @@ export class EvmConnectionService implements WalletConnectionService<RuntimeDeps
     }
 
     getConfiguredConnectors(allConnectors: readonly Connector[]): InternalConnector[] {
-        return computeConfiguredConnectors({
-            allConnectors,
-            walletConnectConnectors: this._deps.registryConnectors ?? [],
-            isMobilePlatform: this._deps.isMobilePlatform ?? false,
-        })
+        return computeConfiguredConnectors({ allConnectors })
     }
 
     getSplitRegistryConnectors(allConnectors: readonly Connector[]): { featured: RegistryConnector[]; additional: RegistryConnector[] } {
@@ -104,12 +100,9 @@ export class EvmConnectionService implements WalletConnectionService<RuntimeDeps
         if (!supportsRegistryConnects(allConnectors)) {
             return { featured: [], additional: [] }
         }
-        const configured = this.getConfiguredConnectors(allConnectors)
-        return splitRegistryConnectors(
-            configured,
-            [...(this._deps.registryConnectors ?? [])],
+        return splitRegistryWallets(
+            this._deps.registryConnectors ?? [],
             this._deps.isMobilePlatform ?? false,
-            PROVIDER_NAME,
         )
     }
 
@@ -195,13 +188,10 @@ export class EvmConnectionService implements WalletConnectionService<RuntimeDeps
             return { connectors: [], nextPage: null, totalCount: 0 }
         }
         const result = await fn(params)
-        const configured = this.getConfiguredConnectors(allConnectors)
-        const additional = splitRegistryConnectors(
-            configured,
+        const { additional } = splitRegistryWallets(
             result.connectors,
             this._deps.isMobilePlatform ?? false,
-            PROVIDER_NAME,
-        ).additional
+        )
         return {
             connectors: additional,
             nextPage: result.nextPage,
@@ -272,7 +262,7 @@ export class EvmConnectionService implements WalletConnectionService<RuntimeDeps
                 }
                 actualConnector = wcConnector as unknown as InternalConnector & LSConnector
 
-                const resolveURI = (uri: string) => buildDeepLink({ id: registryBase!.id, mobile: registryBase!.mobile }, uri)
+                const resolveURI = (uri: string) => buildDeepLink({ id: registryBase!.id, name: registryBase!.name, mobile: registryBase!.mobile }, uri)
                 connector = Object.assign({}, wcConnector, {
                     id: registryBase.id,
                     name: registryBase.name,
@@ -286,7 +276,7 @@ export class EvmConnectionService implements WalletConnectionService<RuntimeDeps
             }
 
             const iconString = (typeof connector.icon === 'string' ? connector.icon : undefined)
-                || resolveEVMWalletConnectorIcon({ connector: evmConnectorNameResolver(connector as unknown as Connector) })
+                || resolveEVMWalletConnectorIcon({ connector: connector.id, name: connector.name })
             setSelectedConnector?.({ ...connector, icon: iconString })
 
             if (actualConnector.id !== 'coinbaseWalletSDK' && typeof (actualConnector as LSConnector).disconnect === 'function') {

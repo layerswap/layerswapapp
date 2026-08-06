@@ -6,7 +6,7 @@ import type {
     WalletConnectionService,
     WalletModalConnector,
 } from '@layerswap/widget/types'
-import { walletIconResolver, getEip6963Providers, walletKey } from '@layerswap/widget/internal'
+import { walletIconResolver, getEip6963Providers, resolveConnectorIdentity, resolveWalletIdentity } from '@layerswap/widget/internal'
 import { name as PROVIDER_NAME, id as PROVIDER_ID, tronNames } from '../constants'
 import { tronAdapterManager } from './tronAdapterManager'
 import { type TronWalletSnapshot, useTronStore } from './tronStore'
@@ -81,8 +81,9 @@ export class TronConnectionService implements WalletConnectionService {
 
     async connectWallet({ connector }: { connector: WalletModalConnector }): Promise<Wallet | undefined> {
         const { wallets } = useTronStore.getState()
+        const targetIdentityId = resolveConnectorIdentity(connector).id
         const target = wallets.find(w => w.name === connector.id)
-            ?? wallets.find(w => walletKey(w.name) === walletKey(connector.name))
+            ?? wallets.find(w => resolveWalletIdentity({ nativeId: w.name, name: w.name, ecosystem: 'tron' }).id === targetIdentityId)
         if (!target) throw new Error('Connector not found')
 
         try {

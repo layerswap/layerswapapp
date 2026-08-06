@@ -1,6 +1,7 @@
 import { useCallback, useRef } from "react";
 import { useWalletProvidersRegistry } from "@/context/walletProviders";
-import { connectorKey, resolveChainConnectors } from "@/hooks/useConnectors";
+import { mergeConnectors } from "@/lib/wallets/merge";
+import { isMobile } from "@/lib/wallets/utils/isMobile";
 import { useWalletDescriptorLoader } from "@/lib/walletConnect/walletDescriptorLoader";
 import {
     ensureRegistryBrowseLoaded,
@@ -40,9 +41,12 @@ export function useWalletProviderReadiness(
             )),
         ]
 
-        return resolveChainConnectors(connectorPool, providerStates)
-            .get(connectorKey(connector.name))
-            ?.variants ?? []
+        const merged = mergeConnectors(connectorPool, {
+            providers: providerStates,
+            isMobilePlatform: isMobile(),
+        })
+        const key = merged.keyOf(connector)
+        return (key && merged.wallets.get(key)?.variants) || []
     }, [registry])
 
     const isRegistrySettled = useCallback(() => (

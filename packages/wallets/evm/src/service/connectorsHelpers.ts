@@ -3,20 +3,23 @@ import type { CreateConnectorFn, Config } from '@wagmi/core'
 import { getAccount } from '@wagmi/core'
 import {
     createRegistryConnector,
-    DisplayUriSource,
-    getKnownConnectorIconBase64,
+    getIconByKey,
+    resolveWalletIdentity,
     sleep,
+    type DisplayUriSource,
     type RegistryConnector,
     type WalletConnectWalletBase,
 } from '@layerswap/widget/internal'
 import type { InternalConnector } from '@layerswap/widget/types'
-import { evmConnectorNameResolver } from '../evmUtils'
-import KnownEVMConnectorIds from '../evmUtils/knownConnectorIds'
+import { HIDDEN_WALLETCONNECT_ID, name as PROVIDER_NAME } from '../constants'
 import { explicitInjectedProviderDetected } from '../connectors/explicitInjectedProviderDetected'
-import { featuredWalletsIds, HIDDEN_WALLETCONNECT_ID, name as PROVIDER_NAME } from '../constants'
 
-const resolveEVMConnectorOrder = (id: string) =>
-    KnownEVMConnectorIds.findIndex(known => known.toLowerCase() === id?.toLowerCase())
+const connectorIdentity = (connector: { id: string; name: string }) =>
+    resolveWalletIdentity({
+        rdns: connector.id.includes('.') ? connector.id : undefined,
+        nativeId: connector.id,
+        name: connector.name,
+    })
 
 // Adapts a wagmi `Connector` to the shared `DisplayUriSource` contract.
 // Subscribes synchronously to the connector's emitter — wagmi connectors
@@ -47,48 +50,29 @@ export const wagmiDisplayUriSource = (connector: Connector): DisplayUriSource =>
 export const supportsRegistryConnects = (allConnectors: readonly Connector[]): boolean =>
     allConnectors.some(c => c.id === HIDDEN_WALLETCONNECT_ID)
 
-export const isFeaturedRegistryWallet = (wallet: WalletConnectWalletBase): boolean => (
-    featuredWalletsIds.includes(wallet.id.toLowerCase())
-    || featuredWalletsIds.some(featuredId => wallet.name.toLowerCase().includes(featuredId))
-)
-
-export const splitRegistryConnectors = (
-    configuredConnectors: InternalConnector[],
-    registryWallets: WalletConnectWalletBase[],
+export const splitRegistryWallets = (
+    registryWallets: readonly WalletConnectWalletBase[],
     isMobilePlatform: boolean,
-    providerName: string,
-): { featured: RegistryConnector[]; additional: RegistryConnector[] } => {
-    const existingConnectorKeys = new Set(
-        configuredConnectors.flatMap(connector => [connector.id.toLowerCase(), connector.name.toLowerCase()]),
-    )
-
-    return registryWallets.reduce<{ featured: RegistryConnector[]; additional: RegistryConnector[] }>((acc, wallet) => {
-        if (existingConnectorKeys.has(wallet.id.toLowerCase()) || existingConnectorKeys.has(wallet.name.toLowerCase())) {
-            return acc
-        }
-
-        const connector = createRegistryConnector(wallet, isMobilePlatform, providerName)
-
-        if (isFeaturedRegistryWallet(wallet)) {
+): { featured: RegistryConnector[]; additional: RegistryConnector[] } =>
+    registryWallets.reduce<{ featured: RegistryConnector[]; additional: RegistryConnector[] }>((acc, wallet) => {
+        const connector = createRegistryConnector(wallet, isMobilePlatform, PROVIDER_NAME)
+        if (connector.identity?.catalog?.featuredRank != null) {
             acc.featured.push(connector)
         } else {
             acc.additional.push(connector)
         }
-
         return acc
     }, { featured: [], additional: [] })
-}
 
 export function dedupePreferInjected(arr: readonly Connector<CreateConnectorFn>[]): Connector<CreateConnectorFn>[] {
-    const getBaseId = (id: string) => id.includes('.') ? id.split('.').pop()! : id
-
-    const groups = arr.reduce<Record<string, Connector<CreateConnectorFn>[]>>((acc, obj) => {
-        const key = getBaseId(obj.name)
-        ;(acc[key] = acc[key] || []).push(obj)
-        return acc
-    }, {})
-
-    return Object.values(groups).flatMap(group => {
+    const groups = new Map<string, Connector<CreateConnectorFn>[]>()
+    for (const connector of arr) {
+        const key = connectorIdentity(connector).id as string
+        const group = groups.get(key)
+        if (group) group.push(connector)
+        else groups.set(key, [connector])
+    }
+    return [...groups.values()].flatMap(group => {
         const injected = group.filter(o => o.type === 'injected')
         return injected.length > 0 ? injected : group
     })
@@ -96,12 +80,8 @@ export function dedupePreferInjected(arr: readonly Connector<CreateConnectorFn>[
 
 export function computeConfiguredConnectors({
     allConnectors,
-    walletConnectConnectors,
-    isMobilePlatform,
 }: {
     allConnectors: readonly Connector[]
-    walletConnectConnectors: readonly WalletConnectWalletBase[]
-    isMobilePlatform: boolean
 }): InternalConnector[] {
     const activeBrowserWallet = explicitInjectedProviderDetected()
         && allConnectors.filter(c => c.id !== 'com.immutable.passport' && c.type === 'injected').length === 1
@@ -113,28 +93,21 @@ export function computeConfiguredConnectors({
 
     return dedupePreferInjected(allConnectors.filter(filterConnectors))
         .map(w => {
-            const walletConnectWallet = walletConnectConnectors.find(w2 =>
-                w2.name.toLowerCase().includes(w.name.toLowerCase())
-                || w2.id.toLowerCase() === w.id.toLowerCase(),
-            )
+            const identity = connectorIdentity(w)
             const isWalletConnectSupported = w.type === 'walletConnect' || w.name === 'WalletConnect'
             const type = ((w.type == 'injected' && w.id !== 'com.immutable.passport')
                 || w.id === 'metaMaskSDK'
                 || isWalletConnectSupported)
                 ? w.type
                 : 'other'
-            const resolvedConnectorName = evmConnectorNameResolver(w)
-            const knownIconBase64 = getKnownConnectorIconBase64(resolvedConnectorName)
 
             return {
                 ...w,
-                order: resolveEVMConnectorOrder(w.id),
                 type,
                 isMobileSupported: isWalletConnectSupported,
-                installUrl: walletConnectWallet?.installUrl,
-                hasBrowserExtension: walletConnectWallet?.hasBrowserExtension,
-                extensionNotFound: walletConnectWallet?.hasBrowserExtension ? (type == 'walletConnect' && !isMobilePlatform) : false,
-                icon: w.icon || knownIconBase64 || walletConnectWallet?.icon,
+                icon: w.icon || getIconByKey(identity.catalog?.iconKey),
+                rdns: w.id.includes('.') ? w.id : undefined,
+                identity,
                 providerName: PROVIDER_NAME,
             }
         })

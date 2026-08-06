@@ -1,4 +1,5 @@
 import { InternalConnector } from "@/types/wallet"
+import { resolveWalletIdentity } from "@/lib/wallets/identity"
 import { WC_REGISTRY_MARKER, type RegistryAttachedConnector, type WalletConnectWalletBase } from "./types"
 
 export type RegistryConnector = RegistryAttachedConnector<InternalConnector>
@@ -18,5 +19,8 @@ export const createRegistryConnector = (
     installUrl: wallet.installUrl,
     extensionNotFound: wallet.hasBrowserExtension ? !isMobilePlatform : false,
     providerName,
+    rdns: wallet.rdns,
+    registryId: wallet.id,
+    identity: resolveWalletIdentity({ rdns: wallet.rdns, registryId: wallet.id, name: wallet.name }),
     [WC_REGISTRY_MARKER]: wallet,
 })

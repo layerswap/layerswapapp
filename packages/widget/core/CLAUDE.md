@@ -27,7 +27,19 @@ Wallet connections/stubs are published to the registry in `WalletProvidersProvid
 
 ### WalletConnect registry entries — per-connector, not per-provider
 
-Registry (WalletConnect Explorer) metadata is attached to each connector tile via the `WC_REGISTRY_MARKER` symbol and read back with `getRegistryEntry(connector)`. There is **no** `provider.registryWallets` array — that per-provider field was removed in the EVM/SVM wallet-class refactor. `splitRegistryConnectors(configured, registryWallets, …)` takes the fetched list as an argument and tags each connector; it does not read a provider field.
+Registry (WalletConnect Explorer) metadata is attached to each connector tile via the `WC_REGISTRY_MARKER` symbol and read back with `getRegistryEntry(connector)`. There is **no** `provider.registryWallets` array — that per-provider field was removed in the EVM/SVM wallet-class refactor. `WalletConnectWalletBase.id` is the explorer API's **stable wallet id**; `slug` (slugified name) exists only for the WC session storage prefix and the registry blocklist.
+
+### Wallet identity — resolve, never string-match
+
+Connector/wallet identity is owned by `lib/wallets/identity` + `lib/wallets/catalog`:
+
+- `resolveWalletIdentity(hints)` resolves `{ rdns, registryId, nativeId, name }` against the catalog with precedence **rdns → registry id → native id → name alias → nameKey(name)**. `nameKey` does **not** strip a trailing "wallet" — merging "X" with "X Wallet" requires catalog evidence (a `nameAliases` entry, shared rdns, or registry id). Distinct products like "Nova" vs "Nova Wallet" stay distinct by default.
+- `lib/wallets/catalog/entries.ts` is the single data source for known wallets: display names, rdns lists, per-ecosystem native ids, aliases, `featuredRank`, deep-link overrides, icon keys, install links, and the registry blocklist. Add data there — never a new hardcoded list in a wallet package.
+- **Never match connectors by substring/fuzzy name comparison.** Use `resolveWalletIdentity`/`resolveConnectorIdentity` and compare `identity.id`.
+
+### Connector merging — one engine, providers don't dedupe
+
+`lib/wallets/merge/mergeConnectors` is the only dedupe/merge point: it groups the pooled connectors by identity, picks one variant per ecosystem by precedence (installed injected > loadable injected > configured > registry), enriches tiles from same-identity registry entries only, synthesizes multichain variants from registry `chains` (only for ecosystems with no real variant), and drives ordering (recents → installed → `featuredRank` → registry `order`). Providers emit their connectors **unfiltered** — EVM/SVM no longer exclude registry wallets that match installed ones. `useConnectors` and `getLiveVariants` (click-time re-check, badge, ecosystem picker) must both derive from `mergeConnectors` so they can't disagree.
 
 ### Extended-route flags — per-provider fail direction, resolved server-side
 

@@ -18,11 +18,12 @@ import {
     getPendingDynamicWcMetadata,
     getRegistryEntry,
     mapConnectError,
+    resolveConnectorIdentity,
     resolveWalletConnectorIcon,
+    resolveWalletIdentity,
     setDynamicWcMetadata,
     setPendingMetadataForRegistry,
     subscribeDisplayUri,
-    walletKey,
     type WalletConnectWalletBase,
 } from '@layerswap/widget/internal'
 import { name as PROVIDER_NAME, id as PROVIDER_ID, solanaNames } from '../constants'
@@ -107,9 +108,11 @@ export class SvmConnectionService implements WalletConnectionService<RuntimeDeps
             // The hidden adapter is the WC transport, never a user-facing tile.
             if (adapterName === SOLANA_HIDDEN_WC_NAME) continue
             const isWcAdapter = adapterName === SOLANA_WC_MODAL_NAME
+            const identity = resolveWalletIdentity({ nativeId: adapterName, name: adapterName, ecosystem: 'svm' })
+            const treatAsInstalled = identity.catalog?.flags?.svmTreatLoadableAsInstalled === true
             const isInstalled = wallet.readyState === 'Installed'
                 || wallet.readyState === 'Loadable'
-                || adapterName === 'Coinbase Wallet'
+                || treatAsInstalled
             installed.push({
                 name: adapterName,
                 id: adapterName,
@@ -118,7 +121,8 @@ export class SvmConnectionService implements WalletConnectionService<RuntimeDeps
                 installUrl: wallet.url,
                 hasBrowserExtension: !isWcAdapter,
                 extensionNotFound: isWcAdapter ? false : !isInstalled,
-                isLoadable: wallet.readyState === 'Loadable' && adapterName !== 'Coinbase Wallet',
+                isLoadable: wallet.readyState === 'Loadable' && !treatAsInstalled,
+                identity,
                 providerName: PROVIDER_NAME,
             })
         }
@@ -126,15 +130,9 @@ export class SvmConnectionService implements WalletConnectionService<RuntimeDeps
     }
 
     getAdditionalConnectors(): InternalConnector[] {
-        const installed = this.getAvailableConnectors()
-        const installedKeys = new Set(installed.map(c => walletKey(c.name)))
-        const registry: InternalConnector[] = []
         const isMobilePlatform = this._deps.isMobilePlatform ?? false
-        for (const reg of this._deps.registryConnectors ?? []) {
-            if (installedKeys.has(walletKey(reg.name)) || installedKeys.has(walletKey(reg.id))) continue
-            registry.push(createRegistryConnector(reg, isMobilePlatform, PROVIDER_NAME))
-        }
-        return registry
+        return (this._deps.registryConnectors ?? [])
+            .map(reg => createRegistryConnector(reg, isMobilePlatform, PROVIDER_NAME))
     }
 
     resolveConnectedWallet(): Wallet | undefined {
@@ -240,10 +238,14 @@ export class SvmConnectionService implements WalletConnectionService<RuntimeDeps
         try {
             const isBareWcTile = connector.name === SOLANA_WC_MODAL_NAME
 
-            // Match the installed adapter by canonical wallet key so spellings
-            // like "Trust" vs "Trust Wallet" collapse to the same adapter.
+            // Match the installed adapter by canonical wallet identity so
+            // spellings like "Trust" vs "Trust Wallet" collapse to the same
+            // adapter via catalog aliases — never by fuzzy name matching, which
+            // could hand the connect to a different product ("Nova Wallet" vs
+            // the installed "Nova").
+            const targetIdentityId = resolveConnectorIdentity(connector).id
             const installedAdapter = svmAdapterManager.getAdapters()
-                .find(a => walletKey(a.name) === walletKey(connector.name))
+                .find(a => resolveWalletIdentity({ nativeId: a.name, name: a.name, ecosystem: 'svm' }).id === targetIdentityId)
             // The visible "WalletConnect" tile is only an entry point; the real
             // WC transport is the hidden adapter that performs the connect.
             const hiddenWcAdapter = svmAdapterManager.getAdapter(SOLANA_HIDDEN_WC_NAME)
@@ -280,7 +282,7 @@ export class SvmConnectionService implements WalletConnectionService<RuntimeDeps
 
             const deeplinkRegistry = registry
             const resolveURI = deeplinkRegistry
-                ? (uri: string) => buildDeepLink({ id: deeplinkRegistry.id, mobile: deeplinkRegistry.mobile }, uri)
+                ? (uri: string) => buildDeepLink({ id: deeplinkRegistry.id, name: deeplinkRegistry.name, mobile: deeplinkRegistry.mobile }, uri)
                 : undefined
 
             if (useWalletConnect && hiddenWcAdapter) {
@@ -363,12 +365,9 @@ export class SvmConnectionService implements WalletConnectionService<RuntimeDeps
             return { connectors: [], nextPage: null, totalCount: 0 }
         }
         const result = await fn(params)
-        const installed = this.getAvailableConnectors()
-        const installedKeys = new Set(installed.map(c => walletKey(c.name)))
         const isMobilePlatform = this._deps.isMobilePlatform ?? false
         return {
             connectors: result.connectors
-                .filter(c => !installedKeys.has(walletKey(c.name)) && !installedKeys.has(walletKey(c.id)))
                 .map(c => createRegistryConnector(c, isMobilePlatform, PROVIDER_NAME)),
             nextPage: result.nextPage,
             totalCount: result.totalCount,

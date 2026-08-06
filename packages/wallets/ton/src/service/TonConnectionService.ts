@@ -6,7 +6,7 @@ import type {
     WalletConnectionService,
     WalletModalConnector,
 } from '@layerswap/widget/types'
-import { connectModalStore, walletIconResolver } from '@layerswap/widget/internal'
+import { connectModalStore, resolveWalletIdentity, walletIconResolver } from '@layerswap/widget/internal'
 import {
     isWalletInfoCurrentlyInjected,
     isWalletInfoInjectable,
@@ -225,15 +225,6 @@ export class TonConnectionService implements WalletConnectionService<RuntimeDeps
 export const tonConnectionService = new TonConnectionService()
 
 /**
- * Display-name overrides for wallets where the TonConnect registry's `name`
- * field is ambiguous (e.g. Telegram's bot wallet is published as just "Wallet").
- * Mirrors how `@tonconnect/ui-react`'s modal labels them.
- */
-const TON_WALLET_DISPLAY_NAMES: Record<string, string> = {
-    'telegram-wallet': 'Wallet in Telegram',
-}
-
-/**
  * The TonConnect registry sometimes contains multiple entries that resolve to
  * the same wallet — most notably OKX, which publishes both `okxWallet` and
  * `okxTonWallet` with the same `jsBridgeKey: "okxTonWallet"`. Collapse to the
@@ -258,11 +249,15 @@ function walletInfoToInternalConnector(info: WalletInfo): InternalConnector {
     const isInjected = isWalletInfoCurrentlyInjected(info)
     const hasBrowserExtension = isInjectable
     const isMobileSupported = isWalletInfoRemote(info)
-    const displayName = TON_WALLET_DISPLAY_NAMES[info.appName] ?? info.name
+    const identity = resolveWalletIdentity({ nativeId: info.appName, name: info.name, ecosystem: 'ton' })
+    const displayName = identity.matchedBy === 'nativeId'
+        ? (identity.catalog?.displayName ?? info.name)
+        : info.name
 
     return {
         id: info.appName,
         name: displayName,
+        identity,
         icon: info.imageUrl,
         type: isInjected ? 'injected' : 'other',
         hasBrowserExtension,

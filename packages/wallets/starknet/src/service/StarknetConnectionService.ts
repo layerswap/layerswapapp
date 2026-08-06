@@ -5,35 +5,15 @@ import type {
     WalletConnectionProvider,
     WalletConnectionService,
 } from '@layerswap/widget/types'
-import { KnownInternalNames, walletIconResolver } from '@layerswap/widget/internal'
+import { KnownInternalNames, resolveWalletIdentity, walletIconResolver } from '@layerswap/widget/internal'
 import type { Connector } from '@starknet-react/core'
 import { name as PROVIDER_NAME, id as PROVIDER_ID, starknetNames } from '../constants'
 import { resolveStarknetWalletIcon } from '../utils'
 import { starknetConnectorManager } from './starknetConnectorManager'
 import { useStarknetStore } from './starknetStore'
 
-const connectorsConfigs = [
-    {
-        id: 'braavos',
-        name: 'Braavos',
-        installLink: 'https://chromewebstore.google.com/detail/braavos-starknet-wallet/jnlgamecbpmbajjfhmmmlhejkemejdma',
-    },
-    {
-        id: 'argentX',
-        name: 'Ready X',
-        installLink: 'https://chromewebstore.google.com/detail/argent-x-starknet-wallet/dlcobpjiigpikoobohmabehhmhfoodbb',
-    },
-    {
-        id: 'keplr',
-        name: 'Keplr',
-        installLink: 'https://chromewebstore.google.com/detail/keplr/dmkamcknogkgcdfhhbddcghachkejeap',
-    },
-    {
-        id: 'xverse',
-        name: 'Xverse Wallet',
-        installLink: 'https://chromewebstore.google.com/detail/xverse-bitcoin-crypto-wal/idnnbdplmphpflfnlkomgpfbpcgelopg',
-    },
-]
+const MOBILE_DISCOVERY_ID_SUFFIX = '-mobile'
+const MOBILE_DISCOVERY_NAME_SUFFIX = / \(mobile\)$/
 
 type ResolveStarknetWalletProps = {
     name: string
@@ -79,7 +59,7 @@ export async function resolveStarknetWallet(props: ResolveStarknetWalletProps): 
         const accounts = await walletAccount.requestAccounts(true)
         const account = accounts?.[0]
 
-        const configuredName = connectorsConfigs.find(c => c.id === connector.id)?.name
+        const configuredName = resolveWalletIdentity({ nativeId: connector.id, ecosystem: 'starknet' }).catalog?.displayName
         const connectorName = configuredName ?? connector.name
 
         const wallet: Wallet = {
@@ -236,12 +216,34 @@ export class StarknetConnectionService implements WalletConnectionService {
     getAvailableConnectors(): InternalConnector[] {
         const connectors = useStarknetStore.getState().connectors
         return connectors.map(connector => {
-            const config = connectorsConfigs.find(c => c.id === connector.id)
-            const displayName = config?.name ?? connector.name
+            const isMobileDiscovery = connector.id.endsWith(MOBILE_DISCOVERY_ID_SUFFIX)
+            const nativeId = isMobileDiscovery
+                ? connector.id.slice(0, -MOBILE_DISCOVERY_ID_SUFFIX.length)
+                : connector.id
+            const baseName = isMobileDiscovery
+                ? connector.name.replace(MOBILE_DISCOVERY_NAME_SUFFIX, '')
+                : connector.name
+            const identity = resolveWalletIdentity({ nativeId, name: baseName, ecosystem: 'starknet' })
+            const displayName = identity.catalog?.displayName ?? baseName
+
+            if (isMobileDiscovery) {
+                return {
+                    name: displayName,
+                    id: connector.id,
+                    icon: resolveStarknetWalletIcon({ icon: connector.icon }),
+                    type: 'other',
+                    platformVariant: 'mobile-store-redirect' as const,
+                    identity,
+                    providerName: displayName,
+                }
+            }
+
+            const isConfiguredInjected = identity.matchedBy === 'nativeId'
+            const installUrl = isConfiguredInjected ? identity.catalog?.installUrls?.chrome : undefined
             const realConnector = starknetConnectorManager.getConnector(connector.id)
             let isInjectedAndAvailable = false
             try {
-                isInjectedAndAvailable = !!config
+                isInjectedAndAvailable = isConfiguredInjected
                     && typeof (realConnector as any)?.available === 'function'
                     && (realConnector as any).available()
             } catch {
@@ -252,8 +254,9 @@ export class StarknetConnectionService implements WalletConnectionService {
                 id: connector.id,
                 icon: resolveStarknetWalletIcon({ icon: connector.icon }),
                 type: isInjectedAndAvailable ? 'injected' : 'other',
-                installUrl: config?.installLink,
-                extensionNotFound: !!config?.installLink && !isInjectedAndAvailable,
+                installUrl,
+                extensionNotFound: !!installUrl && !isInjectedAndAvailable,
+                identity,
                 providerName: displayName,
             }
         })

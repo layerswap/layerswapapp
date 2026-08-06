@@ -21,7 +21,7 @@ export const decorateForWagmi = (base: WalletConnectWalletBase): WalletConnectWa
         icon: base.icon,
         projectId: base.walletConnectProjectId,
         showQrModal: false,
-        customStoragePrefix: base.id,
+        customStoragePrefix: base.slug,
         order: base.order,
         type,
         isMobileSupported: base.isMobileSupported,

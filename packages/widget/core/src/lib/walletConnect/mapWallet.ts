@@ -11,22 +11,15 @@ function slugify(name: string): string {
         .replace(/^-|-$/g, '')
 }
 
-// Wallets whose slugified name doesn't match what buildDeepLink expects
-const SLUG_OVERRIDES: Record<string, string> = {
-    'bitget-wallet': 'bitkeep',
-}
-
 export function mapWallet(wallet: Web3ModalWallet, projectId: string): WalletConnectWalletBase {
-    let id = slugify(wallet.name)
-    if (SLUG_OVERRIDES[id]) id = SLUG_OVERRIDES[id]
-
     const hasBrowserExtension = wallet.injected != null && wallet.injected.length > 0
     const installUrl = hasBrowserExtension ? (wallet.chrome_store ?? undefined) : undefined
     const isMobileSupported = !!wallet.mobile_link
 
     return {
         walletConnectProjectId: projectId,
-        id,
+        id: wallet.id,
+        slug: slugify(wallet.name),
         name: wallet.name,
         icon: walletImageUrl(wallet.image_id, projectId),
         rdns: wallet.rdns || undefined,

@@ -23,39 +23,30 @@ import {
     OpenMaskIcon,
     MyTonWalletIcon,
 } from '@/components/Icons/Wallets'
+import { resolveWalletIdentity } from '../identity'
 import { convertSvgComponentToBase64 } from './convertSvgComponentToBase64'
 
 type IconComponent = ComponentType<SVGProps<SVGSVGElement>>
 
-const KNOWN: Record<string, IconComponent> = {
-    // EVM
+const ICONS: Record<string, IconComponent> = {
     metamask: MetaMaskIcon,
-    'io.metamask': MetaMaskIcon,
-    metamasksdk: MetaMaskIcon,
-    walletconnect: WalletConnectIcon,
+    walletConnect: WalletConnectIcon,
     rainbow: RainbowIcon,
-    'app.rainbow': RainbowIcon,
-    bitkeep: BitGetIcon,
-    bitget: BitGetIcon,
-    coinbasewalletsdk: CoinbaseIcon,
+    coinbase: CoinbaseIcon,
     phantom: PhantomIcon,
-    'app.phantom': PhantomIcon,
-    'ready (formerly argent)': ArgentIcon,
-    'com.immutable.passport': ImtblPassportIcon,
-    injected: BrowserWalletIcon,
-    // Fuel
-    'bako safe': BakoSafeIcon,
-    'fuel wallet': FuelIcon,
-    'fuelet wallet': FueletIcon,
-    'ethereum wallets': EthereumIcon,
-    'solana wallets': SolanaIcon,
-    // Starknet
-    argentx: ArgentXIcon,
+    argent: ArgentIcon,
+    imtblPassport: ImtblPassportIcon,
+    bitget: BitGetIcon,
+    browser: BrowserWalletIcon,
+    bakoSafe: BakoSafeIcon,
+    fuel: FuelIcon,
+    fuelet: FueletIcon,
+    ethereum: EthereumIcon,
+    solana: SolanaIcon,
+    argentX: ArgentXIcon,
     braavos: BraavosIcon,
-    // SVM
     glow: GlowIcon,
     solflare: SolflareIcon,
-    // TON
     ton: TONIcon,
     tonkeeper: TonKeeperIcon,
     openmask: OpenMaskIcon,
@@ -63,6 +54,17 @@ const KNOWN: Record<string, IconComponent> = {
 }
 
 const cache = new Map<string, string>()
+
+export function getIconByKey(iconKey: string | undefined): string | undefined {
+    if (!iconKey) return undefined
+    const cached = cache.get(iconKey)
+    if (cached) return cached
+    const Component = ICONS[iconKey]
+    if (!Component) return undefined
+    const dataUrl = convertSvgComponentToBase64(Component)
+    cache.set(iconKey, dataUrl)
+    return dataUrl
+}
 
 /**
  * String-only icon lookup for known wallet connectors. Wallet packages can
@@ -72,14 +74,12 @@ const cache = new Map<string, string>()
  */
 export function getKnownConnectorIconBase64(id: string | undefined): string | undefined {
     if (!id) return undefined
-    const key = id.toLowerCase()
-    const cached = cache.get(key)
-    if (cached) return cached
-    const Component = KNOWN[key]
-    if (!Component) return undefined
-    const dataUrl = convertSvgComponentToBase64(Component)
-    cache.set(key, dataUrl)
-    return dataUrl
+    const identity = resolveWalletIdentity({
+        rdns: id.includes('.') ? id : undefined,
+        nativeId: id,
+        name: id,
+    })
+    return getIconByKey(identity.catalog?.iconKey)
 }
 
 /**
@@ -110,8 +110,15 @@ export function normalizeIconSrc(icon: string | undefined): string | undefined {
  */
 export function resolveWalletIconString(opts: {
     id?: string
+    name?: string
     iconUrl?: string
 }): string | undefined {
     if (opts.iconUrl) return normalizeIconSrc(opts.iconUrl)
-    return getKnownConnectorIconBase64(opts.id)
+    if (!opts.id && !opts.name) return undefined
+    const identity = resolveWalletIdentity({
+        rdns: opts.id?.includes('.') ? opts.id : undefined,
+        nativeId: opts.id,
+        name: opts.name ?? opts.id,
+    })
+    return getIconByKey(identity.catalog?.iconKey)
 }

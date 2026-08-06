@@ -10,6 +10,7 @@ import type { ThemeData } from '@/Models/Theme';
 import type { StoreApi } from 'zustand/vanilla';
 import { ExtendedRouteProvider } from '../lib/extendedRoutes/types';
 import { WalletConnectWalletBase } from '@/lib/walletConnect';
+import type { WalletIdentity } from '@/lib/wallets/identity';
 
 export type InternalConnector = {
     name: string,
@@ -24,6 +25,10 @@ export type InternalConnector = {
     hasBrowserExtension?: boolean,
     extensionNotFound?: boolean,
     isLoadable?: boolean,
+    identity?: WalletIdentity,
+    rdns?: string,
+    registryId?: string,
+    platformVariant?: 'mobile-store-redirect',
 }
 
 export type Wallet = {

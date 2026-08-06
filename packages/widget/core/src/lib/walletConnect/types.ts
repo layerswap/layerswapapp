@@ -16,6 +16,7 @@ export type WalletConnectDesktop = {
 export type WalletConnectWalletBase = {
     walletConnectProjectId: string
     id: string
+    slug: string
     name: string
     icon: string
     rdns?: string

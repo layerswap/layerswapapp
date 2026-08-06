@@ -1,3 +1,4 @@
+import { resolveWalletIdentity } from "../wallets/identity"
 import { isIOS, isMobile } from "../wallets/utils/isMobile"
 import type { WalletConnectMobile } from "./types"
 
@@ -10,6 +11,7 @@ const addWc = (url: string): string => {
 
 type BuildDeepLinkInput = {
     id: string
+    name?: string
     mobile: WalletConnectMobile
 }
 
@@ -20,29 +22,15 @@ type BuildDeepLinkInput = {
  *   on Android lets the OS route to whichever WC-capable app is the default
  *   handler (which is why "pick Backpack, Rainbow opens" happens), so we
  *   always target the selected wallet explicitly when we can.
- * - Slug-specific overrides match rainbowkit's well-known quirks.
+ * - Per-wallet quirks live in the wallet catalog's `deepLink` overrides.
  */
-export function buildDeepLink({ id, mobile }: BuildDeepLinkInput, uri: string): string {
+export function buildDeepLink({ id, name, mobile }: BuildDeepLinkInput, uri: string): string {
     if (!isMobile()) return uri
 
-    switch (id) {
-        case "bitkeep":
-        case "bitget-wallet":
-            return `bitkeep://wc?uri=${encodeURIComponent(uri)}`
-        case "metamask":
-            // MetaMask's native scheme is broken on iOS v6.5.0+, so prefer the universal link
-            // https://github.com/MetaMask/metamask-mobile/issues/6457
-            return `https://metamask.app.link/wc?uri=${encodeURIComponent(uri)}`
-        case "okx-wallet":
-            return `okex://main/wc?uri=${encodeURIComponent(uri)}`
-        case "rainbow":
-            return isIOS()
-                ? `rainbow://wc?uri=${encodeURIComponent(uri)}&connector=rainbowkit`
-                : `https://rnbwapp.com/wc?uri=${encodeURIComponent(uri)}&connector=rainbowkit`
-        default: {
-            if (mobile?.native) return `${addWc(mobile.native)}?uri=${encodeURIComponent(uri)}`
-            if (mobile?.universal) return `${addWc(mobile.universal)}?uri=${encodeURIComponent(uri)}`
-            return uri
-        }
-    }
+    const catalog = resolveWalletIdentity({ registryId: id, nativeId: id, name }).catalog
+    if (catalog?.deepLink) return catalog.deepLink(uri, { isIOS: isIOS() })
+
+    if (mobile?.native) return `${addWc(mobile.native)}?uri=${encodeURIComponent(uri)}`
+    if (mobile?.universal) return `${addWc(mobile.universal)}?uri=${encodeURIComponent(uri)}`
+    return uri
 }

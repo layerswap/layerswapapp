@@ -46,3 +46,6 @@ export type { ErrorEventType } from '../types/logEvents';
 export { useRpcHealth } from "../context/rpcHealthContext";
 export * from "../lib/walletConnect"
 export * from "../lib/extendedRoutes"
+export * from "../lib/wallets/identity"
+export * from "../lib/wallets/catalog"
+export * from "../lib/wallets/merge"

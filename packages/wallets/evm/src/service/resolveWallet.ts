@@ -1,7 +1,7 @@
 import type { Connector } from 'wagmi'
 import type { NetworkWithTokens, Wallet } from '@layerswap/widget/types'
 import { getDynamicWcMetadata, getPendingDynamicWcMetadata } from '@layerswap/widget/internal'
-import { evmConnectorNameResolver, resolveEVMWalletConnectorIcon } from '../evmUtils'
+import { resolveEVMWalletConnectorIcon } from '../evmUtils'
 import { ethereumNames, HIDDEN_WALLETCONNECT_ID, immutableZKEvm } from '../constants'
 import type { LSConnector } from '../connectors/types'
 import { resolveSupportedNetworks } from './resolveSupportedNetworks'
@@ -58,7 +58,7 @@ export function resolveWallet(props: ResolveWalletProps): Wallet | undefined {
         addresses: addresses || [address],
         displayName: walletDisplayName,
         providerName,
-        icon: resolveEVMWalletConnectorIcon({ connector: evmConnectorNameResolver(connector), iconUrl: walletIcon }),
+        icon: resolveEVMWalletConnectorIcon({ connector: connector.id, name: connector.name, iconUrl: walletIcon }),
         disconnect: () => disconnect(connector.name),
         asSourceSupportedNetworks: resolveSupportedNetworks(supportedNetworks.asSource, walletId),
         autofillSupportedNetworks: resolveSupportedNetworks(supportedNetworks.autofill, walletId),
