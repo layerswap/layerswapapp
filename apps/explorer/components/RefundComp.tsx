@@ -11,11 +11,11 @@ export default function Refund({ refund }: { refund: Transaction }) {
     const txHash = refund.transaction_hash;
 
     return (
-        <div className="rounded-md w-full p-6 grid gap-y-3 items-baseline bg-secondary-700 rounded-t-lg border-secondary-400 border-t-4 shadow-lg mb-2">
+        <div className="mb-2 grid w-full items-baseline gap-y-3 rounded-3xl bg-secondary-700 p-4">
             <div className="flex items-center text-primary-text">
                 <div className="mr-2 text-2xl font-medium">Refund</div>
             </div>
-            <div className="rounded-md w-full grid grid-cols-1 sm:grid-cols-8 text-primary-text bg-secondary-500 shadow-lg relative border-secondary-400 border divide-y divide-secondary-400">
+            <div className="relative grid w-full grid-cols-1 divide-y divide-secondary-300 overflow-hidden rounded-2xl bg-secondary-500 text-primary-text sm:grid-cols-8">
                 <div className="flex-1 p-4 whitespace-nowrap sm:col-span-2">
                     <div className="text-base font-normal text-secondary-text">Asset</div>
                     <div className="flex items-center">

@@ -5,12 +5,22 @@ export default function NotFound() {
     return (
         <section className="fixed inset-0 flex items-center justify-center">
             <NotFoundBackground className="absolute" />
-            <div className="flex flex-col items-center justify-center text-center p-4 relative z-20">
-                <h1 className="text-2xl font-semibold text-primary-text md:text-4xl">We couldn&apos;t find anything</h1>
-                <p className="text-base text-primary-text-placeholder mt-2">Please make sure you entered a valid address/source Tx/destination TX.</p>
-                <span className="text-base text-primary-text-placeholder block">If the issue persists, you can contact our support.</span>
-                <div className="flex items-center mt-6 gap-x-3">
-                    <Link href="/" className="w-full px-5 py-2 text-sm tracking-wide text-primary-text transition-colors duration-200 bg-secondary-500 rounded-lg shrink-0 sm:w-auto hover:bg-secondary-600">
+            <div className="relative z-20 mx-4 flex max-w-xl flex-col items-center justify-center rounded-3xl bg-secondary-700 p-8 text-center sm:p-12">
+                <h1 className="text-2xl font-semibold text-primary-text md:text-4xl">
+                    We couldn&apos;t find anything
+                </h1>
+                <p className="mt-2 text-base text-secondary-text">
+                    Please make sure you entered a valid address, source transaction, or
+                    destination transaction.
+                </p>
+                <span className="block text-base text-secondary-text">
+                    If the issue persists, you can contact our support.
+                </span>
+                <div className="mt-6 flex items-center gap-x-3">
+                    <Link
+                        href="/"
+                        className="inline-flex min-h-12 w-full shrink-0 items-center justify-center rounded-xl bg-secondary-300 px-5 py-3 text-sm font-medium text-primary-text transition hover:bg-secondary-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 active:animate-press-down sm:w-auto"
+                    >
                         Clear search
                     </Link>
                 </div>
