@@ -1,4 +1,4 @@
-import { KnownInternalNames } from "@layerswap/widget/internal";
+import { KnownInternalNames } from "@layerswap/utils";
 
 export const name = 'Fuel'
 export const id = 'fuel'

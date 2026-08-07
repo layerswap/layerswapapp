@@ -1,22 +1,20 @@
-import type {
-    WalletProvider,
-    WalletConnectionStore,
-    WalletInitContext,
-    WalletConnectionProviderProps,
-    BaseWalletProviderConfig,
-} from "@layerswap/widget/types"
+import type { WalletConnectionStore, WalletConnectionProviderProps } from "@layerswap/ui-kit/types"
+import type { WalletProvider, WalletInitContext, BaseWalletProviderConfig } from "@layerswap/ui-kit/types"
 import { FuelBalanceProvider } from "./fuelBalanceProvider"
 import { FuelGasProvider } from "./fuelGasProvider"
 import { createFuelTransfer } from "./transferProvider/createFuelTransfer"
 import { createFuelConnection } from "./service/createFuelConnection"
 import { initFuelProvider } from "./init"
 import { id } from "./constants"
+import type { NetworkWithTokens } from "@layerswap/utils"
 
-export type FuelProviderConfig = BaseWalletProviderConfig
+export type FuelProviderConfig<Network = NetworkWithTokens> = BaseWalletProviderConfig<Network>
 
 // The literal id in the return type lets `defineWalletDescriptor` in
 // `@layerswap/wallets` verify it matches the descriptor id at compile time.
-export function createFuelProvider(config: FuelProviderConfig = {}): WalletProvider & { id: typeof id } {
+export function createFuelProvider<Network = NetworkWithTokens>(
+    config: FuelProviderConfig<Network> = {},
+): WalletProvider<Network> & { id: typeof id } {
     const {
         customConnection,
         balanceProviders,
@@ -29,7 +27,7 @@ export function createFuelProvider(config: FuelProviderConfig = {}): WalletProvi
         // No-op disposer; init is idempotent across remounts.
     }
 
-    const createConnection = (props: WalletConnectionProviderProps): WalletConnectionStore => {
+    const createConnection = (props: WalletConnectionProviderProps<Network>): WalletConnectionStore<Network> => {
         initFuelProvider()
         if (customConnection) {
             return customConnection(props)

@@ -1,13 +1,8 @@
 import type { Config } from '@wagmi/core'
-import type { Network } from '@layerswap/widget/types'
+import type { AppNetworkAdapter } from "@layerswap/ui-kit"
 import { getEvmChainsConfig } from '../evmUtils/chainConfigs'
 import { buildEVMConnectors } from './Connectors'
-import {
-    getEvmConfig,
-    hasEvmConfig,
-    provideExternalEvmConfig,
-    setEvmConfigInitParams,
-} from '../service/getEvmConfig'
+import { getEvmConfig, hasEvmConfig, provideExternalEvmConfig, setEvmConfigInitParams, } from '../service/getEvmConfig'
 import { attachWagmiSync } from '../service/syncWagmi'
 import type { WalletConnectConfig } from '../types'
 
@@ -19,14 +14,10 @@ const DEFAULT_WC_CONFIG: WalletConnectConfig = {
     icons: ['https://www.layerswap.app/favicon.ico'],
 }
 
-type InitOptions = {
+type InitOptions<Network> = {
     networks: Network[]
+    networkAdapter: AppNetworkAdapter<Network>
     walletConnectConfigs?: WalletConnectConfig
-    /**
-     * Optionally adopt an externally-created wagmi Config (e.g. the host
-     * app already mounts `<WagmiProvider>`). When omitted, EVM creates its
-     * own config from `networks` + default connectors.
-     */
     externalWagmiConfig?: Config | null
 }
 
@@ -36,8 +27,9 @@ let _initialized = false
  * One-shot initialization of the EVM wagmi config and store sync. Safe to
  * call multiple times — subsequent calls are no-ops.
  */
-export function initEvmProvider(opts: InitOptions): void {
-    const { networks, walletConnectConfigs = DEFAULT_WC_CONFIG, externalWagmiConfig } = opts
+export function initEvmProvider<Network>(opts: InitOptions<Network>): void {
+    const { networks, networkAdapter, walletConnectConfigs, externalWagmiConfig } = opts
+    const resolvedWalletConnectConfigs = walletConnectConfigs?.projectId ? walletConnectConfigs : DEFAULT_WC_CONFIG
 
     if (_initialized) {
         // Never drop a host config silently: provideExternalEvmConfig warns
@@ -64,8 +56,8 @@ export function initEvmProvider(opts: InitOptions): void {
         return
     }
 
-    const { chains, transports } = getEvmChainsConfig(networks)
-    const connectors = buildEVMConnectors(walletConnectConfigs)
+    const { chains, transports } = getEvmChainsConfig(networks, networkAdapter)
+    const connectors = buildEVMConnectors(resolvedWalletConnectConfigs)
 
     setEvmConfigInitParams({
         chains,

@@ -1,4 +1,4 @@
-import { SelectAccountProps, WalletConnectionProvider } from "@/types/wallet";
+import { SelectAccountProps, WalletConnectionProvider } from "@layerswap/ui-kit/types"
 
 export function SwitchWalletAccount(props: SelectAccountProps, provider: WalletConnectionProvider | undefined) {
     const { walletId, address, providerName } = props;

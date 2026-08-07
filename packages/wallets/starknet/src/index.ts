@@ -1,13 +1,8 @@
-import type {
-    WalletProvider,
-    WalletConnectionStore,
-    WalletInitContext,
-    WalletConnectionProviderProps,
-    BaseWalletProviderConfig,
-    NftProvider,
-} from "@layerswap/widget/types"
-import { LazyGasProvider } from "@layerswap/widget/types"
-import { KnownInternalNames } from "@layerswap/widget/internal"
+import type { WalletConnectionStore, WalletConnectionProviderProps } from "@layerswap/ui-kit/types"
+import type { WalletProvider, WalletInitContext, BaseWalletProviderConfig } from "@layerswap/ui-kit/types";
+import type { NftProvider } from "@layerswap/utils";
+import { LazyGasProvider } from "@layerswap/utils";
+import { KnownInternalNames, type NetworkWithTokens } from "@layerswap/utils";
 import { StarknetBalanceProvider } from "./starknetBalanceProvider"
 import { StarknetNftProvider } from "./starknetNftProvider"
 import { createStarknetTransfer } from "./transferProvider/createStarknetTransfer"
@@ -20,13 +15,15 @@ const isStarknetNetwork = (name: string) =>
     KnownInternalNames.Networks.StarkNetGoerli.includes(name) ||
     KnownInternalNames.Networks.StarkNetSepolia.includes(name)
 
-export type StarknetProviderConfig = BaseWalletProviderConfig & {
+export type StarknetProviderConfig<Network = NetworkWithTokens> = BaseWalletProviderConfig<Network> & {
     nftProviders?: NftProvider | NftProvider[]
 }
 
 // The literal id in the return type lets `defineWalletDescriptor` in
 // `@layerswap/wallets` verify it matches the descriptor id at compile time.
-export function createStarknetProvider(config: StarknetProviderConfig = {}): WalletProvider & { id: typeof id } {
+export function createStarknetProvider<Network = NetworkWithTokens>(
+    config: StarknetProviderConfig<Network> = {},
+): WalletProvider<Network> & { id: typeof id } {
     const {
         customConnection,
         balanceProviders,
@@ -40,7 +37,7 @@ export function createStarknetProvider(config: StarknetProviderConfig = {}): Wal
         // No-op disposer; init is idempotent across remounts.
     }
 
-    const createConnection = (props: WalletConnectionProviderProps): WalletConnectionStore => {
+    const createConnection = (props: WalletConnectionProviderProps<Network>): WalletConnectionStore<Network> => {
         initStarknetProvider()
         if (customConnection) {
             return customConnection(props)

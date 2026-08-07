@@ -1,12 +1,7 @@
-import type {
-    MultiStepHandler,
-    NetworkWithTokens,
-    WalletConnectionProviderProps,
-    WalletConnectionStore,
-} from '@layerswap/widget/types'
-import { createMemoizedConnectionStore, getEip6963Providers, subscribeEip6963Providers } from '@layerswap/widget/internal'
+import type { MultiStepHandler, WalletConnectionProviderProps, WalletConnectionStore } from "@layerswap/ui-kit/types"
+import { createMemoizedConnectionStore, getEip6963Providers, subscribeEip6963Providers, type AppNetworkAdapter } from "@layerswap/ui-kit"
 import { createTronTransfer } from '../transferProvider/createTronTransfer'
-import { tronConnectionService } from './TronConnectionService'
+import { TronConnectionService } from './TronConnectionService'
 import { useTronStore } from './tronStore'
 
 type CreateTronConnectionOptions = {
@@ -17,14 +12,16 @@ type CreateTronConnectionOptions = {
  * Vanilla external-store factory for the Tron wallet connection. Replaces the
  * old `useTronConnection` hook. The widget consumes this via `useSyncExternalStore`.
  */
-export function createTronConnection(
-    initialProps: WalletConnectionProviderProps,
+export function createTronConnection<Network>(
+    initialProps: WalletConnectionProviderProps<Network>,
     options: CreateTronConnectionOptions = {},
-): WalletConnectionStore {
+): WalletConnectionStore<Network> {
     const { extraMultiStepHandlers = [] } = options
 
-    let networks: NetworkWithTokens[] = initialProps.networks
-    tronConnectionService.setNetworks(networks)
+    let networks = initialProps.networks
+    let networkAdapter = initialProps.networkAdapter
+    const tronConnectionService = new TronConnectionService<Network>()
+    tronConnectionService.setNetworks(networks, networkAdapter)
 
     const transferProvider = createTronTransfer()
     const transfer = transferProvider.executeTransfer
@@ -52,7 +49,8 @@ export function createTronConnection(
         ],
         onUpdateProps: nextProps => {
             networks = nextProps.networks
-            tronConnectionService.setNetworks(networks)
+            networkAdapter = nextProps.networkAdapter
+            tronConnectionService.setNetworks(networks, networkAdapter)
         },
     })
 }

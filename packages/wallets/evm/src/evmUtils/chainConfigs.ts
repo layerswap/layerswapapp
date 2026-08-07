@@ -1,7 +1,7 @@
-import { NetworkSettings } from "@layerswap/widget/internal";
-import { Network, NetworkType } from "@layerswap/widget/types";
-import { Chain, http, fallback } from 'viem';
-import resolveChain from "./resolveChain";
+import { NetworkSettings } from "@layerswap/utils";
+import type { AppNetworkAdapter } from "@layerswap/ui-kit"
+import { Chain, fallback, http } from 'viem';
+import { resolveAdapterChain } from "./resolveChain";
 
 const chainsToFilter = [70700, 70701]
 
@@ -10,18 +10,18 @@ export type EvmChainsConfig = {
     transports: Record<number, ReturnType<typeof fallback> | ReturnType<typeof http>>
 }
 
-export function getEvmChainsConfig(networks: Network[]): EvmChainsConfig {
+export function getEvmChainsConfig<Network>(networks: Network[], networkAdapter: AppNetworkAdapter<Network>): EvmChainsConfig {
     const isChain = (c: Chain | undefined): c is Chain => c != undefined
 
     const settingsChains = networks
         .slice()
-        .sort((a, b) => (NetworkSettings.KnownSettings[a.name]?.ChainOrder || Number(a.chain_id)) - (NetworkSettings.KnownSettings[b.name]?.ChainOrder || Number(b.chain_id)))
-        .filter(net => net.type === NetworkType.EVM
-            && net.node_url
-            && net.token
-            && net.chain_id && !chainsToFilter.includes(Number(net.chain_id))
+        .sort((a, b) => (NetworkSettings.KnownSettings[networkAdapter.getId(a)]?.ChainOrder || Number(networkAdapter.getChainId(a))) - (NetworkSettings.KnownSettings[networkAdapter.getId(b)]?.ChainOrder || Number(networkAdapter.getChainId(b))))
+        .filter(network => networkAdapter.isEvmNetwork(network)
+            && networkAdapter.getRpcUrls(network).length > 0
+            && networkAdapter.getNativeCurrency(network)
+            && networkAdapter.getChainId(network) && !chainsToFilter.includes(Number(networkAdapter.getChainId(network)))
         )
-        .map(resolveChain)
+        .map(network => resolveAdapterChain(network, networkAdapter))
         .filter(isChain) as Chain[]
 
     const transports: Record<number, ReturnType<typeof fallback> | ReturnType<typeof http>> = {}

@@ -1,4 +1,4 @@
-import { KnownInternalNames } from "@layerswap/widget/internal";
+import { KnownInternalNames } from "@layerswap/utils";
 
 /**
  * Static configuration for the Polymarket extended withdrawal source.

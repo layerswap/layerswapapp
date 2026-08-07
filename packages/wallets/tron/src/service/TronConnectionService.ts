@@ -1,29 +1,26 @@
-import type {
-    InternalConnector,
-    NetworkWithTokens,
-    Wallet,
-    WalletConnectionProvider,
-    WalletConnectionService,
-    WalletModalConnector,
-} from '@layerswap/widget/types'
-import { walletIconResolver, getEip6963Providers, walletKey } from '@layerswap/widget/internal'
-import { name as PROVIDER_NAME, id as PROVIDER_ID, tronNames } from '../constants'
+import type { WalletConnectionProvider, WalletConnectionService, WalletModalConnector } from "@layerswap/ui-kit/types";
+import type { InternalConnector, Wallet } from "@layerswap/utils";
+import { walletIconResolver, getEip6963Providers, walletKey, type AppNetworkAdapter } from "@layerswap/ui-kit"
+import { name as PROVIDER_NAME, id as PROVIDER_ID } from '../constants'
 import { tronAdapterManager } from './tronAdapterManager'
 import { type TronWalletSnapshot, useTronStore } from './tronStore'
 
-export class TronConnectionService implements WalletConnectionService {
-    private _networks: NetworkWithTokens[] = []
+export class TronConnectionService<Network> implements WalletConnectionService<never, Network> {
+    private _networks: Network[] = []
+    private _networkAdapter: AppNetworkAdapter<Network> | undefined
     private _networksKey = ''
 
-    setNetworks(networks: NetworkWithTokens[]): void {
-        const key = networks.map(n => n.name).join('|')
+    setNetworks(networks: Network[], networkAdapter: AppNetworkAdapter<Network>): void {
+        const key = networks.map(network => networkAdapter.getId(network)).join('|')
         if (this._networksKey === key) return
         this._networks = networks
+        this._networkAdapter = networkAdapter
         this._networksKey = key
     }
 
     getNetworkLogo(): string | undefined {
-        return this._networks.find(n => tronNames.some(name => name === n.name))?.logo
+        const network = this._networks.find(item => this._networkAdapter?.isTronNetwork(item))
+        return network && this._networkAdapter ? this._networkAdapter.getIcon(network) : undefined
     }
 
     getProviderIcon(): string | undefined {
@@ -65,9 +62,9 @@ export class TronConnectionService implements WalletConnectionService {
             isActive: true,
             icon: walletIconResolver(address, snapshot.icon),
             disconnect: () => this.disconnectWallets(),
-            autofillSupportedNetworks: tronNames,
-            withdrawalSupportedNetworks: tronNames,
-            asSourceSupportedNetworks: tronNames,
+            autofillSupportedNetworks: this.getSupportedNetworks(),
+            withdrawalSupportedNetworks: this.getSupportedNetworks(),
+            asSourceSupportedNetworks: this.getSupportedNetworks(),
         }
     }
 
@@ -120,15 +117,19 @@ export class TronConnectionService implements WalletConnectionService {
             availableConnectors,
             connectedWallets,
             activeWallet,
-            autofillSupportedNetworks: tronNames,
-            withdrawalSupportedNetworks: tronNames,
-            asSourceSupportedNetworks: tronNames,
+            autofillSupportedNetworks: this.getSupportedNetworks(),
+            withdrawalSupportedNetworks: this.getSupportedNetworks(),
+            asSourceSupportedNetworks: this.getSupportedNetworks(),
             name: PROVIDER_NAME,
             id: PROVIDER_ID,
             providerIcon: this.getProviderIcon(),
             ready: useTronStore.getState().ready,
         }
     }
-}
 
-export const tronConnectionService = new TronConnectionService()
+    private getSupportedNetworks(): string[] {
+        return this._networkAdapter
+            ? this._networks.filter(network => this._networkAdapter?.isTronNetwork(network)).map(network => this._networkAdapter!.getId(network))
+            : []
+    }
+}

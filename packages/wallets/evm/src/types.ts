@@ -3,11 +3,13 @@ import type {
     BaseWalletProviderConfig,
     WalletConnectConfig,
     WalletProviderModule,
-} from "@layerswap/widget/types"
+} from "@layerswap/ui-kit/types"
+import type { EvmAdditionalSupportedNetworks } from "./service/networkBuckets"
+import type { NetworkWithTokens } from "@layerswap/utils"
 
 export type { WalletConnectConfig }
 
-export type EVMProviderConfig = BaseWalletProviderConfig & {
+export type EVMProviderConfig<Network = NetworkWithTokens> = BaseWalletProviderConfig<Network> & {
     walletConnectConfigs?: WalletConnectConfig
     walletProviderModules?: WalletProviderModule[]
     /**
@@ -22,4 +24,6 @@ export type EVMProviderConfig = BaseWalletProviderConfig & {
      * connectors appear in the modal.
      */
     wagmiConfig?: Config
+    additionalSupportedNetworks?: EvmAdditionalSupportedNetworks
+    ethereumChainIds?: readonly number[]
 }

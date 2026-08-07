@@ -1,5 +1,5 @@
 import { ComponentProps, FC, useCallback, useMemo, useState } from "react";
-import WalletIcon from "@/components/Icons/WalletIcon";
+import { WalletIcon } from "@layerswap/ui-kit/components";
 import { ActionData } from "./sharedTypes";
 import SubmitButton, { SubmitButtonProps } from "@/components/Buttons/submitButton";
 import useWallet from "@/hooks/useWallet";
@@ -15,12 +15,14 @@ import { useInitialSettings, useSettingsState } from "@/context/settings";
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
 import LayerSwapApiClient, { SwapBasicData, SwapDetails } from "@/lib/apiClients/layerSwapApiClient";
-import sleep from "@/lib/wallets/utils/sleep";
+import { sleep } from "@layerswap/utils";
 import { isDiffByPercent } from "@/components/utils/numbers";
 import { useWalletWithdrawalState } from "@/context/withdrawalContext";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import { SwapFormValues } from "../../../Form/SwapFormValues";
 import { ErrorHandler } from "@/lib/ErrorHandler";
+import { TokenBalance, TransferProps } from "@/types"
+import { Wallet } from "@layerswap/utils";
 import { resolvePriceImpactValues } from "@/lib/fees";
 import InfoIcon from "@/components/Icons/InfoIcon";
 import { useBalance } from "@/lib/balances/useBalance";

@@ -1,19 +1,22 @@
-import type { NetworkWithTokens } from '@layerswap/widget/types'
-import { NetworkType } from '@layerswap/widget/types'
+import type { AppNetworkAdapter } from "@layerswap/ui-kit"
 import { ensureBitcoinConfig, hasBitcoinConfig, resetBitcoinConfig } from './service/getBitcoinConfig'
 import { attachBitcoinSync } from './service/syncBitcoin'
 
 let _initialized = false
 
-type InitOptions = {
-    networks: NetworkWithTokens[]
+type InitOptions<Network> = {
+    networks: Network[]
+    networkAdapter: AppNetworkAdapter<Network>
 }
 
-export function initBitcoinProvider(opts: InitOptions): void {
+export function initBitcoinProvider<Network>(opts: InitOptions<Network>): void {
     if (typeof window === 'undefined') return
 
-    const network = opts.networks.find(n => n.type === NetworkType.Bitcoin)
-    const config = ensureBitcoinConfig(network)
+    const network = opts.networks.find(item => opts.networkAdapter.isBitcoinNetwork(item))
+    const config = ensureBitcoinConfig(network ? {
+        id: opts.networkAdapter.getId(network),
+        rpcUrl: opts.networkAdapter.getRpcUrls(network)[0],
+    } : undefined)
     attachBitcoinSync(config)
     _initialized = true
 }

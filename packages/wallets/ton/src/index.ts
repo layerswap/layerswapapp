@@ -1,12 +1,7 @@
-import type {
-    WalletProvider,
-    WalletConnectionStore,
-    WalletInitContext,
-    WalletConnectionProviderProps,
-    BaseWalletProviderConfig,
-} from "@layerswap/widget/types"
-import { LazyBalanceProvider } from "@layerswap/widget/types"
-import { KnownInternalNames } from "@layerswap/widget/internal"
+import type { WalletConnectionStore, WalletConnectionProviderProps } from "@layerswap/ui-kit/types"
+import type { WalletProvider, WalletInitContext, BaseWalletProviderConfig } from "@layerswap/ui-kit/types"
+import { LazyBalanceProvider } from "@layerswap/utils";
+import { KnownInternalNames, type NetworkWithTokens } from "@layerswap/utils";
 import { TonGasProvider } from "./tonGasProvider"
 import { createTonTransfer } from "./transferProvider/createTonTransfer"
 import { createTonConnection } from "./service/createTonConnection"
@@ -18,13 +13,15 @@ export type TonClientConfig = {
     manifestUrl: string
 }
 
-export type TONProviderConfig = BaseWalletProviderConfig & {
+export type TONProviderConfig<Network = NetworkWithTokens> = BaseWalletProviderConfig<Network> & {
     tonConfigs?: TonClientConfig
 }
 
 // The literal id in the return type lets `defineWalletDescriptor` in
 // `@layerswap/wallets` verify it matches the descriptor id at compile time.
-export function createTONProvider(config: TONProviderConfig = {}): WalletProvider & { id: typeof id } {
+export function createTONProvider<Network = NetworkWithTokens>(
+    config: TONProviderConfig<Network> = {},
+): WalletProvider<Network> & { id: typeof id } {
     const {
         tonConfigs,
         customConnection,
@@ -38,7 +35,7 @@ export function createTONProvider(config: TONProviderConfig = {}): WalletProvide
         // No-op disposer; init is idempotent across remounts.
     }
 
-    const createConnection = (props: WalletConnectionProviderProps): WalletConnectionStore => {
+    const createConnection = (props: WalletConnectionProviderProps<Network>): WalletConnectionStore<Network> => {
         initTonProvider({ tonConfigs })
         if (customConnection) {
             return customConnection(props)

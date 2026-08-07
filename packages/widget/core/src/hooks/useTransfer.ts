@@ -1,5 +1,6 @@
 import { resolverService } from "@/lib/resolvers/resolverService";
-import { TransferProps, TransferProgress, Wallet } from "@/types";
+import { TransferProps, TransferProgress } from "@/types"
+import { Wallet } from "@layerswap/utils";
 import { useCallback } from "react";
 
 export function useTransfer() {

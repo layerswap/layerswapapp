@@ -1,6 +1,6 @@
 import type { PublicClient } from "viem";
-import { BalanceProvider, TokenBalance } from "@layerswap/widget/types";
-import { KnownInternalNames } from "@layerswap/widget/internal";
+import { KnownInternalNames } from "@layerswap/utils";
+import { BalanceProvider, TokenBalance } from "@layerswap/utils";
 import resolveChain from "../../evmUtils/resolveChain";
 import { resolveFallbackTransport } from "../../evmUtils/resolveTransports";
 import { resolvePolymarketHolding } from "./funder";

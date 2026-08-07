@@ -1,4 +1,5 @@
-import { AppSettings, isMobile } from '@layerswap/widget/internal'
+import { isMobile } from "@layerswap/utils"
+import { AppSettings } from "@layerswap/utils";
 import { WalletAdapterNetwork, WalletReadyState } from '@solana/wallet-adapter-base'
 import { svmAdapterManager } from './service/svmAdapterManager'
 import { SolanaWalletConnectAdapter } from './connectors/SolanaWalletConnectAdapter'

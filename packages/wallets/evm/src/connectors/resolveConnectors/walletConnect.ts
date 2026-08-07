@@ -1,4 +1,4 @@
-import { buildDeepLink } from '@layerswap/widget/internal'
+import { buildDeepLink } from "@layerswap/ui-kit"
 import {
     ChainNotConfiguredError,
     type Connector,

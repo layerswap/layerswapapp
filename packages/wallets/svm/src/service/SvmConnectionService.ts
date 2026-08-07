@@ -1,31 +1,10 @@
-import type {
-    InternalConnector,
-    NetworkWithTokens,
-    RequestAdditionalConnectorsParams,
-    RequestAdditionalConnectorsResult,
-    Wallet,
-    WalletModalConnector,
-    WalletConnectionProvider,
-    WalletConnectionService,
-} from '@layerswap/widget/types'
-import { NetworkType } from '@layerswap/widget/types'
-import {
-    buildDeepLink,
-    clearPendingDynamicWcMetadata,
-    createRegistryConnector,
-    findRegistryWalletByName,
-    getDynamicWcMetadata,
-    getPendingDynamicWcMetadata,
-    getRegistryEntry,
-    mapConnectError,
-    resolveWalletConnectorIcon,
-    setDynamicWcMetadata,
-    setPendingMetadataForRegistry,
-    subscribeDisplayUri,
-    walletKey,
-    type WalletConnectWalletBase,
-} from '@layerswap/widget/internal'
-import { name as PROVIDER_NAME, id as PROVIDER_ID, solanaNames } from '../constants'
+import type { RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult, WalletConnectionProvider, WalletConnectionService } from "@layerswap/ui-kit/types";
+import type { InternalConnector, Wallet } from "@layerswap/utils";
+import type { WalletModalConnector } from "@layerswap/ui-kit/types"
+import { buildDeepLink, clearPendingDynamicWcMetadata, createRegistryConnector, getDynamicWcMetadata, getPendingDynamicWcMetadata, getRegistryEntry, mapConnectError, setDynamicWcMetadata, setPendingMetadataForRegistry, subscribeDisplayUri, walletKey, type AppNetworkAdapter, type WalletConnectWalletBase } from "@layerswap/ui-kit"
+import { findRegistryWalletByName } from "@layerswap/ui-kit"
+import { resolveWalletConnectorIcon } from "@layerswap/ui-kit"
+import { name as PROVIDER_NAME, id as PROVIDER_ID } from '../constants'
 import { resolveSolanaWalletConnectorIcon } from '../utils'
 import { SolanaWalletConnectAdapter } from '../connectors/SolanaWalletConnectAdapter'
 import { svmAdapterManager } from './svmAdapterManager'
@@ -44,7 +23,7 @@ type RegistryRequestFn = (params?: RequestAdditionalConnectorsParams) => Promise
 
 type RuntimeDeps = {
     setSelectedConnector?: (connector: unknown) => void
-    getSelectedConnector?: () => { id: string } | undefined
+    getSelectedConnector?: () => WalletModalConnector | undefined
     addRecentConnector?: (wallet: WalletConnectWalletBase) => void
     requestRegistryConnectors?: RegistryRequestFn
     isMobilePlatform?: boolean
@@ -57,29 +36,25 @@ const networkSupport: Record<string, string[]> = {
 }
 
 function resolveSupportedNetworks(supportedNetworks: string[], connectorId: string): string[] {
-    const result: string[] = []
-    supportedNetworks.forEach((network) => {
-        const lowerCaseName = network.split('_')[0].toLowerCase()
-        if (lowerCaseName === 'solana') {
-            result.push(network)
-        } else if (networkSupport[lowerCaseName] && networkSupport[lowerCaseName].includes(connectorId?.toLowerCase())) {
-            result.push(network)
-        }
+    return supportedNetworks.filter((network) => {
+        const restrictedToConnectors = networkSupport[network.split('_')[0].toLowerCase()]
+        return !restrictedToConnectors || restrictedToConnectors.includes(connectorId?.toLowerCase())
     })
-    return result
 }
 
-export class SvmConnectionService implements WalletConnectionService<RuntimeDeps> {
-    private _networks: NetworkWithTokens[] = []
+export class SvmConnectionService<Network> implements WalletConnectionService<RuntimeDeps, Network> {
+    private _networks: Network[] = []
+    private _networkAdapter: AppNetworkAdapter<Network> | undefined
     private _supported: string[] = []
     private _networksKey = ''
     private _deps: RuntimeDeps = {}
 
-    setNetworks(networks: NetworkWithTokens[]): void {
-        const key = networks.map(n => n.name).join('|')
+    setNetworks(networks: Network[], networkAdapter: AppNetworkAdapter<Network>): void {
+        const key = networks.map(network => networkAdapter.getId(network)).join('|')
         if (this._networksKey === key) return
         this._networks = networks
-        this._supported = networks.filter(n => n.type === NetworkType.Solana).map(l => l.name)
+        this._networkAdapter = networkAdapter
+        this._supported = networks.filter(network => networkAdapter.isSolanaNetwork(network)).map(network => networkAdapter.getId(network))
         this._networksKey = key
     }
 
@@ -92,7 +67,8 @@ export class SvmConnectionService implements WalletConnectionService<RuntimeDeps
     }
 
     getProviderIcon(): string | undefined {
-        return this._networks.find(n => solanaNames.some(name => name === n.name))?.logo
+        const network = this._networks.find(item => this._networkAdapter?.isSolanaNetwork(item))
+        return network && this._networkAdapter ? this._networkAdapter.getIcon(network) : undefined
     }
 
     getNetworkIcon(): string | undefined {
@@ -231,12 +207,13 @@ export class SvmConnectionService implements WalletConnectionService<RuntimeDeps
         // stale async QR callback must not clobber a connector the user switched
         // to (or a modal they closed) mid-connect. Falls back to an unconditional
         // set when no reader is wired so the QR still renders.
-        const setSelectedConnectorIfCurrent = (next: unknown) => {
+        const setSelectedConnectorIfCurrent = (next: WalletModalConnector) => {
             if (!getSelectedConnector) { setSelectedConnector?.(next); return }
             const current = getSelectedConnector()
             if (current && current.id === connector.id) setSelectedConnector?.(next)
         }
 
+        const prevSelectedName = svmAdapterManager.getSelectedName()
         try {
             const isBareWcTile = connector.name === SOLANA_WC_MODAL_NAME
 
@@ -339,7 +316,7 @@ export class SvmConnectionService implements WalletConnectionService<RuntimeDeps
                 address: newAddress,
                 displayName: `${displayName} - Solana`,
                 providerName: PROVIDER_NAME,
-                icon: resolveWalletConnectorIcon({ connector: displayId, address: newAddress, iconUrl: displayIconRaw }),
+                icon: resolveWalletConnectorIcon({ address: newAddress, iconUrl: displayIconRaw }),
                 disconnect: () => this.disconnectWallet(),
                 isActive: true,
                 addresses: [newAddress],
@@ -350,6 +327,7 @@ export class SvmConnectionService implements WalletConnectionService<RuntimeDeps
             }
             return wallet
         } catch (e) {
+            svmAdapterManager.select(prevSelectedName)
             throw mapConnectError(e)
         } finally {
             unsubscribeDisplayUri?.()
@@ -398,5 +376,3 @@ export class SvmConnectionService implements WalletConnectionService<RuntimeDeps
         }
     }
 }
-
-export const svmConnectionService = new SvmConnectionService()

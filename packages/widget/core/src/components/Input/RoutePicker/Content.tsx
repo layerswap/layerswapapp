@@ -6,7 +6,7 @@ import Row from "./Rows";
 import { LayoutGroup, motion } from "framer-motion";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import useWallet from "@/hooks/useWallet";
-import useProvidersConnectReady from "@/hooks/useProvidersConnectReady";
+import { useProvidersConnectReady } from "@layerswap/ui-kit";
 import ConnectWalletButton from "@/components/Common/ConnectWalletButton";
 import { SwapDirection } from "@/components/Pages/Swap/Form/SwapFormValues";
 import clsx from "clsx";

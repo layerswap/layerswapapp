@@ -1,34 +1,21 @@
-import type {
-    NetworkWithTokens,
-    WalletConnectionProviderProps,
-    WalletConnectionStore,
-} from '@layerswap/widget/types'
-import {
-    connectModalStore,
-    createMemoizedConnectionStore,
-    useWalletStore,
-} from '@layerswap/widget/internal'
-import {
-    asSourceSupportedNetworks,
-    autofillSupportedNetworks,
-    id,
-    name,
-    ParadexConnectionService,
-    withdrawalSupportedNetworks,
-} from './ParadexConnectionService'
+import type { WalletConnectionProviderProps, WalletConnectionStore } from "@layerswap/ui-kit/types"
+import { connectModalStore, createMemoizedConnectionStore } from "@layerswap/ui-kit"
+import { asSourceSupportedNetworks, autofillSupportedNetworks, id, name, ParadexConnectionService, withdrawalSupportedNetworks, } from './ParadexConnectionService'
 import { useParadexActiveStore } from './paradexActiveStore'
+import { paradexAccountStore } from './paradexAccountStore'
 
 /**
  * Vanilla external-store factory for the Paradex wallet connection. Replaces
  * the old `useParadexConnection` hook + `ActiveParadexAccount` React context.
  */
-export function createParadexConnection(
-    initialProps: WalletConnectionProviderProps,
-): WalletConnectionStore {
-    let networks: NetworkWithTokens[] = initialProps.networks
+export function createParadexConnection<Network>(
+    initialProps: WalletConnectionProviderProps<Network>,
+): WalletConnectionStore<Network> {
+    let networks = initialProps.networks
+    let networkAdapter = initialProps.networkAdapter
     const peerProviders = initialProps.walletProvidersRegistry
-    const paradexConnectionService = new ParadexConnectionService()
-    paradexConnectionService.setNetworks(networks)
+    const paradexConnectionService = new ParadexConnectionService<Network>()
+    paradexConnectionService.setNetworks(networks, networkAdapter)
     paradexConnectionService.configure({
         setSelectedConnector: connectModalStore.setSelectedConnector,
         getProviderById: id => peerProviders?.getById(id),
@@ -38,7 +25,7 @@ export function createParadexConnection(
         computeInputs: () => ({
             evmSnapshot: peerProviders?.getById('evm'),
             starknetSnapshot: peerProviders?.getById('starknet'),
-            paradexAccounts: useWalletStore.getState().paradexAccounts,
+            paradexAccounts: paradexAccountStore.getState().paradexAccounts,
             selectedAccount: useParadexActiveStore.getState().selectedAccount,
             networks,
         }),
@@ -64,7 +51,7 @@ export function createParadexConnection(
         }),
         subscribe: sync => {
             const unsubs = [
-                useWalletStore.subscribe(sync),
+                paradexAccountStore.subscribe(sync),
                 useParadexActiveStore.subscribe(sync),
             ]
             if (peerProviders) {
@@ -74,7 +61,8 @@ export function createParadexConnection(
         },
         onUpdateProps: nextProps => {
             networks = nextProps.networks
-            paradexConnectionService.setNetworks(networks)
+            networkAdapter = nextProps.networkAdapter
+            paradexConnectionService.setNetworks(networks, networkAdapter)
         },
     })
 }

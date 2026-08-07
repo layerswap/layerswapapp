@@ -3,7 +3,7 @@ import { UTXOWalletProvider } from "@bigmi/client/dist/esm/connectors/types";
 import { transactionBuilder } from "./transactionBuilder";
 import { Psbt } from "bitcoinjs-lib";
 import { Connector } from "@bigmi/client";
-import { JsonRpcClient } from "@layerswap/widget/internal";
+import { JsonRpcClient } from "@layerswap/utils";
 import { BtcRpcRequestFn, Chain, Client, Transport } from "@bigmi/core";
 
 type sendTransactionParams = {

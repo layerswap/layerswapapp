@@ -1,45 +1,18 @@
-import type {
-    InternalConnector,
-    NetworkWithTokens,
-    RequestAdditionalConnectorsParams,
-    RequestAdditionalConnectorsResult,
-    Wallet,
-    WalletConnectionService,
-    WalletModalConnector,
-} from '@layerswap/widget/types'
-import type { RegistryConnector } from '@layerswap/widget/internal'
+import type { RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult, WalletConnectionService } from "@layerswap/ui-kit/types";
+import type { InternalConnector, Wallet } from "@layerswap/utils";
+import type { WalletModalConnector } from "@layerswap/ui-kit/types"
+import type { RegistryConnector } from "@layerswap/ui-kit"
 import type { Connector } from 'wagmi'
-import {
-    connect,
-    disconnect,
-    getConnections,
-    switchAccount as wagmiSwitchAccount,
-    type Connection,
-} from '@wagmi/core'
-import {
-    buildDeepLink,
-    clearPendingDynamicWcMetadata,
-    getRegistryEntry,
-    mapConnectError,
-    setDynamicWcMetadata,
-    setPendingMetadataForRegistry,
-    subscribeDisplayUri,
-    type WalletConnectWalletBase,
-} from '@layerswap/widget/internal'
+import { connect, disconnect, getConnections, switchAccount as wagmiSwitchAccount, type Connection, } from '@wagmi/core'
+import { buildDeepLink, clearPendingDynamicWcMetadata, getRegistryEntry, mapConnectError, setDynamicWcMetadata, setPendingMetadataForRegistry, subscribeDisplayUri, type AppNetworkAdapter, type WalletConnectWalletBase } from "@layerswap/ui-kit"
 import { evmConnectorNameResolver, resolveEVMWalletConnectorIcon } from '../evmUtils'
 import { name as PROVIDER_NAME, HIDDEN_WALLETCONNECT_ID } from '../constants'
 import type { LSConnector } from '../connectors/types'
 import { getEvmConfig } from './getEvmConfig'
-import { computeEvmNetworkBuckets, type EvmNetworkBuckets } from './networkBuckets'
+import { computeEvmNetworkBuckets, type EvmAdditionalSupportedNetworks, type EvmNetworkBuckets } from './networkBuckets'
 import { resolveSupportedNetworks } from './resolveSupportedNetworks'
 import { resolveWallet } from './resolveWallet'
-import {
-    attemptGetAccount,
-    computeConfiguredConnectors,
-    splitRegistryConnectors,
-    supportsRegistryConnects,
-    wagmiDisplayUriSource,
-} from './connectorsHelpers'
+import { attemptGetAccount, computeConfiguredConnectors, splitRegistryConnectors, supportsRegistryConnects, wagmiDisplayUriSource, } from './connectorsHelpers'
 import { useEvmStore } from './evmStore'
 
 const EVM_NS = 'eip155'
@@ -58,19 +31,26 @@ type RuntimeDeps = {
     requestRegistryConnectors?: RegistryRequestFn
     registryConnectors?: readonly WalletConnectWalletBase[]
     isMobilePlatform?: boolean
+    ethereumChainIds?: readonly number[]
 }
 
-export class EvmConnectionService implements WalletConnectionService<RuntimeDeps> {
-    private _networks: NetworkWithTokens[] = []
+export class EvmConnectionService<Network> implements WalletConnectionService<RuntimeDeps, Network> {
+    private _networks: Network[] = []
+    private _networkAdapter: AppNetworkAdapter<Network> | undefined
     private _buckets: EvmNetworkBuckets = { asSource: [], withdrawal: [], autofill: [] }
     private _networksKey = ''
     private _deps: RuntimeDeps = {}
 
-    setNetworks(networks: NetworkWithTokens[]): void {
-        const key = networks.map(n => n.name).join('|')
+    setNetworks(
+        networks: Network[],
+        networkAdapter: AppNetworkAdapter<Network>,
+        additionalSupportedNetworks?: EvmAdditionalSupportedNetworks,
+    ): void {
+        const key = networks.map(network => networkAdapter.getId(network)).join('|')
         if (this._networksKey === key) return
         this._networks = networks
-        this._buckets = computeEvmNetworkBuckets(networks)
+        this._networkAdapter = networkAdapter
+        this._buckets = computeEvmNetworkBuckets(networks, networkAdapter, additionalSupportedNetworks)
         this._networksKey = key
     }
 
@@ -78,7 +58,7 @@ export class EvmConnectionService implements WalletConnectionService<RuntimeDeps
         this._deps = { ...this._deps, ...deps }
     }
 
-    getNetworks(): NetworkWithTokens[] {
+    getNetworks(): Network[] {
         return this._networks
     }
 
@@ -134,6 +114,8 @@ export class EvmConnectionService implements WalletConnectionService<RuntimeDeps
                 connection,
                 disconnect: disconnectFn,
                 networks: this._networks,
+                networkAdapter: this._networkAdapter!,
+                ethereumChainIds: this._deps.ethereumChainIds,
                 supportedNetworks: this._buckets,
                 providerName: PROVIDER_NAME,
             }))
@@ -295,7 +277,7 @@ export class EvmConnectionService implements WalletConnectionService<RuntimeDeps
             }
 
             const resolveURI = (connector as LSConnector).resolveURI as ((uri: string) => string | undefined) | undefined
-            const showQrCode = (internalConnector as { showQrCode?: unknown })?.showQrCode
+            const showQrCode = internalConnector.showQrCode
             const wantsMobileRedirect = isMobilePlatform && connector.id !== 'walletConnect' && !!resolveURI
             const wantsQrModal = !isMobilePlatform
                 && connector.type !== 'injected'
@@ -382,6 +364,8 @@ export class EvmConnectionService implements WalletConnectionService<RuntimeDeps
                 connection,
                 disconnect: this.disconnectWallet.bind(this),
                 networks: this._networks,
+                networkAdapter: this._networkAdapter!,
+                ethereumChainIds: this._deps.ethereumChainIds,
                 supportedNetworks: this._buckets,
                 providerName: PROVIDER_NAME,
             })
@@ -395,5 +379,3 @@ export class EvmConnectionService implements WalletConnectionService<RuntimeDeps
         }
     }
 }
-
-export const evmConnectionService = new EvmConnectionService()

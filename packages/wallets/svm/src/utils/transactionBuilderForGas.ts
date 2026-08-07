@@ -1,5 +1,5 @@
 import { Connection, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
-import { Network, Token } from "@layerswap/widget/types";
+import { Network, Token } from "@layerswap/utils";
 import { buildSvmTokenTransfer } from "./buildSvmTokenTransfer";
 
 export const transactionBuilderForGas = async (network: Network, token: Token, walletPublicKey: PublicKey, recipientAddress?: string | undefined) => {

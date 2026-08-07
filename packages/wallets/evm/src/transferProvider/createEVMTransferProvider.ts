@@ -1,7 +1,9 @@
-import { TransferProvider, TransferProps, Network, ActionMessageType } from "@layerswap/widget/types"
+import { Network } from "@layerswap/utils"
+import { ActionMessageType } from "@layerswap/ui-kit/types";
+import { TransferProvider, TransferProps } from "@layerswap/utils";
 import { sendTransaction, Config } from '@wagmi/core'
 import { BaseError } from "viem"
-import { isMobile } from "@layerswap/widget/internal"
+import { isMobile } from "@layerswap/utils"
 import { resolveError } from "../evmUtils/resolveError"
 
 type TransactionBuilder = (params: TransferProps) => Promise<any>

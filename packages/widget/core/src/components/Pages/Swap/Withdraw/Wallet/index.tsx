@@ -7,7 +7,7 @@ import { WithdrawPageProps } from "./Common/sharedTypes";
 import { ChangeNetworkButton, ConnectWalletButton, SendTransactionButton } from "./Common/buttons";
 import { GaslessSigner } from "./Common/depositExecution";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
-import WalletIcon from "@/components/Icons/WalletIcon";
+import { WalletIcon } from "@layerswap/ui-kit/components";
 import { useBalance } from "@/lib/balances/useBalance";
 import { TransferProps } from "@/types";
 import { ActionMessage } from "./Common/actionMessage";

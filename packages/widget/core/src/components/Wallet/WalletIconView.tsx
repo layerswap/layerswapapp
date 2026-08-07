@@ -1,9 +1,9 @@
 'use client'
 import { FC } from 'react'
+import { clsx } from 'clsx'
 import AddressIcon from '@/components/Common/AddressIcon'
-import { ImageWithFallback } from '@/components/Common/ImageWithFallback'
-import WalletIcon from '@/components/Icons/WalletIcon'
-import type { Wallet } from '@/types'
+import { ImageWithFallback, WalletIcon } from "@layerswap/ui-kit/components";
+import type { Wallet } from "@layerswap/utils";
 
 type Props = {
     wallet: Pick<Wallet, 'icon' | 'address' | 'displayName' | 'id'>
@@ -24,7 +24,7 @@ const WalletIconView: FC<Props> = ({ wallet, className, size = 24 }) => {
                 alt={wallet.displayName ?? wallet.id}
                 width={size}
                 height={size}
-                className={className}
+                className={clsx('max-w-none object-contain', className)}
             />
         )
     }

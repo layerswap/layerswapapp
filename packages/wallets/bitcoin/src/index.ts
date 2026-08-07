@@ -1,28 +1,21 @@
-import type {
-    WalletProvider,
-    WalletConnectionStore,
-    WalletInitContext,
-    WalletConnectionProviderProps,
-    BaseWalletProviderConfig,
-} from "@layerswap/widget/types"
+import type { WalletConnectionStore, WalletConnectionProviderProps } from "@layerswap/ui-kit/types"
+import type { WalletProvider, WalletInitContext, BaseWalletProviderConfig } from "@layerswap/ui-kit/types"
 import { BitcoinGasProvider } from "./bitcoinGasProvider"
 import { BitcoinBalanceProvider } from "./bitcoinBalanceProvider"
 import { createBitcoinTransfer } from "./transferProvider/createBitcoinTransfer"
 import { createBitcoinConnection } from "./service/createBitcoinConnection"
 import { initBitcoinProvider } from "./init"
 import { id } from "./constants"
+import type { NetworkWithTokens } from "@layerswap/utils"
 
-export type BitcoinProviderConfig = BaseWalletProviderConfig
+export type BitcoinProviderConfig<Network = NetworkWithTokens> = BaseWalletProviderConfig<Network>
 
 // The literal id in the return type lets `defineWalletDescriptor` in
 // `@layerswap/wallets` verify it matches the descriptor id at compile time.
-export function createBitcoinProvider(config: BitcoinProviderConfig = {}): WalletProvider & { id: typeof id } {
-    const {
-        customConnection,
-        balanceProviders,
-        gasProviders,
-        transferProviders,
-    } = config
+export function createBitcoinProvider<Network = NetworkWithTokens>(
+    config: BitcoinProviderConfig<Network> = {},
+): WalletProvider<Network> & { id: typeof id } {
+    const { customConnection, balanceProviders, gasProviders, transferProviders, } = config
 
     const init = (_ctx: WalletInitContext) => {
         // Bitcoin init needs the networks list to pick mainnet vs testnet; that
@@ -30,8 +23,8 @@ export function createBitcoinProvider(config: BitcoinProviderConfig = {}): Walle
         // the provider has a defined lifecycle slot.
     }
 
-    const createConnection = (props: WalletConnectionProviderProps): WalletConnectionStore => {
-        initBitcoinProvider({ networks: props.networks })
+    const createConnection = (props: WalletConnectionProviderProps<Network>): WalletConnectionStore<Network> => {
+        initBitcoinProvider({ networks: props.networks, networkAdapter: props.networkAdapter })
         if (customConnection) {
             return customConnection(props)
         }

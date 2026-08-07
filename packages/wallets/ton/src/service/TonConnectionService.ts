@@ -1,23 +1,11 @@
-import type {
-    InternalConnector,
-    NetworkWithTokens,
-    Wallet,
-    WalletConnectionProvider,
-    WalletConnectionService,
-    WalletModalConnector,
-} from '@layerswap/widget/types'
-import { connectModalStore, walletIconResolver } from '@layerswap/widget/internal'
-import {
-    isWalletInfoCurrentlyInjected,
-    isWalletInfoInjectable,
-    isWalletInfoRemote,
-    type Wallet as TonWallet,
-    type WalletInfo,
-    type WalletInfoInjectable,
-    type WalletInfoRemote,
-} from '@tonconnect/sdk'
+import type { WalletConnectionProvider, WalletConnectionService } from "@layerswap/ui-kit/types";
+import type { InternalConnector, Wallet } from "@layerswap/utils";
+import type { WalletModalConnector } from "@layerswap/ui-kit/types"
+import { connectModalStore, type AppNetworkAdapter } from "@layerswap/ui-kit"
+import { resolveWalletIconString } from "@layerswap/ui-kit"
+import { isWalletInfoCurrentlyInjected, isWalletInfoInjectable, isWalletInfoRemote, type Wallet as TonWallet, type WalletInfo, type WalletInfoInjectable, type WalletInfoRemote, } from '@tonconnect/sdk'
 import { Address } from '@ton/core'
-import { name as PROVIDER_NAME, id as PROVIDER_ID, tonNames } from '../constants'
+import { name as PROVIDER_NAME, id as PROVIDER_ID } from '../constants'
 import { getTonConnect } from './getTonConnect'
 import { snapshotFromTonWallet, type TonWalletSnapshot, useTonStore } from './tonStore'
 
@@ -26,15 +14,17 @@ type RuntimeDeps = {
     isMobilePlatform?: boolean
 }
 
-export class TonConnectionService implements WalletConnectionService<RuntimeDeps> {
-    private _networks: NetworkWithTokens[] = []
+export class TonConnectionService<Network> implements WalletConnectionService<RuntimeDeps, Network> {
+    private _networks: Network[] = []
+    private _networkAdapter: AppNetworkAdapter<Network> | undefined
     private _networksKey = ''
     private _deps: RuntimeDeps = {}
 
-    setNetworks(networks: NetworkWithTokens[]): void {
-        const key = networks.map(n => n.name).join('|')
+    setNetworks(networks: Network[], networkAdapter: AppNetworkAdapter<Network>): void {
+        const key = networks.map(network => networkAdapter.getId(network)).join('|')
         if (this._networksKey === key) return
         this._networks = networks
+        this._networkAdapter = networkAdapter
         this._networksKey = key
     }
 
@@ -43,7 +33,15 @@ export class TonConnectionService implements WalletConnectionService<RuntimeDeps
     }
 
     getNetworkIcon(): string | undefined {
-        return this._networks.find(n => tonNames.some(name => name === n.name))?.logo
+        const network = this._networks.find(item => this._networkAdapter?.isTonNetwork(item))
+        return network && this._networkAdapter ? this._networkAdapter.getIcon(network) : undefined
+    }
+
+    private getSupportedNetworks(): string[] {
+        return this._networks
+            .filter(network => this._networkAdapter?.isTonNetwork(network))
+            .map(network => this._networkAdapter?.getId(network))
+            .filter((id): id is string => !!id)
     }
 
     getProviderIcon(): string | undefined {
@@ -66,7 +64,8 @@ export class TonConnectionService implements WalletConnectionService<RuntimeDeps
             console.warn('[TON] Failed to parse wallet address:', snapshot.address, e)
             return undefined
         }
-        const walletId = snapshot.walletName || snapshot.appName
+        const walletInfo = useTonStore.getState().wallets.find(w => w.appName.toLowerCase() === snapshot.appName?.toLowerCase())
+        const walletId = walletInfo?.name || snapshot.walletName || snapshot.appName
         if (!walletId) return undefined
 
         return {
@@ -76,11 +75,14 @@ export class TonConnectionService implements WalletConnectionService<RuntimeDeps
             address: normalizedAddress,
             providerName: PROVIDER_NAME,
             isActive: true,
-            icon: walletIconResolver(PROVIDER_NAME, snapshot.imageUrl || normalizedAddress),
+            icon: resolveWalletIconString({
+                id: walletInfo?.appName ?? snapshot.appName ?? walletId,
+                iconUrl: walletInfo?.imageUrl ?? snapshot.imageUrl,
+            }),
             disconnect: () => this.disconnectWallets(),
-            withdrawalSupportedNetworks: tonNames,
-            autofillSupportedNetworks: tonNames,
-            asSourceSupportedNetworks: tonNames,
+            withdrawalSupportedNetworks: this.getSupportedNetworks(),
+            autofillSupportedNetworks: this.getSupportedNetworks(),
+            asSourceSupportedNetworks: this.getSupportedNetworks(),
             networkIcon: this.getNetworkIcon(),
         }
     }
@@ -124,13 +126,9 @@ export class TonConnectionService implements WalletConnectionService<RuntimeDeps
         const connectionResultPromise = new Promise<TonWallet>((resolve, reject) => {
             unsubscribeStatus = tonConnect.onStatusChange(
                 (wallet) => {
-                    if (wallet) {
-                        resolve(wallet)
-                    }
+                    if (wallet) resolve(wallet)
                 },
-                (err) => {
-                    reject(err)
-                },
+                reject,
             )
             unsubscribeModal = connectModalStore.subscribe(() => {
                 const modal = connectModalStore.getSnapshot()
@@ -175,7 +173,7 @@ export class TonConnectionService implements WalletConnectionService<RuntimeDeps
             } else if (isWalletInfoInjectable(walletInfo)) {
                 // Injectable but not currently injected → tell the UI the extension is missing.
                 setSelectedConnector?.({ ...connector, extensionNotFound: true })
-                throw new Error(`${walletInfo.name} extension is not installed`)
+                throw new Error(`${connector.name} extension is not installed`)
             } else {
                 throw new Error('Unsupported TON wallet connection source')
             }
@@ -202,7 +200,7 @@ export class TonConnectionService implements WalletConnectionService<RuntimeDeps
         // drops TON out of `isProvidersReady`. Once `ready` flips to true, the
         // store emits and the snapshot recomputes with the real network list,
         // exactly like the previous hook-bridge adapter behaved.
-        const supportedNetworks = ready ? tonNames : []
+        const supportedNetworks = ready ? this.getSupportedNetworks() : []
 
         return {
             connectWallet: this.connectWallet.bind(this),
@@ -222,7 +220,6 @@ export class TonConnectionService implements WalletConnectionService<RuntimeDeps
     }
 }
 
-export const tonConnectionService = new TonConnectionService()
 
 /**
  * Display-name overrides for wallets where the TonConnect registry's `name`

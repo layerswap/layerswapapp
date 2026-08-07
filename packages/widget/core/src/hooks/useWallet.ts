@@ -1,10 +1,11 @@
 "use client"
 import { Network } from "@/Models/Network"
-import { Wallet, WalletConnectionProvider } from "@/types/wallet";
+import { WalletConnectionProvider } from "@layerswap/ui-kit/types";
+import { Wallet } from "@layerswap/utils";
 import { useCallback, useMemo, useRef, useSyncExternalStore } from "react";
-import { isMobile } from "@/lib/wallets/utils/isMobile";
+import { isMobile } from "@layerswap/utils";
 import { useSettingsState } from "@/context/settings";
-import { useWalletProvidersRegistry } from "@/context/walletProviders";
+import { useWalletProvidersRegistry } from "@layerswap/ui-kit";
 
 export type WalletPurpose = "autofill" | "withdrawal" | "asSource"
 

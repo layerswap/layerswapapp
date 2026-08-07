@@ -1,7 +1,9 @@
-import { TransferProvider, TransferProps, Network, ActionMessageType } from "@layerswap/widget/types"
+import { Network } from "@layerswap/utils"
+import { ActionMessageType } from "@layerswap/ui-kit/types";
+import { TransferProvider, TransferProps } from "@layerswap/utils";
 import { Provider } from '@fuel-ts/account'
 import { transactionBuilder } from "./transactionBuilder"
-import { KnownInternalNames } from "@layerswap/widget/internal"
+import { KnownInternalNames } from "@layerswap/utils";
 import { getFuelInstance, hasFuelInstance } from "../service/getFuel"
 
 const supportedNetworks = [

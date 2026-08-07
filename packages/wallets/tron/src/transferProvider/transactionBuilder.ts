@@ -1,4 +1,4 @@
-import { Token } from '@layerswap/widget/types';
+import { Token } from "@layerswap/utils"
 import { TronWeb } from 'tronweb';
 // @ts-ignore
 import { ContractParamter, Transaction, TransferContract } from 'tronweb/lib/esm/types';

@@ -1,8 +1,10 @@
-import { TransferProvider, TransferProps, Network, ActionMessageType } from "@layerswap/widget/types"
+import { Network } from "@layerswap/utils"
+import { ActionMessageType } from "@layerswap/ui-kit/types";
+import { TransferProvider, TransferProps } from "@layerswap/utils";
 import { TronWeb } from 'tronweb'
 import { buildInitialTransaction } from "./transactionBuilder"
 import { TronGasProvider } from "../tronGasProvider"
-import { KnownInternalNames } from "@layerswap/widget/internal"
+import { KnownInternalNames } from "@layerswap/utils";
 import { tronAdapterManager } from "../service/tronAdapterManager"
 
 const supportedNetworks = [

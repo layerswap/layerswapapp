@@ -1,23 +1,20 @@
-import type {
-    WalletProvider,
-    WalletConnectionStore,
-    WalletInitContext,
-    WalletConnectionProviderProps,
-    BaseWalletProviderConfig,
-} from "@layerswap/widget/types"
-import { LazyBalanceProvider } from "@layerswap/widget/types"
-import { KnownInternalNames } from "@layerswap/widget/internal"
+import type { WalletConnectionStore, WalletConnectionProviderProps } from "@layerswap/ui-kit/types"
+import type { WalletProvider, WalletInitContext, BaseWalletProviderConfig } from "@layerswap/ui-kit/types"
+import { LazyBalanceProvider } from "@layerswap/utils";
+import { KnownInternalNames, type NetworkWithTokens } from "@layerswap/utils";
 import { TronGasProvider } from "./tronGasProvider"
 import { createTronTransfer } from "./transferProvider/createTronTransfer"
 import { createTronConnection } from "./service/createTronConnection"
 import { initTronProvider } from "./init"
 import { id } from "./constants"
 
-export type TronProviderConfig = BaseWalletProviderConfig
+export type TronProviderConfig<Network = NetworkWithTokens> = BaseWalletProviderConfig<Network>
 
 // The literal id in the return type lets `defineWalletDescriptor` in
 // `@layerswap/wallets` verify it matches the descriptor id at compile time.
-export function createTronProvider(config: TronProviderConfig = {}): WalletProvider & { id: typeof id } {
+export function createTronProvider<Network = NetworkWithTokens>(
+    config: TronProviderConfig<Network> = {},
+): WalletProvider<Network> & { id: typeof id } {
     const {
         customConnection,
         balanceProviders,
@@ -30,7 +27,7 @@ export function createTronProvider(config: TronProviderConfig = {}): WalletProvi
         // No-op disposer; init is idempotent across remounts.
     }
 
-    const createConnection = (props: WalletConnectionProviderProps): WalletConnectionStore => {
+    const createConnection = (props: WalletConnectionProviderProps<Network>): WalletConnectionStore<Network> => {
         initTronProvider()
         if (customConnection) {
             return customConnection(props)
@@ -70,3 +67,4 @@ export function createTronProvider(config: TronProviderConfig = {}): WalletProvi
 
 export { createTronConnection } from "./service/createTronConnection"
 export { useTronStore } from "./service/tronStore"
+export { tronAdapterManager } from "./service/tronAdapterManager"

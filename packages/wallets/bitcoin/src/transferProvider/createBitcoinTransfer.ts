@@ -1,6 +1,8 @@
-import { TransferProvider, TransferProps, NetworkType, Network, ActionMessageType } from "@layerswap/widget/types"
+import { NetworkType, Network } from "@layerswap/utils"
+import { ActionMessageType } from "@layerswap/ui-kit/types";
+import { TransferProvider, TransferProps } from "@layerswap/utils";
 import { getAccount } from '@bigmi/client'
-import { JsonRpcClient, KnownInternalNames } from "@layerswap/widget/internal"
+import { JsonRpcClient, KnownInternalNames } from "@layerswap/utils";
 import { sendTransaction } from "./sendTransaction"
 import { getBitcoinConfig } from "../service/getBitcoinConfig"
 

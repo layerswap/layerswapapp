@@ -1,7 +1,8 @@
 import { ChevronDown, Plus, Unplug } from "lucide-react";
 import AddressIcon from "@/components/Common/AddressIcon";
 import WalletIconView from "@/components/Wallet/WalletIconView";
-import { SelectAccountProps, Wallet, WalletConnectionProvider } from "@/types/wallet";
+import { SelectAccountProps, WalletConnectionProvider } from "@layerswap/ui-kit/types";
+import { Wallet } from "@layerswap/utils";
 import { FC, useCallback, useState } from "react";
 import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
 import { clsx } from 'clsx';
@@ -11,7 +12,7 @@ import FilledCheck from "@/components/Icons/FilledCheck";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import { useSettingsState } from "@/context/settings";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
-import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
+import { ImageWithFallback } from "@layerswap/ui-kit/components";
 import { AccountIdentity, useSelectedAccount } from "@/context/swapAccounts";
 import { useBalance } from "@/lib/balances/useBalance";
 import VaulDrawer from "@/components/Modal/vaulModal";

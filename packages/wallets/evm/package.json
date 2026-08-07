@@ -11,6 +11,10 @@
       "types": "./dist/types/index.d.ts",
       "default": "./dist/esm/index.js"
     },
+    "./base": {
+      "types": "./dist/types/generic.d.ts",
+      "default": "./dist/esm/generic.js"
+    },
     "./polymarket-protocol": {
       "types": "./dist/types/additionalProviders/polymarket/protocol.d.ts",
       "default": "./dist/esm/additionalProviders/polymarket/protocol.js"
@@ -43,7 +47,8 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@layerswap/widget": "workspace:^",
+    "@layerswap/ui-kit": "workspace:^",
+    "@layerswap/utils": "workspace:^",
     "viem": "catalog:",
     "wagmi": "catalog:",
     "zustand": "catalog:"
@@ -55,7 +60,8 @@
     "js-sha3": "^0.8.0"
   },
   "devDependencies": {
-    "@layerswap/widget": "workspace:^",
+    "@layerswap/ui-kit": "workspace:^",
+    "@layerswap/utils": "workspace:^",
     "@tailwindcss/postcss": "^4.0.15",
     "tailwindcss": "^4.0.15",
     "zustand": "catalog:"

@@ -1,7 +1,6 @@
 import { Connector, ConnectorNotConnectedError, UserNotConnectedError } from '@starknet-react/core'
 import { RpcMessage, RequestFnCall, RpcTypeToMessageMap } from '@starknet-io/types-js'
 import { starknetConnectorManager } from './service/starknetConnectorManager'
-import { starknetConnectionService } from './service/StarknetConnectionService'
 
 let _initialized = false
 let _loadPromise: Promise<void> | null = null
@@ -84,8 +83,6 @@ export function initStarknetProvider(): void {
         defaultConnectors.push(new WebWalletConnector())
 
         starknetConnectorManager.register(defaultConnectors)
-        starknetConnectionService.requestStoredWalletHydration()
-
         _initialized = true
     })()
 
@@ -101,6 +98,5 @@ export function initStarknetProvider(): void {
 export function _resetStarknetInit(): void {
     _initialized = false
     _loadPromise = null
-    starknetConnectionService.dispose()
     starknetConnectorManager.dispose()
 }

@@ -1,26 +1,20 @@
-import type {
-    WalletConnectionProvider,
-    WalletConnectionProviderProps,
-    WalletConnectionStore,
-    MultiStepHandler,
-    NetworkWithTokens,
-} from '@layerswap/widget/types'
-import {
-    connectModalStore,
-    createMemoizedConnectionStore,
-    getAdditionalConnectorsStore,
-    isMobile,
-} from '@layerswap/widget/internal'
-import { ethereumNames, id as PROVIDER_ID, name as PROVIDER_NAME } from '../constants'
+import type { WalletConnectionProvider, WalletConnectionProviderProps, WalletConnectionStore, MultiStepHandler } from "@layerswap/ui-kit/types"
+import { isMobile } from "@layerswap/utils"
+import { connectModalStore, createMemoizedConnectionStore, getAdditionalConnectorsStore, type AppNetworkAdapter } from "@layerswap/ui-kit"
+import { id as PROVIDER_ID, name as PROVIDER_NAME } from '../constants'
 import { createEvmTransfer } from '../transferProvider/createEvmTransfer'
-import { evmConnectionService } from './EvmConnectionService'
+import { EvmConnectionService } from './EvmConnectionService'
+import { findEthereumNetwork } from './findEthereumNetwork'
 import { useEvmStore } from './evmStore'
+import type { EvmAdditionalSupportedNetworks } from './networkBuckets'
 
 const EVM_NS = 'eip155'
 
 type CreateEvmConnectionOptions = {
     walletConnectProjectId?: string
     extraMultiStepHandlers?: MultiStepHandler[]
+    additionalSupportedNetworks?: EvmAdditionalSupportedNetworks
+    ethereumChainIds?: readonly number[]
 }
 
 /**
@@ -29,15 +23,22 @@ type CreateEvmConnectionOptions = {
  * `useSyncExternalStore`; wallet packages and other non-React callers can
  * read snapshots imperatively.
  */
-export function createEvmConnection(
-    initialProps: WalletConnectionProviderProps,
+export function createEvmConnection<Network>(
+    initialProps: WalletConnectionProviderProps<Network>,
     options: CreateEvmConnectionOptions = {},
-): WalletConnectionStore {
-    const { walletConnectProjectId, extraMultiStepHandlers = [] } = options
+): WalletConnectionStore<Network> {
+    const {
+        walletConnectProjectId,
+        extraMultiStepHandlers = [],
+        additionalSupportedNetworks,
+        ethereumChainIds = [],
+    } = options
     const isMobilePlatform = isMobile()
 
-    let networks: NetworkWithTokens[] = initialProps.networks
-    evmConnectionService.setNetworks(networks)
+    let networks = initialProps.networks
+    let networkAdapter = initialProps.networkAdapter
+    const evmConnectionService = new EvmConnectionService<Network>()
+    evmConnectionService.setNetworks(networks, networkAdapter, additionalSupportedNetworks)
 
     const additionalConnectorsStore = getAdditionalConnectorsStore(EVM_NS, walletConnectProjectId)
 
@@ -47,6 +48,7 @@ export function createEvmConnection(
         requestRegistryConnectors: additionalConnectorsStore.requestAdditionalConnectors,
         registryConnectors: additionalConnectorsStore.getSnapshot().browseConnectors,
         isMobilePlatform,
+        ethereumChainIds,
     })
 
     const transferProvider = createEvmTransfer()
@@ -85,7 +87,8 @@ export function createEvmConnection(
             const activeWallet = evmConnectionService.getActiveWallet(connectedWallets)
             const availableConnectors = evmConnectionService.getAvailableConnectors(allConnectors)
             const additionalConnectors = evmConnectionService.getAdditionalConnectors(allConnectors)
-            const providerIcon = inputs.networks.find(n => ethereumNames.some(name => name === n.name))?.logo
+            const providerNetwork = findEthereumNetwork(inputs.networks, networkAdapter, ethereumChainIds)
+            const providerIcon = providerNetwork ? networkAdapter.getIcon(providerNetwork) : undefined
             const buckets = evmConnectionService.getBuckets()
 
             const snapshot: WalletConnectionProvider = {
@@ -128,7 +131,8 @@ export function createEvmConnection(
         ],
         onUpdateProps: nextProps => {
             networks = nextProps.networks
-            evmConnectionService.setNetworks(networks)
+            networkAdapter = nextProps.networkAdapter
+            evmConnectionService.setNetworks(networks, networkAdapter, additionalSupportedNetworks)
         },
     })
 }

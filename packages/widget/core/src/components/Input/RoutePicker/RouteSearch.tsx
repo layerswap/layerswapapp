@@ -1,5 +1,5 @@
 import { FC, useMemo } from "react";
-import { SearchComponent } from "../Search";
+import { SearchComponent } from "@layerswap/ui-kit/components";
 import { useSettingsState } from "@/context/settings";
 import { SwapDirection } from "@/components/Pages/Swap/Form/SwapFormValues";
 
