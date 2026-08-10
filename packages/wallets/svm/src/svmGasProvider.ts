@@ -1,4 +1,5 @@
-import { Network, NetworkType } from "@layerswap/utils"
+import { NetworkType } from '@layerswap/widget-types';
+import { Network } from "@layerswap/utils"
 import { GasProps, GasProvider } from "@layerswap/utils";
 import { transactionBuilderForGas } from "./utils";
 import { ErrorHandler, formatUnits } from "@layerswap/utils";

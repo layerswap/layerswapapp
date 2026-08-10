@@ -1,5 +1,6 @@
+import { NetworkType } from '@layerswap/widget-types';
 import KnownInternalNames from "@/knownIds";
-import { Network, NetworkType, AddressSelectionMode, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
+import { Network, AddressSelectionMode, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
 
 export const name = 'Tron';
 

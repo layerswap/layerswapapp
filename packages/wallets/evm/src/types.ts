@@ -1,7 +1,7 @@
+import { type WalletConnectConfig } from '@layerswap/widget-types';
 import type { Config } from '@wagmi/core'
 import type {
     BaseWalletProviderConfig,
-    WalletConnectConfig,
     WalletProviderModule,
 } from "@layerswap/ui-kit/types"
 import type { EvmAdditionalSupportedNetworks } from "./service/networkBuckets"

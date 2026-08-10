@@ -1,6 +1,6 @@
+import { type Wallet } from '@layerswap/widget-types';
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
-import type { Wallet } from "@layerswap/utils";
 
 type StarknetAccountMap = { [key: string]: string }
 

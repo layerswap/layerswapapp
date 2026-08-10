@@ -1,8 +1,9 @@
+import { NetworkType } from '@layerswap/widget-types';
 import { FC, MouseEventHandler, ReactNode, SVGProps, useCallback, useMemo, useState } from "react"
 import { AddressGroup, AddressItem } from ".";
 import { Copy, Check, ChevronDown, WalletIcon, Pencil, Link2, SquareArrowOutUpRight, Unplug, Info, Trash2, BookmarkPlus } from "lucide-react";
 import { Partner } from "@/Models/Partner";
-import { Network, NetworkType } from "@/Models/Network";
+import { Network } from "@/Models/Network";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components//shadcn/popover";
 import { ImageWithFallback } from "@layerswap/ui-kit/components";
 import { useCopyClipboard } from "@layerswap/ui-kit";

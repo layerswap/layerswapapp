@@ -1,6 +1,6 @@
+import { type Wallet } from '@layerswap/widget-types';
 import { Network, NetworkRoute, NetworkWithTokens, Token } from "@/types"
 import { TokenBalance } from "./balanceModels"
-import { Wallet } from "./walletModels"
 
 export type TransferProps = {
     network: Network,

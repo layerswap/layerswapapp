@@ -1,6 +1,5 @@
-import { ActionMessageType } from "@layerswap/ui-kit/types";
+import { ActionMessageType, NetworkType } from '@layerswap/widget-types';
 import { TransferProvider, TransferProps, TransferProgress } from "@layerswap/utils";
-import { NetworkType } from "@layerswap/utils"
 import { switchChain } from "@wagmi/core"
 import { getEvmConfig } from "../../service/getEvmConfig"
 import { HyperliquidClient } from "./hyperliquidClient"

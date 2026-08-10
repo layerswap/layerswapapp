@@ -1,5 +1,5 @@
+import { type InternalConnector, type Wallet } from '@layerswap/widget-types';
 import type { WalletConnectionProvider, WalletConnectionService, WalletModalConnector } from "@layerswap/ui-kit/types";
-import type { InternalConnector, Wallet } from "@layerswap/utils";
 import { walletIconResolver, type AppNetworkAdapter } from "@layerswap/ui-kit";
 import {
     connect,

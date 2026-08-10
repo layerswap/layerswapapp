@@ -1,5 +1,5 @@
+import { type Wallet } from '@layerswap/widget-types';
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Wallet } from "@layerswap/utils";
 import { MAX_HISTORY_ADDRESSES } from '@/lib/historyWalletAddresses'
 
 type Args = {

@@ -1,9 +1,5 @@
+import { GasCalculation } from '@layerswap/widget-types';
 import KnownInternalNames from "./knownIds";
-
-export enum GasCalculation {
-    Classic = 'classic',
-    OptimismType = 'optimismType'
-}
 
 const destinationOrder = [
     KnownInternalNames.Networks.StarkNetMainnet,

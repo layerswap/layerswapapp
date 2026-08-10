@@ -39,6 +39,7 @@
   "peerDependencies": {
     "@layerswap/ui-kit": "workspace:^",
     "@layerswap/utils": "workspace:^",
+    "@layerswap/widget-types": "workspace:^",
     "@wagmi/core": "catalog:",
     "wagmi": "catalog:",
     "viem": "catalog:",
@@ -54,6 +55,7 @@
   "devDependencies": {
     "@layerswap/ui-kit": "workspace:^",
     "@layerswap/utils": "workspace:^",
+    "@layerswap/widget-types": "workspace:^",
     "zustand": "catalog:"
   },
   "engines": {

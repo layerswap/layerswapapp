@@ -1,3 +1,4 @@
+import { type Wallet } from '@layerswap/widget-types';
 import { ChevronUp, Plug, Plus, RefreshCw } from 'lucide-react'
 import { FC, ReactElement, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import clsx from "clsx";
@@ -15,7 +16,6 @@ import { SwapDataProvider, SwapDataStateContext } from '@/context/swap';
 import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import { useHistoryFilters } from '@/hooks/useHistoryFilters';
 import { useSwapByTransactionHash } from '@/hooks/useSwapByTransactionHash';
-import { Wallet } from "@layerswap/utils";
 import { FilterNetworkOption } from './Filters/types';
 import { SwapResponse } from '@/lib/apiClients/layerSwapApiClient';
 import Filters from './Filters';

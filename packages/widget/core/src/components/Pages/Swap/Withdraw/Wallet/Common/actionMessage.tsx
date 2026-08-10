@@ -1,5 +1,6 @@
+import { ActionMessageType } from '@layerswap/widget-types';
 import { FC, useEffect } from "react"
-import { ActionMessages, ActionMessageType } from "../../messages/TransactionMessages"
+import { ActionMessages } from "../../messages/TransactionMessages"
 import { ErrorHandler } from "@/lib/ErrorHandler"
 import { Network } from "@/Models"
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore"

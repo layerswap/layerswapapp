@@ -1,5 +1,4 @@
-import type { ThemeData } from "@layerswap/widget-types"
-import type { AvailableSourceNetworkTypes } from "@/types"
+import type { AvailableSourceNetworkTypes, ThemeData } from "@layerswap/widget-types"
 
 class WalletsConfigs {
     /**

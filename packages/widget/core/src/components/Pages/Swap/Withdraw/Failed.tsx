@@ -1,7 +1,7 @@
+import { SwapStatus } from '@layerswap/widget-types';
 import { FC, useCallback, useEffect } from 'react'
 import { useSwapDataState } from '@/context/swap';
 import { useIntercom } from 'react-use-intercom';
-import { SwapStatus } from '@/Models/SwapStatus';
 import QuestionIcon from '@/components//Icons/Question';
 import { ErrorHandler } from '@/lib/ErrorHandler';
 import { useDepositSettings } from '@/context/depositSettings';

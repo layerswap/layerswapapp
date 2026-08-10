@@ -1,5 +1,5 @@
+import { type InternalConnector, type Wallet } from '@layerswap/widget-types';
 import type { RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult, WalletConnectionProvider, WalletConnectionService } from "@layerswap/ui-kit/types";
-import type { InternalConnector, Wallet } from "@layerswap/utils";
 import type { WalletModalConnector } from "@layerswap/ui-kit/types"
 import { buildDeepLink, clearPendingDynamicWcMetadata, createRegistryConnector, getDynamicWcMetadata, getPendingDynamicWcMetadata, getRegistryEntry, mapConnectError, setDynamicWcMetadata, setPendingMetadataForRegistry, subscribeDisplayUri, walletKey, type AppNetworkAdapter, type WalletConnectWalletBase } from "@layerswap/ui-kit"
 import { findRegistryWalletByName } from "@layerswap/ui-kit"

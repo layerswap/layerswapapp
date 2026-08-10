@@ -1,5 +1,5 @@
+import { ActionMessageType } from '@layerswap/widget-types';
 import { Network } from "@layerswap/utils"
-import { ActionMessageType } from "@layerswap/ui-kit/types";
 import { TransferProvider, TransferProps } from "@layerswap/utils";
 import { sendTransaction, Config } from '@wagmi/core'
 import { BaseError } from "viem"

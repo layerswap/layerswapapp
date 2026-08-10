@@ -5,7 +5,7 @@ export type { Manifest } from '@layerswap/widget-js';
 export { ManifestError } from '@layerswap/widget-js';
 
 // Widget prop/config/theme contract, re-exported (via the core) from the
-// shared zero-runtime `@layerswap/widget-types` package — no dependency on
+// shared `@layerswap/widget-types` package — no dependency on
 // the heavy `@layerswap/widget` package. The shared contract is
 // framework-agnostic (its React/wagmi slots are generic); this package binds
 // them to its own peers so React hosts get concrete types.

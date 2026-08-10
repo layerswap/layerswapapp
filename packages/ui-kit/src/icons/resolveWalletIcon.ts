@@ -1,4 +1,4 @@
-import { InternalConnector } from "@layerswap/utils";
+import { type InternalConnector } from '@layerswap/widget-types';
 import { normalizeIconSrc } from "./knownConnectorIcons"
 
 /**

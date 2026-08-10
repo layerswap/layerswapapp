@@ -1,8 +1,8 @@
+import { type Wallet } from '@layerswap/widget-types';
 import { FC, useMemo, useState } from 'react'
 import { ChevronDown, Settings2 } from 'lucide-react'
 import CheckboxRow from './CheckboxRow'
 import { filterChipClasses } from './chipStyles'
-import { Wallet } from "@layerswap/utils";
 import { Address } from '@/lib/address/Address'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/shadcn'
 import VaulDrawer from '@/components/Modal/vaulModal'

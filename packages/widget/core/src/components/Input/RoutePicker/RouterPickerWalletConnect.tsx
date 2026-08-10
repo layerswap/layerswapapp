@@ -1,7 +1,7 @@
+import { type Wallet } from '@layerswap/widget-types';
 import { FC, useMemo, useState } from "react";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { SelectAccountProps } from "@layerswap/ui-kit/types";
-import { Wallet } from "@layerswap/utils";
 import VaulDrawer from "@/components/Modal/vaulModal";
 import { ChevronDown, Plus } from "lucide-react";
 import { WalletItem } from "@/components/Wallet/WalletComponents/WalletsList";

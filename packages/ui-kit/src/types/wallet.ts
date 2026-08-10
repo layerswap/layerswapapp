@@ -4,8 +4,7 @@ import type { TransferProps } from '@layerswap/utils';
 import type { WalletProvider, WalletWrapper } from './provider';
 import type { AppNetworkAdapter } from './network';
 
-import type { InternalConnector, Wallet } from '@layerswap/utils';
-
+import type { InternalConnector, Wallet } from '@layerswap/widget-types';
 
 /**
  * External store contract for a wallet's connection state. Each package
@@ -140,10 +139,3 @@ export type RequestAdditionalConnectorsResult = {
 }
 
 /** Shared WalletConnect project metadata for EVM and Solana packages. */
-export type WalletConnectConfig = {
-    projectId: string
-    name: string
-    description: string
-    url: string
-    icons: string[]
-}

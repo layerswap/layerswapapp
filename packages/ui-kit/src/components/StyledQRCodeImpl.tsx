@@ -1,6 +1,5 @@
-import { useState, type FC } from "react"
+import { useEffect, useState, type FC } from "react"
 import { QRCode } from "react-qrcode-logo"
-import { useOptionalWalletUi } from "./internal/WalletUiContext"
 
 export type StyledQRCodeProps = {
     value: string
@@ -20,10 +19,11 @@ const resolveForeground = (): string => {
 }
 
 const StyledQRCodeImpl: FC<StyledQRCodeProps> = ({ value, size = 140, logo, ecLevel = "M" }) => {
-    const walletUi = useOptionalWalletUi()
-    const [documentColor] = useState(resolveForeground)
-    const themedColor = walletUi?.theme?.primary?.text
-    const foreground = themedColor ? `rgb(${themedColor})` : documentColor
+    const [foreground, setForeground] = useState(FALLBACK_FG)
+
+    useEffect(() => {
+        setForeground(resolveForeground())
+    }, [])
 
     const logoSize = Math.round(size * 0.25)
 

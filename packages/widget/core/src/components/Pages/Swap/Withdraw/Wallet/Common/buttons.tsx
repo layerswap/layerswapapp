@@ -1,3 +1,4 @@
+import { type Wallet } from '@layerswap/widget-types';
 import { ComponentProps, FC, useCallback, useMemo, useState } from "react";
 import { WalletIcon } from "@layerswap/ui-kit/components";
 import { ActionData } from "./sharedTypes";
@@ -22,7 +23,6 @@ import { useSelectedAccount } from "@/context/swapAccounts";
 import { SwapFormValues } from "../../../Form/SwapFormValues";
 import { ErrorHandler } from "@/lib/ErrorHandler";
 import { TokenBalance, TransferProps } from "@/types"
-import { Wallet } from "@layerswap/utils";
 import { resolvePriceImpactValues } from "@/lib/fees";
 import InfoIcon from "@/components/Icons/InfoIcon";
 import { useBalance } from "@/lib/balances/useBalance";

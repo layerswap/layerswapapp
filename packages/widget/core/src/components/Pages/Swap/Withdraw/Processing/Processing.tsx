@@ -1,11 +1,11 @@
 'use client'
+import { SwapStatus, type Refuel } from '@layerswap/widget-types';
 import LinkWithIcon from '@/components/Common/LinkWithIcon';
 import { FC, useCallback, useEffect, useMemo, useRef } from 'react'
 import { Widget } from '@/components/Widget/Index';
 import SwapSummary from '../Summary';
-import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, SwapBasicData, SwapDetails, SwapQuote, Refuel } from '@/lib/apiClients/layerSwapApiClient';
+import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, SwapBasicData, SwapDetails, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
 import { truncateDecimals } from '@/components/utils/RoundDecimals';
-import { SwapStatus } from '@/Models/SwapStatus';
 import { SwapFailReasons } from '@/Models/RangeError';
 import { Gauge } from './gauge';
 import { CircleCheck, Undo2 } from 'lucide-react';

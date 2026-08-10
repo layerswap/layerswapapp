@@ -1,3 +1,2 @@
-import { NetworkSettings, GasCalculation } from "@layerswap/utils";
-export { GasCalculation };
+import { NetworkSettings } from "@layerswap/utils";
 export default NetworkSettings;

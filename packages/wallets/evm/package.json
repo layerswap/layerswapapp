@@ -49,6 +49,7 @@
   "peerDependencies": {
     "@layerswap/ui-kit": "workspace:^",
     "@layerswap/utils": "workspace:^",
+    "@layerswap/widget-types": "workspace:^",
     "viem": "catalog:",
     "wagmi": "catalog:",
     "zustand": "catalog:"
@@ -62,6 +63,7 @@
   "devDependencies": {
     "@layerswap/ui-kit": "workspace:^",
     "@layerswap/utils": "workspace:^",
+    "@layerswap/widget-types": "workspace:^",
     "@tailwindcss/postcss": "^4.0.15",
     "tailwindcss": "^4.0.15",
     "zustand": "catalog:"

@@ -109,7 +109,7 @@ const ConnectModalHost: React.FC<{ settings: ReturnType<typeof useSettingsState>
                                 <ConnectorsList
                                     providers={providers}
                                     onFinish={onFinish}
-                                    theme={AppSettings.ThemeData}
+                                    enablePortal={AppSettings.ThemeData?.enablePortal}
                                     brandMark={<LayerSwapLogoSmall className="w-11 h-auto" />}
                                 />
                             </Suspense>

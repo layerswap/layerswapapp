@@ -1,3 +1,4 @@
+import { NetworkType } from '@layerswap/widget-types';
 import { AddressUtilsResolver } from "@/address/addressUtilsResolver";
 import { EVMAddressUtilsProvider } from "@/address/providers/evm";
 import { BitcoinAddressUtilsProvider } from "@/address/providers/bitcoin";
@@ -6,7 +7,6 @@ import { TonAddressUtilsProvider } from "@/address/providers/ton";
 import { StarknetAddressUtilsProvider } from "@/address/providers/starknet";
 import { TronAddressUtilsProvider } from "@/address/providers/tron";
 import { FuelAddressUtilsProvider } from "@/address/providers/fuel";
-import { NetworkType } from "@/types";
 
 // All address utils providers, instantiated once.
 export const addressUtilsProviders = [

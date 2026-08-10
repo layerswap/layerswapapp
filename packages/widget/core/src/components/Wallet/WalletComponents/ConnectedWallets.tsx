@@ -1,3 +1,4 @@
+import { type Wallet } from '@layerswap/widget-types';
 import { WalletIcon } from "@layerswap/ui-kit/components";
 import WalletIconView from "@/components/Wallet/WalletIconView"
 import useWallet from "@/hooks/useWallet"
@@ -5,7 +6,6 @@ import ConnectButton from "@/components/Buttons/connectButton"
 import { useState } from "react"
 import WalletsList from "./WalletsList"
 import VaulDrawer from "@/components/Modal/vaulModal"
-import { Wallet } from "@layerswap/utils";
 import { useLabeledAddress } from "@/stores/addressBookStore"
 import AddressIcon from "@/components/Common/AddressIcon"
 

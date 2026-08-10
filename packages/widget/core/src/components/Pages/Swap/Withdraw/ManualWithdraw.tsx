@@ -1,8 +1,9 @@
+import { type Refuel } from '@layerswap/widget-types';
 import { CopyButton, ImageWithFallback, StyledQRCode } from "@layerswap/ui-kit/components";
 import { useCopyClipboard } from "@layerswap/ui-kit";
 import QRIcon from '@/components/Icons/QRIcon'
 import useWallet from '@/hooks/useWallet'
-import { DepositAction, Refuel, SwapBasicData, SwapQuote } from '@/lib/apiClients/layerSwapApiClient'
+import { DepositAction, SwapBasicData, SwapQuote } from '@/lib/apiClients/layerSwapApiClient'
 import { useMemo } from 'react'
 import { FC, ReactNode, useState } from 'react'
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";

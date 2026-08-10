@@ -3,7 +3,6 @@ import type { Dispatch, RefObject, SetStateAction, } from "react";
 import clsx from "clsx";
 import CircularLoader from "../CircularLoader";
 import { SearchComponent } from "../Search";
-import { useWalletUi } from "../internal/WalletUiContext";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
 import { isProviderConnectReady } from "@/lib/walletConnect/isProviderConnectReady";
 import type { WalletConnectionProvider, WalletModalConnector, } from "@/types";
@@ -32,6 +31,7 @@ type ConnectorsBrowserProps = {
     setSearchValue: Dispatch<SetStateAction<string | undefined>>;
     showProviderPicker: boolean;
     showSourcesLoadingTail: boolean;
+    enablePortal?: boolean;
 }
 
 export function ConnectorsBrowser({
@@ -51,9 +51,9 @@ export function ConnectorsBrowser({
     setSearchValue,
     showProviderPicker,
     showSourcesLoadingTail,
+    enablePortal,
 }: ConnectorsBrowserProps) {
     const { isMobile } = useWindowDimensions()
-    const { theme } = useWalletUi()
     const { isScrolling, handleScroll } = useScrollActivity()
     const providerByName = useMemo(
         () => new Map(featuredProviders.map(provider => [provider.name, provider])),
@@ -87,7 +87,7 @@ export function ConnectorsBrowser({
                 className={clsx(
                     "overflow-y-scroll -mr-4 pr-2 scrollbar:!w-1.5 scrollbar:!h-1.5 overflow-x-hidden scrollbar-thumb:bg-transparent",
                     {
-                        "h-[calc(100svh-160px)]": isMobile && theme?.enablePortal,
+                        "h-[calc(100svh-160px)]": isMobile && enablePortal,
                         "styled-scroll": isScrolling,
                     }
                 )}

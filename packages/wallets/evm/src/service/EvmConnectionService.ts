@@ -1,5 +1,5 @@
+import { type InternalConnector, type Wallet } from '@layerswap/widget-types';
 import type { RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult, WalletConnectionService } from "@layerswap/ui-kit/types";
-import type { InternalConnector, Wallet } from "@layerswap/utils";
 import type { WalletModalConnector } from "@layerswap/ui-kit/types"
 import type { RegistryConnector } from "@layerswap/ui-kit"
 import type { Connector } from 'wagmi'

@@ -1,6 +1,6 @@
+import { NetworkType } from '@layerswap/widget-types';
 import type { WalletConnectionStore, WalletConnectionProviderProps } from "@layerswap/ui-kit/types"
 import type { WalletProvider, WalletInitContext } from "@layerswap/ui-kit/types"
-import { NetworkType } from "@layerswap/utils"
 import { LazyBalanceProvider, LazyGasProvider } from "@layerswap/utils";
 import { createEvmConnection } from "./service/createEvmConnection"
 import { initEvmProvider } from "./EVMProvider/init"

@@ -1,10 +1,9 @@
 import * as Tooltip from "@radix-ui/react-tooltip"
 import { Check } from "lucide-react"
-import { useState, type FC, type ReactNode } from "react"
+import { useState, type FC, type ReactNode, type RefObject } from "react"
 import clsx from "clsx"
 import CopyIcon from "./CopyIcon"
 import useCopyClipboard from "@/hooks/useCopyClipboard"
-import { useOptionalWalletUi } from "./internal/WalletUiContext"
 
 interface CopyButtonProps {
     className?: string
@@ -13,12 +12,12 @@ interface CopyButtonProps {
     iconSize?: number
     iconClassName?: string
     disabled?: boolean
+    portalContainerRef?: RefObject<HTMLElement | null>
 }
 
-const CopyButton: FC<CopyButtonProps> = ({ className, toCopy, children, iconSize, iconClassName, disabled = false, }) => {
+const CopyButton: FC<CopyButtonProps> = ({ className, toCopy, children, iconSize, iconClassName, disabled = false, portalContainerRef, }) => {
     const [isCopied, setCopied] = useCopyClipboard()
     const [isTooltipOpen, setTooltipOpen] = useState(false)
-    const walletUi = useOptionalWalletUi()
 
     const handleCopyClick = () => {
         if (disabled) return
@@ -26,7 +25,7 @@ const CopyButton: FC<CopyButtonProps> = ({ className, toCopy, children, iconSize
         setTooltipOpen(true)
     }
 
-    const container = walletUi?.rootRef.current
+    const container = portalContainerRef?.current
         ?? (typeof document !== "undefined" ? document.getElementById("widget") : null)
 
     return (

@@ -1,4 +1,4 @@
-import { NetworkType } from "@layerswap/utils"
+import { NetworkType } from '@layerswap/widget-types';
 import { GaslessProvider } from "@layerswap/utils";
 import { useConfig } from "wagmi"
 import { createEVMGaslessProvider } from "./createEVMGaslessProvider"

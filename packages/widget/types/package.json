@@ -1,7 +1,7 @@
 {
   "name": "@layerswap/widget-types",
   "version": "0.1.0",
-  "description": "Shared, zero-runtime TypeScript contract for the Layerswap widget: config, callbacks, theme, and prop types consumed by @layerswap/widget, @layerswap/widget-js, and @layerswap/widget-react.",
+  "description": "Shared TypeScript contracts for Layerswap widget and wallet packages.",
   "type": "module",
   "main": "dist/esm/index.js",
   "types": "dist/types/index.d.ts",

@@ -1,4 +1,5 @@
-import { NetworkType, formatUnits } from "@layerswap/utils";
+import { NetworkType } from '@layerswap/widget-types';
+import { formatUnits } from "@layerswap/utils";
 import { CallData, cairo, type Call, type EstimateFeeResponseOverhead } from "starknet";
 import { Network } from "@layerswap/utils"
 import { GasProvider, GasProps } from "@layerswap/utils";

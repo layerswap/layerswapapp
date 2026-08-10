@@ -1,6 +1,6 @@
+import { type InternalConnector } from '@layerswap/widget-types';
 import { FC } from "react";
 import type { WalletConnectionProvider, WalletModalConnector } from "@/types";
-import type { InternalConnector } from "@layerswap/utils";
 import { ImageWithFallback } from "./ImageWithFallback";
 import WalletIcon from "./WalletIcon";
 import CircularLoader from "./CircularLoader";

@@ -1,9 +1,10 @@
+import { NetworkType } from '@layerswap/widget-types';
 import { multicall, getBalance, GetBalanceReturnType, createConfig } from '@wagmi/core'
 import { Chain, formatUnits, PublicClient, erc20Abi } from "viem"
 import resolveChain from "../evmUtils/resolveChain"
 import BalanceGetterAbi from "../jsons/BALANCEGETTERABI.json"
 import { KnownInternalNames } from "@layerswap/utils";
-import { NetworkType, NetworkWithTokens, Token, Network } from "@layerswap/utils"
+import { NetworkWithTokens, Token, Network } from "@layerswap/utils"
 import { BalanceProvider, TokenBalance } from "@layerswap/utils";
 import { resolveFallbackTransport } from "../evmUtils/resolveTransports"
 

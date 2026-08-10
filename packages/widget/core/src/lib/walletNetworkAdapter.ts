@@ -1,5 +1,6 @@
+import { NetworkType } from '@layerswap/widget-types';
 import { defineNetworkAdapter } from "@layerswap/ui-kit";
-import { NetworkType, type NetworkWithTokens } from "@layerswap/utils";
+import { type NetworkWithTokens } from "@layerswap/utils";
 
 export const walletNetworkAdapter = defineNetworkAdapter<NetworkWithTokens>({
     getId: network => network.name,

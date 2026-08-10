@@ -1,3 +1,4 @@
+import { SwapStatus } from '@layerswap/widget-types';
 import { FC, ReactNode, Suspense, lazy, useEffect, useMemo, useRef } from "react";
 import { Form, useFormikContext } from "formik";
 import { Loader2 } from "lucide-react";
@@ -6,7 +7,6 @@ import { Partner } from "@/Models/Partner";
 import { useValidationContext } from "@/context/validationContext";
 import useWallet from "@/hooks/useWallet";
 import { useProvidersConnectReady } from "@layerswap/ui-kit";
-import { SwapStatus } from "@/Models/SwapStatus";
 import { Address as AddressClass } from "@/lib/address/Address";
 import useAutoSourceRoute from "@/hooks/useAutoSourceRoute";
 import { useSwapDataState, useSwapDataUpdate } from "@/context/swap";

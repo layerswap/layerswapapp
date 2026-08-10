@@ -1,7 +1,7 @@
+import { type Wallet } from '@layerswap/widget-types';
 import { useRef, useState, type FC, type ReactNode } from "react"
 import { useConnectors } from "@/hooks/useConnectors"
 import type { WalletConnectionProvider } from "@/types";
-import type { Wallet } from "@layerswap/utils";
 import { useConnectModal } from "./WalletModalProvider"
 import { InstalledExtensionNotFound } from "./InstalledExtensionNotFound"
 import { LoadingConnect } from "./LoadingConnect"
@@ -12,20 +12,19 @@ import { useAdditionalConnectors } from "./connectors-list/useAdditionalConnecto
 import { useConnectorSourcesStatus } from "./connectors-list/useConnectorSourcesStatus"
 import { useFeaturedProviders } from "./connectors-list/useFeaturedProviders"
 import { useWalletConnection } from "./connectors-list/useWalletConnection"
-import { WalletUiProvider, uiKitThemeStyle, type UiKitTheme } from "./internal/WalletUiContext"
 
 export type ConnectorsListProps = {
     providers: WalletConnectionProvider[]
     onFinish: (result: Wallet | undefined) => void
-    theme?: UiKitTheme | null
     brandMark?: ReactNode
+    enablePortal?: boolean
 }
 
 export const ConnectorsList: FC<ConnectorsListProps> = ({
     providers,
     onFinish,
-    theme,
     brandMark,
+    enablePortal,
 }) => {
     const rootRef = useRef<HTMLDivElement>(null)
     const {
@@ -102,6 +101,7 @@ export const ConnectorsList: FC<ConnectorsListProps> = ({
         content = provider ? (
             <InstalledExtensionNotFound
                 selectedConnector={selectedConnector}
+                brandMark={brandMark}
                 onConnect={connector => {
                     void connect(connector, provider)
                 }}
@@ -114,7 +114,7 @@ export const ConnectorsList: FC<ConnectorsListProps> = ({
             || selectedConnector.showQrCode
         )
     ) {
-        content = <WalletQrCode selectedConnector={selectedConnector} />
+        content = <WalletQrCode selectedConnector={selectedConnector} portalContainerRef={rootRef} />
     } else if (selectedConnector) {
         const provider = featuredProviders.find(
             item => item.name === selectedConnector.providerName
@@ -126,6 +126,7 @@ export const ConnectorsList: FC<ConnectorsListProps> = ({
                 }}
                 selectedConnector={selectedConnector}
                 connectionError={connectionError}
+                brandMark={brandMark}
             />
         )
     } else if (selectedMultiChainConnector) {
@@ -166,15 +167,14 @@ export const ConnectorsList: FC<ConnectorsListProps> = ({
                     !selectedProvider || selectedProvider.isSelectedFromFilter === true
                 }
                 showSourcesLoadingTail={showSourcesLoadingTail}
+                enablePortal={enablePortal}
             />
         )
     }
 
     return (
-        <WalletUiProvider brandMark={brandMark} rootRef={rootRef} theme={theme}>
-            <div ref={rootRef} data-ui-kit="" style={uiKitThemeStyle(theme)}>
-                {content}
-            </div>
-        </WalletUiProvider>
+        <div ref={rootRef} className="h-full">
+            {content}
+        </div>
     )
 }

@@ -1,3 +1,4 @@
+import { type Wallet } from '@layerswap/widget-types';
 import { FC, useEffect, useMemo, useState } from "react";
 import ValidationError from "@/components/Pages/Swap/Form/SecondaryComponents/validationError";
 import CexPicker, { SelectedEchangePlaceholder } from "@/components/Input/CexPicker";
@@ -18,7 +19,6 @@ import clsx from "clsx";
 import { useSwapDataState } from "@/context/swap";
 import { useClickOutside } from "@/hooks/useClickOutside";
 import { Network } from "@/Models/Network";
-import { Wallet } from "@layerswap/utils";
 import { SwapFormValues } from "./SwapFormValues";
 import { useCallbacks } from "@/context/callbackProvider";
 import QuoteDetails from "./FeeDetails";

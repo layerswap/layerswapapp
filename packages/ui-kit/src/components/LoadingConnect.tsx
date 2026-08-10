@@ -1,12 +1,11 @@
-import { FC } from "react";
+import { FC, type ReactNode } from "react";
 import type { WalletModalConnector } from "@/types";
 import { Link2Off, RotateCw } from "lucide-react";
-import { BrandMark } from "./internal/WalletUiContext";
 import { ImageWithFallback } from "./ImageWithFallback";
 import WalletIcon from "./WalletIcon";
 import { isMobile } from "@layerswap/utils";
 
-export const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalConnector, connectionError: string | undefined }> = ({ onRetry, selectedConnector, connectionError }) => {
+export const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalConnector, connectionError: string | undefined, brandMark?: ReactNode }> = ({ onRetry, selectedConnector, connectionError, brandMark }) => {
     const connectorIconSrc = selectedConnector.icon
     const isMobilePlatform = isMobile();
 
@@ -18,7 +17,7 @@ export const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: Wallet
                     <div className="flex flex-col gap-4 items-center">
                         <div className="flex items-center gap-2">
                             <div className="p-3 bg-secondary-700 rounded-lg">
-                                <BrandMark />
+                                {brandMark}
                             </div>
                             {
                                 connectionError ?

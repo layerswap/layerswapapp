@@ -1,13 +1,13 @@
+import { NetworkType, type Wallet } from '@layerswap/widget-types';
 import { ChevronDown, Plus, Unplug } from "lucide-react";
 import AddressIcon from "@/components/Common/AddressIcon";
 import WalletIconView from "@/components/Wallet/WalletIconView";
 import { SelectAccountProps, WalletConnectionProvider } from "@layerswap/ui-kit/types";
-import { Wallet } from "@layerswap/utils";
 import { FC, useCallback, useState } from "react";
 import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
 import { clsx } from 'clsx';
 import { useConnectModal } from "../WalletModal";
-import { Network, NetworkType, Token } from "@/Models/Network";
+import { Network, Token } from "@/Models/Network";
 import FilledCheck from "@/components/Icons/FilledCheck";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import { useSettingsState } from "@/context/settings";

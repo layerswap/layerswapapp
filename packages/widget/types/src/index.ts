@@ -6,3 +6,30 @@ export type {
   WalletDefaults,
   WalletProviderId,
 } from './config';
+export { NetworkType } from './network';
+export type { Refuel, AvailableSourceNetworkTypes } from './network';
+export { SwapStatus } from './SwapStatus';
+export type {
+  BaseErrorProps,
+  AlertUIEvent,
+  WidgetError,
+  APIError,
+  BalanceError,
+  GasFeeError,
+  WalletWithdrawalError,
+  GasMiscalculationError,
+  TransactionNotDetectedError,
+  ChainError,
+  TransferError,
+  WalletError,
+  ErrorEventType,
+  SwapStatusEvent,
+} from './logEvents';
+export type { InternalConnector, Wallet, WalletConnectConfig } from './wallet';
+export { ActionMessageType } from './actionMessage';
+export type {
+  MultiStepTransferState,
+  MultiStepTransferProvider,
+  MultiStepTransferParams,
+} from './multiStepTransfer';
+export { GasCalculation } from './GasCalculation';

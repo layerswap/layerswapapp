@@ -1,3 +1,4 @@
+import { type InternalConnector } from '@layerswap/widget-types';
 import { TransferProvider } from '@layerswap/utils';
 import { BalanceProvider } from '@layerswap/utils';
 import { GasProvider } from '@layerswap/utils';
@@ -8,7 +9,6 @@ import { ExtendedRouteProvider } from '@layerswap/utils';
 import { GaslessProvider } from '@layerswap/utils';
 import type { NetworkWithTokens } from '@layerswap/utils';
 import type { WalletConnectionProviderProps, WalletConnectionStore, MultiStepHandler } from './wallet';
-import type { InternalConnector } from '@layerswap/utils';
 
 export type WalletModalConnector = InternalConnector & {
     qr?: ({

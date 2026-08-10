@@ -1,8 +1,8 @@
 'use client'
+import { type Wallet } from '@layerswap/widget-types';
 import { Network, Token } from "@/Models/Network"
 import { resolverService } from "../resolvers/resolverService"
 import { GasWithToken } from "@/types/gas"
-import { Wallet } from "@layerswap/utils";
 import useSWR from "swr"
 
 const useSWRGas = (address: string | undefined | null, network: Network | undefined | null, token?: Token | null, amount?: number | string | null,  wallet?: Wallet ): { gasData: GasWithToken | undefined, isGasLoading: boolean, gasError: any } => {

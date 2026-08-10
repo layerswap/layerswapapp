@@ -1,4 +1,4 @@
-import { ActionMessageType } from "@layerswap/ui-kit/types";
+import { ActionMessageType } from '@layerswap/widget-types';
 import { FC } from "react"
 import WalletMessage, { WalletUnknownError } from "./Message"
 import { Address } from "@/lib/address/Address"
@@ -82,5 +82,3 @@ export const ActionMessages = {
     UnexpectedErrorMessage,
     DifferentAccountsNotAllowedError
 }
-
-export { ActionMessageType } from "@layerswap/ui-kit/types"

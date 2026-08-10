@@ -1,5 +1,5 @@
+import { type Wallet } from '@layerswap/widget-types';
 import { TransferProvider, TransferProps, TransferProgress } from "@/types"
-import { Wallet } from "@layerswap/utils";
 
 export class TransferResolver {
     private providers: TransferProvider[]

@@ -1,10 +1,10 @@
+import { type Wallet } from '@layerswap/widget-types';
 import { Context, createContext, useCallback, useContext, useMemo, useState } from 'react'
 import useWallet from '@/hooks/useWallet';
 import { Address } from '@/lib/address/Address';
 import { getKey, useBalanceStore } from '@/stores/balanceStore';
 import { useManualDestAddressesStore } from '@/stores/manualDestAddressesStore';
 import { WalletConnectionProvider } from "@layerswap/ui-kit/types";
-import { Wallet } from "@layerswap/utils";
 import { SwapDirection } from '@/exports';
 
 export type { ManualDestAddress } from '@/stores/manualDestAddressesStore';

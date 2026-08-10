@@ -1,5 +1,5 @@
+import { type InternalConnector, type Wallet } from '@layerswap/widget-types';
 import type { WalletConnectionProvider, WalletConnectionService } from "@layerswap/ui-kit/types";
-import type { InternalConnector, Wallet } from "@layerswap/utils";
 import { walletIconResolver, type AppNetworkAdapter } from "@layerswap/ui-kit";
 import type { Connector } from '@starknet-react/core'
 import { name as PROVIDER_NAME, id as PROVIDER_ID } from '../constants'

@@ -1,10 +1,49 @@
 {
   "extends": "../tsconfig.wallet.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist/esm",
+    "declarationDir": "dist/types"
+  },
   "include": [
     "src"
   ],
   "exclude": [
     "node_modules"
+  ],
+  "references": [
+    {
+      "path": "../bitcoin"
+    },
+    {
+      "path": "../evm"
+    },
+    {
+      "path": "../fuel"
+    },
+    {
+      "path": "../imtblPassport"
+    },
+    {
+      "path": "../paradex"
+    },
+    {
+      "path": "../starknet"
+    },
+    {
+      "path": "../svm"
+    },
+    {
+      "path": "../ton"
+    },
+    {
+      "path": "../tron"
+    },
+    {
+      "path": "../../ui-kit"
+    },
+    {
+      "path": "../../widget/types"
+    }
   ]
 }
-

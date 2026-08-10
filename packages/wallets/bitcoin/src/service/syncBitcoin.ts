@@ -1,3 +1,4 @@
+import { type InternalConnector } from '@layerswap/widget-types';
 import {
     type Config,
     getAccount,
@@ -6,7 +7,6 @@ import {
     watchConnectors,
 } from '@bigmi/client'
 import { getWallets } from '@wallet-standard/app'
-import type { InternalConnector } from "@layerswap/utils";
 import { snapshotFromBitcoinAccount, useBitcoinStore } from './bitcoinStore'
 import { connectorsConfigs } from './connectorsConfigs'
 

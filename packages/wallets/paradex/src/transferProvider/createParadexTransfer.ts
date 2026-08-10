@@ -6,11 +6,10 @@
 // `getEvmConfig()` singleton); do NOT make it a bundled dependency or the
 // signer would bind to a different, empty config. Keep usage limited to these
 // documented, package-root exports.
+import { ActionMessageType, type Wallet } from '@layerswap/widget-types';
 import { getEthersSigner, getEvmConfig } from '@layerswap/wallet-evm'
 import { KnownInternalNames } from "@layerswap/utils";
 import type { Network } from "@layerswap/utils"
-import type { Wallet } from "@layerswap/utils";
-import { ActionMessageType } from "@layerswap/ui-kit/types";
 import { type TransferProvider, type TransferProps } from "@layerswap/utils";
 import { getChainId, switchChain } from '@wagmi/core'
 import AuthorizeEthereum from '../Authorize/Ethereum'

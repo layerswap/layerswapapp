@@ -1,4 +1,5 @@
-import { Network, Token, NetworkType } from "@layerswap/utils"
+import { NetworkType } from '@layerswap/widget-types';
+import { Network, Token } from "@layerswap/utils"
 import { GasProvider, GasProps } from "@layerswap/utils";
 import { PublicClient, TransactionSerializedEIP1559, createPublicClient, encodeFunctionData, serializeTransaction, formatUnits, erc20Abi, parseGwei } from "viem";
 import { publicActionsL2 } from 'viem/op-stack'

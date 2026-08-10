@@ -1,3 +1,4 @@
+import { NetworkType } from '@layerswap/widget-types';
 import { FC, Suspense, useCallback, useEffect, useState } from "react";
 import { PublishedSwapTransactions, SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { WithdrawalProvider } from "@/context/withdrawalContext";
@@ -19,7 +20,6 @@ import RPCUnhealthyMessage from "./RPCUnhealthyMessage";
 import { isExtendedSourceNetwork } from "@/lib/extendedRoutes/registry";
 import { HyperliquidWalletWithdraw } from "../WithdrawalProviders/Hyperliquid";
 import { PolymarketWalletWithdraw } from "../WithdrawalProviders/Polymarket";
-import { NetworkType } from "@/Models/Network";
 
 type Props = {
     swapData: SwapBasicData

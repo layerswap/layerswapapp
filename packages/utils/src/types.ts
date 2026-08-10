@@ -1,3 +1,5 @@
+import { NetworkType, type Refuel } from '@layerswap/widget-types';
+
 export enum AddressSelectionMode {
     // Unambiguous — assign the type directly
     Auto = 'auto',
@@ -73,41 +75,10 @@ export class Metadata {
     watchdog_contract?: string | null;
 }
 
-export type Refuel = {
-    network: Network
-    token: Token,
-    amount: number,
-    amount_in_usd: number
-}
-
 export class NetworkRoute extends Network {
     tokens: NetworkRouteToken[]
 }
 
 export class NetworkRouteToken extends Token {
     refuel?: Refuel
-}
-
-export type AvailableSourceNetworkTypes = {
-    all: true
-    networks?: never
-} | {
-    all: false
-    networks: string[]
-}
-
-// Local copy of the network type values (mirrors Models/Network.ts in the widget).
-// Kept here so utils does not depend on @layerswap/widget.
-export enum NetworkType {
-    EVM = "evm",
-    Starknet = "starknet",
-    Solana = "solana",
-    Cosmos = "cosmos",
-    StarkEx = "starkex",
-    TON = 'ton',
-    Fuel = 'fuel',
-    Bitcoin = 'bitcoin',
-    Tron = 'tron',
-    Hyperliquid = 'hyperliquid',
-    Polymarket = 'polymarket'
 }

@@ -1,5 +1,5 @@
-import { NetworkType, Network } from "@layerswap/utils"
-import { ActionMessageType } from "@layerswap/ui-kit/types";
+import { NetworkType, ActionMessageType } from '@layerswap/widget-types';
+import { Network } from "@layerswap/utils"
 import { TransferProvider, TransferProps } from "@layerswap/utils";
 import type { Connection, Transaction } from "@solana/web3.js"
 import { configureAndSendCurrentTransaction } from "./transactionSender"

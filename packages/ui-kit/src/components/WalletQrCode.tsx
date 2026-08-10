@@ -1,11 +1,11 @@
-import { FC } from "react";
+import { FC, type RefObject } from "react";
 import type { WalletModalConnector } from "@/types";
 import StyledQRCode from "./StyledQRCode";
 import CopyButton from "./CopyButton";
 import { ImageWithFallback } from "./ImageWithFallback";
 import WalletIcon from "./WalletIcon";
 
-export const WalletQrCode: FC<{ selectedConnector: WalletModalConnector }> = ({ selectedConnector }) => {
+export const WalletQrCode: FC<{ selectedConnector: WalletModalConnector, portalContainerRef: RefObject<HTMLDivElement | null> }> = ({ selectedConnector, portalContainerRef }) => {
     const connectorIconSrc = selectedConnector.icon
 
     const ConnectorImg = ({ className, size }: { className?: string, size: number }) =>
@@ -45,7 +45,7 @@ export const WalletQrCode: FC<{ selectedConnector: WalletModalConnector }> = ({ 
         </div>
         <div className="w-full flex flex-col gap-2">
             <div className='bg-secondary-300 hover:bg-secondary-400 text-secondary-text w-full px-3 py-3 rounded-xl flex justify-center items-center text-sm font-medium transition duration-200 ease-in-out cursor-pointer'>
-                <CopyButton disabled={!selectedConnector?.qr?.value} toCopy={selectedConnector?.qr?.deepLink || selectedConnector?.qr?.value || ''}>Copy link</CopyButton>
+                <CopyButton portalContainerRef={portalContainerRef} disabled={!selectedConnector?.qr?.value} toCopy={selectedConnector?.qr?.deepLink || selectedConnector?.qr?.value || ''}>Copy link</CopyButton>
             </div>
         </div>
     </div>

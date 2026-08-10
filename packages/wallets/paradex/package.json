@@ -41,6 +41,7 @@
     "@layerswap/wallet-starknet": "workspace:^",
     "@layerswap/ui-kit": "workspace:^",
     "@layerswap/utils": "workspace:^",
+    "@layerswap/widget-types": "workspace:^",
     "@wagmi/core": "catalog:",
     "zustand": "catalog:"
   },
@@ -54,6 +55,7 @@
     "@layerswap/wallet-starknet": "workspace:^",
     "@layerswap/ui-kit": "workspace:^",
     "@layerswap/utils": "workspace:^",
+    "@layerswap/widget-types": "workspace:^",
     "zustand": "catalog:"
   },
   "engines": {

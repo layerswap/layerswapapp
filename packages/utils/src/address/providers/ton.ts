@@ -1,5 +1,6 @@
+import { NetworkType } from '@layerswap/widget-types';
 import KnownInternalNames from "@/knownIds";
-import { NetworkType, AddressSelectionMode, AddressUtilsProvider, AddressUtilsProviderProps, Network } from "@/types";
+import { AddressSelectionMode, AddressUtilsProvider, AddressUtilsProviderProps, Network } from "@/types";
 
 export const name = 'Ton';
 

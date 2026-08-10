@@ -1,7 +1,7 @@
 "use client";
+import { type InternalConnector } from '@layerswap/widget-types';
 import { useMemo, useRef } from "react";
 import { WalletConnectionProvider } from "@/types/wallet";
-import { InternalConnector } from "@layerswap/utils";
 import { WalletModalConnector } from "@/types/provider";
 import { removeDuplicatesWithKey } from "@/removeDuplicatesWithKey";
 import { walletKey } from "@/walletKey";

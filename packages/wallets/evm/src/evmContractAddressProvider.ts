@@ -1,6 +1,6 @@
+import { NetworkType } from '@layerswap/widget-types';
 import type { Network } from "@layerswap/utils"
 import type { ContractAddressCheckerProvider } from "@layerswap/utils";
-import { NetworkType } from "@layerswap/utils"
 import resolveChain from "./evmUtils/resolveChain";
 import { createPublicClient } from "viem";
 import { resolveFallbackTransport } from "./evmUtils/resolveTransports";

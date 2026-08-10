@@ -10,8 +10,8 @@
     "rootDir": "src",
     "declaration": true,
     "noEmit": false,
-    "declarationDir": "dist",
-    "outDir": "dist",
+    "declarationDir": "dist/types",
+    "outDir": "dist/esm",
     "esModuleInterop": true,
     "paths": {
       "@/*": [
@@ -25,5 +25,16 @@
   ],
   "exclude": [
     "node_modules"
+  ],
+  "references": [
+    {
+      "path": "../../ui-kit"
+    },
+    {
+      "path": "../../utils"
+    },
+    {
+      "path": "../types"
+    }
   ]
 }

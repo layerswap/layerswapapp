@@ -1,3 +1,4 @@
+import { type Wallet } from '@layerswap/widget-types';
 import { useMemo } from "react";
 import useFormRoutes from "@/hooks/useFormRoutes";
 import useWallet from "@/hooks/useWallet";
@@ -7,7 +8,6 @@ import { depositMethodForFunding } from "@/lib/extendedRoutes/types";
 import { getKey, useBalanceStore } from "@/stores/balanceStore";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
-import { Wallet } from "@layerswap/utils";
 import { useDepositSelection } from "../depositSelectionContext";
 import { useDepositSettings } from "@/context/depositSettings";
 import { DepositMethodId } from "../depositMethods";

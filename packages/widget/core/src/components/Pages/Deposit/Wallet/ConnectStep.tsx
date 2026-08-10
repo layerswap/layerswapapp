@@ -1,7 +1,7 @@
+import { type Wallet } from '@layerswap/widget-types';
 import { FC, useCallback, useEffect } from "react";
 import { ConnectorsList } from "@layerswap/ui-kit/components";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
-import { Wallet } from "@layerswap/utils";
 import { useDepositStep } from "../depositStepContext";
 import { useDepositSelection } from "../depositSelectionContext";
 import { useSelectSwapAccount } from "@/context/swapAccounts";
@@ -70,7 +70,7 @@ const ConnectStep: FC = () => {
             <ConnectorsList
                 providers={providers}
                 onFinish={handleFinish}
-                theme={AppSettings.ThemeData}
+                enablePortal={AppSettings.ThemeData?.enablePortal}
                 brandMark={<LayerSwapLogoSmall className="w-11 h-auto" />}
             />
         </div>

@@ -2,8 +2,7 @@ export { default as KnownInternalNames } from "@/knownIds";
 
 export type { AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
 export { Network, NetworkWithTokens, Token, Metadata, NetworkRoute, NetworkRouteToken } from "@/types";
-export type { Refuel } from "@/types";
-export { NetworkType, AddressSelectionMode } from "@/types";
+export { AddressSelectionMode } from "@/types";
 
 export { AddressUtilsResolver } from "@/address/addressUtilsResolver";
 
@@ -38,31 +37,12 @@ export { fetchWithTimeout } from "@/fetchWithTimeout";
 export { JsonRpcClient } from "@/jsonRpcClient";
 export type { JsonRpcRequest, JsonRpcError, JsonRpcResponse } from "@/jsonRpcClient";
 export { insertIfNotExists } from "@/insertIfNotExists";
-export { default as NetworkSettings, GasCalculation } from "@/NetworkSettings";
+export { default as NetworkSettings } from "@/NetworkSettings";
 export { default as AppSettings } from "@/AppSettings";
-export type { AvailableSourceNetworkTypes } from "@/types";
 export { ErrorHandler, setErrorLogger } from "@/errorHandler";
-export { SwapStatus } from "@/SwapStatus";
-export type {
-    BaseErrorProps,
-    AlertUIEvent,
-    WidgetError,
-    APIError,
-    BalanceError,
-    GasFeeError,
-    WalletWithdrawalError,
-    GasMiscalculationError,
-    TransactionNotDetectedError,
-    ChainError,
-    TransferError,
-    WalletError,
-    ErrorEventType,
-    SwapStatusEvent,
-} from "@/logEvents";
 export { realDepositAddressRoutePresent, realRoutePresent } from "@/extendedRouteAvailability";
 export type { DepositRouteRef } from "@/extendedRouteAvailability";
 
-export type { InternalConnector, Wallet } from "@/resolvers/walletModels";
 export type { GasProps, TokenBalanceError, TokenBalance, NetworkBalance } from "@/resolvers/balanceModels";
 export { BalanceProvider } from "@/resolvers/balance";
 export type { GasProvider, GasWithToken } from "@/resolvers/gas";

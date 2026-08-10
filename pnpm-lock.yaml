@@ -170,6 +170,9 @@ importers:
       '@layerswap/widget':
         specifier: workspace:^
         version: link:../../packages/widget/core
+      '@layerswap/widget-types':
+        specifier: workspace:^
+        version: link:../../packages/widget/types
       '@posthog/react':
         specifier: 1.4.0
         version: 1.4.0(@types/react@19.2.3)(posthog-js@1.390.2)(react@19.2.3)
@@ -616,6 +619,9 @@ importers:
       '@layerswap/utils':
         specifier: workspace:^
         version: link:../utils
+      '@layerswap/widget-types':
+        specifier: workspace:^
+        version: link:../widget/types
       '@radix-ui/react-checkbox':
         specifier: ^1.1.5
         version: 1.3.3(@types/react-dom@19.2.3(@types/react@19.2.3))(@types/react@19.2.3)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -641,33 +647,15 @@ importers:
         specifier: 4.1.0
         version: 4.1.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
     devDependencies:
-      '@tailwindcss/postcss':
-        specifier: ^4.0.15
-        version: 4.0.15
       '@types/react':
         specifier: 'catalog:'
         version: 19.2.3
-      postcss:
-        specifier: '>=8.5.18 <9'
-        version: 8.5.24
-      postcss-cli:
-        specifier: ^11.0.1
-        version: 11.0.1(jiti@2.6.1)(postcss@8.5.24)
-      postcss-prefixwrap:
-        specifier: ^1.55.0
-        version: 1.57.2(postcss@8.5.24)
       react:
         specifier: 'catalog:'
         version: 19.2.3
       rimraf:
         specifier: ^5.0.0
         version: 5.0.10
-      tailwindcss:
-        specifier: ^4.0.15
-        version: 4.0.15
-      tailwindcss-animate:
-        specifier: ^1.0.5
-        version: 1.0.7(tailwindcss@4.0.15)
       tsc-alias:
         specifier: ^1.8.16
         version: 1.8.16
@@ -776,6 +764,9 @@ importers:
       '@layerswap/utils':
         specifier: workspace:^
         version: link:../../utils
+      '@layerswap/widget-types':
+        specifier: workspace:^
+        version: link:../../widget/types
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(react@19.2.3)
@@ -801,6 +792,9 @@ importers:
       '@layerswap/utils':
         specifier: workspace:^
         version: link:../../utils
+      '@layerswap/widget-types':
+        specifier: workspace:^
+        version: link:../../widget/types
       '@tailwindcss/postcss':
         specifier: ^4.0.15
         version: 4.0.15
@@ -835,6 +829,9 @@ importers:
       '@layerswap/utils':
         specifier: workspace:^
         version: link:../../utils
+      '@layerswap/widget-types':
+        specifier: workspace:^
+        version: link:../../widget/types
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(react@19.2.3)
@@ -873,6 +870,9 @@ importers:
       '@layerswap/utils':
         specifier: workspace:^
         version: link:../../utils
+      '@layerswap/widget-types':
+        specifier: workspace:^
+        version: link:../../widget/types
       '@layerswap/wallet-evm':
         specifier: workspace:^
         version: link:../evm
@@ -913,6 +913,9 @@ importers:
       '@layerswap/utils':
         specifier: workspace:^
         version: link:../../utils
+      '@layerswap/widget-types':
+        specifier: workspace:^
+        version: link:../../widget/types
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(react@19.2.3)
@@ -959,6 +962,9 @@ importers:
       '@layerswap/utils':
         specifier: workspace:^
         version: link:../../utils
+      '@layerswap/widget-types':
+        specifier: workspace:^
+        version: link:../../widget/types
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(react@19.2.3)
@@ -984,6 +990,9 @@ importers:
       '@layerswap/utils':
         specifier: workspace:^
         version: link:../../utils
+      '@layerswap/widget-types':
+        specifier: workspace:^
+        version: link:../../widget/types
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(react@19.2.3)
@@ -1021,6 +1030,9 @@ importers:
       '@layerswap/utils':
         specifier: workspace:^
         version: link:../../utils
+      '@layerswap/widget-types':
+        specifier: workspace:^
+        version: link:../../widget/types
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(react@19.2.3)

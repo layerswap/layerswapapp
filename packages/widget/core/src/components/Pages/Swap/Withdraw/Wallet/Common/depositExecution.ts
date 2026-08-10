@@ -1,3 +1,4 @@
+import { type Wallet } from '@layerswap/widget-types';
 import LayerSwapApiClient, {
     BackendTransactionStatus,
     DepositAction,
@@ -7,7 +8,6 @@ import LayerSwapApiClient, {
 } from "@/lib/apiClients/layerSwapApiClient";
 import { useGaslessAuthorizationStore } from "@/stores/swapTransactionStore";
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
-import type { Wallet } from "@layerswap/utils";
 import { isUserRejection } from "./isUserRejection";
 import { TransferProps } from "@/types/transfer";
 import { ErrorHandler } from "@/lib/ErrorHandler";

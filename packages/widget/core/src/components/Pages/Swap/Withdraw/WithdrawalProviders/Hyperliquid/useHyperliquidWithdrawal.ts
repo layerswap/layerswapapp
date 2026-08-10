@@ -1,3 +1,4 @@
+import { ActionMessageType } from '@layerswap/widget-types';
 import { useCallback, useEffect, useRef, useState } from "react";
 import { WithdrawPageProps } from "../../Wallet/Common/sharedTypes";
 import { StepError } from "./resolveError";
@@ -7,7 +8,7 @@ import { useSelectedAccount } from "@/context/swapAccounts";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
 import useWallet from "@/hooks/useWallet";
 import { useTransfer } from "@/hooks/useTransfer";
-import { ActionMessageType, TransferProgress } from "@/types";
+import { TransferProgress } from "@/types";
 import { NetworkRoute } from "@/Models/Network";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { BackendTransactionStatus, DepositAction } from "@/lib/apiClients/layerSwapApiClient";

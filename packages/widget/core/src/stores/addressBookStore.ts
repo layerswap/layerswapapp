@@ -1,9 +1,9 @@
+import { NetworkType } from '@layerswap/widget-types';
 import { useCallback } from 'react'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import { Address } from '@/lib/address/Address'
 import { addressFormat } from '@layerswap/utils'
-import { NetworkType } from '@/Models/Network'
 import { AddressSelectionMode, classifyAddress } from '@layerswap/utils'
 import KnownInternalNames from '@/lib/knownIds'
 import AppSettings from '@/lib/AppSettings'

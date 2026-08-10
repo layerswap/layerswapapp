@@ -1,21 +1,21 @@
-import { FC } from "react";
+import { FC, type ReactNode } from "react";
 import type { WalletModalConnector } from "@/types";
 import { Download, ScanLine } from "lucide-react";
-import { BrandMark } from "./internal/WalletUiContext";
 import { ImageWithFallback } from "./ImageWithFallback";
 import WalletIcon from "./WalletIcon";
 
 export const InstalledExtensionNotFound: FC<{
     selectedConnector: WalletModalConnector | undefined,
     onConnect: (connector: WalletModalConnector) => void
-}> = ({ selectedConnector, onConnect }) => {
+    brandMark?: ReactNode
+}> = ({ selectedConnector, onConnect, brandMark }) => {
     const connectorIconSrc = selectedConnector?.icon
     return <div className='w-full h-full flex flex-col justify-between'>
         <div className="flex grow items-center justify-center">
             <div className="flex-col flex items-center gap-4">
                 <div className="flex items-center gap-2">
                     <div className="p-3 bg-secondary-700 rounded-lg">
-                        <BrandMark />
+                        {brandMark}
                     </div>
                     <div className="w-8 border-t border-dashed border-secondary-400" />
                     <div className="p-3 bg-secondary-700 rounded-lg">

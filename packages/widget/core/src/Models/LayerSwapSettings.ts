@@ -9,5 +9,3 @@ export class LayerSwapSettings {
     destinationRoutes?: NetworkRoute[];
     featureFlags?: ExtendedRouteFlags;
 }
-
-export type { AvailableSourceNetworkTypes } from "@layerswap/utils";

@@ -1,4 +1,5 @@
-import { AvailableSourceNetworkTypes, LayerSwapSettings } from "@/Models";
+import { type AvailableSourceNetworkTypes } from '@layerswap/widget-types';
+import { LayerSwapSettings } from "@/Models";
 import { WalletConnectionProvider } from "@layerswap/ui-kit/types"
 
 

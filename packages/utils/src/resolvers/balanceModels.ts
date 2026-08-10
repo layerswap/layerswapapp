@@ -1,5 +1,5 @@
+import { type Wallet } from '@layerswap/widget-types';
 import { Network, Token } from "@/types"
-import { Wallet } from "./walletModels"
 import { NodeErrorCategory } from "./nodeErrorClassifier"
 
 export type GasProps = {

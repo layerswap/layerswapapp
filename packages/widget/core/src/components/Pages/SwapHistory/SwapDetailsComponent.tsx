@@ -1,3 +1,4 @@
+import { SwapStatus } from '@layerswap/widget-types';
 import { FC, useState } from 'react'
 import { SwapResponse, TransactionType } from '@/lib/apiClients/layerSwapApiClient';
 import { CopyButton } from "@layerswap/ui-kit/components";
@@ -6,7 +7,6 @@ import { ExternalLink } from 'lucide-react';
 import isGuid from '@/components/utils/isGuid';
 import KnownInternalNames from '@/lib/knownIds';
 import { useInitialSettings } from '@/context/settings';
-import { SwapStatus } from '@/Models/SwapStatus';
 import { getDateDifferenceString } from '@/components/utils/dateDifference';
 import { useSwapDataUpdate } from '@/context/swap';
 import { useSettingsState } from '@/context/settings';

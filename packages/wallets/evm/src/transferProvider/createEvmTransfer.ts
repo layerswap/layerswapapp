@@ -1,4 +1,4 @@
-import { NetworkType } from "@layerswap/utils"
+import { NetworkType } from '@layerswap/widget-types';
 import type { TransferProvider } from "@layerswap/utils";
 import { getEvmConfig } from '../service/getEvmConfig'
 import { createEVMTransferProvider } from './createEVMTransferProvider'

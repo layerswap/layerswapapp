@@ -1,3 +1,4 @@
+import { type Wallet } from '@layerswap/widget-types';
 import { useFormikContext } from "formik";
 import { Dispatch, FC, SetStateAction, useCallback, useState } from "react";
 import useWallet from "@/hooks/useWallet";
@@ -5,7 +6,6 @@ import { useProvidersConnectReady } from "@layerswap/ui-kit";
 import { ChevronDown, CircleHelp, QrCode } from "lucide-react";
 import VaulDrawer, { ModalFooterPortal } from "@/components/Modal/vaulModal";
 import { SelectAccountProps } from "@layerswap/ui-kit/types";
-import { Wallet } from "@layerswap/utils";
 import { WalletIcon } from "@layerswap/ui-kit/components";
 import WalletIconView from "@/components/Wallet/WalletIconView";
 import SubmitButton from "@/components/Buttons/submitButton";
