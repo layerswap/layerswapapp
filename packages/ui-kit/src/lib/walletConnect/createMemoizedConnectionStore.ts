@@ -1,5 +1,5 @@
 import { createStore } from 'zustand/vanilla'
-import type { NetworkWithTokens } from '@layerswap/utils'
+import type { NetworkWithTokens } from '@layerswap/widget-types';
 import type { WalletConnectionProvider, WalletConnectionProviderProps, WalletConnectionStore, } from '@/types/wallet'
 
 export type MemoizedConnectionStoreConfig<Inputs extends Record<string, unknown>, Network = NetworkWithTokens> = {

@@ -11,7 +11,7 @@ import ErrorDismissButton from "@/components/Pages/Swap/Form/SecondaryComponents
 import FailIcon from "@/components/Icons/FailIcon";
 import WalletMessage from "../../messages/Message";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
-import { Network, NetworkRoute } from "@/Models/Network";
+import { Network, NetworkRoute } from "@layerswap/widget-types";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
@@ -22,7 +22,7 @@ import { useWalletWithdrawalState } from "@/context/withdrawalContext";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import { SwapFormValues } from "../../../Form/SwapFormValues";
 import { ErrorHandler } from "@/lib/ErrorHandler";
-import { TokenBalance, TransferProps } from "@/types"
+import { TokenBalance, TransferProps } from "@layerswap/widget-types";
 import { resolvePriceImpactValues } from "@/lib/fees";
 import InfoIcon from "@/components/Icons/InfoIcon";
 import { useBalance } from "@/lib/balances/useBalance";

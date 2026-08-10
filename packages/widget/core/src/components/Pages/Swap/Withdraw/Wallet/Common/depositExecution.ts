@@ -9,7 +9,7 @@ import LayerSwapApiClient, {
 import { useGaslessAuthorizationStore } from "@/stores/swapTransactionStore";
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
 import { isUserRejection } from "./isUserRejection";
-import { TransferProps } from "@/types/transfer";
+import { TransferProps } from "@layerswap/widget-types";
 import { ErrorHandler } from "@/lib/ErrorHandler";
 
 export type WalletTransfer = (props: TransferProps) => Promise<string | undefined>

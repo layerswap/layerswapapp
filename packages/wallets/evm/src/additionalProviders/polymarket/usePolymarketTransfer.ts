@@ -1,5 +1,6 @@
-import { Network, KnownInternalNames } from "@layerswap/utils"
-import { TransferProvider } from "@layerswap/utils";
+import { KnownInternalNames } from "@layerswap/utils";
+import { Network } from "@layerswap/widget-types";
+import { TransferProvider } from "@layerswap/widget-types";
 import { useConfig } from "wagmi"
 import { createPolymarketTransferProvider } from "./createPolymarketTransferProvider"
 

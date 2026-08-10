@@ -1,5 +1,5 @@
 import { GasProps } from "./balanceModels"
-import { Network, Token } from "@/types"
+import { Network, Token } from "../types"
 
 export interface GasProvider {
     supportsNetwork(network: Network): boolean,

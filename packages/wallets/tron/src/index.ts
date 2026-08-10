@@ -1,7 +1,8 @@
 import type { WalletConnectionStore, WalletConnectionProviderProps } from "@layerswap/ui-kit/types"
 import type { WalletProvider, WalletInitContext, BaseWalletProviderConfig } from "@layerswap/ui-kit/types"
-import { LazyBalanceProvider } from "@layerswap/utils";
-import { KnownInternalNames, type NetworkWithTokens } from "@layerswap/utils";
+import { LazyBalanceProvider } from "@layerswap/widget-types";
+import { KnownInternalNames } from "@layerswap/utils";
+import { type NetworkWithTokens } from "@layerswap/widget-types";
 import { TronGasProvider } from "./tronGasProvider"
 import { createTronTransfer } from "./transferProvider/createTronTransfer"
 import { createTronConnection } from "./service/createTronConnection"

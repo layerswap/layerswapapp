@@ -5,7 +5,7 @@ import { SelectAccountProps } from "@layerswap/ui-kit/types";
 import VaulDrawer from "@/components/Modal/vaulModal";
 import { ChevronDown, Plus } from "lucide-react";
 import { WalletItem } from "@/components/Wallet/WalletComponents/WalletsList";
-import { Network, NetworkRoute, Token } from "@/Models/Network";
+import { Network, NetworkRoute, Token } from "@layerswap/widget-types";
 import { WalletIcon } from "@layerswap/ui-kit/components";
 import WalletIconView from "@/components/Wallet/WalletIconView";
 import ConnectButton from "@/components/Buttons/connectButton";

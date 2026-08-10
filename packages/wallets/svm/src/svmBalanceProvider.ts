@@ -1,5 +1,6 @@
 import { NetworkType } from '@layerswap/widget-types';
-import { BalanceProvider, insertIfNotExists, fetchWithTimeout, formatUnits } from "@layerswap/utils";
+import { fetchWithTimeout, formatUnits } from "@layerswap/utils";
+import { BalanceProvider, insertIfNotExists } from "@layerswap/widget-types";
 
 export class SolanaBalanceProvider extends BalanceProvider {
     supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {

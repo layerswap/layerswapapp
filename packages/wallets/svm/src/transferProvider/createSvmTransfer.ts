@@ -1,6 +1,6 @@
 import { NetworkType, ActionMessageType } from '@layerswap/widget-types';
-import { Network } from "@layerswap/utils"
-import { TransferProvider, TransferProps } from "@layerswap/utils";
+import { Network } from "@layerswap/widget-types";
+import { TransferProvider, TransferProps } from "@layerswap/widget-types";
 import type { Connection, Transaction } from "@solana/web3.js"
 import { configureAndSendCurrentTransaction } from "./transactionSender"
 import { svmAdapterManager } from "../service/svmAdapterManager"

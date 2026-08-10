@@ -1,7 +1,7 @@
 import { ActionMessageType, type Wallet } from '@layerswap/widget-types';
 import { KnownInternalNames } from "@layerswap/utils";
-import { Network } from "@layerswap/utils"
-import { TransferProvider, TransferProps } from "@layerswap/utils";
+import { Network } from "@layerswap/widget-types";
+import { TransferProvider, TransferProps } from "@layerswap/widget-types";
 
 const supportedNetworks = [
     KnownInternalNames.Networks.StarkNetMainnet,

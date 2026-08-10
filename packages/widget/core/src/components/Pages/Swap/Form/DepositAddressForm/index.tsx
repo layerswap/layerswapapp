@@ -29,7 +29,7 @@ import { useConnectModal } from "@/components/Wallet/WalletModal";
 // page's entry chunks.
 const Processing = lazy(() => import(/* webpackChunkName: "swap-processing" */ "../../Withdraw/Processing"))
 import ValidationError from "../SecondaryComponents/validationError";
-import { NetworkRoute, NetworkRouteToken } from "@/Models";
+import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 
 type Props = {
     partner?: Partner;

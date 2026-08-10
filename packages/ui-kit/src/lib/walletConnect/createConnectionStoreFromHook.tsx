@@ -1,7 +1,7 @@
 'use client'
 import { useLayoutEffect, type FC } from 'react'
 import { createStore } from 'zustand/vanilla'
-import type { NetworkWithTokens } from '@layerswap/utils'
+import type { NetworkWithTokens } from '@layerswap/widget-types';
 import type { WalletConnectionProvider, WalletConnectionProviderProps, WalletConnectionStore, } from '@/types/wallet'
 
 /**

@@ -7,4 +7,3 @@ export { getSettings, useSettings } from '../helpers/getSettings';
 export { compactSettings, encodeSettingsForSSR, inflateSettings } from '../helpers/settingsCompression';
 export { WidgetLoading } from '../components/WidgetLoading';
 export { DepositLoading } from '../components/Pages/Deposit/DepositLoading';
-export { NetworkWithTokens } from '../Models/Network';

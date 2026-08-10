@@ -7,7 +7,7 @@ import { FC, useCallback, useState } from "react";
 import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
 import { clsx } from 'clsx';
 import { useConnectModal } from "../WalletModal";
-import { Network, Token } from "@/Models/Network";
+import { Network, Token } from "@layerswap/widget-types";
 import FilledCheck from "@/components/Icons/FilledCheck";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import { useSettingsState } from "@/context/settings";

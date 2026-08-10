@@ -1,5 +1,5 @@
-import { TokenBalance } from "@/Models/Balance"
-import { Token } from "@/Models/Network"
+import { TokenBalance } from "@layerswap/widget-types";
+import { Token } from "@layerswap/widget-types";
 
 
 type ResoleMaxAllowedAmountProps = {

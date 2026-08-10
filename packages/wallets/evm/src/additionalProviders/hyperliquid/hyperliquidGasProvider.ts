@@ -1,7 +1,7 @@
 import { NetworkType } from '@layerswap/widget-types';
 import { HYPERLIQUID_USDC_SYMBOL, HYPERLIQUID_WITHDRAW_HEADROOM } from "./constants";
-import { Network } from "@layerswap/utils"
-import { GasProps, GasProvider, GasWithToken } from "@layerswap/utils";
+import { Network } from "@layerswap/widget-types";
+import { GasProps, GasProvider, GasWithToken } from "@layerswap/widget-types";
 
 /**
  * Headroom HL reserves for the `sendToEvmWithData` HyperCore-side processing, in

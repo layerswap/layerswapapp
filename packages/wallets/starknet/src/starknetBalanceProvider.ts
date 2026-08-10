@@ -1,7 +1,8 @@
 import { NetworkType } from '@layerswap/widget-types';
 import Erc20Abi from './jsons/ERC20.json'
-import { insertIfNotExists, formatUnits } from "@layerswap/utils";
-import { BalanceProvider, TokenBalance } from "@layerswap/utils";
+import { formatUnits } from "@layerswap/utils";
+import { insertIfNotExists } from "@layerswap/widget-types";
+import { BalanceProvider, TokenBalance } from "@layerswap/widget-types";
 
 export class StarknetBalanceProvider extends BalanceProvider {
     supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {

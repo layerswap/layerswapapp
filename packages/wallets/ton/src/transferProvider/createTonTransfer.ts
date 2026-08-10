@@ -1,6 +1,6 @@
 import { ActionMessageType, type Wallet } from '@layerswap/widget-types';
-import { Network } from "@layerswap/utils"
-import { TransferProvider, TransferProps } from "@layerswap/utils";
+import { Network } from "@layerswap/widget-types";
+import { TransferProvider, TransferProps } from "@layerswap/widget-types";
 import { isMobile } from "@layerswap/utils"
 import { isWalletInfoRemote } from "@tonconnect/sdk"
 import { transactionBuilder } from "./transactionBuilder"

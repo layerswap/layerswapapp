@@ -1,8 +1,8 @@
 import { NetworkType, type WalletConnectConfig } from '@layerswap/widget-types';
 import type { WalletConnectionStore, WalletConnectionProviderProps } from "@layerswap/ui-kit/types"
 import type { WalletProvider, WalletInitContext, BaseWalletProviderConfig } from "@layerswap/ui-kit/types"
-import { type NetworkWithTokens } from "@layerswap/utils"
-import { LazyGasProvider } from "@layerswap/utils";
+import { type NetworkWithTokens } from "@layerswap/widget-types";
+import { LazyGasProvider } from "@layerswap/widget-types";
 import { SolanaBalanceProvider } from "./svmBalanceProvider"
 import { createSvmTransfer } from "./transferProvider/createSvmTransfer"
 import { createSvmConnection } from "./service/createSvmConnection"

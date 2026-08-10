@@ -1,7 +1,7 @@
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 import { useFormikContext } from "formik";
 import { ChevronDown, Plus, Wallet } from "lucide-react";
-import { Network, NetworkRoute, NetworkRouteToken, Token } from "@/Models/Network";
+import { Network, NetworkRoute, NetworkRouteToken, Token } from "@layerswap/widget-types";
 import useWallet from "@/hooks/useWallet";
 import { useProvidersConnectReady } from "@layerswap/ui-kit";
 import { useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts";

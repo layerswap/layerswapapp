@@ -1,4 +1,4 @@
-import { type ErrorEventType } from '@layerswap/widget-types';
+import { type ErrorEventType } from './logEvents';
 
 type ErrorLogger = (event: ErrorEventType) => void;
 

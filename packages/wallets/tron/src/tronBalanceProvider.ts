@@ -1,6 +1,7 @@
-import { KnownInternalNames, insertIfNotExists, formatUnits } from "@layerswap/utils";
-import { Network, Token } from "@layerswap/utils"
-import { BalanceProvider, TokenBalance } from "@layerswap/utils";
+import { KnownInternalNames, formatUnits } from "@layerswap/utils";
+import { insertIfNotExists } from "@layerswap/widget-types";
+import { Network, Token } from "@layerswap/widget-types";
+import { BalanceProvider, TokenBalance } from "@layerswap/widget-types";
 import { TronWeb } from 'tronweb'
 
 export class TronBalanceProvider extends BalanceProvider {

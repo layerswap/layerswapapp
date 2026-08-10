@@ -6,7 +6,7 @@ import { createBitcoinTransfer } from "./transferProvider/createBitcoinTransfer"
 import { createBitcoinConnection } from "./service/createBitcoinConnection"
 import { initBitcoinProvider } from "./init"
 import { id } from "./constants"
-import type { NetworkWithTokens } from "@layerswap/utils"
+import type { NetworkWithTokens } from "@layerswap/widget-types";
 
 export type BitcoinProviderConfig<Network = NetworkWithTokens> = BaseWalletProviderConfig<Network>
 

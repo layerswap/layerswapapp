@@ -1,7 +1,7 @@
 import { flag } from 'flags/next'
 import { vercelAdapter } from '@flags-sdk/vercel'
 import type { GetServerSidePropsContext } from 'next'
-import type { ExtendedRouteFlags } from '@layerswap/widget/types'
+import type { ExtendedRouteFlags } from '@layerswap/widget-types'
 
 // Kill switches for the client-synthesized extended source routes, backed by Vercel
 // Flags (hosted). Create these two flags in the Vercel dashboard's Flags section and

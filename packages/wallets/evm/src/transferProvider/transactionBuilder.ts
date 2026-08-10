@@ -1,4 +1,4 @@
-import { TransferProps } from "@layerswap/utils";
+import { TransferProps } from "@layerswap/widget-types";
 import { parseEther } from "viem"
 import { EVMGasProvider } from "../gasProviders"
 

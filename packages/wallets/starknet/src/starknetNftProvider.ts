@@ -1,6 +1,6 @@
 import { Contract, RpcProvider } from "starknet";
-import { Network } from "@layerswap/utils"
-import { NftBalanceProps, NftProvider } from "@layerswap/utils";
+import { Network } from "@layerswap/widget-types";
+import { NftBalanceProps, NftProvider } from "@layerswap/widget-types";
 import { KnownInternalNames } from "@layerswap/utils";
 
 const NFT_ABI = [

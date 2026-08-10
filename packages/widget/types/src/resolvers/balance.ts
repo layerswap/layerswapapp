@@ -1,6 +1,6 @@
 import { TokenBalance } from "./balanceModels";
-import { Network, NetworkWithTokens, Token } from "@/types";
-import { ErrorHandler } from "@/errorHandler";
+import { Network, NetworkWithTokens, Token } from "../types";
+import { ErrorHandler } from "../errorHandler";
 import { extractErrorDetails } from "./errorUtils";
 import { classifyNodeError } from "./nodeErrorClassifier";
 

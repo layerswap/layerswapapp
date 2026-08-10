@@ -9,7 +9,7 @@ import { useSlippageStore } from '@/stores/slippageStore'
 import { sleep } from '@layerswap/utils';
 import { useSettingsState } from '@/context/settings'
 import { resolveExtendedRoutePlan } from '@/lib/extendedRoutes/registry'
-import { usesDepository } from '@/lib/extendedRoutes/types'
+import { usesDepository } from '@layerswap/widget-types';
 import { transformLimitsForExtendedRoute, transformQuoteForExtendedRoute } from '@/lib/extendedRoutes/transforms'
 import { isPositiveDecimal } from '@/lib/extendedRoutes/amounts'
 import { LayerswapApiClient } from '@/lib/apiClients';

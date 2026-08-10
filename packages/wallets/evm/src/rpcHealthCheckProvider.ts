@@ -1,6 +1,6 @@
 import { NetworkType } from '@layerswap/widget-types';
-import type { Network } from "@layerswap/utils"
-import type { AddEthereumChainParams, RpcHealth, RpcHealthCheckProvider, RpcHealthCheckSnapshot, RpcHealthCheckStore, SuggestRpcResult } from "@layerswap/utils";
+import type { Network } from "@layerswap/widget-types";
+import type { AddEthereumChainParams, RpcHealth, RpcHealthCheckProvider, RpcHealthCheckSnapshot, RpcHealthCheckStore, SuggestRpcResult } from "@layerswap/widget-types";
 import { useEvmStore } from './service/evmStore'
 
 // wagmi's `Connector.getProvider()` returns `Promise<unknown>` (the base

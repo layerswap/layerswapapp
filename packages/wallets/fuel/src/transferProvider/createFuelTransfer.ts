@@ -1,6 +1,6 @@
 import { ActionMessageType } from '@layerswap/widget-types';
-import { Network } from "@layerswap/utils"
-import { TransferProvider, TransferProps } from "@layerswap/utils";
+import { Network } from "@layerswap/widget-types";
+import { TransferProvider, TransferProps } from "@layerswap/widget-types";
 import { Provider } from '@fuel-ts/account'
 import { transactionBuilder } from "./transactionBuilder"
 import { KnownInternalNames } from "@layerswap/utils";

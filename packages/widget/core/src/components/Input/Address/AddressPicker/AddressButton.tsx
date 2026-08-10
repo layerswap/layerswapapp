@@ -3,7 +3,7 @@ import { FC } from "react"
 import type { JSX } from 'react';
 import { AddressItem } from ".";
 import { Partner } from "@/Models/Partner";
-import { Network } from "@/Models/Network";
+import { Network } from "@layerswap/widget-types";
 
 type AddressButtonProps = {
     openAddressModal: () => void;

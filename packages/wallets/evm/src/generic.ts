@@ -1,7 +1,7 @@
 import { NetworkType } from '@layerswap/widget-types';
 import type { WalletConnectionStore, WalletConnectionProviderProps } from "@layerswap/ui-kit/types"
 import type { WalletProvider, WalletInitContext } from "@layerswap/ui-kit/types"
-import { LazyBalanceProvider, LazyGasProvider } from "@layerswap/utils";
+import { LazyBalanceProvider, LazyGasProvider } from "@layerswap/widget-types";
 import { createEvmConnection } from "./service/createEvmConnection"
 import { initEvmProvider } from "./EVMProvider/init"
 import { createEvmTransfer } from "./transferProvider/createEvmTransfer"
@@ -9,8 +9,8 @@ import { EVMContractAddressProvider } from "./evmContractAddressProvider"
 import { EVMRpcHealthCheckProvider } from "./rpcHealthCheckProvider"
 import type { EVMProviderConfig, WalletConnectConfig } from "./types"
 import { getEvmConfig } from "./service/getEvmConfig"
-import type { Network, NetworkWithTokens } from "@layerswap/utils"
-import type { GaslessProvider } from "@layerswap/utils";
+import type { Network, NetworkWithTokens } from "@layerswap/widget-types";
+import type { GaslessProvider } from "@layerswap/widget-types";
 import { createEVMGaslessProvider } from "./gaslessProvider/createEVMGaslessProvider"
 import { id } from "./constants"
 

@@ -9,8 +9,8 @@
 import { ActionMessageType, type Wallet } from '@layerswap/widget-types';
 import { getEthersSigner, getEvmConfig } from '@layerswap/wallet-evm'
 import { KnownInternalNames } from "@layerswap/utils";
-import type { Network } from "@layerswap/utils"
-import { type TransferProvider, type TransferProps } from "@layerswap/utils";
+import type { Network } from "@layerswap/widget-types";
+import { type TransferProvider, type TransferProps } from "@layerswap/widget-types";
 import { getChainId, switchChain } from '@wagmi/core'
 import AuthorizeEthereum from '../Authorize/Ethereum'
 import { AuthorizeStarknet } from '../Authorize/Starknet'

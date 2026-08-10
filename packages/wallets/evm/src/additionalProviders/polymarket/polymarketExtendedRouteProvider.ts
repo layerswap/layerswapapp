@@ -1,6 +1,6 @@
 import { NetworkType } from '@layerswap/widget-types';
-import { NetworkRoute, NetworkRouteToken, NetworkWithTokens, Token, realRoutePresent } from "@layerswap/utils";
-import { ExtendedRouteProvider, ExtendedTokenMapping, RealRouteRef, requiredDepositMethod } from "@layerswap/utils";
+import { NetworkRoute, NetworkRouteToken, NetworkWithTokens, Token, realRoutePresent } from "@layerswap/widget-types";
+import { ExtendedRouteProvider, ExtendedTokenMapping, RealRouteRef, requiredDepositMethod } from "@layerswap/widget-types";
 import { getPolymarketCandidates, pickPolymarketDestination, POLYMARKET_CONFIG, POLYMARKET_DISPLAY_SYMBOL, PolymarketConfig } from "./routes";
 import { POLYMARKET_BASE_TOKEN_SYMBOL, POLYMARKET_DISPLAY_NAME, POLYMARKET_LOGO, POLYMARKET_PUSD_ADDRESS } from "./constants";
 

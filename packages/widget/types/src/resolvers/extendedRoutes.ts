@@ -1,5 +1,5 @@
-import { NetworkRoute, NetworkWithTokens } from "@/types";
-import type { DepositRouteRef } from "@/extendedRouteAvailability";
+import { NetworkRoute, NetworkWithTokens } from "../types";
+import type { DepositRouteRef } from "../extendedRouteAvailability";
 
 /**
  * Extended routes are swap routes the client can execute even though the

@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { AxiosInstance, Method } from "axios";
 import { AuthRefreshFailedError } from "../Errors/AuthRefreshFailedError";
 import { ApiResponse, EmptyApiResponse } from "../../Models/ApiResponse";
-import { NetworkWithTokens, Network, Token } from "../../Models/Network";
+import { NetworkWithTokens, Network, Token } from "@layerswap/widget-types";
 import { Exchange } from "../../Models/Exchange";
 import { ErrorHandler } from "@/lib/ErrorHandler";
 

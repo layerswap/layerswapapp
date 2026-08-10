@@ -4,7 +4,7 @@ import { ParadexBalanceProvider } from "./paradexBalanceProvider"
 import { createParadexConnection } from "./service/createParadexConnection"
 import { createParadexTransfer } from "./transferProvider/createParadexTransfer"
 import { id } from "./constants"
-import type { NetworkWithTokens } from "@layerswap/utils"
+import type { NetworkWithTokens } from "@layerswap/widget-types";
 
 export type ParadexProviderConfig<Network = NetworkWithTokens> = BaseWalletProviderConfig<Network>
 

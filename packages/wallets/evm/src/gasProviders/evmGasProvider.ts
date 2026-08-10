@@ -1,10 +1,11 @@
 import { NetworkType } from '@layerswap/widget-types';
-import { Network, Token } from "@layerswap/utils"
-import { GasProvider, GasProps } from "@layerswap/utils";
+import { Network, Token } from "@layerswap/widget-types";
+import { GasProvider, GasProps } from "@layerswap/widget-types";
 import { PublicClient, TransactionSerializedEIP1559, createPublicClient, encodeFunctionData, serializeTransaction, formatUnits, erc20Abi, parseGwei } from "viem";
 import { publicActionsL2 } from 'viem/op-stack'
 import resolveChain from "../evmUtils/resolveChain";
-import { ErrorHandler, NetworkSettings } from "@layerswap/utils";
+import NetworkSettings from "../NetworkSettings";
+import { ErrorHandler } from "@layerswap/widget-types";
 import { resolveFallbackTransport } from "../evmUtils/resolveTransports";
 
 export class EVMGasProvider implements GasProvider {

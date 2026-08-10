@@ -1,4 +1,4 @@
-import type { RealRouteAvailability } from "@layerswap/utils";
+import type { RealRouteAvailability } from "@layerswap/widget-types";
 /**
  * Single source of truth for Hyperliquid CCTP withdrawal routes, keyed by the
  * Hyperliquid source network. Each source carries an ordered list of

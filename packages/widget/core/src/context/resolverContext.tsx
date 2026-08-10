@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo } from "react";
-import { NftProvider, BalanceProvider, GasProvider, TransferProvider, ContractAddressCheckerProvider, RpcHealthCheckProvider, GaslessProvider } from "@/types"
+import { NftProvider, BalanceProvider, GasProvider, TransferProvider, ContractAddressCheckerProvider, RpcHealthCheckProvider, GaslessProvider } from "@layerswap/widget-types";
 import type { WalletProvider, WalletProviderDescriptor, WalletWrapper } from "@layerswap/ui-kit/types"
 import { isWalletProviderDescriptor } from "@layerswap/ui-kit/types"
 import { resolverService } from "@/lib/resolvers/resolverService";
 import { setExtendedRouteProviders } from "@/lib/extendedRoutes";
-import { ExtendedRouteProvider } from "@/lib/extendedRoutes/types";
+import { ExtendedRouteProvider } from "@layerswap/widget-types";
 
 export const isWalletProviderWithResolvers = (
     p: WalletProvider | WalletWrapper | WalletProviderDescriptor

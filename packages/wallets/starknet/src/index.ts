@@ -1,8 +1,9 @@
 import type { WalletConnectionStore, WalletConnectionProviderProps } from "@layerswap/ui-kit/types"
 import type { WalletProvider, WalletInitContext, BaseWalletProviderConfig } from "@layerswap/ui-kit/types";
-import type { NftProvider } from "@layerswap/utils";
-import { LazyGasProvider } from "@layerswap/utils";
-import { KnownInternalNames, type NetworkWithTokens } from "@layerswap/utils";
+import type { NftProvider } from "@layerswap/widget-types";
+import { LazyGasProvider } from "@layerswap/widget-types";
+import { KnownInternalNames } from "@layerswap/utils";
+import { type NetworkWithTokens } from "@layerswap/widget-types";
 import { StarknetBalanceProvider } from "./starknetBalanceProvider"
 import { StarknetNftProvider } from "./starknetNftProvider"
 import { createStarknetTransfer } from "./transferProvider/createStarknetTransfer"

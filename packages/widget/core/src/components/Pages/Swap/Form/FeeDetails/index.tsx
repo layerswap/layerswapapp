@@ -7,7 +7,7 @@ import useSWRGas from "@/lib/gases/useSWRGas";
 import useWallet from "@/hooks/useWallet";
 import GasIcon from '@/components/Icons/GasIcon';
 import Clock from '@/components/Icons/Clock';
-import { Network } from '@/Models/Network';
+import { Network } from '@layerswap/widget-types';
 import ExchangeGasIcon from '@/components/Icons/ExchangeGasIcon';
 import useSWRNftBalance from '@/lib/nft/useSWRNftBalance';
 import NumFlowWithFallback from '@/components/Common/NumFlowWithFallback';

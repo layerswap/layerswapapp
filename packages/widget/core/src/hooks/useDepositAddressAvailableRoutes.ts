@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { NetworkRoute } from "@/Models/Network";
+import { NetworkRoute } from "@layerswap/widget-types";
 import useDepositAddressSources from "@/hooks/useDepositAddressSources";
 
 // Shares the same SWR key as `useAutoSourceRoute` so both callers reuse one cached request.

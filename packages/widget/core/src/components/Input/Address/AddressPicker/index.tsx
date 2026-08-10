@@ -7,7 +7,7 @@ import useWallet from "@/hooks/useWallet";
 import { Address as AddressClass } from "@/lib/address/Address";
 import ManualAddressInput from "./ManualAddressInput";
 import ConnectWalletButton from "@/components/Common/ConnectWalletButton";
-import { Network, NetworkRoute } from "@/Models/Network";
+import { Network, NetworkRoute } from "@layerswap/widget-types";
 import AddressBook from "./AddressBook";
 import AddressButton from "./AddressButton";
 import { useInitialSettings } from "@/context/settings";

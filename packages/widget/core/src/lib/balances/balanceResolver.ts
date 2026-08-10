@@ -1,8 +1,8 @@
-import { NetworkBalance, TokenBalance } from "@/Models/Balance";
-import { BalanceProvider } from "@/types/balance";
-import { NetworkWithTokens } from "@/Models/Network";
+import { NetworkBalance, TokenBalance } from "@layerswap/widget-types";
+import { BalanceProvider } from "@layerswap/widget-types";
+import { NetworkWithTokens } from "@layerswap/widget-types";
 import { ErrorHandler } from "@/lib/ErrorHandler";
-import { classifyNodeError, extractErrorDetails } from "@layerswap/utils";
+import { classifyNodeError, extractErrorDetails } from "@layerswap/widget-types";
 import KnownInternalNames from "../knownIds";
 
 const SKIP_BALANCE_NETWORKS = [

@@ -4,7 +4,7 @@ import { useVirtualizer } from "@/lib/virtual";
 import { Accordion } from "@/components/shadcn/accordion";
 import Row from "./Rows";
 import { LayoutGroup, motion } from "framer-motion";
-import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
+import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import useWallet from "@/hooks/useWallet";
 import { useProvidersConnectReady } from "@layerswap/ui-kit";
 import ConnectWalletButton from "@/components/Common/ConnectWalletButton";

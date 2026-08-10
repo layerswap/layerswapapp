@@ -1,5 +1,5 @@
-import { type Wallet } from '@layerswap/widget-types';
-import type { Network } from "@/types";
+import { type Wallet } from '../wallet';
+import type { Network } from "../types";
 
 export type GaslessSignParams = {
     network: Network

@@ -1,9 +1,6 @@
 export { useConnectModal } from "@/components/Wallet/WalletModal"
 import KnownInternalNames from "@/lib/knownIds"
 export { KnownInternalNames }
-import NetworkSettings from "@/lib/NetworkSettings"
-export { NetworkSettings }
-export { insertIfNotExists } from "../lib/balances/helpers"
 export * from "../lib/retry"
 export { fetchWithTimeout } from "../lib/fetchWithTimeout"
 export { default as AppSettings } from "../lib/AppSettings";
@@ -36,6 +33,4 @@ export { ErrorHandler } from '../lib/ErrorHandler';
 export { useRpcHealth } from "../context/rpcHealthContext";
 export * from "../lib/extendedRoutes"
 export { connectModalStore, buildDeepLink, createRegistryConnector, createReactHookConnectionAdapter, findRegistryWalletByName, subscribeDisplayUri, getRegistryEntry, mapConnectError, getDynamicWcMetadata, getPendingDynamicWcMetadata, clearPendingDynamicWcMetadata, createMemoizedConnectionStore, setDynamicWcMetadata, setPendingMetadataForRegistry, getAdditionalConnectorsStore, useWalletDescriptorLoader, WalletDescriptorLoaderContext, useConnectors, WalletProvidersRegistryProvider, useWalletProvidersRegistry, useWalletProvidersReady, walletKey, getKnownConnectorIconBase64, normalizeIconSrc, resolveWalletConnectorIcon, walletIconResolver, getEip6963Providers, subscribeEip6963Providers } from "@layerswap/ui-kit";
-export { extractErrorDetails, classifyNodeError } from "@layerswap/utils";
 export type { DisplayUriSource, RegistryConnector, WalletConnectWalletBase, WalletConnectWallet, Eip6963Provider } from "@layerswap/ui-kit";
-export type { ErrorDetails, NodeErrorCategory } from "@layerswap/utils";

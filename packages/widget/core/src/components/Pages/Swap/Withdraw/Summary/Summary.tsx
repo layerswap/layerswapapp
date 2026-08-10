@@ -7,7 +7,7 @@ import { ApiResponse } from "@/Models/ApiResponse";
 import { Partner } from "@/Models/Partner";
 import useSWR from 'swr'
 import { useInitialSettings } from "@/context/settings";
-import { Token } from "@/Models/Network";
+import { Token } from "@layerswap/widget-types";
 import { ImageWithFallback } from "@layerswap/ui-kit/components";
 import NumFlowWithFallback from "@/components/Common/NumFlowWithFallback";
 import { PriceImpact } from "@/components/Input/Amount/PriceImpact";

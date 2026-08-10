@@ -1,6 +1,6 @@
 import { type Wallet } from '@layerswap/widget-types';
 import { ChevronDown, Plus, RefreshCw } from "lucide-react";
-import { Network } from "@/Models/Network";
+import { Network } from "@layerswap/widget-types";
 import { FC, useState } from "react";
 import ResizablePanel from "@/components/Common/ResizablePanel";
 import { SelectAccountProps, WalletConnectionProvider } from "@layerswap/ui-kit/types";

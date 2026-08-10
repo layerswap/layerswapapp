@@ -1,6 +1,6 @@
 import { FC, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
-import { NetworkBalance } from "@/Models/Balance";
+import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
+import { NetworkBalance } from "@layerswap/widget-types";
 import { SwapDirection } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { useVirtualizer } from "@/lib/virtual";
 import { extractTokenElementsAsSuggested, getTokenElementBalanceAmount, sortSuggestedTokenElements } from "@/helpers/routeUtils";

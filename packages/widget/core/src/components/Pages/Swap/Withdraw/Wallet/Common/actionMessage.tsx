@@ -2,7 +2,7 @@ import { ActionMessageType } from '@layerswap/widget-types';
 import { FC, useEffect } from "react"
 import { ActionMessages } from "../../messages/TransactionMessages"
 import { ErrorHandler } from "@/lib/ErrorHandler"
-import { Network } from "@/Models"
+import { Network } from "@layerswap/widget-types"
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore"
 
 export const ActionMessage: FC<{ error: Error | undefined, isLoading: boolean, selectedSourceAddress: string, sourceNetwork: Network }> = ({ error, isLoading, selectedSourceAddress, sourceNetwork }) => {

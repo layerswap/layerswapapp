@@ -1,4 +1,4 @@
-import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
+import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import { SelectItem } from "@/components/Select/Selector/SelectItem";
 import { ChevronDown, Info } from "lucide-react";

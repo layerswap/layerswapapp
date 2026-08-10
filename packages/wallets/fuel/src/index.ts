@@ -6,7 +6,7 @@ import { createFuelTransfer } from "./transferProvider/createFuelTransfer"
 import { createFuelConnection } from "./service/createFuelConnection"
 import { initFuelProvider } from "./init"
 import { id } from "./constants"
-import type { NetworkWithTokens } from "@layerswap/utils"
+import type { NetworkWithTokens } from "@layerswap/widget-types";
 
 export type FuelProviderConfig<Network = NetworkWithTokens> = BaseWalletProviderConfig<Network>
 

@@ -1,4 +1,4 @@
-import { Network } from "@/types";
+import { Network } from "../types";
 
 export interface NftBalanceProps {
     address: string;

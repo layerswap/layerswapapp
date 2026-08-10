@@ -1,6 +1,6 @@
 import { type Wallet } from '@layerswap/widget-types';
 import { resolverService } from "@/lib/resolvers/resolverService";
-import { TransferProps, TransferProgress } from "@/types"
+import { TransferProps, TransferProgress } from "@layerswap/widget-types";
 import { useCallback } from "react";
 
 export function useTransfer() {

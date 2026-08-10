@@ -10,7 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/pop
 import useExchangeNetworks from '@/hooks/useExchangeNetworks'
 import { ChevronDown } from 'lucide-react'
 import { CommandItem, CommandList, CommandWrapper } from '@/components/shadcn/command'
-import { Network, NetworkRoute, Token } from '@/Models/Network'
+import { Network, NetworkRoute, Token } from '@layerswap/widget-types';
 import { useInitialSettings } from '@/context/settings'
 import { useSwapDataUpdate } from '@/context/swap'
 import { useAsyncModal } from '@/context/asyncModal'

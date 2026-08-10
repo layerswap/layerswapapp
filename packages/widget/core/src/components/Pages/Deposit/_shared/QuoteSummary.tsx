@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { ImageWithFallback } from "@layerswap/ui-kit/components";
-import { NetworkRouteToken } from "@/Models/Network";
+import { NetworkRouteToken } from "@layerswap/widget-types";
 import { formatTokenAmount } from "@/components/utils/formatTokenAmount";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
 import { useUsdModeStore } from "@/stores/usdModeStore";

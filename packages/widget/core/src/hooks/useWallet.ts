@@ -1,6 +1,6 @@
 "use client"
 import { type Wallet } from '@layerswap/widget-types';
-import { Network } from "@/Models/Network"
+import { Network } from "@layerswap/widget-types";
 import { WalletConnectionProvider } from "@layerswap/ui-kit/types";
 import { useCallback, useMemo, useRef, useSyncExternalStore } from "react";
 import { isMobile } from "@layerswap/utils";

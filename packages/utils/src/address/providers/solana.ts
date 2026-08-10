@@ -1,6 +1,6 @@
-import { NetworkType } from '@layerswap/widget-types';
+import { NetworkType, type Network } from '@layerswap/widget-types';
 import bs58 from 'bs58';
-import { Network, AddressSelectionMode, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
+import { AddressSelectionMode, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
 
 export const name = 'Solana';
 

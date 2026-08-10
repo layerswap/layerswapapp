@@ -1,4 +1,5 @@
-import { ErrorHandler, NetworkSettings, type Network } from "@layerswap/utils"
+import NetworkSettings from "../NetworkSettings";
+import { ErrorHandler, type Network } from "@layerswap/widget-types";
 import type { AppNetworkAdapter } from "@layerswap/ui-kit"
 import { defineChain } from "viem"
 

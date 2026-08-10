@@ -1,7 +1,7 @@
 import { BalanceResolver } from "@/lib/balances/balanceResolver";
 import { GasResolver } from "@/lib/gases/gasResolver";
-import { BalanceProvider, ContractAddressCheckerProvider, GasProvider, NftProvider, TransferProvider, GaslessProvider } from "@/types";
-import { RpcHealthCheckProvider } from "@/types/rpcHealth";
+import { BalanceProvider, ContractAddressCheckerProvider, GasProvider, NftProvider, TransferProvider, GaslessProvider } from "@layerswap/widget-types";
+import { RpcHealthCheckProvider } from "@layerswap/widget-types";
 import { NftBalanceResolver } from "../nft/nftBalanceResolver";
 import { TransferResolver } from "../transfers/transferResolver";
 import { GaslessResolver } from "../gasless/gaslessResolver";

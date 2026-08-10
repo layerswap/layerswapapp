@@ -1,5 +1,5 @@
 import { TokenBalance, GasProps } from "./balanceModels";
-import { Network, NetworkWithTokens } from "@/types";
+import { Network, NetworkWithTokens } from "../types";
 import { BalanceProvider } from "./balance";
 import { GasProvider, GasWithToken } from "./gas";
 

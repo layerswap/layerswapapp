@@ -1,4 +1,4 @@
-import { TokenBalance, BalanceProvider } from "@layerswap/utils";
+import { TokenBalance, BalanceProvider } from "@layerswap/widget-types";
 import { KnownInternalNames, retry } from "@layerswap/utils";
 import axios from "axios";
 

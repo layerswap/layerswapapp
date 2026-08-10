@@ -1,6 +1,6 @@
-import type { NetworkWithTokens } from '@layerswap/utils';
+import type { NetworkWithTokens } from '@layerswap/widget-types';
 import type { StoreApi } from 'zustand/vanilla';
-import type { TransferProps } from '@layerswap/utils';
+import type { TransferProps } from '@layerswap/widget-types';
 import type { WalletProvider, WalletWrapper } from './provider';
 import type { AppNetworkAdapter } from './network';
 

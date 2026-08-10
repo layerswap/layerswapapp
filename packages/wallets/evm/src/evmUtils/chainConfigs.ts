@@ -1,4 +1,4 @@
-import { NetworkSettings } from "@layerswap/utils";
+import NetworkSettings from "../NetworkSettings";
 import type { AppNetworkAdapter } from "@layerswap/ui-kit"
 import { Chain, fallback, http } from 'viem';
 import { resolveAdapterChain } from "./resolveChain";

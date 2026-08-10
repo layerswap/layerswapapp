@@ -10,7 +10,7 @@ import { GaslessSigner } from "./Common/depositExecution";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
 import { WalletIcon } from "@layerswap/ui-kit/components";
 import { useBalance } from "@/lib/balances/useBalance";
-import { TransferProps } from "@/types";
+import { TransferProps } from "@layerswap/widget-types";
 import { ActionMessage } from "./Common/actionMessage";
 import { ActionMessages } from "../messages/TransactionMessages";
 import { useTransfer } from "@/hooks/useTransfer";

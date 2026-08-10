@@ -7,7 +7,7 @@ import { ApiResponse } from '@/Models/ApiResponse';
 import { Partner } from '@/Models/Partner';
 import { ApiError } from '@/Models/ApiError';
 import useWallet from '@/hooks/useWallet';
-import { Network } from '@/Models/Network';
+import { Network } from '@layerswap/widget-types';
 import { useSettingsState } from './settings';
 import { QuoteError, transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { useRecentNetworksStore } from '@/stores/recentRoutesStore';

@@ -1,5 +1,5 @@
-import { type Wallet } from '@layerswap/widget-types';
-import { Network, NetworkRoute, NetworkWithTokens, Token } from "@/types"
+import { type Wallet } from '../wallet';
+import { Network, NetworkRoute, NetworkWithTokens, Token } from "../types"
 import { TokenBalance } from "./balanceModels"
 
 export type TransferProps = {
@@ -38,6 +38,3 @@ export interface TransferProvider {
     supportsNetwork(network: Network): boolean
     executeTransfer(params: TransferProps, wallet?: Wallet, onProgress?: (info: TransferProgress | undefined) => void): Promise<string>
 }
-
-// Hook-based transfer provider factory
-export type TransferProviderHook = () => TransferProvider

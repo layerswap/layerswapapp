@@ -1,13 +1,13 @@
 import { type InternalConnector } from '@layerswap/widget-types';
-import { TransferProvider } from '@layerswap/utils';
-import { BalanceProvider } from '@layerswap/utils';
-import { GasProvider } from '@layerswap/utils';
-import { NftProvider } from '@layerswap/utils';
-import { ContractAddressCheckerProvider } from '@layerswap/utils';
-import { RpcHealthCheckProvider } from '@layerswap/utils';
-import { ExtendedRouteProvider } from '@layerswap/utils';
-import { GaslessProvider } from '@layerswap/utils';
-import type { NetworkWithTokens } from '@layerswap/utils';
+import { TransferProvider } from '@layerswap/widget-types';
+import { BalanceProvider } from '@layerswap/widget-types';
+import { GasProvider } from '@layerswap/widget-types';
+import { NftProvider } from '@layerswap/widget-types';
+import { ContractAddressCheckerProvider } from '@layerswap/widget-types';
+import { RpcHealthCheckProvider } from '@layerswap/widget-types';
+import { ExtendedRouteProvider } from '@layerswap/widget-types';
+import { GaslessProvider } from '@layerswap/widget-types';
+import type { NetworkWithTokens } from '@layerswap/widget-types';
 import type { WalletConnectionProviderProps, WalletConnectionStore, MultiStepHandler } from './wallet';
 
 export type WalletModalConnector = InternalConnector & {

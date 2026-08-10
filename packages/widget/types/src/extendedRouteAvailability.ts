@@ -1,4 +1,4 @@
-import type { Token } from "@/types"
+import type { Token } from "./types"
 
 export type DepositRouteRef = { networkName: string; tokenSymbol: string }
 
@@ -19,8 +19,4 @@ export function realRoutePresent(routes: RouteLike[], real: DepositRouteRef, dep
         r.name === real.networkName
         && r.deposit_methods?.includes(depositMethod)
         && r.tokens?.some(t => t.symbol === real.tokenSymbol && t.status === 'active'))
-}
-
-export function realDepositAddressRoutePresent(routes: RouteLike[], real: DepositRouteRef): boolean {
-    return realRoutePresent(routes, real, 'deposit_address')
 }

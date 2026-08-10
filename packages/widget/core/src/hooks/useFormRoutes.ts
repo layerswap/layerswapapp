@@ -2,11 +2,11 @@
 import useSWR from "swr";
 import { useEffect, useMemo, useState } from "react";
 import { ApiResponse } from "../Models/ApiResponse";
-import { NetworkRoute, NetworkRouteToken } from "../Models/Network";
+import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import { useInitialSettings, useSettingsState } from "../context/settings";
 import { NetworkElement, RowElement, NetworkTokenElement, TitleElement, GroupedTokenElement, TokenSceletonElement } from "../Models/Route";
 import useAllWithdrawalBalances from "./useAllWithdrawalBalances";
-import { NetworkBalance } from "../Models/Balance";
+import { NetworkBalance } from "@layerswap/widget-types";
 import { resolveExchangesURLForSelectedToken, resolveNetworkRoutesURL } from "../helpers/routes";
 import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 import { Exchange } from "@/Models/Exchange";

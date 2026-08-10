@@ -5,7 +5,7 @@ import type {
     WalletProviderModule,
 } from "@layerswap/ui-kit/types"
 import type { EvmAdditionalSupportedNetworks } from "./service/networkBuckets"
-import type { NetworkWithTokens } from "@layerswap/utils"
+import type { NetworkWithTokens } from "@layerswap/widget-types";
 
 export type { WalletConnectConfig }
 

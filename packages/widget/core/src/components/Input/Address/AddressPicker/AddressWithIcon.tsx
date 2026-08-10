@@ -3,7 +3,7 @@ import { FC, MouseEventHandler, ReactNode, SVGProps, useCallback, useMemo, useSt
 import { AddressGroup, AddressItem } from ".";
 import { Copy, Check, ChevronDown, WalletIcon, Pencil, Link2, SquareArrowOutUpRight, Unplug, Info, Trash2, BookmarkPlus } from "lucide-react";
 import { Partner } from "@/Models/Partner";
-import { Network } from "@/Models/Network";
+import { Network } from "@layerswap/widget-types";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components//shadcn/popover";
 import { ImageWithFallback } from "@layerswap/ui-kit/components";
 import { useCopyClipboard } from "@layerswap/ui-kit";

@@ -1,7 +1,7 @@
 import { NetworkType } from '@layerswap/widget-types';
-import { LazyBalanceProvider, LazyGasProvider } from "@layerswap/utils";
-import type { TransferProvider } from "@layerswap/utils";
-import type { Network, NetworkWithTokens } from "@layerswap/utils"
+import { LazyBalanceProvider, LazyGasProvider } from "@layerswap/widget-types";
+import type { TransferProvider } from "@layerswap/widget-types";
+import type { Network, NetworkWithTokens } from "@layerswap/widget-types";
 import { KnownInternalNames } from "@layerswap/utils"
 import { createEVMProvider as createBaseEVMProvider } from "./generic"
 import { createHyperliquidTransfer } from "./additionalProviders/hyperliquid/createHyperliquidTransferProvider"
