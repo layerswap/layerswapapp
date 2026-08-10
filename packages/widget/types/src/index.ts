@@ -27,9 +27,4 @@ export type {
 } from './logEvents';
 export type { InternalConnector, Wallet, WalletConnectConfig } from './wallet';
 export { ActionMessageType } from './actionMessage';
-export type {
-  MultiStepTransferState,
-  MultiStepTransferProvider,
-  MultiStepTransferParams,
-} from './multiStepTransfer';
 export { GasCalculation } from './GasCalculation';
