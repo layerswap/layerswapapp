@@ -285,8 +285,7 @@ export default function Analytics() {
                         ) : null}
                         <SummaryCards
                             totals={networkAnalytics.totals}
-                            timeline={timeline}
-                            assetsCount={networkAnalytics.assets.length}
+                            assets={networkAnalytics.assets}
                         />
                         <VolumeChart timeline={timeline} range={response.range} />
                         <FlowSection

@@ -73,7 +73,7 @@ export const ANALYTICS_PERIODS: AnalyticsPeriod[] = ["24h", "7d", "30d", "90d"];
 
 // Use the shared Explorer theme tokens so charts follow palette overrides.
 export const FLOW_COLORS = {
-    inflow: "var(--color-secondary-text)",
+    inflow: "#AEB8D6",
     outflow: "var(--color-primary-400)",
     positive: "var(--color-primary-100)",
     negative: "var(--color-primary-400)",

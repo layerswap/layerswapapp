@@ -25,9 +25,12 @@ function metric(r: Row, key: SortKey): number {
     }
 }
 
+const VISIBLE_ROWS = 8;
+
 export default function AssetsTable({ assets }: { assets: AnalyticsAsset[] }) {
     const [sortKey, setSortKey] = useState<SortKey>("vol");
     const [sortDir, setSortDir] = useState<"desc" | "asc">("desc");
+    const [expanded, setExpanded] = useState(false);
 
     const rows: Row[] = useMemo(
         () =>
@@ -59,6 +62,9 @@ export default function AssetsTable({ assets }: { assets: AnalyticsAsset[] }) {
         });
         return copy;
     }, [rows, sortKey, sortDir]);
+
+    const visibleRows = expanded ? sorted : sorted.slice(0, VISIBLE_ROWS);
+    const hiddenCount = sorted.length - VISIBLE_ROWS;
 
     const toggle = (key: SortKey) => {
         if (key === sortKey) setSortDir((d) => (d === "desc" ? "asc" : "desc"));
@@ -94,16 +100,16 @@ export default function AssetsTable({ assets }: { assets: AnalyticsAsset[] }) {
                 </span>
             </div>
             <div className="overflow-x-auto">
-                <table className="w-full border-collapse min-w-[640px]">
+                <table className="w-full table-fixed border-collapse min-w-[760px]">
                     <thead>
                         <tr>
                             <th scope="col" className={`${th} w-[44px] text-left text-primary-text-tertiary`}>#</th>
                             <th scope="col" className={`${th} text-left text-primary-text-tertiary`}>ASSET</th>
-                            <th scope="col" aria-sort={ariaSort("vol")} className={`${th} text-right`}>{sortBtn("vol", "VOLUME")}</th>
-                            <th scope="col" aria-sort={ariaSort("in")} className={`${th} text-right`}>{sortBtn("in", "INFLOW")}</th>
-                            <th scope="col" aria-sort={ariaSort("out")} className={`${th} text-right`}>{sortBtn("out", "OUTFLOW")}</th>
+                            <th scope="col" aria-sort={ariaSort("vol")} className={`${th} w-[104px] text-right`}>{sortBtn("vol", "VOLUME")}</th>
+                            <th scope="col" aria-sort={ariaSort("in")} className={`${th} w-[104px] text-right`}>{sortBtn("in", "INFLOW")}</th>
+                            <th scope="col" aria-sort={ariaSort("out")} className={`${th} w-[104px] text-right`}>{sortBtn("out", "OUTFLOW")}</th>
                             <th scope="col" className={`${th} w-[184px] text-left text-primary-text-tertiary`}>SHARE OF VOLUME</th>
-                            <th scope="col" aria-sort={ariaSort("tx")} className={`${th} text-right`}>{sortBtn("tx", "TRANSFERS")}</th>
+                            <th scope="col" aria-sort={ariaSort("tx")} className={`${th} w-[112px] text-right`}>{sortBtn("tx", "TRANSFERS")}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -114,7 +120,7 @@ export default function AssetsTable({ assets }: { assets: AnalyticsAsset[] }) {
                                 </td>
                             </tr>
                         )}
-                        {sorted.map((r, i) => {
+                        {visibleRows.map((r, i) => {
                             const share = totalVol > 0 ? (r.vol / totalVol) * 100 : 0;
                             const shareWidth = share > 0 ? Math.max(2, share) : 0;
                             return (
@@ -161,6 +167,13 @@ export default function AssetsTable({ assets }: { assets: AnalyticsAsset[] }) {
                     )}
                 </table>
             </div>
+            {hiddenCount > 0 ? (
+                <div className="border-t border-secondary-400">
+                    <button type="button" onClick={() => setExpanded((e) => !e)} aria-expanded={expanded} className="w-full py-2.5 text-center text-[12.5px] font-semibold text-secondary-text transition-colors hover:text-primary-text focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-400">
+                        {expanded ? "Show less" : "Show more"}
+                    </button>
+                </div>
+            ) : null}
         </div>
     );
 }

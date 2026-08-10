@@ -36,7 +36,7 @@ const Search = () => {
 
     return (
         <form className="mt-5 flex w-full items-center gap-2" onSubmit={handleSearch}>
-            <div className="relative flex min-h-14 w-full items-center rounded-2xl bg-secondary-500 px-4 transition-colors focus-within:bg-secondary-400 focus-within:ring-1 focus-within:ring-primary">
+            <div className="relative flex min-h-14 w-full items-center rounded-2xl bg-secondary-500 px-4 transition-colors focus-within:bg-secondary-400">
                 <input
                     type="text"
                     name="searchParam"
