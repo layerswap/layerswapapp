@@ -1,6 +1,6 @@
 import type { WalletProviderDescriptor } from "@layerswap/widget/types"
 import { defineWalletDescriptor } from "./defineWalletDescriptor"
-import { hasStorageKey } from "./persistedSession"
+import { readStorageJson } from "./persistedSession"
 
 const BITCOIN_NETWORKS = ['BITCOIN_MAINNET', 'BITCOIN_TESTNET']
 
@@ -20,9 +20,14 @@ export function createBitcoinDescriptor(): WalletProviderDescriptor {
         // without it the pre-hydration stub counts Bitcoin as mobile-supported,
         // flipping platform-gated state once the descriptor loads.
         unsupportedPlatforms: ['mobile'],
-        // @bigmi/client's `<prefix>.recentConnectorId` — what its reconnect()
-        // (called in wallet-bitcoin's getBitcoinConfig) restores from.
-        hasPersistedSession: () => hasStorageKey('bigmi.recentConnectorId'),
+        // @bigmi/client's `<prefix>.recentConnectorId`. A MetaMask marker is
+        // not restorable (its reconnect opens a popup, so wallet-bitcoin's
+        // NON_SILENT_CONNECTOR_IDS excludes it from session restore); the id
+        // is inlined so this stub never imports the SDK.
+        hasPersistedSession: () => {
+            const recent = readStorageJson('bigmi.recentConnectorId')
+            return typeof recent === 'string' && recent !== 'io.metamask.bitcoin'
+        },
         loadProvider: async () => {
             const mod = await import('@layerswap/wallet-bitcoin')
             return mod.createBitcoinProvider()
