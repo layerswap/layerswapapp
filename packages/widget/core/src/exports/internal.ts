@@ -20,6 +20,7 @@ export * from "../components/Pages/Swap/Withdraw/Wallet/Common/actionMessage"
 export { default as ClickTooltip } from "../components/Common/ClickTooltip"
 export { useSelectedAccount, useSelectSwapAccount, useSwapAccounts, useLatestSourceAccount, useNetworkBalance } from "@/context/swapAccounts";
 export { default as useWallet } from "@/hooks/useWallet"
+export { isProviderConnectReady } from "@/hooks/useProvidersConnectReady"
 export * from "../lib/apiClients"
 export * from "../lib/formatUnits"
 // Explicit re-exports (not `export * from "../stores"`): the wildcard meant any
