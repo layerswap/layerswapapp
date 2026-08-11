@@ -2,46 +2,15 @@
 import { type Wallet } from '@layerswap/widget-types';
 import { Network } from "@layerswap/widget-types";
 import { WalletConnectionProvider } from "@layerswap/wallet-core/types";
-import { useCallback, useMemo, useRef, useSyncExternalStore } from "react";
+import { useCallback, useMemo } from "react";
 import { isMobile } from "@layerswap/utils";
 import { useSettingsState } from "@/context/settings";
-import { useWalletProvidersRegistry } from "@layerswap/wallet-core";
+import { useWalletProviderSnapshots } from "@layerswap/wallet-core";
 
 export type WalletPurpose = "autofill" | "withdrawal" | "asSource"
 
-// Stable reference for SSR — `useSyncExternalStore` requires `getServerSnapshot`
-// to return the same value across calls, otherwise it triggers infinite renders.
-// Wallet providers aren't populated on the server, so an empty list is correct.
-const SSR_SNAPSHOT: WalletConnectionProvider[] = []
-const getServerSnapshot = () => SSR_SNAPSHOT
-
-/**
- * Subscribes to the registry plus every contained store via a single
- * `useSyncExternalStore` call. The registry already fans-out inner store
- * notifications, so one subscribe is enough. The cached array keeps the
- * snapshot reference stable when nothing changed, so downstream `useMemo`s
- * stay cache-effective.
- */
-function useAllProviderSnapshots(): WalletConnectionProvider[] {
-    const walletProvidersRegistry = useWalletProvidersRegistry()
-    const cache = useRef<WalletConnectionProvider[]>([])
-
-    const getSnapshot = useCallback(() => {
-        const entries = walletProvidersRegistry.getEntries()
-        const current = entries.map(e => e.store.getState())
-        const prev = cache.current
-        if (prev.length === current.length && prev.every((v, i) => v === current[i])) {
-            return prev
-        }
-        cache.current = current
-        return current
-    }, [walletProvidersRegistry])
-
-    return useSyncExternalStore(walletProvidersRegistry.subscribe, getSnapshot, getServerSnapshot)
-}
-
 export default function useWallet(network?: Network | undefined, purpose?: WalletPurpose) {
-    const allSnapshots = useAllProviderSnapshots()
+    const allSnapshots = useWalletProviderSnapshots()
     const { networks } = useSettingsState()
     const isMobilePlatform = isMobile()
 
