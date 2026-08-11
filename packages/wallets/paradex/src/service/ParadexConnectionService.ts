@@ -297,7 +297,7 @@ export class ParadexConnectionService implements WalletConnectionService<Runtime
                     providerName: 'EVM',
                 })
                 return this.resolveSingleWallet({
-                    provider: evmProvider,
+                    provider: this.getEvmProvider(),
                     walletId: connectionResult.id,
                     l1Account: connectionResult.address,
                     paradexAccounts: accounts!,
@@ -327,7 +327,7 @@ export class ParadexConnectionService implements WalletConnectionService<Runtime
                     providerName: 'Starknet',
                 })
                 return this.resolveSingleWallet({
-                    provider: starknetProvider,
+                    provider: this.getStarknetProvider(),
                     walletId: connectionResult.id,
                     l1Account: connectionResult.address,
                     paradexAccounts: accounts!,

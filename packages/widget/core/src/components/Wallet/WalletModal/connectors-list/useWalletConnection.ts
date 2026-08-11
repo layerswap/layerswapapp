@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { usePersistedState } from "@/hooks/usePersistedState";
 import { isMobile } from "@/lib/wallets/utils/isMobile";
 import type {
@@ -39,6 +39,7 @@ export function useWalletConnection({
     )
     const [connectionError, setConnectionError] = useState<string | undefined>()
     const isMobilePlatform = isMobile()
+    const lastAttemptRef = useRef<{ connector: WalletModalConnector, provider: WalletConnectionProvider } | null>(null)
 
     const connect = useCallback(async (
         connector: WalletModalConnector,
@@ -51,6 +52,8 @@ export function useWalletConnection({
                 setSelectedMultiChainConnector(connector)
                 return
             }
+
+            lastAttemptRef.current = { connector, provider }
 
             // Injected wallets may gain variants while lazy providers and
             // registry metadata load. Wait once and re-check before committing
@@ -123,11 +126,18 @@ export function useWalletConnection({
         setSelectedMultiChainConnector,
     ])
 
+    const retry = useCallback(() => {
+        const last = lastAttemptRef.current
+        if (!last) return
+        void connect({ ...last.connector, qr: undefined }, last.provider)
+    }, [connect])
+
     return {
         connect,
         connectionError,
         getLiveVariants,
         isMobilePlatform,
         recentConnectors,
+        retry,
     }
 }
