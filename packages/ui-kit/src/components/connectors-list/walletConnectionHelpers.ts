@@ -48,8 +48,14 @@ export const getConnectionError = (error: any) => {
         error?.name === "WalletWindowClosedError"
         || message.includes("rejected")
         || message.includes("denied")
+        || message.includes("declined")
+        || message.includes("cancelled")
     ) {
         return "You've declined the wallet connection request"
+    }
+
+    if (message.includes("expired")) {
+        return "Connection request expired. Please try again."
     }
 
     return error?.message || error?.details || "Something went wrong"

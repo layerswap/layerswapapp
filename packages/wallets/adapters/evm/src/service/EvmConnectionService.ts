@@ -4,7 +4,7 @@ import type { WalletModalConnector } from "@layerswap/wallet-core/types"
 import type { RegistryConnector } from "@layerswap/wallet-core"
 import type { Connector } from 'wagmi'
 import { connect, disconnect, getConnections, switchAccount as wagmiSwitchAccount, type Connection, } from '@wagmi/core'
-import { buildDeepLink, clearPendingDynamicWcMetadata, getRegistryEntry, mapConnectError, setDynamicWcMetadata, setPendingMetadataForRegistry, subscribeDisplayUri, type AppNetworkAdapter, type WalletConnectWalletBase } from "@layerswap/wallet-core"
+import { buildDeepLink, clearPendingDynamicWcMetadata, getRegistryEntry, mapConnectError, setDynamicWcMetadata, setPendingMetadataForRegistry, subscribeDisplayUri, type AppNetworkAdapter, type WalletConnectWalletBase, WC_REGISTRY_MARKER } from "@layerswap/wallet-core"
 import { evmConnectorNameResolver, resolveEVMWalletConnectorIcon } from '../evmUtils'
 import { name as PROVIDER_NAME, HIDDEN_WALLETCONNECT_ID } from '../constants'
 import type { LSConnector } from '../connectors/types'
@@ -262,6 +262,8 @@ export class EvmConnectionService<Network> implements WalletConnectionService<Ru
                     type: 'other',
                     isMobileSupported: true,
                     resolveURI,
+                    providerName: PROVIDER_NAME,
+                    [WC_REGISTRY_MARKER]: registryBase,
                 }) as unknown as InternalConnector & LSConnector
             } else if (!connector || typeof (connector as LSConnector).disconnect !== 'function') {
                 throw new Error('Connector not found')
