@@ -5,6 +5,7 @@ import type {
     MultiStepHandler,
     NetworkWithTokens,
 } from '@layerswap/widget/types'
+import { NetworkType } from '@layerswap/widget/types'
 import {
     connectModalStore,
     createMemoizedConnectionStore,
@@ -13,6 +14,7 @@ import {
 } from '@layerswap/widget/internal'
 import { ethereumNames, id as PROVIDER_ID, name as PROVIDER_NAME } from '../constants'
 import { createEvmTransfer } from '../transferProvider/createEvmTransfer'
+import { supportsRegistryConnects } from './connectorsHelpers'
 import { evmConnectionService } from './EvmConnectionService'
 import { useEvmStore } from './evmStore'
 
@@ -46,6 +48,7 @@ export function createEvmConnection(
         addRecentConnector: additionalConnectorsStore.addRecentConnector,
         requestRegistryConnectors: additionalConnectorsStore.requestAdditionalConnectors,
         registryConnectors: additionalConnectorsStore.getSnapshot().browseConnectors,
+        recentConnectors: additionalConnectorsStore.getSnapshot().recentConnectors,
         isMobilePlatform,
     })
 
@@ -62,12 +65,14 @@ export function createEvmConnection(
                 wagmiAccount: evmState.wagmiAccount,
                 selectedAddress: evmState.selectedAddress,
                 browseConnectors: additionalState.browseConnectors,
+                recentConnectors: additionalState.recentConnectors,
                 networks,
             }
         },
         buildSnapshot: inputs => {
             evmConnectionService.configure({
                 registryConnectors: inputs.browseConnectors,
+                recentConnectors: inputs.recentConnectors,
             })
 
             const { wagmiAccount, selectedAddress, allConnectors, connections } = inputs
@@ -87,6 +92,13 @@ export function createEvmConnection(
             const additionalConnectors = evmConnectionService.getAdditionalConnectors(allConnectors)
             const providerIcon = inputs.networks.find(n => ethereumNames.some(name => name === n.name))?.logo
             const buckets = evmConnectionService.getBuckets()
+            const registryCapabilities = supportsRegistryConnects(allConnectors)
+                ? {
+                    walletConnectRegistry: {
+                        networkTypes: [NetworkType.EVM],
+                    },
+                }
+                : undefined
 
             const snapshot: WalletConnectionProvider = {
                 connectWallet: evmConnectionService.connectWallet.bind(evmConnectionService),
@@ -107,6 +119,7 @@ export function createEvmConnection(
                 additionalConnectors,
                 name: PROVIDER_NAME,
                 id: PROVIDER_ID,
+                capabilities: registryCapabilities,
                 providerIcon,
                 ready: evmConnectionService.getReady(allConnectors),
                 multiStepHandlers: extraMultiStepHandlers,

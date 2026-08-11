@@ -42,6 +42,7 @@ const ConnectorsList: FC<{
         getLiveVariants,
         isMobilePlatform,
         recentConnectors,
+        retry,
     } = useWalletConnection({
         featuredProviders,
         onFinish,
@@ -112,14 +113,9 @@ const ConnectorsList: FC<{
     }
 
     if (selectedConnector) {
-        const provider = featuredProviders.find(
-            item => item.name === selectedConnector.providerName
-        )
         return (
             <LoadingConnect
-                onRetry={() => {
-                    if (provider) void connect({ ...selectedConnector, qr: undefined }, provider)
-                }}
+                onRetry={retry}
                 selectedConnector={selectedConnector}
                 connectionError={connectionError}
             />
