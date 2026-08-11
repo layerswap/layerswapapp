@@ -33,14 +33,7 @@ export default function SummaryCards({ totals, assets, }: { totals: AnalyticsTot
     }, [assets]);
 
     return (
-        <div className="flex flex-col gap-2.5">
-            <span className="text-[12.5px] text-primary-text-tertiary">
-                <span>Total volume </span>
-                <span className="font-semibold tabular-nums text-primary-text">
-                    {fmtUsd(totalVol)}
-                </span>
-            </span>
-            <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-3">
                 <div className={`${CARD_CLASS} flex-[1.4_1_236px]`}>
                     <span className="flex items-center gap-2 text-[12.5px] text-secondary-text">
                         <span className="h-2 w-2 shrink-0 rounded-[2px]" style={{ background: FLOW_COLORS.inflow }} />
@@ -90,7 +83,6 @@ export default function SummaryCards({ totals, assets, }: { totals: AnalyticsTot
                         {topAsset ? `${fmtUsd(topAsset.vol)} · ${pct(topAsset.vol / (totalVol || 1))}` : "No transfers"}
                     </span>
                 </div>
-            </div>
         </div>
     );
 }

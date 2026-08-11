@@ -27,7 +27,8 @@
     "recharts": "^3.10.1",
     "swr": "catalog:",
     "tailwind-merge": "^3.3.0",
-    "tailwindcss-animate": "^1.0.6"
+    "tailwindcss-animate": "^1.0.6",
+    "zustand": "catalog:"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.0.15",

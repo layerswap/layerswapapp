@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
+import { ChevronDown } from "lucide-react";
 import { AnalyticsAsset, FLOW_COLORS } from "@/models/Analytics";
 import { fmtNum, fmtUsd } from "./format";
 
@@ -46,12 +47,6 @@ export default function AssetsTable({ assets }: { assets: AnalyticsAsset[] }) {
     );
 
     const totalVol = rows.reduce((s, r) => s + r.vol, 0);
-    const totals = {
-        vol: totalVol,
-        inUsd: rows.reduce((s, r) => s + r.inUsd, 0),
-        outUsd: rows.reduce((s, r) => s + r.outUsd, 0),
-        txns: rows.reduce((s, r) => s + r.txns, 0),
-    };
 
     const sorted = useMemo(() => {
         const copy = [...rows];
@@ -124,7 +119,7 @@ export default function AssetsTable({ assets }: { assets: AnalyticsAsset[] }) {
                             const share = totalVol > 0 ? (r.vol / totalVol) * 100 : 0;
                             const shareWidth = share > 0 ? Math.max(2, share) : 0;
                             return (
-                                <tr key={r.asset} className="border-t border-secondary-400 transition-colors hover:bg-secondary">
+                                <tr key={r.asset} className="border-t border-secondary-400">
                                     <td className="px-[10px] py-[11px] text-[13px] tabular-nums text-primary-text-tertiary">{i + 1}</td>
                                     <td className="px-[10px] py-[11px]">
                                         <span className="flex items-center gap-[11px] min-w-0">
@@ -152,25 +147,13 @@ export default function AssetsTable({ assets }: { assets: AnalyticsAsset[] }) {
                             );
                         })}
                     </tbody>
-                    {sorted.length > 0 && (
-                        <tfoot>
-                            <tr className="border-t border-secondary-300">
-                                <td className="px-[10px] py-[13px]" />
-                                <td className="px-[10px] py-[13px] text-[13px] font-semibold text-secondary-text">Total</td>
-                                <td className="px-[10px] py-[13px] text-right text-[14px] font-semibold tabular-nums text-primary-text">{fmtUsd(totals.vol)}</td>
-                                <td className="px-[10px] py-[13px] text-right text-[13.5px] font-semibold tabular-nums" style={{ color: FLOW_COLORS.inflow }}>{fmtUsd(totals.inUsd)}</td>
-                                <td className="px-[10px] py-[13px] text-right text-[13.5px] font-semibold tabular-nums" style={{ color: FLOW_COLORS.outflow }}>{fmtUsd(totals.outUsd)}</td>
-                                <td className="px-[10px] py-[13px]" />
-                                <td className="px-[10px] py-[13px] text-right text-[13.5px] font-semibold tabular-nums text-primary-text">{fmtNum(totals.txns)}</td>
-                            </tr>
-                        </tfoot>
-                    )}
                 </table>
             </div>
             {hiddenCount > 0 ? (
                 <div className="border-t border-secondary-400">
-                    <button type="button" onClick={() => setExpanded((e) => !e)} aria-expanded={expanded} className="w-full py-2.5 text-center text-[12.5px] font-semibold text-secondary-text transition-colors hover:text-primary-text focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-400">
-                        {expanded ? "Show less" : "Show more"}
+                    <button type="button" onClick={() => setExpanded((e) => !e)} aria-expanded={expanded} className="flex w-full items-center justify-center gap-1 py-2.5 text-center text-[12.5px] font-semibold text-secondary-text transition-colors hover:text-primary-text focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-400">
+                        {expanded ? "Show less" : `Show all ${sorted.length} assets`}
+                        <ChevronDown className={`h-3.5 w-3.5 shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`} />
                     </button>
                 </div>
             ) : null}

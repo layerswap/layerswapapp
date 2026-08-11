@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { AnalyticsCounterparty, AnalyticsNetwork, FLOW_COLORS } from "@/models/Analytics";
 import { fmtNum, fmtUsd } from "./format";
 import { NetworkBadge } from "./ChainSelector";
@@ -11,16 +12,15 @@ function FlowColumn({
     title,
     subtitle,
     rows,
-    allRows,
+    max,
     color,
 }: {
     title: string;
     subtitle: string;
     rows: AnalyticsCounterparty[];
-    allRows: AnalyticsCounterparty[];
+    max: number;
     color: string;
 }) {
-    const max = Math.max(1, ...allRows.map((r) => r.amount_in_usd));
     return (
         <div className="flex-1 min-w-0">
             <div className="flex items-baseline justify-between gap-2 mb-3">
@@ -78,6 +78,7 @@ export default function FlowSection({
         destinationChains.length - VISIBLE_ROWS,
         0
     );
+    const sharedMax = Math.max(1, ...sourceChains.map((r) => r.amount_in_usd), ...destinationChains.map((r) => r.amount_in_usd));
     const name = network?.display_name ?? "this network";
     return (
         <div className="rounded-2xl border border-secondary-300 bg-secondary-500 p-[18px_20px] shadow-card">
@@ -92,7 +93,7 @@ export default function FlowSection({
                     title="Sources"
                     subtitle="Inflow · from"
                     rows={expanded ? sourceChains : sourceChains.slice(0, VISIBLE_ROWS)}
-                    allRows={sourceChains}
+                    max={sharedMax}
                     color={FLOW_COLORS.inflow}
                 />
                 <div className="hidden w-px self-stretch bg-secondary-400 md:block" />
@@ -100,14 +101,15 @@ export default function FlowSection({
                     title="Destinations"
                     subtitle="Outflow · to"
                     rows={expanded ? destinationChains : destinationChains.slice(0, VISIBLE_ROWS)}
-                    allRows={destinationChains}
+                    max={sharedMax}
                     color={FLOW_COLORS.outflow}
                 />
             </div>
             {hiddenCount > 0 ? (
                 <div className="mt-4 border-t border-secondary-400">
-                    <button type="button" onClick={() => setExpanded((e) => !e)} aria-expanded={expanded} className="w-full pt-3 pb-0.5 text-center text-[12.5px] font-semibold text-secondary-text transition-colors hover:text-primary-text focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-400">
-                        {expanded ? "Show less" : "Show more"}
+                    <button type="button" onClick={() => setExpanded((e) => !e)} aria-expanded={expanded} className="flex w-full items-center justify-center gap-1 pt-3 pb-0.5 text-center text-[12.5px] font-semibold text-secondary-text transition-colors hover:text-primary-text focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-400">
+                        {expanded ? "Show less" : "Show all counterparty chains"}
+                        <ChevronDown className={`h-3.5 w-3.5 shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`} />
                     </button>
                 </div>
             ) : null}

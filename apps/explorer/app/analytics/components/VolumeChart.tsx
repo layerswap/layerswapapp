@@ -156,7 +156,7 @@ export default function VolumeChart({
                             data={rows}
                             margin={{ top: 12, right: 12, left: 0, bottom: 0 }}
                             barCategoryGap="18%"
-                            maxBarSize={28}
+                            maxBarSize={rows.length <= 10 ? 86 : 28}
                         >
                             <CartesianGrid
                                 vertical={false}

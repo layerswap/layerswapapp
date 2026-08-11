@@ -15,8 +15,9 @@ import SummaryCards from "./components/SummaryCards";
 import VolumeChart from "./components/VolumeChart";
 import FlowSection from "./components/FlowSection";
 import AssetsTable from "./components/AssetsTable";
-import { fillTimelineGaps, generatedAtLabel } from "./components/format";
-import { ApiResponse } from "@layerswap/widget/types";
+import { fillTimelineGaps, fmtUsd, generatedAtLabel } from "./components/format";
+import { useAnalyticsNetworkStore } from "@/stores/analyticsNetworkStore";
+import { ApiResponse, NetworkWithTokens } from "@layerswap/widget/types";
 import { AppSettings, LayerswapApiClient } from "@layerswap/widget/internal";
 
 LayerswapApiClient.apiBaseEndpoint =
@@ -24,11 +25,25 @@ LayerswapApiClient.apiBaseEndpoint =
 const apiClient = new LayerswapApiClient();
 const version = process.env.NEXT_PUBLIC_API_VERSION;
 
+const PERIOD_LABELS: Record<AnalyticsPeriod, string> = {
+    "24h": "Last 24 hours",
+    "7d": "Last 7 days",
+    "30d": "Last 30 days",
+    "90d": "Last 90 days",
+};
+
 function buildKey(period: AnalyticsPeriod) {
     const params = new URLSearchParams();
     if (version) params.set("version", version);
     params.set("period", period);
     return `/explorer/analytics?${params.toString()}`;
+}
+
+function buildNetworksKey() {
+    const params = new URLSearchParams();
+    if (version) params.set("version", version);
+    const query = params.toString();
+    return query ? `/networks?${query}` : "/networks";
 }
 
 function responseStatus(error: unknown): number | undefined {
@@ -125,7 +140,8 @@ function AnalyticsUnavailable({
 }
 
 export default function Analytics() {
-    const [networkName, setNetworkName] = useState<string | null>(null);
+    const networkName = useAnalyticsNetworkStore((state) => state.networkName);
+    const setNetworkName = useAnalyticsNetworkStore((state) => state.setNetworkName);
     const [period, setPeriod] = useState<AnalyticsPeriod>("7d");
 
     const { data, error, isLoading, isValidating, mutate } = useSWR<ApiResponse<AnalyticsResponse>>(
@@ -146,21 +162,29 @@ export default function Analytics() {
         }
     );
 
-    const response = data?.data;
-    const selectedNetwork = useMemo(() => {
-        if (!response) return null;
+    const { data: networksData } = useSWR<ApiResponse<NetworkWithTokens[]>>(buildNetworksKey(), apiClient.fetcher, { dedupingInterval: 60000 });
 
-        const requested = networkName
-            ? response.available_networks.find((network) => network.name === networkName)
-            : null;
+    const response = data?.data;
+    const availableNetworks = useMemo<AnalyticsNetwork[]>(
+        () =>
+            (networksData?.data ?? []).map((network) => ({
+                name: network.name,
+                display_name: network.display_name,
+                logo: network.logo,
+            })),
+        [networksData]
+    );
+
+    const selectedNetwork = useMemo(() => {
+        const requested = availableNetworks.find((network) => network.name === networkName);
 
         return (
             requested ??
-            response.networks[0]?.network ??
-            response.available_networks[0] ??
+            response?.networks[0]?.network ??
+            availableNetworks[0] ??
             null
         );
-    }, [networkName, response]);
+    }, [availableNetworks, networkName, response]);
 
     const networkAnalytics = useMemo(() => {
         if (!response || !selectedNetwork) return null;
@@ -208,12 +232,22 @@ export default function Analytics() {
                             </p>
                         </div>
                         {response ? (
-                            <time
-                                dateTime={response.generated_at}
-                                className="text-xs tabular-nums text-primary-text-tertiary"
-                            >
-                                {generatedAtLabel(response.generated_at)}
-                            </time>
+                            <div className="flex flex-col gap-1 sm:items-end">
+                                {networkAnalytics && selectedNetwork ? (
+                                    <span className="text-sm text-secondary-text">
+                                        {`${selectedNetwork.display_name} · ${PERIOD_LABELS[period]} · Total volume `}
+                                        <span className="font-semibold tabular-nums text-primary-text">
+                                            {fmtUsd(networkAnalytics.totals.inflow.amount_in_usd + networkAnalytics.totals.outflow.amount_in_usd)}
+                                        </span>
+                                    </span>
+                                ) : null}
+                                <time
+                                    dateTime={response.generated_at}
+                                    className="text-xs tabular-nums text-primary-text-tertiary"
+                                >
+                                    {generatedAtLabel(response.generated_at)}
+                                </time>
+                            </div>
                         ) : null}
                     </div>
                     <div
@@ -225,10 +259,10 @@ export default function Analytics() {
                 {!isFatalError ? (
                     <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
                         <ChainSelector
-                            networks={response?.available_networks ?? []}
+                            networks={availableNetworks}
                             selected={selectedNetwork}
                             onSelect={onSelectNetwork}
-                            disabled={!response}
+                            disabled={availableNetworks.length === 0}
                         />
                         <div className="flex w-full items-center gap-3 sm:w-auto">
                             {isValidating && response ? (
