@@ -1,4 +1,4 @@
-import type { WalletProviderDescriptor } from "@layerswap/widget/types"
+import type { NetworkType, WalletProviderDescriptor } from "@layerswap/widget/types"
 import type { WalletConnectConfig } from "@layerswap/wallet-evm"
 import { defineWalletDescriptor } from "./defineWalletDescriptor"
 import { hasStorageKey } from "./persistedSession"
@@ -20,6 +20,13 @@ export function createSVMDescriptor(walletConnectConfigs?: WalletConnectConfig):
     return defineWalletDescriptor({
         id: 'solana',
         name: 'Solana',
+        // Keep this descriptor's module graph type-only; loading the widget or
+        // Solana runtime here would defeat the lazy-provider boundary.
+        capabilities: {
+            walletConnectRegistry: {
+                networkTypes: ['solana' as NetworkType],
+            },
+        },
         autofillSupportedNetworks: SVM_NETWORKS,
         withdrawalSupportedNetworks: SVM_NETWORKS,
         asSourceSupportedNetworks: SVM_NETWORKS,

@@ -47,6 +47,8 @@ export function createSvmConnection(
         getSelectedConnector: () => connectModalStore.getSnapshot().selectedConnector,
         addRecentConnector: additionalConnectorsStore.addRecentConnector,
         requestRegistryConnectors: additionalConnectorsStore.requestAdditionalConnectors,
+        registryConnectors: additionalConnectorsStore.getSnapshot().browseConnectors,
+        recentConnectors: additionalConnectorsStore.getSnapshot().recentConnectors,
         isMobilePlatform,
     })
 
@@ -63,6 +65,7 @@ export function createSvmConnection(
                 activeAddress: svm.activeAddress,
                 ready: svm.ready,
                 browseConnectors: additional.browseConnectors,
+                recentConnectors: additional.recentConnectors,
                 networks,
             }
         },
@@ -70,7 +73,10 @@ export function createSvmConnection(
             // Pass current browse connectors to the service via configure so the
             // build path stays a pure read — no writes to upstream stores from
             // inside getSnapshot (would loop the widget's recompute effect).
-            svmConnectionService.configure({ registryConnectors: inputs.browseConnectors })
+            svmConnectionService.configure({
+                registryConnectors: inputs.browseConnectors,
+                recentConnectors: inputs.recentConnectors,
+            })
 
             return {
                 ...svmConnectionService.buildProvider(),

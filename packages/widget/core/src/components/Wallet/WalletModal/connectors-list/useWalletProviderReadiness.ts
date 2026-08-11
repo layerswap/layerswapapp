@@ -42,7 +42,7 @@ export function useWalletProviderReadiness(
 
         return resolveChainConnectors(connectorPool, providerStates)
             .get(connectorKey(connector.name))
-            ?.variants ?? []
+            ?? []
     }, [registry])
 
     const isRegistrySettled = useCallback(() => (

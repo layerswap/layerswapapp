@@ -22,6 +22,7 @@ export function useAdditionalConnectors(namespace: string, projectId?: string) {
         browseMetadata: snapshot.browseMetadata,
         requestAdditionalConnectors: store.requestAdditionalConnectors,
         addRecentConnector: store.addRecentConnector,
+        recentConnectors: snapshot.recentConnectors,
     }
 }
 
