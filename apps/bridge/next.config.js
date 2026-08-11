@@ -64,6 +64,9 @@ module.exports = (phase, { defaultConfig }) => {
     },
     reactStrictMode: true,
     experimental: {
+      // TypeScript 7 is the native compiler and ships no JS compiler API, so
+      // Next has to shell out to `tsc` for the build's type-check step.
+      useTypeScriptCli: true,
       optimizePackageImports: [
         'lucide-react',
         '@radix-ui/react-checkbox',
@@ -73,6 +76,9 @@ module.exports = (phase, { defaultConfig }) => {
         '@radix-ui/react-tooltip',
       ],
     },
+    turbopack: {},
+    // Only reached under `next build --webpack`, which the `analyze` script
+    // needs because @next/bundle-analyzer skips Turbopack builds.
     webpack: config => {
       config.resolve.fallback = { fs: false, net: false, tls: false };
       return config;

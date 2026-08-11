@@ -28,7 +28,7 @@
     "color": "4.2.3",
     "highlight.js": "^11.11.1",
     "lucide-react": "^0.379.0",
-    "next": "15.5.22",
+    "next": "16.2.12",
     "radix-ui": "^1.4.3",
     "react": "catalog:",
     "react-dom": "catalog:",
@@ -49,6 +49,6 @@
     "postcss": "^8.5.10",
     "tailwindcss": "4.0.15",
     "tailwindcss-animate": "^1.0.5",
-    "typescript": "^5"
+    "typescript": "catalog:"
   }
 }
