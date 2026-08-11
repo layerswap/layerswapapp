@@ -13,7 +13,7 @@ import {
 import { PublicKey, Transaction, VersionedTransaction, TransactionVersion } from "@solana/web3.js"
 import type { UniversalProvider as UniversalProviderClass } from "@walletconnect/universal-provider"
 import type { SessionTypes, SignClientTypes } from "@walletconnect/types"
-import { parseAccountId } from "@walletconnect/utils"
+import { getSdkError, parseAccountId } from "@walletconnect/utils"
 import base58 from "bs58"
 
 type UniversalProviderType = InstanceType<typeof UniversalProviderClass>
@@ -31,6 +31,17 @@ const ChainIDs = {
     DeprecatedMainnet: "solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ",
     DeprecatedDevnet: "solana:8E9rvCKLFQia2Y35HXjjpWzj8weVo44K",
 } as const
+
+/**
+ * UniversalProvider restores `client.session.getAll()[0]` regardless of its
+ * namespace, so sharing the default WC store with another ecosystem (the EVM
+ * hidden WalletConnect connector also runs unprefixed) hands an eip155-only
+ * session to Solana. Keep this adapter's sessions in their own store.
+ */
+const SOLANA_WC_STORAGE_PREFIX = "layerswapSolanaWalletConnect"
+
+const solanaAccount = (session: SessionTypes.Struct): string | undefined =>
+    session.namespaces["solana"]?.accounts?.[0]
 
 const WALLET_CONNECT_ICON =
     'data:image/svg+xml;base64,PHN2ZyBoZWlnaHQ9IjE4NSIgdmlld0JveD0iMCAwIDMwMCAxODUiIHdpZHRoPSIzMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0ibTYxLjQzODU0MjkgMzYuMjU2MjYxMmM0OC45MTEyMjQxLTQ3Ljg4ODE2NjMgMTI4LjIxMTk4NzEtNDcuODg4MTY2MyAxNzcuMTIzMjA5MSAwbDUuODg2NTQ1IDUuNzYzNDE3NGMyLjQ0NTU2MSAyLjM5NDQwODEgMi40NDU1NjEgNi4yNzY1MTEyIDAgOC42NzA5MjA0bC0yMC4xMzY2OTUgMTkuNzE1NTAzYy0xLjIyMjc4MSAxLjE5NzIwNTEtMy4yMDUzIDEuMTk3MjA1MS00LjQyODA4MSAwbC04LjEwMDU4NC03LjkzMTE0NzljLTM0LjEyMTY5Mi0zMy40MDc5ODE3LTg5LjQ0Mzg4Ni0zMy40MDc5ODE3LTEyMy41NjU1Nzg4IDBsLTguNjc1MDU2MiA4LjQ5MzYwNTFjLTEuMjIyNzgxNiAxLjE5NzIwNDEtMy4yMDUzMDEgMS4xOTcyMDQxLTQuNDI4MDgwNiAwbC0yMC4xMzY2OTQ5LTE5LjcxNTUwMzFjLTIuNDQ1NTYxMi0yLjM5NDQwOTItMi40NDU1NjEyLTYuMjc2NTEyMiAwLTguNjcwOTIwNHptMjE4Ljc2Nzc5NjEgNDAuNzczNzQ0OSAxNy45MjE2OTcgMTcuNTQ2ODk3YzIuNDQ1NTQ5IDIuMzk0Mzk2OSAyLjQ0NTU2MyA2LjI3NjQ3NjkuMDAwMDMxIDguNjcwODg5OWwtODAuODEwMTcxIDc5LjEyMTEzNGMtMi40NDU1NDQgMi4zOTQ0MjYtNi40MTA1ODIgMi4zOTQ0NTMtOC44NTYxNi4wMDAwNjItLjAwMDAxLS4wMDAwMTAtLjAwMDAyMi0uMDAwMDIyLS4wMDAwMzItLjAwMDAzMmwtNTcuMzU0MTQzLTU2LjE1NDU3MmMtLjYxMTM5LS41OTg2MDItMS42MDI2NS0uNTk4NjAyLTIuMjE0MDQgMC0uMDAwMDA0LjAwMDAwNC0uMDAwMDA3LjAwMDAwOC0uMDAwMDExLjAwMDAxMWwtNTcuMzUyOTIxMiA1Ni4xNTQ1MzFjLTIuNDQ1NTM2OCAyLjM5NDQzMi02LjQxMDU3NTUgMi4zOTQ0NzItOC44NTYxNjEyLjAwMDA4Ny0uMDAwMDE0My0uMDAwMDE0LS4wMDAwMjk2LS4wMDAwMjgtLjAwMDA0NDktLjAwMDA0NGwtODAuODEyNDE5NDMtNzkuMTIyMTg1Yy0yLjQ0NTU2MDIxLTIuMzk0NDA4LTIuNDQ1NTYwMjEtNi4yNzY1MTE1IDAtOC42NzA5MTk3bDE3LjkyMTcyOTYzLTE3LjU0Njg2NzNjMi40NDU1NjAyLTIuMzk0NDA4MiA2LjQxMDU5ODktMi4zOTQ0MDgyIDguODU2MTYwMiAwbDU3LjM1NDk3NzUgNTYuMTU1MzU3Yy42MTEzOTA4LjU5ODYwMiAxLjYwMjY0OS41OTg2MDIgMi4yMTQwMzk4IDAgLjAwMDAwOTItLjAwMDAwOS4wMDAwMTc0LS4wMDAwMTcuMDAwMDI2NS0uMDAwMDI0bDU3LjM1MjEwMzEtNTYuMTU1MzMzYzIuNDQ1NTA1LTIuMzk0NDYzMyA2LjQxMDU0NC0yLjM5NDU1MzEgOC44NTYxNjEtLjAwMDIuMDAwMDM0LjAwMDAzMzYuMDAwMDY4LjAwMDA2NzMuMDAwMTAxLjAwMDEwMWw1Ny4zNTQ5MDIgNTYuMTU1NDMyYy42MTEzOS41OTg2MDEgMS42MDI2NS41OTg2MDEgMi4yMTQwNCAwbDU3LjM1Mzk3NS01Ni4xNTQzMjQ5YzIuNDQ1NTYxLTIuMzk0NDA5MiA2LjQxMDU5OS0yLjM5NDQwOTIgOC44NTYxNiAweiIgZmlsbD0iIzNiOTlmYyIvPjwvc3ZnPg=='
@@ -109,7 +120,10 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
             this._providerInitPromise = (async () => {
                 try {
                     const { UniversalProvider: UP } = await import("@walletconnect/universal-provider")
-                    const provider = await UP.init(this._config.options)
+                    const provider = await UP.init({
+                        ...this._config.options,
+                        customStoragePrefix: this._config.options.customStoragePrefix ?? SOLANA_WC_STORAGE_PREFIX,
+                    })
                     this._provider = provider
                     if (!this._internalDisplayUriHandler) {
                         this._internalDisplayUriHandler = (uri: string) => {
@@ -140,7 +154,10 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
         if (this._readyState !== WalletReadyState.Loadable) return
         try {
             const provider = await this.getProvider()
-            if (provider.session) await this.connect()
+            // Only a session we can actually sign with is resumable. Anything
+            // else makes connect() start a fresh pairing, which would raise a
+            // QR with no UI to scan it.
+            if (provider.session && solanaAccount(provider.session)) await this.connect()
         } catch { /* silent — the user can still connect manually */ }
     }
 
@@ -148,7 +165,7 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
         if (this._readyState !== WalletReadyState.Loadable || this._connecting) return false
         try {
             const provider = await this.getProvider()
-            return !!provider.session
+            return !!provider.session && !!solanaAccount(provider.session)
         } catch {
             return false
         }
@@ -168,12 +185,18 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
             // Reuse existing session when available
             const existing = provider.session
             if (existing) {
-                this._session = existing
-                provider.setDefaultChain(this._network)
-                this._publicKey = this.publicKeyFromSession(existing)
-                this.bindSessionListeners()
-                this.emit("connect", this._publicKey)
-                return
+                if (solanaAccount(existing)) {
+                    this._session = existing
+                    provider.setDefaultChain(this._network)
+                    this._publicKey = this.publicKeyFromSession(existing)
+                    this.bindSessionListeners()
+                    this.emit("connect", this._publicKey)
+                    return
+                }
+                // A stored session with no Solana account can never sign here.
+                // Drop it so this connect pairs afresh instead of failing on
+                // every attempt for as long as the session sits in storage.
+                await this.dropSession(provider)
             }
 
             const chains = this._network === ChainIDs.Mainnet
@@ -197,6 +220,10 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
             if (provider !== this._provider) return
 
             if (!session) throw new Error("WalletConnect Solana: empty session")
+            if (!solanaAccount(session)) {
+                await this.dropSession(provider)
+                throw new Error("This wallet approved the connection without a Solana account")
+            }
             this._session = session
             provider.setDefaultChain(this._network)
             this._publicKey = this.publicKeyFromSession(session)
@@ -230,10 +257,24 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
     }
 
     private publicKeyFromSession(session: SessionTypes.Struct): PublicKey {
-        const account = session.namespaces["solana"]?.accounts?.[0]
+        const account = solanaAccount(session)
         if (!account) throw new Error("WalletConnect Solana: no Solana account in session")
         const { address } = parseAccountId(account)
         return new PublicKey(address)
+    }
+
+    /** Forget a session we can't sign with, on the relay and in local storage. */
+    private async dropSession(provider: UniversalProviderType): Promise<void> {
+        const topic = provider.session?.topic
+        try { await provider.disconnect() } catch { /* fall through to the local delete */ }
+        if (topic) {
+            try {
+                await provider.client.session.delete(topic, getSdkError("USER_DISCONNECTED"))
+            } catch { /* already gone — disconnect() cleaned it up */ }
+        }
+        provider.session = undefined
+        this._session = undefined
+        this._publicKey = null
     }
 
     async disconnect(): Promise<void> {

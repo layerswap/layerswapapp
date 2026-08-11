@@ -23,7 +23,6 @@ import {
     setDynamicWcMetadata,
     setPendingMetadataForRegistry,
     subscribeDisplayUri,
-    WC_REGISTRY_MARKER,
     type WalletConnectWalletBase,
 } from '@layerswap/widget/internal'
 import { evmConnectorNameResolver, resolveEVMWalletConnectorIcon } from '../evmUtils'
@@ -274,11 +273,14 @@ export class EvmConnectionService implements WalletConnectionService<RuntimeDeps
                     id: internalConnector.id,
                     name: internalConnector.name,
                     icon: internalConnector.icon,
-                    type: 'other',
+                    // Keep the registry identity so a retry from the QR/error
+                    // screen re-enters this branch instead of failing lookup.
+                    type: 'walletConnect',
+                    source: 'registry',
+                    mobile: internalConnector.mobile,
                     isMobileSupported: true,
                     resolveURI,
                     providerName: PROVIDER_NAME,
-                    [WC_REGISTRY_MARKER]: registryBase,
                 }) as unknown as InternalConnector & LSConnector
             } else if (!connector || typeof (connector as LSConnector).disconnect !== 'function') {
                 throw new Error('Connector not found')
