@@ -1,6 +1,6 @@
 import type { WalletProviderDescriptor } from "@layerswap/widget/types"
 import { defineWalletDescriptor } from "./defineWalletDescriptor"
-import { hasStorageKey } from "./persistedSession"
+import { hasStorageKeyMatching } from "./persistedSession"
 
 const BITCOIN_NETWORKS = ['BITCOIN_MAINNET', 'BITCOIN_TESTNET']
 
@@ -20,9 +20,13 @@ export function createBitcoinDescriptor(): WalletProviderDescriptor {
         // without it the pre-hydration stub counts Bitcoin as mobile-supported,
         // flipping platform-gated state once the descriptor loads.
         unsupportedPlatforms: ['mobile'],
-        // @bigmi/client's `<prefix>.recentConnectorId` — what its reconnect()
-        // (called in wallet-bitcoin's getBitcoinConfig) restores from.
-        hasPersistedSession: () => hasStorageKey('bigmi.recentConnectorId'),
+        // `bigmi.<connectorId>.connected` — written on a successful connect,
+        // removed on disconnect, and the flag bigmi's own `isAuthorized()`
+        // gates its reconnect on. Deliberately not `bigmi.recentConnectorId`:
+        // bigmi only ever writes that key, so it outlives disconnects and
+        // rejected reconnects and kept hydrating Bitcoin (re-prompting the
+        // wallet) on every load for anyone who had ever connected one.
+        hasPersistedSession: () => hasStorageKeyMatching(/^bigmi\..+\.connected$/),
         loadProvider: async () => {
             const mod = await import('@layerswap/wallet-bitcoin')
             return mod.createBitcoinProvider()

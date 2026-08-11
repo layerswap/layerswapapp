@@ -12,6 +12,25 @@ export function hasStorageKey(key: string): boolean {
     }
 }
 
+/**
+ * True when any localStorage key matches. For SDKs that namespace their session
+ * flag per connector (bigmi writes `bigmi.<connectorId>.connected`), where the
+ * exact key isn't knowable without importing the connector ids from the SDK
+ * this probe exists to avoid loading.
+ */
+export function hasStorageKeyMatching(pattern: RegExp): boolean {
+    if (typeof window === 'undefined') return false
+    try {
+        for (let i = 0; i < window.localStorage.length; i++) {
+            const key = window.localStorage.key(i)
+            if (key && pattern.test(key)) return true
+        }
+        return false
+    } catch {
+        return false
+    }
+}
+
 export function readStorageJson(key: string): unknown {
     if (typeof window === 'undefined') return undefined
     try {

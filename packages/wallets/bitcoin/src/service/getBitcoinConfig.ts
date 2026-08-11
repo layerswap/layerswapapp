@@ -60,10 +60,42 @@ export function ensureBitcoinConfig(network: NetworkWithTokens | undefined): Con
     _configKey = nextConfigKey
 
     if (typeof window !== 'undefined') {
-        reconnect(_config).catch(() => { /* swallow */ })
+        void restoreSession(_config)
     }
 
     return _config
+}
+
+/**
+ * Eager session restore, plus cleanup of the markers it runs off.
+ *
+ * bigmi's connectors authorize purely off their own `<id>.connected`
+ * localStorage flag instead of asking the wallet, and its MetaMask connector
+ * then issues a real `bitcoin:connect` request. So a flag left behind by a
+ * session the wallet no longer honors makes every page load prompt the
+ * wallet — and bigmi clears neither that flag nor `recentConnectorId` when the
+ * attempt fails, so rejecting the prompt changed nothing and it returned on the
+ * next load, indefinitely. Clearing the markers whenever a restore yields no
+ * connection caps that at a single prompt.
+ *
+ * The cost is that a restore which fails for a transient reason (wallet locked,
+ * extension slow past bigmi's 5s poll) also drops the markers, so that wallet
+ * won't auto-restore next load and has to be reconnected by hand. That is the
+ * better failure: the markers claimed a connection the wallet was not honoring.
+ */
+async function restoreSession(config: Config): Promise<void> {
+    let restored: readonly unknown[] = []
+    try {
+        restored = await reconnect(config)
+    } catch { /* fall through to cleanup */ }
+    if (restored.length) return
+
+    try {
+        await Promise.all([
+            config.storage?.removeItem('recentConnectorId'),
+            ...config.connectors.map(c => config.storage?.removeItem(`${c.id}.connected`)),
+        ])
+    } catch { /* storage unavailable — nothing to clean up */ }
 }
 
 export function resetBitcoinConfig(): void {
