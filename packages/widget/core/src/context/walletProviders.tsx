@@ -2,7 +2,7 @@
 import React, { lazy, Suspense, useEffect } from "react";
 import { ChevronLeft } from "lucide-react";
 import clsx from "clsx";
-import { ensureRegistryBrowseLoaded, WalletProvidersRegistryProvider, useWalletProvidersRegistry, useWalletDescriptorLoader } from "@layerswap/ui-kit";
+import { ensureRegistryBrowseLoaded, WalletProvidersRegistryProvider, useWalletProvidersRegistry, useWalletDescriptorLoader } from "@layerswap/wallet-core";
 import { isMobile } from "@layerswap/utils";
 import { useSettingsState } from "./settings";
 import VaulDrawer from "@/components/Modal/vaulModal";
@@ -13,9 +13,9 @@ import { walletNetworkAdapter } from "@/lib/walletNetworkAdapter";
 import { filterSourceNetworks } from "@/helpers/filterSourceNetworks";
 import useWallet from "@/hooks/useWallet";
 import LayerSwapLogoSmall from "@/components/Icons/layerSwapLogoSmall";
-import type { WalletProvider, WalletProviderDescriptor, WalletWrapper } from "@layerswap/ui-kit/types"
+import type { WalletProvider, WalletProviderDescriptor, WalletWrapper } from "@layerswap/wallet-core/types"
 
-export { useWalletProvidersReady } from "@layerswap/ui-kit"
+export { useWalletProvidersReady } from "@layerswap/wallet-core"
 
 const ConnectorsList = lazy(() => import("@layerswap/ui-kit/components").then(module => ({ default: module.ConnectorsList })));
 

@@ -4,7 +4,7 @@ import useWallet from '@/hooks/useWallet';
 import { Address } from '@/lib/address/Address';
 import { getKey, useBalanceStore } from '@/stores/balanceStore';
 import { useManualDestAddressesStore } from '@/stores/manualDestAddressesStore';
-import { WalletConnectionProvider } from "@layerswap/ui-kit/types";
+import { WalletConnectionProvider } from "@layerswap/wallet-core/types";
 import { SwapDirection } from '@/exports';
 
 export type { ManualDestAddress } from '@/stores/manualDestAddressesStore';

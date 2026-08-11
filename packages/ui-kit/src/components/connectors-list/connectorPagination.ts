@@ -1,5 +1,5 @@
 import { type InternalConnector } from '@layerswap/widget-types';
-import type { RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult, WalletConnectionProvider } from "@/types";
+import type { RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult, WalletConnectionProvider } from "@layerswap/wallet-core/types";
 
 export type ProviderPaginationState = {
     loaded: boolean;

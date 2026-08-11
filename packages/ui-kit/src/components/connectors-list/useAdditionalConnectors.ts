@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import type { WalletConnectionProvider } from "@/types";
+import type { WalletConnectionProvider } from "@layerswap/wallet-core/types";
 import { useBrowseConnectors } from "./useBrowseConnectors";
 import { useLoadMoreObserver } from "./useLoadMoreObserver";
 import { useSearchConnectors } from "./useSearchConnectors";

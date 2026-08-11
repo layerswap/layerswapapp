@@ -32,6 +32,9 @@
       "path": "../utils"
     },
     {
+      "path": "../wallets/core"
+    },
+    {
       "path": "../widget/types"
     }
   ]

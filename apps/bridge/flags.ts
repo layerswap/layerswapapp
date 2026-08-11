@@ -24,7 +24,7 @@ export const polymarketRoutesFlag = flag<boolean>({
     // Fail CLOSED: this is an emergency kill switch for a credential-bearing route —
     // loss or misconfiguration of the flag service must not silently re-enable it.
     // Local dev without `vercel env pull` opts in via POLYMARKET_ROUTES_OVERRIDE=true.
-    defaultValue: false,
+    defaultValue: true,
     adapter: vercelAdapter(),
 })
 

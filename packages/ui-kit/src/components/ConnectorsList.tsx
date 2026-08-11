@@ -1,7 +1,7 @@
 import { type Wallet } from '@layerswap/widget-types';
 import { useRef, useState, type FC, type ReactNode } from "react"
-import { useConnectors } from "@/hooks/useConnectors"
-import type { WalletConnectionProvider } from "@/types";
+import { useConnectors } from "@layerswap/wallet-core"
+import type { WalletConnectionProvider } from "@layerswap/wallet-core/types";
 import { useConnectModal } from "./WalletModalProvider"
 import { InstalledExtensionNotFound } from "./InstalledExtensionNotFound"
 import { LoadingConnect } from "./LoadingConnect"

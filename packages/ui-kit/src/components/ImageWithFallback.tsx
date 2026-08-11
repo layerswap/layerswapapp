@@ -1,6 +1,6 @@
 "use client"
 import React, { forwardRef, useCallback, useEffect, useState } from "react"
-import { normalizeIconSrc } from "@/icons/knownConnectorIcons"
+import { normalizeIconSrc } from "@layerswap/wallet-core"
 import LogoPlaceholder from "./LogoPlaceholder"
 
 const toImageSrc = (src: React.ImgHTMLAttributes<HTMLImageElement>["src"]) =>

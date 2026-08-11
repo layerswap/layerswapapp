@@ -1,6 +1,6 @@
 import { type InternalConnector } from '@layerswap/widget-types';
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { WalletConnectionProvider } from "@/types";
+import type { WalletConnectionProvider } from "@layerswap/wallet-core/types";
 import { applyPageResults, canRequestAdditionalConnectors, paginationCursorKey, requestCapableProviderNamesKey, requestProviderPages, SEARCH_PAGE_SIZE, setProvidersLoading, withProviderName, } from "./connectorPagination";
 import type { PaginationByProvider, RequestCapableWalletProvider, } from "./connectorPagination";
 

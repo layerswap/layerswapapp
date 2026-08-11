@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from "react";
 import { NftProvider, BalanceProvider, GasProvider, TransferProvider, ContractAddressCheckerProvider, RpcHealthCheckProvider, GaslessProvider } from "@layerswap/widget-types";
-import type { WalletProvider, WalletProviderDescriptor, WalletWrapper } from "@layerswap/ui-kit/types"
-import { isWalletProviderDescriptor } from "@layerswap/ui-kit/types"
+import type { WalletProvider, WalletProviderDescriptor, WalletWrapper } from "@layerswap/wallet-core/types"
+import { isWalletProviderDescriptor } from "@layerswap/wallet-core/types"
 import { resolverService } from "@/lib/resolvers/resolverService";
 import { setExtendedRouteProviders } from "@/lib/extendedRoutes";
 import { ExtendedRouteProvider } from "@layerswap/widget-types";

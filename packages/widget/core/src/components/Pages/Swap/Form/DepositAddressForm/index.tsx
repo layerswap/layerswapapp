@@ -6,7 +6,7 @@ import { Widget } from "@/components/Widget/Index";
 import { Partner } from "@/Models/Partner";
 import { useValidationContext } from "@/context/validationContext";
 import useWallet from "@/hooks/useWallet";
-import { useProvidersConnectReady } from "@layerswap/ui-kit";
+import { useProvidersConnectReady } from "@layerswap/wallet-core";
 import { Address as AddressClass } from "@/lib/address/Address";
 import useAutoSourceRoute from "@/hooks/useAutoSourceRoute";
 import { useSwapDataState, useSwapDataUpdate } from "@/context/swap";

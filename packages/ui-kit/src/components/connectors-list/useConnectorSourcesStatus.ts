@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import type { WalletConnectionProvider } from "@/types";
-import { ensureRegistryBrowseLoaded, useRegistryBrowseStatuses } from "@/lib/walletConnect";
+import type { WalletConnectionProvider } from "@layerswap/wallet-core/types";
+import { ensureRegistryBrowseLoaded, useRegistryBrowseStatuses } from "@layerswap/wallet-core";
 
 const SOURCES_LOADING_TIMEOUT_MS = 8000
 const PROVIDERS_LOADING_TIMEOUT_MS = 5000

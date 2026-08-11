@@ -1,9 +1,9 @@
-import type { WalletProviderDescriptor } from "@layerswap/ui-kit/types"
+import type { WalletProviderDescriptor } from "@layerswap/wallet-core/types"
 import { defineWalletDescriptor, type DescriptorNetworkOptions } from "./defineWalletDescriptor"
 import { readStorageJson } from "./persistedSession"
 
 // Inlined — importing `KnownInternalNames` pulls a runtime barrel that
-// defeats lazy-loading. Keep in sync with packages/wallets/starknet/src/constants.ts.
+// defeats lazy-loading. Keep in sync with packages/wallets/adapters/starknet/src/constants.ts.
 const STARKNET_NETWORKS = ['STARKNET_MAINNET', 'STARKNET_SEPOLIA', 'STARKNET_GOERLI']
 
 /**

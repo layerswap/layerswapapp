@@ -1,8 +1,8 @@
 import { type Wallet } from '@layerswap/widget-types';
 import { useCallback, useState } from "react";
-import { usePersistedState } from "@/hooks/usePersistedState";
+import { usePersistedState } from "@layerswap/wallet-core";
 import { isMobile } from "@layerswap/utils";
-import type { WalletConnectionProvider, WalletModalConnector } from "@/types";
+import type { WalletConnectionProvider, WalletModalConnector } from "@layerswap/wallet-core/types";
 import { useConnectModal } from "../WalletModalProvider";
 import { useWalletProviderReadiness } from "./useWalletProviderReadiness";
 import { getConnectionError, rememberConnector } from "./walletConnectionHelpers";

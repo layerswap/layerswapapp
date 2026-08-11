@@ -1,5 +1,5 @@
 import { FC, type ReactNode } from "react";
-import type { WalletModalConnector } from "@/types";
+import type { WalletModalConnector } from "@layerswap/wallet-core/types";
 import { Link2Off, RotateCw } from "lucide-react";
 import { ImageWithFallback } from "./ImageWithFallback";
 import WalletIcon from "./WalletIcon";

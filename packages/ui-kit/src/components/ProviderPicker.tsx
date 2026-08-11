@@ -2,7 +2,7 @@ import * as Checkbox from "@radix-ui/react-checkbox";
 import * as Popover from "@radix-ui/react-popover";
 import { Check } from "lucide-react";
 import { FC, useMemo, useRef, useState } from "react";
-import type { WalletConnectionProvider } from "@/types"
+import type { WalletConnectionProvider } from "@layerswap/wallet-core/types"
 import clsx from "clsx";
 import ProviderFilterIcon from "./ProviderFilterIcon";
 

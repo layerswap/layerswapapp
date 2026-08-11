@@ -1,4 +1,4 @@
-import { getKnownConnectorIconBase64 } from "@layerswap/ui-kit";
+import { getKnownConnectorIconBase64 } from "@layerswap/wallet-core";
 
 type KnownWalletIconProps = {
     id: string;

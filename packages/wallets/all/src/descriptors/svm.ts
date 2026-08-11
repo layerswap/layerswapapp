@@ -1,4 +1,4 @@
-import type { WalletProviderDescriptor } from "@layerswap/ui-kit/types"
+import type { WalletProviderDescriptor } from "@layerswap/wallet-core/types"
 import type { WalletConnectConfig } from "@layerswap/wallet-evm"
 import { defineWalletDescriptor, type DescriptorNetworkOptions } from "./defineWalletDescriptor"
 import { hasStorageKey } from "./persistedSession"

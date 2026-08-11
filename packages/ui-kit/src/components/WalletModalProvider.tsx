@@ -1,7 +1,7 @@
 import { type Wallet } from '@layerswap/widget-types';
 import { createContext, type Dispatch, type ReactNode, type SetStateAction, useCallback, useContext, useEffect, useMemo, useState, } from "react"
-import { connectModalStore } from "@/lib/walletConnect/connectModalStore"
-import type { WalletConnectionProvider, WalletModalConnector } from "@/types";
+import { connectModalStore } from "@layerswap/wallet-core"
+import type { WalletConnectionProvider, WalletModalConnector } from "@layerswap/wallet-core/types";
 
 export type ModalWalletProvider = WalletConnectionProvider & {
     isSelectedFromFilter?: boolean

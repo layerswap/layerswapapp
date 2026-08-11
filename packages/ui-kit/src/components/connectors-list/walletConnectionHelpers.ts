@@ -1,4 +1,4 @@
-import type { WalletConnectionProvider, WalletModalConnector, } from "@/types";
+import type { WalletConnectionProvider, WalletModalConnector, } from "@layerswap/wallet-core/types";
 
 export type RecentConnector = {
     providerName?: string;

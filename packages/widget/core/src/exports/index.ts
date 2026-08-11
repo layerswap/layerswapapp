@@ -13,7 +13,7 @@ export { getSettings, useSettings } from '../helpers/getSettings'
 export { LayerswapProvider, type LayerswapWidgetConfig } from '../context/LayerswapProvider';
 export type { CallbacksContextType } from '../context/callbackProvider';
 export { useSettingsState } from '../context/settings'
-export { resolveWalletConnectorIcon, walletIconResolver } from '@layerswap/ui-kit'
+export { resolveWalletConnectorIcon, walletIconResolver } from '@layerswap/wallet-core'
 export { default as useWallet } from '../hooks/useWallet'
 export type { SwapFormValues, SwapDirection } from '../components/Pages/Swap/Form/SwapFormValues'
 export { compactSettings, encodeSettingsForSSR, inflateSettings } from '../helpers/settingsCompression'

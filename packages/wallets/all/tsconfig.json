@@ -13,34 +13,34 @@
   ],
   "references": [
     {
-      "path": "../bitcoin"
+      "path": "../adapters/bitcoin"
     },
     {
-      "path": "../evm"
+      "path": "../adapters/evm"
     },
     {
-      "path": "../fuel"
+      "path": "../adapters/fuel"
     },
     {
-      "path": "../imtblPassport"
+      "path": "../adapters/imtblPassport"
     },
     {
-      "path": "../paradex"
+      "path": "../adapters/paradex"
     },
     {
-      "path": "../starknet"
+      "path": "../adapters/starknet"
     },
     {
-      "path": "../svm"
+      "path": "../adapters/svm"
     },
     {
-      "path": "../ton"
+      "path": "../adapters/ton"
     },
     {
-      "path": "../tron"
+      "path": "../adapters/tron"
     },
     {
-      "path": "../../ui-kit"
+      "path": "../core"
     },
     {
       "path": "../../widget/types"

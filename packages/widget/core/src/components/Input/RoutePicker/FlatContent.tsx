@@ -8,7 +8,7 @@ import { useRecentNetworksStore } from "@/stores/recentRoutesStore";
 import { useSelectorState } from "@/components/Select/Selector/Index";
 import NavigatableList, { NavigatableItem } from "@/components/NavigatableList";
 import useWallet from "@/hooks/useWallet";
-import { useProvidersConnectReady } from "@layerswap/ui-kit";
+import { useProvidersConnectReady } from "@layerswap/wallet-core";
 import ConnectWalletButton from "@/components/Common/ConnectWalletButton";
 import { CurrencySelectItemDisplay } from "./Routes";
 import { SelectItem } from "@/components/Select/Selector/SelectItem";

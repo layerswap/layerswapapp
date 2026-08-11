@@ -2,8 +2,8 @@
 import { FC, ReactNode, createElement, useEffect, useMemo, createContext, useContext } from "react"
 import { WalletProvidersProvider } from "@/context/walletProviders";
 import { WalletModalProvider } from "../WalletModal";
-import type { WalletProvider, WalletProviderDescriptor, WalletWrapper } from "@layerswap/ui-kit/types"
-import { isWalletProviderDescriptor } from "@layerswap/ui-kit/types"
+import type { WalletProvider, WalletProviderDescriptor, WalletWrapper } from "@layerswap/wallet-core/types"
+import { isWalletProviderDescriptor } from "@layerswap/wallet-core/types"
 
 const DynamicProviderWrapper: FC<{
     providers: WalletWrapper[],

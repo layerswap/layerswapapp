@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import type { WalletConnectionProvider } from "@/types";
+import type { WalletConnectionProvider } from "@layerswap/wallet-core/types";
 import type { ModalWalletProvider } from "../WalletModalProvider";
 
 type UseFeaturedProvidersParams = {

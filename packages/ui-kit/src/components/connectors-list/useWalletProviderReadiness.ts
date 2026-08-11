@@ -1,8 +1,8 @@
 import { useCallback, useRef } from "react";
-import { connectorKey, resolveChainConnectors } from "@/hooks/useConnectors";
-import { ensureRegistryBrowseLoaded, getInstantiatedAdditionalConnectorsStores, subscribeAdditionalConnectorsStores, useWalletDescriptorLoader, } from "@/lib/walletConnect";
-import { useWalletProvidersRegistry } from "@/context/WalletProvidersRegistryProvider";
-import type { WalletConnectionProvider, WalletModalConnector, } from "@/types";
+import { connectorKey, resolveChainConnectors } from "@layerswap/wallet-core";
+import { ensureRegistryBrowseLoaded, getInstantiatedAdditionalConnectorsStores, subscribeAdditionalConnectorsStores, useWalletDescriptorLoader, } from "@layerswap/wallet-core";
+import { useWalletProvidersRegistry } from "@layerswap/wallet-core";
+import type { WalletConnectionProvider, WalletModalConnector, } from "@layerswap/wallet-core/types";
 
 export function useWalletProviderReadiness(featuredProviders: WalletConnectionProvider[]) {
     const registry = useWalletProvidersRegistry()

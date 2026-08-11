@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { WalletConnectionProvider } from "@/types";
+import type { WalletConnectionProvider } from "@layerswap/wallet-core/types";
 import {
     applyPageResults,
     canRequestAdditionalConnectors,

@@ -1,5 +1,5 @@
 import { FC, type RefObject } from "react";
-import type { WalletModalConnector } from "@/types";
+import type { WalletModalConnector } from "@layerswap/wallet-core/types";
 import StyledQRCode from "./StyledQRCode";
 import CopyButton from "./CopyButton";
 import { ImageWithFallback } from "./ImageWithFallback";
