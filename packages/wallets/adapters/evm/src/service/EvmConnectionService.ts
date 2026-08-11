@@ -255,7 +255,11 @@ export class EvmConnectionService<Network> implements WalletConnectionService<Ru
                     id: internalConnector.id,
                     name: internalConnector.name,
                     icon: internalConnector.icon,
-                    type: 'other',
+                    // Keep the registry identity so a retry from the QR/error
+                    // screen re-enters this branch instead of failing lookup.
+                    type: 'walletConnect',
+                    source: 'registry',
+                    mobile: internalConnector.mobile,
                     isMobileSupported: true,
                     resolveURI,
                     providerName: PROVIDER_NAME,
