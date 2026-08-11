@@ -102,6 +102,7 @@ const ConnectorsList: FC<{
 
     if (
         selectedConnector?.qr?.state
+        && !connectionError
         && (
             !selectedConnector.hasBrowserExtension
             || selectedConnector.showQrCode
@@ -117,7 +118,7 @@ const ConnectorsList: FC<{
         return (
             <LoadingConnect
                 onRetry={() => {
-                    if (provider) void connect(selectedConnector, provider)
+                    if (provider) void connect({ ...selectedConnector, qr: undefined }, provider)
                 }}
                 selectedConnector={selectedConnector}
                 connectionError={connectionError}

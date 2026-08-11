@@ -157,7 +157,7 @@ export default function TransactionCard({
                 <div className="flex flex-col p-4">
                     <div className="text-base font-normal text-secondary-text">Transaction</div>
                     <div className="text-sm lg:text-base font-medium text-tx-base w-full">
-                        {transaction?.transaction_hash ? (
+                        {displayTransaction?.transaction_hash ? (
                             <div className="flex items-center justify-between text-primary-text hover:text-secondary-text">
                                 <Link
                                     href={txExplorerUrl || '#'}
@@ -165,11 +165,11 @@ export default function TransactionCard({
                                     className="hover:text-secondary-text w-fit contents items-center second-link"
                                 >
                                     <span className="break-all link link-underline link-underline-black">
-                                        {shortenAddress(transaction.transaction_hash)}
+                                        {shortenAddress(displayTransaction.transaction_hash)}
                                     </span>
                                 </Link>
                                 <CopyButton
-                                    toCopy={transaction.transaction_hash}
+                                    toCopy={displayTransaction.transaction_hash}
                                     iconHeight={16}
                                     iconClassName="order-2"
                                     iconWidth={16}
