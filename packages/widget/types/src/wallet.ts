@@ -1,3 +1,10 @@
+import type { NetworkType } from './network';
+
+export type WalletConnectLink = {
+  native?: string | null;
+  universal?: string | null;
+};
+
 export type InternalConnector = {
   name: string;
   id: string;
@@ -11,6 +18,18 @@ export type InternalConnector = {
   hasBrowserExtension?: boolean;
   extensionNotFound?: boolean;
   isLoadable?: boolean;
+  networkTypes?: NetworkType[];
+  mobile?: WalletConnectLink;
+  /**
+   * Describes where the connector definition came from. Configured connectors
+   * use their provider-owned transport; registry connectors are metadata-backed
+   * definitions whose execution strategy is selected separately from `type`.
+   *
+   * Optional for backwards compatibility: an omitted source is treated as a
+   * configured connector. Never infer this from `type`, `mobile`, or other
+   * presentation metadata.
+   */
+  source?: 'configured' | 'registry';
 };
 
 export type Wallet = {

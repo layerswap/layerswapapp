@@ -1,4 +1,4 @@
-import type { NetworkWithTokens } from '@layerswap/widget-types';
+import type { NetworkType, NetworkWithTokens } from '@layerswap/widget-types';
 import type { StoreApi } from 'zustand/vanilla';
 import type { TransferProps } from '@layerswap/widget-types';
 import type { WalletProvider, WalletWrapper } from './provider';
@@ -34,9 +34,20 @@ export type WalletProviderStoreRegistry = {
  * reference the chain SDK. Use `import type` for any type references and a
  * dynamic `import()` inside `loadProvider`.
  */
+export type WalletProviderCapabilities = {
+    /**
+     * WalletConnect registry ecosystems this provider can execute. This is
+     * intentionally separate from concrete route/transfer network support.
+     */
+    walletConnectRegistry?: {
+        networkTypes: readonly NetworkType[]
+    }
+}
+
 export type WalletProviderDescriptor<Network = NetworkWithTokens> = {
     id: string,
     name?: string,
+    capabilities?: WalletProviderCapabilities,
     providerIcon?: string,
     autofillSupportedNetworks?: string[],
     withdrawalSupportedNetworks?: string[],
@@ -96,6 +107,7 @@ export type WalletConnectionProvider = {
     asSourceSupportedNetworks?: string[],
     name: string,
     id: string,
+    capabilities?: WalletProviderCapabilities,
     providerIcon?: string,
     unsupportedPlatforms?: string[],
     hideFromList?: boolean,

@@ -25,7 +25,7 @@ export type {
   ErrorEventType,
   SwapStatusEvent,
 } from './logEvents';
-export type { InternalConnector, Wallet, WalletConnectConfig } from './wallet';
+export type { InternalConnector, Wallet, WalletConnectConfig, WalletConnectLink } from './wallet';
 export { ActionMessageType } from './actionMessage';
 export { GasCalculation } from './GasCalculation';
 export { Network, NetworkWithTokens, Token, Metadata, NetworkRoute, NetworkRouteToken } from './types';

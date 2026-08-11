@@ -1,7 +1,7 @@
 import { type InternalConnector, type Wallet } from '@layerswap/widget-types';
 import type { RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult, WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types";
 import { KnownInternalNames, sleep } from "@layerswap/utils"
-import { getRegistryEntry, type AppNetworkAdapter } from "@layerswap/wallet-core"
+import { isWalletConnectRegistryConnector, type AppNetworkAdapter } from "@layerswap/wallet-core"
 import { Address } from "@layerswap/utils"
 import { getEvmConfig, walletClientToSigner } from '@layerswap/wallet-evm'
 import { getChainId, getWalletClient, switchChain, type ConnectorAlreadyConnectedError, } from '@wagmi/core'
@@ -232,7 +232,7 @@ export class ParadexConnectionService<Network> implements WalletConnectionServic
 
         try {
             setSelectedConnector?.(connector)
-            const isRegistryEvmConnector = !!getRegistryEntry(connector)
+            const isRegistryEvmConnector = isWalletConnectRegistryConnector(connector)
             const isEvm = isRegistryEvmConnector
                 || evmProvider.availableConnectors?.find(w => w.id === connector.id)
                 || evmProvider.additionalConnectors?.find(w => w.id === connector.id)

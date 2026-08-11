@@ -87,6 +87,7 @@ jobs:
       # any artifact can be uploaded to production.
       - name: Test widget release tooling
         run: |
+          pnpm --filter @layerswap/wallet-core test
           pnpm --filter @layerswap/widget-cdn test
           pnpm --filter @layerswap/widget-js test
           pnpm --filter @layerswap/widget-react check:types

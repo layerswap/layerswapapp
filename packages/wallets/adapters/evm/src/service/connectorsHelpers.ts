@@ -3,7 +3,7 @@ import type { Connector } from 'wagmi'
 import type { CreateConnectorFn, Config } from '@wagmi/core'
 import { getAccount } from '@wagmi/core'
 import { sleep } from "@layerswap/utils"
-import { createRegistryConnector, DisplayUriSource, type RegistryConnector, type WalletConnectWalletBase } from "@layerswap/wallet-core"
+import { chainsToNetworkTypes, createRegistryConnector, DisplayUriSource, type WalletConnectWalletBase } from "@layerswap/wallet-core"
 import { getKnownConnectorIconBase64 } from "@layerswap/wallet-core"
 import { evmConnectorNameResolver } from '../evmUtils'
 import KnownEVMConnectorIds from '../evmUtils/knownConnectorIds'
@@ -48,20 +48,11 @@ export const isFeaturedRegistryWallet = (wallet: WalletConnectWalletBase): boole
 )
 
 export const splitRegistryConnectors = (
-    configuredConnectors: InternalConnector[],
     registryWallets: WalletConnectWalletBase[],
     isMobilePlatform: boolean,
     providerName: string,
-): { featured: RegistryConnector[]; additional: RegistryConnector[] } => {
-    const existingConnectorKeys = new Set(
-        configuredConnectors.flatMap(connector => [connector.id.toLowerCase(), connector.name.toLowerCase()]),
-    )
-
-    return registryWallets.reduce<{ featured: RegistryConnector[]; additional: RegistryConnector[] }>((acc, wallet) => {
-        if (existingConnectorKeys.has(wallet.id.toLowerCase()) || existingConnectorKeys.has(wallet.name.toLowerCase())) {
-            return acc
-        }
-
+): { featured: InternalConnector[]; additional: InternalConnector[] } => {
+    return registryWallets.reduce<{ featured: InternalConnector[]; additional: InternalConnector[] }>((acc, wallet) => {
         const connector = createRegistryConnector(wallet, isMobilePlatform, providerName)
 
         if (isFeaturedRegistryWallet(wallet)) {
@@ -123,6 +114,7 @@ export function computeConfiguredConnectors({
 
             return {
                 ...w,
+                source: 'configured' as const,
                 order: resolveEVMConnectorOrder(w.id),
                 type,
                 isMobileSupported: isWalletConnectSupported,
@@ -131,6 +123,8 @@ export function computeConfiguredConnectors({
                 extensionNotFound: walletConnectWallet?.hasBrowserExtension ? (type == 'walletConnect' && !isMobilePlatform) : false,
                 icon: w.icon || knownIconBase64 || walletConnectWallet?.icon,
                 providerName: PROVIDER_NAME,
+                networkTypes: chainsToNetworkTypes(walletConnectWallet?.chains ?? []),
+                mobile: walletConnectWallet?.mobile,
             }
         })
 }

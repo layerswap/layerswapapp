@@ -1,7 +1,8 @@
 import { type InternalConnector, type Wallet } from '@layerswap/widget-types';
+import { NetworkType } from '@layerswap/widget-types';
 import type { RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult, WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types";
 import type { WalletModalConnector } from "@layerswap/wallet-core/types"
-import { buildDeepLink, clearPendingDynamicWcMetadata, createRegistryConnector, getDynamicWcMetadata, getPendingDynamicWcMetadata, getRegistryEntry, mapConnectError, setDynamicWcMetadata, setPendingMetadataForRegistry, subscribeDisplayUri, walletKey, type AppNetworkAdapter, type WalletConnectWalletBase } from "@layerswap/wallet-core"
+import { buildDeepLink, chainsToNetworkTypes, clearPendingDynamicWcMetadata, createRegistryConnector, getDynamicWcMetadata, getPendingDynamicWcMetadata, isWalletConnectRegistryConnector, mapConnectError, setDynamicWcMetadata, setPendingMetadataForRegistry, subscribeDisplayUri, walletKey, type AppNetworkAdapter, type WalletConnectWalletBase } from "@layerswap/wallet-core"
 import { findRegistryWalletByName } from "@layerswap/wallet-core"
 import { resolveWalletConnectorIcon } from "@layerswap/wallet-core"
 import { name as PROVIDER_NAME, id as PROVIDER_ID } from '../constants'
@@ -24,10 +25,11 @@ type RegistryRequestFn = (params?: RequestAdditionalConnectorsParams) => Promise
 type RuntimeDeps = {
     setSelectedConnector?: (connector: unknown) => void
     getSelectedConnector?: () => WalletModalConnector | undefined
-    addRecentConnector?: (wallet: WalletConnectWalletBase) => void
+    addRecentConnector?: (connector: InternalConnector) => void
     requestRegistryConnectors?: RegistryRequestFn
     isMobilePlatform?: boolean
     registryConnectors?: readonly WalletConnectWalletBase[]
+    recentConnectors?: readonly InternalConnector[]
 }
 
 const networkSupport: Record<string, string[]> = {
@@ -86,9 +88,14 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
             const isInstalled = wallet.readyState === 'Installed'
                 || wallet.readyState === 'Loadable'
                 || adapterName === 'Coinbase Wallet'
+            const registryMatch = (this._deps.registryConnectors ?? []).find(registryWallet =>
+                walletKey(registryWallet.name) === walletKey(adapterName)
+                || walletKey(registryWallet.id) === walletKey(adapterName),
+            )
             installed.push({
                 name: adapterName,
                 id: adapterName,
+                source: 'configured',
                 icon: resolveSolanaWalletConnectorIcon({ connector: adapterName, iconUrl: wallet.icon }),
                 type: isInstalled ? 'injected' : 'other',
                 installUrl: wallet.url,
@@ -96,18 +103,17 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
                 extensionNotFound: isWcAdapter ? false : !isInstalled,
                 isLoadable: wallet.readyState === 'Loadable' && adapterName !== 'Coinbase Wallet',
                 providerName: PROVIDER_NAME,
+                networkTypes: chainsToNetworkTypes(registryMatch?.chains ?? []),
+                mobile: registryMatch?.mobile,
             })
         }
-        return installed
+        return [...installed, ...(this._deps.recentConnectors ?? [])]
     }
 
     getAdditionalConnectors(): InternalConnector[] {
-        const installed = this.getAvailableConnectors()
-        const installedKeys = new Set(installed.map(c => walletKey(c.name)))
         const registry: InternalConnector[] = []
         const isMobilePlatform = this._deps.isMobilePlatform ?? false
         for (const reg of this._deps.registryConnectors ?? []) {
-            if (installedKeys.has(walletKey(reg.name)) || installedKeys.has(walletKey(reg.id))) continue
             registry.push(createRegistryConnector(reg, isMobilePlatform, PROVIDER_NAME))
         }
         return registry
@@ -196,7 +202,7 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
         // inner `finally` around connect() and the outer `finally`, so no early
         // exit can leak the display-uri listener.
         let unsubscribeDisplayUri: (() => void) | undefined
-        let registry: WalletConnectWalletBase | undefined
+        let isWc = false
         const isMobilePlatform = this._deps.isMobilePlatform ?? false
         const setSelectedConnector = this._deps.setSelectedConnector
         const getSelectedConnector = this._deps.getSelectedConnector
@@ -228,19 +234,26 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
             // The registry entry carries the mobile deeplink. An installed wallet
             // on mobile still needs its registry entry resolved on demand so we
             // can deeplink into its app instead of rendering a desktop QR.
-            let matchedRegistry = getRegistryEntry(connector)
-            if (!matchedRegistry && isMobilePlatform && installedAdapter && !isBareWcTile && requestRegistryConnectors) {
-                matchedRegistry = await findRegistryWalletByName(requestRegistryConnectors, connector.name)
+            let matchedRegistry: WalletConnectWalletBase | undefined
+            let matched = isWalletConnectRegistryConnector(connector)
+            if (!matched && isMobilePlatform && installedAdapter && !isBareWcTile && requestRegistryConnectors) {
+                const found = await findRegistryWalletByName(requestRegistryConnectors, connector.name)
+                if (found) {
+                    matched = true
+                    matchedRegistry = found
+                }
             }
+            const mobile = matchedRegistry?.mobile ?? connector.mobile
 
             const useWalletConnect = isBareWcTile
                 ? !isMobilePlatform
                 : (
-                    (!!matchedRegistry && (isMobilePlatform || !installedAdapter))
+                    (matched && (isMobilePlatform || !installedAdapter))
                     || (connector.hasBrowserExtension && (connector.showQrCode || (isMobilePlatform && connector.extensionNotFound)))
                 )
 
-            registry = useWalletConnect ? matchedRegistry : undefined
+            isWc = !!useWalletConnect && matched
+            const identity = isWc ? (matchedRegistry ?? connector) : undefined
 
             const targetAdapter = useWalletConnect ? hiddenWcAdapter : installedAdapter
             if (!targetAdapter) throw new Error('Connector not found')
@@ -255,15 +268,14 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
                 }
             }
 
-            const deeplinkRegistry = registry
-            const resolveURI = deeplinkRegistry
-                ? (uri: string) => buildDeepLink({ id: deeplinkRegistry.id, mobile: deeplinkRegistry.mobile }, uri)
+            const resolveURI = (isWc && mobile)
+                ? (uri: string) => buildDeepLink({ id: identity!.id, mobile }, uri)
                 : undefined
 
             if (useWalletConnect && hiddenWcAdapter) {
                 const wcAdapter = hiddenWcAdapter as unknown as SolanaWalletConnectAdapter
 
-                setPendingMetadataForRegistry(SVM_NS, registry)
+                setPendingMetadataForRegistry(SVM_NS, identity)
 
                 const wantsQrModal = !isMobilePlatform || !resolveURI
                 if (wantsQrModal) {
@@ -279,7 +291,10 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
                     onQr: (qr) => setSelectedConnectorIfCurrent({ ...connector, qr, showQrCode: true }),
                 })
 
-                if (registry) addRecentConnector?.(registry)
+                const recentConnector = matchedRegistry
+                    ? createRegistryConnector(matchedRegistry, isMobilePlatform, PROVIDER_NAME)
+                    : (isWc ? connector : undefined)
+                if (recentConnector) addRecentConnector?.(recentConnector)
             }
 
             try {
@@ -295,18 +310,18 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
                 : svmAdapterManager.getAdapters().find(a => a.connected)
             const newAddress = connectedAdapter?.publicKey?.toBase58()
 
-            if (newAddress && useWalletConnect && registry) {
+            if (newAddress && isWc && identity) {
                 setDynamicWcMetadata(SVM_NS, newAddress, {
-                    name: registry.name,
-                    icon: registry.icon || '',
-                    id: registry.id,
+                    name: identity.name,
+                    icon: identity.icon || '',
+                    id: identity.id,
                 })
             }
 
             const resolvedAdapterName = normalizeWcName(connectedAdapter?.name)
-            const displayId = registry?.id || (resolvedAdapterName ? String(resolvedAdapterName) : undefined)
-            const displayName = registry?.name || resolvedAdapterName
-            const displayIconRaw = registry?.icon || connectedAdapter?.icon
+            const displayId = identity?.id || (resolvedAdapterName ? String(resolvedAdapterName) : undefined)
+            const displayName = identity?.name || resolvedAdapterName
+            const displayIconRaw = identity?.icon || connectedAdapter?.icon
 
             if (!newAddress || !connectedAdapter || !displayId) return undefined
 
@@ -331,7 +346,7 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
             throw mapConnectError(e)
         } finally {
             unsubscribeDisplayUri?.()
-            if (registry) clearPendingDynamicWcMetadata(SVM_NS)
+            if (isWc) clearPendingDynamicWcMetadata(SVM_NS)
         }
     }
 
@@ -341,12 +356,9 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
             return { connectors: [], nextPage: null, totalCount: 0 }
         }
         const result = await fn(params)
-        const installed = this.getAvailableConnectors()
-        const installedKeys = new Set(installed.map(c => walletKey(c.name)))
         const isMobilePlatform = this._deps.isMobilePlatform ?? false
         return {
             connectors: result.connectors
-                .filter(c => !installedKeys.has(walletKey(c.name)) && !installedKeys.has(walletKey(c.id)))
                 .map(c => createRegistryConnector(c, isMobilePlatform, PROVIDER_NAME)),
             nextPage: result.nextPage,
             totalCount: result.totalCount,
@@ -370,6 +382,11 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
             asSourceSupportedNetworks: this._supported,
             name: PROVIDER_NAME,
             id: PROVIDER_ID,
+            capabilities: {
+                walletConnectRegistry: {
+                    networkTypes: [NetworkType.Solana],
+                },
+            },
             providerIcon: this.getProviderIcon(),
             ready: useSvmStore.getState().ready,
             requestAdditionalConnectors: this.requestAdditionalConnectors.bind(this),

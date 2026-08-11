@@ -1,6 +1,7 @@
 export * from "./api"
 export * from './buildDeepLink'
 export * from "./createRegistryConnector"
+export * from "./connectorSource"
 export * from "./decorateForWagmi"
 export * from "./dynamicMetadata"
 export * from './mapConnectError'
@@ -18,3 +19,4 @@ export * from './findRegistryWallet'
 export * from "./walletDescriptorLoader"
 export * from "./descriptorStubStore"
 export * from "./isProviderConnectReady"
+export * from './providerCapabilities'

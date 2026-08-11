@@ -1,8 +1,10 @@
 import type { WalletConnectionProvider, WalletConnectionProviderProps, WalletConnectionStore, MultiStepHandler } from "@layerswap/wallet-core/types"
 import { isMobile } from "@layerswap/utils"
+import { NetworkType } from "@layerswap/widget-types"
 import { connectModalStore, createMemoizedConnectionStore, getAdditionalConnectorsStore, type AppNetworkAdapter } from "@layerswap/wallet-core"
 import { id as PROVIDER_ID, name as PROVIDER_NAME } from '../constants'
 import { createEvmTransfer } from '../transferProvider/createEvmTransfer'
+import { supportsRegistryConnects } from './connectorsHelpers'
 import { EvmConnectionService } from './EvmConnectionService'
 import { findEthereumNetwork } from './findEthereumNetwork'
 import { useEvmStore } from './evmStore'
@@ -47,6 +49,7 @@ export function createEvmConnection<Network>(
         addRecentConnector: additionalConnectorsStore.addRecentConnector,
         requestRegistryConnectors: additionalConnectorsStore.requestAdditionalConnectors,
         registryConnectors: additionalConnectorsStore.getSnapshot().browseConnectors,
+        recentConnectors: additionalConnectorsStore.getSnapshot().recentConnectors,
         isMobilePlatform,
         ethereumChainIds,
     })
@@ -64,12 +67,14 @@ export function createEvmConnection<Network>(
                 wagmiAccount: evmState.wagmiAccount,
                 selectedAddress: evmState.selectedAddress,
                 browseConnectors: additionalState.browseConnectors,
+                recentConnectors: additionalState.recentConnectors,
                 networks,
             }
         },
         buildSnapshot: inputs => {
             evmConnectionService.configure({
                 registryConnectors: inputs.browseConnectors,
+                recentConnectors: inputs.recentConnectors,
             })
 
             const { wagmiAccount, selectedAddress, allConnectors, connections } = inputs
@@ -90,6 +95,13 @@ export function createEvmConnection<Network>(
             const providerNetwork = findEthereumNetwork(inputs.networks, networkAdapter, ethereumChainIds)
             const providerIcon = providerNetwork ? networkAdapter.getIcon(providerNetwork) : undefined
             const buckets = evmConnectionService.getBuckets()
+            const registryCapabilities = supportsRegistryConnects(allConnectors)
+                ? {
+                    walletConnectRegistry: {
+                        networkTypes: [NetworkType.EVM],
+                    },
+                }
+                : undefined
 
             const snapshot: WalletConnectionProvider = {
                 connectWallet: evmConnectionService.connectWallet.bind(evmConnectionService),
@@ -110,6 +122,7 @@ export function createEvmConnection<Network>(
                 additionalConnectors,
                 name: PROVIDER_NAME,
                 id: PROVIDER_ID,
+                capabilities: registryCapabilities,
                 providerIcon,
                 ready: evmConnectionService.getReady(allConnectors),
                 multiStepHandlers: extraMultiStepHandlers,
