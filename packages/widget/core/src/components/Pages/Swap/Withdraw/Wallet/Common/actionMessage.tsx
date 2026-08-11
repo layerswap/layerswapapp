@@ -3,11 +3,13 @@ import { ActionMessages, ActionMessageType } from "../../messages/TransactionMes
 import { ErrorHandler } from "@/lib/ErrorHandler"
 import { Network } from "@/Models"
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore"
+import { useSwapDataState } from "@/context/swap"
 
 export const ActionMessage: FC<{ error: Error | undefined, isLoading: boolean, selectedSourceAddress: string, sourceNetwork: Network }> = ({ error, isLoading, selectedSourceAddress, sourceNetwork }) => {
 
     const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
     const gaslessErrorMessage = useGaslessPreferenceStore(s => s.gaslessErrorMessage)
+    const { swapError } = useSwapDataState()
 
     useEffect(() => {
         if (error && (error?.name === ActionMessageType.UnexpectedErrorMessage
@@ -28,6 +30,9 @@ export const ActionMessage: FC<{ error: Error | undefined, isLoading: boolean, s
     }
     if (isLoading) {
         return <ActionMessages.ConfirmActionMessage />
+    }
+    if (swapError) {
+        return <ActionMessages.SwapErrorMessage />
     }
     else if (error?.name === ActionMessageType.TransactionRejected) {
         return <ActionMessages.TransactionRejectedMessage />
