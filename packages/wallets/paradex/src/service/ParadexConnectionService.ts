@@ -9,6 +9,7 @@ import type {
 } from '@layerswap/widget/types'
 import {
     Address,
+    isProviderConnectReady,
     isWalletConnectRegistryConnector,
     KnownInternalNames,
     sleep,
@@ -134,12 +135,18 @@ export class ParadexConnectionService implements WalletConnectionService<Runtime
         return this.getEvmProvider()?.additionalConnectors ?? []
     }
 
+    /**
+     * Paradex has no connection state of its own — it is ready once both
+     * backing providers are. Readiness must go through
+     * {@link isProviderConnectReady} so descriptor stubs count as ready: a stub
+     * only hydrates when the connect modal opens, so reporting `ready: false`
+     * for one would deadlock every connect affordance gated on
+     * `useProvidersConnectReady` (Paradex is `hideFromList`, so users would see
+     * a permanently disabled button with nothing to click to resolve it).
+     */
     isReady(): boolean {
-        const evmProvider = this.getEvmProvider()
-        const starknetProvider = this.getStarknetProvider()
-        const evmReady = typeof evmProvider?.ready === 'boolean' ? evmProvider.ready : true
-        const starknetReady = typeof starknetProvider?.ready === 'boolean' ? starknetProvider.ready : true
-        return evmReady && starknetReady
+        return isProviderConnectReady(this.getEvmProvider())
+            && isProviderConnectReady(this.getStarknetProvider())
     }
 
     private resolveSingleWallet({
