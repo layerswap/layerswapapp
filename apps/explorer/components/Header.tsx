@@ -35,13 +35,14 @@ export default function Header() {
                         <LayerswapExplorerLogo className="h-10 w-auto text-primary-logoColor sm:h-14" />
                     </Link>
                     <div className="flex items-center gap-0.5">
-                        <Link
-                            href="/"
-                            aria-current={isHome ? 'page' : undefined}
-                            className={`${internalLinkClass(isHome)} hidden sm:block`}
-                        >
-                            Transfers
-                        </Link>
+                        {isAnalytics && (
+                            <Link
+                                href="/"
+                                className={`${internalLinkClass(false)} hidden sm:block`}
+                            >
+                                Transfers
+                            </Link>
+                        )}
                         {/* <Link
                             href="/analytics"
                             aria-current={isAnalytics ? 'page' : undefined}
@@ -49,7 +50,9 @@ export default function Header() {
                         >
                             Analytics
                         </Link> */}
-                        <span className="mx-1 hidden h-5 w-px bg-secondary-300 sm:block" aria-hidden="true" />
+                        {isAnalytics && (
+                            <span className="mx-1 hidden h-5 w-px bg-secondary-300 sm:block" aria-hidden="true" />
+                        )}
                         <Link target='_blank' href={'https://layerswap.io/'} className='flex items-center gap-1 rounded-lg px-2 py-1 text-sm text-secondary-text transition-colors hover:bg-secondary-500 hover:text-primary-text sm:px-3 sm:py-2 sm:text-base'>
                             <span>App</span>
                         </Link>

@@ -10,7 +10,7 @@ import VolumeChart from "./components/VolumeChart";
 import FlowSection from "./components/FlowSection";
 import AssetsTable from "./components/AssetsTable";
 import { fillTimelineGaps, fmtUsd, generatedAtLabel } from "./components/format";
-import { ApiResponse, NetworkWithTokens } from "@layerswap/widget/types";
+import { ApiResponse } from "@layerswap/widget/types";
 import { apiClient } from "@/lib/apiClient";
 
 const PERIOD_LABELS: Record<AnalyticsPeriod, string> = {
@@ -147,26 +147,28 @@ export default function Analytics() {
         }
     );
 
-    const { data: networksData } = useSWR<ApiResponse<NetworkWithTokens[]>>("/networks", apiClient.fetcher, { dedupingInterval: 60000 });
+    // const { data: networksData } = useSWR<ApiResponse<NetworkWithTokens[]>>("/networks", apiClient.fetcher, { dedupingInterval: 60000 });
 
     const response = data?.data;
-    const availableNetworks = useMemo<AnalyticsNetwork[]>(
-        () =>
-            (networksData?.data ?? []).map((network) => ({
-                name: network.name,
-                display_name: network.display_name,
-                logo: network.logo,
-            })),
-        [networksData]
-    );
+    // const availableNetworks = useMemo<AnalyticsNetwork[]>(
+    //     () =>
+    //         (networksData?.data ?? []).map((network) => ({
+    //             name: network.name,
+    //             display_name: network.display_name,
+    //             logo: network.logo,
+    //         })),
+    //     [networksData]
+    // );
 
-    const selectedNetwork = useMemo(() => {
-        return (
-            availableNetworks.find((network) =>
-                network.name.startsWith("IMMUTABLEZK_")
-            ) ?? null
-        );
-    }, [availableNetworks]);
+    const selectedNetwork: AnalyticsNetwork = {
+        name: process.env.NEXT_PUBLIC_API_VERSION === "sandbox"
+            ? "IMMUTABLEZK_TESTNET"
+            : "IMMUTABLEZK_MAINNET",
+        display_name: process.env.NEXT_PUBLIC_API_VERSION === "sandbox"
+            ? "Immutable zkEVM Testnet"
+            : "Immutable zkEVM",
+        logo: "",
+    };
 
     const networkAnalytics = useMemo(() => {
         if (!response || !selectedNetwork) return null;
