@@ -16,6 +16,23 @@ import { bitcoin, createClient, defineChain, http, ChainId } from '@bigmi/core'
 let _config: Config | null = null
 let _configKey: string | null = null
 
+// Connectors whose reconnect opens a wallet popup instead of restoring
+// silently — excluded from session restore. Mirrored in the bitcoin
+// descriptor's `hasPersistedSession` probe in `@layerswap/wallets`.
+const NON_SILENT_CONNECTOR_IDS = ['io.metamask.bitcoin']
+
+async function restoreSilentSessions(config: Config): Promise<void> {
+    const silentConnectors = config.connectors.filter(c => !NON_SILENT_CONNECTOR_IDS.includes(c.id))
+    await reconnect(config, { connectors: silentConnectors }).catch(() => undefined)
+    if (config.state.connections.size > 0) return
+    // Nothing restored — clear the stale markers so they don't re-trigger
+    // this path on every page load (bigmi never removes them itself).
+    await Promise.all([
+        config.storage?.removeItem('recentConnectorId'),
+        ...NON_SILENT_CONNECTOR_IDS.map(id => config.storage?.removeItem(`${id}.connected`)),
+    ]).catch(() => undefined)
+}
+
 export function getBitcoinConfig(): Config {
     if (!_config) {
         throw new Error('Bitcoin config requested before BitcoinProvider mounted')
@@ -63,7 +80,7 @@ export function ensureBitcoinConfig(network: BitcoinNetworkConfig | undefined): 
     _configKey = nextConfigKey
 
     if (typeof window !== 'undefined') {
-        reconnect(_config).catch(() => { /* swallow */ })
+        restoreSilentSessions(_config).catch(() => { /* swallow */ })
     }
 
     return _config

@@ -99,6 +99,9 @@ export class BitcoinConnectionService<Network> implements WalletConnectionServic
         if (config.state.connections.size > 0) {
             config.setState(x => ({ ...x, connections: new Map(), current: null, status: 'disconnected' }))
         }
+        // bigmi never removes this marker on a full disconnect; left behind it
+        // keeps signaling a restorable session.
+        await Promise.resolve(config.storage?.removeItem('recentConnectorId')).catch(console.log)
     }
 
     async connectWallet({ connector: internalConnector }: { connector: InternalConnector }): Promise<Wallet | undefined> {

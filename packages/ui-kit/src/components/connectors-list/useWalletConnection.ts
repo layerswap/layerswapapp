@@ -1,5 +1,5 @@
 import { type Wallet } from '@layerswap/widget-types';
-import { useCallback, useState } from "react";
+import { useCallback, useState, useRef } from "react";
 import { usePersistedState } from "@layerswap/wallet-core";
 import { isMobile } from "@layerswap/utils";
 import type { WalletConnectionProvider, WalletModalConnector } from "@layerswap/wallet-core/types";
@@ -19,6 +19,7 @@ export function useWalletConnection({ featuredProviders, onFinish, }: UseWalletC
     const [recentConnectors, setRecentConnectors] = usePersistedState<RecentConnector[]>([], "recentConnectors")
     const [connectionError, setConnectionError] = useState<string | undefined>()
     const isMobilePlatform = isMobile()
+    const lastAttemptRef = useRef<{ connector: WalletModalConnector, provider: WalletConnectionProvider } | null>(null)
 
     const connect = useCallback(async (
         connector: WalletModalConnector,
@@ -31,6 +32,8 @@ export function useWalletConnection({ featuredProviders, onFinish, }: UseWalletC
                 setSelectedMultiChainConnector(connector)
                 return
             }
+
+            lastAttemptRef.current = { connector, provider }
 
             // Injected wallets may gain variants while lazy providers and
             // registry metadata load. Wait once and re-check before committing
@@ -97,11 +100,18 @@ export function useWalletConnection({ featuredProviders, onFinish, }: UseWalletC
         setSelectedMultiChainConnector,
     ])
 
+    const retry = useCallback(() => {
+        const last = lastAttemptRef.current
+        if (!last) return
+        void connect({ ...last.connector, qr: undefined }, last.provider)
+    }, [connect])
+
     return {
         connect,
         connectionError,
         getLiveVariants,
         isMobilePlatform,
         recentConnectors,
+        retry,
     }
 }

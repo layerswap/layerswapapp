@@ -52,6 +52,7 @@ export const ConnectorsList: FC<ConnectorsListProps> = ({
         getLiveVariants,
         isMobilePlatform,
         recentConnectors,
+        retry,
     } = useWalletConnection({
         featuredProviders,
         onFinish,
@@ -117,14 +118,9 @@ export const ConnectorsList: FC<ConnectorsListProps> = ({
     ) {
         content = <WalletQrCode selectedConnector={selectedConnector} portalContainerRef={rootRef} />
     } else if (selectedConnector) {
-        const provider = featuredProviders.find(
-            item => item.name === selectedConnector.providerName
-        )
         content = (
             <LoadingConnect
-                onRetry={() => {
-                    if (provider) void connect({ ...selectedConnector, qr: undefined }, provider)
-                }}
+                onRetry={retry}
                 selectedConnector={selectedConnector}
                 connectionError={connectionError}
                 brandMark={brandMark}
