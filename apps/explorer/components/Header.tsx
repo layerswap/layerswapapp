@@ -43,7 +43,7 @@ export default function Header() {
                             Transfers
                         </Link>
                         <Link
-                            href="/analytics"
+                            href={`/analytics?network=${version === 'sandbox' ? 'IMMUTABLEZK_TESTNET' : 'IMMUTABLEZK_MAINNET'}`}
                             aria-current={isAnalytics ? 'page' : undefined}
                             className={internalLinkClass(isAnalytics)}
                         >

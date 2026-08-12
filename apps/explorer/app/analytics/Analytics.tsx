@@ -14,8 +14,6 @@ import { useSearchParams } from "next/navigation";
 import { ApiResponse, NetworkWithTokens } from "@layerswap/widget/types";
 import { apiClient } from "@/lib/apiClient";
 
-const DEFAULT_NETWORK = "IMMUTABLEZK_MAINNET";
-
 const PERIOD_LABELS: Record<AnalyticsPeriod, string> = {
     "24h": "Last 24 hours",
     "7d": "Last 7 days",
@@ -126,7 +124,7 @@ function AnalyticsUnavailable({
 
 export default function Analytics() {
     const searchParams = useSearchParams();
-    const networkName = searchParams.get("network") ?? DEFAULT_NETWORK;
+    const networkName = searchParams.get("network");
     const [period, setPeriod] = useState<AnalyticsPeriod>("7d");
 
     const { data, error, isLoading, isValidating, mutate } = useSWR<ApiResponse<AnalyticsResponse>>(
