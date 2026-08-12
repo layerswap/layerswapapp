@@ -1,4 +1,4 @@
-// Theme types are defined in the shared, zero-runtime contract package so the
+// Theme types are defined in the shared, lightweight contract package so the
 // widget and the loader packages share one source of truth. Re-exported here
 // to keep existing `@/Models/Theme` imports working unchanged.
 export type { ThemeData, ThemeColor, StatusColor } from "@layerswap/widget-types";
