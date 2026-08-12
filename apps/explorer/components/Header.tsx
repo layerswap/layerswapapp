@@ -42,13 +42,13 @@ export default function Header() {
                         >
                             Transfers
                         </Link>
-                        <Link
-                            href={`/analytics?network=${version === 'sandbox' ? 'IMMUTABLEZK_TESTNET' : 'IMMUTABLEZK_MAINNET'}`}
+                        {/* <Link
+                            href="/analytics"
                             aria-current={isAnalytics ? 'page' : undefined}
                             className={internalLinkClass(isAnalytics)}
                         >
                             Analytics
-                        </Link>
+                        </Link> */}
                         <span className="mx-1 hidden h-5 w-px bg-secondary-300 sm:block" aria-hidden="true" />
                         <Link target='_blank' href={'https://layerswap.io/'} className='flex items-center gap-1 rounded-lg px-2 py-1 text-sm text-secondary-text transition-colors hover:bg-secondary-500 hover:text-primary-text sm:px-3 sm:py-2 sm:text-base'>
                             <span>App</span>

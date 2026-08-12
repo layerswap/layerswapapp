@@ -3,14 +3,13 @@ import { useMemo, useState } from "react";
 import useSWR from "swr";
 import { AnalyticsNetwork, AnalyticsPeriod, AnalyticsResponse, NetworkAnalytics, } from "@/models/Analytics";
 import Link from "next/link";
-import ChainSelector from "./components/ChainSelector";
+// import ChainSelector from "./components/ChainSelector";
 import RangeTabs from "./components/RangeTabs";
 import SummaryCards from "./components/SummaryCards";
 import VolumeChart from "./components/VolumeChart";
 import FlowSection from "./components/FlowSection";
 import AssetsTable from "./components/AssetsTable";
 import { fillTimelineGaps, fmtUsd, generatedAtLabel } from "./components/format";
-import { useSearchParams } from "next/navigation";
 import { ApiResponse, NetworkWithTokens } from "@layerswap/widget/types";
 import { apiClient } from "@/lib/apiClient";
 
@@ -66,7 +65,12 @@ function emptyNetworkAnalytics(network: AnalyticsNetwork): NetworkAnalytics {
 function SectionSkeleton() {
     return (
         <div className="flex animate-pulse flex-col gap-3.5" aria-label="Loading analytics">
-            <div className="h-[118px] rounded-2xl border border-secondary-300 bg-secondary-500" />
+            <div className="flex flex-wrap gap-3">
+                <div className="h-[106px] flex-[1.4_1_236px] rounded-[14px] border border-secondary-300 bg-secondary-500" />
+                <div className="h-[106px] flex-[1.4_1_236px] rounded-[14px] border border-secondary-300 bg-secondary-500" />
+                <div className="h-[106px] flex-[1_1_168px] rounded-[14px] border border-secondary-300 bg-secondary-500" />
+                <div className="h-[106px] flex-[1_1_168px] rounded-[14px] border border-secondary-300 bg-secondary-500" />
+            </div>
             <div className="h-[352px] rounded-2xl border border-secondary-300 bg-secondary-500" />
             <div className="h-[220px] rounded-2xl border border-secondary-300 bg-secondary-500" />
             <div className="h-[320px] rounded-2xl border border-secondary-300 bg-secondary-500" />
@@ -123,8 +127,6 @@ function AnalyticsUnavailable({
 }
 
 export default function Analytics() {
-    const searchParams = useSearchParams();
-    const networkName = searchParams.get("network");
     const [period, setPeriod] = useState<AnalyticsPeriod>("7d");
 
     const { data, error, isLoading, isValidating, mutate } = useSWR<ApiResponse<AnalyticsResponse>>(
@@ -150,26 +152,21 @@ export default function Analytics() {
     const response = data?.data;
     const availableNetworks = useMemo<AnalyticsNetwork[]>(
         () =>
-            (networksData?.data ?? [])
-                .map((network) => ({
-                    name: network.name,
-                    display_name: network.display_name,
-                    logo: network.logo,
-                }))
-                .sort((a, b) => a.display_name.localeCompare(b.display_name)),
+            (networksData?.data ?? []).map((network) => ({
+                name: network.name,
+                display_name: network.display_name,
+                logo: network.logo,
+            })),
         [networksData]
     );
 
     const selectedNetwork = useMemo(() => {
-        const requested = availableNetworks.find((network) => network.name === networkName);
-
         return (
-            requested ??
-            response?.networks[0]?.network ??
-            availableNetworks[0] ??
-            null
+            availableNetworks.find((network) =>
+                network.name.startsWith("IMMUTABLEZK_")
+            ) ?? null
         );
-    }, [availableNetworks, networkName, response]);
+    }, [availableNetworks]);
 
     const networkAnalytics = useMemo(() => {
         if (!response || !selectedNetwork) return null;
@@ -199,12 +196,6 @@ export default function Analytics() {
     const isFatalError = Boolean(error && !response && !isWarming);
     const deploymentMissing =
         status === 400 && responseMessage(error)?.toLowerCase() === "no swaps found";
-
-    const onSelectNetwork = (network: AnalyticsNetwork) => {
-        const params = new URLSearchParams(searchParams.toString());
-        params.set("network", network.name);
-        window.history.replaceState(null, "", `?${params.toString()}`);
-    };
 
     return (
         <main className="flex w-full flex-col px-4 pb-10 pt-8 sm:px-6 xl:px-0">
@@ -246,20 +237,20 @@ export default function Analytics() {
                 </header>
 
                 {!isFatalError ? (
-                    <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-                        <ChainSelector
+                    <div className="mb-4 flex justify-end">
+                        {/* <ChainSelector
                             networks={availableNetworks}
                             selected={selectedNetwork}
-                            onSelect={onSelectNetwork}
+                            onSelect={(network) =>
+                                window.history.replaceState(null, "", `?network=${network.name}`)
+                            }
                             disabled={availableNetworks.length === 0}
+                        /> */}
+                        <RangeTabs
+                            value={period}
+                            onChange={setPeriod}
+                            disabled={isLoading && !response}
                         />
-                        <div className="flex w-full items-center gap-3 sm:w-auto">
-                            <RangeTabs
-                                value={period}
-                                onChange={setPeriod}
-                                disabled={isLoading && !response}
-                            />
-                        </div>
                     </div>
                 ) : null}
 
@@ -295,7 +286,7 @@ export default function Analytics() {
                         {!hasActivity ? (
                             <div className="rounded-2xl border border-secondary-300 bg-secondary-500 px-5 py-4 text-sm text-secondary-text">
                                 No completed transfers for {selectedNetwork.display_name} in this
-                                period. Try a longer range or choose another network.
+                                period. Try a longer range.
                             </div>
                         ) : null}
                         <SummaryCards

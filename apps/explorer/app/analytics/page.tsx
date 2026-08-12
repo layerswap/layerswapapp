@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import MaintananceContent from "@/components/maintanance/maintanance";
 import Analytics from "./Analytics";
 
@@ -15,9 +14,5 @@ export default function AnalyticsPage() {
     if (process.env.NEXT_PUBLIC_MAINTANANCE == String(true))
         return <MaintananceContent />;
 
-    return (
-        <Suspense>
-            <Analytics />
-        </Suspense>
-    );
+    return <Analytics />;
 }
