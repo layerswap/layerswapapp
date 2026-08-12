@@ -177,13 +177,14 @@ export class EvmConnectionService<Network> implements WalletConnectionService<Ru
             return { connectors: [], nextPage: null, totalCount: 0 }
         }
         const result = await fn(params)
-        const additional = splitRegistryConnectors(
+        const { featured, additional } = splitRegistryConnectors(
             result.connectors,
             this._deps.isMobilePlatform ?? false,
             PROVIDER_NAME,
-        ).additional
+        )
+        const connectors = params.query?.trim() ? [...featured, ...additional] : additional
         return {
-            connectors: additional,
+            connectors,
             nextPage: result.nextPage,
             totalCount: result.totalCount,
         }
