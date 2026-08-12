@@ -56,7 +56,7 @@ export default function Header() {
                         <Link target='_blank' href={'https://layerswap.io/'} className='flex items-center gap-1 rounded-lg px-2 py-1 text-sm text-secondary-text transition-colors hover:bg-secondary-500 hover:text-primary-text sm:px-3 sm:py-2 sm:text-base'>
                             <span>App</span>
                         </Link>
-                        <Link target='_blank' href={'https://docs.layerswap.io/'} className='hidden items-center gap-1 rounded-lg px-2 py-1 text-sm text-secondary-text transition-colors hover:bg-secondary-500 hover:text-primary-text sm:flex sm:px-3 sm:py-2 sm:text-base'>
+                        <Link target='_blank' href={'https://docs.layerswap.io/'} className='flex items-center gap-1 rounded-lg px-2 py-1 text-sm text-secondary-text transition-colors hover:bg-secondary-500 hover:text-primary-text sm:px-3 sm:py-2 sm:text-base'>
                             <span>Docs</span>
                         </Link>
                     </div>
