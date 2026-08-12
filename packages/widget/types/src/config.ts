@@ -25,7 +25,7 @@ export type WalletProviderId =
  * (`@layerswap/widget`) refines it internally — its `LayerswapWidgetConfig`
  * is `WidgetConfig` intersected with precise types for the deep fields
  * (`settings`, `initialValues`) — so the two can never structurally diverge,
- * while integrators and the loaders depend only on this zero-runtime package.
+ * while integrators and the loaders depend only on this package.
  *
  * Framework-agnostic by construction: `TLoading` is the host's renderable type
  * (`ReactNode` in React hosts — `@layerswap/widget-react` binds it), kept open

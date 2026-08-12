@@ -3,7 +3,7 @@ import { ChevronDown, CircleHelp, Clock } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/shadcn/accordion";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import { useDetailedQuote } from "@/hooks/useDetailedQuote";
-import { Network, Token } from "@/Models/Network";
+import { Network, Token } from "@layerswap/widget-types";
 import { formatFee } from "./helpers";
 import { formatTokenAmount } from "@/components/utils/formatTokenAmount";
 import { formatVerboseHms, msToParts } from "@/components/utils/formatTime";

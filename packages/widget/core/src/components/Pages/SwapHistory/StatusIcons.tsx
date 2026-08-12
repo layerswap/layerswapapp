@@ -1,4 +1,4 @@
-import { SwapStatus } from "@/Models/SwapStatus"
+import { SwapStatus } from '@layerswap/widget-types';
 import CircleCheckIcon from "@/components/Icons/CircleCheckIcon";
 import { PublishedSwapTransactions, SwapItem, TransactionType } from "@/lib/apiClients/layerSwapApiClient"
 

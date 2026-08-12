@@ -1,5 +1,5 @@
-import { NetworkBalance } from "@/Models/Balance";
-import { NetworkWithTokens, NetworkRoute } from "@/Models/Network";
+import { NetworkBalance } from "@layerswap/widget-types";
+import { NetworkWithTokens, NetworkRoute } from "@layerswap/widget-types";
 
 /**
  * Calculates the total USD value of balances for a network

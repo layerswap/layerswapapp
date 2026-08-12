@@ -1,11 +1,11 @@
+import { type Wallet } from '@layerswap/widget-types';
 import { Command, CommandGroup, CommandItem, CommandList } from "@/components/shadcn/command";
 import { Address } from "@/lib/address/Address";
 import { AddressGroup, AddressItem } from ".";
-import { NetworkRoute } from "@/Models/Network";
+import { NetworkRoute } from "@layerswap/widget-types";
 import { FC } from "react";
 import AddressPickerItem from "./AddressPickerItem";
 import { Partner } from "@/Models/Partner";
-import { Wallet } from "@/types/wallet";
 import { BookOpen } from "lucide-react";
 import { useAddressNameFinder } from "@/stores/addressBookStore";
 

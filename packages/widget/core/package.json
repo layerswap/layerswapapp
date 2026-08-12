@@ -37,8 +37,7 @@
     "build:esm+types": "tsc --project tsconfig.json --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm && tsc-alias -p tsconfig.json --outDir ./dist/types",
     "check:types": "tsc --noEmit",
     "clean": "rimraf dist tsconfig.tsbuildinfo",
-    "dev": "tsc-watch -p tsconfig.json --outDir ./dist/esm --onSuccess \"tsc-alias -p tsconfig.json --outDir ./dist/esm\"",
-    "test": "pnpm build:esm+types && node --test tests/*.test.mjs"
+    "dev": "tsc-watch -p tsconfig.json --outDir ./dist/esm --onSuccess \"tsc-alias -p tsconfig.json --outDir ./dist/esm\""
   },
   "author": "Layerswap",
   "homepage": "https://github.com/layerswap/layerswapapp",
@@ -67,6 +66,8 @@
   },
   "dependencies": {
     "@layerswap/utils": "workspace:^",
+    "@layerswap/ui-kit": "workspace:^",
+    "@layerswap/wallet-core": "workspace:^",
     "@layerswap/widget-types": "workspace:^",
     "@headlessui/react": "^2.1.1",
     "@number-flow/react": "^0.5.10",
@@ -87,14 +88,12 @@
     "clsx": "^2.1.1",
     "cmdk": "^0.2.0",
     "color": "4.2.3",
-    "copy-to-clipboard": "^3.3.3",
     "fflate": "^0.8.2",
     "formik": "^2.2.9",
     "framer-motion": "^12.26.2",
     "lucide-react": "^0.379.0",
     "radix-ui": "^1.4.3",
     "react-error-boundary": "^4.0.11",
-    "react-qrcode-logo": "4.1.0",
     "react-use-intercom": "^2.0.0",
     "swr": "catalog:",
     "tailwind-merge": "^3.4.0",

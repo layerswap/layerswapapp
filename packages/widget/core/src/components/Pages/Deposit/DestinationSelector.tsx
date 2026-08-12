@@ -8,7 +8,7 @@ import { useRecentNetworksStore } from "@/stores/recentRoutesStore";
 import { useRouteSortingStore } from "@/stores/routeSortingStore";
 import useDepositAddressDestinations from "@/hooks/useDepositAddressDestinations";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
-import { NetworkRoute } from "@/Models/Network";
+import { NetworkRoute } from "@layerswap/widget-types";
 
 type Props = {
     /** When true, render a static (non-interactive) badge — the destination is

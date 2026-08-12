@@ -1,5 +1,5 @@
-import { NetworkRoute } from "../Models/Network";
-import { NetworkBalance } from "../Models/Balance";
+import { NetworkRoute } from "@layerswap/widget-types";
+import { NetworkBalance } from "@layerswap/widget-types";
 import { NetworkTokenElement } from "../Models/Route";
 import { RoutesHistory } from "@/stores/recentRoutesStore";
 import { SwapDirection } from "@/components/Pages/Swap/Form/SwapFormValues";

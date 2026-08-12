@@ -1,7 +1,11 @@
+import { type ErrorEventType } from '@layerswap/widget-types';
 import { logStore } from "@/stores/logStore";
-import { ErrorEventType } from "@/types/logEvents";
+import { ErrorHandler as UtilsErrorHandler, setErrorLogger } from "@layerswap/widget-types";
+
+export function registerWidgetErrorLogger() {
+    setErrorLogger((event) => logStore.getState().logger(event));
+}
 
 export function ErrorHandler(event: ErrorEventType) {
-    const { logger } = logStore.getState();;
-    return logger(event);
+    return UtilsErrorHandler(event);
 }

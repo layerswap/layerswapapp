@@ -1,4 +1,4 @@
-import { NetworkWithTokens, Token } from "@/Models/Network";
+import { NetworkWithTokens, Token } from "@layerswap/widget-types";
 import type { ExtendedRouteRecord } from "@/stores/extendedRoutesStore";
 
 /**

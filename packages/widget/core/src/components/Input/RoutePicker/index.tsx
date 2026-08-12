@@ -5,7 +5,7 @@ import { SelectedRouteDisplay } from "./Routes";
 import useFormRoutes from "@/hooks/useFormRoutes";
 import Balance from "../Amount/Balance";
 import { Content } from "./Content";
-import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
+import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import { SwapQuote } from "@/lib/apiClients/layerSwapApiClient";
 import { QuoteTokenPrices } from "@/hooks/useFee";
 import PickerWalletConnect from "./RouterPickerWalletConnect";

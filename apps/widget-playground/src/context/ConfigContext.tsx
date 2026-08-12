@@ -22,7 +22,6 @@ interface ContextType {
     themeData: ThemeData | undefined;
     themeName: string | undefined;
     widgetRenderKey: number;
-    customEvmSwitch: boolean;
     showLoading: boolean;
     showPanel: boolean;
     actionText: string;
@@ -33,7 +32,6 @@ interface ContextType {
     updateActionText: (val: string) => void;
     updateShowPanel: (val: boolean) => void;
     updateShowLoading: (val: boolean) => void;
-    updateCustomEvmSwitch: (val: boolean) => void;
     updateTheme: <K extends keyof ThemeData> (prop: K, value: ThemeData[K]) => void;
     updateWholeTheme: Dispatch<SetStateAction<{
         theme: ThemeData | undefined;
@@ -56,7 +54,6 @@ export const ConfigProvider: FC<{ children: React.ReactNode }> = ({ children }) 
         themeName: 'default'
     });
     const [widgetRenderKey, setWidgetRenderKey] = useState(0);
-    const [customEvmSwitch, setCustomEvmSwitch] = useState(false);
     const [showLoading, setShowLoading] = useState(false);
     const [showPanel, setShowPanel] = useState(true);
     const [actionText, setActionText] = useState('');
@@ -69,7 +66,7 @@ export const ConfigProvider: FC<{ children: React.ReactNode }> = ({ children }) 
 
     useEffect(() => {
         bumpWidgetKey()
-    }, [customEvmSwitch, showLoading, initialValues, widgetType, depositProps])
+    }, [showLoading, initialValues, widgetType, depositProps])
 
     const resetData = () => {
         setThemeData({
@@ -79,7 +76,6 @@ export const ConfigProvider: FC<{ children: React.ReactNode }> = ({ children }) 
             themeName: 'default'
         });
         setInitialSettings({});
-        setCustomEvmSwitch(false);
         setShowLoading(false);
         setActionText('');
         setWidgetType('swap');
@@ -123,9 +119,9 @@ export const ConfigProvider: FC<{ children: React.ReactNode }> = ({ children }) 
 
     return (
         <WidgetContext.Provider value={{
-            themeData: themeData?.theme, themeName: themeData?.themeName, widgetRenderKey, customEvmSwitch, showLoading, showPanel, actionText, initialValues, config,
+            themeData: themeData?.theme, themeName: themeData?.themeName, widgetRenderKey, showLoading, showPanel, actionText, initialValues, config,
             widgetType, depositProps,
-            updateTheme, updateWholeTheme: setThemeData, resetData, updateCustomEvmSwitch: setCustomEvmSwitch, updateShowLoading: setShowLoading, updateShowPanel: setShowPanel, updateActionText: setActionText, updateInitialValues,
+            updateTheme, updateWholeTheme: setThemeData, resetData, updateShowLoading: setShowLoading, updateShowPanel: setShowPanel, updateActionText: setActionText, updateInitialValues,
             updateWidgetType: setWidgetType, updateDepositProp, updateDepositProps: setDepositProps,
         }}>
             <>

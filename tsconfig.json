@@ -1,0 +1,14 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "packages/widget/core"
+    },
+    {
+      "path": "packages/widget/react"
+    },
+    {
+      "path": "packages/wallets/all"
+    }
+  ]
+}
