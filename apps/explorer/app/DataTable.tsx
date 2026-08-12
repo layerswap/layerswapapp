@@ -9,10 +9,8 @@ import { SwapStatus } from "@/models/SwapStatus";
 import { useRouter } from "next/navigation";
 import Error500 from "@/components/Error500";
 import { SwapData, Swap, TransactionType } from "@/models/Swap";
-import { LayerswapApiClient } from '@layerswap/widget/internal'
 import { formatAmount } from "@/helpers/formatAmount";
-
-const apiClient = new LayerswapApiClient()
+import { apiClient } from "@/lib/apiClient";
 
 export default function DataTable() {
     const { data, error, isLoading } = useSWR<ApiResponse<SwapData[]>>(`/explorer?version=${process.env.NEXT_PUBLIC_API_VERSION}&statuses=1&statuses=4&compact=true`, apiClient.fetcher, { dedupingInterval: 60000 });

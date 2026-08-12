@@ -2,17 +2,15 @@
 
 import useSWRInfinite from "swr/infinite";
 import { ApiResponse } from '@layerswap/widget/types';
-import { LayerswapApiClient } from '@layerswap/widget/internal';
 import { SwapData, TransactionType } from "@/models/Swap";
 import LoadingBlocks from "@/components/LoadingBlocks";
 import NotFound from "@/components/notFound";
 import { SwapListView, SwapDetailView } from "@/components/SwapDetails";
+import { apiClient } from "@/lib/apiClient";
 
 interface SearchDataProps {
     searchParam: string;
 }
-
-const apiClient = new LayerswapApiClient();
 
 export default function SearchData({ searchParam }: SearchDataProps) {
     const getKey = (pageIndex: number, previousPageData: ApiResponse<SwapData[]> | null) => {

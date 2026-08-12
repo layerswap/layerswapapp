@@ -1,13 +1,7 @@
 "use client";
-
 import { useMemo, useState } from "react";
 import useSWR from "swr";
-import {
-    AnalyticsNetwork,
-    AnalyticsPeriod,
-    AnalyticsResponse,
-    NetworkAnalytics,
-} from "@/models/Analytics";
+import { AnalyticsNetwork, AnalyticsPeriod, AnalyticsResponse, NetworkAnalytics, } from "@/models/Analytics";
 import Link from "next/link";
 import ChainSelector from "./components/ChainSelector";
 import RangeTabs from "./components/RangeTabs";
@@ -16,14 +10,11 @@ import VolumeChart from "./components/VolumeChart";
 import FlowSection from "./components/FlowSection";
 import AssetsTable from "./components/AssetsTable";
 import { fillTimelineGaps, fmtUsd, generatedAtLabel } from "./components/format";
-import { useAnalyticsNetworkStore } from "@/stores/analyticsNetworkStore";
+import { useSearchParams } from "next/navigation";
 import { ApiResponse, NetworkWithTokens } from "@layerswap/widget/types";
-import { AppSettings, LayerswapApiClient } from "@layerswap/widget/internal";
+import { apiClient } from "@/lib/apiClient";
 
-LayerswapApiClient.apiBaseEndpoint =
-    process.env.NEXT_PUBLIC_LS_API?.replace(/\/$/, "") ?? AppSettings.LayerswapApiUri;
-const apiClient = new LayerswapApiClient();
-const version = process.env.NEXT_PUBLIC_API_VERSION;
+const DEFAULT_NETWORK = "IMMUTABLEZK_MAINNET";
 
 const PERIOD_LABELS: Record<AnalyticsPeriod, string> = {
     "24h": "Last 24 hours",
@@ -34,16 +25,10 @@ const PERIOD_LABELS: Record<AnalyticsPeriod, string> = {
 
 function buildKey(period: AnalyticsPeriod) {
     const params = new URLSearchParams();
-    if (version) params.set("version", version);
+    if (process.env.NEXT_PUBLIC_API_VERSION)
+        params.set("version", process.env.NEXT_PUBLIC_API_VERSION);
     params.set("period", period);
     return `/explorer/analytics?${params.toString()}`;
-}
-
-function buildNetworksKey() {
-    const params = new URLSearchParams();
-    if (version) params.set("version", version);
-    const query = params.toString();
-    return query ? `/networks?${query}` : "/networks";
 }
 
 function responseStatus(error: unknown): number | undefined {
@@ -140,8 +125,8 @@ function AnalyticsUnavailable({
 }
 
 export default function Analytics() {
-    const networkName = useAnalyticsNetworkStore((state) => state.networkName);
-    const setNetworkName = useAnalyticsNetworkStore((state) => state.setNetworkName);
+    const searchParams = useSearchParams();
+    const networkName = searchParams.get("network") ?? DEFAULT_NETWORK;
     const [period, setPeriod] = useState<AnalyticsPeriod>("7d");
 
     const { data, error, isLoading, isValidating, mutate } = useSWR<ApiResponse<AnalyticsResponse>>(
@@ -162,16 +147,18 @@ export default function Analytics() {
         }
     );
 
-    const { data: networksData } = useSWR<ApiResponse<NetworkWithTokens[]>>(buildNetworksKey(), apiClient.fetcher, { dedupingInterval: 60000 });
+    const { data: networksData } = useSWR<ApiResponse<NetworkWithTokens[]>>("/networks", apiClient.fetcher, { dedupingInterval: 60000 });
 
     const response = data?.data;
     const availableNetworks = useMemo<AnalyticsNetwork[]>(
         () =>
-            (networksData?.data ?? []).map((network) => ({
-                name: network.name,
-                display_name: network.display_name,
-                logo: network.logo,
-            })),
+            (networksData?.data ?? [])
+                .map((network) => ({
+                    name: network.name,
+                    display_name: network.display_name,
+                    logo: network.logo,
+                }))
+                .sort((a, b) => a.display_name.localeCompare(b.display_name)),
         [networksData]
     );
 
@@ -215,7 +202,11 @@ export default function Analytics() {
     const deploymentMissing =
         status === 400 && responseMessage(error)?.toLowerCase() === "no swaps found";
 
-    const onSelectNetwork = (network: AnalyticsNetwork) => setNetworkName(network.name);
+    const onSelectNetwork = (network: AnalyticsNetwork) => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("network", network.name);
+        window.history.replaceState(null, "", `?${params.toString()}`);
+    };
 
     return (
         <main className="flex w-full flex-col px-4 pb-10 pt-8 sm:px-6 xl:px-0">
@@ -265,14 +256,6 @@ export default function Analytics() {
                             disabled={availableNetworks.length === 0}
                         />
                         <div className="flex w-full items-center gap-3 sm:w-auto">
-                            {isValidating && response ? (
-                                <span
-                                    className="hidden text-xs text-primary-text-tertiary sm:inline"
-                                    role="status"
-                                >
-                                    Updating…
-                                </span>
-                            ) : null}
                             <RangeTabs
                                 value={period}
                                 onChange={setPeriod}
