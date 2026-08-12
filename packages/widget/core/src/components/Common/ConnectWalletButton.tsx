@@ -1,11 +1,11 @@
+import { type Wallet } from '@layerswap/widget-types';
 import { RefreshCw } from "lucide-react";
 import { ResolveConnectorIcon } from "../Icons/ConnectorIcons";
 import { FC, useCallback, useRef, useState } from "react";
-import { Wallet, WalletConnectionProvider } from "@/types/wallet";
+import { WalletConnectionProvider } from "@layerswap/wallet-core/types";
 import { useConnectModal } from "../Wallet/WalletModal";
-import { useWalletDescriptorLoader } from "@/lib/walletConnect/walletDescriptorLoader";
-import { ensureRegistryBrowseLoaded } from "@/lib/walletConnect/additionalConnectorsStore";
-import { isProviderConnectReady } from "@/hooks/useProvidersConnectReady";
+import { ensureRegistryBrowseLoaded, useWalletDescriptorLoader } from "@layerswap/wallet-core";
+import { isProviderConnectReady } from "@layerswap/wallet-core";
 import { classNames } from "@/components/utils/classNames";
 
 interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {

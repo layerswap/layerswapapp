@@ -5,7 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/pop
 import TokenChainBadge from "./_shared/TokenChainBadge";
 import PickerTriggerContent from "./_shared/PickerTriggerContent";
 import { useSettingsState } from "@/context/settings";
-import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
+import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import { useDepositSelection } from "./depositSelectionContext";
 
 export type SupportedDestination = {

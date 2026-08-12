@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Network } from '@/Models/Network';
+import { Network } from '@layerswap/widget-types';
 import { useContractAddressStore } from '@/stores/contractAddressStore';
 import { useSelectedAccount } from '@/context/swapAccounts';
 

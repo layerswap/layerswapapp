@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useSettingsState } from "@/context/settings";
 import { mergeExtendedSourceRoutes } from "@/lib/extendedRoutes/registry";
-import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
+import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 
 const PREFERRED_SOURCE_TOKEN_SYMBOL = "USDC";
 

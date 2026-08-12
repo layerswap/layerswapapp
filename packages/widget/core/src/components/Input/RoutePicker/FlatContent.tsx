@@ -1,6 +1,6 @@
 import { FC, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
-import { NetworkBalance } from "@/Models/Balance";
+import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
+import { NetworkBalance } from "@layerswap/widget-types";
 import { SwapDirection } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { useVirtualizer } from "@/lib/virtual";
 import { extractTokenElementsAsSuggested, getTokenElementBalanceAmount, sortSuggestedTokenElements } from "@/helpers/routeUtils";
@@ -8,7 +8,7 @@ import { useRecentNetworksStore } from "@/stores/recentRoutesStore";
 import { useSelectorState } from "@/components/Select/Selector/Index";
 import NavigatableList, { NavigatableItem } from "@/components/NavigatableList";
 import useWallet from "@/hooks/useWallet";
-import useProvidersConnectReady from "@/hooks/useProvidersConnectReady";
+import { useProvidersConnectReady } from "@layerswap/wallet-core";
 import ConnectWalletButton from "@/components/Common/ConnectWalletButton";
 import { CurrencySelectItemDisplay } from "./Routes";
 import { SelectItem } from "@/components/Select/Selector/SelectItem";

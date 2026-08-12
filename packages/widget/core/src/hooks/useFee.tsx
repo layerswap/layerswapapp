@@ -6,10 +6,10 @@ import { create } from 'zustand';
 import { isDiffByPercent } from '@/components/utils/numbers'
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
 import { useSlippageStore } from '@/stores/slippageStore'
-import { sleep } from '@/lib/wallets/utils';
+import { sleep } from '@layerswap/utils';
 import { useSettingsState } from '@/context/settings'
 import { resolveExtendedRoutePlan } from '@/lib/extendedRoutes/registry'
-import { usesDepository } from '@/lib/extendedRoutes/types'
+import { usesDepository } from '@layerswap/widget-types';
 import { transformLimitsForExtendedRoute, transformQuoteForExtendedRoute } from '@/lib/extendedRoutes/transforms'
 import { isPositiveDecimal } from '@/lib/extendedRoutes/amounts'
 import { LayerswapApiClient } from '@/lib/apiClients';

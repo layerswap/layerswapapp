@@ -1,7 +1,6 @@
 "use client";
 
 import { ArrowRight } from "lucide-react";
-import Refund from "../RefundComp";
 import TransactionCard, { RefuelCard } from "./TransactionCard";
 import SwapStatusHeader from "./SwapStatusHeader";
 import { SwapStatus } from "@/models/SwapStatus";
@@ -52,6 +51,9 @@ export default function SwapDetailView({
     const isFailed = status === SwapStatus.Failed || status === SwapStatus.Refunded;
     const hasRefuel = swap.transactions?.some(t => t?.type === TransactionType.Refuel);
 
+    const refundToken = !outputTransaction ? refundedTransaction?.token : undefined;
+    const refundNetwork = !outputTransaction ? refundedTransaction?.network : undefined;
+
     return (
         <div className="w-full">
             <div className="w-full">
@@ -75,9 +77,6 @@ export default function SwapDetailView({
                         </div>
                     </div>
                     <>
-                        {/* Refund Info */}
-                        {refundedTransaction && <Refund refund={refundedTransaction} />}
-
                         {/* Transaction Cards */}
                         <div className="flex flex-col items-start gap-2 text-primary-text lg:flex-row">
                             {/* Source Transaction Card */}
@@ -104,32 +103,32 @@ export default function SwapDetailView({
 
                             {/* Destination Transaction Card */}
                             <TransactionCard
-                                    title="To"
-                                    titleClassName={isFailed ? 'text-error-foreground' : ''}
-                                    transaction={outputTransaction}
-                                    refundedTransaction={refundedTransaction}
-                                    amount={(outputTransaction || refundedTransaction)?.amount}
-                                    tokenLogo={destination_token?.logo}
-                                    tokenSymbol={destination_token?.symbol}
-                                    networkLogo={destination_network?.logo}
-                                    networkName={destination_exchange ? destination_network?.display_name : undefined}
-                                    exchangeLogo={destination_exchange?.logo}
-                                    exchangeName={destination_exchange?.display_name || destination_network?.display_name}
-                                    accountExplorerUrl={destination_network?.account_explorer_template?.replace('{0}', (outputTransaction || refundedTransaction)?.to || '')}
-                                    txExplorerUrl={destination_network?.transaction_explorer_template?.replace('{0}', outputTransaction?.transaction_hash || '')}
-                                    isPending={isPending}
-                                    isRefunded={!!refundedTransaction}
-                                >
-                                    {/* Refuel Section */}
-                                    {hasRefuel && (
-                                        <RefuelCard
-                                            refuelTransaction={refuelTransaction}
-                                            refuelAmount={refuel?.amount}
-                                            refuelTokenLogo={refuel?.token?.logo}
-                                            refuelTokenSymbol={refuel?.token?.symbol}
-                                            refuelTokenPrecision={refuel?.token?.precision}
-                                        />
-                                    )}
+                                title="To"
+                                titleClassName={isFailed ? 'text-error-foreground' : ''}
+                                transaction={outputTransaction}
+                                refundedTransaction={refundedTransaction}
+                                amount={(outputTransaction || refundedTransaction)?.amount}
+                                tokenLogo={(refundToken || destination_token)?.logo}
+                                tokenSymbol={(refundToken || destination_token)?.symbol}
+                                networkLogo={(refundNetwork || destination_network)?.logo}
+                                networkName={destination_exchange ? destination_network?.display_name : undefined}
+                                exchangeLogo={destination_exchange?.logo}
+                                exchangeName={destination_exchange?.display_name || (refundNetwork || destination_network)?.display_name}
+                                accountExplorerUrl={(refundNetwork || destination_network)?.account_explorer_template?.replace('{0}', (outputTransaction || refundedTransaction)?.to || '')}
+                                txExplorerUrl={(refundNetwork || destination_network)?.transaction_explorer_template?.replace('{0}', (outputTransaction || refundedTransaction)?.transaction_hash || '')}
+                                isPending={isPending}
+                                isRefunded={!!refundedTransaction}
+                            >
+                                {/* Refuel Section */}
+                                {hasRefuel && (
+                                    <RefuelCard
+                                        refuelTransaction={refuelTransaction}
+                                        refuelAmount={refuel?.amount}
+                                        refuelTokenLogo={refuel?.token?.logo}
+                                        refuelTokenSymbol={refuel?.token?.symbol}
+                                        refuelTokenPrecision={refuel?.token?.precision}
+                                    />
+                                )}
                             </TransactionCard>
                         </div>
                     </>

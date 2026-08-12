@@ -3,7 +3,7 @@ import { useInitialSettings, useSettingsState } from "@/context/settings";
 import { useDepositSettings } from "@/context/depositSettings";
 import { generateSwapInitialValues } from "@/lib/generateSwapInitialValues";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
-import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
+import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import useWallet from "@/hooks/useWallet";
 import { ResolvedDestination, SupportedDestination, useResolvedDestinations } from "./DestinationTokenPicker";
 import { seedDefaultAmount } from "./seedDefaultAmount";

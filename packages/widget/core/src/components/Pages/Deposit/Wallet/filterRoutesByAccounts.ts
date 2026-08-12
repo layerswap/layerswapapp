@@ -1,4 +1,4 @@
-import { NetworkRoute } from "@/Models/Network";
+import { NetworkRoute } from "@layerswap/widget-types";
 import { AccountIdentityWithSupportedNetworks } from "@/context/swapAccounts";
 
 /**

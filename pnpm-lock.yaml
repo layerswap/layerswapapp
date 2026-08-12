@@ -36,6 +36,9 @@ catalogs:
     react-dom:
       specifier: 19.2.3
       version: 19.2.3
+    rimraf:
+      specifier: ^5.0.0
+      version: 5.0.10
     starknet:
       specifier: ^8.5.2
       version: 8.9.2
@@ -129,7 +132,7 @@ importers:
         specifier: ^3.0.0
         version: 3.7.4
       rimraf:
-        specifier: ^5.0.0
+        specifier: 'catalog:'
         version: 5.0.10
       tailwindcss:
         specifier: ^4.0.15
@@ -163,13 +166,16 @@ importers:
         version: 1.4.3(@aws-sdk/credential-provider-web-identity@3.972.66)(flags@4.2.0(next@15.5.22(@types/node@24.10.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(next@15.5.22(@types/node@24.10.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(ws@8.21.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
       '@layerswap/wallet-evm':
         specifier: workspace:^
-        version: link:../../packages/wallets/evm
+        version: link:../../packages/wallets/adapters/evm
       '@layerswap/wallets':
         specifier: workspace:^
         version: link:../../packages/wallets/all
       '@layerswap/widget':
         specifier: workspace:^
         version: link:../../packages/widget/core
+      '@layerswap/widget-types':
+        specifier: workspace:^
+        version: link:../../packages/widget/types
       '@posthog/react':
         specifier: 1.4.0
         version: 1.4.0(@types/react@19.2.3)(posthog-js@1.390.2)(react@19.2.3)
@@ -497,9 +503,6 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: ^1.2.7
         version: 1.2.8(@types/react-dom@19.2.3(@types/react@19.2.3))(@types/react@19.2.3)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      '@tanstack/react-query':
-        specifier: 'catalog:'
-        version: 5.90.11(react@19.2.3)
       axios:
         specifier: 'catalog:'
         version: 1.18.1
@@ -536,12 +539,6 @@ importers:
       tinycolor2:
         specifier: ^1.6.0
         version: 1.6.0
-      viem:
-        specifier: 'catalog:'
-        version: 2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11)
-      wagmi:
-        specifier: 'catalog:'
-        version: 2.14.11(@tanstack/query-core@5.90.16)(@tanstack/react-query@5.90.11(react@19.2.3))(@types/react@19.2.3)(bufferutil@4.1.0)(immer@11.1.15)(react@19.2.3)(typescript@5.9.3)(utf-8-validate@5.0.10)(viem@2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11))(zod@4.1.11)
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(immer@11.1.15)(react@19.2.3)
@@ -623,8 +620,66 @@ importers:
         specifier: ^0.24.0
         version: 0.24.0(rollup@4.62.2)(vite@7.3.6(@types/node@24.10.7)(jiti@2.6.1)(lightningcss@1.29.2)(yaml@2.8.3))
 
+  packages/ui-kit:
+    dependencies:
+      '@layerswap/utils':
+        specifier: workspace:^
+        version: link:../utils
+      '@layerswap/wallet-core':
+        specifier: workspace:^
+        version: link:../wallets/core
+      '@layerswap/widget-types':
+        specifier: workspace:^
+        version: link:../widget/types
+      '@radix-ui/react-checkbox':
+        specifier: ^1.1.5
+        version: 1.3.3(@types/react-dom@19.2.3(@types/react@19.2.3))(@types/react@19.2.3)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@radix-ui/react-popover':
+        specifier: ^1.1.15
+        version: 1.1.15(@types/react-dom@19.2.3(@types/react@19.2.3))(@types/react@19.2.3)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@radix-ui/react-tooltip':
+        specifier: ^1.2.8
+        version: 1.2.8(@types/react-dom@19.2.3(@types/react@19.2.3))(@types/react@19.2.3)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
+      copy-to-clipboard:
+        specifier: ^3.3.3
+        version: 3.3.3
+      framer-motion:
+        specifier: ^12.26.2
+        version: 12.26.2(@emotion/is-prop-valid@0.8.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      lucide-react:
+        specifier: ^0.379.0
+        version: 0.379.0(react@19.2.3)
+      react-qrcode-logo:
+        specifier: 4.1.0
+        version: 4.1.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+    devDependencies:
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.3
+      react:
+        specifier: 'catalog:'
+        version: 19.2.3
+      rimraf:
+        specifier: 'catalog:'
+        version: 5.0.10
+      tsc-alias:
+        specifier: ^1.8.16
+        version: 1.8.16
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.3
+      zustand:
+        specifier: 'catalog:'
+        version: 4.5.7(@types/react@19.2.3)(immer@11.1.15)(react@19.2.3)
+
   packages/utils:
     dependencies:
+      '@layerswap/widget-types':
+        specifier: workspace:^
+        version: link:../widget/types
       bitcoin-address-validation:
         specifier: ^3.0.0
         version: 3.0.0
@@ -634,12 +689,15 @@ importers:
       bs58:
         specifier: ^6.0.0
         version: 6.0.0
+      csstype:
+        specifier: ^3.2.3
+        version: 3.2.3
       js-sha3:
         specifier: ^0.8.0
         version: 0.8.0
     devDependencies:
       rimraf:
-        specifier: ^5.0.0
+        specifier: 'catalog:'
         version: 5.0.10
       tsc-alias:
         specifier: ^1.8.16
@@ -648,44 +706,7 @@ importers:
         specifier: ^5.9.2
         version: 5.9.3
 
-  packages/wallets/all:
-    dependencies:
-      '@layerswap/wallet-bitcoin':
-        specifier: workspace:^
-        version: link:../bitcoin
-      '@layerswap/wallet-evm':
-        specifier: workspace:^
-        version: link:../evm
-      '@layerswap/wallet-fuel':
-        specifier: workspace:^
-        version: link:../fuel
-      '@layerswap/wallet-imtbl-passport':
-        specifier: workspace:^
-        version: link:../imtblPassport
-      '@layerswap/wallet-paradex':
-        specifier: workspace:^
-        version: link:../paradex
-      '@layerswap/wallet-starknet':
-        specifier: workspace:^
-        version: link:../starknet
-      '@layerswap/wallet-svm':
-        specifier: workspace:^
-        version: link:../svm
-      '@layerswap/wallet-ton':
-        specifier: workspace:^
-        version: link:../ton
-      '@layerswap/wallet-tron':
-        specifier: workspace:^
-        version: link:../tron
-      '@layerswap/widget-types':
-        specifier: workspace:^
-        version: link:../../widget/types
-    devDependencies:
-      '@layerswap/widget':
-        specifier: workspace:^
-        version: link:../../widget/core
-
-  packages/wallets/bitcoin:
+  packages/wallets/adapters/bitcoin:
     dependencies:
       '@bitcoinerlab/secp256k1':
         specifier: ^1.2.0
@@ -709,14 +730,20 @@ importers:
       '@bigmi/core':
         specifier: ^0.9.0
         version: 0.9.0(@types/react@19.2.3)(immer@11.1.15)(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.3))
-      '@layerswap/widget':
+      '@layerswap/utils':
         specifier: workspace:^
-        version: link:../../widget/core
+        version: link:../../../utils
+      '@layerswap/wallet-core':
+        specifier: workspace:^
+        version: link:../../core
+      '@layerswap/widget-types':
+        specifier: workspace:^
+        version: link:../../../widget/types
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(immer@11.1.15)(react@19.2.3)
 
-  packages/wallets/evm:
+  packages/wallets/adapters/evm:
     dependencies:
       '@metamask/sdk':
         specifier: ^0.33.1
@@ -731,9 +758,15 @@ importers:
         specifier: ^0.8.0
         version: 0.8.0
     devDependencies:
-      '@layerswap/widget':
+      '@layerswap/utils':
         specifier: workspace:^
-        version: link:../../widget/core
+        version: link:../../../utils
+      '@layerswap/wallet-core':
+        specifier: workspace:^
+        version: link:../../core
+      '@layerswap/widget-types':
+        specifier: workspace:^
+        version: link:../../../widget/types
       '@tailwindcss/postcss':
         specifier: ^4.0.15
         version: 4.0.15
@@ -744,7 +777,7 @@ importers:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(immer@11.1.15)(react@19.2.3)
 
-  packages/wallets/fuel:
+  packages/wallets/adapters/fuel:
     dependencies:
       '@fuel-ts/account':
         specifier: ^0.101.3
@@ -762,14 +795,20 @@ importers:
         specifier: ^4.8.1
         version: 4.8.3(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     devDependencies:
-      '@layerswap/widget':
+      '@layerswap/utils':
         specifier: workspace:^
-        version: link:../../widget/core
+        version: link:../../../utils
+      '@layerswap/wallet-core':
+        specifier: workspace:^
+        version: link:../../core
+      '@layerswap/widget-types':
+        specifier: workspace:^
+        version: link:../../../widget/types
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(immer@11.1.15)(react@19.2.3)
 
-  packages/wallets/imtblPassport:
+  packages/wallets/adapters/imtblPassport:
     dependencies:
       '@imtbl/auth':
         specifier: 2.20.2
@@ -778,14 +817,14 @@ importers:
         specifier: 2.20.2
         version: 2.20.2(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
     devDependencies:
-      '@layerswap/widget':
+      '@layerswap/wallet-core':
         specifier: workspace:^
-        version: link:../../widget/core
+        version: link:../../core
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(immer@11.1.15)(react@19.2.3)
 
-  packages/wallets/paradex:
+  packages/wallets/adapters/paradex:
     dependencies:
       '@paradex/sdk':
         specifier: 0.8.1
@@ -797,20 +836,26 @@ importers:
         specifier: 'catalog:'
         version: 8.9.2
     devDependencies:
+      '@layerswap/utils':
+        specifier: workspace:^
+        version: link:../../../utils
+      '@layerswap/wallet-core':
+        specifier: workspace:^
+        version: link:../../core
       '@layerswap/wallet-evm':
         specifier: workspace:^
         version: link:../evm
       '@layerswap/wallet-starknet':
         specifier: workspace:^
         version: link:../starknet
-      '@layerswap/widget':
+      '@layerswap/widget-types':
         specifier: workspace:^
-        version: link:../../widget/core
+        version: link:../../../widget/types
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(immer@11.1.15)(react@19.2.3)
 
-  packages/wallets/starknet:
+  packages/wallets/adapters/starknet:
     dependencies:
       '@starknet-io/get-starknet-core':
         specifier: ^4.0.8
@@ -834,14 +879,20 @@ importers:
         specifier: ^3.4.3
         version: 3.4.3(@radix-ui/react-slot@1.2.4(@types/react@19.2.3)(react@19.2.3))(@scure/bip39@1.6.0)(@types/react@19.2.3)(bufferutil@4.1.0)(class-variance-authority@0.7.1)(clsx@2.1.1)(framer-motion@12.26.2(@emotion/is-prop-valid@0.8.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(starknet@8.9.2)(swr@2.3.8(react@19.2.3))(tailwind-merge@3.4.0)(tailwindcss-animate@1.0.7(tailwindcss@4.0.15))(tailwindcss@4.0.15)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11)
     devDependencies:
-      '@layerswap/widget':
+      '@layerswap/utils':
         specifier: workspace:^
-        version: link:../../widget/core
+        version: link:../../../utils
+      '@layerswap/wallet-core':
+        specifier: workspace:^
+        version: link:../../core
+      '@layerswap/widget-types':
+        specifier: workspace:^
+        version: link:../../../widget/types
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(immer@11.1.15)(react@19.2.3)
 
-  packages/wallets/svm:
+  packages/wallets/adapters/svm:
     dependencies:
       '@solana/spl-token':
         specifier: ^0.4.14
@@ -877,14 +928,20 @@ importers:
         specifier: ^6.0.0
         version: 6.0.0
     devDependencies:
-      '@layerswap/widget':
+      '@layerswap/utils':
         specifier: workspace:^
-        version: link:../../widget/core
+        version: link:../../../utils
+      '@layerswap/wallet-core':
+        specifier: workspace:^
+        version: link:../../core
+      '@layerswap/widget-types':
+        specifier: workspace:^
+        version: link:../../../widget/types
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(immer@11.1.15)(react@19.2.3)
 
-  packages/wallets/ton:
+  packages/wallets/adapters/ton:
     dependencies:
       '@ton/core':
         specifier: ^0.62.0
@@ -899,14 +956,20 @@ importers:
         specifier: ^3.4.1
         version: 3.4.1
     devDependencies:
-      '@layerswap/widget':
+      '@layerswap/utils':
         specifier: workspace:^
-        version: link:../../widget/core
+        version: link:../../../utils
+      '@layerswap/wallet-core':
+        specifier: workspace:^
+        version: link:../../core
+      '@layerswap/widget-types':
+        specifier: workspace:^
+        version: link:../../../widget/types
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(immer@11.1.15)(react@19.2.3)
 
-  packages/wallets/tron:
+  packages/wallets/adapters/tron:
     dependencies:
       '@tronweb3/tronwallet-adapter-bitkeep':
         specifier: ^1.1.5
@@ -925,7 +988,7 @@ importers:
         version: 1.0.7(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@tronweb3/tronwallet-adapter-tronlink':
         specifier: ^1.1.12
-        version: 1.1.13(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+        version: 1.2.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@tronweb3/tronwallet-adapter-trust':
         specifier: ^1.0.0
         version: 1.1.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
@@ -933,9 +996,80 @@ importers:
         specifier: ^6.3.0
         version: 6.3.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     devDependencies:
-      '@layerswap/widget':
+      '@layerswap/utils':
         specifier: workspace:^
-        version: link:../../widget/core
+        version: link:../../../utils
+      '@layerswap/wallet-core':
+        specifier: workspace:^
+        version: link:../../core
+      '@layerswap/widget-types':
+        specifier: workspace:^
+        version: link:../../../widget/types
+      zustand:
+        specifier: 'catalog:'
+        version: 4.5.7(@types/react@19.2.3)(immer@11.1.15)(react@19.2.3)
+
+  packages/wallets/all:
+    dependencies:
+      '@layerswap/wallet-bitcoin':
+        specifier: workspace:^
+        version: link:../adapters/bitcoin
+      '@layerswap/wallet-evm':
+        specifier: workspace:^
+        version: link:../adapters/evm
+      '@layerswap/wallet-fuel':
+        specifier: workspace:^
+        version: link:../adapters/fuel
+      '@layerswap/wallet-imtbl-passport':
+        specifier: workspace:^
+        version: link:../adapters/imtblPassport
+      '@layerswap/wallet-paradex':
+        specifier: workspace:^
+        version: link:../adapters/paradex
+      '@layerswap/wallet-starknet':
+        specifier: workspace:^
+        version: link:../adapters/starknet
+      '@layerswap/wallet-svm':
+        specifier: workspace:^
+        version: link:../adapters/svm
+      '@layerswap/wallet-ton':
+        specifier: workspace:^
+        version: link:../adapters/ton
+      '@layerswap/wallet-tron':
+        specifier: workspace:^
+        version: link:../adapters/tron
+      '@layerswap/widget-types':
+        specifier: workspace:^
+        version: link:../../widget/types
+    devDependencies:
+      '@layerswap/wallet-core':
+        specifier: workspace:^
+        version: link:../core
+
+  packages/wallets/core:
+    dependencies:
+      '@layerswap/utils':
+        specifier: workspace:^
+        version: link:../../utils
+      '@layerswap/widget-types':
+        specifier: workspace:^
+        version: link:../../widget/types
+    devDependencies:
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.3
+      react:
+        specifier: 'catalog:'
+        version: 19.2.3
+      rimraf:
+        specifier: 'catalog:'
+        version: 5.0.10
+      tsc-alias:
+        specifier: ^1.8.16
+        version: 1.8.16
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.3
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@19.2.3)(immer@11.1.15)(react@19.2.3)
@@ -945,9 +1079,15 @@ importers:
       '@headlessui/react':
         specifier: ^2.1.1
         version: 2.2.9(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@layerswap/ui-kit':
+        specifier: workspace:^
+        version: link:../../ui-kit
       '@layerswap/utils':
         specifier: workspace:^
         version: link:../../utils
+      '@layerswap/wallet-core':
+        specifier: workspace:^
+        version: link:../../wallets/core
       '@layerswap/widget-types':
         specifier: workspace:^
         version: link:../types
@@ -1005,9 +1145,6 @@ importers:
       color:
         specifier: 4.2.3
         version: 4.2.3
-      copy-to-clipboard:
-        specifier: ^3.3.3
-        version: 3.3.3
       fflate:
         specifier: ^0.8.2
         version: 0.8.2
@@ -1026,9 +1163,6 @@ importers:
       react-error-boundary:
         specifier: ^4.0.11
         version: 4.1.2(react@19.2.3)
-      react-qrcode-logo:
-        specifier: 4.1.0
-        version: 4.1.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       react-use-intercom:
         specifier: ^2.0.0
         version: 2.1.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -1105,7 +1239,7 @@ importers:
         version: 19.2.3(react@19.2.3)
       wagmi:
         specifier: 'catalog:'
-        version: 2.14.11(@tanstack/query-core@5.90.16)(@tanstack/react-query@5.90.16(react@19.2.3))(@types/react@19.2.3)(bufferutil@4.1.0)(react@19.2.3)(typescript@5.9.3)(utf-8-validate@5.0.10)(viem@2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11))(zod@4.1.11)
+        version: 2.14.11(@tanstack/query-core@5.90.16)(@tanstack/react-query@5.90.16(react@19.2.3))(@types/react@19.2.3)(bufferutil@4.1.0)(immer@11.1.15)(react@19.2.3)(typescript@5.9.3)(utf-8-validate@5.0.10)(viem@2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11))(zod@4.1.11)
 
   packages/widget/types:
     dependencies:
@@ -2727,7 +2861,6 @@ packages:
 
   '@metamask/sdk-analytics@0.0.5':
     resolution: {integrity: sha512-fDah+keS1RjSUlC8GmYXvx6Y26s3Ax1U9hGpWb6GSY5SAdmTSIqp2CvYy6yW0WgLhnYhW+6xERuD0eVqV63QIQ==}
-    deprecated: No longer maintained, superseded by @metamask/connect-analytics
 
   '@metamask/sdk-communication-layer@0.33.1':
     resolution: {integrity: sha512-0bI9hkysxcfbZ/lk0T2+aKVo1j0ynQVTuB3sJ5ssPWlz+Z3VwveCkP1O7EVu1tsVVCb0YV5WxK9zmURu2FIiaA==}
@@ -3056,7 +3189,7 @@ packages:
 
   '@paulmillr/qr@0.2.1':
     resolution: {integrity: sha512-IHnV6A+zxU7XwmKFinmYjUcwlyK9+xkG3/s9KcQhI9BjQKycrJ1JRO+FbNYPwZiPKW3je/DR0k7w8/gLa5eaxQ==}
-    deprecated: 'The package is now available as "qr": npm install qr'
+    deprecated: 'Switch to "qr" (new package name) for security updates: npm install qr'
 
   '@peculiar/asn1-cms@2.8.0':
     resolution: {integrity: sha512-NgekZOrSJFSBFLFoLfwePguAWAx7z1+f2TEsWFUMyiqqfntZ4+S/S5hzqME3q4pCA0iOsFKdwiQ35dwY24eVqA==}
@@ -5300,6 +5433,7 @@ packages:
   '@stellar/stellar-base@14.0.4':
     resolution: {integrity: sha512-UbNW6zbdOBXJwLAV2mMak0bIC9nw3IZVlQXkv2w2dk1jgCbJjy3oRVC943zeGE5JAm0Z9PHxrIjmkpGhayY7kw==}
     engines: {node: '>=20.0.0'}
+    deprecated: This package is now rolled into @stellar/stellar-sdk. Please use @stellar/stellar-sdk to continue receiving updates and support.
 
   '@stellar/stellar-sdk@14.2.0':
     resolution: {integrity: sha512-7nh2ogzLRMhfkIC0fGjn1LHUzk3jqVw8tjAuTt5ADWfL9CSGBL18ILucE9igz2L/RU2AZgeAvhujAnW91Ut/oQ==}
@@ -5634,10 +5768,6 @@ packages:
     peerDependencies:
       tslib: ^2.6.2
 
-  '@tronweb3/tronwallet-abstract-adapter@1.1.10':
-    resolution: {integrity: sha512-gZExaEZwPfI9oI7qSi56p/5Zl/DEzo1JlcD3lQzz1cuz0rZmEFpIqDS2mhY4r/IwEPwilIU7lg7T8/RQDVk9gA==}
-    engines: {node: '>=16', pnpm: '>=7'}
-
   '@tronweb3/tronwallet-abstract-adapter@1.2.0':
     resolution: {integrity: sha512-Xy3ftKnxhEEWOWG6OXoN877t4oTr4W/kuQb7LWVYdn5PNeQ90LXj7eaTu9e6624iozDRuxMix5FThtqEt5F7dA==}
     engines: {node: '>=16', pnpm: '>=7'}
@@ -5660,10 +5790,6 @@ packages:
 
   '@tronweb3/tronwallet-adapter-okxwallet@1.0.7':
     resolution: {integrity: sha512-XXPZfS/FZ4a48RCDuxXOGdfkvJyO1j72J1zHJ48326r1YubiHVKWSp6liAhedF2nEXVAQOYCSUtGzuOgbXrNYw==}
-    engines: {node: '>=16', pnpm: '>=7'}
-
-  '@tronweb3/tronwallet-adapter-tronlink@1.1.13':
-    resolution: {integrity: sha512-Oq5L0FyBM+g49DCr0DYdSx8xuhiqIlKoBTPNVmCTSDoWnoZpIh0XE33Axm/4OUMO2NHFpQMvP3pFo7QIllOZ/w==}
     engines: {node: '>=16', pnpm: '>=7'}
 
   '@tronweb3/tronwallet-adapter-tronlink@1.2.0':
@@ -6180,10 +6306,6 @@ packages:
     resolution: {integrity: sha512-WDGwoByhP5gwHH01r5EaLgQdLVkACPCdOMQhmhn8rsm10h/siSgTorShzBxrn0ExSPof+Lu+C3TfgqBrPa1xoQ==}
     engines: {node: '>=22'}
 
-  '@wallet-standard/base@1.1.0':
-    resolution: {integrity: sha512-DJDQhjKmSNVLKWItoKThJS+CsJQjR9AOBOirBVT1F9YpRyC9oYHE+ZnSf8y8bxUphtKqdQMPVQ2mHohYdRvDVQ==}
-    engines: {node: '>=16'}
-
   '@wallet-standard/base@1.1.1':
     resolution: {integrity: sha512-gggIHTtxicF9XFMQ12DkfS6NAG92Ak795JeSA7f2whAQ6Y3AkMWWuCMxSZXG2NIPN42kEaZSNVjqMsJRaJRxMQ==}
     engines: {node: '>=22'}
@@ -6543,9 +6665,6 @@ packages:
   axe-core@4.11.1:
     resolution: {integrity: sha512-BASOg+YwO2C+346x3LZOeoovTIoTrRqEsqMa6fmfAV0P+U9mFr9NsyOEpiYvFjbc64NMrSswhV50WdXzdb/Z5A==}
     engines: {node: '>=4'}
-
-  axios@1.18.0:
-    resolution: {integrity: sha512-E32NzpYKp++W7XRe52rHiXV2ehxmh3wbdgO7MHeFM+vqxLBYHzt0ElkiImtOBxtOmyp0yoC8C6uESVV84Y2/hw==}
 
   axios@1.18.1:
     resolution: {integrity: sha512-3nTvFlvpn9Zu/RkHUqtc7/+al4UpRW5az71ap5zccp6e8RAYEzhMTecX8Dz1wWDYrPpUoB1HAQEGEAEvUr7S9g==}
@@ -7048,6 +7167,7 @@ packages:
 
   crypto-js@4.2.0:
     resolution: {integrity: sha512-KALDyEYgpY+Rlob/iriUtjV6d5Eq+Y191A5g4UqLAi8CyGP9N1+FdVbkc1SxKc2r4YAYqG8JzO2KGL+AizD70Q==}
+    deprecated: Active development of CryptoJS has been discontinued. This library is no longer maintained.
 
   css-loader@7.1.4:
     resolution: {integrity: sha512-vv3J9tlOl04WjiMvHQI/9tmIrCxVrj6PFbHemBB1iihpeRbi/I4h033eoFIhwxBBqLhI0KYFS7yvynBFhIZfTw==}
@@ -10659,9 +10779,6 @@ packages:
     resolution: {integrity: sha512-t+3Ktbq0Ies2vaSezfOaWiolH4OigQIO1dk+1xDpOydB1COVPocVYOrEV5rqZ0kFY9XYG1v9LutCyMgYBpABcw==}
     hasBin: true
 
-  ufo@1.6.2:
-    resolution: {integrity: sha512-heMioaxBcG9+Znsda5Q8sQbWnLJSl98AFDXTO80wELWEzX3hordXsTdxrIfMQoO9IY1MEnoGoPjpoKpMj+Yx0Q==}
-
   ufo@1.6.4:
     resolution: {integrity: sha512-JFNbkD1Svwe0KvGi8GOeLcP4kAWQ609twvCdcHxq1oSL8svv39ZuSvajcD8B+5D0eL4+s1Is2D/O6KN3qcTeRA==}
 
@@ -11739,7 +11856,7 @@ snapshots:
       outdent: 0.5.0
       prettier: 2.8.8
       resolve-from: 5.0.0
-      semver: 7.7.3
+      semver: 7.8.5
 
   '@changesets/assemble-release-plan@6.0.9':
     dependencies:
@@ -11748,7 +11865,7 @@ snapshots:
       '@changesets/should-skip-package': 0.1.2
       '@changesets/types': 6.1.0
       '@manypkg/get-packages': 1.1.3
-      semver: 7.7.3
+      semver: 7.8.5
 
   '@changesets/changelog-git@0.2.1':
     dependencies:
@@ -11806,7 +11923,7 @@ snapshots:
       '@changesets/types': 6.1.0
       '@manypkg/get-packages': 1.1.3
       picocolors: 1.1.1
-      semver: 7.7.3
+      semver: 7.8.5
 
   '@changesets/get-release-plan@4.0.14':
     dependencies:
@@ -12190,7 +12307,7 @@ snapshots:
       '@ethersproject/constants': 5.7.0
       '@ethersproject/hash': 5.7.0
       '@ethersproject/keccak256': 5.7.0
-      '@ethersproject/logger': 5.7.0
+      '@ethersproject/logger': 5.8.0
       '@ethersproject/properties': 5.7.0
       '@ethersproject/strings': 5.7.0
 
@@ -12198,7 +12315,7 @@ snapshots:
     dependencies:
       '@ethersproject/bignumber': 5.7.0
       '@ethersproject/bytes': 5.8.0
-      '@ethersproject/logger': 5.7.0
+      '@ethersproject/logger': 5.8.0
       '@ethersproject/networks': 5.7.1
       '@ethersproject/properties': 5.7.0
       '@ethersproject/transactions': 5.7.0
@@ -12209,7 +12326,7 @@ snapshots:
       '@ethersproject/abstract-provider': 5.7.0
       '@ethersproject/bignumber': 5.7.0
       '@ethersproject/bytes': 5.8.0
-      '@ethersproject/logger': 5.7.0
+      '@ethersproject/logger': 5.8.0
       '@ethersproject/properties': 5.7.0
 
   '@ethersproject/address@5.7.0':
@@ -12217,7 +12334,7 @@ snapshots:
       '@ethersproject/bignumber': 5.7.0
       '@ethersproject/bytes': 5.8.0
       '@ethersproject/keccak256': 5.7.0
-      '@ethersproject/logger': 5.7.0
+      '@ethersproject/logger': 5.8.0
       '@ethersproject/rlp': 5.7.0
 
   '@ethersproject/base64@5.7.0':
@@ -12232,12 +12349,12 @@ snapshots:
   '@ethersproject/bignumber@5.7.0':
     dependencies:
       '@ethersproject/bytes': 5.8.0
-      '@ethersproject/logger': 5.7.0
+      '@ethersproject/logger': 5.8.0
       bn.js: 5.2.3
 
   '@ethersproject/bytes@5.7.0':
     dependencies:
-      '@ethersproject/logger': 5.7.0
+      '@ethersproject/logger': 5.8.0
 
   '@ethersproject/bytes@5.8.0':
     dependencies:
@@ -12256,7 +12373,7 @@ snapshots:
       '@ethersproject/bignumber': 5.7.0
       '@ethersproject/bytes': 5.8.0
       '@ethersproject/constants': 5.7.0
-      '@ethersproject/logger': 5.7.0
+      '@ethersproject/logger': 5.8.0
       '@ethersproject/properties': 5.7.0
       '@ethersproject/transactions': 5.7.0
 
@@ -12268,7 +12385,7 @@ snapshots:
       '@ethersproject/bignumber': 5.7.0
       '@ethersproject/bytes': 5.8.0
       '@ethersproject/keccak256': 5.7.0
-      '@ethersproject/logger': 5.7.0
+      '@ethersproject/logger': 5.8.0
       '@ethersproject/properties': 5.7.0
       '@ethersproject/strings': 5.7.0
 
@@ -12278,7 +12395,7 @@ snapshots:
       '@ethersproject/basex': 5.7.0
       '@ethersproject/bignumber': 5.7.0
       '@ethersproject/bytes': 5.8.0
-      '@ethersproject/logger': 5.7.0
+      '@ethersproject/logger': 5.8.0
       '@ethersproject/pbkdf2': 5.7.0
       '@ethersproject/properties': 5.7.0
       '@ethersproject/sha2': 5.7.0
@@ -12294,7 +12411,7 @@ snapshots:
       '@ethersproject/bytes': 5.8.0
       '@ethersproject/hdnode': 5.7.0
       '@ethersproject/keccak256': 5.7.0
-      '@ethersproject/logger': 5.7.0
+      '@ethersproject/logger': 5.8.0
       '@ethersproject/pbkdf2': 5.7.0
       '@ethersproject/properties': 5.7.0
       '@ethersproject/random': 5.7.0
@@ -12314,7 +12431,7 @@ snapshots:
 
   '@ethersproject/networks@5.7.1':
     dependencies:
-      '@ethersproject/logger': 5.7.0
+      '@ethersproject/logger': 5.8.0
 
   '@ethersproject/pbkdf2@5.7.0':
     dependencies:
@@ -12323,7 +12440,7 @@ snapshots:
 
   '@ethersproject/properties@5.7.0':
     dependencies:
-      '@ethersproject/logger': 5.7.0
+      '@ethersproject/logger': 5.8.0
 
   '@ethersproject/providers@5.7.2(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
@@ -12336,7 +12453,7 @@ snapshots:
       '@ethersproject/bytes': 5.8.0
       '@ethersproject/constants': 5.7.0
       '@ethersproject/hash': 5.7.0
-      '@ethersproject/logger': 5.7.0
+      '@ethersproject/logger': 5.8.0
       '@ethersproject/networks': 5.7.1
       '@ethersproject/properties': 5.7.0
       '@ethersproject/random': 5.7.0
@@ -12354,23 +12471,23 @@ snapshots:
   '@ethersproject/random@5.7.0':
     dependencies:
       '@ethersproject/bytes': 5.8.0
-      '@ethersproject/logger': 5.7.0
+      '@ethersproject/logger': 5.8.0
 
   '@ethersproject/rlp@5.7.0':
     dependencies:
       '@ethersproject/bytes': 5.8.0
-      '@ethersproject/logger': 5.7.0
+      '@ethersproject/logger': 5.8.0
 
   '@ethersproject/sha2@5.7.0':
     dependencies:
       '@ethersproject/bytes': 5.8.0
-      '@ethersproject/logger': 5.7.0
+      '@ethersproject/logger': 5.8.0
       hash.js: 1.1.7
 
   '@ethersproject/signing-key@5.7.0':
     dependencies:
       '@ethersproject/bytes': 5.8.0
-      '@ethersproject/logger': 5.7.0
+      '@ethersproject/logger': 5.8.0
       '@ethersproject/properties': 5.7.0
       bn.js: 5.2.3
       elliptic: 6.6.1
@@ -12381,7 +12498,7 @@ snapshots:
       '@ethersproject/bignumber': 5.7.0
       '@ethersproject/bytes': 5.8.0
       '@ethersproject/keccak256': 5.7.0
-      '@ethersproject/logger': 5.7.0
+      '@ethersproject/logger': 5.8.0
       '@ethersproject/sha2': 5.7.0
       '@ethersproject/strings': 5.7.0
 
@@ -12389,7 +12506,7 @@ snapshots:
     dependencies:
       '@ethersproject/bytes': 5.8.0
       '@ethersproject/constants': 5.7.0
-      '@ethersproject/logger': 5.7.0
+      '@ethersproject/logger': 5.8.0
 
   '@ethersproject/transactions@5.7.0':
     dependencies:
@@ -12398,7 +12515,7 @@ snapshots:
       '@ethersproject/bytes': 5.8.0
       '@ethersproject/constants': 5.7.0
       '@ethersproject/keccak256': 5.7.0
-      '@ethersproject/logger': 5.7.0
+      '@ethersproject/logger': 5.8.0
       '@ethersproject/properties': 5.7.0
       '@ethersproject/rlp': 5.7.0
       '@ethersproject/signing-key': 5.7.0
@@ -12407,7 +12524,7 @@ snapshots:
     dependencies:
       '@ethersproject/bignumber': 5.7.0
       '@ethersproject/constants': 5.7.0
-      '@ethersproject/logger': 5.7.0
+      '@ethersproject/logger': 5.8.0
 
   '@ethersproject/wallet@5.7.0':
     dependencies:
@@ -12420,7 +12537,7 @@ snapshots:
       '@ethersproject/hdnode': 5.7.0
       '@ethersproject/json-wallets': 5.7.0
       '@ethersproject/keccak256': 5.7.0
-      '@ethersproject/logger': 5.7.0
+      '@ethersproject/logger': 5.8.0
       '@ethersproject/properties': 5.7.0
       '@ethersproject/random': 5.7.0
       '@ethersproject/signing-key': 5.7.0
@@ -12431,7 +12548,7 @@ snapshots:
     dependencies:
       '@ethersproject/base64': 5.7.0
       '@ethersproject/bytes': 5.8.0
-      '@ethersproject/logger': 5.7.0
+      '@ethersproject/logger': 5.8.0
       '@ethersproject/properties': 5.7.0
       '@ethersproject/strings': 5.7.0
 
@@ -12439,7 +12556,7 @@ snapshots:
     dependencies:
       '@ethersproject/bytes': 5.8.0
       '@ethersproject/hash': 5.7.0
-      '@ethersproject/logger': 5.7.0
+      '@ethersproject/logger': 5.8.0
       '@ethersproject/properties': 5.7.0
       '@ethersproject/strings': 5.7.0
 
@@ -12953,7 +13070,7 @@ snapshots:
 
   '@imtbl/generated-clients@2.20.2':
     dependencies:
-      axios: 1.18.0
+      axios: 1.18.1
     transitivePeerDependencies:
       - debug
       - supports-color
@@ -13195,7 +13312,7 @@ snapshots:
       '@ledgerhq/errors': 6.28.0
       '@ledgerhq/logs': 6.13.0
       rxjs: 7.8.2
-      semver: 7.7.3
+      semver: 7.8.5
 
   '@ledgerhq/errors@6.28.0': {}
 
@@ -13384,7 +13501,7 @@ snapshots:
       '@types/debug': 4.1.12
       debug: 4.4.3
       pony-cause: 2.1.11
-      semver: 7.7.3
+      semver: 7.8.5
       uuid: 11.1.1
     transitivePeerDependencies:
       - supports-color
@@ -13398,7 +13515,7 @@ snapshots:
       '@types/debug': 4.1.12
       debug: 4.4.3
       pony-cause: 2.1.11
-      semver: 7.7.3
+      semver: 7.8.5
       uuid: 11.1.1
     transitivePeerDependencies:
       - supports-color
@@ -13427,7 +13544,7 @@ snapshots:
       '@module-federation/third-party-dts-extractor': 0.9.1
       adm-zip: 0.6.0
       ansi-colors: 4.1.3
-      axios: 1.18.0
+      axios: 1.18.1
       chalk: 3.0.0
       fs-extra: 9.1.0
       isomorphic-ws: 5.0.0(ws@8.21.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
@@ -16947,9 +17064,9 @@ snapshots:
     dependencies:
       '@solana/wallet-standard-features': 1.3.0
       '@solana/web3.js': 1.98.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)
-      '@wallet-standard/base': 1.1.0
+      '@wallet-standard/base': 1.1.1
       '@wallet-standard/features': 1.1.0
-      eventemitter3: 5.0.1
+      eventemitter3: 5.0.4
 
   '@solana/wallet-adapter-bitkeep@0.3.24(@solana/web3.js@1.98.4(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10))':
     dependencies:
@@ -17287,11 +17404,11 @@ snapshots:
 
   '@solana/wallet-standard-chains@1.1.1':
     dependencies:
-      '@wallet-standard/base': 1.1.0
+      '@wallet-standard/base': 1.1.1
 
   '@solana/wallet-standard-features@1.3.0':
     dependencies:
-      '@wallet-standard/base': 1.1.0
+      '@wallet-standard/base': 1.1.1
       '@wallet-standard/features': 1.1.0
 
   '@solana/wallet-standard-util@1.1.2':
@@ -17378,7 +17495,7 @@ snapshots:
       '@starknet-react/chains': 5.0.3
       '@tanstack/react-query': 5.90.16(react@19.2.3)
       abi-wan-kanabi: 2.2.4
-      eventemitter3: 5.0.1
+      eventemitter3: 5.0.4
       react: 19.2.3
       starknet: 8.9.2
       viem: 2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
@@ -17421,7 +17538,7 @@ snapshots:
   '@stellar/stellar-sdk@14.2.0':
     dependencies:
       '@stellar/stellar-base': 14.0.4
-      axios: 1.18.0
+      axios: 1.18.1
       bignumber.js: 9.3.1
       eventsource: 2.0.2
       feaxios: 0.0.23
@@ -17580,7 +17697,7 @@ snapshots:
     dependencies:
       '@ton/core': 0.62.1(@ton/crypto@3.3.0)
       '@ton/crypto': 3.3.0
-      axios: 1.18.0
+      axios: 1.18.1
       dataloader: 2.2.3
       symbol.inspect: 1.0.1
       teslabot: 1.5.0
@@ -17954,16 +18071,6 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@tronweb3/tronwallet-abstract-adapter@1.1.10(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
-    dependencies:
-      eventemitter3: 4.0.7
-      tronweb: 6.3.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-    transitivePeerDependencies:
-      - bufferutil
-      - debug
-      - supports-color
-      - utf-8-validate
-
   '@tronweb3/tronwallet-abstract-adapter@1.2.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
       eventemitter3: 4.0.7
@@ -17976,8 +18083,8 @@ snapshots:
 
   '@tronweb3/tronwallet-adapter-bitkeep@1.1.7(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
-      '@tronweb3/tronwallet-abstract-adapter': 1.1.10(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      '@tronweb3/tronwallet-adapter-tronlink': 1.1.13(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      '@tronweb3/tronwallet-abstract-adapter': 1.2.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      '@tronweb3/tronwallet-adapter-tronlink': 1.2.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - bufferutil
       - debug
@@ -17986,8 +18093,8 @@ snapshots:
 
   '@tronweb3/tronwallet-adapter-bybit@1.0.2(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
-      '@tronweb3/tronwallet-abstract-adapter': 1.1.10(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      '@tronweb3/tronwallet-adapter-tronlink': 1.1.13(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      '@tronweb3/tronwallet-abstract-adapter': 1.2.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      '@tronweb3/tronwallet-adapter-tronlink': 1.2.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - bufferutil
       - debug
@@ -17996,8 +18103,8 @@ snapshots:
 
   '@tronweb3/tronwallet-adapter-gatewallet@1.0.4(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
-      '@tronweb3/tronwallet-abstract-adapter': 1.1.10(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      '@tronweb3/tronwallet-adapter-tronlink': 1.1.13(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      '@tronweb3/tronwallet-abstract-adapter': 1.2.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      '@tronweb3/tronwallet-adapter-tronlink': 1.2.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - bufferutil
       - debug
@@ -18007,7 +18114,7 @@ snapshots:
   '@tronweb3/tronwallet-adapter-metamask-tron@1.0.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
       '@metamask/multichain-api-client': 0.10.1
-      '@tronweb3/tronwallet-abstract-adapter': 1.1.10(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      '@tronweb3/tronwallet-abstract-adapter': 1.2.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - bufferutil
       - debug
@@ -18016,17 +18123,8 @@ snapshots:
 
   '@tronweb3/tronwallet-adapter-okxwallet@1.0.7(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
-      '@tronweb3/tronwallet-abstract-adapter': 1.1.10(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      '@tronweb3/tronwallet-adapter-tronlink': 1.1.13(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-    transitivePeerDependencies:
-      - bufferutil
-      - debug
-      - supports-color
-      - utf-8-validate
-
-  '@tronweb3/tronwallet-adapter-tronlink@1.1.13(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
-    dependencies:
-      '@tronweb3/tronwallet-abstract-adapter': 1.1.10(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      '@tronweb3/tronwallet-abstract-adapter': 1.2.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      '@tronweb3/tronwallet-adapter-tronlink': 1.2.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - bufferutil
       - debug
@@ -18400,7 +18498,7 @@ snapshots:
       '@typescript-eslint/visitor-keys': 8.52.0
       debug: 4.4.3
       minimatch: 9.0.7
-      semver: 7.7.3
+      semver: 7.8.5
       tinyglobby: 0.2.15
       ts-api-utils: 2.4.0(typescript@5.9.3)
       typescript: 5.9.3
@@ -18545,13 +18643,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@wagmi/connectors@5.7.7(@types/react@19.2.3)(@wagmi/core@2.16.4(@tanstack/query-core@5.90.16)(@types/react@19.2.3)(immer@11.1.15)(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.3))(viem@2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11)))(bufferutil@4.1.0)(react@19.2.3)(typescript@5.9.3)(utf-8-validate@5.0.10)(viem@2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11))(zod@4.1.11)':
+  '@wagmi/connectors@5.7.7(@types/react@19.2.3)(@wagmi/core@2.16.4(@tanstack/query-core@5.90.16)(@types/react@19.2.3)(immer@11.1.15)(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@19.2.3))(viem@2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11)))(bufferutil@4.1.0)(react@19.2.3)(typescript@5.9.3)(utf-8-validate@5.0.10)(viem@2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11))(zod@4.1.11)':
     dependencies:
       '@coinbase/wallet-sdk': 4.3.0
       '@metamask/sdk': 0.33.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@safe-global/safe-apps-provider': 0.18.5(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11)
       '@safe-global/safe-apps-sdk': 9.1.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11)
-      '@wagmi/core': 2.16.4(@tanstack/query-core@5.90.16)(@types/react@19.2.3)(immer@11.1.15)(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.3))(viem@2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11))
+      '@wagmi/core': 2.16.4(@tanstack/query-core@5.90.16)(@types/react@19.2.3)(immer@11.1.15)(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@19.2.3))(viem@2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11))
       '@walletconnect/ethereum-provider': 2.21.8(@types/react@19.2.3)(bufferutil@4.1.0)(react@19.2.3)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11)
       cbw-sdk: '@coinbase/wallet-sdk@3.9.3'
       viem: 2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11)
@@ -18585,13 +18683,13 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@wagmi/connectors@5.7.7(@types/react@19.2.3)(@wagmi/core@2.16.4(@tanstack/query-core@5.90.16)(@types/react@19.2.3)(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@19.2.3))(viem@2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11)))(bufferutil@4.1.0)(react@19.2.3)(typescript@5.9.3)(utf-8-validate@5.0.10)(viem@2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11))(zod@4.1.11)':
+  '@wagmi/connectors@5.7.7(@types/react@19.2.3)(@wagmi/core@2.16.4(@tanstack/query-core@5.90.16)(@types/react@19.2.3)(immer@11.1.15)(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.3))(viem@2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11)))(bufferutil@4.1.0)(react@19.2.3)(typescript@5.9.3)(utf-8-validate@5.0.10)(viem@2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11))(zod@4.1.11)':
     dependencies:
       '@coinbase/wallet-sdk': 4.3.0
       '@metamask/sdk': 0.33.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@safe-global/safe-apps-provider': 0.18.5(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11)
       '@safe-global/safe-apps-sdk': 9.1.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11)
-      '@wagmi/core': 2.16.4(@tanstack/query-core@5.90.16)(@types/react@19.2.3)(immer@11.1.15)(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@19.2.3))(viem@2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11))
+      '@wagmi/core': 2.16.4(@tanstack/query-core@5.90.16)(@types/react@19.2.3)(immer@11.1.15)(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.3))(viem@2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11))
       '@walletconnect/ethereum-provider': 2.21.8(@types/react@19.2.3)(bufferutil@4.1.0)(react@19.2.3)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11)
       cbw-sdk: '@coinbase/wallet-sdk@3.9.3'
       viem: 2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11)
@@ -18659,13 +18757,11 @@ snapshots:
     dependencies:
       '@wallet-standard/base': 1.1.1
 
-  '@wallet-standard/base@1.1.0': {}
-
   '@wallet-standard/base@1.1.1': {}
 
   '@wallet-standard/features@1.1.0':
     dependencies:
-      '@wallet-standard/base': 1.1.0
+      '@wallet-standard/base': 1.1.1
 
   '@wallet-standard/wallet@1.1.0':
     dependencies:
@@ -20048,16 +20144,6 @@ snapshots:
       possible-typed-array-names: 1.1.0
 
   axe-core@4.11.1: {}
-
-  axios@1.18.0:
-    dependencies:
-      follow-redirects: 1.16.0
-      form-data: 4.0.6
-      https-proxy-agent: 5.0.1
-      proxy-from-env: 2.1.0
-    transitivePeerDependencies:
-      - debug
-      - supports-color
 
   axios@1.18.1:
     dependencies:
@@ -22212,7 +22298,7 @@ snapshots:
 
   is-bun-module@2.0.0:
     dependencies:
-      semver: 7.7.3
+      semver: 7.8.5
 
   is-callable@1.2.7: {}
 
@@ -23049,7 +23135,7 @@ snapshots:
     dependencies:
       destr: 2.0.5
       node-fetch-native: 1.6.7
-      ufo: 1.6.2
+      ufo: 1.6.4
 
   oidc-client-ts@3.4.1:
     dependencies:
@@ -24491,7 +24577,7 @@ snapshots:
       '@walletconnect/sign-client': 2.23.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11)
       bowser: 2.13.1
       detect-browser: 5.3.0
-      eventemitter3: 5.0.1
+      eventemitter3: 5.0.4
       events: 3.3.0
       lodash-es: 4.18.0
       react: 18.3.1
@@ -24811,7 +24897,7 @@ snapshots:
   tronweb@6.2.2(bufferutil@4.1.0)(utf-8-validate@5.0.10):
     dependencies:
       '@babel/runtime': 7.26.10
-      axios: 1.18.0
+      axios: 1.18.1
       bignumber.js: 9.1.2
       ethereum-cryptography: 2.2.1
       ethers: 6.13.5(bufferutil@4.1.0)(utf-8-validate@5.0.10)
@@ -24828,7 +24914,7 @@ snapshots:
   tronweb@6.3.0(bufferutil@4.1.0)(utf-8-validate@5.0.10):
     dependencies:
       '@babel/runtime': 7.26.10
-      axios: 1.18.0
+      axios: 1.18.1
       bignumber.js: 9.1.2
       ethereum-cryptography: 2.2.1
       ethers: 6.13.5(bufferutil@4.1.0)(utf-8-validate@5.0.10)
@@ -24960,8 +25046,6 @@ snapshots:
       is-standalone-pwa: 0.1.1
       ua-is-frozen: 0.1.2
 
-  ufo@1.6.2: {}
-
   ufo@1.6.4: {}
 
   uglify-js@3.19.3: {}
@@ -25046,7 +25130,7 @@ snapshots:
       lru-cache: 10.4.3
       node-fetch-native: 1.6.7
       ofetch: 1.5.1
-      ufo: 1.6.2
+      ufo: 1.6.4
     optionalDependencies:
       '@vercel/functions': 3.7.5(@aws-sdk/credential-provider-web-identity@3.972.66)(ws@8.21.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
       idb-keyval: 6.2.2
@@ -25369,10 +25453,10 @@ snapshots:
       - utf-8-validate
       - zod
 
-  wagmi@2.14.11(@tanstack/query-core@5.90.16)(@tanstack/react-query@5.90.16(react@19.2.3))(@types/react@19.2.3)(bufferutil@4.1.0)(react@19.2.3)(typescript@5.9.3)(utf-8-validate@5.0.10)(viem@2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11))(zod@4.1.11):
+  wagmi@2.14.11(@tanstack/query-core@5.90.16)(@tanstack/react-query@5.90.16(react@19.2.3))(@types/react@19.2.3)(bufferutil@4.1.0)(immer@11.1.15)(react@19.2.3)(typescript@5.9.3)(utf-8-validate@5.0.10)(viem@2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11))(zod@4.1.11):
     dependencies:
       '@tanstack/react-query': 5.90.16(react@19.2.3)
-      '@wagmi/connectors': 5.7.7(@types/react@19.2.3)(@wagmi/core@2.16.4(@tanstack/query-core@5.90.16)(@types/react@19.2.3)(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@19.2.3))(viem@2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11)))(bufferutil@4.1.0)(react@19.2.3)(typescript@5.9.3)(utf-8-validate@5.0.10)(viem@2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11))(zod@4.1.11)
+      '@wagmi/connectors': 5.7.7(@types/react@19.2.3)(@wagmi/core@2.16.4(@tanstack/query-core@5.90.16)(@types/react@19.2.3)(immer@11.1.15)(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@19.2.3))(viem@2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11)))(bufferutil@4.1.0)(react@19.2.3)(typescript@5.9.3)(utf-8-validate@5.0.10)(viem@2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11))(zod@4.1.11)
       '@wagmi/core': 2.16.4(@tanstack/query-core@5.90.16)(@types/react@19.2.3)(immer@11.1.15)(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@19.2.3))(viem@2.44.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11))
       react: 19.2.3
       use-sync-external-store: 1.4.0(react@19.2.3)

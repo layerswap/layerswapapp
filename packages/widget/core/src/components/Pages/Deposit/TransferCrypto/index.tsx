@@ -8,7 +8,7 @@ import { SwapDataProvider, useSwapDataState, useSwapDataUpdate } from "@/context
 import { useInitialSettings } from "@/context/settings";
 import { ApiError, LSAPIKnownErrorCode } from "@/Models/ApiError";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
-import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
+import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import { useDepositInitialValues, useDepositSelection } from "../depositSelectionContext";
 import { useDepositPrefetch } from "../depositPrefetchContext";
 import { useReportCloseLock } from "../depositStepContext";

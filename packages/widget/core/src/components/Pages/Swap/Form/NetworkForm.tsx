@@ -12,7 +12,7 @@ import { useSettingsState } from "@/context/settings";
 import { swapInProgress } from "@/components/utils/swapUtils";
 import { ArrowUpDown } from "lucide-react";
 import FormButton from "./SecondaryComponents/FormButton";
-import { WalletConnectionProvider } from "@/types/wallet";
+import { WalletConnectionProvider } from "@layerswap/wallet-core/types"
 import { updateFormBulk } from "./updateForm";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useValidationContext } from "@/context/validationContext";

@@ -1,6 +1,6 @@
 import { Dispatch, FC, SetStateAction, memo, useMemo, useState } from "react";
 import { ArrowDown } from "lucide-react";
-import { Network, Token } from "@/Models/Network";
+import { Network, Token } from "@layerswap/widget-types";
 import { useQuoteData, validDestinationAddress } from "@/hooks/useFee";
 import NumFlowWithFallback from "@/components/Common/NumFlowWithFallback";
 import TokenChainBadge from "@/components/Pages/Deposit/_shared/TokenChainBadge";

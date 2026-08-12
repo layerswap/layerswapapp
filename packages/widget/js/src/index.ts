@@ -2,7 +2,7 @@
 export { mountWidget } from './mount.js';
 export type { WidgetHandle, MountOptions } from './mount.js';
 
-// Shared widget prop/config/theme contract, re-exported from the zero-runtime
+// Shared widget prop/config/theme contract, re-exported from the
 // `@layerswap/widget-types` package (the single source of truth).
 export type {
   WidgetProps,

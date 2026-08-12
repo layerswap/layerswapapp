@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react'
 import { useFormikContext } from 'formik'
 import useDepositAddressSources from './useDepositAddressSources'
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
-import { NetworkRoute, NetworkRouteToken } from '@/Models/Network'
+import { NetworkRoute, NetworkRouteToken } from '@layerswap/widget-types';
 
 /**
  * Picks the top-ranked source route + active token for the deposit-address

@@ -1,5 +1,5 @@
+import { NetworkType } from '@layerswap/widget-types';
 import { useMemo, useState } from 'react'
-import { NetworkType } from '@/Models/Network'
 import { useSettingsState } from '@/context/settings'
 import { classifyAddress, addressTypeLabel, AddressSelectionMode, defaultNetworkScope } from '@layerswap/utils'
 import { SavedAddress } from '@/stores/addressBookStore'
