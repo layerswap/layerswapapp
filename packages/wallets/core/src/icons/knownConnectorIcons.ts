@@ -22,6 +22,7 @@ import {
     TonKeeperIconBase64,
     OpenMaskIconBase64,
     MyTonWalletIconBase64,
+    TrustIconBase64,
 } from './iconStrings'
 
 const KNOWN: Record<string, string> = {
@@ -54,6 +55,8 @@ const KNOWN: Record<string, string> = {
     // SVM
     glow: GlowIconBase64,
     solflare: SolflareIconBase64,
+    trust: TrustIconBase64,
+    'trust wallet': TrustIconBase64,
     // TON
     ton: TONIconBase64,
     tonkeeper: TonKeeperIconBase64,
