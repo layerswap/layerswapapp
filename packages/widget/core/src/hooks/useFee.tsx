@@ -30,6 +30,7 @@ type UseQuoteData = {
     quote?: Quote
     quoteTokenPrices?: QuoteTokenPrices
     quoteError?: QuoteError
+    limitsError?: QuoteError
     isQuoteLoading: boolean
     isDebouncing: boolean
     mutateFee: () => void
@@ -140,7 +141,7 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
             destinationAddress,
         }) : null
 
-    const { data: amountRange, mutate: mutateLimits, isValidating: limitsValidating } = useSWR<ApiResponse<{
+    const { data: amountRange, mutate: mutateLimits, isValidating: limitsValidating, error: limitsError } = useSWR<ApiResponse<{
         min_amount: number
         min_amount_in_usd: number
         max_amount: number
@@ -252,6 +253,7 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
         isQuoteLoading,
         isDebouncing,
         quoteError,
+        limitsError,
         mutateFee,
         mutateLimits,
         limitsValidating,
