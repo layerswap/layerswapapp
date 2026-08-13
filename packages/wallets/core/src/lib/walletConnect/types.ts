@@ -28,6 +28,9 @@ export type DynamicWcMetadata = {
     name: string
     icon: string
     id: string
+    /** Bare mobile deep-link of the connected WC wallet (native scheme or
+     *  universal link), used to foreground the wallet app at signing time. */
+    deepLink?: string
 }
 
 /**
