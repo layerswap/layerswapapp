@@ -1,5 +1,5 @@
 import { FC, useMemo, useState } from "react";
-import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
+import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import useWallet from "@/hooks/useWallet";
 import useDepositAddressDestinations from "@/hooks/useDepositAddressDestinations";
 import { Selector, SelectorContent, SelectorTrigger } from "@/components/Select/Selector/Index";

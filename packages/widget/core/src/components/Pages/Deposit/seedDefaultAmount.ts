@@ -1,4 +1,4 @@
-import { NetworkRouteToken } from "@/Models/Network";
+import { NetworkRouteToken } from "@layerswap/widget-types";
 
 /**
  * Token amount equivalent to `defaultAmountUsd` worth of `token`, truncated to

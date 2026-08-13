@@ -1,5 +1,6 @@
 {
   "name": "@layerswap/widget-react",
+  "private": true,
   "version": "0.1.0",
   "description": "React component that fetches the Layerswap widget from the CDN at runtime via Module Federation. Integrators install this and nothing else.",
   "type": "module",

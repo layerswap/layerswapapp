@@ -1,8 +1,8 @@
 'use client'
+import { SwapStatus } from '@layerswap/widget-types';
 import { FC, useEffect } from 'react';
 import SwapForm from "./Form"
 import { SWRConfig, mutate } from 'swr';
-import { SwapStatus } from '@/Models/SwapStatus';
 import ThemeWrapper from '@/components/themeWrapper';
 
 export const Swap: FC = () => {

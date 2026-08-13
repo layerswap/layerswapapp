@@ -1,8 +1,8 @@
+import { SwapStatus } from '@layerswap/widget-types';
 import { useEffect, useState } from 'react'
 import { useSwapDataState } from '@/context/swap'
 import { useGaslessAuthorizationStore } from '@/stores/swapTransactionStore'
 import { GaslessAuthorizationStatus, TransactionType } from '@/lib/apiClients/layerSwapApiClient'
-import { SwapStatus } from '@/Models/SwapStatus'
 
 // Grace for client clock skew before the fallback timer declares expiry.
 const EXPIRY_GRACE_SECONDS = 30

@@ -1,6 +1,7 @@
-import type { NetworkType, WalletProviderDescriptor } from "@layerswap/widget/types"
+import type { WalletProviderDescriptor } from "@layerswap/wallet-core/types"
+import type { NetworkType } from "@layerswap/widget-types"
 import type { WalletConnectConfig } from "@layerswap/wallet-evm"
-import { defineWalletDescriptor } from "./defineWalletDescriptor"
+import { defineWalletDescriptor, type DescriptorNetworkOptions } from "./defineWalletDescriptor"
 import { hasStorageKey } from "./persistedSession"
 
 // SVM's runtime list is built dynamically from `NetworkType.Solana` networks
@@ -16,7 +17,8 @@ const SVM_NETWORKS = ['SOLANA_MAINNET', 'SOLANA_TESTNET', 'SOLANA_DEVNET']
  * by `SolanaWalletConnectAdapter` (~138 KB parsed) out of the host's entry
  * chunk.
  */
-export function createSVMDescriptor(walletConnectConfigs?: WalletConnectConfig): WalletProviderDescriptor {
+export function createSVMDescriptor(walletConnectConfigs?: WalletConnectConfig, options?: DescriptorNetworkOptions): WalletProviderDescriptor {
+    const supportedNetworks = options?.supportedNetworks ?? SVM_NETWORKS
     return defineWalletDescriptor({
         id: 'solana',
         name: 'Solana',
@@ -27,9 +29,9 @@ export function createSVMDescriptor(walletConnectConfigs?: WalletConnectConfig):
                 networkTypes: ['solana' as NetworkType],
             },
         },
-        autofillSupportedNetworks: SVM_NETWORKS,
-        withdrawalSupportedNetworks: SVM_NETWORKS,
-        asSourceSupportedNetworks: SVM_NETWORKS,
+        autofillSupportedNetworks: supportedNetworks,
+        withdrawalSupportedNetworks: supportedNetworks,
+        asSourceSupportedNetworks: supportedNetworks,
         // `STORAGE_KEY` in wallet-svm's svmAdapterManager — persisted only
         // after a selection actually connected, so it's a reliable
         // restorable-session hint.

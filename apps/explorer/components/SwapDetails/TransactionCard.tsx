@@ -55,15 +55,22 @@ export default function TransactionCard({
     const hasAmount = displayAmount !== undefined && displayAmount !== null;
 
     return (
-        <div className={`rounded-md w-full p-6 grid gap-y-3 text-primary-text bg-secondary-700 border-secondary-400 border-t-4 shadow-lg ${isSource ? 'items-baseline lg:max-w-[50%] rounded-t-lg' : 'relative'}`}>
-            {isPending && <span className="pendingAnim"></span>}
+        <div className={`relative grid w-full gap-y-3 rounded-3xl bg-secondary-700 p-4 text-primary-text ${isSource ? 'items-baseline lg:max-w-[50%]' : ''}`}>
+            {isPending ? (
+                <span
+                    className="pointer-events-none absolute inset-x-4 top-2 h-1 overflow-hidden rounded-full bg-warning-background"
+                    aria-hidden="true"
+                >
+                    <span className="pending-progress block h-full w-2/5 rounded-full bg-warning-foreground" />
+                </span>
+            ) : null}
 
             <div className="flex items-center text-primary-text">
                 <div className={`mr-2 text-2xl font-medium ${titleClassName}`}>{title}</div>
             </div>
 
 
-            <div className="rounded-md w-full grid text-primary-text bg-secondary-500 shadow-lg relative border-secondary-400 border divide-y divide-secondary-400">
+            <div className="relative grid w-full divide-y divide-secondary-300 overflow-hidden rounded-2xl bg-secondary-500 text-primary-text">
                 {/* Asset & Network Row */}
                 <div className="flex justify-around">
                     <div className="flex-1 p-4 whitespace-nowrap">
@@ -177,7 +184,7 @@ export default function TransactionCard({
                                 />
                             </div>
                         ) : (
-                            <span>{isRefunded ? <span className="text-[#FF6161]">Failed</span> : "-"}</span>
+                            <span>{isRefunded ? <span className="text-error-foreground">Failed</span> : "-"}</span>
                         )}
                     </div>
                 </div>
@@ -186,7 +193,7 @@ export default function TransactionCard({
                 {showConfirmations && transaction && transaction.confirmations < transaction.max_confirmations && (
                     <div className="flex-1 px-4 pb-2">
                         <div className="text-base font-normal text-secondary-text">
-                            Confirmations
+                            {"Confirmations"}
                             <span className="text-sm lg:text-base font-medium text-primary-text ml-1">
                                 {transaction.confirmations}/{transaction.max_confirmations}
                             </span>
@@ -231,7 +238,7 @@ export function RefuelCard({
             <div className="flex items-center text-primary-text">
                 <div className="mr-2 text-primary-text text-2xl font-medium">... and for gas</div>
             </div>
-            <div className="rounded-md w-full grid gap-y-3 text-primary-text bg-secondary-700 shadow-lg relative border-secondary-600 border">
+            <div className="relative grid w-full gap-y-3 overflow-hidden rounded-2xl bg-secondary-500 text-primary-text">
                 <div className="flex justify-around">
                     <div className="flex-1 p-4">
                         <div className="text-base font-normal text-socket-secondary">Native Asset</div>
@@ -255,7 +262,7 @@ export function RefuelCard({
                                 <Link
                                     href={refuelTransaction.network?.transaction_explorer_template?.replace('{0}', refuelTransaction.transaction_hash) || '#'}
                                     target="_blank"
-                                    className="hover:text-gray-300 w-fit contents items-center"
+                                    className="contents w-fit items-center hover:text-secondary-text"
                                 >
                                     <span className="break-all link link-underline link-underline-black">
                                         {shortenHash(refuelTransaction.transaction_hash)}
@@ -278,4 +285,3 @@ export function RefuelCard({
         </>
     );
 }
-

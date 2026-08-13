@@ -1,5 +1,5 @@
-import { Network } from "@/Models/Network"
-import { RpcHealthCheckProvider } from "@/types/rpcHealth"
+import { Network } from "@layerswap/widget-types";
+import { RpcHealthCheckProvider } from "@layerswap/widget-types";
 
 export class RpcHealthCheckResolver {
     private providers: RpcHealthCheckProvider[]

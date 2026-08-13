@@ -1,10 +1,10 @@
+import { type Wallet } from '@layerswap/widget-types';
 import { FC } from 'react'
 import { RefreshCw } from 'lucide-react'
 import HistorySummary from '../HistorySummary'
 import SwapDetails from '../SwapDetailsComponent'
 import { SwapResponse } from '@/lib/apiClients/layerSwapApiClient'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/shadcn'
-import { Wallet } from '@/types'
 
 type SearchResultProps = {
     isLoading: boolean
