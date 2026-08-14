@@ -1,4 +1,4 @@
-import { isMobile } from "@layerswap/utils";
+import { foregroundWalletApp } from "@layerswap/wallet-core";
 import { Network } from "@layerswap/widget-types";
 import { GaslessProvider, GaslessSignParams } from "@layerswap/widget-types";
 import { getAccount, Config } from '@wagmi/core'
@@ -21,10 +21,7 @@ export function createEVMGaslessProvider(
             if (!walletProvider?.request)
                 throw new Error('Wallet provider unavailable')
 
-            if (isMobile() && wallet?.metadata?.deepLink) {
-                window.location.href = wallet.metadata.deepLink
-                await new Promise(resolve => setTimeout(resolve, 100))
-            }
+            await foregroundWalletApp(wallet?.metadata?.deepLink)
 
             const signature = await walletProvider.request({
                 method: 'eth_signTypedData_v4',

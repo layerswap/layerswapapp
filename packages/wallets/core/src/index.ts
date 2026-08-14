@@ -15,6 +15,8 @@ export {
     createMemoizedConnectionStore,
     setDynamicWcMetadata,
     setPendingMetadataForRegistry,
+    foregroundWalletApp,
+    isSafeDeepLink,
     getAdditionalConnectorsStore,
     getInstantiatedAdditionalConnectorsStores,
     subscribeAdditionalConnectorsStores,

@@ -153,6 +153,7 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
             autofillSupportedNetworks: supported,
             withdrawalSupportedNetworks: supported,
             networkIcon: this.getNetworkIcon(),
+            metadata: { deepLink: dynamicMeta?.deepLink },
         }
     }
 
@@ -254,6 +255,7 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
 
             isWc = !!useWalletConnect && matched
             const identity = isWc ? (matchedRegistry ?? connector) : undefined
+            const wcDeepLink = isWc ? (mobile?.native || mobile?.universal || undefined) : undefined
 
             const targetAdapter = useWalletConnect ? hiddenWcAdapter : installedAdapter
             if (!targetAdapter) throw new Error('Connector not found')
@@ -275,7 +277,7 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
             if (useWalletConnect && hiddenWcAdapter) {
                 const wcAdapter = hiddenWcAdapter as unknown as SolanaWalletConnectAdapter
 
-                setPendingMetadataForRegistry(SVM_NS, identity)
+                setPendingMetadataForRegistry(SVM_NS, identity ? { ...identity, deepLink: wcDeepLink } : undefined)
 
                 const wantsQrModal = !isMobilePlatform || !resolveURI
                 if (wantsQrModal) {
@@ -315,6 +317,7 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
                     name: identity.name,
                     icon: identity.icon || '',
                     id: identity.id,
+                    deepLink: wcDeepLink,
                 })
             }
 
@@ -339,6 +342,7 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
                 autofillSupportedNetworks: supported,
                 withdrawalSupportedNetworks: supported,
                 networkIcon: this.getNetworkIcon(),
+                metadata: { deepLink: wcDeepLink },
             }
             return wallet
         } catch (e) {

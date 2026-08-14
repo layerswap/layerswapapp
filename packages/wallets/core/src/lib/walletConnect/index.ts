@@ -4,6 +4,7 @@ export * from "./createRegistryConnector"
 export * from "./connectorSource"
 export * from "./decorateForWagmi"
 export * from "./dynamicMetadata"
+export * from "./foregroundWalletApp"
 export * from './mapConnectError'
 export * from "./mapWallet"
 export * from "./registry"

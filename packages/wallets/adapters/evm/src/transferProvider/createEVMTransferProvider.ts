@@ -3,7 +3,7 @@ import { Network } from "@layerswap/widget-types";
 import { TransferProvider, TransferProps } from "@layerswap/widget-types";
 import { sendTransaction, Config } from '@wagmi/core'
 import { BaseError } from "viem"
-import { isMobile } from "@layerswap/utils"
+import { foregroundWalletApp } from "@layerswap/wallet-core"
 import { resolveError } from "../evmUtils/resolveError"
 
 type TransactionBuilder = (params: TransferProps) => Promise<any>
@@ -22,10 +22,7 @@ export function createEVMTransferProvider(
             try {
                 const tx = await buildTransaction(params)
 
-                if (isMobile() && selectedWallet?.metadata?.deepLink) {
-                    window.location.href = selectedWallet.metadata.deepLink
-                    await new Promise(resolve => setTimeout(resolve, 100))
-                }
+                await foregroundWalletApp(selectedWallet?.metadata?.deepLink)
 
                 const hash = await sendTransaction(config, tx)
 
