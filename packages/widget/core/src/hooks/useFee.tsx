@@ -339,6 +339,8 @@ export function buildQuoteUrl(args: QuoteUrlArgs): string {
         params.append('destination_address', destinationAddress)
     }
 
+    params.append('force_user_execution', 'true')
+
     return `/quote?${params.toString()}`
 }
 
@@ -413,6 +415,8 @@ export function buildLimitsUrl({
     if (destinationAddress) {
         params.append('destination_address', destinationAddress);
     }
+
+    params.append('force_user_execution', 'true');
 
     return `/limits?${params.toString()}`;
 }
