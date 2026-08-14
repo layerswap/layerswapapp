@@ -93,7 +93,7 @@ export const clearPendingDynamicWcMetadata = (namespace: string): void => {
  */
 export const setPendingMetadataForRegistry = (
     namespace: string,
-    registry: { name: string; icon?: string; id: string } | undefined
+    registry: { name: string; icon?: string; id: string; deepLink?: string } | undefined
 ): DynamicWcMetadata | undefined => {
     if (!registry) {
         clearPendingDynamicWcMetadata(namespace)
@@ -103,6 +103,7 @@ export const setPendingMetadataForRegistry = (
         name: registry.name,
         icon: registry.icon || '',
         id: registry.id,
+        deepLink: registry.deepLink,
     }
     setPendingDynamicWcMetadata(namespace, meta)
     return meta

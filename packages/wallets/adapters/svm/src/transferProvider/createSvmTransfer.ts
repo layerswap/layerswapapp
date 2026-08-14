@@ -1,6 +1,7 @@
 import { NetworkType, ActionMessageType } from '@layerswap/widget-types';
 import { Network } from "@layerswap/widget-types";
 import { TransferProvider, TransferProps } from "@layerswap/widget-types";
+import { foregroundWalletApp } from "@layerswap/wallet-core"
 import type { Connection, Transaction } from "@solana/web3.js"
 import { configureAndSendCurrentTransaction } from "./transactionSender"
 import { svmAdapterManager } from "../service/svmAdapterManager"
@@ -30,6 +31,8 @@ export function createSvmTransfer(): TransferProvider {
                     connection,
                     LAMPORTS_PER_SOL,
                 )
+
+                await foregroundWalletApp(params.selectedWallet?.metadata?.deepLink)
 
                 const signature = await configureAndSendCurrentTransaction(
                     transaction,

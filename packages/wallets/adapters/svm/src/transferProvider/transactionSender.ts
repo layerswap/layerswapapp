@@ -5,7 +5,7 @@ import { transactionSenderAndConfirmationWaiter } from './transactionBuilder';
 export const configureAndSendCurrentTransaction = async (
     transaction: Transaction,
     connection: Connection,
-    signTransaction: SignerWalletAdapterProps['signTransaction']
+    signTransaction: SignerWalletAdapterProps['signTransaction'],
 ) => {
 
     const blockHash = await connection.getLatestBlockhash();
