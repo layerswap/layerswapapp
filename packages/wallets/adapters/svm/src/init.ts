@@ -42,6 +42,13 @@ export function initSvmProvider(opts: InitOptions = {}): void {
                 return rs === WalletReadyState.NotDetected && isMobile() ? WalletReadyState.Loadable : rs;
             }
         }
+        class LoadableSolflareAdapter extends SolflareWalletAdapter {
+            get readyState() {
+                const rs = super.readyState;
+                const isInAppBrowser = typeof window !== 'undefined' && !!(window as { SolflareApp?: unknown }).SolflareApp;
+                return rs === WalletReadyState.Installed && !isInAppBrowser ? WalletReadyState.Loadable : rs;
+            }
+        }
         // The official adapter inherits `autoConnect() { await this.connect() }`,
         // and its connect() opens the WalletConnect modal whenever no session
         // exists — on the restore-selection path that's an unsolicited modal on
@@ -73,7 +80,7 @@ export function initSvmProvider(opts: InitOptions = {}): void {
         svmAdapterManager.register([
             new LoadablePhantomAdapter(),
             new NightlyWalletAdapter(),
-            new SolflareWalletAdapter(),
+            new LoadableSolflareAdapter(),
             new BitgetWalletAdapter(),
             new TrustWalletAdapter(),
             new LedgerWalletAdapter(),
