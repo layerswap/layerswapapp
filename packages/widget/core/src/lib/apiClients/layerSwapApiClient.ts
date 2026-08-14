@@ -43,7 +43,7 @@ export default class LayerSwapApiClient {
 
     async CreateSwapAsync(params: CreateSwapParams): Promise<ApiResponse<SwapResponse>> {
         const correlationId = uuidv4()
-        const data = { ...params, force_user_execution: true }
+        const data = { ...params, use_frontend_swap: true }
         return await this.AuthenticatedRequest<ApiResponse<SwapResponse>>("POST", `/swaps`, data, { 'X-LS-CORRELATION-ID': correlationId });
     }
 
@@ -156,7 +156,7 @@ export type CreateSwapParams = {
     use_deposit_address: boolean
     use_depository?: boolean
     use_gasless?: boolean
-    force_user_execution?: boolean
+    use_frontend_swap?: boolean
     app_name?: string,
 }
 
