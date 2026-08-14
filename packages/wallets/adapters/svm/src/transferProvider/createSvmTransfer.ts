@@ -32,11 +32,12 @@ export function createSvmTransfer(): TransferProvider {
                     LAMPORTS_PER_SOL,
                 )
 
+                await foregroundWalletApp(params.selectedWallet?.metadata?.deepLink)
+
                 const signature = await configureAndSendCurrentTransaction(
                     transaction,
                     connection,
                     signTransaction,
-                    () => foregroundWalletApp(params.selectedWallet?.metadata?.deepLink),
                 )
 
                 if (!signature) {
