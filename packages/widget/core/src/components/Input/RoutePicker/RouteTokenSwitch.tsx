@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { motion } from "framer-motion";
 import TokenIcon from "@/components/Icons/TokenIcon";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@layerswap/ui-kit/components";
 import clsx from "clsx";
 import { useRouteTokenSwitchStore } from "@/stores/routeTokenSwitchStore";
 import GlobeIcon from "@/components/Icons/GlobeIcon";

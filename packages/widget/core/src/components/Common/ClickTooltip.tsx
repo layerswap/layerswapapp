@@ -1,7 +1,7 @@
 import { Info } from 'lucide-react';
 import { FC } from "react";
 import type { JSX } from 'react';
-import { Popover, PopoverContent, PopoverTrigger } from '../shadcn/popover';
+import { Popover, PopoverContent, PopoverTrigger } from "@layerswap/ui-kit/components";
 import { classNames } from '../utils/classNames';
 
 type Props = {

@@ -1,10 +1,10 @@
 import { FC, useMemo } from "react"
 import { ExternalLink } from "lucide-react"
 import { CopyButton } from "@layerswap/ui-kit/components";
-import AddressIcon from "@/components/Common/AddressIcon"
+import { AddressIcon } from "@layerswap/ui-kit/components"
 import { Partner } from "@/components/../Models/Partner"
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues"
-import { getExplorerUrl } from "@/lib/address/explorerUrl"
+import { getExplorerUrl } from "@layerswap/utils"
 import { Address } from "@/lib/address/Address"
 
 type Props = {

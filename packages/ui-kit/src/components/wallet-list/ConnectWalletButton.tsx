@@ -1,12 +1,12 @@
+'use client'
 import { type Wallet } from '@layerswap/widget-types';
 import { RefreshCw } from "lucide-react";
-import { ResolveConnectorIcon } from "../Icons/ConnectorIcons";
 import { FC, useCallback, useRef, useState } from "react";
+import { clsx } from "clsx";
 import { WalletConnectionProvider } from "@layerswap/wallet-core/types";
-import { useConnectModal } from "../Wallet/WalletModal";
-import { ensureRegistryBrowseLoaded, useWalletDescriptorLoader } from "@layerswap/wallet-core";
-import { isProviderConnectReady } from "@layerswap/wallet-core";
-import { classNames } from "@/components/utils/classNames";
+import { ensureRegistryBrowseLoaded, useWalletDescriptorLoader, isProviderConnectReady } from "@layerswap/wallet-core";
+import { ResolveConnectorIcon } from "./ConnectorIcons";
+import { useWalletListAdapters } from "./adapters";
 
 interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     provider?: WalletConnectionProvider,
@@ -17,7 +17,7 @@ interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 const ConnectWalletButton: FC<Props> = ({ provider, onConnect, descriptionText, ...rest }) => {
 
     const [isLoading, setIsLoading] = useState(false)
-    const { connect } = useConnectModal()
+    const { connect } = useWalletListAdapters()
     const { loadAll } = useWalletDescriptorLoader()
     // A descriptor stub isn't "initializing" — its SDK simply hasn't been
     // requested yet. Treat it as ready-to-click so the button stays enabled
@@ -71,7 +71,7 @@ const ConnectWalletButton: FC<Props> = ({ provider, onConnect, descriptionText, 
         onTouchStart={prefetchDescriptors}
         data-attr="connect-wallet"
         disabled={!isProviderReady || rest.disabled}
-        className={classNames(`focus-ring-primary-bold py-5 px-6 bg-secondary-500 hover:bg-secondary-400 transition-colors duration-200 rounded-xl ${(isLoading || !isProviderReady) && 'cursor-progress opacity-80'} disabled:opacity-50 disabled:cursor-not-allowed`, rest.className)}
+        className={clsx(`focus-ring-primary-bold py-5 px-6 bg-secondary-500 hover:bg-secondary-400 transition-colors duration-200 rounded-xl ${(isLoading || !isProviderReady) && 'cursor-progress opacity-80'} disabled:opacity-50 disabled:cursor-not-allowed`, rest.className)}
     >
         <div className="flex flex-row justify-between gap-9 items-stretch">
             <ResolveConnectorIcon

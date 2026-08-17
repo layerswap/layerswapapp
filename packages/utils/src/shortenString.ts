@@ -5,7 +5,7 @@
  * @param str - The string to shorten (transaction hash, swap ID, etc.)
  * @returns Shortened string in format "first5...last4"
  */
-export default function shortenString(str: string) {
+export function shortenString(str: string) {
     if (!str || str.length < 13) {
         return str;
     }

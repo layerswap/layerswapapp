@@ -41,8 +41,10 @@
     "bitcoin-address-validation": "^3.0.0",
     "bn.js": "^5.2.3",
     "bs58": "^6.0.0",
+    "clsx": "^2.1.1",
     "csstype": "^3.2.3",
-    "js-sha3": "^0.8.0"
+    "js-sha3": "^0.8.0",
+    "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
     "rimraf": "catalog:",

@@ -6,7 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/shadcn/accordion";
+import { AccordionContent, AccordionItem, AccordionTrigger } from "@layerswap/ui-kit/components";
 import { motion } from "framer-motion";
 import {
   NetworkElement,

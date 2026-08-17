@@ -1,7 +1,7 @@
 import { FC, useState } from "react";
 import { useRouteSortingStore, SortingOption } from "@/stores/routeSortingStore";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@layerswap/ui-kit/components";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@layerswap/ui-kit/components";
 import clsx from "clsx";
 import { ArrowUpDown } from "lucide-react";
 import CheckIcon from "@/components/Icons/CheckIcon";

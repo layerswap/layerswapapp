@@ -30,7 +30,11 @@ export { addressFormat } from "@/address/formatter";
 export { isAndroid, isIOS, isMobile } from "@/isMobile";
 export { default as sleep } from "@/sleep";
 
+export { cn } from "@/cn";
 export { formatUnits } from "@/formatUnits";
+export { truncateDecimals, isScientific } from "@/truncateDecimals";
+export { shortenString } from "@/shortenString";
+export { getExplorerUrl } from "@/explorerUrl";
 export { retry, retryWithExponentialBackoff } from "@/retry";
 export { fetchWithTimeout } from "@/fetchWithTimeout";
 export { JsonRpcClient } from "@/jsonRpcClient";

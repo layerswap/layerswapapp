@@ -1,4 +1,4 @@
-import * as Tooltip from "@radix-ui/react-tooltip"
+import { Tooltip } from "radix-ui"
 import { Check } from "lucide-react"
 import { useEffect, useLayoutEffect, useState, type FC, type ReactNode, type RefObject } from "react"
 import clsx from "clsx"

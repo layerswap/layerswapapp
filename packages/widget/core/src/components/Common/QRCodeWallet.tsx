@@ -2,8 +2,8 @@ import { FC } from "react"
 import { StyledQRCode } from "@layerswap/ui-kit/components";
 import { classNames } from "../utils/classNames";
 import { QrCode } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@layerswap/ui-kit/components";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@layerswap/ui-kit/components";
 import { motion } from "framer-motion";
 
 type QRCodeModalProps = {

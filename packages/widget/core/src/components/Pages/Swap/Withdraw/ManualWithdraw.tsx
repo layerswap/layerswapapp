@@ -6,10 +6,10 @@ import useWallet from '@/hooks/useWallet'
 import { DepositAction, SwapBasicData, SwapQuote } from '@/lib/apiClients/layerSwapApiClient'
 import { useMemo } from 'react'
 import { FC, ReactNode, useState } from 'react'
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@layerswap/ui-kit/components";
 import useExchangeNetworks from '@/hooks/useExchangeNetworks'
 import { ChevronDown } from 'lucide-react'
-import { CommandItem, CommandList, CommandWrapper } from '@/components/shadcn/command'
+import { CommandItem, CommandList, CommandWrapper } from '@layerswap/ui-kit/components'
 import { Network, NetworkRoute, Token } from '@layerswap/widget-types';
 import { useInitialSettings } from '@/context/settings'
 import { useSwapDataUpdate } from '@/context/swap'
@@ -18,13 +18,13 @@ import { handleLimitsUpdate } from './QuoteUpdate'
 import SubmitButton from '@/components/Buttons/submitButton'
 import { SwapFormValues } from '../Form/SwapFormValues'
 import { Widget } from '@/components/Widget/Index'
-import { truncateDecimals } from '@/components/utils/RoundDecimals'
+import { truncateDecimals } from '@layerswap/utils'
 import { resolveDepositAddress } from '@/helpers/depositActions'
 import { Partner } from '@/Models/Partner'
-import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
+import { ExtendedAddress } from '@layerswap/ui-kit/components'
 import QuoteDetails from '../Form/FeeDetails'
 import { Address } from "@/lib/address/Address";
-import AddressIcon from '@/components/Common/AddressIcon'
+import { AddressIcon } from '@layerswap/ui-kit/components'
 
 interface Props {
     swapBasicData: SwapBasicData;

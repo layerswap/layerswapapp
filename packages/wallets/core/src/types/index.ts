@@ -8,6 +8,7 @@ export type {
     WalletConnectionProvider,
     MultiStepHandler,
     SelectAccountProps,
+    AccountIdentity,
     RequestAdditionalConnectorsParams,
     RequestAdditionalConnectorsResult,
 } from "@/types/wallet";

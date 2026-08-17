@@ -3,7 +3,7 @@
 import * as React from "react"
 import { XIcon } from "lucide-react"
 import { Dialog as DialogPrimitive } from "radix-ui"
-import { classNames } from "../utils/classNames"
+import { cn } from "@layerswap/utils"
 
 function Dialog({
   ...props
@@ -36,7 +36,7 @@ function DialogOverlay({
   return (
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
-      className={classNames(
+      className={cn(
         "fixed inset-0 isolate z-50 bg-black/50 duration-100 supports-backdrop-filter:backdrop-blur-xs data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
         className
       )}
@@ -63,7 +63,7 @@ function DialogContent({
         <DialogOverlay />
         <DialogPrimitive.Content
           data-slot="dialog-content"
-          className={classNames(
+          className={cn(
             "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-2xl bg-secondary-800 p-4 text-sm text-primary-text ring-1 ring-secondary-500 duration-100 outline-none sm:max-w-sm data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
             className
           )}
@@ -89,7 +89,7 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="dialog-header"
-      className={classNames("flex flex-col gap-2", className)}
+      className={cn("flex flex-col gap-2", className)}
       {...props}
     />
   )
@@ -102,7 +102,7 @@ function DialogFooter({
   return (
     <div
       data-slot="dialog-footer"
-      className={classNames(
+      className={cn(
         "-mx-4 -mb-4 flex flex-col-reverse gap-2 rounded-b-2xl border-t border-secondary-500 bg-secondary-700/50 p-4 sm:flex-row sm:justify-end",
         className
       )}
@@ -118,7 +118,7 @@ function DialogTitle({
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={classNames(
+      className={cn(
         "text-base leading-none font-semibold text-primary-text",
         className
       )}
@@ -134,7 +134,7 @@ function DialogDescription({
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"
-      className={classNames(
+      className={cn(
         "text-sm text-secondary-text *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-primary-text",
         className
       )}

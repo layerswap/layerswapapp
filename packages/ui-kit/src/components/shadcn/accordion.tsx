@@ -1,6 +1,8 @@
+"use client"
+
 import * as React from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { classNames } from "../utils/classNames"
+import { cn } from "@layerswap/utils"
 
 interface AccordionContextValue {
     value: string | string[] | undefined
@@ -104,7 +106,7 @@ const AccordionTrigger = React.forwardRef<
         <Component
             {...(Component === 'button' ? { type: 'button' } : { role: 'button' })}
             ref={ref as any}
-            className={classNames("w-full grow", className)}
+            className={cn("w-full grow", className)}
             onClick={handleClick}
             aria-expanded={isOpen}
             {...props}
@@ -180,7 +182,7 @@ const AccordionContent = React.forwardRef<HTMLDivElement, AccordionContentProps>
                     opacity: { duration: 0.1, delay: isOpen ? 0.05 : 0 }
                 }}
                 style={{ overflow: "hidden" }}
-                className={classNames("AccordionContent", className)}
+                className={cn("AccordionContent", className)}
             >
                 <AnimatePresence mode="wait">
                     {isOpen && (

@@ -8,7 +8,7 @@ import { useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { SwapFormValues } from "../SwapFormValues";
 import { SelectAccountProps } from "@layerswap/wallet-core/types"
-import AddressIcon from "@/components/Common/AddressIcon";
+import { AddressIcon } from "@layerswap/ui-kit/components";
 import { Address as AddressClass } from "@/lib/address/Address";
 import VaulDrawer from "@/components/Modal/vaulModal";
 import { WalletItem } from "@/components/Wallet/WalletComponents/WalletsList";

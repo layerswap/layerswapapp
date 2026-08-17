@@ -13,13 +13,12 @@ import { useSettingsState } from '@/context/settings';
 import { generateSwapInitialValuesFromSwap } from '@/lib/generateSwapInitialValues';
 import SubmitButton from '@/components/Buttons/submitButton';
 import SecondaryButton from '@/components/Buttons/secondaryButton';
-import shortenString from '@/components/utils/ShortenString';
-import { getExplorerUrl } from '@/lib/address/explorerUrl';
+import { getExplorerUrl, shortenString } from '@layerswap/utils';
 import useWallet from '@/hooks/useWallet';
 import { Address } from '@/lib/address/Address';
-import AddressIcon from '@/components/Common/AddressIcon';
-import WalletIconView from '@/components/Wallet/WalletIconView';
-import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon';
+import { AddressIcon } from '@layerswap/ui-kit/components';
+import { WalletIconView } from '@layerswap/ui-kit/components';
+import { ExtendedAddress } from '@layerswap/ui-kit/components';
 
 type Props = {
     swapResponse: SwapResponse

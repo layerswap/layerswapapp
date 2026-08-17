@@ -138,6 +138,16 @@ export type SelectAccountProps = {
     providerName: string;
 }
 
+export type AccountIdentity = {
+    address: string;
+    providerName: string;
+    id: string;
+    displayName: string;
+    addresses: string[];
+    provider: WalletConnectionProvider;
+    icon?: string;
+}
+
 export type RequestAdditionalConnectorsParams = {
     page?: number,
     pageSize?: number,

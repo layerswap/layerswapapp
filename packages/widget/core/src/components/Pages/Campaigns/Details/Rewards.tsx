@@ -7,11 +7,10 @@ import { RewardsComponentSceleton } from "@/components/Common/Sceletons"
 import useSWR from "swr"
 import { ApiResponse } from "@/Models/ApiResponse"
 import ClickTooltip from "@/components/Common/ClickTooltip"
-import { Progress } from "@/components/shadcn/progressBar";
+import { Progress } from "@layerswap/ui-kit/components";
 import useWallet from "@/hooks/useWallet";
 import { ImageWithFallback } from "@layerswap/ui-kit/components";
-import { getExplorerUrl } from "@/lib/address/explorerUrl";
-import shortenString from "@/components/utils/ShortenString";
+import { getExplorerUrl, shortenString } from "@layerswap/utils";
 
 type Props = {
     campaign: Campaign

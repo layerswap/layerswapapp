@@ -5,12 +5,12 @@ import { FC, useState } from "react";
 import ResizablePanel from "@/components/Common/ResizablePanel";
 import { SelectAccountProps, WalletConnectionProvider } from "@layerswap/wallet-core/types";
 import { WalletIcon } from "@layerswap/ui-kit/components";
-import WalletIconView from "@/components/Wallet/WalletIconView";
+import { WalletIconView } from "@layerswap/ui-kit/components";
 import { WalletItem } from "@/components/Wallet/WalletComponents/WalletsList";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { AddressItem } from ".";
 import { Partner } from "@/Models/Partner";
-import AddressIcon from "@/components/Common/AddressIcon";
+import { AddressIcon } from "@layerswap/ui-kit/components";
 import AddressWithIcon from "./AddressWithIcon";
 
 type Props = {

@@ -1,7 +1,7 @@
 import { type Refuel } from '@layerswap/widget-types';
 import { FC, useMemo } from "react";
 import { Triangle } from "lucide-react";
-import { Tooltip, TooltipArrow, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
+import { Tooltip, TooltipArrow, TooltipContent, TooltipTrigger } from "@layerswap/ui-kit/components";
 import { SwapQuote } from "@/lib/apiClients/layerSwapApiClient";
 import clsx from 'clsx';
 import { resolvePriceImpactValues } from "@/lib/fees";

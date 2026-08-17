@@ -2,8 +2,8 @@
 import Jazzicon from "./jazzicon.mjs";
 import { FC, useEffect, useRef } from "react";
 import { UserRound } from "lucide-react";
-import { cn } from "@/helpers/cn";
-import { useAddressName } from "@/stores/addressBookStore";
+import { cn } from "@layerswap/utils";
+import { useWalletListAdapters } from "../adapters";
 
 type Props = {
     address: string;
@@ -15,7 +15,8 @@ type Props = {
 
 const AddressIcon: FC<Props> = ({ address, size, className, network, providerName }) => {
     const ref = useRef<HTMLDivElement>(null)
-    const savedName = useAddressName(address, network, providerName)
+    const adapters = useWalletListAdapters()
+    const { name: savedName } = adapters.useAddressLabel(address, network, providerName)
     const saved = !!savedName
     const renderSize = size ?? 24
     // Mirror the connected-wallet network badge (≈0.5 of the icon, poking out the corner).

@@ -2,8 +2,9 @@
 import { type Wallet } from '@layerswap/widget-types';
 import { FC } from 'react'
 import { clsx } from 'clsx'
-import AddressIcon from '@/components/Common/AddressIcon'
-import { ImageWithFallback, WalletIcon } from "@layerswap/ui-kit/components";
+import { ImageWithFallback } from "../ImageWithFallback";
+import WalletIcon from "../WalletIcon";
+import AddressIcon from "./AddressIcon";
 
 type Props = {
     wallet: Pick<Wallet, 'icon' | 'address' | 'displayName' | 'id'>

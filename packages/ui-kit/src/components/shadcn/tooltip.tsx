@@ -1,8 +1,9 @@
 "use client"
 
 import * as React from "react"
-import * as TooltipPrimitive from "@radix-ui/react-tooltip"
-import { clsx } from "clsx"
+import { Tooltip as TooltipPrimitive } from "radix-ui"
+import { cn } from "@layerswap/utils"
+import { useWidgetContainer } from "@/lib/portal"
 
 function TooltipProvider({
   delayDuration = 0,
@@ -81,7 +82,7 @@ function TooltipTrigger({
       toggle?.()
     }
   }
-  return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" className={clsx(
+  return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" className={cn(
     "cursor-pointer",
     className
   )}
@@ -91,7 +92,8 @@ function TooltipTrigger({
 
 type TooltipContentProps = React.ComponentProps<typeof TooltipPrimitive.Content> & {
   arrowClasses?: string,
-  showArrow?: boolean
+  showArrow?: boolean,
+  container?: HTMLElement | null
 }
 
 function TooltipContent({
@@ -100,16 +102,18 @@ function TooltipContent({
   children,
   arrowClasses,
   showArrow = false,
+  container,
   ...props
 }: TooltipContentProps) {
-  const container = typeof document !== 'undefined' ? document.getElementById('widget') : null;
+  const widgetContainer = useWidgetContainer()
+  const resolvedContainer = container !== undefined ? container : widgetContainer
   return (
-    <TooltipPrimitive.Portal container={container}>
+    <TooltipPrimitive.Portal container={resolvedContainer ?? undefined}>
       <div className="layerswap-styles">
         <TooltipPrimitive.Content
           data-slot="tooltip-content"
           sideOffset={sideOffset}
-          className={clsx(
+          className={cn(
             "z-50 origin-(--radix-tooltip-content-transform-origin) rounded-xl border border-secondary-600 bg-secondary-800 px-3 py-1.5 text-xs text-secondary-text has-data-[slot=kbd]:pr-1.5 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 **:data-[slot=kbd]:relative **:data-[slot=kbd]:isolate **:data-[slot=kbd]:z-50 **:data-[slot=kbd]:rounded-lg data-[state=delayed-open]:animate-in data-[state=delayed-open]:fade-in-0 data-[state=delayed-open]:zoom-in-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
             className
           )}
@@ -124,7 +128,7 @@ function TooltipContent({
 }
 
 function TooltipArrow({ className, ...props }: React.ComponentProps<typeof TooltipPrimitive.Arrow>) {
-  return <TooltipPrimitive.Arrow className={clsx("bg-secondary-500 fill-secondary-500 z-50 size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-[2px] data-[side=left]:translate-x-[-1.5px] data-[side=right]:translate-x-[1.5px]", className)} {...props} />
+  return <TooltipPrimitive.Arrow className={cn("bg-secondary-500 fill-secondary-500 z-50 size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-[2px] data-[side=left]:translate-x-[-1.5px] data-[side=right]:translate-x-[1.5px]", className)} {...props} />
 }
 
 export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider, TooltipArrow }
