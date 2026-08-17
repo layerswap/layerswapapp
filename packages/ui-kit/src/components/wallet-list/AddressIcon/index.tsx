@@ -16,7 +16,7 @@ type Props = {
 const AddressIcon: FC<Props> = ({ address, size, className, network, providerName }) => {
     const ref = useRef<HTMLDivElement>(null)
     const adapters = useWalletListAdapters()
-    const { name: savedName } = adapters.useAddressLabel(address, network, providerName)
+    const savedName = adapters.useAddressName(address, network, providerName)
     const saved = !!savedName
     const renderSize = size ?? 24
     // Mirror the connected-wallet network badge (≈0.5 of the icon, poking out the corner).

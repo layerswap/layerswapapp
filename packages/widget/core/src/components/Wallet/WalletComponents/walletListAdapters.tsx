@@ -21,7 +21,7 @@ const useWidgetWalletBalance: WalletListAdapters["useWalletBalance"] = ({ addres
 
 const useWidgetAddressLabel: WalletListAdapters["useAddressLabel"] = (address, network, providerName) => {
     const name = useAddressName(address, network, providerName)
-    const labeled = useLabeledAddress(address, network, providerName)
+    const labeled = useLabeledAddress((network || providerName) ? address : undefined, network, providerName)
     return { name, labeled }
 }
 
@@ -37,6 +37,7 @@ export const WidgetWalletListAdapters = ({ children }: { children: ReactNode }) 
         connect: connectAdapter,
         useWalletBalance: useWidgetWalletBalance,
         useAddressLabel: useWidgetAddressLabel,
+        useAddressName,
         renderSaveForm,
     }), [networks, connectAdapter])
     return <WalletListAdaptersProvider adapters={adapters}>{children}</WalletListAdaptersProvider>

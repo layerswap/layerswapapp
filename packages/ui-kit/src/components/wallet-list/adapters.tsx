@@ -32,6 +32,7 @@ export type WalletListAdapters = {
     getNetworkId: (network: Network) => string
     useWalletBalance: (args: { address?: string; network?: Network; token?: Token }) => WalletBalanceResult
     useAddressLabel: (address?: string | null, network?: { name: string } | null, providerName?: string) => AddressLabelResult
+    useAddressName: (address?: string | null, network?: { name: string } | null, providerName?: string) => string | undefined
     renderSaveForm?: (props: RenderSaveFormProps) => ReactNode
 }
 
@@ -49,6 +50,7 @@ const defaultAdapters: WalletListAdapters = {
     getNetworkId: (network) => network.name,
     useWalletBalance: defaultUseWalletBalance,
     useAddressLabel: defaultUseAddressLabel,
+    useAddressName: () => undefined,
 }
 
 const WalletListAdaptersContext = createContext<WalletListAdapters>(defaultAdapters)
