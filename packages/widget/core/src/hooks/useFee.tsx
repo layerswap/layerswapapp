@@ -122,10 +122,12 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
     const gaslessEnabled = useGaslessPreferenceStore(s => s.gaslessEnabled)
     const selectedSourceAccount = useSelectedAccount("from", from)
     const sourceRouteToken = useMemo(() => sourceRoutes?.find(r => r.name === from)?.tokens?.find(t => t.symbol === fromCurrency), [sourceRoutes, from, fromCurrency])
+    const sourceIsSupported = !!selectedSourceAccount?.walletAsSourceSupportedNetworks?.some(n => n === from)
+    const sourceAddress = sourceIsSupported ? selectedSourceAccount?.address : undefined
     const useGasless = !isBridge && gaslessEnabled && isGaslessCapableRoute({
         depositMethod,
         supportsGaslessDeposit: sourceRouteToken?.supports_gasless_deposit,
-        sourceIsSupported: !!selectedSourceAccount?.walletAsSourceSupportedNetworks?.some(n => n === from),
+        sourceIsSupported,
         sourceAddress: selectedSourceAccount?.address,
     })
 
@@ -168,6 +170,7 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
             slippage,
             useGasless,
             destinationAddress,
+            sourceAddress,
         })
         : null
 
@@ -301,6 +304,7 @@ export type QuoteUrlArgs = {
     slippage?: number
     useGasless?: boolean
     destinationAddress?: string
+    sourceAddress?: string
 }
 
 export function buildQuoteUrl(args: QuoteUrlArgs): string {
@@ -315,6 +319,7 @@ export function buildQuoteUrl(args: QuoteUrlArgs): string {
         slippage,
         useGasless,
         destinationAddress,
+        sourceAddress,
     } = args
 
     const params = new URLSearchParams({
@@ -337,6 +342,10 @@ export function buildQuoteUrl(args: QuoteUrlArgs): string {
 
     if (destinationAddress) {
         params.append('destination_address', destinationAddress)
+    }
+
+    if (sourceAddress) {
+        params.append('source_address', sourceAddress)
     }
 
     return `/quote?${params.toString()}`
