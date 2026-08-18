@@ -1,7 +1,5 @@
-import * as React from "react"
-
 /**
- * Reads `#widget` lazily after mount.
+ * Reads `#widget` from the document.
  *
  * Radix Portal defaults to `document.body`. The widget's Tailwind
  * utilities are scoped to `.layerswap-styles` (postcss-prefixwrap), so a
@@ -12,13 +10,5 @@ import * as React from "react"
  * that need a different target can still pass `container` explicitly.
  */
 export function useWidgetContainer(): HTMLElement | null {
-  const [el, setEl] = React.useState<HTMLElement | null>(null)
-  // useLayoutEffect runs synchronously after DOM mutation, before paint, so
-  // the portal resolves to `#widget` before the popover is first painted —
-  // avoiding the body→#widget remount flash a passive effect would cause.
-  // This component never renders server-side, so the SSR warning is moot.
-  React.useLayoutEffect(() => {
-    setEl(document.getElementById('widget'))
-  }, [])
-  return el
+    return typeof document !== 'undefined' ? document.getElementById('widget') : null
 }

@@ -36,7 +36,7 @@ export const WalletsIcons = ({ wallets }: WalletsIconsProps) => {
             }
             {
                 uniqueWallets.length > 2 &&
-                <div className="h-6 w-6 shrink-0 rounded-md justify-center p-1 bg-secondary-600 text-primary-text overlfow-hidden text-xs">
+                <div className="h-6 w-6 shrink-0 rounded-md justify-center p-1 bg-secondary-600 text-primary-text text-xs">
                     <span><span>+</span>{uniqueWallets.length - 2}</span>
                 </div>
             }

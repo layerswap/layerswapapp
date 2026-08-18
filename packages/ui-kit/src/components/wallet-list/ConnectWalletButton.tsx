@@ -65,7 +65,7 @@ const ConnectWalletButton: FC<Props> = ({ provider, onConnect, descriptionText, 
     return <button
         {...rest}
         type="button"
-        onClick={handleConnect}
+        onClick={(e) => { rest.onClick?.(e); handleConnect() }}
         onMouseEnter={prefetchDescriptors}
         onFocus={prefetchDescriptors}
         onTouchStart={prefetchDescriptors}
