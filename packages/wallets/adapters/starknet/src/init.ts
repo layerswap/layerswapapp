@@ -21,8 +21,16 @@ class DiscoveryConnector extends Connector {
 
     available() { return true }
     connect(): any {
-        window.open(this.#wallet.downloads[this.#store], '_blank')
+        window.open(this.#link(), '_blank')
         return undefined
+    }
+    // Xverse's discovery entry only carries a Play Store listing, which cannot
+    // open the installed app. Their documented app link can.
+    #link(): string {
+        if (this.#wallet.id === 'xverse') {
+            return `https://connect.xverse.app/browser?url=${encodeURIComponent(window.location.href)}`
+        }
+        return this.#wallet.downloads[this.#store]
     }
     get wallet(): any { throw new ConnectorNotConnectedError() }
     disconnect(): any { throw new UserNotConnectedError() }
@@ -62,7 +70,7 @@ export function initStarknetProvider(): void {
 
         const defaultConnectors: Connector[] = []
 
-        if (!isSafari) {
+        if (!isSafari && !isAndroid) {
             defaultConnectors.push(new InjectedConnector({ options: { id: 'argentX' } }))
             defaultConnectors.push(new InjectedConnector({ options: { id: 'keplr' } }))
             defaultConnectors.push(new InjectedConnector({ options: { id: 'braavos' } }))
@@ -71,11 +79,16 @@ export function initStarknetProvider(): void {
 
         if ((isAndroid || isIOS) && !defaultConnectors.some(c => c.id === 'braavos')) {
             const starknet = (await import('@starknet-io/get-starknet-core')).default
-            const discoverWallets = (await starknet.getDiscoveryWallets()).filter(w => {
-                return (isAndroid && (w.downloads as any)['android']) || (isIOS && (w.downloads as any)['ios'])
-            })
-            if (discoverWallets.length) {
-                defaultConnectors.push(...discoverWallets.map(w => new DiscoveryConnector(w, isAndroid ? 'android' : 'ios')))
+            const injectedWallets = isAndroid ? await starknet.getAvailableWallets() : []
+            if (injectedWallets.length) {
+                defaultConnectors.push(...injectedWallets.map(w => new InjectedConnector({ options: { id: w.id } })))
+            } else {
+                const discoverWallets = (await starknet.getDiscoveryWallets()).filter(w => {
+                    return (isAndroid && (w.downloads as any)['android']) || (isIOS && (w.downloads as any)['ios'])
+                })
+                if (discoverWallets.length) {
+                    defaultConnectors.push(...discoverWallets.map(w => new DiscoveryConnector(w, isAndroid ? 'android' : 'ios')))
+                }
             }
         }
 
