@@ -35,7 +35,7 @@ export default function Transactions({ settings, themeData, apiKey }: InferGetSe
               }
             }}
           >
-            <TransactionsHistory height={isMobile ? '90svh' : '600px'} />
+            <TransactionsHistory height={isMobile ? '90svh' : 'calc(79svh - 72px)'} />
           </WidgetWrapper>
         </div>
       </Layout>
