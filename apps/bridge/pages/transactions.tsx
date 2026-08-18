@@ -21,7 +21,7 @@ export default function Transactions({ settings, themeData, apiKey }: InferGetSe
   return (
     <>
       <Layout themeData={themeData}>
-        <div className='h-full w-full'>
+        <div className='h-full w-full sm:max-w-[472px] mx-auto'>
           <WidgetWrapper
             settings={resolvedSettings}
             themeData={themeData}

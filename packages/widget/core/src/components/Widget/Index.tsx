@@ -20,7 +20,7 @@ const Widget = ({ children, hideMenu, goBack, contextualMenu, fitHeight = false 
    const wrapper = useRef(null);
    const { isEmbedded } = useSettingsState()
 
-   return <div className="relative p-px h-full sm:max-w-[472px] mx-auto">
+   return <div className="relative p-px h-full">
       {
          AppSettings.ThemeData?.enableWideVersion && !isEmbedded &&
          <div className="invisible sm:visible absolute inset-0 rounded-[25px] bg-linear-to-t from-secondary-800 to-secondary-300 pointer-events-none" />
