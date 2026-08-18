@@ -45,7 +45,7 @@ const NetworkLogoStack: FC<Props> = ({ items, summary, max = 3, ringClassName = 
                     )}
                 </div>
             </TooltipTrigger>
-            <TooltipContent side="top" align="end" className="max-w-[240px] p-2.5">
+            <TooltipContent side="top" align="end" className="max-w-[240px]">
                 {summary ? (
                     <span className="text-primary-text text-xs font-medium">{summary}</span>
                 ) : (

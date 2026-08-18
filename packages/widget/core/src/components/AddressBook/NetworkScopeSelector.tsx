@@ -101,7 +101,7 @@ const NetworkScopeSelector: FC<NetworkScopeSelectorProps> = ({ sectionLabel, mas
                         <ChevronDown className={clsx('w-5 h-5 text-secondary-text shrink-0 transition-transform duration-200', open && 'rotate-180')} />
                     </button>
                 </PopoverTrigger>
-                <PopoverContent container={modal ? drawerRef.current : undefined} collisionBoundary={widget ?? undefined} collisionPadding={8} align="start" className="w-[var(--radix-popover-trigger-width)]! max-w-none! bg-secondary-500! p-0 rounded-2xl overflow-hidden">
+                <PopoverContent container={modal ? drawerRef.current : undefined} collisionBoundary={widget ?? undefined} collisionPadding={8} align="start" className="w-[var(--radix-popover-trigger-width)]! max-w-none! bg-secondary-500! overflow-hidden">
                     {!overlapping && (
                         <div className="p-2 pb-1 border-b border-secondary-500">
                             <SearchComponent searchQuery={query} setSearchQuery={setQuery} placeholder="Search networks" containerClassName="mb-0 h-9 bg-secondary-300! focus-within:bg-secondary-200!" className="bg-transparent!" />

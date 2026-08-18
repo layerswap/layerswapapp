@@ -40,7 +40,7 @@ const AddressRow: FC<{ entry: SavedAddress, onEdit: () => void, onDelete: () => 
                         <MoreVertical className="h-4 w-4" />
                     </button>
                 </PopoverTrigger>
-                <PopoverContent align="end" sideOffset={4} className="min-w-40 p-1 bg-secondary-500! rounded-xl">
+                <PopoverContent align="end" sideOffset={4} className="min-w-40 bg-secondary-500! rounded-xl">
                     <button
                         type="button"
                         onClick={onEdit}

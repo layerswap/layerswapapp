@@ -58,7 +58,7 @@ const RouteSortingMenu: FC = () => {
                     <ArrowUpDown className="w-4 h-4 text-primary-text-tertiary hover:text-primary-text transition-colors" />
                 </button>
             </PopoverTrigger>
-            <PopoverContent className="min-w-[170px] p-0 bg-secondary-500! rounded-xl" align="start" sideOffset={8}>
+            <PopoverContent className="min-w-[170px] bg-secondary-500! rounded-xl" align="start" sideOffset={8}>
                 <div className=" flex flex-col gap-1">
                     {sortingOptions.map((option) => (
                         <button

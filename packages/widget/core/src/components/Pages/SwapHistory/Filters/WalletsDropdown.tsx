@@ -52,7 +52,7 @@ const WalletsDropdown: FC<WalletsDropdownProps> = ({ wallets, addresses, selecte
                         <ChevronDown className="w-4 h-4" />
                     </button>
                 </PopoverTrigger>
-                <PopoverContent align="start" className="p-1 w-64 overflow-hidden">
+                <PopoverContent align="start" className="overflow-hidden">
                     <div className="max-h-72 overflow-y-auto styled-scroll">
                         {rows.map(({ address, label, short, icon }) => {
                             const checked = selectedAddresses.includes(address)
