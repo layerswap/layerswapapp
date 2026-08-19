@@ -78,7 +78,6 @@
     "@uidotdev/usehooks": "^2.4.1",
     "axios": "catalog:",
     "clsx": "^2.1.1",
-    "color": "4.2.3",
     "fflate": "^0.8.2",
     "formik": "^2.2.9",
     "framer-motion": "^12.26.2",

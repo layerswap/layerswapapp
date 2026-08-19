@@ -1,9 +1,9 @@
 import { FC, useMemo, useRef, useState } from "react";
 import type { WalletConnectionProvider } from "@layerswap/wallet-core/types"
 import clsx from "clsx";
-import ProviderFilterIcon from "./ProviderFilterIcon";
-import { Popover, PopoverTrigger, PopoverContent } from "./shadcn/popover";
-import { Checkbox } from "./shadcn/checkbox";
+import ProviderFilterIcon from "../icons/ProviderFilterIcon";
+import { Popover, PopoverTrigger, PopoverContent } from "../shadcn/popover";
+import { Checkbox } from "../shadcn/checkbox";
 
 export const ProviderPicker: FC<{ providers: WalletConnectionProvider[], selectedProviderNames: string[], setSelectedProviderNames: (providerNames: string[]) => void }> = ({ providers, selectedProviderNames, setSelectedProviderNames }) => {
     const values = useMemo(() => providers.map(p => p.name).sort(), [providers])

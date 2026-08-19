@@ -1,7 +1,7 @@
 import useWindowDimensions from "@/hooks/useWindowDimensions"
 import { DetailedHTMLProps, InputHTMLAttributes, useEffect, useRef, useState } from "react"
-import FilledX from "./FilledX"
-import SearchIcon from "./SearchIcon"
+import FilledX from "../icons/FilledX"
+import SearchIcon from "../icons/SearchIcon"
 import clsx from "clsx"
 import { AnimatePresence, motion } from "framer-motion"
 

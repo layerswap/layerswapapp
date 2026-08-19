@@ -1,9 +1,9 @@
 import { type InternalConnector } from '@layerswap/widget-types';
 import { FC } from "react";
 import type { WalletConnectionProvider, WalletModalConnector } from "@layerswap/wallet-core/types";
-import { ImageWithFallback } from "./ImageWithFallback";
-import WalletIcon from "./WalletIcon";
-import CircularLoader from "./CircularLoader";
+import { ImageWithFallback } from "../common/ImageWithFallback";
+import WalletIcon from "../icons/WalletIcon";
+import CircularLoader from "../icons/CircularLoader";
 
 type MultichainConnectorModalProps = {
     selectedConnector: WalletModalConnector,

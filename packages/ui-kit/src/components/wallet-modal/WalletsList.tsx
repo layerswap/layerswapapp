@@ -4,13 +4,13 @@ import { ChevronDown, Plus, Unplug } from "lucide-react";
 import { SelectAccountProps, WalletConnectionProvider, AccountIdentity } from "@layerswap/wallet-core/types";
 import { FC, ReactNode, useCallback, useState } from "react";
 import { clsx } from 'clsx';
-import { ImageWithFallback } from "../ImageWithFallback";
+import { ImageWithFallback } from "../common/ImageWithFallback";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
-import FilledCheck from "./FilledCheck";
+import FilledCheck from "../icons/FilledCheck";
 import WalletIconView from "./WalletIconView";
-import AddressIcon from "./AddressIcon";
-import { ExtendedAddress } from "./ExtendedAddress";
-import { useWalletListAdapters, type SaveAddressRequest } from "./adapters";
+import AddressIcon from "../address/address-icon";
+import { ExtendedAddress } from "../address/ExtendedAddress";
+import { useWalletListAdapters, type SaveAddressRequest } from "@/lib/adapters";
 
 type Props = {
     selectable?: boolean;

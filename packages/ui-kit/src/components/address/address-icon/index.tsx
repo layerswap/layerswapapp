@@ -3,7 +3,7 @@ import Jazzicon from "./jazzicon.mjs";
 import { FC, useEffect, useRef } from "react";
 import { UserRound } from "lucide-react";
 import { cn } from "@layerswap/utils";
-import { useWalletListAdapters } from "../adapters";
+import { useWalletListAdapters } from "@/lib/adapters";
 
 type Props = {
     address: string;

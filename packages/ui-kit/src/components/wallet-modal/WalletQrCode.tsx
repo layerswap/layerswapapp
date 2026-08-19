@@ -1,9 +1,9 @@
 import { FC, type RefObject } from "react";
 import type { WalletModalConnector } from "@layerswap/wallet-core/types";
-import StyledQRCode from "./StyledQRCode";
-import CopyButton from "./CopyButton";
-import { ImageWithFallback } from "./ImageWithFallback";
-import WalletIcon from "./WalletIcon";
+import StyledQRCode from "../qr-code/StyledQRCode";
+import CopyButton from "../buttons/CopyButton";
+import { ImageWithFallback } from "../common/ImageWithFallback";
+import WalletIcon from "../icons/WalletIcon";
 
 export const WalletQrCode: FC<{ selectedConnector: WalletModalConnector, portalContainerRef: RefObject<HTMLDivElement | null> }> = ({ selectedConnector, portalContainerRef }) => {
     const connectorIconSrc = selectedConnector.icon

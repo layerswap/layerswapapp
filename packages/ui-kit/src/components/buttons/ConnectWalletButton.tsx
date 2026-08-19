@@ -5,8 +5,8 @@ import { FC, useCallback, useRef, useState } from "react";
 import { clsx } from "clsx";
 import { WalletConnectionProvider } from "@layerswap/wallet-core/types";
 import { ensureRegistryBrowseLoaded, useWalletDescriptorLoader, isProviderConnectReady } from "@layerswap/wallet-core";
-import { ResolveConnectorIcon } from "./ConnectorIcons";
-import { useWalletListAdapters } from "./adapters";
+import { ResolveConnectorIcon } from "../icons/ConnectorIcons";
+import { useWalletListAdapters } from "@/lib/adapters";
 
 interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     provider?: WalletConnectionProvider,

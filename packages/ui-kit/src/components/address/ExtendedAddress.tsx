@@ -6,10 +6,10 @@ import clsx from "clsx";
 import { Address, getExplorerUrl, shortenString } from "@layerswap/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
-import { ImageWithFallback } from "../ImageWithFallback";
+import { ImageWithFallback } from "../common/ImageWithFallback";
 import useCopyClipboard from "@/hooks/useCopyClipboard";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
-import { useWalletListAdapters } from "./adapters";
+import { useWalletListAdapters } from "@/lib/adapters";
 
 type ExtendedAddressBaseProps = {
     address: string;

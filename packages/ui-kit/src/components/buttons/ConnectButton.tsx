@@ -1,7 +1,7 @@
 'use client'
 import { ReactNode } from "react";
 import { useWallet } from "@layerswap/wallet-core";
-import { useWalletListAdapters } from "./adapters";
+import { useWalletListAdapters } from "@/lib/adapters";
 
 const ConnectButton = ({
     children,

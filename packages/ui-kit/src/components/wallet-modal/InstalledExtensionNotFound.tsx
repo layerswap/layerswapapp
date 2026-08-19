@@ -1,8 +1,8 @@
 import { FC, type ReactNode } from "react";
 import type { WalletModalConnector } from "@layerswap/wallet-core/types";
 import { Download, ScanLine } from "lucide-react";
-import { ImageWithFallback } from "./ImageWithFallback";
-import WalletIcon from "./WalletIcon";
+import { ImageWithFallback } from "../common/ImageWithFallback";
+import WalletIcon from "../icons/WalletIcon";
 
 export const InstalledExtensionNotFound: FC<{
     selectedConnector: WalletModalConnector | undefined,

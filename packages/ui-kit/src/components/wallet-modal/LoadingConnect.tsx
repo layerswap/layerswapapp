@@ -1,8 +1,8 @@
 import { FC, type ReactNode } from "react";
 import type { WalletModalConnector } from "@layerswap/wallet-core/types";
 import { Link2Off, RotateCw } from "lucide-react";
-import { ImageWithFallback } from "./ImageWithFallback";
-import WalletIcon from "./WalletIcon";
+import { ImageWithFallback } from "../common/ImageWithFallback";
+import WalletIcon from "../icons/WalletIcon";
 import { isMobile } from "@layerswap/utils";
 
 export const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalConnector, connectionError: string | undefined, brandMark?: ReactNode }> = ({ onRetry, selectedConnector, connectionError, brandMark }) => {

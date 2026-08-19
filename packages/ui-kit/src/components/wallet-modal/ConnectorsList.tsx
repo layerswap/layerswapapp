@@ -7,11 +7,11 @@ import { InstalledExtensionNotFound } from "./InstalledExtensionNotFound"
 import { LoadingConnect } from "./LoadingConnect"
 import { MultichainConnectorPicker } from "./MultichainConnectorPicker"
 import { WalletQrCode } from "./WalletQrCode"
-import { ConnectorsBrowser } from "./connectors-list/ConnectorsBrowser"
-import { useAdditionalConnectors } from "./connectors-list/useAdditionalConnectors"
-import { useConnectorSourcesStatus } from "./connectors-list/useConnectorSourcesStatus"
-import { useFeaturedProviders } from "./connectors-list/useFeaturedProviders"
-import { useWalletConnection } from "./connectors-list/useWalletConnection"
+import { ConnectorsBrowser } from "./ConnectorsBrowser"
+import { useAdditionalConnectors } from "./hooks/useAdditionalConnectors"
+import { useConnectorSourcesStatus } from "./hooks/useConnectorSourcesStatus"
+import { useFeaturedProviders } from "./hooks/useFeaturedProviders"
+import { useWalletConnection } from "./hooks/useWalletConnection"
 
 export type ConnectorsListProps = {
     providers: WalletConnectionProvider[]

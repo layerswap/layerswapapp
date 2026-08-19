@@ -637,6 +637,9 @@ importers:
       cmdk:
         specifier: ^0.2.0
         version: 0.2.1(@types/react-dom@19.2.3(@types/react@19.2.3))(@types/react@19.2.3)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      color:
+        specifier: 4.2.3
+        version: 4.2.3
       copy-to-clipboard:
         specifier: ^3.3.3
         version: 3.3.3
@@ -1118,9 +1121,6 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
-      color:
-        specifier: 4.2.3
-        version: 4.2.3
       fflate:
         specifier: ^0.8.2
         version: 0.8.2
