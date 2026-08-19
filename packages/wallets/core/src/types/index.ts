@@ -23,5 +23,3 @@ export type {
     WalletProviderModule,
     BaseWalletProviderConfig,
 } from "@/types/provider";
-export type { AppNetworkAdapter } from "@/types/network";
-export { defineNetworkAdapter } from "@/types/network";

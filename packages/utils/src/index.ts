@@ -16,11 +16,16 @@ export { FuelAddressUtilsProvider } from "@/address/providers/fuel";
 export {
     addressUtilsProviders,
     addressUtilsResolver,
+    setNetworkAdapter,
+    getNetworkAdapter,
     classifyAddress,
     addressTypeLabel,
     addressSelectionType,
     defaultNetworkScope,
 } from "@/address/instance";
+
+export type { AppNetworkAdapter, WalletNativeCurrency } from "@/networkAdapter";
+export { defineNetworkAdapter } from "@/networkAdapter";
 
 export { Address, EmailAddress, isEmailAddress } from "@/address/Address";
 export type { AddressDisplayFormat, AddressFormatOptions } from "@/address/Address";

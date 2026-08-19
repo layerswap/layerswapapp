@@ -20,6 +20,8 @@ export type AppNetworkAdapter<Network> = {
     isBitcoinNetwork(network: Network): boolean
     isTonNetwork(network: Network): boolean
     isFuelNetwork(network: Network): boolean
+    validateAddress?(network: Network, address: string): boolean | undefined
+    formatAddress?(network: Network, address: string): string | undefined
 }
 
 export const defineNetworkAdapter = <Network>(

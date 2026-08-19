@@ -2,7 +2,7 @@ import type { NetworkType, NetworkWithTokens } from '@layerswap/widget-types';
 import type { StoreApi } from 'zustand/vanilla';
 import type { TransferProps } from '@layerswap/widget-types';
 import type { WalletProvider, WalletWrapper } from './provider';
-import type { AppNetworkAdapter } from './network';
+import type { AppNetworkAdapter } from '@layerswap/utils';
 
 import type { InternalConnector, Wallet } from '@layerswap/widget-types';
 

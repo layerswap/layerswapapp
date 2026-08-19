@@ -44,5 +44,3 @@ export * from "@/icons/resolveWalletIcon";
 
 export { getEip6963Providers, subscribeEip6963Providers } from "@/lib/eip6963Providers";
 export type { Eip6963Provider } from "@/lib/eip6963Providers";
-export { defineNetworkAdapter } from "@/types/network";
-export type { AppNetworkAdapter } from "@/types/network";

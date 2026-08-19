@@ -3,7 +3,7 @@ import { NetworkType, type Network } from '@layerswap/widget-types';
 import { FC, MouseEventHandler, ReactNode, SVGProps, useCallback, useMemo, useState } from "react"
 import { Copy, Check, ChevronDown, Unplug, Info, SquareArrowOutUpRight, Trash2, BookmarkPlus } from "lucide-react";
 import clsx from "clsx";
-import { Address, getExplorerUrl, shortenString } from "@layerswap/utils";
+import { Address, getExplorerUrl, getNetworkAdapter, shortenString } from "@layerswap/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
 import { ImageWithFallback } from "../common/ImageWithFallback";
@@ -84,7 +84,7 @@ const AddressDetailsPopover: FC<AddressDetailsPopoverProps> = ({ address, networ
             ...((network && isAddressValid) ? [{
                 title: 'View',
                 Icon: SquareArrowOutUpRight,
-                href: getExplorerUrl(network.account_explorer_template, addr.full)
+                href: getExplorerUrl(getNetworkAdapter()?.getAccountExplorerUrl(network) ?? network.account_explorer_template, addr.full)
             }] : []),
             ...(canSave && !saving ? [{
                 title: 'Save',
