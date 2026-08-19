@@ -75,6 +75,8 @@ export function initStarknetProvider(): void {
             defaultConnectors.push(new InjectedConnector({ options: { id: 'keplr' } }))
             defaultConnectors.push(new InjectedConnector({ options: { id: 'braavos' } }))
             defaultConnectors.push(new InjectedConnector({ options: { id: 'xverse' } }))
+            defaultConnectors.push(new InjectedConnector({ options: { id: 'fordefi' } }))
+            defaultConnectors.push(new InjectedConnector({ options: { id: 'okxwallet' } }))
         }
 
         if ((isAndroid || isIOS) && !defaultConnectors.some(c => c.id === 'braavos')) {
