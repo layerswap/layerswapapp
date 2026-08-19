@@ -3,7 +3,7 @@ import { AddressGroup, AddressItem } from ".";
 import { Pencil, Link2, WalletIcon } from "lucide-react";
 import { Partner } from "@/Models/Partner";
 import { Network } from "@layerswap/widget-types";
-import { ImageWithFallback, AddressIcon, ExtendedAddress } from "@layerswap/ui-kit/components";
+import { ImageWithFallback, AddressIcon, ExtendedAddress } from "@layerswap/ui-kit";
 import { shortenString } from "@layerswap/utils";
 import { useAddressName } from "@/stores/addressBookStore";
 import { Address } from "@/lib/address/Address";

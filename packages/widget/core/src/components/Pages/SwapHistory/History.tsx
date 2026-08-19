@@ -6,11 +6,11 @@ import HistorySummary from "./HistorySummary";
 import useWallet from "@/hooks/useWallet"
 import Snippet, { HistoryItemSceleton } from "./Snippet"
 import { groupBy } from "@/components/utils/groupBy"
-import { ConnectButton } from "@layerswap/ui-kit/components"
+import { ConnectButton } from "@layerswap/ui-kit"
 import { useVirtualizer } from '@/lib/virtual'
 import SwapDetails from "./SwapDetailsComponent"
 import { useSettingsState } from "@/context/settings";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@layerswap/ui-kit/components";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@layerswap/ui-kit";
 import { useSwapHistoryData } from "@/hooks/useSwapHistoryData";
 import { SwapDataProvider, SwapDataStateContext } from '@/context/swap';
 import { useSwapTransactionStore } from '@/stores/swapTransactionStore';

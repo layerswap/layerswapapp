@@ -1,7 +1,7 @@
 "use client"
 import { useCallback, useMemo, type ReactNode } from "react"
 import { truncateDecimals } from "@layerswap/utils"
-import { WalletListAdaptersProvider, type WalletListAdapters } from "@layerswap/ui-kit/components"
+import { WalletListAdaptersProvider, type WalletListAdapters } from "@layerswap/ui-kit"
 import { useSettingsState } from "@/context/settings"
 import { useBalance } from "@/lib/balances/useBalance"
 import { useAddressName, useLabeledAddress } from "@/stores/addressBookStore"

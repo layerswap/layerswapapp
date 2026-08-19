@@ -7,9 +7,9 @@ import { RewardsComponentSceleton } from "@/components/Common/Sceletons"
 import useSWR from "swr"
 import { ApiResponse } from "@/Models/ApiResponse"
 import ClickTooltip from "@/components/Common/ClickTooltip"
-import { Progress } from "@layerswap/ui-kit/components";
+import { Progress } from "@layerswap/ui-kit";
 import useWallet from "@/hooks/useWallet";
-import { ImageWithFallback } from "@layerswap/ui-kit/components";
+import { ImageWithFallback } from "@layerswap/ui-kit";
 import { getExplorerUrl, shortenString } from "@layerswap/utils";
 
 type Props = {

@@ -1,15 +1,15 @@
 import { type Refuel } from '@layerswap/widget-types';
-import { CopyButton, ImageWithFallback, StyledQRCode } from "@layerswap/ui-kit/components";
+import { CopyButton, ImageWithFallback, StyledQRCode } from "@layerswap/ui-kit";
 import { useCopyClipboard } from "@layerswap/ui-kit";
 import QRIcon from '@/components/Icons/QRIcon'
 import useWallet from '@/hooks/useWallet'
 import { DepositAction, SwapBasicData, SwapQuote } from '@/lib/apiClients/layerSwapApiClient'
 import { useMemo } from 'react'
 import { FC, ReactNode, useState } from 'react'
-import { Popover, PopoverContent, PopoverTrigger } from "@layerswap/ui-kit/components";
+import { Popover, PopoverContent, PopoverTrigger } from "@layerswap/ui-kit";
 import useExchangeNetworks from '@/hooks/useExchangeNetworks'
 import { ChevronDown } from 'lucide-react'
-import { CommandItem, CommandList, CommandWrapper } from '@layerswap/ui-kit/components'
+import { CommandItem, CommandList, CommandWrapper } from '@layerswap/ui-kit'
 import { Network, NetworkRoute, Token } from '@layerswap/widget-types';
 import { useInitialSettings } from '@/context/settings'
 import { useSwapDataUpdate } from '@/context/swap'
@@ -21,10 +21,10 @@ import { Widget } from '@/components/Widget/Index'
 import { truncateDecimals } from '@layerswap/utils'
 import { resolveDepositAddress } from '@/helpers/depositActions'
 import { Partner } from '@/Models/Partner'
-import { ExtendedAddress } from '@layerswap/ui-kit/components'
+import { ExtendedAddress } from '@layerswap/ui-kit'
 import QuoteDetails from '../Form/FeeDetails'
 import { Address } from "@/lib/address/Address";
-import { AddressIcon } from '@layerswap/ui-kit/components'
+import { AddressIcon } from '@layerswap/ui-kit'
 
 interface Props {
     swapBasicData: SwapBasicData;

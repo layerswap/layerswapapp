@@ -1,4 +1,4 @@
-import { Checkbox } from '@layerswap/ui-kit/components'
+import { Checkbox } from '@layerswap/ui-kit'
 import { FC, ReactNode } from 'react'
 import { cn } from '@layerswap/utils'
 

@@ -1,7 +1,7 @@
 import { FC, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { ChevronDown, CircleHelp, Clock } from "lucide-react";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@layerswap/ui-kit/components";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@layerswap/ui-kit/components";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@layerswap/ui-kit";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@layerswap/ui-kit";
 import { useDetailedQuote } from "@/hooks/useDetailedQuote";
 import { Network, Token } from "@layerswap/widget-types";
 import { formatFee } from "./helpers";

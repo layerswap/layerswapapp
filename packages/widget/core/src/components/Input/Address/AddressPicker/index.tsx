@@ -6,7 +6,7 @@ import { Partner } from "@/Models/Partner";
 import useWallet from "@/hooks/useWallet";
 import { Address as AddressClass } from "@/lib/address/Address";
 import ManualAddressInput from "./ManualAddressInput";
-import { ConnectWalletButton } from "@layerswap/ui-kit/components";
+import { ConnectWalletButton } from "@layerswap/ui-kit";
 import { Network, NetworkRoute } from "@layerswap/widget-types";
 import AddressBook from "./AddressBook";
 import AddressButton from "./AddressButton";

@@ -1,7 +1,7 @@
 import { FC } from 'react'
 import clsx from 'clsx'
-import { ImageWithFallback } from "@layerswap/ui-kit/components";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@layerswap/ui-kit/components"
+import { ImageWithFallback } from "@layerswap/ui-kit";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@layerswap/ui-kit"
 import type { ScopeItem } from './useAddressScope'
 
 type Props = {

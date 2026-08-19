@@ -6,14 +6,14 @@ import {
     CommandItem,
     CommandList,
     CommandWrapper
-} from '@layerswap/ui-kit/components'
+} from '@layerswap/ui-kit'
 import React from "react";
 import useWindowDimensions from '../../../hooks/useWindowDimensions';
 import SelectItem from '../Shared/SelectItem';
 import { SelectProps } from '../Shared/Props/SelectProps'
 import SpinIcon from '../../Icons/spinIcon';
 import { LeafletHeight } from '../../Modal/leaflet';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@layerswap/ui-kit/components';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@layerswap/ui-kit';
 import VaulDrawer from '../../Modal/vaulModal';
 import { Search } from 'lucide-react';
 

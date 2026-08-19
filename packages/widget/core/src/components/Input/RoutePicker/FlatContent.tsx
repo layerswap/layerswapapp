@@ -9,7 +9,7 @@ import { useSelectorState } from "@/components/Select/Selector/Index";
 import NavigatableList, { NavigatableItem } from "@/components/NavigatableList";
 import useWallet from "@/hooks/useWallet";
 import { useProvidersConnectReady } from "@layerswap/wallet-core";
-import { ConnectWalletButton } from "@layerswap/ui-kit/components";
+import { ConnectWalletButton } from "@layerswap/ui-kit";
 import { CurrencySelectItemDisplay } from "./Routes";
 import { SelectItem } from "@/components/Select/Selector/SelectItem";
 import clsx from "clsx";

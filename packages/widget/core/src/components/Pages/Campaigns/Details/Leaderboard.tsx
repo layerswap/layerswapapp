@@ -6,8 +6,8 @@ import useSWR from "swr"
 import { ApiResponse } from "@/Models/ApiResponse"
 import ClickTooltip from "@/components/Common/ClickTooltip"
 import { truncateDecimals } from "@layerswap/utils"
-import { AddressIcon } from "@layerswap/ui-kit/components";
-import { ImageWithFallback } from "@layerswap/ui-kit/components";
+import { AddressIcon } from "@layerswap/ui-kit";
+import { ImageWithFallback } from "@layerswap/ui-kit";
 import { useSelectedAccount } from "@/context/swapAccounts"
 import { useWallet } from "@/exports"
 import VaulDrawer from "@/components/Modal/vaulModal";

@@ -1,7 +1,7 @@
 import { FC, useMemo } from "react"
 import { ExternalLink } from "lucide-react"
-import { CopyButton } from "@layerswap/ui-kit/components";
-import { AddressIcon } from "@layerswap/ui-kit/components"
+import { CopyButton } from "@layerswap/ui-kit";
+import { AddressIcon } from "@layerswap/ui-kit"
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues"
 import { Partner } from "@/Models"
 import { getExplorerUrl } from "@layerswap/utils"

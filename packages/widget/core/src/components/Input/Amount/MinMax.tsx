@@ -3,7 +3,7 @@ import useSWRGas from "@/lib/gases/useSWRGas";
 import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import React, { useMemo } from "react";
 import { resolveMaxAllowedAmount } from "./helpers";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@layerswap/ui-kit/components";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@layerswap/ui-kit";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { useBalance } from "@/lib/balances/useBalance";

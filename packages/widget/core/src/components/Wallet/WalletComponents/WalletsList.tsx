@@ -2,7 +2,7 @@
 import { type Wallet, Network, Token } from '@layerswap/widget-types';
 import { FC, useState } from "react";
 import { SelectAccountProps, WalletConnectionProvider, AccountIdentity } from "@layerswap/wallet-core/types";
-import { WalletsList as BaseWalletsList, WalletItem as BaseWalletItem, type SaveAddressRequest } from "@layerswap/ui-kit/components";
+import { WalletsList as BaseWalletsList, WalletItem as BaseWalletItem, type SaveAddressRequest } from "@layerswap/ui-kit";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import VaulDrawer from "@/components/Modal/vaulModal";
 import AddressBookEntryForm from "@/components/AddressBook/AddressBookEntryForm";

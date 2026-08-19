@@ -2,14 +2,14 @@ import { FC, useEffect, useMemo, useState } from 'react'
 import { useAddressBookStore, SavedAddress } from '@/stores/addressBookStore'
 import { MoreVertical, Pencil, Plus, Trash2 } from 'lucide-react'
 import { shortenString } from '@layerswap/utils'
-import { ExtendedAddress } from '@layerswap/ui-kit/components'
+import { ExtendedAddress } from '@layerswap/ui-kit'
 import AddressBookEntryForm, { AddressBookEntryFormProps } from './AddressBookEntryForm'
 import NetworkLogoStack from './NetworkLogoStack'
 import { useAddressScope } from './useAddressScope'
-import { SearchComponent } from "@layerswap/ui-kit/components";
-import { Popover, PopoverContent, PopoverTrigger } from "@layerswap/ui-kit/components"
+import { SearchComponent } from "@layerswap/ui-kit";
+import { Popover, PopoverContent, PopoverTrigger } from "@layerswap/ui-kit"
 import { useFormWizardaUpdate } from '@/context/formWizardProvider'
-import { AddressIcon } from '@layerswap/ui-kit/components'
+import { AddressIcon } from '@layerswap/ui-kit'
 import { HistoryItemSceleton } from '../Pages/SwapHistory/Snippet'
 
 type EditingState =

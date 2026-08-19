@@ -1,5 +1,5 @@
 import { FC, useState } from 'react'
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@layerswap/ui-kit/components'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@layerswap/ui-kit'
 import { ChevronDown } from 'lucide-react'
 import useWallet from '@/hooks/useWallet'
 import { Quote } from '@/lib/apiClients/layerSwapApiClient'

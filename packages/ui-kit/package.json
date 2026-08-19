@@ -3,17 +3,13 @@
   "version": "2.0.0-next.0",
   "description": "Presentational wallet connection UI: connect modal, connectors list, and shared components.",
   "type": "module",
-  "main": "dist/esm/components/index.js",
-  "types": "dist/types/components/index.d.ts",
-  "typings": "dist/types/components/index.d.ts",
+  "main": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "typings": "dist/types/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/types/components/index.d.ts",
-      "default": "./dist/esm/components/index.js"
-    },
-    "./components": {
-      "types": "./dist/types/components/index.d.ts",
-      "default": "./dist/esm/components/index.js"
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/esm/index.js"
     }
   },
   "sideEffects": false,

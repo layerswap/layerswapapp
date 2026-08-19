@@ -1,7 +1,7 @@
 import { FC, useState, useEffect } from "react"
-import { AddressIcon } from "@layerswap/ui-kit/components"
+import { AddressIcon } from "@layerswap/ui-kit"
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues"
-import { Checkbox } from "@layerswap/ui-kit/components"
+import { Checkbox } from "@layerswap/ui-kit"
 import { Address } from "@/lib/address/Address"
 
 type Props = {

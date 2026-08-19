@@ -2,7 +2,7 @@
 import { FC, useCallback, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import { Partner } from "@/Models/Partner";
-import { Dialog, DialogContent, DialogTrigger } from "@layerswap/ui-kit/components";
+import { Dialog, DialogContent, DialogTrigger } from "@layerswap/ui-kit";
 import { FamilyDrawer, ViewsRegistry } from "@/components/Modal/FamilyDrawer";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import useWindowDimensions from "@/hooks/useWindowDimensions";

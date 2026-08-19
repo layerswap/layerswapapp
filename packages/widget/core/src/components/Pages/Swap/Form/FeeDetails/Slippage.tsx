@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState, forwardRef } from "react"
 import { useClickOutside } from "@/hooks/useClickOutside"
 import clsx from "clsx"
 import { useSlippageStore } from "@/stores/slippageStore"
-import { Popover, PopoverContent, PopoverTrigger, Tooltip, TooltipContent, TooltipTrigger } from "@layerswap/ui-kit/components"
+import { Popover, PopoverContent, PopoverTrigger, Tooltip, TooltipContent, TooltipTrigger } from "@layerswap/ui-kit"
 
 type SlippageProps = {
     quoteData: SwapQuote | undefined

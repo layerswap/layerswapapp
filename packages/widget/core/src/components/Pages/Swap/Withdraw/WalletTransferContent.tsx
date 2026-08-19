@@ -1,5 +1,5 @@
 import { FC } from 'react'
-import { WalletIcon } from "@layerswap/ui-kit/components";
+import { WalletIcon } from "@layerswap/ui-kit";
 import useWallet from '@/hooks/useWallet';
 import AddressWithIcon from '@/components/Input/Address/AddressPicker/AddressWithIcon';
 import { AddressGroup } from '@/components/Input/Address/AddressPicker';

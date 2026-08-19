@@ -1,7 +1,7 @@
 import { FC, ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
 import FailIcon from "../../../../Icons/FailIcon";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@layerswap/ui-kit/components";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@layerswap/ui-kit";
 import { motion } from "framer-motion";
 
 export type WalletMessageProps = {

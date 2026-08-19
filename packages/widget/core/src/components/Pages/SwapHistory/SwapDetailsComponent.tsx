@@ -1,7 +1,7 @@
 import { SwapStatus } from '@layerswap/widget-types';
 import { FC, useState } from 'react'
 import { SwapResponse, TransactionType } from '@/lib/apiClients/layerSwapApiClient';
-import { CopyButton } from "@layerswap/ui-kit/components";
+import { CopyButton } from "@layerswap/ui-kit";
 import StatusIcon from './StatusIcons';
 import { ExternalLink } from 'lucide-react';
 import isGuid from '@/components/utils/isGuid';
@@ -16,9 +16,9 @@ import SecondaryButton from '@/components/Buttons/secondaryButton';
 import { getExplorerUrl, shortenString } from '@layerswap/utils';
 import useWallet from '@/hooks/useWallet';
 import { Address } from '@/lib/address/Address';
-import { AddressIcon } from '@layerswap/ui-kit/components';
-import { WalletIconView } from '@layerswap/ui-kit/components';
-import { ExtendedAddress } from '@layerswap/ui-kit/components';
+import { AddressIcon } from '@layerswap/ui-kit';
+import { WalletIconView } from '@layerswap/ui-kit';
+import { ExtendedAddress } from '@layerswap/ui-kit';
 
 type Props = {
     swapResponse: SwapResponse
