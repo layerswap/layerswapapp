@@ -28,6 +28,16 @@ const connectorsConfigs = [
         name: 'Xverse Wallet',
         installLink: 'https://chromewebstore.google.com/detail/xverse-bitcoin-crypto-wal/idnnbdplmphpflfnlkomgpfbpcgelopg',
     },
+    {
+        id: 'okxwallet',
+        name: 'OKX Wallet',
+        installLink: 'https://chromewebstore.google.com/detail/okx-wallet/mcohilncbfahbmgdjkbpemcciiolgcge',
+    },
+    {
+        id: 'fordefi',
+        name: 'Fordefi',
+        installLink: 'https://chromewebstore.google.com/detail/fordefi/hcmehenccjdmfbojapcbcofkgdpbnlle',
+    },
 ]
 
 type ResolveStarknetWalletProps = {
