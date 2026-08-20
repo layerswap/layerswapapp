@@ -3,7 +3,7 @@ import type { Dispatch, RefObject, SetStateAction, } from "react";
 import clsx from "clsx";
 import CircularLoader from "../icons/CircularLoader";
 import { SearchComponent } from "../common/Search";
-import useWindowDimensions from "@/hooks/useWindowDimensions";
+import { useWindowDimensions } from "@layerswap/utils";
 import { isProviderConnectReady } from "@layerswap/wallet-core";
 import type { WalletConnectionProvider, WalletModalConnector, } from "@layerswap/wallet-core/types";
 import Connector from "./Connector";

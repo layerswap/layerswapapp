@@ -45,3 +45,6 @@ export { fetchWithTimeout } from "@/fetchWithTimeout";
 export { JsonRpcClient } from "@/jsonRpcClient";
 export type { JsonRpcRequest, JsonRpcError, JsonRpcResponse } from "@/jsonRpcClient";
 export { default as AppSettings } from "@/AppSettings";
+
+export { default as useCopyClipboard } from "@/hooks/useCopyClipboard";
+export { default as useWindowDimensions } from "@/hooks/useWindowDimensions";

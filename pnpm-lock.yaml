@@ -640,9 +640,6 @@ importers:
       color:
         specifier: 4.2.3
         version: 4.2.3
-      copy-to-clipboard:
-        specifier: ^3.3.3
-        version: 3.3.3
       framer-motion:
         specifier: ^12.26.2
         version: 12.26.2(@emotion/is-prop-valid@0.8.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -692,6 +689,9 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      copy-to-clipboard:
+        specifier: ^3.3.3
+        version: 3.3.3
       csstype:
         specifier: ^3.2.3
         version: 3.2.3
@@ -702,6 +702,12 @@ importers:
         specifier: ^3.4.0
         version: 3.4.0
     devDependencies:
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.3
+      react:
+        specifier: 'catalog:'
+        version: 19.2.3
       rimraf:
         specifier: 'catalog:'
         version: 5.0.10

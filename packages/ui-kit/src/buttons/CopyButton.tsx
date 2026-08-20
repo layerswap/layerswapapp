@@ -3,7 +3,7 @@ import { Check } from "lucide-react"
 import { useEffect, useLayoutEffect, useState, type FC, type ReactNode, type RefObject } from "react"
 import clsx from "clsx"
 import CopyIcon from "../icons/CopyIcon"
-import useCopyClipboard from "@/hooks/useCopyClipboard"
+import { useCopyClipboard } from "@layerswap/utils"
 
 const useIsomorphicLayoutEffect = typeof document !== "undefined" ? useLayoutEffect : useEffect
 
