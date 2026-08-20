@@ -2,7 +2,7 @@ import { NetworkType, type Wallet } from '@layerswap/widget-types';
 import { ChangeEvent, FC, useCallback, useState } from "react";
 import { Pencil } from "lucide-react";
 import { Partner } from "@/Models/Partner";
-import { FilledX } from "@layerswap/ui-kit/components";
+import { FilledX } from "@layerswap/ui-kit";
 import { AddressGroup, AddressItem } from ".";
 import { Address } from "@/lib/address/Address";
 import { FormikHelpers } from "formik";

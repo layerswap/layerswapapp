@@ -1,5 +1,5 @@
 import type { MultiStepHandler, WalletConnectionProviderProps, WalletConnectionStore } from "@layerswap/wallet-core/types"
-import { createMemoizedConnectionStore, type AppNetworkAdapter } from "@layerswap/wallet-core"
+import { createMemoizedConnectionStore } from "@layerswap/wallet-core"
 import { createStarknetTransfer } from '../transferProvider/createStarknetTransfer'
 import { StarknetConnectionService } from './StarknetConnectionService'
 import { useStarknetStore } from './starknetStore'

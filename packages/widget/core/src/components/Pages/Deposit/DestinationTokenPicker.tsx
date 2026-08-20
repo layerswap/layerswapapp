@@ -1,7 +1,7 @@
 import { FC, useMemo, useState } from "react";
 import { Check } from "lucide-react";
 import clsx from "clsx";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@layerswap/ui-kit";
 import TokenChainBadge from "./_shared/TokenChainBadge";
 import PickerTriggerContent from "./_shared/PickerTriggerContent";
 import { useSettingsState } from "@/context/settings";

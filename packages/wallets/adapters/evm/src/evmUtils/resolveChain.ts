@@ -1,6 +1,6 @@
 import NetworkSettings from "../NetworkSettings";
 import { ErrorHandler, type Network } from "@layerswap/widget-types";
-import type { AppNetworkAdapter } from "@layerswap/wallet-core"
+import type { AppNetworkAdapter } from "@layerswap/utils"
 import { defineChain } from "viem"
 
 type ChainDefinitionInput = {

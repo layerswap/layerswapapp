@@ -3,7 +3,7 @@ import useSWRGas from "@/lib/gases/useSWRGas";
 import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import React, { useMemo } from "react";
 import { resolveMaxAllowedAmount } from "./helpers";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@layerswap/ui-kit";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { useBalance } from "@/lib/balances/useBalance";
@@ -11,7 +11,8 @@ import useWallet from "@/hooks/useWallet";
 import { useUsdModeStore } from "@/stores/usdModeStore";
 import { skipNextUsdSync } from "@/hooks/useUsdTokenSync";
 import { ceilUsd, floorUsd } from "@/components/utils/formatUsdAmount";
-import { ceilToDecimals, roundToDecimals, truncateToDecimals, isScientific } from "@/components/utils/RoundDecimals";
+import { ceilToDecimals, roundToDecimals, truncateToDecimals } from "@/components/utils/RoundDecimals";
+import { isScientific } from "@layerswap/utils";
 
 type MinMaxProps = {
     fromCurrency: NetworkRouteToken,
@@ -149,7 +150,7 @@ const MinMax = (props: MinMaxProps) => {
                         onClick={handleSetMaxAmount}
                     />
                 </TooltipTrigger>
-                {showMaxTooltip ? <TooltipContent className="pointer-events-none w-80 grow p-2 border-none! bg-secondary-300! text-xs rounded-xl!" side="top" align="start" alignOffset={-10}>
+                {showMaxTooltip ? <TooltipContent className="pointer-events-none w-80 grow border-none! bg-secondary-300! text-xs rounded-xl!" side="top" align="start" alignOffset={-10}>
                     <p>Max is calculated based on your balance minus gas fee for the transaction</p>
                 </TooltipContent> : null}
             </Tooltip>

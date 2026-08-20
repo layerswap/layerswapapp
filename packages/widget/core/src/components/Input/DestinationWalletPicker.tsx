@@ -3,11 +3,11 @@ import { Address } from "@/lib/address/Address";
 import { ChevronDown, PlusIcon } from "lucide-react";
 import { AddressGroup, AddressItem, AddressTriggerProps } from "./Address/AddressPicker";
 import { Partner } from "@/Models/Partner";
-import { ImageWithFallback } from "@layerswap/ui-kit/components";
-import WalletIconView from "@/components/Wallet/WalletIconView";
+import { ImageWithFallback } from "@layerswap/ui-kit";
+import { WalletIconView } from "@layerswap/ui-kit";
 import clsx from 'clsx';
 import { useNamedAddress } from "@/stores/addressBookStore";
-import AddressIcon from "../Common/AddressIcon";
+import { AddressIcon } from "@layerswap/ui-kit";
 
 const DestinationWalletPicker = (props: AddressTriggerProps) => {
     const { addressItem, connectedWallet, partner, destination } = props

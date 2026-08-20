@@ -5,7 +5,7 @@ import { Exchange } from "@/Models/Exchange";
 import { SelectItem } from "../Select/Selector/SelectItem";
 import useFormRoutes from "@/hooks/useFormRoutes";
 import { LayoutGroup, motion } from "framer-motion";
-import { ImageWithFallback, SearchComponent } from "@layerswap/ui-kit/components";
+import { ImageWithFallback, SearchComponent } from "@layerswap/ui-kit";
 import { ChevronDown } from "lucide-react";
 import { updateForm } from "../Pages/Swap/Form/updateForm";
 import { SwapDirection, SwapFormValues } from "../Pages/Swap/Form/SwapFormValues";

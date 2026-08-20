@@ -2,8 +2,8 @@ import { FC, useEffect, useState } from "react";
 import { ButtonWrapper } from "./Common/buttons";
 import { AddEthereumChainParams, SuggestRpcResult } from "@layerswap/widget-types";
 import FailIcon from "@/components/Icons/FailIcon";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
-import { useCopyClipboard } from "@layerswap/ui-kit";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@layerswap/ui-kit";
+import { useCopyClipboard } from "@layerswap/utils";
 import { Check, CopyIcon } from "lucide-react";
 import { Network } from "@layerswap/widget-types";
 
