@@ -387,7 +387,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel, fail
         <Widget.Content fitContent>
             <div className={`w-full min-h-102.5 h-full space-y-2 flex flex-col justify-between text-primary-text`}>
                 <SwapSummary />
-                {swapBasicData.use_deposit_address ? null : (
+                {swapBasicData.use_deposit_address || phase === SwapPhase.Completed ? null : (
                     <SwapQuoteDetails
                         compact
                         swapBasicData={swapBasicData}

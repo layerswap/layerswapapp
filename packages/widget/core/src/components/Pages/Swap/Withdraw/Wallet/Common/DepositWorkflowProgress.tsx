@@ -66,14 +66,19 @@ const DepositWorkflowProgress: FC<Props> = ({ actions, isExecuting, actionStateT
                 const failed = action.status === 'failed'
                 const isPending = active && (action.status === 'pending' || !!isExecuting)
                 const description = active ? currentDescription : undefined
+                const hasDescription = !!description
 
                 return <li
                     key={`${action.step}-${index}`}
-                    className="relative z-10 grid grid-cols-[2rem_minmax(0,1fr)] items-start gap-3 py-0.5"
+                    className={clsx(
+                        "relative z-10 grid grid-cols-[2rem_minmax(0,1fr)] gap-3 py-0.5",
+                        hasDescription ? "items-start" : "items-center",
+                    )}
                     aria-current={active ? 'step' : undefined}
                 >
                     <span className={clsx(
-                        "mt-2.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
+                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
+                        hasDescription && "mt-2.5",
                         completed && "bg-success-background text-success-foreground",
                         failed && "bg-error-background text-error-foreground",
                         active && !failed && "bg-primary/15 text-primary ring-1 ring-inset ring-primary/20",
