@@ -28,7 +28,11 @@ export function useAutoSlippageTest({ values, shouldTest }: AutoSlippageTestProp
             amount: values.amount ?? '',
             refuel: !!values.refuel,
             useDepositAddress: values.depositMethod !== 'wallet',
-            useFrontendSwap: shouldUseFrontendSwap(values.depositMethod),
+            useFrontendSwap: shouldUseFrontendSwap({
+                depositMethod: values.depositMethod,
+                sourceNetwork: values.from?.name,
+                destinationNetwork: values.to?.name,
+            }),
             destinationAddress: validatedDestinationAddress,
         })
         : null

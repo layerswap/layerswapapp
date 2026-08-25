@@ -98,7 +98,11 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
     }, [amount])
 
     const use_deposit_address = depositMethod === 'wallet' ? false : true
-    const useFrontendSwap = shouldUseFrontendSwap(depositMethod)
+    const useFrontendSwap = shouldUseFrontendSwap({
+        depositMethod,
+        sourceNetwork: from,
+        destinationNetwork: to,
+    })
 
     // Extended source (e.g. Hyperliquid): the backend doesn't know this source,
     // so quote/limits are fetched against the real route it maps to.
@@ -336,7 +340,7 @@ export function buildQuoteUrl(args: QuoteUrlArgs): string {
         amount: String(amount),
         refuel: String(!!refuel),
         use_deposit_address: useDepositAddress ? 'true' : 'false',
-        use_frontend_swap: String(useFrontendSwap),
+        ...(!useGasless ? { use_frontend_swap: String(useFrontendSwap) } : {}),
     })
 
     if (slippage !== undefined) {
@@ -426,7 +430,7 @@ export function buildLimitsUrl({
         destination_network: destinationNetwork,
         destination_token: destinationToken,
         use_deposit_address: useDepositAddress ? 'true' : 'false',
-        use_frontend_swap: String(useFrontendSwap),
+        ...(!useGasless ? { use_frontend_swap: String(useFrontendSwap) } : {}),
         refuel: String(!!refuel),
     });
 

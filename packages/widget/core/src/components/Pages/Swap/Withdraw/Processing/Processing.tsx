@@ -23,10 +23,10 @@ import { getExplorerUrl } from '@/lib/address/explorerUrl';
 import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
 import { SwapPhase } from '@/components/utils/resolveSwapPhase';
 import { useDepositSettings } from '@/context/depositSettings';
-import { useSettingsState } from '@/context/settings';
-import { useExtendedRoutesStore } from '@/stores/extendedRoutesStore';
 import { SwapFailureReason } from '@/hooks/useSwapRetry';
 import { SwapQuoteDetails } from '../SwapQuoteDetails';
+import { useIsGaslessActive } from '@/hooks/useIsGaslessActive';
+import { shouldUseFrontendSwap } from '@/helpers/swapFlow';
 
 const apiClient = new LayerSwapApiClient();
 
@@ -39,6 +39,12 @@ type Props = {
 }
 
 const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel, failureReason }) => {
+    const isGaslessActive = useIsGaslessActive(swapBasicData)
+    const isFrontendSwap = shouldUseFrontendSwap({
+        depositMethod: swapBasicData.use_deposit_address ? 'deposit_address' : 'wallet',
+        sourceNetwork: swapBasicData.source_network.name,
+        destinationNetwork: swapBasicData.destination_network.name,
+    }) && !isGaslessActive
     const { boot, show, update } = useIntercom();
     const { onSwapStatusChange } = useCallbacks()
     const { isDepositFlow } = useDepositSettings()
@@ -387,7 +393,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel, fail
         <Widget.Content fitContent>
             <div className={`w-full min-h-102.5 h-full space-y-2 flex flex-col justify-between text-primary-text`}>
                 <SwapSummary />
-                {swapBasicData.use_deposit_address || phase === SwapPhase.Completed ? null : (
+                {!isFrontendSwap || phase === SwapPhase.Completed ? null : (
                     <SwapQuoteDetails
                         compact
                         swapBasicData={swapBasicData}

@@ -156,7 +156,7 @@ export type CreateSwapParams = {
     use_deposit_address: boolean
     use_depository?: boolean
     use_gasless?: boolean
-    use_frontend_swap: boolean
+    use_frontend_swap?: boolean
     app_name?: string,
 }
 

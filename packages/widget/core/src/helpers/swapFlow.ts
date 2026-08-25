@@ -3,11 +3,19 @@ import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 
 export type DepositMethod = 'wallet' | 'deposit_address' | undefined;
 
-// The wallet method is the user's explicit choice to execute actions in this
-// frontend. Keep every discovery/price/create request derived from this helper
-// so virtual routes cannot drift between API calls.
-export function shouldUseFrontendSwap(depositMethod: DepositMethod): boolean {
-    return depositMethod === 'wallet';
+type FrontendSwapOptions = {
+    depositMethod: DepositMethod;
+    sourceNetwork: string | undefined;
+    destinationNetwork: string | undefined;
+}
+
+// Frontend execution is currently available only for same-network token swaps.
+// Keep discovery, pricing, creation, and UI decisions derived from this helper
+// so regular cross-network bridges never opt into the frontend swap flow.
+export function shouldUseFrontendSwap({ depositMethod, sourceNetwork, destinationNetwork }: FrontendSwapOptions): boolean {
+    return depositMethod === 'wallet'
+        && !!sourceNetwork
+        && sourceNetwork === destinationNetwork;
 }
 
 // Deposit address (manual transfer) flow with no source exchange: amount is optional

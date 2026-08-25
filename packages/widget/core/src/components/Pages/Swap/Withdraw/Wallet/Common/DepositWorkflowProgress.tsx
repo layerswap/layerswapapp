@@ -1,7 +1,8 @@
 import { FC } from "react";
-import { Check, Loader2, X } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { DepositAction } from "@/lib/apiClients/layerSwapApiClient";
 import clsx from "clsx";
+import { Gauge } from "../../Processing/gauge";
 
 const DEPOSIT_STEP_LABELS: Record<string, string> = {
     approve_permit2: 'Approve in wallet',
@@ -77,20 +78,24 @@ const DepositWorkflowProgress: FC<Props> = ({ actions, isExecuting, actionStateT
                     aria-current={active ? 'step' : undefined}
                 >
                     <span className={clsx(
-                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
+                        "relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary-500",
                         hasDescription && "mt-2.5",
-                        completed && "bg-success-background text-success-foreground",
+                        completed && "text-primary",
                         failed && "bg-error-background text-error-foreground",
-                        active && !failed && "bg-primary/15 text-primary ring-1 ring-inset ring-primary/20",
-                        !completed && !failed && !active && "bg-secondary-500 text-secondary-text ring-1 ring-inset ring-secondary-400",
+                        active && !failed && !isPending && "text-primary ring-1 ring-inset ring-primary/20",
+                        isPending && "text-primary",
+                        !completed && !failed && !active && "text-secondary-text ring-1 ring-inset ring-secondary-400",
                     )} aria-hidden="true">
+                        {completed || (active && !failed && !isPending)
+                            ? <span className={clsx("absolute inset-0 rounded-full", completed ? "bg-primary/20" : "bg-primary/15")} />
+                            : null}
                         {completed
-                            ? <Check className="h-4 w-4" aria-hidden="true" />
+                            ? <Check className="relative z-10 h-4 w-4" aria-hidden="true" />
                             : failed
-                                ? <X className="h-4 w-4" aria-hidden="true" />
+                                ? <X className="relative z-10 h-4 w-4" aria-hidden="true" />
                                 : isPending
-                                    ? <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
-                                    : <span className="h-2 w-2 rounded-full bg-current" aria-hidden="true" />}
+                                    ? <span className="relative z-10 animate-spin motion-reduce:animate-none"><Gauge value={40} size="tiny" /></span>
+                                    : <span className="relative z-10 h-2 w-2 rounded-full bg-current" aria-hidden="true" />}
                     </span>
                     <span className={clsx(
                         "min-w-0 rounded-xl px-3 py-2.5 transition-colors duration-200 motion-reduce:transition-none",

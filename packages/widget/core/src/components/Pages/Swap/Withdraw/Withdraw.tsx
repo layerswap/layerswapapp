@@ -22,11 +22,18 @@ import { ICON_CLASSES_WARNING } from '../Form/SecondaryComponents/validationErro
 import { RefreshBalanceButton } from '../Form/SecondaryComponents/validationError/RefreshBalanceButton';
 import { AdjustAmountButton } from '../Form/SecondaryComponents/validationError/AdjustAmountButton';
 import { AnimatePresence, motion } from 'framer-motion';
-import { isDepositAddressSwap } from '@/helpers/swapFlow';
+import { isDepositAddressSwap, shouldUseFrontendSwap } from '@/helpers/swapFlow';
+import { useIsGaslessActive } from '@/hooks/useIsGaslessActive';
 
 const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: () => void, onCancelWithdrawal?: () => void, partner?: Partner }> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal, partner }) => {
     const { swapBasicData, swapDetails, swapId, quote, refuel, quoteIsLoading, quoteError } = useSwapDataState()
     const { setSubmitedFormValues } = useSwapDataUpdate()
+    const isGaslessActive = useIsGaslessActive(swapBasicData)
+    const isFrontendSwap = shouldUseFrontendSwap({
+        depositMethod: swapBasicData?.use_deposit_address ? 'deposit_address' : 'wallet',
+        sourceNetwork: swapBasicData?.source_network?.name,
+        destinationNetwork: swapBasicData?.destination_network?.name,
+    }) && !isGaslessActive
 
     const { networks } = useSettingsState()
     const source_network = swapBasicData?.source_network && networks.find(n => n.name === swapBasicData?.source_network?.name)
@@ -137,7 +144,7 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
                 <div className="w-full flex flex-col justify-between  text-secondary-text">
                     <div className='grid grid-cols-1 gap-2 '>
                         <SwapSummary />
-                        <SwapQuoteDetails swapBasicData={swapBasicData} quote={quote} refuel={refuel} quoteIsLoading={quoteIsLoading} quoteError={quoteError} partner={partner} compact={!!swapId} />
+                        <SwapQuoteDetails swapBasicData={swapBasicData} quote={quote} refuel={refuel} quoteIsLoading={quoteIsLoading} quoteError={quoteError} partner={partner} compact={!!swapId && isFrontendSwap} />
                         {withdraw?.content}
                     </div>
                 </div>

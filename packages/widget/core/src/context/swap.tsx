@@ -299,6 +299,11 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             availableRoutes: sourceRoutes,
         })
         const isExtendedBridge = !!extendedPlan
+        const useFrontendSwap = shouldUseFrontendSwap({
+            depositMethod,
+            sourceNetwork: from.name,
+            destinationNetwork: to.name,
+        })
 
         const data: CreateSwapParams = extendedPlan ? buildCreateSwapParamsForExtendedRoute({
             plan: extendedPlan,
@@ -308,7 +313,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             referenceId: query.externalId,
             refuel,
             sourceAddress: selectedSourceAccount?.address,
-            useFrontendSwap: shouldUseFrontendSwap(depositMethod),
+            useFrontendSwap,
         }) : {
             amount: amount || undefined,
             source_network: from.name,
@@ -320,10 +325,11 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             reference_id: query.externalId,
             refuel: !!refuel,
             use_deposit_address: depositMethod === 'wallet' ? false : true,
-            use_frontend_swap: shouldUseFrontendSwap(depositMethod),
             source_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
             refund_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
-            ...(useGasless && { use_gasless: true, use_depository: true }),
+            ...(useGasless
+                ? { use_gasless: true, use_depository: true }
+                : { use_frontend_swap: useFrontendSwap }),
         }
 
         if (!isExtendedBridge && depositMethod === 'wallet' && slippage && slippage > 0 && slippage < 0.8) {

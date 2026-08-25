@@ -63,7 +63,11 @@ export const resolveNetworkRoutesURL = (direction: SwapDirection, values: SwapFo
 
     const isCEX = fromExchange || toExchange
     const hasDepositAddress = depositMethod === 'deposit_address'
-    const useFrontendSwap = shouldUseFrontendSwap(depositMethod)
+    const useFrontendSwap = shouldUseFrontendSwap({
+        depositMethod,
+        sourceNetwork: from?.name,
+        destinationNetwork: to?.name,
+    })
 
     const unboundDestination = hasDepositAddress && direction === 'to'
 

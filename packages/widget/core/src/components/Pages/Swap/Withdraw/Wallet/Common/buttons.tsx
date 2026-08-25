@@ -30,6 +30,8 @@ import useSWRGas from "@/lib/gases/useSWRGas";
 import { useDepositSettings } from "@/context/depositSettings";
 import { DepositExecutionContext, GaslessSigner, WalletTransfer, executeGaslessAuthorization, executeWalletTransfer, getActionableDepositAction, isSignAction, isTransferAction, requiresDepositActionRefresh } from "./depositExecution";
 import DepositWorkflowProgress from "./DepositWorkflowProgress";
+import { isGaslessCapableRoute } from "@/helpers/gasless";
+import { shouldUseFrontendSwap } from "@/helpers/swapFlow";
 
 const layerswapApiClient = new LayerSwapApiClient()
 
@@ -189,6 +191,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, refuel: refuelData, swapError, setSwapError } = useSwapDataState()
     const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
     const gaslessFailureStage = useGaslessPreferenceStore(s => s.gaslessFailureStage)
+    const gaslessEnabled = useGaslessPreferenceStore(s => s.gaslessEnabled)
     const switchToStandardTransfer = useGaslessPreferenceStore(s => s.switchToStandardTransfer)
     const clearGaslessUnavailable = useGaslessPreferenceStore(s => s.clearGaslessUnavailable)
     const { onWalletWithdrawalSuccess: onWalletWithdrawalSuccess, onCancelWithdrawal } = useWalletWithdrawalState();
@@ -203,6 +206,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const { balances } = useBalance(selectedSourceAccount?.address, networkWithTokens)
 
     const { wallets } = useWallet(swapBasicData.source_network, 'withdrawal')
+    const selectedWallet = wallets.find(wallet => wallet.id === selectedSourceAccount?.id)
     const { gasData } = useSWRGas(selectedSourceAccount?.address, networkWithTokens, swapBasicData.source_token, swapBasicData.requested_amount)
     const [actionStateText, setActionStateText] = useState<string | undefined>()
     const [loading, setLoading] = useState(false)
@@ -220,7 +224,19 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
     const isMultiStepWorkflow = (depositActions?.filter(action => !!action.step).length ?? 0) > 1
     const workflowCompleted = !!depositActions?.length && depositActions.every(action => action.status === 'completed')
-    const primaryActionText = actionButtonText || 'Approve and Swap'
+    const depositMethod = swapBasicData.use_deposit_address ? 'deposit_address' : 'wallet'
+    const isGaslessActive = gaslessEnabled && isGaslessCapableRoute({
+        depositMethod,
+        supportsGaslessDeposit: swapBasicData.source_token?.supports_gasless_deposit,
+        sourceIsSupported: !!selectedWallet?.asSourceSupportedNetworks?.includes(swapBasicData.source_network.name),
+        sourceAddress: selectedSourceAccount?.address,
+    })
+    const isFrontendSwap = shouldUseFrontendSwap({
+        depositMethod,
+        sourceNetwork: swapBasicData.source_network.name,
+        destinationNetwork: swapBasicData.destination_network.name,
+    }) && !isGaslessActive
+    const primaryActionText = isFrontendSwap ? 'Approve and Swap' : (actionButtonText || 'Swap now')
 
     const priceImpactValues = useMemo(() => quote ? resolvePriceImpactValues(quote, refuel ? refuelData : undefined) : undefined, [quote, refuel]);
     const criticalMarketPriceImpact = useMemo(() => priceImpactValues?.criticalMarketPriceImpact, [priceImpactValues]);
@@ -230,7 +246,6 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         executionInFlight.current = true
         let executionSwapId = forceNewSwap ? undefined : swapId
         try {
-            const selectedWallet = wallets.find(w => w.id === selectedSourceAccount?.id)
             if (!selectedSourceAccount) {
                 throw new Error('Selected source account is undefined')
             }
