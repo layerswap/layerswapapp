@@ -245,7 +245,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             let activeDepositActions = forceNewSwap ? undefined : depositActions;
 
             if (!executionSwapId || !swapData) {
-                setActionStateText("Preparing")
+                setActionStateText("Preparing swap…")
                 setSwapId(undefined)
                 setWorkflowState(undefined)
 
@@ -286,7 +286,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 }
 
                 if (isDiffByPercent(quote?.receive_amount, newSwapData.quote.receive_amount, 2)) {
-                    setActionStateText("Updating quotes")
+                    setActionStateText("Updating quote…")
                     setQuoteLoading(true)
                     await sleep(3500)
                     setQuoteLoading(false)
@@ -340,7 +340,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
                 if (!requiresDepositActionRefresh(currentAction, activeDepositActions)) return
 
-                setActionStateText(currentAction.step === 'approve_permit2' ? 'Confirming approval' : 'Preparing transaction')
+                setActionStateText(currentAction.step === 'approve_permit2' ? 'Confirming approval…' : 'Preparing transaction…')
                 activeDepositActions = await waitForSwapActionTransition({
                     swapId: swapData.id,
                     sourceAddress: selectedSourceAccount.address,
@@ -458,7 +458,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                         isSubmitting={true}
                         isDisabled={true}
                     >
-                        {actionStateText || "Preparing"}
+                        {actionStateText || "Preparing…"}
                     </ButtonWrapper>
                 )}
             </>

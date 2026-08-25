@@ -56,7 +56,7 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
     const { swapData, swapBasicData, selectedWallet, sourceAddress, layerswapApiClient, setActionStateText, setSwapTransaction, onSuccess } = ctx
 
     const transferProps = resolveTransactionData(swapData, action, swapBasicData, selectedWallet)
-    setActionStateText("Opening Wallet")
+    setActionStateText(action.step === 'approve_permit2' ? "Approve in your wallet" : "Confirm in your wallet")
     const hash = await onClick(transferProps)
     if (!hash) return
 
@@ -92,7 +92,7 @@ export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, 
 
     if (!sourceAddress) throw new Error('No selected account')
 
-    setActionStateText("Sign in wallet")
+    setActionStateText("Sign in your wallet")
     let authorizedValidBefore: number | undefined
     try {
         authorizedValidBefore = await submitGaslessAuthorization({
