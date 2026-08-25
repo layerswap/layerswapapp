@@ -27,6 +27,7 @@ export default function useDepositAddressSources({ destinationNetwork, destinati
             includes: { unmatched: false, unavailable: false, swaps: true },
             hasDepositAddress: true,
             useDepositAddressSwaps: true,
+            useFrontendSwap: false,
         })
     }, [enabled, destinationNetwork, destinationToken])
 

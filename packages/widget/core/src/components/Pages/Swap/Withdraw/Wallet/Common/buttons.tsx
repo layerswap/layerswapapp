@@ -1,5 +1,5 @@
 import { type Wallet } from '@layerswap/widget-types';
-import { ComponentProps, FC, useCallback, useMemo, useState } from "react";
+import { ComponentProps, FC, useCallback, useMemo, useRef, useState } from "react";
 import { WalletIcon } from "@layerswap/ui-kit/components";
 import { ActionData } from "./sharedTypes";
 import SubmitButton, { SubmitButtonProps } from "@/components/Buttons/submitButton";
@@ -15,7 +15,7 @@ import { Network, NetworkRoute } from "@layerswap/widget-types";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
-import LayerSwapApiClient, { SwapBasicData, SwapDetails } from "@/lib/apiClients/layerSwapApiClient";
+import LayerSwapApiClient, { DepositAction, SwapBasicData, SwapDetails } from "@/lib/apiClients/layerSwapApiClient";
 import { sleep } from "@layerswap/utils";
 import { isDiffByPercent } from "@/components/utils/numbers";
 import { useWalletWithdrawalState } from "@/context/withdrawalContext";
@@ -28,7 +28,8 @@ import InfoIcon from "@/components/Icons/InfoIcon";
 import { useBalance } from "@/lib/balances/useBalance";
 import useSWRGas from "@/lib/gases/useSWRGas";
 import { useDepositSettings } from "@/context/depositSettings";
-import { DepositExecutionContext, GaslessSigner, WalletTransfer, executeGaslessAuthorization, executeWalletTransfer, isSignAction } from "./depositExecution";
+import { DepositExecutionContext, GaslessSigner, WalletTransfer, executeGaslessAuthorization, executeWalletTransfer, getActionableDepositAction, isSignAction, isTransferAction, requiresDepositActionRefresh } from "./depositExecution";
+import DepositWorkflowProgress from "./DepositWorkflowProgress";
 
 const layerswapApiClient = new LayerSwapApiClient()
 
@@ -185,13 +186,13 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     refuel,
     ...props
 }) => {
-    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, refuel: refuelData, setSwapError } = useSwapDataState()
+    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, refuel: refuelData, swapError, setSwapError } = useSwapDataState()
     const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
     const gaslessFailureStage = useGaslessPreferenceStore(s => s.gaslessFailureStage)
     const switchToStandardTransfer = useGaslessPreferenceStore(s => s.switchToStandardTransfer)
     const clearGaslessUnavailable = useGaslessPreferenceStore(s => s.clearGaslessUnavailable)
     const { onWalletWithdrawalSuccess: onWalletWithdrawalSuccess, onCancelWithdrawal } = useWalletWithdrawalState();
-    const { createSwap, setSwapId, setQuoteLoading } = useSwapDataUpdate()
+    const { createSwap, mutateSwap, setSwapId, setQuoteLoading } = useSwapDataUpdate()
     const { setSwapTransaction } = useSwapTransactionStore();
     const initialSettings = useInitialSettings()
 
@@ -206,13 +207,28 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const [actionStateText, setActionStateText] = useState<string | undefined>()
     const [loading, setLoading] = useState(false)
     const [showCriticalMarketPriceImpactButtons, setShowCriticalMarketPriceImpactButtons] = useState(false)
+    const [workflowState, setWorkflowState] = useState<{ swapId: string, actions: DepositAction[], swapData?: SwapDetails }>()
+    const executionInFlight = useRef(false)
+
+    const activeWorkflowState = workflowState && workflowState.swapId === swapId ? workflowState : undefined
+    const depositActions = activeWorkflowState
+        ? activeWorkflowState.actions
+        : depositActionsResponse
+    const workflowProgress = <DepositWorkflowProgress actions={depositActions} isExecuting={loading} actionStateText={actionStateText} />
 
     const { actionButtonText } = useDepositSettings()
+
+    const isMultiStepWorkflow = (depositActions?.filter(action => !!action.step).length ?? 0) > 1
+    const workflowCompleted = !!depositActions?.length && depositActions.every(action => action.status === 'completed')
+    const primaryActionText = actionButtonText || 'Approve and Swap'
 
     const priceImpactValues = useMemo(() => quote ? resolvePriceImpactValues(quote, refuel ? refuelData : undefined) : undefined, [quote, refuel]);
     const criticalMarketPriceImpact = useMemo(() => priceImpactValues?.criticalMarketPriceImpact, [priceImpactValues]);
 
-    const handleClick = async () => {
+    const executeWorkflow = async (forceNewSwap = false) => {
+        if (executionInFlight.current) return
+        executionInFlight.current = true
+        let executionSwapId = forceNewSwap ? undefined : swapId
         try {
             const selectedWallet = wallets.find(w => w.id === selectedSourceAccount?.id)
             if (!selectedSourceAccount) {
@@ -225,12 +241,13 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             setLoading(true)
             clearError?.()
             setSwapError?.("")
-            let swapData: SwapDetails | undefined = swapDetails
-            let depositActions = depositActionsResponse;
+            let swapData: SwapDetails | undefined = forceNewSwap ? undefined : activeWorkflowState?.swapData ?? swapDetails
+            let activeDepositActions = forceNewSwap ? undefined : depositActions;
 
-            if (!swapId || !swapDetails) {
+            if (!executionSwapId || !swapData) {
                 setActionStateText("Preparing")
                 setSwapId(undefined)
+                setWorkflowState(undefined)
 
                 const swapValues: SwapFormValues = {
                     amount: swapBasicData.requested_amount.toString(),
@@ -257,6 +274,8 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     throw new Error('Swap ID is undefined');
                 }
 
+                executionSwapId = newSwapId
+                setWorkflowState(newSwapData.deposit_actions ? { swapId: newSwapId, actions: newSwapData.deposit_actions, swapData: newSwapData.swap } : undefined)
                 setSwapId(newSwapId)
 
                 const priceImpactValues = newSwapData.quote ? resolvePriceImpactValues(newSwapData.quote, newSwapData.refuel) : undefined;
@@ -273,9 +292,9 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     setQuoteLoading(false)
                 }
                 swapData = newSwapData.swap
-                depositActions = newSwapData.deposit_actions;
+                activeDepositActions = newSwapData.deposit_actions;
             }
-            if (!depositActions?.length) {
+            if (!activeDepositActions?.length) {
                 throw new Error('No deposit actions')
             }
 
@@ -283,35 +302,67 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 throw new Error('No swap data')
             }
 
-            const executionContext: DepositExecutionContext = {
-                swapData,
-                depositActions,
-                swapBasicData,
-                selectedWallet,
-                sourceAddress: selectedSourceAccount.address,
-                layerswapApiClient,
-                setActionStateText,
-                setSwapTransaction,
-                setSwapError,
-                onSuccess: () => onWalletWithdrawalSuccess?.(),
+            // The server owns the workflow state. Execute the currently actionable
+            // item, wait for the swap response to expose the next one, then continue
+            // without requiring another click in the Layerswap UI.
+            const maxActions = Math.max(activeDepositActions.length, 1) + 1
+            for (let executedActions = 0; executedActions < maxActions; executedActions++) {
+                const currentAction = getActionableDepositAction(activeDepositActions)
+                if (!currentAction) {
+                    const failedStep = activeDepositActions.find(action => action.status === 'failed')
+                    if (failedStep) throw new Error(failedStep.detail || 'The swap action failed')
+                    if (activeDepositActions.every(action => action.status === 'completed')) {
+                        onWalletWithdrawalSuccess?.()
+                        return
+                    }
+                    throw new Error('No deposit action is currently available')
+                }
+
+                const executionContext: DepositExecutionContext = {
+                    swapData,
+                    depositActions: activeDepositActions,
+                    swapBasicData,
+                    selectedWallet,
+                    sourceAddress: selectedSourceAccount.address,
+                    layerswapApiClient,
+                    setActionStateText,
+                    setSwapTransaction,
+                    setSwapError,
+                    onSuccess: () => onWalletWithdrawalSuccess?.(),
+                }
+
+                if (isSignAction(currentAction)) {
+                    if (!onSign) throw new Error('This wallet cannot sign the requested authorization')
+                    await executeGaslessAuthorization(executionContext, onSign, currentAction)
+                } else if (isTransferAction(currentAction)) {
+                    await executeWalletTransfer(executionContext, onClick, currentAction)
+                }
+
+                if (!requiresDepositActionRefresh(currentAction, activeDepositActions)) return
+
+                setActionStateText(currentAction.step === 'approve_permit2' ? 'Confirming approval' : 'Preparing transaction')
+                activeDepositActions = await waitForSwapActionTransition({
+                    swapId: swapData.id,
+                    sourceAddress: selectedSourceAccount.address,
+                    previousAction: currentAction,
+                })
+                setWorkflowState({ swapId: swapData.id, actions: activeDepositActions, swapData })
             }
 
-            if (onSign && depositActions.some(isSignAction)) {
-                await executeGaslessAuthorization(executionContext, onSign)
-            } else {
-                await executeWalletTransfer(executionContext, onClick)
-            }
+            throw new Error('The swap workflow has more actions than expected')
         }
         catch (e) {
-            setSwapId(undefined)
             const error = e as Error;
+            if (!useGaslessPreferenceStore.getState().gaslessUnavailable) {
+                setSwapError?.(error.message || 'Could not complete the swap action')
+            }
             ErrorHandler({
                 type: 'SwapWithdrawalError',
                 message: error.message,
                 name: error.name,
                 stack: error.stack,
                 cause: error.cause,
-                swapId: swapId,
+                swapId: executionSwapId,
                 fromAddress: selectedSourceAccount?.address,
                 toAddress: swapBasicData?.destination_address
             });
@@ -336,35 +387,86 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             }
         }
         finally {
+            executionInFlight.current = false
             setLoading(false)
         }
+    }
+
+    const waitForSwapActionTransition = async ({
+        swapId: activeSwapId,
+        sourceAddress,
+        previousAction,
+    }: {
+        swapId: string,
+        sourceAddress: string,
+        previousAction: DepositAction,
+    }): Promise<DepositAction[]> => {
+        const maxAttempts = previousAction.step === 'approve_permit2' ? 60 : 10
+
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            if (attempt > 0) await sleep(2000)
+            const response = await layerswapApiClient.GetSwapAsync(activeSwapId, sourceAddress)
+            if (response?.error) throw response.error
+
+            const latestActions = response?.data?.deposit_actions ?? []
+            const failedStep = latestActions.find(action => action.status === 'failed')
+            const nextAction = getActionableDepositAction(latestActions)
+            const workflowCompleted = latestActions.length > 0 && latestActions.every(action => action.status === 'completed')
+            const transitioned = workflowCompleted || (!!nextAction && nextAction.step !== previousAction.step)
+
+            if (failedStep || transitioned) {
+                await mutateSwap(response, false)
+                setWorkflowState(previous => ({
+                    swapId: activeSwapId,
+                    actions: latestActions,
+                    swapData: previous?.swapId === activeSwapId ? previous.swapData : undefined,
+                }))
+            }
+
+            if (failedStep) throw new Error(failedStep.detail || 'The swap action failed')
+            if (transitioned) return latestActions
+        }
+
+        throw new Error('The transaction is still confirming. Please wait a moment and try again.')
+    }
+
+    const handleClick = () => executeWorkflow(false)
+    const handleCriticalContinue = () => {
+        setShowCriticalMarketPriceImpactButtons(false)
+        executeWorkflow(false)
     }
 
     const retryGasless = () => {
         clearGaslessUnavailable()
         setSwapError?.(null)
-        handleClick()
+        executeWorkflow(false)
     }
 
     const switchToStandard = () => {
         switchToStandardTransfer()
         setSwapError?.(null)
-        handleClick()
+        executeWorkflow(true)
     }
 
     if (quoteIsLoading || loading)
         return (
-            <ButtonWrapper
-                {...props}
-                isSubmitting={true}
-                isDisabled={true}
-            >
-                {actionStateText || "Preparing"}
-            </ButtonWrapper>
+            <>
+                {workflowProgress}
+                {isMultiStepWorkflow && loading ? null : (
+                    <ButtonWrapper
+                        {...props}
+                        isSubmitting={true}
+                        isDisabled={true}
+                    >
+                        {actionStateText || "Preparing"}
+                    </ButtonWrapper>
+                )}
+            </>
         )
 
     if (showCriticalMarketPriceImpactButtons) {
         return (<>
+            {workflowProgress}
             {quote && priceImpactValues && <div className="py-1">
                 <div className="flex items-start gap-2.5">
                     <span className="shrink-0"><InfoIcon className="w-5 h-5 text-warning-foreground" /></span>
@@ -376,7 +478,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             </div>}
             <ButtonWrapper
                 {...props}
-                onClick={handleClick}
+                onClick={handleCriticalContinue}
                 buttonStyle="secondary"
                 size="small"
                 isSubmitting={false}
@@ -407,6 +509,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     </div>
                 </div>
             </div>}
+            {workflowProgress}
             {gaslessUnavailable ? (
                 <div className="space-y-2">
                     {gaslessFailureStage === 'deposit' &&
@@ -434,9 +537,9 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     {...props}
                     isSubmitting={props.isSubmitting || loading || quoteIsLoading}
                     onClick={handleClick}
-                    isDisabled={quoteIsLoading || !!quoteError}
+                    isDisabled={quoteIsLoading || !!quoteError || workflowCompleted}
                 >
-                    {error ? 'Try again' : actionButtonText || 'Swap now'}
+                    {error || swapError ? 'Try again' : workflowCompleted ? 'Completed' : primaryActionText}
                 </ButtonWrapper>
             )}
         </>

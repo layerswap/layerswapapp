@@ -2,6 +2,7 @@ import { SwapDirection, SwapFormValues } from "@/components/Pages/Swap/Form/Swap
 import AppSettings from "@/lib/AppSettings"
 import { resolveExtendedRoutePlan } from "@/lib/extendedRoutes/registry"
 import { NetworkRoute } from "@layerswap/widget-types"
+import { shouldUseFrontendSwap } from "@/helpers/swapFlow"
 
 export const resolveExchangesURLForSelectedToken = (values: SwapFormValues, sourceRoutes?: NetworkRoute[]) => {
 
@@ -62,6 +63,7 @@ export const resolveNetworkRoutesURL = (direction: SwapDirection, values: SwapFo
 
     const isCEX = fromExchange || toExchange
     const hasDepositAddress = depositMethod === 'deposit_address'
+    const useFrontendSwap = shouldUseFrontendSwap(depositMethod)
 
     const unboundDestination = hasDepositAddress && direction === 'to'
 
@@ -95,6 +97,7 @@ export const resolveNetworkRoutesURL = (direction: SwapDirection, values: SwapFo
         networkTypes,
         hasDepositAddress,
         useDepositAddressSwaps: useDepositAddressSwaps || !!extendedPlan,
+        useFrontendSwap,
     })
 }
 
@@ -111,8 +114,9 @@ type ResolveRoutesURLForSelectedTokenProps = {
     networkTypes?: string[],
     hasDepositAddress?: boolean,
     useDepositAddressSwaps?: boolean,
+    useFrontendSwap: boolean,
 }
-export const resolveRoutesURLForSelectedToken = ({ direction, network, token, includes, networkTypes, hasDepositAddress, useDepositAddressSwaps }: ResolveRoutesURLForSelectedTokenProps) => {
+export const resolveRoutesURLForSelectedToken = ({ direction, network, token, includes, networkTypes, hasDepositAddress, useDepositAddressSwaps, useFrontendSwap }: ResolveRoutesURLForSelectedTokenProps) => {
 
     const include_unmatched = includes.unmatched ? 'true' : 'false'
     const include_unavailable = includes.unavailable ? 'true' : 'false'
@@ -125,6 +129,7 @@ export const resolveRoutesURLForSelectedToken = ({ direction, network, token, in
             : { include_swaps: includes.swaps ? 'true' : 'false' }),
         ...(networkTypes ? { network_types: networkTypes?.join(',') } : {}),
         ...(hasDepositAddress ? { has_deposit_address: 'true' } : {}),
+        use_frontend_swap: String(useFrontendSwap),
         ...(network ?
             {
                 [direction === 'to' ? 'source_network' : 'destination_network']: network,

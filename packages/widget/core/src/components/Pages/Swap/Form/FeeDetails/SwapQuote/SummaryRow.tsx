@@ -25,7 +25,8 @@ export const SummaryRow: FC<{
     sourceAddress?: string
     quoteData: Quote
     partner?: Partner
-}> = ({ quoteData, isQuoteLoading, values, wallet, onOpen, sourceAddress, isOpen, partner }) => {
+    compact?: boolean
+}> = ({ quoteData, isQuoteLoading, values, wallet, onOpen, sourceAddress, isOpen, partner, compact }) => {
     const { destination_address: destinationAddressFromQuery }  = useInitialSettings()
     const { showDestinationAddress } = useDepositSettings()
     const { to, destination_address } = values
@@ -34,10 +35,10 @@ export const SummaryRow: FC<{
 
     return (
         <div className={clsx("flex flex-col w-full p-2", { "!pb-0 !-mb-1": isOpen })}>
-            {showDestinationAddress && values.destination_address && sourceAddress?.toLowerCase() !== values.destination_address?.toLowerCase() && (
+            {(compact || showDestinationAddress) && values.destination_address && (compact || sourceAddress?.toLowerCase() !== values.destination_address?.toLowerCase()) && (
                 <div className={`flex items-center w-full justify-between gap-1 text-sm px-2 py-3`}>
                     <div className="inline-flex items-center text-left text-secondary-text gap-1 pr-4">
-                        <label>Send to</label>
+                        <label>{compact ? 'To address' : 'Send to'}</label>
                     </div>
                     <div className="text-right text-primary-text">
                         <span className="cursor-pointer hover:underline flex items-center gap-2">
@@ -82,12 +83,12 @@ export const SummaryRow: FC<{
                     )}
                 </div>
             </div>
-            <Slippage quoteData={quoteData.quote} values={values} />
+            {compact ? null : <Slippage quoteData={quoteData.quote} values={values} />}
             {
-                isOpen &&
+                !compact && isOpen &&
                 <GasFee values={values} quote={quoteData.quote} />
             }
-            <div className={`${isOpen ? "hidden" : ""} flex items-center w-full justify-between px-2 py-3`}>
+            {compact ? null : <div className={`${isOpen ? "hidden" : ""} flex items-center w-full justify-between px-2 py-3`}>
                 <DetailsButton quote={quoteData?.quote} isQuoteLoading={isQuoteLoading} swapValues={values} destination={to} destinationAddress={destination_address} reward={quoteData?.reward} />
 
                 <button
@@ -103,7 +104,7 @@ export const SummaryRow: FC<{
                     <span>See details</span>
                     <ChevronDown className="h-3.5 w-3.5" />
                 </button>
-            </div>
+            </div>}
         </div>
     )
 }

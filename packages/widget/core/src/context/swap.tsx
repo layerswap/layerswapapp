@@ -26,7 +26,7 @@ import { isGaslessCapableRoute } from '@/helpers/gasless';
 import { resolveExtendedRoutePlan } from '@/lib/extendedRoutes/registry';
 import { buildCreateSwapParamsForExtendedRoute } from '@/lib/extendedRoutes/transforms';
 import { useExtendedRoutesStore } from '@/stores/extendedRoutesStore';
-import { isDepositAddressFlow, isDepositAddressSwap } from '@/helpers/swapFlow';
+import { isDepositAddressFlow, isDepositAddressSwap, shouldUseFrontendSwap } from '@/helpers/swapFlow';
 import { resolveSwapPollingInterval, SWAP_POLL_DEDUPE_MS } from '@/lib/swapPollingPolicy';
 
 export const SwapDataStateContext = createContext<SwapContextData | null>(null);
@@ -308,6 +308,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             referenceId: query.externalId,
             refuel,
             sourceAddress: selectedSourceAccount?.address,
+            useFrontendSwap: shouldUseFrontendSwap(depositMethod),
         }) : {
             amount: amount || undefined,
             source_network: from.name,
@@ -319,6 +320,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             reference_id: query.externalId,
             refuel: !!refuel,
             use_deposit_address: depositMethod === 'wallet' ? false : true,
+            use_frontend_swap: shouldUseFrontendSwap(depositMethod),
             source_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
             refund_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
             ...(useGasless && { use_gasless: true, use_depository: true }),

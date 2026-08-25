@@ -19,7 +19,7 @@ import { ErrorHandler } from "@/lib/ErrorHandler";
 const DEPOSIT_ACTION_TYPES = ['transfer', 'manual_transfer']
 
 const getDepositAddress = (actions: DepositAction[] | undefined): string | undefined =>
-    actions?.find(a => DEPOSIT_ACTION_TYPES.includes(a.type))?.to_address
+    actions?.find(a => !!a.type && DEPOSIT_ACTION_TYPES.includes(a.type))?.to_address
 
 const logWithdrawalError = (error: unknown, ctx: { swapId?: string; fromAddress?: string; toAddress?: string }) => {
     const e = error instanceof Error ? error : new Error(String(error))

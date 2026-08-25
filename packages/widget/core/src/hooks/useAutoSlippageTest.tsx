@@ -4,6 +4,7 @@ import LayerSwapApiClient, { Quote } from '../lib/apiClients/layerSwapApiClient'
 import { ApiResponse } from '../Models/ApiResponse'
 import { buildQuoteUrl, validDestinationAddress } from './useFee'
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
+import { shouldUseFrontendSwap } from '@/helpers/swapFlow'
 
 type AutoSlippageTestProps = {
     values: SwapFormValues
@@ -27,6 +28,7 @@ export function useAutoSlippageTest({ values, shouldTest }: AutoSlippageTestProp
             amount: values.amount ?? '',
             refuel: !!values.refuel,
             useDepositAddress: values.depositMethod !== 'wallet',
+            useFrontendSwap: shouldUseFrontendSwap(values.depositMethod),
             destinationAddress: validatedDestinationAddress,
         })
         : null

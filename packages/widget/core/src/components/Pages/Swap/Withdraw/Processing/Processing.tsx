@@ -26,6 +26,7 @@ import { useDepositSettings } from '@/context/depositSettings';
 import { useSettingsState } from '@/context/settings';
 import { useExtendedRoutesStore } from '@/stores/extendedRoutesStore';
 import { SwapFailureReason } from '@/hooks/useSwapRetry';
+import { SwapQuoteDetails } from '../SwapQuoteDetails';
 
 const apiClient = new LayerSwapApiClient();
 
@@ -386,6 +387,16 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel, fail
         <Widget.Content fitContent>
             <div className={`w-full min-h-102.5 h-full space-y-2 flex flex-col justify-between text-primary-text`}>
                 <SwapSummary />
+                {swapBasicData.use_deposit_address ? null : (
+                    <SwapQuoteDetails
+                        compact
+                        swapBasicData={swapBasicData}
+                        quote={quote}
+                        refuel={refuel}
+                        quoteIsLoading={false}
+                        quoteError={undefined}
+                    />
+                )}
                 <div className="bg-secondary-500 font-normal px-3 pt-6 pb-3 rounded-2xl space-y-4 flex flex-col w-full relative z-10 divide-y-2 divide-secondary-300 divide-dashed">
                     <div className='pb-4'>
                         <div className='flex flex-col gap-2 items-center'>

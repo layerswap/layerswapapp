@@ -20,7 +20,7 @@ import { truncateToDecimals } from "@/components/utils/RoundDecimals";
 const DEPOSIT_ACTION_TYPES = ['transfer', 'manual_transfer']
 
 const getDepositAction = (actions: DepositAction[] | undefined): { depository: string; depositCallData: string } | undefined => {
-    const action = actions?.find(a => DEPOSIT_ACTION_TYPES.includes(a.type))
+    const action = actions?.find(a => !!a.type && DEPOSIT_ACTION_TYPES.includes(a.type))
     if (!action?.to_address || !action.call_data) return undefined
     return { depository: action.to_address, depositCallData: action.call_data }
 }

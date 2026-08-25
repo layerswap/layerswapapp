@@ -25,7 +25,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { isDepositAddressSwap } from '@/helpers/swapFlow';
 
 const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: () => void, onCancelWithdrawal?: () => void, partner?: Partner }> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal, partner }) => {
-    const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading, quoteError } = useSwapDataState()
+    const { swapBasicData, swapDetails, swapId, quote, refuel, quoteIsLoading, quoteError } = useSwapDataState()
     const { setSubmitedFormValues } = useSwapDataUpdate()
 
     const { networks } = useSettingsState()
@@ -137,7 +137,7 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
                 <div className="w-full flex flex-col justify-between  text-secondary-text">
                     <div className='grid grid-cols-1 gap-2 '>
                         <SwapSummary />
-                        <SwapQuoteDetails swapBasicData={swapBasicData} quote={quote} refuel={refuel} quoteIsLoading={quoteIsLoading} quoteError={quoteError} partner={partner} />
+                        <SwapQuoteDetails swapBasicData={swapBasicData} quote={quote} refuel={refuel} quoteIsLoading={quoteIsLoading} quoteError={quoteError} partner={partner} compact={!!swapId} />
                         {withdraw?.content}
                     </div>
                 </div>

@@ -17,6 +17,7 @@ import { useSelectedAccount } from '@/context/swapAccounts'
 import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore'
 import { isGaslessCapableRoute } from '@/helpers/gasless'
 import { Address } from '@/lib/address/Address';
+import { shouldUseFrontendSwap } from '@/helpers/swapFlow';
 
 const apiClient = new LayerswapApiClient()
 
@@ -97,6 +98,7 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
     }, [amount])
 
     const use_deposit_address = depositMethod === 'wallet' ? false : true
+    const useFrontendSwap = shouldUseFrontendSwap(depositMethod)
 
     // Extended source (e.g. Hyperliquid): the backend doesn't know this source,
     // so quote/limits are fetched against the real route it maps to.
@@ -138,6 +140,7 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
             destinationNetwork: to!,
             destinationToken: toCurrency!,
             useDepositAddress: effectiveUseDepositAddress,
+            useFrontendSwap,
             refuel,
             useGasless,
             destinationAddress,
@@ -167,6 +170,7 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
             amount: effectiveAmount || 0,
             refuel: !!refuel,
             useDepositAddress: effectiveUseDepositAddress,
+            useFrontendSwap,
             slippage,
             useGasless,
             destinationAddress,
@@ -301,6 +305,7 @@ export type QuoteUrlArgs = {
     amount: string | number
     refuel: boolean
     useDepositAddress: boolean
+    useFrontendSwap: boolean
     slippage?: number
     useGasless?: boolean
     destinationAddress?: string
@@ -316,6 +321,7 @@ export function buildQuoteUrl(args: QuoteUrlArgs): string {
         amount,
         refuel,
         useDepositAddress,
+        useFrontendSwap,
         slippage,
         useGasless,
         destinationAddress,
@@ -330,6 +336,7 @@ export function buildQuoteUrl(args: QuoteUrlArgs): string {
         amount: String(amount),
         refuel: String(!!refuel),
         use_deposit_address: useDepositAddress ? 'true' : 'false',
+        use_frontend_swap: String(useFrontendSwap),
     })
 
     if (slippage !== undefined) {
@@ -351,10 +358,10 @@ export function buildQuoteUrl(args: QuoteUrlArgs): string {
     return `/quote?${params.toString()}`
 }
 
-export const getLimits = async (swapValues: LimitsQueryOptions) => {
-    const { sourceToken, sourceNetwork, destinationNetwork, destinationToken, refuel, useDepositAddress, destinationAddress } = swapValues || {}
+export const getLimits = async (swapValues: LimitsQueryOptions & { useFrontendSwap: boolean }) => {
+    const { sourceToken, sourceNetwork, destinationNetwork, destinationToken, refuel, useDepositAddress, useFrontendSwap, destinationAddress } = swapValues || {}
 
-    if (!sourceNetwork || !destinationNetwork || !useDepositAddress || !destinationToken || !sourceToken)
+    if (!sourceNetwork || !destinationNetwork || useDepositAddress === undefined || !destinationToken || !sourceToken)
         return { minAllowedAmount: undefined, maxAllowedAmount: undefined }
 
     const url = buildLimitsUrl({
@@ -363,6 +370,7 @@ export const getLimits = async (swapValues: LimitsQueryOptions) => {
         destinationNetwork,
         destinationToken,
         useDepositAddress,
+        useFrontendSwap,
         refuel,
         destinationAddress
     })
@@ -386,9 +394,14 @@ interface LimitsQueryOptions {
     destinationNetwork?: string;
     destinationToken?: string;
     useDepositAddress?: boolean;
+    useFrontendSwap?: boolean;
     refuel?: boolean;
     useGasless?: boolean;
     destinationAddress?: string;
+}
+
+type BuildLimitsUrlOptions = LimitsQueryOptions & {
+    useFrontendSwap: boolean;
 }
 
 export function buildLimitsUrl({
@@ -397,10 +410,11 @@ export function buildLimitsUrl({
     destinationNetwork,
     destinationToken,
     useDepositAddress,
+    useFrontendSwap,
     refuel = false,
     useGasless = false,
     destinationAddress
-}: LimitsQueryOptions): string {
+}: BuildLimitsUrlOptions): string {
 
     if (!sourceNetwork || !sourceToken || !destinationNetwork || !destinationToken) {
         throw new Error("Invalid parameters for building limits URL");
@@ -412,6 +426,7 @@ export function buildLimitsUrl({
         destination_network: destinationNetwork,
         destination_token: destinationToken,
         use_deposit_address: useDepositAddress ? 'true' : 'false',
+        use_frontend_swap: String(useFrontendSwap),
         refuel: String(!!refuel),
     });
 
