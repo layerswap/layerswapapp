@@ -2,8 +2,8 @@
 export { mountWidget, mountDepositWidget } from "./mount.js";
 export type { WidgetHandle, DepositWidgetHandle, MountOptions } from "./mount.js";
 
-// Shared widget prop/config/theme and protocol contract, re-exported from
-// `@layerswap/widget-types` (the single source of truth).
+// Shared widget prop/config/theme contract, re-exported from the
+// `@layerswap/widget-types` package (the single source of truth).
 export type {
   WidgetProps,
   WidgetConfig,

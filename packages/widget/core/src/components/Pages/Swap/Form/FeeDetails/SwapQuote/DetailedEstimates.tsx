@@ -11,7 +11,7 @@ import { SwapValues } from "..";
 import { RateElement } from "../Rate";
 import { Slippage } from "../Slippage";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
-import { Network, NetworkRouteToken } from "@/Models";
+import { Network, NetworkRouteToken } from "@layerswap/widget-types";
 import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
 import { Address } from "@/lib/address/Address";
 import shortenString from "@/components/utils/ShortenString";

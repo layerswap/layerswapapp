@@ -1,0 +1,66 @@
+{
+  "name": "@layerswap/wallet-core",
+  "version": "2.0.0-next.0",
+  "description": "Headless wallet contracts, provider registry, and connection plumbing shared by Layerswap wallet packages and UIs.",
+  "type": "module",
+  "main": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "typings": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/esm/index.js"
+    },
+    "./types": {
+      "types": "./dist/types/types/index.d.ts",
+      "default": "./dist/esm/types/index.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "dist/**/*"
+  ],
+  "scripts": {
+    "build": "pnpm run clean && pnpm run build:esm+types",
+    "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm && tsc-alias -p tsconfig.json --outDir ./dist/types",
+    "check:types": "tsc --noEmit",
+    "clean": "rimraf dist tsconfig.tsbuildinfo",
+    "test": "pnpm build:esm+types && node --test tests/*.test.mjs"
+  },
+  "author": "Layerswap",
+  "homepage": "https://github.com/layerswap/layerswapapp",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/layerswap/layerswapapp.git",
+    "directory": "packages/wallets/core"
+  },
+  "keywords": [
+    "layerswap",
+    "wallet",
+    "wallet-connection"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@layerswap/utils": "workspace:^",
+    "@layerswap/widget-types": "workspace:^"
+  },
+  "peerDependencies": {
+    "react": "^18.0 || ^19.0.0 || ^19.0.0-rc",
+    "zustand": "catalog:"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "react": "catalog:",
+    "rimraf": "catalog:",
+    "tsc-alias": "^1.8.16",
+    "typescript": "^5.9.2",
+    "zustand": "catalog:"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "bugs": {
+    "url": "https://github.com/layerswap/layerswapapp/issues"
+  }
+}

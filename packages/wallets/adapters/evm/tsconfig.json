@@ -1,0 +1,40 @@
+{
+  "extends": "../../tsconfig.wallet.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist/esm",
+    "declarationDir": "dist/types",
+    "paths": {
+      "@layerswap/wallet-core": [
+        "../../core/src/index.ts"
+      ],
+      "@layerswap/wallet-core/types": [
+        "../../core/src/types/index.ts"
+      ],
+      "@layerswap/utils": [
+        "../../../utils/src/index.ts"
+      ],
+      "@layerswap/widget-types": [
+        "../../../widget/types/src/index.ts"
+      ]
+    }
+  },
+  "include": [
+    "src",
+    "src/jsons/*.json"
+  ],
+  "exclude": [
+    "node_modules"
+  ],
+  "references": [
+    {
+      "path": "../../core"
+    },
+    {
+      "path": "../../../utils"
+    },
+    {
+      "path": "../../../widget/types"
+    }
+  ]
+}

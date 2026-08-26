@@ -1,6 +1,7 @@
 {
   "name": "@layerswap/widget-js",
   "version": "1.0.0",
+  "private": true,
   "description": "Framework-agnostic loader that fetches the Layerswap widget from the CDN at runtime via Module Federation and mounts it into any DOM element. No framework required.",
   "type": "module",
   "main": "dist/esm/index.js",

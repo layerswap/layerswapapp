@@ -4,7 +4,7 @@ import { ChevronDown } from 'lucide-react'
 import useWallet from '@/hooks/useWallet'
 import { Quote } from '@/lib/apiClients/layerSwapApiClient'
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
-import { Network } from '@/Models/Network'
+import { Network } from '@layerswap/widget-types';
 import { SummaryRow } from './SummaryRow'
 import { DetailedEstimates } from './DetailedEstimates'
 import { Address } from '@/lib/address/Address'

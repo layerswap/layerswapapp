@@ -1,5 +1,5 @@
+import { SwapStatus } from '@layerswap/widget-types';
 import { SwapResponse, TransactionType } from '@/lib/apiClients/layerSwapApiClient'
-import { SwapStatus } from '@/Models/SwapStatus'
 
 const INCOMPLETE_STATUSES: string[] = [
     SwapStatus.Created,

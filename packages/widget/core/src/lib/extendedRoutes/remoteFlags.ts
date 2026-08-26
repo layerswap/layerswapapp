@@ -1,4 +1,4 @@
-import { ExtendedRouteFlags } from "./types";
+import { ExtendedRouteFlags } from "@layerswap/widget-types";
 
 /**
  * Public, CORS-open endpoint on the canonical bridge deployment that returns the

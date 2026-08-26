@@ -2,7 +2,7 @@ import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, 
 import useSWR from "swr";
 import LayerSwapApiClient, { CreateSwapParams, DepositAction, SwapResponse } from "@/lib/apiClients/layerSwapApiClient";
 import { ApiResponse } from "@/Models/ApiResponse";
-import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
+import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import useDepositAddressSources from "@/hooks/useDepositAddressSources";
 import { pickAutoSource } from "@/hooks/useAutoSourceRoute";

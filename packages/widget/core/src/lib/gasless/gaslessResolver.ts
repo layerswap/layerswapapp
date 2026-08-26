@@ -1,5 +1,5 @@
-import { GaslessProvider, GaslessSignParams } from "@/types"
-import { Network } from "@/Models/Network"
+import { GaslessProvider, GaslessSignParams } from "@layerswap/widget-types";
+import { Network } from "@layerswap/widget-types";
 
 export class GaslessResolver {
     private providers: GaslessProvider[]

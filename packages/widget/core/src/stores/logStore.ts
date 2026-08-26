@@ -1,4 +1,4 @@
-import { ErrorEventType } from '@/types';
+import { type ErrorEventType } from '@layerswap/widget-types';
 import { createStore, useStore } from 'zustand';
 
 const defaultHandler = (error: ErrorEventType) => {

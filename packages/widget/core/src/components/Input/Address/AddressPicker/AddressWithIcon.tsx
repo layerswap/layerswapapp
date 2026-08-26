@@ -1,12 +1,13 @@
+import { NetworkType } from '@layerswap/widget-types';
 import { FC, MouseEventHandler, ReactNode, SVGProps, useCallback, useMemo, useState } from "react"
 import { AddressGroup, AddressItem } from ".";
 import { Copy, Check, ChevronDown, WalletIcon, Pencil, Link2, SquareArrowOutUpRight, Unplug, Info, Trash2, BookmarkPlus } from "lucide-react";
 import { Partner } from "@/Models/Partner";
-import { Network, NetworkType } from "@/Models/Network";
+import { Network } from "@layerswap/widget-types";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components//shadcn/popover";
-import useCopyClipboard from "@/hooks/useCopyClipboard";
+import { ImageWithFallback } from "@layerswap/ui-kit/components";
+import { useCopyClipboard } from "@layerswap/ui-kit";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
-import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import clsx from "clsx";
 import shortenString from "@/components/utils/ShortenString";
 import { useAddressName, useLabeledAddress } from "@/stores/addressBookStore";

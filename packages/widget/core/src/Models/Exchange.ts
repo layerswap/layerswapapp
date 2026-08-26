@@ -1,4 +1,4 @@
-import { Network, Token } from "./Network";
+import { Network, Token } from "@layerswap/widget-types";
 
 export class Exchange {
     display_name: string;

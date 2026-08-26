@@ -7,23 +7,28 @@
       "@layerswap/widget",
       "@layerswap/wallet-*",
       "@layerswap/wallets",
-      "@layerswap/utils"
-    ],
-    [
-      "@layerswap/widget-react",
-      "@layerswap/widget-js",
-      "@layerswap/widget-types"
+      "@layerswap/utils",
+      "@layerswap/wallet-core",
+      "@layerswap/ui-kit"
     ]
   ],
   "linked": [],
   "access": "public",
-  "baseBranch": "dev-monorepo",
+  "baseBranch": "dev",
   "updateInternalDependencies": "patch",
   "privatePackages": {
     "version": true,
     "tag": false
   },
-  "ignore": ["@layerswap/bridge", "widget-playground", "layerswap-explorer"],
+  "ignore": [
+    "@layerswap/bridge",
+    "widget-playground",
+    "layerswap-explorer",
+    "widget-react-host-example",
+    "@layerswap/widget-js",
+    "@layerswap/widget-cdn",
+    "@layerswap/widget-react"
+  ],
   "snapshot": {
     "useCalculatedVersion": true
   },

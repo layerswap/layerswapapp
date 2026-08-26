@@ -6,14 +6,6 @@ import { DepositComponent, DepositLoading } from '@layerswap/widget/deposit';
 import { useWidgetContext } from '@/context/ConfigContext';
 import { useSettingsState } from '@/context/settings';
 import { getDefaultProviders } from '@layerswap/wallets';
-// import dynamic from 'next/dynamic';
-// const LayerswapWidgetCustomEvm = dynamic(
-//     () => import('./LayerswapWidgetCustomEvm'),
-//     {
-//         ssr: false,
-//         loading: () => <WidgetLoading />,
-//     }
-// );
 
 const walletConnectConfigs = {
     projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '',
@@ -34,10 +26,6 @@ const LayerswapWidget: FC = () => {
             manifestUrl: 'https://layerswap.io/app/tonconnect-manifest.json'
         }
     }), [])
-
-    // if (customEvmSwitch) {
-    //     return <LayerswapWidgetCustomEvm />;
-    // }
 
     return (
         <div

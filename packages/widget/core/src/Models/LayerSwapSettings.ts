@@ -1,6 +1,6 @@
-import { NetworkWithTokens, NetworkRoute } from "./Network";
+import { NetworkWithTokens, NetworkRoute } from "@layerswap/widget-types";
 import { Exchange } from "./Exchange";
-import { ExtendedRouteFlags } from "../lib/extendedRoutes/types";
+import { ExtendedRouteFlags } from "@layerswap/widget-types";
 
 export class LayerSwapSettings {
     sourceExchanges?: Exchange[];
@@ -8,12 +8,4 @@ export class LayerSwapSettings {
     sourceRoutes?: NetworkRoute[];
     destinationRoutes?: NetworkRoute[];
     featureFlags?: ExtendedRouteFlags;
-}
-
-export type AvailableSourceNetworkTypes = {
-    all: true
-    networks?: never
-} | {
-    all: false
-    networks: string[]
 }

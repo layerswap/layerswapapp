@@ -1,12 +1,11 @@
+import { SwapStatus, type Refuel } from '@layerswap/widget-types';
 import {
     BackendTransactionStatus,
-    Refuel,
     SwapDetails,
     Transaction,
     TransactionStatus,
     TransactionType,
 } from '../../lib/apiClients/layerSwapApiClient';
-import { SwapStatus } from '../../Models/SwapStatus';
 import { SwapFailReasons } from '../../Models/RangeError';
 import type { SwapTransaction as StoredWalletTransaction } from '../../stores/swapTransactionStore';
 import { Progress, ProgressStatus } from '../Pages/Swap/Withdraw/Processing/types';

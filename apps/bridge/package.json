@@ -20,6 +20,7 @@
     "@layerswap/wallet-evm": "workspace:^",
     "@layerswap/wallets": "workspace:^",
     "@layerswap/widget": "workspace:^",
+    "@layerswap/widget-types": "workspace:^",
     "@posthog/react": "1.4.0",
     "@radix-ui/react-context-menu": "^1.0.0",
     "@tanstack/react-query": "catalog:",

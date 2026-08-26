@@ -1,6 +1,6 @@
 import { useFormikContext } from "formik";
 import useSWRGas from "@/lib/gases/useSWRGas";
-import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
+import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import React, { useMemo } from "react";
 import { resolveMaxAllowedAmount } from "./helpers";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";

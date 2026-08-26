@@ -1,7 +1,7 @@
 {
   "name": "@layerswap/widget-types",
-  "version": "1.0.0",
-  "description": "Shared TypeScript and protocol contract for the Layerswap widget, loaders, and CDN remote.",
+  "version": "1.0.0-next.0",
+  "description": "Shared TypeScript contracts for Layerswap widget and wallet packages.",
   "type": "module",
   "main": "dist/esm/index.js",
   "types": "dist/types/index.d.ts",
