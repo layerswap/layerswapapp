@@ -180,13 +180,14 @@ manifest URL and signature verification policy are fixed inside
 whose internal `WIDGET_MANIFEST_URL` and trust anchor target the sandbox; do not add
 host environment variables or globals to bypass that boundary.
 
-## 10. GitHub Actions branch sandbox
+## 10. GitHub Actions environments
 
 After local delivery works, `.github/workflows/widget-cdn-deploy.yml` deploys
-this feature branch to the personal account through OIDC (its default target
-is the `widget-cdn-azure-sandbox` GitHub environment; the sandbox identifiers
-are inline fallbacks, so only the `LAYERSWAP_PRIVATE_KEY_PEM` signing secret
-is required).
+merges to `dev` to the personal account through OIDC. Its automatic target is
+the `widget-cdn-azure-sandbox` GitHub environment; the sandbox identifiers are
+inline fallbacks, so only the `LAYERSWAP_PRIVATE_KEY_PEM` signing secret is
+required. Production is a manual dispatch from `main` to the
+`widget-cdn-production` environment.
 
 In Azure Portal:
 
@@ -197,28 +198,48 @@ In Azure Portal:
 4. Select the GitHub Actions scenario and configure:
    - Organization: `layerswap`
    - Repository: `layerswapapp`
-   - Entity type: **Branch**
-   - Branch: `codex/widget-cdn-azure-sandbox`
+   - Entity type: **Environment**
+   - Environment: `widget-cdn-azure-sandbox`
 5. Assign this application **Storage Blob Data Contributor** on only the
    `widget-cdn` container.
+6. Create a separate production identity and environment-based federated
+   credential for `widget-cdn-production`, scoped only to the production
+   container.
 
-The workflow is triggered by pushes to that branch. Azure accepts an OIDC
-token only when its subject is exactly:
+In GitHub, a repository administrator must then:
+
+1. Open **Settings → Environments** and create
+   `widget-cdn-azure-sandbox`.
+2. Add one or more **Required reviewers** under deployment protection rules.
+   Enable **Prevent self-review** when the person who starts a deployment must
+   not approve it.
+3. Add `LAYERSWAP_PRIVATE_KEY_PEM` as an environment secret and add the Azure
+   identifiers described in the [CI deploy configuration](./README.md#ci-deploy)
+   as environment variables.
+4. Repeat for `widget-cdn-production`, using the production approvers,
+   identity, storage account, and signing key.
+
+Do not place the signing key or Azure deployment configuration at repository
+scope. Environment-scoped values remain unavailable to the deploy job until a
+required reviewer approves it.
+
+Because each privileged job declares a GitHub Environment, Azure accepts its
+OIDC token only when the corresponding subject is exactly:
 
 ```text
-repo:layerswap/layerswapapp:ref:refs/heads/codex/widget-cdn-azure-sandbox
+repo:layerswap/layerswapapp:environment:widget-cdn-azure-sandbox
+repo:layerswap/layerswapapp:environment:widget-cdn-production
 ```
 
 The Azure client, tenant, subscription, storage account, and container
-identifiers in the sandbox workflow are not credentials. The workflow
-generates a disposable signing key for each run. Production should instead
-use a protected GitHub environment and the production signing key or KMS.
+identifiers in the sandbox workflow are not credentials. The workflow builds
+and tests an unsigned candidate first; only the approved environment job can
+access its signing key or request the Azure OIDC token.
 
 ## Production follow-up
 
 The Layerswap account should replace this public sandbox origin with Azure
 Front Door and preferably a private Blob origin. The final rollout also needs:
 
-- GitHub Actions OIDC instead of a developer's Azure CLI session.
 - The production manifest signing key/KMS.
 - A stable custom domain such as `cdn.layerswap.io`.

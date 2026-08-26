@@ -92,11 +92,12 @@ export type Manifest = {
  * Rotating this key requires a version bump of `@layerswap/widget-js`;
  * integrators pin it transitively via npm SRI.
  *
- * Current key: generated 2026-06 (pre-KMS). A future KMS/HSM migration must
+ * Current sandbox key: rotated 2026-08 (pre-KMS). A future production
+ * KMS/HSM migration must
  * update this constant plus the GitHub secret `LAYERSWAP_PRIVATE_KEY_PEM`.
  */
 export const MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64 =
-    'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAESuHFHbltz/hfcY+DzIrLq7Ixc4efHE8SLZdNg0pZZDHTfdwbqLpGk4461EgNranHLWnVsoAbyQ4IyHIVnRAVKw==';
+    'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEY9/zg6ZUU8ZVOAbuS4qqreIR6/U8BDqY+8giwi8xFYl5dllwzE0x//l2iVRgo3fr6nRpplm9RUYRKcXaiJC/Lg==';
 
 /**
  * Canonical Layerswap CDN manifest URL — the fixed source the loaders always

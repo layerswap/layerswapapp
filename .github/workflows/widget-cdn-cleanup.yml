@@ -21,9 +21,7 @@ name: widget-cdn — cleanup old builds
 # jobs declare the environment — if it has required reviewers, the read-only
 # plan needs one approval and the delete a second, informed one.
 #
-# Note: `schedule` only fires from the repository's default branch; until this
-# file lands there, run it via workflow_dispatch (pick the branch — the Azure
-# sandbox OIDC credential is scoped to codex/widget-cdn-azure-sandbox).
+# Note: `schedule` only fires from the repository's default branch (`dev`).
 
 on:
   schedule:
@@ -52,7 +50,6 @@ concurrency:
 
 permissions:
   contents: read
-  id-token: write
 
 env:
   DEPLOY_TARGET: ${{ inputs.environment || 'widget-cdn-azure-sandbox' }}
@@ -62,12 +59,18 @@ env:
 jobs:
   plan:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     environment: ${{ inputs.environment || 'widget-cdn-azure-sandbox' }}
+    permissions:
+      contents: read
+      id-token: write
     outputs:
       has-deletions: ${{ steps.plan.outputs.has-deletions }}
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
 
       - name: Resolve storage target
         env:
@@ -79,9 +82,9 @@ jobs:
           RAW_CDN_BASE_URL: ${{ vars.CDN_BASE_URL }}
         run: bash .github/scripts/resolve-widget-cdn-env.sh
 
-      - uses: pnpm/action-setup@v6
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: 20
           cache: pnpm
@@ -93,7 +96,7 @@ jobs:
         run: pnpm --filter @layerswap/widget-types build
 
       - name: Log in to Azure with OIDC
-        uses: azure/login@v2
+        uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2
         with:
           client-id: ${{ env.AZURE_CLIENT_ID }}
           tenant-id: ${{ env.AZURE_TENANT_ID }}
@@ -124,7 +127,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload plan artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: cleanup-plan
           path: ${{ runner.temp }}/plan.json
@@ -134,12 +137,18 @@ jobs:
     needs: plan
     if: ${{ needs.plan.outputs.has-deletions == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     # The approval gate: this environment's required reviewers must approve
     # before anything is deleted from the container.
     environment: ${{ inputs.environment || 'widget-cdn-azure-sandbox' }}
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
 
       - name: Resolve storage target
         env:
@@ -151,9 +160,9 @@ jobs:
           RAW_CDN_BASE_URL: ${{ vars.CDN_BASE_URL }}
         run: bash .github/scripts/resolve-widget-cdn-env.sh
 
-      - uses: pnpm/action-setup@v6
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: 20
           cache: pnpm
@@ -165,13 +174,13 @@ jobs:
         run: pnpm --filter @layerswap/widget-types build
 
       - name: Download approved plan
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: cleanup-plan
           path: ${{ runner.temp }}
 
       - name: Log in to Azure with OIDC
-        uses: azure/login@v2
+        uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2
         with:
           client-id: ${{ env.AZURE_CLIENT_ID }}
           tenant-id: ${{ env.AZURE_TENANT_ID }}

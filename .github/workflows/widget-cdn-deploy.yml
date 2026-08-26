@@ -16,20 +16,19 @@ name: widget-cdn — deploy
 #     the environment has any variables configured.
 #   - widget-cdn-production: drop-in — fails with a clear error until a repo
 #     admin creates the production Azure identity/storage account and fills in
-#     the environment. Dispatches only from the default branch.
+#     the environment. Dispatches only from main, after dev is merged to main.
 #
-# A push to dev that touches the widget build graph deploys to the sandbox.
-# The sandbox environment has required reviewers, so every push deploy pauses
-# for approval ("Review deployments") before touching storage — nothing ships
-# unreviewed. Production is workflow_dispatch with
-# environment=widget-cdn-production and its own required reviewers.
+# A push to dev that touches the widget build graph prepares an unsigned release
+# candidate for the sandbox. The job that signs it, obtains Azure credentials,
+# and writes to storage targets the protected GitHub environment and therefore
+# pauses for required-reviewer approval ("Review deployments"). Production is
+# workflow_dispatch with environment=widget-cdn-production and its own required
+# reviewers.
 
 on:
   push:
     branches:
       - dev
-      # Pre-merge sandbox deploys — remove once this PR lands on dev.
-      - codex/widget-cdn-azure-sandbox
     paths:
       - 'apps/widget-cdn/**'
       - 'packages/**'
@@ -56,44 +55,36 @@ concurrency:
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-    # Required reviewers on this environment turn every deploy into an
-    # approvable step; the cleanup workflow's apply job shares the same gate.
-    environment: ${{ inputs.environment || 'widget-cdn-azure-sandbox' }}
+    timeout-minutes: 30
     env:
       DEPLOY_TARGET: ${{ inputs.environment || 'widget-cdn-azure-sandbox' }}
-      LAYERSWAP_PROMOTE: ${{ github.event_name != 'workflow_dispatch' || inputs.promote != false }}
+    outputs:
+      build-id: ${{ steps.metadata.outputs.build-id }}
+      build-time: ${{ steps.metadata.outputs.build-time }}
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           fetch-depth: 0
+          persist-credentials: false
 
-      - name: Resolve deployment target
-        env:
-          RAW_AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
-          RAW_AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
-          RAW_AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-          RAW_AZURE_STORAGE_ACCOUNT: ${{ vars.AZURE_STORAGE_ACCOUNT }}
-          RAW_AZURE_STORAGE_CONTAINER: ${{ vars.AZURE_STORAGE_CONTAINER }}
-          RAW_CDN_BASE_URL: ${{ vars.CDN_BASE_URL }}
+      - name: Validate deployment target
         run: |
           set -euo pipefail
-          # Production must ship code that has landed on the default branch.
+          # Production must ship code that has completed the dev -> main path.
           if [ "$DEPLOY_TARGET" = "widget-cdn-production" ] \
-            && [ "$GITHUB_REF_NAME" != "${{ github.event.repository.default_branch }}" ]; then
-            echo "::error::Refusing to deploy '$GITHUB_REF_NAME' to production — dispatch from '${{ github.event.repository.default_branch }}'."
+            && [ "$GITHUB_REF_NAME" != "main" ]; then
+            echo "::error::Refusing to deploy '$GITHUB_REF_NAME' to production — dispatch from 'main'."
             exit 1
           fi
-          bash .github/scripts/resolve-widget-cdn-env.sh
 
-      - uses: pnpm/action-setup@v6
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: 20
           cache: pnpm
@@ -111,11 +102,95 @@ jobs:
           pnpm --filter @layerswap/widget-react check:types
 
       - name: Compute build metadata
+        id: metadata
         run: |
-          echo "LAYERSWAP_GIT_SHA=${GITHUB_SHA}" >> "$GITHUB_ENV"
-          echo "LAYERSWAP_BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
+          BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
           BUILD_ID=$(node --input-type=module -e "import { resolveBuildIdentity } from './apps/widget-cdn/scripts/build-id.mjs'; process.stdout.write(resolveBuildIdentity('./apps/widget-cdn').buildId)")
+          echo "build-time=${BUILD_TIME}" >> "$GITHUB_OUTPUT"
+          echo "build-id=${BUILD_ID}" >> "$GITHUB_OUTPUT"
+          echo "LAYERSWAP_GIT_SHA=${GITHUB_SHA}" >> "$GITHUB_ENV"
+          echo "LAYERSWAP_BUILD_TIME=${BUILD_TIME}" >> "$GITHUB_ENV"
           echo "LAYERSWAP_BUILD_ID=${BUILD_ID}" >> "$GITHUB_ENV"
+
+      # Build before approval so reviewers gate a concrete release candidate.
+      # It remains unsigned: the signing key is only exposed to the protected
+      # deploy job after approval.
+      - name: Build unsigned release candidate
+        working-directory: apps/widget-cdn
+        run: pnpm build
+
+      - name: Upload release candidate
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: widget-cdn-${{ steps.metadata.outputs.build-id }}
+          path: apps/widget-cdn/dist
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Summary
+        run: |
+          {
+            echo "## widget-cdn release candidate"
+            echo ""
+            echo "- Target: \`${DEPLOY_TARGET}\`"
+            echo "- Build id: \`${LAYERSWAP_BUILD_ID}\`"
+            echo "- Commit: \`${GITHUB_SHA}\`"
+            echo ""
+            echo "Build and tests passed. Approve the protected deployment environment to publish this candidate."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # This is the approval boundary. Configure required reviewers for both
+    # environments in Settings → Environments; no signing or Azure access is
+    # possible before this job is approved.
+    environment: ${{ inputs.environment || 'widget-cdn-azure-sandbox' }}
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      DEPLOY_TARGET: ${{ inputs.environment || 'widget-cdn-azure-sandbox' }}
+      LAYERSWAP_PROMOTE: ${{ github.event_name != 'workflow_dispatch' || inputs.promote != false }}
+      LAYERSWAP_GIT_SHA: ${{ github.sha }}
+      LAYERSWAP_BUILD_TIME: ${{ needs.build.outputs.build-time }}
+      LAYERSWAP_BUILD_ID: ${{ needs.build.outputs.build-id }}
+
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Resolve deployment target
+        env:
+          RAW_AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+          RAW_AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+          RAW_AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          RAW_AZURE_STORAGE_ACCOUNT: ${{ vars.AZURE_STORAGE_ACCOUNT }}
+          RAW_AZURE_STORAGE_CONTAINER: ${{ vars.AZURE_STORAGE_CONTAINER }}
+          RAW_CDN_BASE_URL: ${{ vars.CDN_BASE_URL }}
+        run: bash .github/scripts/resolve-widget-cdn-env.sh
+
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared widget protocol
+        run: pnpm --filter @layerswap/widget-types build
+
+      - name: Download approved release candidate
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: widget-cdn-${{ needs.build.outputs.build-id }}
+          path: apps/widget-cdn/dist
 
       # The signing key is the target environment's own secret. Rotating a key
       # during a normal deploy would break every existing installation pinned
@@ -134,16 +209,16 @@ jobs:
           printf '%s' "$PRIVATE_KEY_PEM" > "$KEY_PATH"
           echo "key-path=$KEY_PATH" >> "$GITHUB_OUTPUT"
 
-      - name: Build signed artifact
+      - name: Sign and verify approved artifact
         working-directory: apps/widget-cdn
         env:
           LAYERSWAP_PRIVATE_KEY_PEM: ${{ steps.key.outputs.key-path }}
         run: |
-          pnpm build
+          node scripts/build-manifest.mjs
           pnpm verify-manifest
 
       - name: Log in to Azure with OIDC
-        uses: azure/login@v2
+        uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2
         with:
           client-id: ${{ env.AZURE_CLIENT_ID }}
           tenant-id: ${{ env.AZURE_TENANT_ID }}

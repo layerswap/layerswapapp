@@ -125,9 +125,11 @@ new commit gets a fresh control-file prefix.
 
 ### CI deploy
 
-Deploys go through `.github/workflows/widget-cdn-deploy.yml`: build, test,
-sign (key never leaves CI), verify, upload, promote, then smoke-test the
-public channel. The deploy target is a **GitHub environment**:
+Deploys go through `.github/workflows/widget-cdn-deploy.yml` as two jobs. The
+`build` job tests the release and uploads an unsigned release candidate. The
+`deploy` job waits for approval of the target **GitHub environment**, then
+signs that candidate (the key never leaves CI), verifies it, uploads it,
+promotes the channel, and smoke-tests the public endpoint:
 
 - **`widget-cdn-azure-sandbox`** — the personal-account sandbox. A push
   deploys here; its Azure identifiers are hardcoded fallbacks in
@@ -143,8 +145,23 @@ Each environment carries its Azure identity as environment **variables**
 `AZURE_STORAGE_ACCOUNT`, optional `AZURE_STORAGE_CONTAINER` and
 `CDN_BASE_URL` for a custom domain) and its **own** signing keypair as the
 environment **secret** `LAYERSWAP_PRIVATE_KEY_PEM` — the production key must
-never exist at repo level. Add required reviewers to an environment and every
-deploy (and cleanup apply) to it pauses on "Review deployments".
+never exist at repo level.
+
+Approval protection is required configuration; workflow YAML can reference an
+environment but cannot define its reviewers. A repo admin must configure both
+deployment environments in **Settings → Environments**:
+
+1. Open `widget-cdn-azure-sandbox`, add one or more **Required reviewers**, and
+   enable **Prevent self-review** if the deploy initiator must not approve it.
+2. Repeat for `widget-cdn-production` with the production approver group.
+3. Keep the Azure variables and `LAYERSWAP_PRIVATE_KEY_PEM` scoped to the
+   environment, not the repository. This ensures they are unavailable until
+   the approval is granted.
+
+With those protection rules enabled, every CDN deploy pauses at the `deploy`
+job with "Review deployments". The job cannot sign a manifest, request an
+Azure OIDC token, or write to Blob Storage before approval. Cleanup `apply`
+jobs use the same gate.
 
 ### Blob cache and retention policy
 
@@ -207,6 +224,10 @@ in Settings → Environments → `widget-cdn-azure-sandbox`.
 | variable | `AZURE_STORAGE_ACCOUNT` | Target storage account. |
 | variable | `AZURE_STORAGE_CONTAINER` | Optional; default `widget-cdn`. |
 | variable | `CDN_BASE_URL` | Optional; custom domain / Front Door origin for smoke tests. Defaults to the Blob endpoint. |
+
+Each environment must also have a **Required reviewers** deployment protection
+rule. This rule is what enforces approval; creating an unprotected environment
+with the same name is not sufficient.
 
 Azure authentication uses OIDC federation (`azure/login`) — no storage keys or
 connection strings are stored as secrets.
