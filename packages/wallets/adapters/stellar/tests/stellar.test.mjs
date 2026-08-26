@@ -28,6 +28,7 @@ import {
     createUnfundedStellarBalances,
     resolveStellarBalanceAmount,
 } from '../dist/esm/stellarBalances.js'
+import { toStellarConnector } from '../dist/esm/service/stellarConnector.js'
 
 const sourceKey = Keypair.random()
 const receiverKey = Keypair.random()
@@ -278,4 +279,48 @@ test('maps spendable Horizon balances like the backend', () => {
     assert.deepEqual(unfunded.map(balance => balance.amount), [0, 0])
     assert.ok(unfunded.every(balance => balance.error === undefined))
     assert.equal(baseUnitsToNumber(100n, 7), 0.00001)
+})
+
+test('marks web-based Stellar wallets as loadable instead of installed', () => {
+    const connectors = [
+        {
+            id: 'albedo',
+            name: 'Albedo',
+            type: 'HOT_WALLET',
+            isAvailable: true,
+            isPlatformWrapper: false,
+            icon: 'albedo.png',
+            url: 'https://albedo.link/',
+        },
+        {
+            id: 'xbull',
+            name: 'xBull',
+            type: 'HOT_WALLET',
+            isAvailable: true,
+            isPlatformWrapper: false,
+            icon: 'xbull.png',
+            url: 'https://xbull.app',
+        },
+        {
+            id: 'freighter',
+            name: 'Freighter',
+            type: 'HOT_WALLET',
+            isAvailable: true,
+            isPlatformWrapper: false,
+            icon: 'freighter.png',
+            url: 'https://freighter.app',
+        },
+    ].map(toStellarConnector)
+    const albedo = connectors.find(connector => connector.id === 'albedo')
+    const xbull = connectors.find(connector => connector.id === 'xbull')
+    const freighter = connectors.find(connector => connector.id === 'freighter')
+
+    assert.equal(albedo?.type, 'injected')
+    assert.equal(albedo?.isLoadable, true)
+    assert.equal(albedo?.extensionNotFound, false)
+    assert.equal(xbull?.type, 'injected')
+    assert.equal(xbull?.isLoadable, true)
+    assert.equal(xbull?.extensionNotFound, false)
+    assert.equal(freighter?.type, 'injected')
+    assert.equal(freighter?.isLoadable, false)
 })

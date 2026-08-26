@@ -4,6 +4,7 @@ import { walletIconResolver, type AppNetworkAdapter } from '@layerswap/wallet-co
 import { id as PROVIDER_ID, name as PROVIDER_NAME } from '../constants'
 import { stellarKitManager } from './stellarKitManager'
 import { stellarStore, type StellarWalletSnapshot } from './stellarStore'
+import { toStellarConnector } from './stellarConnector'
 
 export class StellarConnectionService<Network> implements WalletConnectionService<never, Network> {
     private networks: Network[] = []
@@ -19,18 +20,7 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
     }
 
     getAvailableConnectors(): InternalConnector[] {
-        return stellarStore.getState().wallets.map(wallet => {
-            const isUnavailable = !wallet.isAvailable && !wallet.isPlatformWrapper
-            return {
-                id: wallet.id,
-                name: wallet.name,
-                icon: wallet.icon,
-                type: isUnavailable ? 'other' : 'injected',
-                installUrl: wallet.url,
-                extensionNotFound: isUnavailable,
-                providerName: PROVIDER_NAME,
-            }
-        })
+        return stellarStore.getState().wallets.map(toStellarConnector)
     }
 
     getConnectedWallets(): Wallet[] {
