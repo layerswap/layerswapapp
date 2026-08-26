@@ -1,15 +1,58 @@
-import type { InternalConnector, Wallet } from '@layerswap/widget-types'
-import type { WalletConnectionProvider, WalletConnectionService } from '@layerswap/wallet-core/types'
-import { walletIconResolver, type AppNetworkAdapter } from '@layerswap/wallet-core'
+import { NetworkType, type InternalConnector, type Wallet } from '@layerswap/widget-types'
+import type {
+    RequestAdditionalConnectorsParams,
+    RequestAdditionalConnectorsResult,
+    WalletConnectionProvider,
+    WalletConnectionService,
+    WalletModalConnector,
+} from '@layerswap/wallet-core/types'
+import {
+    buildDeepLink,
+    clearPendingDynamicWcMetadata,
+    createRegistryConnector,
+    getDynamicWcMetadata,
+    getPendingDynamicWcMetadata,
+    isWalletConnectRegistryConnector,
+    setDynamicWcMetadata,
+    setPendingMetadataForRegistry,
+    subscribeDisplayUri,
+    walletIconResolver,
+    type AppNetworkAdapter,
+    type WalletConnectWalletBase,
+} from '@layerswap/wallet-core'
 import { id as PROVIDER_ID, name as PROVIDER_NAME } from '../constants'
 import { stellarKitManager } from './stellarKitManager'
 import { stellarStore, type StellarWalletSnapshot } from './stellarStore'
 import { toStellarConnector } from './stellarConnector'
 
-export class StellarConnectionService<Network> implements WalletConnectionService<never, Network> {
+type RegistryRequestFn = (params?: RequestAdditionalConnectorsParams) => Promise<{
+    connectors: WalletConnectWalletBase[]
+    nextPage: number | null
+    totalCount: number
+}>
+
+type RuntimeDeps = {
+    setSelectedConnector?: (connector: WalletModalConnector) => void
+    getSelectedConnector?: () => WalletModalConnector | undefined
+    addRecentConnector?: (connector: InternalConnector) => void
+    requestRegistryConnectors?: RegistryRequestFn
+    registryConnectors?: readonly WalletConnectWalletBase[]
+    recentConnectors?: readonly InternalConnector[]
+    isMobilePlatform?: boolean
+}
+
+type StellarKitConnectionManager = Pick<
+    typeof stellarKitManager,
+    'connect' | 'disconnect' | 'onDisplayUri'
+>
+
+export class StellarConnectionService<Network> implements WalletConnectionService<RuntimeDeps, Network> {
     private networks: Network[] = []
     private networkAdapter: AppNetworkAdapter<Network> | undefined
     private networksKey = ''
+    private deps: RuntimeDeps = {}
+
+    constructor(private readonly kitManager: StellarKitConnectionManager = stellarKitManager) {}
 
     setNetworks(networks: Network[], networkAdapter: AppNetworkAdapter<Network>): void {
         const key = networks.map(network => networkAdapter.getId(network)).join('|')
@@ -19,8 +62,22 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
         this.networksKey = key
     }
 
+    configure(deps: RuntimeDeps): void {
+        this.deps = { ...this.deps, ...deps }
+    }
+
     getAvailableConnectors(): InternalConnector[] {
-        return stellarStore.getState().wallets.map(toStellarConnector)
+        return [
+            ...stellarStore.getState().wallets.map(toStellarConnector),
+            ...(this.deps.recentConnectors ?? []),
+        ]
+    }
+
+    getAdditionalConnectors(): InternalConnector[] {
+        const isMobilePlatform = this.deps.isMobilePlatform ?? false
+        return (this.deps.registryConnectors ?? []).map(wallet =>
+            createRegistryConnector(wallet, isMobilePlatform, PROVIDER_NAME),
+        )
     }
 
     getConnectedWallets(): Wallet[] {
@@ -31,15 +88,86 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
         return [this.resolveWallet(snapshot, activeAddress)]
     }
 
-    async connectWallet({ connector }: { connector: InternalConnector }): Promise<Wallet | undefined> {
-        const wallet = stellarStore.getState().wallets.find(item => item.id === connector.id)
+    async connectWallet({ connector }: { connector: WalletModalConnector }): Promise<Wallet | undefined> {
+        const wallets = stellarStore.getState().wallets
+        const registryConnector = isWalletConnectRegistryConnector(connector) ? connector : undefined
+        const wallet = registryConnector
+            ? wallets.find(item => item.type === 'BRIDGE_WALLET')
+            : wallets.find(item => item.id === connector.id)
         if (!wallet) throw new Error('Stellar wallet connector not found')
-        const { address } = await stellarKitManager.connect(wallet.id)
-        return this.resolveWallet(wallet, address)
+
+        const isWalletConnect = wallet.type === 'BRIDGE_WALLET'
+        const isMobilePlatform = this.deps.isMobilePlatform ?? false
+        const mobile = registryConnector?.mobile
+        const deepLink = mobile?.native || mobile?.universal || undefined
+        const resolveURI = registryConnector && mobile
+            ? (uri: string) => buildDeepLink({ id: registryConnector.id, mobile }, uri)
+            : undefined
+        let unsubscribeDisplayUri: (() => void) | undefined
+
+        const setSelectedConnectorIfCurrent = (next: WalletModalConnector) => {
+            if (!this.deps.getSelectedConnector) {
+                this.deps.setSelectedConnector?.(next)
+                return
+            }
+            const current = this.deps.getSelectedConnector()
+            if (current?.id === connector.id) this.deps.setSelectedConnector?.(next)
+        }
+
+        try {
+            if (isWalletConnect) {
+                setPendingMetadataForRegistry(
+                    PROVIDER_ID,
+                    registryConnector ? { ...registryConnector, deepLink } : undefined,
+                )
+                const wantsQrModal = !isMobilePlatform || !resolveURI
+                setSelectedConnectorIfCurrent(wantsQrModal
+                    ? { ...connector, qr: { state: 'loading', value: undefined }, showQrCode: true }
+                    : connector)
+                unsubscribeDisplayUri = subscribeDisplayUri({
+                    source: this.kitManager,
+                    resolveURI,
+                    isMobilePlatform,
+                    onQr: qr => setSelectedConnectorIfCurrent({ ...connector, qr, showQrCode: true }),
+                })
+                if (registryConnector) this.deps.addRecentConnector?.(registryConnector)
+            }
+
+            const { address } = await this.kitManager.connect(wallet.id)
+            if (registryConnector) {
+                setDynamicWcMetadata(PROVIDER_ID, address, {
+                    name: registryConnector.name,
+                    icon: registryConnector.icon || '',
+                    id: registryConnector.id,
+                    deepLink,
+                })
+            }
+            return this.resolveWallet(wallet, address)
+        } finally {
+            unsubscribeDisplayUri?.()
+            if (isWalletConnect) clearPendingDynamicWcMetadata(PROVIDER_ID)
+        }
     }
 
     async disconnectWallets(): Promise<void> {
-        await stellarKitManager.disconnect()
+        await this.kitManager.disconnect()
+    }
+
+    async requestAdditionalConnectors(
+        params: RequestAdditionalConnectorsParams = {},
+    ): Promise<RequestAdditionalConnectorsResult> {
+        if (!this.deps.requestRegistryConnectors || !this.hasWalletConnectTransport()) {
+            return { connectors: [], nextPage: null, totalCount: 0 }
+        }
+        const result = await this.deps.requestRegistryConnectors(params)
+        const isMobilePlatform = this.deps.isMobilePlatform ?? false
+        return {
+            connectors: result.connectors.map(wallet =>
+                createRegistryConnector(wallet, isMobilePlatform, PROVIDER_NAME),
+            ),
+            nextPage: result.nextPage,
+            totalCount: result.totalCount,
+        }
     }
 
     buildProvider(): WalletConnectionProvider {
@@ -50,7 +178,13 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
         return {
             connectWallet: this.connectWallet.bind(this),
             disconnectWallets: this.disconnectWallets.bind(this),
+            requestAdditionalConnectors: this.hasWalletConnectTransport()
+                ? this.requestAdditionalConnectors.bind(this)
+                : undefined,
             availableConnectors: this.getAvailableConnectors(),
+            additionalConnectors: this.hasWalletConnectTransport()
+                ? this.getAdditionalConnectors()
+                : undefined,
             connectedWallets,
             activeWallet,
             autofillSupportedNetworks: supportedNetworks,
@@ -58,6 +192,11 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
             asSourceSupportedNetworks: supportedNetworks,
             name: PROVIDER_NAME,
             id: PROVIDER_ID,
+            capabilities: this.hasWalletConnectTransport() ? {
+                walletConnectRegistry: {
+                    networkTypes: [NetworkType.Stellar],
+                },
+            } : undefined,
             providerIcon: networkLogo,
             ready: stellarStore.getState().ready,
         }
@@ -65,20 +204,32 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
 
     private resolveWallet(snapshot: StellarWalletSnapshot, address: string): Wallet {
         const supportedNetworks = this.getSupportedNetworks()
+        const isWalletConnect = snapshot.type === 'BRIDGE_WALLET'
+        const dynamicMetadata = isWalletConnect
+            ? getDynamicWcMetadata(PROVIDER_ID, address) || getPendingDynamicWcMetadata(PROVIDER_ID)
+            : null
+        const displayName = dynamicMetadata?.name || snapshot.name
+        const walletId = dynamicMetadata?.id || snapshot.id
+        const icon = dynamicMetadata?.icon || snapshot.icon
         return {
-            id: snapshot.id,
+            id: walletId,
             address,
             addresses: [address],
-            displayName: `${snapshot.name} - Stellar`,
+            displayName: `${displayName} - Stellar`,
             providerName: PROVIDER_NAME,
             isActive: true,
-            icon: walletIconResolver(address, snapshot.icon),
+            icon: walletIconResolver(address, icon),
             networkIcon: this.getNetworkLogo(),
             disconnect: () => this.disconnectWallets(),
             autofillSupportedNetworks: supportedNetworks,
             withdrawalSupportedNetworks: supportedNetworks,
             asSourceSupportedNetworks: supportedNetworks,
+            metadata: { deepLink: dynamicMetadata?.deepLink },
         }
+    }
+
+    private hasWalletConnectTransport(): boolean {
+        return stellarStore.getState().wallets.some(wallet => wallet.type === 'BRIDGE_WALLET')
     }
 
     private getNetworkLogo(): string | undefined {

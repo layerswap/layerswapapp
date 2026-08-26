@@ -43,7 +43,9 @@ export function createStellarProvider<Network = NetworkWithTokens>(
     }
     const createConnection = (props: WalletConnectionProviderProps<Network>): WalletConnectionStore<Network> => {
         initialize()
-        return customConnection ? customConnection(props) : createStellarConnection(props)
+        return customConnection
+            ? customConnection(props)
+            : createStellarConnection(props, { walletConnectProjectId: walletConnect?.projectId })
     }
 
     const defaultBalanceProviders = [

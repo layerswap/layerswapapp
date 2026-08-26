@@ -906,6 +906,9 @@ importers:
       '@stellar/stellar-sdk':
         specifier: 17.0.0
         version: 17.0.0
+      '@walletconnect/sign-client':
+        specifier: 2.23.0
+        version: 2.23.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.11)
     devDependencies:
       '@layerswap/utils':
         specifier: workspace:^

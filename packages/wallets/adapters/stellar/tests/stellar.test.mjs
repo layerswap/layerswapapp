@@ -28,7 +28,13 @@ import {
     createUnfundedStellarBalances,
     resolveStellarBalanceAmount,
 } from '../dist/esm/stellarBalances.js'
+import {
+    StellarWalletConnectChain,
+    StellarWalletConnectModule,
+} from '../dist/esm/service/StellarWalletConnectModule.js'
+import { StellarConnectionService } from '../dist/esm/service/StellarConnectionService.js'
 import { toStellarConnector } from '../dist/esm/service/stellarConnector.js'
+import { stellarStore } from '../dist/esm/service/stellarStore.js'
 
 const sourceKey = Keypair.random()
 const receiverKey = Keypair.random()
@@ -281,7 +287,7 @@ test('maps spendable Horizon balances like the backend', () => {
     assert.equal(baseUnitsToNumber(100n, 7), 0.00001)
 })
 
-test('marks web-based Stellar wallets as loadable instead of installed', () => {
+test('maps web and bridge Stellar wallets without requiring extensions', () => {
     const connectors = [
         {
             id: 'albedo',
@@ -310,10 +316,22 @@ test('marks web-based Stellar wallets as loadable instead of installed', () => {
             icon: 'freighter.png',
             url: 'https://freighter.app',
         },
+        {
+            id: 'wallet_connect',
+            name: 'WalletConnect',
+            type: 'BRIDGE_WALLET',
+            // SignClient initializes asynchronously, so the Kit can report
+            // false during its first supported-wallet refresh.
+            isAvailable: false,
+            isPlatformWrapper: false,
+            icon: 'walletconnect.png',
+            url: 'https://walletconnect.com/',
+        },
     ].map(toStellarConnector)
     const albedo = connectors.find(connector => connector.id === 'albedo')
     const xbull = connectors.find(connector => connector.id === 'xbull')
     const freighter = connectors.find(connector => connector.id === 'freighter')
+    const walletConnect = connectors.find(connector => connector.id === 'wallet_connect')
 
     assert.equal(albedo?.type, 'injected')
     assert.equal(albedo?.isLoadable, true)
@@ -323,4 +341,159 @@ test('marks web-based Stellar wallets as loadable instead of installed', () => {
     assert.equal(xbull?.extensionNotFound, false)
     assert.equal(freighter?.type, 'injected')
     assert.equal(freighter?.isLoadable, false)
+    assert.equal(walletConnect?.type, 'walletConnect')
+    assert.equal(walletConnect?.isLoadable, true)
+    assert.equal(walletConnect?.hasBrowserExtension, false)
+    assert.equal(walletConnect?.extensionNotFound, false)
+})
+
+test('emits the WalletConnect URI and signs Stellar XDR through SignClient', async () => {
+    const session = {
+        topic: 'stellar-session',
+        namespaces: {
+            stellar: {
+                accounts: [`${StellarWalletConnectChain.Testnet}:${sourceKey.publicKey()}`],
+                methods: ['stellar_signXDR'],
+                events: [],
+            },
+        },
+    }
+    const requests = []
+    const proposals = []
+    const listeners = new Map()
+    const client = {
+        session: { values: [] },
+        on: (event, listener) => listeners.set(event, listener),
+        off: (event) => listeners.delete(event),
+        connect: async proposal => {
+            proposals.push(proposal)
+            return {
+                uri: 'wc:stellar-pairing',
+                approval: async () => {
+                    client.session.values = [session]
+                    return session
+                },
+            }
+        },
+        request: async request => {
+            requests.push(request)
+            return { signedXDR: 'signed-stellar-xdr' }
+        },
+        disconnect: async () => {},
+    }
+    const walletConnect = new StellarWalletConnectModule({
+        projectId: 'project-id',
+        name: 'LayerSwap',
+        description: 'LayerSwap',
+        url: 'https://layerswap.io',
+        icons: ['https://layerswap.io/icon.png'],
+    }, async () => client)
+    const uris = []
+    let sessionEnded = false
+    walletConnect.onDisplayUri(uri => uris.push(uri))
+    walletConnect.onSessionDelete(() => { sessionEnded = true })
+
+    const { address } = await walletConnect.getAddress()
+    const signed = await walletConnect.signTransaction('unsigned-stellar-xdr', {
+        networkPassphrase: Networks.TESTNET,
+        address,
+    })
+
+    assert.equal(address, sourceKey.publicKey())
+    assert.deepEqual(uris, ['wc:stellar-pairing'])
+    assert.deepEqual(proposals[0].requiredNamespaces.stellar.chains, [
+        StellarWalletConnectChain.Public,
+        StellarWalletConnectChain.Testnet,
+    ])
+    assert.deepEqual(proposals[0].requiredNamespaces.stellar.methods, ['stellar_signXDR'])
+    assert.deepEqual(requests, [{
+        topic: 'stellar-session',
+        chainId: StellarWalletConnectChain.Testnet,
+        request: {
+            method: 'stellar_signXDR',
+            params: { xdr: 'unsigned-stellar-xdr' },
+        },
+    }])
+    assert.deepEqual(signed, {
+        signedTxXdr: 'signed-stellar-xdr',
+        signerAddress: sourceKey.publicKey(),
+    })
+    await assert.rejects(
+        walletConnect.signTransaction('unsigned-stellar-xdr', {
+            networkPassphrase: Networks.TESTNET,
+            address: receiverKey.publicKey(),
+        }),
+        /selected address/,
+    )
+    assert.deepEqual(await walletConnect.getConnectedAddress(), { address: sourceKey.publicKey() })
+    await walletConnect.getAddress()
+    assert.equal(proposals.length, 2)
+    listeners.get('session_expire')?.({ topic: 'stellar-session' })
+    assert.equal(sessionEnded, true)
+    client.session.values = []
+    await assert.rejects(walletConnect.getConnectedAddress(), /session expired/)
+    assert.equal(proposals.length, 2)
+})
+
+test('routes Stellar registry wallets through the shared QR modal', async () => {
+    const walletConnectSnapshot = {
+        id: 'wallet_connect',
+        name: 'WalletConnect',
+        type: 'BRIDGE_WALLET',
+        isAvailable: true,
+        isPlatformWrapper: false,
+        icon: 'walletconnect.png',
+        url: 'https://walletconnect.com/',
+    }
+    stellarStore.getState().setWallets([walletConnectSnapshot])
+
+    let displayUriListener
+    let selectedConnector = {
+        id: 'freighter-mobile',
+        name: 'Freighter Mobile',
+        icon: 'freighter-mobile.png',
+        type: 'walletConnect',
+        source: 'registry',
+        providerName: 'Stellar',
+        mobile: { native: 'freighter://', universal: 'https://freighter.app' },
+    }
+    const qrStates = []
+    const recentConnectors = []
+    const manager = {
+        onDisplayUri: listener => {
+            displayUriListener = listener
+            return () => { displayUriListener = undefined }
+        },
+        connect: async walletId => {
+            assert.equal(walletId, 'wallet_connect')
+            displayUriListener?.('wc:stellar-pairing')
+            return { address: sourceKey.publicKey() }
+        },
+        disconnect: async () => {},
+    }
+    const service = new StellarConnectionService(manager)
+    service.configure({
+        getSelectedConnector: () => selectedConnector,
+        setSelectedConnector: connector => {
+            selectedConnector = connector
+            qrStates.push(connector.qr)
+        },
+        addRecentConnector: connector => recentConnectors.push(connector),
+        isMobilePlatform: false,
+    })
+
+    try {
+        const connected = await service.connectWallet({ connector: selectedConnector })
+
+        assert.deepEqual(qrStates, [
+            { state: 'loading', value: undefined },
+            { state: 'fetched', value: 'wc:stellar-pairing', deepLink: 'wc:stellar-pairing' },
+        ])
+        assert.equal(connected.id, 'freighter-mobile')
+        assert.equal(connected.displayName, 'Freighter Mobile - Stellar')
+        assert.equal(recentConnectors[0].id, 'freighter-mobile')
+    } finally {
+        stellarStore.getState().setWallets([])
+        stellarStore.getState().setActive(undefined, undefined)
+    }
 })

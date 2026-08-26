@@ -3,6 +3,10 @@ import { ActionMessageType } from '@layerswap/widget-types'
 import { isValidStellarAddress } from '@layerswap/utils'
 import type { ISupportedWallet } from '@creit.tech/stellar-wallets-kit/types'
 import { STELLAR_SESSION_KEY } from '../constants'
+import {
+    STELLAR_WALLET_CONNECT_ID,
+    StellarWalletConnectModule,
+} from './StellarWalletConnectModule'
 import { stellarStore, type StellarWalletSnapshot } from './stellarStore'
 
 type KitSdkModule = typeof import('@creit.tech/stellar-wallets-kit/sdk')
@@ -72,6 +76,7 @@ class StellarKitManager {
     private initPromise: Promise<void> | undefined
     private detachers: Array<() => void> = []
     private selectedWalletId: string | undefined
+    private walletConnectModule: StellarWalletConnectModule | undefined
     private generation = 0
 
     init(walletConnect?: WalletConnectConfig): Promise<void> {
@@ -92,35 +97,18 @@ class StellarKitManager {
         const kitPromise = import('@creit.tech/stellar-wallets-kit/sdk')
         const kitTypesPromise = import('@creit.tech/stellar-wallets-kit/types')
         const kitUtilsPromise = import('@creit.tech/stellar-wallets-kit/modules/utils')
-        const walletConnectPromise = walletConnect?.projectId
-            ? import('@creit.tech/stellar-wallets-kit/modules/wallet-connect')
-            : Promise.resolve(undefined)
-        const [kitModule, kitTypesModule, kitUtilsModule, walletConnectModule] = await Promise.all([
+        const [kitModule, kitTypesModule, kitUtilsModule] = await Promise.all([
             kitPromise,
             kitTypesPromise,
             kitUtilsPromise,
-            walletConnectPromise,
         ])
         if (generation !== this.generation) return
 
         const modules = kitUtilsModule.defaultModules()
-        if (walletConnect?.projectId && walletConnectModule) {
-            const alreadyIncluded = modules.some(module => module.productId === walletConnectModule.WALLET_CONNECT_ID)
-            if (!alreadyIncluded) {
-                modules.push(new walletConnectModule.WalletConnectModule({
-                    projectId: walletConnect.projectId,
-                    metadata: {
-                        name: walletConnect.name,
-                        description: walletConnect.description,
-                        url: walletConnect.url,
-                        icons: walletConnect.icons,
-                    },
-                    allowedChains: [
-                        walletConnectModule.WalletConnectTargetChain.PUBLIC,
-                        walletConnectModule.WalletConnectTargetChain.TESTNET,
-                    ],
-                }))
-            }
+        if (walletConnect?.projectId) {
+            this.walletConnectModule = new StellarWalletConnectModule(walletConnect)
+            modules.push(this.walletConnectModule)
+            this.detachers.push(this.walletConnectModule.onSessionDelete(() => this.clearSession()))
         }
 
         const persisted = readPersistedSession()
@@ -185,6 +173,14 @@ class StellarKitManager {
         }
     }
 
+    onDisplayUri(listener: (uri: string) => void): () => void {
+        return this.walletConnectModule?.onDisplayUri(listener) ?? (() => {})
+    }
+
+    warmUpWalletConnect(): void {
+        this.walletConnectModule?.warmup()
+    }
+
     async revalidate(expectedAddress: string, networkPassphrase: string): Promise<void> {
         await this.requireReady()
         const kit = this.requireKit()
@@ -206,7 +202,9 @@ class StellarKitManager {
             // an explicit SEP-43 network passphrase.
         }
 
-        const { address } = await kit.fetchAddress()
+        const { address } = activeWalletId === STELLAR_WALLET_CONNECT_ID && this.walletConnectModule
+            ? await this.walletConnectModule.getConnectedAddress(expectedAddress)
+            : await kit.fetchAddress()
         this.assertSourceAddress(address)
         if (address !== expectedAddress) {
             throw walletError(ActionMessageType.WaletMismatch, 'The connected Stellar account changed')
@@ -246,6 +244,8 @@ class StellarKitManager {
     dispose(): void {
         this.generation += 1
         for (const detach of this.detachers.splice(0)) detach()
+        this.walletConnectModule?.dispose()
+        this.walletConnectModule = undefined
         this.kit = undefined
         this.networks = undefined
         this.initPromise = undefined

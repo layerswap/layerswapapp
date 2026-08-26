@@ -1,4 +1,4 @@
-import type { WalletConnectConfig } from '@layerswap/widget-types'
+import type { NetworkType, WalletConnectConfig } from '@layerswap/widget-types'
 import type { WalletProviderDescriptor } from '@layerswap/wallet-core/types'
 import { defineWalletDescriptor, type DescriptorNetworkOptions } from './defineWalletDescriptor'
 import { readStorageJson } from './persistedSession'
@@ -19,6 +19,11 @@ export function createStellarDescriptor(
     return defineWalletDescriptor({
         id: 'stellar',
         name: 'Stellar',
+        capabilities: walletConnect?.projectId ? {
+            walletConnectRegistry: {
+                networkTypes: ['stellar' as NetworkType],
+            },
+        } : undefined,
         autofillSupportedNetworks: supportedNetworks,
         withdrawalSupportedNetworks: supportedNetworks,
         asSourceSupportedNetworks: supportedNetworks,
