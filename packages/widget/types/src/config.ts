@@ -16,6 +16,7 @@ export type WalletProviderId =
   | 'ton'
   | 'solana'
   | 'tron'
+  | 'stellar'
   | 'imtblPassport';
 
 /**

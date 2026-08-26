@@ -7,7 +7,7 @@ import { ApiResponse } from '@/Models/ApiResponse';
 import { Partner } from '@/Models/Partner';
 import { ApiError } from '@/Models/ApiError';
 import useWallet from '@/hooks/useWallet';
-import { Network } from '@layerswap/widget-types';
+import { Network, NetworkType } from '@layerswap/widget-types';
 import { useSettingsState } from './settings';
 import { QuoteError, transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { useRecentNetworksStore } from '@/stores/recentRoutesStore';
@@ -321,7 +321,8 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             use_deposit_address: depositMethod === 'wallet' ? false : true,
             source_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
             refund_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
-            ...(useGasless && { use_gasless: true, use_depository: true }),
+            ...(useGasless && { use_gasless: true }),
+            ...((useGasless || from.type === NetworkType.Stellar) && { use_depository: true }),
         }
 
         if (!isExtendedBridge && depositMethod === 'wallet' && slippage && slippage > 0 && slippage < 0.8) {

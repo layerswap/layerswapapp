@@ -1,8 +1,8 @@
 'use client';
 import React, { Context, FC, useEffect, useState } from 'react'
+import { isInIframe } from '@layerswap/utils/common'
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
 import { InitialSettings } from '../Models/InitialSettings';
-import inIframe from '@/components/utils/inIframe';
 
 export interface SettingsContextValue {
   settings: LayerSwapAppSettings;
@@ -25,7 +25,7 @@ export const SettingsProvider: FC<{
 
   const [embedded, setEmbedded] = useState<boolean>(false)
   useEffect(() => {
-    setEmbedded(inIframe())
+    setEmbedded(isInIframe())
   }, [])
 
   return (

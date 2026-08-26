@@ -1,7 +1,7 @@
 {
-  "name": "@layerswap/utils",
+  "name": "@layerswap/wallet-stellar",
   "version": "2.0.0-next.0",
-  "description": "Shared internal utilities for Layerswap Widget (address validation & formatting)",
+  "description": "Stellar Wallet Provider for Layerswap Widget",
   "type": "module",
   "main": "dist/esm/index.js",
   "types": "dist/types/index.d.ts",
@@ -10,14 +10,6 @@
     ".": {
       "types": "./dist/types/index.d.ts",
       "default": "./dist/esm/index.js"
-    },
-    "./common": {
-      "types": "./dist/types/common.d.ts",
-      "default": "./dist/esm/common.js"
-    },
-    "./known-ids": {
-      "types": "./dist/types/knownIds.d.ts",
-      "default": "./dist/esm/knownIds.js"
     }
   },
   "sideEffects": false,
@@ -29,7 +21,7 @@
     "build": "pnpm run clean && pnpm run build:esm+types",
     "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm && tsc-alias -p tsconfig.json --outDir ./dist/types",
     "check:types": "tsc --noEmit",
-    "test": "pnpm run build:esm+types && node --test tests/*.test.mjs",
+    "test": "pnpm run build:esm+types && node --no-warnings --experimental-loader ./tests/extension-loader.mjs --test tests/*.test.mjs",
     "clean": "rimraf dist tsconfig.tsbuildinfo"
   },
   "author": "Layerswap",
@@ -37,34 +29,34 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/layerswap/layerswapapp.git",
-    "directory": "packages/utils"
+    "directory": "packages/wallets/adapters/stellar"
   },
   "keywords": [
     "layerswap",
-    "utils",
-    "address"
+    "stellar",
+    "wallet-provider"
   ],
   "license": "MIT",
-  "dependencies": {
+  "peerDependencies": {
+    "@layerswap/wallet-core": "workspace:^",
+    "@layerswap/utils": "workspace:^",
     "@layerswap/widget-types": "workspace:^",
-    "bitcoin-address-validation": "^3.0.0",
-    "bn.js": "^5.2.3",
-    "bs58": "^6.0.0",
-    "csstype": "^3.2.3",
-    "js-sha3": "^0.8.0"
+    "zustand": "catalog:"
+  },
+  "dependencies": {
+    "@creit.tech/stellar-wallets-kit": "2.5.0",
+    "@stellar/stellar-sdk": "17.0.0"
   },
   "devDependencies": {
+    "@layerswap/wallet-core": "workspace:^",
+    "@layerswap/utils": "workspace:^",
+    "@layerswap/widget-types": "workspace:^",
     "rimraf": "catalog:",
     "tsc-alias": "^1.8.16",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "zustand": "catalog:"
   },
   "engines": {
     "node": ">=22"
-  },
-  "directories": {
-    "lib": "lib"
-  },
-  "bugs": {
-    "url": "https://github.com/layerswap/layerswapapp/issues"
   }
 }

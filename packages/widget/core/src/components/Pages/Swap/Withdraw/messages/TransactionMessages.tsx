@@ -45,6 +45,13 @@ const TransactionFailedMessage: FC = () => {
         details={`Transfer failed or terminated`} />
 }
 
+const TransactionExpiredMessage: FC = () => {
+    return <WalletMessage
+        status="error"
+        header='Transfer details expired'
+        details='Refresh the transfer details and try again' />
+}
+
 const WalletMismatchMessage: FC<{ address: string; network: { name: string } }> = ({ address, network }) => {
     return <WalletMessage
         status="error"
@@ -77,6 +84,7 @@ export const ActionMessages = {
     TransactionRejectedMessage,
     WalletMismatchMessage,
     TransactionFailedMessage,
+    TransactionExpiredMessage,
     SwapErrorMessage,
     GaslessUnavailableMessage,
     UnexpectedErrorMessage,
