@@ -186,7 +186,8 @@ After local delivery works, `.github/workflows/widget-cdn-deploy.yml` deploys
 merges to `dev` to the personal account through OIDC. Its automatic target is
 the `widget-cdn-azure-sandbox` GitHub environment; the sandbox identifiers are
 inline fallbacks, so only the `LAYERSWAP_PRIVATE_KEY_PEM` signing secret is
-required. Production is a manual dispatch from `main` to the
+required alongside the `LAYERSWAP_MANIFEST_PUBLIC_KEY_SPKI_B64` public-key
+variable. Production is a manual dispatch from `main` to the
 `widget-cdn-production` environment.
 
 In Azure Portal:
@@ -215,7 +216,7 @@ In GitHub, a repository administrator must then:
    not approve it.
 3. Add `LAYERSWAP_PRIVATE_KEY_PEM` as an environment secret and add the Azure
    identifiers described in the [CI deploy configuration](./README.md#ci-deploy)
-   as environment variables.
+   plus `LAYERSWAP_MANIFEST_PUBLIC_KEY_SPKI_B64` as environment variables.
 4. Repeat for `widget-cdn-production`, using the production approvers,
    identity, storage account, and signing key.
 

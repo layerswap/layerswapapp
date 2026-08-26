@@ -92,12 +92,12 @@ export type Manifest = {
  * Rotating this key requires a version bump of `@layerswap/widget-js`;
  * integrators pin it transitively via npm SRI.
  *
- * Current sandbox key: rotated 2026-08 (pre-KMS). A future production
+ * Current production key: provisioned 2026-08 (pre-KMS). A future production
  * KMS/HSM migration must
  * update this constant plus the GitHub secret `LAYERSWAP_PRIVATE_KEY_PEM`.
  */
 export const MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64 =
-    'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEY9/zg6ZUU8ZVOAbuS4qqreIR6/U8BDqY+8giwi8xFYl5dllwzE0x//l2iVRgo3fr6nRpplm9RUYRKcXaiJC/Lg==';
+    'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE0oX4imbQj/eWYNcLmBb7sIo5EWQSL8fGLN9MxGPgKc8MuOBYQcBXwQ7KiC2+dEBUP8Z3w00sNNzO0i9839qXZQ==';
 
 /**
  * Canonical Layerswap CDN manifest URL — the fixed source the loaders always
@@ -116,7 +116,7 @@ export const MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64 =
  * a public loader feature.
  */
 export const WIDGET_MANIFEST_URL =
-    `https://layerswapcdntest.blob.core.windows.net/widget-cdn/v${WIDGET_PROTOCOL_MAJOR}/manifest.json`;
+    `https://cdn.layerswap.io/widget/v${WIDGET_PROTOCOL_MAJOR}/manifest.json`;
 
 const fromB64 = (b64: string): ArrayBuffer => {
     const bin = atob(b64);
