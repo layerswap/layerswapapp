@@ -7,7 +7,8 @@ name: widget-cdn — deploy
 #   variables: AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID,
 #              AZURE_STORAGE_ACCOUNT, AZURE_STORAGE_CONTAINER (optional,
 #              default widget-cdn), CDN_BASE_URL (optional, for a custom
-#              domain / Front Door; defaults to the Blob endpoint)
+#              domain / Front Door; defaults to the Blob endpoint),
+#              LAYERSWAP_MANIFEST_PUBLIC_KEY_SPKI_B64
 #   secrets:   LAYERSWAP_PRIVATE_KEY_PEM (each environment gets its OWN
 #              keypair — the production key must never exist at repo level)
 #
@@ -214,6 +215,7 @@ jobs:
         working-directory: apps/widget-cdn
         env:
           LAYERSWAP_PRIVATE_KEY_PEM: ${{ steps.key.outputs.key-path }}
+          LAYERSWAP_MANIFEST_PUBLIC_KEY_SPKI_B64: ${{ vars.LAYERSWAP_MANIFEST_PUBLIC_KEY_SPKI_B64 }}
         run: |
           node scripts/build-manifest.mjs
           pnpm verify-manifest

@@ -143,9 +143,11 @@ promotes the channel, and smoke-tests the public endpoint:
 Each environment carries its Azure identity as environment **variables**
 (`AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`,
 `AZURE_STORAGE_ACCOUNT`, optional `AZURE_STORAGE_CONTAINER` and
-`CDN_BASE_URL` for a custom domain) and its **own** signing keypair as the
-environment **secret** `LAYERSWAP_PRIVATE_KEY_PEM` — the production key must
-never exist at repo level.
+`CDN_BASE_URL` for a custom domain), its public signing key as
+`LAYERSWAP_MANIFEST_PUBLIC_KEY_SPKI_B64`, and its **own** private signing key
+as the environment **secret** `LAYERSWAP_PRIVATE_KEY_PEM` — the production
+private key must never exist at repo level. Production additionally requires
+the environment public key to match the trust anchor baked into the loader.
 
 Approval protection is required configuration; workflow YAML can reference an
 environment but cannot define its reviewers. A repo admin must configure both
@@ -154,9 +156,9 @@ deployment environments in **Settings → Environments**:
 1. Open `widget-cdn-azure-sandbox`, add one or more **Required reviewers**, and
    enable **Prevent self-review** if the deploy initiator must not approve it.
 2. Repeat for `widget-cdn-production` with the production approver group.
-3. Keep the Azure variables and `LAYERSWAP_PRIVATE_KEY_PEM` scoped to the
-   environment, not the repository. This ensures they are unavailable until
-   the approval is granted.
+3. Keep the Azure variables, public-key variable, and
+   `LAYERSWAP_PRIVATE_KEY_PEM` scoped to the environment, not the repository.
+   This ensures they are unavailable until the approval is granted.
 
 With those protection rules enabled, every CDN deploy pauses at the `deploy`
 job with "Review deployments". The job cannot sign a manifest, request an
@@ -220,6 +222,7 @@ in Settings → Environments → `widget-cdn-azure-sandbox`.
 | Kind | Name | Value |
 |---|---|---|
 | secret | `LAYERSWAP_PRIVATE_KEY_PEM` | ECDSA P-256 private key (PEM), one keypair per environment. The production public half is baked into `packages/widget/js/src/manifest.ts`. |
+| variable | `LAYERSWAP_MANIFEST_PUBLIC_KEY_SPKI_B64` | Base64 SPKI public half of the environment signing key. Production must match the loader trust anchor. |
 | variable | `AZURE_CLIENT_ID` / `AZURE_TENANT_ID` / `AZURE_SUBSCRIPTION_ID` | OIDC-federated identity for `azure/login`. |
 | variable | `AZURE_STORAGE_ACCOUNT` | Target storage account. |
 | variable | `AZURE_STORAGE_CONTAINER` | Optional; default `widget-cdn`. |
@@ -232,6 +235,11 @@ with the same name is not sufficient.
 Azure authentication uses OIDC federation (`azure/login`) — no storage keys or
 connection strings are stored as secrets.
 
+The npm `prepublishOnly` gate also requires
+`LAYERSWAP_MANIFEST_PUBLIC_KEY_SPKI_B64` in the publishing process. It refuses
+to publish unless `WIDGET_MANIFEST_URL` is the production URL and the loader's
+baked-in key exactly matches that production environment value.
+
 ### First-time infrastructure setup
 
 Follow [AZURE_SETUP.md](./AZURE_SETUP.md) (storage account, container, CORS,
@@ -242,9 +250,11 @@ openssl ecparam -name prime256v1 -genkey -noout -out .keys/manifest-private.pem
 openssl ec -in .keys/manifest-private.pem -pubout -outform DER | base64 | tr -d '\n'
 ```
 
-Put the base64 SPKI into `packages/widget/js/src/manifest.ts`
-(`MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64`) and `.keys/manifest-public.b64.txt`,
-and the private PEM into the `LAYERSWAP_PRIVATE_KEY_PEM` secret.
+Put the base64 SPKI into the environment variable
+`LAYERSWAP_MANIFEST_PUBLIC_KEY_SPKI_B64`. For production, put the same value
+into `packages/widget/js/src/manifest.ts`
+(`MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64`). Put the private PEM into the
+environment's `LAYERSWAP_PRIVATE_KEY_PEM` secret.
 
 ### Key rotation
 
