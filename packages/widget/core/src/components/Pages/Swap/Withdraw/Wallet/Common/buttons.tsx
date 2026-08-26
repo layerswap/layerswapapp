@@ -416,9 +416,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         sourceAddress: string,
         previousAction: DepositAction,
     }): Promise<DepositAction[]> => {
-        const maxAttempts = previousAction.step === 'approve_permit2' ? 60 : 10
-
-        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        for (let attempt = 0; attempt < 69; attempt++) {
             if (attempt > 0) await sleep(2000)
             const response = await layerswapApiClient.GetSwapAsync(activeSwapId, sourceAddress)
             if (response?.error) throw response.error
