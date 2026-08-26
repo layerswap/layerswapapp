@@ -1,3 +1,5 @@
+import { WIDGET_PROTOCOL_MAJOR } from '@layerswap/widget-types';
+
 /**
  * Manifest format published at `/<channel>/manifest.json` by the CDN.
  *
@@ -11,12 +13,12 @@
  * of the manifest with `signature` itself set to `null`. See `verifyManifest`.
  */
 export type Manifest = {
-    /** Semver of the build this manifest describes (the `@layerswap/widget` version). */
+    /** Loader/remote compatibility boundary. Must match WIDGET_PROTOCOL_MAJOR. */
+    protocolMajor: number;
+    /** Implementation semver of the `@layerswap/widget` package in this build. */
     version: string;
     /**
-     * Major channel this build belongs to, e.g. `"v1"`. Informational — the
-     * loader fetches whatever manifest URL it's given; this field lets tooling
-     * and humans see which compatibility channel a pinned build came from.
+     * Major protocol channel this build belongs to, e.g. `"v1"`.
      */
     channel?: string;
     /**
@@ -35,7 +37,7 @@ export type Manifest = {
      * ISO-8601 end of the manifest's validity window. Replay protection: a
      * signature and SRI prove authenticity and byte integrity but not
      * freshness — without an enforced expiry, an attacker who can replay
-     * CDN/R2 responses could serve an older valid build indefinitely,
+     * CDN/storage responses could serve an older valid build indefinitely,
      * reviving a fixed vulnerability or bypassing a newer kill switch.
      *
      * Availability policy (explicit, so an outage is never a reason to accept
@@ -52,11 +54,11 @@ export type Manifest = {
     /**
      * Absolute or manifest-relative URL to the remoteEntry.js.
      *
-     * Kept origin-relative (`"./remoteEntry.js"`) so the same signed bytes work
-     * whether the manifest is fetched directly at its immutable version path
-     * (`/1.5.0/manifest.json`) or reached via a rolling-channel redirect
-     * (`/v1/manifest.json` → 302 → `/1.5.0/manifest.json`). The loader resolves
-     * it against the manifest's FINAL (post-redirect) URL — see `resolveSource`.
+     * Production builds use a build-addressed relative URL such as
+     * `"../1.5.0-abc123def456/remoteEntry.js"`. The same signed bytes therefore
+     * work at the immutable path (`/<buildId>/manifest.json`), behind the
+     * existing rolling-channel redirect, or copied directly to
+     * `/v1/manifest.json` by Azure promotion.
      */
     remoteEntry: string;
     /**
@@ -90,12 +92,12 @@ export type Manifest = {
  * Rotating this key requires a version bump of `@layerswap/widget-js`;
  * integrators pin it transitively via npm SRI.
  *
- * Current key: generated 2026-06 (pre-KMS). Before a 1.0 release, regenerate
- * in a KMS/HSM and update this constant plus the GitHub secret
- * `LAYERSWAP_PRIVATE_KEY_PEM`.
+ * Current sandbox key: rotated 2026-08 (pre-KMS). A future production
+ * KMS/HSM migration must
+ * update this constant plus the GitHub secret `LAYERSWAP_PRIVATE_KEY_PEM`.
  */
 export const MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64 =
-    'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAESuHFHbltz/hfcY+DzIrLq7Ixc4efHE8SLZdNg0pZZDHTfdwbqLpGk4461EgNranHLWnVsoAbyQ4IyHIVnRAVKw==';
+    'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEY9/zg6ZUU8ZVOAbuS4qqreIR6/U8BDqY+8giwi8xFYl5dllwzE0x//l2iVRgo3fr6nRpplm9RUYRKcXaiJC/Lg==';
 
 /**
  * Canonical Layerswap CDN manifest URL — the fixed source the loaders always
@@ -103,20 +105,18 @@ export const MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64 =
  * reads it directly. Points at the rolling `v1` channel, so hosts auto-receive
  * forward-compatible widget updates without a redeploy.
  *
- * Currently the Cloudflare Worker's `*.workers.dev` subdomain. When the
- * `cdn.layerswap.io` custom domain is wired in `apps/widget-cdn/worker/
- * wrangler.toml`, update this constant to `https://cdn.layerswap.io/v1/
- * manifest.json` and publish a new `@layerswap/widget-js` — integrators pick
- * up the new origin transitively via npm.
+ * Currently the Azure Blob Storage endpoint. When a custom domain such as
+ * `cdn.layerswap.io` fronts the storage account (e.g. via Azure Front Door),
+ * update this constant to `https://cdn.layerswap.io/v1/manifest.json` and
+ * publish a new `@layerswap/widget-js` — integrators pick up the new origin
+ * transitively via npm.
  *
- * The major (`/v1/`) is pinned to this package's major version: when Layerswap
- * cuts a breaking `/v2/`, it ships a new loader major whose default points
- * there. There is no per-call override — pinning an exact build means
- * installing an older package version. (Layerswap's own dev harnesses can
- * repoint the loader at a local server via the internal `__LAYERSWAP_WIDGET_*`
- * globals — see `resolveSource` in `loader.ts`.)
+ * The channel major is the shared widget protocol major. A breaking `/v2/`
+ * ships with loader package major 2. Exact build pinning is intentionally not
+ * a public loader feature.
  */
-export const DEFAULT_MANIFEST_URL = 'https://layerswap-widget-cdn.layerswapcdn.workers.dev/v1/manifest.json';
+export const WIDGET_MANIFEST_URL =
+    `https://layerswapcdntest.blob.core.windows.net/widget-cdn/v${WIDGET_PROTOCOL_MAJOR}/manifest.json`;
 
 const fromB64 = (b64: string): ArrayBuffer => {
     const bin = atob(b64);
@@ -214,7 +214,10 @@ export function resolveRemoteEntry(manifestUrl: string, remoteEntry: string): st
 }
 
 export class ManifestError extends Error {
-    constructor(public readonly reason: 'fetch' | 'parse' | 'signature' | 'kill-switch' | 'stale', message: string) {
+    constructor(
+        public readonly reason: 'fetch' | 'parse' | 'signature' | 'kill-switch' | 'stale' | 'incompatible',
+        message: string,
+    ) {
         super(message);
         this.name = 'ManifestError';
     }
@@ -243,10 +246,9 @@ export type FetchedManifest = {
     manifest: Manifest;
     /**
      * The FINAL URL the manifest was served from, after any HTTP redirects.
-     * When a rolling channel (`/v1/manifest.json`) 302-redirects to an
-     * immutable build (`/1.5.0/manifest.json`), this is the latter — so
-     * resolving the relative `remoteEntry` against it anchors the remote (and
-     * every chunk it loads) at the immutable version path, not the channel root.
+     * The remoteEntry is build-addressed in production, so it anchors at the
+     * immutable build whether the manifest was redirected there or served
+     * directly from the rolling Azure channel path.
      */
     url: string;
 };

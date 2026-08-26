@@ -56,6 +56,7 @@ function createStore(): RpcHealthCheckStore {
     const listeners = new Set<() => void>()
     let lastConnectorId: string | undefined
     let lastIsConnected = false
+    let lastChainId: number | undefined
     let unsubEvm: (() => void) | null = null
 
     const setSnapshot = (next: Partial<RpcHealthCheckSnapshot>) => {
@@ -70,9 +71,22 @@ function createStore(): RpcHealthCheckStore {
         return { connector, isConnected, chainId: state.wagmiAccount.chainId }
     }
 
+    // Monotonic probe generation. Comparing connector/chain ids can't tell two
+    // in-flight probes for the *same* chain apart (a fast A→B→A flip-flop), so
+    // an older probe resolving late could overwrite a fresher verdict. Every
+    // context change and every newly started probe bumps the generation; a
+    // probe's verdict counts only while its generation is still the latest.
+    let probeGeneration = 0
+
     const check = async () => {
         const { connector, isConnected } = getActiveConnector()
         if (!connector || !isConnected) return
+
+        // Claim a generation synchronously, before any await — any context change
+        // (chain switch, disconnect) or a fresher probe starting invalidates this
+        // one, even if this one happens to resolve later.
+        const myGeneration = ++probeGeneration
+        const isCurrent = () => probeGeneration === myGeneration
 
         try {
             const provider = (await connector.getProvider()) as Eip1193Provider | null
@@ -88,6 +102,7 @@ function createStore(): RpcHealthCheckStore {
                 'Wallet RPC timed out',
             )
             const latencyMs = performance.now() - start
+            if (!isCurrent()) return
 
             const tsHex = latestBlock?.timestamp
             const blockAgeSec = tsHex != null
@@ -106,6 +121,7 @@ function createStore(): RpcHealthCheckStore {
             }
             setSnapshot({ health: { status: 'healthy', latencyMs, blockAgeSec } satisfies RpcHealth })
         } catch (e: any) {
+            if (!isCurrent()) return
             // A wallet declining to serve the read method isn't an RPC health signal —
             // leave status "unknown" so we don't prompt the user to add an RPC.
             if (isMethodUnsupportedError(e)) {
@@ -155,7 +171,7 @@ function createStore(): RpcHealthCheckStore {
         })
     }
 
-    // Auto-check when the active connector or connectedness changes. The
+    // Auto-check when the active connector, connectedness, or chain changes. The
     // upstream subscription only lives while someone is listening (first
     // subscriber starts it, last unsubscriber stops it), so consumer
     // mount/unmount cycles — including StrictMode's — can't leave the store
@@ -163,16 +179,27 @@ function createStore(): RpcHealthCheckStore {
     // also catch up: if a wallet is already connected, check right away.
     const startAutoCheck = () => {
         unsubEvm = useEvmStore.subscribe(() => {
-            const { connector, isConnected } = getActiveConnector()
+            const { connector, isConnected, chainId } = getActiveConnector()
             const connectorId = connector?.id
-            if (connectorId === lastConnectorId && isConnected === lastIsConnected) return
+            if (connectorId === lastConnectorId && isConnected === lastIsConnected && chainId === lastChainId) return
             lastConnectorId = connectorId
             lastIsConnected = isConnected
+            lastChainId = chainId
+            // The previous verdict belongs to the old connector/chain — invalidate
+            // any probe still in flight and drop back to "unknown" (banner hidden)
+            // until the fresh probe for this chain resolves.
+            probeGeneration++
+            setSnapshot({ health: { status: undefined } satisfies RpcHealth })
             if (connector && isConnected) void check()
         })
-        const { connector, isConnected } = getActiveConnector()
+        const { connector, isConnected, chainId } = getActiveConnector()
+        if (connector?.id !== lastConnectorId || chainId !== lastChainId) {
+            probeGeneration++
+            setSnapshot({ health: { status: undefined } satisfies RpcHealth })
+        }
         lastConnectorId = connector?.id
         lastIsConnected = isConnected
+        lastChainId = chainId
         if (connector && isConnected) void check()
     }
 
