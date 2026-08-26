@@ -7,7 +7,7 @@ import { ApiResponse } from '@/Models/ApiResponse';
 import { Partner } from '@/Models/Partner';
 import { ApiError } from '@/Models/ApiError';
 import useWallet from '@/hooks/useWallet';
-import { Network, NetworkType } from '@layerswap/widget-types';
+import { Network } from '@layerswap/widget-types';
 import { useSettingsState } from './settings';
 import { QuoteError, transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { useRecentNetworksStore } from '@/stores/recentRoutesStore';
@@ -299,6 +299,9 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             availableRoutes: sourceRoutes,
         })
         const isExtendedBridge = !!extendedPlan
+        const requiresDepository = depositMethod === 'wallet'
+            && from.wallet_deposit_modes?.includes('depository')
+            && !from.wallet_deposit_modes.includes('direct')
 
         const data: CreateSwapParams = extendedPlan ? buildCreateSwapParamsForExtendedRoute({
             plan: extendedPlan,
@@ -322,7 +325,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             source_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
             refund_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
             ...(useGasless && { use_gasless: true }),
-            ...((useGasless || from.type === NetworkType.Stellar) && { use_depository: true }),
+            ...((useGasless || requiresDepository) && { use_depository: true }),
         }
 
         if (!isExtendedBridge && depositMethod === 'wallet' && slippage && slippage > 0 && slippage < 0.8) {
