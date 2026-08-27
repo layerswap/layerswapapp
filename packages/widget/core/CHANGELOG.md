@@ -1,10 +1,10 @@
 # @layerswap/widget
 
-## 2.0.0-next.0
+## 2.0.0
 
 ### Major Changes
 
-- Widget 2.0 — the widget is now a family of packages with a hardened embedding story.
+- 3e34e07: Widget 2.0 — the widget is now a family of packages with a hardened embedding story.
 
   **Breaking changes**
   - `NetworkType` and `NetworkWithTokens` are no longer exported from the package root — import them from the new `@layerswap/widget-types` package. Shared models (`Wallet`, `InternalConnector`, network/route models, theme types, `SwapStatus`, `WidgetConfig`) now live in `@layerswap/widget-types`; the `@layerswap/widget/types` subpath keeps re-exporting wallet contracts for backward compatibility.
@@ -33,13 +33,13 @@
 
 ### Patch Changes
 
-- Updated dependencies
-- Updated dependencies
-- Updated dependencies
-  - @layerswap/utils@2.0.0-next.0
-  - @layerswap/wallet-core@2.0.0-next.0
-  - @layerswap/ui-kit@2.0.0-next.0
-  - @layerswap/widget-types@1.0.0-next.0
+- Updated dependencies [3e34e07]
+- Updated dependencies [3e34e07]
+- Updated dependencies [3e34e07]
+  - @layerswap/utils@2.0.0
+  - @layerswap/wallet-core@2.0.0
+  - @layerswap/ui-kit@2.0.0
+  - @layerswap/widget-types@1.0.0
 
 ## 1.7.0
 
