@@ -133,6 +133,8 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
     const useGasless = !isBridge && gaslessEnabled && isGaslessCapableRoute({
         depositMethod,
         supportsGaslessDeposit: sourceRouteToken?.supports_gasless_deposit,
+        sourceTokenContract: sourceRouteToken?.contract,
+        gaslessStandard: sourceRouteToken?.gasless_standard,
         sourceIsSupported,
         sourceAddress: selectedSourceAccount?.address,
     })

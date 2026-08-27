@@ -1,6 +1,10 @@
+import type { GaslessStandard } from '@layerswap/widget-types'
+
 export type GaslessCapabilityInput = {
     depositMethod: string | undefined
     supportsGaslessDeposit: boolean | undefined
+    sourceTokenContract: string | null | undefined
+    gaslessStandard: GaslessStandard | undefined
     sourceIsSupported: boolean | undefined
     sourceAddress: string | undefined
 }
@@ -9,6 +13,8 @@ export type GaslessCapabilityInput = {
 export function isGaslessCapableRoute(input: GaslessCapabilityInput): boolean {
     return input.depositMethod === 'wallet'
         && !!input.supportsGaslessDeposit
+        && !!input.sourceTokenContract
+        && input.gaslessStandard !== 'permit2'
         && !!input.sourceIsSupported
         && !!input.sourceAddress
 }

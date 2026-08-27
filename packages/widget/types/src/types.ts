@@ -1,4 +1,4 @@
-import { NetworkType, type Refuel } from './network';
+import { NetworkType, type GaslessStandard, type Refuel } from './network';
 
 export class Network {
     name: string;
@@ -33,6 +33,7 @@ export class Token {
     listing_date: string;
     status?: 'active' | 'inactive' | 'not_found';
     supports_gasless_deposit?: boolean;
+    gasless_standard?: GaslessStandard;
     source_rank?: number | undefined;
     destination_rank?: number | undefined;
 }

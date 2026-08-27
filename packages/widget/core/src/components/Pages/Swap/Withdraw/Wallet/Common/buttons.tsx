@@ -228,6 +228,8 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const isGaslessActive = gaslessEnabled && isGaslessCapableRoute({
         depositMethod,
         supportsGaslessDeposit: swapBasicData.source_token?.supports_gasless_deposit,
+        sourceTokenContract: swapBasicData.source_token?.contract,
+        gaslessStandard: swapBasicData.source_token?.gasless_standard,
         sourceIsSupported: !!selectedWallet?.asSourceSupportedNetworks?.includes(swapBasicData.source_network.name),
         sourceAddress: selectedSourceAccount?.address,
     })

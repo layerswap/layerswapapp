@@ -18,6 +18,8 @@ export function useIsGaslessActive(swapData: SwapBasicData | undefined): boolean
     return gaslessEnabled && isGaslessCapableRoute({
         depositMethod: swapData?.use_deposit_address ? 'deposit_address' : 'wallet',
         supportsGaslessDeposit: swapData?.source_token?.supports_gasless_deposit,
+        sourceTokenContract: swapData?.source_token?.contract,
+        gaslessStandard: swapData?.source_token?.gasless_standard,
         sourceIsSupported: !!sourceWalletSupported,
         sourceAddress: selectedSourceAccount?.address,
     })

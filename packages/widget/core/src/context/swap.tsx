@@ -151,12 +151,20 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const baseSwapData = useMemo<(SwapBasicData & { refuel: boolean }) | undefined>(() => {
         if (!(swapId && data?.data?.swap)) return undefined
         const swap = data.data.swap
-        // Swap response omits supports_gasless_deposit; restore it from the route definition.
+        // Swap responses can omit gasless token metadata; restore it from the route definition.
         const routeToken = sourceRoutes
             ?.find(r => r.name === swap.source_network?.name)
             ?.tokens?.find(t => t.symbol === swap.source_token?.symbol)
-        const source_token = routeToken?.supports_gasless_deposit != null
-            ? { ...swap.source_token, supports_gasless_deposit: routeToken.supports_gasless_deposit }
+        const source_token = routeToken
+            ? {
+                ...swap.source_token,
+                ...(routeToken.supports_gasless_deposit != null
+                    ? { supports_gasless_deposit: routeToken.supports_gasless_deposit }
+                    : {}),
+                ...(routeToken.gasless_standard != null
+                    ? { gasless_standard: routeToken.gasless_standard }
+                    : {}),
+            }
             : swap.source_token
         return {
             ...swap,
@@ -286,6 +294,8 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         const useGasless = isGaslessCapableRoute({
             depositMethod,
             supportsGaslessDeposit: fromCurrency.supports_gasless_deposit,
+            sourceTokenContract: fromCurrency.contract,
+            gaslessStandard: fromCurrency.gasless_standard,
             sourceIsSupported: !!sourceIsSupported,
             sourceAddress: selectedSourceAccount?.address,
         }) && gaslessEnabled

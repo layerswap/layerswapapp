@@ -12,6 +12,8 @@ export enum NetworkType {
   Polymarket = 'polymarket',
 }
 
+export type GaslessStandard = 'none' | 'eip3009' | 'erc2612' | 'permit2';
+
 type RefuelToken = {
   symbol: string;
   display_asset?: string;
@@ -23,6 +25,7 @@ type RefuelToken = {
   listing_date: string;
   status?: 'active' | 'inactive' | 'not_found';
   supports_gasless_deposit?: boolean;
+  gasless_standard?: GaslessStandard;
   source_rank?: number;
   destination_rank?: number;
 };
