@@ -4,7 +4,7 @@ import useWallet from '@/hooks/useWallet';
 import { Address } from '@/lib/address/Address';
 import { getKey, useBalanceStore } from '@/stores/balanceStore';
 import { useManualDestAddressesStore } from '@/stores/manualDestAddressesStore';
-import { WalletConnectionProvider } from "@layerswap/wallet-core/types";
+import { WalletConnectionProvider, AccountIdentity } from "@layerswap/wallet-core/types";
 import { SwapDirection } from '@/exports';
 
 export type { ManualDestAddress } from '@/stores/manualDestAddressesStore';
@@ -35,14 +35,6 @@ type BaseAccountIdentity = {
     providerName: string;
     id: string;
 }
-
-export type AccountIdentity = BaseAccountIdentity & {
-    displayName: string,
-    addresses: string[],
-    provider: WalletConnectionProvider;
-    icon?: string;
-}
-
 
 export type AccountIdentityWithSupportedNetworks = AccountIdentity & {
     walletWithdrawalSupportedNetworks: Wallet['withdrawalSupportedNetworks'];

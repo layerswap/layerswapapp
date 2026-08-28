@@ -28,6 +28,8 @@ export {
 } from "@/lib/walletConnect";
 export type { DisplayUriSource, WalletConnectRegistryConnector, WalletConnectWalletBase, WalletConnectLink } from "@/lib/walletConnect";
 export { useConnectors, connectorKey, resolveChainConnectors } from "@/hooks/useConnectors";
+export { default as useWallet } from "@/hooks/useWallet";
+export type { WalletPurpose, UseWalletOptions } from "@/hooks/useWallet";
 export { useWalletProviderSnapshots } from "@/hooks/useWalletProviderSnapshots";
 export { useProvidersConnectReady } from "@/hooks/useProvidersConnectReady";
 export { usePersistedState } from "@/hooks/usePersistedState";
@@ -42,5 +44,3 @@ export * from "@/icons/resolveWalletIcon";
 
 export { getEip6963Providers, subscribeEip6963Providers } from "@/lib/eip6963Providers";
 export type { Eip6963Provider } from "@/lib/eip6963Providers";
-export { defineNetworkAdapter } from "@/types/network";
-export type { AppNetworkAdapter } from "@/types/network";

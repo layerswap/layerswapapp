@@ -1,5 +1,6 @@
 import { NetworkType } from '@layerswap/widget-types';
 import { AddressUtilsResolver } from "@/address/addressUtilsResolver";
+import { AppNetworkAdapter } from "@/networkAdapter";
 import { EVMAddressUtilsProvider } from "@/address/providers/evm";
 import { BitcoinAddressUtilsProvider } from "@/address/providers/bitcoin";
 import { SolanaAddressUtilsProvider } from "@/address/providers/solana";
@@ -22,6 +23,9 @@ export const addressUtilsProviders = [
 // Singleton resolver wired with every provider — the canonical entry point for
 // address validation/formatting/classification.
 export const addressUtilsResolver = new AddressUtilsResolver(addressUtilsProviders);
+
+export const setNetworkAdapter = <Network,>(adapter: AppNetworkAdapter<Network>) => addressUtilsResolver.setNetworkAdapter(adapter);
+export const getNetworkAdapter = () => addressUtilsResolver.getNetworkAdapter();
 
 export const classifyAddress = (address: string) => addressUtilsResolver.classifyAddress(address);
 export const addressTypeLabel = (type: NetworkType) => addressUtilsResolver.addressTypeLabel(type);

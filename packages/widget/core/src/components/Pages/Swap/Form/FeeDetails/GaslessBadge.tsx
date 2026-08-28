@@ -1,7 +1,7 @@
 import { FC } from 'react'
 import clsx from 'clsx'
 import GasIcon from '@/components/Icons/GasIcon'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/shadcn'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@layerswap/ui-kit'
 
 // Green pill shown in place of the gas fee when the route is gasless. Carries its own tooltip
 // so the explanation shows wherever the badge is used.
