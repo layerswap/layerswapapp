@@ -21,6 +21,7 @@ import {
     type WalletConnectWalletBase,
 } from '@layerswap/wallet-core'
 import { id as PROVIDER_ID, name as PROVIDER_NAME } from '../constants'
+import { STELLAR_APPKIT_WALLET_CONNECT_ID } from './StellarWalletConnectModule'
 import { stellarKitManager } from './stellarKitManager'
 import { stellarStore, type StellarWalletSnapshot } from './stellarStore'
 import { toStellarConnector } from './stellarConnector'
@@ -43,7 +44,7 @@ type RuntimeDeps = {
 
 type StellarKitConnectionManager = Pick<
     typeof stellarKitManager,
-    'connect' | 'disconnect' | 'onDisplayUri' | 'setWalletConnectPresentation'
+    'connect' | 'disconnect' | 'onDisplayUri'
 >
 
 export class StellarConnectionService<Network> implements WalletConnectionService<RuntimeDeps, Network> {
@@ -52,7 +53,7 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
     private networksKey = ''
     private deps: RuntimeDeps = {}
 
-    constructor(private readonly kitManager: StellarKitConnectionManager = stellarKitManager) {}
+    constructor(private readonly kitManager: StellarKitConnectionManager = stellarKitManager) { }
 
     setNetworks(networks: Network[], networkAdapter: AppNetworkAdapter<Network>): void {
         const key = networks.map(network => networkAdapter.getId(network)).join('|')
@@ -69,6 +70,7 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
     getAvailableConnectors(): InternalConnector[] {
         const isMobilePlatform = this.deps.isMobilePlatform ?? false
         const configured = stellarStore.getState().wallets
+            .filter(wallet => wallet.id !== STELLAR_APPKIT_WALLET_CONNECT_ID)
             .map(toStellarConnector)
             .filter(connector => !isMobilePlatform || connector.isMobileSupported)
         const recent = (this.deps.recentConnectors ?? [])
@@ -107,6 +109,7 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
             ? (uri: string) => buildDeepLink({ id: registryConnector.id, mobile }, uri)
             : undefined
         const useAppKit = isWalletConnect && isMobilePlatform && !registryConnector
+        const kitWallet = useAppKit ? wallets.find(item => item.id === STELLAR_APPKIT_WALLET_CONNECT_ID) ?? wallet : wallet
         let unsubscribeDisplayUri: (() => void) | undefined
 
         const setSelectedConnectorIfCurrent = (next: WalletModalConnector) => {
@@ -120,14 +123,13 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
 
         try {
             if (isWalletConnect) {
-                this.kitManager.setWalletConnectPresentation(useAppKit ? 'appkit' : 'layerswap')
                 setPendingMetadataForRegistry(
                     PROVIDER_ID,
                     registryConnector ? { ...registryConnector, deepLink } : undefined,
                 )
                 const wantsQrModal = !useAppKit && (!isMobilePlatform || !resolveURI)
                 if (wantsQrModal) {
-                    setSelectedConnectorIfCurrent({
+                    this.deps.setSelectedConnector?.({
                         ...connector,
                         qr: { state: 'loading', value: undefined },
                         showQrCode: true,
@@ -144,7 +146,7 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
                 if (registryConnector) this.deps.addRecentConnector?.(registryConnector)
             }
 
-            const { address } = await this.kitManager.connect(wallet.id)
+            const { address } = await this.kitManager.connect(kitWallet.id)
             if (registryConnector) {
                 setDynamicWcMetadata(PROVIDER_ID, address, {
                     name: registryConnector.name,
@@ -153,7 +155,7 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
                     deepLink,
                 })
             }
-            return this.resolveWallet(wallet, address)
+            return this.resolveWallet(kitWallet, address)
         } finally {
             unsubscribeDisplayUri?.()
             if (isWalletConnect) clearPendingDynamicWcMetadata(PROVIDER_ID)

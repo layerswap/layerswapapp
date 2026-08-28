@@ -29,6 +29,7 @@ import {
     resolveStellarBalanceAmount,
 } from '../dist/esm/stellarBalances.js'
 import {
+    STELLAR_APPKIT_WALLET_CONNECT_ID,
     StellarWalletConnectChain,
     StellarWalletConnectModule,
 } from '../dist/esm/service/StellarWalletConnectModule.js'
@@ -435,94 +436,125 @@ test('emits the WalletConnect URI and signs Stellar XDR through SignClient', asy
     assert.equal(proposals.length, 2)
 })
 
-test('opens AppKit only for an explicitly requested mobile WalletConnect presentation', async () => {
-    const session = {
-        topic: 'stellar-mobile-session',
-        namespaces: {
-            stellar: {
-                accounts: [`${StellarWalletConnectChain.Public}:${sourceKey.publicKey()}`],
-                methods: ['stellar_signXDR'],
-                events: [],
-            },
-        },
+test('routes the mobile WalletConnect tile to the kit AppKit module', async () => {
+    const bridgeSnapshot = {
+        id: 'wallet_connect',
+        name: 'WalletConnect',
+        type: 'BRIDGE_WALLET',
+        isAvailable: true,
+        isPlatformWrapper: false,
+        icon: 'walletconnect.png',
+        url: 'https://walletconnect.com/',
     }
-    const client = {
-        session: { values: [] },
-        on: () => {},
-        off: () => {},
-        connect: async () => ({
-            uri: 'wc:stellar-mobile-pairing',
-            approval: async () => session,
-        }),
-        request: async () => ({}),
+    const appKitSnapshot = { ...bridgeSnapshot, id: STELLAR_APPKIT_WALLET_CONNECT_ID }
+    stellarStore.getState().setWallets([bridgeSnapshot, appKitSnapshot])
+
+    const connectedIds = []
+    const qrStates = []
+    let displayUriSubscriptions = 0
+    const manager = {
+        onDisplayUri: () => {
+            displayUriSubscriptions += 1
+            return () => {}
+        },
+        connect: async walletId => {
+            connectedIds.push(walletId)
+            return { address: sourceKey.publicKey() }
+        },
         disconnect: async () => {},
     }
-    const opened = []
-    let closeCount = 0
-    const walletConnect = new StellarWalletConnectModule({
-        projectId: 'project-id',
-        name: 'LayerSwap',
-        description: 'LayerSwap',
-        url: 'https://layerswap.io',
-        icons: ['https://layerswap.io/icon.png'],
-    }, async () => client, async () => ({
-        open: options => { opened.push(options) },
-        close: () => { closeCount += 1 },
-    }))
-    const emittedUris = []
-    walletConnect.onDisplayUri(uri => emittedUris.push(uri))
+    const service = new StellarConnectionService(manager)
+    const wcTile = {
+        id: 'wallet_connect',
+        name: 'WalletConnect',
+        icon: 'walletconnect.png',
+        type: 'walletConnect',
+        providerName: 'Stellar',
+    }
+    service.configure({
+        getSelectedConnector: () => wcTile,
+        setSelectedConnector: connector => qrStates.push(connector.qr),
+        isMobilePlatform: true,
+    })
 
-    walletConnect.setNextPresentation('appkit')
-    assert.deepEqual(await walletConnect.getAddress(), { address: sourceKey.publicKey() })
-    assert.deepEqual(opened, [{ uri: 'wc:stellar-mobile-pairing' }])
-    assert.equal(closeCount, 1)
-    assert.deepEqual(emittedUris, [])
+    try {
+        assert.deepEqual(
+            service.getAvailableConnectors().map(connector => connector.id),
+            ['wallet_connect'],
+        )
 
-    // Presentation is per-attempt: the next desktop-style connection goes
-    // back through Layerswap's QR listener.
-    await walletConnect.getAddress()
-    assert.deepEqual(emittedUris, ['wc:stellar-mobile-pairing'])
-    assert.equal(opened.length, 1)
+        const connected = await service.connectWallet({ connector: wcTile })
+
+        assert.deepEqual(connectedIds, [STELLAR_APPKIT_WALLET_CONNECT_ID])
+        assert.equal(connected.id, STELLAR_APPKIT_WALLET_CONNECT_ID)
+        assert.equal(connected.displayName, 'WalletConnect - Stellar')
+        assert.deepEqual(qrStates, [])
+        assert.equal(displayUriSubscriptions, 0)
+    } finally {
+        stellarStore.getState().setWallets([])
+        stellarStore.getState().setActive(undefined, undefined)
+    }
 })
 
-test('rejects the mobile WalletConnect attempt when the AppKit modal is dismissed', async () => {
-    const client = {
-        session: { values: [] },
-        on: () => {},
-        off: () => {},
-        connect: async () => ({
-            uri: 'wc:stellar-mobile-pairing',
-            approval: () => new Promise(() => {}),
-        }),
-        request: async () => ({}),
+test('shows the QR immediately for the desktop WalletConnect tile before the modal store catches up', async () => {
+    const bridgeSnapshot = {
+        id: 'wallet_connect',
+        name: 'WalletConnect',
+        type: 'BRIDGE_WALLET',
+        isAvailable: true,
+        isPlatformWrapper: false,
+        icon: 'walletconnect.png',
+        url: 'https://walletconnect.com/',
+    }
+    stellarStore.getState().setWallets([bridgeSnapshot])
+
+    let displayUriListener
+    const qrStates = []
+    let selectedConnector
+    const manager = {
+        onDisplayUri: listener => {
+            displayUriListener = listener
+            return () => { displayUriListener = undefined }
+        },
+        connect: async walletId => {
+            assert.equal(walletId, 'wallet_connect')
+            displayUriListener?.('wc:stellar-pairing')
+            return { address: sourceKey.publicKey() }
+        },
         disconnect: async () => {},
     }
-    let stateListener
-    let unsubscribed = false
-    let closeCount = 0
-    const walletConnect = new StellarWalletConnectModule({
-        projectId: 'project-id',
-        name: 'LayerSwap',
-        description: 'LayerSwap',
-        url: 'https://layerswap.io',
-        icons: ['https://layerswap.io/icon.png'],
-    }, async () => client, async () => ({
-        open: () => {},
-        close: () => { closeCount += 1 },
-        subscribeState: listener => {
-            stateListener = listener
-            return () => { unsubscribed = true }
+    const service = new StellarConnectionService(manager)
+    const wcTile = {
+        id: 'wallet_connect',
+        name: 'WalletConnect',
+        icon: 'walletconnect.png',
+        type: 'walletConnect',
+        providerName: 'Stellar',
+    }
+    service.configure({
+        // The modal store lags the click: nothing is selected yet when
+        // connectWallet starts, so the initial QR-loading set must land
+        // unconditionally instead of being skipped by the current-connector guard.
+        getSelectedConnector: () => selectedConnector,
+        setSelectedConnector: connector => {
+            selectedConnector = connector
+            qrStates.push(connector.qr)
         },
-    }))
+        isMobilePlatform: false,
+    })
 
-    walletConnect.setNextPresentation('appkit')
-    const pending = walletConnect.getAddress()
-    const assertion = assert.rejects(pending, /cancelled/)
-    await new Promise(resolve => setTimeout(resolve, 0))
-    stateListener({ open: false })
-    await assertion
-    assert.equal(unsubscribed, true)
-    assert.equal(closeCount, 1)
+    try {
+        const connected = await service.connectWallet({ connector: wcTile })
+
+        assert.deepEqual(qrStates, [
+            { state: 'loading', value: undefined },
+            { state: 'fetched', value: 'wc:stellar-pairing', deepLink: undefined },
+        ])
+        assert.equal(connected.id, 'wallet_connect')
+    } finally {
+        stellarStore.getState().setWallets([])
+        stellarStore.getState().setActive(undefined, undefined)
+    }
 })
 
 test('routes Stellar registry wallets through the shared QR modal', async () => {
@@ -550,7 +582,6 @@ test('routes Stellar registry wallets through the shared QR modal', async () => 
     const qrStates = []
     const recentConnectors = []
     const manager = {
-        setWalletConnectPresentation: () => {},
         onDisplayUri: listener => {
             displayUriListener = listener
             return () => { displayUriListener = undefined }

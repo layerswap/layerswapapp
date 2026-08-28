@@ -1,19 +1,17 @@
 import type { DisplayUriSource } from '@layerswap/wallet-core'
 import type { WalletConnectConfig } from '@layerswap/widget-types'
 import { ModuleType, Networks, type ModuleInterface } from '@creit.tech/stellar-wallets-kit/types'
-import type { AppKit } from '@reown/appkit/core'
 import type SignClientClass from '@walletconnect/sign-client'
 
 type SignClient = InstanceType<typeof SignClientClass>
 type WalletConnectSession = SignClient['session']['values'][number]
 type ClientFactory = () => Promise<SignClient>
-type AppKitFactory = () => Promise<AppKit>
-
-export type StellarWalletConnectPresentation = 'layerswap' | 'appkit'
 
 const STELLAR_WALLET_CONNECT_STORAGE_PREFIX = 'layerswapStellarWalletConnect'
 
 export const STELLAR_WALLET_CONNECT_ID = 'wallet_connect'
+
+export const STELLAR_APPKIT_WALLET_CONNECT_ID = 'wallet_connect_appkit'
 
 export const StellarWalletConnectChain = {
     Public: 'stellar:pubnet',
@@ -60,9 +58,6 @@ export class StellarWalletConnectModule implements ModuleInterface, DisplayUriSo
     private readonly sessionDeleteListeners = new Set<() => void>()
     private sessionEndedHandler: ((event: { topic: string }) => void) | undefined
     private activeTopic: string | undefined
-    private appKit: AppKit | undefined
-    private appKitPromise: Promise<AppKit> | undefined
-    private nextPresentation: StellarWalletConnectPresentation = 'layerswap'
 
     constructor(
         private readonly config: WalletConnectConfig,
@@ -79,22 +74,7 @@ export class StellarWalletConnectModule implements ModuleInterface, DisplayUriSo
                 customStoragePrefix: STELLAR_WALLET_CONNECT_STORAGE_PREFIX,
             })
         },
-        private readonly appKitFactory: AppKitFactory = async () => {
-            const [{ createAppKit }, { mainnet }] = await Promise.all([
-                import('@reown/appkit/core'),
-                import('@reown/appkit/networks'),
-            ])
-            return createAppKit({
-                projectId: config.projectId,
-                metadata: { name: config.name, description: config.description, url: config.url, icons: config.icons, },
-                manualWCControl: true,
-                networks: [mainnet],
-                featuredWalletIds: [
-                    '997a355c8f682468706a76cff1b004a7115f505fb962dac54b6e9b442dd1c380', // Freighter
-                    '76a3d548a08cf402f5c7d021f24fd2881d767084b387a5325df88bc3d4b6f21b', // Lobstr
-                ],
-            })
-        },
+        private readonly chains: string[] = [StellarWalletConnectChain.Public, StellarWalletConnectChain.Testnet],
     ) { }
 
     async isAvailable(): Promise<boolean> {
@@ -125,15 +105,9 @@ export class StellarWalletConnectModule implements ModuleInterface, DisplayUriSo
         })
     }
 
-    setNextPresentation(presentation: StellarWalletConnectPresentation): void {
-        this.nextPresentation = presentation
-    }
-
     async getAddress(): Promise<{ address: string }> {
-        const presentation = this.nextPresentation
-        this.nextPresentation = 'layerswap'
         const client = await this.getClient()
-        const chains = [StellarWalletConnectChain.Public, StellarWalletConnectChain.Testnet]
+        const chains = this.chains
         const { uri, approval } = await client.connect({
             requiredNamespaces: {
                 stellar: {
@@ -154,35 +128,10 @@ export class StellarWalletConnectModule implements ModuleInterface, DisplayUriSo
                 },
             },
         })
-        const modal = presentation === 'appkit' && uri ? await this.getAppKit() : undefined
         if (uri) {
-            if (modal) {
-                await modal.open({ uri })
-            } else {
-                for (const listener of this.displayUriListeners) listener(uri)
-            }
+            for (const listener of this.displayUriListeners) listener(uri)
         }
-        let session: WalletConnectSession
-        let unsubscribeModalState: (() => void) | undefined
-        try {
-            if (modal?.subscribeState) {
-                const approvalPromise = approval()
-                approvalPromise.catch(() => {})
-                session = await Promise.race([
-                    approvalPromise,
-                    new Promise<never>((_, reject) => {
-                        unsubscribeModalState = modal.subscribeState(state => {
-                            if (!state.open) reject(new Error('The wallet connection request was cancelled'))
-                        })
-                    }),
-                ])
-            } else {
-                session = await approval()
-            }
-        } finally {
-            unsubscribeModalState?.()
-            if (presentation === 'appkit') await this.closeAppKit()
-        }
+        const session = await approval()
 
         const address = stellarAccount(session)
         if (!address) {
@@ -287,32 +236,6 @@ export class StellarWalletConnectModule implements ModuleInterface, DisplayUriSo
         this.activeTopic = undefined
         this.client = undefined
         this.clientPromise = undefined
-        void this.closeAppKit()
-        this.appKit = undefined
-        this.appKitPromise = undefined
-        this.nextPresentation = 'layerswap'
-    }
-
-    private async getAppKit(): Promise<AppKit> {
-        if (this.appKit) return this.appKit
-        if (!this.appKitPromise) {
-            this.appKitPromise = this.appKitFactory().then(modal => {
-                this.appKit = modal
-                return modal
-            }).finally(() => {
-                this.appKitPromise = undefined
-            })
-        }
-        return this.appKitPromise
-    }
-
-    private async closeAppKit(): Promise<void> {
-        try {
-            await this.appKit?.close()
-        } catch {
-            // Closing presentation is best-effort and must not mask the
-            // WalletConnect approval result.
-        }
     }
 
     private async getClient(): Promise<SignClient> {

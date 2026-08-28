@@ -1,5 +1,6 @@
 import { Horizon, Transaction, TransactionBuilder, TransactionFailedError } from '@stellar/stellar-sdk'
 import { bytesToHex } from '@layerswap/utils/common'
+import { foregroundWalletApp } from '@layerswap/wallet-core'
 import { ActionMessageType, NetworkType, type TransferProvider } from '@layerswap/widget-types'
 import { resolveStellarNetworkPassphrase } from '../stellarNetwork'
 import { stellarKitManager } from '../service/stellarKitManager'
@@ -77,6 +78,8 @@ export function createStellarTransfer(): TransferProvider {
                     currentAccountSequence: account.sequence,
                 })
                 await stellarKitManager.revalidate(selectedWallet.address, networkPassphrase)
+
+                await foregroundWalletApp(selectedWallet.metadata?.deepLink)
 
                 const signed = await stellarKitManager.signTransaction(
                     callData,
