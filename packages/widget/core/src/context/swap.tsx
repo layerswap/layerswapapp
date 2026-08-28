@@ -1,6 +1,6 @@
 import { type Refuel, type Wallet } from '@layerswap/widget-types';
 import { Context, useCallback, useEffect, useState, createContext, useContext, useMemo, useRef } from 'react'
-import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, DepositAction, SwapBasicData, SwapQuote, SwapDetails, TransactionType } from '@/lib/apiClients/layerSwapApiClient';
+import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, DepositAction, SwapBasicData, SwapQuote, SwapDetails, SwapExecution, TransactionType } from '@/lib/apiClients/layerSwapApiClient';
 import { InitialSettings } from '@/Models/InitialSettings';
 import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '@/Models/ApiResponse';
@@ -26,7 +26,7 @@ import { isGaslessCapableRoute } from '@/helpers/gasless';
 import { resolveExtendedRoutePlan } from '@/lib/extendedRoutes/registry';
 import { buildCreateSwapParamsForExtendedRoute } from '@/lib/extendedRoutes/transforms';
 import { useExtendedRoutesStore } from '@/stores/extendedRoutesStore';
-import { isDepositAddressFlow, isDepositAddressSwap } from '@/helpers/swapFlow';
+import { isDepositAddressFlow, isDepositAddressSwap, wantsFrontendSwap } from '@/helpers/swapFlow';
 import { resolveSwapPollingInterval, SWAP_POLL_DEDUPE_MS } from '@/lib/swapPollingPolicy';
 
 export const SwapDataStateContext = createContext<SwapContextData | null>(null);
@@ -40,6 +40,7 @@ export type UpdateSwapInterface = {
     setDepositAddressIsFromAccount: (value: boolean) => void,
     setWithdrawType: (value: WithdrawType) => void
     setSwapId: (value: string | undefined) => void
+    startFreshSwapAttempt: () => void
     setSwapDataFromQuery?: (swapData: SwapResponse | undefined) => void,
     setSubmitedFormValues: (values: NonNullable<SwapFormValues>) => void,
     setSwapModalOpen: (value: boolean) => void
@@ -58,6 +59,7 @@ export type SwapContextData = {
     quoteError: QuoteError | undefined,
     refuel: Refuel | undefined,
     swapDetails: SwapDetails | undefined,
+    execution: SwapExecution | undefined,
     swapId: string | undefined,
     swapModalOpen: boolean,
     swapError?: string | null | undefined,
@@ -151,12 +153,20 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const baseSwapData = useMemo<(SwapBasicData & { refuel: boolean }) | undefined>(() => {
         if (!(swapId && data?.data?.swap)) return undefined
         const swap = data.data.swap
-        // Swap response omits supports_gasless_deposit; restore it from the route definition.
+        // Swap responses can omit gasless token metadata; restore it from the route definition.
         const routeToken = sourceRoutes
             ?.find(r => r.name === swap.source_network?.name)
             ?.tokens?.find(t => t.symbol === swap.source_token?.symbol)
-        const source_token = routeToken?.supports_gasless_deposit != null
-            ? { ...swap.source_token, supports_gasless_deposit: routeToken.supports_gasless_deposit }
+        const source_token = routeToken
+            ? {
+                ...swap.source_token,
+                ...(routeToken.supports_gasless_deposit != null
+                    ? { supports_gasless_deposit: routeToken.supports_gasless_deposit }
+                    : {}),
+                ...(routeToken.gasless_standard != null
+                    ? { gasless_standard: routeToken.gasless_standard }
+                    : {}),
+            }
             : swap.source_token
         return {
             ...swap,
@@ -176,6 +186,15 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         return swapBasicFormData
     }, [data, swapBasicFormData, swapId, baseSwapData, extendedSwapData])
 
+    const startFreshSwapAttempt = useCallback(() => {
+        // Preserve the displayed inputs before detaching the stale attempt. This also makes
+        // retry-after-reload safe when swapBasicFormData was never populated locally.
+        if (swapBasicData) setSwapBasicFormData(swapBasicData)
+        setSwapTransaction(undefined)
+        setSwapError(null)
+        setSwapId(undefined)
+    }, [swapBasicData])
+
     const swapDetails = useMemo(() => {
         if (swapId)
             return data?.data?.swap
@@ -187,6 +206,13 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         }
         return formDataQuote?.quote
     }, [formDataQuote, data, swapId, extendedSwapData]);
+
+    const execution = useMemo(() => {
+        if (swapId && data?.data) {
+            return data.data.execution
+        }
+        return formDataQuote?.execution
+    }, [formDataQuote, data, swapId]);
 
     const quoteError = useMemo(() => {
         if (swapId && data?.data) {
@@ -286,6 +312,8 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         const useGasless = isGaslessCapableRoute({
             depositMethod,
             supportsGaslessDeposit: fromCurrency.supports_gasless_deposit,
+            sourceTokenContract: fromCurrency.contract,
+            gaslessStandard: fromCurrency.gasless_standard,
             sourceIsSupported: !!sourceIsSupported,
             sourceAddress: selectedSourceAccount?.address,
         }) && gaslessEnabled
@@ -299,6 +327,11 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             availableRoutes: sourceRoutes,
         })
         const isExtendedBridge = !!extendedPlan
+        const useFrontendSwap = wantsFrontendSwap({
+            depositMethod,
+            sourceNetwork: from.name,
+            destinationNetwork: to.name,
+        })
 
         const data: CreateSwapParams = extendedPlan ? buildCreateSwapParamsForExtendedRoute({
             plan: extendedPlan,
@@ -308,6 +341,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             referenceId: query.externalId,
             refuel,
             sourceAddress: selectedSourceAccount?.address,
+            useFrontendSwap,
         }) : {
             amount: amount || undefined,
             source_network: from.name,
@@ -321,7 +355,8 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             use_deposit_address: depositMethod === 'wallet' ? false : true,
             source_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
             refund_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
-            ...(useGasless && { use_gasless: true, use_depository: true }),
+            use_frontend_swap: useFrontendSwap,
+            use_gasless: useGasless,
         }
 
         if (!isExtendedBridge && depositMethod === 'wallet' && slippage && slippage > 0 && slippage < 0.8) {
@@ -375,10 +410,11 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         setDepositAddressIsFromAccount,
         setWithdrawType,
         setSwapId: handleUpdateSwapid,
+        startFreshSwapAttempt,
         setSubmitedFormValues,
         setQuoteLoading,
         setSwapModalOpen
-    }), [createSwap, mutate, handleUpdateSwapid, setSubmitedFormValues]);
+    }), [createSwap, mutate, handleUpdateSwapid, startFreshSwapAttempt, setSubmitedFormValues]);
 
     const stateValue = useMemo(() => ({
         withdrawType,
@@ -393,11 +429,12 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         refuel,
         swapBasicData,
         swapDetails,
+        execution,
         swapId,
         swapModalOpen,
         swapError,
         setSwapError
-    }), [withdrawType, swapTransaction, depositAddressIsFromAccount, error, depositActionsResponse, depositActionsError, quote, quoteIsLoading, quoteError, refuel, swapBasicData, swapDetails, swapId, swapModalOpen, swapError]);
+    }), [withdrawType, swapTransaction, depositAddressIsFromAccount, error, depositActionsResponse, depositActionsError, quote, quoteIsLoading, quoteError, refuel, swapBasicData, swapDetails, execution, swapId, swapModalOpen, swapError]);
 
     return (
         <SwapDataStateContext.Provider value={stateValue}>

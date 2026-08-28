@@ -158,7 +158,6 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
 }) => {
     const [buttonClicked, setButtonClicked] = useState(false)
     const [error, setError] = useState<Error | undefined>()
-    const [loading, setLoading] = useState(false)
 
     const selectedSourceAccount = useSelectedAccount("from", swapData.source_network.name);
 
@@ -175,7 +174,6 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
     const clickHandler = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
         setButtonClicked(true)
         setError(undefined)
-        setLoading(true)
         try {
             if (!depositAddress)
                 throw new Error('Missing deposit address')
@@ -230,7 +228,6 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
 
             }
         } catch (e) {
-            setLoading(false)
             setError(e)
 
             throw e
@@ -265,21 +262,18 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
             buttonClicked &&
             <ActionMessage
                 error={error}
-                isLoading={loading}
+                isLoading={false}
                 selectedSourceAddress={selectedSourceAccount?.address || ''}
                 sourceNetwork={swapData.source_network}
             />
         }
-        {
-            !loading &&
-            <SendTransactionButton
-                onClick={clickHandler}
-                onSign={isGaslessSupported(swapData.source_network) ? signHandler : undefined}
-                icon={<WalletIcon className="stroke-2 w-6 h-6" />}
-                error={!!error && buttonClicked}
-                swapData={swapData}
-                refuel={refuel}
-            />
-        }
+        <SendTransactionButton
+            onClick={clickHandler}
+            onSign={isGaslessSupported(swapData.source_network) ? signHandler : undefined}
+            icon={<WalletIcon className="stroke-2 w-6 h-6" />}
+            error={!!error && buttonClicked}
+            swapData={swapData}
+            refuel={refuel}
+        />
     </div>
 }

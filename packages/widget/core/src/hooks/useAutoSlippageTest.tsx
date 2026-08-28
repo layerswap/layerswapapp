@@ -4,6 +4,10 @@ import LayerSwapApiClient, { Quote } from '../lib/apiClients/layerSwapApiClient'
 import { ApiResponse } from '../Models/ApiResponse'
 import { buildQuoteUrl, validDestinationAddress } from './useFee'
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
+import { wantsFrontendSwap } from '@/helpers/swapFlow'
+import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore'
+import { useSelectedAccount } from '@/context/swapAccounts'
+import { isGaslessCapableRoute } from '@/helpers/gasless'
 
 type AutoSlippageTestProps = {
     values: SwapFormValues
@@ -12,6 +16,17 @@ type AutoSlippageTestProps = {
 const apiClient = new LayerSwapApiClient()
 
 export function useAutoSlippageTest({ values, shouldTest }: AutoSlippageTestProps) {
+
+    const gaslessEnabled = useGaslessPreferenceStore(state => state.gaslessEnabled)
+    const selectedSourceAccount = useSelectedAccount('from', values.from?.name)
+    const useGasless = gaslessEnabled && isGaslessCapableRoute({
+        depositMethod: values.depositMethod,
+        supportsGaslessDeposit: values.fromAsset?.supports_gasless_deposit,
+        sourceTokenContract: values.fromAsset?.contract,
+        gaslessStandard: values.fromAsset?.gasless_standard,
+        sourceIsSupported: !!selectedSourceAccount?.walletAsSourceSupportedNetworks?.includes(values.from?.name ?? ''),
+        sourceAddress: selectedSourceAccount?.address,
+    })
 
     const validatedDestinationAddress = useMemo(
         () => validDestinationAddress(values.destination_address, values.to),
@@ -27,6 +42,12 @@ export function useAutoSlippageTest({ values, shouldTest }: AutoSlippageTestProp
             amount: values.amount ?? '',
             refuel: !!values.refuel,
             useDepositAddress: values.depositMethod !== 'wallet',
+            useFrontendSwap: wantsFrontendSwap({
+                depositMethod: values.depositMethod,
+                sourceNetwork: values.from?.name,
+                destinationNetwork: values.to?.name,
+            }),
+            useGasless,
             destinationAddress: validatedDestinationAddress,
         })
         : null

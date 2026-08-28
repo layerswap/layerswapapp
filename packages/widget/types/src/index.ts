@@ -12,7 +12,7 @@ export type {
   SupportedDestination,
 } from './config';
 export { NetworkType } from './network';
-export type { Refuel, AvailableSourceNetworkTypes } from './network';
+export type { Refuel, AvailableSourceNetworkTypes, GaslessStandard } from './network';
 export { SwapStatus } from './SwapStatus';
 export type {
   BaseErrorProps,
