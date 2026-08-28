@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 // Round-trip the signed manifest in CI before we ship. Reads
 // `dist/<buildId>/manifest.json` and verifies the signature against the
-// public key constant defined in the shared loader core (packages/widget/js),
-// which every loader consumes. Exits non-zero if anything is wrong — catches:
+// selected deployment environment's public key. Local verification falls
+// back to the public key constant defined in the shared loader core
+// (packages/widget/js). Exits non-zero if anything is wrong — catches:
 //   - Unsigned manifests when verification is supposed to be on
 //   - Drift between the build-time canonicalization and the loaders'
-//   - Wrong-key situations (key in CI doesn't match the bundled public key)
+//   - Wrong-key situations (private key doesn't match the selected environment)
+//   - Production key drift from the public trust anchor bundled in the loader
 //
 // Same canonical encoding as the shared loader core
 // (packages/widget/js/src/manifest.ts).
@@ -13,9 +15,15 @@
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createVerify, createPublicKey, createHash } from 'node:crypto';
+import { createVerify, createHash } from 'node:crypto';
 import { resolveBuildIdentity } from './build-id.mjs';
 import { ASSET_BASE, ASSET_DIRECTORY } from './cdn-layout.mjs';
+import {
+    MANIFEST_PUBLIC_KEY_ENV,
+    PRODUCTION_DEPLOY_TARGET,
+    assertProductionLoaderKeyMatch,
+    resolveManifestVerificationKey,
+} from './manifest-verification-key.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -58,19 +66,40 @@ if (expiresMs <= Date.now()) {
     process.exit(3);
 }
 
-// Pull the public key from the shared loader core (widget-js) so we verify
-// against the same constant every loader uses. If the key has been rotated
-// in source but the signer is still using the old one, this catches it.
+// Protected deployments select their trust anchor through the GitHub
+// Environment. Local verification falls back to the loader constant.
 const MANIFEST_SRC = join(REPO_ROOT, 'packages', 'widget', 'js', 'src', 'manifest.ts');
 const src = readFileSync(MANIFEST_SRC, 'utf8');
-const m = src.match(/MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64\s*=\s*['"]([A-Za-z0-9+/=]+)['"]/);
-if (!m) {
-    console.error('[verify-manifest] could not extract MANIFEST_VERIFY_PUBLIC_KEY_SPKI_B64 from widget-js source.');
+let verificationKey;
+try {
+    verificationKey = resolveManifestVerificationKey({
+        environmentValue: process.env[MANIFEST_PUBLIC_KEY_ENV],
+        loaderSource: src,
+        requireEnvironment: process.env.GITHUB_ACTIONS === 'true',
+    });
+} catch (error) {
+    console.error(
+        `[verify-manifest] ${error instanceof Error ? error.message : String(error)}.`,
+    );
     process.exit(4);
 }
-const pubB64 = m[1];
-const pubDer = Buffer.from(pubB64, 'base64');
-const publicKey = createPublicKey({ key: pubDer, format: 'der', type: 'spki' });
+const { publicKey, source: publicKeySource } = verificationKey;
+
+if (process.env.DEPLOY_TARGET === PRODUCTION_DEPLOY_TARGET) {
+    try {
+        const loaderKey = resolveManifestVerificationKey({ loaderSource: src });
+        assertProductionLoaderKeyMatch({
+            deployTarget: process.env.DEPLOY_TARGET,
+            environmentPublicKeyB64: verificationKey.publicKeyB64,
+            loaderPublicKeyB64: loaderKey.publicKeyB64,
+        });
+    } catch (error) {
+        console.error(
+            `[verify-manifest] ${error instanceof Error ? error.message : String(error)}.`,
+        );
+        process.exit(4);
+    }
+}
 
 // Deterministic JSON: sorts object keys recursively at every level. Must
 // match `canonicalize` in the shared loader core
@@ -104,9 +133,8 @@ const ok = verifier.verify(
 );
 
 if (!ok) {
-    console.error('[verify-manifest] SIGNATURE INVALID — the private key in CI does not match the public key in the loader core.');
+    console.error(`[verify-manifest] SIGNATURE INVALID — the signing key does not match the ${publicKeySource}.`);
     console.error('  manifest:', MANIFEST_PATH);
-    console.error('  loader core public key:', pubB64);
     process.exit(5);
 }
 
@@ -168,4 +196,4 @@ if (mismatches.length > 0) {
     process.exit(8);
 }
 
-console.log(`[verify-manifest] OK  buildId=${manifest.buildId}  version=${manifest.version}  channel=${manifest.channel}  chunks=${actualFiles.length}`);
+console.log(`[verify-manifest] OK  buildId=${manifest.buildId}  version=${manifest.version}  channel=${manifest.channel}  chunks=${actualFiles.length}  key=${publicKeySource}`);

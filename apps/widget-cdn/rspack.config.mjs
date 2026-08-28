@@ -5,6 +5,7 @@ import rspack from '@rspack/core';
 import { ModuleFederationPlugin } from '@module-federation/enhanced/rspack';
 import { resolveBuildIdentity } from './scripts/build-id.mjs';
 import { ASSET_BASE, CHUNK_HASH_LENGTH } from './scripts/cdn-layout.mjs';
+import { WIDGET_PROTOCOL_MAJOR } from '@layerswap/widget-types';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
@@ -43,12 +44,12 @@ const SHARED_SINGLETONS = {
 // Every build publishes its control files to an IMMUTABLE, buildId-named
 // directory (`dist/1.7.0-abc123def456/`). Content-hashed chunks are uploaded
 // separately under the stable `/assets/` namespace so byte-identical chunks
-// keep the same URL across builds. The rolling major channel (`/v1/`) is a 302
-// redirect served by the Cloudflare Worker (see `worker/`).
+// keep the same URL across builds. The rolling major channel (`/v1/`) is the
+// signed manifest copied to `/<channel>/manifest.json` at promotion.
 //
 // The buildId (widget version + git sha — see `scripts/build-id.mjs`) is
 // resolved identically by `build-manifest.mjs`, `verify-manifest.mjs`, and
-// `deploy-r2.mjs`, so all four agree on the output directory.
+// `deploy-azure.mjs`, so all four agree on the output directory.
 const { buildId: BUILD_ID } = resolveBuildIdentity(__dirname);
 
 // Dev-only: emit a minimal `manifest.json` next to `remoteEntry.js` so the
@@ -66,6 +67,7 @@ const devManifestPlugin = {
         },
         () => {
           const manifest = {
+            protocolMajor: WIDGET_PROTOCOL_MAJOR,
             version: '0.0.0-dev',
             remoteEntry: './remoteEntry.js',
             chunks: {},
@@ -89,8 +91,8 @@ export default (env, argv) => {
     devtool: isProd ? 'source-map' : 'eval-cheap-module-source-map',
     entry: {}, // Pure remote — no app entry.
     output: {
-      // Production: dist/<buildId>/* — deploy-r2.mjs keeps control files under
-      // that prefix and publishes content-hashed files under /assets/.
+      // Production: dist/<buildId>/* — deploy-azure.mjs keeps control files
+      // under that prefix and publishes content-hashed files under /assets/.
       // Dev: keep dist/ flat (the dev-server serves whatever publicPath says).
       path: path.resolve(__dirname, isProd ? `dist/${BUILD_ID}` : 'dist'),
       publicPath: 'auto',
@@ -201,6 +203,12 @@ export default (env, argv) => {
           // Imperative mount entry for framework-agnostic hosts. Owns its own
           // React root so non-React pages can embed it without a host framework.
           './mount': './src/mount.tsx',
+          // Deposit widget: fixed-destination funding flow. Same pairing —
+          // React hosts consume the component, vanilla hosts the mount.
+          // Additive expose: older loaders never request it, so this rolls
+          // within protocol v1.
+          './DepositWidget': './src/DepositWidget.tsx',
+          './mountDeposit': './src/mountDeposit.tsx',
         },
         shared: SHARED_SINGLETONS,
         // Disable MF's dev-only live-reload bridge. With the remote consumed

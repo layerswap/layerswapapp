@@ -1,17 +1,17 @@
 # @layerswap/utils
 
-## 2.0.0-next.0
+## 2.0.0
 
 ### Major Changes
 
-- **Breaking:** `NetworkType` and the structural `Network` type moved to `@layerswap/widget-types` — import them from there.
+- 3e34e07: **Breaking:** `NetworkType` and the structural `Network` type moved to `@layerswap/widget-types` — import them from there.
 
   **New:** `Address` / `EmailAddress` / `isEmailAddress`, `isValidAddress`, `addressFormat`, and the `isAndroid` / `isIOS` / `isMobile` and `sleep` helpers are now exported.
 
 ### Patch Changes
 
-- Updated dependencies
-  - @layerswap/widget-types@1.0.0-next.0
+- Updated dependencies [3e34e07]
+  - @layerswap/widget-types@1.0.0
 
 ## 1.7.0
 
