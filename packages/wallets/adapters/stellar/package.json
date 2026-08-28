@@ -45,6 +45,7 @@
   },
   "dependencies": {
     "@creit.tech/stellar-wallets-kit": "2.5.0",
+    "@reown/appkit": "1.7.8",
     "@stellar/stellar-sdk": "17.0.0",
     "@walletconnect/sign-client": "2.23.0"
   },

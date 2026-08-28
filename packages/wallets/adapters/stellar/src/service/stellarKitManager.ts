@@ -6,6 +6,7 @@ import { STELLAR_SESSION_KEY } from '../constants'
 import {
     STELLAR_WALLET_CONNECT_ID,
     StellarWalletConnectModule,
+    type StellarWalletConnectPresentation,
 } from './StellarWalletConnectModule'
 import { stellarStore, type StellarWalletSnapshot } from './stellarStore'
 
@@ -179,6 +180,10 @@ class StellarKitManager {
 
     warmUpWalletConnect(): void {
         this.walletConnectModule?.warmup()
+    }
+
+    setWalletConnectPresentation(presentation: StellarWalletConnectPresentation): void {
+        this.walletConnectModule?.setNextPresentation(presentation)
     }
 
     async revalidate(expectedAddress: string, networkPassphrase: string): Promise<void> {

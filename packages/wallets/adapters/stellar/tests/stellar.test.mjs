@@ -435,6 +435,96 @@ test('emits the WalletConnect URI and signs Stellar XDR through SignClient', asy
     assert.equal(proposals.length, 2)
 })
 
+test('opens AppKit only for an explicitly requested mobile WalletConnect presentation', async () => {
+    const session = {
+        topic: 'stellar-mobile-session',
+        namespaces: {
+            stellar: {
+                accounts: [`${StellarWalletConnectChain.Public}:${sourceKey.publicKey()}`],
+                methods: ['stellar_signXDR'],
+                events: [],
+            },
+        },
+    }
+    const client = {
+        session: { values: [] },
+        on: () => {},
+        off: () => {},
+        connect: async () => ({
+            uri: 'wc:stellar-mobile-pairing',
+            approval: async () => session,
+        }),
+        request: async () => ({}),
+        disconnect: async () => {},
+    }
+    const opened = []
+    let closeCount = 0
+    const walletConnect = new StellarWalletConnectModule({
+        projectId: 'project-id',
+        name: 'LayerSwap',
+        description: 'LayerSwap',
+        url: 'https://layerswap.io',
+        icons: ['https://layerswap.io/icon.png'],
+    }, async () => client, async () => ({
+        open: options => { opened.push(options) },
+        close: () => { closeCount += 1 },
+    }))
+    const emittedUris = []
+    walletConnect.onDisplayUri(uri => emittedUris.push(uri))
+
+    walletConnect.setNextPresentation('appkit')
+    assert.deepEqual(await walletConnect.getAddress(), { address: sourceKey.publicKey() })
+    assert.deepEqual(opened, [{ uri: 'wc:stellar-mobile-pairing' }])
+    assert.equal(closeCount, 1)
+    assert.deepEqual(emittedUris, [])
+
+    // Presentation is per-attempt: the next desktop-style connection goes
+    // back through Layerswap's QR listener.
+    await walletConnect.getAddress()
+    assert.deepEqual(emittedUris, ['wc:stellar-mobile-pairing'])
+    assert.equal(opened.length, 1)
+})
+
+test('rejects the mobile WalletConnect attempt when the AppKit modal is dismissed', async () => {
+    const client = {
+        session: { values: [] },
+        on: () => {},
+        off: () => {},
+        connect: async () => ({
+            uri: 'wc:stellar-mobile-pairing',
+            approval: () => new Promise(() => {}),
+        }),
+        request: async () => ({}),
+        disconnect: async () => {},
+    }
+    let stateListener
+    let unsubscribed = false
+    let closeCount = 0
+    const walletConnect = new StellarWalletConnectModule({
+        projectId: 'project-id',
+        name: 'LayerSwap',
+        description: 'LayerSwap',
+        url: 'https://layerswap.io',
+        icons: ['https://layerswap.io/icon.png'],
+    }, async () => client, async () => ({
+        open: () => {},
+        close: () => { closeCount += 1 },
+        subscribeState: listener => {
+            stateListener = listener
+            return () => { unsubscribed = true }
+        },
+    }))
+
+    walletConnect.setNextPresentation('appkit')
+    const pending = walletConnect.getAddress()
+    const assertion = assert.rejects(pending, /cancelled/)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    stateListener({ open: false })
+    await assertion
+    assert.equal(unsubscribed, true)
+    assert.equal(closeCount, 1)
+})
+
 test('routes Stellar registry wallets through the shared QR modal', async () => {
     const walletConnectSnapshot = {
         id: 'wallet_connect',
@@ -460,6 +550,7 @@ test('routes Stellar registry wallets through the shared QR modal', async () => 
     const qrStates = []
     const recentConnectors = []
     const manager = {
+        setWalletConnectPresentation: () => {},
         onDisplayUri: listener => {
             displayUriListener = listener
             return () => { displayUriListener = undefined }
