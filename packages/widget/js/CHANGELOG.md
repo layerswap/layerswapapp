@@ -1,0 +1,1 @@
+# @layerswap/widget-js
