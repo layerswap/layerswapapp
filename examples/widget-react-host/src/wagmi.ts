@@ -1,6 +1,10 @@
 import { http, createConfig } from 'wagmi';
 import { mainnet } from 'wagmi/chains';
 
+// Only the chains the HOST app itself uses need to be declared here. The
+// widget appends every Layerswap-supported EVM chain (and transports) to
+// this config when it adopts it, so in-widget network switching and
+// transfers work on chains not listed below.
 export const wagmiConfig = createConfig({
   chains: [mainnet],
   // Rely on wagmi's default EIP-6963 multi-injected provider discovery. The

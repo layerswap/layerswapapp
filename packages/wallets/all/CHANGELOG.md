@@ -1,10 +1,10 @@
 # @layerswap/wallets
 
-## 2.0.0-next.0
+## 2.0.0
 
 ### Major Changes
 
-- Wallets 2.0 — the wallet stack is re-architected into a layered package family with lazy chain loading.
+- 3e34e07: Wallets 2.0 — the wallet stack is re-architected into a layered package family with lazy chain loading.
 
   **Breaking changes**
   - New `@layerswap/wallet-core` package: the headless foundation (wallet contracts — `WalletProvider`, `WalletWrapper`, `WalletProviderDescriptor`, the shared connection-service contract — plus the provider registry and WalletConnect plumbing), extracted from the widget. New `@layerswap/ui-kit` package: the presentational connect modal and connectors list. Chain packages depend only on wallet-core, `@layerswap/utils`, and `@layerswap/widget-types`.
@@ -32,19 +32,19 @@
 
 ### Patch Changes
 
-- Updated dependencies
-- Updated dependencies
-  - @layerswap/wallet-core@2.0.0-next.0
-  - @layerswap/wallet-evm@2.0.0-next.0
-  - @layerswap/wallet-svm@2.0.0-next.0
-  - @layerswap/wallet-bitcoin@2.0.0-next.0
-  - @layerswap/wallet-ton@2.0.0-next.0
-  - @layerswap/wallet-tron@2.0.0-next.0
-  - @layerswap/wallet-starknet@2.0.0-next.0
-  - @layerswap/wallet-fuel@2.0.0-next.0
-  - @layerswap/wallet-paradex@2.0.0-next.0
-  - @layerswap/wallet-imtbl-passport@2.0.0-next.0
-  - @layerswap/widget-types@1.0.0-next.0
+- Updated dependencies [3e34e07]
+- Updated dependencies [3e34e07]
+  - @layerswap/wallet-core@2.0.0
+  - @layerswap/wallet-evm@2.0.0
+  - @layerswap/wallet-svm@2.0.0
+  - @layerswap/wallet-bitcoin@2.0.0
+  - @layerswap/wallet-ton@2.0.0
+  - @layerswap/wallet-tron@2.0.0
+  - @layerswap/wallet-starknet@2.0.0
+  - @layerswap/wallet-fuel@2.0.0
+  - @layerswap/wallet-paradex@2.0.0
+  - @layerswap/wallet-imtbl-passport@2.0.0
+  - @layerswap/widget-types@1.0.0
 
 ## 1.7.0
 

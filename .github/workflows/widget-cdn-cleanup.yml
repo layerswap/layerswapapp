@@ -1,0 +1,202 @@
+name: widget-cdn — cleanup old builds
+
+# Reference-aware retention for the widget CDN storage in Azure Blob Storage
+# (policy in apps/widget-cdn/scripts/cleanup-lib.mjs), run as
+# plan → approve → apply:
+#
+#   1. The `plan` job computes what is deletable, prints the keep/delete
+#      report to the run summary, and uploads the plan as an artifact. It also
+#      warns when the promoted build's manifest is near expiry (the live
+#      channel fails closed past it).
+#   2. The `apply` job waits on the target ENVIRONMENT's required reviewers —
+#      the "we can delete these 4 old builds, delete them?" button. Review the
+#      plan job's summary, then approve. It deletes exactly the approved plan
+#      (intersected with fresh state, so anything promoted or uploaded since
+#      planning stays protected). If the plan is empty, apply is skipped and
+#      no approval is requested.
+#
+# The target is a GitHub environment carrying the Azure identity as variables
+# (see .github/scripts/resolve-widget-cdn-env.sh; the sandbox has inline
+# fallbacks, production must be configured in Settings → Environments). Both
+# jobs declare the environment — if it has required reviewers, the read-only
+# plan needs one approval and the delete a second, informed one.
+#
+# Note: `schedule` only fires from the repository's default branch (`dev`).
+
+on:
+  schedule:
+    - cron: "17 4 * * 1" # weekly sandbox plan; deletes only if approved
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Storage target (GitHub environment)"
+        type: choice
+        options: [widget-cdn-azure-sandbox, widget-cdn-production]
+        default: widget-cdn-azure-sandbox
+      keep_recent:
+        description: "Most recent builds kept per channel regardless of expiry"
+        type: string
+        required: false
+        default: "3"
+      asset_grace_days:
+        description: "Grace period before unreferenced shared assets are deleted"
+        type: string
+        required: false
+        default: "2"
+
+concurrency:
+  group: widget-cdn-cleanup-${{ inputs.environment || 'widget-cdn-azure-sandbox' }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  DEPLOY_TARGET: ${{ inputs.environment || 'widget-cdn-azure-sandbox' }}
+  KEEP_RECENT: ${{ inputs.keep_recent || '3' }}
+  ASSET_GRACE_DAYS: ${{ inputs.asset_grace_days || '2' }}
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: ${{ inputs.environment || 'widget-cdn-azure-sandbox' }}
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      has-deletions: ${{ steps.plan.outputs.has-deletions }}
+
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Resolve storage target
+        env:
+          RAW_AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+          RAW_AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+          RAW_AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          RAW_AZURE_STORAGE_ACCOUNT: ${{ vars.AZURE_STORAGE_ACCOUNT }}
+          RAW_AZURE_STORAGE_CONTAINER: ${{ vars.AZURE_STORAGE_CONTAINER }}
+          RAW_CDN_BASE_URL: ${{ vars.CDN_BASE_URL }}
+        run: bash .github/scripts/resolve-widget-cdn-env.sh
+
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared widget protocol
+        run: pnpm --filter @layerswap/widget-types build
+
+      - name: Log in to Azure with OIDC
+        uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2
+        with:
+          client-id: ${{ env.AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Compute cleanup plan (dry run)
+        id: plan
+        working-directory: apps/widget-cdn
+        run: |
+          set -euo pipefail
+          node scripts/cleanup-azure.mjs \
+            --keep-recent "$KEEP_RECENT" --asset-grace-days "$ASSET_GRACE_DAYS" \
+            --plan-out "$RUNNER_TEMP/plan.json" 2>&1 | tee "$RUNNER_TEMP/cleanup.log"
+          COUNT=$(node -e "const p=require(process.env.RUNNER_TEMP+'/plan.json'); console.log(p.deleteBuilds.length + p.deleteAssets.length)")
+          echo "has-deletions=$([ "$COUNT" -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          {
+            echo "## widget-cdn cleanup plan (${DEPLOY_TARGET})"
+            echo ""
+            if [ "$COUNT" -gt 0 ]; then
+              echo "**$COUNT object group(s) are deletable. Approve the \`apply\` job to delete them.**"
+            else
+              echo "Nothing to delete — apply will be skipped."
+            fi
+            echo ""
+            echo '```'
+            cat "$RUNNER_TEMP/cleanup.log"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload plan artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: cleanup-plan
+          path: ${{ runner.temp }}/plan.json
+          retention-days: 7
+
+  apply:
+    needs: plan
+    if: ${{ needs.plan.outputs.has-deletions == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # The approval gate: this environment's required reviewers must approve
+    # before anything is deleted from the container.
+    environment: ${{ inputs.environment || 'widget-cdn-azure-sandbox' }}
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Resolve storage target
+        env:
+          RAW_AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+          RAW_AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+          RAW_AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          RAW_AZURE_STORAGE_ACCOUNT: ${{ vars.AZURE_STORAGE_ACCOUNT }}
+          RAW_AZURE_STORAGE_CONTAINER: ${{ vars.AZURE_STORAGE_CONTAINER }}
+          RAW_CDN_BASE_URL: ${{ vars.CDN_BASE_URL }}
+        run: bash .github/scripts/resolve-widget-cdn-env.sh
+
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared widget protocol
+        run: pnpm --filter @layerswap/widget-types build
+
+      - name: Download approved plan
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: cleanup-plan
+          path: ${{ runner.temp }}
+
+      - name: Log in to Azure with OIDC
+        uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2
+        with:
+          client-id: ${{ env.AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Apply approved plan
+        working-directory: apps/widget-cdn
+        run: |
+          set -euo pipefail
+          node scripts/cleanup-azure.mjs --apply --plan-in "$RUNNER_TEMP/plan.json" \
+            --keep-recent "$KEEP_RECENT" --asset-grace-days "$ASSET_GRACE_DAYS" \
+            2>&1 | tee "$RUNNER_TEMP/cleanup.log"
+          {
+            echo "## widget-cdn cleanup applied (${DEPLOY_TARGET})"
+            echo ""
+            echo '```'
+            cat "$RUNNER_TEMP/cleanup.log"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

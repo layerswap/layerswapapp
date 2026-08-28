@@ -1,37 +1,76 @@
+import { useState } from 'react';
 import { WagmiProvider } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { LayerswapWidget } from '@layerswap/widget-react';
+import { LayerswapWidget, LayerswapDepositWidget } from '@layerswap/widget-react';
+import type { LayerswapWidgetProps, LayerswapDepositWidgetProps } from '@layerswap/widget-react';
 import { wagmiConfig } from './wagmi';
 import { HostWallet } from './HostWallet';
 
-// Integrators do NOT configure the widget's source — it is always the
-// canonical signed Layerswap CDN baked into `@layerswap/widget-js`. This dev
-// harness is the exception: it points the loader at the local widget-cdn dev
-// server (`pnpm dev` in apps/widget-cdn) via the internal `__LAYERSWAP_WIDGET_*`
-// override globals. These are an undocumented build/test seam, not a public API.
-//
-// Defaults to the local dev server; set VITE_LAYERSWAP_MANIFEST to a production
-// URL (e.g. https://cdn.layerswap.io/v1/manifest.json). The dev server emits an
-// unsigned manifest, so verification is off unless VITE_LAYERSWAP_VERIFY=true.
-const MANIFEST_URL =
-  import.meta.env.VITE_LAYERSWAP_MANIFEST ?? 'http://127.0.0.1:3100/manifest.json';
-const VERIFY = import.meta.env.VITE_LAYERSWAP_VERIFY === 'true';
-
-declare global {
-  interface Window {
-    __LAYERSWAP_WIDGET_MANIFEST__?: string;
-    __LAYERSWAP_WIDGET_VERIFY__?: boolean;
-  }
-}
-
-// Set before <LayerswapWidget> mounts (module scope runs first), so the loader
-// reads them when it resolves the source.
-window.__LAYERSWAP_WIDGET_MANIFEST__ = MANIFEST_URL;
-window.__LAYERSWAP_WIDGET_VERIFY__ = VERIFY;
-
 const queryClient = new QueryClient();
 
+// Demo recipient for the deposit tab. A real integrator supplies their own
+// deposit address here — the deposit widget never asks the end user for it.
+const DEPOSIT_DEMO_ADDRESS = '0xB2029bbd8C1cBCC43c3A7b7fE3d118b0C57D7C31';
+
+// Keep object/function props referentially stable — the widget memoizes its
+// wallet-provider setup on these by identity, so fresh inline literals on
+// every host render would needlessly rebuild wallet providers. Hoist them
+// (or useMemo/useCallback them if they depend on host state).
+const WIDGET_CONFIG: LayerswapWidgetProps['config'] = { version: 'mainnet' };
+const WALLET_PROVIDERS_CONFIG: LayerswapWidgetProps['walletProvidersConfig'] = {
+  exclude: ['tron', 'fuel'],
+};
+const DEPOSIT_DESTINATION: LayerswapDepositWidgetProps['destination'] = {
+  network: 'BASE_MAINNET',
+  tokens: ['USDC', 'ETH'],
+};
+const SWAP_CALLBACKS: LayerswapWidgetProps['callbacks'] = {
+  onSwapCreate: (swap) => console.log('[host] swap created', swap),
+  onSwapComplete: (swap) => console.log('[host] swap complete', swap),
+  onError: (err) => console.warn('[host] widget error', err),
+  onSwapModalStateChange: (open) => console.log('[host] swap modal', open),
+};
+const DEPOSIT_CALLBACKS: LayerswapDepositWidgetProps['callbacks'] = {
+  onSwapCreate: (swap) => console.log('[host] deposit swap created', swap),
+  onSwapComplete: (swap) => console.log('[host] deposit complete', swap),
+  onError: (err) => console.warn('[host] deposit widget error', err),
+};
+const onWidgetReady = () => console.log('[embed] widget ready');
+const onWidgetLoadError = (err: unknown) => console.error('[embed] failed to load', err);
+const onDepositWidgetReady = () => console.log('[embed] deposit widget ready');
+const onDepositWidgetLoadError = (err: unknown) => console.error('[embed] failed to load', err);
+
+type WidgetTab = 'swap' | 'deposit';
+
+const loadingFallback = (
+  <div style={{ padding: 40, textAlign: 'center', color: '#9CA3AF' }}>
+    Loading widget…
+  </div>
+);
+
 export function App() {
+  // Only one Layerswap widget (of either kind) may be live per page — the
+  // widget keeps process-global state. Tabs swap between them rather than
+  // rendering both.
+  const [tab, setTab] = useState<WidgetTab>('swap');
+
+  const tabButton = (value: WidgetTab, label: string) => (
+    <button
+      type="button"
+      onClick={() => setTab(value)}
+      style={{
+        padding: '6px 16px',
+        borderRadius: 8,
+        border: '1px solid #374151',
+        background: tab === value ? '#374151' : 'transparent',
+        color: tab === value ? '#F9FAFB' : '#9CA3AF',
+        cursor: 'pointer',
+      }}
+    >
+      {label}
+    </button>
+  );
+
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
@@ -50,30 +89,39 @@ export function App() {
           </h1>
           <p style={{ marginBottom: 20, color: '#9CA3AF', maxWidth: 540, textAlign: 'center' }}>
             The host page below mounts its own <code>WagmiProvider</code> and a
-            connect button. The Layerswap widget is fetched at runtime via the
-            manifest at <code>{MANIFEST_URL}</code>. Connect the host wallet and
+            connect button. The Layerswap widget is fetched from the signed CDN
+            configured inside the loader package. Connect the host wallet and
             compare its account against what the widget sees.
           </p>
           <HostWallet />
+          <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+            {tabButton('swap', 'Swap')}
+            {tabButton('deposit', 'Deposit')}
+          </div>
           <div style={{ width: '100%', maxWidth: 512 }}>
-            <LayerswapWidget
-              config={{ version: 'mainnet' }}
-              walletProvidersConfig={{ exclude: ['tron', 'fuel'] }}
-              wagmiConfig={wagmiConfig}
-              callbacks={{
-                onSwapCreate: (swap) => console.log('[host] swap created', swap),
-                onSwapComplete: (swap) => console.log('[host] swap complete', swap),
-                onError: (err) => console.warn('[host] widget error', err),
-                onSwapModalStateChange: (open) => console.log('[host] swap modal', open),
-              }}
-              fallback={
-                <div style={{ padding: 40, textAlign: 'center', color: '#9CA3AF' }}>
-                  Loading widget…
-                </div>
-              }
-              onReady={() => console.log('[embed] widget ready')}
-              onError={(err) => console.error('[embed] failed to load', err)}
-            />
+            {tab === 'swap' ? (
+              <LayerswapWidget
+                config={WIDGET_CONFIG}
+                walletProvidersConfig={WALLET_PROVIDERS_CONFIG}
+                wagmiConfig={wagmiConfig}
+                callbacks={SWAP_CALLBACKS}
+                fallback={loadingFallback}
+                onReady={onWidgetReady}
+                onError={onWidgetLoadError}
+              />
+            ) : (
+              <LayerswapDepositWidget
+                config={WIDGET_CONFIG}
+                destination={DEPOSIT_DESTINATION}
+                destinationAddress={DEPOSIT_DEMO_ADDRESS}
+                walletProvidersConfig={WALLET_PROVIDERS_CONFIG}
+                wagmiConfig={wagmiConfig}
+                callbacks={DEPOSIT_CALLBACKS}
+                fallback={loadingFallback}
+                onReady={onDepositWidgetReady}
+                onError={onDepositWidgetLoadError}
+              />
+            )}
           </div>
         </div>
       </QueryClientProvider>

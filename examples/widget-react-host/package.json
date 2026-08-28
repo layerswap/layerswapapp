@@ -17,6 +17,7 @@
     "wagmi": "catalog:",
     "zustand": "catalog:"
   },
+  "packageManager": "pnpm@10.20.0",
   "devDependencies": {
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
