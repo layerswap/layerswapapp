@@ -29,8 +29,8 @@ export default class LayerSwapApiClient {
 
     fetcher = (url: string) => this.AuthenticatedRequest<ApiResponse<any>>("GET", url)
 
-    async GetRoutesAsync(direction: 'sources' | 'destinations', useFrontendSwap: boolean): Promise<ApiResponse<NetworkWithTokens[]>> {
-        return await this.UnauthenticatedRequest<ApiResponse<NetworkWithTokens[]>>("GET", `/${direction}?include_unmatched=true&include_swaps=true&include_unavailable=true&use_frontend_swap=${useFrontendSwap}`)
+    async GetRoutesAsync(direction: 'sources' | 'destinations', _useFrontendSwap: true = true): Promise<ApiResponse<NetworkWithTokens[]>> {
+        return await this.UnauthenticatedRequest<ApiResponse<NetworkWithTokens[]>>("GET", `/${direction}?include_unmatched=true&include_swaps=true&include_unavailable=true&use_frontend_swap=true`)
     }
 
     async GetSourceExchangesAsync(): Promise<ApiResponse<Exchange[]>> {
@@ -43,7 +43,11 @@ export default class LayerSwapApiClient {
 
     async CreateSwapAsync(params: CreateSwapParams): Promise<ApiResponse<SwapResponse>> {
         const correlationId = uuidv4()
-        return await this.AuthenticatedRequest<ApiResponse<SwapResponse>>("POST", `/swaps`, params, { 'X-LS-CORRELATION-ID': correlationId });
+        return await this.AuthenticatedRequest<ApiResponse<SwapResponse>>("POST", `/swaps`, {
+            ...params,
+            use_frontend_swap: true,
+            use_gasless: params.use_gasless === true,
+        }, { 'X-LS-CORRELATION-ID': correlationId });
     }
 
     async GetTransactionStatus(network: string, tx_id: string): Promise<ApiResponse<any>> {
@@ -155,16 +159,25 @@ export type CreateSwapParams = {
     destination_exchange?: string
     use_deposit_address: boolean
     use_depository?: boolean
-    use_gasless?: boolean
-    use_frontend_swap?: boolean
+    use_gasless: boolean
+    use_frontend_swap: true
     app_name?: string,
 }
 
 export type SwapResponse = {
     deposit_actions?: DepositAction[];
+    execution?: SwapExecution;
     swap: SwapItem;
     quote: SwapQuote
     refuel?: Refuel,
+}
+
+export type SwapExecution = {
+    type: 'frontend_swap' | 'wallet_direct' | 'wallet_depository' | 'deposit_address' | 'exchange';
+    gas_mode: 'self_paid' | 'gasless';
+    wallet_deposit_mode?: 'direct' | 'depository';
+    pull_standard?: 'native' | 'eip3009' | 'permit2' | 'permit2_witness';
+    provisional: boolean;
 }
 
 export type SwapBasicData = {
@@ -277,6 +290,7 @@ export type DepositAction = TransferDepositAction | SignDepositAction | PendingD
 
 export type Quote = {
     quote: SwapQuote,
+    execution?: SwapExecution,
     refuel?: Refuel,
     reward?: QuoteReward
 }
@@ -298,7 +312,7 @@ export type GetQuoteParams = {
     destination_token: string,
     destination_address: string,
     use_deposit_address: boolean,
-    use_frontend_swap: boolean,
+    use_frontend_swap: true,
     include_gas?: boolean,
     amount: number,
     refuel?: boolean

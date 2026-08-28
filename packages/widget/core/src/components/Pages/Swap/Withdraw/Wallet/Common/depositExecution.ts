@@ -48,6 +48,16 @@ export const getActionableDepositAction = (actions: DepositAction[] | undefined)
     return legacy && (isSignAction(legacy) || isTransferAction(legacy)) ? legacy : undefined
 }
 
+const DEPOSIT_ACTION_LABELS: Record<string, string> = {
+    approve_permit2: 'Approve token',
+    sign: 'Sign to swap',
+    publish: 'Confirm swap',
+    deposit: 'Send from wallet',
+}
+
+export const getDepositActionLabel = (action: DepositAction): string =>
+    action.step ? DEPOSIT_ACTION_LABELS[action.step] ?? 'Continue' : 'Continue'
+
 export const requiresDepositActionRefresh = (action: DepositAction, actions: DepositAction[]): boolean =>
     action.step === 'approve_permit2'
     || (action.step === 'sign' && actions.some(candidate => candidate.step === 'publish'))

@@ -13,7 +13,7 @@ import WalletMessage from "../../messages/Message";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { Network, NetworkRoute } from "@layerswap/widget-types";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
-import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
+import { useGaslessAuthorizationStore, useSwapTransactionStore } from "@/stores/swapTransactionStore";
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
 import LayerSwapApiClient, { DepositAction, SwapBasicData, SwapDetails } from "@/lib/apiClients/layerSwapApiClient";
 import { sleep } from "@layerswap/utils";
@@ -28,10 +28,10 @@ import InfoIcon from "@/components/Icons/InfoIcon";
 import { useBalance } from "@/lib/balances/useBalance";
 import useSWRGas from "@/lib/gases/useSWRGas";
 import { useDepositSettings } from "@/context/depositSettings";
-import { DepositExecutionContext, GaslessSigner, WalletTransfer, executeGaslessAuthorization, executeWalletTransfer, getActionableDepositAction, isSignAction, isTransferAction, requiresDepositActionRefresh } from "./depositExecution";
+import { DepositExecutionContext, GaslessSigner, WalletTransfer, executeGaslessAuthorization, executeWalletTransfer, getActionableDepositAction, getDepositActionLabel, isSignAction, isTransferAction, requiresDepositActionRefresh } from "./depositExecution";
 import DepositWorkflowProgress from "./DepositWorkflowProgress";
+import { hasSwapExecutionProgress } from "@/helpers/swapProgress";
 import { isGaslessCapableRoute } from "@/helpers/gasless";
-import { shouldUseFrontendSwap } from "@/helpers/swapFlow";
 
 const layerswapApiClient = new LayerSwapApiClient()
 
@@ -192,7 +192,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     refuel,
     ...props
 }) => {
-    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, refuel: refuelData, swapError, setSwapError } = useSwapDataState()
+    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, execution, depositActionsResponse, refuel: refuelData, swapError, setSwapError } = useSwapDataState()
     const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
     const gaslessFailureStage = useGaslessPreferenceStore(s => s.gaslessFailureStage)
     const gaslessEnabled = useGaslessPreferenceStore(s => s.gaslessEnabled)
@@ -200,7 +200,13 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const clearGaslessUnavailable = useGaslessPreferenceStore(s => s.clearGaslessUnavailable)
     const { onWalletWithdrawalSuccess: onWalletWithdrawalSuccess, onCancelWithdrawal } = useWalletWithdrawalState();
     const { createSwap, mutateSwap, setSwapId, setQuoteLoading } = useSwapDataUpdate()
-    const { setSwapTransaction } = useSwapTransactionStore();
+    const setSwapTransaction = useSwapTransactionStore(state => state.setSwapTransaction)
+    const storedWalletTransaction = useSwapTransactionStore(
+        state => swapId ? state.swapTransactions[swapId] : undefined,
+    )
+    const gaslessAuthorization = useGaslessAuthorizationStore(
+        state => swapId ? state.authorizations[swapId] : undefined,
+    )
     const initialSettings = useInitialSettings()
 
     const selectedSourceAccount = useSelectedAccount("from", swapBasicData.source_network?.name);
@@ -228,28 +234,37 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
     const isMultiStepWorkflow = (depositActions?.filter(action => !!action.step).length ?? 0) > 1
     const workflowCompleted = !!depositActions?.length && depositActions.every(action => action.status === 'completed')
-    const depositMethod = swapBasicData.use_deposit_address ? 'deposit_address' : 'wallet'
-    const isGaslessActive = gaslessEnabled && isGaslessCapableRoute({
-        depositMethod,
+    const hasProgress = useMemo(() => hasSwapExecutionProgress({
+        swapDetails,
+        depositActions,
+        storedWalletTransaction,
+        gaslessAuthorization,
+    }), [swapDetails, depositActions, storedWalletTransaction, gaslessAuthorization])
+    const desiredGasless = gaslessEnabled && isGaslessCapableRoute({
+        depositMethod: swapBasicData.use_deposit_address ? 'deposit_address' : 'wallet',
         supportsGaslessDeposit: swapBasicData.source_token?.supports_gasless_deposit,
         sourceTokenContract: swapBasicData.source_token?.contract,
         gaslessStandard: swapBasicData.source_token?.gasless_standard,
         sourceIsSupported: !!selectedWallet?.asSourceSupportedNetworks?.includes(swapBasicData.source_network.name),
         sourceAddress: selectedSourceAccount?.address,
     })
-    const isFrontendSwap = shouldUseFrontendSwap({
-        depositMethod,
-        sourceNetwork: swapBasicData.source_network.name,
-        destinationNetwork: swapBasicData.destination_network.name,
-    }) && !isGaslessActive
-    const primaryActionText = isFrontendSwap ? 'Approve and Swap' : (actionButtonText || 'Swap now')
+    const flowPreferenceChanged = !!swapId
+        && !!execution
+        && (execution.gas_mode === 'gasless') !== desiredGasless
+    const actionableDepositAction = getActionableDepositAction(depositActions)
+    const primaryActionText = actionableDepositAction
+        ? getDepositActionLabel(actionableDepositAction)
+        : (actionButtonText || 'Swap now')
 
     const priceImpactValues = useMemo(() => quote ? resolvePriceImpactValues(quote, refuel ? refuelData : undefined) : undefined, [quote, refuel]);
     const criticalMarketPriceImpact = useMemo(() => priceImpactValues?.criticalMarketPriceImpact, [priceImpactValues]);
 
-    const executeWorkflow = async (forceNewSwap = false) => {
+    const executeWorkflow = async (requestFreshSwap = false) => {
         if (executionInFlight.current) return
         executionInFlight.current = true
+        // Once funds or a live authorization can move, resuming is the only safe choice. Before
+        // that point every retry gets a new swap so it reflects the latest gasless preference.
+        const forceNewSwap = (requestFreshSwap || flowPreferenceChanged) && !hasProgress
         let executionSwapId = forceNewSwap ? undefined : swapId
         try {
             if (!selectedSourceAccount) {
@@ -262,6 +277,10 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             setLoading(true)
             clearError?.()
             setSwapError?.("")
+            if (forceNewSwap && swapId) {
+                useGaslessAuthorizationStore.getState().removeGaslessAuthorization(swapId)
+                useSwapTransactionStore.getState().removeSwapTransaction(swapId)
+            }
             let swapData: SwapDetails | undefined = forceNewSwap ? undefined : activeWorkflowState?.swapData ?? swapDetails
             let activeDepositActions = forceNewSwap ? undefined : depositActions;
 
@@ -449,7 +468,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         throw new Error('The transaction is still confirming. Please wait a moment and try again.')
     }
 
-    const handleClick = () => executeWorkflow(false)
+    const handleClick = () => executeWorkflow(!!error || !!swapError)
     const handleCriticalContinue = () => {
         setShowCriticalMarketPriceImpactButtons(false)
         executeWorkflow(false)
@@ -458,7 +477,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const retryGasless = () => {
         clearGaslessUnavailable()
         setSwapError?.(null)
-        executeWorkflow(false)
+        executeWorkflow(true)
     }
 
     const switchToStandard = () => {

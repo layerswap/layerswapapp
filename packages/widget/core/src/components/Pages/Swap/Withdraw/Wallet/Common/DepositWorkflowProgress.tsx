@@ -3,18 +3,7 @@ import { Check, X } from "lucide-react";
 import { DepositAction } from "@/lib/apiClients/layerSwapApiClient";
 import clsx from "clsx";
 import { Gauge } from "../../Processing/gauge";
-
-const DEPOSIT_STEP_LABELS: Record<string, string> = {
-    approve_permit2: 'Approve in wallet',
-    sign: 'Sign message',
-    publish: 'Confirm swap',
-    deposit: 'Send deposit',
-}
-
-const getDepositStepLabel = (step: string): string => DEPOSIT_STEP_LABELS[step] ?? step
-
-const getDepositActionLabel = (action: DepositAction): string =>
-    getDepositStepLabel(action.step ?? 'Continue')
+import { getDepositActionLabel } from "./depositExecution";
 
 const getStepDescription = (action: DepositAction): string | undefined => {
     switch (action.step) {

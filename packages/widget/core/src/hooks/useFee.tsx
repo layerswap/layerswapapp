@@ -17,7 +17,7 @@ import { useSelectedAccount } from '@/context/swapAccounts'
 import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore'
 import { isGaslessCapableRoute } from '@/helpers/gasless'
 import { Address } from '@/lib/address/Address';
-import { shouldUseFrontendSwap } from '@/helpers/swapFlow';
+import { wantsFrontendSwap } from '@/helpers/swapFlow';
 
 const apiClient = new LayerswapApiClient()
 
@@ -98,7 +98,7 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
     }, [amount])
 
     const use_deposit_address = depositMethod === 'wallet' ? false : true
-    const useFrontendSwap = shouldUseFrontendSwap({
+    const useFrontendSwap = wantsFrontendSwap({
         depositMethod,
         sourceNetwork: from,
         destinationNetwork: to,
@@ -311,7 +311,7 @@ export type QuoteUrlArgs = {
     amount: string | number
     refuel: boolean
     useDepositAddress: boolean
-    useFrontendSwap: boolean
+    useFrontendSwap: true
     slippage?: number
     useGasless?: boolean
     destinationAddress?: string
@@ -327,9 +327,8 @@ export function buildQuoteUrl(args: QuoteUrlArgs): string {
         amount,
         refuel,
         useDepositAddress,
-        useFrontendSwap,
         slippage,
-        useGasless,
+        useGasless = false,
         destinationAddress,
         sourceAddress,
     } = args
@@ -342,15 +341,12 @@ export function buildQuoteUrl(args: QuoteUrlArgs): string {
         amount: String(amount),
         refuel: String(!!refuel),
         use_deposit_address: useDepositAddress ? 'true' : 'false',
-        ...(!useGasless ? { use_frontend_swap: String(useFrontendSwap) } : {}),
+        use_frontend_swap: 'true',
+        use_gasless: String(useGasless),
     })
 
     if (slippage !== undefined) {
         params.append('slippage', String(slippage))
-    }
-
-    if (useGasless) {
-        params.append('use_gasless', 'true')
     }
 
     if (destinationAddress) {
@@ -364,8 +360,8 @@ export function buildQuoteUrl(args: QuoteUrlArgs): string {
     return `/quote?${params.toString()}`
 }
 
-export const getLimits = async (swapValues: LimitsQueryOptions & { useFrontendSwap: boolean }) => {
-    const { sourceToken, sourceNetwork, destinationNetwork, destinationToken, refuel, useDepositAddress, useFrontendSwap, destinationAddress } = swapValues || {}
+export const getLimits = async (swapValues: LimitsQueryOptions & { useFrontendSwap: true }) => {
+    const { sourceToken, sourceNetwork, destinationNetwork, destinationToken, refuel, useDepositAddress, useFrontendSwap, useGasless, destinationAddress } = swapValues || {}
 
     if (!sourceNetwork || !destinationNetwork || useDepositAddress === undefined || !destinationToken || !sourceToken)
         return { minAllowedAmount: undefined, maxAllowedAmount: undefined }
@@ -377,6 +373,7 @@ export const getLimits = async (swapValues: LimitsQueryOptions & { useFrontendSw
         destinationToken,
         useDepositAddress,
         useFrontendSwap,
+        useGasless,
         refuel,
         destinationAddress
     })
@@ -400,14 +397,14 @@ interface LimitsQueryOptions {
     destinationNetwork?: string;
     destinationToken?: string;
     useDepositAddress?: boolean;
-    useFrontendSwap?: boolean;
+    useFrontendSwap?: true;
     refuel?: boolean;
     useGasless?: boolean;
     destinationAddress?: string;
 }
 
 type BuildLimitsUrlOptions = LimitsQueryOptions & {
-    useFrontendSwap: boolean;
+    useFrontendSwap: true;
 }
 
 export function buildLimitsUrl({
@@ -416,7 +413,6 @@ export function buildLimitsUrl({
     destinationNetwork,
     destinationToken,
     useDepositAddress,
-    useFrontendSwap,
     refuel = false,
     useGasless = false,
     destinationAddress
@@ -432,13 +428,10 @@ export function buildLimitsUrl({
         destination_network: destinationNetwork,
         destination_token: destinationToken,
         use_deposit_address: useDepositAddress ? 'true' : 'false',
-        ...(!useGasless ? { use_frontend_swap: String(useFrontendSwap) } : {}),
+        use_frontend_swap: 'true',
+        use_gasless: String(useGasless),
         refuel: String(!!refuel),
     });
-
-    if (useGasless) {
-        params.append('use_gasless', 'true');
-    }
 
     if (destinationAddress) {
         params.append('destination_address', destinationAddress);

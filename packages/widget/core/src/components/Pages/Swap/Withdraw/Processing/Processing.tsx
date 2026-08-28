@@ -4,7 +4,7 @@ import LinkWithIcon from '@/components/Common/LinkWithIcon';
 import { FC, useCallback, useEffect, useMemo, useRef } from 'react'
 import { Widget } from '@/components/Widget/Index';
 import SwapSummary from '../Summary';
-import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, SwapBasicData, SwapDetails, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
+import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, SwapBasicData, SwapDetails, SwapExecution, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
 import { truncateDecimals } from '@/components/utils/RoundDecimals';
 import { SwapFailReasons } from '@/Models/RangeError';
 import { Gauge } from './gauge';
@@ -25,26 +25,21 @@ import { SwapPhase } from '@/components/utils/resolveSwapPhase';
 import { useDepositSettings } from '@/context/depositSettings';
 import { SwapFailureReason } from '@/hooks/useSwapRetry';
 import { SwapQuoteDetails } from '../SwapQuoteDetails';
-import { useIsGaslessActive } from '@/hooks/useIsGaslessActive';
-import { shouldUseFrontendSwap } from '@/helpers/swapFlow';
+import { isFrontendSwapExecution } from '@/helpers/swapFlow';
 
 const apiClient = new LayerSwapApiClient();
 
 type Props = {
     swapBasicData: SwapBasicData;
     swapDetails: SwapDetails;
+    execution: SwapExecution | undefined;
     quote: SwapQuote | undefined;
     refuel: Refuel | undefined;
     failureReason?: SwapFailureReason;
 }
 
-const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel, failureReason }) => {
-    const isGaslessActive = useIsGaslessActive(swapBasicData)
-    const isFrontendSwap = shouldUseFrontendSwap({
-        depositMethod: swapBasicData.use_deposit_address ? 'deposit_address' : 'wallet',
-        sourceNetwork: swapBasicData.source_network.name,
-        destinationNetwork: swapBasicData.destination_network.name,
-    }) && !isGaslessActive
+const Processing: FC<Props> = ({ swapBasicData, swapDetails, execution, quote, refuel, failureReason }) => {
+    const isFrontendSwap = isFrontendSwapExecution(execution)
     const { boot, show, update } = useIntercom();
     const { onSwapStatusChange } = useCallbacks()
     const { isDepositFlow } = useDepositSettings()

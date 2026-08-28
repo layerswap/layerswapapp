@@ -85,6 +85,7 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
     const handleWithdraw = useCallback(async () => {
         if (submittingRef.current) return
         submittingRef.current = true
+        const retryingUnstartedSwap = !!error || rejected
         setError(undefined)
         setRejected(false)
         setLoading(true)
@@ -92,9 +93,9 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
         // Ensure the backend swap exists (created lazily on first click) and resolve
         // its deposit address, which the withdrawal funds.
         const resolveSwapAndDepositAddress = async (amount: string): Promise<{ destination: string; activeSwapId: string }> => {
-            let depositActions = depositActionsResponse
-            let activeSwapId = swapId
-            if (!swapId || !swapDetails) {
+            let depositActions = retryingUnstartedSwap ? undefined : depositActionsResponse
+            let activeSwapId = retryingUnstartedSwap ? undefined : swapId
+            if (retryingUnstartedSwap || !swapId || !swapDetails) {
                 setSwapId(undefined)
                 const swapValues: SwapFormValues = {
                     amount,
@@ -174,7 +175,7 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
             }
             submittingRef.current = false
         }
-    }, [sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, networks, sourceRoutes, depositActionsResponse, swapId, swapDetails, refuel, initialSettings, wallet, createSwap, setSwapId, executeTransfer, onWalletWithdrawalSuccess, swapBasicData.requested_amount])
+    }, [sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, networks, sourceRoutes, depositActionsResponse, swapId, swapDetails, refuel, initialSettings, wallet, createSwap, setSwapId, executeTransfer, onWalletWithdrawalSuccess, swapBasicData.requested_amount, error, rejected])
 
     return {
         handleWithdraw,

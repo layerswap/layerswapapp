@@ -2,7 +2,7 @@ import { SwapDirection, SwapFormValues } from "@/components/Pages/Swap/Form/Swap
 import AppSettings from "@/lib/AppSettings"
 import { resolveExtendedRoutePlan } from "@/lib/extendedRoutes/registry"
 import { NetworkRoute } from "@layerswap/widget-types"
-import { shouldUseFrontendSwap } from "@/helpers/swapFlow"
+import { wantsFrontendSwap } from "@/helpers/swapFlow"
 
 export const resolveExchangesURLForSelectedToken = (values: SwapFormValues, sourceRoutes?: NetworkRoute[]) => {
 
@@ -63,7 +63,7 @@ export const resolveNetworkRoutesURL = (direction: SwapDirection, values: SwapFo
 
     const isCEX = fromExchange || toExchange
     const hasDepositAddress = depositMethod === 'deposit_address'
-    const useFrontendSwap = shouldUseFrontendSwap({
+    const useFrontendSwap = wantsFrontendSwap({
         depositMethod,
         sourceNetwork: from?.name,
         destinationNetwork: to?.name,
@@ -118,9 +118,9 @@ type ResolveRoutesURLForSelectedTokenProps = {
     networkTypes?: string[],
     hasDepositAddress?: boolean,
     useDepositAddressSwaps?: boolean,
-    useFrontendSwap: boolean,
+    useFrontendSwap: true,
 }
-export const resolveRoutesURLForSelectedToken = ({ direction, network, token, includes, networkTypes, hasDepositAddress, useDepositAddressSwaps, useFrontendSwap }: ResolveRoutesURLForSelectedTokenProps) => {
+export const resolveRoutesURLForSelectedToken = ({ direction, network, token, includes, networkTypes, hasDepositAddress, useDepositAddressSwaps }: ResolveRoutesURLForSelectedTokenProps) => {
 
     const include_unmatched = includes.unmatched ? 'true' : 'false'
     const include_unavailable = includes.unavailable ? 'true' : 'false'
@@ -133,7 +133,7 @@ export const resolveRoutesURLForSelectedToken = ({ direction, network, token, in
             : { include_swaps: includes.swaps ? 'true' : 'false' }),
         ...(networkTypes ? { network_types: networkTypes?.join(',') } : {}),
         ...(hasDepositAddress ? { has_deposit_address: 'true' } : {}),
-        use_frontend_swap: String(useFrontendSwap),
+        use_frontend_swap: 'true',
         ...(network ?
             {
                 [direction === 'to' ? 'source_network' : 'destination_network']: network,

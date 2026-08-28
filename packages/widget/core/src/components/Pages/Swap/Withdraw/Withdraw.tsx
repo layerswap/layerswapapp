@@ -22,18 +22,12 @@ import { ICON_CLASSES_WARNING } from '../Form/SecondaryComponents/validationErro
 import { RefreshBalanceButton } from '../Form/SecondaryComponents/validationError/RefreshBalanceButton';
 import { AdjustAmountButton } from '../Form/SecondaryComponents/validationError/AdjustAmountButton';
 import { AnimatePresence, motion } from 'framer-motion';
-import { isDepositAddressSwap, shouldUseFrontendSwap } from '@/helpers/swapFlow';
-import { useIsGaslessActive } from '@/hooks/useIsGaslessActive';
+import { isDepositAddressSwap, isFrontendSwapExecution } from '@/helpers/swapFlow';
 
 const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: () => void, onCancelWithdrawal?: () => void, partner?: Partner }> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal, partner }) => {
-    const { swapBasicData, swapDetails, swapId, quote, refuel, quoteIsLoading, quoteError } = useSwapDataState()
+    const { swapBasicData, swapDetails, swapId, quote, refuel, quoteIsLoading, quoteError, execution } = useSwapDataState()
     const { setSubmitedFormValues } = useSwapDataUpdate()
-    const isGaslessActive = useIsGaslessActive(swapBasicData)
-    const isFrontendSwap = shouldUseFrontendSwap({
-        depositMethod: swapBasicData?.use_deposit_address ? 'deposit_address' : 'wallet',
-        sourceNetwork: swapBasicData?.source_network?.name,
-        destinationNetwork: swapBasicData?.destination_network?.name,
-    }) && !isGaslessActive
+    const isFrontendSwap = isFrontendSwapExecution(execution)
 
     const { networks } = useSettingsState()
     const source_network = swapBasicData?.source_network && networks.find(n => n.name === swapBasicData?.source_network?.name)

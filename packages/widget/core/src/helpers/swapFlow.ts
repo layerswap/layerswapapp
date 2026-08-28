@@ -1,5 +1,5 @@
 import { Exchange } from "@/Models/Exchange";
-import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
+import type { SwapBasicData, SwapExecution } from "@/lib/apiClients/layerSwapApiClient";
 
 export type DepositMethod = 'wallet' | 'deposit_address' | undefined;
 
@@ -9,13 +9,14 @@ type FrontendSwapOptions = {
     destinationNetwork: string | undefined;
 }
 
-// Frontend execution is currently available only for same-network token swaps.
-// Keep discovery, pricing, creation, and UI decisions derived from this helper
-// so regular cross-network bridges never opt into the frontend swap flow.
-export function shouldUseFrontendSwap({ depositMethod, sourceNetwork, destinationNetwork }: FrontendSwapOptions): boolean {
-    return depositMethod === 'wallet'
-        && !!sourceNetwork
-        && sourceNetwork === destinationNetwork;
+// Frontend-swap support is always requested. The backend remains the authority that
+// resolves the actual execution lane for the selected route and current capacity.
+export function wantsFrontendSwap(_options: FrontendSwapOptions): true {
+    return true;
+}
+
+export function isFrontendSwapExecution(execution: Pick<SwapExecution, 'type'> | undefined): boolean {
+    return execution?.type === 'frontend_swap';
 }
 
 // Deposit address (manual transfer) flow with no source exchange: amount is optional

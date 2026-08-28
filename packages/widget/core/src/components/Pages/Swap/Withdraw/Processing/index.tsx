@@ -9,11 +9,11 @@ type Props = {
 
 const Component: FC<Props> = ({ failureReason }) => {
 
-    const { swapBasicData, swapDetails, quote, refuel } = useSwapDataState()
+    const { swapBasicData, swapDetails, quote, refuel, execution } = useSwapDataState()
 
     return (
         <>
-            {swapDetails && swapBasicData && <Processing swapBasicData={swapBasicData} swapDetails={swapDetails} quote={quote} refuel={refuel} failureReason={failureReason} />}
+            {swapDetails && swapBasicData && <Processing swapBasicData={swapBasicData} swapDetails={swapDetails} execution={execution} quote={quote} refuel={refuel} failureReason={failureReason} />}
         </>
 
     )
