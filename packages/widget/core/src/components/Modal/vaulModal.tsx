@@ -22,9 +22,10 @@ export type VaulDrawerProps = {
     className?: string;
     mode?: 'snapPoints' | 'fitHeight';
     dismissible?: boolean;
+    nonModal?: boolean;
 }
 
-const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose, onAnimationEnd, className, modalId, mode = 'snapPoints', dismissible = true }) => {
+const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose, onAnimationEnd, className, modalId, mode = 'snapPoints', dismissible = true, nonModal }) => {
     const { isMobileWithPortal: isMobile, isMobile: isMobileWithoutPortal } = useWindowDimensions();
     let [headerRef, { height }] = useMeasure();
     const { setHeaderHeight } = useSnapPoints()
@@ -41,6 +42,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
     const isFitHeightMode = mode === 'fitHeight';
     const isSnapPointsMode = mode === 'snapPoints';
     const isLastSnap = isSnapPointsMode ? snapElement?.id === snapPoints[snapPoints.length - 1]?.id : true;
+    const isFullHeightSnap = isSnapPointsMode && snapElement?.height === 1;
 
     const snapPointsSettled = snapElemenetsHeight.length > 0 && snap !== null && snapPointsHeight.includes(snap);
     const everSettledRef = useRef(false);
@@ -154,7 +156,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
             onOpenChange={handleOpenChange}
             container={container}
             {...snapPointsProps}
-            modal={isMobile ? true : false}
+            modal={isMobile ? !nonModal : false}
             repositionInputs={false}
             onAnimationEnd={(e) => { onAnimationEnd && onAnimationEnd(e) }}
             handleOnly={isMobileWithoutPortal}
@@ -248,7 +250,9 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                     <div
                         ref={isFitHeightMode ? drawerContentRef : undefined}
                         className={clsx('w-full px-4 styled-scroll', {
-                            'flex flex-col overflow-x-hidden relative h-full': isSnapPointsMode,
+                            'flex flex-col overflow-x-hidden relative': isSnapPointsMode,
+                            'h-full': isSnapPointsMode && !isFullHeightSnap,
+                            'flex-1 min-h-0': isFullHeightSnap,
                             'pb-4': isFitHeightMode
                         })}
                         id="virtualListContainer"
@@ -271,9 +275,9 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                                 </motion.div>
                             }
                         </AnimatePresence>
-                        {isMobile && <VaulFooter snapElement={snapElement} mode={mode} />}
+                        {isMobile && !isFullHeightSnap && <VaulFooter snapElement={snapElement} mode={mode} />}
                     </div>
-                    {!isMobile && <VaulFooter snapElement={snapElement} mode={mode} />}
+                    {(!isMobile || isFullHeightSnap) && <VaulFooter snapElement={snapElement} mode={mode} />}
                 </Drawer.Content>
                 </div>
             </Drawer.Portal>
@@ -291,14 +295,15 @@ const VaulFooter: FC<{ snapElement: SnapElement | null; mode?: 'snapPoints' | 'f
         setFooterHeight(height || 0);
     }, [height])
 
+    const isFullHeightSnap = mode === 'snapPoints' && snapElement?.height === 1;
+
     return <div
         ref={ref}
         id={WALLET_MODAL_FOOTER_ID}
         style={{
-            top: mode === 'snapPoints' && snapElement?.height !== 1 ? `${Number(snapElement?.height?.toString().replace('px', '')) - 50}px` : undefined,
-            bottom: mode === 'snapPoints' && snapElement?.height === 1 ? '12px' : undefined
+            top: mode === 'snapPoints' && !isFullHeightSnap ? `${Number(snapElement?.height?.toString().replace('px', '')) - 50}px` : undefined
         }}
-        className='w-full left-0 z-50 max-sm:absolute'
+        className={clsx('w-full left-0 z-50', isFullHeightSnap ? 'shrink-0' : 'max-sm:absolute')}
     />
 }
 
