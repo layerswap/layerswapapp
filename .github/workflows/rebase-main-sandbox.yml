@@ -3,20 +3,24 @@ on:
   push:
     branches: [main]
 permissions:
-  contents: write
+  contents: read
 jobs:
   rebase-main-sandbox:
+    permissions:
+      contents: write
     timeout-minutes: 2
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      with:
+        fetch-depth: 0
     - name: Set Git config
       run: |
           git config --local user.email "actions@github.com"
           git config --local user.name "Github Actions"
     - name: Merge main to main-sandbox
       run: |
-          git fetch --unshallow
-          git checkout main-sandbox
+          git fetch origin main-sandbox
+          git checkout -B main-sandbox origin/main-sandbox
           git rebase main 
-          git push
+          git push origin HEAD:main-sandbox

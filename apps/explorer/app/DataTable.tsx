@@ -9,10 +9,8 @@ import { SwapStatus } from "@/models/SwapStatus";
 import { useRouter } from "next/navigation";
 import Error500 from "@/components/Error500";
 import { SwapData, Swap, TransactionType } from "@/models/Swap";
-import { LayerswapApiClient } from '@layerswap/widget/internal'
 import { formatAmount } from "@/helpers/formatAmount";
-
-const apiClient = new LayerswapApiClient()
+import { apiClient } from "@/lib/apiClient";
 
 export default function DataTable() {
     const { data, error, isLoading } = useSWR<ApiResponse<SwapData[]>>(`/explorer?version=${process.env.NEXT_PUBLIC_API_VERSION}&statuses=1&statuses=4&compact=true`, apiClient.fetcher, { dedupingInterval: 60000 });
@@ -20,16 +18,16 @@ export default function DataTable() {
     const router = useRouter();
 
     if (error) return <Error500 />
-    if (isLoading) return <LoadingBlocks />
+    if (isLoading) return <LoadingBlocks variant="table" />
 
     return (
         <div className="px-4 sm:px-6 lg:px-8 w-full">
             <div className="mt-8 flow-root">
                 <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8 h-full max-h-[55vh] 2xl:max-h-[65vh] dataTable">
                     <div className="inline-block h-screen min-w-full pb-2 align-middle sm:px-6 lg:px-8">
-                        <div className="shadow ring-1 ring-white/5 sm:rounded-lg">
-                            <table className="min-w-full divide-y divide-secondary-500 relative">
-                                <thead className="bg-secondary-700 sticky -top-1 z-10 sm:rounded-lg">
+                        <div className="overflow-hidden rounded-3xl bg-secondary-700 p-1">
+                            <table className="relative min-w-full divide-y divide-secondary-300">
+                                <thead className="sticky -top-1 z-10 bg-secondary-500">
                                     <tr>
                                         <th scope="col" className="sticky top-0 px-3 py-3.5 text-left text-sm font-semibold text-primary-text rounded-tl-lg">
                                             Status
@@ -45,7 +43,7 @@ export default function DataTable() {
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-secondary-400 bg-secondary-600 overflow-y-scroll">
+                                <tbody className="overflow-y-scroll divide-y divide-secondary-500 bg-secondary-700">
                                     {swapsData?.filter(s => s.transactions?.some(t => t?.type == TransactionType.Input))?.map((swap, index) => {
                                         const input_transaction = swap?.transactions?.find(t => t?.type == TransactionType.Input)
                                         const output_transaction = swap?.transactions?.find(t => t?.type == TransactionType.Output)
@@ -60,7 +58,7 @@ export default function DataTable() {
                                         const destinationToken = swap?.destination_token
 
                                         return (
-                                            <tr key={index} onClick={() => router.push(`/${encodeURIComponent(String(input_transaction?.transaction_hash))}`)} className="cursor-pointer hover:bg-secondary-500">
+                                            <tr key={index} onClick={() => router.push(`/${encodeURIComponent(String(input_transaction?.transaction_hash))}`)} className="cursor-pointer transition-colors hover:bg-secondary-500">
                                                 <td className="whitespace-nowrap py-2 px-3 text-sm font-medium text-primary-text flex flex-col">
                                                     <div className="flex flex-row items-center text-btn-success bg-btn-success py-1 rounded">
                                                         {DestTxStatus(swap)}
@@ -94,8 +92,8 @@ export default function DataTable() {
                                                                     </span>
                                                                 </div>
                                                                 <div className="mx-2 text-primary-text">
-                                                                    <Link href={`${sourceNetwork?.transaction_explorer_template?.replace('{0}', (input_transaction?.transaction_hash || ''))}`} onClick={(e) => e.stopPropagation()} target="_blank" className="hover:text-gray-300 inline-flex items-center w-fit">
-                                                                        <span className="mx-0.5 hover:text-gray-300 underline hover:no-underline">{sourceExchange ? sourceExchange?.display_name : sourceNetwork?.display_name}</span>
+                                                                    <Link href={`${sourceNetwork?.transaction_explorer_template?.replace('{0}', (input_transaction?.transaction_hash || ''))}`} onClick={(e) => e.stopPropagation()} target="_blank" className="inline-flex w-fit items-center hover:text-secondary-text">
+                                                                        <span className="mx-0.5 underline hover:no-underline">{sourceExchange ? sourceExchange?.display_name : sourceNetwork?.display_name}</span>
                                                                     </Link>
                                                                 </div>
                                                             </div>
@@ -135,8 +133,8 @@ export default function DataTable() {
                                                                 <div className="mx-2 text-primary-text">
                                                                     {
                                                                         output_transaction?.transaction_hash ?
-                                                                            <Link href={`${destinationNetwork?.transaction_explorer_template?.replace('{0}', (output_transaction?.transaction_hash || ''))}`} onClick={(e) => e.stopPropagation()} target="_blank" className={`${!output_transaction ? "disabled" : ""} hover:text-gray-300 inline-flex items-center w-fit`}>
-                                                                                <span className={`underline mx-0.5 hover:text-gray-300 hover:no-underline`}>{destinationExchange ? destinationExchange?.display_name : destinationNetwork?.display_name}</span>
+                                                                            <Link href={`${destinationNetwork?.transaction_explorer_template?.replace('{0}', (output_transaction?.transaction_hash || ''))}`} onClick={(e) => e.stopPropagation()} target="_blank" className={`${!output_transaction ? "disabled" : ""} inline-flex w-fit items-center hover:text-secondary-text`}>
+                                                                                <span className="mx-0.5 underline hover:no-underline">{destinationExchange ? destinationExchange?.display_name : destinationNetwork?.display_name}</span>
                                                                             </Link>
                                                                             :
                                                                             <span className={`mx-0.5`}>{destinationExchange ? destinationExchange?.display_name : destinationNetwork?.display_name}</span>

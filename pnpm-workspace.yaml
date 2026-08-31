@@ -16,6 +16,7 @@ catalog:
   axios: 1.18.1
   react: 19.2.3
   react-dom: 19.2.3
+  rimraf: ^5.0.0
   swr: ^2.2.5
   viem: ^2.21.16
   wagmi: 2.14.11

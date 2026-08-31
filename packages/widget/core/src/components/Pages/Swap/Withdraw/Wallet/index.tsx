@@ -1,3 +1,4 @@
+import { NetworkType } from '@layerswap/widget-types';
 import { FC, Suspense, useCallback, useEffect, useState } from "react";
 import { PublishedSwapTransactions, SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { WithdrawalProvider } from "@/context/withdrawalContext";
@@ -7,9 +8,9 @@ import { WithdrawPageProps } from "./Common/sharedTypes";
 import { ChangeNetworkButton, ConnectWalletButton, SendTransactionButton } from "./Common/buttons";
 import { GaslessSigner } from "./Common/depositExecution";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
-import WalletIcon from "@/components/Icons/WalletIcon";
+import { WalletIcon } from "@layerswap/ui-kit/components";
 import { useBalance } from "@/lib/balances/useBalance";
-import { TransferProps } from "@/types";
+import { TransferProps } from "@layerswap/widget-types";
 import { ActionMessage } from "./Common/actionMessage";
 import { ActionMessages } from "../messages/TransactionMessages";
 import { useTransfer } from "@/hooks/useTransfer";
@@ -20,7 +21,6 @@ import { isExtendedSourceNetwork } from "@/lib/extendedRoutes/registry";
 import { HyperliquidWalletWithdraw } from "../WithdrawalProviders/Hyperliquid";
 import { PolymarketWalletWithdraw } from "../WithdrawalProviders/Polymarket";
 import { LighterWalletWithdraw } from "../WithdrawalProviders/Lighter";
-import { NetworkType } from "@/Models/Network";
 
 type Props = {
     swapData: SwapBasicData

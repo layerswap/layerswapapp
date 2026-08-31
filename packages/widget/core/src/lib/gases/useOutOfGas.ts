@@ -1,5 +1,5 @@
-import { TokenBalance } from "@/Models/Balance"
-import { Network, Token } from "@/Models/Network"
+import { TokenBalance } from "@layerswap/widget-types";
+import { Network, Token } from "@layerswap/widget-types";
 import useSWRGas from "./useSWRGas"
 
 interface UseOutOfGasParams {

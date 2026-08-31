@@ -1,6 +1,6 @@
 {
   "name": "@layerswap/wallets",
-  "version": "1.7.0",
+  "version": "2.0.0",
   "description": "All Layerswap Wallet Providers bundled together",
   "type": "module",
   "main": "dist/esm/index.js",
@@ -24,6 +24,7 @@
   "scripts": {
     "build": "pnpm run clean && pnpm run build:esm+types",
     "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm && tsc-alias -p tsconfig.json --outDir ./dist/types",
+    "dev": "tsc-watch -p tsconfig.json --outDir ./dist/esm --onSuccess \"tsc-alias -p tsconfig.json --outDir ./dist/esm\"",
     "check:types": "tsc --noEmit",
     "clean": "rimraf dist tsconfig.tsbuildinfo"
   },
@@ -54,7 +55,7 @@
     "@layerswap/widget-types": "workspace:^"
   },
   "peerDependencies": {
-    "@layerswap/widget": "workspace:^",
+    "@layerswap/wallet-core": "workspace:^",
     "@tanstack/react-query": "catalog:",
     "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
     "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
@@ -68,6 +69,6 @@
     "url": "https://github.com/layerswap/layerswapapp/issues"
   },
   "devDependencies": {
-    "@layerswap/widget": "workspace:^"
+    "@layerswap/wallet-core": "workspace:^"
   }
 }

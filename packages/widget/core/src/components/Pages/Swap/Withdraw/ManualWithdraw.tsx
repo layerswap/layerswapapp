@@ -1,17 +1,16 @@
-import CopyButton from '@/components/Buttons/copyButton'
-import { ImageWithFallback } from '@/components/Common/ImageWithFallback'
+import { type Refuel } from '@layerswap/widget-types';
+import { CopyButton, ImageWithFallback, StyledQRCode } from "@layerswap/ui-kit/components";
+import { useCopyClipboard } from "@layerswap/ui-kit";
 import QRIcon from '@/components/Icons/QRIcon'
-import useCopyClipboard from '@/hooks/useCopyClipboard'
 import useWallet from '@/hooks/useWallet'
-import { DepositAction, Refuel, SwapBasicData, SwapQuote } from '@/lib/apiClients/layerSwapApiClient'
-import StyledQRCode from '@/components/Common/StyledQRCode'
+import { DepositAction, SwapBasicData, SwapQuote } from '@/lib/apiClients/layerSwapApiClient'
 import { useMemo } from 'react'
 import { FC, ReactNode, useState } from 'react'
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
 import useExchangeNetworks from '@/hooks/useExchangeNetworks'
 import { ChevronDown } from 'lucide-react'
 import { CommandItem, CommandList, CommandWrapper } from '@/components/shadcn/command'
-import { Network, NetworkRoute, Token } from '@/Models/Network'
+import { Network, NetworkRoute, Token } from '@layerswap/widget-types';
 import { useInitialSettings } from '@/context/settings'
 import { useSwapDataUpdate } from '@/context/swap'
 import { useAsyncModal } from '@/context/asyncModal'

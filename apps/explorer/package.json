@@ -1,5 +1,5 @@
 {
-  "name": "layerswap-explorer",
+  "name": "@layerswap/explorer",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -24,6 +24,7 @@
     "next": "15.5.22",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "recharts": "^3.10.1",
     "swr": "catalog:",
     "tailwind-merge": "^3.3.0",
     "tailwindcss-animate": "^1.0.6"

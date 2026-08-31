@@ -1,26 +1,42 @@
-import { ServerOff } from "lucide-react"
-import Link from "next/link"
+import { ServerOff } from "lucide-react";
+import Link from "next/link";
 
 const Error500 = () => {
     return (
-        <div className="flex h-full items-center justify-center p-5 w-full flex-1">
-            <div className="text-center">
-                <div className="inline-flex rounded-full relative">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="116" height="116" viewBox="0 0 116 116" fill="none">
-                        <circle cx="58" cy="58" r="58" fill="#E43636" fillOpacity="0.1" />
-                        <circle cx="58" cy="58" r="45" fill="#E43636" fillOpacity="0.5" />
-                        <circle cx="58" cy="58" r="30" fill="#E43636" />
+        <div className="flex h-full w-full flex-1 items-center justify-center p-5">
+            <div className="max-w-xl rounded-3xl bg-secondary-700 p-8 text-center sm:p-12">
+                <div className="relative inline-flex text-error-foreground">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="116"
+                        height="116"
+                        viewBox="0 0 116 116"
+                        fill="none"
+                        aria-hidden="true"
+                    >
+                        <circle cx="58" cy="58" r="58" fill="currentColor" fillOpacity="0.1" />
+                        <circle cx="58" cy="58" r="45" fill="currentColor" fillOpacity="0.5" />
+                        <circle cx="58" cy="58" r="30" fill="currentColor" />
                     </svg>
-                    <ServerOff className="text-primary-text absolute top-[calc(50%-16px)] right-[calc(50%-16px)] h-8 w-auto" />
+                    <ServerOff className="absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 text-primary-text" />
                 </div>
-                <h1 className="mt-5 text-[36px] font-bold text-primary-text lg:text-[50px]">500 - Oops</h1>
-                <p className="text-primary-text my-5 lg:text-lg">Something went wrong. Try to refresh this page or <br /> feel free to contact us if the problem presists.</p>
-                <Link href={'https://layerswap.io/help'} target="_blank" className="w-1/2 px-5 py-2 text-sm tracking-wide text-primary-text transition-colors duration-200 bg-primary-500 rounded-lg shrink-0 sm:w-auto hover:bg-primary-500/80">
+                <h1 className="mt-5 text-4xl font-semibold text-primary-text lg:text-5xl">
+                    500 - Oops
+                </h1>
+                <p className="my-5 text-secondary-text lg:text-lg">
+                    Something went wrong. Try refreshing this page, or contact us if the problem
+                    persists.
+                </p>
+                <Link
+                    href="https://layerswap.io/help"
+                    target="_blank"
+                    className="inline-flex min-h-12 items-center justify-center rounded-xl bg-primary-500 px-5 py-3 text-sm font-medium text-primary-buttonTextColor transition hover:brightness-125 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 active:animate-press-down"
+                >
                     Contact support
                 </Link>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default Error500
+export default Error500;

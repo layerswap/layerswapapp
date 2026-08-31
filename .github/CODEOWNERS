@@ -1,0 +1,8 @@
+# Frontend release security boundary. Changes to these files require review
+# from a maintainer who can approve widget publishing and deployment changes.
+/.github/CODEOWNERS                         @layerswap/frontend-release-maintainers
+/.github/workflows/                         @layerswap/frontend-release-maintainers
+/.github/scripts/                           @layerswap/frontend-release-maintainers
+/apps/widget-cdn/scripts/                   @layerswap/frontend-release-maintainers
+/packages/widget/js/src/manifest.ts         @layerswap/frontend-release-maintainers
+/pnpm-lock.yaml                             @layerswap/frontend-release-maintainers

@@ -1,4 +1,4 @@
-// The widget prop/config/callback contract lives in the shared, zero-runtime
+// The widget prop/config/callback contract lives in the shared
 // `@layerswap/widget-types` package so the widget and every loader share one
 // source of truth. Re-exported here for local (`./types`) imports.
 export type {
@@ -7,4 +7,8 @@ export type {
   WidgetCallbacks,
   WalletDefaults,
   WalletProviderId,
-} from '@layerswap/widget-types';
+  DepositWidgetProps,
+  DepositConfig,
+  DepositMethodId,
+  SupportedDestination,
+} from "@layerswap/widget-types";

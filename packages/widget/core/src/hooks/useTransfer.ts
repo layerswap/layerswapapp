@@ -1,5 +1,11 @@
+import type {
+    AuthorizeWithdrawalProps,
+    TransferProgress,
+    TransferProps,
+    Wallet,
+    WithdrawalAuthorization,
+} from '@layerswap/widget-types';
 import { resolverService } from "@/lib/resolvers/resolverService";
-import { AuthorizeWithdrawalProps, TransferProps, TransferProgress, Wallet, WithdrawalAuthorization } from "@/types";
 import { useCallback } from "react";
 
 export function useTransfer() {

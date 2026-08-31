@@ -4,6 +4,9 @@
     "jsx": "react-jsx",
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "rootDir": "src",
+    "outDir": "dist/esm",
+    "declarationDir": "dist/types",
     "declaration": true,
     "noEmit": false,
     "composite": true,
@@ -11,5 +14,10 @@
     "esModuleInterop": true
   },
   "include": ["src"],
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules", "dist"],
+  "references": [
+    {
+      "path": "../types"
+    }
+  ]
 }

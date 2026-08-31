@@ -19,11 +19,15 @@ import WalletsProviders from "@/components/Wallet/WalletProviders";
 import { CallbackProvider, CallbacksContextType } from "./callbackProvider";
 import { InitialSettings } from "@/Models/InitialSettings";
 import { SwapAccountsProvider } from "./swapAccounts";
-import { WalletProvider, WalletProviderDescriptor, WalletWrapper, isWalletProviderDescriptor } from "@/types";
+import type { WalletProvider, WalletProviderDescriptor, WalletWrapper } from "@layerswap/wallet-core/types"
+import { isWalletProviderDescriptor } from "@layerswap/wallet-core/types"
 import { ResolverProviders, extractExtendedRouteProviders } from "./resolverContext";
 import { setExtendedRouteProviders } from "@/lib/extendedRoutes";
 import { ErrorProvider } from "./ErrorProvider";
-import { WalletDescriptorLoaderContext } from "@/lib/walletConnect/walletDescriptorLoader";
+import { DescriptorHydrationBoundary } from "@layerswap/wallet-core";
+import { registerWidgetErrorLogger } from "@/lib/ErrorHandler";
+
+registerWidgetErrorLogger();
 
 /**
  * Internal config — a refinement of the public `WidgetConfig` contract
@@ -100,6 +104,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
     // Legacy globals are read synchronously by descendants during render.
     AppSettings.ApiVersion = version || AppSettings.ApiVersion
     AppSettings.LayerswapApiUri = apiUri || AppSettings.LayerswapApiUri
+    LayerSwapApiClient.apiBaseEndpoint = AppSettings.LayerswapApiUri
     AppSettings.ImtblPassportConfig = imtblPassport
     AppSettings.TonClientConfig = tonConfigs || AppSettings.TonClientConfig
     AppSettings.WalletConnectConfig = walletConnect || AppSettings.WalletConnectConfig
@@ -198,7 +203,6 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
                                 {(resolvedProviders) => (
                                     <WalletsProviders
                                         appName={initialValues?.appName}
-                                        themeData={themeData}
                                         walletProviders={resolvedProviders}
                                     >
                                         <ResolverProviders walletProviders={resolvedProviders}>
@@ -216,98 +220,6 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
                 </CallbackProvider>
             </SettingsProvider >
         </IntercomProvider>
-    )
-}
-
-/**
- * Owns the descriptor → real-provider transition. Starts with the input
- * array as given; when `loadById` is invoked (by the connect modal or any
- * other consumer of `useWalletDescriptorLoader`), runs the descriptor's
- * lazy import and swaps the resolved provider into the list. Both
- * `WalletsProviders` and `ResolverProviders` re-render with the new list.
- */
-const DescriptorHydrationBoundary: FC<{
-    walletProviders: (WalletProvider | WalletWrapper | WalletProviderDescriptor)[]
-    children: (resolved: (WalletProvider | WalletWrapper | WalletProviderDescriptor)[]) => ReactNode
-}> = ({ walletProviders, children }) => {
-    const [loadedById, setLoadedById] = useState<ReadonlyMap<string, WalletProvider | WalletWrapper>>(new Map())
-    // In-flight loads, deduplicated by id, so concurrent triggers don't double-import the SDK.
-    const inflightRef = useRef<Map<string, Promise<void>>>(new Map())
-    // Mirror `loadedById` into a ref so `loadById`/`loadAll` can read the latest
-    // resolved set WITHOUT listing it as a dependency. Otherwise every resolved
-    // descriptor changes their identity → new context value → all loader
-    // consumers re-render (8 cascades when opening the modal).
-    const loadedByIdRef = useRef(loadedById)
-    loadedByIdRef.current = loadedById
-
-    const resolvedProviders = useMemo(() => {
-        return walletProviders.map(p => {
-            if (!isWalletProviderDescriptor(p)) return p
-            const loaded = loadedById.get(p.id)
-            return loaded ?? p
-        })
-    }, [walletProviders, loadedById])
-
-    const loadById = useCallback<(id: string) => Promise<void>>(async (id) => {
-        if (loadedByIdRef.current.has(id)) return
-        const existing = inflightRef.current.get(id)
-        if (existing) return existing
-        const descriptor = walletProviders.find(p => isWalletProviderDescriptor(p) && p.id === id) as WalletProviderDescriptor | undefined
-        if (!descriptor) return
-        const p = descriptor.loadProvider().then(real => {
-            setLoadedById(prev => {
-                if (prev.has(id)) return prev
-                const next = new Map(prev)
-                next.set(id, real)
-                return next
-            })
-        }).catch(error => {
-            // Absorb the failure so fire-and-forget callers (`void loadById`,
-            // `loadAll`'s Promise.all) never produce an unhandled rejection.
-            // The in-flight slot is cleared below and `loadedById` stays
-            // unset, so the next trigger retries the import.
-            console.error(`[layerswap/widget] Failed to load wallet provider "${id}"`, error)
-        }).finally(() => {
-            inflightRef.current.delete(id)
-        })
-        inflightRef.current.set(id, p)
-        return p
-    }, [walletProviders])
-
-    const loadAll = useCallback(async () => {
-        const pending = walletProviders
-            .filter((p): p is WalletProviderDescriptor => isWalletProviderDescriptor(p) && !loadedByIdRef.current.has(p.id))
-            .map(p => loadById(p.id))
-        await Promise.all(pending)
-    }, [walletProviders, loadById])
-
-    // Phase-2 trigger: descriptors whose chain SDK left a persisted-session
-    // marker (declared via `hasPersistedSession` — a cheap localStorage sniff
-    // that never loads the SDK) hydrate immediately on mount, so restored
-    // sessions surface without the user opening the connect modal (the
-    // phase-1 `loadAll` trigger). No idle deferral: effects already run after
-    // first paint, only descriptors with an actual session marker load
-    // (usually zero or one, and their wallet is user-visible state the page
-    // is incomplete without), and the connect gate treats these stubs as
-    // initializing — every deferred millisecond here is a millisecond the
-    // swap form's connect affordances stay in their loading state.
-    useEffect(() => {
-        if (typeof window === 'undefined') return
-        walletProviders.forEach(p => {
-            if (isWalletProviderDescriptor(p)
-                && !loadedByIdRef.current.has(p.id)
-                && p.hasPersistedSession?.() === true) {
-                void loadById(p.id)
-            }
-        })
-    }, [walletProviders, loadById])
-
-    const loaderValue = useMemo(() => ({ loadById, loadAll }), [loadById, loadAll])
-
-    return (
-        <WalletDescriptorLoaderContext.Provider value={loaderValue}>
-            {children(resolvedProviders)}
-        </WalletDescriptorLoaderContext.Provider>
     )
 }
 

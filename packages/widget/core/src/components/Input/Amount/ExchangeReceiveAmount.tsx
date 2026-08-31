@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { Token } from "@/Models/Network";
+import { Token } from "@layerswap/widget-types";
 import { Quote } from "@/lib/apiClients/layerSwapApiClient";
 import NumFlowWithFallback from "@/components/Common/NumFlowWithFallback";
 import clsx from "clsx";

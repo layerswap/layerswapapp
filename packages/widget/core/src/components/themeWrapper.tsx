@@ -6,7 +6,7 @@ type Props = {
 export default function ThemeWrapper({ children }: Props) {
     return <main className="styled-scroll h-full">
         <div className={`flex flex-col items-center overflow-hidden relative font-robo h-full`}>
-            <div className="w-full h-full sm:max-w-[472px] z-auto">
+            <div className="w-full h-full sm:max-w-[472px] z-auto sm:z-10">
                 <div className="flex h-full w-full content-center items-center justify-center flex-col">
                     <div className="h-full w-full text-primary-text">
                         {children}

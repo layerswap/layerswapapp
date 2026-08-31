@@ -11,11 +11,11 @@ export const metadata = {
   description: 'Layerswap Explorer provides a detailed view of all transactions going through Layerswap. Search by address or txn to get the information you need.',
   icons: {
     icon: [
-      { url: faviconPath('favicon.ico') },
-      { url: faviconPath('favicon-32x32.png'), sizes: '32x32', type: 'image/png' },
-      { url: faviconPath('favicon-16x16.png'), sizes: '16x16', type: 'image/png' },
+      { url: faviconPath('favicon.ico'), sizes: '32x32' },
+      { url: faviconPath('favicon.svg'), type: 'image/svg+xml' },
+      { url: faviconPath('favicon-96x96.png'), sizes: '96x96', type: 'image/png' },
     ],
-    apple: faviconPath('apple-touch-icon.png'),
+    apple: { url: faviconPath('apple-touch-icon.png'), sizes: '180x180' },
   },
   manifest: faviconPath('site.webmanifest'),
   alternates: {

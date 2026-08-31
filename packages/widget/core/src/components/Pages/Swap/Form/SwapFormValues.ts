@@ -1,4 +1,4 @@
-import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
+import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import { Exchange } from "@/Models/Exchange";
 
 export type SwapFormValues = {

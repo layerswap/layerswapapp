@@ -9,7 +9,8 @@ import {
   NetworkWithTokens,
 } from "@layerswap/widget";
 import { resolveWalletConnectorIcon, createReactHookConnectionAdapter } from "@layerswap/widget/internal"
-import { WalletConnectionProvider, Wallet, WalletConnectionProviderProps } from "@layerswap/widget/types"
+import type { Wallet } from "@layerswap/widget-types"
+import type { WalletConnectionProvider, WalletConnectionProviderProps } from "@layerswap/widget/types"
 
 function useStarknet({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
   const name = "Starknet";

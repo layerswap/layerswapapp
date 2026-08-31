@@ -1,4 +1,11 @@
-import { AuthorizeWithdrawalProps, TransferProvider, TransferProps, TransferProgress, Wallet, WithdrawalAuthorization } from "@/types"
+import type {
+    AuthorizeWithdrawalProps,
+    TransferProgress,
+    TransferProps,
+    TransferProvider,
+    Wallet,
+    WithdrawalAuthorization,
+} from "@layerswap/widget-types";
 
 export class TransferResolver {
     private providers: TransferProvider[]

@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { ArrowRight } from "lucide-react"
 import { truncateDecimals } from "@/components/utils/RoundDecimals"
-import { NetworkRouteToken } from "@/Models/Network"
+import { NetworkRouteToken } from "@layerswap/widget-types";
 
 export const RateElement = ({
     fromAsset,
