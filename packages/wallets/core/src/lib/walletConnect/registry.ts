@@ -12,6 +12,7 @@ export type ResolveOptions = {
     entries?: number
     search?: string
     projectId?: string
+    persistCache?: boolean
 }
 
 export type ResolveResult = {
@@ -30,7 +31,7 @@ export async function resolveWalletConnectWallets(opts: ResolveOptions = {}): Pr
         chains: chains || undefined,
         search: opts.search,
         projectId,
-    })
+    }, opts.persistCache)
 
     const wallets = response.data
         .map((wallet) => mapWallet(wallet, projectId))

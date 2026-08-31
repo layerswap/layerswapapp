@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import type { Dispatch, RefObject, SetStateAction, } from "react";
 import clsx from "clsx";
 import CircularLoader from "../CircularLoader";
@@ -24,6 +24,7 @@ type ConnectorsBrowserProps = {
     filteredProviders: WalletConnectionProvider[];
     loadMoreTriggerRef: RefObject<HTMLDivElement | null>;
     registryError: boolean;
+    requestRegistryEntriesFor: (connectors: WalletModalConnector[]) => void;
     retryRegistry: () => void;
     searchValue: string | undefined;
     selectProviders: (providerNames: string[]) => void;
@@ -44,6 +45,7 @@ export function ConnectorsBrowser({
     filteredProviders,
     loadMoreTriggerRef,
     registryError,
+    requestRegistryEntriesFor,
     retryRegistry,
     searchValue,
     selectProviders,
@@ -64,6 +66,10 @@ export function ConnectorsBrowser({
         || anyProviderLoadingMore
         || showSourcesLoadingTail
     )
+
+    useEffect(() => {
+        requestRegistryEntriesFor(connectors)
+    }, [connectors, requestRegistryEntriesFor])
 
     return (
         <div className="text-primary-text space-y-3 flex flex-col w-full styled-scroll relative h-full">

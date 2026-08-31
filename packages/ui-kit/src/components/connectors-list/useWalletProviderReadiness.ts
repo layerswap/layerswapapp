@@ -1,7 +1,6 @@
 import { useCallback, useRef } from "react";
-import { connectorKey, resolveChainConnectors } from "@layerswap/wallet-core";
-import { ensureRegistryBrowseLoaded, getInstantiatedAdditionalConnectorsStores, subscribeAdditionalConnectorsStores, useWalletDescriptorLoader, } from "@layerswap/wallet-core";
-import { useWalletProvidersRegistry } from "@layerswap/wallet-core";
+import { isMobile } from "@layerswap/utils";
+import { connectorKey, ensureRegistryBrowseLoaded, getInstantiatedAdditionalConnectorsStores, resolveChainConnectors, subscribeAdditionalConnectorsStores, useWalletDescriptorLoader, useWalletProvidersRegistry } from "@layerswap/wallet-core";
 import type { WalletConnectionProvider, WalletModalConnector, } from "@layerswap/wallet-core/types";
 
 export function useWalletProviderReadiness(featuredProviders: WalletConnectionProvider[]) {
@@ -30,7 +29,7 @@ export function useWalletProviderReadiness(featuredProviders: WalletConnectionPr
             )),
         ]
 
-        return resolveChainConnectors(connectorPool, providerStates)
+        return resolveChainConnectors(connectorPool, providerStates, isMobile())
             .get(connectorKey(connector.name))
             ?? []
     }, [registry])

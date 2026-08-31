@@ -77,6 +77,7 @@ async function fetchAdditionalConnectorsPage(
             entries: params.pageSize,
             search: query || undefined,
             projectId: params.projectId,
+            persistCache: !query,
         })
 
         if (queryCache.size >= MAX_CACHED_PAGES_PER_QUERY) {
@@ -111,6 +112,7 @@ export type AdditionalConnectorsSnapshot = {
 }
 
 export type AdditionalConnectorsStore = {
+    readonly projectId: string
     subscribe(listener: () => void): () => void
     getSnapshot(): AdditionalConnectorsSnapshot
     requestAdditionalConnectors(
@@ -220,6 +222,7 @@ function createStore(namespace: string, projectId: string): AdditionalConnectors
     }
 
     return {
+        projectId,
         subscribe(listener) {
             listeners.add(listener)
             return () => listeners.delete(listener)

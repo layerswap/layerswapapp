@@ -21,3 +21,4 @@ export * from "./walletDescriptorLoader"
 export * from "./descriptorStubStore"
 export * from "./isProviderConnectReady"
 export * from './providerCapabilities'
+export * from './registryEntryIndex'

@@ -81,12 +81,13 @@ export const ConnectorsList: FC<ConnectorsListProps> = ({
         isListVisible,
     })
 
-    const { initialConnectors } = useConnectors({
+    const { initialConnectors, requestRegistryEntriesFor } = useConnectors({
         featuredProviders,
         filteredProviders,
         searchValue,
         recentConnectors,
         searchResults: isSearching ? searchResults : undefined,
+        isMobilePlatform,
     })
 
     let content: ReactNode
@@ -155,6 +156,7 @@ export const ConnectorsList: FC<ConnectorsListProps> = ({
                 filteredProviders={filteredProviders}
                 loadMoreTriggerRef={loadMoreTriggerRef}
                 registryError={registryError}
+                requestRegistryEntriesFor={requestRegistryEntriesFor}
                 retryRegistry={retryRegistry}
                 searchValue={searchValue}
                 selectProviders={selectProviders}
