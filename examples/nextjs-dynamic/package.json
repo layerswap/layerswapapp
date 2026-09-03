@@ -24,9 +24,9 @@
     "@layerswap/widget": "next",
     "@layerswap/widget-types": "next",
     "@tanstack/react-query": "^5.90.5",
-    "next": "14.2.35",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "next": "^15.3.3",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
     "react-error-boundary": "^4.0.11",
     "viem": "^2.21.16",
     "wagmi": "2.14.11",
@@ -36,16 +36,16 @@
     "@tailwindcss/postcss": "^4.1.13",
     "@types/bn.js": "^5.1.0",
     "@types/crypto-js": "^4.1.1",
-    "@types/react": "18.3.1",
+    "@types/react": "19.2.3",
     "@web3-react/types": "^6.0.7",
     "autoprefixer": "^10.4.5",
     "eslint": "8.49.0",
     "eslint-config-next": "^14.0.4",
+    "eslint-plugin-no-conditional-literals-in-jsx": "file:./eslint-plugins/eslint-plugin-no-conditional-literals-in-jsx",
     "tailwindcss": "^4.0.15",
     "typescript": "5.9.3"
   },
   "engines": {
     "node": ">=20.9.0"
-  },
-  "packageManager": "yarn@1.22.22"
+  }
 }

@@ -35,6 +35,5 @@
     "typescript": "^5.9.3",
     "vite": "^7.3.0",
     "vite-plugin-node-polyfills": "^0.24.0"
-  },
-  "packageManager": "yarn@1.22.22"
+  }
 }

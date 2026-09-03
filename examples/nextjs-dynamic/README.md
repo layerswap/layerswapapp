@@ -7,15 +7,18 @@ This example demonstrates how to integrate the [Layerswap Widget](https://github
 ### Prerequisites
 
 - Node.js >= 20.9.0
-- Yarn 1.22.22 or later
+- pnpm 10 or later
 
 ### Installation
 
 Install dependencies:
 
 ```bash
-yarn install
+pnpm install --ignore-workspace
 ```
+
+This example is intentionally isolated from the parent pnpm workspace, so the
+`--ignore-workspace` flag keeps its installation and lockfile local.
 
 ### Environment Setup
 
@@ -32,8 +35,7 @@ You'll also need to configure your Dynamic environment ID in [components/PageCom
 ### Running the Development Server
 
 ```bash
-yarn dev
+pnpm --ignore-workspace dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the widget.
-
