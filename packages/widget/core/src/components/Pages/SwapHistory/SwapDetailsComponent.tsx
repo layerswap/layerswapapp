@@ -170,7 +170,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                                 {
                                                     refundTransaction?.transaction_hash ?
                                                         (
-                                                            (refundTransaction?.transaction_hash && swap?.source_exchange?.name === KnownInternalNames.Exchanges.Coinbase && (isGuid(refundTransaction?.transaction_hash))) ?
+                                                            (refundTransaction?.transaction_hash && swap?.destination_exchange?.name === KnownInternalNames.Exchanges.Coinbase && (isGuid(refundTransaction?.transaction_hash))) ?
                                                                 <span><CopyButton toCopy={refundTransaction.transaction_hash} iconClassName="text-primary-text order-2">{shortenString(refundTransaction.transaction_hash)}</CopyButton></span>
                                                                 :
                                                                 <a
