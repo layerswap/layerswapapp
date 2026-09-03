@@ -23,11 +23,9 @@
   "ignore": [
     "@layerswap/bridge",
     "widget-playground",
-    "layerswap-explorer",
+    "@layerswap/explorer",
     "widget-react-host-example",
-    "@layerswap/widget-js",
-    "@layerswap/widget-cdn",
-    "@layerswap/widget-react"
+    "@layerswap/widget-cdn"
   ],
   "snapshot": {
     "useCalculatedVersion": true

@@ -9,18 +9,19 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@layerswap/widget-react": "workspace:^",
-    "@tanstack/react-query": "catalog:",
-    "react": "catalog:",
-    "react-dom": "catalog:",
-    "viem": "catalog:",
-    "wagmi": "catalog:",
-    "zustand": "catalog:"
+    "@layerswap/widget-react": "1.0.0",
+    "@tanstack/react-query": "5.90.11",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "starknet": "8.1.0",
+    "viem": "2.21.16",
+    "wagmi": "2.14.11",
+    "zustand": "4.5.7"
   },
-  "packageManager": "pnpm@10.20.0",
+  "packageManager": "yarn@1.22.22",
   "devDependencies": {
-    "@types/react": "catalog:",
-    "@types/react-dom": "catalog:",
+    "@types/react": "19.2.3",
+    "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^5.1.2",
     "typescript": "^5.9.3",
     "vite": "^7.3.0",

@@ -10,7 +10,7 @@ const queryClient = new QueryClient();
 
 // Demo recipient for the deposit tab. A real integrator supplies their own
 // deposit address here — the deposit widget never asks the end user for it.
-const DEPOSIT_DEMO_ADDRESS = '0x2fc617e933a52713247ce25730f6695920b3befe';
+const DEPOSIT_DEMO_ADDRESS = '0xB2029bbd8C1cBCC43c3A7b7fE3d118b0C57D7C31';
 
 // Keep object/function props referentially stable — the widget memoizes its
 // wallet-provider setup on these by identity, so fresh inline literals on

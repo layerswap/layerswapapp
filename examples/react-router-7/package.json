@@ -42,6 +42,5 @@
     "vite": "^7.1.7",
     "vite-plugin-node-polyfills": "^0.24.0",
     "vite-tsconfig-paths": "^5.1.4"
-  },
-  "packageManager": "yarn@1.22.22"
+  }
 }
