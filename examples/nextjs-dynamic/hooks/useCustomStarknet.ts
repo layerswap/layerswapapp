@@ -5,15 +5,39 @@ import {
   dynamicEvents,
   Wallet as DynamicWallet,
 } from "@dynamic-labs/sdk-react-core";
-import {
-  NetworkWithTokens,
-} from "@layerswap/widget";
 import { resolveWalletConnectorIcon, createReactHookConnectionAdapter } from "@layerswap/widget/internal"
-import type { Wallet } from "@layerswap/widget-types"
+import { NetworkType, type InternalConnector, type NetworkWithTokens, type Wallet } from "@layerswap/widget-types"
 import type { WalletConnectionProvider, WalletConnectionProviderProps } from "@layerswap/widget/types"
 
+const DYNAMIC_CONNECTOR_ID = "dynamic-starknet"
+const STARKNET_PROVIDER_NAME = "Starknet"
+
+export const customStarknetNetworkAdapter: WalletConnectionProviderProps["networkAdapter"] = {
+  getId: network => network.name,
+  getDisplayName: network => network.display_name,
+  getChainId: network => network.chain_id,
+  getRpcUrls: network => network.nodes?.length
+    ? network.nodes
+    : [network.node_url].filter((url): url is string => Boolean(url)),
+  getIcon: network => network.logo,
+  getTransactionExplorerUrl: network => network.transaction_explorer_template,
+  getAccountExplorerUrl: network => network.account_explorer_template,
+  getNativeCurrency: network => network.token && {
+    symbol: network.token.symbol,
+    decimals: network.token.decimals,
+  },
+  getMulticallAddress: network => network.metadata?.evm_multicall_contract ?? undefined,
+  isEvmNetwork: network => network.type === NetworkType.EVM,
+  isSolanaNetwork: network => network.type === NetworkType.Solana,
+  isStarknetNetwork: network => network.type === NetworkType.Starknet,
+  isTronNetwork: network => network.type === NetworkType.Tron,
+  isBitcoinNetwork: network => network.type === NetworkType.Bitcoin,
+  isTonNetwork: network => network.type === NetworkType.TON,
+  isFuelNetwork: network => network.type === NetworkType.Fuel,
+}
+
 function useStarknet({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
-  const name = "Starknet";
+  const name = STARKNET_PROVIDER_NAME;
   const id = "starknet";
 
   // Dynamic SDK
@@ -43,8 +67,13 @@ function useStarknet({ networks }: WalletConnectionProviderProps): WalletConnect
       dynamicEvents.removeAllListeners("authFlowCancelled");
     };
   }, []);
-  // connectWallet: log out existing, show authFlow, wait for event, then resolve
-  const connectWallet = useCallback(async (): Promise<Wallet | undefined> => {
+  // The connector tile represents the handoff to Dynamic; Dynamic's own UI
+  // performs the actual Starknet wallet selection.
+  const connectWallet = useCallback(async ({ connector }: { connector: InternalConnector }): Promise<Wallet | undefined> => {
+    if (connector.id !== DYNAMIC_CONNECTOR_ID) {
+      throw new Error(`Unsupported Dynamic connector: ${connector.id}`)
+    }
+
     if (userWallets.length) {
       await handleLogOut();
     }
@@ -102,9 +131,22 @@ function useStarknet({ networks }: WalletConnectionProviderProps): WalletConnect
   );
 
   const logo = networks.find((n) => n.name.toLowerCase().includes("starknet"))?.logo;
+  // Keep one connector available even while logged out. The concrete Argent,
+  // Braavos, etc. connector is only known after Dynamic finishes authentication.
+  const availableConnectors = useMemo<InternalConnector[]>(() => [{
+    id: DYNAMIC_CONNECTOR_ID,
+    name: "Dynamic",
+    providerName: STARKNET_PROVIDER_NAME,
+    icon: logo,
+    type: "other",
+    source: "configured",
+    hasBrowserExtension: false,
+    isMobileSupported: true,
+  }], [logo])
 
   return {
     connectWallet,
+    availableConnectors,
     activeWallet: connectedWallets.find((w) => w.isActive),
     connectedWallets,
     asSourceSupportedNetworks: supportedNetworks.asSource,

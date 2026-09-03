@@ -19,5 +19,4 @@ export * from "./walletProvidersRegistry"
 export * from './findRegistryWallet'
 export * from "./walletDescriptorLoader"
 export * from "./descriptorStubStore"
-export * from "./isProviderConnectReady"
 export * from './providerCapabilities'
