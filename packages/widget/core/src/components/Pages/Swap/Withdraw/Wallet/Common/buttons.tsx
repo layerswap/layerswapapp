@@ -321,17 +321,18 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             });
 
             const walletBalance = balances?.find(b => b?.network === swapBasicData.source_network?.name && b?.token === swapBasicData.source_token?.symbol)
-            if (walletBalance?.isNativeCurrency && gasData?.gas && walletBalance?.amount != null) {
+            const gasFee = gasData?.maxFee ?? gasData?.gas
+            if (walletBalance?.isNativeCurrency && gasFee && walletBalance?.amount != null) {
                 const requestedAmount = Number(swapBasicData.requested_amount)
                 const difference = walletBalance.amount - requestedAmount
-                if (difference >= 0 && difference < 5 * gasData.gas) {
+                if (difference >= 0 && difference < 5 * gasFee) {
                     ErrorHandler({
                         type: 'GasMiscalculation',
                         message: (e as Error)?.message,
                         name: (e as Error)?.name,
                         requestedAmount,
                         walletBalance: walletBalance.amount,
-                        calculatedGas: gasData.gas,
+                        calculatedGas: gasFee,
                         difference,
                         network: swapBasicData.source_network?.name,
                         token: swapBasicData.source_token?.symbol,
