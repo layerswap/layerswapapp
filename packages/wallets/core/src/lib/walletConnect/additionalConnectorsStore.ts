@@ -77,7 +77,6 @@ async function fetchAdditionalConnectorsPage(
             entries: params.pageSize,
             search: query || undefined,
             projectId: params.projectId,
-            persistCache: !query,
         })
 
         if (queryCache.size >= MAX_CACHED_PAGES_PER_QUERY) {

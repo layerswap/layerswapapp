@@ -3,7 +3,7 @@ import { mapWallet } from "./mapWallet"
 import type { WalletConnectWalletBase } from "./types"
 
 // Slugified names of wallets to exclude (duplicates / unwanted entries).
-const SLUGS_TO_FILTER = ['okx-wallet-1', 'ready', 'yowallet', 'safewallet']
+export const SLUGS_TO_FILTER = ['okx-wallet-1', 'ready', 'yowallet', 'safewallet']
 
 export type ResolveOptions = {
     namespace?: string
@@ -11,8 +11,7 @@ export type ResolveOptions = {
     page?: number
     entries?: number
     search?: string
-    projectId?: string
-    persistCache?: boolean
+    projectId: string
 }
 
 export type ResolveResult = {
@@ -21,17 +20,17 @@ export type ResolveResult = {
     nextPage: number | null
 }
 
-export async function resolveWalletConnectWallets(opts: ResolveOptions = {}): Promise<ResolveResult> {
+export async function resolveWalletConnectWallets(opts: ResolveOptions): Promise<ResolveResult> {
     const chains = opts.chainIds?.join(',')
         || (opts.namespace ? chainsForNamespace(opts.namespace) : undefined)
-    const projectId = opts.projectId || '6113382c2e587bff00e2b5c3d68531f3'
+    const projectId = opts.projectId
     const response = await fetchWallets({
         page: opts.page ?? 1,
         entries: opts.entries ?? 40,
         chains: chains || undefined,
         search: opts.search,
         projectId,
-    }, opts.persistCache)
+    })
 
     const wallets = response.data
         .map((wallet) => mapWallet(wallet, projectId))

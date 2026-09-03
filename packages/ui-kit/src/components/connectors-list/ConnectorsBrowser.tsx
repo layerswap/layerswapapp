@@ -68,8 +68,9 @@ export function ConnectorsBrowser({
     )
 
     useEffect(() => {
+        if (blockListWhileLoading) return
         requestRegistryEntriesFor(connectors)
-    }, [connectors, requestRegistryEntriesFor])
+    }, [blockListWhileLoading, connectors, requestRegistryEntriesFor])
 
     return (
         <div className="text-primary-text space-y-3 flex flex-col w-full styled-scroll relative h-full">

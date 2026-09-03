@@ -17,6 +17,7 @@
     "@bigmi/client": "^0.10.1",
     "@bigmi/core": "^0.9.0",
     "@flags-sdk/vercel": "^1.4.3",
+    "@layerswap/wallet-core": "workspace:^",
     "@layerswap/wallet-evm": "workspace:^",
     "@layerswap/wallets": "workspace:^",
     "@layerswap/widget": "workspace:^",

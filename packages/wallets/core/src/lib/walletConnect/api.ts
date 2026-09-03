@@ -1,5 +1,3 @@
-import { readRegistryCache, writeRegistryCache } from './registryCache'
-
 const BASE = 'https://api.web3modal.org'
 
 export type Web3ModalWallet = {
@@ -99,7 +97,7 @@ function validateWallets(data: GetWalletsResponse): GetWalletsResponse {
 // Web3Modal explorer API reference: https://docs.reown.com/cloud/explorer
 // The `st` / `sv` (source type / source version) params are internal AppKit
 // telemetry routing keys required for the API to return results.
-export async function fetchWallets(params: FetchWalletsParams, persist?: boolean): Promise<GetWalletsResponse> {
+export async function fetchWallets(params: FetchWalletsParams): Promise<GetWalletsResponse> {
     const url = new URL(`${BASE}/getWallets`)
     url.searchParams.set('projectId', params.projectId)
     url.searchParams.set('st', 'appkit')
@@ -109,21 +107,7 @@ export async function fetchWallets(params: FetchWalletsParams, persist?: boolean
     if (params.chains) url.searchParams.set('chains', params.chains)
     if (params.search) url.searchParams.set('search', params.search)
 
-    if (persist) {
-        const cached = await readRegistryCache(url.toString())
-        if (cached) {
-            try {
-                return validateWallets(cached as GetWalletsResponse)
-            } catch {
-            }
-        }
-    }
-
     const res = await fetch(url.toString())
     if (!res.ok) throw new Error(`getWallets failed: ${res.status}`)
-    const data = validateWallets(await res.json())
-
-    if (persist) await writeRegistryCache(url.toString(), data)
-
-    return data
+    return validateWallets(await res.json())
 }
