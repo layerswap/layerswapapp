@@ -1,6 +1,6 @@
 import { type Wallet } from '@layerswap/widget-types';
 import { useRef, useState, type FC, type ReactNode } from "react"
-import { useConnectors } from "@layerswap/wallet-core"
+import { useConnectors, useConnectorSourcesStatus } from "@layerswap/wallet-core"
 import type { WalletConnectionProvider } from "@layerswap/wallet-core/types";
 import { useConnectModal } from "./WalletModalProvider"
 import { InstalledExtensionNotFound } from "./InstalledExtensionNotFound"
@@ -9,7 +9,6 @@ import { MultichainConnectorPicker } from "./MultichainConnectorPicker"
 import { WalletQrCode } from "./WalletQrCode"
 import { ConnectorsBrowser } from "./ConnectorsBrowser"
 import { useAdditionalConnectors } from "./hooks/useAdditionalConnectors"
-import { useConnectorSourcesStatus } from "./hooks/useConnectorSourcesStatus"
 import { useFeaturedProviders } from "./hooks/useFeaturedProviders"
 import { useWalletConnection } from "./hooks/useWalletConnection"
 

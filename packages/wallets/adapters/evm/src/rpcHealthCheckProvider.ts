@@ -109,16 +109,6 @@ function createStore(): RpcHealthCheckStore {
                 ? Date.now() / 1000 - parseInt(tsHex, 16)
                 : Number.POSITIVE_INFINITY
 
-            const tooSlow = latencyMs > 2000
-            const tooStale = blockAgeSec > 60
-
-            if (tooSlow || tooStale) {
-                let reason = ''
-                if (tooSlow) reason += `Wallet RPC is slow (${latencyMs.toFixed(0)}ms). `
-                if (tooStale) reason += `Latest block is stale (${blockAgeSec.toFixed(0)}s old).`
-                setSnapshot({ health: { status: 'unhealthy', reason: reason.trim() } satisfies RpcHealth })
-                return
-            }
             setSnapshot({ health: { status: 'healthy', latencyMs, blockAgeSec } satisfies RpcHealth })
         } catch (e: any) {
             if (!isCurrent()) return

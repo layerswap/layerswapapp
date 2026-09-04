@@ -174,7 +174,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                                                 :
                                                                 <a
                                                                     target="_blank"
-                                                                    href={getExplorerUrl(output_tx_explorer_template, refundTransaction.transaction_hash)}
+                                                                    href={getExplorerUrl(input_tx_explorer_template, refundTransaction.transaction_hash)}
                                                                     className='group/addressItem flex items-center space-x-1 cursor-pointer hover:text-secondary-text transition duration-200'
                                                                     rel="noopener noreferrer"
                                                                 >

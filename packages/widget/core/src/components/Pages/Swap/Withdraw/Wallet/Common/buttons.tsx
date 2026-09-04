@@ -189,7 +189,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     refuel,
     ...props
 }) => {
-    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, refuel: refuelData, setSwapError } = useSwapDataState()
+    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, refuel: refuelData, swapError, setSwapError } = useSwapDataState()
     const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
     const gaslessFailureStage = useGaslessPreferenceStore(s => s.gaslessFailureStage)
     const switchToStandardTransfer = useGaslessPreferenceStore(s => s.switchToStandardTransfer)
@@ -440,7 +440,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     onClick={handleClick}
                     isDisabled={quoteIsLoading || !!quoteError}
                 >
-                    {error ? 'Try again' : actionButtonText || 'Swap now'}
+                    {(error || swapError) ? 'Try again' : actionButtonText || 'Swap now'}
                 </ButtonWrapper>
             )}
         </>
