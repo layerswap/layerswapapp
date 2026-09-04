@@ -76,23 +76,7 @@ export function walletImageUrl(imageId: string, projectId: string): string {
     return `https://explorer-api.walletconnect.com/v3/logo/md/${imageId}?projectId=${projectId}`
 }
 
-// Web3Modal explorer API reference: https://docs.reown.com/cloud/explorer
-// The `st` / `sv` (source type / source version) params are internal AppKit
-// telemetry routing keys required for the API to return results.
-export async function fetchWallets(params: FetchWalletsParams): Promise<GetWalletsResponse> {
-    const url = new URL(`${BASE}/getWallets`)
-    url.searchParams.set('projectId', params.projectId)
-    url.searchParams.set('st', 'appkit')
-    url.searchParams.set('sv', 'react-viem')
-    url.searchParams.set('page', String(params.page ?? 1))
-    url.searchParams.set('entries', String(params.entries ?? 40))
-    if (params.chains) url.searchParams.set('chains', params.chains)
-    if (params.search) url.searchParams.set('search', params.search)
-
-    const res = await fetch(url.toString())
-    if (!res.ok) throw new Error(`getWallets failed: ${res.status}`)
-    const data: GetWalletsResponse = await res.json()
-
+function validateWallets(data: GetWalletsResponse): GetWalletsResponse {
     if (!Array.isArray(data?.data)) {
         throw new Error('Invalid response: missing data array')
     }
@@ -108,4 +92,22 @@ export async function fetchWallets(params: FetchWalletsParams): Promise<GetWalle
     }
 
     return data
+}
+
+// Web3Modal explorer API reference: https://docs.reown.com/cloud/explorer
+// The `st` / `sv` (source type / source version) params are internal AppKit
+// telemetry routing keys required for the API to return results.
+export async function fetchWallets(params: FetchWalletsParams): Promise<GetWalletsResponse> {
+    const url = new URL(`${BASE}/getWallets`)
+    url.searchParams.set('projectId', params.projectId)
+    url.searchParams.set('st', 'appkit')
+    url.searchParams.set('sv', 'react-viem')
+    url.searchParams.set('page', String(params.page ?? 1))
+    url.searchParams.set('entries', String(params.entries ?? 40))
+    if (params.chains) url.searchParams.set('chains', params.chains)
+    if (params.search) url.searchParams.set('search', params.search)
+
+    const res = await fetch(url.toString())
+    if (!res.ok) throw new Error(`getWallets failed: ${res.status}`)
+    return validateWallets(await res.json())
 }
