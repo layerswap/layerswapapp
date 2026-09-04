@@ -41,6 +41,9 @@ export const ActionMessage: FC<{ error: Error | undefined, isLoading: boolean, s
     else if (error?.name === ActionMessageType.TransactionFailed) {
         return <ActionMessages.TransactionFailedMessage />
     }
+    else if (error?.name === ActionMessageType.TransactionExpired) {
+        return <ActionMessages.TransactionExpiredMessage />
+    }
     else if (error?.name === ActionMessageType.InsufficientFunds) {
         return <ActionMessages.InsufficientFundsMessage />
     }

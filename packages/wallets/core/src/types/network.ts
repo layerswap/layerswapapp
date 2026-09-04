@@ -17,6 +17,7 @@ export type AppNetworkAdapter<Network> = {
     isSolanaNetwork(network: Network): boolean
     isStarknetNetwork(network: Network): boolean
     isTronNetwork(network: Network): boolean
+    isStellarNetwork(network: Network): boolean
     isBitcoinNetwork(network: Network): boolean
     isTonNetwork(network: Network): boolean
     isFuelNetwork(network: Network): boolean

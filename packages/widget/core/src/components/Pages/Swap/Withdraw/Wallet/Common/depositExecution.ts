@@ -1,4 +1,4 @@
-import { type Wallet } from '@layerswap/widget-types';
+import { ActionMessageType, type Wallet } from '@layerswap/widget-types';
 import LayerSwapApiClient, {
     BackendTransactionStatus,
     DepositAction,
@@ -33,9 +33,26 @@ export const isSignAction = (action: DepositAction): action is SignDepositAction
 export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClick: WalletTransfer): Promise<void> => {
     const { swapData, depositActions, swapBasicData, selectedWallet, sourceAddress, layerswapApiClient, setActionStateText, setSwapTransaction, onSuccess } = ctx
 
-    const transferProps = resolveTransactionData(swapData, depositActions, swapBasicData, selectedWallet)
+    let transferProps = resolveTransactionData(swapData, depositActions, swapBasicData, selectedWallet)
     setActionStateText("Opening Wallet")
-    const hash = await onClick(transferProps)
+    let hash: string | undefined
+    try {
+        hash = await onClick(transferProps)
+    } catch (error) {
+        if ((error as Error)?.name !== ActionMessageType.TransactionExpired) throw error
+
+        setActionStateText("Refreshing transfer")
+        const refreshed = await layerswapApiClient.GetDepositActionsAsync(
+            swapData.id,
+            sourceAddress ?? selectedWallet.address,
+        )
+        if (!refreshed?.data?.length) {
+            throw new Error('Could not refresh the expired Stellar deposit action. Please try again.')
+        }
+        transferProps = resolveTransactionData(swapData, refreshed.data, swapBasicData, selectedWallet)
+        setActionStateText("Opening Wallet")
+        hash = await onClick(transferProps)
+    }
     if (!hash) return
 
     onSuccess()
@@ -95,7 +112,9 @@ const resolveTransactionData = (swapDetails: SwapDetails, deposit_actions: Depos
     }
     return {
         amount: depositAction.amount,
-        callData: depositAction.call_data,
+        amountInBaseUnits: depositAction.amount_in_base_units,
+        callData: depositAction.call_data ?? '',
+        encodedArgs: depositAction.encoded_args,
         depositAddress: depositAction.to_address,
         sequenceNumber: swapDetails.metadata.sequence_number,
         swapId: swapDetails.id,

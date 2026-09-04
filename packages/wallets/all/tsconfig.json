@@ -34,6 +34,9 @@
       "path": "../adapters/svm"
     },
     {
+      "path": "../adapters/stellar"
+    },
+    {
       "path": "../adapters/ton"
     },
     {

@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
+import { isInIframe } from '@layerswap/utils/common'
 import MessageComponent from "../../Common/MessageComponent";
-import inIframe from "../../utils/inIframe";
 import ThemeWrapper from "@/components/themeWrapper";
 
 function NoCookies(props) {
     const [embedded, setEmbedded] = useState<boolean>()
 
     useEffect(() => {
-        setEmbedded(inIframe())
+        setEmbedded(isInIframe())
     }, [])
 
     return (

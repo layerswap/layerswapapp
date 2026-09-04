@@ -1,0 +1,63 @@
+{
+  "name": "@layerswap/wallet-stellar",
+  "version": "2.0.0-next.0",
+  "description": "Stellar Wallet Provider for Layerswap Widget",
+  "type": "module",
+  "main": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "typings": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/esm/index.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "dist/**/*"
+  ],
+  "scripts": {
+    "build": "pnpm run clean && pnpm run build:esm+types",
+    "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm && tsc-alias -p tsconfig.json --outDir ./dist/types",
+    "check:types": "tsc --noEmit",
+    "test": "pnpm run build:esm+types && node --no-warnings --experimental-loader ./tests/extension-loader.mjs --test tests/*.test.mjs",
+    "clean": "rimraf dist tsconfig.tsbuildinfo"
+  },
+  "author": "Layerswap",
+  "homepage": "https://github.com/layerswap/layerswapapp",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/layerswap/layerswapapp.git",
+    "directory": "packages/wallets/adapters/stellar"
+  },
+  "keywords": [
+    "layerswap",
+    "stellar",
+    "wallet-provider"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@layerswap/wallet-core": "workspace:^",
+    "@layerswap/utils": "workspace:^",
+    "@layerswap/widget-types": "workspace:^",
+    "zustand": "catalog:"
+  },
+  "dependencies": {
+    "@creit.tech/stellar-wallets-kit": "2.5.0",
+    "@stellar/stellar-sdk": "17.0.0",
+    "@walletconnect/sign-client": "2.23.0"
+  },
+  "devDependencies": {
+    "@layerswap/wallet-core": "workspace:^",
+    "@layerswap/utils": "workspace:^",
+    "@layerswap/widget-types": "workspace:^",
+    "rimraf": "catalog:",
+    "tsc-alias": "^1.8.16",
+    "typescript": "^5.9.2",
+    "zustand": "catalog:"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

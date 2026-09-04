@@ -1,4 +1,4 @@
-import KnownInternalNames from "./knownIds";
+import KnownInternalNames from "@layerswap/utils/known-ids";
 
 export default class SwapSettings {
     public static NativeSupportedPaths: {

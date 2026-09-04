@@ -7,6 +7,7 @@ import { TonAddressUtilsProvider } from "@/address/providers/ton";
 import { StarknetAddressUtilsProvider } from "@/address/providers/starknet";
 import { TronAddressUtilsProvider } from "@/address/providers/tron";
 import { FuelAddressUtilsProvider } from "@/address/providers/fuel";
+import { StellarAddressUtilsProvider } from "@/address/providers/stellar";
 
 // All address utils providers, instantiated once.
 export const addressUtilsProviders = [
@@ -17,6 +18,7 @@ export const addressUtilsProviders = [
     new StarknetAddressUtilsProvider(),
     new TronAddressUtilsProvider(),
     new FuelAddressUtilsProvider(),
+    new StellarAddressUtilsProvider(),
 ];
 
 // Singleton resolver wired with every provider — the canonical entry point for

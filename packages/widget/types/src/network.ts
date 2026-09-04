@@ -8,9 +8,12 @@ export enum NetworkType {
   Fuel = 'fuel',
   Bitcoin = 'bitcoin',
   Tron = 'tron',
+  Stellar = 'stellar',
   Hyperliquid = 'hyperliquid',
   Polymarket = 'polymarket',
 }
+
+export type WalletDepositMode = 'direct' | 'depository';
 
 type RefuelToken = {
   /** Canonical identifier used in Layerswap API requests and lookups. */
@@ -48,6 +51,7 @@ type RefuelNetwork = {
     watchdog_contract?: string | null;
   };
   deposit_methods: string[];
+  wallet_deposit_modes?: WalletDepositMode[];
   token?: RefuelToken;
   source_rank?: number;
   destination_rank?: number;
