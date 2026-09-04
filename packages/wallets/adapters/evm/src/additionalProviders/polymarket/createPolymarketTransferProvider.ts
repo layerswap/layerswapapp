@@ -139,7 +139,7 @@ export function createPolymarketTransferProvider(
             }
             if (!funder) {
                 const largest = executable[0]
-                throw fail('Insufficient balance', `Your available Polymarket balance (${largest.amount} ${sourceToken.symbol}) is below the withdrawal amount.`)
+                throw fail('Insufficient balance', `Your available Polymarket balance (${largest.amount} ${sourceToken.asset}) is below the withdrawal amount.`)
             }
 
             // Assemble the batch (unwrap if holding pUSD, then approve + deposit). The calls are

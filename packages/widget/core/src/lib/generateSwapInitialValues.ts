@@ -66,7 +66,7 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
 
     let initialSourceCurrency = filteredSourceCurrencies?.find(c => c.symbol?.toUpperCase() == fromAsset?.toUpperCase())
     if (!initialSourceCurrency && !fromAsset && sourceNetwork) {
-        initialSourceCurrency = filteredSourceCurrencies?.sort((a, b) => a.symbol.localeCompare(b.symbol))?.find(c => c.status === "active")
+        initialSourceCurrency = filteredSourceCurrencies?.sort((a, b) => a.asset.localeCompare(b.asset))?.find(c => c.status === "active")
     }
 
     let initialDestinationCurrency = filteredDestinationCurrencies?.find(c => c.symbol?.toUpperCase() == toAsset?.toUpperCase())
@@ -77,7 +77,7 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
                 ?.filter(c => c.status === "active")
                 ?.sort((a, b) => rank(a) - rank(b))[0];
         } else {
-            initialDestinationCurrency = filteredDestinationCurrencies?.sort((a, b) => a.symbol.localeCompare(b.symbol))?.find(c => c.status === "active")
+            initialDestinationCurrency = filteredDestinationCurrencies?.sort((a, b) => a.asset.localeCompare(b.asset))?.find(c => c.status === "active")
         }
     }
 

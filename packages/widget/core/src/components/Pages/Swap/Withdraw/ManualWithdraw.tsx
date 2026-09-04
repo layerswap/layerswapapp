@@ -131,7 +131,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
 
     const requestAmount = (
         <span className='inline-flex items-center gap-1 px-1.5 bg-secondary-300 rounded-lg whitespace-nowrap'>
-            <span>{truncateDecimals(Number(swapBasicData?.requested_amount), swapBasicData?.source_token?.precision)}</span> <span>{swapBasicData?.source_token?.symbol}</span>
+            <span>{truncateDecimals(Number(swapBasicData?.requested_amount), swapBasicData?.source_token?.precision)}</span> <span>{swapBasicData?.source_token?.asset}</span>
             <CopyButton toCopy={swapBasicData?.requested_amount} iconClassName='text-secondary-text' />
         </span>
     )
@@ -292,7 +292,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
                                 number={3}
                                 label={
                                     <span className='flex items-center gap-1'>
-                                        <span>Receive</span> <span>{truncateDecimals(quote?.receive_amount ?? 0, swapBasicData?.destination_token?.precision)}</span> <span>{swapBasicData?.destination_token?.symbol}</span> <span>at</span> <span>{destinationNetwork}</span>
+                                        <span>Receive</span> <span>{truncateDecimals(quote?.receive_amount ?? 0, swapBasicData?.destination_token?.precision)}</span> <span>{swapBasicData?.destination_token?.asset}</span> <span>at</span> <span>{destinationNetwork}</span>
                                     </span>
                                 }
                                 value={
