@@ -14,7 +14,7 @@ import { remoteEntryForBuild } from "./cdn-layout.mjs";
 import {
   WIDGET_PROTOCOL_MAJOR,
   widgetProtocolMajorOf,
-} from "@layerswap/widget-types";
+} from "@layerswap/widget-js";
 
 export async function rollbackAzureChannel(options) {
   const {

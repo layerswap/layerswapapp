@@ -1,6 +1,6 @@
 import { fetchManifest, resolveRemoteEntry, verifyManifest, manifestFreshness, ManifestError, WIDGET_MANIFEST_URL } from './manifest.js';
 import { registerChunkHashes } from './sri.js';
-import { WIDGET_PROTOCOL_MAJOR, widgetProtocolMajorOf } from '@layerswap/widget-types';
+import { WIDGET_PROTOCOL_MAJOR, widgetProtocolMajorOf } from './protocol.js';
 
 export type ResolvedSource = { remoteEntry: string };
 
