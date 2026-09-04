@@ -20,7 +20,7 @@
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { WIDGET_PROTOCOL_MAJOR } from '@layerswap/widget-types';
+import { WIDGET_PROTOCOL_MAJOR } from '@layerswap/widget-js';
 
 const VERSION_RE = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
 // `assets` is the shared content-addressed namespace and cannot also name a

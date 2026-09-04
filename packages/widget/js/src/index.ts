@@ -17,7 +17,7 @@ export type {
   ThemeData,
   ThemeColor,
 } from "@layerswap/widget-types";
-export { WIDGET_PROTOCOL_MAJOR } from "@layerswap/widget-types";
+export { WIDGET_PROTOCOL_MAJOR, widgetProtocolMajorOf } from "./protocol.js";
 
 // Lower-level building blocks, reused by `@layerswap/widget-react` and
 // available for advanced integrators wiring their own loader.

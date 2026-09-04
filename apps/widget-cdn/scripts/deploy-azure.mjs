@@ -18,7 +18,7 @@ import {
   writeChannelManifest,
 } from "./azure-lib.mjs";
 import { resolveBuildIdentity } from "./build-id.mjs";
-import { WIDGET_PROTOCOL_MAJOR } from "@layerswap/widget-types";
+import { WIDGET_PROTOCOL_MAJOR } from "@layerswap/widget-js";
 import {
   ASSET_BASE,
   ASSET_DIRECTORY,

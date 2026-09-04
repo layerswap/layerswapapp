@@ -10,13 +10,14 @@
     "deploy:azure": "node scripts/deploy-azure.mjs",
     "rollback:azure": "node scripts/rollback-azure.mjs",
     "cleanup:azure": "node scripts/cleanup-azure.mjs",
-    "test": "pnpm --filter @layerswap/widget-types build && node --test scripts/*.test.mjs",
+    "test": "pnpm --filter @layerswap/widget-js... build && node --test scripts/*.test.mjs",
     "start": "node serve.mjs",
     "check:bundle-budget": "node scripts/check-bundle-budget.mjs"
   },
   "dependencies": {
     "@layerswap/wallets": "workspace:^",
     "@layerswap/widget": "workspace:^",
+    "@layerswap/widget-js": "workspace:^",
     "@layerswap/widget-types": "workspace:^",
     "@tanstack/react-query": "catalog:",
     "assert": "^2.1.0",
