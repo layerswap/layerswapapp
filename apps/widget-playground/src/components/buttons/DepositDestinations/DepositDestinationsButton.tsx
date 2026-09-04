@@ -14,10 +14,10 @@ const renderNetworkOption = (net: { name: string; display_name?: string; logo?: 
     </div>
 );
 
-const renderTokenOption = (tok: { symbol: string; logo?: string }) => (
+const renderTokenOption = (tok: { asset: string; logo?: string }) => (
     <div className="flex items-center gap-2">
-        {tok.logo && <img src={tok.logo} alt={tok.symbol} className="rounded-sm w-5 h-5" />}
-        <span>{tok.symbol}</span>
+        {tok.logo && <img src={tok.logo} alt={tok.asset} className="rounded-sm w-5 h-5" />}
+        <span>{tok.asset}</span>
     </div>
 );
 

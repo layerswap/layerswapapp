@@ -1,5 +1,23 @@
 # @layerswap/wallets
 
+## 2.0.1
+
+### Patch Changes
+
+- Wallet connection readiness fixes
+- Updated dependencies
+  - @layerswap/wallet-bitcoin@2.0.1
+  - @layerswap/wallet-evm@2.0.1
+  - @layerswap/wallet-fuel@2.0.1
+  - @layerswap/wallet-imtbl-passport@2.0.1
+  - @layerswap/wallet-paradex@2.0.1
+  - @layerswap/wallet-starknet@2.0.1
+  - @layerswap/wallet-svm@2.0.1
+  - @layerswap/wallet-ton@2.0.1
+  - @layerswap/wallet-tron@2.0.1
+  - @layerswap/wallet-core@2.0.1
+  - @layerswap/widget-types@1.0.1
+
 ## 2.0.0
 
 ### Major Changes
