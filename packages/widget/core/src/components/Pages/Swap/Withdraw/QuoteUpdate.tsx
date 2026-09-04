@@ -47,7 +47,7 @@ export const QuoteUpdated: FC<QuoteUpdatedProps> = (props) => {
 export async function handleLimitsUpdate(params: {
     swapValues: SwapFormValues;
     network?: { display_name: string };
-    token?: { symbol: string };
+    token?: { asset: string };
     getConfirmation: ReturnType<typeof useAsyncModal>['getConfirmation'];
 }): Promise<void> {
     const { swapValues, network, token } = params;
@@ -87,7 +87,7 @@ export async function handleLimitsUpdate(params: {
                 maxAllowedAmount={maxAllowedAmount}
                 isBelowMin={belowMin}
                 network={network?.display_name}
-                token={token?.symbol}
+                token={token?.asset}
             />
         ),
         submitText: "Continue",

@@ -24,7 +24,8 @@
     "@layerswap/bridge",
     "widget-playground",
     "@layerswap/explorer",
-    "widget-react-host-example",
+    "@layerswap/widget-js",
+    "@layerswap/widget-react",
     "@layerswap/widget-cdn"
   ],
   "snapshot": {

@@ -1,6 +1,7 @@
 
 export type Token = {
     symbol: string;
+    asset: string;
     logo: string;
     contract: string;
     decimals: number;

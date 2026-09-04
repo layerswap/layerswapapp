@@ -367,6 +367,9 @@ importers:
       '@layerswap/widget':
         specifier: workspace:^
         version: link:../../packages/widget/core
+      '@layerswap/widget-js':
+        specifier: workspace:^
+        version: link:../../packages/widget/js
       '@layerswap/widget-types':
         specifier: workspace:^
         version: link:../../packages/widget/types

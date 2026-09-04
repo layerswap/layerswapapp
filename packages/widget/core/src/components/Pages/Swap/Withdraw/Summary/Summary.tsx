@@ -60,10 +60,10 @@ const Summary: FC<SwapInfoProps> = (props) => {
                     primary={requestedAmount ? (isUsdMode ? (
                         <NumFlowWithFallback value={Number(requestedAmountInUsd) || 0} prefix="$" trend={0} />
                     ) : (
-                        <span>{truncateDecimals(Number(requestedAmount), sourceCurrency.precision)}{` ${sourceCurrency.symbol}`}</span>
+                        <span>{truncateDecimals(Number(requestedAmount), sourceCurrency.precision)}{` ${sourceCurrency.asset}`}</span>
                     )) : null}
                     secondary={requestedAmount ? (isUsdMode ? (
-                        <span>{truncateDecimals(Number(requestedAmount), sourceCurrency.precision)}{` ${sourceCurrency.symbol}`}</span>
+                        <span>{truncateDecimals(Number(requestedAmount), sourceCurrency.precision)}{` ${sourceCurrency.asset}`}</span>
                     ) : (
                         <NumFlowWithFallback value={Number(requestedAmountInUsd) || 0} prefix="$" trend={0} />
                     )) : null}
@@ -78,13 +78,13 @@ const Summary: FC<SwapInfoProps> = (props) => {
                     primary={receiveAmount ? (isUsdMode ? (
                         <NumFlowWithFallback value={Number(receiveAmountInUsd) || 0} prefix="$" trend={0} />
                     ) : (
-                        <NumFlowWithFallback value={Number(receiveAmount) || 0} suffix={` ${destinationCurrency.symbol}`} trend={0} format={{ maximumFractionDigits: quote.quote.destination_token?.decimals || 2 }} />
+                        <NumFlowWithFallback value={Number(receiveAmount) || 0} suffix={` ${destinationCurrency.asset}`} trend={0} format={{ maximumFractionDigits: quote.quote.destination_token?.decimals || 2 }} />
                     )) : null}
                     secondary={receiveAmount ? (
                         <>
                             <PriceImpact className="text-sm" quote={swapQuote} refuel={refuel} />
                             {isUsdMode ? (
-                                <NumFlowWithFallback value={Number(receiveAmount) || 0} suffix={` ${destinationCurrency.symbol}`} trend={0} format={{ maximumFractionDigits: quote.quote.destination_token?.decimals || 2 }} />
+                                <NumFlowWithFallback value={Number(receiveAmount) || 0} suffix={` ${destinationCurrency.asset}`} trend={0} format={{ maximumFractionDigits: quote.quote.destination_token?.decimals || 2 }} />
                             ) : (
                                 <NumFlowWithFallback value={Number(receiveAmountInUsd) || 0} prefix="$" trend={0} />
                             )}
@@ -101,7 +101,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                                 <p>Refuel</p>
                             </div>
                             <div className="flex flex-col items-end">
-                                <p className="text-primary-text text-sm">{truncatedRefuelAmount} {nativeCurrency?.symbol}</p>
+                                <p className="text-primary-text text-sm">{truncatedRefuelAmount} {nativeCurrency?.asset}</p>
                                 <p className="text-secondary-text text-sm flex justify-end">${refuelAmountInUsd}</p>
                             </div>
                         </div>
@@ -148,7 +148,7 @@ const SwapRow: FC<SwapRowProps> = ({ route, token, primary, secondary }) => {
             </div>
             <div className="flex flex-col grow min-w-0">
                 <div className="flex items-center gap-2 h-8">
-                    <p className="text-primary-text text-xl leading-6 font-normal grow truncate min-w-0">{token.symbol}</p>
+                    <p className="text-primary-text text-xl leading-6 font-normal grow truncate min-w-0">{token.asset}</p>
                     <div className="text-primary-text text-xl leading-6 font-normal flex items-center justify-end shrink-0 whitespace-nowrap">{primary}</div>
                 </div>
                 <div className="flex items-center gap-2 h-5">
