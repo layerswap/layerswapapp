@@ -18,6 +18,7 @@ import { getTotalBalanceInUSD } from "../helpers/balanceHelper";
 import { SortingOption, useRouteSortingStore } from "@/stores/routeSortingStore";
 import { extractTokenElementsAsSuggested, sortSuggestedTokenElements } from "../helpers/routeUtils";
 import { isExtendedSourceNetwork, mergeExtendedSourceRoutes } from "@/lib/extendedRoutes/registry";
+import { useSwapRouteRecency, type SwapRouteRecency } from "@/stores/swapRouteHistoryStore";
 
 type Props = {
     direction: SwapDirection;
@@ -37,6 +38,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
     const sortingOption = useRouteSortingStore((s) => s.sortingOption)
     const { balances, partialPublished, isLoading } = useAllWithdrawalBalances();
     const routesHistory = useRecentNetworksStore(state => state.recentRoutes)
+    const swapRecency = useSwapRouteRecency()
     const loadingSuggestions = useMemo(() => {
         return !partialPublished && isLoading && direction === "from"
     }, [isLoading, direction, partialPublished])
@@ -57,12 +59,13 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
             balances,
             groupBy: groupByToken ? "token" : "network",
             recents: routesHistory,
+            swapRecency,
             balancesLoaded: loadingSuggestions,
             search,
             suggestionsLimit,
             sortingOption
         }),
-        [filteredRoutes, balances, direction, search, groupByToken, routesHistory, loadingSuggestions, suggestionsLimit, sortingOption]);
+        [filteredRoutes, balances, direction, search, groupByToken, routesHistory, swapRecency, loadingSuggestions, suggestionsLimit, sortingOption]);
 
     const exchanges = useMemo(() => {
         return groupExchanges(exchangesRoutes, search, direction, { lockFrom, from, lockTo, to });
@@ -564,9 +567,9 @@ function sortTokenItemsByRelevance(
     });
 }
 
-function resolveSearch(routes: NetworkRoute[], search: string, direction: SwapDirection, balances: Record<string, NetworkBalance> | null, routesHistory: RoutesHistory): RowElement[] {
+function resolveSearch(routes: NetworkRoute[], search: string, direction: SwapDirection, balances: Record<string, NetworkBalance> | null, routesHistory: RoutesHistory, swapRecency?: SwapRouteRecency): RowElement[] {
     const matchedNetworks = searchInNetworks(routes, search, direction, balances)
-    const matchedTokens = searchInTokens(routes, search).sort(sortSuggestedTokenElements(direction, balances, routesHistory))
+    const matchedTokens = searchInTokens(routes, search).sort(sortSuggestedTokenElements(direction, balances, routesHistory, swapRecency))
     return [
         ...(matchedNetworks.length ? [resolveTitle('Networks'), ...matchedNetworks] : []),
         ...(matchedTokens.length ? [resolveTitle('Tokens'), ...matchedTokens] : [])
@@ -626,6 +629,7 @@ export type GroupRoutesProps = {
     balances: Record<string, NetworkBalance> | null;
     groupBy: 'token' | 'network';
     recents: RoutesHistory;
+    swapRecency?: SwapRouteRecency;
     balancesLoaded: boolean;
     search?: string;
     suggestionsLimit?: number;
@@ -637,17 +641,17 @@ export type GroupRoutesProps = {
 }
 
 export function groupRoutes(
-    { routes, direction, balances, groupBy, recents, balancesLoaded, search, suggestionsLimit = 4, sortingOption = SortingOption.RELEVANCE, skipBalanceGate = false, hideSuggestions = false }: GroupRoutesProps
+    { routes, direction, balances, groupBy, recents, swapRecency, balancesLoaded, search, suggestionsLimit = 4, sortingOption = SortingOption.RELEVANCE, skipBalanceGate = false, hideSuggestions = false }: GroupRoutesProps
 ): RowElement[] {
 
     if (search) {
-        return resolveSearch(routes, search, direction, balances, recents)
+        return resolveSearch(routes, search, direction, balances, recents, swapRecency)
     }
 
     // Suggestions always use relevance-based sorting (unchanged)
     const suggestedRoutes = hideSuggestions
         ? []
-        : getSuggestedRoutes(routes, balances, recents, direction, balancesLoaded, suggestionsLimit, skipBalanceGate)
+        : getSuggestedRoutes(routes, balances, recents, direction, balancesLoaded, suggestionsLimit, skipBalanceGate, swapRecency)
 
     // Apply custom sorting ONLY to "All Networks/All Tokens" section
     if (groupBy === "token") {
@@ -802,7 +806,7 @@ function useExchangeRoutes({ values }: Props) {
     return { exchangesRoutes: res, isLoading }
 }
 
-function getSuggestedRoutes(routes: NetworkRoute[], balances: Record<string, NetworkBalance> | null, routesHistory: RoutesHistory, direction: SwapDirection, balancesLoading: boolean, limit: number = 4, skipBalanceGate: boolean = false): (NetworkTokenElement | TokenSceletonElement)[] {
+function getSuggestedRoutes(routes: NetworkRoute[], balances: Record<string, NetworkBalance> | null, routesHistory: RoutesHistory, direction: SwapDirection, balancesLoading: boolean, limit: number = 4, skipBalanceGate: boolean = false, swapRecency?: SwapRouteRecency): (NetworkTokenElement | TokenSceletonElement)[] {
     // Ensure minimum of 4 suggestions
     const effectiveLimit = Math.max(4, limit);
 
@@ -814,7 +818,7 @@ function getSuggestedRoutes(routes: NetworkRoute[], balances: Record<string, Net
     }
 
     const tokenElements = extractTokenElementsAsSuggested(routes).filter(t => t.route.token.status === "active")
-    const sorted = tokenElements.sort(sortSuggestedTokenElements(direction, balances, routesHistory))
+    const sorted = tokenElements.sort(sortSuggestedTokenElements(direction, balances, routesHistory, swapRecency))
     return sorted.slice(0, effectiveLimit)
 }
 

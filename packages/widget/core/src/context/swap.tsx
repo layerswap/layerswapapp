@@ -28,6 +28,7 @@ import { buildCreateSwapParamsForExtendedRoute } from '@/lib/extendedRoutes/tran
 import { useExtendedRoutesStore } from '@/stores/extendedRoutesStore';
 import { isDepositAddressFlow, isDepositAddressSwap } from '@/helpers/swapFlow';
 import { resolveSwapPollingInterval, SWAP_POLL_DEDUPE_MS } from '@/lib/swapPollingPolicy';
+import { recordSwapRouteHistory } from '@/stores/swapRouteHistoryStore';
 
 export const SwapDataStateContext = createContext<SwapContextData | null>(null);
 
@@ -363,6 +364,10 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         updateRecentTokens({
             from: !fromExchange ? { network: from.name, token: fromCurrency.symbol } : undefined,
             to: { network: to.name, token: toCurrency.symbol }
+        });
+        void recordSwapRouteHistory(swap, {
+            sourceRoute: fromExchange ? null : { network: from.name, token: fromCurrency.symbol },
+            destinationRoute: { network: to.name, token: toCurrency.symbol },
         });
 
 

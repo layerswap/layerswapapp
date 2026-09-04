@@ -13,6 +13,7 @@ import { useSelectedAccount } from "@/context/swapAccounts";
 import { useCallbacks } from "@/context/callbackProvider";
 import { WalletIsSupportedForSource } from "@/context/swap";
 import { useRecentNetworksStore } from "@/stores/recentRoutesStore";
+import { recordSwapRouteHistory } from "@/stores/swapRouteHistoryStore";
 import { useContractAddressStore } from "@/stores/contractAddressStore";
 import { Address } from "@/lib/address/Address";
 import { useDepositSelection } from "./depositSelectionContext";
@@ -206,6 +207,7 @@ export function DepositPrefetchProvider({ children }: { children: ReactNode }) {
                     from: { network: swap.swap.source_network.name, token: swap.swap.source_token.symbol },
                     to: { network: swap.swap.destination_network.name, token: swap.swap.destination_token.symbol },
                 });
+                void recordSwapRouteHistory(swap);
             }
         }
         if (values) {

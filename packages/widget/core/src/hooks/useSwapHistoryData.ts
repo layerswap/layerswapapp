@@ -6,6 +6,7 @@ import { ApiResponse } from '@/Models/ApiResponse'
 import { useSwapTransactionStore } from '@/stores/swapTransactionStore'
 import { useExtendedSourceSkin } from './useExtendedSourceSkin'
 import { Address } from '@/lib/address/Address'
+import { recordFetchedSwapRouteHistory } from '@/stores/swapRouteHistoryStore'
 
 export function useSwapHistoryData(addresses?: string[], networks?: string[]) {
     const [revalidateAll, setRevalidateAll] = useState(false)
@@ -177,6 +178,13 @@ export function useSwapHistoryData(addresses?: string[], networks?: string[]) {
         () => ({ ...mergedCompleted, swaps: skinnedCompletedSwaps }),
         [mergedCompleted, skinnedCompletedSwaps],
     )
+
+    useEffect(() => {
+        void recordFetchedSwapRouteHistory([
+            ...skinnedPendingSwaps,
+            ...skinnedCompletedSwaps,
+        ])
+    }, [skinnedPendingSwaps, skinnedCompletedSwaps])
 
     return {
         pendingDeposit: skinnedPendingDeposit,
