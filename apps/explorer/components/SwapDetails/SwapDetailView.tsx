@@ -16,6 +16,7 @@ interface SwapDetailViewProps {
         token?: {
             logo?: string;
             symbol?: string;
+            asset?: string;
             precision?: number;
         };
     };
@@ -69,7 +70,7 @@ export default function SwapDetailView({
                                         outputTransaction={outputTransaction}
                                         createdDate={created_date}
                                         totalFee={quote?.total_fee}
-                                        sourceTokenSymbol={source_token?.symbol}
+                                        sourceTokenSymbol={source_token?.asset}
                                         sourceTokenPrecision={source_token?.precision}
                                     />
                                 </div>
@@ -85,7 +86,7 @@ export default function SwapDetailView({
                                 transaction={inputTransaction}
                                 amount={inputTransaction.amount}
                                 tokenLogo={source_token?.logo}
-                                tokenSymbol={source_token?.symbol}
+                                tokenSymbol={source_token?.asset}
                                 networkLogo={source_network?.logo}
                                 networkName={source_exchange ? source_network?.display_name : undefined}
                                 exchangeLogo={source_exchange?.logo}
@@ -109,7 +110,7 @@ export default function SwapDetailView({
                                 refundedTransaction={refundedTransaction}
                                 amount={(outputTransaction || refundedTransaction)?.amount}
                                 tokenLogo={(refundToken || destination_token)?.logo}
-                                tokenSymbol={(refundToken || destination_token)?.symbol}
+                                tokenSymbol={(refundToken || destination_token)?.asset}
                                 networkLogo={(refundNetwork || destination_network)?.logo}
                                 networkName={destination_exchange ? destination_network?.display_name : undefined}
                                 exchangeLogo={destination_exchange?.logo}
@@ -125,7 +126,7 @@ export default function SwapDetailView({
                                         refuelTransaction={refuelTransaction}
                                         refuelAmount={refuel?.amount}
                                         refuelTokenLogo={refuel?.token?.logo}
-                                        refuelTokenSymbol={refuel?.token?.symbol}
+                                        refuelTokenSymbol={refuel?.token?.asset}
                                         refuelTokenPrecision={refuel?.token?.precision}
                                     />
                                 )}
