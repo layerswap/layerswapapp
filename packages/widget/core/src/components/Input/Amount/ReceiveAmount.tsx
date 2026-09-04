@@ -51,7 +51,7 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ destination_token, fee, 
             ctx.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
 
             const intPart = receive_amount ? Math.floor(receive_amount).toString() : '0';
-            const suffix = ` ${destination_token?.symbol || ''}`;
+            const suffix = ` ${destination_token?.asset || ''}`;
             const fixedWidth = ctx.measureText(intPart + '.').width + ctx.measureText(suffix).width;
 
             if (fixedWidth >= availableWidth) {
@@ -70,7 +70,7 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ destination_token, fee, 
         observer.observe(container);
 
         return () => observer.disconnect();
-    }, [isUsdMode, receive_amount, destination_token?.symbol, tokenDecimals]);
+    }, [isUsdMode, receive_amount, destination_token?.asset, tokenDecimals]);
 
     useEffect(() => {
         if (!isUsdMode) setMaxDecimals(Math.min(tokenDecimals, 7));
@@ -97,7 +97,7 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ destination_token, fee, 
                 <span ref={numberSpanRef} className="text-xs sm:text-base leading-5 inline-flex items-center font-medium text-secondary-text h-5 min-w-0">
                     {isUsdMode ? <>
                         <NumFlowWithFallback className="p-0 align-middle shrink-0" value={receive_amount || 0} trend={0} format={{ maximumFractionDigits: maxDecimals }} />
-                        <span className="truncate ml-1">{destination_token?.symbol}</span>
+                        <span className="truncate ml-1">{destination_token?.asset}</span>
                     </> : (
                         <NumFlowWithFallback className="p-0 align-middle" value={Number(receiveAmountInUsd) || 0} prefix="$" format={{ maximumFractionDigits: receiveAmountInUsd ? 2 : 0 }} trend={0} />
                     )}
