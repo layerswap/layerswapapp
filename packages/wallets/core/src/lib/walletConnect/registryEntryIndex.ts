@@ -2,15 +2,11 @@ import { walletKey } from '@/lib/walletKey'
 import type { Web3ModalWallet } from './api'
 import { getInstantiatedAdditionalConnectorsStores, subscribeAdditionalConnectorsStores, type AdditionalConnectorsStore } from './additionalConnectorsStore'
 import { mapWallet } from './mapWallet'
-import { SLUGS_TO_FILTER } from './registry'
+import { SLUGS_TO_FILTER } from '@/constants'
 import { WALLET_REGISTRY_BATCH_LIMIT, type WalletRegistryBatchResponse } from './registrySnapshot'
 import type { WalletConnectWalletBase } from './types'
 
-declare const process: { env: { __NEXT_ROUTER_BASEPATH?: string } } | undefined
-
-const CANONICAL_WALLET_REGISTRY_URL = 'https://layerswap.io/app/api/wallet-registry'
-const NEXT_BASE_PATH = typeof process !== 'undefined' ? process.env.__NEXT_ROUTER_BASEPATH : undefined
-const WALLET_REGISTRY_URL = typeof window !== 'undefined' && typeof NEXT_BASE_PATH === 'string' ? `${window.location.origin}${NEXT_BASE_PATH}/api/wallet-registry` : CANONICAL_WALLET_REGISTRY_URL
+const WALLET_REGISTRY_URL = 'https://layerswap.io/app/api/wallet-registry'
 const ERROR_RETRY_DELAY_MS = 30_000
 
 const resolvedEntries = new Map<string, WalletConnectWalletBase | null>()
@@ -56,11 +52,11 @@ export const getRegistryEntryByName = (name: string): WalletConnectWalletBase | 
     return resolvedEntries.get(key) ?? getBrowsedEntries().get(key)
 }
 
-const postRegistryBatch = async (names: string[]): Promise<Web3ModalWallet[]> => {
+const postRegistryBatch = async (names: string[], projectId: string): Promise<Web3ModalWallet[]> => {
     const res = await fetch(WALLET_REGISTRY_URL, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ names }),
+        body: JSON.stringify({ names, projectId }),
     })
     if (!res.ok) throw new Error(`wallet-registry failed: ${res.status}`)
     const data = await res.json() as WalletRegistryBatchResponse
@@ -78,7 +74,7 @@ const resolveRegistryEntries = async (requested: Map<string, string>): Promise<v
         const batch = [...requested].filter(([key]) => !resolvedEntries.has(key) && !getBrowsedEntries().has(key)).slice(0, WALLET_REGISTRY_BATCH_LIMIT)
         if (!batch.length) return
 
-        const wallets = await postRegistryBatch(batch.map(([, name]) => name))
+        const wallets = await postRegistryBatch(batch.map(([, name]) => name), store.projectId)
         const index = new Map<string, WalletConnectWalletBase>(wallets.flatMap((raw): [string, WalletConnectWalletBase][] => {
             const mapped = mapWallet(raw, store.projectId)
             if (SLUGS_TO_FILTER.includes(mapped.id)) return []

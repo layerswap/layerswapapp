@@ -11,6 +11,7 @@ import { getRegistryEntryByName, getRegistryEntryIndexVersion, requestRegistryEn
 import { chainsToNetworkTypes } from "@/lib/walletConnect/types";
 import { removeDuplicatesWithKey } from '@/lib/removeDuplicatesWithKey';
 import { walletKey } from '@/lib/walletKey';
+import { NAME_OVERRIDES, UNMERGEABLE_WALLETS } from '@/constants';
 
 type UseConnectorsParams = {
     searchValue?: string;
@@ -27,9 +28,6 @@ type InitialSnapshot = {
     seen: Set<string>;
 }
 
-const UNMERGEABLE_WALLETS = ['nova', 'nova wallet', 'coinwallet', 'coin wallet', 'superwallet', 'super wallet']
-const NAME_OVERRIDES: Record<string, string> = { bitget: 'Bitget Wallet' }
-const EXCLUDED_WALLETS = new Set(['Coinbase', 'Coinbase Wallet SDK', 'Base (formerly Coinbase Wallet)', 'Immutable Passport', 'Fordefi', 'Solflare', 'Wallet in Telegram', 'Tonkeeper', 'Gram Wallet', 'Tonhub', 'OpenMask', 'BitgetWeb3', 'XTONWallet', 'TON Wallet', 'Mirai Mini App', 'Architec.ton', 'Tonkeeper Pro', 'Kolo', 'Cactus Link', 'Defiway', 'SparX Wallet', 'STOWER', 'SociaWallet', 'Fuel Wallet', 'Bako Safe', 'Fuelet Wallet'].map(walletKey))
 export const connectorKey = (name: string) =>
     UNMERGEABLE_WALLETS.includes(name.toLowerCase()) ? name.toLowerCase() : walletKey(name)
 
@@ -96,7 +94,7 @@ export const getMissingRegistryEntryNames = (pool: InternalConnector[], provider
         const key = connectorKey(connector.name)
         const record = records.get(key) ?? { name: connector.name, providerNames: new Set<string>(), hasNative: false }
         if (connector.providerName) record.providerNames.add(connector.providerName)
-        record.hasNative ||= connector.source !== 'registry' && connector.type !== 'injected' && !EXCLUDED_WALLETS.has(walletKey(connector.name))
+        record.hasNative ||= connector.source !== 'registry' && connector.type !== 'injected'
         records.set(key, record)
     }
     return [...records.values()].filter(record => {

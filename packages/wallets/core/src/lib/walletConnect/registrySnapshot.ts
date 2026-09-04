@@ -1,7 +1,7 @@
 import { walletKey } from '@/lib/walletKey'
 import { chainsForNamespace, fetchWallets, type Web3ModalWallet } from './api'
 import { mapWallet } from './mapWallet'
-import { SLUGS_TO_FILTER } from './registry'
+import { SLUGS_TO_FILTER } from '@/constants'
 
 export const WALLET_REGISTRY_BATCH_LIMIT = 100
 

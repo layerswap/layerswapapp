@@ -1,25 +1,26 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { unstable_cache } from "next/cache";
-import { WALLET_REGISTRY_BATCH_LIMIT, fetchRegistrySnapshot, matchRegistrySnapshot, normalizeRegistryNames, type Web3ModalWallet } from "@layerswap/wallet-core/registry-snapshot";
+import { DEFAULT_WALLETCONNECT_PROJECT_ID, WALLET_REGISTRY_BATCH_LIMIT, fetchRegistrySnapshot, matchRegistrySnapshot, normalizeRegistryNames, type Web3ModalWallet } from "@layerswap/wallet-core";
 
 export const config = { api: { bodyParser: { sizeLimit: "16kb" } } };
 
 const SNAPSHOT_REVALIDATE_SECONDS = 7 * 24 * 60 * 60;
-const PROJECT_ID = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '6113382c2e587bff00e2b5c3d68531f3';
 
 const getCachedSnapshot = unstable_cache(
-    () => fetchRegistrySnapshot(PROJECT_ID),
+    (projectId: string) => fetchRegistrySnapshot(projectId),
     ["wallet-registry-snapshot"],
     { revalidate: SNAPSHOT_REVALIDATE_SECONDS },
 );
 
-let lastSnapshot: Web3ModalWallet[] | null = null;
+const lastSnapshots = new Map<string, Web3ModalWallet[]>();
 
-async function readSnapshot(): Promise<Web3ModalWallet[]> {
+async function readSnapshot(projectId: string): Promise<Web3ModalWallet[]> {
     try {
-        lastSnapshot = await getCachedSnapshot();
-        return lastSnapshot;
+        const snapshot = await getCachedSnapshot(projectId);
+        lastSnapshots.set(projectId, snapshot);
+        return snapshot;
     } catch (error) {
+        const lastSnapshot = lastSnapshots.get(projectId);
         if (lastSnapshot) return lastSnapshot;
         throw error;
     }
@@ -43,14 +44,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(405).json({ error: "Method not allowed" });
     }
 
-    const names = typeof req.body === "object" && req.body ? (req.body as { names?: unknown }).names : undefined;
+    const body = (typeof req.body === "object" && req.body ? req.body : {}) as { names?: string[]; projectId?: string };
+    const { names } = body;
     if (!Array.isArray(names) || !names.length || names.length > WALLET_REGISTRY_BATCH_LIMIT || names.some(name => typeof name !== "string" || !name.trim())) {
         return res.status(400).json({ error: `names must be 1-${WALLET_REGISTRY_BATCH_LIMIT} non-empty strings` });
     }
+    const projectId = body.projectId || DEFAULT_WALLETCONNECT_PROJECT_ID;
 
     try {
-        const snapshot = await readSnapshot();
-        return res.status(200).json({ wallets: matchRegistrySnapshot(snapshot, normalizeRegistryNames(names), PROJECT_ID) });
+        const snapshot = await readSnapshot(projectId);
+        return res.status(200).json({ wallets: matchRegistrySnapshot(snapshot, normalizeRegistryNames(names), projectId) });
     } catch (error) {
         console.error("[api/wallet-registry] registry snapshot unavailable", error);
         return res.status(502).json({ error: "Wallet registry unavailable" });

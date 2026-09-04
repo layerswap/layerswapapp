@@ -2,6 +2,7 @@ import { resolveWalletConnectWallets } from './registry'
 import type { WalletConnectWalletBase } from './types'
 import type { InternalConnector } from '@layerswap/widget-types'
 import type { RequestAdditionalConnectorsParams } from '@/types'
+import { DEFAULT_WALLETCONNECT_PROJECT_ID } from '@/constants'
 
 type PageCacheEntry = {
     page: number
@@ -26,7 +27,6 @@ const inFlightByKey = new Map<string, Promise<PageCacheEntry['result']>>()
 const DEFAULT_PAGE_SIZE = 40
 const MAX_CACHED_PAGES_PER_QUERY = 20
 const MAX_CACHED_QUERIES_PER_NAMESPACE = 50
-const DEFAULT_PROJECT_ID = '6113382c2e587bff00e2b5c3d68531f3'
 
 const normalizeQuery = (query?: string) => query?.trim() ?? ''
 
@@ -286,7 +286,7 @@ export function getAdditionalConnectorsStore(
     namespace: string,
     projectId?: string,
 ): AdditionalConnectorsStore {
-    const resolvedProjectId = projectId ?? DEFAULT_PROJECT_ID
+    const resolvedProjectId = projectId ?? DEFAULT_WALLETCONNECT_PROJECT_ID
     const key = `${namespace}:${resolvedProjectId}`
     let store = storeRegistry.get(key)
     if (!store) {

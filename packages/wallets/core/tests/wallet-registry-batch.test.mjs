@@ -107,13 +107,13 @@ test('one batch resolves all requested names without per-wallet Reown lookups', 
     await waitFor(() => getRegistryEntryByName('Rainbow'))
 
     assert.equal(batchCalls(calls).length, 1)
-    assert.deepEqual(batchCalls(calls)[0].body, { names: ['Rainbow', 'Uniswap Wallet'] })
+    assert.deepEqual(batchCalls(calls)[0].body, { names: ['Rainbow', 'Uniswap Wallet'], projectId: 'pb1' })
     assert.ok(calls.every(call => !call.url.includes('search=')))
     assert.deepEqual(getRegistryEntryByName('Uniswap Wallet')?.chains, ['eip155:1', 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'])
 
     requestRegistryEntriesByName(['Rainbow', 'Zerion Fresh'])
     await waitFor(() => batchCalls(calls).length === 2)
-    assert.deepEqual(batchCalls(calls)[1].body, { names: ['Zerion Fresh'] })
+    assert.deepEqual(batchCalls(calls)[1].body, { names: ['Zerion Fresh'], projectId: 'pb1' })
 })
 
 test('names present in loaded browse pages are not submitted', async () => {
@@ -126,7 +126,7 @@ test('names present in loaded browse pages are not submitted', async () => {
     requestRegistryEntriesByName(['Ledger Live X', 'Fresh Unknown'])
     await waitFor(() => batchCalls(calls).length === 1)
 
-    assert.deepEqual(batchCalls(calls)[0].body, { names: ['Fresh Unknown'] })
+    assert.deepEqual(batchCalls(calls)[0].body, { names: ['Fresh Unknown'], projectId: 'pb1' })
 })
 
 test('empty matches are recorded and not re-requested', async () => {
