@@ -21,6 +21,7 @@ import {
     type WalletConnectWalletBase,
 } from '@layerswap/wallet-core'
 import { id as PROVIDER_ID, name as PROVIDER_NAME } from '../constants'
+import { STELLAR_APPKIT_WALLET_CONNECT_ID } from './StellarWalletConnectModule'
 import { stellarKitManager } from './stellarKitManager'
 import { stellarStore, type StellarWalletSnapshot } from './stellarStore'
 import { toStellarConnector } from './stellarConnector'
@@ -52,7 +53,7 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
     private networksKey = ''
     private deps: RuntimeDeps = {}
 
-    constructor(private readonly kitManager: StellarKitConnectionManager = stellarKitManager) {}
+    constructor(private readonly kitManager: StellarKitConnectionManager = stellarKitManager) { }
 
     setNetworks(networks: Network[], networkAdapter: AppNetworkAdapter<Network>): void {
         const key = networks.map(network => networkAdapter.getId(network)).join('|')
@@ -67,17 +68,21 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
     }
 
     getAvailableConnectors(): InternalConnector[] {
-        return [
-            ...stellarStore.getState().wallets.map(toStellarConnector),
-            ...(this.deps.recentConnectors ?? []),
-        ]
+        const isMobilePlatform = this.deps.isMobilePlatform ?? false
+        const configured = stellarStore.getState().wallets
+            .filter(wallet => wallet.id !== STELLAR_APPKIT_WALLET_CONNECT_ID)
+            .map(toStellarConnector)
+            .filter(connector => !isMobilePlatform || connector.isMobileSupported)
+        const recent = (this.deps.recentConnectors ?? [])
+            .filter(connector => !isMobilePlatform || connector.isMobileSupported)
+        return [...configured, ...recent]
     }
 
     getAdditionalConnectors(): InternalConnector[] {
         const isMobilePlatform = this.deps.isMobilePlatform ?? false
-        return (this.deps.registryConnectors ?? []).map(wallet =>
-            createRegistryConnector(wallet, isMobilePlatform, PROVIDER_NAME),
-        )
+        return (this.deps.registryConnectors ?? [])
+            .filter(wallet => !isMobilePlatform || wallet.isMobileSupported)
+            .map(wallet => createRegistryConnector(wallet, isMobilePlatform, PROVIDER_NAME))
     }
 
     getConnectedWallets(): Wallet[] {
@@ -100,9 +105,11 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
         const isMobilePlatform = this.deps.isMobilePlatform ?? false
         const mobile = registryConnector?.mobile
         const deepLink = mobile?.native || mobile?.universal || undefined
-        const resolveURI = registryConnector && mobile
+        const resolveURI = registryConnector && mobile && deepLink
             ? (uri: string) => buildDeepLink({ id: registryConnector.id, mobile }, uri)
             : undefined
+        const useAppKit = isWalletConnect && isMobilePlatform && !registryConnector
+        const kitWallet = useAppKit ? wallets.find(item => item.id === STELLAR_APPKIT_WALLET_CONNECT_ID) ?? wallet : wallet
         let unsubscribeDisplayUri: (() => void) | undefined
 
         const setSelectedConnectorIfCurrent = (next: WalletModalConnector) => {
@@ -120,20 +127,26 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
                     PROVIDER_ID,
                     registryConnector ? { ...registryConnector, deepLink } : undefined,
                 )
-                const wantsQrModal = !isMobilePlatform || !resolveURI
-                setSelectedConnectorIfCurrent(wantsQrModal
-                    ? { ...connector, qr: { state: 'loading', value: undefined }, showQrCode: true }
-                    : connector)
-                unsubscribeDisplayUri = subscribeDisplayUri({
-                    source: this.kitManager,
-                    resolveURI,
-                    isMobilePlatform,
-                    onQr: qr => setSelectedConnectorIfCurrent({ ...connector, qr, showQrCode: true }),
-                })
+                const wantsQrModal = !useAppKit && (!isMobilePlatform || !resolveURI)
+                if (wantsQrModal) {
+                    this.deps.setSelectedConnector?.({
+                        ...connector,
+                        qr: { state: 'loading', value: undefined },
+                        showQrCode: true,
+                    })
+                }
+                if (!useAppKit) {
+                    unsubscribeDisplayUri = subscribeDisplayUri({
+                        source: this.kitManager,
+                        resolveURI,
+                        isMobilePlatform,
+                        onQr: qr => setSelectedConnectorIfCurrent({ ...connector, qr, showQrCode: true }),
+                    })
+                }
                 if (registryConnector) this.deps.addRecentConnector?.(registryConnector)
             }
 
-            const { address } = await this.kitManager.connect(wallet.id)
+            const { address } = await this.kitManager.connect(kitWallet.id)
             if (registryConnector) {
                 setDynamicWcMetadata(PROVIDER_ID, address, {
                     name: registryConnector.name,
@@ -142,7 +155,7 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
                     deepLink,
                 })
             }
-            return this.resolveWallet(wallet, address)
+            return this.resolveWallet(kitWallet, address)
         } finally {
             unsubscribeDisplayUri?.()
             if (isWalletConnect) clearPendingDynamicWcMetadata(PROVIDER_ID)
@@ -161,10 +174,11 @@ export class StellarConnectionService<Network> implements WalletConnectionServic
         }
         const result = await this.deps.requestRegistryConnectors(params)
         const isMobilePlatform = this.deps.isMobilePlatform ?? false
+        const connectors = result.connectors
+            .filter(wallet => !isMobilePlatform || wallet.isMobileSupported)
+            .map(wallet => createRegistryConnector(wallet, isMobilePlatform, PROVIDER_NAME))
         return {
-            connectors: result.connectors.map(wallet =>
-                createRegistryConnector(wallet, isMobilePlatform, PROVIDER_NAME),
-            ),
+            connectors,
             nextPage: result.nextPage,
             totalCount: result.totalCount,
         }

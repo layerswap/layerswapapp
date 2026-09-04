@@ -1,10 +1,13 @@
 import type { WalletConnectConfig } from '@layerswap/widget-types'
 import { ActionMessageType } from '@layerswap/widget-types'
-import { isValidStellarAddress } from '@layerswap/utils'
+import { AppSettings, isMobile, isValidStellarAddress } from '@layerswap/utils'
 import type { ISupportedWallet } from '@creit.tech/stellar-wallets-kit/types'
+import type { WalletConnectModule as StellarKitWalletConnectModule } from '@creit.tech/stellar-wallets-kit/modules/wallet-connect'
 import { STELLAR_SESSION_KEY } from '../constants'
 import {
+    STELLAR_APPKIT_WALLET_CONNECT_ID,
     STELLAR_WALLET_CONNECT_ID,
+    StellarWalletConnectChain,
     StellarWalletConnectModule,
 } from './StellarWalletConnectModule'
 import { stellarStore, type StellarWalletSnapshot } from './stellarStore'
@@ -18,6 +21,8 @@ type StellarPersistedSession = {
     walletId: string
     address: string
 }
+
+const STELLAR_APPKIT_WALLET_CONNECT_STORAGE_PREFIX = 'layerswapStellarAppKitWalletConnect'
 
 function readPersistedSession(): StellarPersistedSession | undefined {
     if (typeof window === 'undefined') return undefined
@@ -76,7 +81,9 @@ class StellarKitManager {
     private initPromise: Promise<void> | undefined
     private detachers: Array<() => void> = []
     private selectedWalletId: string | undefined
+    private network: string | undefined
     private walletConnectModule: StellarWalletConnectModule | undefined
+    private appKitWalletConnectModule: StellarKitWalletConnectModule | undefined
     private generation = 0
 
     init(walletConnect?: WalletConnectConfig): Promise<void> {
@@ -104,21 +111,37 @@ class StellarKitManager {
         ])
         if (generation !== this.generation) return
 
+        const isTestnet = AppSettings.ApiVersion === 'testnet' || AppSettings.ApiVersion === 'sandbox'
+        const network = isTestnet ? kitTypesModule.Networks.TESTNET : kitTypesModule.Networks.PUBLIC
         const modules = kitUtilsModule.defaultModules()
         if (walletConnect?.projectId) {
-            this.walletConnectModule = new StellarWalletConnectModule(walletConnect)
+            this.walletConnectModule = new StellarWalletConnectModule(walletConnect, undefined, [isTestnet ? StellarWalletConnectChain.Testnet : StellarWalletConnectChain.Public,])
             modules.push(this.walletConnectModule)
             this.detachers.push(this.walletConnectModule.onSessionDelete(() => this.clearSession()))
+            if (isMobile()) {
+                const { WalletConnectModule, WalletConnectTargetChain } = await import('@creit.tech/stellar-wallets-kit/modules/wallet-connect')
+                if (generation !== this.generation) return
+                const appKitModule = new WalletConnectModule({
+                    projectId: walletConnect.projectId,
+                    metadata: { name: walletConnect.name, description: walletConnect.description, url: walletConnect.url, icons: walletConnect.icons, },
+                    signClientOptions: { customStoragePrefix: STELLAR_APPKIT_WALLET_CONNECT_STORAGE_PREFIX },
+                    allowedChains: [isTestnet ? WalletConnectTargetChain.TESTNET : WalletConnectTargetChain.PUBLIC],
+                })
+                appKitModule.productId = STELLAR_APPKIT_WALLET_CONNECT_ID
+                this.appKitWalletConnectModule = appKitModule
+                modules.push(appKitModule)
+            }
         }
 
         const persisted = readPersistedSession()
         kitModule.StellarWalletsKit.init({
             modules,
             selectedWalletId: persisted?.walletId,
-            network: kitTypesModule.Networks.PUBLIC,
+            network,
         })
         this.kit = kitModule.StellarWalletsKit
         this.networks = kitTypesModule.Networks
+        this.network = network
         this.attachEvents(kitModule, kitTypesModule)
 
         const wallets = await this.kit.refreshSupportedWallets()
@@ -163,18 +186,19 @@ class StellarKitManager {
             kit.setWallet(walletId)
             const { address } = await kit.fetchAddress()
             this.assertSourceAddress(address)
+            if (this.network) await this.assertWalletNetwork(this.network)
             stellarStore.getState().setActive(walletId, address)
             persistSession({ walletId, address })
             return { address }
         } catch (error) {
             this.selectedWalletId = previousWalletId
             if (previousWalletId) kit.setWallet(previousWalletId)
-            throw error
+            throw error instanceof Error ? error : new Error((error as { message: string }).message)
         }
     }
 
     onDisplayUri(listener: (uri: string) => void): () => void {
-        return this.walletConnectModule?.onDisplayUri(listener) ?? (() => {})
+        return this.walletConnectModule?.onDisplayUri(listener) ?? (() => { })
     }
 
     warmUpWalletConnect(): void {
@@ -191,20 +215,13 @@ class StellarKitManager {
 
         this.selectedWalletId = activeWalletId
         kit.setWallet(activeWalletId)
-        try {
-            const walletNetwork = await kit.getNetwork()
-            if (walletNetwork.networkPassphrase && walletNetwork.networkPassphrase !== networkPassphrase) {
-                throw walletError(ActionMessageType.WaletMismatch, 'Switch the Stellar wallet to the selected network')
-            }
-        } catch (error) {
-            if ((error as Error)?.name === ActionMessageType.WaletMismatch) throw error
-            // Some modules cannot report their network but can still sign with
-            // an explicit SEP-43 network passphrase.
-        }
+        await this.assertWalletNetwork(networkPassphrase)
 
         const { address } = activeWalletId === STELLAR_WALLET_CONNECT_ID && this.walletConnectModule
             ? await this.walletConnectModule.getConnectedAddress(expectedAddress)
-            : await kit.fetchAddress()
+            : activeWalletId === STELLAR_APPKIT_WALLET_CONNECT_ID && this.appKitWalletConnectModule
+                ? await this.getAppKitConnectedAddress(this.appKitWalletConnectModule, expectedAddress)
+                : await kit.fetchAddress().catch((error: { message: string }) => { throw new Error(error.message) })
         this.assertSourceAddress(address)
         if (address !== expectedAddress) {
             throw walletError(ActionMessageType.WaletMismatch, 'The connected Stellar account changed')
@@ -225,6 +242,7 @@ class StellarKitManager {
             if (knownNetwork) kit.setNetwork(knownNetwork)
         }
         return kit.signTransaction(xdr, { networkPassphrase, address })
+            .catch((error: { message: string }) => { throw new Error(error.message) })
     }
 
     async refreshWallets(): Promise<void> {
@@ -246,6 +264,7 @@ class StellarKitManager {
         for (const detach of this.detachers.splice(0)) detach()
         this.walletConnectModule?.dispose()
         this.walletConnectModule = undefined
+        this.appKitWalletConnectModule = undefined
         this.kit = undefined
         this.networks = undefined
         this.initPromise = undefined
@@ -260,6 +279,23 @@ class StellarKitManager {
     private requireKit(): StellarWalletsKitClass {
         if (!this.kit) throw new Error('Stellar Wallets Kit is not initialized')
         return this.kit
+    }
+
+    private async assertWalletNetwork(expected: string): Promise<void> {
+        const walletNetwork = await this.requireKit().getNetwork().catch(() => undefined)
+        if (walletNetwork?.networkPassphrase && walletNetwork.networkPassphrase !== expected) {
+            const target = expected === this.networks?.TESTNET ? 'Testnet' : 'Mainnet'
+            throw new Error(`The wallet is on the wrong network. Switch it to Stellar ${target}, then try again`)
+        }
+    }
+
+    private async getAppKitConnectedAddress(module: StellarKitWalletConnectModule, expectedAddress: string,): Promise<{ address: string }> {
+        const sessions = await module.getSessions()
+        const connected = sessions.some(session => (session.namespaces['stellar']?.accounts ?? []).some(account => account.split(':')[2] === expectedAddress))
+        if (!connected) {
+            throw new Error('The Stellar WalletConnect session expired; reconnect the wallet')
+        }
+        return { address: expectedAddress }
     }
 
     private assertSourceAddress(address: string): void {

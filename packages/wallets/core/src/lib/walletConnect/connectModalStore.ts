@@ -3,8 +3,9 @@
  * that wallet packages need to read/write from outside React render. The
  * existing React `WalletModalProvider` mirrors its state here.
  */
+import type { WalletModalConnector } from '../../types/provider'
 
-type SelectedConnectorLike = { id: string; [key: string]: unknown } | undefined
+type SelectedConnectorLike = WalletModalConnector | undefined
 
 export type ConnectModalSnapshot = {
     isWalletModalOpen: boolean
