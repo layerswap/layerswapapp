@@ -7,20 +7,19 @@ export const config = { api: { bodyParser: { sizeLimit: "16kb" } } };
 const SNAPSHOT_REVALIDATE_SECONDS = 7 * 24 * 60 * 60;
 
 const getCachedSnapshot = unstable_cache(
-    (projectId: string) => fetchRegistrySnapshot(projectId),
+    () => fetchRegistrySnapshot(DEFAULT_WALLETCONNECT_PROJECT_ID),
     ["wallet-registry-snapshot"],
     { revalidate: SNAPSHOT_REVALIDATE_SECONDS },
 );
 
-const lastSnapshots = new Map<string, Web3ModalWallet[]>();
+let lastSnapshot: Web3ModalWallet[] | undefined;
 
-async function readSnapshot(projectId: string): Promise<Web3ModalWallet[]> {
+async function readSnapshot(): Promise<Web3ModalWallet[]> {
     try {
-        const snapshot = await getCachedSnapshot(projectId);
-        lastSnapshots.set(projectId, snapshot);
+        const snapshot = await getCachedSnapshot();
+        lastSnapshot = snapshot;
         return snapshot;
     } catch (error) {
-        const lastSnapshot = lastSnapshots.get(projectId);
         if (lastSnapshot) return lastSnapshot;
         throw error;
     }
@@ -52,7 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const projectId = body.projectId || DEFAULT_WALLETCONNECT_PROJECT_ID;
 
     try {
-        const snapshot = await readSnapshot(projectId);
+        const snapshot = await readSnapshot();
         return res.status(200).json({ wallets: matchRegistrySnapshot(snapshot, normalizeRegistryNames(names), projectId) });
     } catch (error) {
         console.error("[api/wallet-registry] registry snapshot unavailable", error);
