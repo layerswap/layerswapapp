@@ -78,7 +78,7 @@ export const SummaryRow: FC<{
                 </div>
                 <div className="text-right text-primary-text h-5">
                     {quoteData?.quote?.min_receive_amount !== undefined && !isNaN(quoteData?.quote?.min_receive_amount) && (
-                        <NumFlowWithFallback value={quoteData?.quote?.min_receive_amount} trend={0} format={{ maximumFractionDigits: quoteData?.quote.destination_token?.decimals || 2 }} suffix={` ${values?.toAsset?.symbol}`} />
+                        <NumFlowWithFallback value={quoteData?.quote?.min_receive_amount} trend={0} format={{ maximumFractionDigits: quoteData?.quote.destination_token?.decimals || 2 }} suffix={` ${values?.toAsset?.asset}`} />
                     )}
                 </div>
             </div>

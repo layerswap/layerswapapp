@@ -13,7 +13,10 @@ export enum NetworkType {
 }
 
 type RefuelToken = {
+  /** Canonical identifier used in Layerswap API requests and lookups. */
   symbol: string;
+  /** User-facing ticker used in labels and messages. */
+  asset: string;
   display_asset?: string;
   logo: string;
   contract: string | null | undefined;

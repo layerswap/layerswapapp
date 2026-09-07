@@ -144,7 +144,7 @@ const AmountField = forwardRef(function AmountField({ actionValue, actionValueUs
                             {`${previewToken ?? formattedTokenAmount}`}
                         </span>
                         <span className="shrink-0">
-                            {` ${fromCurrency?.symbol || ''}`}
+                            {` ${fromCurrency?.asset || ''}`}
                         </span>
                     </span>
                 </div>
@@ -201,4 +201,3 @@ function getFontFromElement(el: HTMLElement | null): string {
     const style = window.getComputedStyle(el);
     return `${style.fontSize} ${style.fontFamily}`;
 }
-

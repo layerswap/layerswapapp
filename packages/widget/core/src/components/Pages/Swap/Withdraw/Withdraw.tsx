@@ -90,10 +90,10 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
                 icon={<InfoIcon className={ICON_CLASSES_WARNING} />}
                 title={<>
                     <span>{"Insufficient balance"}</span>
-                    {balanceAmount && swapBasicData?.source_token?.symbol && (
+                    {balanceAmount && swapBasicData?.source_token?.asset && (
                         <span
                             className={`font-normal text-sm ${showSpinner ? 'animate-shine bg-[linear-gradient(90deg,var(--color-secondary-text)_40%,white_50%,var(--color-secondary-text)_60%)] bg-size-[200%_100%] bg-clip-text text-transparent' : 'text-secondary-text'}`}
-                        > ({balanceAmount} {swapBasicData.source_token.symbol})</span>
+                        > ({balanceAmount} {swapBasicData.source_token.asset})</span>
                     )}
                 </>}
                 message="If you recently added funds, refresh the balance or check your connected wallet"

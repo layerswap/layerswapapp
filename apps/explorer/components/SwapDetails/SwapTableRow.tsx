@@ -70,7 +70,7 @@ export default function SwapTableRow({
                                 </div>
                                 <div className="mx-2.5">
                                     <span className="text-primary-text">{formatAmount(inputTransaction.amount)}</span>
-                                    <span className="mx-1 text-primary-text">{source_token?.symbol}</span>
+                                    <span className="mx-1 text-primary-text">{source_token?.asset}</span>
                                 </div>
                             </div>
                         </div>
@@ -125,7 +125,7 @@ export default function SwapTableRow({
                                 {outputTransaction?.amount ? (
                                     <div className="mx-2.5">
                                         <span className="text-primary-text mx-0.5">{formatAmount(outputTransaction.amount)}</span>
-                                        <span className="text-primary-text">{destination_token?.symbol}</span>
+                                        <span className="text-primary-text">{destination_token?.asset}</span>
                                     </div>
                                 ) : (
                                     <span className="ml-2.5">-</span>

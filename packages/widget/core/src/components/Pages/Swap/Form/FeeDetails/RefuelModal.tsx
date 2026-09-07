@@ -36,11 +36,11 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal, fee }) => 
                         {
                             fee && refuel ?
                                 <>
-                                    <span><span>We&apos;ll convert</span> <span>${fee?.refuel?.amount_in_usd}</span> <span>of your transfer into</span> <span>{nativeAsset?.symbol}</span> <span>so you can start using your funds on the destination chain immediately.</span></span>
+                                    <span><span>We&apos;ll convert</span> <span>${fee?.refuel?.amount_in_usd}</span> <span>of your transfer into</span> <span>{nativeAsset?.asset}</span> <span>so you can start using your funds on the destination chain immediately.</span></span>
                                 </>
                                 :
                                 <>
-                                    <span><span>We&apos;ll convert a small portion of your transfer into</span> <span>{nativeAsset?.symbol}</span> <span>so you can start using your funds on the destination chain immediately.</span></span>
+                                    <span><span>We&apos;ll convert a small portion of your transfer into</span> <span>{nativeAsset?.asset}</span> <span>so you can start using your funds on the destination chain immediately.</span></span>
                                 </>
                         }
                     </p>
@@ -55,7 +55,7 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal, fee }) => 
                                                     <span>Current balance</span>
                                                 </div>
                                                 <p className='text-end'>
-                                                    <span>{truncateDecimals(destNativeTokenBalance?.amount!, nativeAsset?.precision)} {nativeAsset?.symbol}</span>
+                                                    <span>{truncateDecimals(destNativeTokenBalance?.amount!, nativeAsset?.precision)} {nativeAsset?.asset}</span>
                                                 </p>
                                             </div>
                                         </div>
@@ -70,7 +70,7 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal, fee }) => 
                                                     You will receive
                                                 </div>
                                                 <p>
-                                                    <span>{truncateDecimals(toCurrency.refuel?.amount, nativeAsset.precision)} {nativeAsset?.symbol}</span>
+                                                    <span>{truncateDecimals(toCurrency.refuel?.amount, nativeAsset.precision)} {nativeAsset?.asset}</span>
                                                 </p>
                                             </div>
                                         </div>

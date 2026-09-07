@@ -25,15 +25,15 @@ export const RateElement = ({
         >
             {!flipped ? (
                 <>
-                    <p><span>1</span> <span>{fromAsset?.symbol}</span></p>
+                    <p><span>1</span> <span>{fromAsset?.asset}</span></p>
                     <ArrowRight className="w-3 h-3 mx-1" />
-                    <span>{rateTruncated} {toAsset?.symbol}</span>
+                    <span>{rateTruncated} {toAsset?.asset}</span>
                 </>
             ) : (
                 <>
-                    <p><span>1</span> <span>{toAsset?.symbol}</span></p>
+                    <p><span>1</span> <span>{toAsset?.asset}</span></p>
                     <ArrowRight className="w-3 h-3 mx-1" />
-                    <span>{flippedRateTruncated} {fromAsset?.symbol}</span>
+                    <span>{flippedRateTruncated} {fromAsset?.asset}</span>
                 </>
             )}
         </div>

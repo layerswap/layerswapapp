@@ -226,7 +226,7 @@ export const WalletItem: FC<WalletItemProps> = ({ selectable, account: item, net
                                                             <div className='h-[14px] w-20 inline-flex bg-gray-500 rounded-xs animate-pulse' />
                                                             :
                                                             <>
-                                                                <span>{walletBalanceAmount}</span> <span>{token?.symbol}</span>
+                                                                <span>{walletBalanceAmount}</span> <span>{token?.asset}</span>
                                                             </>
                                                     }
                                                 </div>
@@ -372,7 +372,7 @@ const NestedWalletAddress: FC<NestedWalletAddressProps> = ({ selectable, address
                                         <div className="h-[14px] w-20 inline-flex bg-gray-500 rounded-sm animate-pulse" />
                                     ) : (
                                         <>
-                                            <span>{nestedWalletBalanceAmount}</span> <span>{token?.symbol}</span>
+                                            <span>{nestedWalletBalanceAmount}</span> <span>{token?.asset}</span>
                                         </>
                                     )
                                 }

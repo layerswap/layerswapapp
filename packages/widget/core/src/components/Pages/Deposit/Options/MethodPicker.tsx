@@ -180,7 +180,7 @@ const MethodPicker: FC = () => {
                     if (!(option.present && canShow(id))) return null;
                     const name = option.network?.display_name ?? "";
                     const balanceLabel = (option.compatibleWalletBalance != null && option.compatibleWalletBalance > 0) && option.token
-                        ? `Balance: ${truncateDecimals(option.compatibleWalletBalance, option.token.precision)} ${option.token.symbol}`
+                        ? `Balance: ${truncateDecimals(option.compatibleWalletBalance, option.token.precision)} ${option.token.asset}`
                         : undefined;
                     return (
                         <MethodCard
