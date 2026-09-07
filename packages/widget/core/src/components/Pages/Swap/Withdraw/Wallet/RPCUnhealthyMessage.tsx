@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/too
 import { useCopyClipboard } from "@layerswap/ui-kit";
 import { Check, CopyIcon } from "lucide-react";
 import { Network } from "@layerswap/widget-types";
+import { KnownInternalNames } from "@layerswap/utils";
 
 const HEALTH_CHECK_INTERVAL = 1500 // 1.5 seconds
 
@@ -30,15 +31,22 @@ const RPCUnhealthyMessage: FC<Props> = ({ network, suggestRpcForCurrentChain, is
 
     const handleAddRpc = async () => {
         setRpcAddStatus('idle')
-        const result = await suggestRpcForCurrentChain(network.node_url, {
-            chainName: network.display_name,
-            nativeCurrency: {
-                name: network.display_name,
-                symbol: network.token?.asset,
-                decimals: network.token?.decimals
-            }
-        })
-        setRpcAddStatus(result.success ? 'success' : 'error')
+        const isTempo = network.name === KnownInternalNames.Networks.TempoMainnet
+            || network.name === KnownInternalNames.Networks.TempoTestnet
+        try {
+            const result = await suggestRpcForCurrentChain(network.node_url, {
+                chainName: network.display_name,
+                // Tempo has no native token; USD with 18 decimals is wallet compatibility metadata.
+                nativeCurrency: isTempo ? { name: 'USD', symbol: 'USD', decimals: 18 } : {
+                    name: network.display_name,
+                    symbol: network.token?.asset,
+                    decimals: network.token?.decimals
+                }
+            })
+            setRpcAddStatus(result.success ? 'success' : 'error')
+        } catch {
+            setRpcAddStatus('error')
+        }
     }
 
     return (
@@ -69,6 +77,11 @@ type MessageContentProps = {
 
 const MessageContent: FC<MessageContentProps> = ({ RPCUrl, isSuggestingRpc, rpcAddStatus }) => {
     const [isCopied, setCopied] = useCopyClipboard(2000)
+    const title = rpcAddStatus === 'success'
+        ? 'RPC URL added successfully'
+        : rpcAddStatus === 'error'
+            ? 'Could not add RPC URL'
+            : 'Your wallet RPC has network issues'
 
     const getMessage = () => {
         if (isSuggestingRpc) {
@@ -80,6 +93,20 @@ const MessageContent: FC<MessageContentProps> = ({ RPCUrl, isSuggestingRpc, rpcA
             return <p className="text-secondary-text text-sm leading-[18px]">
                 RPC URL added! Please switch to the new RPC in your wallet settings.
             </p>
+        }
+        if (rpcAddStatus === 'error') {
+            return <div className="space-y-2 text-secondary-text text-sm leading-[18px]" aria-live="polite">
+                <p>We couldn’t add the RPC URL automatically. Copy it below and update it in your wallet’s network settings.</p>
+                <button
+                    type="button"
+                    onClick={() => setCopied(RPCUrl)}
+                    aria-label="Copy RPC URL"
+                    className="flex items-center gap-2 w-full text-left text-primary-text hover:underline"
+                >
+                    <span className="break-all">{RPCUrl}</span>
+                    {isCopied ? <Check className="h-4 w-4 shrink-0" /> : <CopyIcon className="h-4 w-4 shrink-0" />}
+                </button>
+            </div>
         }
         return <p className="text-secondary-text text-sm leading-[18px] space-x-1">
             <span>Update your RPC URL manually or add our</span>
@@ -113,7 +140,7 @@ const MessageContent: FC<MessageContentProps> = ({ RPCUrl, isSuggestingRpc, rpcA
             </span>
             <div className="flex flex-col gap-1">
                 <p className="text-white font-medium leading-4 text-base mt-0.5">
-                    {rpcAddStatus === 'success' ? 'RPC URL added successfully' : 'Your wallet RPC has network issues'}
+                    {title}
                 </p>
                 {getMessage()}
             </div>
