@@ -14,6 +14,8 @@ import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { BackendTransactionStatus, DepositAction } from "@/lib/apiClients/layerSwapApiClient";
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 import { ErrorHandler } from "@/lib/ErrorHandler";
+import { useCallbacks } from "@/context/callbackProvider";
+import { lifecycleContextFromSwap, lifecycleErrorDetails } from "@/lib/swapLifecycle";
 
 /** Deposit-action kinds that carry the destination deposit address. */
 const DEPOSIT_ACTION_TYPES = ['transfer', 'manual_transfer']
@@ -56,6 +58,7 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
     const { swapDetails, depositActionsResponse } = useSwapDataState()
     const { createSwap, setSwapId } = useSwapDataUpdate()
     const { executeTransfer } = useTransfer()
+    const { onSwapLifecycle } = useCallbacks()
 
     const selectedSourceAccount = useSelectedAccount("from", source_network?.name)
     const { wallets } = useWallet(source_network, "withdrawal")
@@ -84,6 +87,19 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
 
     const handleWithdraw = useCallback(async () => {
         if (submittingRef.current) return
+        if (rejected || error) {
+            onSwapLifecycle({
+                step: 'retry_requested',
+                stage: 'wallet_action',
+                outcome: 'started',
+                path: 'HyperliquidWithdrawal',
+                reasonCode: rejected ? 'user_rejected' : 'provider_withdrawal_failed',
+                action: 'hyperliquid_withdrawal',
+                provider: wallet?.providerName,
+                ...lifecycleContextFromSwap(swapBasicData, swapDetails),
+                swapId,
+            })
+        }
         submittingRef.current = true
         setError(undefined)
         setRejected(false)
@@ -118,6 +134,8 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
             return { destination, activeSwapId }
         }
 
+        let lifecycleSwapId = swapId
+        let walletPromptOpened = false
         try {
             if (!sourceAddress) throw new Error('No connected Hyperliquid account')
             if (!source_network || !destination_network || !destination_token) throw new Error('Unsupported Hyperliquid network')
@@ -134,6 +152,18 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
             if (!Number.isFinite(A) || A <= 0) throw new Error('Invalid amount')
 
             const { destination, activeSwapId } = await resolveSwapAndDepositAddress(amount)
+            lifecycleSwapId = activeSwapId
+            walletPromptOpened = true
+            onSwapLifecycle({
+                step: 'wallet_prompt_opened',
+                stage: 'wallet_action',
+                outcome: 'pending',
+                path: 'HyperliquidWithdrawal',
+                action: 'hyperliquid_withdrawal',
+                provider: wallet?.providerName,
+                ...lifecycleContextFromSwap(swapBasicData, swapDetails),
+                swapId: activeSwapId,
+            })
 
             // Resolves with a (possibly empty) hash on success; throws on rejection/failure.
             const txHash = await executeTransfer({
@@ -153,6 +183,18 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
 
             if (!mountedRef.current) return
 
+            onSwapLifecycle({
+                step: 'transaction_submitted',
+                stage: 'input_transfer',
+                outcome: 'succeeded',
+                path: 'HyperliquidWithdrawal',
+                action: 'hyperliquid_withdrawal',
+                provider: wallet?.providerName,
+                transactionHash: txHash || undefined,
+                ...lifecycleContextFromSwap(swapBasicData, swapDetails),
+                swapId: activeSwapId,
+            })
+
             // Success — hand off to the standard Processing screen by recording a pending input.
             // There is usually no real source tx hash (the backend detects the CCTP deposit), so
             // the empty hash just flips the swap off the withdraw screen.
@@ -162,10 +204,35 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
             if (!mountedRef.current) return
             // A declined wallet prompt is a user action, not an error to log.
             if ((e as Error)?.name === ActionMessageType.TransactionRejected) {
+                onSwapLifecycle({
+                    step: 'wallet_action_rejected',
+                    stage: 'wallet_action',
+                    outcome: 'rejected',
+                    path: 'HyperliquidWithdrawal',
+                    action: 'hyperliquid_withdrawal',
+                    provider: wallet?.providerName,
+                    ...lifecycleErrorDetails(e),
+                    reasonCode: 'user_rejected',
+                    ...lifecycleContextFromSwap(swapBasicData, swapDetails),
+                    swapId: lifecycleSwapId,
+                })
                 setRejected(true)
                 return
             }
-            logWithdrawalError(e, { swapId, fromAddress: sourceAddress })
+            if (walletPromptOpened) {
+                onSwapLifecycle({
+                    step: 'wallet_action_failed',
+                    stage: 'wallet_action',
+                    outcome: 'failed',
+                    path: 'HyperliquidWithdrawal',
+                    action: 'hyperliquid_withdrawal',
+                    provider: wallet?.providerName,
+                    ...lifecycleErrorDetails(e),
+                    ...lifecycleContextFromSwap(swapBasicData, swapDetails),
+                    swapId: lifecycleSwapId,
+                })
+            }
+            logWithdrawalError(e, { swapId: lifecycleSwapId, fromAddress: sourceAddress })
             setError({ header: (e as any)?.header ?? 'Withdrawal failed', details: (e as Error)?.message || 'Unexpected error occurred.' })
         } finally {
             if (mountedRef.current) {
@@ -174,7 +241,7 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
             }
             submittingRef.current = false
         }
-    }, [sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, networks, sourceRoutes, depositActionsResponse, swapId, swapDetails, refuel, initialSettings, wallet, createSwap, setSwapId, executeTransfer, onWalletWithdrawalSuccess, swapBasicData.requested_amount])
+    }, [sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, networks, sourceRoutes, depositActionsResponse, swapId, swapDetails, refuel, initialSettings, wallet, createSwap, setSwapId, executeTransfer, onWalletWithdrawalSuccess, swapBasicData, rejected, error, onSwapLifecycle])
 
     return {
         handleWithdraw,

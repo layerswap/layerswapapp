@@ -28,6 +28,7 @@ import { buildCreateSwapParamsForExtendedRoute } from '@/lib/extendedRoutes/tran
 import { useExtendedRoutesStore } from '@/stores/extendedRoutesStore';
 import { isDepositAddressFlow, isDepositAddressSwap } from '@/helpers/swapFlow';
 import { resolveSwapPollingInterval, SWAP_POLL_DEDUPE_MS } from '@/lib/swapPollingPolicy';
+import { lifecycleContextFromForm, lifecycleErrorDetails } from '@/lib/swapLifecycle';
 
 export const SwapDataStateContext = createContext<SwapContextData | null>(null);
 
@@ -66,7 +67,7 @@ export type SwapContextData = {
 
 export function SwapDataProvider({ children, initialSwapData }: { children: React.ReactNode, initialSwapData?: SwapResponse | null }) {
     const initialSettings = useInitialSettings()
-    const { onSwapCreate } = useCallbacks()
+    const { onSwapCreate, onSwapLifecycle } = useCallbacks()
     const [swapBasicFormData, setSwapBasicFormData] = useState<SwapBasicData & { refuel: boolean }>()
 
     const { providers } = useWallet(swapBasicFormData?.source_network, 'asSource')
@@ -272,102 +273,131 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         if (!depositAddressFlow && !amount)
             throw new Error("Form data is missing")
 
-        const sourceWalletIsSupported = selectedWallet && WalletIsSupportedForSource({
-            sourceNetwork: from,
-            sourceWallet: selectedWallet
-        })
-        const contractCheckResult = (depositAddressFlow && selectedWallet) ? await checkContractStatus(selectedWallet.address, from, to) : null
-        const isContract = contractCheckResult?.sourceIsContract ?? false
-        const sourceIsSupported = sourceWalletIsSupported && !isContract
-
-        const slippage = useSlippageStore.getState().slippage
-        const gaslessEnabled = useGaslessPreferenceStore.getState().gaslessEnabled
-
-        const useGasless = isGaslessCapableRoute({
-            depositMethod,
-            supportsGaslessDeposit: fromCurrency.supports_gasless_deposit,
-            sourceIsSupported: !!sourceIsSupported,
-            sourceAddress: selectedSourceAccount?.address,
-        }) && gaslessEnabled
-
-        const extendedPlan = resolveExtendedRoutePlan({
-            sourceNetworkName: from.name,
-            sourceTokenSymbol: fromCurrency.symbol,
-            destinationNetworkName: to.name,
-            destinationTokenSymbol: toCurrency.symbol,
-            sourceAmount: amount,
-            availableRoutes: sourceRoutes,
-        })
-        const isExtendedBridge = !!extendedPlan
-
-        const data: CreateSwapParams = extendedPlan ? buildCreateSwapParamsForExtendedRoute({
-            plan: extendedPlan,
-            destinationNetworkName: to.name,
-            destinationTokenSymbol: toCurrency.symbol,
-            destinationAddress: destination_address,
-            referenceId: query.externalId,
-            refuel,
-            sourceAddress: selectedSourceAccount?.address,
-        }) : {
-            amount: amount || undefined,
-            source_network: from.name,
-            destination_network: to.name,
-            source_token: fromCurrency.symbol,
-            destination_token: toCurrency.symbol,
-            source_exchange: fromExchange?.name,
-            destination_address: destination_address,
-            reference_id: query.externalId,
-            refuel: !!refuel,
-            use_deposit_address: depositMethod === 'wallet' ? false : true,
-            source_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
-            refund_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
-            ...(useGasless && { use_gasless: true, use_depository: true }),
-        }
-
-        if (!isExtendedBridge && depositMethod === 'wallet' && slippage && slippage > 0 && slippage < 0.8) {
-            data.slippage = slippage.toString()
-        }
-
-        const swapResponse = await layerswapApiClient.CreateSwapAsync(data).catch((e) => {
-            if (useGasless) useGaslessPreferenceStore.getState().reportGaslessUnavailable('create')
-            throw e
+        const lifecycleContext = lifecycleContextFromForm(values)
+        onSwapLifecycle({
+            step: 'swap_creation_started',
+            stage: 'swap_creation',
+            outcome: 'started',
+            path: 'SwapDataProvider.createSwap',
+            ...lifecycleContext,
         })
 
-        if (swapResponse?.error) {
-            if (useGasless) useGaslessPreferenceStore.getState().reportGaslessUnavailable('create')
-            throw swapResponse?.error
-        }
-
-
-
-        const swap = swapResponse?.data;
-        if (!swap?.swap.id)
-            throw new Error("Could not create swap")
-
-        onSwapCreate(swap)
-        // Persist the extended identity so the post-create UI and the withdraw step
-        // can keep showing the extended source and resume after a reload.
-        if (extendedPlan) {
-            useExtendedRoutesStore.getState().setRecord(swap.swap.id, {
-                providerId: extendedPlan.mapping.provider.id,
-                extendedNetwork: from.name,
-                extendedToken: fromCurrency.symbol,
-                realNetwork: extendedPlan.mapping.real.networkName,
-                realToken: extendedPlan.mapping.real.tokenSymbol,
-                sourceAddress: selectedSourceAccount?.address || '',
-                sourceAmount: (amount || '').toString(),
-                createdAt: Date.now(),
+        let useGasless = false
+        try {
+            const sourceWalletIsSupported = selectedWallet && WalletIsSupportedForSource({
+                sourceNetwork: from,
+                sourceWallet: selectedWallet
             })
+            const contractCheckResult = (depositAddressFlow && selectedWallet) ? await checkContractStatus(selectedWallet.address, from, to) : null
+            const isContract = contractCheckResult?.sourceIsContract ?? false
+            const sourceIsSupported = sourceWalletIsSupported && !isContract
+
+            const slippage = useSlippageStore.getState().slippage
+            const gaslessEnabled = useGaslessPreferenceStore.getState().gaslessEnabled
+
+            useGasless = isGaslessCapableRoute({
+                depositMethod,
+                supportsGaslessDeposit: fromCurrency.supports_gasless_deposit,
+                sourceIsSupported: !!sourceIsSupported,
+                sourceAddress: selectedSourceAccount?.address,
+            }) && gaslessEnabled
+
+            const extendedPlan = resolveExtendedRoutePlan({
+                sourceNetworkName: from.name,
+                sourceTokenSymbol: fromCurrency.symbol,
+                destinationNetworkName: to.name,
+                destinationTokenSymbol: toCurrency.symbol,
+                sourceAmount: amount,
+                availableRoutes: sourceRoutes,
+            })
+            const isExtendedBridge = !!extendedPlan
+
+            const data: CreateSwapParams = extendedPlan ? buildCreateSwapParamsForExtendedRoute({
+                plan: extendedPlan,
+                destinationNetworkName: to.name,
+                destinationTokenSymbol: toCurrency.symbol,
+                destinationAddress: destination_address,
+                referenceId: query.externalId,
+                refuel,
+                sourceAddress: selectedSourceAccount?.address,
+            }) : {
+                amount: amount || undefined,
+                source_network: from.name,
+                destination_network: to.name,
+                source_token: fromCurrency.symbol,
+                destination_token: toCurrency.symbol,
+                source_exchange: fromExchange?.name,
+                destination_address: destination_address,
+                reference_id: query.externalId,
+                refuel: !!refuel,
+                use_deposit_address: depositMethod === 'wallet' ? false : true,
+                source_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
+                refund_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
+                ...(useGasless && { use_gasless: true, use_depository: true }),
+            }
+
+            if (!isExtendedBridge && depositMethod === 'wallet' && slippage && slippage > 0 && slippage < 0.8) {
+                data.slippage = slippage.toString()
+            }
+
+            const swapResponse = await layerswapApiClient.CreateSwapAsync(data)
+
+            if (swapResponse?.error) {
+                throw swapResponse?.error
+            }
+
+            const swap = swapResponse?.data;
+            if (!swap?.swap.id)
+                throw new Error("Could not create swap")
+
+            onSwapLifecycle({
+                step: 'swap_created',
+                stage: 'swap_creation',
+                outcome: 'succeeded',
+                path: 'SwapDataProvider.createSwap',
+                ...lifecycleContext,
+                swapId: swap.swap.id,
+                fromAddress: swap.swap.source_address,
+                status: swap.swap.status,
+            })
+
+            onSwapCreate(swap)
+            // Persist the extended identity so the post-create UI and the withdraw step
+            // can keep showing the extended source and resume after a reload.
+            if (extendedPlan) {
+                useExtendedRoutesStore.getState().setRecord(swap.swap.id, {
+                    providerId: extendedPlan.mapping.provider.id,
+                    extendedNetwork: from.name,
+                    extendedToken: fromCurrency.symbol,
+                    realNetwork: extendedPlan.mapping.real.networkName,
+                    realToken: extendedPlan.mapping.real.tokenSymbol,
+                    sourceAddress: selectedSourceAccount?.address || '',
+                    sourceAmount: (amount || '').toString(),
+                    createdAt: Date.now(),
+                })
+            }
+
+            updateRecentTokens({
+                from: !fromExchange ? { network: from.name, token: fromCurrency.symbol } : undefined,
+                to: { network: to.name, token: toCurrency.symbol }
+            });
+
+            return swap;
+        }
+        catch (error) {
+            if (useGasless) useGaslessPreferenceStore.getState().reportGaslessUnavailable('create')
+            onSwapLifecycle({
+                step: 'swap_creation_failed',
+                stage: 'swap_creation',
+                outcome: 'failed',
+                path: 'SwapDataProvider.createSwap',
+                ...lifecycleErrorDetails(error),
+                ...lifecycleContext,
+            })
+            throw error
         }
 
-        updateRecentTokens({
-            from: !fromExchange ? { network: from.name, token: fromCurrency.symbol } : undefined,
-            to: { network: to.name, token: toCurrency.symbol }
-        });
-
-
-        return swap;
-    }, [selectedSourceAccount, selectedWallet, onSwapCreate, updateRecentTokens, swapDetails?.id, networks, sourceRoutes])
+    }, [selectedSourceAccount, selectedWallet, onSwapCreate, onSwapLifecycle, updateRecentTokens, swapDetails?.id, networks, sourceRoutes])
 
     const updateFns = useMemo<UpdateSwapInterface>(() => ({
         createSwap,

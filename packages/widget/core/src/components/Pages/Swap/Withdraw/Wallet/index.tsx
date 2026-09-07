@@ -1,5 +1,5 @@
 import { NetworkType } from '@layerswap/widget-types';
-import { FC, Suspense, useCallback, useEffect, useState } from "react";
+import { FC, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { PublishedSwapTransactions, SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { WithdrawalProvider } from "@/context/withdrawalContext";
 import useWallet from "@/hooks/useWallet";
@@ -21,6 +21,8 @@ import RPCUnhealthyMessage from "./RPCUnhealthyMessage";
 import { isExtendedSourceNetwork } from "@/lib/extendedRoutes/registry";
 import { HyperliquidWalletWithdraw } from "../WithdrawalProviders/Hyperliquid";
 import { PolymarketWalletWithdraw } from "../WithdrawalProviders/Polymarket";
+import { useCallbacks } from "@/context/callbackProvider";
+import { lifecycleContextFromSwap } from "@/lib/swapLifecycle";
 
 type Props = {
     swapData: SwapBasicData
@@ -66,9 +68,33 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
     const selectedSourceAccount = useSelectedAccount("from", swapBasicData.source_network.name);
     const { wallets, provider } = useWallet(source_network, "withdrawal")
     const { sameAccountNetwork } = useInitialSettings()
+    const { swapDetails } = useSwapDataState()
+    const { onSwapLifecycle } = useCallbacks()
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id && w.withdrawalSupportedNetworks?.includes(source_network?.name))
     const networkChainId = source_network?.chain_id ?? undefined
     const [savedTransactionHash, setSavedTransactionHash] = useState<string>()
+    const lifecycleContext = useMemo(
+        () => lifecycleContextFromSwap(swapBasicData, swapDetails),
+        [
+            swapBasicData.destination_address,
+            swapBasicData.destination_network.name,
+            swapBasicData.destination_token.symbol,
+            swapBasicData.requested_amount,
+            swapBasicData.source_network.name,
+            swapBasicData.source_token.symbol,
+            swapBasicData.use_deposit_address,
+            swapDetails?.id,
+            swapDetails?.source_address,
+        ],
+    )
+    const sameAccountMismatch = (
+        source_network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase()
+        || destination_network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase()
+    ) && !!(
+        selectedSourceAccount?.address
+        && destination_address
+        && selectedSourceAccount.address.toLowerCase() !== destination_address.toLowerCase()
+    )
 
     useEffect(() => {
         if (!swapId) return;
@@ -83,6 +109,19 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
             console.error(e.message)
         }
     }, [swapId])
+
+    useEffect(() => {
+        if (!sameAccountMismatch) return
+        onSwapLifecycle({
+            step: 'flow_error',
+            stage: 'wallet_action',
+            outcome: 'failed',
+            path: 'WalletWithdrawal',
+            reasonCode: 'same_account_required',
+            reason: 'The selected source and destination accounts must match for this route',
+            ...lifecycleContext,
+        })
+    }, [lifecycleContext, onSwapLifecycle, sameAccountMismatch])
 
     // Extended sources (Hyperliquid, Polymarket) have their own withdraw flow — the chain
     // logic comes from the wallet package's TransferProvider, the UI lives here. Polymarket
@@ -113,14 +152,23 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
                     refuel={refuel}
                     onTransferComplete={(hash: string) => {
                         setSavedTransactionHash(hash)
+                        onSwapLifecycle({
+                            step: 'transaction_submitted',
+                            stage: 'input_transfer',
+                            outcome: 'succeeded',
+                            path: 'MultiStepWalletTransfer',
+                            action: 'send_transaction',
+                            provider: wallet?.providerName || provider?.name,
+                            transactionHash: hash,
+                            ...lifecycleContext,
+                        })
                     }}
                 />
             </Suspense>
         }
     }
 
-    if ((source_network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase() || destination_network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase())
-        && (selectedSourceAccount?.address && destination_address && selectedSourceAccount?.address.toLowerCase() !== destination_address?.toLowerCase())) {
+    if (sameAccountMismatch) {
         const network = source_network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase() ? source_network : destination_network
         return <ActionMessages.DifferentAccountsNotAllowedError network={network?.display_name!} />
     }
@@ -160,7 +208,8 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
     const [buttonClicked, setButtonClicked] = useState(false)
     const [error, setError] = useState<Error | undefined>()
     const [loading, setLoading] = useState(false)
-    const { swapError } = useSwapDataState()
+    const { swapDetails, swapError } = useSwapDataState()
+    const { onSwapLifecycle } = useCallbacks()
 
     const selectedSourceAccount = useSelectedAccount("from", swapData.source_network.name);
 
@@ -173,6 +222,33 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
     const { executeTransfer } = useTransfer()
     const { signGaslessDeposit, isGaslessSupported } = useGasless()
     const rpcHealth = useRpcHealth(swapData.source_network)
+    const lifecycleContext = useMemo(
+        () => lifecycleContextFromSwap(swapData, swapDetails),
+        [
+            swapData.destination_address,
+            swapData.destination_network.name,
+            swapData.destination_token.symbol,
+            swapData.requested_amount,
+            swapData.source_network.name,
+            swapData.source_token.symbol,
+            swapData.use_deposit_address,
+            swapDetails?.id,
+            swapDetails?.source_address,
+        ],
+    )
+
+    useEffect(() => {
+        if (rpcHealth?.health.status !== 'unhealthy') return
+        onSwapLifecycle({
+            step: 'flow_error',
+            stage: 'wallet_action',
+            outcome: 'failed',
+            path: 'RPCHealth',
+            reasonCode: 'rpc_unhealthy',
+            reason: `No healthy RPC endpoint is available for ${swapData.source_network.name}`,
+            ...lifecycleContext,
+        })
+    }, [lifecycleContext, onSwapLifecycle, rpcHealth?.health.status, swapData.source_network.name])
 
     const clickHandler = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
         setButtonClicked(true)

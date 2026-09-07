@@ -197,7 +197,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
         <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500} shouldInitialize={intercomReady}>
             <SettingsProvider initialLayerswapData={appSettings} initialSettings={config?.initialValues}>
                 <CallbackProvider callbacks={callbacks}>
-                    <ErrorProvider>
+                    <ErrorProvider onError={callbacks?.onError}>
                         <ErrorBoundary FallbackComponent={ErrorFallback} >
                             <DescriptorHydrationBoundary walletProviders={walletProviders}>
                                 {(resolvedProviders) => (

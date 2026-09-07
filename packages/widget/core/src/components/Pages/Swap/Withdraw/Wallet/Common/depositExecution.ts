@@ -1,4 +1,4 @@
-import { type Wallet } from '@layerswap/widget-types';
+import { type SwapLifecycleEvent, type Wallet } from '@layerswap/widget-types';
 import LayerSwapApiClient, {
     BackendTransactionStatus,
     DepositAction,
@@ -11,6 +11,7 @@ import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
 import { isUserRejection } from "./isUserRejection";
 import { TransferProps } from "@layerswap/widget-types";
 import { ErrorHandler } from "@/lib/ErrorHandler";
+import { lifecycleContextFromSwap, lifecycleErrorDetails } from "@/lib/swapLifecycle";
 
 export type WalletTransfer = (props: TransferProps) => Promise<string | undefined>
 export type GaslessSigner = (signAction: SignDepositAction) => Promise<string>
@@ -26,17 +27,73 @@ export type DepositExecutionContext = {
     setSwapTransaction: (id: string, status: BackendTransactionStatus, hash: string) => void
     setSwapError?: (value: string | null) => void
     onSuccess: () => void
+    onLifecycle: (event: SwapLifecycleEvent) => void
 }
 
 export const isSignAction = (action: DepositAction): action is SignDepositAction => action.type === 'sign'
 
 export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClick: WalletTransfer): Promise<void> => {
-    const { swapData, depositActions, swapBasicData, selectedWallet, sourceAddress, layerswapApiClient, setActionStateText, setSwapTransaction, onSuccess } = ctx
+    const { swapData, depositActions, swapBasicData, selectedWallet, sourceAddress, layerswapApiClient, setActionStateText, setSwapTransaction, onSuccess, onLifecycle } = ctx
 
     const transferProps = resolveTransactionData(swapData, depositActions, swapBasicData, selectedWallet)
+    const lifecycleContext = lifecycleContextFromSwap(swapBasicData, swapData)
     setActionStateText("Opening Wallet")
-    const hash = await onClick(transferProps)
-    if (!hash) return
+    onLifecycle({
+        step: 'wallet_prompt_opened',
+        stage: 'wallet_action',
+        outcome: 'pending',
+        path: 'WalletTransfer',
+        action: 'send_transaction',
+        provider: selectedWallet.providerName,
+        ...lifecycleContext,
+    })
+
+    let hash: string | undefined
+    try {
+        hash = await onClick(transferProps)
+    }
+    catch (error) {
+        const rejected = isUserRejection(error)
+        const errorDetails = lifecycleErrorDetails(error)
+        onLifecycle({
+            step: rejected ? 'wallet_action_rejected' : 'wallet_action_failed',
+            stage: 'wallet_action',
+            outcome: rejected ? 'rejected' : 'failed',
+            path: 'WalletTransfer',
+            action: 'send_transaction',
+            provider: selectedWallet.providerName,
+            ...errorDetails,
+            reasonCode: rejected ? 'user_rejected' : errorDetails.reasonCode,
+            ...lifecycleContext,
+        })
+        throw error
+    }
+    if (!hash) {
+        const error = new Error('Wallet returned no transaction hash')
+        onLifecycle({
+            step: 'wallet_action_failed',
+            stage: 'wallet_action',
+            outcome: 'failed',
+            path: 'WalletTransfer',
+            action: 'send_transaction',
+            provider: selectedWallet.providerName,
+            reasonCode: 'missing_transaction_hash',
+            reason: error.message,
+            ...lifecycleContext,
+        })
+        throw error
+    }
+
+    onLifecycle({
+        step: 'transaction_submitted',
+        stage: 'input_transfer',
+        outcome: 'succeeded',
+        path: 'WalletTransfer',
+        action: 'send_transaction',
+        provider: selectedWallet.providerName,
+        transactionHash: hash,
+        ...lifecycleContext,
+    })
 
     onSuccess()
     setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, hash)
@@ -58,13 +115,23 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
 }
 
 export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, onSign: GaslessSigner): Promise<void> => {
-    const { swapData, depositActions, sourceAddress, layerswapApiClient, setActionStateText, setSwapTransaction, onSuccess } = ctx
+    const { swapData, depositActions, swapBasicData, selectedWallet, sourceAddress, layerswapApiClient, setActionStateText, setSwapTransaction, onSuccess, onLifecycle } = ctx
 
     const signAction = depositActions.find(isSignAction)
     if (!signAction) throw new Error('No sign action')
     if (!sourceAddress) throw new Error('No selected account')
 
+    const lifecycleContext = lifecycleContextFromSwap(swapBasicData, swapData)
     setActionStateText("Sign in wallet")
+    onLifecycle({
+        step: 'wallet_prompt_opened',
+        stage: 'wallet_action',
+        outcome: 'pending',
+        path: 'GaslessAuthorization',
+        action: 'sign_gasless_authorization',
+        provider: selectedWallet.providerName,
+        ...lifecycleContext,
+    })
     let authorizedValidBefore: number | undefined
     try {
         authorizedValidBefore = await submitGaslessAuthorization({
@@ -75,13 +142,36 @@ export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, 
             layerswapApiClient,
         })
     } catch (e: any) {
+        const rejected = isUserRejection(e)
+        const errorDetails = lifecycleErrorDetails(e)
+        onLifecycle({
+            step: rejected ? 'wallet_action_rejected' : 'wallet_action_failed',
+            stage: 'wallet_action',
+            outcome: rejected ? 'rejected' : 'failed',
+            path: 'GaslessAuthorization',
+            action: 'sign_gasless_authorization',
+            provider: selectedWallet.providerName,
+            ...errorDetails,
+            reasonCode: rejected ? 'user_rejected' : errorDetails.reasonCode,
+            ...lifecycleContext,
+        })
         // Don't flag the route unavailable when the user simply declined.
-        if (!isUserRejection(e)) {
+        if (!rejected) {
             const message = e?.response?.data?.error?.message || e?.message
             useGaslessPreferenceStore.getState().reportGaslessUnavailable('deposit', message)
         }
         throw e
     }
+
+    onLifecycle({
+        step: 'gasless_authorization_submitted',
+        stage: 'input_transfer',
+        outcome: 'succeeded',
+        path: 'GaslessAuthorization',
+        action: 'authorize_deposit',
+        provider: selectedWallet.providerName,
+        ...lifecycleContext,
+    })
 
     setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, '')
     useGaslessAuthorizationStore.getState().setGaslessAuthorization(swapData.id, authorizedValidBefore ?? fallbackGaslessValidBefore())

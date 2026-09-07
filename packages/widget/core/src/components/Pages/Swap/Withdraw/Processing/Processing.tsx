@@ -1,5 +1,5 @@
 'use client'
-import { SwapStatus, type Refuel } from '@layerswap/widget-types';
+import { SwapStatus, type Refuel, type SwapLifecycleEvent } from '@layerswap/widget-types';
 import LinkWithIcon from '@/components/Common/LinkWithIcon';
 import { FC, useCallback, useEffect, useMemo, useRef } from 'react'
 import { Widget } from '@/components/Widget/Index';
@@ -26,6 +26,7 @@ import { useDepositSettings } from '@/context/depositSettings';
 import { useSettingsState } from '@/context/settings';
 import { useExtendedRoutesStore } from '@/stores/extendedRoutesStore';
 import { SwapFailureReason } from '@/hooks/useSwapRetry';
+import { lifecycleContextFromSwap } from '@/lib/swapLifecycle';
 
 const apiClient = new LayerSwapApiClient();
 
@@ -37,9 +38,69 @@ type Props = {
     failureReason?: SwapFailureReason;
 }
 
+type PhaseLifecycleEvent = Pick<SwapLifecycleEvent, 'step' | 'stage' | 'outcome'>
+
+const PHASE_LIFECYCLE_EVENTS: Record<SwapPhase, PhaseLifecycleEvent> = {
+    [SwapPhase.AwaitingUserDeposit]: {
+        step: 'awaiting_user_deposit',
+        stage: 'input_transfer',
+        outcome: 'pending',
+    },
+    [SwapPhase.InputPending]: {
+        step: 'input_transfer_pending',
+        stage: 'input_transfer',
+        outcome: 'pending',
+    },
+    [SwapPhase.OutputPending]: {
+        step: 'output_transfer_pending',
+        stage: 'output_transfer',
+        outcome: 'pending',
+    },
+    [SwapPhase.SettlingOutput]: {
+        step: 'output_settling',
+        stage: 'output_transfer',
+        outcome: 'pending',
+    },
+    [SwapPhase.Completed]: {
+        step: 'swap_completed',
+        stage: 'swap',
+        outcome: 'succeeded',
+    },
+    [SwapPhase.Failed]: {
+        step: 'swap_failed',
+        stage: 'swap',
+        outcome: 'failed',
+    },
+    [SwapPhase.Delayed]: {
+        step: 'swap_delayed',
+        stage: 'swap',
+        outcome: 'delayed',
+    },
+    [SwapPhase.Expired]: {
+        step: 'swap_expired',
+        stage: 'swap',
+        outcome: 'expired',
+    },
+    [SwapPhase.Cancelled]: {
+        step: 'swap_cancelled',
+        stage: 'swap',
+        outcome: 'cancelled',
+    },
+    [SwapPhase.PendingRefund]: {
+        step: 'refund_pending',
+        stage: 'refund',
+        outcome: 'pending',
+    },
+    [SwapPhase.Refunded]: {
+        step: 'refund_completed',
+        stage: 'refund',
+        outcome: 'succeeded',
+    },
+}
+
 const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel, failureReason }) => {
     const { boot, show, update } = useIntercom();
-    const { onSwapStatusChange } = useCallbacks()
+    const { onSwapLifecycle, onSwapStatusChange } = useCallbacks()
     const { isDepositFlow } = useDepositSettings()
     const setSwapTransaction = useSwapTransactionStore(state => state.setSwapTransaction);
     const storedWalletTransaction = useSwapTransactionStore(
@@ -53,6 +114,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel, fail
 
     const {
         source_network,
+        source_token,
         destination_network,
         destination_token,
     } = swapBasicData
@@ -75,12 +137,26 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel, fail
     const swapOutputTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Output)
     const swapRefuelTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Refuel)
     const swapRefundTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Refund)
+    const lifecycleContext = useMemo(
+        () => lifecycleContextFromSwap(swapBasicData, swapDetails),
+        [
+            destination_network.name,
+            destination_token.symbol,
+            source_network.name,
+            source_token.symbol,
+            swapBasicData.destination_address,
+            swapBasicData.requested_amount,
+            swapBasicData.use_deposit_address,
+            swapDetails.id,
+            swapDetails.source_address,
+        ],
+    )
 
     const { data: inputTxStatusData } = useSWR<ApiResponse<{ status: TransactionStatus }>>((transactionHash && swapInputTransaction?.status !== BackendTransactionStatus.Completed) ? [source_network?.name, transactionHash] : null, ([network, tx_id]) => apiClient.GetTransactionStatus(network, tx_id as any), { dedupingInterval: 6000 })
 
     const inputTxStatusFromApi = inputTxStatusData?.data?.status?.toLowerCase() as TransactionStatus | undefined
     const resolved = useResolvedSwapStatus({ inputTxStatusFromApi, gaslessAuthorizationFailed: failureReason === 'gasless_deposit_failed' })
-    const { stepStatuses, generalStatus, phase, swapInputTxStatus, isRefundFlow, hidesSteps, showsFailedPanel, showsEstimatedTime } = resolved
+    const { stepStatuses, generalStatus, phase, swapInputTxStatus, inputReady, isRefundFlow, hidesSteps, showsFailedPanel, showsEstimatedTime } = resolved
 
     const loggedNotDetectedTxAt = useRef<number | null>(null);
 
@@ -98,7 +174,10 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel, fail
                     message: error.message,
                     name: error.name,
                     stack: error.stack,
-                    cause: error.cause
+                    cause: error.cause,
+                    swapId: swapDetails.id,
+                    transactionHash,
+                    network: source_network.name,
                 })
             }
         }
@@ -133,8 +212,100 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel, fail
     }, [swapInputTxStatus, transactionHash, swapDetails?.id, swapInputTransaction?.from, swapBasicData?.destination_address])
 
     useEffect(() => {
+        if (!swapInputTransaction?.transaction_hash) return
+        onSwapLifecycle({
+            step: 'input_transaction_detected',
+            stage: 'input_transfer',
+            outcome: 'pending',
+            path: 'Processing',
+            transactionHash: swapInputTransaction.transaction_hash,
+            inputTransactionHash: swapInputTransaction.transaction_hash,
+            status: swapInputTransaction.status,
+            confirmations: swapInputTransaction.confirmations,
+            maxConfirmations: swapInputTransaction.max_confirmations,
+            ...lifecycleContext,
+        })
+    }, [
+        lifecycleContext,
+        onSwapLifecycle,
+        swapInputTransaction?.transaction_hash,
+    ])
+
+    useEffect(() => {
+        if (!inputReady || !swapInputTransaction) return
+        onSwapLifecycle({
+            step: 'input_transfer_confirmed',
+            stage: 'input_transfer',
+            outcome: 'succeeded',
+            path: 'Processing',
+            transactionHash: swapInputTransaction.transaction_hash,
+            inputTransactionHash: swapInputTransaction.transaction_hash,
+            status: swapInputTransaction.status,
+            confirmations: swapInputTransaction.confirmations,
+            maxConfirmations: swapInputTransaction.max_confirmations,
+            ...lifecycleContext,
+        })
+    }, [
+        inputReady,
+        lifecycleContext,
+        onSwapLifecycle,
+        swapInputTransaction?.confirmations,
+        swapInputTransaction?.max_confirmations,
+        swapInputTransaction?.status,
+        swapInputTransaction?.transaction_hash,
+    ])
+
+    useEffect(() => {
+        if (!swapOutputTransaction?.transaction_hash) return
+        onSwapLifecycle({
+            step: 'output_transaction_detected',
+            stage: 'output_transfer',
+            outcome: swapOutputTransaction.status === BackendTransactionStatus.Completed
+                ? 'succeeded'
+                : swapOutputTransaction.status === BackendTransactionStatus.Failed ? 'failed' : 'pending',
+            path: 'Processing',
+            transactionHash: swapOutputTransaction.transaction_hash,
+            outputTransactionHash: swapOutputTransaction.transaction_hash,
+            status: swapOutputTransaction.status,
+            confirmations: swapOutputTransaction.confirmations,
+            maxConfirmations: swapOutputTransaction.max_confirmations,
+            ...lifecycleContext,
+        })
+    }, [
+        lifecycleContext,
+        onSwapLifecycle,
+        swapOutputTransaction?.confirmations,
+        swapOutputTransaction?.max_confirmations,
+        swapOutputTransaction?.status,
+        swapOutputTransaction?.transaction_hash,
+    ])
+
+    useEffect(() => {
+        const lifecycleEvent = PHASE_LIFECYCLE_EVENTS[phase]
+        onSwapLifecycle({
+            ...lifecycleEvent,
+            path: 'Processing',
+            status: swapDetails.status,
+            phase,
+            reasonCode: swapDetails.fail_reason || failureReason,
+            ...lifecycleContext,
+        })
+    }, [
+        failureReason,
+        lifecycleContext,
+        onSwapLifecycle,
+        phase,
+        swapDetails.fail_reason,
+        swapDetails.status,
+    ])
+
+    useEffect(() => {
         const status = swapDetails?.status
+        if (!status) return
+
         if (
+            phase === SwapPhase.Completed ||
+            phase === SwapPhase.Failed ||
             status === SwapStatus.Completed ||
             status === SwapStatus.Failed ||
             status === SwapStatus.Expired ||
@@ -144,9 +315,28 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel, fail
                 type: status,
                 swapId: swapDetails?.id!,
                 path: 'Processing',
+                phase,
+                fromAddress: swapDetails.source_address ?? swapInputTransaction?.from,
+                toAddress: swapBasicData.destination_address,
+                sourceNetwork: source_network.name,
+                destinationNetwork: destination_network.name,
+                sourceToken: source_token.symbol,
+                destinationToken: destination_token.symbol,
             })
         }
-    }, [swapDetails?.status, swapDetails?.id])
+    }, [
+        destination_network.name,
+        destination_token.symbol,
+        onSwapStatusChange,
+        phase,
+        source_network.name,
+        source_token.symbol,
+        swapBasicData.destination_address,
+        swapDetails?.id,
+        swapDetails?.source_address,
+        swapDetails?.status,
+        swapInputTransaction?.from,
+    ])
 
     const truncatedRefuelAmount = refuel && truncateDecimals(refuel.amount, refuel.token?.precision)
 

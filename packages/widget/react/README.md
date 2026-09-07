@@ -139,7 +139,7 @@ widget's behavior, not where it comes from.
 | Prop | Type | Description |
 |---|---|---|
 | `config` | `WidgetConfig` (from `@layerswap/widget-types`, re-exported here) | Forwarded to the widget's `LayerswapProvider`. Includes `apiKey`, `version`, `theme`, `initialValues`, `settings`. |
-| `callbacks` | `WidgetCallbacks` | `onSwapCreate`, `onSwapComplete`, `onError`, `onSwapModalStateChange`, etc. |
+| `callbacks` | `WidgetCallbacks` | `onSwapCreate`, `onSwapComplete`, `onSwapLifecycle`, `onError`, `onSwapModalStateChange`, etc. `onSwapLifecycle` reports semantic steps, outcomes, and reason codes for journey observability. |
 | `wagmiConfig` | `wagmi/Config` | Host wagmi config the widget adopts for EVM. |
 | `walletDefaults` | `WalletDefaults` | `walletConnect` (projectId, etc.), `ton`, `immutablePassport`. |
 | `walletProvidersConfig.include` | `WalletProviderId[]` | Allowlist — keep only these chains, e.g. `['evm', 'solana']`. Applied before `exclude`. |

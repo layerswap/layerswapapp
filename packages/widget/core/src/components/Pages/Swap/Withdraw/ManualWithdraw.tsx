@@ -4,7 +4,7 @@ import { useCopyClipboard } from "@layerswap/ui-kit";
 import QRIcon from '@/components/Icons/QRIcon'
 import useWallet from '@/hooks/useWallet'
 import { DepositAction, SwapBasicData, SwapQuote } from '@/lib/apiClients/layerSwapApiClient'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { FC, ReactNode, useState } from 'react'
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
 import useExchangeNetworks from '@/hooks/useExchangeNetworks'
@@ -12,7 +12,7 @@ import { ChevronDown } from 'lucide-react'
 import { CommandItem, CommandList, CommandWrapper } from '@/components/shadcn/command'
 import { Network, NetworkRoute, Token } from '@layerswap/widget-types';
 import { useInitialSettings } from '@/context/settings'
-import { useSwapDataUpdate } from '@/context/swap'
+import { useSwapDataState, useSwapDataUpdate } from '@/context/swap'
 import { useAsyncModal } from '@/context/asyncModal'
 import { handleLimitsUpdate } from './QuoteUpdate'
 import SubmitButton from '@/components/Buttons/submitButton'
@@ -25,6 +25,8 @@ import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/Addres
 import QuoteDetails from '../Form/FeeDetails'
 import { Address } from "@/lib/address/Address";
 import AddressIcon from '@/components/Common/AddressIcon'
+import { useCallbacks } from '@/context/callbackProvider'
+import { lifecycleContextFromSwap } from '@/lib/swapLifecycle'
 
 interface Props {
     swapBasicData: SwapBasicData;
@@ -39,6 +41,8 @@ interface Props {
 const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, partner, type, quote, isQuoteLoading }) => {
     const { wallets } = useWallet();
     const { createSwap, setSwapId } = useSwapDataUpdate()
+    const { swapDetails } = useSwapDataState()
+    const { onSwapLifecycle } = useCallbacks()
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const [selectedFrom, setSelectedFrom] = useState<{
         network: Network | null;
@@ -60,10 +64,44 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
 
     const walletIconSrc = wallets.find(wallet => wallet.address.toLowerCase() == swapBasicData?.destination_address?.toLowerCase())?.icon;
     const addressProviderIcon = destinationAddressFromQuery && partner?.is_wallet && Address.equals(destinationAddressFromQuery, swapBasicData?.destination_address!, swapBasicData?.destination_network || null) && partner?.logo
+    const lifecycleContext = useMemo(
+        () => lifecycleContextFromSwap(swapBasicData, swapDetails),
+        [
+            swapBasicData.destination_address,
+            swapBasicData.destination_network.name,
+            swapBasicData.destination_token.symbol,
+            swapBasicData.requested_amount,
+            swapBasicData.source_network.name,
+            swapBasicData.source_token.symbol,
+            swapBasicData.use_deposit_address,
+            swapDetails?.id,
+            swapDetails?.source_address,
+        ],
+    )
+
+    useEffect(() => {
+        if (!swapDetails?.id) return
+        onSwapLifecycle({
+            step: 'awaiting_user_deposit',
+            stage: 'input_transfer',
+            outcome: 'pending',
+            path: 'ManualWithdraw',
+            action: 'manual_deposit',
+            ...lifecycleContext,
+        })
+    }, [lifecycleContext, onSwapLifecycle, swapDetails?.id])
 
     const handleCopy = () => {
         if (depositAddress) {
             copy(depositAddress)
+            onSwapLifecycle({
+                step: 'deposit_address_copied',
+                stage: 'input_transfer',
+                outcome: 'pending',
+                path: 'ManualWithdraw',
+                action: 'copy_deposit_address',
+                ...lifecycleContext,
+            })
         }
     }
 

@@ -1,16 +1,16 @@
 import React, { createContext, useEffect } from 'react';
-import { useCallbacks } from './callbackProvider';
-import { logStore } from '@/stores/logStore';
+import { type ErrorLogger, logStore } from '@/stores/logStore';
 
 const LogContext = createContext<null>(null);
 
-export const ErrorProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
-  const callbacks = useCallbacks();
+type ErrorProviderProps = React.PropsWithChildren<{
+  onError?: ErrorLogger;
+}>;
+
+export const ErrorProvider: React.FC<ErrorProviderProps> = ({ children, onError }) => {
   useEffect(() => {
-    if (callbacks?.onError) {
-      logStore.getState().setLogger(callbacks.onError);
-    }
-  }, [callbacks.onError]);
+    return logStore.getState().registerLogger(onError);
+  }, [onError]);
 
   return <LogContext.Provider value={null}>{children}</LogContext.Provider>;
 };

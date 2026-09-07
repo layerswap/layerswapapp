@@ -29,6 +29,8 @@ import UrlAddressNote from "@/components/Input/Address/UrlAddressNote";
 import { Address } from "@/lib/address/Address";
 import ContractAddressValidationCache, { ContractSourceAddressValidationCache } from "./SecondaryComponents/validationError/ContractAddressValidationCache";
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
+import { SwapStatus } from "@layerswap/widget-types";
+import { lifecycleContextFromForm, lifecycleContextFromSwap } from "@/lib/swapLifecycle";
 const SwapDetails = lazy(() => import("../Withdraw/SwapDetails"))
 
 type NetworkToConnect = {
@@ -58,7 +60,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
     const [walletWihdrawDone, setWalletWihdrawDone] = useState(false);
     const selectedSourceAccount = useSelectedAccount("from", swapBasicData?.source_network?.name);
     const { mutate: mutateBalances } = useBalance(selectedSourceAccount?.address, sourceNetworkWithTokens)
-    const { onSwapModalStateChange } = useCallbacks()
+    const { onSwapLifecycle, onSwapModalStateChange } = useCallbacks()
     const { getConfirmation } = useAsyncModal();
     const initialSettings = useInitialSettings()
     const { destination_address: destinationAddressFromQuery } = initialSettings
@@ -68,6 +70,16 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
     const { setConfirmed, isConfirmed, checkContractStatus } = useContractAddressStore();
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
+        const lifecycleContext = lifecycleContextFromForm(values)
+        onSwapLifecycle({
+            step: 'form_submitted',
+            stage: 'form',
+            outcome: 'started',
+            path: 'SwapForm',
+            action: 'submit',
+            ...lifecycleContext,
+        })
+
         setSwapError && setSwapError(null)
         useGaslessPreferenceStore.getState().clearGaslessUnavailable()
         const { destination_address, to } = values
@@ -93,6 +105,14 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                 setIsAddressFromQueryConfirmed(true)
             }
             else if (!confirmed) {
+                onSwapLifecycle({
+                    step: 'form_confirmation_cancelled',
+                    stage: 'form',
+                    outcome: 'cancelled',
+                    path: 'DestinationAddressConfirmation',
+                    reasonCode: 'destination_address_confirmation_cancelled',
+                    ...lifecycleContext,
+                })
                 return;
             }
         }
@@ -118,6 +138,14 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                     if (confirmed && dontShowContractWarningRef.current) {
                         setConfirmed(destination_address, values.to.name);
                     } else if (!confirmed) {
+                        onSwapLifecycle({
+                            step: 'form_confirmation_cancelled',
+                            stage: 'form',
+                            outcome: 'cancelled',
+                            path: 'ContractAddressConfirmation',
+                            reasonCode: 'contract_address_confirmation_cancelled',
+                            ...lifecycleContext,
+                        })
                         return;
                     }
                 }
@@ -144,7 +172,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
         catch (error) {
             setSwapError && setSwapError(error?.message || 'Could not create swap')
         }
-    }, [createSwap, initialSettings, partner, swapBasicData, getProvider, settings, type, setSwapError])
+    }, [createSwap, initialSettings, partner, swapBasicData, getProvider, settings, type, setSwapError, onSwapLifecycle])
 
     // Formik has no `enableReinitialize`, so this is read once at mount — memoize
     // to keep post-mount re-renders (wallet events, balance revalidation) from
@@ -158,12 +186,27 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
         setSwapModalOpen(value)
         onSwapModalStateChange(value)
         if (!value) {
+            if (swapBasicData) {
+                const status = swapDetails?.status
+                const completed = status === SwapStatus.Completed || status === SwapStatus.Refunded
+                const failed = status === SwapStatus.Failed || status === SwapStatus.Expired
+                const cancelled = status === SwapStatus.Cancelled
+                onSwapLifecycle({
+                    step: 'flow_closed',
+                    stage: 'flow',
+                    outcome: completed ? 'succeeded' : failed ? 'failed' : cancelled ? 'cancelled' : 'abandoned',
+                    path: 'SwapModal',
+                    reasonCode: completed ? 'completed_flow_closed' : (failed || cancelled) ? status : 'user_closed_non_terminal_flow',
+                    status,
+                    ...lifecycleContextFromSwap(swapBasicData, swapDetails),
+                })
+            }
             if (walletWihdrawDone) {
                 mutateBalances()
                 setWalletWihdrawDone(false)
             }
         }
-    }, [swapDetails, walletWihdrawDone, mutateBalances])
+    }, [swapBasicData, swapDetails, walletWihdrawDone, mutateBalances, onSwapLifecycle, onSwapModalStateChange, setSwapModalOpen])
 
 
     return <>

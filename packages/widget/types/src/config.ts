@@ -79,8 +79,9 @@ export type WalletDefaults = {
 /**
  * Widget-level event callbacks. Payloads are typed openly so this package
  * carries no dependency on the widget's internal models — import the precise
- * payload types (`SwapResponse`, `SwapFormValues`, `SwapStatusEvent`,
- * `ErrorEventType`) from `@layerswap/widget` if you want them.
+ * payload types (`SwapResponse`, `SwapFormValues`) from `@layerswap/widget`
+ * and (`SwapStatusEvent`, `SwapLifecycleEvent`, `ErrorEventType`) from
+ * `@layerswap/widget-types` if you want them.
  */
 export type WidgetCallbacks = {
   onFormChange?: (formData: unknown) => void;
@@ -90,6 +91,7 @@ export type WidgetCallbacks = {
   onBackClick?: () => void;
   onError?: (error: unknown) => void;
   onSwapStatusChange?: (event: unknown) => void;
+  onSwapLifecycle?: (event: unknown) => void;
   onMenuNavigationChange?: (path: string) => void;
 };
 

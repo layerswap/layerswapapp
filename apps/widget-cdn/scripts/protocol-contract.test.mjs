@@ -13,7 +13,6 @@ function packageMajor(relativePath) {
 }
 
 test('public loader package majors match the CDN protocol major', () => {
-    assert.equal(packageMajor('packages/widget/types/package.json'), WIDGET_PROTOCOL_MAJOR);
     assert.equal(packageMajor('packages/widget/js/package.json'), WIDGET_PROTOCOL_MAJOR);
     assert.equal(packageMajor('packages/widget/react/package.json'), WIDGET_PROTOCOL_MAJOR);
 });

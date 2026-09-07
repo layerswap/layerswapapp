@@ -9,6 +9,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/next';
 import { IntercomProvider } from 'react-use-intercom';
 import { markPostHogReady } from '../lib/posthog';
+import { setFaroView } from '../lib/faro';
 
 const INTERCOM_APP_ID = 'h5zisg78'
 
@@ -25,6 +26,13 @@ Router.events.on("routeChangeError", progress.finish);
 
 function App({ Component, pageProps }) {
   const router = useRouter()
+
+  // Use the route template (for example `/swap/[swapId]`) as the view name.
+  // This keeps the view dimension low-cardinality; Faro's separate page and
+  // navigation metadata still retain the complete URL and query string.
+  useEffect(() => {
+    setFaroView(router.pathname)
+  }, [router.pathname])
 
   // Intercom needs a provider in scope for pages that render outside the
   // widget surface (e.g. /404 uses `useIntercom()` directly). We keep the

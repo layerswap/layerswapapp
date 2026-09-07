@@ -60,7 +60,12 @@ export type GasMiscalculationError = ({
   token?: string;
 } & BaseErrorProps);
 
-export type TransactionNotDetectedError = ({ type: 'TransactionNotDetected' } & BaseErrorProps);
+export type TransactionNotDetectedError = ({
+  type: 'TransactionNotDetected';
+  swapId?: string;
+  transactionHash?: string;
+  network?: string;
+} & BaseErrorProps);
 export type ChainError = ({ type: 'ChainError' } & BaseErrorProps);
 export type TransferError = ({ type: 'TransferError' } & BaseErrorProps);
 export type WalletError = ({ type: 'WalletError' } & BaseErrorProps);
@@ -71,4 +76,108 @@ export type SwapStatusEvent = {
   type: SwapStatus;
   swapId: string;
   path?: string;
+  /** UI-resolved phase; it can reach completed before the API status catches up. */
+  phase?: string;
+  fromAddress?: string;
+  toAddress?: string;
+  sourceNetwork?: string;
+  destinationNetwork?: string;
+  sourceToken?: string;
+  destinationToken?: string;
+};
+
+/** Stable, query-friendly stages in the user-facing swap journey. */
+export type SwapLifecycleStage =
+  | 'form'
+  | 'swap_creation'
+  | 'wallet_connection'
+  | 'network_switch'
+  | 'wallet_action'
+  | 'input_transfer'
+  | 'output_transfer'
+  | 'refund'
+  | 'swap'
+  | 'flow';
+
+export type SwapLifecycleOutcome =
+  | 'started'
+  | 'pending'
+  | 'succeeded'
+  | 'rejected'
+  | 'failed'
+  | 'cancelled'
+  | 'expired'
+  | 'delayed'
+  | 'abandoned'
+  | 'stalled';
+
+/**
+ * Semantic steps emitted by the widget. These deliberately describe user and
+ * application intent instead of mirroring raw console messages or API calls.
+ */
+export type SwapLifecycleStep =
+  | 'form_submitted'
+  | 'form_confirmation_cancelled'
+  | 'swap_creation_started'
+  | 'swap_created'
+  | 'swap_creation_failed'
+  | 'wallet_connection_started'
+  | 'wallet_connected'
+  | 'wallet_connection_failed'
+  | 'network_switch_started'
+  | 'network_switched'
+  | 'network_switch_rejected'
+  | 'network_switch_failed'
+  | 'awaiting_wallet_action'
+  | 'wallet_prompt_opened'
+  | 'wallet_action_rejected'
+  | 'wallet_action_failed'
+  | 'transaction_submitted'
+  | 'gasless_authorization_submitted'
+  | 'awaiting_user_deposit'
+  | 'deposit_address_copied'
+  | 'input_transaction_detected'
+  | 'input_transfer_pending'
+  | 'input_transfer_confirmed'
+  | 'output_transfer_pending'
+  | 'output_transaction_detected'
+  | 'output_settling'
+  | 'swap_delayed'
+  | 'swap_completed'
+  | 'swap_failed'
+  | 'swap_expired'
+  | 'swap_cancelled'
+  | 'refund_pending'
+  | 'refund_completed'
+  | 'retry_requested'
+  | 'flow_closed'
+  | 'flow_error'
+  | 'suspected_stall';
+
+export type SwapLifecycleEvent = {
+  step: SwapLifecycleStep;
+  stage: SwapLifecycleStage;
+  outcome: SwapLifecycleOutcome;
+  path: string;
+  swapId?: string;
+  reasonCode?: string;
+  reason?: string;
+  action?: string;
+  provider?: string;
+  transactionHash?: string;
+  inputTransactionHash?: string;
+  outputTransactionHash?: string;
+  refundTransactionHash?: string;
+  status?: string;
+  phase?: string;
+  depositMethod?: string;
+  requestedAmount?: string;
+  fromAddress?: string;
+  toAddress?: string;
+  sourceNetwork?: string;
+  destinationNetwork?: string;
+  sourceToken?: string;
+  destinationToken?: string;
+  confirmations?: number;
+  maxConfirmations?: number;
 };

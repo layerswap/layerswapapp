@@ -1,8 +1,28 @@
-const { PHASE_PRODUCTION_SERVER } = require('next/constants');
+const { PHASE_PRODUCTION_BUILD, PHASE_PRODUCTION_SERVER } = require('next/constants');
 const { withPostHogConfig } = require('@posthog/nextjs-config');
+const FaroSourceMapUploaderPlugin = require('@grafana/faro-webpack-plugin');
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 });
+
+const FARO_APP_NAME = 'layerswap-frontend';
+
+const posthogConfigsAreSet = Boolean(
+  process.env.POSTHOG_PROJECT_ID
+  && process.env.POSTHOG_API_KEY
+  && process.env.NEXT_PUBLIC_POSTHOG_HOST
+);
+
+const posthogOptions = {
+  personalApiKey: process.env.POSTHOG_API_KEY,
+  projectId: process.env.POSTHOG_PROJECT_ID,
+  host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+  sourcemaps: {
+    enabled: true,
+    project: 'Layerswap',
+    deleteAfterUpload: true,
+  },
+};
 
 const securityHeaders = [
   { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
@@ -32,23 +52,35 @@ const REMOTE_PATTERNS = [
   },
 ];
 
-module.exports = (phase, { defaultConfig }) => {
+const buildNextConfig = (phase) => {
   /**
    * @type {import('next').NextConfig}
    */
 
-  const posthogConfigsAreSet = process.env.POSTHOG_PROJECT_ID && process.env.POSTHOG_API_KEY && process.env.NEXT_PUBLIC_POSTHOG_HOST;
+  const faroSourceMapConfig = {
+    endpoint: process.env.FARO_SOURCEMAP_ENDPOINT,
+    appId: process.env.FARO_SOURCEMAP_APP_ID || process.env.FARO_APP_ID,
+    apiKey: process.env.FARO_SOURCEMAP_API_KEY || process.env.FARO_API_KEY,
+    stackId: process.env.FARO_SOURCEMAP_STACK_ID || process.env.FARO_STACK_ID,
+  };
+  const missingFaroSourceMapVariables = [
+    ['FARO_SOURCEMAP_ENDPOINT', faroSourceMapConfig.endpoint],
+    ['FARO_SOURCEMAP_APP_ID (or FARO_APP_ID)', faroSourceMapConfig.appId],
+    ['FARO_SOURCEMAP_API_KEY (or FARO_API_KEY)', faroSourceMapConfig.apiKey],
+    ['FARO_SOURCEMAP_STACK_ID (or FARO_STACK_ID)', faroSourceMapConfig.stackId],
+  ].filter(([, value]) => !value).map(([name]) => name);
+  const sourceMapsConfigured = missingFaroSourceMapVariables.length === 0;
+  const sourceMapsRequested = Object.values(faroSourceMapConfig).some(Boolean);
 
-  const posthogWrapped = posthogConfigsAreSet ? withPostHogConfig({}, {
-    personalApiKey: process.env.POSTHOG_API_KEY,
-    projectId: process.env.POSTHOG_PROJECT_ID,
-    host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-    sourcemaps: {
-      enabled: true,
-      project: 'Layerswap',
-      deleteAfterUpload: true,
-    },
-  }) : {};
+  if (
+    phase === PHASE_PRODUCTION_BUILD
+    && sourceMapsRequested
+    && !sourceMapsConfigured
+  ) {
+    console.warn(
+      `[Faro] Source-map upload is partially configured and disabled. Missing: ${missingFaroSourceMapVariables.join(', ')}`,
+    );
+  }
 
   const nextConfig = {
     i18n: {
@@ -73,8 +105,32 @@ module.exports = (phase, { defaultConfig }) => {
         '@radix-ui/react-tooltip',
       ],
     },
-    webpack: config => {
+    webpack: (config, { isServer }) => {
       config.resolve.fallback = { fs: false, net: false, tls: false };
+
+      if (!isServer && phase === PHASE_PRODUCTION_BUILD && sourceMapsConfigured) {
+        config.plugins.push(new FaroSourceMapUploaderPlugin({
+          appName: FARO_APP_NAME,
+          endpoint: faroSourceMapConfig.endpoint.replace(/\/$/, ''),
+          appId: faroSourceMapConfig.appId,
+          apiKey: faroSourceMapConfig.apiKey,
+          stackId: faroSourceMapConfig.stackId,
+          bundleId: process.env.FARO_BUNDLE_ID || process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA || undefined,
+          gitHash:
+            process.env.VERCEL_GIT_COMMIT_SHA
+            || process.env.GITHUB_SHA
+            || process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA,
+          outputFiles: /^static[\\/]chunks[\\/].*\.js\.map$/,
+          recursive: true,
+          nextjs: true,
+          gzipContents: true,
+          // The outer PostHog plugin runs after Faro and removes the maps. If
+          // PostHog is absent, Faro removes them after a successful upload.
+          keepSourcemaps: posthogConfigsAreSet,
+          verbose: process.env.FARO_SOURCEMAP_DEBUG === 'true',
+        }));
+      }
+
       return config;
     },
     productionBrowserSourceMaps: true,
@@ -111,7 +167,11 @@ module.exports = (phase, { defaultConfig }) => {
       ]
     }
   }
-  let merged = { ...posthogWrapped, ...nextConfig };
-
-  return withBundleAnalyzer(merged)
+  return withBundleAnalyzer(nextConfig)
 }
+
+// PostHog must remain the outer wrapper for its compiler/webpack hooks to run;
+// the Faro plugin is installed by the inner webpack callback above.
+module.exports = posthogConfigsAreSet
+  ? withPostHogConfig(buildNextConfig, posthogOptions)
+  : buildNextConfig;

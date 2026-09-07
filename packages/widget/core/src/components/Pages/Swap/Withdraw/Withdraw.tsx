@@ -1,4 +1,4 @@
-import { FC, useCallback } from 'react'
+import { FC, useCallback, useEffect, useMemo } from 'react'
 import type { JSX } from 'react';
 import { useSwapDataState, useSwapDataUpdate } from '@/context/swap';
 import SwapSummary from './Summary';
@@ -23,10 +23,13 @@ import { RefreshBalanceButton } from '../Form/SecondaryComponents/validationErro
 import { AdjustAmountButton } from '../Form/SecondaryComponents/validationError/AdjustAmountButton';
 import { AnimatePresence, motion } from 'framer-motion';
 import { isDepositAddressSwap } from '@/helpers/swapFlow';
+import { useCallbacks } from '@/context/callbackProvider';
+import { lifecycleContextFromSwap } from '@/lib/swapLifecycle';
 
 const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: () => void, onCancelWithdrawal?: () => void, partner?: Partner }> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal, partner }) => {
     const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading, quoteError } = useSwapDataState()
     const { setSubmitedFormValues } = useSwapDataUpdate()
+    const { onSwapLifecycle } = useCallbacks()
 
     const { networks } = useSettingsState()
     const source_network = swapBasicData?.source_network && networks.find(n => n.name === swapBasicData?.source_network?.name)
@@ -37,6 +40,32 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
     const walletBalanceAmount = walletBalance?.amount
     const { gasData } = useSWRGas(selectedSourceAccount?.address, source_network, swapBasicData?.source_token, swapBasicData?.requested_amount)
     const { setFieldValue } = useFormikContext<SwapFormValues>()
+    const lifecycleContext = useMemo(
+        () => swapBasicData ? lifecycleContextFromSwap(swapBasicData, swapDetails) : undefined,
+        [
+            swapBasicData?.destination_address,
+            swapBasicData?.destination_network?.name,
+            swapBasicData?.destination_token?.symbol,
+            swapBasicData?.requested_amount,
+            swapBasicData?.source_network?.name,
+            swapBasicData?.source_token?.symbol,
+            swapBasicData?.use_deposit_address,
+            swapDetails?.id,
+            swapDetails?.source_address,
+        ],
+    )
+
+    useEffect(() => {
+        if (!lifecycleContext || swapBasicData?.use_deposit_address) return
+        onSwapLifecycle({
+            step: 'awaiting_wallet_action',
+            stage: 'wallet_action',
+            outcome: 'pending',
+            path: 'Withdraw',
+            action: 'send_from_wallet',
+            ...lifecycleContext,
+        })
+    }, [lifecycleContext, onSwapLifecycle, swapBasicData?.use_deposit_address])
 
     const handleEditAmount = useCallback(() => {
         if (walletBalanceAmount == null || !gasData?.gas || !swapBasicData) return

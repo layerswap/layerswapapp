@@ -29,6 +29,10 @@ export type {
   WalletError,
   ErrorEventType,
   SwapStatusEvent,
+  SwapLifecycleEvent,
+  SwapLifecycleOutcome,
+  SwapLifecycleStage,
+  SwapLifecycleStep,
 } from './logEvents';
 export type { InternalConnector, Wallet, WalletConnectConfig, WalletConnectLink } from './wallet';
 export { ActionMessageType } from './actionMessage';
