@@ -1,6 +1,6 @@
 import { Dispatch, FC, SetStateAction, memo, useMemo, useState } from "react";
 import { ArrowDown } from "lucide-react";
-import { Network, Token } from "@/Models/Network";
+import { Network, Token } from "@layerswap/widget-types";
 import { useQuoteData, validDestinationAddress } from "@/hooks/useFee";
 import NumFlowWithFallback from "@/components/Common/NumFlowWithFallback";
 import TokenChainBadge from "@/components/Pages/Deposit/_shared/TokenChainBadge";
@@ -33,13 +33,13 @@ const RouteChip = memo(({ network, token }: { network: Network | undefined; toke
         <span className="flex items-center gap-2 shrink-0 min-w-0">
             <TokenChainBadge
                 tokenLogo={token.logo}
-                tokenSymbol={token.symbol}
+                tokenSymbol={token.asset}
                 networkLogo={network.logo}
                 networkName={network.display_name}
                 size={28}
             />
             <span className="flex flex-col min-w-0 max-w-[110px]">
-                <span className="text-sm font-semibold text-primary-text leading-tight">{token.symbol}</span>
+                <span className="text-sm font-semibold text-primary-text leading-tight">{token.asset}</span>
                 <span className="text-xs font-normal text-secondary-text leading-tight truncate">{network.display_name}</span>
             </span>
         </span>

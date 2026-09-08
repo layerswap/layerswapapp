@@ -1,0 +1,57 @@
+name: widget-cdn — PR validation
+
+on:
+  pull_request:
+    branches: [dev, main]
+    paths:
+      - "apps/widget-cdn/**"
+      - "examples/widget-react-host/**"
+      - "packages/**"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/widget-cdn-*.yml"
+      - ".github/scripts/resolve-widget-cdn-env.sh"
+
+# PR code is untrusted. This workflow uses a GitHub-hosted runner, has only a
+# read-only token, and never references deployment environments or secrets.
+permissions:
+  contents: read
+
+concurrency:
+  group: widget-cdn-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build workspace packages
+        run: pnpm build:packages
+
+      - name: Test widget packages and release tooling
+        run: |
+          pnpm --filter @layerswap/widget-cdn test
+          pnpm --filter @layerswap/widget-js test
+          pnpm --filter @layerswap/widget-react check:types
+          pnpm --filter @layerswap/widget-react test
+
+      - name: Build release candidates
+        run: |
+          pnpm --filter @layerswap/widget-cdn build
+          pnpm --filter widget-react-host-example build

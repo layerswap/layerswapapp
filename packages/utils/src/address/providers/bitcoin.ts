@@ -1,6 +1,7 @@
+import { NetworkType } from '@layerswap/widget-types';
 import { validate, Network as BtcNetwork } from 'bitcoin-address-validation';
 import KnownInternalNames from "@/knownIds";
-import { NetworkType, AddressSelectionMode, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
+import { AddressSelectionMode, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
 
 export const name = 'Bitcoin';
 

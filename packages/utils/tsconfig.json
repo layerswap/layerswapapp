@@ -4,6 +4,9 @@
     "emitDeclarationOnly": false,
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "rootDir": "src",
+    "outDir": "dist/esm",
+    "declarationDir": "dist/types",
     "preserveSymlinks": false,
     "composite": true,
     "declaration": true,
@@ -22,5 +25,10 @@
   ],
   "exclude": [
     "node_modules"
+  ],
+  "references": [
+    {
+      "path": "../widget/types"
+    }
   ]
 }

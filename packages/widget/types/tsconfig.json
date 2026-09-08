@@ -4,11 +4,17 @@
     "jsx": "react-jsx",
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "rootDir": "src",
+    "outDir": "dist/esm",
+    "declarationDir": "dist/types",
     "declaration": true,
     "noEmit": false,
     "composite": true,
     "skipLibCheck": true,
     "esModuleInterop": true
+  },
+  "tsc-alias": {
+    "resolveFullPaths": true
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]

@@ -15,16 +15,18 @@ export default function RewardsPage({ settings, themeData, apiKey }: InferGetSer
 
     return (<>
         <Layout themeData={themeData}>
-            <WidgetWrapper
-                settings={resolvedSettings}
-                themeData={themeData}
-                apiKey={apiKey}
-            >
-                <CampaignDetails
-                    campaignName={router.query.campaign?.toString()!}
-                    goBack={router.back}
-                />
-            </WidgetWrapper>
+            <div className='h-full w-full sm:max-w-[472px] mx-auto'>
+                <WidgetWrapper
+                    settings={resolvedSettings}
+                    themeData={themeData}
+                    apiKey={apiKey}
+                >
+                    <CampaignDetails
+                        campaignName={router.query.campaign?.toString()!}
+                        goBack={router.back}
+                    />
+                </WidgetWrapper>
+            </div>
         </Layout>
     </>
     )

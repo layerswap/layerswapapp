@@ -1,3 +1,4 @@
+import { type Wallet } from '@layerswap/widget-types';
 import { useFormikContext } from "formik";
 import { FC, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { JSX } from 'react';
@@ -6,12 +7,11 @@ import useWallet from "@/hooks/useWallet";
 import { Address as AddressClass } from "@/lib/address/Address";
 import ManualAddressInput from "./ManualAddressInput";
 import ConnectWalletButton from "@/components/Common/ConnectWalletButton";
-import { Network, NetworkRoute } from "@/Models/Network";
+import { Network, NetworkRoute } from "@layerswap/widget-types";
 import AddressBook from "./AddressBook";
 import AddressButton from "./AddressButton";
 import { useInitialSettings } from "@/context/settings";
 import ConnectedWallets, { NotCompatibleWallets } from "./ConnectedWallets";
-import { Wallet } from "@/types/wallet";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import VaulDrawer from "@/components/Modal/vaulModal";
 import { useManualDestAddresses, useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts";

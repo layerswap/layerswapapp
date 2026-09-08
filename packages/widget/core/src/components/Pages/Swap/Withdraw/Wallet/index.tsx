@@ -1,15 +1,17 @@
+import { NetworkType } from '@layerswap/widget-types';
 import { FC, Suspense, useCallback, useEffect, useState } from "react";
 import { PublishedSwapTransactions, SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { WithdrawalProvider } from "@/context/withdrawalContext";
 import useWallet from "@/hooks/useWallet";
 import { useSelectedAccount } from "@/context/swapAccounts";
+import { useSwapDataState } from "@/context/swap";
 import { WithdrawPageProps } from "./Common/sharedTypes";
 import { ChangeNetworkButton, ConnectWalletButton, SendTransactionButton } from "./Common/buttons";
 import { GaslessSigner } from "./Common/depositExecution";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
-import WalletIcon from "@/components/Icons/WalletIcon";
+import { WalletIcon } from "@layerswap/ui-kit/components";
 import { useBalance } from "@/lib/balances/useBalance";
-import { TransferProps } from "@/types";
+import { TransferProps } from "@layerswap/widget-types";
 import { ActionMessage } from "./Common/actionMessage";
 import { ActionMessages } from "../messages/TransactionMessages";
 import { useTransfer } from "@/hooks/useTransfer";
@@ -19,7 +21,6 @@ import RPCUnhealthyMessage from "./RPCUnhealthyMessage";
 import { isExtendedSourceNetwork } from "@/lib/extendedRoutes/registry";
 import { HyperliquidWalletWithdraw } from "../WithdrawalProviders/Hyperliquid";
 import { PolymarketWalletWithdraw } from "../WithdrawalProviders/Polymarket";
-import { NetworkType } from "@/Models/Network";
 
 type Props = {
     swapData: SwapBasicData
@@ -159,6 +160,7 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
     const [buttonClicked, setButtonClicked] = useState(false)
     const [error, setError] = useState<Error | undefined>()
     const [loading, setLoading] = useState(false)
+    const { swapError } = useSwapDataState()
 
     const selectedSourceAccount = useSelectedAccount("from", swapData.source_network.name);
 
@@ -262,7 +264,7 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
 
     return <div className="w-full space-y-2 flex flex-col justify-between h-full text-primary-text">
         {
-            buttonClicked &&
+            (buttonClicked || !!swapError) &&
             <ActionMessage
                 error={error}
                 isLoading={loading}

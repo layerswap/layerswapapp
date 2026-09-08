@@ -1,4 +1,5 @@
-import { AddressUtilsProvider, AddressUtilsProviderProps, NetworkType, AddressSelectionMode } from "@/types";
+import { NetworkType } from '@layerswap/widget-types';
+import { AddressUtilsProvider, AddressUtilsProviderProps, AddressSelectionMode } from "@/types";
 
 export class AddressUtilsResolver {
     private providers: AddressUtilsProvider[];

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import useWindowDimensions from './useWindowDimensions';
+import AppSettings from '../lib/AppSettings';
 
 const SUGGESTION_ROW_HEIGHT = 60;
 const MIN_SUGGESTIONS = 4;
@@ -45,6 +46,8 @@ export default function useSuggestionsLimit({ hasWallet }: Options) {
     const { windowSize } = useWindowDimensions();
 
     const limit = useMemo(() => {
+        if (AppSettings.ThemeData?.enableWideVersion !== true) return MIN_SUGGESTIONS;
+
         return calculateFromViewport(windowSize, hasWallet);
     }, [windowSize, hasWallet]);
 

@@ -1,5 +1,5 @@
 import { FC, useMemo } from "react";
-import { SearchComponent } from "../Search";
+import { SearchComponent } from "@layerswap/ui-kit/components";
 import { useSettingsState } from "@/context/settings";
 import { SwapDirection } from "@/components/Pages/Swap/Form/SwapFormValues";
 
@@ -21,7 +21,7 @@ const RouteSearch: FC<RouteSearchProps> = ({ searchQuery, setSearchQuery, should
             .filter((route) => route.tokens?.length)
             .map((route) => {
                 const token = route.tokens[Math.floor(Math.random() * route.tokens.length)];
-                return `Try "${token.symbol} ${route.display_name || route.name}"`;
+                return `Try "${token.asset} ${route.display_name || route.name}"`;
             });
         return ["Search by token and network", ...routeTexts];
     }, [routes])

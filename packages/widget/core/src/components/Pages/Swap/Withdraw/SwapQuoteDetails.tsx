@@ -1,5 +1,6 @@
+import { type Refuel } from '@layerswap/widget-types';
 import { FC } from 'react'
-import { Refuel, SwapBasicData, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
+import { SwapBasicData, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
 import { SwapValues } from '../Form/FeeDetails';
 import SwapQuoteComp from '../Form/FeeDetails/SwapQuote';
 import { QuoteError } from '@/hooks/useFee';

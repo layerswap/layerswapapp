@@ -1,141 +1,49 @@
 "use client";
-import React, { createContext, lazy, Suspense, useContext, useEffect, useMemo, useRef, useState } from "react";
-import type { StoreApi } from "zustand/vanilla";
-import { WalletConnectionProvider, WalletConnectionStore, WalletProvider, WalletProviderDescriptor, WalletWrapper, isWalletProviderDescriptor } from "@/types";
+import React, { lazy, Suspense, useEffect } from "react";
+import { ChevronLeft } from "lucide-react";
+import clsx from "clsx";
+import { ensureRegistryBrowseLoaded, WalletProvidersRegistryProvider, useWalletProvidersRegistry, useWalletDescriptorLoader } from "@layerswap/wallet-core";
+import { isMobile } from "@layerswap/utils";
 import { useSettingsState } from "./settings";
 import VaulDrawer from "@/components/Modal/vaulModal";
 import IconButton from "@/components/Buttons/iconButton";
-import { ChevronLeft } from "lucide-react";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
-import { isMobile } from "@/lib/wallets/utils/isMobile";
 import AppSettings from "@/lib/AppSettings";
+import { walletNetworkAdapter } from "@/lib/walletNetworkAdapter";
 import { filterSourceNetworks } from "@/helpers/filterSourceNetworks";
-import { createWalletProvidersRegistry, type WalletProvidersRegistry } from "@/lib/walletConnect/walletProvidersRegistry";
-import { createDescriptorStubStore } from "@/lib/walletConnect/descriptorStubStore";
-import { useWalletDescriptorLoader } from "@/lib/walletConnect/walletDescriptorLoader";
-import { ensureRegistryBrowseLoaded } from "@/lib/walletConnect/additionalConnectorsStore";
-import clsx from "clsx";
+import useWallet from "@/hooks/useWallet";
+import LayerSwapLogoSmall from "@/components/Icons/layerSwapLogoSmall";
+import type { WalletProvider, WalletProviderDescriptor, WalletWrapper } from "@layerswap/wallet-core/types"
 
-const ConnectorsList = lazy(() => import("@/components/Wallet/WalletModal/ConnectorsList"));
+export { useWalletProvidersReady } from "@layerswap/wallet-core"
 
-// Shown while the connectors chunk loads on first modal open, so a slow chunk
-// fetch surfaces a spinner instead of falling through to the error boundary.
+const ConnectorsList = lazy(() => import("@layerswap/ui-kit/components").then(module => ({ default: module.ConnectorsList })));
+
 const ConnectorsListFallback: React.FC = () => (
     <div className="flex h-full w-full items-center justify-center py-10">
         <div className="loader text-[3px]!" />
     </div>
 );
 
-type RegistryEntry = { id: string; store: StoreApi<WalletConnectionProvider> }
-
-const WalletProvidersRegistryContext = createContext<WalletProvidersRegistry | null>(null)
-
-export function useWalletProvidersRegistry(): WalletProvidersRegistry {
-    const registry = useContext(WalletProvidersRegistryContext)
-    if (!registry) throw new Error('useWalletProvidersRegistry must be used within WalletProvidersProvider')
-    return registry
-}
-
-const WalletProvidersReadyContext = createContext<boolean>(false)
-
-export function useWalletProvidersReady(): boolean {
-    return useContext(WalletProvidersReadyContext)
-}
-
-const HasConfiguredWalletProvidersContext = createContext<boolean>(false)
-
-/**
- * Whether the integrator configured any wallet-connection providers. Unlike the
- * registry (populated in a post-commit effect) this is derived from the
- * `walletProviders` prop during render, so it is correct on the very first
- * render and during SSR. Use it for decisions that only need "is wallet
- * connection available at all" (e.g. the deposit flow's root step); decisions
- * that need hydrated provider details must still gate on
- * `useWalletProvidersReady()`.
- */
-export function useHasConfiguredWalletProviders(): boolean {
-    return useContext(HasConfiguredWalletProvidersContext)
-}
-
 type ProviderEntry = WalletProvider | WalletWrapper | WalletProviderDescriptor
-
 export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walletProviders: ProviderEntry[] }> = ({ children, walletProviders }) => {
     const settings = useSettingsState();
     const { networks } = settings;
+    return (
+        <WalletProvidersRegistryProvider networks={networks} networkAdapter={walletNetworkAdapter} walletProviders={walletProviders}>
+            {children}
+            <ConnectModalHost settings={settings} />
+        </WalletProvidersRegistryProvider>
+    );
+};
+
+const ConnectModalHost: React.FC<{ settings: ReturnType<typeof useSettingsState> }> = ({ settings }) => {
+    const { networks } = settings;
     const isMobilePlatform = isMobile();
+    const walletProvidersRegistry = useWalletProvidersRegistry();
+    const { providers } = useWallet()
     const { goBack, onFinish, open, setOpen, presentation, selectedConnector, selectedMultiChainConnector, dismissible, topContent, fullHeight, hideHeader } = useConnectModal()
-
-    const walletProvidersRegistry = useMemo(() => createWalletProvidersRegistry(), [])
     const { loadAll } = useWalletDescriptorLoader()
-
-    // Mirrors exactly which providers will produce a registry entry below
-    // (descriptors get stubs; real providers need `createConnection`), but is
-    // available at render time — before the effect publishes the entries.
-    const hasConfiguredProviders = useMemo(
-        () => walletProviders.some(p => isWalletProviderDescriptor(p) || !!(p as WalletProvider).createConnection),
-        [walletProviders]
-    )
-
-    // Per-id caches: keep real connections alive across re-renders so that
-    // a descriptor finishing its load doesn't tear down peer providers.
-    const connectionsRef = useRef<Map<string, WalletConnectionStore>>(new Map())
-    const stubsRef = useRef<Map<string, StoreApi<WalletConnectionProvider>>>(new Map())
-    const [isInitialized, setIsInitialized] = useState(false)
-
-    useEffect(() => {
-        const seenIds = new Set<string>()
-        const entries: RegistryEntry[] = []
-
-        for (const p of walletProviders) {
-            seenIds.add(p.id)
-            if (isWalletProviderDescriptor(p)) {
-                // Descriptor still pending: serve a static-metadata stub so
-                // route filtering and the registry see the provider exists.
-                let stub = stubsRef.current.get(p.id)
-                if (!stub) {
-                    stub = createDescriptorStubStore(p)
-                    stubsRef.current.set(p.id, stub)
-                }
-                entries.push({ id: p.id, store: stub })
-                continue
-            }
-            // Real provider: drop any prior stub for this id, then init
-            // a connection if we don't already have one.
-            stubsRef.current.delete(p.id)
-            let conn = connectionsRef.current.get(p.id)
-            if (!conn && (p as WalletProvider).createConnection) {
-                conn = (p as WalletProvider).createConnection({ networks, walletProvidersRegistry })
-                connectionsRef.current.set(p.id, conn)
-            }
-            if (conn) entries.push({ id: p.id, store: conn.store })
-        }
-
-        // Tear down anything that disappeared from the input.
-        for (const [id, conn] of connectionsRef.current) {
-            if (!seenIds.has(id)) {
-                conn.destroy?.()
-                connectionsRef.current.delete(id)
-            }
-        }
-        for (const id of Array.from(stubsRef.current.keys())) {
-            if (!seenIds.has(id)) stubsRef.current.delete(id)
-        }
-
-        walletProvidersRegistry.setEntries(entries)
-        setIsInitialized(true)
-    }, [walletProviders, walletProvidersRegistry])
-
-    useEffect(() => () => {
-        // On unmount, dispose every still-live connection.
-        for (const conn of connectionsRef.current.values()) conn.destroy?.()
-        connectionsRef.current.clear()
-        stubsRef.current.clear()
-        walletProvidersRegistry.setEntries([])
-    }, [walletProvidersRegistry])
-
-    useEffect(() => {
-        connectionsRef.current.forEach(c => c.updateProps?.({ networks, walletProvidersRegistry }))
-    }, [networks, walletProvidersRegistry])
 
     // `AvailableSourceNetworkTypes` is read by `helpers/routes.ts` to decide
     // which source-network types are reachable. It depends on each provider's
@@ -171,46 +79,44 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
     }, [open, loadAll])
 
     return (
-        <WalletProvidersRegistryContext.Provider value={walletProvidersRegistry}>
-            <WalletProvidersReadyContext.Provider value={isInitialized}>
-            <HasConfiguredWalletProvidersContext.Provider value={hasConfiguredProviders}>
-            {children}
-            <VaulDrawer
-                show={open && presentation === 'modal'}
-                setShow={setOpen}
-                onClose={onFinish}
-                modalId={"connectNewWallet"}
-                dismissible={dismissible}
-                header={
-                    <div className="flex items-center gap-1">
-                        {
-                            (selectedConnector || selectedMultiChainConnector) ?
-                                <div className="sm:-ml-2 ml-0">
-                                    <IconButton onClick={goBack} icon={
-                                        <ChevronLeft className="h-6 w-6" />
-                                    }>
-                                    </IconButton>
-                                </div>
-                                : null
-                        }
-                        {hideHeader ? undefined : <p>{(selectedMultiChainConnector && !selectedConnector) ? "Select ecosystem" : "Connect wallet"}</p>}
-                    </div>
-                }>
-                <VaulDrawer.Snap openFullHeight id='item-1' className={clsx("h-full max-h-[83svh] sm:max-h-full", fullHeight && "openpicker")}>
-                    {open ? (
-                        <div className="flex flex-col gap-3 h-full">
-                            {!selectedConnector && !selectedMultiChainConnector ? topContent : null}
-                            <div className="flex-1 min-h-0">
-                                <Suspense fallback={<ConnectorsListFallback />}>
-                                    <ConnectorsList onFinish={onFinish} />
-                                </Suspense>
+        <VaulDrawer
+            show={open && presentation === 'modal'}
+            setShow={setOpen}
+            onClose={onFinish}
+            modalId={"connectNewWallet"}
+            dismissible={dismissible}
+            header={
+                <div className="flex items-center gap-1">
+                    {
+                        (selectedConnector || selectedMultiChainConnector) ?
+                            <div className="sm:-ml-2 ml-0">
+                                <IconButton onClick={goBack} icon={
+                                    <ChevronLeft className="h-6 w-6" />
+                                }>
+                                </IconButton>
                             </div>
+                            : null
+                    }
+                    {hideHeader ? undefined : <p>{(selectedMultiChainConnector && !selectedConnector) ? "Select ecosystem" : "Connect wallet"}</p>}
+                </div>
+            }>
+            <VaulDrawer.Snap openFullHeight id='item-1' className={clsx("h-full max-h-[83svh] sm:max-h-full", fullHeight && "openpicker")}>
+                {open ? (
+                    <div className="flex flex-col gap-3 h-full">
+                        {!selectedConnector && !selectedMultiChainConnector ? topContent : null}
+                        <div className="flex-1 min-h-0">
+                            <Suspense fallback={<ConnectorsListFallback />}>
+                                <ConnectorsList
+                                    providers={providers}
+                                    onFinish={onFinish}
+                                    enablePortal={AppSettings.ThemeData?.enablePortal}
+                                    brandMark={<LayerSwapLogoSmall className="w-11 h-auto" />}
+                                />
+                            </Suspense>
                         </div>
-                    ) : null}
-                </VaulDrawer.Snap>
-            </VaulDrawer>
-            </HasConfiguredWalletProvidersContext.Provider>
-            </WalletProvidersReadyContext.Provider>
-        </WalletProvidersRegistryContext.Provider>
+                    </div>
+                ) : null}
+            </VaulDrawer.Snap>
+        </VaulDrawer>
     );
 };

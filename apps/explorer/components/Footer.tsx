@@ -52,9 +52,9 @@ const Footer = () => {
 
     return (
         <footer className="overflow-hidden py-6 md:grid grid-cols-3 w-full px-6 lg:px-8 mt-auto relative z-20">
-            <div className="flex justify-center space-x-6 order-3 place-self-end">
+            <div className="flex justify-center space-x-6 order-3 md:place-self-end">
                 {footerNavigation.social.map((item) => (
-                    <Link target="_blank" key={item.name} href={item.href} className="text-gray-400 hover:text-gray-500">
+                    <Link target="_blank" key={item.name} href={item.href} className="text-primary-text-tertiary transition-colors hover:text-secondary-text">
                         <span className="sr-only">{item.name}</span>
                         <item.icon className="h-6 w-6" aria-hidden="true" />
                     </Link>
@@ -68,7 +68,7 @@ const Footer = () => {
                     Terms of Services
                 </Link>
             </div>
-            <div className="mt-3 order-1 md:mt-0 place-self-start">
+            <div className="mt-3 order-1 md:mt-0 md:place-self-start">
                 <p className="text-center text-xs text-primary-text-tertiary leading-6">
                     &copy; {new Date().getFullYear()} Layerswap Labs, Inc. All rights reserved.
                 </p>

@@ -1,6 +1,6 @@
+import { type ErrorEventType, type SwapStatusEvent } from '@layerswap/widget-types';
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
 import { SwapResponse } from '@/lib/apiClients/layerSwapApiClient'
-import { ErrorEventType, SwapStatusEvent } from '@/types'
 import { createContext, useContext, ReactNode, useCallback, useMemo } from 'react'
 import { ErrorHandler } from '@/lib/ErrorHandler'
 

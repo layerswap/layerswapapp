@@ -21,7 +21,7 @@ export default function Transactions({ settings, themeData, apiKey }: InferGetSe
   return (
     <>
       <Layout themeData={themeData}>
-        <div className='h-full w-full'>
+        <div className='h-full w-full sm:max-w-[472px] mx-auto'>
           <WidgetWrapper
             settings={resolvedSettings}
             themeData={themeData}
@@ -35,7 +35,7 @@ export default function Transactions({ settings, themeData, apiKey }: InferGetSe
               }
             }}
           >
-            <TransactionsHistory height={isMobile ? '90svh' : '600px'} />
+            <TransactionsHistory height={isMobile ? '90svh' : 'calc(79svh - 72px)'} />
           </WidgetWrapper>
         </div>
       </Layout>

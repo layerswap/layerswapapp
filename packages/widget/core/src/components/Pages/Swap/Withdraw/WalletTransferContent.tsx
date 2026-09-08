@@ -1,11 +1,11 @@
 import { FC } from 'react'
-import WalletIcon from '@/components/Icons/WalletIcon';
+import { WalletIcon } from "@layerswap/ui-kit/components";
 import useWallet from '@/hooks/useWallet';
 import AddressWithIcon from '@/components/Input/Address/AddressPicker/AddressWithIcon';
 import { AddressGroup } from '@/components/Input/Address/AddressPicker';
 import { truncateDecimals } from '@/components/utils/RoundDecimals';
 import VaulDrawer from '@/components/Modal/vaulModal';
-import { SelectAccountProps } from '@/types/wallet';
+import { SelectAccountProps } from "@layerswap/wallet-core/types"
 import { useSettingsState } from '@/context/settings';
 import WalletsList from '@/components/Wallet/WalletComponents/WalletsList';
 import { SwapBasicData } from '@/lib/apiClients/layerSwapApiClient';
@@ -69,7 +69,7 @@ const WalletTransferContent: FC<Props> = ({ openModal, setOpenModal, swapData })
                     />
                     <div className="flex flex-col col-start-8 col-span-3 items-end font-normal text-secondary-text text-xs">
                         <p>Balance</p>
-                        <p className='flex items-center gap-1'><span>{truncateDecimals(Number(walletBalanceAmount), walletBalance?.decimals)}</span> <span>{walletBalance?.token}</span></p>
+                        <p className='flex items-center gap-1'><span>{truncateDecimals(Number(walletBalanceAmount), walletBalance?.decimals)}</span> <span>{source_token?.asset}</span></p>
                     </div>
                 </div>
             }

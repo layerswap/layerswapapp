@@ -1,5 +1,6 @@
-import { AvailableSourceNetworkTypes, LayerSwapSettings } from "@/Models";
-import { WalletConnectionProvider } from "@/types";
+import { type AvailableSourceNetworkTypes } from '@layerswap/widget-types';
+import { LayerSwapSettings } from "@/Models";
+import { WalletConnectionProvider } from "@layerswap/wallet-core/types"
 
 
 export function filterSourceNetworks(settings: LayerSwapSettings, walletProviders: WalletConnectionProvider[]): AvailableSourceNetworkTypes {
@@ -15,7 +16,7 @@ export function filterSourceNetworks(settings: LayerSwapSettings, walletProvider
     const allNetworkTypes = Object.keys(networkTypesAggregation)
 
     const availableNetworkTypes = allNetworkTypes.filter(networkType => {
-        return networkTypesAggregation[networkType].some(route => route.deposit_methods.includes("deposit_address") ||
+        return networkTypesAggregation[networkType].some(route => route?.deposit_methods?.includes("deposit_address") ||
             walletProviders.some(provider => provider.withdrawalSupportedNetworks.includes(route.name))
         )
     })

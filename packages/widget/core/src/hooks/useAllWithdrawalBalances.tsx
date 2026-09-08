@@ -1,8 +1,8 @@
 import { useSettingsState } from "@/context/settings"
 import { selectResolvedSortingBalances, useBalanceStore } from "../stores/balanceStore"
 import { useEffect, useMemo, useRef } from "react"
-import { NetworkWithTokens } from "@/Models/Network"
-import { NetworkBalance } from "@/Models/Balance"
+import { NetworkWithTokens } from "@layerswap/widget-types";
+import { NetworkBalance } from "@layerswap/widget-types";
 import { useSwapAccounts } from "@/context/swapAccounts"
 
 export default function useAllWithdrawalBalances() {

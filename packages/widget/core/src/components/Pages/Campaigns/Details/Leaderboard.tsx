@@ -7,12 +7,12 @@ import { ApiResponse } from "@/Models/ApiResponse"
 import ClickTooltip from "@/components/Common/ClickTooltip"
 import { truncateDecimals } from "@/components/utils/RoundDecimals"
 import AddressIcon from "@/components/Common/AddressIcon";
-import { ImageWithFallback } from "@/components/Common/ImageWithFallback"
+import { ImageWithFallback } from "@layerswap/ui-kit/components";
 import { useSelectedAccount } from "@/context/swapAccounts"
 import { useWallet } from "@/exports"
 import VaulDrawer from "@/components/Modal/vaulModal";
 import { getExplorerUrl } from "@/lib/address/explorerUrl";
-import { Network, Token } from "@/Models";
+import { Network, Token } from "@layerswap/widget-types";
 import { Address } from "@/lib/address/Address";
 import { useNamedAddress } from "@/stores/addressBookStore"
 
@@ -132,7 +132,7 @@ const LeaderbordComponent: FC<{
                                                     <span className="text-primary">You</span>
                                                 </a>}
                                             </div>
-                                            <p className="mt-1 text-sm font-medium text-secondary-text leading-3">{truncateDecimals(rewards.user_reward.total_amount, token?.precision)} {token?.symbol}</p>
+                                            <p className="mt-1 text-sm font-medium text-secondary-text leading-3">{truncateDecimals(rewards.user_reward.total_amount, token?.precision)} {token?.asset}</p>
                                         </div>
                                     </div >
                                 </div >
@@ -169,7 +169,7 @@ const LeaderboardItem: FC<{
                             {user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : displayName}
                         </a>}
                     </div>
-                    <p className="mt-1 text-sm font-medium text-secondary-text leading-3">{truncateDecimals(user.amount, token?.precision)} {token?.symbol}</p>
+                    <p className="mt-1 text-sm font-medium text-secondary-text leading-3">{truncateDecimals(user.amount, token?.precision)} {token?.asset}</p>
                 </div>
             </div >
         </div >
@@ -189,7 +189,7 @@ const LeaderboardItem: FC<{
                                 className="rounded-full object-contain" />
                         </div>
                         <p>
-                            <span>{leaderboardRewards[user.position - 1]} {token?.symbol}</span>
+                            <span>{leaderboardRewards[user.position - 1]} {token?.asset}</span>
                         </p>
                     </div>
                 } />

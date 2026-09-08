@@ -1,12 +1,13 @@
+import { NetworkType } from '@layerswap/widget-types';
 import { FC, MouseEventHandler, ReactNode, SVGProps, useCallback, useMemo, useState } from "react"
 import { AddressGroup, AddressItem } from ".";
 import { Copy, Check, ChevronDown, WalletIcon, Pencil, Link2, SquareArrowOutUpRight, Unplug, Info, Trash2, BookmarkPlus } from "lucide-react";
 import { Partner } from "@/Models/Partner";
-import { Network, NetworkType } from "@/Models/Network";
+import { Network } from "@layerswap/widget-types";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components//shadcn/popover";
-import useCopyClipboard from "@/hooks/useCopyClipboard";
+import { ImageWithFallback } from "@layerswap/ui-kit/components";
+import { useCopyClipboard } from "@layerswap/ui-kit";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
-import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import clsx from "clsx";
 import shortenString from "@/components/utils/ShortenString";
 import { useAddressName, useLabeledAddress } from "@/stores/addressBookStore";
@@ -20,7 +21,7 @@ type Props = {
     addressItem: AddressItem;
     partner?: Partner;
     network?: Network;
-    balance?: { amount: number, symbol: string, isLoading: boolean } | undefined;
+    balance?: { amount: number, asset: string, isLoading: boolean } | undefined;
     onDisconnect?: ExtendedAddressProps['onDisconnect']
     onRemove?: ExtendedAddressProps['onRemove']
 }
@@ -131,7 +132,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
                                         <div className='h-[14px] w-20 inline-flex bg-gray-500 rounded-xs animate-pulse' />
                                         :
                                         <>
-                                            <span>{balance.amount.toLocaleString()}</span> <span>{balance.symbol}</span>
+                                            <span>{balance.amount.toLocaleString()}</span> <span>{balance.asset}</span>
                                         </>
                                 }
                             </div>

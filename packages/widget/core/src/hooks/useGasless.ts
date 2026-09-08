@@ -1,6 +1,6 @@
 import { resolverService } from "@/lib/resolvers/resolverService";
-import { GaslessSignParams } from "@/types";
-import { Network } from "@/Models/Network";
+import { GaslessSignParams } from "@layerswap/widget-types";
+import { Network } from "@layerswap/widget-types";
 import { useCallback } from "react";
 
 export function useGasless() {

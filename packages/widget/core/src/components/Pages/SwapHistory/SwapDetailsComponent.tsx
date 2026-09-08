@@ -1,12 +1,12 @@
+import { SwapStatus } from '@layerswap/widget-types';
 import { FC, useState } from 'react'
 import { SwapResponse, TransactionType } from '@/lib/apiClients/layerSwapApiClient';
-import CopyButton from '@/components/Buttons/copyButton';
+import { CopyButton } from "@layerswap/ui-kit/components";
 import StatusIcon from './StatusIcons';
 import { ExternalLink } from 'lucide-react';
 import isGuid from '@/components/utils/isGuid';
 import KnownInternalNames from '@/lib/knownIds';
 import { useInitialSettings } from '@/context/settings';
-import { SwapStatus } from '@/Models/SwapStatus';
 import { getDateDifferenceString } from '@/components/utils/dateDifference';
 import { useSwapDataUpdate } from '@/context/swap';
 import { useSettingsState } from '@/context/settings';
@@ -175,7 +175,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                                                 :
                                                                 <a
                                                                     target="_blank"
-                                                                    href={getExplorerUrl(output_tx_explorer_template, refundTransaction.transaction_hash)}
+                                                                    href={getExplorerUrl(input_tx_explorer_template, refundTransaction.transaction_hash)}
                                                                     className='group/addressItem flex items-center space-x-1 cursor-pointer hover:text-secondary-text transition duration-200'
                                                                     rel="noopener noreferrer"
                                                                 >

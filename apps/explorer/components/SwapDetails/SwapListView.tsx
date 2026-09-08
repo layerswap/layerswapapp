@@ -1,15 +1,13 @@
 "use client";
 
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import CopyButton from "../buttons/copyButton";
-import BackBtn from "@/helpers/BackButton";
 import SwapTableRow from "./SwapTableRow";
 import { Swap, TransactionType } from "@/models/Swap";
 
 interface SwapListViewProps {
     swaps: Swap[];
     destinationAddress?: string;
-    basePath?: string;
     onLoadMore?: () => void;
     isLoadingMore?: boolean;
     isReachingEnd?: boolean;
@@ -18,26 +16,15 @@ interface SwapListViewProps {
 export default function SwapListView({
     swaps,
     destinationAddress,
-    basePath,
     onLoadMore,
     isLoadingMore = false,
     isReachingEnd = true,
 }: SwapListViewProps) {
     const router = useRouter();
-    const pathname = usePathname();
-
-    const isHomePage = pathname === '/' || pathname === basePath || pathname === `${basePath}/`;
     const hasScrollableList = swaps.length > 5;
 
     return (
         <div className="px-4 sm:px-6 lg:px-8 w-full">
-            {/* Back Button */}
-            {!isHomePage && (
-                <div className="hidden xl:block w-fit mb-1 hover:bg-secondary-600 hover:text-accent-foreground rounded ring-offset-background transition-colors -ml-5">
-                    <BackBtn />
-                </div>
-            )}
-
             <div className="flow-root w-full">
                 {/* Address Header */}
                 <div className="inline-block min-w-full align-middle">
@@ -62,9 +49,9 @@ export default function SwapListView({
                     -mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8
                 `}>
                     <div className="inline-block min-w-full pb-2 align-middle sm:px-6 lg:px-8">
-                        <div className="shadow ring-1 ring-white/5 sm:rounded-lg">
-                            <table className="min-w-full divide-y divide-secondary-500 relative">
-                                <thead className="bg-secondary-800 sticky -top-1 z-10 sm:rounded-lg">
+                        <div className="overflow-hidden rounded-3xl bg-secondary-700 p-1">
+                            <table className="relative min-w-full divide-y divide-secondary-300">
+                                <thead className="sticky -top-1 z-10 bg-secondary-500">
                                     <tr>
                                         <th scope="col" className="sticky top-0 px-3 py-3.5 text-left text-sm font-semibold text-primary-text sm:rounded-tl-lg">
                                             Source Tx Hash
@@ -79,7 +66,7 @@ export default function SwapListView({
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-secondary-400 bg-secondary">
+                                <tbody className="divide-y divide-secondary-500 bg-secondary-700">
                                     {swaps.map((swap, index) => {
                                         const inputTransaction = swap.transactions?.find(t => t?.type === TransactionType.Input);
                                         const outputTransaction = swap.transactions?.find(t => t?.type === TransactionType.Output);
@@ -108,7 +95,7 @@ export default function SwapListView({
                         <button
                             onClick={onLoadMore}
                             disabled={isLoadingMore}
-                            className="px-4 py-2 text-sm font-medium text-primary-text bg-secondary-500 hover:bg-secondary-400 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="min-h-12 rounded-xl bg-secondary-300 px-4 py-3 text-sm font-medium text-primary-text transition hover:bg-secondary-400 active:animate-press-down disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             {isLoadingMore ? 'Loading...' : 'Load more'}
                         </button>
@@ -118,4 +105,3 @@ export default function SwapListView({
         </div>
     );
 }
-

@@ -1,6 +1,6 @@
 
-import { GasProps } from "../../Models/Balance";
-import { GasProvider } from "@/types/gas";
+import { GasProps } from "@layerswap/widget-types";
+import { GasProvider } from "@layerswap/widget-types";
 
 export class GasResolver {
     private providers: GasProvider[];

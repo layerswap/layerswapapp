@@ -1,5 +1,5 @@
 import { Exchange } from "./Exchange";
-import { NetworkRouteToken, NetworkRoute } from "./Network";
+import { NetworkRouteToken, NetworkRoute } from "@layerswap/widget-types";
 
 export type NetworkElement = {
     type: 'network';
@@ -19,6 +19,7 @@ export type TitleElement = {
 export type GroupedTokenElement = {
     type: 'grouped_token';
     symbol: string;
+    asset: string;
     items: NetworkTokenElement[];
 }
 export type TokenSceletonElement = {

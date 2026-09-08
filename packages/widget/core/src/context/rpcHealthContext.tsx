@@ -1,7 +1,7 @@
 'use client'
 import { useMemo, useSyncExternalStore } from 'react'
-import { Network } from '@/Models/Network'
-import type { RpcHealthCheckResult, RpcHealthCheckStore } from '@/types/rpcHealth'
+import { Network } from '@layerswap/widget-types';
+import type { RpcHealthCheckResult, RpcHealthCheckStore } from '@layerswap/widget-types';
 import { resolverService } from '@/lib/resolvers/resolverService'
 
 /**

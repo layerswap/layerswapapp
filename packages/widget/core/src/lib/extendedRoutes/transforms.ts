@@ -1,7 +1,7 @@
-import { Network, Token } from "@/Models/Network";
+import { Network, Token } from "@layerswap/widget-types";
 import { CreateSwapParams, Quote } from "@/lib/apiClients/layerSwapApiClient";
 import { parseHmsString } from "@/components/utils/formatTime";
-import { ExtendedRoutePlan, ResolvedExtendedMapping, usesDepository } from "./types";
+import { ExtendedRoutePlan, ResolvedExtendedMapping, usesDepository } from "@layerswap/widget-types";
 import { DecimalInput, decimalToNumber, isPositiveDecimal } from "./amounts";
 
 export type ExtendedLimits = {

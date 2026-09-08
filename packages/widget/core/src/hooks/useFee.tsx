@@ -6,10 +6,10 @@ import { create } from 'zustand';
 import { isDiffByPercent } from '@/components/utils/numbers'
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
 import { useSlippageStore } from '@/stores/slippageStore'
-import { sleep } from '@/lib/wallets/utils';
+import { sleep } from '@layerswap/utils';
 import { useSettingsState } from '@/context/settings'
 import { resolveExtendedRoutePlan } from '@/lib/extendedRoutes/registry'
-import { usesDepository } from '@/lib/extendedRoutes/types'
+import { usesDepository } from '@layerswap/widget-types';
 import { transformLimitsForExtendedRoute, transformQuoteForExtendedRoute } from '@/lib/extendedRoutes/transforms'
 import { isPositiveDecimal } from '@/lib/extendedRoutes/amounts'
 import { LayerswapApiClient } from '@/lib/apiClients';
@@ -30,6 +30,7 @@ type UseQuoteData = {
     quote?: Quote
     quoteTokenPrices?: QuoteTokenPrices
     quoteError?: QuoteError
+    limitsError?: QuoteError
     isQuoteLoading: boolean
     isDebouncing: boolean
     mutateFee: () => void
@@ -121,10 +122,12 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
     const gaslessEnabled = useGaslessPreferenceStore(s => s.gaslessEnabled)
     const selectedSourceAccount = useSelectedAccount("from", from)
     const sourceRouteToken = useMemo(() => sourceRoutes?.find(r => r.name === from)?.tokens?.find(t => t.symbol === fromCurrency), [sourceRoutes, from, fromCurrency])
+    const sourceIsSupported = !!selectedSourceAccount?.walletAsSourceSupportedNetworks?.some(n => n === from)
+    const sourceAddress = sourceIsSupported ? selectedSourceAccount?.address : undefined
     const useGasless = !isBridge && gaslessEnabled && isGaslessCapableRoute({
         depositMethod,
         supportsGaslessDeposit: sourceRouteToken?.supports_gasless_deposit,
-        sourceIsSupported: !!selectedSourceAccount?.walletAsSourceSupportedNetworks?.some(n => n === from),
+        sourceIsSupported,
         sourceAddress: selectedSourceAccount?.address,
     })
 
@@ -140,7 +143,7 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
             destinationAddress,
         }) : null
 
-    const { data: amountRange, mutate: mutateLimits, isValidating: limitsValidating } = useSWR<ApiResponse<{
+    const { data: amountRange, mutate: mutateLimits, isValidating: limitsValidating, error: limitsError } = useSWR<ApiResponse<{
         min_amount: number
         min_amount_in_usd: number
         max_amount: number
@@ -167,6 +170,7 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
             slippage,
             useGasless,
             destinationAddress,
+            sourceAddress,
         })
         : null
 
@@ -252,6 +256,7 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
         isQuoteLoading,
         isDebouncing,
         quoteError,
+        limitsError,
         mutateFee,
         mutateLimits,
         limitsValidating,
@@ -299,6 +304,7 @@ export type QuoteUrlArgs = {
     slippage?: number
     useGasless?: boolean
     destinationAddress?: string
+    sourceAddress?: string
 }
 
 export function buildQuoteUrl(args: QuoteUrlArgs): string {
@@ -313,6 +319,7 @@ export function buildQuoteUrl(args: QuoteUrlArgs): string {
         slippage,
         useGasless,
         destinationAddress,
+        sourceAddress,
     } = args
 
     const params = new URLSearchParams({
@@ -335,6 +342,10 @@ export function buildQuoteUrl(args: QuoteUrlArgs): string {
 
     if (destinationAddress) {
         params.append('destination_address', destinationAddress)
+    }
+
+    if (sourceAddress) {
+        params.append('source_address', sourceAddress)
     }
 
     return `/quote?${params.toString()}`

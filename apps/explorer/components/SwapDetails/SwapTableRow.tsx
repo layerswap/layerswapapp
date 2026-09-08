@@ -31,14 +31,14 @@ export default function SwapTableRow({
     return (
         <tr
             onClick={onRowClick}
-            className="hover:bg-secondary-600 hover:cursor-pointer"
+            className="transition-colors hover:cursor-pointer hover:bg-secondary-500"
         >
             {/* Transaction Hash & Status */}
             <td className="whitespace-nowrap py-2 px-3 text-sm font-medium text-primary-text flex flex-col">
                 <Link
                     href={`/${inputTransaction.transaction_hash}`}
                     onClick={stopPropagation}
-                    className="hover:text-gray-300 inline-flex items-center w-fit"
+                    className="inline-flex w-fit items-center hover:text-secondary-text"
                 >
                     {shortenAddress(inputTransaction.transaction_hash)}
                 </Link>
@@ -70,7 +70,7 @@ export default function SwapTableRow({
                                 </div>
                                 <div className="mx-2.5">
                                     <span className="text-primary-text">{formatAmount(inputTransaction.amount)}</span>
-                                    <span className="mx-1 text-primary-text">{source_token?.symbol}</span>
+                                    <span className="mx-1 text-primary-text">{source_token?.asset}</span>
                                 </div>
                             </div>
                         </div>
@@ -90,9 +90,9 @@ export default function SwapTableRow({
                                     href={source_network?.transaction_explorer_template?.replace('{0}', swap.source_address || inputTransaction.from || '') || '#'}
                                     onClick={stopPropagation}
                                     target="_blank"
-                                    className="hover:text-gray-300 inline-flex items-center w-fit"
+                                    className="inline-flex w-fit items-center hover:text-secondary-text"
                                 >
-                                    <span className="mx-0.5 hover:text-gray-300 underline">
+                                    <span className="mx-0.5 underline hover:text-secondary-text">
                                         {source_exchange?.display_name || source_network?.display_name}
                                     </span>
                                 </Link>
@@ -125,7 +125,7 @@ export default function SwapTableRow({
                                 {outputTransaction?.amount ? (
                                     <div className="mx-2.5">
                                         <span className="text-primary-text mx-0.5">{formatAmount(outputTransaction.amount)}</span>
-                                        <span className="text-primary-text">{destination_token?.symbol}</span>
+                                        <span className="text-primary-text">{destination_token?.asset}</span>
                                     </div>
                                 ) : (
                                     <span className="ml-2.5">-</span>
@@ -148,9 +148,9 @@ export default function SwapTableRow({
                                     href={destination_network?.transaction_explorer_template?.replace('{0}', outputTransaction?.transaction_hash || '') || '#'}
                                     onClick={stopPropagation}
                                     target="_blank"
-                                    className={`${!outputTransaction ? "disabled" : ""} hover:text-gray-300 inline-flex items-center w-fit`}
+                                    className={`${!outputTransaction ? "disabled" : ""} inline-flex w-fit items-center hover:text-secondary-text`}
                                 >
-                                    <span className={`${outputTransaction?.transaction_hash ? "underline" : ""} mx-0.5 hover:text-gray-300`}>
+                                    <span className={`${outputTransaction?.transaction_hash ? "underline" : ""} mx-0.5 hover:text-secondary-text`}>
                                         {destination_exchange?.display_name || destination_network?.display_name}
                                     </span>
                                 </Link>
@@ -167,4 +167,3 @@ export default function SwapTableRow({
         </tr>
     );
 }
-

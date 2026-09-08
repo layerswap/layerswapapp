@@ -1,5 +1,5 @@
-import { Network } from "@/Models/Network";
-import { NftProvider } from "@/types";
+import { Network } from "@layerswap/widget-types";
+import { NftProvider } from "@layerswap/widget-types";
 export class NftBalanceResolver {
     private providers: NftProvider[]
 

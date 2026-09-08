@@ -13,7 +13,7 @@ export const TransactionsHistory: FC<{ height?: string }> = ({ height = '600px' 
         <Widget.Content>
           <div
             style={{ height }}
-            className="h-full w-full overflow-y-auto styled-scroll"
+            className="h-full w-full overflow-y-auto overflow-x-hidden styled-scroll"
             id='virtualListContainer'
           >
             <Content />

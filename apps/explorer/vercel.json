@@ -1,6 +1,6 @@
 {
   "installCommand": "pnpm install",
-  "buildCommand": "cd ../../packages/widget/types && pnpm build && cd ../../utils && pnpm build && cd ../widget/core && pnpm build && cd ../../../apps/explorer && pnpm build",
+  "buildCommand": "cd ../.. && pnpm build:packages && cd apps/explorer && pnpm build",
   "framework": "nextjs",
   "git": {
     "deploymentEnabled": {

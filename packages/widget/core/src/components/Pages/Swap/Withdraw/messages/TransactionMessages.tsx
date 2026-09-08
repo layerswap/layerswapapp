@@ -1,3 +1,4 @@
+import { ActionMessageType } from '@layerswap/widget-types';
 import { FC } from "react"
 import WalletMessage, { WalletUnknownError } from "./Message"
 import { Address } from "@/lib/address/Address"
@@ -51,11 +52,11 @@ const WalletMismatchMessage: FC<{ address: string; network: { name: string } }> 
         details={`Select ${new Address(address, network).toShortString()} in your wallet, then try again`} />
 }
 
-const SwapErrorMessage: FC<{ message: string }> = ({ message }) => {
+const SwapErrorMessage: FC<{ message?: string }> = ({ message }) => {
     return <WalletMessage
         status="error"
-        header='API error'
-        details={message} />
+        header='Something went wrong'
+        details={message || `Our team is informed and is now investigating the issue. Please try again later.`} />
 }
 
 const GaslessUnavailableMessage: FC<{ message?: string }> = ({ message }) => {
@@ -80,15 +81,4 @@ export const ActionMessages = {
     GaslessUnavailableMessage,
     UnexpectedErrorMessage,
     DifferentAccountsNotAllowedError
-}
-
-export enum ActionMessageType {
-    ConfirmTransaction = 'ConfirmTransaction',
-    TransactionInProgress = 'TransactionInProgress',
-    InsufficientFunds = 'InsufficientFunds',
-    TransactionRejected = 'TransactionRejected',
-    WaletMismatch = 'WaletMismatch',
-    TransactionFailed = 'TransactionFailed',
-    UnexpectedErrorMessage = 'UnexpectedErrorMessage',
-    DifferentAccountsNotAllowedError = 'DifferentAccountsNotAllowedError',
 }

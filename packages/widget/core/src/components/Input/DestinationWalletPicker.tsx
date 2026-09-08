@@ -1,9 +1,9 @@
+import { type Wallet } from '@layerswap/widget-types';
 import { Address } from "@/lib/address/Address";
 import { ChevronDown, PlusIcon } from "lucide-react";
 import { AddressGroup, AddressItem, AddressTriggerProps } from "./Address/AddressPicker";
 import { Partner } from "@/Models/Partner";
-import { Wallet } from "@/types/wallet";
-import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
+import { ImageWithFallback } from "@layerswap/ui-kit/components";
 import WalletIconView from "@/components/Wallet/WalletIconView";
 import clsx from 'clsx';
 import { useNamedAddress } from "@/stores/addressBookStore";

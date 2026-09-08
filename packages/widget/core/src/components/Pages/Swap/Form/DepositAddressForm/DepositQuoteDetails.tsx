@@ -3,7 +3,7 @@ import { ChevronDown, CircleHelp, Clock } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/shadcn/accordion";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import { useDetailedQuote } from "@/hooks/useDetailedQuote";
-import { Network, Token } from "@/Models/Network";
+import { Network, Token } from "@layerswap/widget-types";
 import { formatFee } from "./helpers";
 import { formatTokenAmount } from "@/components/utils/formatTokenAmount";
 import { formatVerboseHms, msToParts } from "@/components/utils/formatTime";
@@ -84,13 +84,13 @@ const DepositQuoteDetails: FC<DepositQuoteDetailsProps> = ({
     const minDepositDisplay = useMemo(() => {
         const min = sortedTiers[0]?.min_amount;
         if (!min || !sourceToken) return null;
-        return `${formatTokenAmount(min)} ${sourceToken.symbol}`;
+        return `${formatTokenAmount(min)} ${sourceToken.asset}`;
     }, [sortedTiers, sourceToken]);
 
     const maxDepositDisplay = useMemo(() => {
         const max = sortedTiers[sortedTiers.length - 1]?.max_amount;
         if (!max || !Number.isFinite(max) || !sourceToken) return null;
-        return `${formatTokenAmount(max)} ${sourceToken.symbol}`;
+        return `${formatTokenAmount(max)} ${sourceToken.asset}`;
     }, [sortedTiers, sourceToken]);
 
     const feeDisplay = sortedTiers[0]

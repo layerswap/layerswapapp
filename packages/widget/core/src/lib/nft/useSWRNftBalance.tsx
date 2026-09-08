@@ -1,6 +1,6 @@
 'use client'
 import useSWR from "swr";
-import { Network } from "../../Models/Network";
+import { Network } from "@layerswap/widget-types";
 import { resolverService } from "../resolvers/resolverService";
 
 const useSWRNftBalance = (address: string, network: Network | undefined, contractAddress: string) => {

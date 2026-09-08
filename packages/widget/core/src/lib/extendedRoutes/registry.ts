@@ -1,7 +1,7 @@
-import { NetworkRoute, NetworkWithTokens } from "@/Models/Network";
+import { NetworkRoute, NetworkWithTokens } from "@layerswap/widget-types";
 import { DecimalInput, addDecimal, subtractDecimal } from "./amounts";
-import { ExtendedRouteFlags, ExtendedRoutePlan, ExtendedRouteProvider, ResolvedExtendedMapping, requiredDepositMethod } from "./types";
-import { realRoutePresent } from "./availability";
+import { ExtendedRouteFlags, ExtendedRoutePlan, ExtendedRouteProvider, ResolvedExtendedMapping, requiredDepositMethod } from "@layerswap/widget-types";
+import { realRoutePresent } from "@layerswap/widget-types";
 
 let sourceProviders: ExtendedRouteProvider[] = []
 

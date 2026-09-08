@@ -1,0 +1,26 @@
+{
+  "extends": "../../tsconfig.wallet.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist/esm",
+    "declarationDir": "dist/types"
+  },
+  "include": [
+    "src",
+    "src/jsons/*.json"
+  ],
+  "exclude": [
+    "node_modules"
+  ],
+  "references": [
+    {
+      "path": "../../core"
+    },
+    {
+      "path": "../../../utils"
+    },
+    {
+      "path": "../../../widget/types"
+    }
+  ]
+}

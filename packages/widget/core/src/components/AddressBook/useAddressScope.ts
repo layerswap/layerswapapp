@@ -1,6 +1,6 @@
+import { NetworkType } from '@layerswap/widget-types';
 import { useMemo } from 'react'
 import { useSettingsState } from '@/context/settings'
-import { NetworkType } from '@/Models/Network'
 import { classifyAddress, addressTypeLabel } from '@layerswap/utils'
 import KnownInternalNames from '@/lib/knownIds'
 

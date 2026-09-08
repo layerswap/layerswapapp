@@ -1,11 +1,11 @@
-import { SwapStatus } from "../../Models/SwapStatus";
+import { SwapStatus, type Refuel } from '@layerswap/widget-types';
 import AppSettings from "../AppSettings";
 import { InitializeUnauthInstance, InitializeAuthInstance } from "../axiosInterceptor"
 import { v4 as uuidv4 } from 'uuid';
 import { AxiosInstance, Method } from "axios";
 import { AuthRefreshFailedError } from "../Errors/AuthRefreshFailedError";
 import { ApiResponse, EmptyApiResponse } from "../../Models/ApiResponse";
-import { NetworkWithTokens, Network, Token } from "../../Models/Network";
+import { NetworkWithTokens, Network, Token } from "@layerswap/widget-types";
 import { Exchange } from "../../Models/Exchange";
 import { ErrorHandler } from "@/lib/ErrorHandler";
 
@@ -163,13 +163,6 @@ export type SwapResponse = {
     swap: SwapItem;
     quote: SwapQuote
     refuel?: Refuel,
-}
-
-export type Refuel = {
-    network: Network
-    token: Token,
-    amount: number,
-    amount_in_usd: number
 }
 
 export type SwapBasicData = {

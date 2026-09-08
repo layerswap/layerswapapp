@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
-import { NetworkBalance } from '../Models/Balance'
-import { NetworkWithTokens } from '../Models/Network'
+import { NetworkBalance } from '@layerswap/widget-types';
+import { NetworkWithTokens } from '@layerswap/widget-types';
 import { resolverService } from '../lib/resolvers/resolverService'
 
 export function getKey(address: string, network: NetworkWithTokens): string

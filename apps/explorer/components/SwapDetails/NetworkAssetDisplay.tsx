@@ -75,9 +75,9 @@ export default function NetworkAssetDisplay({
                     href={explorerUrl || '#'}
                     onClick={onLinkClick}
                     target="_blank"
-                    className="hover:text-gray-300 inline-flex items-center w-fit"
+                    className="inline-flex w-fit items-center hover:text-secondary-text"
                 >
-                    <span className={`mx-0.5 hover:text-gray-300 ${explorerUrl ? 'underline' : ''}`}>
+                    <span className={`mx-0.5 hover:text-secondary-text ${explorerUrl ? 'underline' : ''}`}>
                         {networkName}
                     </span>
                 </Link>
@@ -85,4 +85,3 @@ export default function NetworkAssetDisplay({
         </div>
     );
 }
-

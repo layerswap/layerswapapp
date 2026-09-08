@@ -2,7 +2,7 @@ import { RefObject } from "react";
 import { RowElement } from "@/Models/Route";
 import { CurrencySelectItemDisplay } from "../Routes";
 import { CollapsibleRow } from "./CollapsibleRow";
-import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
+import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import { SelectItem } from "@/components/Select/Selector/SelectItem";
 import { SwapDirection } from "@/components/Pages/Swap/Form/SwapFormValues";
 import TitleRow from "./TitleRow";

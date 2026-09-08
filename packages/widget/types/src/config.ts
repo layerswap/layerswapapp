@@ -1,4 +1,4 @@
-import type { ThemeData } from './theme';
+import type { ThemeData } from "./theme";
 
 /**
  * Wallet provider ids matching what the remote's `getDefaultProviders()`
@@ -8,15 +8,15 @@ import type { ThemeData } from './theme';
  * Note the id for Solana is `'solana'` (the chain), not `'svm'`.
  */
 export type WalletProviderId =
-  | 'evm'
-  | 'starknet'
-  | 'fuel'
-  | 'paradex'
-  | 'bitcoin'
-  | 'ton'
-  | 'solana'
-  | 'tron'
-  | 'imtblPassport';
+  | "evm"
+  | "starknet"
+  | "fuel"
+  | "paradex"
+  | "bitcoin"
+  | "ton"
+  | "solana"
+  | "tron"
+  | "imtblPassport";
 
 /**
  * Public widget configuration contract.
@@ -25,7 +25,7 @@ export type WalletProviderId =
  * (`@layerswap/widget`) refines it internally — its `LayerswapWidgetConfig`
  * is `WidgetConfig` intersected with precise types for the deep fields
  * (`settings`, `initialValues`) — so the two can never structurally diverge,
- * while integrators and the loaders depend only on this zero-runtime package.
+ * while integrators and the loaders depend only on this lightweight package.
  *
  * Framework-agnostic by construction: `TLoading` is the host's renderable type
  * (`ReactNode` in React hosts — `@layerswap/widget-react` binds it), kept open
@@ -36,7 +36,7 @@ export type WidgetConfig<TLoading = never> = {
   apiKey?: string;
   apiUri?: string;
   /** Network set to target. */
-  version?: 'mainnet' | 'testnet';
+  version?: "mainnet" | "testnet";
   /** Visual theme overrides. */
   theme?: ThemeData | null;
   /**
@@ -94,6 +94,66 @@ export type WidgetCallbacks = {
 };
 
 /**
+ * The single destination the deposit widget funds. Structurally typed — the
+ * precise source of truth is `SupportedDestination` in `@layerswap/widget`
+ * (`components/Pages/Deposit/DestinationTokenPicker.tsx`); the CDN remote
+ * spreads these props into that component, so a divergence fails its
+ * typecheck rather than drifting silently.
+ */
+export type SupportedDestination = {
+  /** Network `name` (canonical identifier like `BASE_MAINNET`). */
+  network: string;
+  /** Token symbols (case-insensitive, e.g. `["USDC", "USDT"]`). The user picks
+   * one of these via the token dropdown; the network is fixed. */
+  tokens: string[];
+};
+
+/**
+ * Deposit funding methods. Mirrors `DEPOSIT_METHODS` in `@layerswap/widget`
+ * (`components/Pages/Deposit/depositMethods.ts`) — kept in lockstep by the CDN
+ * remote's typecheck, same as {@link SupportedDestination}.
+ */
+export type DepositMethodId =
+  | "wallet"
+  | "deposit_address"
+  | "hyperliquid"
+  | "polymarket";
+
+/**
+ * Deposit-widget-specific props — the integrator-facing surface of
+ * `DepositProps` in `@layerswap/widget`. `partner` is deliberately not part of
+ * the public contract (it is a Layerswap-internal model).
+ */
+export type DepositConfig = {
+  /** The single destination network and its allowed tokens. The network is
+   * fixed; the user picks one of the tokens via the token dropdown. */
+  destination: SupportedDestination;
+  /** Recipient address on the destination network. Required — the deposit
+   * widget never asks the end user for this. */
+  destinationAddress: string;
+  /** "inline" (default) renders the widget directly. "button" renders a Deposit
+   * button that opens the widget inside a dialog. */
+  mode?: "inline" | "button";
+  /** Title shown in the widget header. Defaults to "Deposit". */
+  title?: string;
+  /** Label for the trigger button when mode="button". Defaults to "Deposit". */
+  buttonLabel?: string;
+  /** Extra className applied to the trigger button when mode="button". */
+  buttonClassName?: string;
+  /** When true, show the "Send to" destination address row in the quote
+   * summary. Defaults to false. */
+  showDestinationAddress?: boolean;
+  actionButtonText?: string;
+  /** Default amount (in USD) seeded into the wallet flow once the user
+   * picks a source token. Defaults to $1. Set to 0 to disable seeding. */
+  defaultAmountUsd?: number;
+  /** The deposit funding methods to offer, e.g. `['wallet','deposit_address']`.
+   * Acts as an allow-list: only listed methods can appear (a method also still
+   * needs its own runtime condition). Defaults to all available methods. */
+  methods?: DepositMethodId[];
+};
+
+/**
  * Props the CDN remote's widget export accepts — the shared shape forwarded by
  * the vanilla `mountWidget` and the React `LayerswapWidget`.
  *
@@ -138,3 +198,22 @@ export type WidgetProps<
    */
   wagmiConfig?: TWagmi;
 };
+
+/**
+ * Props the CDN remote's DEPOSIT widget export accepts — the shared shape
+ * forwarded by the vanilla `mountDepositWidget` and the React
+ * `LayerswapDepositWidget`: the common widget props plus the deposit-specific
+ * configuration, flattened to mirror `Deposit`'s props in `@layerswap/widget`.
+ *
+ * Same generic scheme as {@link WidgetProps}: framework-agnostic by default,
+ * bound to precise host/remote types by `@layerswap/widget-react` and the CDN
+ * remote respectively.
+ */
+export type DepositWidgetProps<
+  TWagmi = never,
+  TLoading = never,
+  TConfig = WidgetConfig<TLoading>,
+  TWalletDefaults = WalletDefaults,
+  TCallbacks = WidgetCallbacks,
+> = WidgetProps<TWagmi, TLoading, TConfig, TWalletDefaults, TCallbacks> &
+  DepositConfig;

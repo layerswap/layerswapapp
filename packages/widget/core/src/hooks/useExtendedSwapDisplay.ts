@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { Token, NetworkWithTokens } from "@/Models/Network"
+import { Token, NetworkWithTokens } from "@layerswap/widget-types";
 import { useSettingsState } from "@/context/settings"
 import { ExtendedRouteRecord, useExtendedRoutesStore } from "@/stores/extendedRoutesStore"
 import { SwapBasicData, SwapQuote } from "@/lib/apiClients/layerSwapApiClient"

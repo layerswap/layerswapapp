@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { Token } from "@/Models/Network";
+import { Token } from "@layerswap/widget-types";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import { Quote } from "@/lib/apiClients/layerSwapApiClient";
 import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
@@ -33,7 +33,7 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ source_token, destination
                                     <>{parsedReceiveAmount}</>
                                     &nbsp;
                                     <span>
-                                        {destination_token?.symbol}
+                                        {destination_token?.asset}
                                     </span>
                                     {
                                         receiveAmountInUsd !== undefined && Number(receiveAmountInUsd) > 0 &&

@@ -2,7 +2,7 @@ import { InferGetServerSidePropsType } from 'next';
 import React, { useMemo } from 'react';
 import { getThemeData } from '../../helpers/settingsHelper';
 import { SwapWithdrawal, inflateSettings, encodeSettingsForSSR } from '@layerswap/widget';
-import { LayerswapApiClient } from '@layerswap/widget/internal';
+import { AppSettings, LayerswapApiClient } from '@layerswap/widget/internal';
 import Layout from '../../components/layout';
 import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
@@ -54,10 +54,19 @@ export const getServerSideProps = async (ctx) => {
   const app = ctx.query?.appName || ctx.query?.addressSource
   const apiKey = JSON.parse(process.env.API_KEYS || "{ }")?.[app] || process.env.NEXT_PUBLIC_API_KEY
   LayerswapApiClient.apiKey = apiKey
+  LayerswapApiClient.apiBaseEndpoint = process.env.NEXT_PUBLIC_LS_API || AppSettings.LayerswapApiUri
   const apiClient = new LayerswapApiClient()
-  const { data: networkData } = await apiClient.GetLSNetworksAsync()
 
-  const { data: swapData } = await apiClient.GetSwapAsync(params.swapId)
+  const [networkData, swapData] = await Promise.all([
+    apiClient.GetLSNetworksAsync().then(res => res.data).catch(error => {
+      console.error('[swap/[swapId]] Failed to fetch networks', error)
+      return undefined
+    }),
+    apiClient.GetSwapAsync(params.swapId).then(res => res.data).catch(error => {
+      console.error('[swap/[swapId]] Failed to fetch swap', error)
+      return undefined
+    }),
+  ])
 
   if (swapData?.swap.transactions.length == 0) {
     const redirectParams = new URLSearchParams({
@@ -79,12 +88,10 @@ export const getServerSideProps = async (ctx) => {
     }
   }
 
-  if (!networkData) return
-
-  const settings = {
+  const settings = networkData ? {
     networks: networkData,
     featureFlags: await resolveExtendedRouteFlags(ctx.req),
-  }
+  } : null
 
   const themeData = await getThemeData(ctx.query)
 

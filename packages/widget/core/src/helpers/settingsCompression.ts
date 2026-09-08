@@ -1,7 +1,7 @@
 import { Exchange } from "../Models/Exchange";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
-import { NetworkRoute, NetworkRouteToken, NetworkWithTokens } from "../Models/Network";
-import { ExtendedRouteFlags } from "../lib/extendedRoutes/types";
+import { NetworkRoute, NetworkRouteToken, NetworkWithTokens } from "@layerswap/widget-types";
+import { ExtendedRouteFlags } from "@layerswap/widget-types";
 import { gunzipSync, gzipSync, strFromU8, strToU8 } from "fflate";
 
 type CompactRouteToken = {

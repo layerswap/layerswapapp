@@ -1,4 +1,4 @@
-import { ContractAddressCheckerProvider, Network } from "@/types";
+import { ContractAddressCheckerProvider, Network } from "@layerswap/widget-types";
 
 export class ContractAddressResolver {
     private providers: ContractAddressCheckerProvider[];

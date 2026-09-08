@@ -1,8 +1,8 @@
-import { NetworkWithTokens, NetworkRoute } from "./Network";
+import { NetworkWithTokens, NetworkRoute } from "@layerswap/widget-types";
 import { Exchange } from "./Exchange";
 import { LayerSwapSettings } from "./LayerSwapSettings";
 import { mergeExtendedSourceNetworks } from "../lib/extendedRoutes/registry";
-import { ExtendedRouteFlags } from "../lib/extendedRoutes/types";
+import { ExtendedRouteFlags } from "@layerswap/widget-types";
 
 export class LayerSwapAppSettings {
     constructor(settings: LayerSwapSettings) {

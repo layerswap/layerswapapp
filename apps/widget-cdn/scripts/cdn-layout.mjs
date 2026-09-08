@@ -22,3 +22,16 @@ export function deploymentKey(buildId, relativePath) {
         ? `${ASSET_DIRECTORY}/${relativePath}`
         : `${buildId}/${relativePath}`;
 }
+
+/**
+ * A signed production manifest is published twice on Azure:
+ *   - /<buildId>/manifest.json (immutable)
+ *   - /<channel>/manifest.json (rolling pointer)
+ *
+ * This relative URL resolves to the same immutable remote from either
+ * location, so promotion can atomically copy the already-signed manifest
+ * bytes without an edge redirect or a second signature.
+ */
+export function remoteEntryForBuild(buildId) {
+    return `../${buildId}/remoteEntry.js`;
+}

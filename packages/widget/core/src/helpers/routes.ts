@@ -1,7 +1,7 @@
 import { SwapDirection, SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues"
 import AppSettings from "@/lib/AppSettings"
 import { resolveExtendedRoutePlan } from "@/lib/extendedRoutes/registry"
-import { NetworkRoute } from "@/Models"
+import { NetworkRoute } from "@layerswap/widget-types"
 
 export const resolveExchangesURLForSelectedToken = (values: SwapFormValues, sourceRoutes?: NetworkRoute[]) => {
 

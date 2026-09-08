@@ -1,7 +1,6 @@
 packages:
   - packages/**
   - apps/*
-  - examples/widget-react-host
 
 catalog:
   '@tanstack/react-query': 5.90.11
@@ -16,6 +15,7 @@ catalog:
   axios: 1.18.1
   react: 19.2.3
   react-dom: 19.2.3
+  rimraf: ^5.0.0
   swr: ^2.2.5
   typescript: ^7.0.2
   viem: ^2.21.16

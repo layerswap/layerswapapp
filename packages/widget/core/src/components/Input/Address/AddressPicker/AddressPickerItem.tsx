@@ -1,7 +1,7 @@
 import { FC } from "react";
 import clsx from "clsx";
 import { AddressItem } from ".";
-import { NetworkRoute } from "@/Models/Network";
+import { NetworkRoute } from "@layerswap/widget-types";
 import { Partner } from "@/Models/Partner";
 import AddressWithIcon from "./AddressWithIcon";
 import FilledCheck from "@/components/Icons/FilledCheck";

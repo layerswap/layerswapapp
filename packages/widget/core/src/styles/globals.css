@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @config '../../tailwind.config.js';
+@source "../../../../ui-kit/src/components";
 
 /*
   The default border color has changed to `currentColor` in Tailwind CSS v4,

@@ -1,4 +1,4 @@
-import { BalanceError, GasFeeError, WalletWithdrawalError, WidgetError } from "@layerswap/widget/types"
+import type { BalanceError, GasFeeError, WalletWithdrawalError, WidgetError } from "@layerswap/widget-types"
 
 export const logError = (e: WidgetError | BalanceError | GasFeeError | WalletWithdrawalError) => {
     console.log("got error message", e.message)

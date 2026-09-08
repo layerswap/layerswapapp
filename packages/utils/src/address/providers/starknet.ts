@@ -1,6 +1,7 @@
+import { NetworkType, type Network } from '@layerswap/widget-types';
 import BN from 'bn.js';
 import KnownInternalNames from "@/knownIds";
-import { Network, NetworkType, AddressSelectionMode, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
+import { AddressSelectionMode, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
 
 export const name = 'Starknet';
 

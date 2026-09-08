@@ -10,9 +10,8 @@ import { useDepositSelection } from "../depositSelectionContext";
 import { Address } from "@/lib/address/Address";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import DestinationTokenPicker from "../DestinationTokenPicker";
-import WalletIcon from "@/components/Icons/WalletIcon";
+import { ImageWithFallback, WalletIcon } from "@layerswap/ui-kit/components";
 import { ResolveConnectorIcon } from "@/components/Icons/ConnectorIcons";
-import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { useExtendedDepositOption } from "./useExtendedDepositOption";
 
 type MethodCardProps = {
@@ -181,7 +180,7 @@ const MethodPicker: FC = () => {
                     if (!(option.present && canShow(id))) return null;
                     const name = option.network?.display_name ?? "";
                     const balanceLabel = (option.compatibleWalletBalance != null && option.compatibleWalletBalance > 0) && option.token
-                        ? `Balance: ${truncateDecimals(option.compatibleWalletBalance, option.token.precision)} ${option.token.symbol}`
+                        ? `Balance: ${truncateDecimals(option.compatibleWalletBalance, option.token.precision)} ${option.token.asset}`
                         : undefined;
                     return (
                         <MethodCard

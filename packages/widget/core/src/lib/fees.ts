@@ -1,4 +1,5 @@
-import { Refuel, SwapQuote } from "./apiClients/layerSwapApiClient";
+import { type Refuel } from '@layerswap/widget-types';
+import { SwapQuote } from "./apiClients/layerSwapApiClient";
 
 export function CalculateMinimalAuthorizeAmount(usd_price: number, amount: number) {
     return Math.ceil((usd_price * amount) + (usd_price * amount * 0.02))

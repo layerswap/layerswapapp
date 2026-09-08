@@ -1,5 +1,5 @@
 import { THEME_COLORS } from "@layerswap/widget";
-import { ImtblPassportIcon, LayerSwapLogoSmall } from "@layerswap/widget/internal";
+import { KnownWalletIcon, LayerSwapLogoSmall } from "@layerswap/widget/internal";
 import { Link2Off } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useMemo } from "react";
@@ -77,7 +77,7 @@ const ImtblRedirectPage = () => {
                         : <div className="loader text-[3px]!" />
                     }
                     <div className="p-3 bg-secondary-700 rounded-lg">
-                        <ImtblPassportIcon className="w-11 h-11" />
+                        <KnownWalletIcon id="com.immutable.passport" className="w-11 h-11" />
                     </div>
                 </div>
                 <div className="text-center max-w-xs">

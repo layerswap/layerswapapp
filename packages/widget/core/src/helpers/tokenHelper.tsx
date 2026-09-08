@@ -1,5 +1,5 @@
 import { QuoteTokenPrices } from "@/hooks/useFee"
-import { Token } from "@/Models/Network"
+import { Token } from "@layerswap/widget-types";
 
 export const resolveTokenUsdPrice = (token: Token | undefined, quote: QuoteTokenPrices | undefined) => {
     if (quote?.source_token?.symbol && quote?.source_token?.symbol === token?.symbol) {

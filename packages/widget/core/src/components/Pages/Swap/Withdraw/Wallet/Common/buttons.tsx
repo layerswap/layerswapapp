@@ -1,5 +1,6 @@
+import { type Wallet } from '@layerswap/widget-types';
 import { ComponentProps, FC, useCallback, useMemo, useState } from "react";
-import WalletIcon from "@/components/Icons/WalletIcon";
+import { WalletIcon } from "@layerswap/ui-kit/components";
 import { ActionData } from "./sharedTypes";
 import SubmitButton, { SubmitButtonProps } from "@/components/Buttons/submitButton";
 import useWallet from "@/hooks/useWallet";
@@ -10,17 +11,18 @@ import ErrorDismissButton from "@/components/Pages/Swap/Form/SecondaryComponents
 import FailIcon from "@/components/Icons/FailIcon";
 import WalletMessage from "../../messages/Message";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
-import { Network, NetworkRoute } from "@/Models/Network";
+import { Network, NetworkRoute } from "@layerswap/widget-types";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
 import LayerSwapApiClient, { SwapBasicData, SwapDetails } from "@/lib/apiClients/layerSwapApiClient";
-import sleep from "@/lib/wallets/utils/sleep";
+import { sleep } from "@layerswap/utils";
 import { isDiffByPercent } from "@/components/utils/numbers";
 import { useWalletWithdrawalState } from "@/context/withdrawalContext";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import { SwapFormValues } from "../../../Form/SwapFormValues";
 import { ErrorHandler } from "@/lib/ErrorHandler";
+import { TokenBalance, TransferProps } from "@layerswap/widget-types";
 import { resolvePriceImpactValues } from "@/lib/fees";
 import InfoIcon from "@/components/Icons/InfoIcon";
 import { useBalance } from "@/lib/balances/useBalance";
@@ -87,10 +89,14 @@ export const ChangeNetworkMessage: FC<{ data: ActionData, network: string }> = (
         />
     }
     else if (data.isError) {
+        const error = data.error as (Error & { shortMessage?: string, cause?: { shortMessage?: string } }) | null
+        const reason = error?.cause?.shortMessage ?? error?.shortMessage
         return <WalletMessage
             status="error"
             header='Network switch failed'
-            details={`Please try again or switch your wallet network manually to ${network}`}
+            details={reason
+                ? `${reason} Please try again or switch your wallet network manually to ${network}.`
+                : `Please try again or switch your wallet network manually to ${network}`}
         />
     }
 }
@@ -183,7 +189,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     refuel,
     ...props
 }) => {
-    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, refuel: refuelData, setSwapError } = useSwapDataState()
+    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, refuel: refuelData, swapError, setSwapError } = useSwapDataState()
     const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
     const gaslessFailureStage = useGaslessPreferenceStore(s => s.gaslessFailureStage)
     const switchToStandardTransfer = useGaslessPreferenceStore(s => s.switchToStandardTransfer)
@@ -368,7 +374,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     <span className="shrink-0"><InfoIcon className="w-5 h-5 text-warning-foreground" /></span>
                     <div className="flex flex-col gap-1.5 pr-4">
                         <p className="text-white font-semibold leading-4 text-base mt-0.5">Critical receiving amount</p>
-                        <p className="text-priamry-text text-base font-normal leading-4.5"><span>By continuing, you agree to receive as low as </span><span className="text-warning-foreground text-nowrap">{quote.min_receive_amount} {quote.destination_token?.symbol} ($ {priceImpactValues.minReceiveAmountUSD})</span></p>
+                        <p className="text-priamry-text text-base font-normal leading-4.5"><span>By continuing, you agree to receive as low as </span><span className="text-warning-foreground text-nowrap">{quote.min_receive_amount} {quote.destination_token?.asset} ($ {priceImpactValues.minReceiveAmountUSD})</span></p>
                     </div>
                 </div>
             </div>}
@@ -401,7 +407,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     <span className="shrink-0"><InfoIcon className="w-5 h-5 text-warning-foreground" /></span>
                     <div className="flex flex-col gap-1.5 pr-4">
                         <p className="text-primary-text font-medium leading-4 text-base mt-0.5">Critical receiving amount</p>
-                        <p className="text-secondary-text text-sm leading-4.5"><span>The “receive at least” amount is affected by high price impact. You will receive at least </span><span>{quote.min_receive_amount} {quote.destination_token?.symbol} ($ {priceImpactValues.minReceiveAmountUSD}) </span></p>
+                        <p className="text-secondary-text text-sm leading-4.5"><span>The “receive at least” amount is affected by high price impact. You will receive at least </span><span>{quote.min_receive_amount} {quote.destination_token?.asset} ($ {priceImpactValues.minReceiveAmountUSD}) </span></p>
                     </div>
                 </div>
             </div>}
@@ -434,7 +440,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     onClick={handleClick}
                     isDisabled={quoteIsLoading || !!quoteError}
                 >
-                    {error ? 'Try again' : actionButtonText || 'Swap now'}
+                    {(error || swapError) ? 'Try again' : actionButtonText || 'Swap now'}
                 </ButtonWrapper>
             )}
         </>

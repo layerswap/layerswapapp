@@ -1,9 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import { ArrowRight } from "lucide-react";
-import BackBtn from "@/helpers/BackButton";
-import Refund from "../RefundComp";
 import TransactionCard, { RefuelCard } from "./TransactionCard";
 import SwapStatusHeader from "./SwapStatusHeader";
 import { SwapStatus } from "@/models/SwapStatus";
@@ -19,6 +16,7 @@ interface SwapDetailViewProps {
         token?: {
             logo?: string;
             symbol?: string;
+            asset?: string;
             precision?: number;
         };
     };
@@ -37,8 +35,6 @@ export default function SwapDetailView({
     refuelTransaction,
     refundedTransaction,
 }: SwapDetailViewProps) {
-    const pathname = usePathname();
-
     const {
         source_network,
         source_token,
@@ -56,17 +52,13 @@ export default function SwapDetailView({
     const isFailed = status === SwapStatus.Failed || status === SwapStatus.Refunded;
     const hasRefuel = swap.transactions?.some(t => t?.type === TransactionType.Refuel);
 
+    const refundToken = !outputTransaction ? refundedTransaction?.token : undefined;
+    const refundNetwork = !outputTransaction ? refundedTransaction?.network : undefined;
+
     return (
         <div className="w-full">
-            <div className="sm:rounded-lg w-full">
-                <div className="py-2 lg:py-10 pt-4 sm:px-6 lg:px-8">
-                    {/* Back Button */}
-                    {pathname !== '/' && (
-                        <div className="hidden xl:block w-fit mb-1 hover:bg-secondary-600 hover:text-accent-foreground rounded ring-offset-background transition-colors -ml-5">
-                            <BackBtn />
-                        </div>
-                    )}
-
+            <div className="w-full">
+                <div className="pb-2 pt-3 sm:px-6 lg:px-8 lg:pb-10">
                     {/* Status Header */}
                     <div className="md:ml-0 md:mb-2 flex-col sm:flex-row sm:justify-between sm:items-start">
                         <div className="text-sm md:text-base sm:flex justify-between w-full">
@@ -78,7 +70,7 @@ export default function SwapDetailView({
                                         outputTransaction={outputTransaction}
                                         createdDate={created_date}
                                         totalFee={quote?.total_fee}
-                                        sourceTokenSymbol={source_token?.symbol}
+                                        sourceTokenSymbol={source_token?.asset}
                                         sourceTokenPrecision={source_token?.precision}
                                     />
                                 </div>
@@ -86,18 +78,15 @@ export default function SwapDetailView({
                         </div>
                     </div>
                     <>
-                        {/* Refund Info */}
-                        {refundedTransaction && <Refund refund={refundedTransaction} />}
-
                         {/* Transaction Cards */}
-                        <div className="flex flex-col lg:flex-row items-start rounded-md text-primary-text gap-4">
+                        <div className="flex flex-col items-start gap-2 text-primary-text lg:flex-row">
                             {/* Source Transaction Card */}
                             <TransactionCard
                                 title="From"
                                 transaction={inputTransaction}
                                 amount={inputTransaction.amount}
                                 tokenLogo={source_token?.logo}
-                                tokenSymbol={source_token?.symbol}
+                                tokenSymbol={source_token?.asset}
                                 networkLogo={source_network?.logo}
                                 networkName={source_exchange ? source_network?.display_name : undefined}
                                 exchangeLogo={source_exchange?.logo}
@@ -115,32 +104,32 @@ export default function SwapDetailView({
 
                             {/* Destination Transaction Card */}
                             <TransactionCard
-                                    title="To"
-                                    titleClassName={isFailed ? 'text-[#FF6161]' : ''}
-                                    transaction={outputTransaction}
-                                    refundedTransaction={refundedTransaction}
-                                    amount={(outputTransaction || refundedTransaction)?.amount}
-                                    tokenLogo={destination_token?.logo}
-                                    tokenSymbol={destination_token?.symbol}
-                                    networkLogo={destination_network?.logo}
-                                    networkName={destination_exchange ? destination_network?.display_name : undefined}
-                                    exchangeLogo={destination_exchange?.logo}
-                                    exchangeName={destination_exchange?.display_name || destination_network?.display_name}
-                                    accountExplorerUrl={destination_network?.account_explorer_template?.replace('{0}', (outputTransaction || refundedTransaction)?.to || '')}
-                                    txExplorerUrl={destination_network?.transaction_explorer_template?.replace('{0}', outputTransaction?.transaction_hash || '')}
-                                    isPending={isPending}
-                                    isRefunded={!!refundedTransaction}
-                                >
-                                    {/* Refuel Section */}
-                                    {hasRefuel && (
-                                        <RefuelCard
-                                            refuelTransaction={refuelTransaction}
-                                            refuelAmount={refuel?.amount}
-                                            refuelTokenLogo={refuel?.token?.logo}
-                                            refuelTokenSymbol={refuel?.token?.symbol}
-                                            refuelTokenPrecision={refuel?.token?.precision}
-                                        />
-                                    )}
+                                title="To"
+                                titleClassName={isFailed ? 'text-error-foreground' : ''}
+                                transaction={outputTransaction}
+                                refundedTransaction={refundedTransaction}
+                                amount={(outputTransaction || refundedTransaction)?.amount}
+                                tokenLogo={(refundToken || destination_token)?.logo}
+                                tokenSymbol={(refundToken || destination_token)?.asset}
+                                networkLogo={(refundNetwork || destination_network)?.logo}
+                                networkName={destination_exchange ? destination_network?.display_name : undefined}
+                                exchangeLogo={destination_exchange?.logo}
+                                exchangeName={destination_exchange?.display_name || (refundNetwork || destination_network)?.display_name}
+                                accountExplorerUrl={(refundNetwork || destination_network)?.account_explorer_template?.replace('{0}', (outputTransaction || refundedTransaction)?.to || '')}
+                                txExplorerUrl={(refundNetwork || destination_network)?.transaction_explorer_template?.replace('{0}', (outputTransaction || refundedTransaction)?.transaction_hash || '')}
+                                isPending={isPending}
+                                isRefunded={!!refundedTransaction}
+                            >
+                                {/* Refuel Section */}
+                                {hasRefuel && (
+                                    <RefuelCard
+                                        refuelTransaction={refuelTransaction}
+                                        refuelAmount={refuel?.amount}
+                                        refuelTokenLogo={refuel?.token?.logo}
+                                        refuelTokenSymbol={refuel?.token?.asset}
+                                        refuelTokenPrecision={refuel?.token?.precision}
+                                    />
+                                )}
                             </TransactionCard>
                         </div>
                     </>
@@ -150,4 +139,3 @@ export default function SwapDetailView({
         </div>
     );
 }
-

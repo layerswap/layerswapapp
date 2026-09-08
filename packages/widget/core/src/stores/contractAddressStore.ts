@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { Network } from '@/Models/Network';
+import { Network } from '@layerswap/widget-types';
 import { resolverService } from '@/lib/resolvers/resolverService';
 
 interface ContractStatus {

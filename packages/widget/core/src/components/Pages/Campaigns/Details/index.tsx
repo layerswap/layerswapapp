@@ -5,7 +5,7 @@ import LayerSwapApiClient, { Campaign } from "@/lib/apiClients/layerSwapApiClien
 import useSWR from "swr"
 import { ApiResponse } from "@/Models/ApiResponse"
 import SubmitButton from "@/components/Buttons/submitButton";
-import WalletIcon from "@/components/Icons/WalletIcon";
+import { ImageWithFallback, WalletIcon } from "@layerswap/ui-kit/components";
 import LinkWrapper from "@/components/Common/LinkWrapper";
 import { Widget } from "@/components/Widget/Index";
 import Leaderboard from "./Leaderboard"
@@ -13,7 +13,6 @@ import Rewards from "./Rewards";
 import SpinIcon from "@/components/Icons/spinIcon"
 import useWallet from "@/hooks/useWallet"
 import { useConnectModal } from "@/components/Wallet/WalletModal"
-import { ImageWithFallback } from "@/components/Common/ImageWithFallback"
 
 export const CampaignDetailsComponent: FC<{ campaignName: string | undefined }> = ({ campaignName }) => {
 
@@ -91,7 +90,7 @@ const BriefInformation: FC<BriefInformationProps> = ({ campaign }) =>
             :
             <>
                 <span>You can earn $</span>
-                <span>{campaign?.token.symbol}</span>
+                <span>{campaign?.token.asset}</span>
                 <span>&nbsp;tokens by transferring assets to&nbsp;</span>
                 <span>{campaign.network.display_name}.</span>
                 <span> For each transaction, you&#39;ll receive&nbsp;</span>

@@ -72,7 +72,7 @@ test('rejects malformed release versions', (t) => {
     }
 });
 
-test('accepts semver prerelease and build metadata', (t) => {
+test('core semver does not select the compatibility channel', (t) => {
     const root = fixtureRoot(t);
     const identity = withEnv({
         LAYERSWAP_RELEASE_VERSION: '2.0.0-beta.1+build.2',
@@ -80,6 +80,6 @@ test('accepts semver prerelease and build metadata', (t) => {
         LAYERSWAP_GIT_SHA: 'abcdef0123456789',
     }, () => resolveBuildIdentity(root));
 
-    assert.equal(identity.channel, 'v2');
+    assert.equal(identity.channel, 'v1');
     assert.equal(identity.buildId, '2.0.0-beta.1+build.2-abcdef012345');
 });

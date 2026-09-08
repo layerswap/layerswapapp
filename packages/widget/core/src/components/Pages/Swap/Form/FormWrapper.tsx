@@ -268,9 +268,9 @@ const handleCreateSwap = async ({ query, values, partner, setShowSwapModal, crea
             setShowConnectNetworkModal(true);
         } else if (data?.code === LSAPIKnownErrorCode.NETWORK_CURRENCY_DAILY_LIMIT_REACHED) {
             if (data.metadata.AvailableTransactionAmount) {
-                throw new Error(`Daily limit of ${values.fromAsset?.symbol} transfers from ${values.from?.display_name} is reached. Please try sending up to ${data.metadata.AvailableTransactionAmount} ${values.fromAsset?.symbol}.`)
+                throw new Error(`Daily limit of ${values.fromAsset?.asset} transfers from ${values.from?.display_name} is reached. Please try sending up to ${data.metadata.AvailableTransactionAmount} ${values.fromAsset?.asset}.`)
             } else {
-                throw new Error(`Daily limit of ${values.fromAsset?.symbol} transfers from ${values.from?.display_name} is reached.`)
+                throw new Error(`Daily limit of ${values.fromAsset?.asset} transfers from ${values.from?.display_name} is reached.`)
             }
         } else if (data?.code === "QUOTE_REQUIRES_NO_DEPOSIT_ADDRESS") {
             throw new Error("This route isn't available with a deposit address. Try a different source or destination.")

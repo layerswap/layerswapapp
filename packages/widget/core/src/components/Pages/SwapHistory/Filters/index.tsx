@@ -1,10 +1,10 @@
+import { type Wallet } from '@layerswap/widget-types';
 import { FC } from 'react'
 import WalletsDropdown from './WalletsDropdown'
 import NetworksDropdown from './NetworksDropdown'
 import ClearAllButton from './ClearAllButton'
 import { FilterNetworkOption } from './types'
-import { SearchComponent } from '@/components/Input/Search'
-import { Wallet } from '@/types/wallet'
+import { SearchComponent } from "@layerswap/ui-kit/components";
 import { HistoryWalletAddress } from '@/lib/historyWalletAddresses'
 
 type FiltersProps = {

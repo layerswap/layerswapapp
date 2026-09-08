@@ -1,9 +1,9 @@
 import { FC, useMemo } from "react";
 import { Copy, Check } from "lucide-react";
-import StyledQRCode from "@/components/Common/StyledQRCode";
+import { StyledQRCode } from "@layerswap/ui-kit/components";
+import { useCopyClipboard } from "@layerswap/ui-kit";
 import { AnimatePresence, motion } from "framer-motion";
-import useCopyClipboard from "@/hooks/useCopyClipboard";
-import { Network, Token } from "@/Models/Network";
+import { Network, Token } from "@layerswap/widget-types";
 import DepositQuoteDetails from "./DepositQuoteDetails";
 
 type DepositAddressInfoProps = {

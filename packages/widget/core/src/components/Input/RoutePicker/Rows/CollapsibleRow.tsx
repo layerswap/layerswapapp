@@ -13,7 +13,7 @@ import {
   GroupedTokenElement,
 } from "@/Models/Route";
 import { CurrencySelectItemDisplay } from "../Routes";
-import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
+import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import { CollapsableHeader } from "./CollapsableHeader";
 import { StickyHeader } from "./StickyHeader";
 import { SwapDirection } from "@/components/Pages/Swap/Form/SwapFormValues";

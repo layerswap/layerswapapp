@@ -1,13 +1,13 @@
+import { type Wallet } from '@layerswap/widget-types';
 import { useMemo } from "react";
 import useFormRoutes from "@/hooks/useFormRoutes";
 import useWallet from "@/hooks/useWallet";
 import { useQuoteData } from "@/hooks/useFee";
 import { getExtendedProviderForNetwork, getSourceProviders, resolveExtendedRoutePlan } from "@/lib/extendedRoutes/registry";
-import { depositMethodForFunding } from "@/lib/extendedRoutes/types";
+import { depositMethodForFunding } from "@layerswap/widget-types";
 import { getKey, useBalanceStore } from "@/stores/balanceStore";
-import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
+import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
-import { Wallet } from "@/types/wallet";
 import { useDepositSelection } from "../depositSelectionContext";
 import { useDepositSettings } from "@/context/depositSettings";
 import { DepositMethodId } from "../depositMethods";

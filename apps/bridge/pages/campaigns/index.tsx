@@ -17,16 +17,18 @@ export default function CampaignsPage({ settings, themeData, apiKey }: InferGetS
     
     return (<>
         <Layout themeData={themeData}>
-            <WidgetWrapper
-                settings={resolvedSettings}
-                themeData={themeData}
-                apiKey={apiKey}
-            >
-                <Campaigns
-                    goBack={router.back}
-                    onCampaignSelect={(campaign) => router.push({ pathname: `/campaigns/${campaign.name}`, query: { ...resolvePersistantQueryParams(router.query) } })}
-                />
-            </WidgetWrapper>
+            <div className='h-full w-full sm:max-w-[472px] mx-auto'>
+                <WidgetWrapper
+                    settings={resolvedSettings}
+                    themeData={themeData}
+                    apiKey={apiKey}
+                >
+                    <Campaigns
+                        goBack={router.back}
+                        onCampaignSelect={(campaign) => router.push({ pathname: `/campaigns/${campaign.name}`, query: { ...resolvePersistantQueryParams(router.query) } })}
+                    />
+                </WidgetWrapper>
+            </div>
         </Layout>
     </>)
 }

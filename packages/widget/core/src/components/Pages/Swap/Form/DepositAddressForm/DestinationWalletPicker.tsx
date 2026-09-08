@@ -1,18 +1,18 @@
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 import { useFormikContext } from "formik";
 import { ChevronDown, Plus, Wallet } from "lucide-react";
-import { Network, NetworkRoute, NetworkRouteToken, Token } from "@/Models/Network";
+import { Network, NetworkRoute, NetworkRouteToken, Token } from "@layerswap/widget-types";
 import useWallet from "@/hooks/useWallet";
-import useProvidersConnectReady from "@/hooks/useProvidersConnectReady";
+import { useProvidersConnectReady } from "@layerswap/wallet-core";
 import { useSelectedAccount, useSelectSwapAccount } from "@/context/swapAccounts";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { SwapFormValues } from "../SwapFormValues";
-import { SelectAccountProps } from "@/types/wallet";
+import { SelectAccountProps } from "@layerswap/wallet-core/types"
 import AddressIcon from "@/components/Common/AddressIcon";
 import { Address as AddressClass } from "@/lib/address/Address";
 import VaulDrawer from "@/components/Modal/vaulModal";
 import { WalletItem } from "@/components/Wallet/WalletComponents/WalletsList";
-import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
+import { ImageWithFallback } from "@layerswap/ui-kit/components";
 import { useAddressName } from "@/stores/addressBookStore";
 
 type DestinationWalletPickerProps = {

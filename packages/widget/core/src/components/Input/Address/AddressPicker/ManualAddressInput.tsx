@@ -1,11 +1,10 @@
+import { NetworkType, type Wallet } from '@layerswap/widget-types';
 import { ChangeEvent, FC, useCallback, useState } from "react";
 import { Pencil } from "lucide-react";
 import { Partner } from "@/Models/Partner";
-import { NetworkType } from "@/Models/Network";
-import FilledX from "@/components/Icons/FilledX";
+import { FilledX } from "@layerswap/ui-kit/components";
 import { AddressGroup, AddressItem } from ".";
 import { Address } from "@/lib/address/Address";
-import { Wallet } from "@/types/wallet";
 import { FormikHelpers } from "formik";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { useAddressName } from "@/stores/addressBookStore";

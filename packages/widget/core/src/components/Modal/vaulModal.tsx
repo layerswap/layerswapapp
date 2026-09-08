@@ -281,6 +281,8 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
     );
 }
 
+const WALLET_MODAL_FOOTER_ID = 'walletModalFooter';
+
 const VaulFooter: FC<{ snapElement: SnapElement | null; mode?: 'snapPoints' | 'fitHeight' }> = ({ snapElement, mode = 'snapPoints' }) => {
     let [ref, { height }] = useMeasure();
     const { setFooterHeight } = useSnapPoints()
@@ -291,7 +293,7 @@ const VaulFooter: FC<{ snapElement: SnapElement | null; mode?: 'snapPoints' | 'f
 
     return <div
         ref={ref}
-        id='walletModalFooter'
+        id={WALLET_MODAL_FOOTER_ID}
         style={{
             top: mode === 'snapPoints' && snapElement?.height !== 1 ? `${Number(snapElement?.height?.toString().replace('px', '')) - 50}px` : undefined,
             bottom: mode === 'snapPoints' && snapElement?.height === 1 ? '12px' : undefined
@@ -345,20 +347,24 @@ type Props = {
 }
 
 export const ModalFooterPortal: FC<Props> = ({ children, isWalletModalOpen }) => {
-    const ref = useRef<Element | null>(null);
-    const [mounted, setMounted] = useState(false)
+    const [target, setTarget] = useState<HTMLElement | null>(null);
 
     useEffect(() => {
-        let element = isWalletModalOpen && document.getElementById('walletModalFooter');
-
-        if (element) {
-            ref.current = element
-            setMounted(true)
+        if (!isWalletModalOpen) {
+            setTarget(null);
+            return;
         }
 
+        const sync = () => setTarget(document.querySelector<HTMLElement>(`.layerswap-styles #${WALLET_MODAL_FOOTER_ID}`));
+        sync();
+
+        const observer = new MutationObserver(sync);
+        observer.observe(document.body, { childList: true, subtree: true });
+
+        return () => observer.disconnect();
     }, [isWalletModalOpen]);
 
-    return ref.current && mounted ? createPortal(children, ref.current) : null;
+    return target ? createPortal(children, target) : null;
 };
 
 export default VaulDrawer;

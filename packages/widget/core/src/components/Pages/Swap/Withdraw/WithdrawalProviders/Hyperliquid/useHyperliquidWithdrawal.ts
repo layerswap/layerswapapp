@@ -1,3 +1,4 @@
+import { ActionMessageType } from '@layerswap/widget-types';
 import { useCallback, useEffect, useRef, useState } from "react";
 import { WithdrawPageProps } from "../../Wallet/Common/sharedTypes";
 import { StepError } from "./resolveError";
@@ -7,8 +8,8 @@ import { useSelectedAccount } from "@/context/swapAccounts";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
 import useWallet from "@/hooks/useWallet";
 import { useTransfer } from "@/hooks/useTransfer";
-import { ActionMessageType, TransferProgress } from "@/types";
-import { NetworkRoute } from "@/Models/Network";
+import { TransferProgress } from "@layerswap/widget-types";
+import { NetworkRoute } from "@layerswap/widget-types";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { BackendTransactionStatus, DepositAction } from "@/lib/apiClients/layerSwapApiClient";
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
@@ -128,7 +129,7 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
             const amount = swapBasicData.requested_amount.toString().trim()
             const decimals = source_token.decimals ?? 6
             const amountPattern = decimals > 0 ? new RegExp(`^\\d+(\\.\\d{1,${decimals}})?$`) : /^\d+$/
-            if (!amountPattern.test(amount)) throw new Error(`Invalid amount — at most ${decimals} decimal places for ${source_token.symbol}`)
+            if (!amountPattern.test(amount)) throw new Error(`Invalid amount — at most ${decimals} decimal places for ${source_token.asset}`)
             const A = Number(amount)
             if (!Number.isFinite(A) || A <= 0) throw new Error('Invalid amount')
 

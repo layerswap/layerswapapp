@@ -1,5 +1,5 @@
+import { SwapStatus } from '@layerswap/widget-types';
 import { FC, useEffect, useState } from "react";
-import { SwapStatus } from "../../Models/SwapStatus";
 import { SwapDetails, TransactionType } from "../../lib/apiClients/layerSwapApiClient";
 import { formatHmsClock, msToParts } from "@/components/utils/formatTime";
 
