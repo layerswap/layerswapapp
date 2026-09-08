@@ -7,6 +7,14 @@ import resolveChain from "../evmUtils/resolveChain";
 import NetworkSettings from "../NetworkSettings";
 import { ErrorHandler } from "@layerswap/widget-types";
 import { resolveFallbackTransport } from "../evmUtils/resolveTransports";
+import { calculateGasFeeAmounts, resolveAccountBalanceReserve } from "./evmGasMath";
+import { resolveEVMGasPolicy } from "./evmGasPolicies";
+
+type ResolvedGas = {
+    gas: number
+    maxFee?: number
+    balanceReserve?: number
+}
 
 export class EVMGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {
@@ -45,10 +53,10 @@ export class EVMGasProvider implements GasProvider {
                 }
             )
 
-            const gas = await gasProvider.resolveGas()
+            const resolvedGas = await gasProvider.resolveGas()
 
-            if (gas) {
-                return { gas, token: network.token }
+            if (resolvedGas) {
+                return { ...resolvedGas, token: network.token }
             }
         }
         catch (e) {
@@ -107,7 +115,7 @@ abstract class getEVMGas {
         this.nativeToken = nativeToken
     }
 
-    abstract resolveGas(): Promise<number | undefined>
+    abstract resolveGas(): Promise<ResolvedGas | undefined>
 
     protected async resolveFeeData() {
 
@@ -228,23 +236,38 @@ abstract class getEVMGas {
 
 class getEthereumGas extends getEVMGas {
     resolveGas = async () => {
-        const [feeData, estimatedGasLimit] = await Promise.all([
+        const policy = resolveEVMGasPolicy(this.chainId)
+        const [feeData, estimatedGasLimit, accountCode] = await Promise.all([
             this.resolveFeeData(),
             this.contract_address
                 ? this.estimateERC20GasLimit()
-                : this.estimateNativeGasLimit()
+                : this.estimateNativeGasLimit(),
+            policy.accountBalanceReserve
+                ? this.publicClient.getCode({ address: this.account })
+                : Promise.resolve(undefined),
         ])
 
-        const multiplier = feeData.maxFeePerGas || feeData.gasPrice
+        const feeAmounts = calculateGasFeeAmounts({
+            policy,
+            estimatedGas: estimatedGasLimit,
+            gasPrice: feeData.gasPrice,
+            maxFeePerGas: feeData.maxFeePerGas,
+        })
 
-        if (!multiplier)
+        if (!feeAmounts)
             return undefined
 
-        const totalGas = multiplier * estimatedGasLimit
-
         const decimals = NetworkSettings.KnownSettings[this.from.name]?.FeeParsingDecimalPlaces || this.nativeToken?.decimals
-        const formattedGas = Number(formatUnits(BigInt(totalGas), decimals))
-        return formattedGas
+        const gas = Number(formatUnits(feeAmounts.estimatedFee, decimals))
+        const maxFee = Number(formatUnits(feeAmounts.maximumFee, decimals))
+        const accountBalanceReserve = resolveAccountBalanceReserve({ policy, accountCode })
+        const balanceReserve = Number(formatUnits(accountBalanceReserve, decimals))
+
+        return {
+            gas,
+            ...(policy.reserveMaximumFee ? { maxFee } : {}),
+            ...(balanceReserve > 0 ? { balanceReserve } : {}),
+        }
     }
 
 }
@@ -276,7 +299,7 @@ export default class getOptimismGas extends getEVMGas {
         let totalGas = (multiplier * estimatedGasLimit) + l1OpFee
 
         const formattedGas = Number(formatUnits(BigInt(totalGas), this.nativeToken?.decimals))
-        return formattedGas
+        return { gas: formattedGas }
     }
 
     private GetOpL1Fee = async (gasPrice: bigint): Promise<bigint> => {

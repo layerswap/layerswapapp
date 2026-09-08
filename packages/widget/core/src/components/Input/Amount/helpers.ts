@@ -5,25 +5,24 @@ import { Token } from "@layerswap/widget-types";
 type ResoleMaxAllowedAmountProps = {
     limitsMaxAmount: number | undefined
     walletBalance: TokenBalance | undefined
-    gasAmount: number
+    gasBalanceBudget: number
     fromCurrency: Token
     native_currency: Token | undefined
     depositMethod: 'wallet' | 'deposit_address' | undefined
-    fallbackAmount: number
 }
 
 export const resolveMaxAllowedAmount = (props: ResoleMaxAllowedAmountProps) => {
-    const { limitsMaxAmount, walletBalance, gasAmount, fromCurrency, native_currency, depositMethod, fallbackAmount } = props
+    const { limitsMaxAmount, walletBalance, gasBalanceBudget, fromCurrency, native_currency, depositMethod } = props
 
     if (!walletBalance || isNaN(Number(walletBalance.amount)) || depositMethod !== 'wallet')
         return limitsMaxAmount
 
     const shouldPayGasWithTheToken = Number(walletBalance.amount) > 0 && (native_currency?.symbol === fromCurrency?.symbol) || !native_currency
-    const payableAmount = Number(walletBalance.amount) - (gasAmount * 1.02)
+    const payableAmount = Number(walletBalance.amount) - gasBalanceBudget
 
     if (!shouldPayGasWithTheToken)
         return isNaN(Number(walletBalance.amount)) ? 0 : Number(walletBalance.amount)
 
     const res = Number(Number(payableAmount).toFixed(fromCurrency?.decimals))
-    return res <= 0 ? fallbackAmount : res
+    return Math.max(0, res)
 }
