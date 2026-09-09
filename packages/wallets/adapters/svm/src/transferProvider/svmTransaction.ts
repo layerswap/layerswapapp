@@ -1,18 +1,18 @@
+import { ed25519 } from '@noble/curves/ed25519'
 import {
     address,
     assertIsFullySignedTransaction,
     assertIsTransactionWithinSizeLimit,
     blockhash,
     createSolanaRpc,
+    getAddressEncoder,
     getBase64Decoder,
     getBase64Encoder,
     getCompiledTransactionMessageDecoder,
     getCompiledTransactionMessageEncoder,
-    getPublicKeyFromAddress,
     getTransactionDecoder,
     getTransactionEncoder,
     getTransactionLifetimeConstraintFromCompiledTransactionMessage,
-    verifySignature,
     type Transaction,
     type TransactionMessageBytes,
     type TransactionMessageBytesBase64,
@@ -99,10 +99,18 @@ export async function validateSignedSvmTransaction(original: Transaction, signed
     assertSvmTransactionMessageAllowed(original, signed)
     assertIsTransactionWithinSizeLimit(signed)
     assertIsFullySignedTransaction(signed)
-    await Promise.all(Object.entries(signed.signatures).map(async ([signer, signature]) => {
-        if (!signature || !await verifySignature(await getPublicKeyFromAddress(address(signer)), signature, signed.messageBytes)) {
+    // JavaScript verification also works in wallets' older embedded browsers.
+    for (const [signer, signature] of Object.entries(signed.signatures)) {
+        const publicKey = getAddressEncoder().encode(address(signer))
+        if (!signature || !ed25519.verify(
+            new Uint8Array(signature),
+            new Uint8Array(signed.messageBytes),
+            new Uint8Array(publicKey),
+            // Preserve strict RFC 8032 signature validation.
+            { zip215: false },
+        )) {
             throw new Error(`Invalid Solana transaction signature for ${signer}`)
         }
-    }))
+    }
     return signed
 }

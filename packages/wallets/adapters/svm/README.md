@@ -85,9 +85,9 @@ Legacy and v0 transactions use the existing wallet adapters. For v1, Wallet Stan
 
 Unsigned legacy/v0 payloads may omit all signature entries; the provider initializes empty entries for the wallet to sign. Unsigned transfers receive a fresh blockhash before fee estimation. Pre-signed transfers keep their original blockhash and co-signatures, and expired inputs are rejected. Durable nonce transfers are not supported.
 
-Wallets may add or adjust compute-unit limits and priority fees on unsigned legacy/v0 transfers. The provider checks that the fee payer, blockhash, account permissions, lookup tables, and transfer instructions remain unchanged, then checks the final RPC fee against the balance before submission. V1 and pre-signed transfers require the exact original message. All wallet responses require valid signatures from every signer.
+Wallets may add or adjust compute-unit limits and priority fees on unsigned legacy/v0 transfers. The provider checks that the fee payer, blockhash, account permissions, lookup tables, and transfer instructions remain unchanged, then checks the final RPC fee against the balance before submission. V1 and pre-signed transfers require the exact original message. All wallet responses require valid signatures from every signer. Signature verification runs in JavaScript and does not require native WebCrypto Ed25519 support.
 
-The provider confirms transactions by signature and block height, or blockhash validity for pre-signed inputs. Its RPC polling cadence is independent of slot duration. It does not depend on account-update frequency, reward parsing, or Token-2022 confidential-transfer instruction parsing.
+The provider confirms transactions by signature and block height, or confirmed blockhash validity for pre-signed inputs. Temporary confirmation RPC failures leave the submitted transaction pending while the provider retries. Its RPC polling cadence is independent of slot duration and resend latency, with at most one resend in flight. It does not depend on account-update frequency, reward parsing, or Token-2022 confidential-transfer instruction parsing.
 
 Run `pnpm --filter @layerswap/wallet-svm test` for offline transfer and signing fixtures. These tests do not replace testing with a connected wallet on a network where v1 is enabled.
 

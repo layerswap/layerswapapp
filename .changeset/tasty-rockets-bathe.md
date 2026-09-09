@@ -22,4 +22,6 @@ Support legacy, v0, and v1 Solana transfer payloads with Solana Kit. Add v1 sign
 
 Accept unsigned legacy/v0 payloads with omitted signature entries and wallet-added priority fees, while preserving transfer details and checking the final fee before submission.
 
+Keep submitted Solana transfers pending through temporary confirmation RPC failures, check preserved blockhashes at confirmed commitment, and continue confirmation polling during slow resends. Verify signatures in JavaScript for browsers without native WebCrypto Ed25519 support.
+
 Use the CommonJS-compatible import for `js-sha3` so the utilities' main entry point loads in Node ESM.

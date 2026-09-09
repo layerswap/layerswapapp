@@ -130,6 +130,38 @@ test('rejects message changes, missing co-signatures, and invalid signatures', a
     corrupt[corrupt.length - 1] ^= 1
     await assert.rejects(validateSignedSvmTransaction(transaction, corrupt), /Invalid Solana transaction signature/)
 })
+for (const version of ['legacy', 0, 1] as const) {
+    test(`${version}: verifies all signatures without native WebCrypto Ed25519`, async t => {
+        const transaction = fixture(version, { cosign: true })
+        const signed = await partiallySignTransaction([payer.keyPair, coSigner.keyPair], transaction)
+        const bytes = serializeSvmTransaction(signed)
+        const unsupported = async () => { throw new DOMException('Unrecognized algorithm name', 'NotSupportedError') }
+        t.mock.method(crypto.subtle, 'importKey', unsupported)
+        t.mock.method(crypto.subtle, 'verify', unsupported)
+
+        assert.deepEqual(serializeSvmTransaction(await validateSignedSvmTransaction(transaction, bytes)), bytes)
+        for (const signer of [payer, coSigner]) {
+            const signature = new Uint8Array(signed.signatures[signer.address]!)
+            signature[0] ^= 1
+            const corrupt = { ...signed, signatures: { ...signed.signatures, [signer.address]: signature } }
+            await assert.rejects(validateSignedSvmTransaction(transaction, serializeSvmTransaction(corrupt)), /Invalid Solana transaction signature/)
+        }
+    })
+}
+test('rejects signatures forged with an identity public key', async () => {
+    const identityKey = new Uint8Array(32)
+    identityKey[0] = 1
+    const signer = address(new PublicKey(identityKey).toBase58())
+    const transaction = compileTransaction(setTransactionMessageLifetimeUsingBlockhash(
+        { blockhash: originalHash, lastValidBlockHeight: 100n },
+        setTransactionMessageFeePayer(signer, createTransactionMessage({ version: 'legacy' })),
+    ))
+    // R = identity, S = 0 satisfies permissive verification for this key and any message.
+    const signature = new Uint8Array(64)
+    signature[0] = 1
+    const forged = { ...transaction, signatures: { [signer]: signature } }
+    await assert.rejects(validateSignedSvmTransaction(transaction, serializeSvmTransaction(forged)), /Invalid Solana transaction signature/)
+})
 test('fee estimation sends the prepared v1 message and returns total lamports', async t => {
     const prepared = await prepareSvmTransaction(fixture(1), connection())
     let fee: number | null = 55000
