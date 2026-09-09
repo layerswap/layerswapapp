@@ -1,5 +1,6 @@
 import {
     Address,
+    Operation,
     StrKey,
     Transaction,
     TransactionBuilder,
@@ -23,6 +24,13 @@ export type ValidateStellarXdrParams = {
     swapSequenceNumber: number
     currentAccountSequence: string
     now?: number
+}
+
+export type ValidateStellarOperationXdrParams = Omit<
+    ValidateStellarXdrParams,
+    'envelopeXdr' | 'currentAccountSequence' | 'now'
+> & {
+    operationXdr: string
 }
 
 function staleError(message: string): Error {
@@ -85,6 +93,15 @@ function encodeDepositId(sequenceNumber: number): string {
     return BigInt(sequenceNumber).toString(16).padStart(64, '0')
 }
 
+function validateAddresses(selectedAddress: string, depositoryContract: string): void {
+    if (!selectedAddress.startsWith('G') || !isValidStellarAddress(selectedAddress)) {
+        throw new Error('Selected Stellar source account is invalid')
+    }
+    if (!StrKey.isValidContract(depositoryContract)) {
+        throw new Error('Stellar depository destination must be a C-address')
+    }
+}
+
 function validateExpectedArguments(params: {
     args: readonly xdr.ScVal[]
     selectedAddress: string
@@ -121,6 +138,73 @@ function validateExpectedArguments(params: {
     return { receiver }
 }
 
+function validateDepositOperation(
+    operation: ReturnType<typeof Operation.fromXdrObject>,
+    params: Pick<
+        ValidateStellarXdrParams,
+        'selectedAddress' | 'depositoryContract' | 'networkPassphrase' | 'token' | 'amountInBaseUnits' | 'encodedArgs' | 'swapSequenceNumber'
+    >,
+): { tokenContract: string; receiver: string } {
+    const {
+        selectedAddress,
+        depositoryContract,
+        networkPassphrase,
+        token,
+        amountInBaseUnits,
+        encodedArgs,
+        swapSequenceNumber,
+    } = params
+
+    if (operation.type !== 'invokeHostFunction') {
+        throw new Error('Stellar deposit XDR must contain one Soroban contract invocation')
+    }
+    if (operation.source !== selectedAddress) {
+        throw new Error('Stellar depository operation source does not match the connected account')
+    }
+    if (operation.func.type !== 'hostFunctionTypeInvokeContract') {
+        throw new Error('Stellar deposit XDR must invoke the depository contract')
+    }
+
+    const invocation = operation.func.invokeContract
+    if (Address.fromScAddress(invocation.contractAddress).toString() !== depositoryContract) {
+        throw new Error('Stellar depository contract does not match the deposit action')
+    }
+    if (invocation.functionName.toString() !== 'deposit') {
+        throw new Error('Stellar depository function must be deposit')
+    }
+
+    const tokenContract = resolveStellarAsset(token).contractId(networkPassphrase)
+    const { receiver } = validateExpectedArguments({
+        args: invocation.args,
+        selectedAddress,
+        tokenContract,
+        amountInBaseUnits,
+        encodedArgs,
+        swapSequenceNumber,
+    })
+    return { tokenContract, receiver }
+}
+
+export function validateStellarOperationXdr(params: ValidateStellarOperationXdrParams): xdr.Operation {
+    const { operationXdr, selectedAddress, depositoryContract } = params
+    validateAddresses(selectedAddress, depositoryContract)
+    if (!operationXdr) throw new Error('Stellar deposit action is missing operation XDR')
+
+    let encodedOperation: xdr.Operation
+    try {
+        encodedOperation = xdr.Operation.fromXdr(operationXdr, 'base64')
+    } catch (cause) {
+        throw new Error('Stellar deposit action contains invalid operation XDR', { cause })
+    }
+
+    const operation = Operation.fromXdrObject(encodedOperation)
+    validateDepositOperation(operation, params)
+    if (operation.type !== 'invokeHostFunction' || (operation.auth?.length ?? 0) !== 0) {
+        throw new Error('Unsigned Stellar depository operation must not contain authorization entries')
+    }
+    return encodedOperation
+}
+
 export function validateStellarXdr(params: ValidateStellarXdrParams): Transaction {
     const {
         envelopeXdr,
@@ -135,12 +219,7 @@ export function validateStellarXdr(params: ValidateStellarXdrParams): Transactio
         now = Math.floor(Date.now() / 1000),
     } = params
 
-    if (!selectedAddress.startsWith('G') || !isValidStellarAddress(selectedAddress)) {
-        throw new Error('Selected Stellar source account is invalid')
-    }
-    if (!StrKey.isValidContract(depositoryContract)) {
-        throw new Error('Stellar depository destination must be a C-address')
-    }
+    validateAddresses(selectedAddress, depositoryContract)
     if (!envelopeXdr) throw new Error('Stellar deposit action is missing unsigned XDR')
 
     const parsed = TransactionBuilder.fromXdr(envelopeXdr, networkPassphrase)
@@ -170,31 +249,19 @@ export function validateStellarXdr(params: ValidateStellarXdrParams): Transactio
     if (parsed.operations.length !== 1) throw new Error('Stellar deposit XDR must contain exactly one operation')
 
     const operation = parsed.operations[0]
-    if (operation.type !== 'invokeHostFunction') {
-        throw new Error('Stellar deposit XDR must contain one Soroban contract invocation')
-    }
-    if (operation.source !== undefined) throw new Error('Stellar depository operation cannot override its source')
-    if (operation.func.type !== 'hostFunctionTypeInvokeContract') {
-        throw new Error('Stellar deposit XDR must invoke the depository contract')
-    }
-
-    const invocation = operation.func.invokeContract
-    if (Address.fromScAddress(invocation.contractAddress).toString() !== depositoryContract) {
-        throw new Error('Stellar depository contract does not match the deposit action')
-    }
-    if (invocation.functionName.toString() !== 'deposit') {
-        throw new Error('Stellar depository function must be deposit')
-    }
-
-    const tokenContract = resolveStellarAsset(token).contractId(networkPassphrase)
-    const { receiver } = validateExpectedArguments({
-        args: invocation.args,
+    const { tokenContract, receiver } = validateDepositOperation(operation, {
         selectedAddress,
-        tokenContract,
+        depositoryContract,
+        networkPassphrase,
+        token,
         amountInBaseUnits,
         encodedArgs,
         swapSequenceNumber,
     })
+    if (operation.type !== 'invokeHostFunction' || operation.func.type !== 'hostFunctionTypeInvokeContract') {
+        throw new Error('Stellar deposit XDR must contain one Soroban contract invocation')
+    }
+    const invocation = operation.func.invokeContract
 
     const authorization = operation.auth
     if (!authorization || authorization.length !== 1) {

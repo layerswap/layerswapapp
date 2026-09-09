@@ -300,10 +300,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             availableRoutes: sourceRoutes,
         })
         const isExtendedBridge = !!extendedPlan
-        const requiresDepository = (depositMethod === 'wallet'
-            && from.wallet_deposit_modes?.includes('depository')
-            && !from.wallet_deposit_modes.includes('direct'))
-            || (from.name == KnownInternalNames.Networks.StellarTestnet || from.name == KnownInternalNames.Networks.StellarMainnet)
+        const requiresDepository = from.name == KnownInternalNames.Networks.StellarTestnet || from.name == KnownInternalNames.Networks.StellarMainnet
 
         const data: CreateSwapParams = extendedPlan ? buildCreateSwapParamsForExtendedRoute({
             plan: extendedPlan,

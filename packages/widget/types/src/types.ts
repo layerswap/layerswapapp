@@ -1,4 +1,4 @@
-import { NetworkType, type Refuel, type WalletDepositMode } from './network';
+import { NetworkType, type Refuel } from './network';
 
 export class Network {
     name: string;
@@ -12,7 +12,6 @@ export class Network {
     account_explorer_template: string;
     metadata?: Metadata;
     deposit_methods: string[];
-    wallet_deposit_modes?: WalletDepositMode[];
     token?: Token;
     source_rank?: number | undefined;
     destination_rank?: number | undefined;

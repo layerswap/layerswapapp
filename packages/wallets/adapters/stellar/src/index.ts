@@ -85,4 +85,4 @@ export function createStellarProvider<Network = NetworkWithTokens>(
 export { createStellarConnection } from './service/createStellarConnection'
 export { stellarStore } from './service/stellarStore'
 export { stellarKitManager } from './service/stellarKitManager'
-export { validateStellarXdr } from './transferProvider/validateStellarXdr'
+export { validateStellarOperationXdr, validateStellarXdr } from './transferProvider/validateStellarXdr'

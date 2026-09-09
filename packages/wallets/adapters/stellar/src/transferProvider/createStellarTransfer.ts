@@ -1,9 +1,12 @@
-import { Horizon, Transaction, TransactionBuilder, TransactionFailedError } from '@stellar/stellar-sdk'
+import { Transaction, TransactionBuilder, TransactionFailedError } from '@stellar/stellar-sdk'
 import { bytesToHex } from '@layerswap/utils/common'
 import { ActionMessageType, NetworkType, type TransferProvider } from '@layerswap/widget-types'
 import { resolveStellarNetworkPassphrase } from '../stellarNetwork'
+import { getStellarHorizonServer, getStellarRpcServer } from '../stellarServers'
 import { stellarKitManager } from '../service/stellarKitManager'
-import { validateStellarXdr } from './validateStellarXdr'
+import { validateStellarOperationXdr, validateStellarXdr } from './validateStellarXdr'
+
+const TRANSACTION_TIMEOUT_SECONDS = 5 * 60
 
 function mappedError(name: ActionMessageType, message: string, cause?: unknown): Error {
     const error = new Error(message, cause === undefined ? undefined : { cause })
@@ -54,19 +57,22 @@ export function createStellarTransfer(): TransferProvider {
                 amountInBaseUnits,
                 encodedArgs,
                 sequenceNumber,
+                sourceAddress,
             } = params
             if (!selectedWallet?.address) throw new Error('Stellar wallet address not found')
             if (!depositAddress) throw new Error('Stellar depository contract not found')
             if (!amountInBaseUnits) throw new Error('Stellar deposit amount is missing')
             if (!encodedArgs) throw new Error('Stellar deposit encoded_args are missing')
             if (sequenceNumber === undefined) throw new Error('Stellar swap sequence number is missing')
+            if (!sourceAddress) throw new Error('Stellar deposit source address is missing')
+            if (sourceAddress !== selectedWallet.address) {
+                throw mappedError(ActionMessageType.WaletMismatch, 'The Stellar deposit action belongs to a different account')
+            }
 
             try {
                 const networkPassphrase = resolveStellarNetworkPassphrase(network)
-                const server = new Horizon.Server(network.node_url)
-                const account = await server.loadAccount(selectedWallet.address)
-                const unsignedTransaction = validateStellarXdr({
-                    envelopeXdr: callData,
+                const operation = validateStellarOperationXdr({
+                    operationXdr: callData,
                     networkPassphrase,
                     selectedAddress: selectedWallet.address,
                     depositoryContract: depositAddress,
@@ -74,12 +80,44 @@ export function createStellarTransfer(): TransferProvider {
                     amountInBaseUnits,
                     encodedArgs,
                     swapSequenceNumber: sequenceNumber,
-                    currentAccountSequence: account.sequence,
+                })
+                const [horizonServer, rpcServer] = await Promise.all([
+                    getStellarHorizonServer(network, networkPassphrase),
+                    getStellarRpcServer(network, networkPassphrase),
+                ])
+                const [account, baseFee] = await Promise.all([
+                    horizonServer.loadAccount(selectedWallet.address),
+                    horizonServer.fetchBaseFee(),
+                ])
+                if (!Number.isSafeInteger(baseFee) || baseFee <= 0) {
+                    throw new Error('Horizon returned an invalid Stellar base fee')
+                }
+                const currentAccountSequence = account.sequence
+                const preparedTransaction = await rpcServer.prepareTransaction(
+                    new TransactionBuilder(account, {
+                        fee: baseFee.toString(),
+                        networkPassphrase,
+                    })
+                        .addOperation(operation)
+                        .setTimeout(TRANSACTION_TIMEOUT_SECONDS)
+                        .build(),
+                )
+                const preparedXdr = preparedTransaction.toXdr()
+                const unsignedTransaction = validateStellarXdr({
+                    envelopeXdr: preparedXdr,
+                    networkPassphrase,
+                    selectedAddress: selectedWallet.address,
+                    depositoryContract: depositAddress,
+                    token,
+                    amountInBaseUnits,
+                    encodedArgs,
+                    swapSequenceNumber: sequenceNumber,
+                    currentAccountSequence,
                 })
                 await stellarKitManager.revalidate(selectedWallet.address, networkPassphrase)
 
                 const signed = await stellarKitManager.signTransaction(
-                    callData,
+                    preparedXdr,
                     networkPassphrase,
                     selectedWallet.address,
                 )
@@ -94,7 +132,7 @@ export function createStellarTransfer(): TransferProvider {
                     throw new Error('Wallet changed the Stellar transaction while signing')
                 }
 
-                const result = await server.submitTransaction(signedTransaction)
+                const result = await horizonServer.submitTransaction(signedTransaction)
                 if (!result.successful || !result.hash) throw new Error('Horizon did not accept the Stellar transaction')
                 return result.hash
             } catch (error) {
