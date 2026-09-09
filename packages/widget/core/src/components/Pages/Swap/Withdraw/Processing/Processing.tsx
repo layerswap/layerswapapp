@@ -226,15 +226,15 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, execution, quote, r
         },
         "output_transfer": {
             upcoming: {
-                name: isDepositFlow ? 'Completing your deposit' : `Sending ${destination_token.symbol} to your address`,
+                name: isDepositFlow ? 'Completing your deposit' : `Sending ${destination_token.asset} to your address`,
                 description: null
             },
             current: {
-                name: isDepositFlow ? 'Completing your deposit' : `Sending ${destination_token.symbol} to your address`,
+                name: isDepositFlow ? 'Completing your deposit' : `Sending ${destination_token.asset} to your address`,
                 description: null
             },
             complete: {
-                name: `${swapOutputTransaction?.amount && truncateDecimals(swapOutputTransaction?.amount, destination_token.decimals)} ${destination_token.symbol} ${isDepositFlow ? 'deposited' : 'was sent to your address'}`,
+                name: `${swapOutputTransaction?.amount && truncateDecimals(swapOutputTransaction?.amount, destination_token.decimals)} ${destination_token.asset} ${isDepositFlow ? 'deposited' : 'was sent to your address'}`,
                 description: swapOutputTransaction?.amount ? <div className="flex flex-col">
                     <div>
                         <span>Transaction: </span>{' '}
@@ -274,15 +274,15 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, execution, quote, r
         },
         "refuel": {
             upcoming: {
-                name: `Sending ${refuel?.token?.symbol} to your address`,
+                name: `Sending ${refuel?.token?.asset} to your address`,
                 description: null
             },
             current: {
-                name: `Sending ${refuel?.token?.symbol} to your address`,
+                name: `Sending ${refuel?.token?.asset} to your address`,
                 description: null
             },
             complete: {
-                name: `${truncatedRefuelAmount} ${refuel?.token?.symbol} was sent to your address`,
+                name: `${truncatedRefuelAmount} ${refuel?.token?.asset} was sent to your address`,
                 description: <div>
                     <span>Transaction: </span>{' '}
                     {swapRefuelTransaction &&
@@ -339,9 +339,9 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, execution, quote, r
         swapOutputTransaction,
         swapRefuelTransaction,
         swapRefundTransaction,
-        destination_token.symbol,
+        destination_token.asset,
         destination_token.decimals,
-        refuel?.token?.symbol,
+        refuel?.token?.asset,
         truncatedRefuelAmount,
         fail_reason,
         swapDetails.status,

@@ -17,7 +17,7 @@ import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createSign, createPrivateKey, createHash } from 'node:crypto';
-import { WIDGET_PROTOCOL_MAJOR } from '@layerswap/widget-types';
+import { WIDGET_PROTOCOL_MAJOR } from '@layerswap/widget-js';
 import { resolveBuildIdentity } from './build-id.mjs';
 import { ASSET_BASE, ASSET_DIRECTORY, remoteEntryForBuild } from './cdn-layout.mjs';
 

@@ -99,7 +99,7 @@ export function createHyperliquidTransfer(): TransferProvider {
             const split = await client.getWithdrawableSplit(sourceAddress, hlConfig.nodeUrl, sourceToken.symbol)
             const plan = planWithdrawal(split, required, decimals)
             if (plan.insufficient) {
-                throw fail('Insufficient balance', `Your available Hyperliquid balance (${split.combined} ${sourceToken.symbol}) is below ${amount} ${sourceToken.symbol}.`)
+                throw fail('Insufficient balance', `Your available Hyperliquid balance (${split.combined} ${sourceToken.asset}) is below ${amount} ${sourceToken.asset}.`)
             }
 
             let sourceDex = plan.sourceDex
@@ -112,7 +112,7 @@ export function createHyperliquidTransfer(): TransferProvider {
                 // signature) and let it paint before the wallet prompt opens.
                 onProgress?.({
                     title: 'Approve moving your balance',
-                    description: `Moving ${plan.transfer.amount} ${sourceToken.symbol} from your Hyperliquid ${fromLabel} balance to ${toLabel} so this withdrawal can be funded. The funds stay on Hyperliquid and there's no fee — you'll approve the withdrawal itself next.`,
+                    description: `Moving ${plan.transfer.amount} ${sourceToken.asset} from your Hyperliquid ${fromLabel} balance to ${toLabel} so this withdrawal can be funded. The funds stay on Hyperliquid and there's no fee — you'll approve the withdrawal itself next.`,
                 })
                 await sleep(50)
                 transferNonce = Date.now()

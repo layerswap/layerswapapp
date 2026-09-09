@@ -21,7 +21,7 @@ export default function Refund({ refund }: { refund: Transaction }) {
                     <div className="flex items-center">
                         <span className="text-sm lg:text-base font-medium text-primary-text flex items-center">
                             <Image alt="Source token icon" src={asset?.logo || ''} width={20} height={20} decoding="async" data-nimg="responsive" className="rounded-md mr-2" />
-                            {formatAmount(refund?.amount)} {asset?.symbol}
+                            {formatAmount(refund?.amount)} {asset?.asset}
                         </span>
                     </div>
                 </div>

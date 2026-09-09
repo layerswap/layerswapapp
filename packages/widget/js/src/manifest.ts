@@ -1,4 +1,4 @@
-import { WIDGET_PROTOCOL_MAJOR } from '@layerswap/widget-types';
+import { WIDGET_PROTOCOL_MAJOR } from './protocol.js';
 
 /**
  * Manifest format published at `/<channel>/manifest.json` by the CDN.

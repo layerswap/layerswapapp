@@ -4,7 +4,7 @@ import { usePersistedState } from "@layerswap/wallet-core";
 import { isMobile } from "@layerswap/utils";
 import type { WalletConnectionProvider, WalletModalConnector } from "@layerswap/wallet-core/types";
 import { useConnectModal } from "../WalletModalProvider";
-import { useWalletProviderReadiness } from "./useWalletProviderReadiness";
+import { useWalletProviderReadiness } from "@layerswap/wallet-core";
 import { getConnectionError, rememberConnector } from "./walletConnectionHelpers";
 import type { RecentConnector, } from "./walletConnectionHelpers";
 

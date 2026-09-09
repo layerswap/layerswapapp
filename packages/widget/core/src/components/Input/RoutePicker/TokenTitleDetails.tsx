@@ -28,7 +28,7 @@ export const TokenInfoIcon = ({ item, route, className }: { item: NetworkRouteTo
                     showDetails
                     address={item.contract}
                     logo={item.logo}
-                    title={item.symbol}
+                    title={item.asset}
                     description={item.display_asset}
                     onPopoverOpenChange={setIsPopoverOpen}
                     onTooltipOpenChange={setIsTooltipOpen}
@@ -55,7 +55,7 @@ export const TokenTitleWithBalance = ({ item, route, tokenbalance, usdAmount }: 
         <div className="flex items-center gap-2 justify-between w-full min-w-0">
             <div className="flex items-center gap-2 py-px min-w-0 flex-1 overflow-hidden">
                 <p className="shrink-0">
-                    {item.symbol}
+                    {item.asset}
                 </p>
                 <TokenInfoIcon
                     item={item}
@@ -78,7 +78,7 @@ const TokenInfoTrigger = ({ item, isPopoverOpen, isTooltipOpen }: TokenInfoTrigg
     return (
         <span className="flex items-center gap-1 text-secondary-text cursor-pointer hover:text-primary-text data-[popover-open=true] data-[tooltip-open=true] text-xs pr-2" data-popover-open={isPopoverOpen} data-tooltip-open={isTooltipOpen}>
             <p className="truncate min-w-0">
-                <span>•</span> <span>{item.display_asset || item.symbol}</span>
+                <span>•</span> <span>{item.display_asset || item.asset}</span>
             </p>
             <Info className="h-3 w-3 shrink-0" />
         </span>
@@ -128,7 +128,7 @@ const NativeTokenTitle = ({ item, route, onTooltipOpenChange, onPopoverOpenChang
                         <div className="flex items-center gap-3">
                             <ImageWithFallback
                                 src={item.logo}
-                                alt={item.symbol}
+                                alt={item.asset}
                                 height="40"
                                 width="40"
                                 loading="eager"
@@ -136,7 +136,7 @@ const NativeTokenTitle = ({ item, route, onTooltipOpenChange, onPopoverOpenChang
                                 className="rounded-full object-contain shrink-0 h-10 w-10"
                             />
                             <div className="flex-1 font-medium">
-                                <h3 className="text-base leading-5 text-primary-text">{item.symbol}</h3>
+                                <h3 className="text-base leading-5 text-primary-text">{item.asset}</h3>
                                 <p className="text-sm leading-[18px] text-secondary-text">{item.display_asset}</p>
                             </div>
                         </div>
@@ -144,7 +144,7 @@ const NativeTokenTitle = ({ item, route, onTooltipOpenChange, onPopoverOpenChang
                     </div>
 
                     <p className="text-secondary-text text-sm leading-5 break-all text-left font-mono">
-                        {route.display_name} <span>{item.symbol}</span>{' native coin'}
+                        {route.display_name} <span>{item.asset}</span>{' native coin'}
                     </p>
                 </PopoverContent>
             </Popover>
