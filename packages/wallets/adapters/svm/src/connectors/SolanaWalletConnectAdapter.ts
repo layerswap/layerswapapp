@@ -346,6 +346,34 @@ export class SolanaWalletConnectAdapter extends BaseSignerWalletAdapter {
         }
     }
 
+    /** Sign v1 wire bytes without passing them through web3.js's read-only v1 message class. */
+    async signSerializedTransaction(transaction: Uint8Array): Promise<Uint8Array> {
+        try {
+            if (!this._provider || !this._session || !this._publicKey) throw new WalletNotConnectedError()
+            if (!this._session.namespaces.solana?.methods.includes(Methods.signTransaction)) {
+                throw new WalletSignTransactionError('This wallet does not support Solana transaction signing')
+            }
+            const result = await this._provider.client.request<{ transaction?: string }>({
+                chainId: this._network,
+                topic: this._session.topic,
+                request: {
+                    method: Methods.signTransaction,
+                    params: { transaction: Buffer.from(transaction).toString('base64') },
+                },
+            })
+            if (!result.transaction) {
+                throw new WalletSignTransactionError('The wallet must return the full signed Solana v1 transaction')
+            }
+            return new Uint8Array(Buffer.from(result.transaction, 'base64'))
+        } catch (error) {
+            const wrapped = error instanceof WalletSignTransactionError || error instanceof WalletNotConnectedError
+                ? error
+                : new WalletSignTransactionError(error instanceof Error ? error.message : String(error), error)
+            this.emit('error', wrapped)
+            throw wrapped
+        }
+    }
+
     async signMessage(message: Uint8Array): Promise<Uint8Array> {
         try {
             if (!this._provider || !this._session || !this._publicKey) throw new WalletNotConnectedError()

@@ -31,3 +31,9 @@ catalog:
 overrides:
   '@types/react': 19.2.3
   '@types/react-dom': 19.2.3
+
+# Trezor's existing Token-2022 client needs Kit 2 sysvars, even with Kit 8 in the SVM provider.
+packageExtensions:
+  '@solana-program/token-2022@0.4.2':
+    dependencies:
+      '@solana/sysvars': 2.3.0

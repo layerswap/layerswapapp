@@ -1,5 +1,5 @@
 import { NetworkType, type Network } from '@layerswap/widget-types';
-import { keccak256 } from "js-sha3";
+import sha3 from "js-sha3";
 import KnownInternalNames from "@/knownIds";
 import { AddressSelectionMode, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
 
@@ -8,7 +8,7 @@ export const name = 'EVM';
 function isChecksumAddress(address: string): boolean {
     // Check each case
     address = address.replace('0x', '');
-    const addressHash = keccak256(address.toLowerCase());
+    const addressHash = sha3.keccak256(address.toLowerCase());
     for (let i = 0; i < 40; i++) {
         // the nth letter should be uppercase if the nth digit of casemap is 1
         if ((parseInt(addressHash[i], 16) > 7 && address[i].toUpperCase() !== address[i]) || (parseInt(addressHash[i], 16) <= 7 && address[i].toLowerCase() !== address[i])) {

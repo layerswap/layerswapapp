@@ -1,28 +1,27 @@
-import { Transaction, Connection } from '@solana/web3.js';
-import { SignerWalletAdapterProps } from '@solana/wallet-adapter-base';
-import { transactionSenderAndConfirmationWaiter } from './transactionBuilder';
+import type { Transaction } from '@solana/kit'
+import type { Connection } from '@solana/web3.js'
+import { transactionSenderAndConfirmationWaiter, type SvmTransactionLifetime } from './transactionBuilder'
+import { getSvmTransactionFee, serializeSvmTransaction, validateSignedSvmTransaction } from './svmTransaction'
+import { haveSameSvmMessageBytes } from './validateSvmTransactionMessage'
 
 export const configureAndSendCurrentTransaction = async (
     transaction: Transaction,
     connection: Connection,
-    signTransaction: SignerWalletAdapterProps['signTransaction'],
+    signTransaction: (transaction: Transaction) => Promise<Uint8Array>,
+    lifetime: SvmTransactionLifetime,
+    validateFee: (feeInLamports: bigint) => void,
 ) => {
-
-    const blockHash = await connection.getLatestBlockhash();
-    transaction.recentBlockhash = blockHash.blockhash;
-    transaction.lastValidBlockHeight = blockHash.lastValidBlockHeight;
-
-    const signed = await signTransaction(transaction);
-
-    const res = await transactionSenderAndConfirmationWaiter({
-        connection,
-        serializedTransaction: signed.serialize(),
-        blockhashWithExpiryBlockHeight: blockHash,
-    });
-
-    if (res?.meta?.err) {
-        throw new Error(res.meta.err.toString())
+    const signed = await validateSignedSvmTransaction(transaction, await signTransaction(transaction))
+    if (!haveSameSvmMessageBytes(transaction, signed)) {
+        validateFee(await getSvmTransactionFee(signed, connection.rpcEndpoint))
     }
+    const response = await transactionSenderAndConfirmationWaiter({
+        connection,
+        serializedTransaction: serializeSvmTransaction(signed),
+        blockhashWithExpiryBlockHeight: lifetime,
+    })
 
-    return res?.transaction.signatures[0];
-};
+    if (!response) throw new Error('Solana transaction expired before confirmation')
+    if (response.meta?.err) throw new Error(JSON.stringify(response.meta.err))
+    return response.transaction.signatures[0]
+}

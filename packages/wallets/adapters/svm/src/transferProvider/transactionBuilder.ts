@@ -1,101 +1,57 @@
-import {
-    BlockhashWithExpiryBlockHeight,
-    Connection,
-    TransactionExpiredBlockheightExceededError,
-    VersionedTransactionResponse,
-} from "@solana/web3.js";
-import { sleep } from "@layerswap/utils"
-import { retry } from "@layerswap/utils";type TransactionSenderAndConfirmationWaiterArgs = {
-    connection: Connection;
-    serializedTransaction: Buffer;
-    blockhashWithExpiryBlockHeight: BlockhashWithExpiryBlockHeight;
-};
+import type { Connection, VersionedTransactionResponse } from '@solana/web3.js'
+import { sleep, retry } from '@layerswap/utils'
 
-const SEND_OPTIONS = {
-    skipPreflight: true,
-};
+export type SvmTransactionLifetime = {
+    blockhash: string
+    lastValidBlockHeight?: number
+}
+
+type TransactionSenderAndConfirmationWaiterArgs = {
+    connection: Connection
+    serializedTransaction: Uint8Array
+    blockhashWithExpiryBlockHeight: SvmTransactionLifetime
+    /** RPC retry cadence, independent of the network's slot duration. */
+    pollIntervalMs?: number
+}
 
 export async function transactionSenderAndConfirmationWaiter({
     connection,
     serializedTransaction,
-    blockhashWithExpiryBlockHeight,
+    blockhashWithExpiryBlockHeight: lifetime,
+    pollIntervalMs = 2000,
 }: TransactionSenderAndConfirmationWaiterArgs): Promise<VersionedTransactionResponse | null> {
-    const txid = await connection.sendRawTransaction(
-        serializedTransaction,
-        SEND_OPTIONS
-    );
+    const txid = await connection.sendRawTransaction(serializedTransaction, {
+        preflightCommitment: 'confirmed',
+    })
 
-    const controller = new AbortController();
-    const abortSignal = controller.signal;
+    while (true) {
+        const { value: status } = await connection.getSignatureStatus(txid, { searchTransactionHistory: false })
+        if (status?.confirmationStatus === 'confirmed' || status?.confirmationStatus === 'finalized') break
 
-    const abortableResender = async () => {
-        while (true) {
-            await sleep(2000);
-            if (abortSignal.aborted) return;
-            try {
-                await connection.sendRawTransaction(
-                    serializedTransaction,
-                    SEND_OPTIONS
-                );
-            } catch (e) {
-                console.warn(`Failed to resend transaction: ${e}`);
-            }
+        const expired = lifetime.lastValidBlockHeight === undefined
+            ? !(await connection.isBlockhashValid(lifetime.blockhash, { commitment: 'finalized' })).value
+            : await connection.getBlockHeight('finalized') > lifetime.lastValidBlockHeight
+        if (expired) {
+            // Check history once more in case the transaction landed before expiry.
+            const { value } = await connection.getSignatureStatus(txid, { searchTransactionHistory: true })
+            if (value?.confirmationStatus === 'confirmed' || value?.confirmationStatus === 'finalized') break
+            return null
         }
-    };
 
-    try {
-        abortableResender();
-        const lastValidBlockHeight =
-            blockhashWithExpiryBlockHeight.lastValidBlockHeight;
-
-        // this would throw TransactionExpiredBlockheightExceededError
-        await Promise.race([
-            connection.confirmTransaction(
-                {
-                    ...blockhashWithExpiryBlockHeight,
-                    lastValidBlockHeight,
-                    signature: txid,
-                },
-                "confirmed"
-            ),
-            new Promise(async (resolve) => {
-                // in case ws socket died
-                while (!abortSignal.aborted) {
-                    await sleep(2000);
-                    const tx = await connection.getSignatureStatus(txid, {
-                        searchTransactionHistory: false,
-                    });
-                    if (tx?.value?.confirmationStatus === "confirmed") {
-                        resolve(tx);
-                    }
-                }
-            }),
-        ]);
-    } catch (e) {
-        if (e instanceof TransactionExpiredBlockheightExceededError) {
-            // we consume this error and getTransaction would return null
-            return null;
-        } else {
-            // invalid state from web3.js
-            throw e;
+        await sleep(pollIntervalMs)
+        try {
+            await connection.sendRawTransaction(serializedTransaction, { skipPreflight: true })
+        } catch (error) {
+            console.warn('Failed to resend Solana transaction', error)
         }
-    } finally {
-        controller.abort();
     }
 
-    // in case rpc is not synced yet, we add some retries
-    const response = retry(
-        async () => {
-            const response = await connection.getTransaction(txid, {
-                commitment: "confirmed",
-                maxSupportedTransactionVersion: 0,
-            });
-            if (!response) {
-                throw new Error("Transaction not found");
-            }
-            return response;
-        }
-    );
-
-    return response;
+    return retry(async () => {
+        const response = await connection.getTransaction(txid, {
+            commitment: 'confirmed',
+            maxSupportedTransactionVersion: 1,
+        })
+        if (!response) throw new Error('Transaction not found')
+        return response
+    })
 }
