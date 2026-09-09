@@ -116,6 +116,7 @@ const resolveTransactionData = (swapDetails: SwapDetails, deposit_actions: Depos
         callData: depositAction.call_data ?? '',
         encodedArgs: depositAction.encoded_args,
         depositAddress: depositAction.to_address,
+        sourceAddress: depositAction.from_address,
         sequenceNumber: swapDetails.metadata.sequence_number,
         swapId: swapDetails.id,
         userDestinationAddress: swapBasicData.destination_address,

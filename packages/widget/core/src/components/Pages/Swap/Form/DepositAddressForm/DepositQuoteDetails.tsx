@@ -84,13 +84,13 @@ const DepositQuoteDetails: FC<DepositQuoteDetailsProps> = ({
     const minDepositDisplay = useMemo(() => {
         const min = sortedTiers[0]?.min_amount;
         if (!min || !sourceToken) return null;
-        return `${formatTokenAmount(min)} ${sourceToken.symbol}`;
+        return `${formatTokenAmount(min)} ${sourceToken.asset}`;
     }, [sortedTiers, sourceToken]);
 
     const maxDepositDisplay = useMemo(() => {
         const max = sortedTiers[sortedTiers.length - 1]?.max_amount;
         if (!max || !Number.isFinite(max) || !sourceToken) return null;
-        return `${formatTokenAmount(max)} ${sourceToken.symbol}`;
+        return `${formatTokenAmount(max)} ${sourceToken.asset}`;
     }, [sortedTiers, sourceToken]);
 
     const feeDisplay = sortedTiers[0]

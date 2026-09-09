@@ -13,10 +13,11 @@ export enum NetworkType {
   Polymarket = 'polymarket',
 }
 
-export type WalletDepositMode = 'direct' | 'depository';
-
 type RefuelToken = {
+  /** Canonical identifier used in Layerswap API requests and lookups. */
   symbol: string;
+  /** User-facing ticker used in labels and messages. */
+  asset: string;
   display_asset?: string;
   logo: string;
   contract: string | null | undefined;
@@ -48,7 +49,6 @@ type RefuelNetwork = {
     watchdog_contract?: string | null;
   };
   deposit_methods: string[];
-  wallet_deposit_modes?: WalletDepositMode[];
   token?: RefuelToken;
   source_rank?: number;
   destination_rank?: number;

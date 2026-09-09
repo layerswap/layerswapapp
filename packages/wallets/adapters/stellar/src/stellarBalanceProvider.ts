@@ -1,4 +1,3 @@
-import { Horizon } from '@stellar/stellar-sdk'
 import { BalanceProvider, insertIfNotExists } from '@layerswap/widget-types'
 import { NetworkType } from '@layerswap/widget-types'
 import {
@@ -6,7 +5,8 @@ import {
     createUnfundedStellarBalances,
     resolveStellarBalanceAmount,
 } from './stellarBalances'
-import { resolveStellarAsset } from './stellarNetwork'
+import { resolveStellarAsset, resolveStellarNetworkPassphrase } from './stellarNetwork'
+import { getStellarHorizonServer } from './stellarServers'
 
 function statusOf(error: unknown): number | undefined {
     const candidate = error as {
@@ -22,9 +22,10 @@ export class StellarBalanceProvider extends BalanceProvider {
 
     fetchBalance: BalanceProvider['fetchBalance'] = async (address, network) => {
         const tokens = insertIfNotExists(network.tokens, network.token)
-        const server = new Horizon.Server(network.node_url)
 
         try {
+            const networkPassphrase = resolveStellarNetworkPassphrase(network)
+            const server = await getStellarHorizonServer(network, networkPassphrase)
             const needsReserve = tokens.some(token => resolveStellarAsset(token).isNative())
             const [account, ledgerPage] = await Promise.all([
                 server.loadAccount(address),

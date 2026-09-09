@@ -34,7 +34,7 @@ const RPCUnhealthyMessage: FC<Props> = ({ network, suggestRpcForCurrentChain, is
             chainName: network.display_name,
             nativeCurrency: {
                 name: network.display_name,
-                symbol: network.token?.symbol,
+                symbol: network.token?.asset,
                 decimals: network.token?.decimals
             }
         })

@@ -4,6 +4,7 @@ import { PublishedSwapTransactions, SwapBasicData } from "@/lib/apiClients/layer
 import { WithdrawalProvider } from "@/context/withdrawalContext";
 import useWallet from "@/hooks/useWallet";
 import { useSelectedAccount } from "@/context/swapAccounts";
+import { useSwapDataState } from "@/context/swap";
 import { WithdrawPageProps } from "./Common/sharedTypes";
 import { ChangeNetworkButton, ConnectWalletButton, SendTransactionButton } from "./Common/buttons";
 import { GaslessSigner } from "./Common/depositExecution";
@@ -159,6 +160,7 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
     const [buttonClicked, setButtonClicked] = useState(false)
     const [error, setError] = useState<Error | undefined>()
     const [loading, setLoading] = useState(false)
+    const { swapError } = useSwapDataState()
 
     const selectedSourceAccount = useSelectedAccount("from", swapData.source_network.name);
 
@@ -253,7 +255,7 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
 
     return <div className="w-full space-y-2 flex flex-col justify-between h-full text-primary-text">
         {
-            buttonClicked &&
+            (buttonClicked || !!swapError) &&
             <ActionMessage
                 error={error}
                 isLoading={loading}

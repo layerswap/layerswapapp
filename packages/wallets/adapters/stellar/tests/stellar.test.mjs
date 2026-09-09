@@ -23,7 +23,14 @@ import {
     resolveStellarAsset,
     resolveStellarNetworkPassphrase,
 } from '../dist/esm/stellarNetwork.js'
-import { validateStellarXdr } from '../dist/esm/transferProvider/validateStellarXdr.js'
+import {
+    getStellarHorizonServer,
+    getStellarRpcServer,
+} from '../dist/esm/stellarServers.js'
+import {
+    validateStellarOperationXdr,
+    validateStellarXdr,
+} from '../dist/esm/transferProvider/validateStellarXdr.js'
 import {
     createUnfundedStellarBalances,
     resolveStellarBalanceAmount,
@@ -122,7 +129,7 @@ function buildFixture({
         function: functionName,
         args,
         auth,
-        ...(operationSource ? { source: operationSource } : {}),
+        source: operationSource ?? sourceKey.publicKey(),
     }))
     if (secondOperation) {
         builder.addOperation(Operation.payment({
@@ -136,6 +143,48 @@ function buildFixture({
     const transaction = builder.build()
     return {
         transaction,
+        networkPassphrase,
+        token,
+        depository,
+        encodedArgs: [
+            sourceKey.publicKey(),
+            Buffer.from(depositIdBytes(depositId)).toString('hex'),
+            tokenContract,
+            receiver,
+            amount,
+        ],
+        amount,
+        depositId,
+    }
+}
+
+function buildOperationFixture({
+    networkPassphrase = Networks.TESTNET,
+    token = nativeToken,
+    depository = depositoryContract,
+    receiver = receiverKey.publicKey(),
+    amount = amountInBaseUnits,
+    depositId = swapSequenceNumber,
+    source = sourceKey.publicKey(),
+    auth = [],
+} = {}) {
+    const tokenContract = resolveStellarAsset(token).contractId(networkPassphrase)
+    const args = [
+        new Address(sourceKey.publicKey()).toScVal(),
+        nativeToScVal(depositIdBytes(depositId)),
+        new Address(tokenContract).toScVal(),
+        new Address(receiver).toScVal(),
+        nativeToScVal(BigInt(amount), { type: 'i128' }),
+    ]
+    const operation = Operation.invokeContractFunction({
+        contract: depository,
+        function: 'deposit',
+        args,
+        auth,
+        source,
+    })
+    return {
+        operationXdr: operation.toXdr('base64'),
         networkPassphrase,
         token,
         depository,
@@ -211,6 +260,51 @@ test('validates native and issued-asset depository XDR on both networks', () => 
     assert.equal(validateFixture(issued).source, sourceKey.publicKey())
 })
 
+test('validates backend Stellar depository operation XDR before simulation', () => {
+    const native = buildOperationFixture()
+    const parsedNative = validateStellarOperationXdr({
+        operationXdr: native.operationXdr,
+        networkPassphrase: native.networkPassphrase,
+        selectedAddress: sourceKey.publicKey(),
+        depositoryContract: native.depository,
+        token: native.token,
+        amountInBaseUnits: native.amount,
+        encodedArgs: native.encodedArgs,
+        swapSequenceNumber: native.depositId,
+    })
+    assert.equal(Operation.fromXdrObject(parsedNative).source, sourceKey.publicKey())
+
+    const issued = buildOperationFixture({ networkPassphrase: Networks.PUBLIC, token: issuedToken })
+    assert.doesNotThrow(() => validateStellarOperationXdr({
+        operationXdr: issued.operationXdr,
+        networkPassphrase: issued.networkPassphrase,
+        selectedAddress: sourceKey.publicKey(),
+        depositoryContract: issued.depository,
+        token: issued.token,
+        amountInBaseUnits: issued.amount,
+        encodedArgs: issued.encodedArgs,
+        swapSequenceNumber: issued.depositId,
+    }))
+
+    const authorized = buildOperationFixture({
+        auth: createAuthorization({
+            depository: native.depository,
+            tokenContract: native.encodedArgs[2],
+            args: Operation.fromXdrObject(parsedNative).func.invokeContract.args,
+        }),
+    })
+    assert.throws(() => validateStellarOperationXdr({
+        operationXdr: authorized.operationXdr,
+        networkPassphrase: authorized.networkPassphrase,
+        selectedAddress: sourceKey.publicKey(),
+        depositoryContract: authorized.depository,
+        token: authorized.token,
+        amountInBaseUnits: authorized.amount,
+        encodedArgs: authorized.encodedArgs,
+        swapSequenceNumber: authorized.depositId,
+    }), /must not contain authorization entries/)
+})
+
 test('rejects security-sensitive depository XDR mismatches', () => {
     const fixture = buildFixture()
     const otherSource = Keypair.random().publicKey()
@@ -229,7 +323,7 @@ test('rejects security-sensitive depository XDR mismatches', () => {
     ))
 
     const sourceOverride = buildFixture({ operationSource: otherSource })
-    assert.throws(() => validateFixture(sourceOverride), /cannot override/)
+    assert.throws(() => validateFixture(sourceOverride), /operation source does not match/)
 
     const extraOperation = buildFixture({ secondOperation: true })
     assert.throws(() => validateFixture(extraOperation), /exactly one operation/)
@@ -276,6 +370,9 @@ test('maps spendable Horizon balances like the backend', () => {
     assert.throws(() => resolveStellarBalanceAmount(issuedToken, [
         { ...balances[1], is_authorized: false },
     ]), /not authorized/)
+    assert.throws(() => resolveStellarBalanceAmount(issuedToken, [
+        { ...balances[1], is_authorized: undefined },
+    ]), /not authorized/)
 
     const network = {
         name: 'STELLAR_TESTNET',
@@ -286,6 +383,50 @@ test('maps spendable Horizon balances like the backend', () => {
     assert.deepEqual(unfunded.map(balance => balance.amount), [0, 0])
     assert.ok(unfunded.every(balance => balance.error === undefined))
     assert.equal(baseUnitsToNumber(100n, 7), 0.00001)
+})
+
+test('discovers Horizon and RPC from the backend network node list', async () => {
+    const originalFetch = globalThis.fetch
+    const requests = []
+    globalThis.fetch = async (input, init) => {
+        const request = input instanceof Request ? input : new Request(input, init)
+        requests.push({ url: request.url, method: request.method })
+
+        if (request.url.startsWith('https://horizon.example') && request.method === 'GET') {
+            return Response.json({ network_passphrase: Networks.TESTNET })
+        }
+        if (request.url.startsWith('https://rpc.example') && request.method === 'POST') {
+            const body = await request.json()
+            return Response.json({
+                jsonrpc: '2.0',
+                id: body.id,
+                result: {
+                    passphrase: Networks.TESTNET,
+                    protocolVersion: '23',
+                },
+            })
+        }
+        return Response.json({ error: 'wrong endpoint type' }, { status: 404 })
+    }
+
+    try {
+        const network = {
+            name: 'STELLAR_TESTNET',
+            node_url: 'https://rpc.example',
+            nodes: ['https://rpc.example', 'https://horizon.example'],
+        }
+        const [horizon, rpcServer] = await Promise.all([
+            getStellarHorizonServer(network, Networks.TESTNET),
+            getStellarRpcServer(network, Networks.TESTNET),
+        ])
+
+        assert.match(horizon.serverURL.toString(), /horizon\.example/)
+        assert.match(rpcServer.serverURL.toString(), /rpc\.example/)
+        assert.ok(requests.some(request => request.url.startsWith('https://horizon.example') && request.method === 'GET'))
+        assert.ok(requests.some(request => request.url.startsWith('https://rpc.example') && request.method === 'POST'))
+    } finally {
+        globalThis.fetch = originalFetch
+    }
 })
 
 test('maps web and bridge Stellar wallets without requiring extensions', () => {

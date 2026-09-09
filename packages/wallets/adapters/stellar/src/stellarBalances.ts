@@ -46,7 +46,7 @@ export function resolveStellarBalanceAmount(
             && balance.asset_issuer === asset.getIssuer()
         ))
     if (!line) return 0
-    if (!asset.isNative() && line.is_authorized === false) {
+    if (!asset.isNative() && line.is_authorized !== true) {
         throw new Error(`The ${token.symbol} trustline is not authorized`)
     }
 

@@ -231,10 +231,13 @@ export type EIP712TypedData = {
 }
 
 type DepositActionBase = {
+    step?: 'approve_permit2' | 'sign' | 'publish' | 'deposit',
+    status?: 'action_required' | 'pending' | 'waiting' | 'completed' | 'failed',
     amount: number,
     amount_in_base_units: string,
     call_data: string | null,
     encoded_args?: string[] | null,
+    from_address?: string,
     gas_limit?: string,
     fee: any | null,//TODO: clarify this field type
     network: Network,

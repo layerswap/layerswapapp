@@ -75,12 +75,6 @@ function WalletModalShell({ children }: { children: ReactNode }) {
         provider?: WalletConnectionProvider,
         options: ConnectOptions = {},
     ) => {
-        const hasConnectorPicker = !!provider?.availableConnectors?.length
-            || !!provider?.additionalConnectors?.length
-            || !!provider?.requestAdditionalConnectors
-
-        if (!hasConnectorPicker) await provider?.connectWallet()
-
         setPresentation("modal")
         setDismissible(options.dismissible ?? true)
         setTopContent(options.topContent ?? null)
