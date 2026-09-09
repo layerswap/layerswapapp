@@ -75,6 +75,17 @@ For detailed setup instructions, configuration options, and usage examples, see 
 - Solana transaction support
 - WalletConnect support for Solana
 
+### Agave 4.2 compatibility
+
+Transaction lookups accept legacy, v0, and v1 responses using
+`maxSupportedTransactionVersion: 1` and `@solana/web3.js` 1.99.0 or later.
+The [1.99.0 release](https://github.com/solana-foundation/solana-web3.js/releases/tag/v1.99.0)
+backports v1 read support to the stable SDK used by the wallet adapters.
+
+Transfer call data must still contain a legacy transaction. This update does
+not enable v1 transaction construction or signing; those require a separate
+SDK and wallet compatibility migration before the API starts returning v1 call data.
+
 ## TypeScript
 
 This package includes TypeScript definitions. All types are exported from the main entry point.
@@ -86,4 +97,3 @@ MIT
 ## Repository
 
 [GitHub](https://github.com/layerswap/layerswapapp/tree/main/packages/wallets/svm)
-
