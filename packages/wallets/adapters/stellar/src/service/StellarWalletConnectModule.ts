@@ -11,6 +11,8 @@ const STELLAR_WALLET_CONNECT_STORAGE_PREFIX = 'layerswapStellarWalletConnect'
 
 export const STELLAR_WALLET_CONNECT_ID = 'wallet_connect'
 
+export const STELLAR_APPKIT_WALLET_CONNECT_ID = 'wallet_connect_appkit'
+
 export const StellarWalletConnectChain = {
     Public: 'stellar:pubnet',
     Testnet: 'stellar:testnet',
@@ -72,7 +74,8 @@ export class StellarWalletConnectModule implements ModuleInterface, DisplayUriSo
                 customStoragePrefix: STELLAR_WALLET_CONNECT_STORAGE_PREFIX,
             })
         },
-    ) {}
+        private readonly chains: string[] = [StellarWalletConnectChain.Public, StellarWalletConnectChain.Testnet],
+    ) { }
 
     async isAvailable(): Promise<boolean> {
         return typeof window !== 'undefined'
@@ -104,7 +107,7 @@ export class StellarWalletConnectModule implements ModuleInterface, DisplayUriSo
 
     async getAddress(): Promise<{ address: string }> {
         const client = await this.getClient()
-        const chains = [StellarWalletConnectChain.Public, StellarWalletConnectChain.Testnet]
+        const chains = this.chains
         const { uri, approval } = await client.connect({
             requiredNamespaces: {
                 stellar: {

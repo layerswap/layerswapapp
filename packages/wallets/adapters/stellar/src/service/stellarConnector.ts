@@ -21,6 +21,7 @@ export function toStellarConnector(wallet: StellarWalletSnapshot): InternalConne
         hasBrowserExtension: isBridgeWallet ? false : undefined,
         extensionNotFound: isUnavailable,
         isLoadable,
+        isMobileSupported: isLoadable || wallet.isPlatformWrapper,
         providerName: PROVIDER_NAME,
     }
 }
