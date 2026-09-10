@@ -43,6 +43,7 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "@layerswap/utils": "workspace:^",
     "@layerswap/wallet-bitcoin": "workspace:^",
     "@layerswap/wallet-evm": "workspace:^",
     "@layerswap/wallet-fuel": "workspace:^",
@@ -50,6 +51,7 @@
     "@layerswap/wallet-paradex": "workspace:^",
     "@layerswap/wallet-starknet": "workspace:^",
     "@layerswap/wallet-svm": "workspace:^",
+    "@layerswap/wallet-stellar": "workspace:^",
     "@layerswap/wallet-ton": "workspace:^",
     "@layerswap/wallet-tron": "workspace:^",
     "@layerswap/widget-types": "workspace:^"

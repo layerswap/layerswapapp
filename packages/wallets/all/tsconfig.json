@@ -13,6 +13,9 @@
   ],
   "references": [
     {
+      "path": "../../utils"
+    },
+    {
       "path": "../adapters/bitcoin"
     },
     {
@@ -32,6 +35,9 @@
     },
     {
       "path": "../adapters/svm"
+    },
+    {
+      "path": "../adapters/stellar"
     },
     {
       "path": "../adapters/ton"

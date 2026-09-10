@@ -1,8 +1,13 @@
+import KnownInternalNames from "@layerswap/utils/known-ids"
 import type { WalletProviderDescriptor } from "@layerswap/wallet-core/types"
 import { defineWalletDescriptor, type DescriptorNetworkOptions } from "./defineWalletDescriptor"
 import { hasStorageKey } from "./persistedSession"
 
-const FUEL_NETWORKS = ['FUEL_MAINNET', 'FUEL_TESTNET', 'FUEL_DEVNET']
+const FUEL_NETWORKS = [
+    KnownInternalNames.Networks.FuelMainnet,
+    KnownInternalNames.Networks.FuelTestnet,
+    KnownInternalNames.Networks.FuelDevnet,
+]
 
 /**
  * Tree-shake-safe stand-in for `createFuelProvider`. Defers `@fuel-ts/*` +
