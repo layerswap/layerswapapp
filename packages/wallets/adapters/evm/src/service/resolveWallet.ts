@@ -2,12 +2,10 @@ import { type Wallet } from '@layerswap/widget-types';
 import type { Connector } from 'wagmi'
 import { getDynamicWcMetadata, getPendingDynamicWcMetadata, type AppNetworkAdapter } from "@layerswap/wallet-core"
 import { evmConnectorNameResolver, resolveEVMWalletConnectorIcon } from '../evmUtils'
-import { HIDDEN_WALLETCONNECT_ID, immutableZKEvm } from '../constants'
+import { evmWalletConnectChain, HIDDEN_WALLETCONNECT_ID, immutableZKEvm } from '../constants'
 import type { LSConnector } from '../connectors/types'
 import { findEthereumNetwork } from './findEthereumNetwork'
 import { resolveSupportedNetworks } from './resolveSupportedNetworks'
-
-const EVM_NS = 'eip155'
 
 export type ResolveWalletProps<Network> = {
     connection: {
@@ -52,7 +50,7 @@ export function resolveWallet<Network>(props: ResolveWalletProps<Network>): Wall
 
     const isHiddenConnector = connector.id === HIDDEN_WALLETCONNECT_ID
     const dynamicMetadata = isHiddenConnector
-        ? (getDynamicWcMetadata(EVM_NS, address) || getPendingDynamicWcMetadata(EVM_NS))
+        ? (getDynamicWcMetadata(evmWalletConnectChain.namespace, address) || getPendingDynamicWcMetadata(evmWalletConnectChain.namespace))
         : null
 
     const walletName = dynamicMetadata?.name || connector.name

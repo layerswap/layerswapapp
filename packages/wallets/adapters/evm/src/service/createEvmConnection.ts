@@ -1,16 +1,13 @@
 import type { WalletConnectionProvider, WalletConnectionProviderProps, WalletConnectionStore, MultiStepHandler } from "@layerswap/wallet-core/types"
 import { isMobile } from "@layerswap/utils"
-import { NetworkType } from "@layerswap/widget-types"
 import { connectModalStore, createMemoizedConnectionStore, getAdditionalConnectorsStore, type AppNetworkAdapter } from "@layerswap/wallet-core"
-import { id as PROVIDER_ID, name as PROVIDER_NAME } from '../constants'
+import { evmWalletConnectChain, id as PROVIDER_ID, name as PROVIDER_NAME, registerEvmWalletConnectChain } from '../constants'
 import { createEvmTransfer } from '../transferProvider/createEvmTransfer'
 import { supportsRegistryConnects } from './connectorsHelpers'
 import { EvmConnectionService } from './EvmConnectionService'
 import { findEthereumNetwork } from './findEthereumNetwork'
 import { useEvmStore } from './evmStore'
 import type { EvmAdditionalSupportedNetworks } from './networkBuckets'
-
-const EVM_NS = 'eip155'
 
 type CreateEvmConnectionOptions = {
     walletConnectProjectId?: string
@@ -29,6 +26,8 @@ export function createEvmConnection<Network>(
     initialProps: WalletConnectionProviderProps<Network>,
     options: CreateEvmConnectionOptions = {},
 ): WalletConnectionStore<Network> {
+    registerEvmWalletConnectChain()
+
     const {
         walletConnectProjectId,
         extraMultiStepHandlers = [],
@@ -42,7 +41,7 @@ export function createEvmConnection<Network>(
     const evmConnectionService = new EvmConnectionService<Network>()
     evmConnectionService.setNetworks(networks, networkAdapter, additionalSupportedNetworks)
 
-    const additionalConnectorsStore = getAdditionalConnectorsStore(EVM_NS, walletConnectProjectId)
+    const additionalConnectorsStore = getAdditionalConnectorsStore(evmWalletConnectChain.namespace, walletConnectProjectId)
 
     evmConnectionService.configure({
         setSelectedConnector: connectModalStore.setSelectedConnector,
@@ -98,7 +97,7 @@ export function createEvmConnection<Network>(
             const registryCapabilities = supportsRegistryConnects(allConnectors)
                 ? {
                     walletConnectRegistry: {
-                        networkTypes: [NetworkType.EVM],
+                        networkTypes: [evmWalletConnectChain.networkType],
                     },
                 }
                 : undefined

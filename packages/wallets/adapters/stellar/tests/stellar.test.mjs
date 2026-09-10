@@ -37,9 +37,9 @@ import {
 } from '../dist/esm/stellarBalances.js'
 import {
     STELLAR_APPKIT_WALLET_CONNECT_ID,
-    StellarWalletConnectChain,
     StellarWalletConnectModule,
 } from '../dist/esm/service/StellarWalletConnectModule.js'
+import { StellarWalletConnectChain } from '../dist/esm/constants.js'
 import { StellarConnectionService } from '../dist/esm/service/StellarConnectionService.js'
 import { toStellarConnector } from '../dist/esm/service/stellarConnector.js'
 import { stellarStore } from '../dist/esm/service/stellarStore.js'

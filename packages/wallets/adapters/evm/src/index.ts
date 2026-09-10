@@ -1,4 +1,5 @@
 export * from "./extendedRoutes"
+export { evmWalletConnectChain, registerEvmWalletConnectChain } from './constants'
 export {
     createEvmConnection,
     createHiddenWalletConnectConnector,
