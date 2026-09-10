@@ -20,7 +20,7 @@ import { truncateToDecimals } from "@/components/utils/RoundDecimals";
 const DEPOSIT_ACTION_TYPES = ['transfer', 'manual_transfer']
 
 const getDepositAction = (actions: DepositAction[] | undefined): { depository: string; depositCallData: string } | undefined => {
-    const action = actions?.find(a => DEPOSIT_ACTION_TYPES.includes(a.type))
+    const action = actions?.find(a => !!a.type && DEPOSIT_ACTION_TYPES.includes(a.type))
     if (!action?.to_address || !action.call_data) return undefined
     return { depository: action.to_address, depositCallData: action.call_data }
 }
@@ -85,6 +85,7 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
     const handleWithdraw = useCallback(async () => {
         if (submittingRef.current) return
         submittingRef.current = true
+        const retryingUnstartedSwap = !!error || rejected
         setError(undefined)
         setRejected(false)
         setLoading(true)
@@ -92,9 +93,9 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
         // Ensure the backend swap exists (created lazily on first click, with use_depository so
         // its deposit action carries the Depository address + depositERC20 calldata) and resolve it.
         const resolveSwapAndDepositAction = async (amount: string): Promise<{ depository: string; depositCallData: string; activeSwapId: string }> => {
-            let depositActions = depositActionsResponse
-            let activeSwapId = swapId
-            if (!swapId || !swapDetails) {
+            let depositActions = retryingUnstartedSwap ? undefined : depositActionsResponse
+            let activeSwapId = retryingUnstartedSwap ? undefined : swapId
+            if (retryingUnstartedSwap || !swapId || !swapDetails) {
                 setSwapId(undefined)
                 const swapValues: SwapFormValues = {
                     amount,
@@ -169,7 +170,7 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
             }
             submittingRef.current = false
         }
-    }, [sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, networks, sourceRoutes, depositActionsResponse, swapId, swapDetails, refuel, initialSettings, wallet, createSwap, setSwapId, executeTransfer, onWalletWithdrawalSuccess, swapBasicData.requested_amount])
+    }, [sourceAddress, source_network, source_token, destination_network, destination_token, destination_address, networks, sourceRoutes, depositActionsResponse, swapId, swapDetails, refuel, initialSettings, wallet, createSwap, setSwapId, executeTransfer, onWalletWithdrawalSuccess, swapBasicData.requested_amount, error, rejected])
 
     return {
         handleWithdraw,

@@ -5,6 +5,7 @@ import LayerSwapApiClient, {
     SignDepositAction,
     SwapBasicData,
     SwapDetails,
+    TransferDepositAction,
 } from "@/lib/apiClients/layerSwapApiClient";
 import { useGaslessAuthorizationStore } from "@/stores/swapTransactionStore";
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
@@ -30,13 +31,49 @@ export type DepositExecutionContext = {
 
 export const isSignAction = (action: DepositAction): action is SignDepositAction => action.type === 'sign'
 
-export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClick: WalletTransfer): Promise<void> => {
-    const { swapData, depositActions, swapBasicData, selectedWallet, sourceAddress, layerswapApiClient, setActionStateText, setSwapTransaction, onSuccess } = ctx
+export const isTransferAction = (action: DepositAction): action is TransferDepositAction =>
+    action.type === 'transfer' || action.type === 'manual_transfer'
 
-    const transferProps = resolveTransactionData(swapData, depositActions, swapBasicData, selectedWallet)
-    setActionStateText("Opening Wallet")
+export const getActionableDepositAction = (actions: DepositAction[] | undefined): SignDepositAction | TransferDepositAction | undefined => {
+    if (!actions?.length) return undefined
+
+    const current = actions.find(action =>
+        action.status === 'action_required' && (isSignAction(action) || isTransferAction(action))
+    )
+    if (current && (isSignAction(current) || isTransferAction(current))) return current
+
+    const legacy = actions.find(action =>
+        !action.status && (isSignAction(action) || isTransferAction(action))
+    )
+    return legacy && (isSignAction(legacy) || isTransferAction(legacy)) ? legacy : undefined
+}
+
+const DEPOSIT_ACTION_LABELS: Record<string, string> = {
+    approve_permit2: 'Approve token',
+    sign: 'Sign to swap',
+    publish: 'Confirm swap',
+    deposit: 'Send from wallet',
+}
+
+export const getDepositActionLabel = (action: DepositAction): string =>
+    action.step ? DEPOSIT_ACTION_LABELS[action.step] ?? 'Continue' : 'Continue'
+
+export const requiresDepositActionRefresh = (action: DepositAction, actions: DepositAction[]): boolean =>
+    action.step === 'approve_permit2'
+    || (action.step === 'sign' && actions.some(candidate => candidate.step === 'publish'))
+
+export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClick: WalletTransfer, action: TransferDepositAction): Promise<string | undefined> => {
+    const { swapData, swapBasicData, selectedWallet, sourceAddress, layerswapApiClient, setActionStateText, setSwapTransaction, onSuccess } = ctx
+
+    const transferProps = resolveTransactionData(swapData, action, swapBasicData, selectedWallet)
+    setActionStateText(action.step === 'approve_permit2' ? "Approve in your wallet" : "Confirm in your wallet")
     const hash = await onClick(transferProps)
     if (!hash) return
+
+    // Permit2 approval is a prerequisite, not the swap transaction. The caller
+    // refreshes the server-owned workflow after it confirms and presents the
+    // newly actionable sign/publish step.
+    if (action.step === 'approve_permit2') return hash
 
     onSuccess()
     setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, hash)
@@ -55,16 +92,17 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
             toAddress: swapBasicData?.destination_address,
         })
     }
+
+    return hash
 }
 
-export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, onSign: GaslessSigner): Promise<void> => {
+export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, onSign: GaslessSigner, signAction: SignDepositAction): Promise<void> => {
     const { swapData, depositActions, sourceAddress, layerswapApiClient, setActionStateText, setSwapTransaction, onSuccess } = ctx
+    const requiresUserPublish = depositActions.some(action => action.step === 'publish')
 
-    const signAction = depositActions.find(isSignAction)
-    if (!signAction) throw new Error('No sign action')
     if (!sourceAddress) throw new Error('No selected account')
 
-    setActionStateText("Sign in wallet")
+    setActionStateText("Sign in your wallet")
     let authorizedValidBefore: number | undefined
     try {
         authorizedValidBefore = await submitGaslessAuthorization({
@@ -76,32 +114,35 @@ export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, 
         })
     } catch (e: any) {
         // Don't flag the route unavailable when the user simply declined.
-        if (!isUserRejection(e)) {
+        if (!requiresUserPublish && !isUserRejection(e)) {
             const message = e?.response?.data?.error?.message || e?.message
             useGaslessPreferenceStore.getState().reportGaslessUnavailable('deposit', message)
         }
         throw e
     }
 
+    // A self-paid frontend swap still needs the user to publish the prepared
+    // transaction after the signature is stored. Do not mark it submitted yet.
+    if (requiresUserPublish) return
+
     setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, '')
     useGaslessAuthorizationStore.getState().setGaslessAuthorization(swapData.id, authorizedValidBefore ?? fallbackGaslessValidBefore())
     onSuccess()
 }
 
-const resolveTransactionData = (swapDetails: SwapDetails, deposit_actions: DepositAction[], swapBasicData: SwapBasicData, selectedWallet: Wallet): TransferProps => {
-    const depositAction = deposit_actions?.find(action => action.type === 'transfer')
-    if (!depositAction) {
-        throw new Error('No deposit action found')
-    }
+const resolveTransactionData = (swapDetails: SwapDetails, depositAction: TransferDepositAction, swapBasicData: SwapBasicData, selectedWallet: Wallet): TransferProps => {
+    if (!depositAction.to_address) throw new Error('Deposit action is missing a target address')
+    if (depositAction.amount === undefined) throw new Error('Deposit action is missing an amount')
+
     return {
         amount: depositAction.amount,
-        callData: depositAction.call_data,
+        callData: depositAction.call_data || '0x',
         depositAddress: depositAction.to_address,
         sequenceNumber: swapDetails.metadata.sequence_number,
         swapId: swapDetails.id,
         userDestinationAddress: swapBasicData.destination_address,
-        network: swapBasicData.source_network,
-        token: swapBasicData.source_token,
+        network: depositAction.network ?? swapBasicData.source_network,
+        token: depositAction.token ?? swapBasicData.source_token,
         selectedWallet,
     }
 }

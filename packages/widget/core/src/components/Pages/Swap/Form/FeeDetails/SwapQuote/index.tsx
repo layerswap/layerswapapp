@@ -26,13 +26,28 @@ interface QuoteComponentProps {
     onOpen?: () => void;
     isAccordionOpen?: boolean;
     partner?: Partner;
+    compact?: boolean;
 }
 
-const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quoteData, isQuoteLoading, partner }) => {
+const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quoteData, isQuoteLoading, partner, compact }) => {
     const [isOpen, setIsOpen] = useState(false)
     const { wallets: destWallets } = useWallet(values.to, 'autofill')
     const wallet = (values?.to && values?.destination_address) ? destWallets?.find(w => w.addresses?.some(a => Address.equals(a, values.destination_address!, values.to!))) : undefined
     const selectedSourceAccount = useSelectedAccount("from", values?.from?.name);
+
+    if (compact) {
+        return <div className="w-full rounded-2xl bg-secondary-500">
+            <SummaryRow
+                compact
+                isQuoteLoading={isQuoteLoading}
+                values={values}
+                wallet={wallet}
+                quoteData={quoteData}
+                sourceAddress={selectedSourceAccount?.address}
+                partner={partner}
+            />
+        </div>
+    }
 
     return (
         <Accordion

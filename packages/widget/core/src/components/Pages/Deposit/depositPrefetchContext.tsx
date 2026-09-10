@@ -152,6 +152,8 @@ export function DepositPrefetchProvider({ children }: { children: ReactNode }) {
                 reference_id: initialSettings.externalId,
                 refuel: false,
                 use_deposit_address: true,
+                use_frontend_swap: true,
+                use_gasless: false,
                 source_address: sourceAddressForSwap,
                 refund_address: sourceAddressForSwap,
             };

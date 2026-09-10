@@ -4,7 +4,7 @@ import LinkWithIcon from '@/components/Common/LinkWithIcon';
 import { FC, useCallback, useEffect, useMemo, useRef } from 'react'
 import { Widget } from '@/components/Widget/Index';
 import SwapSummary from '../Summary';
-import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, SwapBasicData, SwapDetails, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
+import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, SwapBasicData, SwapDetails, SwapExecution, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
 import { truncateDecimals } from '@/components/utils/RoundDecimals';
 import { SwapFailReasons } from '@/Models/RangeError';
 import { Gauge } from './gauge';
@@ -23,21 +23,23 @@ import { getExplorerUrl } from '@/lib/address/explorerUrl';
 import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
 import { SwapPhase } from '@/components/utils/resolveSwapPhase';
 import { useDepositSettings } from '@/context/depositSettings';
-import { useSettingsState } from '@/context/settings';
-import { useExtendedRoutesStore } from '@/stores/extendedRoutesStore';
 import { SwapFailureReason } from '@/hooks/useSwapRetry';
+import { SwapQuoteDetails } from '../SwapQuoteDetails';
+import { isFrontendSwapExecution } from '@/helpers/swapFlow';
 
 const apiClient = new LayerSwapApiClient();
 
 type Props = {
     swapBasicData: SwapBasicData;
     swapDetails: SwapDetails;
+    execution: SwapExecution | undefined;
     quote: SwapQuote | undefined;
     refuel: Refuel | undefined;
     failureReason?: SwapFailureReason;
 }
 
-const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel, failureReason }) => {
+const Processing: FC<Props> = ({ swapBasicData, swapDetails, execution, quote, refuel, failureReason }) => {
+    const isFrontendSwap = isFrontendSwapExecution(execution)
     const { boot, show, update } = useIntercom();
     const { onSwapStatusChange } = useCallbacks()
     const { isDepositFlow } = useDepositSettings()
@@ -386,6 +388,16 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel, fail
         <Widget.Content fitContent>
             <div className={`w-full min-h-102.5 h-full space-y-2 flex flex-col justify-between text-primary-text`}>
                 <SwapSummary />
+                {!isFrontendSwap || phase === SwapPhase.Completed ? null : (
+                    <SwapQuoteDetails
+                        compact
+                        swapBasicData={swapBasicData}
+                        quote={quote}
+                        refuel={refuel}
+                        quoteIsLoading={false}
+                        quoteError={undefined}
+                    />
+                )}
                 <div className="bg-secondary-500 font-normal px-3 pt-6 pb-3 rounded-2xl space-y-4 flex flex-col w-full relative z-10 divide-y-2 divide-secondary-300 divide-dashed">
                     <div className='pb-4'>
                         <div className='flex flex-col gap-2 items-center'>
