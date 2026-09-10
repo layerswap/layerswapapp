@@ -5,6 +5,8 @@ import {
     Address,
     Asset,
     Keypair,
+    Horizon,
+    rpc,
     Memo,
     Networks,
     Operation,
@@ -28,6 +30,7 @@ import {
     getStellarRpcServer,
 } from '../dist/esm/stellarServers.js'
 import {
+    buildStellarDepositOperation,
     validateStellarOperationXdr,
     validateStellarXdr,
 } from '../dist/esm/transferProvider/validateStellarXdr.js'
@@ -43,6 +46,8 @@ import {
 import { StellarConnectionService } from '../dist/esm/service/StellarConnectionService.js'
 import { toStellarConnector } from '../dist/esm/service/stellarConnector.js'
 import { stellarStore } from '../dist/esm/service/stellarStore.js'
+import { stellarKitManager } from '../dist/esm/service/stellarKitManager.js'
+import { createStellarTransfer } from '../dist/esm/transferProvider/createStellarTransfer.js'
 
 const sourceKey = Keypair.random()
 const receiverKey = Keypair.random()
@@ -147,7 +152,6 @@ function buildFixture({
         token,
         depository,
         encodedArgs: [
-            sourceKey.publicKey(),
             Buffer.from(depositIdBytes(depositId)).toString('hex'),
             tokenContract,
             receiver,
@@ -158,46 +162,17 @@ function buildFixture({
     }
 }
 
-function buildOperationFixture({
-    networkPassphrase = Networks.TESTNET,
-    token = nativeToken,
-    depository = depositoryContract,
-    receiver = receiverKey.publicKey(),
-    amount = amountInBaseUnits,
-    depositId = swapSequenceNumber,
-    source = sourceKey.publicKey(),
-    auth = [],
-} = {}) {
-    const tokenContract = resolveStellarAsset(token).contractId(networkPassphrase)
-    const args = [
-        new Address(sourceKey.publicKey()).toScVal(),
-        nativeToScVal(depositIdBytes(depositId)),
-        new Address(tokenContract).toScVal(),
-        new Address(receiver).toScVal(),
-        nativeToScVal(BigInt(amount), { type: 'i128' }),
-    ]
-    const operation = Operation.invokeContractFunction({
-        contract: depository,
-        function: 'deposit',
-        args,
-        auth,
-        source,
+function buildDepositOperation(fixture, overrides = {}) {
+    return buildStellarDepositOperation({
+        networkPassphrase: fixture.networkPassphrase,
+        selectedAddress: sourceKey.publicKey(),
+        depositoryContract: fixture.depository,
+        token: fixture.token,
+        amountInBaseUnits: fixture.amount,
+        encodedArgs: fixture.encodedArgs,
+        swapSequenceNumber: fixture.depositId,
+        ...overrides,
     })
-    return {
-        operationXdr: operation.toXdr('base64'),
-        networkPassphrase,
-        token,
-        depository,
-        encodedArgs: [
-            sourceKey.publicKey(),
-            Buffer.from(depositIdBytes(depositId)).toString('hex'),
-            tokenContract,
-            receiver,
-            amount,
-        ],
-        amount,
-        depositId,
-    }
 }
 
 function validateFixture(fixture, overrides = {}) {
@@ -260,49 +235,135 @@ test('validates native and issued-asset depository XDR on both networks', () => 
     assert.equal(validateFixture(issued).source, sourceKey.publicKey())
 })
 
-test('validates backend Stellar depository operation XDR before simulation', () => {
-    const native = buildOperationFixture()
-    const parsedNative = validateStellarOperationXdr({
-        operationXdr: native.operationXdr,
-        networkPassphrase: native.networkPassphrase,
-        selectedAddress: sourceKey.publicKey(),
-        depositoryContract: native.depository,
-        token: native.token,
-        amountInBaseUnits: native.amount,
-        encodedArgs: native.encodedArgs,
-        swapSequenceNumber: native.depositId,
-    })
-    assert.equal(Operation.fromXdrObject(parsedNative).source, sourceKey.publicKey())
+test('builds native and issued-asset deposits from four arguments with the connected wallet as from', () => {
+    for (const fixture of [buildFixture(), buildFixture({ networkPassphrase: Networks.PUBLIC, token: issuedToken })]) {
+        const encodedOperation = buildDepositOperation(fixture)
+        const operation = Operation.fromXdrObject(encodedOperation)
+        assert.equal(operation.source, sourceKey.publicKey())
+        assert.equal(operation.func.type, 'hostFunctionTypeInvokeContract')
+        const invocation = operation.func.invokeContract
+        assert.equal(Address.fromScAddress(invocation.contractAddress).toString(), fixture.depository)
+        assert.equal(invocation.functionName.toString(), 'deposit')
+        assert.equal(invocation.args.length, 5)
+        assert.equal(Address.fromScVal(invocation.args[0]).toString(), sourceKey.publicKey())
+        assert.deepEqual(invocation.args.map(arg => arg.toXdr('base64')),
+            fixture.transaction.operations[0].func.invokeContract.args.map(arg => arg.toXdr('base64')))
+        assert.deepEqual(operation.auth, [])
+        const operationParams = {
+            networkPassphrase: fixture.networkPassphrase,
+            selectedAddress: sourceKey.publicKey(),
+            depositoryContract: fixture.depository,
+            token: fixture.token,
+            amountInBaseUnits: fixture.amount,
+            encodedArgs: fixture.encodedArgs,
+            swapSequenceNumber: fixture.depositId,
+        }
+        assert.doesNotThrow(() => validateStellarOperationXdr({
+            ...operationParams,
+            operationXdr: encodedOperation.toXdr('base64'),
+        }))
+        const authorized = Operation.invokeContractFunction({
+            contract: fixture.depository,
+            function: 'deposit',
+            source: sourceKey.publicKey(),
+            args: invocation.args,
+            auth: fixture.transaction.operations[0].auth,
+        })
+        assert.throws(() => validateStellarOperationXdr({
+            ...operationParams,
+            operationXdr: authorized.toXdr('base64'),
+        }), /must not contain authorization entries/)
 
-    const issued = buildOperationFixture({ networkPassphrase: Networks.PUBLIC, token: issuedToken })
-    assert.doesNotThrow(() => validateStellarOperationXdr({
-        operationXdr: issued.operationXdr,
-        networkPassphrase: issued.networkPassphrase,
-        selectedAddress: sourceKey.publicKey(),
-        depositoryContract: issued.depository,
-        token: issued.token,
-        amountInBaseUnits: issued.amount,
-        encodedArgs: issued.encodedArgs,
-        swapSequenceNumber: issued.depositId,
-    }))
+        const otherSource = Keypair.random().publicKey()
+        const switched = Operation.fromXdrObject(buildDepositOperation(fixture, { selectedAddress: otherSource }))
+        assert.equal(switched.source, otherSource)
+        assert.equal(Address.fromScVal(switched.func.invokeContract.args[0]).toString(), otherSource)
+    }
+})
 
-    const authorized = buildOperationFixture({
-        auth: createAuthorization({
-            depository: native.depository,
-            tokenContract: native.encodedArgs[2],
-            args: Operation.fromXdrObject(parsedNative).func.invokeContract.args,
-        }),
+test('prepares, signs and submits a deposit without API call_data or from_address', async t => {
+    const fixture = buildFixture()
+    const calls = []
+    t.mock.method(Horizon.Server.prototype, 'root', async () => ({ network_passphrase: fixture.networkPassphrase }))
+    t.mock.method(rpc.Server.prototype, 'getNetwork', async () => ({ passphrase: fixture.networkPassphrase }))
+    t.mock.method(Horizon.Server.prototype, 'loadAccount', async address => {
+        assert.equal(address, sourceKey.publicKey())
+        return new Account(address, sourceSequence)
     })
-    assert.throws(() => validateStellarOperationXdr({
-        operationXdr: authorized.operationXdr,
-        networkPassphrase: authorized.networkPassphrase,
-        selectedAddress: sourceKey.publicKey(),
-        depositoryContract: authorized.depository,
-        token: authorized.token,
-        amountInBaseUnits: authorized.amount,
-        encodedArgs: authorized.encodedArgs,
-        swapSequenceNumber: authorized.depositId,
-    }), /must not contain authorization entries/)
+    t.mock.method(Horizon.Server.prototype, 'fetchBaseFee', async () => 100)
+    t.mock.method(rpc.Server.prototype, 'prepareTransaction', async transaction => {
+        calls.push('prepare')
+        const operation = transaction.operations[0]
+        assert.equal(transaction.source, sourceKey.publicKey())
+        assert.equal(transaction.sequence, (BigInt(sourceSequence) + 1n).toString())
+        assert.equal(operation.source, sourceKey.publicKey())
+        assert.deepEqual(operation.auth, [])
+        assert.deepEqual(operation.func.invokeContract.args.map(arg => arg.toXdr('base64')),
+            fixture.transaction.operations[0].func.invokeContract.args.map(arg => arg.toXdr('base64')))
+        return fixture.transaction
+    })
+    t.mock.method(stellarKitManager, 'revalidate', async (address, passphrase) => {
+        calls.push('revalidate')
+        assert.equal(address, sourceKey.publicKey())
+        assert.equal(passphrase, fixture.networkPassphrase)
+    })
+    t.mock.method(stellarKitManager, 'signTransaction', async (envelope, passphrase, address) => {
+        calls.push('sign')
+        assert.equal(address, sourceKey.publicKey())
+        const transaction = TransactionBuilder.fromXdr(envelope, passphrase)
+        transaction.sign(sourceKey)
+        return { signedTxXdr: transaction.toXdr(), signerAddress: address }
+    })
+    t.mock.method(Horizon.Server.prototype, 'submitTransaction', async transaction => {
+        calls.push('submit')
+        assert.equal(transaction.signatures.length, 1)
+        return { successful: true, hash: 'deposit-hash' }
+    })
+    const params = {
+        selectedWallet: { address: sourceKey.publicKey() },
+        depositAddress: fixture.depository,
+        network: {
+            name: 'STELLAR_TESTNET',
+            type: 'stellar',
+            chain_id: fixture.networkPassphrase,
+            node_url: 'https://deposit-flow.example',
+        },
+        token: fixture.token,
+        amountInBaseUnits: fixture.amount,
+        encodedArgs: fixture.encodedArgs,
+        sequenceNumber: fixture.depositId,
+        callData: '',
+    }
+    const provider = createStellarTransfer()
+    assert.equal(await provider.executeTransfer(params), 'deposit-hash')
+    assert.deepEqual(calls, ['prepare', 'revalidate', 'sign', 'submit'])
+
+    calls.length = 0
+    const tampered = buildFixture({ receiver: Keypair.random().publicKey() })
+    t.mock.method(rpc.Server.prototype, 'prepareTransaction', async () => tampered.transaction)
+    await assert.rejects(provider.executeTransfer(params), /encoded_args do not match/)
+    assert.deepEqual(calls, [])
+})
+
+test('rejects malformed and mismatched deposit components before simulation', () => {
+    const fixture = buildFixture()
+    const withArg = (index, value) => ({ encodedArgs: fixture.encodedArgs.map((arg, i) => i === index ? value : arg) })
+    assert.throws(() => buildDepositOperation(fixture, { encodedArgs: [] }), /exactly four/)
+    assert.throws(() => buildDepositOperation(fixture, { encodedArgs: [sourceKey.publicKey(), ...fixture.encodedArgs] }), /exactly four/)
+    for (const id of ['2a', 'z'.repeat(64), `0x${fixture.encodedArgs[0]}`]) {
+        assert.throws(() => buildDepositOperation(fixture, withArg(0, id)), /32 hex-encoded bytes/)
+    }
+    assert.throws(() => buildDepositOperation(fixture, withArg(0, '0'.repeat(64))), /ID does not match/)
+    assert.throws(() => buildDepositOperation(fixture, withArg(1, sourceKey.publicKey())), /asset contract is invalid/)
+    assert.throws(() => buildDepositOperation(fixture, withArg(1, depositoryContract)), /asset does not match/)
+    assert.throws(() => buildDepositOperation(fixture, withArg(2, depositoryContract)), /receiver is invalid/)
+    for (const amount of ['0', '-1', '1.5', '1e7']) {
+        assert.throws(() => buildDepositOperation(fixture, withArg(3, amount)), /amount is invalid/)
+    }
+    assert.throws(() => buildDepositOperation(fixture, withArg(3, '1')), /amount does not match/)
+    assert.throws(() => buildDepositOperation(fixture, withArg(3, (1n << 127n).toString())))
+    assert.throws(() => buildDepositOperation(fixture, { selectedAddress: depositoryContract }), /source account is invalid/)
+    assert.throws(() => buildDepositOperation(fixture, { depositoryContract: sourceKey.publicKey() }), /must be a C-address/)
 })
 
 test('rejects security-sensitive depository XDR mismatches', () => {
@@ -316,7 +377,7 @@ test('rejects security-sensitive depository XDR mismatches', () => {
     assert.throws(() => validateFixture(fixture, { token: issuedToken }), /asset does not match/)
     assert.throws(() => validateFixture(fixture, { swapSequenceNumber: 43 }), /ID does not match/)
     assert.throws(() => validateFixture(fixture, {
-        encodedArgs: fixture.encodedArgs.map((value, index) => index === 3 ? otherSource : value),
+        encodedArgs: fixture.encodedArgs.map((value, index) => index === 2 ? otherSource : value),
     }), /encoded_args do not match/)
     assert.throws(() => validateFixture(fixture, { currentAccountSequence: '12344' }), error => (
         error.name === 'TransactionExpired' && /stale account sequence/.test(error.message)
