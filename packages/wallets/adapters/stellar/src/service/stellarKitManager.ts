@@ -285,7 +285,7 @@ class StellarKitManager {
         const walletNetwork = await this.requireKit().getNetwork().catch(() => undefined)
         if (walletNetwork?.networkPassphrase && walletNetwork.networkPassphrase !== expected) {
             const target = expected === this.networks?.TESTNET ? 'Testnet' : 'Mainnet'
-            throw new Error(`The wallet is on the wrong network. Switch it to Stellar ${target}, then try again`)
+            throw walletError(ActionMessageType.WaletMismatch, `The wallet is on the wrong network. Switch it to Stellar ${target}, then try again`)
         }
     }
 
