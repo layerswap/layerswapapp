@@ -5,7 +5,7 @@ import rspack from '@rspack/core';
 import { ModuleFederationPlugin } from '@module-federation/enhanced/rspack';
 import { resolveBuildIdentity } from './scripts/build-id.mjs';
 import { ASSET_BASE, CHUNK_HASH_LENGTH } from './scripts/cdn-layout.mjs';
-import { WIDGET_PROTOCOL_MAJOR } from '@layerswap/widget-types';
+import { WIDGET_PROTOCOL_MAJOR } from '@layerswap/widget-js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);

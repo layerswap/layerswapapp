@@ -1,5 +1,15 @@
 # @layerswap/wallet-starknet
 
+## 2.0.1
+
+### Patch Changes
+
+- Wallet connection readiness fixes
+- Updated dependencies
+  - @layerswap/utils@2.0.1
+  - @layerswap/wallet-core@2.0.1
+  - @layerswap/widget-types@1.0.1
+
 ## 2.0.0
 
 ### Major Changes

@@ -82,7 +82,7 @@ export const GasFee = ({ values, quote }: { values: SwapValues, quote: SwapQuote
     const gasFeeInUsd = gasData?.gas && gasTokenPriceInUsd ? gasData.gas * gasTokenPriceInUsd : null
     const displayGasFeeInUsd = gasFeeInUsd != null ? (gasFeeInUsd < 0.01 ? '<$0.01' : `$${gasFeeInUsd.toFixed(2)}`) : null
     const gas = gasData?.gas
-    const gasCurrencyName = gasData?.token?.symbol
+    const gasCurrencyName = gasData?.token?.asset
 
     const gaslessEnabled = useGaslessPreferenceStore(s => s.gaslessEnabled)
     const setGaslessEnabled = useGaslessPreferenceStore(s => s.setGaslessEnabled)
@@ -171,7 +171,7 @@ const Fees = ({ quote, values }: { quote: SwapQuote | undefined, values: SwapVal
             ? (discountedFeeInUsd < 0.01 ? '<$0.01' : `$${discountedFeeInUsd.toFixed(2)}`)
             : null)
 
-    const currencyName = values.fromAsset?.symbol || ''
+    const currencyName = values.fromAsset?.asset || ''
     const displayLsFee = discountedFee !== undefined
         ? truncateDecimals(discountedFee, values.fromAsset?.decimals)
         : undefined
@@ -217,7 +217,7 @@ const Reward = ({ reward }: { reward: QuoteReward }) => {
             </TooltipTrigger>
             <TooltipContent className="bg-secondary-300! border-secondary-300! text-primart-text!">
                 <span>{reward?.amount || '-'} </span>
-                <span>{reward?.amount ? reward.token.symbol : ''}</span>
+                <span>{reward?.amount ? reward.token.asset : ''}</span>
             </TooltipContent>
         </Tooltip>
     </RowWrapper>
@@ -247,7 +247,7 @@ const ExchangeTokenContract = ({ fromAsset, network }: { fromAsset: NetworkRoute
         return shortenString(fromAsset.contract)
     }, [fromAsset?.contract, network])
 
-    return <RowWrapper title={`${network?.display_name} - ${fromAsset?.symbol}`}>
+    return <RowWrapper title={`${network?.display_name} - ${fromAsset?.asset}`}>
         {
             isValidAddress && fromAsset?.contract && network ? (
                 <div className="text-sm group/addressItem text-secondary-text">

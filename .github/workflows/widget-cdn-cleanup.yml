@@ -92,8 +92,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build shared widget protocol
-        run: pnpm --filter @layerswap/widget-types build
+      - name: Build widget loader protocol
+        run: pnpm --filter @layerswap/widget-js... build
 
       - name: Log in to Azure with OIDC
         uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2
@@ -170,8 +170,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build shared widget protocol
-        run: pnpm --filter @layerswap/widget-types build
+      - name: Build widget loader protocol
+        run: pnpm --filter @layerswap/widget-js... build
 
       - name: Download approved plan
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4

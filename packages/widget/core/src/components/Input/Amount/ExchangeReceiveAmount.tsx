@@ -22,7 +22,7 @@ export const ExchangeReceiveAmount: FC<ReceiveAmountProps> = ({ destination_toke
                     { "text-secondary-text": !receive_amount }
                 )}>
                     <NumFlowWithFallback value={receive_amount || 0} trend={0} format={{ maximumFractionDigits: fee?.quote.destination_token?.decimals || 2 }} />
-                    <span className="ml-1">{destination_token?.symbol}</span>
+                    <span className="ml-1">{destination_token?.asset}</span>
                 </div>
             </div>
             <div className="flex items-baseline space-x-2 mt-1.5">

@@ -16,7 +16,7 @@ export function filterSourceNetworks(settings: LayerSwapSettings, walletProvider
     const allNetworkTypes = Object.keys(networkTypesAggregation)
 
     const availableNetworkTypes = allNetworkTypes.filter(networkType => {
-        return networkTypesAggregation[networkType].some(route => route.deposit_methods.includes("deposit_address") ||
+        return networkTypesAggregation[networkType].some(route => route?.deposit_methods?.includes("deposit_address") ||
             walletProviders.some(provider => provider.withdrawalSupportedNetworks.includes(route.name))
         )
     })

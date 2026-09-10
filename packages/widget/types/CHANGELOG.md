@@ -1,5 +1,11 @@
 # @layerswap/widget-types
 
+## 2.0.1
+
+### Major Changes
+
+- Wallet connection readiness fixes
+
 ## 1.0.0
 
 ### Major Changes

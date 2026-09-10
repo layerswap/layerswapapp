@@ -1,7 +1,6 @@
 packages:
   - packages/**
   - apps/*
-  - examples/widget-react-host
 
 catalog:
   '@tanstack/react-query': 5.90.11

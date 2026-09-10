@@ -56,6 +56,7 @@ export const polymarketProvider: ExtendedRouteProvider = {
         const token: Token = {
             ...baseToken,
             symbol: POLYMARKET_DISPLAY_SYMBOL,
+            asset: POLYMARKET_DISPLAY_SYMBOL,
             display_asset: POLYMARKET_DISPLAY_SYMBOL,
             contract: POLYMARKET_PUSD_ADDRESS,
         }

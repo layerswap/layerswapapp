@@ -129,7 +129,7 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
             const amount = swapBasicData.requested_amount.toString().trim()
             const decimals = source_token.decimals ?? 6
             const amountPattern = decimals > 0 ? new RegExp(`^\\d+(\\.\\d{1,${decimals}})?$`) : /^\d+$/
-            if (!amountPattern.test(amount)) throw new Error(`Invalid amount — at most ${decimals} decimal places for ${source_token.symbol}`)
+            if (!amountPattern.test(amount)) throw new Error(`Invalid amount — at most ${decimals} decimal places for ${source_token.asset}`)
             const A = Number(amount)
             if (!Number.isFinite(A) || A <= 0) throw new Error('Invalid amount')
 
