@@ -9,6 +9,7 @@ import { useRouteSortingStore } from "@/stores/routeSortingStore";
 import useDepositAddressDestinations from "@/hooks/useDepositAddressDestinations";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { NetworkRoute } from "@layerswap/widget-types";
+import { useSwapRouteRecency } from "@/stores/swapRouteHistoryStore";
 
 type Props = {
     /** When true, render a static (non-interactive) badge — the destination is
@@ -24,6 +25,7 @@ const DestinationSelector: FC<Props> = ({ locked }) => {
     const [searchQuery, setSearchQuery] = useState("");
     const sortingOption = useRouteSortingStore((s) => s.sortingOption);
     const routesHistory = useRecentNetworksStore((state) => state.recentRoutes);
+    const swapRecency = useSwapRouteRecency();
 
     const { data: destinationRoutesData } = useDepositAddressDestinations({ enabled: !locked });
     const isLoading = !locked && destinationRoutesData === undefined;
@@ -45,6 +47,7 @@ const DestinationSelector: FC<Props> = ({ locked }) => {
             balances: null,
             groupBy: "token",
             recents: routesHistory,
+            swapRecency,
             balancesLoaded: false,
             search: searchQuery,
             suggestionsLimit: 4,
@@ -52,7 +55,7 @@ const DestinationSelector: FC<Props> = ({ locked }) => {
             skipBalanceGate: true,
             hideSuggestions: true,
         });
-    }, [availableRoutes, searchQuery, routesHistory, sortingOption]);
+    }, [availableRoutes, searchQuery, routesHistory, swapRecency, sortingOption]);
 
     // Pre-populate the highest-ranked destination so downstream sub-flows have
     // something to use when the dropdown is enabled and no destination is set.
