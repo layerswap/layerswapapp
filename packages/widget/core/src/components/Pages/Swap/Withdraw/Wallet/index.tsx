@@ -174,7 +174,8 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
     const { signGaslessDeposit, isGaslessSupported } = useGasless()
     const rpcHealth = useRpcHealth(swapData.source_network)
 
-    const clickHandler = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
+    const clickHandler = useCallback(async (transferProps: TransferProps) => {
+        const { amount, depositAddress } = transferProps
         setButtonClicked(true)
         setError(undefined)
         setLoading(true)
@@ -186,18 +187,17 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
             if (!wallet)
                 throw new Error('No selected account')
 
+            const resolvedTransferProps: TransferProps = {
+                ...transferProps,
+                token: swapData.source_token,
+                selectedWallet: wallet,
+                network: swapData.source_network,
+                balances,
+                userDestinationAddress: swapData.destination_address,
+            }
+
             try {
-                const tx = await executeTransfer({
-                    token: swapData.source_token,
-                    amount,
-                    depositAddress,
-                    callData,
-                    selectedWallet: wallet,
-                    network: swapData.source_network,
-                    balances: balances,
-                    userDestinationAddress: swapData.destination_address,
-                    swapId,
-                }, wallet)
+                const tx = await executeTransfer(resolvedTransferProps, wallet)
 
                 if (!tx)
                     throw new Error('No transaction')
@@ -209,16 +209,7 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
                 if (typeof e === 'string' && e?.includes('No transfer provider found for network:')) {
                     if (!provider?.transfer) throw new Error('No provider transfer')
 
-                    const tx = await provider.transfer({
-                        token: swapData.source_token,
-                        amount,
-                        depositAddress,
-                        callData,
-                        selectedWallet: wallet,
-                        network: swapData.source_network,
-                        balances: balances,
-                        userDestinationAddress: swapData.destination_address,
-                    }, wallet)
+                    const tx = await provider.transfer(resolvedTransferProps, wallet)
 
                     if (!tx)
                         throw new Error('No transaction')

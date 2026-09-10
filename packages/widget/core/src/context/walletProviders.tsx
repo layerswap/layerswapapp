@@ -85,6 +85,7 @@ const ConnectModalHost: React.FC<{ settings: ReturnType<typeof useSettingsState>
             onClose={onFinish}
             modalId={"connectNewWallet"}
             dismissible={dismissible}
+            nonModal
             header={
                 <div className="flex items-center gap-1">
                     {

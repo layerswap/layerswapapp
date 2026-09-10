@@ -1,4 +1,4 @@
-import KnownInternalNames from "./knownIds";
+import KnownInternalNames from "@layerswap/utils/known-ids";
 
 export default class CurrencySettings {
     Order?: number;

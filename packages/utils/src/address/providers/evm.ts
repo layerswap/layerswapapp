@@ -1,9 +1,10 @@
 import { NetworkType, type Network } from '@layerswap/widget-types';
-import { keccak256 } from "js-sha3";
+import sha3 from "js-sha3";
 import KnownInternalNames from "@/knownIds";
 import { AddressSelectionMode, AddressUtilsProvider, AddressUtilsProviderProps } from "@/types";
 
 export const name = 'EVM';
+const { keccak256 } = sha3;
 
 function isChecksumAddress(address: string): boolean {
     // Check each case

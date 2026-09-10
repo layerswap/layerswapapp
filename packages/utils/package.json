@@ -10,6 +10,14 @@
     ".": {
       "types": "./dist/types/index.d.ts",
       "default": "./dist/esm/index.js"
+    },
+    "./common": {
+      "types": "./dist/types/common.d.ts",
+      "default": "./dist/esm/common.js"
+    },
+    "./known-ids": {
+      "types": "./dist/types/knownIds.d.ts",
+      "default": "./dist/esm/knownIds.js"
     }
   },
   "sideEffects": false,
@@ -21,6 +29,7 @@
     "build": "pnpm run clean && pnpm run build:esm+types",
     "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm && tsc-alias -p tsconfig.json --outDir ./dist/types",
     "check:types": "tsc --noEmit",
+    "test": "pnpm run build:esm+types && node --test tests/*.test.mjs",
     "clean": "rimraf dist tsconfig.tsbuildinfo"
   },
   "author": "Layerswap",
