@@ -4,6 +4,7 @@ import {
     StrKey,
     Transaction,
     TransactionBuilder,
+    nativeToScVal,
     scValToNative,
     xdr,
 } from '@stellar/stellar-sdk'
@@ -25,6 +26,11 @@ export type ValidateStellarXdrParams = {
     currentAccountSequence: string
     now?: number
 }
+
+export type BuildStellarDepositOperationParams = Omit<
+    ValidateStellarXdrParams,
+    'envelopeXdr' | 'currentAccountSequence' | 'now'
+>
 
 export type ValidateStellarOperationXdrParams = Omit<
     ValidateStellarXdrParams,
@@ -127,7 +133,7 @@ function validateExpectedArguments(params: {
     if (!StrKey.isValidEd25519PublicKey(receiver)) throw new Error('Stellar depository receiver is invalid')
     if (amount !== amountInBaseUnits) throw new Error('Stellar depository amount does not match the deposit action')
 
-    const expectedEncodedArgs = [source, depositId, assetContract, receiver, amount]
+    const expectedEncodedArgs = [depositId, assetContract, receiver, amount]
     if (
         encodedArgs.length !== expectedEncodedArgs.length
         || encodedArgs.some((value, index) => value !== expectedEncodedArgs[index])
@@ -203,6 +209,35 @@ export function validateStellarOperationXdr(params: ValidateStellarOperationXdrP
         throw new Error('Unsigned Stellar depository operation must not contain authorization entries')
     }
     return encodedOperation
+}
+
+export function buildStellarDepositOperation(params: BuildStellarDepositOperationParams): xdr.Operation {
+    const { selectedAddress, depositoryContract, encodedArgs } = params
+    validateAddresses(selectedAddress, depositoryContract)
+    if (encodedArgs.length !== 4) throw new Error('Stellar deposit must contain exactly four encoded_args')
+
+    const [depositId, tokenContract, receiver, amount] = encodedArgs
+    if (!/^[0-9a-f]{64}$/.test(depositId)) throw new Error('Stellar depository ID must be 32 hex-encoded bytes')
+    if (!/^[1-9]\d*$/.test(amount)) throw new Error('Stellar deposit amount is invalid')
+    if (!StrKey.isValidContract(tokenContract)) throw new Error('Stellar depository asset contract is invalid')
+    if (!StrKey.isValidEd25519PublicKey(receiver)) throw new Error('Stellar depository receiver is invalid')
+
+    const idBytes = Uint8Array.from({ length: 32 }, (_, index) => Number.parseInt(depositId.slice(index * 2, index * 2 + 2), 16))
+    const operation = Operation.invokeContractFunction({
+        contract: depositoryContract,
+        function: 'deposit',
+        source: selectedAddress,
+        args: [
+            new Address(selectedAddress).toScVal(),
+            nativeToScVal(idBytes),
+            new Address(tokenContract).toScVal(),
+            new Address(receiver).toScVal(),
+            nativeToScVal(BigInt(amount), { type: 'i128' }),
+        ],
+        auth: [],
+    })
+    validateDepositOperation(Operation.fromXdrObject(operation), params)
+    return operation
 }
 
 export function validateStellarXdr(params: ValidateStellarXdrParams): Transaction {

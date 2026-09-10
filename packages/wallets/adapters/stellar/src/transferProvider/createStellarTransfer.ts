@@ -5,7 +5,7 @@ import { ActionMessageType, NetworkType, type TransferProvider } from '@layerswa
 import { resolveStellarNetworkPassphrase } from '../stellarNetwork'
 import { getStellarHorizonServer, getStellarRpcServer } from '../stellarServers'
 import { stellarKitManager } from '../service/stellarKitManager'
-import { validateStellarOperationXdr, validateStellarXdr } from './validateStellarXdr'
+import { buildStellarDepositOperation, validateStellarXdr } from './validateStellarXdr'
 
 const TRANSACTION_TIMEOUT_SECONDS = 5 * 60
 
@@ -54,26 +54,19 @@ export function createStellarTransfer(): TransferProvider {
                 depositAddress,
                 network,
                 token,
-                callData,
                 amountInBaseUnits,
                 encodedArgs,
                 sequenceNumber,
-                sourceAddress,
             } = params
             if (!selectedWallet?.address) throw new Error('Stellar wallet address not found')
             if (!depositAddress) throw new Error('Stellar depository contract not found')
             if (!amountInBaseUnits) throw new Error('Stellar deposit amount is missing')
             if (!encodedArgs) throw new Error('Stellar deposit encoded_args are missing')
             if (sequenceNumber === undefined) throw new Error('Stellar swap sequence number is missing')
-            if (!sourceAddress) throw new Error('Stellar deposit source address is missing')
-            if (sourceAddress !== selectedWallet.address) {
-                throw mappedError(ActionMessageType.WaletMismatch, 'The Stellar deposit action belongs to a different account')
-            }
 
             try {
                 const networkPassphrase = resolveStellarNetworkPassphrase(network)
-                const operation = validateStellarOperationXdr({
-                    operationXdr: callData,
+                const operation = buildStellarDepositOperation({
                     networkPassphrase,
                     selectedAddress: selectedWallet.address,
                     depositoryContract: depositAddress,
