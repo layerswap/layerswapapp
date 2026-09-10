@@ -11,7 +11,7 @@ import { Network } from '@layerswap/widget-types';
 import { useSettingsState } from './settings';
 import { QuoteError, transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { useRecentNetworksStore } from '@/stores/recentRoutesStore';
-import { useSelectedAccount } from './swapAccounts';
+import { useSelectedAccount, useSwapAccounts } from './swapAccounts';
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues';
 import { useInitialSettings } from './settings';
 import { useSlippageStore } from '@/stores/slippageStore';
@@ -70,7 +70,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const { onSwapCreate } = useCallbacks()
     const [swapBasicFormData, setSwapBasicFormData] = useState<SwapBasicData & { refuel: boolean }>()
 
-    const { providers } = useWallet(swapBasicFormData?.source_network, 'asSource')
+    const sourceAccounts = useSwapAccounts("from")
 
     const [quoteIsLoading, setQuoteLoading] = useState<boolean>(false)
     const [withdrawType, setWithdrawType] = useState<WithdrawType>()
@@ -80,7 +80,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     // with data on first paint instead of a loading state.
     const [swapId, setSwapId] = useState<string | undefined>(initialSettings.swapId?.toString() ?? initialSwapData?.swap.id)
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
-    const { sourceRoutes, destinationRoutes, networks } = useSettingsState()
+    const { sourceRoutes, destinationRoutes } = useSettingsState()
     const updateRecentTokens = useRecentNetworksStore(state => state.updateRecentNetworks)
     const [swapModalOpen, setSwapModalOpen] = useState(false)
     const [swapError, setSwapError] = useState<string | null>(null)
@@ -203,9 +203,9 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         return formDataQuote?.refuel
     }, [formDataQuote, data, swapId]);
 
-    const selectedSourceAccount = useSelectedAccount("from", swapBasicFormData?.source_network?.name);
-    const { wallets } = useWallet(swapBasicFormData?.source_network, 'asSource')
-    const selectedWallet = (selectedSourceAccount?.address && swapBasicFormData) && wallets.find(w => Address.equals(w.address, selectedSourceAccount.address, swapBasicFormData?.source_network))
+    const selectedSourceAccount = useSelectedAccount("from", swapBasicData?.source_network?.name);
+    const { wallets } = useWallet(swapBasicData?.source_network, 'asSource')
+    const selectedWallet = (selectedSourceAccount?.address && swapBasicData) && wallets.find(w => Address.equals(w.address, selectedSourceAccount.address, swapBasicData.source_network))
     const { checkContractStatus } = useContractAddressStore();
 
     const sourceIsSupported = (swapBasicData && selectedWallet) && WalletIsSupportedForSource({
@@ -273,6 +273,9 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         if (!depositAddressFlow && !amount)
             throw new Error("Form data is missing")
 
+        // Creation can run before submitted form state has rendered.
+        const selectedSourceAccount = sourceAccounts.find(account => account.provider.withdrawalSupportedNetworks?.includes(from.name))
+        const selectedWallet = selectedSourceAccount?.provider.connectedWallets?.find(wallet => wallet.id === selectedSourceAccount.id)
         const sourceWalletIsSupported = selectedWallet && WalletIsSupportedForSource({
             sourceNetwork: from,
             sourceWallet: selectedWallet
@@ -370,7 +373,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
 
 
         return swap;
-    }, [selectedSourceAccount, selectedWallet, onSwapCreate, updateRecentTokens, swapDetails?.id, networks, sourceRoutes])
+    }, [sourceAccounts, checkContractStatus, onSwapCreate, updateRecentTokens, sourceRoutes])
 
     const updateFns = useMemo<UpdateSwapInterface>(() => ({
         createSwap,

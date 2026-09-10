@@ -58,7 +58,7 @@ export function createStellarTransfer(): TransferProvider {
                 amountInBaseUnits,
                 encodedArgs,
                 sequenceNumber,
-                sourceAddress,
+                sourceAddress = selectedWallet?.address,
             } = params
             if (!selectedWallet?.address) throw new Error('Stellar wallet address not found')
             if (!depositAddress) throw new Error('Stellar depository contract not found')

@@ -67,8 +67,11 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<DepositAction[]>>("GET", `/swaps/${swapId}/deposit_actions${query}`);
     }
 
-    async GetSwapAsync(swapId: string): Promise<ApiResponse<SwapResponse>> {
-        return await this.AuthenticatedRequest<ApiResponse<SwapResponse>>("GET", `/swaps/${swapId}`);
+    async GetSwapAsync(swapId: string, sourceAddress?: string): Promise<ApiResponse<SwapResponse>> {
+        const query = sourceAddress
+            ? `source_address=${encodeURIComponent(sourceAddress)}`
+            : 'exclude_deposit_actions=true';
+        return await this.AuthenticatedRequest<ApiResponse<SwapResponse>>("GET", `/swaps/${swapId}?${query}`);
     }
 
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
