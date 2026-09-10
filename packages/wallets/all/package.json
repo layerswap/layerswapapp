@@ -43,6 +43,7 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "@layerswap/utils": "workspace:^",
     "@layerswap/wallet-bitcoin": "workspace:^",
     "@layerswap/wallet-evm": "workspace:^",
     "@layerswap/wallet-fuel": "workspace:^",

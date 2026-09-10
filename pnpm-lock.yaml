@@ -1002,6 +1002,9 @@ importers:
 
   packages/wallets/all:
     dependencies:
+      '@layerswap/utils':
+        specifier: workspace:^
+        version: link:../../utils
       '@layerswap/wallet-bitcoin':
         specifier: workspace:^
         version: link:../adapters/bitcoin
