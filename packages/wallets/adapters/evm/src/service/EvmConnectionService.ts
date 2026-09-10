@@ -6,7 +6,7 @@ import { numberToHex, type Chain } from 'viem'
 import { connect, disconnect, getConnections, switchAccount as wagmiSwitchAccount, type Connection, } from '@wagmi/core'
 import { buildDeepLink, clearPendingDynamicWcMetadata, isWalletConnectRegistryConnector, mapConnectError, setDynamicWcMetadata, setPendingMetadataForRegistry, subscribeDisplayUri, type AppNetworkAdapter, type WalletConnectWalletBase } from "@layerswap/wallet-core"
 import { evmConnectorNameResolver, resolveEVMWalletConnectorIcon } from '../evmUtils'
-import { evmWalletConnectChain, name as PROVIDER_NAME, HIDDEN_WALLETCONNECT_ID } from '../constants'
+import { EIP155_NAMESPACE, name as PROVIDER_NAME, HIDDEN_WALLETCONNECT_ID } from '../constants'
 import type { LSConnector } from '../connectors/types'
 import { getEvmConfig, isExternalEvmConfig } from './getEvmConfig'
 import { computeEvmNetworkBuckets, type EvmAdditionalSupportedNetworks, type EvmNetworkBuckets } from './networkBuckets'
@@ -322,7 +322,7 @@ export class EvmConnectionService<Network> implements WalletConnectionService<Ru
             // Always prime pending metadata for registry-sourced connects so the
             // `connectedWallets` re-render that happens between connect start and
             // address resolution can render the right wallet name/icon.
-            const pendingMetadata = setPendingMetadataForRegistry(evmWalletConnectChain.namespace, isRegistry ? internalConnector : undefined)
+            const pendingMetadata = setPendingMetadataForRegistry(EIP155_NAMESPACE, isRegistry ? internalConnector : undefined)
 
             try {
                 await connect(config, { connector: actualConnector as unknown as Connector })
@@ -334,9 +334,9 @@ export class EvmConnectionService<Network> implements WalletConnectionService<Ru
             const activeAccount = await attemptGetAccount(config)
 
             if (isRegistry && pendingMetadata && activeAccount.address) {
-                setDynamicWcMetadata(evmWalletConnectChain.namespace, activeAccount.address, pendingMetadata)
+                setDynamicWcMetadata(EIP155_NAMESPACE, activeAccount.address, pendingMetadata)
             }
-            clearPendingDynamicWcMetadata(evmWalletConnectChain.namespace)
+            clearPendingDynamicWcMetadata(EIP155_NAMESPACE)
 
             const connections = getConnections(config)
             let connection = connections.find(c => c.connector.id === connector?.id)
@@ -392,7 +392,7 @@ export class EvmConnectionService<Network> implements WalletConnectionService<Ru
             throw mapConnectError(e)
         } finally {
             unsubscribeDisplayUri?.()
-            if (isRegistry) clearPendingDynamicWcMetadata(evmWalletConnectChain.namespace)
+            if (isRegistry) clearPendingDynamicWcMetadata(EIP155_NAMESPACE)
         }
     }
 }
