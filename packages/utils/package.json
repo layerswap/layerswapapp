@@ -45,9 +45,10 @@
     "js-sha3": "^0.8.0"
   },
   "devDependencies": {
+    "@types/node": "^24.5.1",
     "rimraf": "catalog:",
     "tsc-alias": "^1.8.16",
-    "typescript": "^5.9.2"
+    "typescript": "catalog:"
   },
   "engines": {
     "node": ">=22"
