@@ -1,9 +1,10 @@
+import KnownInternalNames from '@layerswap/utils/known-ids'
 import type { NetworkType, WalletConnectConfig } from '@layerswap/widget-types'
 import type { WalletProviderDescriptor } from '@layerswap/wallet-core/types'
 import { defineWalletDescriptor, type DescriptorNetworkOptions } from './defineWalletDescriptor'
 import { readStorageJson } from './persistedSession'
 
-const STELLAR_NETWORKS = ['STELLAR_MAINNET', 'STELLAR_TESTNET']
+const STELLAR_NETWORKS = [KnownInternalNames.Networks.StellarMainnet, KnownInternalNames.Networks.StellarTestnet]
 const STELLAR_SESSION_KEY = 'layerswap:stellar-wallet'
 
 type StellarPersistedSession = {

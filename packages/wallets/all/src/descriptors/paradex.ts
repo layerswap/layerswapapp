@@ -1,11 +1,9 @@
+import KnownInternalNames from "@layerswap/utils/known-ids"
 import type { WalletProviderDescriptor } from "@layerswap/wallet-core/types"
 import { defineWalletDescriptor, type DescriptorNetworkOptions } from "./defineWalletDescriptor"
 import { readStorageJson } from "./persistedSession"
 
-// Inlined — importing Paradex's runtime constants drags `starknet` (~884 KB
-// parsed) into the host entry chunk. Keep in sync with the
-// `ParadexMainnet`/`ParadexTestnet` entries in widget's `knownIds.ts`.
-const PARADEX_NETWORKS = ['PARADEX_MAINNET', 'PARADEX_TESTNET']
+const PARADEX_NETWORKS = [KnownInternalNames.Networks.ParadexMainnet, KnownInternalNames.Networks.ParadexTestnet]
 
 /**
  * Tree-shake-safe stand-in for `createParadexProvider` — defers

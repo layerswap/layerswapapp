@@ -1,9 +1,11 @@
+import KnownInternalNames from '@layerswap/utils/known-ids'
+
 export const name = 'Stellar'
 export const id = 'stellar' as const
 
 export const supportedNetworkNames = [
-    'STELLAR_MAINNET',
-    'STELLAR_TESTNET',
+    KnownInternalNames.Networks.StellarMainnet,
+    KnownInternalNames.Networks.StellarTestnet,
 ] as const
 
 export const STELLAR_SESSION_KEY = 'layerswap:stellar-wallet'
