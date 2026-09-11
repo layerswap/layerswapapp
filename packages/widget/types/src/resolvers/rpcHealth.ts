@@ -19,7 +19,7 @@ export type AddEthereumChainParams = {
 
 export type SuggestRpcResult =
   | { success: true }
-  | { success: false; error: string }
+  | { success: false; error: string; errorCode?: string }
 
 export type RpcHealthCheckSnapshot = {
   health: RpcHealth

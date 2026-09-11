@@ -1,4 +1,4 @@
-import { NetworkType } from '@layerswap/widget-types';
+import { NetworkType, type TransferBlockedReasonCode } from '@layerswap/widget-types';
 import { FC, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { PublishedSwapTransactions, SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { WithdrawalProvider } from "@/context/withdrawalContext";
@@ -22,7 +22,10 @@ import { isExtendedSourceNetwork } from "@/lib/extendedRoutes/registry";
 import { HyperliquidWalletWithdraw } from "../WithdrawalProviders/Hyperliquid";
 import { PolymarketWalletWithdraw } from "../WithdrawalProviders/Polymarket";
 import { useCallbacks } from "@/context/callbackProvider";
-import { lifecycleContextFromSwap } from "@/lib/swapLifecycle";
+import { lifecycleContextFromSwap, lifecycleErrorDetails } from "@/lib/swapLifecycle";
+import { useTransferBlocked } from "@/hooks/useTransferBlocked";
+import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
+import { isUserRejection } from "./Common/isUserRejection";
 
 type Props = {
     swapData: SwapBasicData
@@ -110,18 +113,18 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
         }
     }, [swapId])
 
-    useEffect(() => {
-        if (!sameAccountMismatch) return
-        onSwapLifecycle({
-            step: 'flow_error',
-            stage: 'wallet_action',
-            outcome: 'failed',
-            path: 'WalletWithdrawal',
-            reasonCode: 'same_account_required',
-            reason: 'The selected source and destination accounts must match for this route',
-            ...lifecycleContext,
-        })
-    }, [lifecycleContext, onSwapLifecycle, sameAccountMismatch])
+    const isExtendedSource = source_network?.type === NetworkType.Polymarket || isExtendedSourceNetwork(source_network?.name)
+    const hasMultiStepHandler = !!provider?.multiStepHandlers?.some(handler => handler.supportedNetworks.includes(source_network?.name))
+    // A connected account whose wallet cannot withdraw on this network only
+    // sees the connect button again; report that as a blocked transfer step.
+    const blockedReason: TransferBlockedReasonCode | undefined = isExtendedSource || hasMultiStepHandler ? undefined
+        : sameAccountMismatch ? 'same_account_required'
+        : selectedSourceAccount && !wallet ? 'wallet_unsupported_for_network'
+        : undefined
+    useTransferBlocked(blockedReason, lifecycleContext, 'WalletWithdrawal',
+        blockedReason === 'same_account_required' ? 'The selected source and destination accounts must match for this route'
+        : blockedReason === 'wallet_unsupported_for_network' ? `${selectedSourceAccount?.providerName ?? 'The selected wallet'} cannot send from ${source_network?.name}`
+        : undefined)
 
     // Extended sources (Hyperliquid, Polymarket) have their own withdraw flow — the chain
     // logic comes from the wallet package's TransferProvider, the UI lives here. Polymarket
@@ -160,6 +163,22 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
                             action: 'send_transaction',
                             provider: wallet?.providerName || provider?.name,
                             transactionHash: hash,
+                            ...lifecycleContext,
+                        })
+                    }}
+                    onTransferError={(error: unknown) => {
+                        // Optional: handlers that report failures make them visible like the shared path.
+                        const rejected = isUserRejection(error)
+                        const errorDetails = lifecycleErrorDetails(error)
+                        onSwapLifecycle({
+                            step: rejected ? 'wallet_action_rejected' : 'wallet_action_failed',
+                            stage: 'wallet_action',
+                            outcome: rejected ? 'rejected' : 'failed',
+                            path: 'MultiStepWalletTransfer',
+                            action: 'send_transaction',
+                            provider: wallet?.providerName || provider?.name,
+                            ...errorDetails,
+                            reasonCode: rejected ? 'user_rejected' : errorDetails.reasonCode,
                             ...lifecycleContext,
                         })
                     }}
@@ -208,8 +227,9 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
     const [buttonClicked, setButtonClicked] = useState(false)
     const [error, setError] = useState<Error | undefined>()
     const [loading, setLoading] = useState(false)
-    const { swapDetails, swapError } = useSwapDataState()
-    const { onSwapLifecycle } = useCallbacks()
+    const { swapDetails, swapError, depositActionsError } = useSwapDataState()
+    const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
+    const gaslessErrorMessage = useGaslessPreferenceStore(s => s.gaslessErrorMessage)
 
     const selectedSourceAccount = useSelectedAccount("from", swapData.source_network.name);
 
@@ -237,18 +257,19 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
         ],
     )
 
-    useEffect(() => {
-        if (rpcHealth?.health.status !== 'unhealthy') return
-        onSwapLifecycle({
-            step: 'flow_error',
-            stage: 'wallet_action',
-            outcome: 'failed',
-            path: 'RPCHealth',
-            reasonCode: 'rpc_unhealthy',
-            reason: `No healthy RPC endpoint is available for ${swapData.source_network.name}`,
-            ...lifecycleContext,
-        })
-    }, [lifecycleContext, onSwapLifecycle, rpcHealth?.health.status, swapData.source_network.name])
+    // Every state that replaces the send button with a message, in display priority.
+    const blockedReason: TransferBlockedReasonCode | undefined =
+        rpcHealth?.health.status === 'unhealthy' ? 'rpc_unhealthy'
+        : gaslessUnavailable ? 'gasless_unavailable'
+        : depositActionsError ? 'deposit_actions_unavailable'
+        : swapError ? 'swap_error'
+        : undefined
+    useTransferBlocked(blockedReason, lifecycleContext, 'TransferTokenButton',
+        blockedReason === 'rpc_unhealthy' ? (rpcHealth?.health.status === 'unhealthy' ? rpcHealth.health.reason : undefined)
+        : blockedReason === 'gasless_unavailable' ? gaslessErrorMessage ?? undefined
+        : blockedReason === 'deposit_actions_unavailable' ? depositActionsError
+        : blockedReason === 'swap_error' ? swapError ?? undefined
+        : undefined)
 
     const clickHandler = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
         setButtonClicked(true)

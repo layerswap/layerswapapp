@@ -1,0 +1,423 @@
+{
+  "apiVersion": 1,
+  "groups": [
+    {
+      "orgId": 1,
+      "name": "frontend-issues-review",
+      "folder": "Layerswap frontend alert review",
+      "interval": "1m",
+      "rules": [
+        {
+          "uid": "ls-faro-issue-burst",
+          "title": "Frontend issue observations exceed 10 in 5m",
+          "condition": "B",
+          "for": "5m",
+          "isPaused": true,
+          "noDataState": "NoData",
+          "execErrState": "Error",
+          "annotations": {
+            "summary": "Frontend issue observations exceed 10 in 5m",
+            "description": "Observation threshold, not unique incidents. Tune against real traffic before enabling.",
+            "dashboard_url": "https://grafana-2.dev.lb.layerswap.cloud/d/layerswap-faro-trial-home"
+          },
+          "labels": {
+            "application": "layerswap-frontend",
+            "api_mode": "mainnet",
+            "review_required": "true"
+          },
+          "data": [
+            {
+              "refId": "A",
+              "datasourceUid": "P8E80F9AEF21F6940",
+              "relativeTimeRange": {
+                "from": 300,
+                "to": 0
+              },
+              "model": {
+                "refId": "A",
+                "datasource": {
+                  "type": "loki",
+                  "uid": "P8E80F9AEF21F6940"
+                },
+                "expr": "sum by (group_key, type) (count_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=\"layerswap-frontend\" | app_environment=\"mainnet\" | kind=\"exception\" | context_impact!=\"diagnostic\" | context_eventType!~\"BalanceResolverError|BalanceProviderError|MaxPriorityFeePerGasError|FeesPerGasError|GasPriceError|GasProviderError|GasMiscalculation|APIError|SwapCatchupError\" | type!=\"TransactionRejected\" | label_format type=`{{ if .type }}{{ .type }}{{ else }}(unknown type){{ end }}` | label_format group_key=`{{ $m := .value | trim }}{{ $m = regexReplaceAll \"(?s)\\\\n.*\" $m \"\" }}{{ $m = regexReplaceAll \"0x[0-9a-fA-F]{8,}\" $m \"<hex>\" }}{{ $m = regexReplaceAll \"\\\\b[1-9A-HJ-NP-Za-km-z]{32,64}\\\\b\" $m \"<address>\" }}{{ $m = regexReplaceAll \"\\\\b(bc1|tb1)[a-z0-9]{20,}\\\\b\" $m \"<address>\" }}{{ $m = regexReplaceAll \"\\\\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\\\\b\" $m \"<id>\" }}{{ $m = regexReplaceAll \"https?://[^\\\\s]+\" $m \"<url>\" }}{{ $m = regexReplaceAll \"(?i)\\\\b(amount|value|balance)([ :=]+)[0-9]+(\\\\.[0-9]+)?\\\\b\" $m \"${1}${2}<amount>\" }}{{ $m = regexReplaceAll \"\\\\b[0-9]+\\\\.[0-9]+\\\\b\" $m \"<amount>\" }}{{ $m = regexReplaceAll \"\\\\b[0-9]{6,}\\\\b\" $m \"<number>\" }}{{ $m = regexReplaceAll \"Could not fetch balance for .* in \" $m \"Could not fetch balance in \" }}{{ $m = regexReplaceAll \"\\\\s+\" $m \" \" }}{{ printf \"v2:%s:%s\" .type $m }}` | keep group_key, type [5m])) or vector(0)",
+                "queryType": "instant",
+                "instant": true,
+                "range": false,
+                "intervalMs": 1000,
+                "maxDataPoints": 1
+              }
+            },
+            {
+              "refId": "B",
+              "datasourceUid": "__expr__",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "model": {
+                "refId": "B",
+                "type": "threshold",
+                "expression": "A",
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "type": "gt",
+                      "params": [
+                        10
+                      ]
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "reducer": {
+                      "type": "last",
+                      "params": []
+                    },
+                    "type": "query",
+                    "query": {
+                      "params": [
+                        "B"
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "uid": "ls-faro-unseen-group",
+          "title": "Frontend group absent from preceding 24h",
+          "condition": "B",
+          "for": "5m",
+          "isPaused": true,
+          "noDataState": "NoData",
+          "execErrState": "Error",
+          "annotations": {
+            "summary": "Frontend group absent from preceding 24h",
+            "description": "At least 3 observations in 5m, absent in the preceding retained 24h. This is not first-ever occurrence or a confirmed regression.",
+            "dashboard_url": "https://grafana-2.dev.lb.layerswap.cloud/d/layerswap-faro-trial-home"
+          },
+          "labels": {
+            "application": "layerswap-frontend",
+            "api_mode": "mainnet",
+            "review_required": "true"
+          },
+          "data": [
+            {
+              "refId": "A",
+              "datasourceUid": "P8E80F9AEF21F6940",
+              "relativeTimeRange": {
+                "from": 300,
+                "to": 0
+              },
+              "model": {
+                "refId": "A",
+                "datasource": {
+                  "type": "loki",
+                  "uid": "P8E80F9AEF21F6940"
+                },
+                "expr": "(sum by (group_key, type) (count_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=\"layerswap-frontend\" | app_environment=\"mainnet\" | kind=\"exception\" | context_impact!=\"diagnostic\" | context_eventType!~\"BalanceResolverError|BalanceProviderError|MaxPriorityFeePerGasError|FeesPerGasError|GasPriceError|GasProviderError|GasMiscalculation|APIError|SwapCatchupError\" | type!=\"TransactionRejected\" | label_format type=`{{ if .type }}{{ .type }}{{ else }}(unknown type){{ end }}` | label_format group_key=`{{ $m := .value | trim }}{{ $m = regexReplaceAll \"(?s)\\\\n.*\" $m \"\" }}{{ $m = regexReplaceAll \"0x[0-9a-fA-F]{8,}\" $m \"<hex>\" }}{{ $m = regexReplaceAll \"\\\\b[1-9A-HJ-NP-Za-km-z]{32,64}\\\\b\" $m \"<address>\" }}{{ $m = regexReplaceAll \"\\\\b(bc1|tb1)[a-z0-9]{20,}\\\\b\" $m \"<address>\" }}{{ $m = regexReplaceAll \"\\\\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\\\\b\" $m \"<id>\" }}{{ $m = regexReplaceAll \"https?://[^\\\\s]+\" $m \"<url>\" }}{{ $m = regexReplaceAll \"(?i)\\\\b(amount|value|balance)([ :=]+)[0-9]+(\\\\.[0-9]+)?\\\\b\" $m \"${1}${2}<amount>\" }}{{ $m = regexReplaceAll \"\\\\b[0-9]+\\\\.[0-9]+\\\\b\" $m \"<amount>\" }}{{ $m = regexReplaceAll \"\\\\b[0-9]{6,}\\\\b\" $m \"<number>\" }}{{ $m = regexReplaceAll \"Could not fetch balance for .* in \" $m \"Could not fetch balance in \" }}{{ $m = regexReplaceAll \"\\\\s+\" $m \" \" }}{{ printf \"v2:%s:%s\" .type $m }}` | keep group_key, type [5m])) unless sum by (group_key, type) (count_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=\"layerswap-frontend\" | app_environment=\"mainnet\" | kind=\"exception\" | context_impact!=\"diagnostic\" | context_eventType!~\"BalanceResolverError|BalanceProviderError|MaxPriorityFeePerGasError|FeesPerGasError|GasPriceError|GasProviderError|GasMiscalculation|APIError|SwapCatchupError\" | type!=\"TransactionRejected\" | label_format type=`{{ if .type }}{{ .type }}{{ else }}(unknown type){{ end }}` | label_format group_key=`{{ $m := .value | trim }}{{ $m = regexReplaceAll \"(?s)\\\\n.*\" $m \"\" }}{{ $m = regexReplaceAll \"0x[0-9a-fA-F]{8,}\" $m \"<hex>\" }}{{ $m = regexReplaceAll \"\\\\b[1-9A-HJ-NP-Za-km-z]{32,64}\\\\b\" $m \"<address>\" }}{{ $m = regexReplaceAll \"\\\\b(bc1|tb1)[a-z0-9]{20,}\\\\b\" $m \"<address>\" }}{{ $m = regexReplaceAll \"\\\\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\\\\b\" $m \"<id>\" }}{{ $m = regexReplaceAll \"https?://[^\\\\s]+\" $m \"<url>\" }}{{ $m = regexReplaceAll \"(?i)\\\\b(amount|value|balance)([ :=]+)[0-9]+(\\\\.[0-9]+)?\\\\b\" $m \"${1}${2}<amount>\" }}{{ $m = regexReplaceAll \"\\\\b[0-9]+\\\\.[0-9]+\\\\b\" $m \"<amount>\" }}{{ $m = regexReplaceAll \"\\\\b[0-9]{6,}\\\\b\" $m \"<number>\" }}{{ $m = regexReplaceAll \"Could not fetch balance for .* in \" $m \"Could not fetch balance in \" }}{{ $m = regexReplaceAll \"\\\\s+\" $m \" \" }}{{ printf \"v2:%s:%s\" .type $m }}` | keep group_key, type [24h] offset 5m))) or vector(0)",
+                "queryType": "instant",
+                "instant": true,
+                "range": false,
+                "intervalMs": 1000,
+                "maxDataPoints": 1
+              }
+            },
+            {
+              "refId": "B",
+              "datasourceUid": "__expr__",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "model": {
+                "refId": "B",
+                "type": "threshold",
+                "expression": "A",
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "type": "gt",
+                      "params": [
+                        2
+                      ]
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "reducer": {
+                      "type": "last",
+                      "params": []
+                    },
+                    "type": "query",
+                    "query": {
+                      "params": [
+                        "B"
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "uid": "ls-faro-no-telemetry",
+          "title": "No frontend telemetry for 15m",
+          "condition": "B",
+          "for": "5m",
+          "isPaused": true,
+          "noDataState": "NoData",
+          "execErrState": "Error",
+          "annotations": {
+            "summary": "No frontend telemetry for 15m",
+            "description": "Visibility unknown. May be quiet traffic, sampling, browser delivery, or ingestion failure; use a scheduled canary before paging on this in development.",
+            "dashboard_url": "https://grafana-2.dev.lb.layerswap.cloud/d/layerswap-faro-trial-home"
+          },
+          "labels": {
+            "application": "layerswap-frontend",
+            "api_mode": "mainnet",
+            "review_required": "true"
+          },
+          "data": [
+            {
+              "refId": "A",
+              "datasourceUid": "P8E80F9AEF21F6940",
+              "relativeTimeRange": {
+                "from": 300,
+                "to": 0
+              },
+              "model": {
+                "refId": "A",
+                "datasource": {
+                  "type": "loki",
+                  "uid": "P8E80F9AEF21F6940"
+                },
+                "expr": "absent_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=\"layerswap-frontend\" | app_environment=\"mainnet\" | keep app_name [15m]) or vector(0)",
+                "queryType": "instant",
+                "instant": true,
+                "range": false,
+                "intervalMs": 1000,
+                "maxDataPoints": 1
+              }
+            },
+            {
+              "refId": "B",
+              "datasourceUid": "__expr__",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "model": {
+                "refId": "B",
+                "type": "threshold",
+                "expression": "A",
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "type": "gt",
+                      "params": [
+                        0
+                      ]
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "reducer": {
+                      "type": "last",
+                      "params": []
+                    },
+                    "type": "query",
+                    "query": {
+                      "params": [
+                        "B"
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "uid": "ls-faro-transfer-trouble",
+          "title": "Blocked or failed transfers exceed 30% of journeys reaching the transfer step in 30m",
+          "condition": "B",
+          "for": "5m",
+          "isPaused": true,
+          "noDataState": "NoData",
+          "execErrState": "Error",
+          "annotations": {
+            "summary": "Blocked or failed transfers exceed 30% of journeys reaching the transfer step in 30m",
+            "description": "Share of journeys that reached the send button and then saw a blocking message or a failed wallet operation, evaluated only once at least five journeys reached the step. User declines are excluded. Open the Transfer step tab for reasons by network and wallet.",
+            "dashboard_url": "https://grafana-2.dev.lb.layerswap.cloud/d/layerswap-faro-trial-home"
+          },
+          "labels": {
+            "application": "layerswap-frontend",
+            "api_mode": "mainnet",
+            "review_required": "true"
+          },
+          "data": [
+            {
+              "refId": "A",
+              "datasourceUid": "P8E80F9AEF21F6940",
+              "relativeTimeRange": {
+                "from": 1800,
+                "to": 0
+              },
+              "model": {
+                "refId": "A",
+                "datasource": {
+                  "type": "loki",
+                  "uid": "P8E80F9AEF21F6940"
+                },
+                "expr": "((count(sum by (journey) (count_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=\"layerswap-frontend\" | app_environment=\"mainnet\" | label_format journey=`{{ if .event_data_journey_id }}{{ .event_data_journey_id }}{{ else }}{{ .session_attr_journey_id }}{{ end }}` | label_format swap=`{{ if .event_data_swap_id }}{{ .event_data_swap_id }}{{ else }}{{ .session_attr_swap_id }}{{ end }}` | event_name=\"swap_lifecycle\" | event_data_step=~\"transfer_blocked|wallet_action_failed|network_switch_failed|wallet_connection_failed\" | event_data_outcome=~\"blocked|failed\" | journey!=\"\" | keep journey [30m]))) or vector(0)) / (count(sum by (journey) (count_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=\"layerswap-frontend\" | app_environment=\"mainnet\" | label_format journey=`{{ if .event_data_journey_id }}{{ .event_data_journey_id }}{{ else }}{{ .session_attr_journey_id }}{{ end }}` | label_format swap=`{{ if .event_data_swap_id }}{{ .event_data_swap_id }}{{ else }}{{ .session_attr_swap_id }}{{ end }}` | event_name=\"swap_lifecycle\" | event_data_step=\"awaiting_wallet_action\" | journey!=\"\" | keep journey [30m]))) > 4)) or vector(0)",
+                "queryType": "instant",
+                "instant": true,
+                "range": false,
+                "intervalMs": 1000,
+                "maxDataPoints": 1
+              }
+            },
+            {
+              "refId": "B",
+              "datasourceUid": "__expr__",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "model": {
+                "refId": "B",
+                "type": "threshold",
+                "expression": "A",
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "type": "gt",
+                      "params": [
+                        0.3
+                      ]
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "reducer": {
+                      "type": "last",
+                      "params": []
+                    },
+                    "type": "query",
+                    "query": {
+                      "params": [
+                        "B"
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "uid": "ls-faro-no-submissions",
+          "title": "Journeys reach the transfer step but nothing is submitted for 2h",
+          "condition": "B",
+          "for": "5m",
+          "isPaused": true,
+          "noDataState": "NoData",
+          "execErrState": "Error",
+          "annotations": {
+            "summary": "Journeys reach the transfer step but nothing is submitted for 2h",
+            "description": "At least three journeys reached the send button in the last two hours and no transaction or gasless authorization was submitted by anyone. Quiet traffic reads as zero; a wallet, RPC or deposit-action outage reads as the number of stranded journeys.",
+            "dashboard_url": "https://grafana-2.dev.lb.layerswap.cloud/d/layerswap-faro-trial-home"
+          },
+          "labels": {
+            "application": "layerswap-frontend",
+            "api_mode": "mainnet",
+            "review_required": "true"
+          },
+          "data": [
+            {
+              "refId": "A",
+              "datasourceUid": "P8E80F9AEF21F6940",
+              "relativeTimeRange": {
+                "from": 7200,
+                "to": 0
+              },
+              "model": {
+                "refId": "A",
+                "datasource": {
+                  "type": "loki",
+                  "uid": "P8E80F9AEF21F6940"
+                },
+                "expr": "((count(sum by (journey) (count_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=\"layerswap-frontend\" | app_environment=\"mainnet\" | label_format journey=`{{ if .event_data_journey_id }}{{ .event_data_journey_id }}{{ else }}{{ .session_attr_journey_id }}{{ end }}` | label_format swap=`{{ if .event_data_swap_id }}{{ .event_data_swap_id }}{{ else }}{{ .session_attr_swap_id }}{{ end }}` | event_name=\"swap_lifecycle\" | event_data_step=\"awaiting_wallet_action\" | journey!=\"\" | keep journey [2h]))) or vector(0)) * (absent_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=\"layerswap-frontend\" | app_environment=\"mainnet\" | event_name=\"swap_lifecycle\" | event_data_step=~\"transaction_submitted|gasless_authorization_submitted\" | keep app_name [2h]) or vector(0)))",
+                "queryType": "instant",
+                "instant": true,
+                "range": false,
+                "intervalMs": 1000,
+                "maxDataPoints": 1
+              }
+            },
+            {
+              "refId": "B",
+              "datasourceUid": "__expr__",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "model": {
+                "refId": "B",
+                "type": "threshold",
+                "expression": "A",
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "type": "gt",
+                      "params": [
+                        2
+                      ]
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "reducer": {
+                      "type": "last",
+                      "params": []
+                    },
+                    "type": "query",
+                    "query": {
+                      "params": [
+                        "B"
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

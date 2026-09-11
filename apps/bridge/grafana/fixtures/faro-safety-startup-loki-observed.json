@@ -1,0 +1,49 @@
+{
+  "verification": "Verified in Loki",
+  "verifiedAt": "2026-09-08T15:02:57.321Z",
+  "provenance": {
+    "method": "Read-only development Grafana datasource proxy query after user reported local collect calls",
+    "outgoingPayloadCaptured": false,
+    "windowFrom": "2026-09-08T15:00:00.000Z",
+    "windowTo": "2026-09-08T15:02:56.405Z",
+    "query": "{source=\"faro\"} | logfmt | __error__=\"\" | app_name=\"layerswap-frontend\" | app_version=\"local\"",
+    "limit": 1000,
+    "returnedRecords": 197,
+    "projectionOnly": true,
+    "sanitization": "Session/journey identifiers replaced with file-local aliases. URLs, addresses, trace/span IDs and error text omitted. Presence checks are derived from the queried record, not stored fields."
+  },
+  "records": [
+    {
+      "timestampNs": "1788879687140960980",
+      "parsedFields": { "app_name": "layerswap-frontend", "app_environment": "testnet", "app_version": "local", "kind": "event", "event_name": "session_start", "session_id": "session-safety-test-1" },
+      "checks": { "journeyIdPresent": false, "nonemptySwapIdPresent": false, "walletSnapshotPresent": false, "pageHostIsLocalhost": true }
+    },
+    {
+      "timestampNs": "1788879687553238166",
+      "parsedFields": { "app_name": "layerswap-frontend", "app_environment": "testnet", "app_version": "local", "kind": "event", "event_name": "view_changed", "session_id": "session-safety-test-1", "session_attr_connected_wallet_count": "0", "session_attr_connected_wallets_state": "restoring" },
+      "checks": { "journeyIdPresent": false, "nonemptySwapIdPresent": false, "walletSnapshotPresent": true }
+    },
+    {
+      "timestampNs": "1788879688587098671",
+      "parsedFields": { "app_name": "layerswap-frontend", "app_environment": "testnet", "app_version": "local", "kind": "event", "event_name": "faro.tracing.fetch", "session_id": "session-safety-test-1", "session_attr_connected_wallet_count": "1", "session_attr_connected_wallets_state": "restoring" },
+      "checks": { "journeyIdPresent": false, "walletSnapshotPresent": true, "traceIdPresent": true, "spanIdPresent": true }
+    },
+    {
+      "timestampNs": "1788879691816879126",
+      "parsedFields": { "app_name": "layerswap-frontend", "app_environment": "testnet", "app_version": "local", "kind": "event", "event_name": "swap_lifecycle", "session_id": "session-safety-test-1", "session_attr_connected_wallet_count": "1", "session_attr_connected_wallets_state": "restoring", "session_attr_step": "flow_error", "event_data_step": "flow_error", "event_data_outcome": "failed", "session_attr_journey_id": "journey-safety-test-1" },
+      "checks": { "nonemptySwapIdPresent": false, "walletSnapshotPresent": true }
+    },
+    {
+      "timestampNs": "1788879703004652369",
+      "parsedFields": { "app_name": "layerswap-frontend", "app_environment": "testnet", "app_version": "local", "kind": "event", "event_name": "faro.tracing.fetch", "session_id": "session-safety-test-1", "session_attr_connected_wallet_count": "1", "session_attr_connected_wallets_state": "ready", "session_attr_step": "flow_error", "session_attr_journey_id": "journey-safety-test-1" },
+      "checks": { "nonemptySwapIdPresent": false, "walletSnapshotPresent": true, "traceIdPresent": true, "spanIdPresent": true }
+    }
+  ],
+  "limitations": [
+    "session_start is not a persisted-session restoration test; absence of startup swap context does not prove stale-context removal",
+    "app_version local does not uniquely identify the new code; runtime config and outgoing body remain to be inspected",
+    "No flow-close, deployed-build filtering, duplicate-suppression, nested Error limit, source-map or Tempo verification",
+    "restoring can include already connected wallets while other providers are still restoring",
+    "No production volume, rate or baseline inferred from these records"
+  ]
+}

@@ -4,6 +4,7 @@ import {
     type ErrorEventType,
     type SwapLifecycleEvent,
     type SwapStatusEvent,
+    type WidgetTelemetryEvent,
 } from "@layerswap/widget-types"
 import { useRouter } from "next/router"
 import { ComponentProps, ReactNode, useCallback, useMemo, useRef } from "react"
@@ -12,8 +13,9 @@ import { removeSwapPath, setMenuPath, setSwapPath } from "./utils/updatePath"
 import { getDefaultProviders } from "@layerswap/wallets";
 import { QueryParams } from "../helpers/querryHelper"
 import { logError } from "./utils/logError"
-import { captureEvent, setSwapContext } from "../lib/faro"
+import { captureEvent } from "../lib/faro"
 import { useSwapLifecycleTelemetry } from "../hooks/useSwapLifecycleTelemetry"
+import FaroWalletContext from './FaroWalletContext'
 
 type LayerswapProviderComponentProps = ComponentProps<typeof LayerswapProvider>;
 type WidgetCallbacks = NonNullable<LayerswapProviderComponentProps['callbacks']>;
@@ -56,11 +58,6 @@ function getSwapStatusEventName(event: SwapStatusEvent): string | undefined {
     return undefined
 }
 
-function isUserRejection(error: ErrorEventType): boolean {
-    return error.name === 'TransactionRejected'
-        || /user rejected|user denied|rejected the request/i.test(error.message)
-}
-
 // Hoisted to module scope — all values are build-time constants, so a single
 // stable reference avoids recreating the providers if this is ever added to a
 // memo dependency array.
@@ -97,7 +94,7 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
 }: WidgetWrapperProps<T>) => {
     const router = useRouter()
     const emittedSwapEventsRef = useRef(new Set<string>())
-    const recordLifecycleEvent = useSwapLifecycleTelemetry()
+    const { record: recordLifecycleEvent, setLegacyContext, openFlow, closeFlow } = useSwapLifecycleTelemetry()
 
     const immutablePassportConfig = useMemo(() => {
         const clientId = process.env.NEXT_PUBLIC_IMMUTABLE_CLIENT_ID
@@ -184,21 +181,27 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
     const baseOnSwapComplete = baseCallbacks?.onSwapComplete
     const baseOnSwapStatusChange = baseCallbacks?.onSwapStatusChange
     const baseOnSwapLifecycle = baseCallbacks?.onSwapLifecycle
+    const baseOnSwapModalStateChange = baseCallbacks?.onSwapModalStateChange
     const hostOnError = baseCallbacks?.onError
+    const hostOnTelemetry = baseCallbacks?.onTelemetry
+    const handleTelemetry = useCallback((event: WidgetTelemetryEvent) => {
+        captureEvent(event.name, { ...event.attributes, route: router.pathname })
+        hostOnTelemetry?.(event)
+    }, [hostOnTelemetry, router.pathname])
 
     const recordSwapEvent = useCallback((name: string, attributes: Record<string, unknown>) => {
-        setSwapContext(attributes)
-
         const swapId = attributes.swap_id
         const dedupeKey = `${name}:${String(swapId ?? '')}`
         if (emittedSwapEventsRef.current.has(dedupeKey)) return
+
+        setLegacyContext(attributes)
 
         const accepted = captureEvent(name, {
             ...attributes,
             page_url: typeof window !== 'undefined' ? window.location.href : undefined,
         })
         if (accepted) emittedSwapEventsRef.current.add(dedupeKey)
-    }, [])
+    }, [setLegacyContext])
 
     const handleSwapCreate = useCallback((swapData: SwapCallbackData) => {
         recordSwapEvent('swap_initiated', getSwapAttributes(swapData))
@@ -215,45 +218,28 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
         const eventName = getSwapStatusEventName(event)
 
         if (eventName) recordSwapEvent(eventName, attributes)
-        else setSwapContext(attributes)
+        else setLegacyContext(attributes)
 
         baseOnSwapStatusChange?.(event)
-    }, [baseOnSwapStatusChange, recordSwapEvent])
+    }, [baseOnSwapStatusChange, recordSwapEvent, setLegacyContext])
 
     const handleSwapLifecycle = useCallback((event: SwapLifecycleEvent) => {
         recordLifecycleEvent(event)
         baseOnSwapLifecycle?.(event)
     }, [baseOnSwapLifecycle, recordLifecycleEvent])
 
-    const handleError = useCallback((error: ErrorEventType) => {
-        const details = error as ErrorEventType & {
-            swapId?: string;
-            transactionHash?: string;
-            fromAddress?: string;
-            toAddress?: string;
-            network?: string;
-        }
-        const rejected = isUserRejection(error)
-        recordLifecycleEvent({
-            step: rejected ? 'wallet_action_rejected' : 'flow_error',
-            stage: rejected ? 'wallet_action' : 'flow',
-            outcome: rejected ? 'rejected' : 'failed',
-            path: 'ErrorHandler',
-            swapId: details.swapId,
-            transactionHash: details.transactionHash,
-            fromAddress: details.fromAddress,
-            toAddress: details.toAddress,
-            sourceNetwork: details.network,
-            reasonCode: rejected ? 'user_rejected' : error.type,
-            reason: error.message,
-        })
+    const handleSwapModalStateChange = useCallback((open: boolean) => {
+        if (open) openFlow()
+        else closeFlow()
+        baseOnSwapModalStateChange?.(open)
+    }, [baseOnSwapModalStateChange, openFlow, closeFlow])
 
-        // Faro always receives widget errors, including on pages that supply a
-        // partial callbacks object. Preserve an embedding host's callback too.
-        // A declined wallet prompt is an expected user outcome, not an exception.
-        if (!rejected) logError(error)
+    const handleError = useCallback((error: ErrorEventType) => {
+        // Explicit operation callbacks own progression. A handled error is an
+        // observation and must not invent another failure or erase swap context.
+        logError(error)
         if (hostOnError && hostOnError !== logError) hostOnError(error)
-    }, [hostOnError, recordLifecycleEvent])
+    }, [hostOnError])
 
     const resolvedCallbacks = useMemo(() => ({
         ...baseCallbacks,
@@ -261,14 +247,17 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
         onSwapComplete: handleSwapComplete,
         onSwapStatusChange: handleSwapStatusChange,
         onSwapLifecycle: handleSwapLifecycle,
+        onSwapModalStateChange: handleSwapModalStateChange,
         onError: handleError,
-    }), [baseCallbacks, handleError, handleSwapComplete, handleSwapCreate, handleSwapLifecycle, handleSwapStatusChange])
+        onTelemetry: handleTelemetry,
+    }), [baseCallbacks, handleError, handleSwapComplete, handleSwapCreate, handleSwapLifecycle, handleSwapStatusChange, handleSwapModalStateChange, handleTelemetry])
 
     return <LayerswapProvider
         config={mergedConfig}
         callbacks={resolvedCallbacks}
         walletProviders={resolvedWalletProviders}
     >
+        <FaroWalletContext />
         {children}
     </LayerswapProvider>
 }

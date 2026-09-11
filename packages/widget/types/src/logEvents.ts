@@ -1,6 +1,8 @@
 import { SwapStatus } from './SwapStatus';
 
 export interface BaseErrorProps {
+  /** Shared only by observations of the same thrown error object/cause. */
+  occurrenceId?: string;
   name?: string;
   message: string;
   stack?: string;
@@ -109,7 +111,42 @@ export type SwapLifecycleOutcome =
   | 'expired'
   | 'delayed'
   | 'abandoned'
-  | 'stalled';
+  | 'stalled'
+  | 'blocked';
+
+/**
+ * Why the transfer step cannot proceed without a thrown error. Bounded so
+ * dashboards can group by cause across networks and wallets.
+ */
+export type TransferBlockedReasonCode =
+  | 'rpc_unhealthy'
+  | 'same_account_required'
+  | 'wallet_unsupported_for_network'
+  | 'deposit_actions_unavailable'
+  | 'swap_error'
+  | 'insufficient_balance'
+  | 'insufficient_gas'
+  | 'gasless_unavailable'
+  | 'critical_price_impact';
+
+/**
+ * Normalized wallet/provider failure causes. The raw provider code stays in
+ * `errorCode`; API error codes are already bounded and pass through unchanged.
+ */
+export type WalletErrorReasonCode =
+  | 'user_rejected'
+  | 'insufficient_funds'
+  | 'gas_estimation_failed'
+  | 'contract_reverted'
+  | 'nonce_or_replacement'
+  | 'chain_not_added'
+  | 'wallet_disconnected'
+  | 'unsupported_method'
+  | 'invalid_parameters'
+  | 'internal_rpc_error'
+  | 'network_error'
+  | 'timeout'
+  | 'unknown_error';
 
 /**
  * Semantic steps emitted by the widget. These deliberately describe user and
@@ -150,11 +187,13 @@ export type SwapLifecycleStep =
   | 'refund_pending'
   | 'refund_completed'
   | 'retry_requested'
+  | 'transfer_blocked'
   | 'flow_closed'
   | 'flow_error'
   | 'suspected_stall';
 
 export type SwapLifecycleEvent = {
+  occurrenceId?: string;
   step: SwapLifecycleStep;
   stage: SwapLifecycleStage;
   outcome: SwapLifecycleOutcome;
@@ -162,6 +201,8 @@ export type SwapLifecycleEvent = {
   swapId?: string;
   reasonCode?: string;
   reason?: string;
+  /** Raw provider/API code behind a normalized `reasonCode`. */
+  errorCode?: string;
   action?: string;
   provider?: string;
   transactionHash?: string;

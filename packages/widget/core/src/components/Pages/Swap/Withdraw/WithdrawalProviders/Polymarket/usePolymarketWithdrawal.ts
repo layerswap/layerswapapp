@@ -34,7 +34,7 @@ const logWithdrawalError = (error: unknown, ctx: { swapId?: string; fromAddress?
         message: e.message,
         name: e.name || 'PolymarketWithdrawalError',
         stack: e.stack,
-        cause: e.cause,
+        cause: e,
         swapId: ctx.swapId,
         fromAddress: ctx.fromAddress,
         toAddress: ctx.toAddress,

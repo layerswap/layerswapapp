@@ -33,12 +33,16 @@ export type {
   SwapLifecycleOutcome,
   SwapLifecycleStage,
   SwapLifecycleStep,
+  TransferBlockedReasonCode,
+  WalletErrorReasonCode,
 } from './logEvents';
 export type { InternalConnector, Wallet, WalletConnectConfig, WalletConnectLink } from './wallet';
 export { ActionMessageType } from './actionMessage';
 export { GasCalculation } from './GasCalculation';
 export { Network, NetworkWithTokens, Token, Metadata, NetworkRoute, NetworkRouteToken } from './types';
 export { ErrorHandler, setErrorLogger } from './errorHandler';
+export { getErrorOccurrenceId } from './errorOccurrence';
+export type { WidgetTelemetryEvent, WidgetTelemetryHandler } from './telemetry';
 export { insertIfNotExists } from './insertIfNotExists';
 export { realRoutePresent } from './extendedRouteAvailability';
 export type { DepositRouteRef } from './extendedRouteAvailability';

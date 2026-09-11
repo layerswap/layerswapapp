@@ -1,0 +1,158 @@
+{
+  "fixture_version": 1,
+  "provenance": {
+    "source": "User-saved complete collect POST body from Desktop/faro-payload.json",
+    "signalTimestamp": "2026-09-08T15:05:53.654Z",
+    "verification": "Verified in outgoing Faro payload",
+    "sanitization": "Raw source unchanged. Addresses/session/journey IDs replaced with file-local aliases; URLs, browser user agent, reason and log message sanitized. Empty and absent values preserved.",
+    "originalBytes": 1599
+  },
+  "summary": {
+    "signalCounts": {
+      "logs": 1,
+      "events": 0,
+      "exceptions": 0,
+      "measurements": 0
+    },
+    "hasTraces": false,
+    "walletEntries": 1,
+    "sessionIdPresent": true,
+    "journeyIdPresent": true,
+    "swapIdNonempty": false,
+    "pageHasQuery": false
+  },
+  "body": {
+    "meta": {
+      "sdk": {
+        "name": "faro-web",
+        "version": "2.11.0"
+      },
+      "app": {
+        "name": "layerswap-frontend",
+        "version": "local",
+        "environment": "testnet"
+      },
+      "browser": {
+        "name": "Chrome",
+        "version": "152.0.0.0",
+        "os": "Mac OS 10.15.7",
+        "userAgent": "[sanitized]",
+        "language": "en-AU",
+        "mobile": false,
+        "brands": [
+          {
+            "brand": "Chromium",
+            "version": "152"
+          },
+          {
+            "brand": "Not?A_Brand",
+            "version": "24"
+          },
+          {
+            "brand": "Google Chrome",
+            "version": "152"
+          }
+        ],
+        "viewportWidth": "1512",
+        "viewportHeight": "743"
+      },
+      "os": {
+        "name": "Mac OS",
+        "version": "10.15.7"
+      },
+      "page": {
+        "url": "https://faro-validation.invalid/controlled",
+        "id": "/controlled"
+      },
+      "view": {
+        "name": "/controlled"
+      },
+      "session": {
+        "id": "session-desktop-test-1",
+        "attributes": {
+          "previousSession": "session-desktop-test-1",
+          "connected_wallets": "[{\"wallet_address\":\"wallet-desktop-test-2\",\"wallet_family\":\"evm\",\"wallet_connector\":\"metaMaskSDK\",\"wallet_chain_id\":\"43114\"}]",
+          "connected_wallet_count": "1",
+          "connected_wallets_omitted": "0",
+          "connected_wallets_state": "ready",
+          "schema_version": "1",
+          "step": "flow_error",
+          "stage": "flow",
+          "outcome": "failed",
+          "path": "ErrorHandler",
+          "swap_id": "",
+          "reason_code": "BalanceResolverError",
+          "reason": "[sanitized]",
+          "source_network": "LIGHTLINK_TESTNET",
+          "journey_id": "journey-desktop-test-3",
+          "sequence": "8",
+          "attempt": "0",
+          "previous_step": "flow_error",
+          "previous_outcome": "failed",
+          "previous_step_duration_ms": "4",
+          "journey_duration_ms": "7710",
+          "page_url": "https://faro-validation.invalid/controlled"
+        }
+      }
+    },
+    "logs": [
+      {
+        "message": "[sanitized]",
+        "level": "log",
+        "timestamp": "2026-09-08T15:05:53.654Z"
+      }
+    ]
+  },
+  "loki": {
+    "verification": "Verified in Loki",
+    "verifiedAt": "2026-09-08T15:14:19.017Z",
+    "timestampNs": "1788879954151743076",
+    "match": {
+      "method": "Exact original session ID, log message and client timestamp matched in memory",
+      "matchingRecords": 1,
+      "queriedRecords": 14,
+      "limit": 1000
+    },
+    "checks": {
+      "sessionEqual": true,
+      "appEqual": true,
+      "versionEqual": true,
+      "environmentEqual": true,
+      "walletJsonEqual": true,
+      "journeyEqual": true,
+      "pageUrlEqual": true,
+      "levelEqual": true,
+      "allNonemptySessionAttributesEqual": true
+    },
+    "observedDifferences": [
+      {
+        "payloadField": "meta.session.attributes.swap_id",
+        "outgoingValue": "",
+        "lokiField": "session_attr_swap_id",
+        "storedPresent": false
+      }
+    ],
+    "parsedFields": {
+      "kind": "log",
+      "level": "log",
+      "timestamp": "2026-09-08 15:05:53.654 +0000 UTC",
+      "app_name": "layerswap-frontend",
+      "app_environment": "testnet",
+      "app_version": "local",
+      "message": "[sanitized]",
+      "session_id": "session-desktop-test-1",
+      "session_attr_connected_wallets": "[{\"wallet_address\":\"wallet-desktop-test-2\",\"wallet_family\":\"evm\",\"wallet_connector\":\"metaMaskSDK\",\"wallet_chain_id\":\"43114\"}]",
+      "session_attr_journey_id": "journey-desktop-test-3",
+      "session_attr_step": "flow_error"
+    }
+  },
+  "limitations": [
+    "One console-log body, not startup, close-flow, HTTP, error-limit or Web Vital capture.",
+    "No spans or trace/span IDs in this request; no Tempo verification.",
+    "No request headers captured.",
+    "The original page URL had no query; this exemplar cannot verify query-string preservation.",
+    "app_version local does not uniquely identify the working code.",
+    "Empty swap_id omission is observed for this record, not a universal rule for all fields.",
+    "Fixture aliases are not live search values."
+  ]
+}

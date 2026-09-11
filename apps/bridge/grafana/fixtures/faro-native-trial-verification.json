@@ -1,0 +1,204 @@
+{
+  "checkedAt": "2026-09-09T12:53:24.389088+00:00",
+  "checks": [
+    {
+      "check": "schema dry run",
+      "dashboard": "layerswap-faro-trial-views",
+      "passed": true
+    },
+    {
+      "check": "schema dry run",
+      "dashboard": "layerswap-faro-trial-issue",
+      "passed": true
+    },
+    {
+      "check": "schema dry run",
+      "dashboard": "layerswap-faro-trial-session",
+      "passed": true
+    },
+    {
+      "check": "schema dry run",
+      "dashboard": "layerswap-faro-trial-event",
+      "passed": true
+    },
+    {
+      "check": "live query",
+      "dashboard": "layerswap-faro-trial-views",
+      "panel": "panel-2",
+      "rows": 29,
+      "passed": true
+    },
+    {
+      "check": "live query",
+      "dashboard": "layerswap-faro-trial-views",
+      "panel": "panel-4",
+      "rows": 34,
+      "passed": true
+    },
+    {
+      "check": "live query",
+      "dashboard": "layerswap-faro-trial-views",
+      "panel": "panel-6",
+      "rows": 36,
+      "passed": true
+    },
+    {
+      "check": "live query",
+      "dashboard": "layerswap-faro-trial-views",
+      "panel": "panel-8",
+      "rows": 0,
+      "passed": true
+    },
+    {
+      "check": "live query",
+      "dashboard": "layerswap-faro-trial-issue",
+      "panel": "panel-2",
+      "rows": 2,
+      "passed": true
+    },
+    {
+      "check": "live query",
+      "dashboard": "layerswap-faro-trial-session",
+      "panel": "panel-2",
+      "rows": 0,
+      "passed": true
+    },
+    {
+      "check": "live query",
+      "dashboard": "layerswap-faro-trial-session",
+      "panel": "panel-3",
+      "rows": 643,
+      "passed": true
+    },
+    {
+      "check": "live query",
+      "dashboard": "layerswap-faro-trial-session",
+      "panel": "panel-4",
+      "rows": 1,
+      "passed": true
+    },
+    {
+      "check": "live query",
+      "dashboard": "layerswap-faro-trial-session",
+      "panel": "panel-6",
+      "rows": 10,
+      "passed": true
+    },
+    {
+      "check": "live query",
+      "dashboard": "layerswap-faro-trial-session",
+      "panel": "panel-8",
+      "rows": 0,
+      "passed": true
+    },
+    {
+      "check": "live query",
+      "dashboard": "layerswap-faro-trial-session",
+      "panel": "panel-10",
+      "rows": 20,
+      "passed": true
+    },
+    {
+      "check": "live query",
+      "dashboard": "layerswap-faro-trial-event",
+      "panel": "panel-2",
+      "rows": 1,
+      "passed": true
+    },
+    {
+      "check": "lookup blank",
+      "rows": 0,
+      "passed": true
+    },
+    {
+      "check": "lookup existing",
+      "rows": 1,
+      "passed": true
+    },
+    {
+      "check": "lookup missing",
+      "rows": 0,
+      "passed": true
+    },
+    {
+      "check": "event existing",
+      "rows": 1,
+      "passed": true
+    },
+    {
+      "check": "event missing",
+      "rows": 0,
+      "passed": true
+    },
+    {
+      "check": "session count reconciles with complete selected sample",
+      "records": 643,
+      "passed": true
+    },
+    {
+      "check": "focused window retains selected occurrence",
+      "rows": 643,
+      "passed": true
+    },
+    {
+      "check": "existing wallet lookup",
+      "matchingSessions": 11,
+      "passed": true
+    },
+    {
+      "check": "existing swap lookup",
+      "matchingSessions": 1,
+      "passed": true
+    },
+    {
+      "check": "existing journey lookup",
+      "matchingSessions": 1,
+      "passed": true
+    },
+    {
+      "check": "quoted backslash backtick newline and unicode lookup safely returns empty",
+      "passed": true
+    },
+    {
+      "check": "request view with recorded HTTP mirrors",
+      "rows": 3,
+      "passed": true
+    }
+  ],
+  "browserVerified": false,
+  "publication": {
+    "status": "published and readback verified",
+    "at": "2026-09-09T13:09:16.532379+00:00",
+    "results": [
+      {
+        "uid": "layerswap-faro-trial-home",
+        "generation": 1,
+        "readbackMatched": true,
+        "url": "https://grafana-2.dev.lb.layerswap.cloud/d/layerswap-faro-trial-home"
+      },
+      {
+        "uid": "layerswap-faro-trial-issue",
+        "generation": 2,
+        "readbackMatched": true,
+        "url": "https://grafana-2.dev.lb.layerswap.cloud/d/layerswap-faro-trial-issue"
+      },
+      {
+        "uid": "layerswap-faro-trial-session",
+        "generation": 1,
+        "readbackMatched": true,
+        "url": "https://grafana-2.dev.lb.layerswap.cloud/d/layerswap-faro-trial-session"
+      },
+      {
+        "uid": "layerswap-faro-trial-event",
+        "generation": 1,
+        "readbackMatched": true,
+        "url": "https://grafana-2.dev.lb.layerswap.cloud/d/layerswap-faro-trial-event"
+      }
+    ],
+    "existingDashboardsUnchanged": true,
+    "tokenChanged": false,
+    "creationFix": "Added grafana.app/grant-permissions: default, matching Grafana native save code",
+    "inaccessibleInitialDraft": "layerswap-faro-trial-views",
+    "initialDraftMetadataRepairStatus": 403
+  }
+}

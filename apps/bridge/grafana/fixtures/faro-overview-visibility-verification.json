@@ -1,0 +1,51 @@
+{
+  "checkedAt": "2026-09-10T10:27:47.316783+00:00",
+  "from": "1788307200000",
+  "to": "1789036025664",
+  "filters": [
+    {
+      "category": "All",
+      "tests": "Include",
+      "groups": 7,
+      "records": 33
+    },
+    {
+      "category": "All",
+      "tests": "Exclude",
+      "groups": 5,
+      "records": 31
+    },
+    {
+      "category": "All",
+      "tests": "Only",
+      "groups": 2,
+      "records": 2
+    },
+    {
+      "category": "Diagnostics",
+      "tests": "Include",
+      "groups": 5,
+      "records": 31
+    },
+    {
+      "category": "Unclassified",
+      "tests": "Include",
+      "groups": 2,
+      "records": 2
+    },
+    {
+      "category": "User-impacting",
+      "tests": "Include",
+      "groups": 0,
+      "records": 0
+    }
+  ],
+  "categoryAndTestPartitionsReconcile": true,
+  "allFourTriageQueriesPassed": true,
+  "statusAndTrendQueriesPassed": true,
+  "selectedGroupQueriesPassed": true,
+  "dashboardRegressionTests": 8,
+  "browserVerified": false,
+  "browserBlocker": "Browser runtime import rejected node:process during setup.",
+  "customVariableSchema": "https://github.com/grafana/grafana/blob/main/apps/dashboard/pkg/apis/dashboard/v2/dashboard_spec.cue"
+}

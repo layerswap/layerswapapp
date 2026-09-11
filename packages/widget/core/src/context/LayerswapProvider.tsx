@@ -26,6 +26,7 @@ import { setExtendedRouteProviders } from "@/lib/extendedRoutes";
 import { ErrorProvider } from "./ErrorProvider";
 import { DescriptorHydrationBoundary } from "@layerswap/wallet-core";
 import { registerWidgetErrorLogger } from "@/lib/ErrorHandler";
+import { captureWidgetInteraction } from '@/lib/widgetTelemetry';
 
 registerWidgetErrorLogger();
 
@@ -228,6 +229,8 @@ export const LayerswapProvider: typeof LayerswapProviderComponent = (props) => {
         <>
             <ColorSchema themeData={props.config?.theme} />
             <div
+                onClickCapture={captureWidgetInteraction}
+                onChangeCapture={captureWidgetInteraction}
                 style={{ backgroundColor: 'transparent', height: '100%', width: '100%' }}
                 className="layerswap-styles">
                 <LayerswapProviderComponent  {...props}>

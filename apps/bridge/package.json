@@ -9,7 +9,8 @@
     "start": "next start",
     "analyze": "cross-env ANALYZE=true next build",
     "lint": "next lint",
-    "check:types": "tsc --noEmit"
+    "check:types": "tsc --noEmit",
+    "test:faro": "node --experimental-strip-types --test lib/__tests__/faro-*.test.mjs"
   },
   "packageManager": "pnpm@10.20.0",
   "dependencies": {
@@ -20,6 +21,7 @@
     "@grafana/faro-react": "2.11.0",
     "@grafana/faro-web-sdk": "2.11.0",
     "@grafana/faro-web-tracing": "2.11.0",
+    "@layerswap/wallet-core": "workspace:^",
     "@layerswap/wallet-evm": "workspace:^",
     "@layerswap/wallets": "workspace:^",
     "@layerswap/widget": "workspace:^",

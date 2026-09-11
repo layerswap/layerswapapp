@@ -84,6 +84,7 @@ export type WalletDefaults = {
  * `@layerswap/widget-types` if you want them.
  */
 export type WidgetCallbacks = {
+  onTelemetry?: import('./telemetry').WidgetTelemetryHandler;
   onFormChange?: (formData: unknown) => void;
   onSwapCreate?: (swapData: unknown) => void;
   onSwapComplete?: (swapData: unknown) => void;

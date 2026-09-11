@@ -1,0 +1,50 @@
+{
+  "fixtureVersion": 1,
+  "provenance": {
+    "source": "Read-only development Loki query after user reported reconnecting with a different account",
+    "datasourceUid": "P8E80F9AEF21F6940",
+    "scope": "Sanitized parsed-field projection; original addresses/session/journey IDs compared in memory. Aliases match previous connect/disconnect fixtures. Not an outgoing browser body or complete session history."
+  },
+  "verification": "Verified in Loki",
+  "verifiedAt": "2026-09-08T14:11:00.152Z",
+  "status": "success",
+  "beforeTimestampNs": "1788875467001090240",
+  "disconnectTimestampNs": "1788876232057274215",
+  "queryEndNs": "1788876658442000000",
+  "queryLimit": 30,
+  "returnedRecords": 30,
+  "checks": {
+    "addressChanged": true,
+    "oldAddressAbsentFromCurrentWallets": true,
+    "sameSession": true,
+    "sameApplication": true,
+    "sameEnvironment": true,
+    "sameVersion": true,
+    "journeyContextPresent": true,
+    "sameJourney": false,
+    "oldAddressStillSearchable": true,
+    "newAddressSearchable": true
+  },
+  "lookup": {
+    "oldRecords": 10,
+    "newRecords": 10,
+    "limitEach": 10,
+    "scope": "Exact first JSON element only, not arbitrary array membership. Original identifiers never printed."
+  },
+  "record": {
+    "timestampNs": "1788876651722951825",
+    "parsedFields": {
+      "app_name": "layerswap-frontend",
+      "app_environment": "testnet",
+      "app_version": "local",
+      "kind": "event",
+      "event_name": "faro.tracing.fetch",
+      "session_attr_step": "flow_error",
+      "session_attr_connected_wallet_count": "1",
+      "session_attr_connected_wallets_omitted": "0",
+      "session_attr_connected_wallets_state": "ready",
+      "session_id": "session-wallet-test-1",
+      "session_attr_connected_wallets": "[{\"wallet_address\":\"address-wallet-test-2\",\"wallet_family\":\"evm\",\"wallet_connector\":\"metaMaskSDK\",\"wallet_chain_id\":\"43114\"}]"
+    }
+  }
+}

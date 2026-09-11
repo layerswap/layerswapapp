@@ -12,6 +12,7 @@ import { isUserRejection } from "./isUserRejection";
 import { TransferProps } from "@layerswap/widget-types";
 import { ErrorHandler } from "@/lib/ErrorHandler";
 import { lifecycleContextFromSwap, lifecycleErrorDetails } from "@/lib/swapLifecycle";
+import { widgetTelemetry } from '@/lib/widgetTelemetry';
 
 export type WalletTransfer = (props: TransferProps) => Promise<string | undefined>
 export type GaslessSigner = (signAction: SignDepositAction) => Promise<string>
@@ -49,12 +50,16 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
     })
 
     let hash: string | undefined
+    const finishTelemetry = widgetTelemetry.beginOperation('wallet_transfer', {
+        swap_id: swapData.id, provider: selectedWallet.providerName, timing_kind: 'user_wait_included',
+    })
     try {
         hash = await onClick(transferProps)
     }
     catch (error) {
         const rejected = isUserRejection(error)
         const errorDetails = lifecycleErrorDetails(error)
+        finishTelemetry(rejected ? 'rejected' : 'failed', { occurrence_id: errorDetails.occurrenceId })
         onLifecycle({
             step: rejected ? 'wallet_action_rejected' : 'wallet_action_failed',
             stage: 'wallet_action',
@@ -69,6 +74,7 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
         throw error
     }
     if (!hash) {
+        finishTelemetry('failed', { reason_code: 'missing_transaction_hash' })
         const error = new Error('Wallet returned no transaction hash')
         onLifecycle({
             step: 'wallet_action_failed',
@@ -79,11 +85,13 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
             provider: selectedWallet.providerName,
             reasonCode: 'missing_transaction_hash',
             reason: error.message,
+            occurrenceId: lifecycleErrorDetails(error).occurrenceId,
             ...lifecycleContext,
         })
         throw error
     }
 
+    finishTelemetry('succeeded')
     onLifecycle({
         step: 'transaction_submitted',
         stage: 'input_transfer',
@@ -133,6 +141,9 @@ export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, 
         ...lifecycleContext,
     })
     let authorizedValidBefore: number | undefined
+    const finishTelemetry = widgetTelemetry.beginOperation('gasless_authorization', {
+        swap_id: swapData.id, provider: selectedWallet.providerName, timing_kind: 'user_wait_included',
+    })
     try {
         authorizedValidBefore = await submitGaslessAuthorization({
             swapId: swapData.id,
@@ -144,6 +155,7 @@ export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, 
     } catch (e: any) {
         const rejected = isUserRejection(e)
         const errorDetails = lifecycleErrorDetails(e)
+        finishTelemetry(rejected ? 'rejected' : 'failed', { occurrence_id: errorDetails.occurrenceId })
         onLifecycle({
             step: rejected ? 'wallet_action_rejected' : 'wallet_action_failed',
             stage: 'wallet_action',
@@ -163,6 +175,7 @@ export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, 
         throw e
     }
 
+    finishTelemetry('succeeded')
     onLifecycle({
         step: 'gasless_authorization_submitted',
         stage: 'input_transfer',

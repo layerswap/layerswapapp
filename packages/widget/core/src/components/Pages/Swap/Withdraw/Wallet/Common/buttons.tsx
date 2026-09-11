@@ -32,6 +32,7 @@ import { DepositExecutionContext, GaslessSigner, WalletTransfer, executeGaslessA
 import { useCallbacks } from "@/context/callbackProvider";
 import { lifecycleContextFromSwap, lifecycleErrorDetails } from "@/lib/swapLifecycle";
 import { isUserRejection } from "./isUserRejection";
+import { useTransferBlocked } from "@/hooks/useTransferBlocked";
 
 const layerswapApiClient = new LayerSwapApiClient()
 
@@ -284,6 +285,8 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
     const priceImpactValues = useMemo(() => quote ? resolvePriceImpactValues(quote, refuel ? refuelData : undefined) : undefined, [quote, refuel]);
     const criticalMarketPriceImpact = useMemo(() => priceImpactValues?.criticalMarketPriceImpact, [priceImpactValues]);
+    useTransferBlocked(showCriticalMarketPriceImpactButtons ? 'critical_price_impact' : undefined,
+        lifecycleContextFromSwap(swapBasicData, swapDetails), 'SendTransactionButton')
 
     const handleClick = async () => {
         if (error || swapError) {
@@ -397,7 +400,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     message: error.message,
                     name: error.name,
                     stack: error.stack,
-                    cause: error.cause,
+                    cause: error,
                     swapId: swapId,
                     fromAddress: selectedSourceAccount?.address,
                     toAddress: swapBasicData?.destination_address
@@ -411,6 +414,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 if (difference >= 0 && difference < 5 * gasData.gas) {
                     ErrorHandler({
                         type: 'GasMiscalculation',
+                        cause: error,
                         message: (e as Error)?.message,
                         name: (e as Error)?.name,
                         requestedAmount,

@@ -173,6 +173,9 @@ importers:
       '@grafana/faro-web-tracing':
         specifier: 2.11.0
         version: 2.11.0
+      '@layerswap/wallet-core':
+        specifier: workspace:^
+        version: link:../../packages/wallets/core
       '@layerswap/wallet-evm':
         specifier: workspace:^
         version: link:../../packages/wallets/adapters/evm

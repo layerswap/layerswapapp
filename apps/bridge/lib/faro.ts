@@ -4,117 +4,21 @@ import {
     getWebInstrumentations,
     initializeFaro,
     InternalLoggerLevel,
-    TransportItemType,
-    type APIEvent,
     type Faro,
-    type Meta,
-    type TransportItem,
 } from '@grafana/faro-web-sdk'
 import { TracingInstrumentation } from '@grafana/faro-web-tracing'
+import { beforeSend, MAX_CONTEXT_VALUE_LENGTH, sanitizeValue } from './faro-sanitizer'
+import { createWalletContextWriter, createSwapContextWriter, SwapContextInstrumentation } from './faro-session-context'
+import { getFaroVolumePolicy } from './faro-policy'
 
 // Keep this identity aligned with the existing Grafana app configured by the
 // babkenmes/posthog-to-faro branch.
 const FARO_APP_NAME = 'layerswap-frontend'
-const REDACTED = '[REDACTED]'
-const MAX_CONTEXT_VALUE_LENGTH = 8_192
 
 let faroClient: Faro | undefined
 let initializationAttempted = false
-
-const normalizedSensitiveKeys = [
-    'authorization',
-    'cookie',
-    'setcookie',
-    'apikey',
-    'accesstoken',
-    'refreshtoken',
-    'idtoken',
-    'password',
-    'passphrase',
-    'privatekey',
-    'clientsecret',
-    'mnemonic',
-    'seedphrase',
-    'bearertoken',
-    'signature',
-]
-
-function isSensitiveKey(key: string): boolean {
-    const normalizedKey = key.replace(/[^a-z0-9]/gi, '').toLowerCase()
-    return normalizedSensitiveKeys.some(sensitiveKey => normalizedKey.includes(sensitiveKey))
-}
-
-function redactSensitiveText(value: string): string {
-    return value
-        .replace(/(bearer\s+)[a-z0-9._~+/=-]+/gi, `$1${REDACTED}`)
-        .replace(
-            /([?&](?:api[_-]?key|access[_-]?token|refresh[_-]?token|id[_-]?token|password|passphrase|private[_-]?key|client[_-]?secret|mnemonic|seed[_-]?phrase|signature)=)[^&#\s]*/gi,
-            `$1${REDACTED}`,
-        )
-        .replace(
-            /((?:authorization|api[_-]?key|access[_-]?token|refresh[_-]?token|id[_-]?token|password|passphrase|private[_-]?key|client[_-]?secret|mnemonic|seed[_-]?phrase|signature)["']?\s*[:=]\s*["']?)[^,"'\s}]+/gi,
-            `$1${REDACTED}`,
-        )
-}
-
-function sanitizeValue(
-    value: unknown,
-    key = '',
-    seen = new WeakSet<object>(),
-    depth = 0,
-): unknown {
-    if (isSensitiveKey(key)) return REDACTED
-    if (typeof value === 'string') {
-        const sanitized = redactSensitiveText(value)
-        return sanitized.length > MAX_CONTEXT_VALUE_LENGTH
-            ? `${sanitized.slice(0, MAX_CONTEXT_VALUE_LENGTH)}...[truncated]`
-            : sanitized
-    }
-    if (typeof value === 'bigint' || typeof value === 'symbol' || typeof value === 'function') {
-        return String(value)
-    }
-    if (value === null || value === undefined || typeof value !== 'object') return value
-    if (depth >= 8) return '[Maximum depth reached]'
-    if (seen.has(value)) return '[Circular]'
-
-    seen.add(value)
-
-    if (value instanceof Error) {
-        return {
-            name: value.name,
-            message: redactSensitiveText(value.message),
-            stack: value.stack ? redactSensitiveText(value.stack) : undefined,
-        }
-    }
-
-    if (Array.isArray(value)) {
-        return value.map(item => sanitizeValue(item, key, seen, depth + 1))
-    }
-
-    return Object.fromEntries(
-        Object.entries(value).map(([nestedKey, nestedValue]) => [
-            nestedKey,
-            sanitizeValue(nestedValue, nestedKey, seen, depth + 1),
-        ]),
-    )
-}
-
-function beforeSend(item: TransportItem): TransportItem | null {
-    if (
-        item.type === TransportItemType.EXCEPTION
-        && 'value' in item.payload
-        && typeof item.payload.value === 'string'
-        && item.payload.value.includes('ResizeObserver loop')
-    ) {
-        return null
-    }
-
-    return {
-        ...item,
-        payload: sanitizeValue(item.payload) as APIEvent,
-        meta: sanitizeValue(item.meta) as Meta,
-    }
-}
+const walletContextWriters = new WeakMap<Faro, (attributes: Record<string, string>) => boolean>()
+let writeSwapContext: ReturnType<typeof createSwapContextWriter> | undefined
 
 function parseSamplingRate(value: string | undefined): number {
     if (!value) return 1
@@ -172,35 +76,35 @@ export function initFaro(): Faro | undefined {
             url: collectorUrl,
             app: {
                 name: FARO_APP_NAME,
-                version: process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA || 'local',
+                version: process.env.NEXT_PUBLIC_FARO_RELEASE || 'unknown-release',
+                release: process.env.NEXT_PUBLIC_FARO_RELEASE || 'unknown-release',
+                // Retain the existing API-mode field for saved queries/links.
+                // Deployment identity is separate, immutable page metadata below.
                 environment: process.env.NEXT_PUBLIC_API_VERSION || 'sandbox',
             },
             beforeSend,
-            // Repeated identical logs can be meaningful in swap diagnostics.
-            dedupe: false,
-            consoleInstrumentation: {
-                // Faro disables debug, trace, and log by default. An empty list
-                // explicitly captures every browser console level.
-                disabledLevels: [],
-                consoleErrorAsLog: false,
-                serializeErrors: true,
-            },
+            ...getFaroVolumePolicy(process.env.NODE_ENV),
             internalLoggerLevel: process.env.NEXT_PUBLIC_FARO_DEBUG === 'true'
                 ? InternalLoggerLevel.VERBOSE
                 : InternalLoggerLevel.ERROR,
             pageTracking: {
                 generatePageId: location => location.pathname,
+                page: {
+                    attributes: {
+                        deployment_environment: process.env.NEXT_PUBLIC_FARO_DEPLOYMENT || 'unknown',
+                    },
+                },
             },
             sessionTracking: {
                 enabled: true,
                 persistent: true,
                 samplingRate: parseSamplingRate(process.env.NEXT_PUBLIC_FARO_SAMPLE_RATE),
             },
-            trackResources: true,
             experimental: {
                 trackNavigation: true,
             },
             instrumentations: [
+                new SwapContextInstrumentation(writer => { writeSwapContext = writer }),
                 ...getWebInstrumentations({
                     captureConsole: true,
                     enableContentSecurityPolicyInstrumentation: true,
@@ -315,20 +219,29 @@ export function setSwapContext(
     if (!client) return false
 
     try {
-        const currentSession = client.api.getSession()
-        if (!currentSession?.id) return false
-
-        client.api.setSession({
-            ...currentSession,
-            attributes: options.replaceAttributes ? flattenContext(attributes) : {
-                ...currentSession.attributes,
-                ...flattenContext(attributes),
-            },
-        })
-        return true
+        writeSwapContext ??= createSwapContextWriter(client.api, listener => client.metas.addListener(listener))
+        return writeSwapContext(flattenContext(attributes), options.replaceAttributes ?? false)
     }
     catch (captureError) {
         client.unpatchedConsole.error('[Faro] Failed to set swap session context.', captureError)
+        return false
+    }
+}
+
+/** Replace only wallet-owned fields; do not rotate the session or touch swap data. */
+export function setWalletContext(attributes: Record<string, string>): boolean {
+    const client = getFaro() ?? initFaro()
+    if (!client) return false
+    try {
+        let write = walletContextWriters.get(client)
+        if (!write) {
+            write = createWalletContextWriter(client.api, listener => client.metas.addListener(listener))
+            walletContextWriters.set(client, write)
+        }
+        return write(flattenContext(attributes))
+    }
+    catch {
+        // Do not log wallet/provider data or interfere with wallet interactions.
         return false
     }
 }

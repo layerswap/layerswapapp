@@ -8,6 +8,8 @@ type text_align = 'center' | 'left'
 type button_align = 'left' | 'right'
 
 export class SubmitButtonProps {
+    'data-attr'?: string;
+    'data-ls-action'?: string;
     isDisabled?: boolean;
     isSubmitting?: boolean;
     type?: 'submit' | 'reset' | 'button' | undefined;
@@ -22,10 +24,12 @@ export class SubmitButtonProps {
     style?: CSSProperties;
 }
 
-const SubmitButton: FC<SubmitButtonProps> = ({ isDisabled, isSubmitting, icon, children, type, onClick, buttonStyle = 'filled', size = 'medium', text_align = 'center', button_align = 'left', className, style }) => {
+const SubmitButton: FC<SubmitButtonProps> = ({ isDisabled, isSubmitting, icon, children, type, onClick, buttonStyle = 'filled', size = 'medium', text_align = 'center', button_align = 'left', className, style, 'data-attr': dataAttr, 'data-ls-action': telemetryAction }) => {
 
     return (
         <button
+            data-attr={dataAttr}
+            data-ls-action={telemetryAction}
             disabled={isDisabled || isSubmitting}
             type={type}
             onClick={onClick}

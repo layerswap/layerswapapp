@@ -1,0 +1,89 @@
+{
+  "fixtureVersion": 1,
+  "verification": "Verified in Loki",
+  "provenance": {
+    "source": "Dev Loki query after user reloaded and connected a wallet, 2026-09-08",
+    "scope": "Sanitized parsed-field projections, not browser payloads or raw log lines. Address/session pseudonyms preserve equality. Arbitrary error/provider content and journey IDs omitted.",
+    "datasourceUid": "P8E80F9AEF21F6940",
+    "verifiedAt": "2026-09-08T13:52:20.988Z",
+    "window": {
+      "from": "2026-09-08T13:32:19.297Z",
+      "to": "2026-09-08T13:52:19.297Z"
+    },
+    "returnedRecords": 200,
+    "queryLimit": 200,
+    "completeWindow": false
+  },
+  "rawQueryEvidence": {
+    "sampleLimit": 10,
+    "streamLabelNames": [
+      "detected_level",
+      "service_name",
+      "source"
+    ],
+    "structuredMetadataPresent": false
+  },
+  "records": [
+    {
+      "timestampNs": "1788875467001090240",
+      "parsedFields": {
+        "app_name": "layerswap-frontend",
+        "app_environment": "testnet",
+        "app_version": "local",
+        "session_id": "session-wallet-test-1",
+        "session_attr_connected_wallets": "[{\"wallet_address\":\"address-wallet-test-1\",\"wallet_family\":\"evm\",\"wallet_connector\":\"metaMaskSDK\",\"wallet_chain_id\":\"43114\"}]",
+        "session_attr_connected_wallet_count": "1",
+        "session_attr_connected_wallets_omitted": "0",
+        "session_attr_connected_wallets_state": "ready",
+        "session_attr_step": "flow_error",
+        "kind": "event",
+        "event_name": "faro.tracing.fetch"
+      }
+    },
+    {
+      "timestampNs": "1788875467125896401",
+      "parsedFields": {
+        "app_name": "layerswap-frontend",
+        "app_environment": "testnet",
+        "app_version": "local",
+        "session_id": "session-wallet-test-1",
+        "session_attr_connected_wallets": "[{\"wallet_address\":\"address-wallet-test-1\",\"wallet_family\":\"evm\",\"wallet_connector\":\"metaMaskSDK\",\"wallet_chain_id\":\"43114\"}]",
+        "session_attr_connected_wallet_count": "1",
+        "session_attr_connected_wallets_omitted": "0",
+        "session_attr_connected_wallets_state": "ready",
+        "session_attr_step": "flow_error",
+        "kind": "exception"
+      }
+    },
+    {
+      "timestampNs": "1788875467125994003",
+      "parsedFields": {
+        "app_name": "layerswap-frontend",
+        "app_environment": "testnet",
+        "app_version": "local",
+        "session_id": "session-wallet-test-1",
+        "session_attr_connected_wallets": "[{\"wallet_address\":\"address-wallet-test-1\",\"wallet_family\":\"evm\",\"wallet_connector\":\"metaMaskSDK\",\"wallet_chain_id\":\"43114\"}]",
+        "session_attr_connected_wallet_count": "1",
+        "session_attr_connected_wallets_omitted": "0",
+        "session_attr_connected_wallets_state": "ready",
+        "session_attr_step": "flow_error",
+        "kind": "event",
+        "event_name": "swap_lifecycle"
+      }
+    }
+  ],
+  "lookupEvidence": {
+    "verifiedAt": "2026-09-08T13:53:38.294Z",
+    "status": "success",
+    "records": 10,
+    "limit": 10,
+    "allAddressesExactlyMatched": true,
+    "scope": "JSON element zero only; not arbitrary array membership. Query used original IDs/addresses in memory; placeholders cannot locate live records."
+  },
+  "limitations": [
+    "No paired outgoing wallet payload captured",
+    "Disconnect/account-change/multiple-wallet browser scenarios not yet verified",
+    "No Tempo verification",
+    "200 returned rows hit query limit; not production volume or a complete session history"
+  ]
+}

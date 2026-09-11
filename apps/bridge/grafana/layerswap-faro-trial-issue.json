@@ -1,0 +1,854 @@
+{
+  "apiVersion": "dashboard.grafana.app/v2",
+  "kind": "Dashboard",
+  "metadata": {
+    "name": "layerswap-faro-trial-issue",
+    "annotations": {
+      "grafana.app/folder": "",
+      "grafana.app/grant-permissions": "default"
+    }
+  },
+  "spec": {
+    "title": "Error occurrences \u00b7 Native trial",
+    "description": "Development telemetry. Usability trial; not a production health dashboard.",
+    "tags": [
+      "layerswap",
+      "faro",
+      "development",
+      "native-trial"
+    ],
+    "editable": true,
+    "annotations": [],
+    "cursorSync": "Off",
+    "liveNow": false,
+    "preload": false,
+    "timeSettings": {
+      "timezone": "utc",
+      "from": "now-7d",
+      "to": "now",
+      "autoRefresh": "",
+      "autoRefreshIntervals": [
+        "1m",
+        "5m",
+        "15m"
+      ],
+      "hideTimepicker": false,
+      "fiscalYearStartMonth": 0
+    },
+    "variables": [
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "application",
+          "label": "Application",
+          "query": "layerswap-frontend",
+          "current": {
+            "text": "layerswap-frontend",
+            "value": "layerswap-frontend"
+          },
+          "hide": "dontHide",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "deployment",
+          "label": "Deployment (blank = all)",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "dontHide",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "release",
+          "label": "Release (blank = all)",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "dontHide",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "CustomVariable",
+        "spec": {
+          "name": "category",
+          "label": "Issues category",
+          "query": "All,User-impacting,Diagnostics,Unclassified",
+          "current": {
+            "text": "All",
+            "value": "All"
+          },
+          "options": [
+            {
+              "text": "All",
+              "value": "All",
+              "selected": true
+            },
+            {
+              "text": "User-impacting",
+              "value": "User-impacting",
+              "selected": false
+            },
+            {
+              "text": "Diagnostics",
+              "value": "Diagnostics",
+              "selected": false
+            },
+            {
+              "text": "Unclassified",
+              "value": "Unclassified",
+              "selected": false
+            }
+          ],
+          "multi": false,
+          "includeAll": false,
+          "allowCustomValue": false,
+          "hide": "hideVariable",
+          "skipUrlSync": false,
+          "description": "Filters the Issues list and chart."
+        }
+      },
+      {
+        "kind": "CustomVariable",
+        "spec": {
+          "name": "test_errors",
+          "label": "Test errors",
+          "query": "Include,Exclude,Only",
+          "current": {
+            "text": "Include",
+            "value": "Include"
+          },
+          "options": [
+            {
+              "text": "Include",
+              "value": "Include",
+              "selected": true
+            },
+            {
+              "text": "Exclude",
+              "value": "Exclude",
+              "selected": false
+            },
+            {
+              "text": "Only",
+              "value": "Only",
+              "selected": false
+            }
+          ],
+          "multi": false,
+          "includeAll": false,
+          "allowCustomValue": false,
+          "hide": "hideVariable",
+          "skipUrlSync": false,
+          "description": "Known controlled test errors only; does not infer tests from release or environment."
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "selected_category",
+          "label": "selected_category",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "selected_test",
+          "label": "selected_test",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "search",
+          "label": "Wallet / swap / session / journey",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "error_marker",
+          "label": "Message / type contains",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "group_key",
+          "label": "group_key",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "error_type",
+          "label": "error_type",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "session_id",
+          "label": "session_id",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "journey_id",
+          "label": "Journey (blank = all)",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "event_ns",
+          "label": "event_ns",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "origin_tab",
+          "label": "origin_tab",
+          "query": "Issues",
+          "current": {
+            "text": "Issues",
+            "value": "Issues"
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "return_from",
+          "label": "return_from",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "return_to",
+          "label": "return_to",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "return_release",
+          "label": "return_release",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "route",
+          "label": "Page template (blank = all)",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "browser",
+          "label": "Browser (blank = all)",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "mobile",
+          "label": "Mobile: true / false / blank",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "form_mode",
+          "label": "Form mode (blank = all)",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      },
+      {
+        "kind": "TextVariable",
+        "spec": {
+          "name": "flow_id",
+          "label": "Form visit (blank = all)",
+          "query": "",
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "hide": "hideVariable",
+          "skipUrlSync": false
+        }
+      }
+    ],
+    "links": [
+      {
+        "title": "\u2190 Back to results",
+        "url": "/d/layerswap-faro-trial-home?orgId=1&from=${return_from:percentencode}&to=${return_to:percentencode}&dtab=${origin_tab:percentencode}&var-application=${application:percentencode}&var-deployment=${deployment:percentencode}&var-release=${return_release:percentencode}&var-category=${category:percentencode}&var-test_errors=${test_errors:percentencode}&var-selected_category=${selected_category:percentencode}&var-selected_test=${selected_test:percentencode}&var-search=${search:percentencode}&var-error_marker=${error_marker:percentencode}&var-group_key=${group_key:percentencode}&var-error_type=${error_type:percentencode}&var-session_id=${session_id:percentencode}&var-journey_id=${journey_id:percentencode}&var-event_ns=${event_ns:percentencode}&var-origin_tab=${origin_tab:percentencode}&var-return_from=${return_from:percentencode}&var-return_to=${return_to:percentencode}&var-return_release=${return_release:percentencode}&var-route=${route:percentencode}&var-browser=${browser:percentencode}&var-mobile=${mobile:percentencode}&var-form_mode=${form_mode:percentencode}&var-flow_id=${flow_id:percentencode}",
+        "targetBlank": false,
+        "type": "link",
+        "asDropdown": false,
+        "includeVars": false,
+        "keepTime": false,
+        "tags": [],
+        "icon": "external link",
+        "tooltip": ""
+      }
+    ],
+    "elements": {
+      "panel-1": {
+        "kind": "Panel",
+        "spec": {
+          "id": 1,
+          "title": "Selected error type \u00b7 ${error_type}",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "text",
+            "version": "13.1.3",
+            "spec": {
+              "options": {
+                "mode": "markdown",
+                "content": "Choose an occurrence to inspect its original message and surrounding activity. The chart shows this group over time; clear Release to compare versions. Resolved/assigned state is not tracked."
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "noValue": "\u2014"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-2": {
+        "kind": "Panel",
+        "spec": {
+          "id": 2,
+          "title": "Occurrences \u00b7 newest 100",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "P8E80F9AEF21F6940"
+                      },
+                      "spec": {
+                        "expr": "{source=\"faro\"} | logfmt | __error__=\"\" | label_format needle_application=`${application:percentencode}` | label_format needle_application=`{{ urldecode .needle_application }}` | label_format matched=`{{ (eq .app_name .needle_application) }}` | matched=\"true\" | label_format needle_release=`${release:percentencode}` | label_format needle_release=`{{ urldecode .needle_release }}` | label_format matched=`{{ or (eq .needle_release \"\") (eq .app_version .needle_release) }}` | matched=\"true\" | label_format deployment=`{{ if .page_attr_deployment_environment }}{{ .page_attr_deployment_environment }}{{ else }}unknown{{ end }}` | label_format needle_deployment=`${deployment:percentencode}` | label_format needle_deployment=`{{ urldecode .needle_deployment }}` | label_format matched=`{{ or (eq .needle_deployment \"\") (eq .deployment .needle_deployment) }}` | matched=\"true\" | kind=\"exception\" or event_name=\"widget_diagnostic\" | label_format type=`{{ if .type }}{{ .type }}{{ else if .event_data_error_type }}{{ .event_data_error_type }}{{ else }}(unknown type){{ end }}` | label_format error_message=`{{ if .value }}{{ .value }}{{ else }}{{ .event_data_message }}{{ end }}` | label_format category=`{{ if .context_eventType }}{{ .context_eventType }}{{ else }}{{ .event_data_error_category }}{{ end }}` | label_format signal=`{{ if or (eq .type \"TransactionRejected\") (eq .event_data_impact \"expected\") }}expected{{ else if or (eq .context_impact \"diagnostic\") (eq .event_data_impact \"diagnostic\") (eq .category \"BalanceResolverError\" \"BalanceProviderError\" \"MaxPriorityFeePerGasError\" \"FeesPerGasError\" \"GasPriceError\" \"GasProviderError\" \"GasMiscalculation\" \"APIError\" \"SwapCatchupError\") }}diagnostic{{ else }}issue{{ end }}` | label_format needle_error_marker=`${error_marker:percentencode}` | label_format needle_error_marker=`{{ urldecode .needle_error_marker }}` | label_format matched=`{{ or (contains (lower .needle_error_marker) (lower .error_message)) (contains (lower .needle_error_marker) (lower .type)) }}` | matched=\"true\" | label_format normalized=`{{ .error_message | trim }}` | label_format normalized=`{{ regexReplaceAll \"(?s)\\\\n.*\" .normalized \"\" }}` | label_format normalized=`{{ regexReplaceAll \"0x[0-9a-fA-F]{8,}\" .normalized \"<hex>\" }}` | label_format normalized=`{{ regexReplaceAll \"\\\\b[1-9A-HJ-NP-Za-km-z]{32,64}\\\\b\" .normalized \"<address>\" }}` | label_format normalized=`{{ regexReplaceAll \"\\\\b(bc1|tb1)[a-z0-9]{20,}\\\\b\" .normalized \"<address>\" }}` | label_format normalized=`{{ regexReplaceAll \"\\\\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\\\\b\" .normalized \"<id>\" }}` | label_format normalized=`{{ regexReplaceAll \"https?://[^\\\\s]+\" .normalized \"<url>\" }}` | label_format normalized=`{{ regexReplaceAll \"(?i)\\\\b(amount|value|balance)([ :=]+)[0-9]+(\\\\.[0-9]+)?\\\\b\" .normalized \"${1}${2}<amount>\" }}` | label_format normalized=`{{ regexReplaceAll \"\\\\b[0-9]+\\\\.[0-9]+\\\\b\" .normalized \"<amount>\" }}` | label_format normalized=`{{ regexReplaceAll \"\\\\b[0-9]{6,}\\\\b\" .normalized \"<number>\" }}` | label_format normalized=`{{ regexReplaceAll \"Could not fetch balance for .* in \" .normalized \"Could not fetch balance in \" }}` | label_format normalized=`{{ regexReplaceAll \"\\\\s+\" .normalized \" \" }}` | label_format group_key=`{{ printf \"v2:%s:%s\" .type .normalized }}` | label_format summary=`{{ .normalized | trim | trunc 180 }}` | label_format release=`{{ if .app_version }}{{ .app_version }}{{ else }}(unknown){{ end }}` | label_format impact_category=`{{ if or (eq .context_impact \"user\") (eq .event_data_impact \"user\") }}User-impacting{{ else if eq .signal \"diagnostic\" }}Diagnostics{{ else }}Unclassified{{ end }}` | label_format test_record=`{{ if or (eq .type \"controlled_test\") (hasPrefix \"FARO_CONTROLLED_\" .error_message) }}Yes{{ else }}No{{ end }}` | label_format needle_group_key=`${group_key:percentencode}` | label_format needle_group_key=`{{ urldecode .needle_group_key }}` | label_format matched=`{{ (eq .group_key .needle_group_key) }}` | matched=\"true\" | label_format needle_error_type=`${error_type:percentencode}` | label_format needle_error_type=`{{ urldecode .needle_error_type }}` | label_format matched=`{{ (eq .type .needle_error_type) }}` | matched=\"true\" | label_format needle_selected_category=`${selected_category:percentencode}` | label_format needle_selected_category=`{{ urldecode .needle_selected_category }}` | label_format matched=`{{ or (eq .needle_selected_category \"\") (eq .impact_category .needle_selected_category) }}` | matched=\"true\" | label_format needle_selected_test=`${selected_test:percentencode}` | label_format needle_selected_test=`{{ urldecode .needle_selected_test }}` | label_format matched=`{{ or (eq .needle_selected_test \"\") (eq .test_record .needle_selected_test) }}` | matched=\"true\" | label_format journey=`{{ if .event_data_journey_id }}{{ .event_data_journey_id }}{{ else }}{{ .session_attr_journey_id }}{{ end }}` | label_format swap=`{{ if .event_data_swap_id }}{{ .event_data_swap_id }}{{ else }}{{ .session_attr_swap_id }}{{ end }}` | label_format stored_ns=`ns:{{ __timestamp__ | unixEpochNanos }}` | label_format window_from=`{{ sub (unixEpochMillis (__timestamp__)) 300000 }}` | label_format window_to=`{{ add (unixEpochMillis (__timestamp__)) 300000 }}` | label_format activity=`{{ if .value }}{{ .value }}{{ else if .message }}{{ .message }}{{ else if .event_data_message }}{{ .event_data_message }}{{ else if .event_data_reason }}{{ .event_data_reason }}{{ else if .event_data_step }}{{ .event_data_step }}{{ else }}{{ .event_name }}{{ end }}` | label_format activity=`{{ regexReplaceAll \"(?s)\\n.*\" .activity \"\" | trim | trunc 240 }}` | keep timestamp, activity, event_data_step, event_data_outcome, type, app_version, stored_ns, window_from, window_to, session_id, journey, kind",
+                        "queryType": "range",
+                        "instant": false,
+                        "range": true,
+                        "direction": "backward",
+                        "maxLines": 100,
+                        "editorMode": "code"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [
+                {
+                  "kind": "Transformation",
+                  "group": "extractFields",
+                  "spec": {
+                    "options": {
+                      "source": "labels",
+                      "format": "json",
+                      "replace": true,
+                      "keepTime": false
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "organize",
+                  "spec": {
+                    "options": {
+                      "excludeByName": {
+                        "Time": true
+                      },
+                      "indexByName": {
+                        "timestamp": 0,
+                        "activity": 1,
+                        "event_data_step": 2,
+                        "event_data_outcome": 3,
+                        "type": 4,
+                        "app_version": 5,
+                        "stored_ns": 6,
+                        "window_from": 7,
+                        "window_to": 8,
+                        "session_id": 9,
+                        "journey": 10,
+                        "kind": 11
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "Transformation",
+                  "group": "sortBy",
+                  "spec": {
+                    "options": {
+                      "sort": [
+                        {
+                          "field": "timestamp",
+                          "desc": true
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "13.1.3",
+            "spec": {
+              "options": {
+                "showHeader": true,
+                "cellHeight": "md",
+                "enablePagination": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "noValue": "\u2014"
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "timestamp"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Client time"
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 220
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "activity"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "What happened"
+                      },
+                      {
+                        "id": "links",
+                        "value": [
+                          {
+                            "title": "Open surrounding timeline",
+                            "url": "/d/layerswap-faro-trial-session?orgId=1&from=${__data.fields[\"window_from\"]:percentencode}&to=${__data.fields[\"window_to\"]:percentencode}&var-application=${application:percentencode}&var-deployment=${deployment:percentencode}&var-release=${release:percentencode}&var-category=${category:percentencode}&var-test_errors=${test_errors:percentencode}&var-selected_category=${selected_category:percentencode}&var-selected_test=${selected_test:percentencode}&var-search=${search:percentencode}&var-error_marker=${error_marker:percentencode}&var-group_key=${group_key:percentencode}&var-error_type=${error_type:percentencode}&var-session_id=${__data.fields[\"session_id\"]:percentencode}&var-journey_id=&var-event_ns=${__data.fields[\"stored_ns\"]:percentencode}&var-origin_tab=${origin_tab:percentencode}&var-return_from=${return_from:percentencode}&var-return_to=${return_to:percentencode}&var-return_release=${return_release:percentencode}&var-route=${route:percentencode}&var-browser=${browser:percentencode}&var-mobile=${mobile:percentencode}&var-form_mode=${form_mode:percentencode}&var-flow_id=",
+                            "targetBlank": false
+                          }
+                        ]
+                      },
+                      {
+                        "id": "custom.wrapText",
+                        "value": true
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 480
+                      },
+                      {
+                        "id": "custom.inspect",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "event_data_step"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Step"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "event_data_outcome"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Outcome"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "type"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Type"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "app_version"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "Release"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "stored_ns"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "window_from"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "window_to"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "session_id"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "journey"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "kind"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.hideFrom.viz",
+                        "value": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-3": {
+        "kind": "Panel",
+        "spec": {
+          "id": 3,
+          "title": "Selected group \u00b7 hourly observations by release",
+          "description": "Rolling hourly counts for this normalized group. Clear Release to compare releases. Absence of observations is not resolved state.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "P8E80F9AEF21F6940"
+                      },
+                      "spec": {
+                        "expr": "sum by (release) (count_over_time({source=\"faro\"} | logfmt | __error__=\"\" | label_format needle_application=`${application:percentencode}` | label_format needle_application=`{{ urldecode .needle_application }}` | label_format matched=`{{ (eq .app_name .needle_application) }}` | matched=\"true\" | label_format needle_release=`${release:percentencode}` | label_format needle_release=`{{ urldecode .needle_release }}` | label_format matched=`{{ or (eq .needle_release \"\") (eq .app_version .needle_release) }}` | matched=\"true\" | label_format deployment=`{{ if .page_attr_deployment_environment }}{{ .page_attr_deployment_environment }}{{ else }}unknown{{ end }}` | label_format needle_deployment=`${deployment:percentencode}` | label_format needle_deployment=`{{ urldecode .needle_deployment }}` | label_format matched=`{{ or (eq .needle_deployment \"\") (eq .deployment .needle_deployment) }}` | matched=\"true\" | kind=\"exception\" or event_name=\"widget_diagnostic\" | label_format type=`{{ if .type }}{{ .type }}{{ else if .event_data_error_type }}{{ .event_data_error_type }}{{ else }}(unknown type){{ end }}` | label_format error_message=`{{ if .value }}{{ .value }}{{ else }}{{ .event_data_message }}{{ end }}` | label_format category=`{{ if .context_eventType }}{{ .context_eventType }}{{ else }}{{ .event_data_error_category }}{{ end }}` | label_format signal=`{{ if or (eq .type \"TransactionRejected\") (eq .event_data_impact \"expected\") }}expected{{ else if or (eq .context_impact \"diagnostic\") (eq .event_data_impact \"diagnostic\") (eq .category \"BalanceResolverError\" \"BalanceProviderError\" \"MaxPriorityFeePerGasError\" \"FeesPerGasError\" \"GasPriceError\" \"GasProviderError\" \"GasMiscalculation\" \"APIError\" \"SwapCatchupError\") }}diagnostic{{ else }}issue{{ end }}` | label_format needle_error_marker=`${error_marker:percentencode}` | label_format needle_error_marker=`{{ urldecode .needle_error_marker }}` | label_format matched=`{{ or (contains (lower .needle_error_marker) (lower .error_message)) (contains (lower .needle_error_marker) (lower .type)) }}` | matched=\"true\" | label_format normalized=`{{ .error_message | trim }}` | label_format normalized=`{{ regexReplaceAll \"(?s)\\\\n.*\" .normalized \"\" }}` | label_format normalized=`{{ regexReplaceAll \"0x[0-9a-fA-F]{8,}\" .normalized \"<hex>\" }}` | label_format normalized=`{{ regexReplaceAll \"\\\\b[1-9A-HJ-NP-Za-km-z]{32,64}\\\\b\" .normalized \"<address>\" }}` | label_format normalized=`{{ regexReplaceAll \"\\\\b(bc1|tb1)[a-z0-9]{20,}\\\\b\" .normalized \"<address>\" }}` | label_format normalized=`{{ regexReplaceAll \"\\\\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\\\\b\" .normalized \"<id>\" }}` | label_format normalized=`{{ regexReplaceAll \"https?://[^\\\\s]+\" .normalized \"<url>\" }}` | label_format normalized=`{{ regexReplaceAll \"(?i)\\\\b(amount|value|balance)([ :=]+)[0-9]+(\\\\.[0-9]+)?\\\\b\" .normalized \"${1}${2}<amount>\" }}` | label_format normalized=`{{ regexReplaceAll \"\\\\b[0-9]+\\\\.[0-9]+\\\\b\" .normalized \"<amount>\" }}` | label_format normalized=`{{ regexReplaceAll \"\\\\b[0-9]{6,}\\\\b\" .normalized \"<number>\" }}` | label_format normalized=`{{ regexReplaceAll \"Could not fetch balance for .* in \" .normalized \"Could not fetch balance in \" }}` | label_format normalized=`{{ regexReplaceAll \"\\\\s+\" .normalized \" \" }}` | label_format group_key=`{{ printf \"v2:%s:%s\" .type .normalized }}` | label_format summary=`{{ .normalized | trim | trunc 180 }}` | label_format release=`{{ if .app_version }}{{ .app_version }}{{ else }}(unknown){{ end }}` | label_format impact_category=`{{ if or (eq .context_impact \"user\") (eq .event_data_impact \"user\") }}User-impacting{{ else if eq .signal \"diagnostic\" }}Diagnostics{{ else }}Unclassified{{ end }}` | label_format test_record=`{{ if or (eq .type \"controlled_test\") (hasPrefix \"FARO_CONTROLLED_\" .error_message) }}Yes{{ else }}No{{ end }}` | label_format needle_group_key=`${group_key:percentencode}` | label_format needle_group_key=`{{ urldecode .needle_group_key }}` | label_format matched=`{{ (eq .group_key .needle_group_key) }}` | matched=\"true\" | label_format needle_error_type=`${error_type:percentencode}` | label_format needle_error_type=`{{ urldecode .needle_error_type }}` | label_format matched=`{{ (eq .type .needle_error_type) }}` | matched=\"true\" | label_format needle_selected_category=`${selected_category:percentencode}` | label_format needle_selected_category=`{{ urldecode .needle_selected_category }}` | label_format matched=`{{ or (eq .needle_selected_category \"\") (eq .impact_category .needle_selected_category) }}` | matched=\"true\" | label_format needle_selected_test=`${selected_test:percentencode}` | label_format needle_selected_test=`{{ urldecode .needle_selected_test }}` | label_format matched=`{{ or (eq .needle_selected_test \"\") (eq .test_record .needle_selected_test) }}` | matched=\"true\" | keep release [1h]))",
+                        "queryType": "range",
+                        "instant": false,
+                        "range": true,
+                        "direction": "backward",
+                        "maxLines": 1000,
+                        "editorMode": "code"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.1.3",
+            "spec": {
+              "options": {
+                "legend": {
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "mode": "multi"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "noValue": "\u2014"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      }
+    },
+    "layout": {
+      "kind": "GridLayout",
+      "spec": {
+        "items": [
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-1"
+              },
+              "x": 0,
+              "y": 0,
+              "width": 24,
+              "height": 3
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-3"
+              },
+              "x": 0,
+              "y": 3,
+              "width": 24,
+              "height": 7
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-2"
+              },
+              "x": 0,
+              "y": 10,
+              "width": 24,
+              "height": 16
+            }
+          }
+        ]
+      }
+    }
+  }
+}

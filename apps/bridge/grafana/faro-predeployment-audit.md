@@ -1,5 +1,81 @@
 # Grafana Faro pre-deployment audit
 
+## Optimized policy observed in Loki — 2026-09-08
+
+At 15:36:30 UTC, the user-operated [console test](fixtures/faro-optimized-policy-loki-observed.json) returned one warning and one error for two identical invocations each, and no debug/log/info marker records. Both retained the same session. Navigation, measurements and fetch/XHR mirrors occur in the bounded nearby-session window; no resource-performance events were returned. This supersedes optimized-filter/dedupe pending notes only for this controlled stored outcome. Outgoing capture, TRACE filtering, indefinite resource suppression and receiver-side source maps remain unverified. No production or infrastructure changes were made.
+
+## Optimized-build artifact check — 2026-09-08
+
+The [local optimized build check](faro-optimized-build-check.md) passed compilation and HTTP artifact checks at 15:32:59 UTC. Generated source maps resolve a minified position back to the policy source locally. The compiled production-mode policy selects the approved volume controls; browser filtering and receiver-side source-map resolution remain pending. The build reported an ESLint dependency failure, so lint is not validated. No deployment or field verification upgrade is implied.
+
+## Flow-close runtime verification — 2026-09-08
+
+The user created a testnet swap and closed its modal. At 15:19:28 UTC, dev Loki verified the contextual `flow_closed` event, followed by 43 records with later client timestamps and no session swap/journey IDs. Session ID and wallet JSON remain identical across those records. The [sanitized evidence](fixtures/faro-flow-close-loki-observed.json) supersedes flow-close-pending notes below for this scenario only. No outgoing close body, persisted-session restoration, optimized-build filtering or Tempo was verified.
+
+## Paired wallet browser payload — 2026-09-08
+
+The [sanitized complete request](fixtures/faro-wallet-browser-payload.json) supplies previously missing outgoing wallet/session metadata: one console log, ready-state connected wallet JSON and journey context. At 15:14:19 UTC, dev Loki returned one exact client-timestamp/message/session match. Wallet JSON, app scope, page URL and all nonempty session attributes were preserved; empty outgoing `swap_id` was omitted in the parsed stored record. No span/header, flow-exit, persisted-session restoration or deployed volume-policy behavior was verified by this body. Its Desktop original was not modified.
+
+## Approved safety implementation — 2026-09-08
+
+The user approved the [safety patch](faro-production-safety-plan.md): deployed-build warn/error console capture, suppression of resource performance events, SDK dedupe, consistent nested-Error string limits and page/flow-owned swap-context cleanup. Default 100% sampling, ordinary full URLs, wallet/form data, Web Vitals, navigation and HTTP tracing remain. Local development keeps verbose console/resource capture. 36 Faro tests, 9 dashboard tests and the bridge type check pass. The local server was restarted; fresh browser/Loki checks are pending and no field verification state is upgraded. The browser controller has no connected browser. No production, Grafana or FluxCD changes were made. This supersedes the proposal-only status immediately below for the approved patch only.
+
+## Production-safety review and URL decision — 2026-09-08
+
+The user confirms current application URL parameters are safe to log. The [updated safety proposal](faro-production-safety-plan.md) retains full URLs with existing credential redaction, superseding earlier blanket query-removal recommendations. It documents current sampling/console/resource behavior, an independently reproduced nested-Error size-limit gap and flow-exit context ownership work. Existing 18 Faro tests pass. No integration or deployment changes were made; technical corrections and volume settings await approval. No stored-field verification state changed.
+
+## Wallet storage verification — 2026-09-08
+
+Follow-up at 14:11:00 UTC: reconnecting with a different account is verified in dev Loki. The new address replaces the old in current wallet context; exact historical lookups using either address still find the same Faro session. The journey ID differs, so journey preservation is not claimed for this step. The [reconnect fixture](fixtures/faro-wallet-reconnect-loki-observed.json) preserves sanitized evidence. In-place account switching without disconnect, multiple wallets and paired outgoing payload capture remain unverified.
+
+Follow-up at 14:05:30 UTC: disconnect is now verified in subsequent dev Loki records, superseding the disconnect-pending status below. The newest sampled wallet snapshot is `[]`, count `0`, state `ready`, with exact session/journey IDs and application/environment/version retained. See the [disconnect evidence](fixtures/faro-wallet-disconnect-loki-observed.json). Account/chain changes, multiple-wallet tests and paired outgoing wallet payload capture remain pending. All 18 Faro regression tests pass.
+
+The new wallet fields are now verified in dev Loki, superseding their earlier source-only status below. A connected `evm` / `metaMaskSDK` wallet with optional chain ID `43114` appears in JSON session context alongside errors and lifecycle records. Exact first-element address extraction/filtering works; wallet fields are parsed log content, not stream labels. See the [wallet report](faro-wallet-session-context.md) and [sanitized stored projections](fixtures/faro-wallet-loki-observed.json). Outgoing wallet payload capture, disconnect/account changes and multiple-wallet browser tests remain pending. Tempo is still deferred.
+
+## Approved connected-wallet context — 2026-09-08
+
+The [wallet/session synchronizer](faro-wallet-session-context.md) is implemented after user approval. It observes existing registry connections, keeps bounded JSON wallet context separate from swap-owned fields, handles account/chain/disconnect changes and preserves SDK session identity/attributes. Seventeen Faro regression tests, seven dashboard tests and the bridge TypeScript check pass; the local app serves HTTP 200. New wallet fields remain source-only, pending real browser and Loki verification. Historical statements below that call this feature unimplemented are superseded by this update. No FluxCD, production policy or Tempo change was made.
+
+## Approved sanitizer correction — 2026-09-08
+
+The frontend [schema-aware sanitizer fix](faro-sanitizer-fix.md) is implemented after user approval. Nine regression tests and the bridge TypeScript check pass. Fresh user-provided browser excerpts show six valid typed span attributes including `session.id` and an intact `browser.brands` resource array containing three typed strings; the span's matching dev Loki tracing mirror retains the exact session/trace/span IDs. See the [sanitized excerpts](fixtures/faro-sanitizer-browser-span-excerpt.json). This is not a full body capture or Tempo verification; other resource attributes and live sensitive-key sanitization remain unverified after the fix. This supersedes earlier **not implemented** status for this correction only; historical payload observations remain valid. Wallet synchronization and production policy choices are unchanged.
+
+## Infrastructure discovery update — 2026-09-08
+
+The user supplied `layerswap/layerswap-fluxcd`; its monitoring configuration was inspected read-only at commit `53b7e74183c84b7395ba1b28fd1a4efd1724dbf8`. The [infrastructure audit](faro-infrastructure-audit.md) supersedes configuration-unavailable statements below. It identifies direct Faro → Loki/Tempo routing, explicit Alloy `source="faro"` labeling, dev/prod CORS, declared retention and datasource provisioning. Active rendered/reconciled configuration is still unverified; no Tempo storage state was upgraded. Fresh dev preflight checks allow `http://localhost:3000` but not `http://127.0.0.1:3000`.
+
+The limited dashboard was subsequently created with approval. [Checkpoint C](faro-checkpoint-c.md) records the browser-reported scalar-variable quoting defect and its saved version-2 correction. Production policy and instrumentation fixes remain proposals; no infrastructure configuration was changed.
+
+## Current evidence update — 2026-09-08
+
+Working revision during verification: `790cb6260`. [Checkpoint B](faro-checkpoint-b.md) and the [updated telemetry contract](faro-telemetry-contract.md) supersede the historical verification status below. The numbered source audit and original test results are retained as the 2026-09-04 snapshot; they are not a claim that all earlier access blockers still exist.
+
+- A manually operated Chrome browser produced genuine Faro envelopes on a temporary loopback collector. The [sanitized browser fixture](fixtures/faro-controlled-browser-payload.json) contains initialization, initial view assignment, navigation timing, TTFB, success/503/slow fetch mirrors and spans, and explicit/uncaught controlled errors.
+- The developer Grafana account can query Loki. Six filtered browser envelopes were replayed to the actual dev Faro receiver, all acknowledged with HTTP 202. Nine corresponding records were found and parsed with LogQL `logfmt`. The [stored-record fixture](fixtures/faro-loki-observed-records.json) preserves a sanitized projection of observed fields.
+- The user separately created a Sepolia swap and rejected the `send_transaction` prompt from `localhost:3000`. Loki contains ten journey steps. Only five carry the swap ID; session/journey correlation recovers the five earlier steps. No outgoing browser body was captured for this test. Connection cancellation and gasless signature rejection remain unverified.
+- Raw controlled Loki responses contain only `source`, `service_name` and `detected_level` as stream labels. All other listed fields are parsed from logfmt, not ingestion labels. No structured metadata tuple was returned. Replayed error labels include `service_name=unknown_service` and `detected_level=unknown`; query `app_name` and `kind=exception` instead.
+- Session IDs and the three controlled HTTP trace/span IDs were preserved exactly in Loki. Controlled exceptions carried no trace IDs. Session proximity does not identify the causal request.
+- Tempo health failed with connection refused to the provisioned `http://tempo:3200`; the user explicitly deferred Tempo. No field is verified in Tempo, and no trace UI link has been validated.
+- Alloy receiver/processor/write configuration remains unavailable. Stored transformations are observed, but their precise component ownership, tenant routing, retention and sampling remain unknown.
+- The actual captured application environment was `mainnet` for the local HTTP/error test and `testnet` for the Sepolia swap; both versions were `local`. The local `.env` file alone was not a complete description of effective configuration. The user supplies only the collector as a Faro-specific setting. Do not equate API mode with deployment identity.
+
+### New technical findings (proposals only)
+
+1. `beforeSend` depth truncation corrupts OTLP attribute structure: all 19 span attributes in the selected three-span fixture are `[Maximum depth reached]` strings, and a nested resource array is also truncated. The attributes remain readable on the shallower tracing mirror events. Correct with schema-aware sanitization and re-capture; do not mark expected span attributes or `session.id` as observed on OTLP spans.
+2. Performance navigation and resource timings were observed as **events**, not measurements. TTFB was a measurement. Other Web Vitals are not verified by the TTFB exemplar.
+3. The sole initial `view_changed` event is `unknown` → `/`. It confirms initialization of the view name, not successful navigation between two application routes. A separate view identifier was not observed.
+4. Initial capture volume was 131 requests / 583,270 bytes over about 39 seconds, including 307 resource events and 256 tracing mirror events. The collector URL was excluded. The external request initiators and production volume remain unproven; do not infer a production baseline or that every external fetch was a POST.
+5. Replay records have newer Loki tuple timestamps while preserving old browser signal timestamps. The dashboard must retrieve by the stored time range and distinguish client event time from ingestion time.
+6. The user approved retaining connected-wallet addresses alongside session/form context as searchable fields, never stream labels or metric dimensions. Proposed fields are wallet_address, wallet_family, wallet_connector and optional wallet_chain_id, without required wallet_network. This synchronization is still unimplemented; session attribute replacement must be addressed first.
+
+### Current phase gate
+
+Read-only verification queries passed for error grouping (two groups / two errors), exact error-session filtering, trace-ID equality, the ten-step swap journey and absent-session/wrong-environment empty results. Dashboard UI variables, data links and visual empty states have not been tested. See Checkpoint B for exact query templates and execution window.
+
+The next checkpoint decision is approval of the limited Loki-only vertical slice. Production policy and instrumentation corrections remain proposals. No dashboard or integration code was changed in this evidence update. Source-map resolution, remaining browser scenarios, receiver configuration and production validation remain open.
+
+## Historical source audit — 2026-09-04
+
 Audit date: 2026-09-04
 Branch and revision inspected: `dev` at `f8c50dfda`
 Scope: the uncommitted working-tree implementation, including the bridge, widget telemetry, source-map build configuration, and checked-in Grafana assets.

@@ -1,0 +1,90 @@
+{
+  "verifiedAt": "2026-09-09T11:30:53.295Z",
+  "kind": "Sanitized development query verification report, not a browser payload",
+  "window": {
+    "from": "2026-09-01T00:00:00.000Z",
+    "to": "2026-09-09T23:59:59.000Z"
+  },
+  "observed": {
+    "rawErrorRecords": 34,
+    "typeRows": 6,
+    "types": [
+      {
+        "type": "AxiosError",
+        "records": 1,
+        "recordedSessions": 1,
+        "latestStoredMs": 1788538401603
+      },
+      {
+        "type": "TransactionRejected",
+        "records": 1,
+        "recordedSessions": 1,
+        "latestStoredMs": 1788531804101
+      },
+      {
+        "type": "BalanceError",
+        "records": 1,
+        "recordedSessions": 1,
+        "latestStoredMs": 1788461099916
+      },
+      {
+        "type": "Error",
+        "records": 7,
+        "recordedSessions": 5,
+        "latestStoredMs": 1788853949049
+      },
+      {
+        "type": "ContractFunctionExecutionError",
+        "records": 23,
+        "recordedSessions": 4,
+        "latestStoredMs": 1788538201849
+      },
+      {
+        "type": "controlled_test",
+        "records": 1,
+        "recordedSessions": 1,
+        "latestStoredMs": 1788853949049
+      }
+    ],
+    "contractErrorMessageVariants": 19,
+    "contractErrorExamples": 20,
+    "narrowedVariantExamples": 2,
+    "exactStoredRecordMatches": 1,
+    "broadSessionTimelineRecords": 1000,
+    "controlledMarkerErrorRecords": 2,
+    "controlledJourneyActivityRecords": 15
+  },
+  "checks": {
+    "panelLokiAndGrafanaDataframeCases": 17,
+    "rawTypeCountsSessionsAndLatestReconciled": true,
+    "typeToHiddenVariantToSessionAndExactRecord": true,
+    "unselectedTypeReturnsNoVariantsSessionsOrExamples": true,
+    "absentEnvironmentAndSessionReturnNoRows": true,
+    "blankWalletSearchReturnsNoRows": true
+  },
+  "publication": {
+    "publishedAt": "2026-09-09T11:43:25.031Z",
+    "results": [
+      {
+        "uid": "layerswap-faro-dev-errors",
+        "version": 1,
+        "url": "/d/layerswap-faro-dev-errors/faro-dev-c2b7-error-overview-provisional",
+        "readbackMatched": true
+      },
+      {
+        "uid": "layerswap-faro-dev-slice",
+        "version": 5,
+        "url": "/d/layerswap-faro-dev-slice/e5abf79",
+        "readbackMatched": true
+      }
+    ]
+  },
+  "limitations": [
+    "Grafana query frames and modeled links checked; rendering/hidden field links/native Explore not newly browser-verified. Browser discovery returned no connected browser.",
+    "The broad session timeline reached the oldest-1000 limit; completeness is not verified.",
+    "No outgoing payload generated, telemetry replayed, instrumentation modified or contract verification states upgraded.",
+    "Query-only high-cardinality grouping must be tested at realistic scale. No production baselines or alert thresholds.",
+    "Type-first overview does not semantically merge similar message/stack variants.",
+    "No identifiers, raw error messages, wallet addresses or credentials retained here."
+  ]
+}

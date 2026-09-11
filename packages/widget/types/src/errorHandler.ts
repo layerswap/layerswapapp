@@ -1,4 +1,5 @@
 import { type ErrorEventType } from './logEvents';
+import { getErrorOccurrenceId } from './errorOccurrence';
 
 type ErrorLogger = (event: ErrorEventType) => void;
 
@@ -13,5 +14,5 @@ export function setErrorLogger(logger: ErrorLogger) {
 }
 
 export function ErrorHandler(event: ErrorEventType) {
-    return currentLogger(event);
+    return currentLogger({ ...event, occurrenceId: event.occurrenceId ?? getErrorOccurrenceId(event) });
 }

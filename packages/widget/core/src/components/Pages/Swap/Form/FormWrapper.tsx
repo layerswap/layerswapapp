@@ -31,6 +31,7 @@ import ContractAddressValidationCache, { ContractSourceAddressValidationCache } 
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
 import { SwapStatus } from "@layerswap/widget-types";
 import { lifecycleContextFromForm, lifecycleContextFromSwap } from "@/lib/swapLifecycle";
+import FormTelemetry from './FormTelemetry';
 const SwapDetails = lazy(() => import("../Withdraw/SwapDetails"))
 
 type NetworkToConnect = {
@@ -217,6 +218,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
         >
             {({ setFieldValue, values }) => (
                 <>
+                    <FormTelemetry mode={type} />
                     <VaulDrawer
                         show={showConnectNetworkModal}
                         setShow={setShowConnectNetworkModal}

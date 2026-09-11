@@ -1,0 +1,46 @@
+name: Faro — PR validation
+
+on:
+  pull_request:
+    branches: [dev, main]
+    paths:
+      - "apps/bridge/**"
+      - "packages/**"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "package.json"
+      - ".github/workflows/faro-pr.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: faro-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:packages
+      - name: Validate telemetry and widget contracts
+        run: |
+          pnpm --filter @layerswap/bridge check:types
+          pnpm --filter @layerswap/bridge test:faro
+          pnpm --filter @layerswap/widget test
+      - name: Validate dashboard navigation and generated resources
+        run: |
+          node --test apps/bridge/grafana/tests/faro-dev-vertical-slice.test.mjs
+          python3 apps/bridge/grafana/tests/native-trial.test.py
+          python3 apps/bridge/grafana/build-native-trial.py
+          git diff --exit-code -- apps/bridge/grafana/layerswap-faro-trial-*.json

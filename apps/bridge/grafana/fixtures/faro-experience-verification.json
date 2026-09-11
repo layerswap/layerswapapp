@@ -1,0 +1,451 @@
+{
+  "checkedAt": "2026-09-10T11:59:56.412803+00:00",
+  "checks": [
+    {
+      "check": "v2 schema dry run",
+      "dashboard": "layerswap-faro-trial-home",
+      "passed": true
+    },
+    {
+      "check": "v2 schema dry run",
+      "dashboard": "layerswap-faro-trial-issue",
+      "passed": true
+    },
+    {
+      "check": "v2 schema dry run",
+      "dashboard": "layerswap-faro-trial-session",
+      "passed": true
+    },
+    {
+      "check": "v2 schema dry run",
+      "dashboard": "layerswap-faro-trial-event",
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-20",
+      "environment": "mainnet",
+      "frames": 7,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-20",
+      "environment": "testnet",
+      "frames": 8,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-21",
+      "environment": "mainnet",
+      "frames": 11,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-21",
+      "environment": "testnet",
+      "frames": 12,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-22",
+      "environment": "mainnet",
+      "frames": 11,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-22",
+      "environment": "testnet",
+      "frames": 9,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-23",
+      "environment": "mainnet",
+      "frames": 10,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-23",
+      "environment": "testnet",
+      "frames": 9,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-24",
+      "environment": "mainnet",
+      "frames": 22,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-24",
+      "environment": "testnet",
+      "frames": 13,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-25",
+      "environment": "mainnet",
+      "frames": 5,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-25",
+      "environment": "testnet",
+      "frames": 5,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-26",
+      "environment": "mainnet",
+      "frames": 7,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-26",
+      "environment": "testnet",
+      "frames": 8,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-27",
+      "environment": "mainnet",
+      "frames": 0,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-27",
+      "environment": "testnet",
+      "frames": 0,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-28",
+      "environment": "mainnet",
+      "frames": 0,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-28",
+      "environment": "testnet",
+      "frames": 0,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-29",
+      "environment": "mainnet",
+      "frames": 1,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-29",
+      "environment": "testnet",
+      "frames": 1,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-30",
+      "environment": "mainnet",
+      "frames": 1,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-30",
+      "environment": "testnet",
+      "frames": 1,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-39",
+      "environment": "mainnet",
+      "frames": 1,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-39",
+      "environment": "testnet",
+      "frames": 1,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-40",
+      "environment": "mainnet",
+      "frames": 1,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-40",
+      "environment": "testnet",
+      "frames": 1,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-41",
+      "environment": "mainnet",
+      "frames": 1,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-41",
+      "environment": "testnet",
+      "frames": 1,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-42",
+      "environment": "mainnet",
+      "frames": 1,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-42",
+      "environment": "testnet",
+      "frames": 1,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-31",
+      "environment": "mainnet",
+      "frames": 0,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-31",
+      "environment": "testnet",
+      "frames": 0,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-32",
+      "environment": "mainnet",
+      "frames": 0,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-32",
+      "environment": "testnet",
+      "frames": 0,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-33",
+      "environment": "mainnet",
+      "frames": 0,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-33",
+      "environment": "testnet",
+      "frames": 0,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-34",
+      "environment": "mainnet",
+      "frames": 0,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-34",
+      "environment": "testnet",
+      "frames": 0,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-35",
+      "environment": "mainnet",
+      "frames": 0,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-35",
+      "environment": "testnet",
+      "frames": 0,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-36",
+      "environment": "mainnet",
+      "frames": 0,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-36",
+      "environment": "testnet",
+      "frames": 0,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-37",
+      "environment": "mainnet",
+      "frames": 1,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-37",
+      "environment": "testnet",
+      "frames": 1,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-38",
+      "environment": "mainnet",
+      "frames": 0,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-38",
+      "environment": "testnet",
+      "frames": 0,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-session",
+      "panel": "panel-11",
+      "environment": "mainnet",
+      "frames": 1,
+      "passed": true
+    },
+    {
+      "check": "live Loki query",
+      "dashboard": "layerswap-faro-trial-session",
+      "panel": "panel-11",
+      "environment": "testnet",
+      "frames": 1,
+      "passed": true
+    },
+    {
+      "check": "Tempo frontend service search",
+      "traces": 0,
+      "passed": false
+    }
+  ],
+  "frontendDeployed": false,
+  "browserVerified": false,
+  "publication": {
+    "at": "2026-09-10T12:00:57.485340+00:00",
+    "url": "https://grafana-2.dev.lb.layerswap.cloud/d/layerswap-faro-trial-home",
+    "dashboards": [
+      {
+        "uid": "layerswap-faro-trial-home",
+        "readbackMatched": true,
+        "generation": 9
+      },
+      {
+        "uid": "layerswap-faro-trial-issue",
+        "readbackMatched": true,
+        "generation": 10
+      },
+      {
+        "uid": "layerswap-faro-trial-session",
+        "readbackMatched": true,
+        "generation": 8
+      },
+      {
+        "uid": "layerswap-faro-trial-event",
+        "readbackMatched": true,
+        "generation": 6
+      }
+    ]
+  },
+  "transformationChecks": {
+    "grafanaVersion": "13.1.3",
+    "passed": 7,
+    "details": [
+      "Five p75 cards against retained measurements",
+      "LCP trend retains time and finite percentiles",
+      "Latest form activity keeps session boundaries and all drilldown fields"
+    ]
+  }
+}

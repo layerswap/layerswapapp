@@ -6,6 +6,7 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 });
 
 const FARO_APP_NAME = 'layerswap-frontend';
+const { resolveFaroRelease, resolveFaroDeployment } = require('./lib/faro-release.cjs');
 
 const posthogConfigsAreSet = Boolean(
   process.env.POSTHOG_PROJECT_ID
@@ -53,6 +54,10 @@ const REMOTE_PATTERNS = [
 ];
 
 const buildNextConfig = (phase) => {
+  const productionBuild = phase === PHASE_PRODUCTION_BUILD || phase === PHASE_PRODUCTION_SERVER;
+  const faroRelease = resolveFaroRelease(process.env, productionBuild);
+  const faroDeployment = resolveFaroDeployment(process.env, productionBuild);
+  const faroBundleId = process.env.FARO_BUNDLE_ID || faroRelease;
   /**
    * @type {import('next').NextConfig}
    */
@@ -83,6 +88,10 @@ const buildNextConfig = (phase) => {
   }
 
   const nextConfig = {
+    env: {
+      NEXT_PUBLIC_FARO_RELEASE: faroRelease,
+      NEXT_PUBLIC_FARO_DEPLOYMENT: faroDeployment,
+    },
     i18n: {
       locales: ["en"],
       defaultLocale: "en",
@@ -115,7 +124,7 @@ const buildNextConfig = (phase) => {
           appId: faroSourceMapConfig.appId,
           apiKey: faroSourceMapConfig.apiKey,
           stackId: faroSourceMapConfig.stackId,
-          bundleId: process.env.FARO_BUNDLE_ID || process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA || undefined,
+          bundleId: faroBundleId,
           gitHash:
             process.env.VERCEL_GIT_COMMIT_SHA
             || process.env.GITHUB_SHA

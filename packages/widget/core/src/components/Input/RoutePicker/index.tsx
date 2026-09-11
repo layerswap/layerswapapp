@@ -15,6 +15,7 @@ import clsx from "clsx";
 import { SwapDirection, SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import useSuggestionsLimit from "@/hooks/useSuggestionsLimit";
 import useWallet from "@/hooks/useWallet";
+import { widgetTelemetry } from '@/lib/widgetTelemetry';
 
 const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, className?: string, minAllowedAmount?: number, maxAllowedAmount?: number, quote?: SwapQuote, quoteTokenPrices?: QuoteTokenPrices, hideBalance?: boolean, onTriggerClick?: () => void }> = ({ direction, isExchange = false, className, minAllowedAmount, maxAllowedAmount, quote, quoteTokenPrices, hideBalance = false, onTriggerClick }) => {
     const {
@@ -55,6 +56,8 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
     }, [selectedRoute, selectedToken, allRoutes, direction, setFieldValue]);
 
     const handleSelect = useCallback(async (route: NetworkRoute, token: NetworkRouteToken) => {
+        widgetTelemetry.interaction(direction === 'from' ? 'select_source_route' : 'select_destination_route', 'selection', true,
+            { selected_network: route.name, selected_token: token.symbol })
         swapInProgress.current = false;
         await updateForm({
             formDataKey: currencyFieldName,

@@ -8,6 +8,7 @@ import { ApiResponse, EmptyApiResponse } from "../../Models/ApiResponse";
 import { NetworkWithTokens, Network, Token } from "@layerswap/widget-types";
 import { Exchange } from "../../Models/Exchange";
 import { ErrorHandler } from "@/lib/ErrorHandler";
+import { startApiOperation } from '../widgetTelemetry';
 
 const IGNORED_API_ERROR_CODES = [
     'ROUTE_NOT_FOUND_ERROR',
@@ -72,12 +73,15 @@ export default class LayerSwapApiClient {
     }
 
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
+        const finishTelemetry = startApiOperation(method, endpoint)
         let uri = LayerSwapApiClient.apiBaseEndpoint + "/api/v2" + endpoint;
         return await this._authInterceptor(uri, { method: method, data: data, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })
             .then(res => {
+                finishTelemetry(res?.data?.error ? 'failed' : 'succeeded', { http_status: res?.status })
                 return res?.data;
             })
             .catch(async reason => {
+                finishTelemetry(reason?.code === 'ERR_CANCELED' ? 'cancelled' : 'failed', { http_status: reason?.response?.status })
                 if (reason instanceof AuthRefreshFailedError) {
                     return Promise.resolve(new EmptyApiResponse());
                 }
@@ -102,7 +106,7 @@ export default class LayerSwapApiClient {
                             message: error.message,
                             name: error.name,
                             stack: error.stack,
-                            cause: error.cause
+                            cause: reason
                         });
                     }
                     return Promise.reject(reason);

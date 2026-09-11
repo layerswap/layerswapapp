@@ -25,6 +25,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { isDepositAddressSwap } from '@/helpers/swapFlow';
 import { useCallbacks } from '@/context/callbackProvider';
 import { lifecycleContextFromSwap } from '@/lib/swapLifecycle';
+import { useTransferBlocked } from '@/hooks/useTransferBlocked';
 
 const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: () => void, onCancelWithdrawal?: () => void, partner?: Partner }> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal, partner }) => {
     const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading, quoteError } = useSwapDataState()
@@ -109,6 +110,11 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
         minAllowedAmount,
         maxAllowedAmount
     })
+    useTransferBlocked(
+        swapBasicData?.use_deposit_address === false && showInsufficientBalanceWarning ? 'insufficient_balance'
+        : swapBasicData?.use_deposit_address === false && outOfGas ? 'insufficient_gas'
+        : undefined,
+        lifecycleContext, 'Withdraw')
 
     if (swapBasicData?.use_deposit_address === false && showInsufficientBalanceWarning) {
         const balanceAmount = walletBalanceAmount !== undefined ? truncateDecimals(walletBalanceAmount, swapBasicData?.source_token?.precision) : undefined;

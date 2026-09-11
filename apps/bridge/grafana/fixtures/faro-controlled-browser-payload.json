@@ -1,0 +1,905 @@
+{
+  "fixture_version": 2,
+  "provenance": "Filtered and sanitized genuine browser Faro POST bodies captured on 2026-09-07 UTC. IDs are deterministic replacements; absent and empty values are preserved.",
+  "limitations": [
+    "View event was unknown to / during initialization; this does not verify navigation between two routes.",
+    "Only TTFB is retained as the verified Web Vital exemplar.",
+    "OTLP span attributes contain observed [Maximum depth reached] strings; this is the integration bug, not a fixture transformation.",
+    "Console noise and unrelated events are excluded.",
+    "Replay to dev receiver used original session/trace IDs and different URL/view sanitization; this fixture is not the exact replay byte stream.",
+    "No outgoing body was captured for the later user-operated Sepolia swap."
+  ],
+  "requests": [
+    {
+      "scenario": "application_initialization",
+      "source_file": "capture-1788810950905-1.json",
+      "body": {
+        "meta": {
+          "sdk": {
+            "name": "faro-web",
+            "version": "2.11.0"
+          },
+          "app": {
+            "name": "layerswap-frontend",
+            "version": "local",
+            "environment": "mainnet"
+          },
+          "browser": {
+            "name": "Chrome",
+            "version": "152.0.0.0",
+            "os": "Mac OS 10.15.7",
+            "userAgent": "[sanitized browser user agent]",
+            "language": "en-AU",
+            "mobile": false,
+            "brands": [
+              {
+                "brand": "Chromium",
+                "version": "152"
+              },
+              {
+                "brand": "Not?A_Brand",
+                "version": "24"
+              },
+              {
+                "brand": "Google Chrome",
+                "version": "152"
+              }
+            ],
+            "viewportWidth": "2560",
+            "viewportHeight": "1180"
+          },
+          "os": {
+            "name": "Mac OS",
+            "version": "10.15.7"
+          },
+          "page": {
+            "url": "https://faro-validation.invalid/controlled",
+            "id": "/"
+          },
+          "session": {
+            "id": "session-controlled-0001"
+          }
+        },
+        "events": [
+          {
+            "name": "session_start",
+            "domain": "browser",
+            "timestamp": "2026-09-07T19:55:49.904Z"
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "initial_view_assignment",
+      "source_file": "capture-1788810957280-3.json",
+      "body": {
+        "meta": {
+          "sdk": {
+            "name": "faro-web",
+            "version": "2.11.0"
+          },
+          "app": {
+            "name": "layerswap-frontend",
+            "version": "local",
+            "environment": "mainnet"
+          },
+          "browser": {
+            "name": "Chrome",
+            "version": "152.0.0.0",
+            "os": "Mac OS 10.15.7",
+            "userAgent": "[sanitized browser user agent]",
+            "language": "en-AU",
+            "mobile": false,
+            "brands": [
+              {
+                "brand": "Chromium",
+                "version": "152"
+              },
+              {
+                "brand": "Not?A_Brand",
+                "version": "24"
+              },
+              {
+                "brand": "Google Chrome",
+                "version": "152"
+              }
+            ],
+            "viewportWidth": "1512",
+            "viewportHeight": "857"
+          },
+          "os": {
+            "name": "Mac OS",
+            "version": "10.15.7"
+          },
+          "page": {
+            "url": "https://faro-validation.invalid/controlled",
+            "id": "/"
+          },
+          "session": {
+            "id": "session-controlled-0001"
+          },
+          "view": {
+            "name": "/"
+          }
+        },
+        "events": [
+          {
+            "name": "view_changed",
+            "domain": "browser",
+            "attributes": {
+              "fromView": "unknown",
+              "toView": "/"
+            },
+            "timestamp": "2026-09-07T19:55:57.212Z"
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "navigation_and_ttfb",
+      "source_file": "capture-1788810957275-2.json",
+      "body": {
+        "meta": {
+          "sdk": {
+            "name": "faro-web",
+            "version": "2.11.0"
+          },
+          "app": {
+            "name": "layerswap-frontend",
+            "version": "local",
+            "environment": "mainnet"
+          },
+          "browser": {
+            "name": "Chrome",
+            "version": "152.0.0.0",
+            "os": "Mac OS 10.15.7",
+            "userAgent": "[sanitized browser user agent]",
+            "language": "en-AU",
+            "mobile": false,
+            "brands": [
+              {
+                "brand": "Chromium",
+                "version": "152"
+              },
+              {
+                "brand": "Not?A_Brand",
+                "version": "24"
+              },
+              {
+                "brand": "Google Chrome",
+                "version": "152"
+              }
+            ],
+            "viewportWidth": "1512",
+            "viewportHeight": "857"
+          },
+          "os": {
+            "name": "Mac OS",
+            "version": "10.15.7"
+          },
+          "page": {
+            "url": "https://faro-validation.invalid/controlled",
+            "id": "/"
+          },
+          "session": {
+            "id": "session-controlled-0001"
+          }
+        },
+        "events": [
+          {
+            "name": "faro.performance.navigation",
+            "domain": "browser",
+            "attributes": {
+              "name": "https://faro-validation.invalid/controlled",
+              "httpHost": "faro-validation.invalid",
+              "duration": "41288",
+              "tcpHandshakeTime": "0",
+              "dnsLookupTime": "0",
+              "tlsNegotiationTime": "17",
+              "responseStatus": "200",
+              "redirectTime": "0",
+              "requestTime": "33661",
+              "responseTime": "3",
+              "fetchTime": "33680",
+              "serviceWorkerTime": "0",
+              "decodedBodySize": "165796",
+              "encodedBodySize": "89411",
+              "cacheHitStatus": "fullLoad",
+              "renderBlockingStatus": "non-blocking",
+              "protocol": "http/1.1",
+              "initiatorType": "navigation",
+              "visibilityState": "visible",
+              "ttfb": "33678",
+              "transferSize": "89711",
+              "pageLoadTime": "41287",
+              "documentParsingTime": "147",
+              "domProcessingTime": "7455",
+              "domContentLoadHandlerTime": "0",
+              "onLoadTime": "0",
+              "type": "navigate",
+              "faroNavigationId": "navigation-controlled-0001",
+              "faroPreviousNavigationId": "unknown"
+            },
+            "timestamp": "2026-09-07T19:55:15.742Z"
+          }
+        ],
+        "measurements": [
+          {
+            "type": "web-vitals",
+            "values": {
+              "ttfb": 33677.79999998212,
+              "delta": 33677.79999998212,
+              "connection_duration": 0.3999999761581421,
+              "request_duration": 33661,
+              "waiting_duration": 0.9000000059604645,
+              "cache_duration": 15.5
+            },
+            "timestamp": "2026-09-07T19:55:57.035Z",
+            "context": {
+              "id": "vital-controlled-0001",
+              "rating": "poor",
+              "navigation_type": "navigate",
+              "navigation_entry_id": "navigation-controlled-0001"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "successful_and_failed_fetch",
+      "source_file": "capture-1788811846981-137.json",
+      "body": {
+        "meta": {
+          "sdk": {
+            "name": "faro-web",
+            "version": "2.11.0"
+          },
+          "app": {
+            "name": "layerswap-frontend",
+            "version": "local",
+            "environment": "mainnet"
+          },
+          "browser": {
+            "name": "Chrome",
+            "version": "152.0.0.0",
+            "os": "Mac OS 10.15.7",
+            "userAgent": "[sanitized browser user agent]",
+            "language": "en-AU",
+            "mobile": false,
+            "brands": [
+              {
+                "brand": "Chromium",
+                "version": "152"
+              },
+              {
+                "brand": "Not?A_Brand",
+                "version": "24"
+              },
+              {
+                "brand": "Google Chrome",
+                "version": "152"
+              }
+            ],
+            "viewportWidth": "1512",
+            "viewportHeight": "857"
+          },
+          "os": {
+            "name": "Mac OS",
+            "version": "10.15.7"
+          },
+          "page": {
+            "url": "https://faro-validation.invalid/controlled",
+            "id": "/"
+          },
+          "view": {
+            "name": "/"
+          },
+          "session": {
+            "id": "session-controlled-0001",
+            "attributes": {
+              "schema_version": "1",
+              "step": "flow_error",
+              "stage": "flow",
+              "outcome": "failed",
+              "path": "ErrorHandler",
+              "swap_id": "",
+              "reason_code": "BalanceResolverError",
+              "reason": "[sanitized]",
+              "source_network": "ZEROG_MAINNET",
+              "journey_id": "journey-controlled-0001",
+              "sequence": "2",
+              "attempt": "0",
+              "previous_step": "flow_error",
+              "previous_outcome": "failed",
+              "previous_step_duration_ms": "2",
+              "journey_duration_ms": "2",
+              "page_url": "https://faro-validation.invalid/controlled",
+              "previousSession": "session-controlled-0001"
+            }
+          }
+        },
+        "events": [
+          {
+            "name": "faro.tracing.fetch",
+            "domain": "browser",
+            "attributes": {
+              "http.request.method": "GET",
+              "url.full": "https://faro-validation.invalid/http/success",
+              "session.id": "session-controlled-0001",
+              "http.response.status_code": "200",
+              "server.address": "faro-validation.invalid",
+              "server.port": "12348",
+              "duration_ns": "8000000"
+            },
+            "timestamp": "2026-09-07T20:10:45.665Z",
+            "trace": {
+              "trace_id": "00000000000000000000000000000001",
+              "span_id": "0000000000000001"
+            }
+          },
+          {
+            "name": "faro.tracing.fetch",
+            "domain": "browser",
+            "attributes": {
+              "http.request.method": "GET",
+              "url.full": "https://faro-validation.invalid/http/failure",
+              "session.id": "session-controlled-0001",
+              "http.response.status_code": "503",
+              "server.address": "faro-validation.invalid",
+              "server.port": "12348",
+              "error.type": "503",
+              "duration_ns": "3000064"
+            },
+            "timestamp": "2026-09-07T20:10:45.668Z",
+            "trace": {
+              "trace_id": "00000000000000000000000000000002",
+              "span_id": "0000000000000002"
+            }
+          }
+        ],
+        "traces": {
+          "resourceSpans": [
+            {
+              "resource": {
+                "attributes": [
+                  {
+                    "key": "service.name",
+                    "value": {
+                      "stringValue": "layerswap-frontend"
+                    }
+                  },
+                  {
+                    "key": "service.version",
+                    "value": {
+                      "stringValue": "local"
+                    }
+                  },
+                  {
+                    "key": "deployment.environment.name",
+                    "value": {
+                      "stringValue": "mainnet"
+                    }
+                  },
+                  {
+                    "key": "deployment.environment",
+                    "value": {
+                      "stringValue": "mainnet"
+                    }
+                  },
+                  {
+                    "key": "browser.brands",
+                    "value": {
+                      "arrayValue": {
+                        "values": "[Maximum depth reached]"
+                      }
+                    }
+                  },
+                  {
+                    "key": "browser.language",
+                    "value": {
+                      "stringValue": "en-AU"
+                    }
+                  },
+                  {
+                    "key": "browser.mobile",
+                    "value": {
+                      "boolValue": false
+                    }
+                  },
+                  {
+                    "key": "browser.platform",
+                    "value": {
+                      "stringValue": "Mac OS 10.15.7"
+                    }
+                  },
+                  {
+                    "key": "user_agent.original",
+                    "value": {
+                      "stringValue": "[sanitized browser user agent]"
+                    }
+                  },
+                  {
+                    "key": "process.runtime.name",
+                    "value": {
+                      "stringValue": "browser"
+                    }
+                  },
+                  {
+                    "key": "process.runtime.version",
+                    "value": {
+                      "stringValue": "[sanitized browser user agent]"
+                    }
+                  },
+                  {
+                    "key": "telemetry.distro.name",
+                    "value": {
+                      "stringValue": "faro-web-sdk"
+                    }
+                  },
+                  {
+                    "key": "telemetry.distro.version",
+                    "value": {
+                      "stringValue": "2.11.0"
+                    }
+                  },
+                  {
+                    "key": "telemetry.sdk.language",
+                    "value": {
+                      "stringValue": "webjs"
+                    }
+                  },
+                  {
+                    "key": "telemetry.sdk.name",
+                    "value": {
+                      "stringValue": "opentelemetry"
+                    }
+                  },
+                  {
+                    "key": "telemetry.sdk.version",
+                    "value": {
+                      "stringValue": "2.11.0"
+                    }
+                  }
+                ],
+                "droppedAttributesCount": 0
+              },
+              "scopeSpans": [
+                {
+                  "scope": {
+                    "name": "@opentelemetry/instrumentation-fetch",
+                    "version": "0.221.0"
+                  },
+                  "spans": [
+                    {
+                      "traceId": "00000000000000000000000000000001",
+                      "spanId": "0000000000000001",
+                      "name": "GET",
+                      "kind": 3,
+                      "startTimeUnixNano": "1788811845658000000",
+                      "endTimeUnixNano": "1788811845666000000",
+                      "attributes": [
+                        "[Maximum depth reached]",
+                        "[Maximum depth reached]",
+                        "[Maximum depth reached]",
+                        "[Maximum depth reached]",
+                        "[Maximum depth reached]",
+                        "[Maximum depth reached]"
+                      ],
+                      "droppedAttributesCount": 0,
+                      "events": [],
+                      "droppedEventsCount": 0,
+                      "status": {
+                        "code": 0
+                      },
+                      "links": [],
+                      "droppedLinksCount": 0,
+                      "flags": 257
+                    },
+                    {
+                      "traceId": "00000000000000000000000000000002",
+                      "spanId": "0000000000000002",
+                      "name": "GET",
+                      "kind": 3,
+                      "startTimeUnixNano": "1788811845665000000",
+                      "endTimeUnixNano": "1788811845668000000",
+                      "attributes": [
+                        "[Maximum depth reached]",
+                        "[Maximum depth reached]",
+                        "[Maximum depth reached]",
+                        "[Maximum depth reached]",
+                        "[Maximum depth reached]",
+                        "[Maximum depth reached]",
+                        "[Maximum depth reached]"
+                      ],
+                      "droppedAttributesCount": 0,
+                      "events": [],
+                      "droppedEventsCount": 0,
+                      "status": {
+                        "code": 2
+                      },
+                      "links": [],
+                      "droppedLinksCount": 0,
+                      "flags": 257
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "scenario": "slow_fetch",
+      "source_file": "capture-1788811849232-140.json",
+      "body": {
+        "meta": {
+          "sdk": {
+            "name": "faro-web",
+            "version": "2.11.0"
+          },
+          "app": {
+            "name": "layerswap-frontend",
+            "version": "local",
+            "environment": "mainnet"
+          },
+          "browser": {
+            "name": "Chrome",
+            "version": "152.0.0.0",
+            "os": "Mac OS 10.15.7",
+            "userAgent": "[sanitized browser user agent]",
+            "language": "en-AU",
+            "mobile": false,
+            "brands": [
+              {
+                "brand": "Chromium",
+                "version": "152"
+              },
+              {
+                "brand": "Not?A_Brand",
+                "version": "24"
+              },
+              {
+                "brand": "Google Chrome",
+                "version": "152"
+              }
+            ],
+            "viewportWidth": "1512",
+            "viewportHeight": "857"
+          },
+          "os": {
+            "name": "Mac OS",
+            "version": "10.15.7"
+          },
+          "page": {
+            "url": "https://faro-validation.invalid/controlled",
+            "id": "/"
+          },
+          "view": {
+            "name": "/"
+          },
+          "session": {
+            "id": "session-controlled-0001",
+            "attributes": {
+              "schema_version": "1",
+              "step": "flow_error",
+              "stage": "flow",
+              "outcome": "failed",
+              "path": "ErrorHandler",
+              "swap_id": "",
+              "reason_code": "BalanceResolverError",
+              "reason": "[sanitized]",
+              "source_network": "ZEROG_MAINNET",
+              "journey_id": "journey-controlled-0001",
+              "sequence": "2",
+              "attempt": "0",
+              "previous_step": "flow_error",
+              "previous_outcome": "failed",
+              "previous_step_duration_ms": "2",
+              "journey_duration_ms": "2",
+              "page_url": "https://faro-validation.invalid/controlled",
+              "previousSession": "session-controlled-0001"
+            }
+          }
+        },
+        "events": [
+          {
+            "name": "faro.tracing.fetch",
+            "domain": "browser",
+            "attributes": {
+              "http.request.method": "GET",
+              "url.full": "https://faro-validation.invalid/http/slow",
+              "session.id": "session-controlled-0001",
+              "http.response.status_code": "200",
+              "server.address": "faro-validation.invalid",
+              "server.port": "12348",
+              "duration_ns": "2006999808"
+            },
+            "timestamp": "2026-09-07T20:10:47.673Z",
+            "trace": {
+              "trace_id": "00000000000000000000000000000003",
+              "span_id": "0000000000000003"
+            }
+          }
+        ],
+        "traces": {
+          "resourceSpans": [
+            {
+              "resource": {
+                "attributes": [
+                  {
+                    "key": "service.name",
+                    "value": {
+                      "stringValue": "layerswap-frontend"
+                    }
+                  },
+                  {
+                    "key": "service.version",
+                    "value": {
+                      "stringValue": "local"
+                    }
+                  },
+                  {
+                    "key": "deployment.environment.name",
+                    "value": {
+                      "stringValue": "mainnet"
+                    }
+                  },
+                  {
+                    "key": "deployment.environment",
+                    "value": {
+                      "stringValue": "mainnet"
+                    }
+                  },
+                  {
+                    "key": "browser.brands",
+                    "value": {
+                      "arrayValue": {
+                        "values": "[Maximum depth reached]"
+                      }
+                    }
+                  },
+                  {
+                    "key": "browser.language",
+                    "value": {
+                      "stringValue": "en-AU"
+                    }
+                  },
+                  {
+                    "key": "browser.mobile",
+                    "value": {
+                      "boolValue": false
+                    }
+                  },
+                  {
+                    "key": "browser.platform",
+                    "value": {
+                      "stringValue": "Mac OS 10.15.7"
+                    }
+                  },
+                  {
+                    "key": "user_agent.original",
+                    "value": {
+                      "stringValue": "[sanitized browser user agent]"
+                    }
+                  },
+                  {
+                    "key": "process.runtime.name",
+                    "value": {
+                      "stringValue": "browser"
+                    }
+                  },
+                  {
+                    "key": "process.runtime.version",
+                    "value": {
+                      "stringValue": "[sanitized browser user agent]"
+                    }
+                  },
+                  {
+                    "key": "telemetry.distro.name",
+                    "value": {
+                      "stringValue": "faro-web-sdk"
+                    }
+                  },
+                  {
+                    "key": "telemetry.distro.version",
+                    "value": {
+                      "stringValue": "2.11.0"
+                    }
+                  },
+                  {
+                    "key": "telemetry.sdk.language",
+                    "value": {
+                      "stringValue": "webjs"
+                    }
+                  },
+                  {
+                    "key": "telemetry.sdk.name",
+                    "value": {
+                      "stringValue": "opentelemetry"
+                    }
+                  },
+                  {
+                    "key": "telemetry.sdk.version",
+                    "value": {
+                      "stringValue": "2.11.0"
+                    }
+                  }
+                ],
+                "droppedAttributesCount": 0
+              },
+              "scopeSpans": [
+                {
+                  "scope": {
+                    "name": "@opentelemetry/instrumentation-fetch",
+                    "version": "0.221.0"
+                  },
+                  "spans": [
+                    {
+                      "traceId": "00000000000000000000000000000003",
+                      "spanId": "0000000000000003",
+                      "name": "GET",
+                      "kind": 3,
+                      "startTimeUnixNano": "1788811845667000000",
+                      "endTimeUnixNano": "1788811847674000000",
+                      "attributes": [
+                        "[Maximum depth reached]",
+                        "[Maximum depth reached]",
+                        "[Maximum depth reached]",
+                        "[Maximum depth reached]",
+                        "[Maximum depth reached]",
+                        "[Maximum depth reached]"
+                      ],
+                      "droppedAttributesCount": 0,
+                      "events": [],
+                      "droppedEventsCount": 0,
+                      "status": {
+                        "code": 0
+                      },
+                      "links": [],
+                      "droppedLinksCount": 0,
+                      "flags": 257
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "scenario": "explicit_and_uncaught_errors",
+      "source_file": "capture-1788811847732-138.json",
+      "body": {
+        "meta": {
+          "sdk": {
+            "name": "faro-web",
+            "version": "2.11.0"
+          },
+          "app": {
+            "name": "layerswap-frontend",
+            "version": "local",
+            "environment": "mainnet"
+          },
+          "browser": {
+            "name": "Chrome",
+            "version": "152.0.0.0",
+            "os": "Mac OS 10.15.7",
+            "userAgent": "[sanitized browser user agent]",
+            "language": "en-AU",
+            "mobile": false,
+            "brands": [
+              {
+                "brand": "Chromium",
+                "version": "152"
+              },
+              {
+                "brand": "Not?A_Brand",
+                "version": "24"
+              },
+              {
+                "brand": "Google Chrome",
+                "version": "152"
+              }
+            ],
+            "viewportWidth": "1512",
+            "viewportHeight": "857"
+          },
+          "os": {
+            "name": "Mac OS",
+            "version": "10.15.7"
+          },
+          "page": {
+            "url": "https://faro-validation.invalid/controlled",
+            "id": "/"
+          },
+          "view": {
+            "name": "/"
+          },
+          "session": {
+            "id": "session-controlled-0001",
+            "attributes": {
+              "schema_version": "1",
+              "step": "flow_error",
+              "stage": "flow",
+              "outcome": "failed",
+              "path": "ErrorHandler",
+              "swap_id": "",
+              "reason_code": "BalanceResolverError",
+              "reason": "[sanitized]",
+              "source_network": "ZEROG_MAINNET",
+              "journey_id": "journey-controlled-0001",
+              "sequence": "2",
+              "attempt": "0",
+              "previous_step": "flow_error",
+              "previous_outcome": "failed",
+              "previous_step_duration_ms": "2",
+              "journey_duration_ms": "2",
+              "page_url": "https://faro-validation.invalid/controlled",
+              "previousSession": "session-controlled-0001"
+            }
+          }
+        },
+        "exceptions": [
+          {
+            "type": "controlled_test",
+            "value": "FARO_CONTROLLED_EXPLICIT",
+            "timestamp": "2026-09-07T20:10:47.673Z",
+            "context": {
+              "scenario": "explicit_error"
+            },
+            "stacktrace": {
+              "frames": [
+                {
+                  "filename": "https://faro-validation.invalid/app.js",
+                  "function": "[sanitized function]",
+                  "lineno": 7,
+                  "colno": 7
+                }
+              ]
+            }
+          },
+          {
+            "type": "Error",
+            "value": "FARO_CONTROLLED_UNCAUGHT",
+            "timestamp": "2026-09-07T20:10:47.676Z",
+            "stacktrace": {
+              "frames": [
+                {
+                  "filename": "https://faro-validation.invalid/app.js",
+                  "function": "[sanitized function]",
+                  "lineno": 16,
+                  "colno": 13
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "controlled_application_request_headers": [
+    {
+      "path": "/success",
+      "method": "GET",
+      "traceparent": null,
+      "tracestate": null,
+      "baggage": null
+    },
+    {
+      "path": "/failure",
+      "method": "GET",
+      "traceparent": null,
+      "tracestate": null,
+      "baggage": null
+    },
+    {
+      "path": "/slow",
+      "method": "GET",
+      "traceparent": null,
+      "tracestate": null,
+      "baggage": null
+    }
+  ]
+}

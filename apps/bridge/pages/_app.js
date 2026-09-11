@@ -10,6 +10,7 @@ import { Analytics } from '@vercel/analytics/next';
 import { IntercomProvider } from 'react-use-intercom';
 import { markPostHogReady } from '../lib/posthog';
 import { setFaroView } from '../lib/faro';
+import FaroExperience from '../components/FaroExperience';
 
 const INTERCOM_APP_ID = 'h5zisg78'
 
@@ -106,6 +107,7 @@ function App({ Component, pageProps }) {
         </IntercomProvider>
       </SWRConfig>
       <SpeedInsights />
+      <FaroExperience />
       <Analytics />
     </>)
 }
