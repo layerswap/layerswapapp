@@ -1,5 +1,19 @@
 # @layerswap/widget
 
+## 2.1.0
+
+### Minor Changes
+
+- Global fixes and improvements
+
+### Patch Changes
+
+- Updated dependencies
+  - @layerswap/ui-kit@2.1.0
+  - @layerswap/utils@2.1.0
+  - @layerswap/wallet-core@2.1.0
+  - @layerswap/widget-types@2.1.0
+
 ## 2.0.1
 
 ### Patch Changes
