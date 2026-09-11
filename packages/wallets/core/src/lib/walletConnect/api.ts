@@ -39,9 +39,15 @@ const SOLANA_CHAINS = [
     'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
 ].join(',')
 
+const STELLAR_CHAINS = [
+    'stellar:pubnet',
+    'stellar:testnet',
+].join(',')
+
 export function chainsForNamespace(namespace: string): string {
     if (namespace === 'eip155') return EVM_CHAINS
     if (namespace === 'solana') return SOLANA_CHAINS
+    if (namespace === 'stellar') return STELLAR_CHAINS
     return ''
 }
 

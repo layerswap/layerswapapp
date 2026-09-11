@@ -1,6 +1,6 @@
 import { LayerSwapAppSettings } from '@layerswap/widget/types';
+import { isInIframe } from '@layerswap/utils/common';
 import React, { Context, FC, useEffect, useState } from 'react'
-import inIframe from '../components/utils/inIframe';
 
 type SettingsState = LayerSwapAppSettings & { isEmbedded?: boolean }
 
@@ -9,7 +9,7 @@ export const SettingsStateContext = React.createContext<SettingsState | null>(nu
 export const SettingsProvider: FC<{ data: LayerSwapAppSettings, children?: React.ReactNode }> = ({ children, data }) => {
   const [embedded, setEmbedded] = useState<boolean>(false)
   useEffect(() => {
-    setEmbedded(inIframe())
+    setEmbedded(isInIframe())
   }, [])
 
   return (

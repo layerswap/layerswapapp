@@ -1,5 +1,28 @@
 # @layerswap/wallets
 
+## 2.1.0
+
+### Minor Changes
+
+- Global fixes and improvements
+
+### Patch Changes
+
+- Updated dependencies
+  - @layerswap/utils@2.1.0
+  - @layerswap/wallet-bitcoin@2.1.0
+  - @layerswap/wallet-evm@2.1.0
+  - @layerswap/wallet-fuel@2.1.0
+  - @layerswap/wallet-imtbl-passport@2.1.0
+  - @layerswap/wallet-paradex@2.1.0
+  - @layerswap/wallet-starknet@2.1.0
+  - @layerswap/wallet-stellar@2.1.0
+  - @layerswap/wallet-svm@2.1.0
+  - @layerswap/wallet-ton@2.1.0
+  - @layerswap/wallet-tron@2.1.0
+  - @layerswap/wallet-core@2.1.0
+  - @layerswap/widget-types@2.1.0
+
 ## 2.0.1
 
 ### Patch Changes

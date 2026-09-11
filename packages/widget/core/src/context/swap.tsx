@@ -28,6 +28,7 @@ import { buildCreateSwapParamsForExtendedRoute } from '@/lib/extendedRoutes/tran
 import { useExtendedRoutesStore } from '@/stores/extendedRoutesStore';
 import { isDepositAddressFlow, isDepositAddressSwap } from '@/helpers/swapFlow';
 import { resolveSwapPollingInterval, SWAP_POLL_DEDUPE_MS } from '@/lib/swapPollingPolicy';
+import { KnownInternalNames } from '@layerswap/utils';
 
 export const SwapDataStateContext = createContext<SwapContextData | null>(null);
 
@@ -299,6 +300,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             availableRoutes: sourceRoutes,
         })
         const isExtendedBridge = !!extendedPlan
+        const requiresDepository = from.name == KnownInternalNames.Networks.StellarTestnet || from.name == KnownInternalNames.Networks.StellarMainnet
 
         const data: CreateSwapParams = extendedPlan ? buildCreateSwapParamsForExtendedRoute({
             plan: extendedPlan,
@@ -321,7 +323,8 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             use_deposit_address: depositMethod === 'wallet' ? false : true,
             source_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
             refund_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
-            ...(useGasless && { use_gasless: true, use_depository: true }),
+            ...(useGasless && { use_gasless: true }),
+            ...((useGasless || requiresDepository) && { use_depository: true }),
         }
 
         if (!isExtendedBridge && depositMethod === 'wallet' && slippage && slippage > 0 && slippage < 0.8) {

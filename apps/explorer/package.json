@@ -10,6 +10,7 @@
     "check:types": "tsc --noEmit"
   },
   "dependencies": {
+    "@layerswap/utils": "workspace:^",
     "@layerswap/widget": "workspace:^",
     "@radix-ui/react-accordion": "^1.1.2",
     "@radix-ui/react-dropdown-menu": "^2.0.5",

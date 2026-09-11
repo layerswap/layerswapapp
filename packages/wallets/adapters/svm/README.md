@@ -75,6 +75,15 @@ For detailed setup instructions, configuration options, and usage examples, see 
 - Solana transaction support
 - WalletConnect support for Solana
 
+### Agave 4.2 compatibility
+
+Transaction lookups accept legacy, v0, and v1 responses using
+`maxSupportedTransactionVersion: 1` 
+
+Transfer call data must still contain a legacy transaction. This update does
+not enable v1 transaction construction or signing; those require a separate
+SDK and wallet compatibility migration before the API starts returning v1 call data.
+
 ## TypeScript
 
 This package includes TypeScript definitions. All types are exported from the main entry point.
@@ -86,4 +95,3 @@ MIT
 ## Repository
 
 [GitHub](https://github.com/layerswap/layerswapapp/tree/main/packages/wallets/svm)
-
