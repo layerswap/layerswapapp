@@ -104,6 +104,12 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
 
     const quoteErrorCode = quoteError?.response?.data?.error?.code || quoteError?.code;
     const quoteErrorMessage = quoteError?.response?.data?.error?.message || quoteError?.message;
+    if (quoteErrorCode === 'RECEIVE_SETTINGS_INVALID') {
+        return { message: 'Check receive settings', code: quoteErrorCode };
+    }
+    if (quoteErrorCode === 'VALIDATION_ERROR') {
+        return { message: 'Check swap settings', code: quoteErrorCode };
+    }
     if (quoteError && quoteErrorCode !== "QUOTE_REQUIRES_NO_DEPOSIT_ADDRESS") {
         if (quoteErrorCode === "PRICE_IMPACT_TOO_HIGH") {
             return { message: 'Price impact too high', code: FORM_VALIDATION_ERROR_CODES.PRICE_IMPACT_TOO_HIGH };

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import useSWR, { useSWRConfig } from 'swr'
+import useSWR, { unstable_serialize, useSWRConfig } from 'swr'
 import { Quote, SwapBasicData, SwapQuote } from '../lib/apiClients/layerSwapApiClient'
 import { ApiResponse } from '../Models/ApiResponse'
 import { create } from 'zustand';
@@ -17,6 +17,10 @@ import { useSelectedAccount } from '@/context/swapAccounts'
 import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore'
 import { isGaslessCapableRoute } from '@/helpers/gasless'
 import { Address } from '@/lib/address/Address';
+import { isTokenSwap, receiveRequestParams, receiveSettingsError, receiveSettingsScope, resolveReceiveSettings } from '@/lib/receiveSettings'
+
+import { buildQuoteUrl } from '@/lib/quoteRequest'
+export { buildQuoteUrl, type QuoteUrlArgs } from '@/lib/quoteRequest'
 
 const apiClient = new LayerswapApiClient()
 
@@ -28,6 +32,8 @@ type UseQuoteData = {
     minAllowedAmountInUsd?: number
     maxAllowedAmountInUsd?: number
     quote?: Quote
+    // Estimates may stay visible during an edit; only `quote` is valid for submission.
+    displayQuote?: Quote
     quoteTokenPrices?: QuoteTokenPrices
     quoteError?: QuoteError
     limitsError?: QuoteError
@@ -77,24 +83,26 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
     const { skipLimits, refreshInterval } = options
 
     const [debouncedAmount, setDebouncedAmount] = useState(amount)
-    const [isDebouncing, setIsDebouncing] = useState(false)
-    const { slippage } = useSlippageStore()
+    const storedReceiveSettings = useSlippageStore(state => state.receiveSettings)
+    const receiveSettingsRevision = useSlippageStore(state => state.revision)
+    const receiveSettings = resolveReceiveSettings(storedReceiveSettings, receiveSettingsScope(formValues ?? {}), isTokenSwap(fromCurrency, toCurrency))
+    const selectionKey = JSON.stringify(receiveSettings)
+    const [debouncedSelectionKey, setDebouncedSelectionKey] = useState(selectionKey)
+    const isDebouncing = amount !== debouncedAmount || selectionKey !== debouncedSelectionKey
+    const inputError = receiveSettingsError(receiveSettings)
+    const receiveParams = inputError ? {} : receiveRequestParams(receiveSettings)
     useEffect(() => {
-        if (amount === debouncedAmount) {
-            setIsDebouncing(false)
-            return;
-        }
+        if (!isDebouncing) return
 
-        setIsDebouncing(true)
         const handler = setTimeout(() => {
             setDebouncedAmount(amount)
-            setIsDebouncing(false)
+            setDebouncedSelectionKey(selectionKey)
         }, 300)
 
         return () => {
             clearTimeout(handler)
         }
-    }, [amount])
+    }, [amount, selectionKey, isDebouncing])
 
     const use_deposit_address = depositMethod === 'wallet' ? false : true
 
@@ -158,7 +166,7 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
     // Bridge mode fetches the backend quote for the truncated real amount (A - fee).
     const effectiveAmount = isBridge ? extendedPlan.realAmount : debouncedAmount
 
-    const quoteURL = (hasQuoteParams && !isDebouncing && (!isBridge || (effectiveAmount && isPositiveDecimal(effectiveAmount))))
+    const quoteURL = (hasQuoteParams && !isDebouncing && !inputError && (!isBridge || (effectiveAmount && isPositiveDecimal(effectiveAmount))))
         ? buildQuoteUrl({
             sourceNetwork: effectiveFrom!,
             sourceToken: effectiveFromToken!,
@@ -167,7 +175,8 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
             amount: effectiveAmount || 0,
             refuel: !!refuel,
             useDepositAddress: effectiveUseDepositAddress,
-            slippage,
+            slippage: receiveParams.slippage === undefined ? undefined : Number(receiveParams.slippage),
+            minReceiveAmount: receiveParams.min_receive_amount,
             useGasless,
             destinationAddress,
             sourceAddress,
@@ -176,17 +185,16 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
 
     const { cache } = useSWRConfig();
     const isQuoteLoading = useLoadingStore((state) => state.isLoading);
-    // Remember the last settled quote we emitted, so that while the next one loads we don't flash stale data after an empty state (e.g. a route that errored).
-    const lastSettledQuoteRef = useRef<Quote | undefined>(undefined)
+    const displayQuoteRef = useRef<{ scope: string; quote: Quote } | undefined>(undefined)
     //TODO: implement middleware that handles the delay logic
-    const quoteFetchWrapper = useCallback(async (url: string): Promise<ApiResponse<Quote>> => {
+    const quoteFetchWrapper = useCallback(async ([url, revision]: readonly [string, number]): Promise<ApiResponse<Quote>> => {
         const { setLoading, key, setKey } = useLoadingStore.getState()
         try {
             if (key !== url) {
                 setLoading(true)
             }
 
-            const previousData = cache.get(url)?.data as ApiResponse<Quote>
+            const previousData = cache.get(unstable_serialize([url, revision]))?.data as ApiResponse<Quote>
             const newData = await apiClient.fetcher(url) as ApiResponse<Quote>
             if (previousData?.data?.quote && isDiffByPercent(previousData?.data?.quote.receive_amount, newData.data?.quote.receive_amount, 2)) {
                 const { setLoading } = useLoadingStore.getState()
@@ -200,36 +208,48 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
             return newData
         }
         catch (error) {
-            if (error.response?.data?.error?.code === "VALIDATION_ERROR") {
-                useSlippageStore.getState().clearSlippage()
-            }
             setLoading(false)
             setKey(null)
             throw error
         }
     }, [cache])
 
-    const { data: quote, mutate: mutateFee, error: quoteError, isLoading: swrIsLoading } = useSWR<ApiResponse<Quote>>(quoteURL, quoteFetchWrapper, {
+    // Returning to Auto must not reuse a quote (and token prices) from before the
+    // user's edits. All consumers still share and refresh the current selection.
+    const quoteKey = quoteURL ? [quoteURL, receiveSettingsRevision] as const : null
+    const { data: quote, mutate: mutateFee, error: requestError, isLoading: swrIsLoading } = useSWR<ApiResponse<Quote>>(quoteKey, quoteFetchWrapper, {
         refreshInterval: (refreshInterval || refreshInterval == 0) ? refreshInterval : 42000,
         dedupingInterval: 5000,
         keepPreviousData: true,
     })
 
-    const quoteData = quote?.data
+    const quoteError = inputError ? { code: 'RECEIVE_SETTINGS_INVALID', message: inputError } : requestError ?? (!swrIsLoading && !isDebouncing ? quote?.error : undefined)
+    const quoteData = swrIsLoading ? undefined : quote?.data
     const hasValidAmount = !!debouncedAmount && isPositiveDecimal(String(debouncedAmount))
     const isTransitioning = swrIsLoading || isDebouncing
-    const resolvedQuote = (quoteError || !hasQuoteParams || !hasValidAmount) ? undefined : quoteData
-    if (!isTransitioning) lastSettledQuoteRef.current = resolvedQuote
-    const suppressStale = isTransitioning && lastSettledQuoteRef.current === undefined
+    const resolvedQuote = (quoteError || isDebouncing || !quoteURL || !hasQuoteParams || !hasValidAmount) ? undefined : quoteData
 
     // Re-denominate the backend quote so the source side reads as the extended route.
-    let finalQuote = suppressStale ? undefined : resolvedQuote
+    let finalQuote = resolvedQuote
     if (extendedMapping && hasValidAmount && debouncedAmount) {
         const sourceAmount = String(debouncedAmount)
         if (isBridge && finalQuote && extendedNetworkObj && extendedTokenObj) {
             finalQuote = transformQuoteForExtendedRoute(finalQuote, extendedMapping, extendedNetworkObj, extendedTokenObj, sourceAmount)
         }
     }
+
+    // Changing the receive setting must not animate estimates to zero while its
+    // quote loads. Never carry these estimates across an amount or route change,
+    // or reuse them to validate or create a swap.
+    const displayScope = JSON.stringify([
+        receiveSettingsScope(formValues ?? {}), refuel, destinationAddress,
+        sourceAddress, useGasless, effectiveFrom, effectiveFromToken,
+    ])
+    const previousDisplayQuote = displayQuoteRef.current
+    const displayQuote = finalQuote ?? (isTransitioning && !quoteError && previousDisplayQuote?.scope === displayScope ? previousDisplayQuote.quote : undefined)
+    useEffect(() => {
+        displayQuoteRef.current = displayQuote ? { scope: displayScope, quote: displayQuote } : undefined
+    }, [displayScope, displayQuote])
 
     let minAllowedAmount = amountRange?.data?.min_amount
     let maxAllowedAmount = amountRange?.data?.max_amount
@@ -249,11 +269,12 @@ export function useQuoteData(formValues: Props | undefined, options: Options = {
         minAllowedAmountInUsd,
         maxAllowedAmountInUsd,
         quote: finalQuote,
-        quoteTokenPrices: (finalQuote?.quote && !suppressStale) ? {
+        displayQuote,
+        quoteTokenPrices: finalQuote?.quote ? {
             source_token: finalQuote.quote.source_token,
             destination_token: finalQuote.quote.destination_token,
         } : undefined,
-        isQuoteLoading,
+        isQuoteLoading: isQuoteLoading || swrIsLoading || isDebouncing,
         isDebouncing,
         quoteError,
         limitsError,
@@ -293,63 +314,6 @@ export function transformSwapDataToQuoteArgs(swapData: SwapBasicData | undefined
     }
 }
 
-export type QuoteUrlArgs = {
-    sourceNetwork: string
-    sourceToken: string
-    destinationNetwork: string
-    destinationToken: string
-    amount: string | number
-    refuel: boolean
-    useDepositAddress: boolean
-    slippage?: number
-    useGasless?: boolean
-    destinationAddress?: string
-    sourceAddress?: string
-}
-
-export function buildQuoteUrl(args: QuoteUrlArgs): string {
-    const {
-        sourceNetwork,
-        sourceToken,
-        destinationNetwork,
-        destinationToken,
-        amount,
-        refuel,
-        useDepositAddress,
-        slippage,
-        useGasless,
-        destinationAddress,
-        sourceAddress,
-    } = args
-
-    const params = new URLSearchParams({
-        source_network: sourceNetwork,
-        source_token: sourceToken,
-        destination_network: destinationNetwork,
-        destination_token: destinationToken,
-        amount: String(amount),
-        refuel: String(!!refuel),
-        use_deposit_address: useDepositAddress ? 'true' : 'false',
-    })
-
-    if (slippage !== undefined) {
-        params.append('slippage', String(slippage))
-    }
-
-    if (useGasless) {
-        params.append('use_gasless', 'true')
-    }
-
-    if (destinationAddress) {
-        params.append('destination_address', destinationAddress)
-    }
-
-    if (sourceAddress) {
-        params.append('source_address', sourceAddress)
-    }
-
-    return `/quote?${params.toString()}`
-}
 
 export const getLimits = async (swapValues: LimitsQueryOptions) => {
     const { sourceToken, sourceNetwork, destinationNetwork, destinationToken, refuel, useDepositAddress, destinationAddress } = swapValues || {}

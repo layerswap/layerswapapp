@@ -24,7 +24,6 @@ import RefuelToggle from "./FeeDetails/Refuel";
 import RefuelModal from "./FeeDetails/RefuelModal";
 import { SwapFormValues } from "./SwapFormValues";
 import { useCallbacks } from "@/context/callbackProvider";
-import { Slippage } from "./FeeDetails/Slippage";
 
 type Props = {
     partner?: Partner;
@@ -51,11 +50,11 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
     const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
-    const { minAllowedAmount, maxAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isQuoteLoading, quote, quoteTokenPrices } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval });
+    const { minAllowedAmount, maxAllowedAmount, minAllowedAmountInUsd, maxAllowedAmountInUsd, isQuoteLoading, quote, displayQuote, quoteTokenPrices, quoteError } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval });
 
     const toAsset = values.toAsset;
     const fromAsset = values.fromAsset;
-    const { formValidation, autoSlippageWouldWork, isTestingAutoSlippage } = useValidationContext();
+    const { formValidation } = useValidationContext();
     const initialSettings = useInitialSettings();
 
     const isValid = !formValidation.message;
@@ -66,7 +65,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     useEffect(() => {
         onFormChange(values);
     }, [values, onFormChange]);
-    const shouldShowSlippage = autoSlippageWouldWork && !isTestingAutoSlippage;
 
     useEffect(() => {
         if (!source || !toAsset || !toAsset.refuel) {
@@ -104,7 +102,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                             {
                                 !(initialSettings?.hideTo && values?.to) && <DestinationPicker
                                     isFeeLoading={isQuoteLoading}
-                                    fee={quote}
+                                    fee={displayQuote}
                                     partner={partner}
                                 />
                             }
@@ -117,19 +115,8 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                     onButtonClick={() => setOpenRefuelModal(true)}
                                 />
                             }
-                            {
-                                shouldShowSlippage ? (
-                                    <div className="mt-2 bg-secondary-500 rounded-xl">
-                                        <Slippage quoteData={undefined} values={values} disableEditingBackground />
-                                    </div>
-                                ) : null
-                            }
                             <ValidationError />
-                            {
-                                !autoSlippageWouldWork ? (
-                                    <QuoteDetails swapValues={values} quote={quote?.quote} reward={quote?.reward} isQuoteLoading={isQuoteLoading} triggerClassnames="mt-2" />
-                                ) : null
-                            }
+                            <QuoteDetails swapValues={values} quote={displayQuote?.quote} reward={displayQuote?.reward} isQuoteLoading={isQuoteLoading} triggerClassnames="mt-2" allowMinimumReceive={!!values.amount} quoteError={quoteError} />
                         </div>
                     </div>
                 </Widget.Content>
