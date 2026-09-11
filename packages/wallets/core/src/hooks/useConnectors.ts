@@ -1,13 +1,17 @@
 "use client";
 import { type InternalConnector } from '@layerswap/widget-types';
-import { useMemo, useRef } from "react";
+import { useCallback, useMemo, useRef, useSyncExternalStore } from "react";
 import { WalletConnectionProvider } from "@/types/wallet";
 import { WalletModalConnector } from "@/types/provider";
 import type { NetworkType } from "@layerswap/widget-types";
 import { isWalletConnectRegistryConnector } from "@/lib/walletConnect/connectorSource";
+import { createRegistryConnector } from "@/lib/walletConnect/createRegistryConnector";
 import { getProvidersForWalletConnectNetworkType } from "@/lib/walletConnect/providerCapabilities";
+import { getRegistryEntryByName, getRegistryEntryIndexVersion, requestRegistryEntriesByName, subscribeRegistryEntryIndex } from "@/lib/walletConnect/registryEntryIndex";
+import { chainsToNetworkTypes } from "@/lib/walletConnect/types";
 import { removeDuplicatesWithKey } from '@/lib/removeDuplicatesWithKey';
 import { walletKey } from '@/lib/walletKey';
+import { NAME_OVERRIDES, UNMERGEABLE_WALLETS } from '@/constants';
 
 type UseConnectorsParams = {
     searchValue?: string;
@@ -15,6 +19,7 @@ type UseConnectorsParams = {
     featuredProviders: WalletConnectionProvider[];
     filteredProviders: WalletConnectionProvider[];
     searchResults?: InternalConnector[];
+    isMobilePlatform: boolean;
 };
 
 type InitialSnapshot = {
@@ -23,8 +28,6 @@ type InitialSnapshot = {
     seen: Set<string>;
 }
 
-const UNMERGEABLE_WALLETS = ['nova', 'nova wallet']
-const NAME_OVERRIDES: Record<string, string> = { bitget: 'Bitget Wallet' }
 export const connectorKey = (name: string) =>
     UNMERGEABLE_WALLETS.includes(name.toLowerCase()) ? name.toLowerCase() : walletKey(name)
 
@@ -44,11 +47,11 @@ const resolveNames = (groups: InternalConnector[][]): InternalConnector[][] => {
     return groups.map(group => group.map(c => c?.name ? { ...c, name: NAME_OVERRIDES[walletKey(c.name)] ?? canonical.get(walletKey(c.name)) ?? c.name } : c))
 }
 
-export const resolveChainConnectors = (pool: InternalConnector[], providers: WalletConnectionProvider[]) => {
-    const records = new Map<string, { connectors: InternalConnector[], networkTypes: Set<NetworkType> }>()
+export const resolveChainConnectors = (pool: InternalConnector[], providers: WalletConnectionProvider[], isMobilePlatform: boolean) => {
+    const records = new Map<string, { name: string, connectors: InternalConnector[], networkTypes: Set<NetworkType> }>()
     const recordFor = (name: string) => {
         const k = connectorKey(name)
-        return records.get(k) ?? records.set(k, { connectors: [], networkTypes: new Set() }).get(k)!
+        return records.get(k) ?? records.set(k, { name, connectors: [], networkTypes: new Set() }).get(k)!
     }
 
     for (const c of pool) {
@@ -59,6 +62,8 @@ export const resolveChainConnectors = (pool: InternalConnector[], providers: Wal
     }
     const resolved = new Map<string, InternalConnector[]>()
     for (const [key, record] of records) {
+        const indexedEntry = UNMERGEABLE_WALLETS.includes(record.name.toLowerCase()) ? undefined : getRegistryEntryByName(record.name)
+        for (const networkType of chainsToNetworkTypes(indexedEntry?.chains)) record.networkTypes.add(networkType)
         const variants: InternalConnector[] = []
         for (const connector of record.connectors) {
             if (connector.providerName && !variants.some(variant => variant.providerName === connector.providerName)) variants.push(connector)
@@ -69,6 +74,8 @@ export const resolveChainConnectors = (pool: InternalConnector[], providers: Wal
             for (const provider of matchingProviders) {
                 if (template && !variants.some(variant => variant.providerName === provider.name)) {
                     variants.push({ ...template, providerName: provider.name, isLoadable: false })
+                } else if (indexedEntry && !variants.some(variant => variant.providerName === provider.name)) {
+                    variants.push({ ...createRegistryConnector(indexedEntry, isMobilePlatform, provider.name), isLoadable: false })
                 }
             }
         }
@@ -78,12 +85,35 @@ export const resolveChainConnectors = (pool: InternalConnector[], providers: Wal
     return resolved
 }
 
+export const getMissingRegistryEntryNames = (pool: InternalConnector[], providers: WalletConnectionProvider[]): string[] => {
+    const registryProviders = providers.flatMap(provider => (provider.capabilities?.walletConnectRegistry?.networkTypes ?? []).map(networkType => ({ name: provider.name, networkType })))
+    if (!registryProviders.length) return []
+    const records = new Map<string, { name: string, providerNames: Set<string>, hasNative: boolean }>()
+    for (const connector of pool) {
+        if (!connector.name) continue
+        const key = connectorKey(connector.name)
+        const record = records.get(key) ?? { name: connector.name, providerNames: new Set<string>(), hasNative: false }
+        if (connector.providerName) record.providerNames.add(connector.providerName)
+        record.hasNative ||= connector.source !== 'registry' && connector.type !== 'injected'
+        records.set(key, record)
+    }
+    return [...records.values()].filter(record => {
+        return record.hasNative
+            && !getRegistryEntryByName(record.name)
+            && !UNMERGEABLE_WALLETS.includes(record.name.toLowerCase())
+            && walletKey(record.name) !== 'walletconnect'
+            && registryProviders.some(provider => !record.providerNames.has(provider.name))
+    })
+        .map(record => record.name)
+}
+
 export function useConnectors({
     featuredProviders,
     filteredProviders,
     searchValue,
     recentConnectors,
     searchResults,
+    isMobilePlatform,
 }: UseConnectorsParams) {
 
     const { featuredConnectors, additionalConnectors, resolvedSearchResults } = useMemo(() => {
@@ -113,6 +143,13 @@ export function useConnectors({
 
     const initialSortedRef = useRef<InitialSnapshot | null>(null)
     const appendedRef = useRef<InternalConnector[]>([])
+    const registryEntriesVersion = useSyncExternalStore(subscribeRegistryEntryIndex, getRegistryEntryIndexVersion, getRegistryEntryIndexVersion)
+    const connectorPool = useMemo(() => [...featuredConnectors, ...additionalConnectors, ...(resolvedSearchResults ?? [])], [featuredConnectors, additionalConnectors, resolvedSearchResults])
+    const connectorsByWallet = useMemo(() => resolveChainConnectors(connectorPool, featuredProviders, isMobilePlatform), [connectorPool, featuredProviders, isMobilePlatform, registryEntriesVersion])
+    const requestRegistryEntriesFor = useCallback((connectors: WalletModalConnector[]) => {
+        const keys = new Set(connectors.map(connector => connectorKey(connector.name)))
+        requestRegistryEntriesByName(getMissingRegistryEntryNames(connectorPool.filter(connector => keys.has(connectorKey(connector.name))), featuredProviders))
+    }, [connectorPool, featuredProviders])
 
     const initialConnectors: WalletModalConnector[] = useMemo(() => {
         // Persisted host-origin data is untrusted at runtime even though the
@@ -165,8 +202,6 @@ export function useConnectors({
             for (const c of additionalConnectors) appendIfNew(c)
         }
 
-        const pool = [...featuredConnectors, ...additionalConnectors, ...(resolvedSearchResults ?? [])]
-        const connectorsByWallet = resolveChainConnectors(pool, featuredProviders)
         const withMultiChain = (list: InternalConnector[]): WalletModalConnector[] => list.map(c => {
             const variants = connectorsByWallet.get(connectorKey(c.name)) ?? []
             return { ...c, variants, isMultiChain: variants.length > 1 }
@@ -188,13 +223,14 @@ export function useConnectors({
         }
 
         return recentsFirst(withMultiChain(list))
-    }, [featuredConnectors, additionalConnectors, recentConnectors, resolvedSearchResults, filterKey, featuredProviders]);
+    }, [featuredConnectors, additionalConnectors, recentConnectors, resolvedSearchResults, filterKey, connectorsByWallet]);
 
     return {
         featuredConnectors,
         additionalConnectors,
         resolvedSearchResults,
         initialConnectors,
+        requestRegistryEntriesFor,
         featuredProviders,
         filteredProviders,
     };

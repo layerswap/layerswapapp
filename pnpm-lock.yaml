@@ -167,6 +167,9 @@ importers:
       '@layerswap/utils':
         specifier: workspace:^
         version: link:../../packages/utils
+      '@layerswap/wallet-core':
+        specifier: workspace:^
+        version: link:../../packages/wallets/core
       '@layerswap/wallet-evm':
         specifier: workspace:^
         version: link:../../packages/wallets/adapters/evm
