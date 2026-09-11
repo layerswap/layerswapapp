@@ -1,5 +1,11 @@
 # @layerswap/widget-types
 
+## 2.1.0
+
+### Minor Changes
+
+- Global fixes and improvements
+
 ## 2.0.1
 
 ### Major Changes
