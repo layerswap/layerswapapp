@@ -1,4 +1,4 @@
-import type { AppNetworkAdapter } from '@layerswap/wallet-core'
+import type { AppNetworkAdapter } from '@layerswap/utils'
 
 export type EvmNetworkBuckets = {
     asSource: string[]

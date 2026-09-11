@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { ImageWithFallback } from "@layerswap/ui-kit/components";
+import { ImageWithFallback } from "@layerswap/ui-kit";
 import { NetworkRouteToken } from "@layerswap/widget-types";
 import { formatTokenAmount } from "@/components/utils/formatTokenAmount";
 import { formatUsd } from "@/components/utils/formatUsdAmount";

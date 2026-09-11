@@ -5,7 +5,7 @@ import { FC, useCallback, useEffect, useMemo, useRef } from 'react'
 import { Widget } from '@/components/Widget/Index';
 import SwapSummary from '../Summary';
 import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, SwapBasicData, SwapDetails, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
-import { truncateDecimals } from '@/components/utils/RoundDecimals';
+import { truncateDecimals } from '@layerswap/utils';
 import { SwapFailReasons } from '@/Models/RangeError';
 import { Gauge } from './gauge';
 import { CircleCheck, Undo2 } from 'lucide-react';
@@ -19,7 +19,7 @@ import { useIntercom } from 'react-use-intercom';
 import Steps from './StepsComponent';
 import { useCallbacks } from '@/context/callbackProvider';
 import { ErrorHandler } from '@/lib/ErrorHandler';
-import { getExplorerUrl } from '@/lib/address/explorerUrl';
+import { getExplorerUrl } from '@layerswap/utils';
 import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
 import { SwapPhase } from '@/components/utils/resolveSwapPhase';
 import { useDepositSettings } from '@/context/depositSettings';

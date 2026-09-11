@@ -3,8 +3,8 @@ import { ChevronDown } from 'lucide-react'
 import CheckboxRow from './CheckboxRow'
 import { filterChipClasses } from './chipStyles'
 import { FilterNetworkOption } from './types'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/shadcn'
-import { ImageWithFallback, SearchComponent } from "@layerswap/ui-kit/components";
+import { Popover, PopoverContent, PopoverTrigger } from '@layerswap/ui-kit'
+import { ImageWithFallback, SearchComponent } from "@layerswap/ui-kit";
 
 type NetworksDropdownProps = {
     networks: FilterNetworkOption[]
@@ -48,7 +48,7 @@ const NetworksDropdown: FC<NetworksDropdownProps> = ({ networks, selectedNames, 
                     <ChevronDown className="w-4 h-4" />
                 </button>
             </PopoverTrigger>
-            <PopoverContent align="start" className="p-0 w-64 overflow-hidden">
+            <PopoverContent align="start" className="overflow-hidden">
                 <div className="p-2 pb-1 border-b border-secondary-500">
                     <SearchComponent
                         searchQuery={query}

@@ -1,7 +1,8 @@
 import { type InternalConnector, type Wallet } from '@layerswap/widget-types';
 import type { RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult, WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types";
 import { KnownInternalNames, sleep } from "@layerswap/utils"
-import { isWalletConnectRegistryConnector, type AppNetworkAdapter, isProviderConnectReady } from "@layerswap/wallet-core"
+import { isWalletConnectRegistryConnector, isProviderConnectReady } from "@layerswap/wallet-core"
+import type { AppNetworkAdapter } from "@layerswap/utils"
 import { Address } from "@layerswap/utils"
 import { getEvmConfig, walletClientToSigner } from '@layerswap/wallet-evm'
 import { getChainId, getWalletClient, switchChain, type ConnectorAlreadyConnectedError, } from '@wagmi/core'

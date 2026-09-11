@@ -1,15 +1,15 @@
 import { FC, useEffect, useMemo, useState } from 'react'
 import { useAddressBookStore, SavedAddress } from '@/stores/addressBookStore'
 import { MoreVertical, Pencil, Plus, Trash2 } from 'lucide-react'
-import shortenString from '@/components/utils/ShortenString'
-import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
+import { shortenString } from '@layerswap/utils'
+import { ExtendedAddress } from '@layerswap/ui-kit'
 import AddressBookEntryForm, { AddressBookEntryFormProps } from './AddressBookEntryForm'
 import NetworkLogoStack from './NetworkLogoStack'
 import { useAddressScope } from './useAddressScope'
-import { SearchComponent } from "@layerswap/ui-kit/components";
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/shadcn/popover'
+import { SearchComponent } from "@layerswap/ui-kit";
+import { Popover, PopoverContent, PopoverTrigger } from "@layerswap/ui-kit"
 import { useFormWizardaUpdate } from '@/context/formWizardProvider'
-import AddressIcon from '../Common/AddressIcon'
+import { AddressIcon } from '@layerswap/ui-kit'
 import { HistoryItemSceleton } from '../Pages/SwapHistory/Snippet'
 
 type EditingState =
@@ -40,7 +40,7 @@ const AddressRow: FC<{ entry: SavedAddress, onEdit: () => void, onDelete: () => 
                         <MoreVertical className="h-4 w-4" />
                     </button>
                 </PopoverTrigger>
-                <PopoverContent align="end" sideOffset={4} className="min-w-40 p-1 bg-secondary-500! rounded-xl">
+                <PopoverContent align="end" sideOffset={4} className="min-w-40 bg-secondary-500! rounded-xl">
                     <button
                         type="button"
                         onClick={onEdit}

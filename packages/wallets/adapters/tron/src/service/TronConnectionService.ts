@@ -1,6 +1,7 @@
 import { type InternalConnector, type Wallet } from '@layerswap/widget-types';
 import type { WalletConnectionProvider, WalletConnectionService, WalletModalConnector } from "@layerswap/wallet-core/types";
-import { walletIconResolver, getEip6963Providers, walletKey, type AppNetworkAdapter } from "@layerswap/wallet-core"
+import { walletIconResolver, getEip6963Providers, walletKey } from "@layerswap/wallet-core"
+import type { AppNetworkAdapter } from "@layerswap/utils"
 import { name as PROVIDER_NAME, id as PROVIDER_ID } from '../constants'
 import { tronAdapterManager } from './tronAdapterManager'
 import { type TronWalletSnapshot, useTronStore } from './tronStore'

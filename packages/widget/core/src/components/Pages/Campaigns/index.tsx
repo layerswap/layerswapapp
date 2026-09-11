@@ -6,7 +6,7 @@ import LayerSwapApiClient, { Campaign } from "@/lib/apiClients/layerSwapApiClien
 import SpinIcon from "@/components/Icons/spinIcon";
 import useSWR from 'swr'
 import { Widget } from "@/components/Widget/Index";
-import { ImageWithFallback } from "@layerswap/ui-kit/components";
+import { ImageWithFallback } from "@layerswap/ui-kit";
 
 export const CampaignsComponent = ({ onCampaignSelect }: { onCampaignSelect: (campaign: Campaign) => void }) => {
 

@@ -32,11 +32,16 @@ export { StellarAddressUtilsProvider, isValidStellarAddress } from "@/address/pr
 export {
     addressUtilsProviders,
     addressUtilsResolver,
+    setNetworkAdapter,
+    getNetworkAdapter,
     classifyAddress,
     addressTypeLabel,
     addressSelectionType,
     defaultNetworkScope,
 } from "@/address/instance";
+
+export type { AppNetworkAdapter, WalletNativeCurrency } from "@/networkAdapter";
+export { defineNetworkAdapter } from "@/networkAdapter";
 
 export { Address, EmailAddress, isEmailAddress } from "@/address/Address";
 export type { AddressDisplayFormat, AddressFormatOptions } from "@/address/Address";
@@ -46,9 +51,16 @@ export { addressFormat } from "@/address/formatter";
 export { isAndroid, isIOS, isMobile } from "@/isMobile";
 export { default as sleep } from "@/sleep";
 
+export { cn } from "@/cn";
 export { formatUnits } from "@/formatUnits";
+export { truncateDecimals, isScientific } from "@/truncateDecimals";
+export { shortenString } from "@/shortenString";
+export { getExplorerUrl } from "@/explorerUrl";
 export { retry, retryWithExponentialBackoff } from "@/retry";
 export { fetchWithTimeout } from "@/fetchWithTimeout";
 export { JsonRpcClient } from "@/jsonRpcClient";
 export type { JsonRpcRequest, JsonRpcError, JsonRpcResponse } from "@/jsonRpcClient";
 export { default as AppSettings } from "@/AppSettings";
+
+export { default as useCopyClipboard } from "@/hooks/useCopyClipboard";
+export { default as useWindowDimensions } from "@/hooks/useWindowDimensions";

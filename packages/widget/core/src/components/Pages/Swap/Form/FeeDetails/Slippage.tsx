@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState, forwardRef } from "react"
 import { useClickOutside } from "@/hooks/useClickOutside"
 import clsx from "clsx"
 import { useSlippageStore } from "@/stores/slippageStore"
-import { Popover, PopoverContent, PopoverTrigger, Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn"
+import { Popover, PopoverContent, PopoverTrigger, Tooltip, TooltipContent, TooltipTrigger } from "@layerswap/ui-kit"
 
 type SlippageProps = {
     quoteData: SwapQuote | undefined
@@ -56,7 +56,7 @@ export const Slippage = ({ quoteData, values, disableEditingBackground }: Slippa
                                 <Info className={clsx('w-4 h-4', isHighSlippage ? "text-warning-foreground" : "text-secondary-text")} />
                             </span>
                         </TooltipTrigger>
-                        <TooltipContent className="pointer-events-none w-80 grow p-2 border-none! bg-secondary-300! text-xs rounded-xl" side="top" align="start" alignOffset={-30}>
+                        <TooltipContent className="pointer-events-none w-80 grow border-none! bg-secondary-300! text-xs rounded-xl" side="top" align="start" alignOffset={-30}>
                             <p>{isHighSlippage ? "High slippage increases the risk of receiving significantly less than the quoted amount." : "Your transaction will be refunded if the price moves more than the slippage percentage."}</p>
                         </TooltipContent>
                     </Tooltip>
