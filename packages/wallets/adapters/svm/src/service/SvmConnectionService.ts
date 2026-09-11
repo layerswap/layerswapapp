@@ -1,11 +1,10 @@
 import { type InternalConnector, type Wallet } from '@layerswap/widget-types';
-import { NetworkType } from '@layerswap/widget-types';
 import type { RequestAdditionalConnectorsParams, RequestAdditionalConnectorsResult, WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types";
 import type { WalletModalConnector } from "@layerswap/wallet-core/types"
 import { buildDeepLink, chainsToNetworkTypes, clearPendingDynamicWcMetadata, createRegistryConnector, getDynamicWcMetadata, getPendingDynamicWcMetadata, isWalletConnectRegistryConnector, mapConnectError, setDynamicWcMetadata, setPendingMetadataForRegistry, subscribeDisplayUri, walletKey, type AppNetworkAdapter, type WalletConnectWalletBase } from "@layerswap/wallet-core"
 import { findRegistryWalletByName } from "@layerswap/wallet-core"
 import { resolveWalletConnectorIcon } from "@layerswap/wallet-core"
-import { name as PROVIDER_NAME, id as PROVIDER_ID } from '../constants'
+import { name as PROVIDER_NAME, id as PROVIDER_ID, solanaWalletConnectChain } from '../constants'
 import { resolveSolanaWalletConnectorIcon } from '../utils'
 import { SolanaWalletConnectAdapter } from '../connectors/SolanaWalletConnectAdapter'
 import { svmAdapterManager } from './svmAdapterManager'
@@ -13,7 +12,7 @@ import { useSvmStore } from './svmStore'
 
 const SOLANA_WC_MODAL_NAME = 'WalletConnect'
 const SOLANA_HIDDEN_WC_NAME = 'Hidden WalletConnect'
-const SVM_NS = PROVIDER_ID
+const SVM_NS = solanaWalletConnectChain.namespace
 
 const normalizeWcName = (name?: string) => name === SOLANA_HIDDEN_WC_NAME ? SOLANA_WC_MODAL_NAME : name
 type RegistryRequestFn = (params?: RequestAdditionalConnectorsParams) => Promise<{
@@ -388,7 +387,7 @@ export class SvmConnectionService<Network> implements WalletConnectionService<Ru
             id: PROVIDER_ID,
             capabilities: {
                 walletConnectRegistry: {
-                    networkTypes: [NetworkType.Solana],
+                    networkTypes: [solanaWalletConnectChain.networkType],
                 },
             },
             providerIcon: this.getProviderIcon(),

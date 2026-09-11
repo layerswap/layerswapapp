@@ -1,3 +1,5 @@
+import { defaultWalletConnectChainRegistry, type WalletConnectChainRegistry } from './chainRegistry'
+
 const BASE = 'https://api.web3modal.org'
 
 export type Web3ModalWallet = {
@@ -29,26 +31,8 @@ export type FetchWalletsParams = {
     projectId: string;
 }
 
-const EVM_CHAINS = [
-    'eip155:1', 'eip155:10', 'eip155:56', 'eip155:137',
-    'eip155:43114', 'eip155:42161', 'eip155:324', 'eip155:8453',
-].join(',')
-
-const SOLANA_CHAINS = [
-    'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
-    'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
-].join(',')
-
-const STELLAR_CHAINS = [
-    'stellar:pubnet',
-    'stellar:testnet',
-].join(',')
-
-export function chainsForNamespace(namespace: string): string {
-    if (namespace === 'eip155') return EVM_CHAINS
-    if (namespace === 'solana') return SOLANA_CHAINS
-    if (namespace === 'stellar') return STELLAR_CHAINS
-    return ''
+export function chainsForNamespace(namespace: string, registry: WalletConnectChainRegistry = defaultWalletConnectChainRegistry): string {
+    return registry.get(namespace)?.explorerChainIds.join(',') ?? ''
 }
 
 const DANGEROUS_URL_PROTOCOLS = ['javascript:', 'data:', 'vbscript:', 'file:']
