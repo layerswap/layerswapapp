@@ -446,6 +446,48 @@ test('maps spendable Horizon balances like the backend', () => {
     assert.equal(baseUnitsToNumber(100n, 7), 0.00001)
 })
 
+test('uses verified mainnet endpoints when backend public nodes are unavailable', async t => {
+    const requests = []
+    let passphrase = Networks.TESTNET
+    t.mock.method(globalThis, 'fetch', async (input, init) => {
+        const request = input instanceof Request ? input : new Request(input, init)
+        requests.push({ url: request.url, method: request.method })
+        if (request.url === 'https://horizon.stellar.org/' && request.method === 'GET') {
+            return Response.json({ network_passphrase: passphrase })
+        }
+        if (request.url === 'https://mainnet.sorobanrpc.com/' && request.method === 'POST') {
+            const body = await request.json()
+            assert.equal(body.method, 'getNetwork')
+            return Response.json({ jsonrpc: '2.0', id: body.id, result: { passphrase, protocolVersion: 27 } })
+        }
+        assert.fail(`Unexpected Stellar request: ${request.method} ${request.url}`)
+    })
+    const network = {
+        name: 'STELLAR_MAINNET',
+        node_url: 'https://horizon.stellar.org',
+        nodes: [],
+    }
+
+    // A reachable endpoint on the wrong chain must still be rejected.
+    await assert.rejects(getStellarHorizonServer(network, Networks.PUBLIC), /No Stellar Horizon endpoint/)
+    await assert.rejects(getStellarRpcServer(network, Networks.PUBLIC), /No Stellar RPC endpoint/)
+
+    // Failed verification must not prevent a later successful retry.
+    passphrase = Networks.PUBLIC
+    const [horizon, rpcServer] = await Promise.all([
+        getStellarHorizonServer(network, Networks.PUBLIC),
+        getStellarRpcServer(network, Networks.PUBLIC),
+    ])
+    assert.equal(horizon.serverURL.toString(), 'https://horizon.stellar.org/')
+    assert.equal(rpcServer.serverURL.toString(), 'https://mainnet.sorobanrpc.com/')
+    assert.deepEqual(requests, [
+        { url: 'https://horizon.stellar.org/', method: 'GET' },
+        { url: 'https://mainnet.sorobanrpc.com/', method: 'POST' },
+        { url: 'https://horizon.stellar.org/', method: 'GET' },
+        { url: 'https://mainnet.sorobanrpc.com/', method: 'POST' },
+    ])
+})
+
 test('discovers Horizon and RPC from the backend network node list', async () => {
     const originalFetch = globalThis.fetch
     const requests = []
