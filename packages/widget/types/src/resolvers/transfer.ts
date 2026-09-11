@@ -6,6 +6,8 @@ export type TransferProps = {
     network: Network,
     token: Token,
     callData: string
+    amountInBaseUnits?: string
+    encodedArgs?: string[] | null
     depositAddress?: string
     amount: number
     swapId?: string
