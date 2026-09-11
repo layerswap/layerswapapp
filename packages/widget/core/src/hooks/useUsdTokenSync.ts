@@ -23,6 +23,7 @@ interface UseUsdTokenSyncArgs {
     fromCurrency: { symbol?: string; precision?: number; price_in_usd?: number } | undefined;
     amount: string | undefined;
     setFieldValue: (field: string, value: any, shouldValidate?: boolean) => void;
+    preserveTokenAmount?: boolean;
 }
 
 interface UseUsdTokenSyncReturn {
@@ -39,6 +40,7 @@ export function useUsdTokenSync({
     fromCurrency,
     amount,
     setFieldValue,
+    preserveTokenAmount = false,
 }: UseUsdTokenSyncArgs): UseUsdTokenSyncReturn {
     const isUsdMode = useUsdModeStore(s => s.isUsdMode);
     const usdAmount = useUsdModeStore(s => s.usdAmount);
@@ -116,8 +118,15 @@ export function useUsdTokenSync({
         }
         if (prevPriceRef.current === sourceCurrencyPriceInUsd) return;
         prevPriceRef.current = sourceCurrencyPriceInUsd;
+        if (preserveTokenAmount) {
+            // A fixed receive minimum belongs to this token send amount. Refresh
+            // its USD display instead of changing the amount and clearing the floor.
+            preciseUsdRef.current = Number(currentAmountRef.current || 0) * sourceCurrencyPriceInUsd;
+            setUsdAmount(preciseUsdRef.current.toFixed(2).replace(/\.?0+$/, ''));
+            return;
+        }
         computeAndSetTokenAmount(preciseUsdRef.current);
-    }, [sourceCurrencyPriceInUsd, isUsdMode, usdAmount, computeAndSetTokenAmount]);
+    }, [sourceCurrencyPriceInUsd, isUsdMode, usdAmount, computeAndSetTokenAmount, preserveTokenAmount, setUsdAmount]);
 
     // Recompute token amount when source token changes in USD mode
     useEffect(() => {

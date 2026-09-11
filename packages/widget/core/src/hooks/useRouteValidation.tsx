@@ -26,7 +26,7 @@ export function useRouteValidation(quoteError?: QuoteError, hasQuote?: boolean, 
 
     if (!hasQuote && autoSlippageWouldWork) {
         validationDetails = { title: 'Route Unavailable', type: 'warning', icon: <RouteOff className={ICON_CLASSES_WARNING} /> };
-        validationMessage = `This might be because of high slippage, try switching the slippage percentage to "Auto"`;
+        validationMessage = 'No quote is available with these receive settings. Edit the value or return to Auto.';
     }
 
     if (((from?.name && from?.name.toLowerCase() === initialSettings.sameAccountNetwork?.toLowerCase()) || (to?.name && to?.name.toLowerCase() === initialSettings.sameAccountNetwork?.toLowerCase()))) {

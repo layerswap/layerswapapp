@@ -29,6 +29,7 @@ import { useExtendedRoutesStore } from '@/stores/extendedRoutesStore';
 import { isDepositAddressFlow, isDepositAddressSwap } from '@/helpers/swapFlow';
 import { resolveSwapPollingInterval, SWAP_POLL_DEDUPE_MS } from '@/lib/swapPollingPolicy';
 import { KnownInternalNames } from '@layerswap/utils';
+import { formReceiveSettingsScope, isTokenSwap, receiveRequestParams, resolveReceiveSettings } from '@/lib/receiveSettings';
 
 export const SwapDataStateContext = createContext<SwapContextData | null>(null);
 
@@ -281,7 +282,8 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         const isContract = contractCheckResult?.sourceIsContract ?? false
         const sourceIsSupported = sourceWalletIsSupported && !isContract
 
-        const slippage = useSlippageStore.getState().slippage
+        const scope = formReceiveSettingsScope(values)
+        const receiveSettings = resolveReceiveSettings(useSlippageStore.getState().receiveSettings, scope, isTokenSwap(fromCurrency.symbol, toCurrency.symbol))
         const gaslessEnabled = useGaslessPreferenceStore.getState().gaslessEnabled
 
         const useGasless = isGaslessCapableRoute({
@@ -299,7 +301,6 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             sourceAmount: amount,
             availableRoutes: sourceRoutes,
         })
-        const isExtendedBridge = !!extendedPlan
         const requiresDepository = from.name == KnownInternalNames.Networks.StellarTestnet || from.name == KnownInternalNames.Networks.StellarMainnet
 
         const data: CreateSwapParams = extendedPlan ? buildCreateSwapParamsForExtendedRoute({
@@ -327,8 +328,8 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             ...((useGasless || requiresDepository) && { use_depository: true }),
         }
 
-        if (!isExtendedBridge && depositMethod === 'wallet' && slippage && slippage > 0 && slippage < 0.8) {
-            data.slippage = slippage.toString()
+        if (depositMethod === 'wallet') {
+            Object.assign(data, receiveRequestParams(receiveSettings))
         }
 
         const swapResponse = await layerswapApiClient.CreateSwapAsync(data).catch((e) => {

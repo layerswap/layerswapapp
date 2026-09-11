@@ -5,9 +5,7 @@ import DestinationWalletPicker from "./DestinationWalletPicker";
 import { useFormikContext } from "formik";
 import { Partner } from "../../Models/Partner";
 import { ReceiveAmount } from "./Amount/ReceiveAmount";
-import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
-import { useMemo } from "react";
-import { useSwapDataState } from "@/context/swap";
+import type { useQuoteData } from "@/hooks/useFee";
 import { SwapFormValues } from "../Pages/Swap/Form/SwapFormValues";
 
 type Props = {
@@ -17,13 +15,9 @@ type Props = {
 }
 
 const DestinationPicker = (props: Props) => {
-    const { partner } = props
+    const { partner, fee, isFeeLoading } = props
     const { values } = useFormikContext<SwapFormValues>()
     const { toAsset: toCurrency } = values
-    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
-    const { swapId } = useSwapDataState()
-    const quoteRefreshInterval = !!swapId ? 0 : undefined;
-    const { quote, isQuoteLoading } = useQuoteData(quoteArgs, { refreshInterval: quoteRefreshInterval });
 
     return <div className="flex flex-col w-full bg-secondary-500 rounded-2xl p-4 pb-3.75 space-y-6.75">
         <div className="grid grid-cols-9 gap-2 items-center h-7">
@@ -42,8 +36,8 @@ const DestinationPicker = (props: Props) => {
                 <div className="min-w-0 overflow-hidden">
                     <ReceiveAmount
                         destination_token={toCurrency}
-                        fee={quote}
-                        isFeeLoading={isQuoteLoading}
+                        fee={fee}
+                        isFeeLoading={isFeeLoading}
                     />
                 </div>
                 <div className="justify-self-end self-start">
