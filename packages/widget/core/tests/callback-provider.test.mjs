@@ -3,8 +3,8 @@ import test, { after, afterEach, beforeEach } from 'node:test'
 import { registerHooks } from 'node:module'
 import { extname } from 'node:path'
 import { JSDOM } from 'jsdom'
-import { act, createElement, useEffect, useState } from 'react'
-import { setErrorLogger } from '@layerswap/widget-types'
+import { act, createElement, StrictMode, useEffect, useState } from 'react'
+import { ErrorHandler, getErrorOccurrenceId, setErrorLogger } from '@layerswap/widget-types'
 
 const dom = new JSDOM('<!doctype html><html><body></body></html>')
 const globals = {
@@ -32,6 +32,7 @@ const { createRoot } = await import('react-dom/client')
 const { CallbackProvider, useCallbacks } = await import('../dist/esm/context/callbackProvider.js')
 const { registerWidgetErrorLogger } = await import('../dist/esm/lib/ErrorHandler.js')
 const { widgetTelemetry } = await import('../dist/esm/lib/widgetTelemetry.js')
+const { logStore } = await import('../dist/esm/stores/logStore.js')
 
 let root
 let container
@@ -70,6 +71,52 @@ function SwapEvents({ status }) {
   }, [status, onSwapLifecycle])
   return null
 }
+
+test('the widget attaches classification to the error occurrence before calling the host', t => {
+  const received = []
+  registerWidgetErrorLogger()
+  t.after(logStore.getState().registerLogger(event => received.push(event)))
+  const cause = Object.assign(new Error('Request declined'), { code: 'ACTION_REJECTED' })
+  ErrorHandler({ type: 'SwapWithdrawalError', message: 'Withdrawal failed', cause, swapId: 'swap-a' })
+  ErrorHandler({ type: 'WalletError', message: 'Account unavailable', cause: { code: 4100 } })
+  assert.equal(received[0].reasonCode, 'user_rejected')
+  assert.equal(received[0].occurrenceId, getErrorOccurrenceId(cause))
+  assert.equal(received[0].cause, cause)
+  assert.equal(received[0].swapId, 'swap-a')
+  assert.equal(received[1].reasonCode, 'unauthorized')
+})
+
+test('error enrichment leaves background diagnostics and unknown wallet reasons unset', t => {
+  const received = []
+  registerWidgetErrorLogger()
+  t.after(logStore.getState().registerLogger(event => received.push(event)))
+  const events = [
+    { type: 'APIError', message: 'Backend unavailable' },
+    { type: 'APIError', message: 'Not enough liquidity for route' },
+    { type: 'APIError', message: 'Upstream timeout' },
+    { type: 'BalanceProviderError', message: 'Network error' },
+    { type: 'GasProviderError', message: 'Cannot estimate gas' },
+    { type: 'WalletError', message: 'Unexpected provider failure', cause: { code: -1 } },
+  ]
+  for (const event of events) ErrorHandler(event)
+  assert.equal(received.length, events.length)
+  for (const [i, event] of received.entries()) {
+    assert.equal(Object.hasOwn(event, 'reasonCode'), false)
+    assert.equal(event.type, events[i].type)
+    assert.equal(event.message, events[i].message)
+    assert.equal(event.cause, events[i].cause)
+    assert.ok(event.occurrenceId)
+  }
+})
+
+test('error enrichment preserves explicit reasons instead of reclassifying message text', t => {
+  const received = []
+  registerWidgetErrorLogger()
+  t.after(logStore.getState().registerLogger(event => received.push(event)))
+  ErrorHandler({ type: 'WalletError', message: 'User rejected', reasonCode: 'unauthorized' })
+  ErrorHandler({ type: 'APIError', message: 'Request failed', reasonCode: 'timeout' })
+  assert.deepEqual(received.map(event => event.reasonCode), ['unauthorized', 'timeout'])
+})
 
 test('inline callbacks that store events in host state settle without repeated emissions', async () => {
   let renders = 0
@@ -148,4 +195,50 @@ test('throwing host callbacks retain their error details and lifecycle telemetry
   assert.equal(received[0].occurrenceId, received[1].occurrenceId)
   assert.equal(telemetry.mock.callCount(), 1)
   assert.equal(telemetry.mock.calls[0].arguments[0].step, 'swap_completed')
+})
+
+test('StrictMode deduplicates widget flow observations while preserving public lifecycle callbacks', async t => {
+  const records = []
+  const forwarded = []
+  const callbacks = { onTelemetry: e => records.push(e), onSwapLifecycle: e => forwarded.push(e) }
+  const unmountFlow = widgetTelemetry.mount(widgetTelemetry.createFlow({ form_mode: 'cross-chain' }))
+  t.after(unmountFlow)
+  const observation = (step, extra = {}) => ({ step, stage: 'swap', outcome: 'succeeded',
+    path: 'Processing', swapId: 'swap-123', ...extra })
+
+  function ProcessingObservations({ confirmations }) {
+    const { onSwapLifecycle } = useCallbacks()
+    // Independent effects reproduce Processing's interleaved mount replay.
+    useEffect(() => {
+      onSwapLifecycle(observation('input_transaction_detected', { transactionHash: 'input-a' }))
+    }, [onSwapLifecycle])
+    useEffect(() => {
+      onSwapLifecycle(observation('input_transfer_confirmed', { transactionHash: 'input-a', confirmations }))
+    }, [onSwapLifecycle, confirmations])
+    useEffect(() => {
+      onSwapLifecycle(observation('output_transaction_detected', { transactionHash: 'output-a', confirmations }))
+    }, [onSwapLifecycle, confirmations])
+    useEffect(() => {
+      onSwapLifecycle(observation('swap_completed', { phase: 'completed' }))
+    }, [onSwapLifecycle])
+    return null
+  }
+
+  const render = confirmations => act(() => root.render(createElement(StrictMode, null,
+    createElement(CallbackProvider, { callbacks }, confirmations === undefined ? null
+      : createElement(ProcessingObservations, { confirmations })),
+  )))
+  await render()
+  widgetTelemetry.lifecycle({ step: 'form_submitted', stage: 'form', outcome: 'started', path: 'test' })
+  widgetTelemetry.lifecycle(observation('swap_created'))
+  records.length = 0
+
+  await render(10)
+  assert.deepEqual(records.map(e => e.attributes.step), [
+    'input_transaction_detected', 'input_transfer_confirmed', 'output_transaction_detected', 'swap_completed',
+  ])
+  assert.equal(forwarded.length, 8, 'public callbacks still receive each effect observation')
+  await render(11)
+  assert.equal(records.length, 4, 'confirmation-only updates do not duplicate funnel milestones')
+  assert.equal(forwarded.length, 10)
 })

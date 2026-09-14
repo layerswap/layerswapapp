@@ -18,6 +18,8 @@ dist/
 
 # misc
 .DS_Store
+__pycache__/
+*.py[cod]
 
 # debug
 npm-debug.log*
@@ -47,6 +49,7 @@ next-env.d.ts
 
 # PR Review Report
 pr-review-report.md
+pr-review-assessment.md
 .env*
 
 # Agents

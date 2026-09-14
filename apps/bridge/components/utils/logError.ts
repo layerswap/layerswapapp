@@ -3,12 +3,12 @@ import { captureEvent, captureException } from '../../lib/faro'
 import { widgetErrorImpact } from '../../lib/faro-error-policy'
 
 export const logError = (event: ErrorEventType) => {
-    const { message, stack, name, cause, type, occurrenceId, ...details } = event
+    const { message, stack, name, cause, type, occurrenceId, reasonCode, ...details } = event
     const impact = widgetErrorImpact(event)
     if (impact !== 'user') {
         const captured = captureEvent('widget_diagnostic', {
             ...details, source: 'layerswap-widget', impact, error_category: type,
-            error_type: name || type, message, stack, cause, occurrence_id: occurrenceId,
+            error_type: name || type, message, stack, cause, occurrence_id: occurrenceId, reason_code: reasonCode,
         })
         if (!captured) console.info('[layerswap/widget diagnostic]', event)
         return
@@ -23,6 +23,7 @@ export const logError = (event: ErrorEventType) => {
         eventType: type,
         impact,
         occurrence_id: occurrenceId,
+        reason_code: reasonCode,
         cause,
         ...details,
     })

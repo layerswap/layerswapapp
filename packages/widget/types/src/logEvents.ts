@@ -3,6 +3,8 @@ import { SwapStatus } from './SwapStatus';
 export interface BaseErrorProps {
   /** Shared only by observations of the same thrown error object/cause. */
   occurrenceId?: string;
+  /** Normalized wallet/provider cause, shared by execution and error reporting. */
+  reasonCode?: WalletErrorReasonCode;
   name?: string;
   message: string;
   stack?: string;
@@ -135,6 +137,7 @@ export type TransferBlockedReasonCode =
  */
 export type WalletErrorReasonCode =
   | 'user_rejected'
+  | 'unauthorized'
   | 'insufficient_funds'
   | 'gas_estimation_failed'
   | 'contract_reverted'
@@ -191,6 +194,13 @@ export type SwapLifecycleStep =
   | 'flow_closed'
   | 'flow_error'
   | 'suspected_stall';
+
+/** Mutually exclusive UI phase observations; consumers dedupe these in one slot. */
+export const SWAP_LIFECYCLE_PHASE_STEPS: readonly SwapLifecycleStep[] = [
+  'awaiting_wallet_action', 'awaiting_user_deposit', 'input_transfer_pending', 'output_transfer_pending',
+  'output_settling', 'swap_completed', 'swap_failed', 'swap_delayed', 'swap_expired', 'swap_cancelled',
+  'refund_pending', 'refund_completed',
+];
 
 export type SwapLifecycleEvent = {
   occurrenceId?: string;

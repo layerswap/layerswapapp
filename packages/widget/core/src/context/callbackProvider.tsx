@@ -1,25 +1,16 @@
-import { type ErrorEventType, type SwapLifecycleEvent, type SwapStatusEvent } from '@layerswap/widget-types';
+import { type SwapLifecycleEvent, type SwapStatusEvent, type WidgetCallbacks } from '@layerswap/widget-types';
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
 import { SwapResponse } from '@/lib/apiClients/layerSwapApiClient'
 import { createContext, useContext, ReactNode, useCallback, useMemo, useEffect, useLayoutEffect, useRef } from 'react'
 import { ErrorHandler } from '@/lib/ErrorHandler'
-import { reportErrorLoggerFailure } from '@/stores/logStore'
-import type { WidgetTelemetryHandler } from '@layerswap/widget-types'
 import { widgetTelemetry } from '@/lib/widgetTelemetry'
 
 const useClientLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
 
-export interface CallbacksContextType {
-    onTelemetry?: WidgetTelemetryHandler
+export interface CallbacksContextType extends Omit<WidgetCallbacks, 'onFormChange' | 'onSwapCreate' | 'onSwapComplete'> {
     onFormChange?: (formData: SwapFormValues) => void
     onSwapCreate?: (swapData: SwapResponse) => void
     onSwapComplete?: (swapData: SwapResponse) => void
-    onSwapModalStateChange?: (open: boolean) => void
-    onBackClick?: () => void
-    onError?: (error: ErrorEventType) => void
-    onSwapStatusChange?: (event: SwapStatusEvent) => void
-    onSwapLifecycle?: (event: SwapLifecycleEvent) => void
-    onMenuNavigationChange?: (path: string) => void
 }
 
 export interface CallbackProviderProps {
@@ -27,7 +18,8 @@ export interface CallbackProviderProps {
     callbacks?: CallbacksContextType
 }
 
-const CallbackContext = createContext<Required<CallbacksContextType> | undefined>(undefined)
+type CallbackContextValue = Required<Omit<CallbacksContextType, 'onError'>>
+const CallbackContext = createContext<CallbackContextValue | undefined>(undefined)
 
 export function CallbackProvider({ children, callbacks }: CallbackProviderProps) {
     const callbacksRef = useRef(callbacks)
@@ -47,7 +39,7 @@ export function CallbackProvider({ children, callbacks }: CallbackProviderProps)
     const telemetryEnabled = !!callbacks?.onTelemetry
     useClientLayoutEffect(() => widgetTelemetry.register(telemetryEnabled
         ? event => telemetryRef.current?.(event) : undefined), [telemetryEnabled])
-    const value = useMemo<Required<CallbacksContextType>>(() => {
+    const value = useMemo<CallbackContextValue>(() => {
         return {
             onTelemetry: event => { try { callbacks?.onTelemetry?.(event) } catch { /* optional telemetry */ } },
             onFormChange: (formData: SwapFormValues) => { try { callbacks?.onFormChange?.(formData) } catch (error) { ErrorHandler(error) } },
@@ -55,14 +47,6 @@ export function CallbackProvider({ children, callbacks }: CallbackProviderProps)
             onSwapComplete: (swapData: SwapResponse) => { try { callbacks?.onSwapComplete?.(swapData) } catch (error) { ErrorHandler(error) } },
             onSwapModalStateChange: (open: boolean) => { try { callbacks?.onSwapModalStateChange?.(open) } catch (error) { ErrorHandler(error) } },
             onBackClick: () => { try { callbacks?.onBackClick?.() } catch (error) { ErrorHandler(error) } },
-            onError: (event: ErrorEventType) => {
-                try {
-                    callbacks?.onError?.(event)
-                }
-                catch (error) {
-                    reportErrorLoggerFailure(event, error)
-                }
-            },
             onSwapStatusChange,
             onSwapLifecycle,
             onMenuNavigationChange: (path: string) => { try { callbacks?.onMenuNavigationChange?.(path) } catch (error) { ErrorHandler(error) } },
@@ -75,7 +59,7 @@ export function CallbackProvider({ children, callbacks }: CallbackProviderProps)
     )
 }
 
-export function useCallbacks(): Required<CallbacksContextType> {
+export function useCallbacks(): CallbackContextValue {
     const context = useContext(CallbackContext)
     if (!context) {
         throw new Error('useCallbacks must be used within a CallbackProvider')

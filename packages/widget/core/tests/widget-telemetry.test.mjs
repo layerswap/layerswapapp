@@ -46,6 +46,36 @@ test('overlapping operations retain their starting flow and unique operation ide
     assert.deepEqual(operations.map(e => e.attributes.duration_ms), [75, 50])
 })
 
+test('operation completion enriches the captured context with newly available fields', () => {
+    const { telemetry, events, advance } = setup()
+    const finish = telemetry.beginOperation('swap_creation', { http_status: 202 })
+    advance(25)
+    finish('succeeded', { swap_id: 'created-swap', http_status: 201 })
+    const { attributes } = events.find(event => event.name === 'widget_operation')
+    assert.equal(attributes.swap_id, 'created-swap')
+    assert.equal(attributes.http_status, 201)
+    assert.equal(attributes.source_network, 'TEST_A')
+    assert.equal(attributes.duration_ms, 25)
+})
+
+test('completion extras cannot replace operation identity, outcome or computed metadata', () => {
+    const { telemetry, events, advance } = setup()
+    const finish = telemetry.beginOperation('quote_request')
+    advance(40)
+    finish('failed', {
+        operation: 'wallet_transfer', operation_id: 'replacement-operation',
+        outcome: 'succeeded', duration_ms: -1, schema_version: 99, event_id: 'replacement-event',
+    })
+    const { attributes } = events.find(event => event.name === 'widget_operation')
+    assert.equal(attributes.operation, 'quote_request')
+    assert.ok(attributes.operation_id)
+    assert.notEqual(attributes.operation_id, 'replacement-operation')
+    assert.equal(attributes.outcome, 'failed')
+    assert.equal(attributes.duration_ms, 40)
+    assert.equal(attributes.schema_version, 1)
+    assert.notEqual(attributes.event_id, 'replacement-event')
+})
+
 test('cleanup cannot report late results through a replacement handler', () => {
     const { telemetry, events, unregister } = setup()
     const finish = telemetry.beginOperation('balance_fetch')
@@ -120,4 +150,110 @@ test('transfer prompt and submission flags separate the wallet step from deposit
     telemetry.lifecycle(event('gasless_authorization_submitted', 'swap-a'))
     assert.equal(events.at(-1).attributes.transfer_submitted, true)
     assert.equal(events.at(-1).attributes.deposit_observed, false)
+})
+
+function submittedFlow() {
+    const h = setup()
+    h.telemetry.lifecycle(event('form_submitted'))
+    h.telemetry.lifecycle(event('swap_created', 'swap-a'))
+    h.events.length = 0
+    return h
+}
+
+test('interleaved lifecycle effect replay survives flow cleanup/remount without duplicate observations', () => {
+    const { telemetry, flow, unmount, events } = submittedFlow()
+    const observations = [
+        { ...event('input_transaction_detected', 'swap-a'), transactionHash: 'input-a' },
+        { ...event('input_transfer_confirmed', 'swap-a'), transactionHash: 'input-a', outcome: 'succeeded' },
+        { ...event('output_transaction_detected', 'swap-a'), transactionHash: 'output-a', outcome: 'succeeded' },
+        { ...event('swap_completed', 'swap-a'), phase: 'completed', outcome: 'succeeded' },
+    ]
+    observations.forEach(telemetry.lifecycle)
+    unmount()
+    telemetry.mount(flow)
+    observations.forEach(telemetry.lifecycle)
+    assert.deepEqual(events.map(e => e.attributes.step), observations.map(e => e.step))
+    assert.equal(events.at(-1).attributes.deposit_observed, true)
+    assert.equal(events.at(-1).attributes.completion_observed, true)
+})
+
+test('confirmation-only updates are ignored while transaction, outcome and API status changes survive', () => {
+    const { telemetry, events } = submittedFlow()
+    const input = { ...event('input_transfer_confirmed', 'swap-a'), outcome: 'succeeded', inputTransactionHash: 'input-a', status: 'completed' }
+    const output = { ...event('output_transaction_detected', 'swap-a'), outputTransactionHash: 'output-a', status: 'pending' }
+    const completed = { ...event('swap_completed', 'swap-a'), outcome: 'succeeded', phase: 'completed', status: 'ls_transfer_pending' }
+    for (const confirmations of [10, 11, 12]) {
+        for (const observation of [input, output, completed]) telemetry.lifecycle({ ...observation, confirmations, maxConfirmations: 10 })
+    }
+    assert.equal(events.length, 3)
+    telemetry.lifecycle({ ...output, outcome: 'succeeded', status: 'completed' })
+    telemetry.lifecycle({ ...output, outputTransactionHash: 'replacement-output' })
+    telemetry.lifecycle({ ...input, inputTransactionHash: 'replacement-input' })
+    telemetry.lifecycle({ ...completed, status: 'completed' })
+    assert.equal(events.length, 7)
+})
+
+test('returning to a previous phase and new failure reasons or occurrences remain visible', () => {
+    const { telemetry, events } = submittedFlow()
+    for (const step of ['output_transfer_pending', 'swap_delayed', 'output_transfer_pending']) {
+        telemetry.lifecycle(event(step, 'swap-a'))
+    }
+    assert.deepEqual(events.map(e => e.attributes.step), ['output_transfer_pending', 'swap_delayed', 'output_transfer_pending'])
+    const failed = { ...event('swap_failed', 'swap-a'), outcome: 'failed', reasonCode: 'reason-a', occurrenceId: 'incident-a' }
+    for (const observation of [failed, failed, { ...failed, reasonCode: 'reason-b' }, { ...failed, occurrenceId: 'incident-b' }]) {
+        telemetry.lifecycle(observation)
+    }
+    assert.equal(events.filter(e => e.attributes.step === 'swap_failed').length, 3)
+})
+
+test('submissions, wallet attempts, rejections and blocking transitions are repeatable', () => {
+    const { telemetry, events } = submittedFlow()
+    for (let attempt = 0; attempt < 2; attempt++) telemetry.lifecycle(event('form_submitted'))
+    assert.deepEqual(events.map(e => e.attributes.submission_count), [2, 3])
+    const failed = { ...event('swap_failed', 'swap-a'), outcome: 'failed' }
+    for (let attempt = 0; attempt < 2; attempt++) {
+        telemetry.lifecycle(event('wallet_prompt_opened', 'swap-a'))
+        telemetry.lifecycle({ ...event('wallet_action_rejected', 'swap-a'), outcome: 'rejected', occurrenceId: `incident-${attempt}` })
+        telemetry.lifecycle(failed)
+        telemetry.lifecycle(failed)
+    }
+    telemetry.lifecycle(event('retry_requested', 'swap-a'))
+    telemetry.lifecycle(failed)
+    telemetry.lifecycle(failed)
+    assert.equal(events.filter(e => e.attributes.step === 'wallet_prompt_opened').length, 2)
+    assert.equal(events.filter(e => e.attributes.step === 'wallet_action_rejected').length, 2)
+    assert.equal(events.filter(e => e.attributes.step === 'swap_failed').length, 3)
+    for (const reasonCode of ['rpc_unhealthy', 'insufficient_gas', 'rpc_unhealthy']) {
+        telemetry.lifecycle({ ...event('transfer_blocked', 'swap-a'), outcome: 'blocked', reasonCode })
+    }
+    assert.deepEqual(events.filter(e => e.attributes.step === 'transfer_blocked').map(e => e.attributes.reason_code),
+        ['rpc_unhealthy', 'insufficient_gas', 'rpc_unhealthy'])
+})
+
+test('a new swap or form gets independent observations and late unrelated swaps remain ignored', () => {
+    const { telemetry, events } = submittedFlow()
+    telemetry.lifecycle(event('swap_completed', 'swap-a'))
+    telemetry.lifecycle(event('swap_created', 'swap-b'))
+    telemetry.lifecycle(event('swap_completed', 'swap-b'))
+    telemetry.lifecycle(event('swap_completed', 'swap-a'))
+    telemetry.lifecycle(event('swap_completed', 'swap-b'))
+    assert.deepEqual(events.filter(e => e.attributes.step === 'swap_completed').map(e => e.attributes.swap_id), ['swap-a', 'swap-b'])
+    const firstFlowId = events[0].attributes.flow_id
+    telemetry.mount(telemetry.createFlow({ form_mode: 'exchange' }))
+    telemetry.lifecycle(event('form_submitted'))
+    telemetry.lifecycle(event('swap_created', 'swap-a'))
+    telemetry.lifecycle(event('swap_completed', 'swap-a'))
+    assert.equal(events.at(-1).attributes.step, 'swap_completed')
+    assert.notEqual(events.at(-1).attributes.flow_id, firstFlowId)
+})
+
+test('observations made without an active handler do not suppress later delivery', () => {
+    const { telemetry, unregister, events } = submittedFlow()
+    unregister()
+    telemetry.lifecycle(event('swap_completed', 'swap-a'))
+    telemetry.register(e => events.push(e))
+    telemetry.lifecycle(event('swap_completed', 'swap-a'))
+    telemetry.lifecycle(event('swap_completed', 'swap-a'))
+    assert.equal(events.length, 1)
+    assert.equal(events[0].attributes.completion_observed, true)
 })

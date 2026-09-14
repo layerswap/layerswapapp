@@ -29,6 +29,14 @@ test('same failure links interceptor, lifecycle and wrapped handler; separate fa
     assert.equal(getErrorOccurrenceId(cycle), getErrorOccurrenceId(cycle))
 })
 
+test('error reporting classifies the same occurrence without a lifecycle event or message matching', () => {
+    const cause = Object.assign(new Error('Request declined'), { code: 'ACTION_REJECTED' })
+    assert.equal(widgetErrorImpact({ type: 'SwapWithdrawalError', message: 'Withdrawal failed', cause }), 'expected')
+    assert.equal(widgetErrorImpact({ type: 'WalletError', message: 'Declined', reasonCode: 'user_rejected' }), 'expected')
+    assert.equal(widgetErrorImpact({ type: 'WalletError', message: 'user rejected', reasonCode: 'unauthorized' }), 'user')
+    assert.equal(widgetErrorImpact({ type: 'WalletError', message: 'Account unavailable', cause: { code: 4100 } }), 'user')
+})
+
 test('release uses CI identity for both SDK and uploader, never labels an unidentified production build local', () => {
     assert.equal(resolveFaroRelease({ VERCEL_GIT_COMMIT_SHA: 'vercel-sha' }, true), 'vercel-sha')
     assert.equal(resolveFaroRelease({ GITHUB_SHA: 'github-sha' }, true), 'github-sha')

@@ -14,6 +14,10 @@
     "./types": {
       "types": "./dist/types/types/index.d.ts",
       "default": "./dist/esm/types/index.js"
+    },
+    "./errors": {
+      "types": "./dist/types/lib/walletErrors.d.ts",
+      "default": "./dist/esm/lib/walletErrors.js"
     }
   },
   "sideEffects": false,

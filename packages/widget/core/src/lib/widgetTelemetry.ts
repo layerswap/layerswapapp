@@ -1,11 +1,22 @@
-import type { SwapLifecycleEvent, WidgetTelemetryEvent, WidgetTelemetryHandler } from '@layerswap/widget-types'
+import type { SwapLifecycleEvent, SwapLifecycleStep, WidgetTelemetryEvent, WidgetTelemetryHandler, WidgetTelemetryAttributes, WidgetTelemetryData, WidgetFlowStep, WidgetOperation, WidgetOperationOutcome } from '@layerswap/widget-types'
+import { SWAP_LIFECYCLE_PHASE_STEPS } from '@layerswap/widget-types'
 
-type Attributes = WidgetTelemetryEvent['attributes']
+type Attributes = WidgetTelemetryAttributes
 type Flow = {
     id: string; started: number; attributes: Attributes; opened: boolean; engaged: boolean;
     submitted: boolean; prompted: boolean; transferSubmitted: boolean; deposited: boolean; completed: boolean;
     attempts: number; swapId?: string; validation?: string;
+    observations: Map<SwapLifecycleStep | 'phase', string>;
 }
+
+const TRANSACTION_OBSERVATION_STEPS = new Set<SwapLifecycleStep>([
+    'input_transaction_detected', 'input_transfer_confirmed', 'output_transaction_detected',
+])
+const PHASE_OBSERVATION_STEPS = new Set(SWAP_LIFECYCLE_PHASE_STEPS)
+const ATTEMPT_START_STEPS = new Set<SwapLifecycleStep>([
+    'form_submitted', 'swap_creation_started', 'wallet_connection_started', 'network_switch_started',
+    'wallet_prompt_opened', 'retry_requested',
+])
 
 const id = () => globalThis.crypto?.randomUUID?.() ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`
 const now = () => globalThis.performance?.now() ?? Date.now()
@@ -14,9 +25,11 @@ const now = () => globalThis.performance?.now() ?? Date.now()
 export function createWidgetTelemetry(clock = now, wallClock = Date.now) {
     let registration: { handler: WidgetTelemetryHandler; active: boolean } | undefined
     let flow: Flow | undefined
-    const emit = (owner: typeof registration, name: WidgetTelemetryEvent['name'], attributes: Attributes) => {
+    const emit = <Name extends keyof WidgetTelemetryData>(owner: typeof registration, name: Name, attributes: WidgetTelemetryData[Name]) => {
         if (!owner?.active) return
-        try { owner.handler({ name, attributes: { schema_version: 1, event_id: id(), ...attributes } }) }
+        // The keyed arguments preserve the name/payload relationship across the
+        // shared envelope; metadata cannot be overwritten by extra attributes.
+        try { owner.handler({ name, attributes: { ...attributes, schema_version: 1, event_id: id() } } as WidgetTelemetryEvent) }
         catch { /* An optional analytics callback must never affect a wallet or API operation. */ }
     }
     const snapshot = (current = flow): Attributes => current ? {
@@ -26,7 +39,7 @@ export function createWidgetTelemetry(clock = now, wallClock = Date.now) {
         transfer_submitted: current.transferSubmitted, deposit_observed: current.deposited,
         completion_observed: current.completed, submission_count: current.attempts, swap_id: current.swapId,
     } : {}
-    const progress = (step: string, extra: Attributes = {}) => emit(registration, 'widget_flow', { ...snapshot(), step, ...extra })
+    const progress = (step: WidgetFlowStep, extra: Attributes = {}) => emit(registration, 'widget_flow', { ...snapshot(), ...extra, step })
     const open = () => {
         if (!flow || flow.opened || !registration?.active) return
         flow.opened = true
@@ -44,7 +57,8 @@ export function createWidgetTelemetry(clock = now, wallClock = Date.now) {
         },
         createFlow(attributes: Attributes): Flow {
             return { id: id(), started: wallClock(), attributes, opened: false, engaged: false,
-                submitted: false, prompted: false, transferSubmitted: false, deposited: false, completed: false, attempts: 0 }
+                submitted: false, prompted: false, transferSubmitted: false, deposited: false, completed: false,
+                attempts: 0, observations: new Map() }
         },
         mount(current: Flow) {
             flow = current
@@ -76,6 +90,25 @@ export function createWidgetTelemetry(clock = now, wallClock = Date.now) {
             // A revisited/late swap must not complete the currently edited form.
             if (event.swapId && event.swapId !== flow.swapId && event.step !== 'swap_created') return
             open()
+            if (ATTEMPT_START_STEPS.has(event.step)
+                || (event.step === 'swap_created' && event.swapId !== flow.swapId)) flow.observations.clear()
+
+            // Each transaction effect owns a slot; phases share one so a real
+            // A → B → A transition survives. Four slots stay with the form across
+            // StrictMode replay, without accumulating every swap or confirmation.
+            const observationKey = TRANSACTION_OBSERVATION_STEPS.has(event.step) ? event.step
+                : PHASE_OBSERVATION_STEPS.has(event.step) ? 'phase' : undefined
+            if (observationKey && registration?.active) {
+                // Confirmation counts and context enrichment do not advance the
+                // funnel. Preserve new transactions, outcomes and failure causes.
+                const fingerprint = JSON.stringify([
+                    event.swapId ?? flow.swapId, event.step, event.outcome, event.status, event.phase,
+                    event.reasonCode, event.occurrenceId, event.transactionHash, event.inputTransactionHash,
+                    event.outputTransactionHash, event.refundTransactionHash,
+                ])
+                if (flow.observations.get(observationKey) === fingerprint) return
+                flow.observations.set(observationKey, fingerprint)
+            }
             if (event.step === 'form_submitted') {
                 flow.submitted = true
                 flow.attempts++
@@ -87,17 +120,21 @@ export function createWidgetTelemetry(clock = now, wallClock = Date.now) {
             if (event.step === 'swap_completed') flow.completed = true
             progress(event.step, { outcome: event.outcome, reason_code: event.reasonCode, occurrence_id: event.occurrenceId })
         },
-        beginOperation(operation: string, attributes: Attributes = {}) {
+        beginOperation(operation: WidgetOperation, attributes: Attributes = {}) {
             const owner = registration
-            if (!owner?.active) return (_outcome: string, _extra?: Attributes) => {}
+            if (!owner?.active) return (_outcome: WidgetOperationOutcome, _extra?: Attributes) => {}
             const context = { ...snapshot(), ...attributes, operation, operation_id: id() }
             const started = clock()
             let finished = false
             // Only completion is emitted: polling must not double the number of records.
-            return (outcome: string, extra: Attributes = {}) => {
+            return (outcome: WidgetOperationOutcome, extra: Attributes = {}) => {
                 if (finished) return
                 finished = true
-                emit(owner, 'widget_operation', { ...context, ...extra, outcome, duration_ms: Math.max(0, clock() - started) })
+                emit(owner, 'widget_operation', {
+                    ...context, ...extra,
+                    operation: context.operation, operation_id: context.operation_id,
+                    outcome, duration_ms: Math.max(0, clock() - started),
+                })
             }
         },
     }

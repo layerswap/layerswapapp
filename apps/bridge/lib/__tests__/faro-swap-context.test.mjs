@@ -41,6 +41,28 @@ function harness() {
 }
 const event = (step, swapId, extra = {}) => ({ step, swapId, stage: 'flow', outcome: 'pending', path: 'unit-test', ...extra })
 
+test('a returning phase updates Faro context and restarts its stall timer without replay duplicates', t => {
+    t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 1000 })
+    const h = harness()
+    t.after(() => h.controller.dispose())
+    const pending = event('output_transfer_pending', 'swap-a')
+    const observed = event('input_transaction_detected', 'swap-a', { transactionHash: 'input-a' })
+    h.controller.record(pending)
+    const journeyId = h.attrs().journey_id
+    h.controller.record(observed)
+    h.controller.record(event('swap_delayed', 'swap-a', { outcome: 'delayed' }))
+    h.controller.record(pending)
+    h.controller.record(observed)
+    h.controller.record(pending)
+    assert.deepEqual(h.records.map(record => record.attrs.step), [
+        'output_transfer_pending', 'input_transaction_detected', 'swap_delayed', 'output_transfer_pending',
+    ])
+    assert.equal(h.attrs().step, 'output_transfer_pending')
+    assert.equal(h.attrs().journey_id, journeyId)
+    t.mock.timers.tick(30 * 60_000 + 1)
+    assert.equal(h.records.at(-1).attrs.stalled_step, 'output_transfer_pending')
+})
+
 test('stored flow-close fixture retains closing context and wallet/session equality after cleanup', () => {
     const fixture = JSON.parse(readFileSync(new URL('../../grafana/fixtures/faro-flow-close-loki-observed.json', import.meta.url)))
     assert.equal(fixture.verification, 'Verified in Loki')

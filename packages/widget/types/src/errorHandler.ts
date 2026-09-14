@@ -1,16 +1,40 @@
 import { type ErrorEventType } from './logEvents';
 import { getErrorOccurrenceId } from './errorOccurrence';
 
-type ErrorLogger = (event: ErrorEventType) => void;
+export type ErrorLogger = (event: ErrorEventType) => void;
 
-const defaultLogger: ErrorLogger = (event) => {
+export const defaultErrorLogger: ErrorLogger = (event) => {
     console.log('[layerswap:log]', event);
 };
 
-let currentLogger: ErrorLogger = defaultLogger;
+export function reportErrorLoggerFailure(event: ErrorEventType, error: unknown) {
+    console.error('[layerswap/widget] onError callback failed; falling back to console logging.', error);
+    defaultErrorLogger(event);
+}
+
+/** Shared by standalone package consumers and the widget's registration store. */
+export function createSafeErrorLogger(handler: ErrorLogger): ErrorLogger {
+    let isHandlingError = false;
+    return (event) => {
+        if (isHandlingError) {
+            reportErrorLoggerFailure(event, new Error('Recursive onError callback invocation blocked'));
+            return;
+        }
+        isHandlingError = true;
+        try {
+            handler(event);
+        } catch (error) {
+            reportErrorLoggerFailure(event, error);
+        } finally {
+            isHandlingError = false;
+        }
+    };
+}
+
+let currentLogger: ErrorLogger = defaultErrorLogger;
 
 export function setErrorLogger(logger: ErrorLogger) {
-    currentLogger = logger;
+    currentLogger = createSafeErrorLogger(logger);
 }
 
 export function ErrorHandler(event: ErrorEventType) {

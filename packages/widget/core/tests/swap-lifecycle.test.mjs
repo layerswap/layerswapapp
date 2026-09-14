@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { getErrorOccurrenceId } from '@layerswap/widget-types'
+import { normalizeWalletErrorCode } from '@layerswap/wallet-core/errors'
 import {
   lifecycleContextFromForm,
   lifecycleContextFromSwap,
   lifecycleErrorDetails,
-  normalizeWalletErrorCode,
 } from '../dist/esm/lib/swapLifecycle.js'
 
 test('normalizes form data into stable lifecycle fields', () => {

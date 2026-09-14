@@ -1,4 +1,6 @@
-import { type SwapLifecycleEvent, type SwapLifecycleStep } from '@layerswap/widget-types'
+import { SWAP_LIFECYCLE_PHASE_STEPS, type SwapLifecycleEvent, type SwapLifecycleStep } from '@layerswap/widget-types'
+
+const PHASE_OBSERVATION_STEPS = new Set(SWAP_LIFECYCLE_PHASE_STEPS)
 
 function getLifecycleAttributes(event: SwapLifecycleEvent): Record<string, unknown> {
     return {
@@ -39,7 +41,7 @@ type LifecycleState = {
     lastEventAt: number
     lastStep?: SwapLifecycleStep
     lastOutcome?: SwapLifecycleEvent['outcome']
-    lastFingerprintByStep: Map<SwapLifecycleStep, string>
+    lastFingerprintByStep: Map<SwapLifecycleStep | 'phase', string>
     sequence: number
     attempt: number
     operationSequence: number
@@ -193,6 +195,8 @@ export function createSwapLifecycleTelemetry({ captureEvent, setSwapContext }: {
         }
 
         const attributes = getLifecycleAttributes(event)
+        // A -> B -> A is a real recovery, while replaying A alone is a duplicate.
+        const observationKey = PHASE_OBSERVATION_STEPS.has(event.step) ? 'phase' : event.step
         const fingerprint = JSON.stringify([
             state.operationSequence,
             event.occurrenceId,
@@ -208,7 +212,7 @@ export function createSwapLifecycleTelemetry({ captureEvent, setSwapContext }: {
             event.phase,
         ])
         if (
-            state.lastFingerprintByStep.get(event.step) === fingerprint
+            state.lastFingerprintByStep.get(observationKey) === fingerprint
             && !REPEATABLE_LIFECYCLE_STEPS.has(event.step)
         ) return
 
@@ -252,7 +256,7 @@ export function createSwapLifecycleTelemetry({ captureEvent, setSwapContext }: {
         state.lastEventAt = now
         state.lastStep = event.step
         state.lastOutcome = event.outcome
-        state.lastFingerprintByStep.set(event.step, fingerprint)
+        state.lastFingerprintByStep.set(observationKey, fingerprint)
         state.terminal = TERMINAL_LIFECYCLE_STEPS.has(event.step)
 
         const stallThreshold = STALL_THRESHOLDS_MS[event.step]

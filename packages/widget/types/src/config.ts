@@ -1,4 +1,5 @@
 import type { ThemeData } from "./theme";
+import type { ErrorEventType, SwapLifecycleEvent, SwapStatusEvent } from './logEvents';
 
 /**
  * Wallet provider ids matching what the remote's `getDefaultProviders()`
@@ -77,11 +78,9 @@ export type WalletDefaults = {
 };
 
 /**
- * Widget-level event callbacks. Payloads are typed openly so this package
- * carries no dependency on the widget's internal models — import the precise
- * payload types (`SwapResponse`, `SwapFormValues`) from `@layerswap/widget`
- * and (`SwapStatusEvent`, `SwapLifecycleEvent`, `ErrorEventType`) from
- * `@layerswap/widget-types` if you want them.
+ * Widget-level event callbacks. Form and swap response payloads stay open to
+ * avoid a dependency on core's internal models. Event contracts live here and
+ * are shared by the widget, CDN remote, and loaders.
  */
 export type WidgetCallbacks = {
   onTelemetry?: import('./telemetry').WidgetTelemetryHandler;
@@ -90,9 +89,9 @@ export type WidgetCallbacks = {
   onSwapComplete?: (swapData: unknown) => void;
   onSwapModalStateChange?: (open: boolean) => void;
   onBackClick?: () => void;
-  onError?: (error: unknown) => void;
-  onSwapStatusChange?: (event: unknown) => void;
-  onSwapLifecycle?: (event: unknown) => void;
+  onError?: (error: ErrorEventType) => void;
+  onSwapStatusChange?: (event: SwapStatusEvent) => void;
+  onSwapLifecycle?: (event: SwapLifecycleEvent) => void;
   onMenuNavigationChange?: (path: string) => void;
 };
 

@@ -14,6 +14,7 @@ export type {
 export { NetworkType } from './network';
 export type { Refuel, AvailableSourceNetworkTypes } from './network';
 export { SwapStatus } from './SwapStatus';
+export { SWAP_LIFECYCLE_PHASE_STEPS } from './logEvents';
 export type {
   BaseErrorProps,
   AlertUIEvent,
@@ -40,9 +41,10 @@ export type { InternalConnector, Wallet, WalletConnectConfig, WalletConnectLink 
 export { ActionMessageType } from './actionMessage';
 export { GasCalculation } from './GasCalculation';
 export { Network, NetworkWithTokens, Token, Metadata, NetworkRoute, NetworkRouteToken } from './types';
-export { ErrorHandler, setErrorLogger } from './errorHandler';
+export { ErrorHandler, setErrorLogger, createSafeErrorLogger, defaultErrorLogger, reportErrorLoggerFailure } from './errorHandler';
+export type { ErrorLogger } from './errorHandler';
 export { getErrorOccurrenceId } from './errorOccurrence';
-export type { WidgetTelemetryEvent, WidgetTelemetryHandler } from './telemetry';
+export type { WidgetTelemetryEvent, WidgetTelemetryHandler, WidgetTelemetryAttributes, WidgetTelemetryData, WidgetFlowStep, WidgetOperation, WidgetOperationOutcome } from './telemetry';
 export { insertIfNotExists } from './insertIfNotExists';
 export { realRoutePresent } from './extendedRouteAvailability';
 export type { DepositRouteRef } from './extendedRouteAvailability';
