@@ -106,6 +106,7 @@
     "@types/react": "catalog:",
     "chromatic": "^6.24.1",
     "esbuild-plugin-path-alias": "^1.0.7",
+    "jsdom": "^30.0.1",
     "postcss": "^8.5.10",
     "postcss-cli": "^11.0.1",
     "postcss-prefixwrap": "^1.55.0",

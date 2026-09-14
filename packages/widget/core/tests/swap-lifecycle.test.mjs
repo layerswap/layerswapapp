@@ -102,3 +102,34 @@ test('classification follows the cause chain and prefers structured codes over t
   // Very long provider codes stay bounded.
   assert.equal(lifecycleErrorDetails(Object.assign(new Error('x'), { code: 'A'.repeat(500) })).errorCode.length, 128)
 })
+
+test('ambiguous -32000 RPC errors use their details and preserve the raw code', () => {
+  const cases = [
+    ['nonce too low', 'nonce_or_replacement'],
+    ['execution reverted', 'contract_reverted'],
+    ['insufficient funds for gas * price + value', 'insufficient_funds'],
+    ['invalid sender', 'unknown_error'],
+  ]
+  for (const code of [-32000, '-32000']) {
+    for (const [message, reasonCode] of cases) {
+      const error = Object.assign(new Error(message), { code })
+      assert.equal(normalizeWalletErrorCode(error), reasonCode, message)
+      const details = lifecycleErrorDetails(error)
+      assert.equal(details.reasonCode, reasonCode, message)
+      assert.equal(details.errorCode, '-32000')
+      assert.equal(details.reason, message)
+    }
+  }
+})
+
+test('ambiguous -32000 RPC codes do not override typed or nested wallet errors', () => {
+  const typed = Object.assign(new Error('Transaction failed'), {
+    code: -32000,
+    name: 'NonceTooLowError',
+  })
+  assert.equal(normalizeWalletErrorCode(typed), 'nonce_or_replacement')
+  const wrapped = Object.assign(new Error('Transaction failed', {
+    cause: new Error('execution reverted'),
+  }), { code: -32000 })
+  assert.equal(normalizeWalletErrorCode(wrapped), 'contract_reverted')
+})

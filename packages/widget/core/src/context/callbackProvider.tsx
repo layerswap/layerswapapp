@@ -1,7 +1,7 @@
 import { type ErrorEventType, type SwapLifecycleEvent, type SwapStatusEvent } from '@layerswap/widget-types';
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
 import { SwapResponse } from '@/lib/apiClients/layerSwapApiClient'
-import { createContext, useContext, ReactNode, useMemo, useEffect, useLayoutEffect, useRef } from 'react'
+import { createContext, useContext, ReactNode, useCallback, useMemo, useEffect, useLayoutEffect, useRef } from 'react'
 import { ErrorHandler } from '@/lib/ErrorHandler'
 import { reportErrorLoggerFailure } from '@/stores/logStore'
 import type { WidgetTelemetryHandler } from '@layerswap/widget-types'
@@ -30,6 +30,18 @@ export interface CallbackProviderProps {
 const CallbackContext = createContext<Required<CallbacksContextType> | undefined>(undefined)
 
 export function CallbackProvider({ children, callbacks }: CallbackProviderProps) {
+    const callbacksRef = useRef(callbacks)
+    useClientLayoutEffect(() => { callbacksRef.current = callbacks }, [callbacks])
+
+    // Status/lifecycle effects must not rerun just because a host replaces its callbacks.
+    const onSwapStatusChange = useCallback((event: SwapStatusEvent) => {
+        try { callbacksRef.current?.onSwapStatusChange?.(event) } catch (error) { ErrorHandler(error) }
+    }, [])
+    const onSwapLifecycle = useCallback((event: SwapLifecycleEvent) => {
+        widgetTelemetry.lifecycle(event)
+        try { callbacksRef.current?.onSwapLifecycle?.(event) } catch (error) { ErrorHandler(error) }
+    }, [])
+
     const telemetryRef = useRef(callbacks?.onTelemetry)
     useClientLayoutEffect(() => { telemetryRef.current = callbacks?.onTelemetry }, [callbacks?.onTelemetry])
     const telemetryEnabled = !!callbacks?.onTelemetry
@@ -51,14 +63,11 @@ export function CallbackProvider({ children, callbacks }: CallbackProviderProps)
                     reportErrorLoggerFailure(event, error)
                 }
             },
-            onSwapStatusChange: (event: SwapStatusEvent) => { try { callbacks?.onSwapStatusChange?.(event) } catch (error) { ErrorHandler(error) } },
-            onSwapLifecycle: (event: SwapLifecycleEvent) => {
-                widgetTelemetry.lifecycle(event)
-                try { callbacks?.onSwapLifecycle?.(event) } catch (error) { ErrorHandler(error) }
-            },
+            onSwapStatusChange,
+            onSwapLifecycle,
             onMenuNavigationChange: (path: string) => { try { callbacks?.onMenuNavigationChange?.(path) } catch (error) { ErrorHandler(error) } },
         }
-    }, [callbacks])
+    }, [callbacks, onSwapStatusChange, onSwapLifecycle])
     return (
         <CallbackContext.Provider value={value}>
             {children}

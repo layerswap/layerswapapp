@@ -103,7 +103,6 @@ const NUMERIC_CODE_REASONS: Record<string, WalletErrorReasonCode> = {
     '-32601': 'unsupported_method',
     '-32602': 'invalid_parameters',
     '-32603': 'internal_rpc_error',
-    '-32000': 'insufficient_funds',
     '-32004': 'unsupported_method',
 }
 

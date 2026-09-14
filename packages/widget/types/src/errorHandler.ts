@@ -14,5 +14,13 @@ export function setErrorLogger(logger: ErrorLogger) {
 }
 
 export function ErrorHandler(event: ErrorEventType) {
-    return currentLogger({ ...event, occurrenceId: event.occurrenceId ?? getErrorOccurrenceId(event) });
+    return currentLogger({
+        ...event,
+        // Native Error fields are not enumerable, so spreading alone loses them.
+        name: event.name,
+        message: event.message,
+        stack: event.stack,
+        cause: event.cause,
+        occurrenceId: event.occurrenceId ?? getErrorOccurrenceId(event),
+    });
 }
