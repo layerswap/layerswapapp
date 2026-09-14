@@ -15,14 +15,28 @@ type State = ReturnType<typeof useSwapPrerequisites>
 
 export function PrerequisitePanel({ state, inline = false }: { state: State; inline?: boolean }) {
     if (!state.context || !state.applicable) return null
-    if (!state.entries) return <div role="status" className={`flex items-center gap-2 text-sm text-secondary-text ${inline ? 'border-t border-secondary-300 pt-4' : 'rounded-xl bg-secondary-500 p-4'}`}>
+    // Receiving quotes invalidate readiness, but do not change the account setup action.
+    const actionIdentity = swapPrerequisiteKey({ ...state.context, receiveAmount: undefined })
+    return <PrerequisiteEntries key={actionIdentity} state={{ ...state, context: state.context }} inline={inline} />
+}
+
+function PrerequisiteEntries({ state, inline }: { state: State & { context: SwapPrerequisiteContext }; inline: boolean }) {
+    const [previousEntries, setPreviousEntries] = useState(state.entries)
+    useEffect(() => {
+        if (state.entries) setPreviousEntries(state.entries)
+    }, [state.entries])
+
+    // Keep active cards mounted while the new quote is being checked. The keyed parent
+    // resets them (and cancels pending actions) when the user changes the transfer inputs.
+    const entries = state.entries ?? previousEntries
+    if (!entries) return <div role="status" className={`flex items-center gap-2 text-sm text-secondary-text ${inline ? 'border-t border-secondary-300 pt-4' : 'rounded-xl bg-secondary-500 p-4'}`}>
         <Loader2 className="h-4 w-4 animate-spin" />
         <span>Checking account setup…</span>
     </div>
-    const visibleEntries = state.entries.filter(entry => entry.result.status !== 'ready' || entry.result.title || entry.result.description)
+    const visibleEntries = entries.filter(entry => entry.result.status !== 'ready' || entry.result.title || entry.result.description)
     if (!visibleEntries.length) return null
     return <div className="space-y-3">
-        {visibleEntries.map(entry => <PrerequisiteCard key={`${entry.provider.id}:${swapPrerequisiteKey(state.context!)}`} entry={entry} context={state.context!} refresh={state.refresh} isChecking={state.isChecking} inline={inline} />)}
+        {visibleEntries.map(entry => <PrerequisiteCard key={entry.provider.id} entry={entry} context={state.context} refresh={state.refresh} isChecking={state.isChecking} inline={inline} />)}
     </div>
 }
 
@@ -46,13 +60,15 @@ function PrerequisiteCard({ entry, context, refresh, isChecking, inline }: {
     const [progress, setProgress] = useState<TransferProgress>()
     const pending = useRef<AbortController | undefined>(undefined)
     const connecting = useRef(false)
+    const refreshRef = useRef(refresh)
+    useEffect(() => { refreshRef.current = refresh }, [refresh])
     useEffect(() => () => {
         pending.current?.abort()
         if (connecting.current) cancel()
     }, [cancel])
 
     const run = async () => {
-        if (!action || pending.current) return
+        if (!action || pending.current || isChecking) return
         const controller = new AbortController()
         pending.current = controller
         setBusy(true)
@@ -83,7 +99,8 @@ function PrerequisiteCard({ entry, context, refresh, isChecking, inline }: {
             // Setup can consume the same account's source balance as well as its reserve.
             const network = networks.find(network => network.name === action.wallet.network.name)
             if (network) await useBalanceStore.getState().fetchBalance(action.wallet.address, network, { ignoreCache: true }).catch(() => undefined)
-            await refresh()
+            // An approval can outlive a quote update; refresh the currently displayed quote.
+            await refreshRef.current()
         } catch (error) {
             if (!controller.signal.aborted) setError(error instanceof Error ? error.message : String(error))
         } finally {
@@ -101,7 +118,7 @@ function PrerequisiteCard({ entry, context, refresh, isChecking, inline }: {
                 {result.title && <p className="font-medium leading-5 text-primary-text">{progress?.title ?? result.title}</p>}
                 {result.description && <p className="text-sm leading-5 text-secondary-text">{progress?.description ?? result.description}</p>}
             </div>
-            {action && <SubmitButton type="button" size="small" className="sm:w-auto sm:shrink-0" isSubmitting={busy} hideTextWhileSubmitting isDisabled={busy} onClick={run}>
+            {action && <SubmitButton type="button" size="small" className="sm:w-auto sm:shrink-0" isSubmitting={busy} hideTextWhileSubmitting isDisabled={busy || isChecking} onClick={run}>
                 {matchingWallet ? action.label : `Connect ${action.wallet.network.display_name} wallet`}
             </SubmitButton>}
         </div>
