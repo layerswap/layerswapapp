@@ -10,6 +10,7 @@ type button_align = 'left' | 'right'
 export class SubmitButtonProps {
     isDisabled?: boolean;
     isSubmitting?: boolean;
+    hideTextWhileSubmitting?: boolean;
     type?: 'submit' | 'reset' | 'button' | undefined;
     onClick?: MouseEventHandler<HTMLButtonElement> | undefined;
     icon?: React.ReactNode;
@@ -22,11 +23,12 @@ export class SubmitButtonProps {
     style?: CSSProperties;
 }
 
-const SubmitButton: FC<SubmitButtonProps> = ({ isDisabled, isSubmitting, icon, children, type, onClick, buttonStyle = 'filled', size = 'medium', text_align = 'center', button_align = 'left', className, style }) => {
+const SubmitButton: FC<SubmitButtonProps> = ({ isDisabled, isSubmitting, hideTextWhileSubmitting = false, icon, children, type, onClick, buttonStyle = 'filled', size = 'medium', text_align = 'center', button_align = 'left', className, style }) => {
 
     return (
         <button
             disabled={isDisabled || isSubmitting}
+            aria-busy={isSubmitting || undefined}
             type={type}
             onClick={onClick}
             style={style}
@@ -40,13 +42,16 @@ const SubmitButton: FC<SubmitButtonProps> = ({ isDisabled, isSubmitting, icon, c
                     'py-2.5 px-2.5 text-sm min-h-10': size === 'small',
                 })}
         >
-            <span className={`${button_align === "right" ? 'order-last' : 'order-first'} ${text_align === 'center' ? "absolute left-0 inset-y-0 flex items-center pl-3" : "relative"}`}>
+            <span className={clsx(button_align === "right" ? 'order-last' : 'order-first',
+                isSubmitting && hideTextWhileSubmitting
+                    ? 'absolute inset-0 flex items-center justify-center'
+                    : text_align === 'center' ? 'absolute left-0 inset-y-0 flex items-center pl-3' : 'relative')}>
                 {(!isDisabled && !isSubmitting) && icon}
                 {isSubmitting ?
                     <SpinIcon className="animate-spin h-5 w-5" />
                     : null}
             </span>
-            <span className={`grow ${text_align === 'left' ? 'text-left' : 'text-center'}`}>{children}</span>
+            <span className={clsx('grow', text_align === 'left' ? 'text-left' : 'text-center', { 'opacity-0': isSubmitting && hideTextWhileSubmitting })}>{children}</span>
         </button>
     );
 }

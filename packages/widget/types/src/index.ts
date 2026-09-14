@@ -69,3 +69,5 @@ export type {
   RpcHealthCheckProvider,
 } from './resolvers/rpcHealth';
 export type { TransferProps, TransferProgress, TransferProvider } from './resolvers/transfer';
+export type { SwapPrerequisiteContext, SwapPrerequisiteResult, SwapPrerequisiteExecution, SwapPrerequisiteProvider } from './resolvers/prerequisite';
+export { LazySwapPrerequisiteProvider } from './resolvers/prerequisite';

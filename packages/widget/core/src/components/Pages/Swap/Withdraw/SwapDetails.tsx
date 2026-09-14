@@ -12,6 +12,10 @@ import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
 import { useSwapRetry } from '@/hooks/useSwapRetry';
 import { useGaslessAuthorizationStatus } from '@/hooks/useGaslessAuthorizationStatus';
 import { SwapDetailsSceleton } from '@/components/Common/Sceletons';
+import { useSwapPrerequisites } from '@/hooks/useSwapPrerequisites';
+import { prerequisitesFromSwap } from '@/lib/prerequisites/context';
+import { PrerequisiteNotice } from '@/components/SwapPrerequisites/PrerequisiteNotice';
+import SwapSummary from './Summary';
 
 type Props = {
     type: "widget" | "contained",
@@ -29,9 +33,17 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, partner, onCa
     useGaslessAuthorizationStatus(swapDetails?.id)
 
     const resolved = useResolvedSwapStatus()
+    const prerequisites = useSwapPrerequisites(prerequisitesFromSwap(swapBasicData, quote?.receive_amount), resolved.showWithdrawScreen)
     const { failureReason, canRetry, retry, gaslessFailureMessage, canSwitchToStandard, switchToStandard } = useSwapRetry()
 
     if (!swapBasicData) return <SwapDetailsSceleton />
+
+    if (!prerequisites.isReady) return <Container type={type} goBack={onBackClick}>
+        <Widget.Content><div className="w-full space-y-3">
+            <SwapSummary />
+            <PrerequisiteNotice state={prerequisites} onEdit={onCancelWithdrawal ?? onBackClick} />
+        </div></Widget.Content>
+    </Container>
 
     return (
         <Container type={type} goBack={onBackClick}>
