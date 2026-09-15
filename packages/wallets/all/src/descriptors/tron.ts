@@ -1,8 +1,9 @@
+import KnownInternalNames from "@layerswap/utils/known-ids"
 import type { WalletProviderDescriptor } from "@layerswap/wallet-core/types"
 import { defineWalletDescriptor, type DescriptorNetworkOptions } from "./defineWalletDescriptor"
 import { readStorageJson } from "./persistedSession"
 
-const TRON_NETWORKS = ['TRON_MAINNET', 'TRON_TESTNET']
+const TRON_NETWORKS = [KnownInternalNames.Networks.TronMainnet, KnownInternalNames.Networks.TronTestnet]
 
 /**
  * Tree-shake-safe stand-in for `createTronProvider`. Defers `tronweb` +

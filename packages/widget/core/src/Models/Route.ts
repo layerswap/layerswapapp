@@ -19,6 +19,7 @@ export type TitleElement = {
 export type GroupedTokenElement = {
     type: 'grouped_token';
     symbol: string;
+    asset: string;
     items: NetworkTokenElement[];
 }
 export type TokenSceletonElement = {

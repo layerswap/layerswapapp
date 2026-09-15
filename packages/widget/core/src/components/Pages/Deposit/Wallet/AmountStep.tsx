@@ -91,7 +91,7 @@ const AmountStep: FC = () => {
                     <QuoteSummary
                         receiveAmount={receiveAmount != null ? Number(receiveAmount) : undefined}
                         receiveAmountInUsd={receiveAmountInUsd}
-                        tokenSymbol={toAsset?.symbol}
+                        tokenSymbol={toAsset?.asset}
                         token={toAsset}
                         isLoading={isQuoteLoading}
                     />

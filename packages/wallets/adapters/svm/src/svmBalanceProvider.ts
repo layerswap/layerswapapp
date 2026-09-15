@@ -65,7 +65,7 @@ export class SolanaBalanceProvider extends BalanceProvider {
                 }
 
                 return this.resolveTokenBalanceFetchError(
-                    new Error(`Invalid balance returned for ${token.symbol}`),
+                    new Error(`Invalid balance returned for ${token.asset}`),
                     token,
                     network,
                     !token.contract,

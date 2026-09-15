@@ -90,7 +90,7 @@ const BriefInformation: FC<BriefInformationProps> = ({ campaign }) =>
             :
             <>
                 <span>You can earn $</span>
-                <span>{campaign?.token.symbol}</span>
+                <span>{campaign?.token.asset}</span>
                 <span>&nbsp;tokens by transferring assets to&nbsp;</span>
                 <span>{campaign.network.display_name}.</span>
                 <span> For each transaction, you&#39;ll receive&nbsp;</span>

@@ -11,10 +11,10 @@ export function formatFee(percentageFee: number, fixedFeeUsd: number): string {
     return parts.join(' + ') || 'Free';
 }
 
-export function formatTierRange(tier: DetailedQuoteModel, isFirst: boolean, isLast: boolean, symbol: string): string {
+export function formatTierRange(tier: DetailedQuoteModel, isFirst: boolean, isLast: boolean, asset: string): string {
     const min = formatTokenAmount(tier.min_amount);
     const max = formatTokenAmount(tier.max_amount);
-    if (isFirst) return `Up to ${max} ${symbol}`;
-    if (isLast) return `Over ${min} ${symbol}`;
-    return `${min} – ${max} ${symbol}`;
+    if (isFirst) return `Up to ${max} ${asset}`;
+    if (isLast) return `Over ${min} ${asset}`;
+    return `${min} – ${max} ${asset}`;
 }

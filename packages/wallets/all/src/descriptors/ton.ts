@@ -1,12 +1,10 @@
+import KnownInternalNames from "@layerswap/utils/known-ids"
 import type { WalletProviderDescriptor } from "@layerswap/wallet-core/types"
 import type { TonClientConfig } from "@layerswap/wallet-ton"
 import { defineWalletDescriptor, type DescriptorNetworkOptions } from "./defineWalletDescriptor"
 import { hasStorageKey } from "./persistedSession"
 
-// Inlined — see notes in ./starknet.ts on why we don't import the chain
-// package's constants (it would drag the SDK). Keep in sync with
-// packages/wallets/adapters/ton/src/constants.ts and widget's `knownIds.ts`.
-const TON_NETWORKS = ['TON_MAINNET', 'TON_TESTNET']
+const TON_NETWORKS = [KnownInternalNames.Networks.TONMainnet, KnownInternalNames.Networks.TONTestnet]
 
 /**
  * Tree-shake-safe stand-in for `createTONProvider`. Defers `@tonconnect/sdk`

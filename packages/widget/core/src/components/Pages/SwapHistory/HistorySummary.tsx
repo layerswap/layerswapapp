@@ -53,7 +53,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                             <div className="h-[30px] w-[30px] rounded-full overflow-hidden">
                                 <ImageWithFallback
                                     src={source_token.logo}
-                                    alt={`${source_token.symbol} logo`}
+                                    alt={`${source_token.asset} logo`}
                                     width={30}
                                     height={30}
                                     className="rounded-full"
@@ -85,7 +85,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                                     </TooltipContent>
                                 </Tooltip>
 
-                                <span className="shrink-0">{source_token.symbol}</span>
+                                <span className="shrink-0">{source_token.asset}</span>
                             </div>
 
                             <span className="text-secondary-text text-sm text-left leading-3.5">
@@ -114,7 +114,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                                     </TooltipContent>
                                 </Tooltip>
 
-                                <span className="shrink-0">{destination_token.symbol}</span>
+                                <span className="shrink-0">{destination_token.asset}</span>
                             </div>
 
                             <span className="text-secondary-text text-sm text-right leading-3.5">
@@ -126,7 +126,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                             <div className="h-[30px] w-[30px] rounded-full overflow-hidden">
                                 <ImageWithFallback
                                     src={destination_token.logo}
-                                    alt={`${destination_token.symbol} logo`}
+                                    alt={`${destination_token.asset} logo`}
                                     width={30}
                                     height={30}
                                     className="rounded-full"

@@ -115,13 +115,13 @@ const DestinationTokenPicker: FC = () => {
                                     <span className="flex items-center gap-3 min-w-0">
                                         <TokenChainBadge
                                             tokenLogo={r.token.logo}
-                                            tokenSymbol={r.token.symbol}
+                                            tokenSymbol={r.token.asset}
                                             networkLogo={r.network.logo}
                                             networkName={r.network.display_name}
                                             size={32}
                                         />
                                         <span className="flex flex-col min-w-0 text-left leading-tight">
-                                            <span className="text-primary-text text-base font-semibold truncate">{r.token.symbol}</span>
+                                            <span className="text-primary-text text-base font-semibold truncate">{r.token.asset}</span>
                                             <span className="text-secondary-text text-sm truncate">{r.network.display_name}</span>
                                         </span>
                                     </span>

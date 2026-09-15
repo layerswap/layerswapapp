@@ -1,5 +1,24 @@
 # @layerswap/utils
 
+## 2.1.0
+
+### Minor Changes
+
+- Global fixes and improvements
+
+### Patch Changes
+
+- Updated dependencies
+  - @layerswap/widget-types@2.1.0
+
+## 2.0.1
+
+### Patch Changes
+
+- Wallet connection readiness fixes
+- Updated dependencies
+  - @layerswap/widget-types@1.0.1
+
 ## 2.0.0
 
 ### Major Changes
