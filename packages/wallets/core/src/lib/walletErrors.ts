@@ -82,7 +82,8 @@ const STRING_CODE_REASONS: Record<string, WalletErrorReasonCode> = {
 
 /**
  * Bounded cause for wallet and provider failures. Structured codes win over
- * names, and names over message text. The innermost structured cause wins over
+ * names, and names over message text. Explicit cancellation codes take priority
+ * anywhere in the chain; otherwise the innermost structured cause wins over
  * a generic wrapper. Following `cause` handles viem/ethers wrappers without
  * importing either SDK. Returns `unknown_error` when nothing
  * recognizable exists, never a guess from arbitrary text.
@@ -94,6 +95,10 @@ export function normalizeWalletErrorCode(error: unknown): WalletErrorReasonCode 
         chain.push(current as ErrorCandidate)
         try { current = (current as ErrorCandidate).cause }
         catch { break }
+    }
+    for (const candidate of chain) {
+        const code = walletErrorCode(candidate)
+        if (code === '4001' || code?.toUpperCase() === 'ACTION_REJECTED') return 'user_rejected'
     }
     for (const candidate of [...chain].reverse()) {
         const code = walletErrorCode(candidate)

@@ -28,6 +28,7 @@ export type {
   ChainError,
   TransferError,
   WalletError,
+  CallbackError,
   ErrorEventType,
   SwapStatusEvent,
   SwapLifecycleEvent,

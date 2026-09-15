@@ -5,6 +5,7 @@ import { extname } from 'node:path'
 import { JSDOM } from 'jsdom'
 import { act, createElement, StrictMode, useEffect, useState } from 'react'
 import { ErrorHandler, getErrorOccurrenceId, setErrorLogger } from '@layerswap/widget-types'
+import { createSwapLifecycleTelemetry } from '../../../../apps/bridge/lib/faro-swap-lifecycle.ts'
 
 const dom = new JSDOM('<!doctype html><html><body></body></html>')
 const globals = {
@@ -33,6 +34,7 @@ const { CallbackProvider, useCallbacks } = await import('../dist/esm/context/cal
 const { registerWidgetErrorLogger } = await import('../dist/esm/lib/ErrorHandler.js')
 const { widgetTelemetry } = await import('../dist/esm/lib/widgetTelemetry.js')
 const { logStore } = await import('../dist/esm/stores/logStore.js')
+const { useTransferBlocked } = await import('../dist/esm/hooks/useTransferBlocked.js')
 
 let root
 let container
@@ -186,15 +188,117 @@ test('throwing host callbacks retain their error details and lifecycle telemetry
 
   assert.equal(received.length, 2)
   for (const event of received) {
+    assert.equal(event.type, 'CallbackError')
     assert.equal(event.name, error.name)
     assert.equal(event.message, error.message)
     assert.equal(event.stack, error.stack)
-    assert.equal(event.cause, error.cause)
+    assert.equal(event.cause, error)
     assert.ok(event.occurrenceId)
   }
   assert.equal(received[0].occurrenceId, received[1].occurrenceId)
   assert.equal(telemetry.mock.callCount(), 1)
   assert.equal(telemetry.mock.calls[0].arguments[0].step, 'swap_completed')
+})
+
+test('all host callback boundaries normalize nullish and primitive failures without interrupting execution', async t => {
+  const received = []
+  registerWidgetErrorLogger()
+  t.after(logStore.getState().registerLogger(event => received.push(event)))
+  let current
+  function CaptureCallbacks() {
+    current = useCallbacks()
+    return null
+  }
+  const args = {
+    onFormChange: { amount: '1' },
+    onSwapCreate: { swap: { id: 'swap-123' } },
+    onSwapComplete: { swap: { id: 'swap-123' } },
+    onSwapModalStateChange: true,
+    onBackClick: undefined,
+    onSwapStatusChange: { type: 'completed', swapId: 'swap-123' },
+    onSwapLifecycle: { step: 'wallet_prompt_opened', stage: 'wallet_action', outcome: 'pending', path: 'test' },
+    onMenuNavigationChange: 'swap',
+  }
+  for (const caught of [null, undefined, 'host failure', 42, new TypeError('native host failure')]) {
+    const callbacks = Object.fromEntries(Object.keys(args).map(name => [name, () => { throw caught }]))
+    await act(() => root.render(createElement(CallbackProvider, { callbacks }, createElement(CaptureCallbacks))))
+    for (const [name, arg] of Object.entries(args)) {
+      const before = received.length
+      assert.doesNotThrow(() => current[name](arg), name)
+      assert.equal(received.length, before + 1, name)
+      const event = received.at(-1)
+      assert.equal(event.type, 'CallbackError')
+      assert.equal(event.message, caught instanceof Error ? caught.message : String(caught))
+      assert.equal(event.name, caught instanceof Error ? caught.name : 'Error')
+      assert.equal(event.cause, caught)
+      assert.ok(event.occurrenceId)
+      if (caught instanceof Error) assert.equal(event.stack, caught.stack)
+    }
+  }
+})
+
+function BlockedWallet({ reasonCode = 'rpc_unhealthy', reason = 'RPC probe failed' }) {
+  useTransferBlocked(reasonCode, { swapId: 'swap-blocked' }, 'TransferTokenButton', reason)
+  return null
+}
+
+for (const strict of [false, true]) {
+  test(`initial transfer block owns lifecycle context and stall timer${strict ? ' under StrictMode' : ''}`, async t => {
+    t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 1000 })
+    const records = []
+    let context
+    const controller = createSwapLifecycleTelemetry({
+      setSwapContext: attributes => { context = attributes; return true },
+      captureEvent: (name, attributes) => { records.push(attributes); return true },
+    })
+    t.after(() => controller.dispose())
+    function WithdrawPhase() {
+      const { onSwapLifecycle } = useCallbacks()
+      useEffect(() => {
+        onSwapLifecycle({ step: 'awaiting_wallet_action', stage: 'wallet_action', outcome: 'pending',
+          path: 'Withdraw', swapId: 'swap-blocked' })
+      }, [onSwapLifecycle])
+      return createElement(BlockedWallet)
+    }
+    const child = createElement(CallbackProvider, { callbacks: { onSwapLifecycle: controller.record } }, createElement(WithdrawPhase))
+    await act(() => root.render(strict ? createElement(StrictMode, null, child) : child))
+    assert.deepEqual(records.map(event => event.step), ['awaiting_wallet_action', 'transfer_blocked'])
+    assert.equal(context.step, 'transfer_blocked')
+    assert.equal(context.reason_code, 'rpc_unhealthy')
+    assert.equal(context.reason, 'RPC probe failed')
+    t.mock.timers.tick(10 * 60_000 + 1)
+    assert.equal(records.at(-1).step, 'suspected_stall')
+    assert.equal(records.at(-1).stalled_step, 'transfer_blocked')
+    assert.equal(records.at(-1).reason_code, 'transfer_blocked_timeout')
+  })
+}
+
+test('blocked effects cancel stale/unmounted emissions and report again after recovery', async t => {
+  const queued = []
+  t.mock.method(globalThis, 'queueMicrotask', fn => queued.push(fn))
+  const records = []
+  const callbacks = { onSwapLifecycle: event => records.push(event) }
+  const render = (reasonCode, reason) => act(() => root.render(createElement(CallbackProvider, { callbacks },
+    createElement(BlockedWallet, { reasonCode, reason }))))
+  const flush = () => act(() => { for (const emit of queued.splice(0)) emit() })
+
+  await render('rpc_unhealthy')
+  await render('insufficient_gas', 'old details')
+  await render('insufficient_gas', 'latest details')
+  await flush()
+  assert.deepEqual(records.map(event => event.reasonCode), ['insufficient_gas'])
+  assert.equal(records[0].reason, 'latest details')
+  await render('insufficient_gas')
+  await flush()
+  assert.equal(records.length, 1)
+  await render(null)
+  await render('insufficient_gas')
+  await flush()
+  assert.equal(records.length, 2)
+  await render('rpc_unhealthy')
+  await act(() => root.render(null))
+  await flush()
+  assert.equal(records.length, 2, 'unmounted blocks must not change the journey')
 })
 
 test('StrictMode deduplicates widget flow observations while preserving public lifecycle callbacks', async t => {

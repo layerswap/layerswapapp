@@ -73,8 +73,9 @@ export type TransactionNotDetectedError = ({
 export type ChainError = ({ type: 'ChainError' } & BaseErrorProps);
 export type TransferError = ({ type: 'TransferError' } & BaseErrorProps);
 export type WalletError = ({ type: 'WalletError' } & BaseErrorProps);
+export type CallbackError = ({ type: 'CallbackError' } & BaseErrorProps);
 
-export type ErrorEventType = WidgetError | APIError | BalanceError | GasFeeError | WalletWithdrawalError | GasMiscalculationError | AlertUIEvent | TransactionNotDetectedError | ChainError | TransferError | WalletError;
+export type ErrorEventType = WidgetError | APIError | BalanceError | GasFeeError | WalletWithdrawalError | GasMiscalculationError | AlertUIEvent | TransactionNotDetectedError | ChainError | TransferError | WalletError | CallbackError;
 
 export type SwapStatusEvent = {
   type: SwapStatus;

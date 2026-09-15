@@ -21,18 +21,29 @@ export function useTransferBlocked(
     const reported = useRef<TransferBlockedReasonCode | undefined>(undefined)
 
     useEffect(() => {
+        if (!reasonCode) {
+            reported.current = undefined
+            return
+        }
         if (reported.current === reasonCode) return
-        reported.current = reasonCode
-        if (!reasonCode) return
-        const { context: currentContext, reason: currentReason, onSwapLifecycle: emit } = latest.current
-        emit({
-            step: 'transfer_blocked',
-            stage: 'wallet_action',
-            outcome: 'blocked',
-            path,
-            reasonCode,
-            reason: currentReason,
-            ...currentContext,
+
+        // Let parent phase effects run first so this specific block stays current.
+        // Cancel discarded effects without marking the reason as already reported.
+        let disposed = false
+        queueMicrotask(() => {
+            if (disposed) return
+            const { context: currentContext, reason: currentReason, onSwapLifecycle: emit } = latest.current
+            emit({
+                step: 'transfer_blocked',
+                stage: 'wallet_action',
+                outcome: 'blocked',
+                path,
+                reasonCode,
+                reason: currentReason,
+                ...currentContext,
+            })
+            reported.current = reasonCode
         })
+        return () => { disposed = true }
     }, [reasonCode, path])
 }

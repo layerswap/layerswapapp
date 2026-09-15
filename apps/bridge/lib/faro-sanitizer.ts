@@ -36,6 +36,10 @@ function isSensitiveKey(key: string): boolean {
 
 function redactSensitiveText(value: string): string {
     return value
+        .replace(
+            /([?&#](?:code|state|code[_-]?verifier)=)[^&#\s]*/gi,
+            `$1${REDACTED}`,
+        )
         .replace(/(bearer\s+)[a-z0-9._~+/=-]+/gi, `$1${REDACTED}`)
         .replace(
             /([?&](?:api[_-]?key|access[_-]?token|refresh[_-]?token|id[_-]?token|password|passphrase|private[_-]?key|client[_-]?secret|mnemonic|seed[_-]?phrase|signature)=)[^&#\s]*/gi,

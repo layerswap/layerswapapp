@@ -29,6 +29,19 @@ test('authorization and node failures must not become user cancellations', () =>
     assert.equal(normalizeWalletErrorCode({ code: 4100 }), 'unauthorized')
 })
 
+test('explicit cancellation codes win over generic errors anywhere in the cause chain', () => {
+    for (const code of [4001, '4001', 'ACTION_REJECTED', 'action_rejected']) {
+        for (const error of [
+            { code, cause: { code: -32603 } },
+            { code: -32603, cause: { code, cause: { code: 'SERVER_ERROR' } } },
+        ]) {
+            assert.equal(normalizeWalletErrorCode(error), 'user_rejected')
+            assert.equal(isUserRejection(error), true)
+        }
+    }
+    assert.equal(normalizeWalletErrorCode({ code: -32603, cause: { code: 'INSUFFICIENT_FUNDS' } }), 'insufficient_funds')
+})
+
 test('classification handles cyclic causes and a throwing cause accessor', () => {
     const cycle = { code: 'ACTION_REJECTED' }
     cycle.cause = cycle

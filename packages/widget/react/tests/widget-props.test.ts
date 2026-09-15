@@ -99,6 +99,12 @@ const typedCallbacks: WidgetCallbacks = {
       const method: string = event.requestMethod;
       void method;
     }
+    if (event.type === 'CallbackError') {
+      const type: 'CallbackError' = event.type;
+      const cause: unknown = event.cause;
+      void type;
+      void cause;
+    }
     // @ts-expect-error Error payload fields must not silently become any.
     const invalid: number = event.message;
     void message;

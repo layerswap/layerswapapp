@@ -44,6 +44,29 @@ test('approved ordinary URL queries/fragments and financial investigation fields
     assert.equal(sanitizeValue(url + '&api_key=synthetic-secret'), url + '&api_key=[REDACTED]')
 })
 
+test('OAuth callback query and fragment credentials are redacted in metadata and OTLP URLs', () => {
+    for (const separator of ['?', '#']) {
+        const url = `https://test.invalid/app/imtblRedirect${separator}code=synthetic-code&state=synthetic-state&code_verifier=synthetic-verifier&from=ETH&error_code=4001#details`
+        const expected = `https://test.invalid/app/imtblRedirect${separator}code=[REDACTED]&state=[REDACTED]&code_verifier=[REDACTED]&from=ETH&error_code=4001#details`
+        for (const type of ['event', 'log', 'exception', 'measurement']) {
+            const input = { type, payload: { url, reason_code: 'user_rejected', error_code: '4001' }, meta: { page: { url } } }
+            const output = beforeSend(input)
+            assert.equal(output.meta.page.url, expected)
+            assert.deepEqual(output.payload, { url: expected, reason_code: 'user_rejected', error_code: '4001' })
+            assert.equal(input.meta.page.url, url)
+        }
+        const span = { attributes: [stringAttribute('url.full', url), stringAttribute('http.url', url)], events: [], links: [] }
+        const output = beforeSend({ ...transportItem({ resourceSpans: [{ scopeSpans: [{ spans: [span] }] }] }), meta: { page: { url } } })
+        assert.equal(output.meta.page.url, expected)
+        for (const key of ['url.full', 'http.url']) assert.deepEqual(lookup(spansOf(output.payload)[0], key), { stringValue: expected })
+        assert(!JSON.stringify(output).includes('synthetic-'))
+    }
+    for (const key of ['CODE', 'State', 'code-verifier', 'codeVerifier']) {
+        assert.equal(sanitizeValue(`https://test.invalid/#${key}=synthetic-secret&safe=ok`),
+            `https://test.invalid/#${key}=[REDACTED]&safe=ok`)
+    }
+})
+
 // Execute the installed Faro exporter and its actual OTLP transformer. This is
 // local SDK-generated test data, NOT a browser capture or backend verification.
 async function sdkPayload() {

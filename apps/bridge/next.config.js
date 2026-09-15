@@ -1,6 +1,22 @@
 const { PHASE_PRODUCTION_BUILD, PHASE_PRODUCTION_SERVER } = require('next/constants');
 const { withPostHogConfig } = require('@posthog/nextjs-config');
 const FaroSourceMapUploaderPlugin = require('@grafana/faro-webpack-plugin');
+
+// Faro 0.13.0 registers an async uploader with a synchronous tap. Await it before
+// later hooks can delete source maps; remove when upstream uses an awaited hook.
+class AwaitedFaroSourceMapUploaderPlugin extends FaroSourceMapUploaderPlugin {
+  apply(compiler) {
+    compiler.hooks.afterEmit.intercept({
+      register(tap) {
+        return tap.name === 'FaroSourceMapUploaderPlugin' && tap.type === 'sync'
+          ? { ...tap, type: 'promise' }
+          : tap;
+      },
+    });
+    super.apply(compiler);
+  }
+}
+
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 });
@@ -118,7 +134,7 @@ const buildNextConfig = (phase) => {
       config.resolve.fallback = { fs: false, net: false, tls: false };
 
       if (!isServer && phase === PHASE_PRODUCTION_BUILD && sourceMapsConfigured) {
-        config.plugins.push(new FaroSourceMapUploaderPlugin({
+        config.plugins.push(new AwaitedFaroSourceMapUploaderPlugin({
           appName: FARO_APP_NAME,
           endpoint: faroSourceMapConfig.endpoint.replace(/\/$/, ''),
           appId: faroSourceMapConfig.appId,
@@ -133,8 +149,8 @@ const buildNextConfig = (phase) => {
           recursive: true,
           nextjs: true,
           gzipContents: true,
-          // The outer PostHog plugin runs after Faro and removes the maps. If
-          // PostHog is absent, Faro removes them after a successful upload.
+          // The awaited afterEmit upload finishes before PostHog's cleanup.
+          // If PostHog is absent, Faro removes maps after a successful upload.
           keepSourcemaps: posthogConfigsAreSet,
           verbose: process.env.FARO_SOURCEMAP_DEBUG === 'true',
         }));
