@@ -11,6 +11,7 @@ import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
 import { isUserRejection } from "./isUserRejection";
 import { TransferProps } from "@layerswap/widget-types";
 import { ErrorHandler } from "@/lib/ErrorHandler";
+import { SwapPrerequisiteError } from '@layerswap/wallet-core';
 
 export type WalletTransfer = (props: TransferProps) => Promise<string | undefined>
 export type GaslessSigner = (signAction: SignDepositAction) => Promise<string>
@@ -92,8 +93,8 @@ export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, 
             layerswapApiClient,
         })
     } catch (e: any) {
-        // Don't flag the route unavailable when the user simply declined.
-        if (!isUserRejection(e)) {
+        // Account readiness and a user declining do not make gasless signing unavailable.
+        if (!isUserRejection(e) && !(e instanceof SwapPrerequisiteError)) {
             const message = e?.response?.data?.error?.message || e?.message
             useGaslessPreferenceStore.getState().reportGaslessUnavailable('deposit', message)
         }
