@@ -97,7 +97,7 @@ const STALL_THRESHOLDS_MS: Partial<Record<SwapLifecycleStep, number>> = {
     refund_pending: 60 * 60_000,
 }
 
-function createJourneyId(): string {
+export function createJourneyId(): string {
     if (typeof globalThis.crypto?.randomUUID === 'function') {
         return globalThis.crypto.randomUUID()
     }

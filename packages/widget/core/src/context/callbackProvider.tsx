@@ -1,9 +1,10 @@
 import { type SwapLifecycleEvent, type SwapStatusEvent, type WidgetCallbacks } from '@layerswap/widget-types';
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
 import { SwapResponse } from '@/lib/apiClients/layerSwapApiClient'
-import { createContext, useContext, ReactNode, useCallback, useMemo, useEffect, useLayoutEffect, useRef } from 'react'
+import { createContext, useContext, ReactNode, useCallback, useMemo, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { ErrorHandler } from '@/lib/ErrorHandler'
 import { widgetTelemetry } from '@/lib/widgetTelemetry'
+import { createCallbackObservations } from '@/lib/callbackObservations'
 
 const useClientLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
 
@@ -33,17 +34,20 @@ function reportCallbackError(caught: unknown) {
 }
 
 export function CallbackProvider({ children, callbacks }: CallbackProviderProps) {
+    const [observations] = useState(createCallbackObservations)
     const callbacksRef = useRef(callbacks)
     useClientLayoutEffect(() => { callbacksRef.current = callbacks }, [callbacks])
 
     // Status/lifecycle effects must not rerun just because a host replaces its callbacks.
     const onSwapStatusChange = useCallback((event: SwapStatusEvent) => {
+        if (!observations.status(event)) return
         try { callbacksRef.current?.onSwapStatusChange?.(event) } catch (error) { reportCallbackError(error) }
-    }, [])
+    }, [observations])
     const onSwapLifecycle = useCallback((event: SwapLifecycleEvent) => {
         widgetTelemetry.lifecycle(event)
+        if (!observations.lifecycle(event)) return
         try { callbacksRef.current?.onSwapLifecycle?.(event) } catch (error) { reportCallbackError(error) }
-    }, [])
+    }, [observations])
 
     const telemetryRef = useRef(callbacks?.onTelemetry)
     useClientLayoutEffect(() => { telemetryRef.current = callbacks?.onTelemetry }, [callbacks?.onTelemetry])
@@ -56,13 +60,19 @@ export function CallbackProvider({ children, callbacks }: CallbackProviderProps)
             onFormChange: (formData: SwapFormValues) => { try { callbacks?.onFormChange?.(formData) } catch (error) { reportCallbackError(error) } },
             onSwapCreate: (swapData: SwapResponse) => { try { callbacks?.onSwapCreate?.(swapData) } catch (error) { reportCallbackError(error) } },
             onSwapComplete: (swapData: SwapResponse) => { try { callbacks?.onSwapComplete?.(swapData) } catch (error) { reportCallbackError(error) } },
-            onSwapModalStateChange: (open: boolean) => { try { callbacks?.onSwapModalStateChange?.(open) } catch (error) { reportCallbackError(error) } },
-            onBackClick: () => { try { callbacks?.onBackClick?.() } catch (error) { reportCallbackError(error) } },
+            onSwapModalStateChange: (open: boolean) => {
+                if (open) observations.reset()
+                try { callbacks?.onSwapModalStateChange?.(open) } catch (error) { reportCallbackError(error) }
+            },
+            onBackClick: () => {
+                observations.reset()
+                try { callbacks?.onBackClick?.() } catch (error) { reportCallbackError(error) }
+            },
             onSwapStatusChange,
             onSwapLifecycle,
             onMenuNavigationChange: (path: string) => { try { callbacks?.onMenuNavigationChange?.(path) } catch (error) { reportCallbackError(error) } },
         }
-    }, [callbacks, onSwapStatusChange, onSwapLifecycle])
+    }, [callbacks, onSwapStatusChange, onSwapLifecycle, observations])
     return (
         <CallbackContext.Provider value={value}>
             {children}

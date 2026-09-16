@@ -148,6 +148,24 @@ widget's behavior, not where it comes from.
 | `onReady` | `() => void` | Fires once the widget mounts. |
 | `onError` | `(err) => void` | Fires on load/render failure; receives a `ManifestError` for manifest issues. |
 
+`callbacks.onSwapStatusChange` reports changes to `(swapId, type, phase)`;
+late address data does not repeat the same notification. `type` is the API
+status and `phase` is the UI state, which can become `completed` or `failed`
+before the API status catches up. A later API status change is a separate event.
+Starting another wallet attempt permits a new notification even if it reaches
+the same status and phase as the previous attempt.
+
+`callbacks.onSwapLifecycle` delivers phase and transaction observations once
+per meaningful transition. Confirmation counts, context enrichment, and React
+effect replay do not duplicate them. New transactions, phase recovery, and
+user actions (including every wallet prompt and retry) remain observable.
+Reopening the swap, returning to the form, or submitting a new form resets
+observation deduplication. Wallet transfer cancellations use
+`wallet_action_rejected` with `reasonCode: 'user_rejected'`; they no longer
+invoke `callbacks.onError`.
+
+These contracts also apply to `@layerswap/widget-js` and CDN consumers.
+
 ## How it works
 
 1. `<LayerswapWidget>` fetches `manifest.json` from the CDN channel URL

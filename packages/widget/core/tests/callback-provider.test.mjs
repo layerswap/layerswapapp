@@ -301,7 +301,7 @@ test('blocked effects cancel stale/unmounted emissions and report again after re
   assert.equal(records.length, 2, 'unmounted blocks must not change the journey')
 })
 
-test('StrictMode deduplicates widget flow observations while preserving public lifecycle callbacks', async t => {
+test('StrictMode and confirmation updates deduplicate both telemetry and public lifecycle observations', async t => {
   const records = []
   const forwarded = []
   const callbacks = { onTelemetry: e => records.push(e), onSwapLifecycle: e => forwarded.push(e) }
@@ -341,8 +341,102 @@ test('StrictMode deduplicates widget flow observations while preserving public l
   assert.deepEqual(records.map(e => e.attributes.step), [
     'input_transaction_detected', 'input_transfer_confirmed', 'output_transaction_detected', 'swap_completed',
   ])
-  assert.equal(forwarded.length, 8, 'public callbacks still receive each effect observation')
+  assert.equal(forwarded.length, 4, 'public callbacks receive each milestone once')
   await render(11)
   assert.equal(records.length, 4, 'confirmation-only updates do not duplicate funnel milestones')
-  assert.equal(forwarded.length, 10)
+  assert.equal(forwarded.length, 4)
+})
+
+test('status callbacks deduplicate late context but retain API and UI phase transitions per swap', async () => {
+  const events = []
+  function Status({ event }) {
+    const { onSwapStatusChange } = useCallbacks()
+    useEffect(() => { onSwapStatusChange(event) }, [event, onSwapStatusChange])
+    return null
+  }
+  const render = event => act(() => root.render(createElement(StrictMode, null,
+    createElement(CallbackProvider, { callbacks: { onSwapStatusChange: e => events.push(e) } },
+      createElement(Status, { event })),
+  )))
+  const pending = { swapId: 'swap-a', type: 'ls_transfer_pending', phase: 'output_pending' }
+  await render(pending)
+  await render({ ...pending, fromAddress: 'arrived-later' })
+  await render({ ...pending, phase: 'completed' })
+  await render({ ...pending, phase: 'completed', fromAddress: 'enriched' })
+  await render({ ...pending, type: 'completed', phase: 'completed' })
+  await render({ ...pending, swapId: 'swap-b', type: 'completed', phase: 'completed' })
+  await render({ ...pending, type: 'completed', phase: 'completed', fromAddress: 'late-swap-a' })
+  assert.deepEqual(events.map(({ swapId, type, phase }) => [swapId, type, phase]), [
+    ['swap-a', 'ls_transfer_pending', 'output_pending'],
+    ['swap-a', 'ls_transfer_pending', 'completed'],
+    ['swap-a', 'completed', 'completed'],
+    ['swap-b', 'completed', 'completed'],
+  ])
+})
+
+test('a retried wallet failure reports status again even when the API status and UI phase are unchanged', async () => {
+  const events = []
+  let callbacks
+  function Capture() { callbacks = useCallbacks(); return null }
+  await act(() => root.render(createElement(CallbackProvider, {
+    callbacks: { onSwapStatusChange: e => events.push(e) },
+  }, createElement(Capture))))
+  const failed = { swapId: 'swap-a', type: 'user_transfer_pending', phase: 'failed' }
+  const other = { ...failed, swapId: 'swap-b' }
+  callbacks.onSwapStatusChange(failed)
+  callbacks.onSwapStatusChange(other)
+  callbacks.onSwapStatusChange({ ...failed, fromAddress: 'late' })
+  for (const step of ['retry_requested', 'awaiting_wallet_action', 'wallet_prompt_opened']) {
+    callbacks.onSwapLifecycle({ step, swapId: 'swap-a', stage: 'wallet_action', outcome: 'pending', path: 'test' })
+  }
+  callbacks.onSwapStatusChange(failed)
+  callbacks.onSwapStatusChange(other)
+  callbacks.onSwapStatusChange(failed)
+  assert.deepEqual(events, [failed, other, failed], 'retry resets only its own swap status')
+})
+
+test('lifecycle observations preserve recovery, attempts, new transactions and separate swap identities', async () => {
+  const events = []
+  let callbacks
+  function Capture() { callbacks = useCallbacks(); return null }
+  await act(() => root.render(createElement(CallbackProvider, {
+    callbacks: { onSwapLifecycle: e => events.push(e), onSwapStatusChange: e => events.push(e) },
+  }, createElement(Capture))))
+  const emit = (step, extra = {}) => callbacks.onSwapLifecycle({
+    step, swapId: 'swap-a', stage: 'wallet_action', outcome: 'pending', path: 'test', ...extra,
+  })
+  emit('awaiting_wallet_action')
+  emit('awaiting_wallet_action', { fromAddress: 'late' })
+  emit('input_transfer_pending')
+  emit('awaiting_wallet_action')
+  assert.equal(events.length, 3, 'A → B → A is a recovery')
+  emit('input_transfer_confirmed', { transactionHash: 'tx-a', confirmations: 10 })
+  emit('awaiting_wallet_action')
+  emit('input_transfer_confirmed', { transactionHash: 'tx-a', confirmations: 11 })
+  assert.equal(events.length, 4, 'interleaved effects do not reset transaction slots')
+  emit('input_transfer_confirmed', { transactionHash: 'tx-b' })
+  emit('input_transfer_confirmed', { transactionHash: 'tx-a', swapId: 'swap-b' })
+  emit('input_transfer_confirmed', { transactionHash: 'tx-b', fromAddress: 'late' })
+  assert.equal(events.length, 6)
+  for (let attempt = 0; attempt < 2; attempt++) {
+    emit('wallet_prompt_opened')
+    emit('wallet_action_rejected', { occurrenceId: 'same-provider-error-object' })
+    emit('awaiting_wallet_action')
+  }
+  assert.equal(events.length, 12, 'each wallet prompt and retry remains observable')
+  emit('transfer_blocked', { reasonCode: 'rpc_unhealthy' })
+  emit('transfer_blocked', { reasonCode: 'rpc_unhealthy' })
+  assert.equal(events.length, 14, 'the block hook already deduplicates reason transitions')
+  const completed = { type: 'completed', phase: 'completed', swapId: 'swap-a' }
+  callbacks.onSwapStatusChange(completed)
+  callbacks.onSwapStatusChange(completed)
+  assert.equal(events.length, 15)
+  callbacks.onSwapModalStateChange(true)
+  emit('awaiting_wallet_action')
+  callbacks.onSwapStatusChange(completed)
+  assert.equal(events.length, 17, 'reopening starts a fresh observation scope')
+  emit('form_submitted', { swapId: undefined })
+  emit('awaiting_wallet_action')
+  callbacks.onSwapStatusChange(completed)
+  assert.equal(events.length, 20, 'a new form submission resets previous swap observations')
 })

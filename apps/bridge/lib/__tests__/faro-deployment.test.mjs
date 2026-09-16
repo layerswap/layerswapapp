@@ -74,6 +74,13 @@ test('deployment comes from platform target, independently of API mode and optim
     }
 })
 
+test('API environment uses the widget mainnet/testnet taxonomy and default', () => {
+    for (const [mode, expected] of [[undefined, 'mainnet'], ['', 'mainnet'], ['mainnet', 'mainnet'], ['testnet', 'testnet']]) {
+        const config = browserConfig({ NEXT_PUBLIC_API_VERSION: mode, NEXT_PUBLIC_FARO_COLLECTOR_URL: 'https://collector.invalid' })
+        assert.equal(config.app.environment, expected)
+    }
+})
+
 test('real Next configuration aligns browser release/bundle identity with the source-map uploader', () => {
     for (const bundleOverride of [undefined, 'bundle-specific-id']) {
         const env = { VERCEL_TARGET_ENV: 'preview', VERCEL_GIT_COMMIT_SHA: 'commit-sha',

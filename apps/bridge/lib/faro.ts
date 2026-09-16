@@ -80,7 +80,7 @@ export function initFaro(): Faro | undefined {
                 release: process.env.NEXT_PUBLIC_FARO_RELEASE || 'unknown-release',
                 // Retain the existing API-mode field for saved queries/links.
                 // Deployment identity is separate, immutable page metadata below.
-                environment: process.env.NEXT_PUBLIC_API_VERSION || 'sandbox',
+                environment: process.env.NEXT_PUBLIC_API_VERSION === 'testnet' ? 'testnet' : 'mainnet',
             },
             beforeSend,
             ...getFaroVolumePolicy(process.env.NODE_ENV),

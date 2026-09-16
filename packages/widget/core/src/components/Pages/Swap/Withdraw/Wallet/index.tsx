@@ -115,11 +115,18 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
 
     const isExtendedSource = source_network?.type === NetworkType.Polymarket || isExtendedSourceNetwork(source_network?.name)
     const hasMultiStepHandler = !!provider?.multiStepHandlers?.some(handler => handler.supportedNetworks.includes(source_network?.name))
+    // The account can restore before its provider publishes the connected wallet.
+    // useWallet's network provider may belong to another account, so check the
+    // selected account's own snapshot before treating a missing wallet as unsupported.
+    const selectedProvider = selectedSourceAccount?.provider
+    const selectedProviderReady = selectedProvider?.ready === true
+        && selectedProvider.isStub !== true
+        && selectedProvider.pendingSessionRestore !== true
     // A connected account whose wallet cannot withdraw on this network only
     // sees the connect button again; report that as a blocked transfer step.
     const blockedReason: TransferBlockedReasonCode | undefined = isExtendedSource || hasMultiStepHandler ? undefined
         : sameAccountMismatch ? 'same_account_required'
-        : selectedSourceAccount && !wallet ? 'wallet_unsupported_for_network'
+        : selectedProviderReady && !wallet ? 'wallet_unsupported_for_network'
         : undefined
     useTransferBlocked(blockedReason, lifecycleContext, 'WalletWithdrawal',
         blockedReason === 'same_account_required' ? 'The selected source and destination accounts must match for this route'

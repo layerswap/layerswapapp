@@ -415,7 +415,7 @@
   "browserVerified": false,
   "publication": {
     "at": "2026-09-10T12:00:57.485340+00:00",
-    "url": "https://grafana-2.dev.lb.layerswap.cloud/d/layerswap-faro-trial-home",
+    "url": "https://grafana.example.invalid/d/layerswap-faro-trial-home",
     "dashboards": [
       {
         "uid": "layerswap-faro-trial-home",

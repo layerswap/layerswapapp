@@ -39,7 +39,7 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
     let transferProps = resolveTransactionData(swapData, depositActions, swapBasicData, selectedWallet)
     const lifecycleContext = lifecycleContextFromSwap(swapBasicData, swapData)
     setActionStateText("Opening Wallet")
-    onLifecycle({
+    const reportWalletPrompt = () => onLifecycle({
         step: 'wallet_prompt_opened',
         stage: 'wallet_action',
         outcome: 'pending',
@@ -48,6 +48,7 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
         provider: selectedWallet.providerName,
         ...lifecycleContext,
     })
+    reportWalletPrompt()
 
     let hash: string | undefined
     const finishTelemetry = widgetTelemetry.beginOperation('wallet_transfer', {
@@ -69,6 +70,7 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
             }
             transferProps = resolveTransactionData(swapData, refreshed.data, swapBasicData, selectedWallet)
             setActionStateText("Opening Wallet")
+            reportWalletPrompt()
             hash = await onClick(transferProps)
         }
     }

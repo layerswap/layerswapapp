@@ -2,12 +2,13 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { captureEvent } from '../lib/faro'
 import { createEngagementClock } from '../lib/faro-engagement'
+import { createJourneyId } from '../lib/faro-swap-lifecycle'
 
 export default function FaroExperience() {
     const { pathname } = useRouter()
     useEffect(() => {
         let disposed = false
-        const pageViewId = crypto.randomUUID()
+        const pageViewId = createJourneyId()
         const clock = createEngagementClock(() => performance.now())
         let sequence = 0
         let started = false

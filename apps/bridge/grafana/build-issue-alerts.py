@@ -40,24 +40,24 @@ def build():
     reached_2h = journeys(trial.TRANSFER_REACHED, '2h')
     none_submitted = '((' + reached_2h + ' or vector(0)) * (absent_over_time(' + base + trial.TRANSFER_SUBMITTED + ' | keep app_name [2h]) or vector(0)))'
     candidates = [
-        ('ls-faro-issue-burst', 'Frontend issue observations exceed 10 in 5m', current+' or vector(0)', 10,
+        ('ls-faro-issue-burst', 2, 'Frontend issue observations exceed 10 in 5m', current+' or vector(0)', 10,
          'Observation threshold, not unique incidents. Tune against real traffic before enabling.'),
-        ('ls-faro-unseen-group', 'Frontend group absent from preceding 24h', '('+current+' unless '+previous+') or vector(0)', 2,
+        ('ls-faro-unseen-group', 2, 'Frontend group absent from preceding 24h', '('+current+' unless '+previous+') or vector(0)', 2,
          'At least 3 observations in 5m, absent in the preceding retained 24h. This is not first-ever occurrence or a confirmed regression.'),
-        ('ls-faro-no-telemetry', 'No frontend telemetry for 15m', 'absent_over_time('+base+' | keep app_name [15m]) or vector(0)', 0,
+        ('ls-faro-no-telemetry', 11, 'No frontend telemetry for 15m', 'absent_over_time('+base+' | keep app_name [15m]) or vector(0)', 0,
          'Visibility unknown. May be quiet traffic, sampling, browser delivery, or ingestion failure; use a scheduled canary before paging on this in development.'),
-        ('ls-faro-transfer-trouble', 'Blocked or failed transfers exceed 30% of journeys reaching the transfer step in 30m', trouble_ratio, 0.3,
+        ('ls-faro-transfer-trouble', 59, 'Blocked or failed transfers exceed 30% of journeys reaching the transfer step in 30m', trouble_ratio, 0.3,
          'Share of journeys that reached the send button and then saw a blocking message or a failed wallet operation, evaluated only once at least five journeys reached the step. User declines are excluded. Open the Transfer step tab for reasons by network and wallet.', 1800),
-        ('ls-faro-no-submissions', 'Journeys reach the transfer step but nothing is submitted for 2h', none_submitted, 2,
+        ('ls-faro-no-submissions', 58, 'Journeys reach the transfer step but nothing is submitted for 2h', none_submitted, 2,
          'At least three journeys reached the send button in the last two hours and no transaction or gasless authorization was submitted by anyone. Quiet traffic reads as zero; a wallet, RPC or deposit-action outage reads as the number of stranded journeys.', 7200),
     ]
     rules=[]
-    for uid,title,expression,threshold,description,*window in candidates:
+    for uid,panel_id,title,expression,threshold,description,*window in candidates:
         expression = fixed(expression)
         seconds = window[0] if window else 300
         rules.append({'uid':uid,'title':title,'condition':'B','for':'5m','isPaused':True,
             'noDataState':'NoData','execErrState':'Error',
-            'annotations':{'summary':title,'description':description,'dashboard_url':'https://grafana-2.dev.lb.layerswap.cloud/d/layerswap-faro-trial-home'},
+            'annotations':{'summary':title,'description':description,'__dashboardUid__':trial.UIDS['views'],'__panelId__':str(panel_id)},
             'labels':{'application':'layerswap-frontend','api_mode':'mainnet','review_required':'true'},
             'data':[
                 {'refId':'A','datasourceUid':trial.DS,'relativeTimeRange':{'from':seconds,'to':0},

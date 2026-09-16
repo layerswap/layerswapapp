@@ -4,6 +4,8 @@ const FaroSourceMapUploaderPlugin = require('@grafana/faro-webpack-plugin');
 
 // Faro 0.13.0 registers an async uploader with a synchronous tap. Await it before
 // later hooks can delete source maps; remove when upstream uses an awaited hook.
+// When bumping the exact plugin pin, re-check its tap name/type and rerun
+// faro-sourcemap-ordering.test.mjs against the newly installed version.
 class AwaitedFaroSourceMapUploaderPlugin extends FaroSourceMapUploaderPlugin {
   apply(compiler) {
     compiler.hooks.afterEmit.intercept({

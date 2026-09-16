@@ -91,7 +91,9 @@ export type WidgetCallbacks = {
   onSwapModalStateChange?: (open: boolean) => void;
   onBackClick?: () => void;
   onError?: (error: ErrorEventType) => void;
+  /** Reports changes to (swapId, type, phase) per attempt; address-only enrichment does not repeat a notification. */
   onSwapStatusChange?: (event: SwapStatusEvent) => void;
+  /** Phase/transaction observations are deduplicated; user actions and wallet retries remain repeatable. */
   onSwapLifecycle?: (event: SwapLifecycleEvent) => void;
   onMenuNavigationChange?: (path: string) => void;
 };

@@ -37,9 +37,11 @@ NEXT_PUBLIC_FARO_DEBUG: false # optional SDK diagnostics
 
 `NEXT_PUBLIC_FARO_COLLECTOR_URL` is the only required Faro runtime variable.
 The app identity matches the existing integration branch: app name
-`layerswap-frontend`, environment from `NEXT_PUBLIC_API_VERSION` (falling back
-to `sandbox`), and version from `NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA` (falling
-back to `local`). `NEXT_PUBLIC_FARO_SAMPLE_RATE` is optional and defaults to
+`layerswap-frontend`, API environment `testnet` when `NEXT_PUBLIC_API_VERSION`
+is `testnet` and otherwise `mainnet` (matching the widget default), and version
+and release from the build's resolved `NEXT_PUBLIC_FARO_RELEASE`. Deployment
+identity is tracked separately; see [Grafana setup](grafana/README.md).
+`NEXT_PUBLIC_FARO_SAMPLE_RATE` is optional and defaults to
 `1`.
 
 Faro starts in `instrumentation-client.ts` before hydration and captures all

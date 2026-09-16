@@ -50,7 +50,7 @@ test('scope stays dev-only and does not modify ingest labels or add thresholds',
 test('overview type → hidden variant → session → raw event preserves context and absolute time', () => {
   const vars = {...variables, __from: 1788853800000, __to: 1788856200000};
   const navigate = (template, row) => {
-    const url = new URL(interpolate(template, vars, row), 'https://grafana-2.dev.lb.layerswap.cloud');
+    const url = new URL(interpolate(template, vars, row), 'https://grafana.example.invalid');
     assert.match(url.pathname, /\/d\/layerswap-faro-dev-slice(?:\/|$)/);
     assert.equal(url.searchParams.get('from'), String(vars.__from));
     assert.equal(url.searchParams.get('to'), String(vars.__to));
@@ -88,7 +88,7 @@ test('URL encoding round-trips special characters without extra parameters', () 
   Object.assign(vars, {__from: 1788853800000, __to: 1788856200000});
   const row = {type:special, hash:special, session_id:special, timestamp:special, kind:special, stored_ns:special};
   for (const id of [3, 4, 5, 7, 8, 9]) {
-    const url = new URL(interpolate(dataLink(id), vars, row), 'https://grafana-2.dev.lb.layerswap.cloud');
+    const url = new URL(interpolate(dataLink(id), vars, row), 'https://grafana.example.invalid');
     assert.equal(url.searchParams.get('var-application'), special);
     assert.equal(url.searchParams.get('var-environment'), special);
     assert.equal(url.searchParams.get('var-release'), special);
@@ -173,7 +173,7 @@ test('wallet-session link preserves search/scope/time but clears stale error and
   const vars = {...variables, wallet_address:'test-wallet-address', environment:'testnet',
     error_type:'old-type', error_hash:'old-hash', event_time:'old-time', event_kind:'old-kind',
     __from:1788875100000, __to:1788876900000};
-  const url = new URL(interpolate(dataLink(7), vars, {session_id:'test-wallet-session'}), 'https://grafana-2.dev.lb.layerswap.cloud');
+  const url = new URL(interpolate(dataLink(7), vars, {session_id:'test-wallet-session'}), 'https://grafana.example.invalid');
   for (const key of ['application','environment','release','wallet_address','error_marker']) assert.equal(url.searchParams.get(`var-${key}`),vars[key]);
   assert.equal(url.searchParams.get('from'),String(vars.__from));
   assert.equal(url.searchParams.get('to'),String(vars.__to));
@@ -212,7 +212,7 @@ test('timeline text uses event-local details and preserves exact stored-time str
     assert(!query.includes('.session_attr_reason'));
     assert(!panel.transformations[1].options.conversions.some(c=>c.targetField==='stored_ns'));
     assert(!panel.transformations.at(-1).options.excludeByName?.stored_ns);
-    const url=new URL(interpolate(dataLink(id),{...variables,__from:1,__to:2},error),'https://grafana-2.dev.lb.layerswap.cloud');
+    const url=new URL(interpolate(dataLink(id),{...variables,__from:1,__to:2},error),'https://grafana.example.invalid');
     assert.equal(url.searchParams.get('var-event_ns'),error.stored_ns);
     if(id!==5) assert.equal(url.searchParams.get('var-session_id'),error.session_id);
   }
@@ -259,7 +259,7 @@ test('fingerprint is an internal selector only and selecting a type starts with 
 test('overview/back/all-variants links preserve time and scope and reset stale selections', () => {
   const vars={...variables,application:'app & λ',environment:'testnet',release:'local',error_type:'ContractFunctionExecutionError',error_hash:'123',session_id:'old',event_ns:'1234567890123456789',__from:1,__to:2};
   for(const link of dashboard.links){
-    const u=new URL(interpolate(link.url,vars),'https://grafana-2.dev.lb.layerswap.cloud');
+    const u=new URL(interpolate(link.url,vars),'https://grafana.example.invalid');
     for(const key of ['application','environment','release','wallet_address','error_marker'])assert.equal(u.searchParams.get('var-'+key),vars[key]);
     assert.equal(u.searchParams.get('from'),'1');assert.equal(u.searchParams.get('to'),'2');
     assert.equal(u.searchParams.get('var-error_hash'),'.*');

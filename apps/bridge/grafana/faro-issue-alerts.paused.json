@@ -18,7 +18,8 @@
           "annotations": {
             "summary": "Frontend issue observations exceed 10 in 5m",
             "description": "Observation threshold, not unique incidents. Tune against real traffic before enabling.",
-            "dashboard_url": "https://grafana-2.dev.lb.layerswap.cloud/d/layerswap-faro-trial-home"
+            "__dashboardUid__": "layerswap-faro-trial-home",
+            "__panelId__": "2"
           },
           "labels": {
             "application": "layerswap-frontend",
@@ -100,7 +101,8 @@
           "annotations": {
             "summary": "Frontend group absent from preceding 24h",
             "description": "At least 3 observations in 5m, absent in the preceding retained 24h. This is not first-ever occurrence or a confirmed regression.",
-            "dashboard_url": "https://grafana-2.dev.lb.layerswap.cloud/d/layerswap-faro-trial-home"
+            "__dashboardUid__": "layerswap-faro-trial-home",
+            "__panelId__": "2"
           },
           "labels": {
             "application": "layerswap-frontend",
@@ -182,7 +184,8 @@
           "annotations": {
             "summary": "No frontend telemetry for 15m",
             "description": "Visibility unknown. May be quiet traffic, sampling, browser delivery, or ingestion failure; use a scheduled canary before paging on this in development.",
-            "dashboard_url": "https://grafana-2.dev.lb.layerswap.cloud/d/layerswap-faro-trial-home"
+            "__dashboardUid__": "layerswap-faro-trial-home",
+            "__panelId__": "11"
           },
           "labels": {
             "application": "layerswap-frontend",
@@ -264,7 +267,8 @@
           "annotations": {
             "summary": "Blocked or failed transfers exceed 30% of journeys reaching the transfer step in 30m",
             "description": "Share of journeys that reached the send button and then saw a blocking message or a failed wallet operation, evaluated only once at least five journeys reached the step. User declines are excluded. Open the Transfer step tab for reasons by network and wallet.",
-            "dashboard_url": "https://grafana-2.dev.lb.layerswap.cloud/d/layerswap-faro-trial-home"
+            "__dashboardUid__": "layerswap-faro-trial-home",
+            "__panelId__": "59"
           },
           "labels": {
             "application": "layerswap-frontend",
@@ -346,7 +350,8 @@
           "annotations": {
             "summary": "Journeys reach the transfer step but nothing is submitted for 2h",
             "description": "At least three journeys reached the send button in the last two hours and no transaction or gasless authorization was submitted by anyone. Quiet traffic reads as zero; a wallet, RPC or deposit-action outage reads as the number of stranded journeys.",
-            "dashboard_url": "https://grafana-2.dev.lb.layerswap.cloud/d/layerswap-faro-trial-home"
+            "__dashboardUid__": "layerswap-faro-trial-home",
+            "__panelId__": "58"
           },
           "labels": {
             "application": "layerswap-frontend",

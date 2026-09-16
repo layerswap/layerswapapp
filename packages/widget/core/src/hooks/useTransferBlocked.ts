@@ -1,7 +1,9 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import type { TransferBlockedReasonCode } from '@layerswap/widget-types'
 import { useCallbacks } from '@/context/callbackProvider'
 import type { SwapLifecycleContext } from '@/lib/swapLifecycle'
+
+const useClientLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
 
 /**
  * Reports that the transfer step is showing a blocking state instead of the
@@ -17,7 +19,7 @@ export function useTransferBlocked(
 ) {
     const { onSwapLifecycle } = useCallbacks()
     const latest = useRef({ context, reason, onSwapLifecycle })
-    latest.current = { context, reason, onSwapLifecycle }
+    useClientLayoutEffect(() => { latest.current = { context, reason, onSwapLifecycle } }, [context, reason, onSwapLifecycle])
     const reported = useRef<TransferBlockedReasonCode | undefined>(undefined)
 
     useEffect(() => {

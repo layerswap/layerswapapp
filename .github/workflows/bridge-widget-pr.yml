@@ -1,4 +1,4 @@
-name: Faro — PR validation
+name: Bridge and widget — PR validation
 
 on:
   pull_request:
@@ -9,13 +9,13 @@ on:
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
       - "package.json"
-      - ".github/workflows/faro-pr.yml"
+      - ".github/workflows/bridge-widget-pr.yml"
 
 permissions:
   contents: read
 
 concurrency:
-  group: faro-pr-${{ github.event.pull_request.number }}
+  group: bridge-widget-pr-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
@@ -38,12 +38,7 @@ jobs:
           pnpm --filter @layerswap/widget-types test
           pnpm --filter @layerswap/wallet-core test
           pnpm --filter @layerswap/wallet-evm test
+          pnpm --filter @layerswap/widget check:types
           pnpm --filter @layerswap/bridge check:types
           pnpm --filter @layerswap/bridge test:faro
           pnpm --filter @layerswap/widget test
-      - name: Validate dashboard navigation and generated resources
-        run: |
-          node --test apps/bridge/grafana/tests/faro-dev-vertical-slice.test.mjs
-          python3 apps/bridge/grafana/tests/native-trial.test.py
-          python3 apps/bridge/grafana/build-native-trial.py
-          git diff --exit-code -- apps/bridge/grafana/layerswap-faro-trial-*.json

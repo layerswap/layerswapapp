@@ -174,25 +174,25 @@
         "uid": "layerswap-faro-trial-home",
         "generation": 1,
         "readbackMatched": true,
-        "url": "https://grafana-2.dev.lb.layerswap.cloud/d/layerswap-faro-trial-home"
+        "url": "https://grafana.example.invalid/d/layerswap-faro-trial-home"
       },
       {
         "uid": "layerswap-faro-trial-issue",
         "generation": 2,
         "readbackMatched": true,
-        "url": "https://grafana-2.dev.lb.layerswap.cloud/d/layerswap-faro-trial-issue"
+        "url": "https://grafana.example.invalid/d/layerswap-faro-trial-issue"
       },
       {
         "uid": "layerswap-faro-trial-session",
         "generation": 1,
         "readbackMatched": true,
-        "url": "https://grafana-2.dev.lb.layerswap.cloud/d/layerswap-faro-trial-session"
+        "url": "https://grafana.example.invalid/d/layerswap-faro-trial-session"
       },
       {
         "uid": "layerswap-faro-trial-event",
         "generation": 1,
         "readbackMatched": true,
-        "url": "https://grafana-2.dev.lb.layerswap.cloud/d/layerswap-faro-trial-event"
+        "url": "https://grafana.example.invalid/d/layerswap-faro-trial-event"
       }
     ],
     "existingDashboardsUnchanged": true,

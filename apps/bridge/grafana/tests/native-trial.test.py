@@ -171,6 +171,9 @@ class NativeTrialNavigation(unittest.TestCase):
         self.assertIn('absent_over_time', quiet['data'][0]['model']['expr'])
         for rule in rules.values():
             self.assertTrue(rule['isPaused'])
+            # Grafana provisioning requires dashboard and panel annotations together.
+            self.assertEqual(rule['annotations']['__dashboardUid__'], self.views['metadata']['name'])
+            self.assertIn('panel-' + rule['annotations']['__panelId__'], self.views['spec']['elements'])
             # Only regex backreferences may remain; no dashboard variables or Grafana globals.
             self.assertIsNone(re.search(r'\$\{[a-z_]|\$__', rule['data'][0]['model']['expr']))
 
