@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import { FC, useEffect, useState, type ReactNode } from 'react'
 import type { JSX } from 'react';
 import { Widget } from '@/components/Widget/Index';
 import { useSwapDataState } from '@/context/swap';
@@ -12,6 +12,10 @@ import { useResolvedSwapStatus } from '@/hooks/useResolvedSwapStatus';
 import { useSwapRetry } from '@/hooks/useSwapRetry';
 import { useGaslessAuthorizationStatus } from '@/hooks/useGaslessAuthorizationStatus';
 import { SwapDetailsSceleton } from '@/components/Common/Sceletons';
+import { useSwapPrerequisites } from '@/hooks/useSwapPrerequisites';
+import { prerequisitesFromSwap } from '@/lib/prerequisites/context';
+import { PrerequisiteNotice } from '@/components/SwapPrerequisites/PrerequisiteNotice';
+import SwapSummary from './Summary';
 
 type Props = {
     type: "widget" | "contained",
@@ -29,39 +33,62 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, partner, onCa
     useGaslessAuthorizationStatus(swapDetails?.id)
 
     const resolved = useResolvedSwapStatus()
+    const prerequisites = useSwapPrerequisites(prerequisitesFromSwap(swapBasicData, quote?.receive_amount), resolved.showWithdrawScreen)
     const { failureReason, canRetry, retry, gaslessFailureMessage, canSwitchToStandard, switchToStandard } = useSwapRetry()
 
     if (!swapBasicData) return <SwapDetailsSceleton />
 
     return (
         <Container type={type} goBack={onBackClick}>
-            {
-                resolved.showWithdrawScreen
-                    ? swapBasicData?.use_deposit_address === true
-                        ? <ManualWithdraw swapBasicData={swapBasicData} depositActions={depositActionsResponse} refuel={refuel} partner={partner} type={type} quote={quote} isQuoteLoading={quoteIsLoading} />
-                        : <Withdraw type={type} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} onCancelWithdrawal={onCancelWithdrawal} partner={partner} />
-                    : <div className='space-y-3 w-full h-full'>
-                        <Processing failureReason={failureReason} />
-                        {
-                            canRetry &&
-                            <div className='space-y-2'>
-                                {gaslessFailureMessage &&
-                                    <p className='text-sm text-secondary-text px-1'>{gaslessFailureMessage}</p>
-                                }
-                                <SubmitButton isDisabled={false} isSubmitting={false} onClick={retry}>
-                                    Try again
-                                </SubmitButton>
-                                {canSwitchToStandard &&
-                                    <SubmitButton buttonStyle='secondary' isDisabled={false} isSubmitting={false} onClick={switchToStandard}>
-                                        Switch to standard transfer
-                                    </SubmitButton>
+            <>
+                {!prerequisites.isReady && <Widget.Content><div className="w-full space-y-3">
+                    <SwapSummary />
+                    <PrerequisiteNotice state={prerequisites} onEdit={onCancelWithdrawal ?? onBackClick} />
+                </div></Widget.Content>}
+                <PaymentContent ready={prerequisites.isReady}>
+                    {
+                        resolved.showWithdrawScreen
+                            ? swapBasicData?.use_deposit_address === true
+                                ? <ManualWithdraw swapBasicData={swapBasicData} depositActions={depositActionsResponse} refuel={refuel} partner={partner} type={type} quote={quote} isQuoteLoading={quoteIsLoading} />
+                                : <Withdraw type={type} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} onCancelWithdrawal={onCancelWithdrawal} partner={partner} />
+                            : <div className='space-y-3 w-full h-full'>
+                                <Processing failureReason={failureReason} />
+                                {
+                                    canRetry &&
+                                    <div className='space-y-2'>
+                                        {gaslessFailureMessage &&
+                                            <p className='text-sm text-secondary-text px-1'>{gaslessFailureMessage}</p>
+                                        }
+                                        <SubmitButton isDisabled={false} isSubmitting={false} onClick={retry}>
+                                            Try again
+                                        </SubmitButton>
+                                        {canSwitchToStandard &&
+                                            <SubmitButton buttonStyle='secondary' isDisabled={false} isSubmitting={false} onClick={switchToStandard}>
+                                                Switch to standard transfer
+                                            </SubmitButton>
+                                        }
+                                    </div>
                                 }
                             </div>
-                        }
-                    </div>
-            }
+                    }
+                </PaymentContent>
+            </>
         </Container>
     )
+}
+
+// Quote rechecks must hide payment controls without cancelling the mounted transfer.
+// Wait for the first successful check before mounting any payment content.
+const PaymentContent = ({ ready, children }: { ready: boolean; children: ReactNode }) => {
+    const [wasReady, setWasReady] = useState(ready)
+
+    useEffect(() => {
+        if (ready) setWasReady(true)
+    }, [ready])
+
+    return <div style={{ display: ready ? 'contents' : 'none' }}>
+        {(ready || wasReady) && children}
+    </div>
 }
 
 const Container = ({ type, children, goBack }: Props & {

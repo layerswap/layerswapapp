@@ -16,6 +16,7 @@ import { id } from './constants'
 import { createStellarConnection } from './service/createStellarConnection'
 import { stellarKitManager } from './service/stellarKitManager'
 import { createStellarTransfer } from './transferProvider/createStellarTransfer'
+import { createStellarPrerequisiteProvider, stellarPrerequisiteProvider } from './prerequisites/createStellarPrerequisiteProvider'
 
 export type StellarProviderConfig<Network = NetworkWithTokens> = BaseWalletProviderConfig<Network> & {
     walletConnect?: WalletConnectConfig
@@ -30,6 +31,7 @@ export function createStellarProvider<Network = NetworkWithTokens>(
         balanceProviders,
         gasProviders,
         transferProviders,
+        swapPrerequisiteProviders,
     } = config
 
     const initialize = () => {
@@ -79,10 +81,12 @@ export function createStellarProvider<Network = NetworkWithTokens>(
         balanceProvider: finalBalanceProviders,
         gasProvider: finalGasProviders,
         transferProvider: finalTransferProviders,
+        swapPrerequisiteProvider: swapPrerequisiteProviders ?? (customConnection ? createStellarPrerequisiteProvider({ canSign: false }) : stellarPrerequisiteProvider),
     }
 }
 
 export { createStellarConnection } from './service/createStellarConnection'
 export { stellarStore } from './service/stellarStore'
 export { stellarKitManager } from './service/stellarKitManager'
+export { createStellarPrerequisiteProvider, stellarPrerequisiteProvider } from './prerequisites/createStellarPrerequisiteProvider'
 export { validateStellarOperationXdr, validateStellarXdr } from './transferProvider/validateStellarXdr'

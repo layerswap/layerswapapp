@@ -71,6 +71,7 @@ export function createTONProvider<Network = NetworkWithTokens>(
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
         transferProvider: finalTransferProviders,
+        swapPrerequisiteProvider: config.swapPrerequisiteProviders,
     }
 }
 
