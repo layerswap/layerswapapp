@@ -24,6 +24,7 @@ import { PolymarketWalletWithdraw } from "../WithdrawalProviders/Polymarket";
 import { useCallbacks } from "@/context/callbackProvider";
 import { lifecycleContextFromSwap, lifecycleErrorDetails } from "@/lib/swapLifecycle";
 import { useTransferBlocked } from "@/hooks/useTransferBlocked";
+import { isProviderHydrated } from "@layerswap/wallet-core";
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
 import { isUserRejection } from "./Common/isUserRejection";
 
@@ -119,8 +120,7 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
     // useWallet's network provider may belong to another account, so check the
     // selected account's own snapshot before treating a missing wallet as unsupported.
     const selectedProvider = selectedSourceAccount?.provider
-    const selectedProviderReady = selectedProvider?.ready === true
-        && selectedProvider.isStub !== true
+    const selectedProviderReady = isProviderHydrated(selectedProvider)
         && selectedProvider.pendingSessionRestore !== true
     // A connected account whose wallet cannot withdraw on this network only
     // sees the connect button again; report that as a blocked transfer step.

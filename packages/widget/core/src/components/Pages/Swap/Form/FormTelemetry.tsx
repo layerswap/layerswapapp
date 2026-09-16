@@ -1,9 +1,9 @@
-import { useEffect, useLayoutEffect, useRef } from 'react'
+import { useRef } from 'react'
+import { useClientLayoutEffect } from '@/hooks/useClientLayoutEffect'
 import { useFormikContext } from 'formik'
 import type { SwapFormValues } from './SwapFormValues'
 import { widgetTelemetry } from '@/lib/widgetTelemetry'
 
-const useClientLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
 
 /** Owns the pre-submit flow independently from the existing swap lifecycle. */
 export default function FormTelemetry({ mode }: { mode: string }) {

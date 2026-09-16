@@ -1,9 +1,9 @@
-import { useEffect, useLayoutEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
+import { useClientLayoutEffect } from '@/hooks/useClientLayoutEffect'
 import type { TransferBlockedReasonCode } from '@layerswap/widget-types'
 import { useCallbacks } from '@/context/callbackProvider'
 import type { SwapLifecycleContext } from '@/lib/swapLifecycle'
 
-const useClientLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
 
 /**
  * Reports that the transfer step is showing a blocking state instead of the

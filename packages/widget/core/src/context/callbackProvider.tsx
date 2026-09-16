@@ -1,12 +1,12 @@
 import { type SwapLifecycleEvent, type SwapStatusEvent, type WidgetCallbacks } from '@layerswap/widget-types';
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
 import { SwapResponse } from '@/lib/apiClients/layerSwapApiClient'
-import { createContext, useContext, ReactNode, useCallback, useMemo, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { createContext, useContext, ReactNode, useCallback, useMemo, useRef, useState } from 'react'
+import { useClientLayoutEffect } from '@/hooks/useClientLayoutEffect'
 import { ErrorHandler } from '@/lib/ErrorHandler'
 import { widgetTelemetry } from '@/lib/widgetTelemetry'
 import { createCallbackObservations } from '@/lib/callbackObservations'
 
-const useClientLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
 
 export interface CallbacksContextType extends Omit<WidgetCallbacks, 'onFormChange' | 'onSwapCreate' | 'onSwapComplete'> {
     onFormChange?: (formData: SwapFormValues) => void

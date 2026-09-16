@@ -50,11 +50,17 @@ const mockedDependencies = [
   '/RPCUnhealthyMessage', '/lib/extendedRoutes/registry',
   '/WithdrawalProviders/Hyperliquid', '/WithdrawalProviders/Polymarket',
 ]
+// Mocks apply only to imports made by the component under test. If that file
+// moves, update this path or the real wallet SDKs will load unmocked.
+// The real readiness predicate, without the wallet-core barrel that would pull in every SDK.
+const providerReadinessUrl = new URL('../../../wallets/core/dist/esm/lib/providerReadiness.js', import.meta.url).href
 const hooks = registerHooks({
   resolve(specifier, context, nextResolve) {
-    if (context.parentURL?.endsWith('/components/Pages/Swap/Withdraw/Wallet/index.js')
-      && (specifier === '@layerswap/ui-kit/components' || mockedDependencies.some(path => specifier.endsWith(path)))) {
-      return { url: mockUrl, shortCircuit: true }
+    if (context.parentURL?.endsWith('/components/Pages/Swap/Withdraw/Wallet/index.js')) {
+      if (specifier === '@layerswap/wallet-core') return { url: providerReadinessUrl, shortCircuit: true }
+      if (specifier === '@layerswap/ui-kit/components' || mockedDependencies.some(path => specifier.endsWith(path))) {
+        return { url: mockUrl, shortCircuit: true }
+      }
     }
     if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
       return nextResolve(`${specifier}.js`, context)
