@@ -27,6 +27,7 @@ type RefuelToken = {
   listing_date: string;
   status?: 'active' | 'inactive' | 'not_found';
   supports_gasless_deposit?: boolean;
+  gasless_standard?: string | null;
   source_rank?: number;
   destination_rank?: number;
 };
