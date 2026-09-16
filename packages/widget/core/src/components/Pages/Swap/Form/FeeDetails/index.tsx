@@ -1,4 +1,4 @@
-import { FC, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/shadcn/accordion';
 import clsx from 'clsx';
 import { ChevronDown } from 'lucide-react';
@@ -28,6 +28,8 @@ import AverageCompletionTime from '@/components/Common/AverageCompletionTime';
 import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore';
 import { isGaslessCapableRoute } from '@/helpers/gasless';
 import GaslessBadge from './GaslessBadge';
+import type { QuoteError } from '@/hooks/useFee';
+import { isTokenSwap } from '@/lib/receiveSettings';
 
 export interface SwapValues extends Omit<SwapFormValues, 'from' | 'to'> {
     from?: Network;
@@ -43,17 +45,26 @@ export interface QuoteComponentProps {
     reward?: QuoteReward | undefined;
     variant?: 'extended' | 'base';
     triggerClassnames?: string
+    allowMinimumReceive?: boolean
+    quoteError?: QuoteError
 }
 
-export default function QuoteDetails({ swapValues: values, quote, isQuoteLoading, reward, variant = 'extended', triggerClassnames }: QuoteComponentProps) {
+export default function QuoteDetails({ swapValues: values, quote, isQuoteLoading, reward, variant = 'extended', triggerClassnames, allowMinimumReceive, quoteError }: QuoteComponentProps) {
     const { toAsset, fromAsset: fromCurrency, destination_address } = values || {};
     const [isAccordionOpen, setIsAccordionOpen] = useState<boolean>(false);
+    const canEditReceive = allowMinimumReceive && values.depositMethod === 'wallet' && isTokenSwap(fromCurrency?.symbol, toAsset?.symbol);
+    const showReceiveError = !!canEditReceive && !quote && (!!quoteError || !isQuoteLoading);
+    const isOpen = isAccordionOpen || showReceiveError;
+    useEffect(() => {
+        // Keep the editor mounted when recovering from an error starts a new quote.
+        if (showReceiveError) setIsAccordionOpen(true);
+    }, [showReceiveError]);
 
     return (
         <>
             {
-                quote &&
-                <Accordion type='single' collapsible className='w-full' value={isAccordionOpen ? 'quote' : ''} onValueChange={(value) => { setIsAccordionOpen(value === 'quote') }}>
+                (quote || canEditReceive) &&
+                <Accordion type='single' collapsible className='w-full' value={isOpen ? 'quote' : ''} onValueChange={(value) => { setIsAccordionOpen(value === 'quote') }}>
                     <AccordionItem value='quote' className='bg-secondary-500 rounded-2xl'>
                         <AccordionTrigger
                             data-attr="see-swap-details"
@@ -61,13 +72,13 @@ export default function QuoteDetails({ swapValues: values, quote, isQuoteLoading
                                 'p-3.5 pr-5 w-full rounded-2xl flex items-center justify-between transition-colors duration-200 hover:bg-secondary-400',
                                 triggerClassnames,
                                 {
-                                    'bg-secondary-500': !isAccordionOpen,
-                                    'bg-secondary-400': isAccordionOpen,
-                                    'animate-pulse-strong': isQuoteLoading && !isAccordionOpen
+                                    'bg-secondary-500': !isOpen,
+                                    'bg-secondary-400': isOpen,
+                                    'animate-pulse-strong': isQuoteLoading && !isOpen
                                 }
                             )}>
                             {
-                                (isAccordionOpen) ?
+                                (isOpen || !quote) ?
                                     <p className='text-sm'>
                                         Details
                                     </p>
@@ -78,12 +89,15 @@ export default function QuoteDetails({ swapValues: values, quote, isQuoteLoading
                         </AccordionTrigger>
                         <AccordionContent className='rounded-2xl'>
                             {
-                                (quote || isQuoteLoading) && fromCurrency && toAsset &&
+                                (quote || isQuoteLoading || canEditReceive) && fromCurrency && toAsset &&
                                 <DetailedEstimates
                                     swapValues={values}
                                     quote={quote}
                                     variant={variant}
                                     reward={reward}
+                                    allowMinimumReceive={allowMinimumReceive}
+                                    quoteError={quoteError}
+                                    isQuoteLoading={isQuoteLoading}
                                 />
                             }
                         </AccordionContent>

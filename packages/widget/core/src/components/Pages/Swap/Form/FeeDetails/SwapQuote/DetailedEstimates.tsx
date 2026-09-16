@@ -19,19 +19,27 @@ import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
 import { isGaslessCapableRoute } from "@/helpers/gasless";
 import GaslessBadge from "../GaslessBadge";
 import ToggleButton from "@/components/Buttons/toggleButton";
+import type { QuoteError } from '@/hooks/useFee';
+import { isTokenSwap, quotedMinimumInput } from '@/lib/receiveSettings';
 
 type DetailedEstimatesProps = {
     quote: SwapQuote | undefined,
     reward?: QuoteReward,
     swapValues: SwapValues
     variant?: "base" | "extended"
+    allowMinimumReceive?: boolean
+    quoteError?: QuoteError
+    isQuoteLoading?: boolean
 }
 
 export const DetailedEstimates: FC<DetailedEstimatesProps> = ({
     quote,
     reward,
     swapValues: values,
-    variant
+    variant,
+    allowMinimumReceive,
+    quoteError,
+    isQuoteLoading,
 }) => {
     const shouldCheckNFT = reward?.campaign_type === "for_nft_holders" && reward?.nft_contract_address;
     const { balance: nftBalance, isLoading, error } = useSWRNftBalance(
@@ -46,7 +54,13 @@ export const DetailedEstimates: FC<DetailedEstimatesProps> = ({
         <Fees quote={quote} values={values} />
         {values.depositMethod !== "deposit_address" && <Rate fromAsset={values?.fromAsset} toAsset={values?.toAsset} rate={quote?.rate} />}
         {values.depositMethod === "deposit_address" && variant === "extended" && values?.fromAsset?.contract && <ExchangeTokenContract fromAsset={values?.fromAsset} network={values?.from} />}
-        {variant === "extended" && values.depositMethod === "wallet" && <Slippage quoteData={quote} values={values} />}
+        {variant === "extended" && values.depositMethod === "wallet" && (
+            isTokenSwap(values.fromAsset?.symbol, values.toAsset?.symbol)
+                ? <Slippage quoteData={quote} values={values} allowMinimumReceive={allowMinimumReceive} quoteError={quoteError} isQuoteLoading={isQuoteLoading} />
+                : allowMinimumReceive && quote && <RowWrapper title="Receive at least">
+                    <span>{quotedMinimumInput(quote.min_receive_amount) || '—'} {values.toAsset?.asset}</span>
+                </RowWrapper>
+        )}
         <Estimates quote={quote} />
         {showReward && <Reward reward={reward} />}
     </div>
