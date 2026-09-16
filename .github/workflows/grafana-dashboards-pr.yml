@@ -25,6 +25,9 @@ jobs:
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: 24
+          # This job installs no dependencies. Without this, setup-node v5 reads the
+          # root packageManager field and fails because pnpm is not on PATH.
+          package-manager-cache: false
       - name: Validate dashboard navigation and generated resources
         run: |
           node --test apps/bridge/grafana/tests/faro-dev-vertical-slice.test.mjs
