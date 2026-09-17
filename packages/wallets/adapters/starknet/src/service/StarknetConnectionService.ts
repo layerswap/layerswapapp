@@ -4,6 +4,7 @@ import { walletIconResolver, type AppNetworkAdapter } from "@layerswap/wallet-co
 import type { Connector } from '@starknet-react/core'
 import { name as PROVIDER_NAME, id as PROVIDER_ID } from '../constants'
 import { resolveStarknetWalletIcon } from '../utils'
+import { getStarknetRpcUrl } from '../utils/getStarknetRpcUrl'
 import { starknetConnectorManager } from './starknetConnectorManager'
 import { useStarknetStore } from './starknetStore'
 
@@ -83,9 +84,12 @@ export async function resolveStarknetWallet(props: ResolveStarknetWalletProps): 
     const { name, connector, network, disconnectWallets, address, withdrawalSupportedNetworks, autofillSupportedNetworks, asSourceSupportedNetworks } = props
     try {
         const walletChain = network?.chainId
-        assertSecureRpcUrl(network?.rpcUrl)
+        const configuredRpcUrl = network?.rpcUrl
+        assertSecureRpcUrl(configuredRpcUrl)
         const { RpcProvider, WalletAccount } = await import('starknet-rpc')
-        const rpcProvider = await RpcProvider.create({ nodeUrl: network!.rpcUrl })
+        const rpcProvider = await RpcProvider.create({
+            nodeUrl: getStarknetRpcUrl(configuredRpcUrl, network!.id, walletChain),
+        })
 
         const walletAccount = new WalletAccount({ provider: rpcProvider, walletProvider: (connector as any).wallet, address })
 

@@ -3,6 +3,7 @@ import Erc20Abi from './jsons/ERC20.json'
 import { formatUnits } from "@layerswap/utils";
 import { insertIfNotExists } from "@layerswap/widget-types";
 import { BalanceProvider, TokenBalance } from "@layerswap/widget-types";
+import { getStarknetRpcUrl } from './utils/getStarknetRpcUrl';
 
 export class StarknetBalanceProvider extends BalanceProvider {
     supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
@@ -22,7 +23,7 @@ export class StarknetBalanceProvider extends BalanceProvider {
         if (!network?.tokens) return
 
         const provider = await RpcProvider.create({
-            nodeUrl: network.node_url,
+            nodeUrl: getStarknetRpcUrl(network.node_url, network.name, network.chain_id),
         });
 
         const tokens = insertIfNotExists(network.tokens || [], network.token)

@@ -2,6 +2,7 @@ import { Contract, RpcProvider } from "starknet-rpc";
 import { Network } from "@layerswap/widget-types";
 import { NftBalanceProps, NftProvider } from "@layerswap/widget-types";
 import { KnownInternalNames } from "@layerswap/utils";
+import { getStarknetRpcUrl } from './utils/getStarknetRpcUrl';
 
 const NFT_ABI = [
     {
@@ -34,7 +35,7 @@ export class StarknetNftProvider implements NftProvider {
         }
 
         const provider = await RpcProvider.create({
-            nodeUrl: network.node_url
+            nodeUrl: getStarknetRpcUrl(network.node_url, network.name, network.chain_id)
         });
 
         try {

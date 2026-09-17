@@ -87,9 +87,11 @@ and Paradex. Paradex reuses the connected account's v10 RPC provider for
 Starknet authorization reads while retaining v8 for its own chain.
 
 RPC URLs come from the network configuration (`node_url`, or `getRpcUrls` for a
-custom network adapter). Configure an endpoint that serves RPC v0.10 to use that
-version. URLs are passed through unchanged, and the provider detects the RPC
-version. RPC v0.8 endpoints are no longer supported by this adapter.
+custom network adapter). Mainnet URLs whose path does not contain a `v0_10`
+segment are replaced with the configured Alchemy mainnet v0.10 endpoint. Existing
+v0.10 URLs and testnet endpoints are preserved. This applies to balances, NFTs,
+connected wallet accounts, fee estimation, and the provider reused by Paradex.
+The provider detects the endpoint's RPC version; RPC v0.8 is unsupported.
 
 ## TypeScript
 

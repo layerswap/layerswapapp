@@ -6,6 +6,7 @@ import { StarknetNftProvider } from '../dist/esm/starknetNftProvider.js'
 import { StarknetGasProvider } from '../dist/esm/starknetGasProvider.js'
 import { resolveStarknetWallet } from '../dist/esm/service/StarknetConnectionService.js'
 import { createStarknetTransfer } from '../dist/esm/transferProvider/createStarknetTransfer.js'
+import { STARKNET_MAINNET_RPC_URL } from '../dist/esm/utils/getStarknetRpcUrl.js'
 
 const address = '0x123'
 const token = { symbol: 'STRK', contract: '0x456', decimals: 6 }
@@ -19,12 +20,12 @@ const network = {
     tokens: [token],
 }
 
-function mockRpc(t, specVersion) {
+function mockRpc(t, specVersion, expectedUrl = network.node_url, expectedChainId = chainId) {
     const requests = []
     const originalFetch = config.get('fetch')
     t.after(() => config.set('fetch', originalFetch))
     config.set('fetch', async (url, options) => {
-        assert.equal(url, network.node_url, 'Preserve the configured RPC URL')
+        assert.equal(url, expectedUrl, 'Use the expected RPC endpoint for every request')
         const request = JSON.parse(options.body)
         requests.push(request)
         let result
@@ -35,7 +36,7 @@ function mockRpc(t, specVersion) {
                 assert.deepEqual(request.params.request.calldata, [address])
                 result = request.params.request.contract_address === nftContract ? ['0x3'] : ['0x1312d0', '0x0']
                 break
-            case 'starknet_chainId': result = chainId; break
+            case 'starknet_chainId': result = expectedChainId; break
             case 'starknet_getNonce': result = '0x1'; break
             case 'starknet_getClassAt':
                 result = { sierra_program: ['0x1'], contract_class_version: '0.1.0', abi: '[]', entry_points_by_type: { CONSTRUCTOR: [], EXTERNAL: [], L1_HANDLER: [] } }
@@ -61,13 +62,13 @@ function mockRpc(t, specVersion) {
     return requests
 }
 
-async function connectWallet() {
+async function connectWallet(walletNetwork = network, walletChainId = chainId) {
     const walletRequests = []
     const wallet = await resolveStarknetWallet({
         name: 'Starknet',
         address,
-        network: { id: network.name, displayName: 'Starknet Sepolia', chainId, rpcUrl: network.node_url },
-        withdrawalSupportedNetworks: [network.name],
+        network: { id: walletNetwork.name, displayName: 'Starknet', chainId: walletChainId, rpcUrl: walletNetwork.node_url },
+        withdrawalSupportedNetworks: [walletNetwork.name],
         disconnectWallets: async () => {},
         connector: {
             id: 'argentX', name: 'Ready', icon: '',
@@ -87,7 +88,7 @@ async function connectWallet() {
     return { wallet, walletRequests }
 }
 
-for (const specVersion of ['0.10.0', '0.10.1', '0.10.2', '0.10.3', '0.10.4', '0.9.0']) {
+for (const specVersion of ['0.10.0', '0.10.1', '0.10.2', '0.10.3', '0.10.3-rc.0', '0.10.4', '0.9.0']) {
     test(`token and NFT balances work with RPC ${specVersion}`, async t => {
         const requests = mockRpc(t, specVersion)
         const balances = await new StarknetBalanceProvider().fetchBalance(address, network)
@@ -106,7 +107,7 @@ for (const specVersion of ['0.10.0', '0.10.1', '0.10.2', '0.10.3', '0.10.4', '0.
         assert.ok(wallet.metadata.starknetAccount instanceof WalletAccount)
         assert.ok(wallet.metadata.starknetAccount.provider)
         assert.equal(typeof wallet.metadata.starknetAccount.getClassAt, 'undefined')
-        assert.equal(wallet.metadata.starknetAccount.provider.readSpecVersion(), specVersion)
+        assert.equal(wallet.metadata.starknetAccount.provider.readSpecVersion(), specVersion.split('-')[0])
 
         const fee = await new StarknetGasProvider().getGas({ network, token, wallet, amount: '1000000' })
         assert.equal(fee.gas, 0.0675)
@@ -136,4 +137,30 @@ test('rejects unsupported RPC versions before requesting a balance', async t => 
     const requests = mockRpc(t, '0.8.1')
     await assert.rejects(new StarknetBalanceProvider().fetchBalance(address, network), /not compatible/)
     assert.deepEqual(requests.map(r => r.method), ['starknet_specVersion'])
+})
+
+for (const [label, rpcUrl, expectedUrl] of [
+    ['v0_8', 'https://rpc.example/rpc/v0_8/key', STARKNET_MAINNET_RPC_URL],
+    ['v0_9', 'https://rpc.example/rpc/v0_9/key', STARKNET_MAINNET_RPC_URL],
+    ['unversioned', 'https://rpc.example/rpc?apiKey=test', STARKNET_MAINNET_RPC_URL],
+    ['v0_10 only in the query', 'https://rpc.example/rpc/v0_9/key?version=v0_10', STARKNET_MAINNET_RPC_URL],
+    ['v0_100', 'https://rpc.example/rpc/v0_100/key', STARKNET_MAINNET_RPC_URL],
+    ['v0_10', 'https://rpc.example/rpc/v0_10/custom-key?option=1', 'https://rpc.example/rpc/v0_10/custom-key?option=1'],
+]) {
+    test(`mainnet ${label} URL resolves consistently for balances, NFTs, and wallet fees`, async t => {
+        const mainnet = { ...network, name: 'STARKNET_MAINNET', node_url: rpcUrl, chain_id: 'SN_MAIN' }
+        const requests = mockRpc(t, '0.10.3-rc.0', expectedUrl, '0x534e5f4d41494e')
+        const balances = await new StarknetBalanceProvider().fetchBalance(address, mainnet)
+        assert.equal(balances[0].amount, 1.25)
+        assert.equal(await new StarknetNftProvider().getBalance({ address, network: mainnet, contractAddress: nftContract }), 3)
+        const { wallet } = await connectWallet(mainnet, '0x534e5f4d41494e')
+        assert.equal((await new StarknetGasProvider().getGas({ network: mainnet, token, wallet, amount: '1000000' })).gas, 0.0675)
+        assert.equal(requests.filter(r => r.method === 'starknet_specVersion').length, 3)
+    })
+}
+
+test('custom network adapters identify mainnet by chain ID for the URL fallback', async t => {
+    mockRpc(t, '0.10.3-rc.0', STARKNET_MAINNET_RPC_URL, '0x534e5f4d41494e')
+    const { wallet } = await connectWallet({ ...network, name: 'custom-mainnet' }, '0x534e5f4d41494e')
+    assert.ok(wallet)
 })
