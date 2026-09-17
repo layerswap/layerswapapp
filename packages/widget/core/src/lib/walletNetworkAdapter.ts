@@ -12,7 +12,7 @@ export const walletNetworkAdapter = defineNetworkAdapter<NetworkWithTokens>({
     getAccountExplorerUrl: network => network.account_explorer_template,
     getNativeCurrency: network => network.token && {
         symbol: network.token.asset,
-        decimals: network.token.decimals,
+        decimals: network.token.native_decimals ?? network.token.decimals,
     },
     getMulticallAddress: network => network.metadata?.evm_multicall_contract ?? undefined,
     isEvmNetwork: network => network.type === NetworkType.EVM,

@@ -242,7 +242,8 @@ class getEthereumGas extends getEVMGas {
 
         const totalGas = multiplier * estimatedGasLimit
 
-        const decimals = NetworkSettings.KnownSettings[this.from.name]?.FeeParsingDecimalPlaces || this.nativeToken?.decimals
+        const decimals = this.nativeToken?.native_decimals
+            ?? (NetworkSettings.KnownSettings[this.from.name]?.FeeParsingDecimalPlaces || this.nativeToken?.decimals)
         const formattedGas = Number(formatUnits(BigInt(totalGas), decimals))
         return formattedGas
     }
@@ -275,7 +276,7 @@ export default class getOptimismGas extends getEVMGas {
 
         let totalGas = (multiplier * estimatedGasLimit) + l1OpFee
 
-        const formattedGas = Number(formatUnits(BigInt(totalGas), this.nativeToken?.decimals))
+        const formattedGas = Number(formatUnits(BigInt(totalGas), this.nativeToken?.native_decimals ?? this.nativeToken?.decimals))
         return formattedGas
     }
 

@@ -56,7 +56,7 @@ export class EVMBalanceProvider extends BalanceProvider {
                 retryCount: options?.retryCount
             });
             const nativeToken = network.token
-            const skipNativeBalance = nativeBalanceSkip.includes(network.name)
+            const skipNativeBalance = !!nativeToken?.contract || nativeBalanceSkip.includes(network.name)
 
             const nativePromise = skipNativeBalance
                 ? Promise.resolve(null)
@@ -122,12 +122,13 @@ export class EVMBalanceProvider extends BalanceProvider {
 
         const nativeTokenBalance = Number(balances?.[1]?.[balances?.[1]?.length - 1])
 
-        const nativeTokenResolvedBalance: TokenBalance | undefined = network.token?.decimals ? {
+        const nativeDecimals = network.token?.native_decimals ?? network.token?.decimals
+        const nativeTokenResolvedBalance: TokenBalance | undefined = network.token && nativeDecimals != null && !network.token.contract ? {
             network: network.name,
             token: network.token?.symbol,
-            amount: nativeTokenBalance >= 0 ? Number(formatUnits(BigInt(nativeTokenBalance), network.token?.decimals)) : undefined,
+            amount: nativeTokenBalance >= 0 ? Number(formatUnits(BigInt(nativeTokenBalance), nativeDecimals)) : undefined,
             request_time: new Date().toJSON(),
-            decimals: network.token?.decimals,
+            decimals: nativeDecimals,
             isNativeCurrency: true,
         } : undefined
 
@@ -170,12 +171,13 @@ export class EVMBalanceProvider extends BalanceProvider {
 
         if (balanceData.error !== null) return this.resolveTokenBalanceFetchError(new Error(balanceData.error), token, network)
 
+        const decimals = token.native_decimals ?? token.decimals
         const nativeBalance: TokenBalance = {
             network: network.name,
             token: token.symbol,
-            amount: Number(formatUnits(BigInt((balanceData as GetBalanceReturnType)?.value), token.decimals)),
+            amount: Number(formatUnits(BigInt((balanceData as GetBalanceReturnType)?.value), decimals)),
             request_time: new Date().toJSON(),
-            decimals: token.decimals,
+            decimals,
             isNativeCurrency: true,
         }
 

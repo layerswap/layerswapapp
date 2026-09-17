@@ -79,7 +79,10 @@ export default function resolveChain(network: Network) {
         id: Number(network.chain_id),
         settingsId: network.name,
         displayName: network.display_name,
-        nativeCurrency: network.token,
+        nativeCurrency: network.token && {
+            symbol: network.token.symbol,
+            decimals: network.token.native_decimals ?? network.token.decimals,
+        },
         rpcUrls: network.nodes?.length > 0 ? network.nodes : [network.node_url],
         transactionExplorerTemplate: network.transaction_explorer_template,
         multicallAddress: network.metadata?.evm_multicall_contract ?? undefined,

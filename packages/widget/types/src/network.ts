@@ -22,6 +22,7 @@ type RefuelToken = {
   logo: string;
   contract: string | null | undefined;
   decimals: number;
+  native_decimals?: number;
   price_in_usd: number;
   precision: number;
   listing_date: string;

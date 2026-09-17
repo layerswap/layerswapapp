@@ -40,7 +40,7 @@ const RPCUnhealthyMessage: FC<Props> = ({ network, suggestRpcForCurrentChain, is
                 nativeCurrency: isTempo ? { name: 'USD', symbol: 'USD', decimals: 18 } : {
                     name: network.display_name,
                     symbol: network.token?.asset,
-                    decimals: network.token?.decimals
+                    decimals: network.token?.native_decimals ?? network.token?.decimals
                 }
             })
             setRpcAddStatus(result.success ? 'success' : 'error')

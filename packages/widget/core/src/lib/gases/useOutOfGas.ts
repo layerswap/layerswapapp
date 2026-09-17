@@ -25,9 +25,9 @@ const useOutOfGas = ({
     const nativeTokenBalance = balances?.find(b => b.token === network?.token?.symbol)
 
     const balance = nativeTokenBalance?.amount
-    const isNativeToken = nativeTokenBalance?.isNativeCurrency && token?.symbol === network?.token?.symbol
+    const isFeeToken = !!network?.token && token?.symbol === network.token.symbol
 
-    if (balance == null || !gasData || !amount || !isNativeToken || minAllowedAmount == null || maxAllowedAmount == null) {
+    if (balance == null || !gasData || !amount || !isFeeToken || minAllowedAmount == null || maxAllowedAmount == null) {
         return { outOfGas: false }
     }
 
