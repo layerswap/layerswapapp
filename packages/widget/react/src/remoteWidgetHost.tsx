@@ -19,8 +19,8 @@ import {
   resolveSource,
   initRemote,
   loadRemoteModule,
-  type SharedLib,
 } from '@layerswap/widget-js';
+import { loadHostReactShares } from './reactShares.generated.js';
 
 /**
  * Internal machinery shared by `LayerswapWidget` and `LayerswapDepositWidget`:
@@ -58,32 +58,13 @@ class WidgetErrorBoundary extends Component<
   }
 }
 
-// Share the host's React/ReactDOM with the remote as MF singletons so the
-// widget dedups onto the host's instance instead of bundling its own. The
-// range mirrors this package's peerDependencies: accept React 18 and 19 (the
-// widget relies on 18+ hook semantics) while rejecting 17, where those hooks
-// don't exist. `requiredVersion: false` would silently dedup an incompatible
-// host version. Vanilla (non-React) hosts use `@layerswap/widget-js` directly,
-// which shares nothing and lets the remote bundle its own React.
-function hostReactShare(): Record<string, SharedLib> {
-  return {
-    react: {
-      version: (React as { version?: string }).version ?? '0.0.0',
-      lib: () => React,
-      requiredVersion: '^18.0.0 || ^19.0.0',
-    },
-    'react-dom': {
-      version: (ReactDOM as { version?: string }).version ?? '0.0.0',
-      lib: () => ReactDOM,
-      requiredVersion: '^18.0.0 || ^19.0.0',
-    },
-  };
-}
-
 function buildLoader<P>(expose: string): () => Promise<{ default: ComponentType<P> }> {
   return async () => {
-    const { remoteEntry } = await resolveSource();
-    initRemote(remoteEntry, hostReactShare());
+    const [{ remoteEntry }, shared] = await Promise.all([
+      resolveSource(),
+      loadHostReactShares(React.version, ReactDOM.version),
+    ]);
+    initRemote(remoteEntry, shared);
     const Widget = await loadRemoteModule<ComponentType<P>>(expose);
     return { default: Widget };
   };

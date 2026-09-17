@@ -7,11 +7,17 @@ runtime delivery from **Azure Blob Storage**.
 - `filename`: `remoteEntry.js`
 - `exposes`: `./Widget`, `./mount` (swap widget), `./DepositWidget`,
   `./mountDeposit` (deposit widget — fixed-destination funding flow)
-- Shared singletons: `react`, `react-dom`, `wagmi`, `viem`,
+- Shared singletons: `react`, `react-dom` (including their subpaths), `wagmi`, `viem`,
   `@tanstack/react-query`, `zustand`
 
 Consumed by `@layerswap/widget-react` (React hosts) and
 `@layerswap/widget-js` (framework-agnostic hosts).
+
+React host providers are generated from this remote's production and
+development graphs during the React loader build. See
+[Maintaining React sharing](../../packages/widget/react/README.md#maintaining-react-sharing)
+for generation instructions. Vanilla fallback providers resolve
+to this app's own React/ReactDOM versions, including dependency imports.
 
 See [AZURE_SETUP.md](./AZURE_SETUP.md) for the storage-account setup and the
 production follow-up checklist.

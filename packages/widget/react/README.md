@@ -159,8 +159,10 @@ widget's behavior, not where it comes from.
    are rejected.
 4. Calls `@module-federation/runtime` to load `manifest.remoteEntry`
    (resolved relative to the manifest URL). React and react-dom are
-   registered into the MF shared scope from the host as singletons
-   (React 18/19 required) so the remote reuses the host's instances.
+   registered into the MF shared scope from the host as singletons, including
+   the JSX runtimes and ReactDOM renderer entry points used by the remote.
+   React and ReactDOM must have the same version (React 18 or 19). The remote
+   reuses those host modules together, avoiding a mixture of React 18 and 19.
    Everything else (wagmi, viem, react-query, zustand, wallet SDKs)
    is bundled inside the remote.
 5. The remote's exposed `./Widget` component is rendered via
@@ -226,6 +228,21 @@ The widget source and signature verification policy are owned entirely by
 variables, or globals. The runnable Vite host in
 `examples/widget-react-host/` therefore exercises the same signed production
 channel as an integrator.
+
+### Maintaining React sharing
+
+The loader build generates `src/reactShares.generated.ts` from the CDN's
+production and development graphs, including dependency, lazy, and emitted
+JSX imports. No CDN assets are emitted. Use `pnpm --filter
+@layerswap/widget-react check:shares` to check the generated file.
+
+React module imports are discovered automatically, without a manually maintained
+module list. Newly required modules need an updated loader in customer builds;
+generation does not update loaders already deployed by customers.
+Vanilla hosts continue using the CDN's own React/ReactDOM pair.
+
+Customers using the previous loader must receive the updated loader and
+rebuild their app to supply the missing host modules, alongside the CDN fix.
 
 ## Security model
 
