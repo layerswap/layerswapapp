@@ -1,4 +1,4 @@
-import { Contract, RpcProvider } from "starknet";
+import { Contract, RpcProvider } from "starknet-rpc";
 import { Network } from "@layerswap/widget-types";
 import { NftBalanceProps, NftProvider } from "@layerswap/widget-types";
 import { KnownInternalNames } from "@layerswap/utils";
@@ -33,7 +33,7 @@ export class StarknetNftProvider implements NftProvider {
             throw new Error("Missing NFT contract address or node URL");
         }
 
-        const provider = new RpcProvider({
+        const provider = await RpcProvider.create({
             nodeUrl: network.node_url
         });
 
@@ -51,4 +51,4 @@ export class StarknetNftProvider implements NftProvider {
             throw error;
         }
     }
-} 
+}
