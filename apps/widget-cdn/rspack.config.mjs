@@ -6,7 +6,6 @@ import { ModuleFederationPlugin } from '@module-federation/enhanced/rspack';
 import { resolveBuildIdentity } from './scripts/build-id.mjs';
 import { ASSET_BASE, CHUNK_HASH_LENGTH } from './scripts/cdn-layout.mjs';
 import { WIDGET_PROTOCOL_MAJOR } from '@layerswap/widget-js';
-import { reactSharedConfig } from '../../packages/widget/react/scripts/react-sharing.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
@@ -34,7 +33,16 @@ const depVersion = (pkg) => {
 
 // Versions that must match between host and remote (catalog-aligned).
 const SHARED_SINGLETONS = {
-  ...reactSharedConfig(depVersion),
+  // Share each React package and all of its subpaths. The loader discovers
+  // the concrete host modules automatically during its build.
+  ...Object.fromEntries(['react', 'react-dom'].flatMap((pkg) =>
+    [pkg, `${pkg}/`].map((request) => [request, {
+      singleton: true,
+      requiredVersion: '>=18.0.0 <20.0.0',
+      eager: false,
+      version: depVersion(pkg),
+    }]),
+  )),
   wagmi: { singleton: true, requiredVersion: false, eager: false, version: depVersion('wagmi') },
   viem: { singleton: true, requiredVersion: false, eager: false, version: depVersion('viem') },
   '@tanstack/react-query': { singleton: true, requiredVersion: false, eager: false, version: depVersion('@tanstack/react-query') },
@@ -131,8 +139,8 @@ export default (env, argv) => {
       alias: {
         // Fallback providers must also be one coherent runtime: nested wallet
         // dependencies can install React 18 alongside the CDN's React 19.
-        react: polyfillDir('react'),
-        'react-dom': polyfillDir('react-dom'),
+        react: path.dirname(require.resolve('react/package.json')),
+        'react-dom': path.dirname(require.resolve('react-dom/package.json')),
         buffer: polyfillDir('buffer'),
         crypto: polyfillDir('crypto-browserify'),
         stream: polyfillDir('stream-browserify'),
