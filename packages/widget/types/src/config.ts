@@ -8,15 +8,16 @@ import type { ThemeData } from "./theme";
  * Note the id for Solana is `'solana'` (the chain), not `'svm'`.
  */
 export type WalletProviderId =
-  | "evm"
-  | "starknet"
-  | "fuel"
-  | "paradex"
-  | "bitcoin"
-  | "ton"
-  | "solana"
-  | "tron"
-  | "imtblPassport";
+  | 'evm'
+  | 'starknet'
+  | 'fuel'
+  | 'paradex'
+  | 'bitcoin'
+  | 'ton'
+  | 'solana'
+  | 'tron'
+  | 'stellar'
+  | 'imtblPassport';
 
 /**
  * Public widget configuration contract.

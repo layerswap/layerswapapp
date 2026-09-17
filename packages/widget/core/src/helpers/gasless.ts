@@ -4,7 +4,7 @@ export type GaslessCapabilityInput = {
     depositMethod: string | undefined
     supportsGaslessDeposit: boolean | undefined
     sourceTokenContract: string | null | undefined
-    gaslessStandard: GaslessStandard | undefined
+    gaslessStandard: GaslessStandard | null | undefined
     sourceIsSupported: boolean | undefined
     sourceAddress: string | undefined
 }
@@ -18,6 +18,7 @@ export function isGaslessCapableRoute(input: GaslessCapabilityInput): boolean {
         && !!input.supportsGaslessDeposit
         && !sourceTokenIsNative
         && !usesPermit2
+        && input.gaslessStandard !== 'erc2612'
         && !!input.sourceIsSupported
         && !!input.sourceAddress
 }

@@ -1,4 +1,4 @@
-import { type Wallet } from '@layerswap/widget-types';
+import { ActionMessageType, type Wallet } from '@layerswap/widget-types';
 import LayerSwapApiClient, {
     BackendTransactionStatus,
     DepositAction,
@@ -65,9 +65,28 @@ export const requiresDepositActionRefresh = (action: DepositAction, actions: Dep
 export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClick: WalletTransfer, action: TransferDepositAction): Promise<string | undefined> => {
     const { swapData, swapBasicData, selectedWallet, sourceAddress, layerswapApiClient, setActionStateText, setSwapTransaction, onSuccess } = ctx
 
-    const transferProps = resolveTransactionData(swapData, action, swapBasicData, selectedWallet)
-    setActionStateText(action.step === 'approve_permit2' ? "Approve in your wallet" : "Confirm in your wallet")
-    const hash = await onClick(transferProps)
+    let transferProps = resolveTransactionData(swapData, action, swapBasicData, selectedWallet)
+    const confirmationText = action.step === 'approve_permit2' ? "Approve in your wallet" : "Confirm in your wallet"
+    setActionStateText(confirmationText)
+    let hash: string | undefined
+    try {
+        hash = await onClick(transferProps)
+    } catch (error) {
+        if ((error as Error)?.name !== ActionMessageType.TransactionExpired) throw error
+
+        setActionStateText("Refreshing transfer")
+        const refreshed = await layerswapApiClient.GetDepositActionsAsync(
+            swapData.id,
+            sourceAddress ?? selectedWallet.address,
+        )
+        const refreshedAction = getActionableDepositAction(refreshed?.data)
+        if (!refreshedAction || !isTransferAction(refreshedAction) || refreshedAction.step !== action.step) {
+            throw new Error('Could not refresh the expired Stellar deposit action. Please try again.')
+        }
+        transferProps = resolveTransactionData(swapData, refreshedAction, swapBasicData, selectedWallet)
+        setActionStateText(confirmationText)
+        hash = await onClick(transferProps)
+    }
     if (!hash) return
 
     // Permit2 approval is a prerequisite, not the swap transaction. The caller
@@ -136,8 +155,11 @@ const resolveTransactionData = (swapDetails: SwapDetails, depositAction: Transfe
 
     return {
         amount: depositAction.amount,
+        amountInBaseUnits: depositAction.amount_in_base_units,
         callData: depositAction.call_data || '0x',
+        encodedArgs: depositAction.encoded_args,
         depositAddress: depositAction.to_address,
+        sourceAddress: depositAction.from_address,
         sequenceNumber: swapDetails.metadata.sequence_number,
         swapId: swapDetails.id,
         userDestinationAddress: swapBasicData.destination_address,

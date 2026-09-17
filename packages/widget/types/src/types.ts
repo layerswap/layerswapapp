@@ -36,7 +36,7 @@ export class Token {
     listing_date: string;
     status?: 'active' | 'inactive' | 'not_found';
     supports_gasless_deposit?: boolean;
-    gasless_standard?: GaslessStandard;
+    gasless_standard?: GaslessStandard | null;
     source_rank?: number | undefined;
     destination_rank?: number | undefined;
 }

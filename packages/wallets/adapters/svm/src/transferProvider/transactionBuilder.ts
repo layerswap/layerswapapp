@@ -1,11 +1,12 @@
-import {
+import { TransactionExpiredBlockheightExceededError } from "@solana/web3.js";
+import type {
     BlockhashWithExpiryBlockHeight,
     Connection,
-    TransactionExpiredBlockheightExceededError,
     VersionedTransactionResponse,
 } from "@solana/web3.js";
-import { sleep } from "@layerswap/utils"
-import { retry } from "@layerswap/utils";type TransactionSenderAndConfirmationWaiterArgs = {
+import { retry, sleep } from "@layerswap/utils";
+
+type TransactionSenderAndConfirmationWaiterArgs = {
     connection: Connection;
     serializedTransaction: Buffer;
     blockhashWithExpiryBlockHeight: BlockhashWithExpiryBlockHeight;
@@ -88,7 +89,7 @@ export async function transactionSenderAndConfirmationWaiter({
         async () => {
             const response = await connection.getTransaction(txid, {
                 commitment: "confirmed",
-                maxSupportedTransactionVersion: 0,
+                maxSupportedTransactionVersion: 1,
             });
             if (!response) {
                 throw new Error("Transaction not found");

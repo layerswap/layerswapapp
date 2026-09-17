@@ -261,11 +261,12 @@ type DepositActionBase = DepositActionWorkflow & {
     amount_in_base_units?: string,
     call_data?: `0x${string}` | string | null,
     gas_limit?: string,
-    encoded_args?: string[],
+    encoded_args?: string[] | null,
+    from_address?: string,
     fee?: any | null,//TODO: clarify this field type
     network?: Network,
     order?: number,
-    to_address?: `0x${string}`,
+    to_address?: string,
     token?: Token,
     fee_token?: Token,
 }

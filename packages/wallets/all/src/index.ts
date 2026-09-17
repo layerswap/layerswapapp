@@ -48,6 +48,9 @@ import { createTONDescriptor } from "./descriptors/ton";
 import type { TronProviderConfig } from "@layerswap/wallet-tron";
 import { createTronDescriptor } from "./descriptors/tron";
 
+import type { StellarProviderConfig } from "@layerswap/wallet-stellar";
+import { createStellarDescriptor } from "./descriptors/stellar";
+
 import { WalletProviderDescriptor, WalletProvider, WalletWrapper } from "@layerswap/wallet-core/types"
 
 export { defineWalletDescriptor } from "./descriptors/defineWalletDescriptor";
@@ -82,6 +85,9 @@ export type { TONProviderConfig, TonClientConfig };
 export { createTronDescriptor };
 export type { TronProviderConfig };
 
+export { createStellarDescriptor };
+export type { StellarProviderConfig };
+
 /**
  * Configuration options for getDefaultProviders function
  */
@@ -98,7 +104,8 @@ export type DefaultWalletConfig = {
  * other chain ships as a `WalletProviderDescriptor` — the real SDK is
  * dynamic-imported on first connect-modal open. This keeps starknet,
  * @paradex/sdk, @ton/*, @tonconnect/sdk, @fuel-ts/*, @solana/web3.js,
- * tronweb (+ its transitive `validator`/`bignumber.js`), bitcoinjs-lib,
+ * tronweb (+ its transitive `validator`/`bignumber.js`), Stellar Wallets Kit,
+ * @stellar/stellar-sdk, bitcoinjs-lib,
  * @bigmi, and the connector adapters out of the host's entry chunk.
  *
  * @param config - Configuration options for the wallet providers
@@ -155,6 +162,8 @@ export function getDefaultProviders(config: DefaultWalletConfig = {}) {
         createSVMDescriptor(walletConnect),
         // Tron — lazy. Pulls tronweb + its transitive validator/bignumber/protobuf.
         createTronDescriptor(),
+        // Stellar — lazy. Pulls Wallets Kit, Reown, and the Stellar SDK on connect.
+        createStellarDescriptor(walletConnect),
         // Immutable Passport — lazy and conditional. The SDK + service
         // init chain pulls ~993 KB Brotli; deferring it to first
         // connect-modal open removes that from the home page waterfall.

@@ -8,6 +8,7 @@ export enum NetworkType {
   Fuel = 'fuel',
   Bitcoin = 'bitcoin',
   Tron = 'tron',
+  Stellar = 'stellar',
   Hyperliquid = 'hyperliquid',
   Polymarket = 'polymarket',
 }
@@ -28,7 +29,7 @@ type RefuelToken = {
   listing_date: string;
   status?: 'active' | 'inactive' | 'not_found';
   supports_gasless_deposit?: boolean;
-  gasless_standard?: GaslessStandard;
+  gasless_standard?: GaslessStandard | null;
   source_rank?: number;
   destination_rank?: number;
 };
