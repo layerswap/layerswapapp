@@ -13,14 +13,14 @@ const SlowRouteNote: FC<Props> = ({ avgCompletionTime }) => {
 
     return (
         <div className="flex flex-col items-center gap-4 mt-2 w-full">
-            <div className="h-24 w-24 rounded-2xl bg-warning-background flex items-center justify-center">
-                <Clock className="h-12 w-12 text-warning-foreground" />
+            <div className="h-24 w-24 rounded-2xl bg-error-background flex items-center justify-center">
+                <Clock className="h-12 w-12 text-error-foreground" />
             </div>
             <div className="text-center max-w-xs space-y-1">
                 <p className="text-2xl">Longer transfer time</p>
                 <p className="text-secondary-text">
                     <span>This route takes </span>
-                    {estimate ? <><span>approximately </span><span className="text-warning-foreground">{estimate}</span></> : <span>longer than usual</span>}
+                    {estimate ? <><span>approximately </span><span className="text-error-foreground">{estimate}</span></> : <span>longer than usual</span>}
                     <span> to complete. Actual timing may vary depending on network conditions.</span>
                 </p>
             </div>
