@@ -22,7 +22,6 @@ import { useWalletWithdrawalState } from "@/context/withdrawalContext";
 import { useSelectedAccount } from "@/context/swapAccounts";
 import { SwapFormValues } from "../../../Form/SwapFormValues";
 import { ErrorHandler } from "@/lib/ErrorHandler";
-import { TokenBalance, TransferProps } from "@layerswap/widget-types";
 import { resolvePriceImpactValues } from "@/lib/fees";
 import InfoIcon from "@/components/Icons/InfoIcon";
 import { ICON_CLASSES_WARNING } from "@/components/Pages/Swap/Form/SecondaryComponents/validationError/constants";
