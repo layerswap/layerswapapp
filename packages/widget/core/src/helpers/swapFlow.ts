@@ -1,5 +1,5 @@
 import { Exchange } from "@/Models/Exchange";
-import type { SwapBasicData, SwapExecution } from "@/lib/apiClients/layerSwapApiClient";
+import type { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 
 export type DepositMethod = 'wallet' | 'deposit_address' | undefined;
 
@@ -15,8 +15,18 @@ export function wantsFrontendSwap(_options: FrontendSwapOptions): true {
     return true;
 }
 
-export function isFrontendSwapExecution(execution: Pick<SwapExecution, 'type'> | undefined): boolean {
-    return execution?.type === 'frontend_swap';
+type CompactSwapQuoteOptions = {
+    swapData: Pick<SwapBasicData, 'use_deposit_address' | 'source_network' | 'destination_network'> | undefined;
+    isGaslessActive: boolean;
+}
+
+// Same-network wallet swaps use compact quote details when the user pays gas.
+export function shouldShowCompactSwapQuote({ swapData, isGaslessActive }: CompactSwapQuoteOptions): boolean {
+    return !!swapData
+        && !swapData.use_deposit_address
+        && !isGaslessActive
+        && !!swapData.source_network?.name
+        && swapData.source_network.name === swapData.destination_network?.name;
 }
 
 // Deposit address (manual transfer) flow with no source exchange: amount is optional

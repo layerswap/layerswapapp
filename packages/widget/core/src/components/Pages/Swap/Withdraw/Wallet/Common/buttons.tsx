@@ -32,7 +32,7 @@ import { useDepositSettings } from "@/context/depositSettings";
 import { DepositExecutionContext, GaslessSigner, WalletTransfer, executeGaslessAuthorization, executeWalletTransfer, getActionableDepositAction, getDepositActionLabel, isSignAction, isTransferAction, requiresDepositActionRefresh } from "./depositExecution";
 import DepositWorkflowProgress from "./DepositWorkflowProgress";
 import { hasSwapExecutionProgress } from "@/helpers/swapProgress";
-import { isGaslessCapableRoute } from "@/helpers/gasless";
+import { isGaslessCapableRoute, isGaslessDepositWorkflow } from "@/helpers/gasless";
 
 const layerswapApiClient = new LayerSwapApiClient()
 
@@ -193,7 +193,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     refuel,
     ...props
 }) => {
-    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, execution, depositActionsResponse, refuel: refuelData, swapError, setSwapError } = useSwapDataState()
+    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, refuel: refuelData, swapError, setSwapError } = useSwapDataState()
     const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
     const gaslessFailureStage = useGaslessPreferenceStore(s => s.gaslessFailureStage)
     const gaslessEnabled = useGaslessPreferenceStore(s => s.gaslessEnabled)
@@ -249,9 +249,10 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         sourceIsSupported: !!selectedWallet?.asSourceSupportedNetworks?.includes(swapBasicData.source_network.name),
         sourceAddress: selectedSourceAccount?.address,
     })
+    const currentGasless = isGaslessDepositWorkflow(depositActions)
     const flowPreferenceChanged = !!swapId
-        && !!execution
-        && (execution.gas_mode === 'gasless') !== desiredGasless
+        && currentGasless !== undefined
+        && currentGasless !== desiredGasless
     const actionableDepositAction = getActionableDepositAction(depositActions)
     const primaryActionText = actionableDepositAction
         ? getDepositActionLabel(actionableDepositAction)

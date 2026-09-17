@@ -4,7 +4,7 @@ import LinkWithIcon from '@/components/Common/LinkWithIcon';
 import { FC, useCallback, useEffect, useMemo, useRef } from 'react'
 import { Widget } from '@/components/Widget/Index';
 import SwapSummary from '../Summary';
-import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, SwapBasicData, SwapDetails, SwapExecution, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
+import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, SwapBasicData, SwapDetails, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
 import { truncateDecimals } from '@/components/utils/RoundDecimals';
 import { SwapFailReasons } from '@/Models/RangeError';
 import { Gauge } from './gauge';
@@ -25,21 +25,22 @@ import { SwapPhase } from '@/components/utils/resolveSwapPhase';
 import { useDepositSettings } from '@/context/depositSettings';
 import { SwapFailureReason } from '@/hooks/useSwapRetry';
 import { SwapQuoteDetails } from '../SwapQuoteDetails';
-import { isFrontendSwapExecution } from '@/helpers/swapFlow';
+import { shouldShowCompactSwapQuote } from '@/helpers/swapFlow';
+import { useIsGaslessActive } from '@/hooks/useIsGaslessActive';
 
 const apiClient = new LayerSwapApiClient();
 
 type Props = {
     swapBasicData: SwapBasicData;
     swapDetails: SwapDetails;
-    execution: SwapExecution | undefined;
     quote: SwapQuote | undefined;
     refuel: Refuel | undefined;
     failureReason?: SwapFailureReason;
 }
 
-const Processing: FC<Props> = ({ swapBasicData, swapDetails, execution, quote, refuel, failureReason }) => {
-    const isFrontendSwap = isFrontendSwapExecution(execution)
+const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel, failureReason }) => {
+    const isGaslessActive = useIsGaslessActive(swapBasicData)
+    const showCompactQuote = shouldShowCompactSwapQuote({ swapData: swapBasicData, isGaslessActive })
     const { boot, show, update } = useIntercom();
     const { onSwapStatusChange } = useCallbacks()
     const { isDepositFlow } = useDepositSettings()
@@ -388,7 +389,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, execution, quote, r
         <Widget.Content fitContent>
             <div className={`w-full min-h-102.5 h-full space-y-2 flex flex-col justify-between text-primary-text`}>
                 <SwapSummary />
-                {!isFrontendSwap || phase === SwapPhase.Completed ? null : (
+                {!showCompactQuote || phase === SwapPhase.Completed ? null : (
                     <SwapQuoteDetails
                         compact
                         swapBasicData={swapBasicData}

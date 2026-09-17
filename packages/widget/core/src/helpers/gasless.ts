@@ -1,4 +1,5 @@
 import type { GaslessStandard } from '@layerswap/widget-types'
+import type { DepositAction } from '@/lib/apiClients/layerSwapApiClient'
 
 export type GaslessCapabilityInput = {
     depositMethod: string | undefined
@@ -21,4 +22,13 @@ export function isGaslessCapableRoute(input: GaslessCapabilityInput): boolean {
         && input.gaslessStandard !== 'erc2612'
         && !!input.sourceIsSupported
         && !!input.sourceAddress
+}
+
+// A gasless deposit ends with authorization. Self-paid workflows also require
+// the user to publish a transaction. Missing actions leave the mode unknown.
+export function isGaslessDepositWorkflow(actions: DepositAction[] | undefined): boolean | undefined {
+    if (!actions?.length) return undefined
+
+    return actions.some(action => action.type === 'sign' || action.step === 'sign')
+        && !actions.some(action => action.step === 'publish')
 }

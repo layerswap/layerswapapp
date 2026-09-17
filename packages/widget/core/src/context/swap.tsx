@@ -1,6 +1,6 @@
 import { type Refuel, type Wallet } from '@layerswap/widget-types';
 import { Context, useCallback, useEffect, useState, createContext, useContext, useMemo, useRef } from 'react'
-import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, DepositAction, SwapBasicData, SwapQuote, SwapDetails, SwapExecution, TransactionType } from '@/lib/apiClients/layerSwapApiClient';
+import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, DepositAction, SwapBasicData, SwapQuote, SwapDetails, TransactionType } from '@/lib/apiClients/layerSwapApiClient';
 import { InitialSettings } from '@/Models/InitialSettings';
 import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '@/Models/ApiResponse';
@@ -60,7 +60,6 @@ export type SwapContextData = {
     quoteError: QuoteError | undefined,
     refuel: Refuel | undefined,
     swapDetails: SwapDetails | undefined,
-    execution: SwapExecution | undefined,
     swapId: string | undefined,
     swapModalOpen: boolean,
     swapError?: string | null | undefined,
@@ -71,8 +70,6 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const initialSettings = useInitialSettings()
     const { onSwapCreate } = useCallbacks()
     const [swapBasicFormData, setSwapBasicFormData] = useState<SwapBasicData & { refuel: boolean }>()
-
-    const { providers } = useWallet(swapBasicFormData?.source_network, 'asSource')
 
     const [quoteIsLoading, setQuoteLoading] = useState<boolean>(false)
     const [withdrawType, setWithdrawType] = useState<WithdrawType>()
@@ -207,13 +204,6 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         }
         return formDataQuote?.quote
     }, [formDataQuote, data, swapId, extendedSwapData]);
-
-    const execution = useMemo(() => {
-        if (swapId && data?.data) {
-            return data.data.execution
-        }
-        return formDataQuote?.execution
-    }, [formDataQuote, data, swapId]);
 
     const quoteError = useMemo(() => {
         if (swapId && data?.data) {
@@ -432,12 +422,11 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         refuel,
         swapBasicData,
         swapDetails,
-        execution,
         swapId,
         swapModalOpen,
         swapError,
         setSwapError
-    }), [withdrawType, swapTransaction, depositAddressIsFromAccount, error, depositActionsResponse, depositActionsError, quote, quoteIsLoading, quoteError, refuel, swapBasicData, swapDetails, execution, swapId, swapModalOpen, swapError]);
+    }), [withdrawType, swapTransaction, depositAddressIsFromAccount, error, depositActionsResponse, depositActionsError, quote, quoteIsLoading, quoteError, refuel, swapBasicData, swapDetails, swapId, swapModalOpen, swapError]);
 
     return (
         <SwapDataStateContext.Provider value={stateValue}>

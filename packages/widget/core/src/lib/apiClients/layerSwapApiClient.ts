@@ -166,18 +166,9 @@ export type CreateSwapParams = {
 
 export type SwapResponse = {
     deposit_actions?: DepositAction[];
-    execution?: SwapExecution;
     swap: SwapItem;
     quote: SwapQuote
     refuel?: Refuel,
-}
-
-export type SwapExecution = {
-    type: 'frontend_swap' | 'wallet_direct' | 'wallet_depository' | 'deposit_address' | 'exchange';
-    gas_mode: 'self_paid' | 'gasless';
-    wallet_deposit_mode?: 'direct' | 'depository';
-    pull_standard?: 'native' | 'eip3009' | 'permit2' | 'permit2_witness';
-    provisional: boolean;
 }
 
 export type SwapBasicData = {
@@ -291,7 +282,6 @@ export type DepositAction = TransferDepositAction | SignDepositAction | PendingD
 
 export type Quote = {
     quote: SwapQuote,
-    execution?: SwapExecution,
     refuel?: Refuel,
     reward?: QuoteReward
 }
