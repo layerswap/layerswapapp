@@ -1,12 +1,13 @@
 import { NetworkType } from '@layerswap/widget-types';
 import { multicall, getBalance, GetBalanceReturnType, createConfig } from '@wagmi/core'
-import { Chain, formatUnits, PublicClient, erc20Abi } from "viem"
+import { Chain, PublicClient, erc20Abi } from "viem"
 import resolveChain from "../evmUtils/resolveChain"
 import BalanceGetterAbi from "../jsons/BALANCEGETTERABI.json"
 import { KnownInternalNames } from "@layerswap/utils";
 import { NetworkWithTokens, Token, Network } from "@layerswap/widget-types";
 import { BalanceProvider, TokenBalance } from "@layerswap/widget-types";
 import { resolveFallbackTransport } from "../evmUtils/resolveTransports"
+import { toSafeBalanceNumber } from "./toSafeBalanceNumber"
 
 const nativeBalanceSkip = [
     KnownInternalNames.Networks.TempoMainnet,
@@ -102,13 +103,13 @@ export class EVMBalanceProvider extends BalanceProvider {
             functionName: 'getBalances',
             args: [address as `0x${string}`, tokenContracts],
             authorizationList: undefined
-        }) as [string[], number[]]
+        }) as [boolean[], bigint[]]
 
         const resolvedERC20Balances = network.tokens.filter(t => t.contract)?.map((token, index) => {
             const amount = balances[1][index]
 
             if (amount >= 0) {
-                const formattedAmount = Number(formatUnits(BigInt(amount), token.decimals))
+                const formattedAmount = toSafeBalanceNumber(amount, token.decimals)
                 return {
                     network: network.name,
                     token: token.symbol,
@@ -120,12 +121,12 @@ export class EVMBalanceProvider extends BalanceProvider {
             }
         })
 
-        const nativeTokenBalance = Number(balances?.[1]?.[balances?.[1]?.length - 1])
+        const nativeTokenBalance = balances?.[1]?.[balances?.[1]?.length - 1]
 
         const nativeTokenResolvedBalance: TokenBalance | undefined = network.token?.decimals ? {
             network: network.name,
             token: network.token?.symbol,
-            amount: nativeTokenBalance >= 0 ? Number(formatUnits(BigInt(nativeTokenBalance), network.token?.decimals)) : undefined,
+            amount: nativeTokenBalance >= 0 ? toSafeBalanceNumber(nativeTokenBalance, network.token?.decimals) : undefined,
             request_time: new Date().toJSON(),
             decimals: network.token?.decimals,
             isNativeCurrency: true,
@@ -149,7 +150,7 @@ export class EVMBalanceProvider extends BalanceProvider {
                 return {
                     network: network.name,
                     token: currency.symbol,
-                    amount: Number(formatUnits(BigInt(d.result as string | number), currency.decimals)),
+                    amount: toSafeBalanceNumber(BigInt(d.result as string | number), currency.decimals),
                     request_time: new Date().toJSON(),
                     decimals: currency.decimals,
                     isNativeCurrency: false,
@@ -173,7 +174,7 @@ export class EVMBalanceProvider extends BalanceProvider {
         const nativeBalance: TokenBalance = {
             network: network.name,
             token: token.symbol,
-            amount: Number(formatUnits(BigInt((balanceData as GetBalanceReturnType)?.value), token.decimals)),
+            amount: toSafeBalanceNumber((balanceData as GetBalanceReturnType).value, token.decimals),
             request_time: new Date().toJSON(),
             decimals: token.decimals,
             isNativeCurrency: true,

@@ -3,6 +3,7 @@ import { useAsyncModal } from "@/context/asyncModal";
 import { getLimits, validDestinationAddress } from "@/hooks/useFee";
 import { FC } from "react";
 import { SwapFormValues } from "../Form/SwapFormValues";
+import { wantsFrontendSwap } from "@/helpers/swapFlow";
 
 interface QuoteUpdatedProps {
     isBelowMin?: boolean;
@@ -58,6 +59,11 @@ export async function handleLimitsUpdate(params: {
         destinationNetwork: swapValues.to?.name,
         destinationToken: swapValues.toAsset?.symbol,
         useDepositAddress: swapValues.depositMethod == 'deposit_address',
+        useFrontendSwap: wantsFrontendSwap({
+            depositMethod: swapValues.depositMethod,
+            sourceNetwork: swapValues.from?.name,
+            destinationNetwork: swapValues.to?.name,
+        }),
         refuel: params.swapValues.refuel,
         destinationAddress: validDestinationAddress(swapValues.destination_address, swapValues.to)
     });

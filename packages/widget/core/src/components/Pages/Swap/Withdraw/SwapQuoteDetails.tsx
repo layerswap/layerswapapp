@@ -15,10 +15,11 @@ type Props = {
     quoteError: QuoteError | undefined,
     refuel: Refuel | undefined,
     quoteIsLoading: boolean,
-    partner?: Partner | undefined
+    partner?: Partner | undefined,
+    compact?: boolean
 }
 
-export const SwapQuoteDetails: FC<Props> = ({ swapBasicData: swapData, quote, refuel, quoteIsLoading, quoteError, partner }) => {
+export const SwapQuoteDetails: FC<Props> = ({ swapBasicData: swapData, quote, refuel, quoteIsLoading, quoteError, partner, compact }) => {
     const { source_network, destination_network, use_deposit_address, destination_token, requested_amount, source_token, destination_address } = swapData || {}
 
     if (quoteError) return (
@@ -41,5 +42,5 @@ export const SwapQuoteDetails: FC<Props> = ({ swapBasicData: swapData, quote, re
         destination_address,
     }
 
-    return <SwapQuoteComp quote={{ quote, refuel }} swapValues={values} isQuoteLoading={quoteIsLoading} partner={partner} />
+    return <SwapQuoteComp quote={{ quote, refuel }} swapValues={values} isQuoteLoading={quoteIsLoading} partner={partner} compact={compact} />
 }

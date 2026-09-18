@@ -7,6 +7,8 @@ import { gunzipSync, gzipSync, strFromU8, strToU8 } from "fflate";
 type CompactRouteToken = {
     symbol: string;
     status?: NetworkRouteToken["status"];
+    supports_gasless_deposit?: NetworkRouteToken["supports_gasless_deposit"];
+    gasless_standard?: NetworkRouteToken["gasless_standard"];
     source_rank?: number;
     destination_rank?: number;
     refuel?: NetworkRouteToken["refuel"];
@@ -70,6 +72,8 @@ function compactRouteToken(token: NetworkRouteToken): CompactRouteToken {
     return {
         symbol: token.symbol,
         status: token.status,
+        supports_gasless_deposit: token.supports_gasless_deposit,
+        gasless_standard: token.gasless_standard,
         source_rank: token.source_rank,
         destination_rank: token.destination_rank,
         refuel: token.refuel,
@@ -149,6 +153,12 @@ function inflateRouteToken(
 
     if (compactToken.status !== undefined) {
         resolvedToken.status = compactToken.status;
+    }
+    if (compactToken.supports_gasless_deposit !== undefined) {
+        resolvedToken.supports_gasless_deposit = compactToken.supports_gasless_deposit;
+    }
+    if (compactToken.gasless_standard !== undefined) {
+        resolvedToken.gasless_standard = compactToken.gasless_standard;
     }
     if (compactToken.source_rank !== undefined) {
         resolvedToken.source_rank = compactToken.source_rank;
