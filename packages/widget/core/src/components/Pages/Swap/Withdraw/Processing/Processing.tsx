@@ -71,20 +71,10 @@ const PHASE_LIFECYCLE_EVENTS: Record<SwapPhase, PhaseLifecycleEvent> = {
         stage: 'swap',
         outcome: 'failed',
     },
-    [SwapPhase.Delayed]: {
-        step: 'swap_delayed',
-        stage: 'swap',
-        outcome: 'delayed',
-    },
     [SwapPhase.Expired]: {
         step: 'swap_expired',
         stage: 'swap',
         outcome: 'expired',
-    },
-    [SwapPhase.Cancelled]: {
-        step: 'swap_cancelled',
-        stage: 'swap',
-        outcome: 'cancelled',
     },
     [SwapPhase.PendingRefund]: {
         step: 'refund_pending',

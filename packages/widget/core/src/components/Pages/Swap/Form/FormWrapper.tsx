@@ -195,13 +195,12 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                 const status = swapDetails?.status
                 const completed = resolvedPhase === SwapPhase.Completed || resolvedPhase === SwapPhase.Refunded
                 const failed = resolvedPhase === SwapPhase.Failed || resolvedPhase === SwapPhase.Expired
-                const cancelled = resolvedPhase === SwapPhase.Cancelled
                 onSwapLifecycle({
                     step: 'flow_closed',
                     stage: 'flow',
-                    outcome: completed ? 'succeeded' : failed ? 'failed' : cancelled ? 'cancelled' : 'abandoned',
+                    outcome: completed ? 'succeeded' : failed ? 'failed' : 'abandoned',
                     path: 'SwapModal',
-                    reasonCode: completed ? 'completed_flow_closed' : (failed || cancelled) ? resolvedPhase : 'user_closed_non_terminal_flow',
+                    reasonCode: completed ? 'completed_flow_closed' : failed ? resolvedPhase : 'user_closed_non_terminal_flow',
                     status,
                     phase: resolvedPhase,
                     ...lifecycleContextFromSwap(swapBasicData, swapDetails),
