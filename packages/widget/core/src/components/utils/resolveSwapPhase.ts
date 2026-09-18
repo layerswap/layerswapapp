@@ -18,9 +18,7 @@ export enum SwapPhase {
     SettlingOutput = 'settling_output',
     Completed = 'completed',
     Failed = 'failed',
-    Delayed = 'delayed',
     Expired = 'expired',
-    Cancelled = 'cancelled',
     PendingRefund = 'pending_refund',
     Refunded = 'refunded',
 }
@@ -60,7 +58,6 @@ export const TERMINAL_PHASES: ReadonlySet<SwapPhase> = new Set([
     SwapPhase.Completed,
     SwapPhase.Failed,
     SwapPhase.Expired,
-    SwapPhase.Cancelled,
     SwapPhase.Refunded,
 ]);
 
@@ -117,8 +114,8 @@ export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStat
     const isTerminal = TERMINAL_PHASES.has(phase);
 
     const isRefundFlow = phase === SwapPhase.PendingRefund || phase === SwapPhase.Refunded;
-    const hidesSteps = phase === SwapPhase.Cancelled || phase === SwapPhase.Expired;
-    const showsFailedPanel = phase === SwapPhase.Expired || phase === SwapPhase.Cancelled || phase === SwapPhase.Delayed;
+    const hidesSteps = phase === SwapPhase.Expired;
+    const showsFailedPanel = phase === SwapPhase.Expired;
     const showsEstimatedTime = !outputReady && !isTerminal && phase !== SwapPhase.PendingRefund;
 
     return {
@@ -152,9 +149,7 @@ function resolvePhase(args: {
         hasInputTx, hasStoredWalletTx, showWithdrawScreen,
     } = args;
 
-    if (swapStatus === SwapStatus.Cancelled) return SwapPhase.Cancelled;
     if (swapStatus === SwapStatus.Expired) return SwapPhase.Expired;
-    if (swapStatus === SwapStatus.UserTransferDelayed) return SwapPhase.Delayed;
     if (swapStatus === SwapStatus.Refunded) return SwapPhase.Refunded;
     if (swapStatus === SwapStatus.PendingRefund) return SwapPhase.PendingRefund;
     if (swapStatus === SwapStatus.Failed) return SwapPhase.Failed;
@@ -219,11 +214,6 @@ function resolveStepStatuses(args: {
                 refuel_transfer = ProgressStatus.Removed;
             }
             break;
-        case SwapPhase.Delayed:
-            input_transfer = ProgressStatus.Removed;
-            output_transfer = ProgressStatus.Removed;
-            refuel_transfer = ProgressStatus.Removed;
-            break;
         case SwapPhase.SettlingOutput:
             input_transfer = ProgressStatus.Complete;
             output_transfer = outputReady ? ProgressStatus.Complete : ProgressStatus.Current;
@@ -277,10 +267,6 @@ function resolveGeneralStatus(args: {
                 title: failReason === SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? `${noun} on hold` : `${noun} failed`,
                 subTitle: 'View instructions below',
             };
-        case SwapPhase.Delayed:
-            return { title: `${noun} delayed`, subTitle: 'View instructions below' };
-        case SwapPhase.Cancelled:
-            return { title: `${noun} cancelled`, subTitle: '...' };
         case SwapPhase.Expired:
             return { title: `${noun} expired`, subTitle: '...' };
         default:

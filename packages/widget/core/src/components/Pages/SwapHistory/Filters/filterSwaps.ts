@@ -4,11 +4,9 @@ import { SwapResponse, TransactionType } from '@/lib/apiClients/layerSwapApiClie
 const INCOMPLETE_STATUSES: string[] = [
     SwapStatus.Created,
     SwapStatus.UserTransferPending,
-    SwapStatus.UserTransferDelayed,
     SwapStatus.LsTransferPending,
     SwapStatus.Failed,
     SwapStatus.Expired,
-    SwapStatus.Cancelled,
     SwapStatus.PendingRefund,
 ]
 
