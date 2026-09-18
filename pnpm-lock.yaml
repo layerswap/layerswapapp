@@ -1228,6 +1228,15 @@ importers:
         specifier: workspace:*
         version: link:../js
     devDependencies:
+      '@layerswap/wallets':
+        specifier: workspace:^
+        version: link:../../wallets/all
+      '@layerswap/widget':
+        specifier: workspace:^
+        version: link:../core
+      '@layerswap/widget-cdn':
+        specifier: workspace:*
+        version: link:../../../apps/widget-cdn
       '@types/react':
         specifier: 'catalog:'
         version: 19.2.3
