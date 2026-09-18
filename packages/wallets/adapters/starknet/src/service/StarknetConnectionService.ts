@@ -82,10 +82,10 @@ function assertSecureRpcUrl(url: string | undefined): asserts url is string {
 export async function resolveStarknetWallet(props: ResolveStarknetWalletProps): Promise<Wallet | null> {
     const { name, connector, network, disconnectWallets, address, withdrawalSupportedNetworks, autofillSupportedNetworks, asSourceSupportedNetworks } = props
     try {
-    const walletChain = network?.chainId
-    assertSecureRpcUrl(network?.rpcUrl)
-    const { RpcProvider, WalletAccount } = await import('starknet')
-    const rpcProvider = new RpcProvider({ nodeUrl: network!.rpcUrl })
+        const walletChain = network?.chainId
+        assertSecureRpcUrl(network?.rpcUrl)
+        const { RpcProvider, WalletAccount } = await import('starknet-rpc')
+        const rpcProvider = await RpcProvider.create({ nodeUrl: network!.rpcUrl })
 
         const walletAccount = new WalletAccount({ provider: rpcProvider, walletProvider: (connector as any).wallet, address })
 

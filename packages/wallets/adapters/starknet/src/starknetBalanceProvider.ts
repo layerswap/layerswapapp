@@ -14,14 +14,14 @@ export class StarknetBalanceProvider extends BalanceProvider {
             Contract,
             RpcProvider,
             uint256,
-        } = await import("starknet");
+        } = await import("starknet-rpc");
         const { BigNumber } = await import("ethers");
 
         let balances: TokenBalance[] = []
 
         if (!network?.tokens) return
 
-        const provider = new RpcProvider({
+        const provider = await RpcProvider.create({
             nodeUrl: network.node_url,
         });
 
