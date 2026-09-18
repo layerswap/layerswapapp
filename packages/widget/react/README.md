@@ -164,6 +164,37 @@ observation deduplication. Wallet transfer cancellations use
 `wallet_action_rejected` with `reasonCode: 'user_rejected'`; they no longer
 invoke `callbacks.onError`.
 
+`callbacks.onTelemetry` is an optional, vendor-neutral analytics stream. Each
+event is `{ name, attributes }`, discriminated by `name`:
+
+| `name` | Event-specific attributes |
+|---|---|
+| `widget_flow` | `step` (any `onSwapLifecycle` step, plus `form_viewed`, `form_started`, `validation_shown`), optional `outcome`, `reason_code` |
+| `widget_interaction` | `action`, `trigger` |
+| `widget_operation` | `operation` (e.g. `quote_request`, `swap_creation`, `balance_fetch`, `wallet_transfer`), `operation_id`, `outcome`, `duration_ms` |
+
+Every event carries `schema_version: 1` and a unique `event_id`; all other
+attributes are primitives (`string | number | boolean`), never DOM text or
+provider response bodies. A handler that throws is ignored and never affects
+the swap. `widget_flow` events carry journey context (`flow_id`, `swap_id`,
+`submission_count`, progress flags) and deduplicate repeated phase and
+transaction observations the same way `onSwapLifecycle` does; a new journey
+starts on every `form_submitted`. Form text editing reports `form_started`
+once rather than an interaction per keystroke.
+
+```tsx
+import type { WidgetTelemetryEvent } from '@layerswap/widget-react';
+
+const onTelemetry = (event: WidgetTelemetryEvent) => {
+  if (event.name === 'widget_operation') {
+    analytics.track(event.attributes.operation, {
+      outcome: event.attributes.outcome,
+      durationMs: event.attributes.duration_ms,
+    });
+  }
+};
+```
+
 These contracts also apply to `@layerswap/widget-js` and CDN consumers.
 
 ## How it works
