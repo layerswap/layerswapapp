@@ -1,8 +1,7 @@
-import { useEffect, useLayoutEffect, useRef } from 'react'
+import { useRef } from 'react'
+import { useClientLayoutEffect } from '@layerswap/widget/internal'
 import { captureEvent, setSwapContext } from '../lib/faro'
 import { createSwapLifecycleTelemetry } from '../lib/faro-swap-lifecycle'
-
-const useClientLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
 
 export function useSwapLifecycleTelemetry() {
     const controllerRef = useRef<ReturnType<typeof createSwapLifecycleTelemetry> | null>(null)

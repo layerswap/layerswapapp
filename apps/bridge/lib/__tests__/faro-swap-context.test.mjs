@@ -349,3 +349,96 @@ test('occurrence identity stays event-local and distinguishes same-text failures
     assert.equal(h.attrs().occurrence_id, undefined, 'do not stamp the incident on unrelated later records')
     h.controller.dispose()
 })
+
+test('a failed swap-context write is recorded on the row without blocking emission', () => {
+    const records = []
+    let contextAccepted = false
+    const controller = createSwapLifecycleTelemetry({
+        setSwapContext: () => contextAccepted,
+        captureEvent: (name, attrs) => { records.push({ name, attrs }); return true },
+    })
+    controller.record(event('form_submitted'))
+    controller.record(event('swap_created', 'swap-a'))
+    assert.deepEqual(records.map(record => record.attrs.context_write_failed), [true, true])
+    assert.deepEqual(records.map(record => record.attrs.step), ['form_submitted', 'swap_created'])
+    contextAccepted = true
+    controller.record(event('awaiting_wallet_action', 'swap-a'))
+    assert.equal(records.at(-1).attrs.step, 'awaiting_wallet_action')
+    assert.equal('context_write_failed' in records.at(-1).attrs, false)
+    controller.dispose()
+})
+
+test('journey state is bounded to recent swaps and never evicts the active journey', () => {
+    const records = []
+    const contextWrites = []
+    const controller = createSwapLifecycleTelemetry({
+        setSwapContext: attrs => { contextWrites.push(attrs); return true },
+        captureEvent: (name, attrs) => { records.push(attrs); return true },
+    })
+    const journeyOf = swapId => records.find(attrs => attrs.step === 'swap_created' && attrs.swap_id === swapId).journey_id
+    // Each submission opens a distinct journey; swap-0 becomes the oldest tracked one.
+    for (let i = 0; i < 65; i++) {
+        controller.record(event('form_submitted'))
+        controller.record(event('swap_created', `swap-${i}`))
+    }
+    // The active journey keeps its id even though it is tracked with the newest key.
+    controller.record(event('awaiting_wallet_action', 'swap-64'))
+    assert.equal(records.at(-1).journey_id, journeyOf('swap-64'))
+    // A still-tracked closed swap keeps its journey id for late updates.
+    controller.record(event('swap_completed', 'swap-1', { outcome: 'succeeded' }))
+    assert.equal(records.at(-1).journey_id, journeyOf('swap-1'))
+    // The evicted swap is no longer recognized, so its late update gets a new
+    // journey id, but as a background update it must not take over the live
+    // journey's context or stall tracking.
+    contextWrites.length = 0
+    controller.record(event('swap_completed', 'swap-0', { outcome: 'succeeded' }))
+    assert.equal(records.at(-1).swap_id, 'swap-0')
+    assert.notEqual(records.at(-1).journey_id, journeyOf('swap-0'))
+    assert.deepEqual(contextWrites, [])
+    controller.record(event('wallet_prompt_opened', 'swap-64'))
+    assert.equal(records.at(-1).journey_id, journeyOf('swap-64'))
+    assert.equal(contextWrites.at(-1)?.swap_id, 'swap-64')
+    assert.equal(contextWrites.at(-1)?.journey_id, journeyOf('swap-64'))
+    controller.dispose()
+})
+
+test('a late update for an evicted swap cannot revive a closed flow without explicit re-entry', async t => {
+    t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 1000 })
+    const h = harness()
+    t.after(() => h.controller.dispose())
+    const journeys = []
+    for (let i = 0; i < 65; i++) {
+        h.controller.record(event('form_submitted'))
+        h.controller.record(event('swap_created', `swap-${i}`))
+        journeys.push(h.attrs().journey_id)
+    }
+    h.controller.closeFlow()
+    await Promise.resolve()
+    assert.equal(h.attrs().swap_id, undefined)
+    const before = h.records.length
+    h.controller.record(event('output_transfer_pending', 'swap-0'))
+    assert.equal(h.records.length, before + 1)
+    assert.equal(h.records.at(-1).attrs.swap_id, 'swap-0')
+    assert.equal(h.attrs().swap_id, undefined, 'closed context stays cleared')
+    t.mock.timers.tick(31 * 60_000)
+    assert.equal(h.records.filter(record => record.attrs.step === 'suspected_stall').length, 0, 'no stall timer for a background update')
+    // Explicit re-entry lets the next reported swap own a new journey again.
+    h.controller.openFlow()
+    h.controller.record(event('output_transfer_pending', 'swap-0'))
+    assert.equal(h.attrs().swap_id, 'swap-0')
+    assert(h.attrs().journey_id && !journeys.includes(h.attrs().journey_id))
+})
+
+test('navigating straight from one open swap to another still hands over ownership', async () => {
+    const h = harness()
+    h.controller.record(event('swap_created', 'swap-a'))
+    const original = h.attrs().journey_id
+    h.controller.closeFlow()
+    h.controller.openFlow()
+    // An existing swap opened from history reports status without a creation step.
+    h.controller.record(event('output_transfer_pending', 'swap-b'))
+    await Promise.resolve()
+    assert.equal(h.attrs().swap_id, 'swap-b')
+    assert.notEqual(h.attrs().journey_id, original)
+    h.controller.dispose()
+})

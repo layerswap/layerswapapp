@@ -1,5 +1,7 @@
 // Object identity links observations of the same thrown failure. Never infer a
 // shared incident from matching text, a session ID, or a nearby timestamp.
+import { createRandomId } from './randomId'
+
 const occurrences = new WeakMap<object, string>()
 
 export function getErrorOccurrenceId(error: unknown): string | undefined {
@@ -14,9 +16,7 @@ export function getErrorOccurrenceId(error: unknown): string | undefined {
         try { current = (current as { cause?: unknown }).cause }
         catch { break }
     }
-    id ??= typeof globalThis.crypto?.randomUUID === 'function'
-        ? globalThis.crypto.randomUUID()
-        : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`
+    id ??= createRandomId()
     for (const item of chain) occurrences.set(item, id)
     return id
 }

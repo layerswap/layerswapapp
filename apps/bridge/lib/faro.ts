@@ -250,5 +250,11 @@ export function setFaroView(name: string): void {
     const client = getFaro() ?? initFaro()
     if (!client) return
 
-    client.api.setView({ name })
+    try {
+        client.api.setView({ name })
+    }
+    catch (captureError) {
+        // Runs on every route change; observability must never break navigation.
+        client.unpatchedConsole.error('[Faro] Failed to set view.', captureError)
+    }
 }

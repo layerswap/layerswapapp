@@ -169,6 +169,8 @@ The following implemented steps are expected under event name `swap_lifecycle`; 
 | terminal | completion, failure, expiry, cancellation, refund completion, flow close/error | normally once per fingerprint; terminal state ends journey timers |
 | diagnostic | `retry_requested`, `suspected_stall`, `transfer_blocked` | per retry, timer threshold or blocking-state transition |
 
+A row carries `context_write_failed: true` when the bridge could not apply the swap session context before emitting it (no Faro client, no session yet, or an SDK error). The row is still emitted; the flag only marks that surrounding signals from that moment may lack `swap_id`/`journey_id` context. The context writer retries automatically once a session exists.
+
 ## Correlation contract, observed and proposed
 
 Observed: a paired replay retained the exact session ID on both errors and all three fetch mirrors. The mirrors retained exact trace/span IDs in Loki. The errors had no active trace context. An equality query on traceID returned its one matching mirror. This verifies an event's own ID, not a causal relationship between an error and a nearby request.
@@ -188,6 +190,10 @@ Do not promote these to Loki labels or metric dimensions: session ID, journey ID
 Candidate bounded dimensions, subject to controlled payload verification and production cardinality measurement, are application, environment, lifecycle stage/step/outcome, normalized reason code, network, token, path, action, and provider. Release/version is useful but grows with deployments.
 
 User decision: retain useful wallet addresses alongside sessions and swap-form context as access-controlled searchable fields. Keep wallet family and connector, with optional wallet_chain_id; do not require wallet_network or infer the selected EVM chain from MetaMask alone. Connected-wallet synchronization is now implemented, not yet browser/backend verified: current addresses for connected wallets live in the JSON session field `connected_wallets`, distinct from source/destination form addresses. Code updates account/chain changes and clears disconnected records without overwriting swap context. Early startup metadata before the observer mounts can still contain SDK-persisted values; see the [wallet fixture provenance](fixtures/README.md). Addresses, swap IDs and transaction hashes must not become stream labels or metric dimensions. Fixtures replace these identifiers. Amount handling, sampling, console/resource capture, consent/opt-out, retention and access policy remain recommendations for approval; see the [operating limits](README.md#interpretation-and-operating-limits).
+
+### Sanitizer key coverage
+
+`apps/bridge/lib/faro-sanitizer.ts` redacts values by attribute name using a fixed denylist, matched as a substring after the name is lower-cased and stripped of non-alphanumerics (so `Set-Cookie`, `api_key`, `accessToken` and `x-api-key` all match). Covered names: authorization, cookie, setcookie, apikey, accesstoken, refreshtoken, idtoken, password, passphrase, privatekey, clientsecret, mnemonic, seedphrase, bearertoken, signature. Values under any other name are redacted only by the string patterns in `redactSensitiveText` (bearer tokens, OAuth `code`/`state`/`code_verifier` parameters, and `key=value`/`"key": value` pairs for the names above). A new telemetry field or SDK attribute whose name does not contain one of these fragments (for example `pin`, `otp`, `secretAnswer`) is not covered by the key check; add the fragment to `normalizedSensitiveKeys` and a case to `lib/__tests__/faro-sanitizer.test.mjs` before emitting it.
 
 ## Controlled-telemetry update procedure
 

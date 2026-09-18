@@ -17,6 +17,8 @@ import { captureEvent } from "../lib/faro"
 import { useSwapLifecycleTelemetry } from "../hooks/useSwapLifecycleTelemetry"
 import FaroWalletContext from './FaroWalletContext'
 
+const MAX_EMITTED_SWAP_EVENTS = 256
+
 type LayerswapProviderComponentProps = ComponentProps<typeof LayerswapProvider>;
 type WidgetCallbacks = NonNullable<LayerswapProviderComponentProps['callbacks']>;
 type SwapCallbackData = Parameters<NonNullable<WidgetCallbacks['onSwapCreate']>>[0];
@@ -192,7 +194,14 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
     const recordSwapEvent = useCallback((name: string, attributes: Record<string, unknown>) => {
         const swapId = attributes.swap_id
         const dedupeKey = `${name}:${String(swapId ?? '')}`
-        if (emittedSwapEventsRef.current.has(dedupeKey)) return
+        const emitted = emittedSwapEventsRef.current
+        if (emitted.has(dedupeKey)) {
+            // Re-insert so a swap that is still being replayed outlives idle ones
+            // (Set iteration order is insertion order).
+            emitted.delete(dedupeKey)
+            emitted.add(dedupeKey)
+            return
+        }
 
         setLegacyContext(attributes)
 
@@ -200,7 +209,13 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
             ...attributes,
             page_url: typeof window !== 'undefined' ? window.location.href : undefined,
         })
-        if (accepted) emittedSwapEventsRef.current.add(dedupeKey)
+        if (!accepted) return
+        emitted.add(dedupeKey)
+        // Bound the dedupe memory for very long multi-swap sessions by
+        // dropping the least recently observed key.
+        while (emitted.size > MAX_EMITTED_SWAP_EVENTS) {
+            emitted.delete(emitted.values().next().value as string)
+        }
     }, [setLegacyContext])
 
     const handleSwapCreate = useCallback((swapData: SwapCallbackData) => {

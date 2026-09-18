@@ -1,13 +1,26 @@
-import { SWAP_LIFECYCLE_PHASE_STEPS, type SwapLifecycleEvent, type SwapLifecycleStep, type SwapStatusEvent } from '@layerswap/widget-types'
+import {
+    SWAP_LIFECYCLE_ATTEMPT_START_STEPS, SWAP_LIFECYCLE_PHASE_STEPS, SWAP_LIFECYCLE_TRANSACTION_STEPS,
+    type SwapLifecycleEvent, type SwapLifecycleStep, type SwapStatusEvent,
+} from '@layerswap/widget-types'
 
 const PHASE_STEPS = new Set(SWAP_LIFECYCLE_PHASE_STEPS)
-const TRANSACTION_STEPS = new Set<SwapLifecycleStep>([
-    'input_transaction_detected', 'input_transfer_confirmed', 'output_transaction_detected',
-])
-const ATTEMPT_START_STEPS = new Set<SwapLifecycleStep>([
-    'swap_creation_started', 'wallet_connection_started', 'network_switch_started',
-    'wallet_prompt_opened', 'retry_requested',
-])
+const TRANSACTION_STEPS = new Set(SWAP_LIFECYCLE_TRANSACTION_STEPS)
+const ATTEMPT_START_STEPS = new Set(SWAP_LIFECYCLE_ATTEMPT_START_STEPS)
+/** Keeps a long session that browses many swaps from growing without bound. */
+const MAX_TRACKED_SWAPS = 64
+
+/** Re-inserts the entry so recently observed swaps outlive idle ones (Map order is insertion order). */
+function touch<K, V>(map: Map<K, V>, key: K): V | undefined {
+    const value = map.get(key)
+    if (value === undefined) return undefined
+    map.delete(key)
+    map.set(key, value)
+    return value
+}
+
+function evictLeastRecent(map: Map<unknown, unknown>) {
+    while (map.size > MAX_TRACKED_SWAPS) map.delete(map.keys().next().value)
+}
 
 /** Host callbacks observe transitions, while user actions always remain repeatable. */
 export function createCallbackObservations() {
@@ -19,8 +32,9 @@ export function createCallbackObservations() {
         reset,
         status(event: SwapStatusEvent): boolean {
             const fingerprint = JSON.stringify([event.type, event.phase])
-            if (statuses.get(event.swapId) === fingerprint) return false
+            if (touch(statuses, event.swapId) === fingerprint) return false
             statuses.set(event.swapId, fingerprint)
+            evictLeastRecent(statuses)
             return true
         },
         lifecycle(event: SwapLifecycleEvent): boolean {
@@ -37,10 +51,11 @@ export function createCallbackObservations() {
             const key = PHASE_STEPS.has(event.step) ? 'phase'
                 : TRANSACTION_STEPS.has(event.step) ? event.step : undefined
             if (!key) return true
-            let observations = lifecycle.get(event.swapId)
+            let observations = touch(lifecycle, event.swapId)
             if (!observations) {
                 observations = new Map()
                 lifecycle.set(event.swapId, observations)
+                evictLeastRecent(lifecycle)
             }
             // Addresses and confirmation counts enrich context without advancing
             // the journey. New transactions, outcomes and failures do advance it.

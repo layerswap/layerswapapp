@@ -1,5 +1,5 @@
 import type { SwapLifecycleEvent, SwapLifecycleStep, WidgetTelemetryEvent, WidgetTelemetryHandler, WidgetTelemetryAttributes, WidgetTelemetryData, WidgetFlowStep, WidgetOperation, WidgetOperationOutcome } from '@layerswap/widget-types'
-import { SWAP_LIFECYCLE_PHASE_STEPS } from '@layerswap/widget-types'
+import { SWAP_LIFECYCLE_ATTEMPT_START_STEPS, SWAP_LIFECYCLE_PHASE_STEPS, SWAP_LIFECYCLE_TRANSACTION_STEPS, createRandomId } from '@layerswap/widget-types'
 
 type Attributes = WidgetTelemetryAttributes
 type Flow = {
@@ -9,17 +9,19 @@ type Flow = {
     observations: Map<SwapLifecycleStep | 'phase', string>;
 }
 
-const TRANSACTION_OBSERVATION_STEPS = new Set<SwapLifecycleStep>([
-    'input_transaction_detected', 'input_transfer_confirmed', 'output_transaction_detected',
-])
+const TRANSACTION_OBSERVATION_STEPS = new Set(SWAP_LIFECYCLE_TRANSACTION_STEPS)
 const PHASE_OBSERVATION_STEPS = new Set(SWAP_LIFECYCLE_PHASE_STEPS)
-const ATTEMPT_START_STEPS = new Set<SwapLifecycleStep>([
-    'form_submitted', 'swap_creation_started', 'wallet_connection_started', 'network_switch_started',
-    'wallet_prompt_opened', 'retry_requested',
-])
+// Unlike host callbacks, the form flow also restarts on every submission.
+const ATTEMPT_START_STEPS = new Set<SwapLifecycleStep>(['form_submitted', ...SWAP_LIFECYCLE_ATTEMPT_START_STEPS])
 
-const id = () => globalThis.crypto?.randomUUID?.() ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`
+const id = createRandomId
 const now = () => globalThis.performance?.now() ?? Date.now()
+const resetJourney = (flow: Flow) => {
+    flow.prompted = false
+    flow.transferSubmitted = false
+    flow.deposited = false
+    flow.completed = false
+}
 
 /** One live widget is enforced by LayerswapProvider. Kept factory-based for isolation tests. */
 export function createWidgetTelemetry(clock = now, wallClock = Date.now) {
@@ -110,10 +112,21 @@ export function createWidgetTelemetry(clock = now, wallClock = Date.now) {
                 flow.observations.set(observationKey, fingerprint)
             }
             if (event.step === 'form_submitted') {
+                // The form stays mounted between swaps and retries use
+                // retry_requested, so every submission starts a new journey. It
+                // must not inherit the previous swap's id or transfer, deposit
+                // and completion observations, whether that swap finished or failed.
+                resetJourney(flow)
+                flow.swapId = undefined
                 flow.submitted = true
                 flow.attempts++
             }
-            if (event.step === 'swap_created') flow.swapId = event.swapId
+            if (event.step === 'swap_created') {
+                // A different swap id is a new journey even without completion,
+                // e.g. a failed swap followed by a fresh submission.
+                if (flow.swapId && flow.swapId !== event.swapId) resetJourney(flow)
+                flow.swapId = event.swapId
+            }
             if (event.step === 'wallet_prompt_opened') flow.prompted = true
             if (event.step === 'transaction_submitted' || event.step === 'gasless_authorization_submitted') flow.transferSubmitted = true
             if (event.step === 'input_transaction_detected' || event.step === 'input_transfer_confirmed') flow.deposited = true

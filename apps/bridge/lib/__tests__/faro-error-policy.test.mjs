@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { widgetErrorImpact } from '../faro-error-policy.ts'
-import { getErrorOccurrenceId } from '../../../../packages/widget/types/src/errorOccurrence.ts'
+import { getErrorOccurrenceId } from '@layerswap/widget-types'
 import { resolveFaroRelease } from '../faro-release.cjs'
 
 test('balance, gas and interceptor diagnostics are not user operation failures', () => {

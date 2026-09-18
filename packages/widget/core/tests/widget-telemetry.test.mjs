@@ -210,6 +210,8 @@ test('submissions, wallet attempts, rejections and blocking transitions are repe
     const { telemetry, events } = submittedFlow()
     for (let attempt = 0; attempt < 2; attempt++) telemetry.lifecycle(event('form_submitted'))
     assert.deepEqual(events.map(e => e.attributes.submission_count), [2, 3])
+    // A resubmission always creates a swap before any wallet step can follow.
+    telemetry.lifecycle(event('swap_created', 'swap-a'))
     const failed = { ...event('swap_failed', 'swap-a'), outcome: 'failed' }
     for (let attempt = 0; attempt < 2; attempt++) {
         telemetry.lifecycle(event('wallet_prompt_opened', 'swap-a'))
@@ -245,6 +247,47 @@ test('a new swap or form gets independent observations and late unrelated swaps 
     telemetry.lifecycle(event('swap_completed', 'swap-a'))
     assert.equal(events.at(-1).attributes.step, 'swap_completed')
     assert.notEqual(events.at(-1).attributes.flow_id, firstFlowId)
+})
+
+test('a second swap submitted from the same mounted form does not inherit earlier observations', () => {
+    const { telemetry, events } = submittedFlow()
+    telemetry.lifecycle(event('wallet_prompt_opened', 'swap-a'))
+    telemetry.lifecycle(event('transaction_submitted', 'swap-a'))
+    telemetry.lifecycle(event('input_transaction_detected', 'swap-a'))
+    telemetry.lifecycle(event('swap_completed', 'swap-a'))
+    assert.equal(events.at(-1).attributes.completion_observed, true)
+    telemetry.lifecycle(event('form_submitted'))
+    const resubmitted = events.at(-1).attributes
+    assert.equal(resubmitted.step, 'form_submitted')
+    assert.equal(resubmitted.submission_count, 2)
+    for (const flag of ['transfer_prompted', 'transfer_submitted', 'deposit_observed', 'completion_observed']) {
+        assert.equal(resubmitted[flag], false, flag)
+    }
+    // Late updates for the finished swap no longer belong to the new journey.
+    telemetry.lifecycle(event('swap_completed', 'swap-a'))
+    assert.equal(events.at(-1).attributes.step, 'form_submitted')
+    telemetry.lifecycle(event('swap_created', 'swap-b'))
+    assert.equal(events.at(-1).attributes.completion_observed, false)
+    assert.equal(events.at(-1).attributes.swap_id, 'swap-b')
+})
+
+test('resubmitting after a failed swap starts a new journey before the next swap is created', () => {
+    const { telemetry, events } = submittedFlow()
+    telemetry.lifecycle(event('wallet_prompt_opened', 'swap-a'))
+    telemetry.lifecycle(event('transaction_submitted', 'swap-a'))
+    telemetry.lifecycle({ ...event('swap_failed', 'swap-a'), outcome: 'failed' })
+    telemetry.lifecycle(event('form_submitted'))
+    const resubmitted = events.at(-1).attributes
+    assert.equal(resubmitted.step, 'form_submitted')
+    assert.equal(resubmitted.swap_id, undefined)
+    assert.equal(resubmitted.transfer_prompted, false)
+    assert.equal(resubmitted.transfer_submitted, false)
+    // The failed swap's late updates no longer pass the swap-id gate.
+    telemetry.lifecycle({ ...event('swap_failed', 'swap-a'), outcome: 'failed', reasonCode: 'late' })
+    assert.equal(events.at(-1).attributes.step, 'form_submitted')
+    telemetry.lifecycle(event('swap_created', 'swap-b'))
+    assert.equal(events.at(-1).attributes.swap_id, 'swap-b')
+    assert.equal(events.at(-1).attributes.transfer_submitted, false)
 })
 
 test('observations made without an active handler do not suppress later delivery', () => {

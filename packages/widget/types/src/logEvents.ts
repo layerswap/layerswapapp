@@ -203,6 +203,20 @@ export const SWAP_LIFECYCLE_PHASE_STEPS: readonly SwapLifecycleStep[] = [
   'refund_pending', 'refund_completed',
 ];
 
+/** Each on-chain transaction observation owns its own dedupe slot. */
+export const SWAP_LIFECYCLE_TRANSACTION_STEPS: readonly SwapLifecycleStep[] = [
+  'input_transaction_detected', 'input_transfer_confirmed', 'output_transaction_detected',
+];
+
+/**
+ * User or application actions that begin a new attempt. Earlier observations
+ * for the same swap no longer suppress later ones once any of these is seen.
+ */
+export const SWAP_LIFECYCLE_ATTEMPT_START_STEPS: readonly SwapLifecycleStep[] = [
+  'swap_creation_started', 'wallet_connection_started', 'network_switch_started',
+  'wallet_prompt_opened', 'retry_requested',
+];
+
 export type SwapLifecycleEvent = {
   occurrenceId?: string;
   step: SwapLifecycleStep;

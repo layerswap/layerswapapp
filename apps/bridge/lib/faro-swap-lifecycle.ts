@@ -1,6 +1,11 @@
-import { SWAP_LIFECYCLE_PHASE_STEPS, type SwapLifecycleEvent, type SwapLifecycleStep } from '@layerswap/widget-types'
+import {
+    SWAP_LIFECYCLE_ATTEMPT_START_STEPS, SWAP_LIFECYCLE_PHASE_STEPS, createRandomId,
+    type SwapLifecycleEvent, type SwapLifecycleStep,
+} from '@layerswap/widget-types'
 
 const PHASE_OBSERVATION_STEPS = new Set(SWAP_LIFECYCLE_PHASE_STEPS)
+/** Bounds per-swap state for long sessions that revisit many swaps. */
+const MAX_TRACKED_SWAPS = 64
 
 function getLifecycleAttributes(event: SwapLifecycleEvent): Record<string, unknown> {
     return {
@@ -52,12 +57,8 @@ type LifecycleState = {
 }
 
 const REPEATABLE_LIFECYCLE_STEPS = new Set<SwapLifecycleStep>([
+    ...SWAP_LIFECYCLE_ATTEMPT_START_STEPS,
     'form_submitted',
-    'swap_creation_started',
-    'wallet_connection_started',
-    'network_switch_started',
-    'wallet_prompt_opened',
-    'retry_requested',
     // The widget emits one record per reason transition; a later re-block
     // after recovery is a distinct observation.
     'transfer_blocked',
@@ -98,11 +99,7 @@ const STALL_THRESHOLDS_MS: Partial<Record<SwapLifecycleStep, number>> = {
 }
 
 export function createJourneyId(): string {
-    if (typeof globalThis.crypto?.randomUUID === 'function') {
-        return globalThis.crypto.randomUUID()
-    }
-
-    return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`
+    return createRandomId()
 }
 
 function createLifecycleState(now: number): LifecycleState {
@@ -126,6 +123,9 @@ export function createSwapLifecycleTelemetry({ captureEvent, setSwapContext }: {
     const activeLifecycleRef: { current: LifecycleState | undefined } = { current: undefined }
     let disposed = false
     let entryGeneration = 0
+    // Explicit UI entry (openFlow) is the only way an unknown swap may replace a
+    // closed or finished journey; otherwise late updates stay in the background.
+    let entryPending = false
     const depart = (state: LifecycleState | undefined) => {
         if (!state) return
         state.departed = true
@@ -133,10 +133,23 @@ export function createSwapLifecycleTelemetry({ captureEvent, setSwapContext }: {
         state.stallTimer = undefined
     }
     const activate = (state: LifecycleState) => {
+        entryPending = false
         if (activeLifecycleRef.current !== state) {
             entryGeneration += 1
             depart(activeLifecycleRef.current)
             activeLifecycleRef.current = state
+        }
+    }
+    const track = (swapId: string, state: LifecycleState) => {
+        const tracked = lifecycleBySwapRef.current
+        tracked.set(swapId, state)
+        // Every tracked journey was active when inserted and only the active
+        // one can still own timers or context, so evicting an older entry just
+        // forgets its journey id for late background updates.
+        for (const [key, oldest] of tracked) {
+            if (tracked.size <= MAX_TRACKED_SWAPS) break
+            if (oldest === activeLifecycleRef.current) continue
+            tracked.delete(key)
         }
     }
 
@@ -167,23 +180,32 @@ export function createSwapLifecycleTelemetry({ captureEvent, setSwapContext }: {
             }
             else {
                 const activeState = activeLifecycleRef.current
-                const continuesActiveJourney = activeState
-                    && !activeState.terminal
-                    && !activeState.departed
-                    && (
-                        !activeState.swapId
-                        || activeState.swapId === event.swapId
-                        || event.step === 'swap_created'
-                    )
-                state = continuesActiveJourney
-                    ? activeState
-                    : createLifecycleState(now)
-                if (state.swapId && state.swapId !== event.swapId) {
-                    previousSwapId = state.swapId
+                const continuesActiveJourney = activeState && !activeState.terminal && !activeState.departed && (
+                    !activeState.swapId
+                    || activeState.swapId === event.swapId
+                    || event.step === 'swap_created'
+                )
+                if (continuesActiveJourney) {
+                    state = activeState
+                    if (state.swapId && state.swapId !== event.swapId) {
+                        previousSwapId = state.swapId
+                    }
+                    state.swapId = event.swapId
+                    activate(state)
                 }
-                state.swapId = event.swapId
-                lifecycleBySwapRef.current.set(event.swapId, state)
-                activate(state)
+                else {
+                    state = createLifecycleState(now)
+                    state.swapId = event.swapId
+                    // Without a creation step, explicit flow entry or a fresh
+                    // tracker, a different swap reporting here (an evicted or
+                    // never-tracked one) is a background update. It keeps its
+                    // own journey id but must not take over session context or
+                    // stall tracking from a live, finished or closed journey.
+                    const explicitStart = event.step === 'swap_created' || !activeState || entryPending
+                    if (explicitStart) activate(state)
+                    else state.departed = true
+                }
+                track(event.swapId, state)
             }
         }
         else {
@@ -244,8 +266,12 @@ export function createSwapLifecycleTelemetry({ captureEvent, setSwapContext }: {
         // A lifecycle transition replaces the previous transition context so
         // stale reasons/hashes do not leak into unrelated later console logs.
         const ownsContext = activeLifecycleRef.current === state && !state.departed
-        if (ownsContext) setSwapContext(enrichedAttributes, { replaceAttributes: true })
-        const accepted = captureEvent('swap_lifecycle', enrichedAttributes)
+        const contextApplied = !ownsContext || setSwapContext(enrichedAttributes, { replaceAttributes: true })
+        // The writer re-syncs once a session exists, so emission continues; the
+        // row itself records that surrounding signals may lack swap context.
+        const accepted = captureEvent('swap_lifecycle', contextApplied
+            ? enrichedAttributes
+            : { ...enrichedAttributes, context_write_failed: true })
         if (event.step === 'flow_closed') {
             depart(state)
             if (ownsContext) setSwapContext({}, { replaceAttributes: true })
@@ -286,8 +312,10 @@ export function createSwapLifecycleTelemetry({ captureEvent, setSwapContext }: {
                 journey_duration_ms: stalledAt - state.startedAt,
                 page_url: typeof window !== 'undefined' ? window.location.href : undefined,
             }
-            setSwapContext(stalledAttributes, { replaceAttributes: true })
-            const accepted = captureEvent('swap_lifecycle', stalledAttributes)
+            const contextApplied = setSwapContext(stalledAttributes, { replaceAttributes: true })
+            const accepted = captureEvent('swap_lifecycle', contextApplied
+                ? stalledAttributes
+                : { ...stalledAttributes, context_write_failed: true })
             if (accepted) state.sequence = stalledSequence
             state.stallTimer = undefined
         }, stallThreshold)
@@ -308,7 +336,7 @@ export function createSwapLifecycleTelemetry({ captureEvent, setSwapContext }: {
                     activate(state)
                 }
                 state.swapId = swapId
-                lifecycleBySwapRef.current.set(swapId, state)
+                track(swapId, state)
             }
             setSwapContext(attributes)
         },
@@ -326,6 +354,7 @@ export function createSwapLifecycleTelemetry({ captureEvent, setSwapContext }: {
         },
         openFlow() {
             entryGeneration += 1
+            entryPending = true
             // Explicit UI entry distinguishes reopening a known swap from a late
             // background update for a closed one. The next event owns a new journey.
             if (activeLifecycleRef.current?.departed) {
