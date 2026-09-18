@@ -7,6 +7,8 @@ import { Network, Token } from "@layerswap/widget-types";
 import { formatFee } from "./helpers";
 import { formatTokenAmount } from "@/components/utils/formatTokenAmount";
 import { formatVerboseHms, msToParts } from "@/components/utils/formatTime";
+import clsx from "clsx";
+import { resolveRouteSpeedFromMs, routeSpeedTextClass } from "@/lib/routeSpeed";
 import FeeCalculator from "./FeeCalculator";
 
 type DepositQuoteDetailsProps = {
@@ -98,6 +100,7 @@ const DepositQuoteDetails: FC<DepositQuoteDetailsProps> = ({
         : null;
 
     const estTime = bestQuote ? formatVerboseHms(msToParts(bestQuote.avg_completion_milliseconds)) : null;
+    const routeSpeed = resolveRouteSpeedFromMs(bestQuote?.avg_completion_milliseconds);
 
     const showQuoteSkeleton = (isCreatingSwap || isQuoteLoading) && !bestQuote;
 
@@ -144,9 +147,9 @@ const DepositQuoteDetails: FC<DepositQuoteDetailsProps> = ({
                                 {estTime && (
                                     <div className="inline-flex items-center gap-1 shrink-0">
                                         <div className="p-0.5">
-                                            <Clock className="h-4 w-4 text-secondary-text" />
+                                            <Clock className={clsx("h-4 w-4", routeSpeedTextClass(routeSpeed, "text-secondary-text"))} />
                                         </div>
-                                        <span className="text-primary-text">{estTime}</span>
+                                        <span className={routeSpeedTextClass(routeSpeed, "text-primary-text")}>{estTime}</span>
                                     </div>
                                 )}
                             </div>

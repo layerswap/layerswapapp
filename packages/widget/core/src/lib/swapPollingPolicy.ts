@@ -1,5 +1,5 @@
 import { SwapPhase, TERMINAL_PHASES } from '@/components/utils/resolveSwapPhase'
-import { parseHmsString } from '@/components/utils/formatTime'
+import { hmsToMs } from '@/components/utils/formatTime'
 
 /** Must stay below HOT_INTERVAL_MS so SWR dedup never swallows a scheduled poll. */
 export const SWAP_POLL_DEDUPE_MS = 200
@@ -72,8 +72,3 @@ function withJitter(ms: number): number {
     return Math.round(ms * (0.85 + Math.random() * 0.3))
 }
 
-function hmsToMs(value: string | undefined): number | undefined {
-    const parts = parseHmsString(value)
-    if (!parts) return undefined
-    return ((parts.hours * 60 + parts.minutes) * 60 + parts.seconds) * 1000
-}

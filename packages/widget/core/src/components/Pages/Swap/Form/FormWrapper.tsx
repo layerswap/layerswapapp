@@ -29,6 +29,10 @@ import UrlAddressNote from "@/components/Input/Address/UrlAddressNote";
 import { Address } from "@/lib/address/Address";
 import ContractAddressValidationCache, { ContractSourceAddressValidationCache } from "./SecondaryComponents/validationError/ContractAddressValidationCache";
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
+import { SwapQuote } from "@/lib/apiClients/layerSwapApiClient";
+import { FormQuoteReportProvider } from "@/context/formQuote";
+import { isVerySlowRoute } from "@/lib/routeSpeed";
+import SlowRouteNote from "./SecondaryComponents/SlowRouteNote";
 const SwapDetails = lazy(() => import("../Withdraw/SwapDetails"))
 
 type NetworkToConnect = {
@@ -41,6 +45,9 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
     const [isAddressFromQueryConfirmed, setIsAddressFromQueryConfirmed] = useState(false);
     const dontShowContractWarningRef = useRef(false);
+    // Live quote of the rendered form, reported via `useReportFormQuote`; read at submit time only.
+    const formQuoteRef = useRef<SwapQuote | undefined>(undefined);
+    const reportFormQuote = useCallback((quote: SwapQuote | undefined) => { formQuoteRef.current = quote }, []);
 
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
     const settings = useSettingsState();
@@ -121,6 +128,18 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                         return;
                     }
                 }
+            }
+        }
+
+        const avgCompletionTime = formQuoteRef.current?.avg_completion_time
+        if (type !== 'deposit-address' && isVerySlowRoute(avgCompletionTime)) {
+            const confirmed = await getConfirmation({
+                content: <SlowRouteNote avgCompletionTime={avgCompletionTime} />,
+                submitText: 'Continue',
+                dismissText: 'Choose another route'
+            });
+            if (!confirmed) {
+                return;
             }
         }
 
@@ -207,7 +226,9 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                             ) : null
                         }
                     </VaulDrawer >
-                    {children}
+                    <FormQuoteReportProvider value={reportFormQuote}>
+                        {children}
+                    </FormQuoteReportProvider>
                     < ContractAddressValidationCache
                         source_network={values.from}
                         destination_network={values.to}
