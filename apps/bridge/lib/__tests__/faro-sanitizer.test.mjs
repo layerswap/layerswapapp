@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import test from 'node:test'
-import { beforeSend, MAX_CONTEXT_VALUE_LENGTH, sanitizeValue } from '../faro-sanitizer.ts'
+import { beforeSend, MAX_CONTEXT_VALUE_LENGTH, sanitizeValue, serializeConsoleArgs } from '../faro-sanitizer.ts'
 
 const require = createRequire(import.meta.url)
 const { FaroTraceExporter } = require('@grafana/faro-web-tracing')
@@ -20,7 +20,7 @@ const lookup = (container, key) => container.attributes.find(a => a.key === key)
 test('nested Error fields use the same redaction and length limits as ordinary strings', () => {
     const error = new Error('Bearer synthetic-secret ' + 'm'.repeat(MAX_CONTEXT_VALUE_LENGTH))
     error.name = 'n'.repeat(MAX_CONTEXT_VALUE_LENGTH + 100)
-    error.stack = 'authorization=synthetic-secret ' + 's'.repeat(MAX_CONTEXT_VALUE_LENGTH)
+    error.stack = 'authorization=synthetic-secret\n' + 's'.repeat(MAX_CONTEXT_VALUE_LENGTH)
     const output = sanitizeValue({ cause: error }).cause
     for (const field of ['name', 'message', 'stack']) {
         assert.equal(output[field], sanitizeValue(error[field]))
@@ -28,6 +28,21 @@ test('nested Error fields use the same redaction and length limits as ordinary s
         assert(output[field].length <= MAX_CONTEXT_VALUE_LENGTH + '...[truncated]'.length)
     }
     assert(!JSON.stringify(output).includes('synthetic-secret'))
+})
+
+test('serialized console arguments keep no cookie, basic credential or multi-word secret', () => {
+    const headers = { cookie: 'session=synthetic-cookie; theme=dark', Authorization: 'Basic synthetic-basic', mnemonic: 'alpha beta gamma delta' }
+    assert.equal(sanitizeValue(JSON.stringify(headers)),
+        JSON.stringify({ cookie: '[REDACTED]', Authorization: '[REDACTED]', mnemonic: '[REDACTED]' }))
+    assert.equal(sanitizeValue('Authorization: Basic synthetic-basic\nnext: ok'), 'Authorization: [REDACTED]\nnext: ok')
+    assert.equal(sanitizeValue('mnemonic=alpha beta gamma, safe=ok'), 'mnemonic=[REDACTED], safe=ok')
+    assert.equal(sanitizeValue("{ password: 'with \\' quote', safe: 1 }"), "{ password: '[REDACTED]', safe: 1 }")
+    assert.equal(sanitizeValue('{"mnemonic":["alpha","beta"],"safe":["ok"]}'), '{"mnemonic":[REDACTED],"safe":["ok"]}')
+    assert.equal(sanitizeValue(sanitizeValue('api_key=synthetic]')), 'api_key=[REDACTED]')
+    // Faro joins console.error arguments into one string before beforeSend runs.
+    assert.equal(serializeConsoleArgs(['request failed', { headers, nested: { seed_phrase: 'alpha beta' } }, 42, null]),
+        'request failed {"headers":{"cookie":"[REDACTED]","Authorization":"[REDACTED]","mnemonic":"[REDACTED]"},"nested":{"seed_phrase":"[REDACTED]"}} 42 null')
+    assert(!/synthetic|alpha|beta/.test(serializeConsoleArgs(['Bearer synthetic-bearer', headers])))
 })
 
 test('approved ordinary URL queries/fragments and financial investigation fields survive', () => {

@@ -34,6 +34,12 @@ function isSensitiveKey(key: string): boolean {
     return normalizedSensitiveKeys.some(sensitiveKey => normalizedKey.includes(sensitiveKey))
 }
 
+const SENSITIVE_TEXT_KEYS = 'authorization|cookie|set[_-]?cookie|api[_-]?key|access[_-]?token|refresh[_-]?token|id[_-]?token|bearer[_-]?token|password|passphrase|private[_-]?key|client[_-]?secret|mnemonic|seed[_-]?phrase|signature'
+const SENSITIVE_KEY_VALUE_PATTERN = new RegExp(
+    `((?:${SENSITIVE_TEXT_KEYS})["']?\\s*[:=]\\s*)("(?:[^"\\\\]|\\\\.)*"|'(?:[^'\\\\]|\\\\.)*'|\\[[^\\]]*\\]|\\{[^}]*\\}|[^,&}\\n]+)`,
+    'gi',
+)
+
 function redactSensitiveText(value: string): string {
     return value
         .replace(
@@ -45,10 +51,36 @@ function redactSensitiveText(value: string): string {
             /([?&](?:api[_-]?key|access[_-]?token|refresh[_-]?token|id[_-]?token|password|passphrase|private[_-]?key|client[_-]?secret|mnemonic|seed[_-]?phrase|signature)=)[^&#\s]*/gi,
             `$1${REDACTED}`,
         )
+        // Quoted, bracketed and braced values are redacted whole, escapes
+        // included, so JSON-serialized console arguments keep no credential
+        // tail. A bare value runs to the next delimiter rather than the next
+        // space: "Basic <credential>", cookie lists and seed phrases all
+        // contain spaces.
         .replace(
-            /((?:authorization|api[_-]?key|access[_-]?token|refresh[_-]?token|id[_-]?token|password|passphrase|private[_-]?key|client[_-]?secret|mnemonic|seed[_-]?phrase|signature)["']?\s*[:=]\s*["']?)[^,"'\s}]+/gi,
-            `$1${REDACTED}`,
+            SENSITIVE_KEY_VALUE_PATTERN,
+            (_match, prefix: string, value: string) => {
+                const quote = value[0] === '"' || value[0] === "'" ? value[0] : ''
+                return `${prefix}${quote}${REDACTED}${quote}`
+            },
         )
+}
+
+/**
+ * Console arguments are redacted as structured values before Faro flattens
+ * them into one error message; key-based redaction is lost once serialized.
+ */
+export function serializeConsoleArgs(args: unknown[]): string {
+    return args.map(arg => {
+        const sanitized = sanitizeValue(arg)
+        if (typeof sanitized === 'string') return sanitized
+        if (sanitized === null || sanitized === undefined || typeof sanitized !== 'object') return String(sanitized)
+        try {
+            return JSON.stringify(sanitized)
+        }
+        catch {
+            return '[Unserializable]'
+        }
+    }).join(' ')
 }
 
 export function sanitizeValue(

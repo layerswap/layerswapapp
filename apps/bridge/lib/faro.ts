@@ -7,7 +7,7 @@ import {
     type Faro,
 } from '@grafana/faro-web-sdk'
 import { TracingInstrumentation } from '@grafana/faro-web-tracing'
-import { beforeSend, MAX_CONTEXT_VALUE_LENGTH, sanitizeValue } from './faro-sanitizer'
+import { beforeSend, MAX_CONTEXT_VALUE_LENGTH, sanitizeValue, serializeConsoleArgs } from './faro-sanitizer'
 import { createWalletContextWriter, createSwapContextWriter, SwapContextInstrumentation } from './faro-session-context'
 import { getFaroVolumePolicy } from './faro-policy'
 
@@ -70,6 +70,7 @@ export function initFaro(): Faro | undefined {
     }
 
     const tracePropagationUrls = getTracePropagationUrls()
+    const volumePolicy = getFaroVolumePolicy(process.env.NODE_ENV)
 
     try {
         faroClient = initializeFaro({
@@ -83,7 +84,13 @@ export function initFaro(): Faro | undefined {
                 environment: process.env.NEXT_PUBLIC_API_VERSION === 'testnet' ? 'testnet' : 'mainnet',
             },
             beforeSend,
-            ...getFaroVolumePolicy(process.env.NODE_ENV),
+            ...volumePolicy,
+            consoleInstrumentation: {
+                ...volumePolicy.consoleInstrumentation,
+                // console.error objects are redacted by key before Faro flattens
+                // them into one message; beforeSend only sees the text afterwards.
+                errorSerializer: serializeConsoleArgs,
+            },
             internalLoggerLevel: process.env.NEXT_PUBLIC_FARO_DEBUG === 'true'
                 ? InternalLoggerLevel.VERBOSE
                 : InternalLoggerLevel.ERROR,

@@ -201,6 +201,29 @@ test('timers are cancelled on departure/unmount and late callbacks are inert', t
     h.controller.dispose()
 })
 
+test('a synchronous effect replay keeps the live journey and context; a real unmount still disposes', async () => {
+    const h = harness()
+    const pending = event('output_transfer_pending', 'swap-replay')
+    h.controller.record(pending)
+    const journeyId = h.attrs().journey_id
+    assert(journeyId)
+    // React StrictMode: cleanup, then setup again, in the same task.
+    h.controller.scheduleDispose()
+    h.controller.resume()
+    await Promise.resolve()
+    assert.equal(h.attrs().journey_id, journeyId)
+    assert.equal(h.attrs().swap_id, 'swap-replay')
+    h.controller.record(pending)
+    assert.equal(h.records.length, 1, 'the replayed phase is still a duplicate of the surviving journey')
+    h.controller.record(event('swap_completed', 'swap-replay', { outcome: 'succeeded' }))
+    assert.equal(h.records.at(-1).attrs.journey_id, journeyId)
+    h.controller.scheduleDispose()
+    await Promise.resolve()
+    assert.equal(h.attrs().journey_id, undefined)
+    h.controller.record(event('swap_created', 'late-swap'))
+    assert.equal(h.records.length, 2)
+})
+
 test('close clears context even if capture is unavailable; explicit reopening can own a new journey', () => {
     const h = harness()
     h.controller.record(event('swap_created', 'swap-a'))

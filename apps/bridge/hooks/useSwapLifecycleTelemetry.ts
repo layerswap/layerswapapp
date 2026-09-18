@@ -8,10 +8,11 @@ export function useSwapLifecycleTelemetry() {
     controllerRef.current ??= createSwapLifecycleTelemetry({ captureEvent, setSwapContext })
     const controller = controllerRef.current
 
-    // Resume before child passive effects replay in React StrictMode.
+    // Resume before child passive effects replay in React StrictMode, and let
+    // that replay's cleanup fall through without erasing the live journey.
     useClientLayoutEffect(() => {
         controller.resume()
-        return () => controller.dispose()
+        return () => controller.scheduleDispose()
     }, [controller])
 
     return controller

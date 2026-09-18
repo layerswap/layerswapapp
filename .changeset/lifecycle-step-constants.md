@@ -9,3 +9,4 @@ Share lifecycle step categories and bound telemetry dedup state.
 - `@layerswap/widget/internal` exports `useClientLayoutEffect`.
 - `onTelemetry` widget flow events start a new journey on every `form_submitted`: the previous swap id and its transfer, deposit and completion flags are cleared instead of leaking into the next swap submitted from the same form.
 - Host callback deduplication keeps state for at most 64 recently observed swaps.
+- `flow_closed` derives its outcome from the resolved UI phase instead of the raw API status, so closing a swap the Processing panel already shows as complete reports `succeeded` rather than `abandoned`; the event now also carries `phase`.

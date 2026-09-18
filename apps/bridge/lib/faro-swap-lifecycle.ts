@@ -122,6 +122,7 @@ export function createSwapLifecycleTelemetry({ captureEvent, setSwapContext }: {
     const lifecycleBySwapRef = { current: new Map<string, LifecycleState>() }
     const activeLifecycleRef: { current: LifecycleState | undefined } = { current: undefined }
     let disposed = false
+    let disposeScheduled = false
     let entryGeneration = 0
     // Explicit UI entry (openFlow) is the only way an unknown swap may replace a
     // closed or finished journey; otherwise late updates stay in the background.
@@ -321,6 +322,16 @@ export function createSwapLifecycleTelemetry({ captureEvent, setSwapContext }: {
         }, stallThreshold)
     }
 
+    const dispose = () => {
+        disposed = true
+        disposeScheduled = false
+        depart(activeLifecycleRef.current)
+        lifecycleBySwapRef.current.forEach(depart)
+        lifecycleBySwapRef.current.clear()
+        activeLifecycleRef.current = undefined
+        setSwapContext({}, { replaceAttributes: true })
+    }
+
     return {
         record,
         setLegacyContext(attributes: Record<string, unknown>) {
@@ -362,14 +373,20 @@ export function createSwapLifecycleTelemetry({ captureEvent, setSwapContext }: {
                 activeLifecycleRef.current = undefined
             }
         },
-        resume() { disposed = false },
-        dispose() {
-            disposed = true
-            depart(activeLifecycleRef.current)
-            lifecycleBySwapRef.current.forEach(depart)
-            lifecycleBySwapRef.current.clear()
-            activeLifecycleRef.current = undefined
-            setSwapContext({}, { replaceAttributes: true })
+        resume() {
+            disposed = false
+            disposeScheduled = false
         },
+        // React StrictMode replays effect cleanup and setup synchronously after
+        // mount while the widget's callback dedupe keeps suppressing the phase
+        // events it already delivered. Journey state must survive that replay,
+        // so a cleanup disposes only when no resume follows it in the same task.
+        scheduleDispose() {
+            disposeScheduled = true
+            queueMicrotask(() => {
+                if (disposeScheduled) dispose()
+            })
+        },
+        dispose,
     }
 }

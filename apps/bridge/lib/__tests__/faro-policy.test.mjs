@@ -5,6 +5,7 @@ import { dirname, join } from 'node:path'
 import { readFileSync } from 'node:fs'
 import { LogLevel, ConsoleInstrumentation } from '@grafana/faro-web-sdk'
 import { getFaroVolumePolicy } from '../faro-policy.ts'
+import { serializeConsoleArgs } from '../faro-sanitizer.ts'
 import { createSwapLifecycleTelemetry } from '../faro-swap-lifecycle.ts'
 
 const require = createRequire(import.meta.url)
@@ -35,6 +36,7 @@ test('deployed builds retain warn/error; local builds retain verbosity; sampling
     assert(source.includes('if (!value) return 1'))
     assert(source.includes('samplingRate: parseSamplingRate(process.env.NEXT_PUBLIC_FARO_SAMPLE_RATE)'))
     assert(source.includes('enablePerformanceInstrumentation: true'))
+    assert(source.includes('errorSerializer: serializeConsoleArgs'))
     assert(source.includes('new TracingInstrumentation('))
     assert(source.indexOf('new SwapContextInstrumentation(') < source.indexOf('...getWebInstrumentations('))
 })
@@ -71,21 +73,26 @@ test('installed SDK dedupes identical errors/events but preserves real lifecycle
 test('installed console instrumentation actually filters deployed debug/log/info but keeps warn/error', () => {
     const logs = [], errors = []
     const instrumentation = new ConsoleInstrumentation()
-    instrumentation.config = getFaroVolumePolicy('production')
+    // Same shape faro.ts builds: the volume policy plus the redacting serializer.
+    const policy = getFaroVolumePolicy('production')
+    instrumentation.config = { ...policy, consoleInstrumentation: { ...policy.consoleInstrumentation, errorSerializer: serializeConsoleArgs } }
     instrumentation.unpatchedConsole = Object.fromEntries(Object.values(LogLevel).map(level => [level, () => {}]))
     instrumentation.internalLogger = logger
     instrumentation.api = { pushLog: (args, options) => logs.push(options.level), pushError: error => errors.push(error) }
     try {
         instrumentation.initialize()
         for (const level of Object.values(LogLevel)) console[level]('synthetic console test')
+        console.error('request failed', { cookie: 'synthetic-cookie', headers: { Authorization: 'Basic synthetic-basic' }, safe: 'kept' })
     }
     finally {
         instrumentation.destroy()
         __resetConsoleMonitorForTests()
     }
     assert.deepEqual(logs, ['warn'])
-    assert.equal(errors.length, 1)
+    assert.equal(errors.length, 2)
     assert.match(errors[0].message, /synthetic console test/)
+    assert.match(errors[1].message, /request failed .*"cookie":"\[REDACTED\]".*"Authorization":"\[REDACTED\]".*"safe":"kept"/)
+    assert.doesNotMatch(errors[1].message, /synthetic-/)
 })
 
 test('installed resource observer suppresses deployed resource events, retains local resource collection', () => {
