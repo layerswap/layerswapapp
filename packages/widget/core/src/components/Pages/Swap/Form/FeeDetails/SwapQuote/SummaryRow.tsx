@@ -35,7 +35,7 @@ export const SummaryRow: FC<{
 
     return (
         <div className={clsx("flex flex-col w-full p-2", { "!pb-0 !-mb-1": isOpen })}>
-            {(compact || showDestinationAddress) && values.destination_address && (compact || sourceAddress?.toLowerCase() !== values.destination_address?.toLowerCase()) && (
+            {showDestinationAddress && values.destination_address && sourceAddress?.toLowerCase() !== values.destination_address?.toLowerCase() && (
                 <div className={`flex items-center w-full justify-between gap-1 text-sm px-2 py-3`}>
                     <div className="inline-flex items-center text-left text-secondary-text gap-1 pr-4">
                         <label>{compact ? 'To address' : 'Send to'}</label>
@@ -62,7 +62,7 @@ export const SummaryRow: FC<{
                             )}
                             {
                                 ((Address.isValid(values?.destination_address, values?.to) && values?.to) ?
-                                    <div className="text-sm group/addressItem text-secondary-text">
+                                    <div className="text-sm group/addressItem text-primary-text">
                                         <ExtendedAddress address={values?.destination_address} network={values?.to} showDetails={wallet ? true : false} title={wallet?.displayName?.split("-")[0]} description={wallet?.providerName} logo={wallet?.icon} shouldShowChevron={false} />
                                     </div>
                                     :

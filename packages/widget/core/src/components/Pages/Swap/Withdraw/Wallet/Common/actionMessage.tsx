@@ -5,6 +5,7 @@ import { ErrorHandler } from "@/lib/ErrorHandler"
 import { Network } from "@layerswap/widget-types"
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore"
 import { useSwapDataState } from "@/context/swap"
+import { isUserRejection } from "./isUserRejection"
 
 export const ActionMessage: FC<{ error: Error | undefined, isLoading: boolean, selectedSourceAddress: string, sourceNetwork: Network }> = ({ error, isLoading, selectedSourceAddress, sourceNetwork }) => {
 
@@ -13,7 +14,7 @@ export const ActionMessage: FC<{ error: Error | undefined, isLoading: boolean, s
     const { swapError } = useSwapDataState()
 
     useEffect(() => {
-        if (error && (error?.name === ActionMessageType.UnexpectedErrorMessage
+        if (error && !isUserRejection(error) && (error?.name === ActionMessageType.UnexpectedErrorMessage
             || !Object.values(ActionMessageType).includes(error.name as ActionMessageType)
         )) {
             ErrorHandler({
@@ -32,10 +33,7 @@ export const ActionMessage: FC<{ error: Error | undefined, isLoading: boolean, s
     if (isLoading) {
         return <ActionMessages.ConfirmActionMessage />
     }
-    if (swapError) {
-        return <ActionMessages.SwapErrorMessage />
-    }
-    else if (error?.name === ActionMessageType.TransactionRejected) {
+    if (isUserRejection(error)) {
         return <ActionMessages.TransactionRejectedMessage />
     }
     else if (error?.name === ActionMessageType.TransactionFailed) {
@@ -52,6 +50,9 @@ export const ActionMessage: FC<{ error: Error | undefined, isLoading: boolean, s
     }
     else if (error?.name === ActionMessageType.DifferentAccountsNotAllowedError) {
         return <ActionMessages.DifferentAccountsNotAllowedError network={error?.message} />
+    }
+    else if (swapError) {
+        return <ActionMessages.SwapErrorMessage />
     }
     else if (error) {
         if (!error.message) return <ActionMessages.UnexpectedErrorMessage />

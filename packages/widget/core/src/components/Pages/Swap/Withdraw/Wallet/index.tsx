@@ -228,16 +228,23 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
     }, [executeTransfer, chainId, selectedSourceAccount?.address, wallet, swapData, balances])
 
     const signHandler: GaslessSigner = useCallback(async (signAction) => {
-        if (!signAction.typed_data)
-            throw new Error('Missing typed data for gasless deposit')
-        if (!selectedSourceAccount?.address)
-            throw new Error('No selected account')
-        return signGaslessDeposit({
-            network: swapData.source_network,
-            address: selectedSourceAccount.address,
-            typedData: signAction.typed_data,
-            wallet,
-        })
+        setButtonClicked(true)
+        setError(undefined)
+        try {
+            if (!signAction.typed_data)
+                throw new Error('Missing typed data for gasless deposit')
+            if (!selectedSourceAccount?.address)
+                throw new Error('No selected account')
+            return await signGaslessDeposit({
+                network: swapData.source_network,
+                address: selectedSourceAccount.address,
+                typedData: signAction.typed_data,
+                wallet,
+            })
+        } catch (e) {
+            setError(e)
+            throw e
+        }
     }, [signGaslessDeposit, swapData.source_network, selectedSourceAccount?.address, wallet])
 
     // Show RPC health message if available and unhealthy (EVM wallets only)
@@ -265,6 +272,7 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
             onSign={isGaslessSupported(swapData.source_network) ? signHandler : undefined}
             icon={<WalletIcon className="stroke-2 w-6 h-6" />}
             error={!!error && buttonClicked}
+            clearError={() => setError(undefined)}
             swapData={swapData}
             refuel={refuel}
         />

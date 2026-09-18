@@ -1,8 +1,10 @@
 import { BaseError, UserRejectedRequestError } from 'viem'
+import { ActionMessageType } from '@layerswap/widget-types'
 
 // True when an error is the user rejecting a wallet request (signature or transaction).
 export const isUserRejection = (err: unknown): boolean => {
     const e = err as BaseError
+    if (e?.name === ActionMessageType.TransactionRejected) return true
     if (typeof e?.walk === 'function' && e.walk(x => x instanceof UserRejectedRequestError) instanceof UserRejectedRequestError) return true
     if (err instanceof Error && /user rejected|user denied|rejected the request/i.test(err.message)) return true
     const code = (err as any)?.code ?? (err as any)?.cause?.code
