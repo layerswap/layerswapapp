@@ -45,6 +45,7 @@ const posthogOptions = {
 
 const securityHeaders = [
   { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Content-Security-Policy', value: 'frame-ancestors *.immutable.com' },
 ]
 
@@ -183,7 +184,9 @@ const buildNextConfig = (phase) => {
   if (process.env.APP_BASE_PATH) {
     nextConfig.basePath = process.env.APP_BASE_PATH
   }
-  if (phase === PHASE_PRODUCTION_SERVER) {
+  // Next.js records headers() into the routes manifest at build time, so the
+  // server phase alone is too late: `next start` never sees these otherwise.
+  if (productionBuild) {
     nextConfig.headers = async () => {
       return [
         {

@@ -58,7 +58,7 @@ const SubmitButton: FC<SubmitButtonProps> = ({ isDisabled, isSubmitting, icon, c
 
 type DoubleLineTextProps = {
     primaryText: string,
-    secondarytext: string,
+    secondaryText: string,
     colorStyle: 'mltln-text-light' | 'mltln-text-dark',
     reversed?: boolean
 }
@@ -74,9 +74,9 @@ const text_styles = {
     }
 }
 
-export const DoubleLineText = ({ primaryText, secondarytext, colorStyle, reversed }: DoubleLineTextProps) => {
+export const DoubleLineText = ({ primaryText, secondaryText, colorStyle, reversed }: DoubleLineTextProps) => {
     return <div className={`leading-3 flex ${reversed ? 'flex-col-reverse' : 'flex-col'}`}>
-        <div className={`text-xs ${text_styles[colorStyle].secondary}`}>{secondarytext}</div>
+        <div className={`text-xs ${text_styles[colorStyle].secondary}`}>{secondaryText}</div>
         <div className={`${text_styles[colorStyle].primary}`}>{primaryText}</div>
     </div>
 }
