@@ -1,0 +1,74 @@
+{
+  "fixtureVersion": 2,
+  "provenance": {
+    "source": "User-provided Chrome DevTools screenshot and copied outgoing span attributes, 2026-09-08",
+    "scope": "One partial span and a subsequent user-copied browser.brands resource attribute, not a complete Faro request body. Other resource/scope attributes, enclosing metadata, span name/status/times, events/links and request headers were not supplied.",
+    "sanitization": "Session, trace and span IDs replaced consistently; URL host replaced and query removed; server.address replaced. No missing span fields reconstructed.",
+    "verification": "Verified in outgoing Faro payload"
+  },
+  "spanExcerpt": {
+    "traceId": "00000000000000000000000000000004",
+    "spanId": "0000000000000004",
+    "attributes": [
+      { "key": "http.request.method", "value": { "stringValue": "POST" } },
+      { "key": "url.full", "value": { "stringValue": "http://faro-validation.invalid:3000/lsph/e/" } },
+      { "key": "session.id", "value": { "stringValue": "session-sanitizer-controlled-0001" } },
+      { "key": "http.response.status_code", "value": { "intValue": 200 } },
+      { "key": "server.address", "value": { "stringValue": "faro-validation.invalid" } },
+      { "key": "server.port", "value": { "intValue": 3000 } }
+    ]
+  },
+  "resourceAttributeExcerpt": {
+    "key": "browser.brands",
+    "value": {
+      "arrayValue": {
+        "values": [
+          { "stringValue": "Chromium" },
+          { "stringValue": "Not?A_Brand" },
+          { "stringValue": "Google Chrome" }
+        ]
+      }
+    }
+  },
+  "resourceAttributeProvenance": {
+    "source": "User-copied resource attribute in response to the request to inspect browser.brands in the same outgoing payload, 2026-09-08",
+    "scope": "One resource attribute only; no enclosing resource-to-span linkage independently captured. Values retained verbatim. No stored Loki or Tempo mapping verified for browser.brands.",
+    "verification": "Verified in outgoing Faro payload"
+  },
+  "lokiVerification": {
+    "verifiedAt": "2026-09-08T13:24:25.548Z",
+    "datasourceUid": "P8E80F9AEF21F6940",
+    "httpStatus": 200,
+    "queryWindow": { "from": "2026-09-08T13:05:32.573Z", "to": "2026-09-08T13:25:32.573Z" },
+    "matchingRecordCount": 1,
+    "originalEqualityChecks": {
+      "session_id": true,
+      "event_data_session_id": true,
+      "traceID": true,
+      "spanID": true,
+      "event_data_url_full": true,
+      "event_data_server_address": true
+    },
+    "scope": "Sanitized parsed-field projection from a fresh dev Loki query, not a raw line or ingestion-label inventory. This verifies the tracing mirror log, not OTLP span storage in Tempo.",
+    "verification": "Verified in Loki",
+    "record": {
+      "lokiTimestampNs": "1788873334684245635",
+      "parsedFields": {
+        "kind": "event",
+        "event_name": "faro.tracing.fetch",
+        "app_name": "layerswap-frontend",
+        "app_environment": "testnet",
+        "app_version": "local",
+        "session_id": "session-sanitizer-controlled-0001",
+        "event_data_session_id": "session-sanitizer-controlled-0001",
+        "traceID": "00000000000000000000000000000004",
+        "spanID": "0000000000000004",
+        "event_data_http_request_method": "POST",
+        "event_data_url_full": "http://faro-validation.invalid:3000/lsph/e/",
+        "event_data_http_response_status_code": "200",
+        "event_data_server_address": "faro-validation.invalid",
+        "event_data_server_port": "3000"
+      }
+    }
+  }
+}

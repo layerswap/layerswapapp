@@ -1,0 +1,60 @@
+--- a/common/preinstalls/monitoring/kube-prometheus-stack.yaml
++++ b/common/preinstalls/monitoring/kube-prometheus-stack.yaml
+@@ -123,12 +123,14 @@
+           apiVersion: 1
+           datasources:
+             - name: Prometheus
++              uid: PBFA97CFB590B2093
+               type: prometheus
+               url: http://kube-prometheus-stack-prometheus:9090
+               isDefault: true
+               jsonData:
+                 timeInterval: 30s
+             - name: Loki
++              uid: P8E80F9AEF21F6940
+               type: loki
+               url: http://loki-gateway.monitoring.svc.cluster.local:80
+               isDefault: false
+@@ -136,17 +138,18 @@
+                 maxLines: 1000
+                 timeout: 300
+                 derivedFields:
+-                  - datasourceUid: Tempo
++                  - datasourceUid: P214B5B846CF3925F
+                     matcherRegex: "(?:trace_?id|traceID)[=:\\s\"]+([0-9a-fA-F]{32})"
+                     name: TraceID
+                     url: '$${__value.raw}'
+             - name: Tempo
++              uid: P214B5B846CF3925F
+               type: tempo
+               url: http://tempo:3200
+               isDefault: false
+               jsonData:
+                 tracesToLogsV2:
+-                  datasourceUid: Loki
++                  datasourceUid: P8E80F9AEF21F6940
+                   spanStartTimeShift: '-1h'
+                   spanEndTimeShift: '1h'
+                   filterByTraceID: true
+@@ -161,18 +164,18 @@
+                     - key: 'k8s.container.name'
+                       value: 'container'
+                 tracesToMetrics:
+-                  datasourceUid: Prometheus
++                  datasourceUid: PBFA97CFB590B2093
+                   tags:
+                     - key: 'service.name'
+                       value: 'service'
+                     - key: 'service.namespace'
+                       value: 'namespace'
+                 serviceMap:
+-                  datasourceUid: Prometheus
++                  datasourceUid: PBFA97CFB590B2093
+                 nodeGraph:
+                   enabled: true
+                 lokiSearch:
+-                  datasourceUid: Loki
++                  datasourceUid: P8E80F9AEF21F6940
+ 
+     # Alertmanager
+     alertmanager:

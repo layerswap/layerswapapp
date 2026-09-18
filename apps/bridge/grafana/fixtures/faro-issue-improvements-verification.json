@@ -1,0 +1,265 @@
+{
+  "checkedAt": "2026-09-09T17:13:22.217641+00:00",
+  "checks": [
+    {
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-2",
+      "query": "A",
+      "rows": 2,
+      "passed": true
+    },
+    {
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-2",
+      "query": "B",
+      "rows": 2,
+      "passed": true
+    },
+    {
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-2",
+      "query": "C",
+      "rows": 2,
+      "passed": true
+    },
+    {
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-2",
+      "query": "D",
+      "rows": 2,
+      "passed": true
+    },
+    {
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-11",
+      "query": "A",
+      "rows": 0,
+      "passed": true
+    },
+    {
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-12",
+      "query": "A",
+      "rows": 0,
+      "passed": true
+    },
+    {
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-13",
+      "query": "A",
+      "rows": 1,
+      "passed": true
+    },
+    {
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-15",
+      "query": "A",
+      "rows": 5,
+      "passed": true
+    },
+    {
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-15",
+      "query": "B",
+      "rows": 5,
+      "passed": true
+    },
+    {
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-15",
+      "query": "C",
+      "rows": 5,
+      "passed": true
+    },
+    {
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-15",
+      "query": "D",
+      "rows": 5,
+      "passed": true
+    },
+    {
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-4",
+      "query": "A",
+      "rows": 0,
+      "passed": true
+    },
+    {
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-6",
+      "query": "A",
+      "rows": 36,
+      "passed": true
+    },
+    {
+      "dashboard": "layerswap-faro-trial-home",
+      "panel": "panel-8",
+      "query": "A",
+      "rows": 0,
+      "passed": true
+    },
+    {
+      "dashboard": "layerswap-faro-trial-issue",
+      "panel": "panel-2",
+      "query": "A",
+      "rows": 1,
+      "passed": true
+    },
+    {
+      "dashboard": "layerswap-faro-trial-issue",
+      "panel": "panel-3",
+      "query": "A",
+      "rows": 1,
+      "passed": true
+    },
+    {
+      "dashboard": "layerswap-faro-trial-session",
+      "panel": "panel-2",
+      "query": "A",
+      "rows": 0,
+      "passed": true
+    },
+    {
+      "dashboard": "layerswap-faro-trial-session",
+      "panel": "panel-3",
+      "query": "A",
+      "rows": 643,
+      "passed": true
+    },
+    {
+      "dashboard": "layerswap-faro-trial-session",
+      "panel": "panel-4",
+      "query": "A",
+      "rows": 1,
+      "passed": true
+    },
+    {
+      "dashboard": "layerswap-faro-trial-session",
+      "panel": "panel-6",
+      "query": "A",
+      "rows": 0,
+      "passed": true
+    },
+    {
+      "dashboard": "layerswap-faro-trial-session",
+      "panel": "panel-8",
+      "query": "A",
+      "rows": 0,
+      "passed": true
+    },
+    {
+      "dashboard": "layerswap-faro-trial-session",
+      "panel": "panel-10",
+      "query": "A",
+      "rows": 20,
+      "passed": true
+    },
+    {
+      "dashboard": "layerswap-faro-trial-event",
+      "panel": "panel-2",
+      "query": "A",
+      "rows": 1,
+      "passed": true
+    },
+    {
+      "check": "message/type search excludes field names and escapes special characters",
+      "passed": true
+    },
+    {
+      "check": "message/type search excludes field names and escapes special characters",
+      "passed": true
+    },
+    {
+      "check": "observed contract error variants normalize into two groups",
+      "records": 23,
+      "groups": 2,
+      "passed": true
+    },
+    {
+      "check": "historical classification",
+      "counts": {
+        "issue": 2,
+        "diagnostic": 31,
+        "expected": 1
+      },
+      "passed": true
+    }
+  ],
+  "browserVerified": true,
+  "browserVerificationAppliesTo": "2026-09-09 revision; see faro-overview-visibility-verification.json for the September 10 revision",
+  "newFrontendFieldsVerifiedInLoki": false,
+  "alerts": {
+    "count": 3,
+    "expressionsValidated": true,
+    "published": false,
+    "notificationsEnabled": false
+  },
+  "transforms": {
+    "grafanaVersion": "13.1.3",
+    "realLibraryExecuted": true,
+    "triageJoinRows": [
+      2,
+      5
+    ],
+    "causalFixtureInputRows": 5,
+    "causalFixtureOutputRows": 4,
+    "drilldownFieldReferencesValid": true,
+    "nativeLokiInstantTableAdaptationVerifiedInBrowser": true,
+    "initialRawBackendFrameTestWasInsufficient": true
+  },
+  "publication": {
+    "checkedAt": "2026-09-10T10:25:55.002309+00:00",
+    "results": [
+      {
+        "uid": "layerswap-faro-trial-home",
+        "generation": 8,
+        "readbackMatched": true
+      },
+      {
+        "uid": "layerswap-faro-trial-issue",
+        "generation": 9,
+        "readbackMatched": true
+      },
+      {
+        "uid": "layerswap-faro-trial-session",
+        "generation": 7,
+        "readbackMatched": true
+      },
+      {
+        "uid": "layerswap-faro-trial-event",
+        "generation": 5,
+        "readbackMatched": true
+      }
+    ],
+    "originalDashboardsUnchanged": true,
+    "frontendDeployed": false
+  },
+  "browserChecks": {
+    "signedIn": true,
+    "issuesRows": 2,
+    "diagnosticRows": 5,
+    "triageColumnsTogether": true,
+    "hiddenSelectorColumns": true,
+    "diagnosticGroupToOccurrences": true,
+    "occurrenceToSession": true,
+    "backRestoresDiagnosticsTabAndRange": true,
+    "nanosecondSelectorHasTextPrefix": true,
+    "exactSelectedRawRecordVisible": true,
+    "failureTabAccessible": true,
+    "desktopLayoutVerified": true,
+    "testFiltersClearedAndIssuesOverviewRestored": true,
+    "narrowViewportVerified": false,
+    "newFailureIdFixtureInBrowser": false,
+    "fieldNameSearchReturnsEmptyWhileSessionVolumeRemains64": true
+  },
+  "localChecks": {
+    "faroTests": 54,
+    "widgetTelemetryTests": 23,
+    "dashboardTests": 8,
+    "widgetTypesBuild": true,
+    "widgetBuild": true,
+    "bridgeTypecheck": true,
+    "diffWhitespaceCheck": true
+  }
+}

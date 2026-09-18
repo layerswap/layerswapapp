@@ -63,7 +63,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
     return (
         <>
             <DepositMethodComponent />
-            <Form className="h-full grow flex flex-col flex-1 justify-between w-full gap-2">
+            <Form data-ls-form="exchange" className="h-full grow flex flex-col flex-1 justify-between w-full gap-2">
                 <Widget.Content>
                     <div className="w-full flex flex-col justify-between flex-1 relative">
                         <div className="flex flex-col w-full gap-2">

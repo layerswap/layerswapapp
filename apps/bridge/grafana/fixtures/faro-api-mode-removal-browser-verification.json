@@ -1,0 +1,34 @@
+{
+  "date": "2026-09-11",
+  "method": "Signed-in Chrome UI: copy each dashboard resource, remove the environment variable/query restriction/navigation parameter, apply through Grafana's code editor and save.",
+  "dashboards": [
+    "layerswap-faro-trial-home",
+    "layerswap-faro-trial-issue",
+    "layerswap-faro-trial-session",
+    "layerswap-faro-trial-event"
+  ],
+  "verified": {
+    "overviewSaveToast": "Dashboard saved",
+    "overviewApiModeSelectorRemoved": true,
+    "overviewFeeCapFailureVisible": true,
+    "issueSelectorAbsentAfterReload": true,
+    "eventLinksWithoutEnvironmentAfterReload": true,
+    "sessionLoadedFromOldMainnetUrl": true,
+    "sessionRecordCount": 235,
+    "sessionId": "myGhWGtSTN",
+    "swapId": "b25ff3c6-614e-4b10-94bc-2cddf3ac4a06",
+    "selectedStoredTimestampNs": "1789041984194364408",
+    "selectedRecordApiMode": "testnet",
+    "selectedRecordStep": "wallet_action_failed",
+    "selectedRecordReason": "The fee cap (`maxFeePerGas` gwei) cannot be lower than the block base fee.",
+    "rangeFrom": "2026-09-10T12:01:00.000Z",
+    "rangeTo": "2026-09-10T12:12:00.000Z",
+    "journeyFilter": ""
+  },
+  "localValidation": "11 native dashboard checks passed; all four JSON files regenerated.",
+  "limits": [
+    "Only API-mode filtering was removed live; the new Deployment filter remains local.",
+    "No frontend deployment, telemetry alteration or alert changes occurred.",
+    "No claim of exhaustive browser acceptance of every dashboard panel."
+  ]
+}

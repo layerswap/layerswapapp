@@ -1,0 +1,94 @@
+{
+  "fixtureVersion": 1,
+  "verification": "Verified in Loki",
+  "provenance": {
+    "source": "Read-only dev Loki query after user reported disconnecting in the app",
+    "scope": "Sanitized parsed-field projection; IDs replaced consistently with faro-wallet-loki-observed.json. Equality checks used original IDs in memory. No paired outgoing browser body captured.",
+    "datasourceUid": "P8E80F9AEF21F6940"
+  },
+  "verifiedAt": "2026-09-08T14:05:30.275Z",
+  "status": "success",
+  "beforeTimestampNs": "1788875467001090240",
+  "queryEndNs": "1788876329676000000",
+  "latestQueryLimit": 30,
+  "returnedRecords": 30,
+  "emptyWalletRecords": 12,
+  "latestIsEmpty": true,
+  "checks": {
+    "sameSession": true,
+    "sameApplication": true,
+    "sameEnvironment": true,
+    "sameVersion": true,
+    "journeyContextPresent": true,
+    "sameJourney": true,
+    "sameStep": true,
+    "walletJsonEmpty": true,
+    "walletCountZero": true
+  },
+  "after": {
+    "timestampNs": "1788876232057274215",
+    "parsedFields": {
+      "app_name": "layerswap-frontend",
+      "app_environment": "testnet",
+      "app_version": "local",
+      "kind": "event",
+      "event_name": "faro.tracing.fetch",
+      "session_attr_step": "flow_error",
+      "session_attr_connected_wallet_count": "0",
+      "session_attr_connected_wallets_omitted": "0",
+      "session_attr_connected_wallets_state": "ready",
+      "session_id": "session-wallet-test-1",
+      "session_attr_connected_wallets": "[]"
+    }
+  },
+  "latestStates": [
+    {
+      "timestampNs": "1788876232057274215",
+      "parsedFields": {
+        "app_name": "layerswap-frontend",
+        "app_environment": "testnet",
+        "app_version": "local",
+        "kind": "event",
+        "event_name": "faro.tracing.fetch",
+        "session_attr_step": "flow_error",
+        "session_attr_connected_wallet_count": "0",
+        "session_attr_connected_wallets_omitted": "0",
+        "session_attr_connected_wallets_state": "ready",
+        "session_id": "session-wallet-test-1",
+        "session_attr_connected_wallets": "[]"
+      }
+    },
+    {
+      "timestampNs": "1788876232057097112",
+      "parsedFields": {
+        "app_name": "layerswap-frontend",
+        "app_environment": "testnet",
+        "app_version": "local",
+        "kind": "event",
+        "event_name": "faro.tracing.fetch",
+        "session_attr_step": "flow_error",
+        "session_attr_connected_wallet_count": "0",
+        "session_attr_connected_wallets_omitted": "0",
+        "session_attr_connected_wallets_state": "ready",
+        "session_id": "session-wallet-test-1",
+        "session_attr_connected_wallets": "[]"
+      }
+    },
+    {
+      "timestampNs": "1788876232056850808",
+      "parsedFields": {
+        "app_name": "layerswap-frontend",
+        "app_environment": "testnet",
+        "app_version": "local",
+        "kind": "event",
+        "event_name": "faro.performance.resource",
+        "session_attr_step": "flow_error",
+        "session_attr_connected_wallet_count": "0",
+        "session_attr_connected_wallets_omitted": "0",
+        "session_attr_connected_wallets_state": "ready",
+        "session_id": "session-wallet-test-1",
+        "session_attr_connected_wallets": "[]"
+      }
+    }
+  ]
+}

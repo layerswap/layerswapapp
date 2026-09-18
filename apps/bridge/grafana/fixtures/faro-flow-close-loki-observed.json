@@ -1,0 +1,84 @@
+{
+  "verification": "Verified in Loki",
+  "verifiedAt": "2026-09-08T15:19:28.711Z",
+  "provenance": "Read-only dev Loki query after user-created test swap and closing its modal; projections sanitized with file-local aliases. No outgoing close/after body captured.",
+  "queryLimit": 300,
+  "returnedRecords": 55,
+  "afterClientTimeRecords": 43,
+  "cleanedContextRecords": 43,
+  "oldContextRetainedRecords": 0,
+  "checks": {
+    "closingEventHasSwap": true,
+    "closingEventHasJourney": true,
+    "closingSessionSwapMatches": true,
+    "closingSessionJourneyMatches": true,
+    "subsequentRecordsExist": true,
+    "allSubsequentSessionIdsMatch": true,
+    "allSubsequentWalletJsonMatches": true,
+    "oldContextAbsentFromAllSubsequent": true
+  },
+  "closed": {
+    "timestampNs": "1788880700898169787",
+    "parsedFields": {
+      "app_name": "layerswap-frontend",
+      "app_environment": "testnet",
+      "app_version": "local",
+      "session_attr_connected_wallet_count": "1",
+      "session_attr_connected_wallets_omitted": "0",
+      "session_attr_connected_wallets_state": "ready",
+      "session_id": "session-close-test-1",
+      "session_attr_connected_wallets": "[{\"wallet_address\":\"wallet-close-test-1\",\"wallet_family\":\"evm\",\"wallet_connector\":\"metaMaskSDK\",\"wallet_chain_id\":\"421614\"}]",
+      "kind": "event",
+      "event_name": "swap_lifecycle",
+      "timestamp": "2026-09-08 15:18:20.44 +0000 UTC",
+      "session_attr_step": "flow_closed",
+      "event_data_step": "flow_closed",
+      "event_data_outcome": "abandoned",
+      "event_data_journey_id": "journey-close-test-1",
+      "session_attr_journey_id": "journey-close-test-1",
+      "event_data_swap_id": "swap-close-test-1",
+      "session_attr_swap_id": "swap-close-test-1"
+    }
+  },
+  "afterExamples": [
+    {
+      "timestampNs": "1788880701593996127",
+      "parsedFields": {
+        "app_name": "layerswap-frontend",
+        "app_environment": "testnet",
+        "app_version": "local",
+        "session_attr_connected_wallet_count": "1",
+        "session_attr_connected_wallets_omitted": "0",
+        "session_attr_connected_wallets_state": "ready",
+        "session_id": "session-close-test-1",
+        "session_attr_connected_wallets": "[{\"wallet_address\":\"wallet-close-test-1\",\"wallet_family\":\"evm\",\"wallet_connector\":\"metaMaskSDK\",\"wallet_chain_id\":\"421614\"}]",
+        "kind": "log",
+        "timestamp": "2026-09-08 15:18:21.205 +0000 UTC"
+      }
+    },
+    {
+      "timestampNs": "1788880761850880405",
+      "parsedFields": {
+        "app_name": "layerswap-frontend",
+        "app_environment": "testnet",
+        "app_version": "local",
+        "session_attr_connected_wallet_count": "1",
+        "session_attr_connected_wallets_omitted": "0",
+        "session_attr_connected_wallets_state": "ready",
+        "session_id": "session-close-test-1",
+        "session_attr_connected_wallets": "[{\"wallet_address\":\"wallet-close-test-1\",\"wallet_family\":\"evm\",\"wallet_connector\":\"metaMaskSDK\",\"wallet_chain_id\":\"421614\"}]",
+        "kind": "event",
+        "event_name": "faro.tracing.xml-http-request",
+        "timestamp": "2026-09-08 15:19:20.201 +0000 UTC"
+      }
+    }
+  ],
+  "limitations": [
+    "Stored records only; outgoing close/after bodies not captured",
+    "Bounded query, not indefinite absence or full-history guarantee",
+    "Client timestamps determine before/after; timestamps can be affected by clock changes",
+    "Absence checks cover session journey_id/swap_id, not every possible swap-owned field",
+    "No production, Tempo, deployed-volume-policy or source-map validation",
+    "abandoned is the frontend flow-close outcome, not proof of backend swap cancellation"
+  ]
+}

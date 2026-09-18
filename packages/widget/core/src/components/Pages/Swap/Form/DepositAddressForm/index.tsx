@@ -219,7 +219,7 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
 
     return (
         <>
-            <Form className="h-full grow flex flex-col flex-1 justify-between w-full gap-3">
+            <Form data-ls-form="deposit-address" className="h-full grow flex flex-col flex-1 justify-between w-full gap-3">
                 {isProcessing ? (
                     <Suspense fallback={null}>
                         <Processing />

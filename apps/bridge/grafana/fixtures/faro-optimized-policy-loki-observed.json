@@ -1,0 +1,54 @@
+{
+  "verification": "Verified in Loki",
+  "verifiedAt": "2026-09-08T15:36:30.560Z",
+  "provenance": "User ran the supplied console snippet after being instructed to hard-refresh the locally served optimized build; independent read-only dev Loki query.",
+  "marker": "FARO_BUILD_CHECK_1788881719370",
+  "query": "{source=\"faro\"} | logfmt | __error__=\"\" | app_name=\"layerswap-frontend\" | app_environment=\"testnet\" | app_version=\"local\" |~ \"FARO_BUILD_CHECK_[0-9]+_(DEBUG|LOG|INFO|WARN|ERROR)\"",
+  "window": {"startNs": "1788879089114000000", "endNs": "1788881789114000000"},
+  "queryLimit": 1000,
+  "totalMarkerRecords": 2,
+  "selectedRecords": 2,
+  "sessionCount": 1,
+  "snippetInvocations": {"DEBUG": 1, "LOG": 1, "INFO": 1, "WARN": 2, "ERROR": 2},
+  "observedCounts": {"DEBUG": 0, "LOG": 0, "INFO": 0, "WARN": 1, "ERROR": 1},
+  "records": [
+    {
+      "timestampNs": "1788881720007551464",
+      "parsedFields": {
+        "timestamp": "2026-09-08 15:35:19.371 +0000 UTC",
+        "kind": "log", "level": "warn",
+        "message": "FARO_BUILD_CHECK_1788881719370_WARN",
+        "app_name": "layerswap-frontend", "app_environment": "testnet", "app_version": "local"
+      },
+      "sessionAlias": "session-build-check-1"
+    },
+    {
+      "timestampNs": "1788881720007635866",
+      "parsedFields": {
+        "timestamp": "2026-09-08 15:35:19.371 +0000 UTC",
+        "kind": "exception", "type": "Error",
+        "value": "console.error: FARO_BUILD_CHECK_1788881719370_ERROR",
+        "app_name": "layerswap-frontend", "app_environment": "testnet", "app_version": "local"
+      },
+      "sessionAlias": "session-build-check-1"
+    }
+  ],
+  "nearbySession": {
+    "records": 86, "limit": 1000,
+    "startNs": "1788881600007551464", "endNs": "1788881789114000000",
+    "signalCounts": {
+      "measurement": 5, "session_resume": 1, "view_changed": 1,
+      "faro.performance.navigation": 1, "exception": 10, "swap_lifecycle": 8,
+      "faro.tracing.xml-http-request": 8, "faro.tracing.fetch": 51, "log": 1
+    }
+  },
+  "limitations": [
+    "Parsed projections, not raw Loki lines, ingestion labels or outgoing browser payloads.",
+    "Session IDs compared in memory; fixture alias is not searchable in live Loki.",
+    "Invocation counts describe the supplied snippet, not independently captured console calls.",
+    "No resource-performance events in the bounded nearby-session result; not proof of permanent absence.",
+    "Nearby session may include earlier SDK instances; version local is not a build identifier.",
+    "Measurement types were not projected; these counts alone do not verify particular Web Vitals.",
+    "TRACE level was not exercised. No source-map resolution, Tempo, production volume or baseline validation."
+  ]
+}

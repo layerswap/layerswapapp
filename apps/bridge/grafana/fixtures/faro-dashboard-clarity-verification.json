@@ -1,0 +1,645 @@
+{
+  "verifiedAt": "2026-09-09T10:40:50.600Z",
+  "tests": [
+    {
+      "panel": 2,
+      "expected": 2,
+      "observed": 2,
+      "jsonRows": 0,
+      "http": 200,
+      "frames": [
+        {
+          "fields": [
+            {
+              "name": "Time",
+              "type": "time"
+            },
+            {
+              "name": "Value",
+              "type": "number"
+            }
+          ],
+          "rows": 1
+        }
+      ]
+    },
+    {
+      "panel": 3,
+      "expected": 2,
+      "observed": 2,
+      "jsonRows": 0,
+      "http": 200,
+      "frames": [
+        {
+          "fields": [
+            {
+              "name": "Time",
+              "type": "time"
+            },
+            {
+              "name": "Value",
+              "type": "number"
+            }
+          ],
+          "rows": 1
+        },
+        {
+          "fields": [
+            {
+              "name": "Time",
+              "type": "time"
+            },
+            {
+              "name": "Value",
+              "type": "number"
+            }
+          ],
+          "rows": 1
+        }
+      ]
+    },
+    {
+      "panel": 4,
+      "expected": 1,
+      "observed": 1,
+      "jsonRows": 0,
+      "http": 200,
+      "frames": [
+        {
+          "fields": [
+            {
+              "name": "Time",
+              "type": "time"
+            },
+            {
+              "name": "Value",
+              "type": "number"
+            }
+          ],
+          "rows": 1
+        }
+      ]
+    },
+    {
+      "panel": 5,
+      "expected": 9,
+      "observed": 9,
+      "jsonRows": 9,
+      "http": 200,
+      "frames": [
+        {
+          "fields": [
+            {
+              "name": "labels",
+              "type": "other"
+            },
+            {
+              "name": "Time",
+              "type": "time"
+            },
+            {
+              "name": "Line",
+              "type": "string"
+            },
+            {
+              "name": "tsNs",
+              "type": "string"
+            },
+            {
+              "name": "labelTypes",
+              "type": "other"
+            },
+            {
+              "name": "id",
+              "type": "string"
+            }
+          ],
+          "rows": 9
+        }
+      ]
+    },
+    {
+      "panel": 6,
+      "expected": 1,
+      "observed": 1,
+      "jsonRows": 0,
+      "http": 200,
+      "frames": [
+        {
+          "fields": [
+            {
+              "name": "labels",
+              "type": "other"
+            },
+            {
+              "name": "Time",
+              "type": "time"
+            },
+            {
+              "name": "Line",
+              "type": "string"
+            },
+            {
+              "name": "tsNs",
+              "type": "string"
+            },
+            {
+              "name": "labelTypes",
+              "type": "other"
+            },
+            {
+              "name": "id",
+              "type": "string"
+            }
+          ],
+          "rows": 1
+        }
+      ]
+    },
+    {
+      "panel": 7,
+      "expected": 0,
+      "observed": 0,
+      "jsonRows": 0,
+      "http": 200,
+      "frames": []
+    },
+    {
+      "panel": 8,
+      "expected": 1,
+      "observed": 1,
+      "jsonRows": 1,
+      "http": 200,
+      "frames": [
+        {
+          "fields": [
+            {
+              "name": "labels",
+              "type": "other"
+            },
+            {
+              "name": "Time",
+              "type": "time"
+            },
+            {
+              "name": "Line",
+              "type": "string"
+            },
+            {
+              "name": "tsNs",
+              "type": "string"
+            },
+            {
+              "name": "labelTypes",
+              "type": "other"
+            },
+            {
+              "name": "id",
+              "type": "string"
+            }
+          ],
+          "rows": 1
+        }
+      ]
+    },
+    {
+      "panel": 4,
+      "expected": 0,
+      "observed": 0,
+      "jsonRows": 0,
+      "http": 200,
+      "frames": []
+    },
+    {
+      "panel": 5,
+      "expected": 0,
+      "observed": 0,
+      "jsonRows": 0,
+      "http": 200,
+      "frames": [
+        {
+          "fields": [
+            {
+              "name": "labels",
+              "type": "other"
+            },
+            {
+              "name": "Time",
+              "type": "time"
+            },
+            {
+              "name": "Line",
+              "type": "string"
+            },
+            {
+              "name": "tsNs",
+              "type": "string"
+            },
+            {
+              "name": "labelTypes",
+              "type": "other"
+            },
+            {
+              "name": "id",
+              "type": "string"
+            }
+          ],
+          "rows": 0
+        }
+      ]
+    },
+    {
+      "panel": 6,
+      "expected": 0,
+      "observed": 0,
+      "jsonRows": 0,
+      "http": 200,
+      "frames": [
+        {
+          "fields": [
+            {
+              "name": "labels",
+              "type": "other"
+            },
+            {
+              "name": "Time",
+              "type": "time"
+            },
+            {
+              "name": "Line",
+              "type": "string"
+            },
+            {
+              "name": "tsNs",
+              "type": "string"
+            },
+            {
+              "name": "labelTypes",
+              "type": "other"
+            },
+            {
+              "name": "id",
+              "type": "string"
+            }
+          ],
+          "rows": 0
+        }
+      ]
+    },
+    {
+      "panel": 8,
+      "expected": 0,
+      "observed": 0,
+      "jsonRows": 0,
+      "http": 200,
+      "frames": [
+        {
+          "fields": [
+            {
+              "name": "labels",
+              "type": "other"
+            },
+            {
+              "name": "Time",
+              "type": "time"
+            },
+            {
+              "name": "Line",
+              "type": "string"
+            },
+            {
+              "name": "tsNs",
+              "type": "string"
+            },
+            {
+              "name": "labelTypes",
+              "type": "other"
+            },
+            {
+              "name": "id",
+              "type": "string"
+            }
+          ],
+          "rows": 0
+        }
+      ]
+    },
+    {
+      "panel": 5,
+      "expected": 23,
+      "observed": 23,
+      "jsonRows": 23,
+      "http": 200,
+      "frames": [
+        {
+          "fields": [
+            {
+              "name": "labels",
+              "type": "other"
+            },
+            {
+              "name": "Time",
+              "type": "time"
+            },
+            {
+              "name": "Line",
+              "type": "string"
+            },
+            {
+              "name": "tsNs",
+              "type": "string"
+            },
+            {
+              "name": "labelTypes",
+              "type": "other"
+            },
+            {
+              "name": "id",
+              "type": "string"
+            }
+          ],
+          "rows": 23
+        }
+      ]
+    },
+    {
+      "panel": 9,
+      "expected": 15,
+      "observed": 15,
+      "jsonRows": 15,
+      "http": 200,
+      "frames": [
+        {
+          "fields": [
+            {
+              "name": "labels",
+              "type": "other"
+            },
+            {
+              "name": "Time",
+              "type": "time"
+            },
+            {
+              "name": "Line",
+              "type": "string"
+            },
+            {
+              "name": "tsNs",
+              "type": "string"
+            },
+            {
+              "name": "labelTypes",
+              "type": "other"
+            },
+            {
+              "name": "id",
+              "type": "string"
+            }
+          ],
+          "rows": 15
+        }
+      ]
+    },
+    {
+      "name": "all_23_rpc_session_rows_exact_stored_record",
+      "matches": 23,
+      "passed": true
+    },
+    {
+      "panel": 5,
+      "expected": 0,
+      "observed": 0,
+      "jsonRows": 0,
+      "http": 200,
+      "frames": [
+        {
+          "fields": [
+            {
+              "name": "labels",
+              "type": "other"
+            },
+            {
+              "name": "Time",
+              "type": "time"
+            },
+            {
+              "name": "Line",
+              "type": "string"
+            },
+            {
+              "name": "tsNs",
+              "type": "string"
+            },
+            {
+              "name": "labelTypes",
+              "type": "other"
+            },
+            {
+              "name": "id",
+              "type": "string"
+            }
+          ],
+          "rows": 0
+        }
+      ]
+    },
+    {
+      "panel": 6,
+      "expected": 0,
+      "observed": 0,
+      "jsonRows": 0,
+      "http": 200,
+      "frames": [
+        {
+          "fields": [
+            {
+              "name": "labels",
+              "type": "other"
+            },
+            {
+              "name": "Time",
+              "type": "time"
+            },
+            {
+              "name": "Line",
+              "type": "string"
+            },
+            {
+              "name": "tsNs",
+              "type": "string"
+            },
+            {
+              "name": "labelTypes",
+              "type": "other"
+            },
+            {
+              "name": "id",
+              "type": "string"
+            }
+          ],
+          "rows": 0
+        }
+      ]
+    },
+    {
+      "panel": 8,
+      "expected": 0,
+      "observed": 0,
+      "jsonRows": 0,
+      "http": 200,
+      "frames": [
+        {
+          "fields": [
+            {
+              "name": "labels",
+              "type": "other"
+            },
+            {
+              "name": "Time",
+              "type": "time"
+            },
+            {
+              "name": "Line",
+              "type": "string"
+            },
+            {
+              "name": "tsNs",
+              "type": "string"
+            },
+            {
+              "name": "labelTypes",
+              "type": "other"
+            },
+            {
+              "name": "id",
+              "type": "string"
+            }
+          ],
+          "rows": 0
+        }
+      ]
+    },
+    {
+      "panel": 9,
+      "expected": 0,
+      "observed": 0,
+      "jsonRows": 0,
+      "http": 200,
+      "frames": [
+        {
+          "fields": [
+            {
+              "name": "labels",
+              "type": "other"
+            },
+            {
+              "name": "Time",
+              "type": "time"
+            },
+            {
+              "name": "Line",
+              "type": "string"
+            },
+            {
+              "name": "tsNs",
+              "type": "string"
+            },
+            {
+              "name": "labelTypes",
+              "type": "other"
+            },
+            {
+              "name": "id",
+              "type": "string"
+            }
+          ],
+          "rows": 0
+        }
+      ]
+    },
+    {
+      "panel": 5,
+      "expected": 0,
+      "observed": 0,
+      "jsonRows": 0,
+      "http": 200,
+      "frames": [
+        {
+          "fields": [
+            {
+              "name": "labels",
+              "type": "other"
+            },
+            {
+              "name": "Time",
+              "type": "time"
+            },
+            {
+              "name": "Line",
+              "type": "string"
+            },
+            {
+              "name": "tsNs",
+              "type": "string"
+            },
+            {
+              "name": "labelTypes",
+              "type": "other"
+            },
+            {
+              "name": "id",
+              "type": "string"
+            }
+          ],
+          "rows": 0
+        }
+      ]
+    },
+    {
+      "panel": 5,
+      "observed": 2,
+      "jsonRows": 2,
+      "http": 200,
+      "frames": [
+        {
+          "fields": [
+            {
+              "name": "labels",
+              "type": "other"
+            },
+            {
+              "name": "Time",
+              "type": "time"
+            },
+            {
+              "name": "Line",
+              "type": "string"
+            },
+            {
+              "name": "tsNs",
+              "type": "string"
+            },
+            {
+              "name": "labelTypes",
+              "type": "other"
+            },
+            {
+              "name": "id",
+              "type": "string"
+            }
+          ],
+          "rows": 2
+        }
+      ]
+    },
+    {
+      "name": "real_console_log_message_visible",
+      "passed": true
+    }
+  ],
+  "limitations": [
+    "No connected browser; transformations and clicks not visually tested",
+    "No production baselines or dedicated operation panels",
+    "All identities used in requests withheld from this report"
+  ]
+}

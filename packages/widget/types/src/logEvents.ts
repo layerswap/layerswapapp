@@ -1,6 +1,10 @@
 import { SwapStatus } from './SwapStatus';
 
 export interface BaseErrorProps {
+  /** Shared only by observations of the same thrown error object/cause. */
+  occurrenceId?: string;
+  /** Normalized wallet/provider cause, shared by execution and error reporting. */
+  reasonCode?: WalletErrorReasonCode;
   name?: string;
   message: string;
   stack?: string;
@@ -60,15 +64,186 @@ export type GasMiscalculationError = ({
   token?: string;
 } & BaseErrorProps);
 
-export type TransactionNotDetectedError = ({ type: 'TransactionNotDetected' } & BaseErrorProps);
+export type TransactionNotDetectedError = ({
+  type: 'TransactionNotDetected';
+  swapId?: string;
+  transactionHash?: string;
+  network?: string;
+} & BaseErrorProps);
 export type ChainError = ({ type: 'ChainError' } & BaseErrorProps);
 export type TransferError = ({ type: 'TransferError' } & BaseErrorProps);
 export type WalletError = ({ type: 'WalletError' } & BaseErrorProps);
+export type CallbackError = ({ type: 'CallbackError' } & BaseErrorProps);
 
-export type ErrorEventType = WidgetError | APIError | BalanceError | GasFeeError | WalletWithdrawalError | GasMiscalculationError | AlertUIEvent | TransactionNotDetectedError | ChainError | TransferError | WalletError;
+export type ErrorEventType = WidgetError | APIError | BalanceError | GasFeeError | WalletWithdrawalError | GasMiscalculationError | AlertUIEvent | TransactionNotDetectedError | ChainError | TransferError | WalletError | CallbackError;
 
 export type SwapStatusEvent = {
   type: SwapStatus;
   swapId: string;
   path?: string;
+  /** UI-resolved phase; it can reach completed before the API status catches up. */
+  phase?: string;
+  fromAddress?: string;
+  toAddress?: string;
+  sourceNetwork?: string;
+  destinationNetwork?: string;
+  sourceToken?: string;
+  destinationToken?: string;
+};
+
+/** Stable, query-friendly stages in the user-facing swap journey. */
+export type SwapLifecycleStage =
+  | 'form'
+  | 'swap_creation'
+  | 'wallet_connection'
+  | 'network_switch'
+  | 'wallet_action'
+  | 'input_transfer'
+  | 'output_transfer'
+  | 'refund'
+  | 'swap'
+  | 'flow';
+
+export type SwapLifecycleOutcome =
+  | 'started'
+  | 'pending'
+  | 'succeeded'
+  | 'rejected'
+  | 'failed'
+  | 'cancelled'
+  | 'expired'
+  | 'delayed'
+  | 'abandoned'
+  | 'stalled'
+  | 'blocked';
+
+/**
+ * Why the transfer step cannot proceed without a thrown error. Bounded so
+ * dashboards can group by cause across networks and wallets.
+ */
+export type TransferBlockedReasonCode =
+  | 'rpc_unhealthy'
+  | 'same_account_required'
+  | 'wallet_unsupported_for_network'
+  | 'deposit_actions_unavailable'
+  | 'swap_error'
+  | 'insufficient_balance'
+  | 'insufficient_gas'
+  | 'gasless_unavailable'
+  | 'critical_price_impact';
+
+/**
+ * Normalized wallet/provider failure causes. The raw provider code stays in
+ * `errorCode`; API error codes are already bounded and pass through unchanged.
+ */
+export type WalletErrorReasonCode =
+  | 'user_rejected'
+  | 'unauthorized'
+  | 'insufficient_funds'
+  | 'gas_estimation_failed'
+  | 'contract_reverted'
+  | 'nonce_or_replacement'
+  | 'chain_not_added'
+  | 'wallet_disconnected'
+  | 'unsupported_method'
+  | 'invalid_parameters'
+  | 'internal_rpc_error'
+  | 'network_error'
+  | 'timeout'
+  | 'unknown_error';
+
+/**
+ * Semantic steps emitted by the widget. These deliberately describe user and
+ * application intent instead of mirroring raw console messages or API calls.
+ */
+export type SwapLifecycleStep =
+  | 'form_submitted'
+  | 'form_confirmation_cancelled'
+  | 'swap_creation_started'
+  | 'swap_created'
+  | 'swap_creation_failed'
+  | 'wallet_connection_started'
+  | 'wallet_connected'
+  | 'wallet_connection_failed'
+  | 'network_switch_started'
+  | 'network_switched'
+  | 'network_switch_rejected'
+  | 'network_switch_failed'
+  | 'awaiting_wallet_action'
+  | 'wallet_prompt_opened'
+  | 'wallet_action_rejected'
+  | 'wallet_action_failed'
+  | 'transaction_submitted'
+  | 'gasless_authorization_submitted'
+  | 'awaiting_user_deposit'
+  | 'deposit_address_copied'
+  | 'input_transaction_detected'
+  | 'input_transfer_pending'
+  | 'input_transfer_confirmed'
+  | 'output_transfer_pending'
+  | 'output_transaction_detected'
+  | 'output_settling'
+  | 'swap_delayed'
+  | 'swap_completed'
+  | 'swap_failed'
+  | 'swap_expired'
+  | 'swap_cancelled'
+  | 'refund_pending'
+  | 'refund_completed'
+  | 'retry_requested'
+  | 'transfer_blocked'
+  | 'flow_closed'
+  | 'flow_error'
+  | 'suspected_stall';
+
+/** Mutually exclusive UI phase observations; consumers dedupe these in one slot. */
+export const SWAP_LIFECYCLE_PHASE_STEPS: readonly SwapLifecycleStep[] = [
+  'awaiting_wallet_action', 'awaiting_user_deposit', 'input_transfer_pending', 'output_transfer_pending',
+  'output_settling', 'swap_completed', 'swap_failed', 'swap_delayed', 'swap_expired', 'swap_cancelled',
+  'refund_pending', 'refund_completed',
+];
+
+/** Each on-chain transaction observation owns its own dedupe slot. */
+export const SWAP_LIFECYCLE_TRANSACTION_STEPS: readonly SwapLifecycleStep[] = [
+  'input_transaction_detected', 'input_transfer_confirmed', 'output_transaction_detected',
+];
+
+/**
+ * User or application actions that begin a new attempt. Earlier observations
+ * for the same swap no longer suppress later ones once any of these is seen.
+ */
+export const SWAP_LIFECYCLE_ATTEMPT_START_STEPS: readonly SwapLifecycleStep[] = [
+  'swap_creation_started', 'wallet_connection_started', 'network_switch_started',
+  'wallet_prompt_opened', 'retry_requested',
+];
+
+export type SwapLifecycleEvent = {
+  occurrenceId?: string;
+  step: SwapLifecycleStep;
+  stage: SwapLifecycleStage;
+  outcome: SwapLifecycleOutcome;
+  path: string;
+  swapId?: string;
+  reasonCode?: string;
+  reason?: string;
+  /** Raw provider/API code behind a normalized `reasonCode`. */
+  errorCode?: string;
+  action?: string;
+  provider?: string;
+  transactionHash?: string;
+  inputTransactionHash?: string;
+  outputTransactionHash?: string;
+  refundTransactionHash?: string;
+  status?: string;
+  phase?: string;
+  depositMethod?: string;
+  requestedAmount?: string;
+  fromAddress?: string;
+  toAddress?: string;
+  sourceNetwork?: string;
+  destinationNetwork?: string;
+  sourceToken?: string;
+  destinationToken?: string;
+  confirmations?: number;
+  maxConfirmations?: number;
 };

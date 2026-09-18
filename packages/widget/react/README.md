@@ -139,7 +139,7 @@ widget's behavior, not where it comes from.
 | Prop | Type | Description |
 |---|---|---|
 | `config` | `WidgetConfig` (from `@layerswap/widget-types`, re-exported here) | Forwarded to the widget's `LayerswapProvider`. Includes `apiKey`, `version`, `theme`, `initialValues`, `settings`. |
-| `callbacks` | `WidgetCallbacks` | `onSwapCreate`, `onSwapComplete`, `onError`, `onSwapModalStateChange`, etc. |
+| `callbacks` | `WidgetCallbacks` | `onSwapCreate`, `onSwapComplete`, `onSwapLifecycle`, `onError`, `onSwapModalStateChange`, etc. `onSwapLifecycle` reports semantic steps, outcomes, and reason codes for journey observability. |
 | `wagmiConfig` | `wagmi/Config` | Host wagmi config the widget adopts for EVM. |
 | `walletDefaults` | `WalletDefaults` | `walletConnect` (projectId, etc.), `ton`, `immutablePassport`. |
 | `walletProvidersConfig.include` | `WalletProviderId[]` | Allowlist — keep only these chains, e.g. `['evm', 'solana']`. Applied before `exclude`. |
@@ -147,6 +147,55 @@ widget's behavior, not where it comes from.
 | `fallback` | `ReactNode` | Shown while loading. |
 | `onReady` | `() => void` | Fires once the widget mounts. |
 | `onError` | `(err) => void` | Fires on load/render failure; receives a `ManifestError` for manifest issues. |
+
+`callbacks.onSwapStatusChange` reports changes to `(swapId, type, phase)`;
+late address data does not repeat the same notification. `type` is the API
+status and `phase` is the UI state, which can become `completed` or `failed`
+before the API status catches up. A later API status change is a separate event.
+Starting another wallet attempt permits a new notification even if it reaches
+the same status and phase as the previous attempt.
+
+`callbacks.onSwapLifecycle` delivers phase and transaction observations once
+per meaningful transition. Confirmation counts, context enrichment, and React
+effect replay do not duplicate them. New transactions, phase recovery, and
+user actions (including every wallet prompt and retry) remain observable.
+Reopening the swap, returning to the form, or submitting a new form resets
+observation deduplication. Wallet transfer cancellations use
+`wallet_action_rejected` with `reasonCode: 'user_rejected'`; they no longer
+invoke `callbacks.onError`.
+
+`callbacks.onTelemetry` is an optional, vendor-neutral analytics stream. Each
+event is `{ name, attributes }`, discriminated by `name`:
+
+| `name` | Event-specific attributes |
+|---|---|
+| `widget_flow` | `step` (any `onSwapLifecycle` step, plus `form_viewed`, `form_started`, `validation_shown`), optional `outcome`, `reason_code` |
+| `widget_interaction` | `action`, `trigger` |
+| `widget_operation` | `operation` (e.g. `quote_request`, `swap_creation`, `balance_fetch`, `wallet_transfer`), `operation_id`, `outcome`, `duration_ms` |
+
+Every event carries `schema_version: 1` and a unique `event_id`; all other
+attributes are primitives (`string | number | boolean`), never DOM text or
+provider response bodies. A handler that throws is ignored and never affects
+the swap. `widget_flow` events carry journey context (`flow_id`, `swap_id`,
+`submission_count`, progress flags) and deduplicate repeated phase and
+transaction observations the same way `onSwapLifecycle` does; a new journey
+starts on every `form_submitted`. Form text editing reports `form_started`
+once rather than an interaction per keystroke.
+
+```tsx
+import type { WidgetTelemetryEvent } from '@layerswap/widget-react';
+
+const onTelemetry = (event: WidgetTelemetryEvent) => {
+  if (event.name === 'widget_operation') {
+    analytics.track(event.attributes.operation, {
+      outcome: event.attributes.outcome,
+      durationMs: event.attributes.duration_ms,
+    });
+  }
+};
+```
+
+These contracts also apply to `@layerswap/widget-js` and CDN consumers.
 
 ## How it works
 

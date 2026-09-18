@@ -1,4 +1,5 @@
 import { BaseError, InsufficientFundsError, EstimateGasExecutionError, UserRejectedRequestError } from 'viem'
+import { isUserRejection } from '@layerswap/wallet-core/errors'
 
 type ResolvedError = "insufficient_funds" | "transaction_rejected"
 
@@ -27,7 +28,16 @@ export const resolveError = (error: BaseError): ResolvedError | undefined => {
         || code_name === 'EstimateGasExecutionError'
         || code_name === 3)
         return "insufficient_funds"
-    else if (code_name === 4001 || inner_code === -1) {
+    else if (code_name === 4001 || inner_code === -1 || isUserRejection(error)) {
         return "transaction_rejected"
     }
+}
+
+/**
+ * Preserve the EVM adapter's legacy nested -1/data.code cancellation handling.
+ * Keep this compatibility rule at the adapter boundary: an unrecognized -1
+ * from another provider must not become a cancellation just because it is wrapped.
+ */
+export function isEvmUserRejection(error: unknown): boolean {
+    return isUserRejection(error) || resolveError(error as BaseError) === 'transaction_rejected'
 }

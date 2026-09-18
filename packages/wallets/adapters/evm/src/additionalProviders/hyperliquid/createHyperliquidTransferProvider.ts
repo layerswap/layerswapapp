@@ -6,7 +6,8 @@ import { HyperliquidClient } from "./hyperliquidClient"
 import { signSendToEvm, signUsdClassTransfer } from "./withdraw"
 import { planWithdrawal } from "./planWithdrawal"
 import { resolveHyperliquidConfig, HyperliquidConfig, HYPERLIQUID_DEX_SPOT, HYPERLIQUID_WITHDRAW_HEADROOM, HYPERLIQUID_TRANSFER_POLL_INTERVAL_MS, HYPERLIQUID_TRANSFER_POLL_TIMEOUT_MS } from "./constants"
-import { resolveHyperliquidError, isUserRejection } from "./resolveError"
+import { resolveHyperliquidError } from "./resolveError"
+import { isEvmUserRejection } from "../../evmUtils/resolveError"
 
 const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
 
@@ -85,7 +86,7 @@ export function createHyperliquidTransfer(): TransferProvider {
             try {
                 await switchChain(config, { chainId: hlConfig.signatureChainId })
             } catch (switchErr) {
-                if (isUserRejection(switchErr)) throw rejected()
+                if (isEvmUserRejection(switchErr)) throw rejected()
                 throw fail('Wrong network', 'Switch your wallet to Ethereum to sign the withdrawal, then try again.')
             }
 
@@ -126,7 +127,7 @@ export function createHyperliquidTransfer(): TransferProvider {
                     })
                 } catch (signErr) {
                     onProgress?.(undefined)
-                    if (isUserRejection(signErr)) throw rejected()
+                    if (isEvmUserRejection(signErr)) throw rejected()
                     throw signErr
                 }
 
@@ -159,7 +160,7 @@ export function createHyperliquidTransfer(): TransferProvider {
                     sourceDex,
                 })
             } catch (signErr) {
-                if (isUserRejection(signErr)) throw rejected()
+                if (isEvmUserRejection(signErr)) throw rejected()
                 throw signErr
             }
 

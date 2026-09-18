@@ -18,7 +18,8 @@ import {
     POLYMARKET_USDC_E_ADDRESS,
     resolvePolymarketConfig,
 } from "./constants"
-import { resolvePolymarketError, isUserRejection } from "./resolveError"
+import { resolvePolymarketError } from "./resolveError"
+import { isEvmUserRejection } from "../../evmUtils/resolveError"
 
 const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
 
@@ -110,7 +111,7 @@ export function createPolymarketTransferProvider(
             try {
                 await switchChain(config, { chainId: POLYMARKET_CHAIN_ID })
             } catch (switchErr) {
-                if (isUserRejection(switchErr)) throw rejected()
+                if (isEvmUserRejection(switchErr)) throw rejected()
                 throw fail('Wrong network', 'Switch your wallet to Polygon to sign the withdrawal, then try again.')
             }
 
@@ -188,7 +189,7 @@ export function createPolymarketTransferProvider(
             try {
                 request = await buildRequest()
             } catch (signErr) {
-                if (isUserRejection(signErr)) throw rejected()
+                if (isEvmUserRejection(signErr)) throw rejected()
                 throw signErr
             }
 

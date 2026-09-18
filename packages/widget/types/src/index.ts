@@ -13,6 +13,7 @@ export type {
 export { NetworkType } from './network';
 export type { Refuel, AvailableSourceNetworkTypes } from './network';
 export { SwapStatus } from './SwapStatus';
+export { SWAP_LIFECYCLE_PHASE_STEPS, SWAP_LIFECYCLE_TRANSACTION_STEPS, SWAP_LIFECYCLE_ATTEMPT_START_STEPS } from './logEvents';
 export type {
   BaseErrorProps,
   AlertUIEvent,
@@ -26,14 +27,25 @@ export type {
   ChainError,
   TransferError,
   WalletError,
+  CallbackError,
   ErrorEventType,
   SwapStatusEvent,
+  SwapLifecycleEvent,
+  SwapLifecycleOutcome,
+  SwapLifecycleStage,
+  SwapLifecycleStep,
+  TransferBlockedReasonCode,
+  WalletErrorReasonCode,
 } from './logEvents';
 export type { InternalConnector, Wallet, WalletConnectConfig, WalletConnectLink } from './wallet';
 export { ActionMessageType } from './actionMessage';
 export { GasCalculation } from './GasCalculation';
 export { Network, NetworkWithTokens, Token, Metadata, NetworkRoute, NetworkRouteToken } from './types';
-export { ErrorHandler, setErrorLogger } from './errorHandler';
+export { ErrorHandler, setErrorLogger, createSafeErrorLogger, defaultErrorLogger, reportErrorLoggerFailure } from './errorHandler';
+export type { ErrorLogger } from './errorHandler';
+export { getErrorOccurrenceId } from './errorOccurrence';
+export { createRandomId } from './randomId';
+export type { WidgetTelemetryEvent, WidgetTelemetryHandler, WidgetTelemetryAttributes, WidgetTelemetryData, WidgetFlowStep, WidgetOperation, WidgetOperationOutcome } from './telemetry';
 export { insertIfNotExists } from './insertIfNotExists';
 export { realRoutePresent } from './extendedRouteAvailability';
 export type { DepositRouteRef } from './extendedRouteAvailability';
