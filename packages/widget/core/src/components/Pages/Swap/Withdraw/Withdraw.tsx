@@ -23,6 +23,7 @@ import { RefreshBalanceButton } from '../Form/SecondaryComponents/validationErro
 import { AdjustAmountButton } from '../Form/SecondaryComponents/validationError/AdjustAmountButton';
 import { AnimatePresence, motion } from 'framer-motion';
 import { isDepositAddressSwap } from '@/helpers/swapFlow';
+import { resolveGasBalanceBudget } from '@/lib/gases/resolveGasBalanceBudget';
 
 const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: () => void, onCancelWithdrawal?: () => void, partner?: Partner }> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal, partner }) => {
     const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading, quoteError } = useSwapDataState()
@@ -37,10 +38,11 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
     const walletBalanceAmount = walletBalance?.amount
     const { gasData } = useSWRGas(selectedSourceAccount?.address, source_network, swapBasicData?.source_token, swapBasicData?.requested_amount)
     const { setFieldValue } = useFormikContext<SwapFormValues>()
+    const gasBalanceBudget = resolveGasBalanceBudget(gasData)
 
     const handleEditAmount = useCallback(() => {
-        if (walletBalanceAmount == null || !gasData?.gas || !swapBasicData) return
-        const maxAmount = walletBalanceAmount - (gasData.gas * 1.02)
+        if (walletBalanceAmount == null || !gasBalanceBudget || !swapBasicData) return
+        const maxAmount = walletBalanceAmount - gasBalanceBudget
         if (maxAmount <= 0) return
 
         const newAmount = truncateDecimals(maxAmount, swapBasicData.source_token?.precision)
@@ -55,7 +57,7 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
             refuel: !!refuel,
             depositMethod: swapBasicData.use_deposit_address ? 'deposit_address' : 'wallet',
         })
-    }, [walletBalanceAmount, gasData?.gas, swapBasicData, refuel, setFieldValue, setSubmitedFormValues])
+    }, [walletBalanceAmount, gasBalanceBudget, swapBasicData, refuel, setFieldValue, setSubmitedFormValues])
 
     let withdraw: {
         content?: JSX.Element | JSX.Element[],
