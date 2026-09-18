@@ -1,11 +1,39 @@
 import { NetworkType } from '@layerswap/widget-types';
 import { AddressUtilsProvider, AddressUtilsProviderProps, AddressSelectionMode } from "@/types";
+import { AppNetworkAdapter } from "@/networkAdapter";
+
+const adapterFamilyChecks: Partial<Record<NetworkType, keyof AppNetworkAdapter<unknown>>> = {
+    [NetworkType.EVM]: 'isEvmNetwork',
+    [NetworkType.Solana]: 'isSolanaNetwork',
+    [NetworkType.Starknet]: 'isStarknetNetwork',
+    [NetworkType.Tron]: 'isTronNetwork',
+    [NetworkType.Bitcoin]: 'isBitcoinNetwork',
+    [NetworkType.TON]: 'isTonNetwork',
+    [NetworkType.Fuel]: 'isFuelNetwork',
+};
 
 export class AddressUtilsResolver {
     private providers: AddressUtilsProvider[];
+    private adapter?: AppNetworkAdapter<any>;
 
     constructor(providers?: AddressUtilsProvider[]) {
         this.providers = providers || [];
+    }
+
+    setNetworkAdapter<Network>(adapter: AppNetworkAdapter<Network>): void {
+        this.adapter = adapter;
+    }
+
+    getNetworkAdapter(): AppNetworkAdapter<any> | undefined {
+        return this.adapter;
+    }
+
+    private supportsNetwork(provider: AddressUtilsProvider, network: { name: string }): boolean {
+        const familyCheck = adapterFamilyChecks[provider.networkType];
+        if (this.adapter && familyCheck && (this.adapter[familyCheck] as (network: unknown) => boolean)(network)) {
+            return true;
+        }
+        return provider.supportsNetwork(network);
     }
 
     /** Which network type(s) a raw address string matches, and how its scope is picked.
@@ -42,14 +70,24 @@ export class AddressUtilsResolver {
     }
 
     isValidAddress({ network, providerName, address }: AddressUtilsProviderProps): boolean {
-        const provider = this.providers.find(p => network ? p.supportsNetwork(network) : providerName ? p.providerName === providerName : false);
+        if (network && this.adapter?.validateAddress) {
+            const result = this.adapter.validateAddress(network, address);
+            if (result !== undefined) return result;
+        }
+
+        const provider = this.providers.find(p => network ? this.supportsNetwork(p, network) : providerName ? p.providerName === providerName : false);
         if (!provider) return false;
 
         return provider.isValidAddress({ address, network, providerName });
     }
 
     addressFormat({ address, network, providerName }: AddressUtilsProviderProps): string {
-        const provider = this.providers.find(p => network ? p.supportsNetwork(network) : providerName ? p.providerName === providerName : false);
+        if (network && this.adapter?.formatAddress) {
+            const result = this.adapter.formatAddress(network, address);
+            if (result !== undefined) return result;
+        }
+
+        const provider = this.providers.find(p => network ? this.supportsNetwork(p, network) : providerName ? p.providerName === providerName : false);
         if (!provider) return address;
 
         return provider.addressFormat ? provider.addressFormat({ address, network, providerName }) : address;

@@ -5,7 +5,7 @@ import LayerSwapApiClient, { Campaign } from "@/lib/apiClients/layerSwapApiClien
 import useSWR from "swr"
 import { ApiResponse } from "@/Models/ApiResponse"
 import SubmitButton from "@/components/Buttons/submitButton";
-import { ImageWithFallback, WalletIcon } from "@layerswap/ui-kit/components";
+import { ImageWithFallback, WalletIcon } from "@layerswap/ui-kit";
 import LinkWrapper from "@/components/Common/LinkWrapper";
 import { Widget } from "@/components/Widget/Index";
 import Leaderboard from "./Leaderboard"

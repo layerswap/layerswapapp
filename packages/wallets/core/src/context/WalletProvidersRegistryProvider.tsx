@@ -1,8 +1,9 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type FC, type PropsWithChildren, type ReactNode } from "react";
 import type { StoreApi } from "zustand/vanilla";
+import { setNetworkAdapter } from "@layerswap/utils";
 import { WalletConnectionProvider, WalletConnectionStore, WalletProviderDescriptor, isWalletProviderDescriptor, } from "@/types/wallet";
-import type { AppNetworkAdapter } from "@/types/network";
+import type { AppNetworkAdapter } from "@layerswap/utils";
 import type { WalletProvider, WalletWrapper } from "@/types/provider";
 import { createWalletProvidersRegistry, type WalletProvidersRegistry } from "@/lib/walletConnect/walletProvidersRegistry";
 import { createDescriptorStubStore } from "@/lib/walletConnect/descriptorStubStore";
@@ -114,6 +115,7 @@ export function WalletProvidersRegistryProvider<Network>({
     walletProviders: ProviderEntry<Network>[]
 }>) {
     const walletProvidersRegistry = useMemo(() => createWalletProvidersRegistry(), [])
+    useMemo(() => setNetworkAdapter(networkAdapter), [networkAdapter])
     const [isInitialized, setIsInitialized] = useState(false)
     const hasConfiguredProviders = useMemo(
         () => walletProviders.some(

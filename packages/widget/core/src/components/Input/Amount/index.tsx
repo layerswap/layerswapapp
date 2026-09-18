@@ -3,7 +3,7 @@ import { forwardRef, useEffect, useMemo, useRef } from "react";
 import NumericInput from "../NumericInput";
 import { QuoteTokenPrices, useQuoteData } from "@/hooks/useFee";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
-import { truncateDecimals } from "@/components/utils/RoundDecimals";
+import { truncateDecimals } from "@layerswap/utils";
 import clsx from "clsx";
 import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";

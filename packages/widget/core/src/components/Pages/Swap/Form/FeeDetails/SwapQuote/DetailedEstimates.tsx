@@ -1,6 +1,6 @@
 import { FC, useMemo } from "react";
 import AverageCompletionTime from "@/components/Common/AverageCompletionTime";
-import { Tooltip, TooltipContent, TooltipTrigger, } from "@/components/shadcn/tooltip"
+import { Tooltip, TooltipContent, TooltipTrigger, } from "@layerswap/ui-kit"
 import useSWRGas from "@/lib/gases/useSWRGas";
 import useWallet from "@/hooks/useWallet";
 import { QuoteReward, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
@@ -10,11 +10,10 @@ import { useSelectedAccount } from "@/context/swapAccounts";
 import { SwapValues } from "..";
 import { RateElement } from "../Rate";
 import { Slippage } from "../Slippage";
-import { truncateDecimals } from "@/components/utils/RoundDecimals";
+import { truncateDecimals, shortenString } from "@layerswap/utils";
 import { Network, NetworkRouteToken } from "@layerswap/widget-types";
-import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
+import { ExtendedAddress } from "@layerswap/ui-kit";
 import { Address } from "@/lib/address/Address";
-import shortenString from "@/components/utils/ShortenString";
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
 import { isGaslessCapableRoute } from "@/helpers/gasless";
 import GaslessBadge from "../GaslessBadge";

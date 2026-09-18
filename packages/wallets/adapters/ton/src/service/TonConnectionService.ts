@@ -1,7 +1,8 @@
 import { type InternalConnector, type Wallet } from '@layerswap/widget-types';
 import type { WalletConnectionProvider, WalletConnectionService } from "@layerswap/wallet-core/types";
 import type { WalletModalConnector } from "@layerswap/wallet-core/types"
-import { connectModalStore, type AppNetworkAdapter } from "@layerswap/wallet-core"
+import { connectModalStore } from "@layerswap/wallet-core"
+import type { AppNetworkAdapter } from "@layerswap/utils"
 import { resolveWalletIconString } from "@layerswap/wallet-core"
 import { isWalletInfoCurrentlyInjected, isWalletInfoInjectable, isWalletInfoRemote, type Wallet as TonWallet, type WalletInfo, type WalletInfoInjectable, type WalletInfoRemote, } from '@tonconnect/sdk'
 import { Address } from '@ton/core'

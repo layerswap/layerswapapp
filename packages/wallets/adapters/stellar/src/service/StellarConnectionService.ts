@@ -17,9 +17,9 @@ import {
     setPendingMetadataForRegistry,
     subscribeDisplayUri,
     walletIconResolver,
-    type AppNetworkAdapter,
     type WalletConnectWalletBase,
 } from '@layerswap/wallet-core'
+import type { AppNetworkAdapter } from '@layerswap/utils'
 import { id as PROVIDER_ID, name as PROVIDER_NAME } from '../constants'
 import { STELLAR_APPKIT_WALLET_CONNECT_ID } from './StellarWalletConnectModule'
 import { stellarKitManager } from './stellarKitManager'
