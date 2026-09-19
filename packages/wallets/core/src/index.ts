@@ -44,3 +44,5 @@ export { getEip6963Providers, subscribeEip6963Providers } from "@/lib/eip6963Pro
 export type { Eip6963Provider } from "@/lib/eip6963Providers";
 export { defineNetworkAdapter } from "@/types/network";
 export type { AppNetworkAdapter } from "@/types/network";
+export { SwapPrerequisiteResolver, SwapPrerequisiteError, prerequisitesReady, swapPrerequisiteKey, resolveExecutionPrerequisites } from './lib/swapPrerequisites';
+export type { ResolvedSwapPrerequisite, SwapPrerequisiteSnapshot } from './lib/swapPrerequisites';

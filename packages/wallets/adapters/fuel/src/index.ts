@@ -57,6 +57,7 @@ export function createFuelProvider<Network = NetworkWithTokens>(
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
         transferProvider: finalTransferProviders,
+        swapPrerequisiteProvider: config.swapPrerequisiteProviders,
     }
 }
 

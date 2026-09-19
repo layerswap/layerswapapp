@@ -1,4 +1,5 @@
-import { type Refuel, type Wallet } from '@layerswap/widget-types';
+import { type Refuel, type Wallet, type SwapPrerequisiteContext } from '@layerswap/widget-types';
+import { resolveExecutionPrerequisites, type SwapPrerequisiteSnapshot } from '@layerswap/wallet-core';
 import { Context, useCallback, useEffect, useState, createContext, useContext, useMemo, useRef } from 'react'
 import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, DepositAction, SwapBasicData, SwapQuote, SwapDetails, TransactionType } from '@/lib/apiClients/layerSwapApiClient';
 import { InitialSettings } from '@/Models/InitialSettings';
@@ -29,12 +30,15 @@ import { useExtendedRoutesStore } from '@/stores/extendedRoutesStore';
 import { isDepositAddressFlow, isDepositAddressSwap } from '@/helpers/swapFlow';
 import { resolveSwapPollingInterval, SWAP_POLL_DEDUPE_MS } from '@/lib/swapPollingPolicy';
 import { KnownInternalNames } from '@layerswap/utils';
+import { useCheckSwapPrerequisites } from '@/hooks/useSwapPrerequisites';
+import { prerequisitesFromForm, prerequisitesFromSwap } from '@/lib/prerequisites/context';
 
 export const SwapDataStateContext = createContext<SwapContextData | null>(null);
 
 export const SwapDataUpdateContext = createContext<UpdateSwapInterface | null>(null);
 
 export type UpdateSwapInterface = {
+    getExecutionPrerequisites: (swapId?: string) => SwapPrerequisiteContext,
     createSwap: (values: SwapFormValues, query: InitialSettings, partner?: Partner) => Promise<SwapResponse>,
     setQuoteLoading: (value: boolean) => void;
     mutateSwap: KeyedMutator<ApiResponse<SwapResponse>>
@@ -66,6 +70,7 @@ export type SwapContextData = {
 }
 
 export function SwapDataProvider({ children, initialSwapData }: { children: React.ReactNode, initialSwapData?: SwapResponse | null }) {
+    const checkPrerequisites = useCheckSwapPrerequisites()
     const initialSettings = useInitialSettings()
     const { onSwapCreate } = useCallbacks()
     const [swapBasicFormData, setSwapBasicFormData] = useState<SwapBasicData & { refuel: boolean }>()
@@ -79,6 +84,8 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     // id and, via SWR fallbackData below, the swap details — so consumers render
     // with data on first paint instead of a loading state.
     const [swapId, setSwapId] = useState<string | undefined>(initialSettings.swapId?.toString() ?? initialSwapData?.swap.id)
+    const createdExecutionRef = useRef<SwapPrerequisiteSnapshot | undefined>(undefined)
+    const currentExecutionRef = useRef<SwapPrerequisiteSnapshot | undefined>(undefined)
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
     const { sourceRoutes, destinationRoutes, networks } = useSettingsState()
     const updateRecentTokens = useRecentNetworksStore(state => state.updateRecentNetworks)
@@ -91,8 +98,12 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const { quote: formDataQuote, quoteError: formDataQuoteError } = useQuoteData(quoteArgs, { refreshInterval: swapId ? 0 : undefined, skipLimits: isDepositAddressSwap(swapBasicFormData) });
 
     const handleUpdateSwapid = (value: string | undefined) => {
+        if (createdExecutionRef.current?.swapId !== value) createdExecutionRef.current = undefined
         setSwapId(value)
     }
+
+    const getExecutionPrerequisites = useCallback((id?: string) =>
+        resolveExecutionPrerequisites(currentExecutionRef.current, createdExecutionRef.current, id), [])
 
     const setSubmitedFormValues = useCallback((values: NonNullable<SwapFormValues>) => {
         if (!values.from || !values.to || !values.fromAsset || !values.toAsset || !values.destination_address)
@@ -193,6 +204,11 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         return formDataQuote?.quote
     }, [formDataQuote, data, swapId, extendedSwapData]);
 
+    const executionContext = prerequisitesFromSwap(swapBasicData, quote?.receive_amount)
+    currentExecutionRef.current = swapDetails?.id === swapId && swapId && executionContext
+        ? { swapId, context: executionContext }
+        : undefined
+
     const quoteError = useMemo(() => {
         if (swapId && data?.data) {
             return undefined
@@ -277,6 +293,8 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         if (!depositAddressFlow && !amount)
             throw new Error("Form data is missing")
 
+        await checkPrerequisites(prerequisitesFromForm(values))
+
         const sourceWalletIsSupported = selectedWallet && WalletIsSupportedForSource({
             sourceNetwork: from,
             sourceWallet: selectedWallet
@@ -352,6 +370,18 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         if (!swap?.swap.id)
             throw new Error("Could not create swap")
 
+        createdExecutionRef.current = {
+            swapId: swap.swap.id,
+            context: prerequisitesFromSwap({
+                ...swap.swap,
+                source_network: from,
+                source_token: fromCurrency,
+                destination_network: to,
+                destination_token: toCurrency,
+                requested_amount: amount || '',
+            }, swap.quote.receive_amount)!,
+        }
+
         onSwapCreate(swap)
         // Persist the extended identity so the post-create UI and the withdraw step
         // can keep showing the extended source and resume after a reload.
@@ -375,9 +405,10 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
 
 
         return swap;
-    }, [selectedSourceAccount, selectedWallet, onSwapCreate, updateRecentTokens, swapDetails?.id, networks, sourceRoutes])
+    }, [selectedSourceAccount, selectedWallet, onSwapCreate, updateRecentTokens, swapDetails?.id, networks, sourceRoutes, checkPrerequisites])
 
     const updateFns = useMemo<UpdateSwapInterface>(() => ({
+        getExecutionPrerequisites,
         createSwap,
         mutateSwap: mutate,
         setDepositAddressIsFromAccount,
@@ -386,7 +417,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         setSubmitedFormValues,
         setQuoteLoading,
         setSwapModalOpen
-    }), [createSwap, mutate, handleUpdateSwapid, setSubmitedFormValues]);
+    }), [createSwap, mutate, handleUpdateSwapid, setSubmitedFormValues, getExecutionPrerequisites]);
 
     const stateValue = useMemo(() => ({
         withdrawType,
