@@ -14,6 +14,13 @@ function renderStepIcon(step: StatusStep) {
             );
 
         case ProgressStatus.Current:
+            if (step.isLoading === false) {
+                return (
+                    <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 border-primary/40 bg-primary/10">
+                        <span className="h-2 w-2 rounded-full bg-primary" />
+                    </span>
+                );
+            }
             return (
                 <span className="animate-spin">
                     <Gauge value={40} size="verySmall" />

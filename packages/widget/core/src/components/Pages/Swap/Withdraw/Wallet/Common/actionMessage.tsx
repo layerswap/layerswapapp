@@ -7,7 +7,7 @@ import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore"
 import { useSwapDataState } from "@/context/swap"
 import { isUserRejection } from "./isUserRejection"
 
-export const ActionMessage: FC<{ error: Error | undefined, isLoading: boolean, selectedSourceAddress: string, sourceNetwork: Network }> = ({ error, isLoading, selectedSourceAddress, sourceNetwork }) => {
+export const ActionMessage: FC<{ error: Error | undefined, isSignatureError?: boolean, isLoading: boolean, selectedSourceAddress: string, sourceNetwork: Network }> = ({ error, isSignatureError, isLoading, selectedSourceAddress, sourceNetwork }) => {
 
     const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
     const gaslessErrorMessage = useGaslessPreferenceStore(s => s.gaslessErrorMessage)
@@ -34,7 +34,7 @@ export const ActionMessage: FC<{ error: Error | undefined, isLoading: boolean, s
         return <ActionMessages.ConfirmActionMessage />
     }
     if (isUserRejection(error)) {
-        return <ActionMessages.TransactionRejectedMessage />
+        return <ActionMessages.TransactionRejectedMessage isSignature={isSignatureError} />
     }
     else if (error?.name === ActionMessageType.TransactionFailed) {
         return <ActionMessages.TransactionFailedMessage />

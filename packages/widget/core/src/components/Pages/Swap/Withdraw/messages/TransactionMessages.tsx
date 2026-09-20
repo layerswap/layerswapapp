@@ -24,11 +24,13 @@ const InsufficientFundsMessage: FC = () => {
         details='The balance of the connected wallet is not enough' />
 }
 
-const TransactionRejectedMessage: FC = () => {
+const TransactionRejectedMessage: FC<{ isSignature?: boolean }> = ({ isSignature }) => {
     return <WalletMessage
         status="error"
-        header='Transaction rejected'
-        details={`You've rejected the transaction in your wallet. Click “Try again” to open the prompt again.`} />
+        header={isSignature ? 'Signing rejected' : 'Transaction rejected'}
+        details={isSignature
+            ? `You've rejected the signing request in your wallet. Click “Try again” to open the prompt again.`
+            : `You've rejected the transaction in your wallet. Click “Try again” to open the prompt again.`} />
 }
 
 const DifferentAccountsNotAllowedError: FC<{ network: string }> = ({ network }) => {

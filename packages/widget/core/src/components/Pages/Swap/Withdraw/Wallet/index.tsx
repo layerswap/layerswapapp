@@ -159,6 +159,7 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
 }) => {
     const [buttonClicked, setButtonClicked] = useState(false)
     const [error, setError] = useState<Error | undefined>()
+    const [isSignatureError, setIsSignatureError] = useState(false)
     const { swapError } = useSwapDataState()
 
     const selectedSourceAccount = useSelectedAccount("from", swapData.source_network.name);
@@ -221,6 +222,7 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
 
             }
         } catch (e) {
+            setIsSignatureError(false)
             setError(e)
 
             throw e
@@ -242,6 +244,7 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
                 wallet,
             })
         } catch (e) {
+            setIsSignatureError(true)
             setError(e)
             throw e
         }
@@ -262,6 +265,7 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
             (buttonClicked || !!swapError) &&
             <ActionMessage
                 error={error}
+                isSignatureError={isSignatureError}
                 isLoading={false}
                 selectedSourceAddress={selectedSourceAccount?.address || ''}
                 sourceNetwork={swapData.source_network}

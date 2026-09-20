@@ -58,6 +58,23 @@ const DEPOSIT_ACTION_LABELS: Record<string, string> = {
 export const getDepositActionLabel = (action: DepositAction): string =>
     action.step ? DEPOSIT_ACTION_LABELS[action.step] ?? 'Continue' : 'Continue'
 
+export const getDepositActionDescription = (action: DepositAction): string | undefined => {
+    switch (action.step) {
+        case 'approve_permit2':
+            return action.token?.symbol
+                ? `Allow ${action.token.symbol} for this swap`
+                : 'Allow the token for this swap'
+        case 'sign':
+            return 'Confirm the swap authorization'
+        case 'publish':
+            return 'Submit the swap transaction'
+        case 'deposit':
+            return 'Send funds to start the swap'
+        default:
+            return undefined
+    }
+}
+
 export const requiresDepositActionRefresh = (action: DepositAction, actions: DepositAction[]): boolean =>
     action.step === 'approve_permit2'
     || (action.step === 'sign' && actions.some(candidate => candidate.step === 'publish'))

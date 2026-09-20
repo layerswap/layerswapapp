@@ -25,6 +25,7 @@ export enum ProgressStatus {
 export type StatusStep = {
     name?: string;
     status: ProgressStatus;
+    isLoading?: boolean;
     description?: | JSX.Element | string | null;
     index?: number;
 }
