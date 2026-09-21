@@ -38,6 +38,7 @@ export type UpdateSwapInterface = {
     createSwap: (values: SwapFormValues, query: InitialSettings, partner?: Partner) => Promise<SwapResponse>,
     setQuoteLoading: (value: boolean) => void;
     mutateSwap: KeyedMutator<ApiResponse<SwapResponse>>
+    mutateDepositActions: KeyedMutator<ApiResponse<DepositAction[]>>
     setDepositAddressIsFromAccount: (value: boolean) => void,
     setWithdrawType: (value: WithdrawType) => void
     setSwapId: (value: string | undefined) => void
@@ -48,6 +49,7 @@ export type UpdateSwapInterface = {
 
 export type SwapContextData = {
     swapApiError?: ApiError,
+    swapDetailsError?: string,
     depositAddressIsFromAccount?: boolean,
     depositActionsResponse?: DepositAction[],
     depositActionsError?: string,
@@ -147,7 +149,18 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         })
     }, [storedWalletTransaction?.timestamp])
 
-    const { data, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: computeRefreshInterval, dedupingInterval: SWAP_POLL_DEDUPE_MS, fallbackData: initialSwapData ? { data: initialSwapData } : undefined })
+    const { data, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, {
+        refreshInterval: computeRefreshInterval,
+        dedupingInterval: SWAP_POLL_DEDUPE_MS,
+        // Fallback data belongs to one SWR key. Reusing it after a source change
+        // makes the new swap look like the old route until its details arrive.
+        fallbackData: swapId && swapId === initialSwapData?.swap.id ? { data: initialSwapData } : undefined,
+        keepPreviousData: false,
+    })
+    // A failed background refresh must not hide usable data for the active swap.
+    const swapDetailsError = swapId && data?.data?.swap?.id !== swapId && (error || data)
+        ? (error?.response?.data?.error?.message || error?.message || data?.error?.message || 'Could not load swap details.')
+        : undefined
 
     const baseSwapData = useMemo<(SwapBasicData & { refuel: boolean }) | undefined>(() => {
         if (!(swapId && data?.data?.swap)) return undefined
@@ -220,14 +233,17 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const use_deposit_address = swapBasicData?.use_deposit_address
     const deposit_actions_endpoint = swapId ? `/swaps/${swapId}/deposit_actions${(use_deposit_address || !selectedSourceAccount || !sourceIsSupported) ? "" : `?source_address=${selectedSourceAccount?.address}`}` : null
     const inputTransfer = swapDetails?.transactions.find(t => t.type === TransactionType.Input);
-    const { data: depositActions, error: depositActionsSwrError } = useSWR<ApiResponse<DepositAction[]>>(!inputTransfer ? deposit_actions_endpoint : null, layerswapApiClient.fetcher)
+    const { data: depositActions, error: depositActionsSwrError, mutate: mutateDepositActions } = useSWR<ApiResponse<DepositAction[]>>(!inputTransfer ? deposit_actions_endpoint : null, layerswapApiClient.fetcher, { keepPreviousData: false })
 
     // The create-swap response may already carry deposit actions — use them as
     // a fallback (only while the seeded swap is still the active one) so the
     // deposit address renders without waiting for the separate fetch.
     const depositActionsResponse = depositActions?.data
-        ?? (swapId && swapId === initialSwapData?.swap.id ? initialSwapData?.deposit_actions : undefined)
-    const depositActionsError = depositActionsSwrError ? (depositActionsSwrError?.response?.data?.error?.message || 'Could not generate deposit address.') : undefined
+        ?? (swapId && swapId === initialSwapData?.swap.id && initialSwapData?.deposit_actions?.length ? initialSwapData.deposit_actions : undefined)
+    // Cached or swap-scoped prefetched actions remain usable after a failed refresh.
+    const depositActionsError = !depositActionsResponse && (depositActionsSwrError || depositActions)
+        ? (depositActionsSwrError?.response?.data?.error?.message || depositActionsSwrError?.message || depositActions?.error?.message || 'Could not generate deposit address.')
+        : undefined
 
     // Track when the swap payload last changed — any movement restarts the hot polling window.
     useEffect(() => {
@@ -380,19 +396,21 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const updateFns = useMemo<UpdateSwapInterface>(() => ({
         createSwap,
         mutateSwap: mutate,
+        mutateDepositActions,
         setDepositAddressIsFromAccount,
         setWithdrawType,
         setSwapId: handleUpdateSwapid,
         setSubmitedFormValues,
         setQuoteLoading,
         setSwapModalOpen
-    }), [createSwap, mutate, handleUpdateSwapid, setSubmitedFormValues]);
+    }), [createSwap, mutate, mutateDepositActions, handleUpdateSwapid, setSubmitedFormValues]);
 
     const stateValue = useMemo(() => ({
         withdrawType,
         swapTransaction,
         depositAddressIsFromAccount: !!depositAddressIsFromAccount,
         swapApiError: error,
+        swapDetailsError,
         depositActionsResponse,
         depositActionsError,
         quote,
@@ -405,7 +423,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         swapModalOpen,
         swapError,
         setSwapError
-    }), [withdrawType, swapTransaction, depositAddressIsFromAccount, error, depositActionsResponse, depositActionsError, quote, quoteIsLoading, quoteError, refuel, swapBasicData, swapDetails, swapId, swapModalOpen, swapError]);
+    }), [withdrawType, swapTransaction, depositAddressIsFromAccount, error, swapDetailsError, depositActionsResponse, depositActionsError, quote, quoteIsLoading, quoteError, refuel, swapBasicData, swapDetails, swapId, swapModalOpen, swapError]);
 
     return (
         <SwapDataStateContext.Provider value={stateValue}>
