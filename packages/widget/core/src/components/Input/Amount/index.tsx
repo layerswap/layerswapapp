@@ -9,6 +9,8 @@ import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { useUsdTokenSync } from "@/hooks/useUsdTokenSync";
 import { ArrowUpDown } from "lucide-react";
+import { useSlippageStore } from '@/stores/slippageStore';
+import { formReceiveSettingsScope } from '@/lib/receiveSettings';
 
 interface AmountFieldProps {
     fee: ReturnType<typeof useQuoteData>['quote'];
@@ -26,6 +28,8 @@ const AmountField = forwardRef(function AmountField({ actionValue, actionValueUs
     const name = "amount"
     const amountRef = useRef(ref)
     const suffixRef = useRef<HTMLDivElement>(null);
+    const receiveScope = formReceiveSettingsScope(values);
+    const preserveTokenAmount = useSlippageStore(state => state.receiveSettings.mode === 'minimum' && state.receiveSettings.scope === receiveScope);
 
     const {
         sourceCurrencyPriceInUsd,
@@ -38,6 +42,7 @@ const AmountField = forwardRef(function AmountField({ actionValue, actionValueUs
         fromCurrency,
         amount,
         setFieldValue,
+        preserveTokenAmount,
     });
 
     // --- Token mode display computations ---

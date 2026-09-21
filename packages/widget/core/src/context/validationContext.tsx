@@ -1,4 +1,4 @@
-import React, { createContext, useMemo, ReactNode } from 'react';
+import React, { createContext, useEffect, useMemo, ReactNode } from 'react';
 import { useFormikContext } from 'formik';
 import { useInitialSettings } from './settings';
 import { transformFormValuesToQuoteArgs, useQuoteData } from '@/hooks/useFee';
@@ -12,6 +12,7 @@ import { useAutoSlippageTest } from '@/hooks/useAutoSlippageTest';
 import { useUsdModeStore } from '@/stores/usdModeStore';
 import { isDepositAddressFlow } from '@/helpers/swapFlow';
 import useExchangeNetworks from '@/hooks/useExchangeNetworks';
+import { formReceiveSettingsScope, isTokenSwap } from '@/lib/receiveSettings';
 
 export interface ValidationDetails {
     title?: string;
@@ -43,6 +44,11 @@ const ValidationContext = createContext<ValidationContextType>(defaultContext);
 
 export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const { values } = useFormikContext<SwapFormValues>();
+    const receiveScope = formReceiveSettingsScope(values);
+    // Only the active form owns resets; quote consumers also include submitted swaps.
+    useEffect(() => {
+        useSlippageStore.getState().resetMinimumForScope(receiveScope);
+    }, [receiveScope]);
     const initialSettings = useInitialSettings();
     const { sameAccountNetwork } = initialSettings
     const { swapId } = useSwapDataState()
@@ -57,7 +63,7 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
 
     const { autoSlippage } = useSlippageStore();
     const quoteErrorCode = quoteError?.response?.data?.error?.code || quoteError?.code;
-    const shouldTestAutoSlippage = !autoSlippage && !quote && !!values.amount && Number(values.amount) > 0 && !!values.from && !!values.to && !quoteErrorCode && !(isQuoteLoading || isDebouncing);
+    const shouldTestAutoSlippage = isTokenSwap(values.fromAsset?.symbol, values.toAsset?.symbol) && !autoSlippage && !quote && !!values.amount && Number(values.amount) > 0 && !!values.from && !!values.to && !quoteErrorCode && !(isQuoteLoading || isDebouncing);
     const { autoSlippageWouldWork, isTestingAutoSlippage } = useAutoSlippageTest({ values, shouldTest: shouldTestAutoSlippage });
 
     const { networks: exchangeWithdrawalNetworks, isLoading: exchangeNetworksLoading, isValidating: exchangeNetworksValidating } = useExchangeNetworks({ fromExchange: values.fromExchange?.name, to: values.to?.name, toAsset: values.toAsset?.symbol });
