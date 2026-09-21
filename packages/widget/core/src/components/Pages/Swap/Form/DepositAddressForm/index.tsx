@@ -170,15 +170,17 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
         ? `${from?.name}|${fromAsset?.symbol}|${destination?.name}|${toCurrency?.symbol}|${destination_address?.toLowerCase()}`
         : null;
 
-    // Missing details are a loading state, not evidence of a different route.
-    // Only discard a swap after loading details for that exact active id.
+    // Preserve swaps whose route is unknown. A submitted snapshot can establish
+    // a route mismatch before the details request finishes.
     useEffect(() => {
-        if (!swapId || swapDetails?.id !== swapId || swapMatchesValues) return;
+        if (!swapId || !swapBasicData || swapMatchesValues) return;
+        if (swapDetails && swapDetails.id !== swapId) return;
+
         setSwapId(undefined);
         if (fieldKey && attemptedKeyRef.current === fieldKey) {
             setSwapError?.('The deposit does not match your selection. Please try again.');
         }
-    }, [swapId, swapDetails?.id, swapMatchesValues, fieldKey, setSwapId, setSwapError]);
+    }, [swapId, swapBasicData, swapDetails, swapMatchesValues, fieldKey, setSwapId, setSwapError]);
 
     useEffect(() => {
         if (!fieldKey) {

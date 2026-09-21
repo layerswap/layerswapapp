@@ -157,7 +157,8 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         fallbackData: swapId && swapId === initialSwapData?.swap.id ? { data: initialSwapData } : undefined,
         keepPreviousData: false,
     })
-    const swapDetailsError = swapId && (error || data?.error || (data && data.data?.swap?.id !== swapId))
+    // A failed background refresh must not hide usable data for the active swap.
+    const swapDetailsError = swapId && data?.data?.swap?.id !== swapId && (error || data)
         ? (error?.response?.data?.error?.message || error?.message || data?.error?.message || 'Could not load swap details.')
         : undefined
 
@@ -239,7 +240,8 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     // deposit address renders without waiting for the separate fetch.
     const depositActionsResponse = depositActions?.data
         ?? (swapId && swapId === initialSwapData?.swap.id && initialSwapData?.deposit_actions?.length ? initialSwapData.deposit_actions : undefined)
-    const depositActionsError = depositActionsSwrError || depositActions?.error || (depositActions && !depositActions.data)
+    // Cached or swap-scoped prefetched actions remain usable after a failed refresh.
+    const depositActionsError = !depositActionsResponse && (depositActionsSwrError || depositActions)
         ? (depositActionsSwrError?.response?.data?.error?.message || depositActionsSwrError?.message || depositActions?.error?.message || 'Could not generate deposit address.')
         : undefined
 
