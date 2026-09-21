@@ -1,6 +1,7 @@
 import { TokenBalance } from "@layerswap/widget-types";
 import { Network, Token } from "@layerswap/widget-types";
 import useSWRGas from "./useSWRGas"
+import { resolveGasBalanceBudget } from "./resolveGasBalanceBudget"
 
 interface UseOutOfGasParams {
     address: string | undefined
@@ -32,9 +33,10 @@ const useOutOfGas = ({
     }
 
     const numAmount = Number(amount)
-    const totalNeeded = numAmount + gasData.gas
+    const gasBalanceBudget = resolveGasBalanceBudget(gasData)
+    const totalNeeded = numAmount + gasBalanceBudget
     const balanceCoversAmount = numAmount <= balance
-    const balanceExceedsMaxWithGas = balance > (maxAllowedAmount + gasData.gas)
+    const balanceExceedsMaxWithGas = balance > (maxAllowedAmount + gasBalanceBudget)
     const balanceAboveMin = balance > minAllowedAmount
 
     const outOfGas = totalNeeded > balance
