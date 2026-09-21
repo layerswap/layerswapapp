@@ -1,5 +1,5 @@
 import { SwapStatus } from '@layerswap/widget-types';
-import { FC, ReactNode, Suspense, lazy, useEffect, useMemo, useRef } from "react";
+import { FC, ReactNode, Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
 import { Form, useFormikContext } from "formik";
 import { Loader2 } from "lucide-react";
 import { Widget } from "@/components/Widget/Index";
@@ -29,6 +29,8 @@ import { useConnectModal } from "@/components/Wallet/WalletModal";
 // page's entry chunks.
 const Processing = lazy(() => import(/* webpackChunkName: "swap-processing" */ "../../Withdraw/Processing"))
 import ValidationError from "../SecondaryComponents/validationError";
+import { ErrorDisplay } from "../SecondaryComponents/validationError/ErrorDisplay";
+import FailIcon from "@/components/Icons/FailIcon";
 import { NetworkRoute, NetworkRouteToken } from "@layerswap/widget-types";
 
 type Props = {
@@ -136,8 +138,9 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
     }, [])
 
     const { formValidation } = useValidationContext();
-    const { swapId, swapBasicData, swapDetails, depositActionsResponse, refuel, swapError, depositActionsError } = useSwapDataState();
-    const { setSwapId } = useSwapDataUpdate();
+    const { swapId, swapBasicData, swapDetails, depositActionsResponse, refuel, swapError, swapDetailsError, depositActionsError, setSwapError } = useSwapDataState();
+    const { setSwapId, mutateSwap, mutateDepositActions } = useSwapDataUpdate();
+    const [isRetrying, setIsRetrying] = useState(false);
 
     const isValid = !formValidation.message;
     const error = formValidation.message;
@@ -155,14 +158,6 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
         );
     }, [swapId, swapBasicData, from, fromAsset, destination, toCurrency, destination_address, allFieldsReady]);
 
-    // Drop the previous swap as soon as the form values diverge from it so the
-    // inline deposit address doesn't briefly point at a stale swap.
-    useEffect(() => {
-        if (swapId && !swapMatchesValues) {
-            setSwapId(undefined);
-        }
-    }, [swapId, swapMatchesValues, setSwapId]);
-
     // Auto-create the swap once form is complete. The ref tracks the last
     // attempted (from, fromAsset, to, toAsset, address) tuple so we don't loop:
     // if the just-created swap is then dropped by the stale-swap effect (e.g.
@@ -174,6 +169,16 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
     const fieldKey = allFieldsReady
         ? `${from?.name}|${fromAsset?.symbol}|${destination?.name}|${toCurrency?.symbol}|${destination_address?.toLowerCase()}`
         : null;
+
+    // Missing details are a loading state, not evidence of a different route.
+    // Only discard a swap after loading details for that exact active id.
+    useEffect(() => {
+        if (!swapId || swapDetails?.id !== swapId || swapMatchesValues) return;
+        setSwapId(undefined);
+        if (fieldKey && attemptedKeyRef.current === fieldKey) {
+            setSwapError?.('The deposit does not match your selection. Please try again.');
+        }
+    }, [swapId, swapDetails?.id, swapMatchesValues, fieldKey, setSwapId, setSwapError]);
 
     useEffect(() => {
         if (!fieldKey) {
@@ -206,6 +211,26 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
     const hasOutputTx = !!(outputTx?.transaction_hash && outputTx?.amount);
     const isCompleted = !!swapId && swapMatchesValues && hasOutputTx;
     const showDepositInfo = !!swapId && swapMatchesValues && !isProcessing;
+    const depositError = swapError || swapDetailsError || depositActionsError
+        || (showDepositInfo && depositActionsResponse && !depositAddress ? 'No deposit address was returned. Please try again.' : undefined);
+
+    const retryDeposit = async () => {
+        if (isSubmitting || isRetrying || !fieldKey || !isValid) return;
+        setIsRetrying(true);
+        setSwapError?.(null);
+        try {
+            if (swapId) {
+                // A failed read must not create another swap or change its id.
+                // SWR retains any new failure so the retry remains available.
+                await Promise.allSettled([mutateSwap(), mutateDepositActions()]);
+            } else {
+                attemptedKeyRef.current = fieldKey;
+                await submitForm();
+            }
+        } finally {
+            setIsRetrying(false);
+        }
+    };
 
     // Clear the cached attempt key so re-selecting the same route re-creates the swap.
     const resetSwap = (network?: NetworkRoute, token?: NetworkRouteToken) => {
@@ -214,6 +239,8 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
             if (!swapId) attemptedKeyRef.current = null;
             return;
         }
+        attemptedKeyRef.current = null;
+        setSwapError?.(null);
         setSwapId(undefined);
     };
 
@@ -278,7 +305,7 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
                                             mode while the swap is being created so the user sees
                                             the eventual layout instead of a blank gap. */}
                                         {
-                                            (showDepositInfo || lockDestinationAddress) && (
+                                            !depositError && (showDepositInfo || lockDestinationAddress) && (
                                                 <DepositAddressInfo
                                                     sourceNetwork={from}
                                                     sourceToken={fromAsset}
@@ -294,6 +321,15 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
                                     </>
                                 )}
                                 <ValidationError />
+                                {depositError && (
+                                    <div role="alert">
+                                        <ErrorDisplay
+                                            icon={<FailIcon width={20} height={20} />}
+                                            title="Couldn't generate deposit address"
+                                            message={depositError}
+                                        />
+                                    </div>
+                                )}
                             </div >
                         </div >
                     </Widget.Content >
@@ -303,12 +339,13 @@ const DepositAddressForm: FC<Props> = ({ disableAutoConnect, hideDestinationPick
                         values={values}
                         isValid={isValid}
                         error={error}
-                        isSubmitting={isSubmitting}
+                        isSubmitting={isSubmitting || isRetrying}
                         showDepositInfo={showDepositInfo}
                         depositAddress={depositAddress}
                         isProcessing={isProcessing}
                         isCompleted={isCompleted}
-                        hasDepositError={!!swapError || !!depositActionsError}
+                        hasDepositError={!!depositError}
+                        onRetry={retryDeposit}
                         onDepositMore={resetSwap}
                     />
                 </Widget.Footer>
