@@ -29,7 +29,9 @@ export default function FaroExperience() {
             }
         })
         const interval = window.setInterval(flush, 60_000)
-        document.addEventListener('visibilitychange', visibility)
+        // Capture phase: Faro's own visibilitychange listener flushes its batch on
+        // hide, so the final engagement event must be queued before it runs.
+        document.addEventListener('visibilitychange', visibility, { capture: true })
         window.addEventListener('focus', visibility)
         window.addEventListener('blur', visibility)
         window.addEventListener('pagehide', hide)
@@ -39,7 +41,7 @@ export default function FaroExperience() {
             disposed = true
             hide()
             clearInterval(interval)
-            document.removeEventListener('visibilitychange', visibility)
+            document.removeEventListener('visibilitychange', visibility, { capture: true })
             window.removeEventListener('focus', visibility)
             window.removeEventListener('blur', visibility)
             window.removeEventListener('pagehide', hide)

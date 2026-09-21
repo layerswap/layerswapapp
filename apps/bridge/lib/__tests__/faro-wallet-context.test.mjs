@@ -54,6 +54,11 @@ test('wallet projection retains addresses without inferring an EVM network or se
     assert(!JSON.stringify(attrs).includes('wallet_network'))
 })
 
+test('stellar connections keep their wallet family', () => {
+    const attrs = getWalletSessionAttributes([provider([wallet('test-stellar-account', { id: 'Freighter', internalId: 'freighter' })], { id: 'stellar' })])
+    assert.deepEqual(entries(attrs), [{ wallet_address: 'test-stellar-account', wallet_family: 'stellar', wallet_connector: 'freighter' }])
+})
+
 test('multiple connections, account/chain changes, missing chains and disconnects replace the snapshot', () => {
     const api = sessionAPI({ swap_id: 'test-swap', requested_amount: 'test-amount' })
     const publish = snapshots => updateSessionContext(api, 'wallet', getWalletSessionAttributes(snapshots))

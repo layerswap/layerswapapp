@@ -44,9 +44,11 @@ identity is tracked separately; see [Grafana setup](grafana/README.md).
 `NEXT_PUBLIC_FARO_SAMPLE_RATE` is optional and defaults to
 `1`.
 
-Faro starts in `instrumentation-client.ts` before hydration and captures all
-browser console levels, uncaught errors and rejected promises, widget errors,
-sessions/views, CSP and performance events, web vitals, and browser traces.
+Faro starts in `instrumentation-client.ts` before hydration. Optimized
+(`NODE_ENV=production`) builds capture console warnings as logs and console
+errors as exceptions; other build modes capture all console levels. Faro also
+captures uncaught errors and rejected promises, widget errors, sessions/views,
+CSP and performance events, web vitals, and browser traces.
 Full page and request URLs retain their query strings for diagnosis; only
 credential values are redacted. PostHog remains enabled independently for
 product analytics.

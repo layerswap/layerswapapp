@@ -10,7 +10,7 @@ export type ConnectedWalletContext = {
 // Bound the complete JSON, never truncate inside an address or JSON record.
 // Leave headroom under the existing 8,192-character sanitizer limit.
 export const MAX_WALLET_CONTEXT_BYTES = 6_000
-const families = new Set(['evm', 'starknet', 'fuel', 'paradex', 'bitcoin', 'ton', 'solana', 'tron'])
+const families = new Set(['evm', 'starknet', 'fuel', 'paradex', 'bitcoin', 'ton', 'solana', 'tron', 'stellar'])
 
 function boundedString(value: unknown): string | undefined {
     return typeof value === 'string' && value.length > 0 && value.length <= 256 ? value : undefined
