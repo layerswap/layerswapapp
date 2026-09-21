@@ -19,6 +19,13 @@ export function parseHmsString(value: string | undefined): TimeParts | null {
     return { hours, minutes, seconds };
 }
 
+/** Total milliseconds represented by an "H:MM:SS(.fff)" string, or undefined if unparsable. */
+export function hmsToMs(value: string | undefined): number | undefined {
+    const parts = parseHmsString(value);
+    if (!parts) return undefined;
+    return ((parts.hours * 60 + parts.minutes) * 60 + parts.seconds) * 1000;
+}
+
 /** ETA-style: "~3h" | "~12 min" | "~45s" — highest non-zero unit only. */
 export function formatEtaFromMs(ms: number): string {
     const { hours, minutes, seconds } = msToParts(ms);

@@ -28,6 +28,7 @@ import AverageCompletionTime from '@/components/Common/AverageCompletionTime';
 import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore';
 import { isGaslessCapableRoute } from '@/helpers/gasless';
 import GaslessBadge from './GaslessBadge';
+import { resolveRouteSpeed, routeSpeedTextClass } from '@/lib/routeSpeed';
 
 export interface SwapValues extends Omit<SwapFormValues, 'from' | 'to'> {
     from?: Network;
@@ -105,6 +106,7 @@ export const DetailsButton: FC<QuoteComponentProps> = ({ quote, reward, isQuoteL
     const gasTokenPriceInUsd = resolveTokenUsdPrice(gasData?.token, quote)
     const gasFeeInUsd = (gasData && gasTokenPriceInUsd) ? gasData.gas * gasTokenPriceInUsd : null;
     const averageCompletionTime = quote?.avg_completion_time;
+    const routeSpeed = resolveRouteSpeed(averageCompletionTime);
 
     const gaslessEnabled = useGaslessPreferenceStore(s => s.gaslessEnabled)
     const sourceIsSupported = !!wallet?.asSourceSupportedNetworks?.some(n => n === values.from?.name)
@@ -155,9 +157,9 @@ export const DetailsButton: FC<QuoteComponentProps> = ({ quote, reward, isQuoteL
                             { "animate-pulse-strong": isQuoteLoading }
                         )}>
                             <div className='p-0.5'>
-                                <Clock className='h-4 w-4 text-secondary-text' />
+                                <Clock className={clsx('h-4 w-4', routeSpeedTextClass(routeSpeed, 'text-secondary-text'))} />
                             </div>
-                            <AverageCompletionTime className="text-primary-text" avgCompletionTime={quote.avg_completion_time} />
+                            <AverageCompletionTime className="text-primary-text" avgCompletionTime={averageCompletionTime} />
                         </div>
                     </> : null
             }
