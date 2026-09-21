@@ -111,14 +111,7 @@ is ready for distributed trace correlation:
 NEXT_PUBLIC_FARO_TRACE_PROPAGATION_URLS: https://api.layerswap.io,https://api-dev.layerswap.cloud
 ```
 
-For readable production stack traces, configure the server-side build secrets
-below. They are used only by the source-map uploader and are never bundled into
-browser JavaScript:
-
-```yaml
-FARO_SOURCEMAP_ENDPOINT: https://your-grafana-sourcemap-endpoint
-FARO_SOURCEMAP_APP_ID: your-faro-app-id
-FARO_SOURCEMAP_API_KEY: your-source-map-api-key
-FARO_SOURCEMAP_STACK_ID: your-grafana-stack-id
-FARO_BUNDLE_ID: your-release-or-commit # optional; CI commit is used by default
-```
+Source maps are not uploaded by the build. The receiver is a self-hosted Alloy
+`faro.receiver`, which resolves minified stacks from its own `sourcemaps`
+configuration (downloaded from the site, or read from a filesystem `location`
+keyed by release). Until that is configured, stored stacks refer to minified code.

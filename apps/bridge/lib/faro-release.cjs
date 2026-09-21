@@ -1,4 +1,4 @@
-/** One build identity for the browser SDK and source-map uploader. */
+/** One build identity for the browser SDK and receiver-side source-map lookup. */
 function resolveFaroRelease(env, productionBuild) {
     return env.NEXT_PUBLIC_FARO_RELEASE || env.VERCEL_GIT_COMMIT_SHA
         || env.GITHUB_SHA || env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA

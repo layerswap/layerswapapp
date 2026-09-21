@@ -51,7 +51,6 @@
     "zustand": "catalog:"
   },
   "devDependencies": {
-    "@grafana/faro-webpack-plugin": "0.13.0",
     "@next/bundle-analyzer": "^15.5.19",
     "@posthog/nextjs-config": "^1.9.66",
     "@tailwindcss/forms": "^0.5.0",

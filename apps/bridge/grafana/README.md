@@ -76,18 +76,18 @@ deployment environment. No additional manually configured Faro variable is
 required. Faro stores this in `meta.page.attributes.deployment_environment`;
 the native queries expect `page_attr_deployment_environment` in Loki.
 
-Application `version` and `release` use the same resolved release identity as
-the source-map uploader's default bundle ID. An explicit `FARO_BUNDLE_ID` uses
-the uploader's injected preamble. `unknown-release` is not an identified build.
-Runtime and uploader configuration are documented in the
-[bridge README](../README.md#faro-browser-observability).
+Application `version` and `release` share one resolved release identity (the
+CI commit unless `NEXT_PUBLIC_FARO_RELEASE` is set), which is also the key a
+receiver-side source-map `location` should use. `unknown-release` is not an
+identified build. The build does not upload source maps; runtime configuration
+is documented in the [bridge README](../README.md#faro-browser-observability).
 
 To accept source-map delivery, trigger a controlled error at a known location
 in a deployed minified build. Match its outgoing application version, bundle
 URL, line and column to the stored exception; verify the mapped original file,
 line and function against that exact build. Confirm the receiver can reach the
-matching artifacts. A successful build or upload alone does not establish
-receiver-side resolution.
+matching artifacts. A successful build alone does not establish receiver-side
+resolution.
 
 ## Interpretation and operating limits
 

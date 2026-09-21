@@ -21,7 +21,7 @@ const { createPageMeta } = require(join(dirname(require.resolve('@grafana/faro-w
 const phases = require('next/constants')
 
 // Execute the real build configuration with synthetic environment values. Only
-// the uploader and outer wrappers are replaced, so tests cannot upload maps.
+// the outer wrappers are replaced.
 function buildConfig(env) {
     const module = { exports: {} }
     vm.runInNewContext(readFileSync(new URL('../../next.config.js', import.meta.url), 'utf8'), {
@@ -29,7 +29,6 @@ function buildConfig(env) {
         require: name => {
             if (name === '@next/bundle-analyzer') return () => config => config
             if (name === '@posthog/nextjs-config') return { withPostHogConfig: config => config }
-            if (name === '@grafana/faro-webpack-plugin') return class { constructor(options) { this.options = options } }
             if (name === './lib/faro-release.cjs') return require('../faro-release.cjs')
             return require(name)
         },
@@ -81,34 +80,14 @@ test('API environment uses the widget mainnet/testnet taxonomy and default', () 
     }
 })
 
-test('real Next configuration aligns browser release/bundle identity with the source-map uploader', () => {
-    for (const bundleOverride of [undefined, 'bundle-specific-id']) {
-        const env = { VERCEL_TARGET_ENV: 'preview', VERCEL_GIT_COMMIT_SHA: 'commit-sha',
-            NEXT_PUBLIC_API_VERSION: 'testnet', FARO_BUNDLE_ID: bundleOverride,
-            FARO_SOURCEMAP_ENDPOINT: 'https://upload.invalid', FARO_SOURCEMAP_APP_ID: 'app',
-            FARO_SOURCEMAP_API_KEY: 'synthetic-test-value', FARO_SOURCEMAP_STACK_ID: 'stack' }
-        const next = buildConfig(env)
-        const config = browserConfig({ ...env, ...next.env, NEXT_PUBLIC_FARO_COLLECTOR_URL: 'https://collector.invalid' })
-        const webpack = next.webpack({ resolve: {}, plugins: [] }, { isServer: false })
-        assert.equal(config.app.version, 'commit-sha')
-        assert.equal(config.app.release, config.app.version)
-        assert.equal(config.app.environment, 'testnet')
-        const bundleKey = `__faroBundleId_${config.app.name}`
-        const previousBundle = globalThis[bundleKey]
-        try {
-            // The SDK reads the webpack plugin's injected global, even when
-            // app.bundleId is set explicitly. Model that preamble here.
-            globalThis[bundleKey] = webpack.plugins[0].options.bundleId
-            const client = initializeFaro(mockConfig({ app: config.app }))
-            assert.equal(client.metas.value.app.bundleId, bundleOverride || 'commit-sha')
-        }
-        finally {
-            if (previousBundle === undefined) delete globalThis[bundleKey]
-            else globalThis[bundleKey] = previousBundle
-        }
-        assert.equal(config.pageTracking.page.attributes.deployment_environment, 'preview')
-        assert(!Object.values(next.env).includes('synthetic-test-value'))
-    }
+test('real Next configuration gives the browser SDK one release identity', () => {
+    const env = { VERCEL_TARGET_ENV: 'preview', VERCEL_GIT_COMMIT_SHA: 'commit-sha', NEXT_PUBLIC_API_VERSION: 'testnet' }
+    const next = buildConfig(env)
+    const config = browserConfig({ ...env, ...next.env, NEXT_PUBLIC_FARO_COLLECTOR_URL: 'https://collector.invalid' })
+    assert.equal(config.app.version, 'commit-sha')
+    assert.equal(config.app.release, config.app.version)
+    assert.equal(config.app.environment, 'testnet')
+    assert.equal(config.pageTracking.page.attributes.deployment_environment, 'preview')
 })
 
 test('SDK signals retain deployment metadata across navigation and session replacement without altering earlier snapshots', () => {

@@ -37,7 +37,7 @@ test('error reporting classifies the same occurrence without a lifecycle event o
     assert.equal(widgetErrorImpact({ type: 'WalletError', message: 'Account unavailable', cause: { code: 4100 } }), 'user')
 })
 
-test('release uses CI identity for both SDK and uploader, never labels an unidentified production build local', () => {
+test('release uses CI identity, never labels an unidentified production build local', () => {
     assert.equal(resolveFaroRelease({ VERCEL_GIT_COMMIT_SHA: 'vercel-sha' }, true), 'vercel-sha')
     assert.equal(resolveFaroRelease({ GITHUB_SHA: 'github-sha' }, true), 'github-sha')
     assert.equal(resolveFaroRelease({ NEXT_PUBLIC_FARO_RELEASE: 'release-1', GITHUB_SHA: 'sha' }, true), 'release-1')
