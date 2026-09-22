@@ -22,7 +22,6 @@ const FAILED_AUTHORIZATION_STATUSES: ReadonlySet<GaslessAuthorizationStatus> = n
 ])
 
 const ADVANCED_SWAP_STATUSES: ReadonlySet<SwapStatus> = new Set([
-    SwapStatus.UserTransferDelayed,
     SwapStatus.LsTransferPending,
     SwapStatus.Completed,
     SwapStatus.PendingRefund,
