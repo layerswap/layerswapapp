@@ -25,6 +25,7 @@ for (const name of [
     'Element',
     'SVGElement',
     'Node',
+    'DocumentFragment',
     'MutationObserver',
     'CustomEvent',
     'getComputedStyle',
@@ -47,6 +48,7 @@ dom.window.matchMedia = () => ({
     removeEventListener() {},
 });
 dom.window.scrollTo = () => {};
+dom.window.HTMLElement.prototype.scrollIntoView = () => {};
 globalThis.ResizeObserver = class {
     observe() {}
     unobserve() {}
@@ -504,11 +506,41 @@ test('all mounted previews ignore clicks and keyboard activation without request
 
 const chooseGroup = async (container, group) => {
     const picker = container.querySelector('#timeline-group');
-    await act(async () => {
-        picker.value = group;
-        picker.dispatchEvent(new window.Event('change', { bubbles: true }));
-    });
+    await act(async () => picker.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })));
+    const option = [...document.querySelectorAll('[role="option"]')].find(item => item.textContent === group);
+    assert.ok(option, group);
+    await act(async () => option.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
 };
+const chooseMode = async (container, mode) => {
+    const tab = [...container.querySelectorAll('[role="tab"]')].find(item => item.textContent.toLowerCase() === mode);
+    assert.ok(tab, mode);
+    await act(async () => tab.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
+};
+
+test('the viewer hydrates shared selection controls without replacing server markup', async () => {
+    const container = document.getElementById('root');
+    const element = React.createElement(TimelinePage);
+    const errors = [];
+    container.innerHTML = renderToString(element);
+    const serverPicker = container.querySelector('#timeline-group');
+    let root;
+    try {
+        await act(async () => {
+            root = hydrateRoot(container, element, {
+                onRecoverableError: error => errors.push(error.message),
+            });
+        });
+        assert.equal(container.querySelector('#timeline-group'), serverPicker);
+        await chooseGroup(container, 'Frontend swaps');
+        await chooseMode(container, 'modal');
+        assert.equal(container.querySelector('#scenario-title').textContent, 'Frontend swap: approve, sign, confirm');
+        assert.ok(container.querySelector('[data-page2-modal]'));
+        assert.deepEqual(errors, []);
+        assert.deepEqual(forbidden, []);
+    } finally {
+        if (root) await act(async () => root.unmount());
+    }
+});
 
 test('viewer filters scenario groups, resets selections and preserves strictly earlier/later navigation', async () => {
     const container = document.getElementById('root');
@@ -519,30 +551,26 @@ test('viewer filters scenario groups, resets selections and preserves strictly e
             (b) => b.textContent === label,
         );
     const groupPicker = container.querySelector('#timeline-group');
-    const visibleScenarios = () => [...container.querySelectorAll('aside button')].map(b => b.firstElementChild.textContent);
-    assert.equal(groupPicker.value, 'Lifecycle');
+    const visibleScenarios = () => [...container.querySelectorAll('aside button[aria-pressed]')].map(b => b.getAttribute('aria-label'));
+    assert.equal(groupPicker.textContent, 'Lifecycle');
     assert.deepEqual(visibleScenarios(), scenarios.filter(s => s.group === 'Lifecycle').map(s => s.label));
     assert.equal(button('← Previous').disabled, true);
     await act(async () => button('Next →').click());
     assert.equal(container.querySelector('input[type="range"]').value, '5');
-    await act(async () =>
-        container.querySelector('input[value="modal"]').click(),
-    );
+    await chooseMode(container, 'modal');
     assert.equal(container.querySelector('input[type="range"]').value, '5');
     assert.ok(
         container.querySelector(
             '[role="dialog"][aria-label="Complete the swap"]',
         ),
     );
-    await act(async () =>
-        container.querySelector('input[value="component"]').click(),
-    );
+    await chooseMode(container, 'component');
     assert.equal(container.querySelector('input[type="range"]').value, '5');
     assert.equal(container.querySelector('[role="dialog"]'), null);
     await act(async () => button('← Previous').click());
     assert.equal(container.querySelector('input[type="range"]').value, '0');
     await chooseGroup(container, 'Outcomes');
-    const failure = [...container.querySelectorAll('aside button')].find((b) =>
+    const failure = [...container.querySelectorAll('aside button[aria-pressed]')].find((b) =>
         b.textContent.startsWith('Output failure'),
     );
     await act(async () => failure.click());
@@ -554,7 +582,7 @@ test('viewer filters scenario groups, resets selections and preserves strictly e
             .textContent.includes('Confirming deposit'),
         true,
     );
-    await act(async () => container.querySelector('input[value="modal"]').click());
+    await chooseMode(container, 'modal');
     for (const group of [...new Set(scenarios.map(s => s.group))]) {
         await chooseGroup(container, group);
         const groupScenarios = scenarios.filter(s => s.group === group);
@@ -562,7 +590,7 @@ test('viewer filters scenario groups, resets selections and preserves strictly e
         assert.equal(container.querySelector('#scenario-title').textContent, groupScenarios[0].label);
         assert.equal(container.querySelector('input[type="range"]').value, String(groupScenarios[0].milestones[0].at));
         assert.equal(button('← Previous').disabled, true);
-        assert.equal(container.querySelector('input[value="modal"]').checked, true);
+        assert.equal(container.querySelector('[role="tab"][aria-selected="true"]').textContent, 'Modal');
         if (!button('Next →').disabled) await act(async () => button('Next →').click());
     }
     await act(async () => root.unmount());
@@ -585,9 +613,9 @@ test('quote disclosures work in both modes and reset on timeline navigation with
     };
     const choose = async (label) => {
         const group = scenarios.find(s => s.label === label).group;
-        if (container.querySelector('#timeline-group').value !== group) await chooseGroup(container, group);
-        const button = [...container.querySelectorAll('aside button')].find(
-            (b) => b.firstElementChild.textContent === label,
+        if (container.querySelector('#timeline-group').textContent !== group) await chooseGroup(container, group);
+        const button = [...container.querySelectorAll('aside button[aria-pressed]')].find(
+            (b) => b.getAttribute('aria-label') === label,
         );
         assert.ok(button, label);
         await act(async () => button.click());
@@ -595,7 +623,7 @@ test('quote disclosures work in both modes and reset on timeline navigation with
     try {
         await act(async () => root.render(React.createElement(TimelinePage)));
         for (const mode of ['component', 'modal']) {
-            await act(async () => container.querySelector(`input[value="${mode}"]`).click());
+            await chooseMode(container, mode);
             await choose('Successful wallet transfer');
             await click('See details', previewElement());
             assert.equal(expanded(), true);
@@ -640,7 +668,7 @@ test('quote disclosures work in both modes and reset on timeline navigation with
             await click('Next →');
             assert.equal(expanded(), true);
         }
-        await act(async () => container.querySelector('input[value="component"]').click());
+        await chooseMode(container, 'component');
         assert.equal(expanded(), true);
         assert.equal(scenarios[0].milestones[0].snapshot.quoteState.expanded, false);
         assert.deepEqual(forbidden, []);

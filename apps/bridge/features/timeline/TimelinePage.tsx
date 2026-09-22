@@ -1,13 +1,21 @@
 import Head from 'next/head';
-import { ChevronDown } from 'lucide-react';
 import { useState, type ReactElement } from 'react';
 import {
     Page2Preview,
+    SecondaryButton,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+    Tabs,
+    TabsContent,
+    TabsList,
+    TabsTrigger,
     type Page2PreviewMode,
 } from '@layerswap/widget/internal';
 import { EPOCH, scenarios } from './fixtures';
 import { formatTime, selectScenario, selectTime } from './model';
-import styles from './timeline.module.css';
 
 const groups = [...new Set(scenarios.map((scenario) => scenario.group))].map(
     (name) => ({
@@ -52,173 +60,221 @@ export default function TimelinePage() {
                 <title>Page 2 timeline | Layerswap</title>
                 <meta name="robots" content="noindex, nofollow" />
             </Head>
-            <div className={styles.page}>
-                <main
-                    className={`${styles.timeline} layerswap-styles font-robo text-primary-text`}
-                >
-                    <header className={styles.header}>
+            <div className="min-h-screen bg-linear-to-b from-secondary-900 to-secondary-500">
+                <main className="mx-auto max-w-[1080px] px-7 pt-9 pb-12 font-sans text-primary-text max-[700px]:px-4 max-[700px]:pt-6 max-[700px]:pb-8 [&_:focus-visible]:outline-2! [&_:focus-visible]:outline-solid! [&_:focus-visible]:outline-primary-text! [&_:focus-visible]:outline-offset-3! [&_:focus-visible]:shadow-none! motion-reduce:[&_*]:animate-none! motion-reduce:[&_*]:transition-none! motion-reduce:[&_*]:scroll-auto! motion-reduce:[&_*::before]:animate-none! motion-reduce:[&_*::before]:transition-none! motion-reduce:[&_*::after]:animate-none! motion-reduce:[&_*::after]:transition-none!">
+                    <header className="mb-8 flex items-end justify-between gap-6 max-[700px]:mb-6 max-[700px]:flex-col max-[700px]:items-start max-[700px]:gap-2.5">
                         <div>
-                            <p className={styles.eyebrow}>LAYERSWAP · PAGE 2</p>
-                            <h1>Transfer timeline</h1>
+                            <p className="text-[11px] font-medium tracking-[0.13em] text-secondary-text">
+                                LAYERSWAP · PAGE 2
+                            </p>
+                            <h1 className="mt-2 text-3xl font-medium tracking-tight max-[700px]:text-[26px]">
+                                Transfer timeline
+                            </h1>
                         </div>
-                        <p>
+                        <p className="text-sm leading-[1.65] text-secondary-text">
                             <span>Explore each state with sample data.</span>
                             <br />
                             <span>Time moves only when you move it.</span>
                         </p>
                     </header>
-                    <div className={styles.workspace}>
+                    <div className="grid grid-cols-[minmax(230px,320px)_minmax(0,1fr)] items-start gap-10 max-[700px]:grid-cols-1 max-[700px]:gap-6">
                         <aside
-                            className={styles.scenarios}
+                            className="overflow-hidden rounded-2xl border border-secondary-400 bg-secondary-800"
                             aria-label="Scenarios"
                         >
-                            <div className={styles.groupPicker}>
-                                <label htmlFor="timeline-group">
+                            <div className="border-b border-secondary-400 p-4">
+                                <label
+                                    htmlFor="timeline-group"
+                                    className="mb-2 block text-xs text-secondary-text"
+                                >
                                     Scenario group
                                 </label>
-                                <div className={styles.selectField}>
-                                    <select
-                                        id="timeline-group"
-                                        value={group.name}
-                                        aria-controls="timeline-scenarios"
-                                        onChange={(event) => {
-                                            const nextGroup = groups.find(
-                                                (item) =>
-                                                    item.name ===
-                                                    event.target.value,
+                                <Select
+                                    value={group.name}
+                                    onValueChange={(name) => {
+                                        const nextGroup = groups.find(
+                                            (item) => item.name === name,
+                                        );
+                                        if (nextGroup)
+                                            setSelection(
+                                                selectScenario(
+                                                    nextGroup.scenarios[0],
+                                                ),
                                             );
-                                            if (nextGroup)
-                                                setSelection(
-                                                    selectScenario(
-                                                        nextGroup.scenarios[0],
-                                                    ),
-                                                );
-                                        }}
+                                    }}
+                                >
+                                    <SelectTrigger
+                                        id="timeline-group"
+                                        className="focus-visible:rounded-md!"
+                                    >
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent
+                                        position="popper"
+                                        className="motion-reduce:animate-none!"
                                     >
                                         {groups.map((item) => (
-                                            <option
+                                            <SelectItem
                                                 key={item.name}
                                                 value={item.name}
                                             >
                                                 {item.name}
-                                            </option>
+                                            </SelectItem>
                                         ))}
-                                    </select>
-                                    <ChevronDown aria-hidden="true" />
-                                </div>
+                                    </SelectContent>
+                                </Select>
                             </div>
-                            <div className={styles.listHeading}>
-                                <h2>Scenarios</h2>
-                                <span>{group.scenarios.length}</span>
+                            <div className="flex items-center justify-between px-4 pt-4 pb-1">
+                                <h2 className="text-sm font-medium">
+                                    Scenarios
+                                </h2>
+                                <span className="rounded-md bg-secondary-400 px-2 py-0.5 text-xs text-secondary-text">
+                                    {group.scenarios.length}
+                                </span>
                             </div>
                             <div
                                 id="timeline-scenarios"
                                 key={group.name}
-                                className={styles.scenarioList}
+                                className="max-h-[610px] space-y-1 overflow-y-auto p-2 max-[700px]:max-h-[210px]"
                             >
                                 {group.scenarios.map((item) => (
-                                    <button
-                                        type="button"
+                                    <SecondaryButton
+                                        size="lg"
                                         key={item.id}
+                                        aria-label={item.label}
                                         aria-pressed={scenario.id === item.id}
                                         onClick={() =>
                                             setSelection(selectScenario(item))
                                         }
-                                        className={styles.scenarioButton}
+                                        className="w-full text-left aria-pressed:border-primary aria-pressed:bg-secondary-400 focus-visible:rounded-md! [&>span]:w-full"
                                     >
-                                        <span>{item.label}</span>
-                                        <span aria-hidden="true">
-                                            {item.milestones.length} steps
+                                        <span className="flex items-center justify-between gap-2">
+                                            <span>{item.label}</span>
+                                            <span
+                                                aria-hidden="true"
+                                                className="shrink-0 text-xs font-normal text-secondary-text"
+                                            >
+                                                {item.milestones.length} steps
+                                            </span>
                                         </span>
-                                    </button>
+                                    </SecondaryButton>
                                 ))}
                             </div>
                         </aside>
                         <section
-                            className={styles.previewColumn}
+                            className="flex min-w-0 flex-col items-center"
                             aria-labelledby="scenario-title"
                         >
-                            <div className={styles.selectionHeading}>
-                                <p>{scenario.group}</p>
-                                <h2 id="scenario-title">{scenario.label}</h2>
+                            <div className="mb-4 w-full max-w-[472px]">
+                                <p className="mb-1 text-xs text-secondary-text">
+                                    {scenario.group}
+                                </p>
+                                <h2
+                                    id="scenario-title"
+                                    className="text-lg font-medium"
+                                >
+                                    {scenario.label}
+                                </h2>
                             </div>
-                            <fieldset className={styles.modes}>
-                                <legend>Preview mode</legend>
-                                {(['component', 'modal'] as const).map(
-                                    (value) => (
-                                        <label key={value}>
-                                            <input
-                                                type="radio"
-                                                name="preview-mode"
+                            <Tabs
+                                value={mode}
+                                onValueChange={(value) =>
+                                    setMode(value as Page2PreviewMode)
+                                }
+                                className="w-full max-w-[472px]"
+                            >
+                                <p
+                                    id="preview-mode-label"
+                                    className="mb-2 text-xs text-secondary-text"
+                                >
+                                    Preview mode
+                                </p>
+                                <TabsList
+                                    aria-labelledby="preview-mode-label"
+                                    className="w-full bg-secondary-500"
+                                >
+                                    {(['component', 'modal'] as const).map(
+                                        (value) => (
+                                            <TabsTrigger
+                                                key={value}
                                                 value={value}
-                                                checked={mode === value}
-                                                onChange={() => setMode(value)}
-                                            />
-                                            <span>
+                                                className="flex-1 data-[state=active]:bg-secondary-300 data-[state=active]:text-primary-text"
+                                            >
                                                 {value === 'component'
                                                     ? 'Component'
                                                     : 'Modal'}
-                                            </span>
-                                        </label>
-                                    ),
-                                )}
-                            </fieldset>
-                            <Page2Preview
-                                snapshot={previewSnapshot}
-                                now={EPOCH + time * 1000}
-                                mode={mode}
-                                onQuoteExpandedChange={(quoteExpanded) =>
-                                    setSelection((current) => ({
-                                        ...current,
-                                        quoteExpanded,
-                                    }))
-                                }
-                            />
+                                            </TabsTrigger>
+                                        ),
+                                    )}
+                                </TabsList>
+                                <TabsContent
+                                    value={mode}
+                                    className="layerswap-styles mt-4"
+                                >
+                                    <Page2Preview
+                                        snapshot={previewSnapshot}
+                                        now={EPOCH + time * 1000}
+                                        mode={mode}
+                                        onQuoteExpandedChange={(
+                                            quoteExpanded,
+                                        ) =>
+                                            setSelection((current) => ({
+                                                ...current,
+                                                quoteExpanded,
+                                            }))
+                                        }
+                                    />
+                                </TabsContent>
+                            </Tabs>
                         </section>
                     </div>
                     <section
-                        className={styles.controls}
+                        className="mt-7 rounded-2xl border border-secondary-400 bg-secondary-800 p-6 max-[700px]:p-4"
                         aria-label="Timeline controls"
                     >
-                        <div className={styles.controlHeading}>
+                        <div className="mb-6 flex items-center justify-between gap-3 max-[700px]:flex-wrap">
                             <div>
-                                <p className={styles.eyebrow}>SIMULATED TIME</p>
+                                <p className="text-[11px] font-medium tracking-[0.13em] text-secondary-text">
+                                    SIMULATED TIME
+                                </p>
                                 <output
                                     htmlFor="timeline-time"
-                                    className={styles.time}
+                                    className="mt-1 block text-[28px] tracking-[-0.03em] tabular-nums max-[700px]:text-2xl"
                                 >
                                     {formatTime(time)}
                                 </output>
                             </div>
-                            <div className={styles.navigation}>
-                                <button
-                                    type="button"
+                            <div className="flex gap-2 max-[700px]:ml-auto">
+                                <SecondaryButton
+                                    size="lg"
                                     disabled={!previous}
+                                    className="whitespace-nowrap focus-visible:rounded-md!"
                                     onClick={() =>
                                         previous && setTime(previous.at)
                                     }
                                 >
                                     ← Previous
-                                </button>
-                                <button
-                                    type="button"
+                                </SecondaryButton>
+                                <SecondaryButton
+                                    size="lg"
                                     disabled={!next}
+                                    className="whitespace-nowrap focus-visible:rounded-md!"
                                     onClick={() => next && setTime(next.at)}
                                 >
                                     Next →
-                                </button>
+                                </SecondaryButton>
                             </div>
                         </div>
                         <label
                             htmlFor="timeline-time"
-                            className={styles.sliderLabel}
+                            className="flex justify-between gap-2 text-xs text-secondary-text max-[700px]:text-[11px]"
                         >
                             <span>Elapsed simulated time</span>
                             <span>1 second per step</span>
                         </label>
                         <input
                             id="timeline-time"
-                            className={styles.slider}
+                            className="my-1.5 block h-[30px] w-full cursor-pointer accent-primary"
                             type="range"
                             min={first.at}
                             max={last.at}
@@ -229,39 +285,45 @@ export default function TimelinePage() {
                                 setTime(Number(event.target.value))
                             }
                         />
-                        <div className={styles.rangeLabels}>
+                        <div className="flex justify-between text-[11px] text-secondary-text tabular-nums">
                             <span>{formatTime(first.at)}</span>
                             <span>{formatTime(last.at)}</span>
                         </div>
                         <ol
-                            className={styles.milestones}
+                            className="my-5 flex list-none flex-wrap gap-2 p-0"
                             aria-label="Milestones"
                         >
                             {scenario.milestones.map((item) => (
                                 <li key={item.id}>
-                                    <button
-                                        type="button"
+                                    <SecondaryButton
                                         aria-current={
                                             milestone.id === item.id
                                                 ? 'step'
                                                 : undefined
                                         }
                                         onClick={() => setTime(item.at)}
+                                        className="h-full text-left aria-[current=step]:border-primary aria-[current=step]:bg-secondary-400 focus-visible:rounded-md!"
                                     >
-                                        <span>{formatTime(item.at)}</span>
+                                        <span className="mb-1 block text-[10px] text-secondary-text tabular-nums">
+                                            {formatTime(item.at)}
+                                        </span>
                                         {item.label}
-                                    </button>
+                                    </SecondaryButton>
                                 </li>
                             ))}
                         </ol>
                         <div
-                            className={styles.announcement}
+                            className="min-h-[65px] border-t border-secondary-400 pt-4 text-sm"
                             role="status"
                             aria-live="polite"
                             aria-atomic="true"
                         >
-                            <strong>{milestone.label}</strong>
-                            <p>{milestone.description}</p>
+                            <strong className="font-medium">
+                                {milestone.label}
+                            </strong>
+                            <p className="mt-1 text-sm leading-relaxed text-secondary-text">
+                                {milestone.description}
+                            </p>
                         </div>
                     </section>
                 </main>

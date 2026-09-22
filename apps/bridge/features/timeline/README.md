@@ -4,7 +4,9 @@ Open `/timeline` directly with `pnpm dev` or on a Vercel Preview/Development dep
 
 The `.mjs` ending matters: Next's default page extensions include `tsx`, `ts`, `jsx`, and `js`, so `.dev.tsx` would still be discovered in production. The `.dev.mjs` entry needs no custom loader, private Next APIs, environment overrides, or Webpack entry filtering. All UI remains in normal TypeScript files. The timeline uses Next.js's documented [per-page getLayout](https://nextjs.org/docs/15/pages/building-your-application/routing/pages-and-layouts#per-page-layouts) to render without the app's live providers and analytics. `_app.js` only applies the chosen layout, with the normal app layout as its default; it contains no timeline path check.
 
-The Scenario group picker shows only the selected group's scenarios. Changing groups selects its first scenario and resets time and quote disclosure; the Component/Modal mode stays selected. The native picker supports keyboard navigation, and each scenario shows its number of steps.
+The Scenario group picker shows only the selected group's scenarios. Changing groups selects its first scenario and resets time and quote disclosure; the Component/Modal mode stays selected. The shared `Select` supports keyboard navigation, and each scenario shows its number of steps.
+
+Timeline controls reuse `Select`, `Tabs`, and `SecondaryButton` from `@layerswap/widget/internal`, including the group picker, mode switch, scenario rows, milestones, and Previous/Next actions. Tailwind handles the page layout and selected states. The widget's `layerswap-styles` scope wraps the shared preview; the shared select supplies its own scoped portal.
 
 `model.ts` clamps time to each scenario's range, selects the latest preceding snapshot, and finds strictly earlier/later milestones. Every milestone supplies a complete `Page2Snapshot`; the selected second is passed separately as `now`. Scenario changes reset to the first milestone. Component/Modal mode switches preserve the selected scenario and time.
 
