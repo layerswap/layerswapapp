@@ -49,7 +49,7 @@ export function QuoteSummaryView({
                         className={`flex items-center w-full justify-between gap-1 text-sm px-2 py-3`}
                     >
                         <div className="inline-flex items-center text-left text-secondary-text gap-1 pr-4">
-                            <label>{compact ? 'To address' : 'Send to'}</label>
+                            <label>Send to</label>
                         </div>
                         <div className="text-right text-primary-text">
                             <RecipientAddressView
