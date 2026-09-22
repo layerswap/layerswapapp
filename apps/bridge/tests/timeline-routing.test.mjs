@@ -20,8 +20,17 @@ const productionRoutes = [
     '/swap/[swapId]', '/transactions',
 ].sort();
 
-function routesFor(phase) {
-    const { pageExtensions } = configure(phase, { defaultConfig });
+function routesFor(phase, vercelEnvironment) {
+    const previousEnvironment = process.env.VERCEL_ENV;
+    let pageExtensions;
+    try {
+        if (vercelEnvironment === undefined) delete process.env.VERCEL_ENV;
+        else process.env.VERCEL_ENV = vercelEnvironment;
+        ({ pageExtensions } = configure(phase, { defaultConfig }));
+    } finally {
+        if (previousEnvironment === undefined) delete process.env.VERCEL_ENV;
+        else process.env.VERCEL_ENV = previousEnvironment;
+    }
     const matcher = createValidFileMatcher(pageExtensions);
     return {
         pageExtensions,
@@ -30,20 +39,41 @@ function routesFor(phase) {
     };
 }
 
-test('development discovers the timeline and preserves all production URLs', async () => {
+test('local development discovers the timeline and preserves all production URLs', async () => {
     const { routes, pageExtensions } = routesFor(PHASE_DEVELOPMENT_SERVER);
     assert.deepEqual(routes, [...productionRoutes, '/timeline'].sort());
     assert.equal(await findPageFile(pages, '/timeline', pageExtensions, false), '/timeline.dev.mjs');
     assert.equal(await findPageFile(pages, '/_app', pageExtensions, false), '/_app.js');
 });
 
-test('production build, server and export exclude the timeline through normal route discovery', async () => {
-    for (const phase of [PHASE_PRODUCTION_BUILD, PHASE_PRODUCTION_SERVER, PHASE_EXPORT]) {
-        const { routes, pageExtensions } = routesFor(phase);
-        assert.deepEqual(routes, productionRoutes, phase);
-        for (const route of ['/timeline', '/timeline.dev', '/timeline.dev.mjs']) {
-            assert.equal(await findPageFile(pages, route, pageExtensions, false), null, `${phase}: ${route}`);
+test('Vercel preview and development deployments include the timeline in optimized builds', async () => {
+    const previousNodeEnvironment = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+    try {
+        for (const environment of ['preview', 'development']) {
+            for (const phase of [PHASE_PRODUCTION_BUILD, PHASE_PRODUCTION_SERVER, PHASE_EXPORT]) {
+                const { routes, pageExtensions } = routesFor(phase, environment);
+                assert.deepEqual(routes, [...productionRoutes, '/timeline'].sort(), `${environment}: ${phase}`);
+                assert.equal(await findPageFile(pages, '/timeline', pageExtensions, false), '/timeline.dev.mjs');
+            }
         }
-        assert.equal(await findPageFile(pages, '/_app', pageExtensions, false), '/_app.js');
+    } finally {
+        if (previousNodeEnvironment === undefined) delete process.env.NODE_ENV;
+        else process.env.NODE_ENV = previousNodeEnvironment;
+    }
+});
+
+test('production, unknown environments and ordinary local builds exclude the timeline', async () => {
+    for (const environment of ['production', 'staging', undefined]) {
+        const phases = [PHASE_PRODUCTION_BUILD, PHASE_PRODUCTION_SERVER, PHASE_EXPORT];
+        if (environment) phases.push(PHASE_DEVELOPMENT_SERVER);
+        for (const phase of phases) {
+            const { routes, pageExtensions } = routesFor(phase, environment);
+            assert.deepEqual(routes, productionRoutes, `${environment}: ${phase}`);
+            for (const route of ['/timeline', '/timeline.dev', '/timeline.dev.mjs']) {
+                assert.equal(await findPageFile(pages, route, pageExtensions, false), null, `${environment}: ${phase}: ${route}`);
+            }
+            assert.equal(await findPageFile(pages, '/_app', pageExtensions, false), '/_app.js');
+        }
     }
 });

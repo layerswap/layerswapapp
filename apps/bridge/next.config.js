@@ -50,9 +50,14 @@ module.exports = (phase, { defaultConfig }) => {
     },
   }) : {};
 
+  const vercelEnvironment = process.env.VERCEL_ENV;
+  const includeDevPages = vercelEnvironment
+    ? vercelEnvironment === 'preview' || vercelEnvironment === 'development'
+    : phase === PHASE_DEVELOPMENT_SERVER;
+
   const nextConfig = {
-    // .mjs is outside the default page extensions, so dev entries are excluded from builds.
-    pageExtensions: phase === PHASE_DEVELOPMENT_SERVER
+    // Preview deployments also use next build; VERCEL_ENV distinguishes them from production.
+    pageExtensions: includeDevPages
       ? ['dev.mjs', ...defaultConfig.pageExtensions]
       : defaultConfig.pageExtensions,
     i18n: {
