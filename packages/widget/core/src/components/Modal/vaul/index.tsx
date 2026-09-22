@@ -1,4 +1,5 @@
 'use client';
+import { DrawerHandleView } from '../DrawerPresentation';
 
 //https://github.com/emilkowalski/vaul
 
@@ -1065,7 +1066,7 @@ export const Handle = React.forwardRef<HTMLDivElement, HandleProps>(function (
   }
 
   return (
-    <div
+    <DrawerHandleView
       onClick={handleStartCycle}
       onPointerCancel={handleCancelInteraction}
       onPointerDown={(e) => {
@@ -1082,11 +1083,8 @@ export const Handle = React.forwardRef<HTMLDivElement, HandleProps>(function (
       aria-hidden="true"
       {...rest}
     >
-      {/* Expand handle's hit area beyond what's visible to ensure a 44x44 tap target for touch devices */}
-      <span data-vaul-handle-hitarea="" aria-hidden="true">
-        {children}
-      </span>
-    </div>
+      {children}
+    </DrawerHandleView>
   );
 });
 

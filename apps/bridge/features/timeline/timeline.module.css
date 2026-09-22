@@ -1,0 +1,338 @@
+.page {
+    min-height: 100vh;
+    background: linear-gradient(
+        var(--color-secondary-900),
+        var(--color-secondary-500)
+    );
+}
+.timeline {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 36px 28px 48px;
+}
+.header {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 32px;
+}
+.header h1 {
+    font-size: 30px;
+    font-weight: 500;
+    letter-spacing: -0.025em;
+    margin-top: 7px;
+}
+.header > p {
+    color: var(--color-secondary-text);
+    font-size: 14px;
+    line-height: 1.65;
+}
+.eyebrow {
+    color: var(--color-secondary-text);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.13em;
+}
+.workspace {
+    display: grid;
+    grid-template-columns: minmax(230px, 320px) minmax(0, 1fr);
+    gap: 40px;
+    align-items: start;
+}
+.scenarios {
+    border: 1px solid var(--color-secondary-400);
+    border-radius: 18px;
+    background: var(--color-secondary-800);
+    overflow: hidden;
+}
+.listHeading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px;
+    border-bottom: 1px solid var(--color-secondary-400);
+}
+.listHeading h2 {
+    font-size: 15px;
+    font-weight: 500;
+}
+.listHeading > span {
+    color: var(--color-secondary-text);
+    font-size: 12px;
+    background: var(--color-secondary-400);
+    border-radius: 6px;
+    padding: 2px 7px;
+}
+.scenarioList {
+    max-height: 610px;
+    overflow-y: auto;
+    padding: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-secondary-200) transparent;
+}
+.scenarioList h3 {
+    padding: 14px 10px 7px;
+    color: var(--color-secondary-text);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+}
+.scenarioButton {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    text-align: left;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    padding: 10px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--color-secondary-text);
+}
+.scenarioButton > span:last-child {
+    font-size: 11px;
+    opacity: 0.65;
+}
+.scenarioButton:hover {
+    background: var(--color-secondary-500);
+    color: var(--color-primary-text);
+}
+.scenarioButton[aria-pressed='true'] {
+    background: var(--color-secondary-400);
+    border-color: var(--color-secondary-200);
+    color: var(--color-primary-text);
+}
+.scenarioButton[aria-pressed='true'] > span:first-child {
+    border-left: 2px solid var(--color-primary);
+    padding-left: 8px;
+}
+.previewColumn {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.selectionHeading {
+    width: 100%;
+    max-width: 472px;
+    margin-bottom: 16px;
+}
+.selectionHeading > p {
+    color: var(--color-secondary-text);
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+.selectionHeading h2 {
+    font-size: 18px;
+    font-weight: 500;
+}
+.modes {
+    display: flex;
+    width: 100%;
+    max-width: 472px;
+    gap: 6px;
+    margin-bottom: 18px;
+}
+.modes legend {
+    font-size: 12px;
+    color: var(--color-secondary-text);
+    margin-bottom: 8px;
+}
+.modes label {
+    position: relative;
+    flex: 1;
+    cursor: pointer;
+}
+.modes input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+.modes span {
+    display: block;
+    padding: 9px 12px;
+    text-align: center;
+    font-size: 13px;
+    border: 1px solid var(--color-secondary-300);
+    border-radius: 9px;
+    background: var(--color-secondary-800);
+}
+.modes input:checked + span {
+    border-color: var(--color-primary);
+    background: var(--color-secondary-400);
+}
+.modes input:focus-visible + span {
+    outline: 2px solid var(--color-primary-text);
+    outline-offset: 3px;
+}
+.controls {
+    margin-top: 28px;
+    padding: 24px;
+    border: 1px solid var(--color-secondary-400);
+    border-radius: 18px;
+    background: var(--color-secondary-800);
+}
+.controlHeading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 22px;
+}
+.time {
+    display: block;
+    margin-top: 5px;
+    font-size: 28px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.03em;
+}
+.navigation {
+    display: flex;
+    gap: 8px;
+}
+.navigation button {
+    padding: 10px 16px;
+    background: var(--color-secondary-300);
+    border-radius: 9px;
+    font-size: 14px;
+}
+.navigation button:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+.navigation button:enabled:hover {
+    background: var(--color-secondary-200);
+}
+.sliderLabel {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--color-secondary-text);
+}
+.sliderLabel span {
+    font-size: 12px;
+}
+.slider {
+    display: block;
+    width: 100%;
+    height: 30px;
+    margin: 6px 0;
+    accent-color: var(--color-primary);
+    cursor: pointer;
+}
+.rangeLabels {
+    display: flex;
+    justify-content: space-between;
+    color: var(--color-secondary-text);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+}
+.milestones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    list-style: none;
+    margin: 20px 0;
+    padding: 0;
+}
+.milestones button {
+    height: 100%;
+    text-align: left;
+    padding: 9px 12px;
+    border-radius: 9px;
+    border: 1px solid var(--color-secondary-300);
+    font-size: 12px;
+    background: var(--color-secondary-500);
+}
+.milestones button > span {
+    display: block;
+    font-size: 10px;
+    color: var(--color-secondary-text);
+    margin-bottom: 4px;
+    font-variant-numeric: tabular-nums;
+}
+.milestones button[aria-current='step'] {
+    border-color: var(--color-primary);
+    background: var(--color-secondary-400);
+}
+.announcement {
+    border-top: 1px solid var(--color-secondary-400);
+    padding-top: 18px;
+    font-size: 14px;
+    min-height: 65px;
+}
+.announcement strong {
+    font-weight: 500;
+}
+.announcement p {
+    color: var(--color-secondary-text);
+    font-size: 13px;
+    line-height: 1.6;
+    margin-top: 4px;
+}
+.timeline :is(button, input, a, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-primary-text) !important;
+    outline-offset: 3px !important;
+    box-shadow: none !important;
+}
+@media (max-width: 700px) {
+    .timeline {
+        padding: 24px 16px 32px;
+    }
+    .header {
+        align-items: start;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 22px;
+    }
+    .header h1 {
+        font-size: 26px;
+    }
+    .workspace {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 24px;
+    }
+    .scenarioList {
+        max-height: 210px;
+    }
+    .listHeading {
+        padding: 13px 16px;
+    }
+    .controls {
+        padding: 16px;
+    }
+    .controlHeading {
+        flex-wrap: wrap;
+    }
+    .navigation {
+        margin-left: auto;
+    }
+    .navigation button {
+        white-space: nowrap;
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+    .sliderLabel {
+        font-size: 12px;
+    }
+    .sliderLabel span {
+        font-size: 11px;
+    }
+    .time {
+        font-size: 24px;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .timeline *,
+    .timeline *::before,
+    .timeline *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
+}

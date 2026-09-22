@@ -9,7 +9,7 @@ import { WithdrawPageProps } from "./Common/sharedTypes";
 import { ChangeNetworkButton, ConnectWalletButton, SendTransactionButton } from "./Common/buttons";
 import { GaslessSigner } from "./Common/depositExecution";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
-import { WalletIcon } from "@layerswap/ui-kit/components";
+import { WalletSubmissionView } from "../Presentation/Page2Sections";
 import { useBalance } from "@/lib/balances/useBalance";
 import { TransferProps } from "@layerswap/widget-types";
 import { ActionMessage } from "./Common/actionMessage";
@@ -260,8 +260,7 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
         />
     }
 
-    return <div className="w-full space-y-2 flex flex-col justify-between h-full text-primary-text">
-        {
+    return <WalletSubmissionView message={
             (buttonClicked || !!swapError) &&
             <ActionMessage
                 error={error}
@@ -270,15 +269,15 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
                 selectedSourceAddress={selectedSourceAccount?.address || ''}
                 sourceNetwork={swapData.source_network}
             />
+        } action={
+            <SendTransactionButton
+                onClick={clickHandler}
+                onSign={isGaslessSupported(swapData.source_network) ? signHandler : undefined}
+                error={!!error && buttonClicked}
+                clearError={() => setError(undefined)}
+                swapData={swapData}
+                refuel={refuel}
+            />
         }
-        <SendTransactionButton
-            onClick={clickHandler}
-            onSign={isGaslessSupported(swapData.source_network) ? signHandler : undefined}
-            icon={<WalletIcon className="stroke-2 w-6 h-6" />}
-            error={!!error && buttonClicked}
-            clearError={() => setError(undefined)}
-            swapData={swapData}
-            refuel={refuel}
-        />
-    </div>
+    />
 }

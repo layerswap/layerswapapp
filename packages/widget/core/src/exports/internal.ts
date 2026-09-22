@@ -34,3 +34,11 @@ export { useRpcHealth } from "../context/rpcHealthContext";
 export * from "../lib/extendedRoutes"
 export { connectModalStore, buildDeepLink, createRegistryConnector, createReactHookConnectionAdapter, findRegistryWalletByName, subscribeDisplayUri, isWalletConnectRegistryConnector, chainsToNetworkTypes, getProvidersForWalletConnectNetworkType, mapConnectError, getDynamicWcMetadata, getPendingDynamicWcMetadata, clearPendingDynamicWcMetadata, createMemoizedConnectionStore, setDynamicWcMetadata, setPendingMetadataForRegistry, getAdditionalConnectorsStore, useWalletDescriptorLoader, WalletDescriptorLoaderContext, useConnectors, WalletProvidersRegistryProvider, useWalletProvidersRegistry, useWalletProvidersReady, walletKey, getKnownConnectorIconBase64, normalizeIconSrc, resolveWalletConnectorIcon, walletIconResolver, getEip6963Providers, subscribeEip6963Providers, isProviderConnectReady, isProviderHydrated, PROVIDER_HYDRATION_TIMEOUT_MS } from "@layerswap/wallet-core";
 export type { DisplayUriSource, WalletConnectRegistryConnector, WalletConnectWalletBase, WalletConnectWallet, Eip6963Provider } from "@layerswap/wallet-core";
+
+export { Page2Preview } from '../components/Pages/Swap/Withdraw/Presentation/Page2Preview';
+export type { Page2Snapshot, Page2LoadedSnapshot, Page2WalletState } from '../components/Pages/Swap/Withdraw/Presentation/Page2Snapshot';
+export { resolveSwapPhase, SwapPhase } from '../components/utils/resolveSwapPhase';
+export { BackendTransactionStatus, TransactionStatus, TransactionType } from '../lib/apiClients/layerSwapApiClient';
+export type { SwapDetails, SwapQuote, Transaction } from '../lib/apiClients/layerSwapApiClient';
+
+export type { Page2PreviewMode } from '../components/Pages/Swap/Withdraw/Presentation/Page2PreviewFrame';

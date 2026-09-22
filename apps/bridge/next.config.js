@@ -1,4 +1,4 @@
-const { PHASE_PRODUCTION_SERVER } = require('next/constants');
+const { PHASE_DEVELOPMENT_SERVER, PHASE_PRODUCTION_SERVER } = require('next/constants');
 const { withPostHogConfig } = require('@posthog/nextjs-config');
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
@@ -51,6 +51,10 @@ module.exports = (phase, { defaultConfig }) => {
   }) : {};
 
   const nextConfig = {
+    // .mjs is outside the default page extensions, so dev entries are excluded from builds.
+    pageExtensions: phase === PHASE_DEVELOPMENT_SERVER
+      ? ['dev.mjs', ...defaultConfig.pageExtensions]
+      : defaultConfig.pageExtensions,
     i18n: {
       locales: ["en"],
       defaultLocale: "en",

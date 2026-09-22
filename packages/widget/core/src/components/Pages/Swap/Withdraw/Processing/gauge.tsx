@@ -73,7 +73,9 @@ export const Gauge = ({
                     cy="60"
                     style={{
                         strokeDashoffset: strokeDashoffset,
-                        transition: "stroke-dasharray 1s ease 0s,stroke 1s ease 0s",
+                        // Release the entry animation so later progress changes can transition.
+                        animationFillMode: "backwards",
+                        transition: "stroke-dashoffset 1s ease 0s,stroke 1s ease 0s",
                     }}
                 />
             </svg>

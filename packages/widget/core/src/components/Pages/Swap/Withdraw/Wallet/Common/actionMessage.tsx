@@ -1,62 +1,54 @@
-import { ActionMessageType } from '@layerswap/widget-types';
-import { FC, useEffect } from "react"
-import { ActionMessages } from "../../messages/TransactionMessages"
-import { ErrorHandler } from "@/lib/ErrorHandler"
-import { Network } from "@layerswap/widget-types"
-import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore"
-import { useSwapDataState } from "@/context/swap"
-import { isUserRejection } from "./isUserRejection"
+import { isUserRejection } from './isUserRejection';
+import { useSwapDataState } from '@/context/swap';
+import { ErrorHandler } from '@/lib/ErrorHandler';
+import { useGaslessPreferenceStore } from '@/stores/gaslessPreferenceStore';
+import { ActionMessageType, Network } from '@layerswap/widget-types';
+import { FC, useEffect } from 'react';
+import { ActionMessageView } from '../../Presentation/ActionMessageView';
 
-export const ActionMessage: FC<{ error: Error | undefined, isSignatureError?: boolean, isLoading: boolean, selectedSourceAddress: string, sourceNetwork: Network }> = ({ error, isSignatureError, isLoading, selectedSourceAddress, sourceNetwork }) => {
-
-    const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
-    const gaslessErrorMessage = useGaslessPreferenceStore(s => s.gaslessErrorMessage)
-    const { swapError } = useSwapDataState()
+export const ActionMessage: FC<{
+    error: Error | undefined;
+    isLoading: boolean;
+    isSignatureError?: boolean;
+    selectedSourceAddress: string;
+    sourceNetwork: Network;
+}> = ({ error, isSignatureError, isLoading, selectedSourceAddress, sourceNetwork }) => {
+    const gaslessUnavailable = useGaslessPreferenceStore(
+        (s) => s.gaslessUnavailable,
+    );
+    const gaslessErrorMessage = useGaslessPreferenceStore(
+        (s) => s.gaslessErrorMessage,
+    );
+    const { swapError } = useSwapDataState();
 
     useEffect(() => {
-        if (error && !isUserRejection(error) && (error?.name === ActionMessageType.UnexpectedErrorMessage
-            || !Object.values(ActionMessageType).includes(error.name as ActionMessageType)
-        )) {
+        if (
+            error && !isUserRejection(error) &&
+            (error?.name === ActionMessageType.UnexpectedErrorMessage ||
+                !Object.values(ActionMessageType).includes(
+                    error.name as ActionMessageType,
+                ))
+        ) {
             ErrorHandler({
-                type: "SwapWithdrawalError",
+                type: 'SwapWithdrawalError',
                 message: error.message,
                 name: error.name,
                 stack: error.stack,
-                cause: error.cause
+                cause: error.cause,
             });
         }
-    }, [error])
+    }, [error]);
 
-    if (gaslessUnavailable) {
-        return <ActionMessages.GaslessUnavailableMessage message={gaslessErrorMessage ?? undefined} />
-    }
-    if (isLoading) {
-        return <ActionMessages.ConfirmActionMessage />
-    }
-    if (isUserRejection(error)) {
-        return <ActionMessages.TransactionRejectedMessage isSignature={isSignatureError} />
-    }
-    else if (error?.name === ActionMessageType.TransactionFailed) {
-        return <ActionMessages.TransactionFailedMessage />
-    }
-    else if (error?.name === ActionMessageType.TransactionExpired) {
-        return <ActionMessages.TransactionExpiredMessage />
-    }
-    else if (error?.name === ActionMessageType.InsufficientFunds) {
-        return <ActionMessages.InsufficientFundsMessage />
-    }
-    else if (error?.name === ActionMessageType.WaletMismatch) {
-        return <ActionMessages.WalletMismatchMessage address={selectedSourceAddress} network={sourceNetwork} />
-    }
-    else if (error?.name === ActionMessageType.DifferentAccountsNotAllowedError) {
-        return <ActionMessages.DifferentAccountsNotAllowedError network={error?.message} />
-    }
-    else if (swapError) {
-        return <ActionMessages.SwapErrorMessage />
-    }
-    else if (error) {
-        if (!error.message) return <ActionMessages.UnexpectedErrorMessage />
-        return <ActionMessages.UnexpectedErrorMessage />
-    }
-    else return <></>
-}
+    return (
+        <ActionMessageView
+            error={error}
+            isSignatureError={isSignatureError}
+            isLoading={isLoading}
+            selectedSourceAddress={selectedSourceAddress}
+            sourceNetwork={sourceNetwork}
+            gaslessUnavailable={gaslessUnavailable}
+            gaslessErrorMessage={gaslessErrorMessage ?? undefined}
+            swapError={!!swapError}
+        />
+    );
+};
