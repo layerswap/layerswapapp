@@ -60,21 +60,33 @@ const { ActionMessages } = loadSource('../src/components/Pages/Swap/Withdraw/mes
     './Message': { default: () => null, WalletUnknownError: () => null },
     '@/lib/address/Address': {},
 })
+const depositActions = loadSource('../src/helpers/depositActions.ts')
+const presentation = loadSource('../src/components/Pages/Swap/Withdraw/Presentation/ActionMessageView.tsx', {
+    '@layerswap/widget-types': walletTypes,
+    '../Wallet/Common/isUserRejection': { isUserRejection },
+    '../messages/Message': { WalletUnknownError: () => null },
+    '../messages/TransactionMessages': { ActionMessages },
+})
 const gaslessState = {
     gaslessUnavailable: false,
     gaslessErrorMessage: null,
     reportGaslessUnavailable() { this.gaslessUnavailable = true },
 }
 const useGaslessPreferenceStore = Object.assign(selector => selector(gaslessState), { getState: () => gaslessState })
-const { ActionMessage } = loadSource(`${walletPath}actionMessage.tsx`, {
+const { ActionMessage: ActionMessageController } = loadSource(`${walletPath}actionMessage.tsx`, {
     react: { useEffect: () => {} },
     '@layerswap/widget-types': walletTypes,
-    '../../messages/TransactionMessages': { ActionMessages },
+    '../../Presentation/ActionMessageView': presentation,
     '@/lib/ErrorHandler': { ErrorHandler: () => {} },
     '@/stores/gaslessPreferenceStore': { useGaslessPreferenceStore },
     '@/context/swap': { useSwapDataState: () => ({ swapError: 'A generic workflow error is also present' }) },
     './isUserRejection': { isUserRejection },
 })
+
+function ActionMessage(props) {
+    const view = ActionMessageController(props)
+    return view.type(view.props)
+}
 
 test('signing cancellation selects signing copy even when a generic swap error exists', () => {
     for (const error of rejections) {
@@ -107,6 +119,7 @@ test('raw EVM signing cancellation survives the resolver and authorization workf
         '@/stores/swapTransactionStore': { useGaslessAuthorizationStore: { getState: () => assert.fail('A rejected signature must not be stored') } },
         '@/stores/gaslessPreferenceStore': { useGaslessPreferenceStore },
         './isUserRejection': { isUserRejection },
+        '@/helpers/depositActions': depositActions,
         '@/lib/ErrorHandler': { ErrorHandler: () => assert.fail('Cancellation must not be reported as a transfer failure') },
     })
     const resolver = new GaslessResolver([createEVMGaslessProvider({}, () => true)])

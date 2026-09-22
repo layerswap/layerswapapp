@@ -502,7 +502,15 @@ test('all mounted previews ignore clicks and keyboard activation without request
     }
 });
 
-test('viewer controls reset scenarios and preserve strictly earlier/later navigation', async () => {
+const chooseGroup = async (container, group) => {
+    const picker = container.querySelector('#timeline-group');
+    await act(async () => {
+        picker.value = group;
+        picker.dispatchEvent(new window.Event('change', { bubbles: true }));
+    });
+};
+
+test('viewer filters scenario groups, resets selections and preserves strictly earlier/later navigation', async () => {
     const container = document.getElementById('root');
     const root = createRoot(container);
     await act(async () => root.render(React.createElement(TimelinePage)));
@@ -510,6 +518,10 @@ test('viewer controls reset scenarios and preserve strictly earlier/later naviga
         [...container.querySelectorAll('button')].find(
             (b) => b.textContent === label,
         );
+    const groupPicker = container.querySelector('#timeline-group');
+    const visibleScenarios = () => [...container.querySelectorAll('aside button')].map(b => b.firstElementChild.textContent);
+    assert.equal(groupPicker.value, 'Lifecycle');
+    assert.deepEqual(visibleScenarios(), scenarios.filter(s => s.group === 'Lifecycle').map(s => s.label));
     assert.equal(button('← Previous').disabled, true);
     await act(async () => button('Next →').click());
     assert.equal(container.querySelector('input[type="range"]').value, '5');
@@ -529,6 +541,7 @@ test('viewer controls reset scenarios and preserve strictly earlier/later naviga
     assert.equal(container.querySelector('[role="dialog"]'), null);
     await act(async () => button('← Previous').click());
     assert.equal(container.querySelector('input[type="range"]').value, '0');
+    await chooseGroup(container, 'Outcomes');
     const failure = [...container.querySelectorAll('aside button')].find((b) =>
         b.textContent.startsWith('Output failure'),
     );
@@ -541,6 +554,17 @@ test('viewer controls reset scenarios and preserve strictly earlier/later naviga
             .textContent.includes('Confirming deposit'),
         true,
     );
+    await act(async () => container.querySelector('input[value="modal"]').click());
+    for (const group of [...new Set(scenarios.map(s => s.group))]) {
+        await chooseGroup(container, group);
+        const groupScenarios = scenarios.filter(s => s.group === group);
+        assert.deepEqual(visibleScenarios(), groupScenarios.map(s => s.label));
+        assert.equal(container.querySelector('#scenario-title').textContent, groupScenarios[0].label);
+        assert.equal(container.querySelector('input[type="range"]').value, String(groupScenarios[0].milestones[0].at));
+        assert.equal(button('← Previous').disabled, true);
+        assert.equal(container.querySelector('input[value="modal"]').checked, true);
+        if (!button('Next →').disabled) await act(async () => button('Next →').click());
+    }
     await act(async () => root.unmount());
     assert.deepEqual(forbidden, []);
 });
@@ -560,6 +584,8 @@ test('quote disclosures work in both modes and reset on timeline navigation with
         await act(async () => (button.querySelector('span') ?? button).click());
     };
     const choose = async (label) => {
+        const group = scenarios.find(s => s.label === label).group;
+        if (container.querySelector('#timeline-group').value !== group) await chooseGroup(container, group);
         const button = [...container.querySelectorAll('aside button')].find(
             (b) => b.firstElementChild.textContent === label,
         );
@@ -871,6 +897,119 @@ test('production slippage and snapshots render the same presenter, including hig
         await act(async () => root.render(preview(snapshot, 0)));
         assert.deepEqual(signature(), production);
         assert.deepEqual(forbidden, []);
+    } finally {
+        await act(async () => root.unmount());
+    }
+});
+
+const frontendMilestone = (scenario, milestone) => scenarios.find(s => s.id === scenario).milestones.find(m => m.id === milestone);
+const fixtureDOM = (scenario, milestone) => {
+    const m = frontendMilestone(scenario, milestone);
+    const container = document.createElement('div');
+    container.innerHTML = renderToStaticMarkup(preview(m.snapshot, m.at));
+    return container;
+};
+
+test('frontend wallet progress preserves completed steps, pending indicators and production presentation', () => {
+    const progress = (milestone) => fixtureDOM('frontend-permit2', milestone).querySelector('[aria-label="Wallet confirmation progress"]');
+    const approving = progress('approving');
+    assert.match(approving.textContent, /Step 1 of 3: Approve token/);
+    assert.deepEqual([...approving.querySelectorAll('li')].map(li => li.textContent), ['Approve tokenApprove in your wallet', 'Sign to swap', 'Confirm swap']);
+    assert.equal(approving.querySelectorAll('.animate-spin').length, 1);
+    assert.match(progress('approval-pending').textContent, /Confirming approval/);
+    const signing = progress('signing');
+    assert.equal(signing.querySelectorAll('.lucide-check').length, 1);
+    assert.equal(signing.querySelectorAll('.animate-spin').length, 1);
+    assert.match(signing.textContent, /Step 2 of 3: Sign to swap/);
+    const publishing = progress('publishing');
+    assert.equal(publishing.querySelectorAll('.lucide-check').length, 2);
+    assert.match(publishing.textContent, /Step 3 of 3: Confirm swap/);
+
+    const snapshot = frontendMilestone('frontend-permit2', 'signing').snapshot;
+    const production = document.createElement('div');
+    production.innerHTML = renderToStaticMarkup(React.createElement(SendTransactionView, {
+        quote: snapshot.quote, depositActions: snapshot.depositActions,
+        loading: snapshot.wallet.pending, actionStateText: snapshot.wallet.label,
+    }));
+    assert.equal(signing.outerHTML, production.querySelector('[aria-label="Wallet confirmation progress"]').outerHTML);
+    const submitted = fixtureDOM('frontend-approved', 'input');
+    assert.equal(submitted.querySelector('[aria-label="Wallet confirmation progress"]'), null);
+    assert.equal(phase(frontendMilestone('frontend-approved', 'input').snapshot).phase, SwapPhase.InputPending);
+    assert.deepEqual(forbidden, []);
+});
+
+test('frontend snapshots keep automatic wallet execution busy until processing or a real interruption', () => {
+    for (const scenario of scenarios.filter(s => s.group === 'Frontend swaps')) {
+        for (const milestone of scenario.milestones) {
+            const s = milestone.snapshot;
+            const wallet = s.wallet;
+            if (!s.depositActions?.length || !phase(s).showWithdrawScreen || wallet?.kind !== 'send') continue;
+            if (wallet.error || wallet.swapError || wallet.gaslessUnavailable || wallet.critical === 'confirmation') continue;
+
+            const label = `${scenario.id}/${milestone.id}`;
+            assert.equal(wallet.pending, true, `${label}: automatic execution never becomes idle between wallet prompts`);
+            const container = document.createElement('div');
+            container.innerHTML = renderToStaticMarkup(React.createElement(SendTransactionView, {
+                depositActions: s.depositActions, loading: wallet.pending, actionStateText: wallet.label,
+            }));
+            const buttons = [...container.querySelectorAll('button')];
+            if (s.depositActions.filter(action => action.step).length > 1) {
+                assert.equal(buttons.length, 0, `${label}: multistep execution has no intermediate action button`);
+            } else {
+                assert.equal(buttons.length, 1, label);
+                assert.ok(buttons[0].disabled, `${label}: the single-step submitting button is disabled`);
+            }
+        }
+    }
+});
+
+test('frontend quotes match the real full-to-compact lifecycle and sign-only/native variants', () => {
+    assert.ok(fixtureDOM('frontend-permit2', 'ready').querySelector('[aria-label="See details"]'));
+    for (const milestone of ['approving', 'signing', 'input', 'finalizing']) {
+        const view = fixtureDOM('frontend-permit2', milestone);
+        assert.match(view.textContent, /To address/);
+        assert.ok(view.querySelector('[data-recipient-address]'));
+        assert.equal(view.querySelector('[aria-label="See details"]'), null);
+        assert.equal(view.querySelector('[data-attr="edit-slippage"]'), null);
+    }
+    assert.equal(fixtureDOM('frontend-permit2', 'completed').querySelector('[data-recipient-address]'), null);
+    const gasless = fixtureDOM('frontend-gasless', 'gasless');
+    assert.ok(gasless.querySelector('[aria-label="See details"]'));
+    assert.equal(gasless.querySelector('[aria-label="Wallet confirmation progress"]'), null);
+    assert.match(fixtureDOM('frontend-native', 'ready').textContent, /Swap now/);
+    assert.equal(fixtureDOM('frontend-native', 'publishing').querySelector('[aria-label="Wallet confirmation progress"]'), null);
+    assert.match(fixtureDOM('frontend-native', 'publishing').textContent, /Confirm in your wallet/);
+    assert.match(fixtureDOM('frontend-critical', 'critical').textContent, /receive as low as 0.03 ETH/);
+});
+
+test('frontend rejection and failed-step fixtures distinguish signature errors from transaction errors', () => {
+    for (const [step, message] of [['approve_permit2', 'Transaction rejected'], ['sign', 'Signing rejected'], ['publish', 'Transaction rejected']]) {
+        const rejected = fixtureDOM(`frontend-${step}-retry`, 'rejected');
+        assert.match(rejected.textContent, new RegExp(message));
+        assert.equal(rejected.querySelectorAll('[aria-label="Wallet confirmation progress"] .lucide-x').length, 1);
+        const refresh = fixtureDOM(`frontend-${step}-retry`, 'refresh');
+        assert.match(refresh.textContent, /Refreshing swap/);
+        assert.equal(refresh.querySelectorAll('[aria-label="Wallet confirmation progress"] .lucide-x').length, 0);
+    }
+    assert.match(fixtureDOM('frontend-errors', 'failed').textContent, /Token approval reverted/);
+    const pending = fixtureDOM('frontend-errors', 'pending-error').querySelector('[aria-label="Wallet confirmation progress"]');
+    assert.equal(pending.querySelectorAll('.lucide-x').length, 0);
+    assert.equal(pending.querySelectorAll('.animate-spin').length, 1);
+});
+
+test('production critical-amount confirmation resumes through its dedicated callback', async () => {
+    const root = createRoot(document.getElementById('root'));
+    const calls = [];
+    try {
+        await act(async () => root.render(React.createElement(SendTransactionView, {
+            showCriticalMarketPriceImpactButtons: true,
+            depositActions: frontendMilestone('frontend-critical', 'critical').snapshot.depositActions,
+            handleClick: () => calls.push('start'),
+            handleCriticalContinue: () => calls.push('continue'),
+        })));
+        const button = [...document.querySelectorAll('button')].find(b => b.textContent === 'Continue anyway');
+        await act(async () => button.click());
+        assert.deepEqual(calls, ['continue']);
     } finally {
         await act(async () => root.unmount());
     }

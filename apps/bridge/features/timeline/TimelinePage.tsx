@@ -1,18 +1,20 @@
 import Head from 'next/head';
+import { ChevronDown } from 'lucide-react';
 import { useState, type ReactElement } from 'react';
 import {
     Page2Preview,
     type Page2PreviewMode,
 } from '@layerswap/widget/internal';
 import { EPOCH, scenarios } from './fixtures';
-import {
-    formatTime,
-    selectScenario,
-    selectTime,
-} from './model';
+import { formatTime, selectScenario, selectTime } from './model';
 import styles from './timeline.module.css';
 
-const groups = [...new Set(scenarios.map((scenario) => scenario.group))];
+const groups = [...new Set(scenarios.map((scenario) => scenario.group))].map(
+    (name) => ({
+        name,
+        scenarios: scenarios.filter((scenario) => scenario.group === name),
+    }),
+);
 
 export default function TimelinePage() {
     const [mode, setMode] = useState<Page2PreviewMode>('component');
@@ -22,12 +24,16 @@ export default function TimelinePage() {
     const scenario = scenarios.find(
         (item) => item.id === selection.scenarioId,
     )!;
+    const group = groups.find((item) => item.name === scenario.group)!;
     const { time, milestone, previous, next, first, last } = selectTime(
         scenario,
         selection.seconds,
     );
     const setTime = (seconds: number) =>
-        setSelection((current) => ({ scenarioId: current.scenarioId, seconds }));
+        setSelection((current) => ({
+            scenarioId: current.scenarioId,
+            seconds,
+        }));
     const snapshot = milestone.snapshot;
     const previewSnapshot =
         snapshot.kind === 'swap' && selection.quoteExpanded !== undefined
@@ -66,43 +72,65 @@ export default function TimelinePage() {
                             className={styles.scenarios}
                             aria-label="Scenarios"
                         >
+                            <div className={styles.groupPicker}>
+                                <label htmlFor="timeline-group">
+                                    Scenario group
+                                </label>
+                                <div className={styles.selectField}>
+                                    <select
+                                        id="timeline-group"
+                                        value={group.name}
+                                        aria-controls="timeline-scenarios"
+                                        onChange={(event) => {
+                                            const nextGroup = groups.find(
+                                                (item) =>
+                                                    item.name ===
+                                                    event.target.value,
+                                            );
+                                            if (nextGroup)
+                                                setSelection(
+                                                    selectScenario(
+                                                        nextGroup.scenarios[0],
+                                                    ),
+                                                );
+                                        }}
+                                    >
+                                        {groups.map((item) => (
+                                            <option
+                                                key={item.name}
+                                                value={item.name}
+                                            >
+                                                {item.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <ChevronDown aria-hidden="true" />
+                                </div>
+                            </div>
                             <div className={styles.listHeading}>
                                 <h2>Scenarios</h2>
-                                <span>{scenarios.length}</span>
+                                <span>{group.scenarios.length}</span>
                             </div>
-                            <div className={styles.scenarioList}>
-                                {groups.map((group) => (
-                                    <section key={group} aria-label={group}>
-                                        <h3>{group}</h3>
-                                        {scenarios
-                                            .filter(
-                                                (item) => item.group === group,
-                                            )
-                                            .map((item) => (
-                                                <button
-                                                    type="button"
-                                                    key={item.id}
-                                                    aria-pressed={
-                                                        scenario.id === item.id
-                                                    }
-                                                    onClick={() =>
-                                                        setSelection(
-                                                            selectScenario(
-                                                                item,
-                                                            ),
-                                                        )
-                                                    }
-                                                    className={
-                                                        styles.scenarioButton
-                                                    }
-                                                >
-                                                    <span>{item.label}</span>
-                                                    <span aria-hidden="true">
-                                                        {item.milestones.length}
-                                                    </span>
-                                                </button>
-                                            ))}
-                                    </section>
+                            <div
+                                id="timeline-scenarios"
+                                key={group.name}
+                                className={styles.scenarioList}
+                            >
+                                {group.scenarios.map((item) => (
+                                    <button
+                                        type="button"
+                                        key={item.id}
+                                        aria-pressed={scenario.id === item.id}
+                                        onClick={() =>
+                                            setSelection(selectScenario(item))
+                                        }
+                                        className={styles.scenarioButton}
+                                    >
+                                        <span>{item.label}</span>
+                                        <span aria-hidden="true">
+                                            {item.milestones.length} steps
+                                        </span>
+                                    </button>
                                 ))}
                             </div>
                         </aside>

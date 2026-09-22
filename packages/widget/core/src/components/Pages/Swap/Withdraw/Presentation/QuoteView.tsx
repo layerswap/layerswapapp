@@ -21,7 +21,10 @@ export function QuoteView({
     animate?: boolean;
     compact?: boolean;
 }) {
-    if (compact) return <div className="w-full rounded-2xl bg-secondary-500">{summary}</div>;
+    if (compact)
+        return (
+            <div className="w-full rounded-2xl bg-secondary-500">{summary}</div>
+        );
     return (
         <Accordion
             type="single"

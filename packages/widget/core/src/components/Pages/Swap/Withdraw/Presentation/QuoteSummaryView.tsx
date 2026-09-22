@@ -85,27 +85,29 @@ export function QuoteSummaryView({
             </div>
             {!compact && slippage}
             {!compact && isOpen && gasFee}
-            {!compact && <div
-                className={`${isOpen ? 'hidden' : ''} flex items-center w-full justify-between px-2 py-3`}
-            >
-                {detailsButton}
-
-                <button
-                    data-attr="see-swap-details"
-                    data-page2-quote-disclosure
-                    type="button"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onOpen?.();
-                    }}
-                    className="flex items-center text-secondary-text text-sm whitespace-nowrap gap-0.5 hover:text-primary-text"
-                    aria-label="See details"
-                    aria-expanded={!!isOpen}
+            {!compact && (
+                <div
+                    className={`${isOpen ? 'hidden' : ''} flex items-center w-full justify-between px-2 py-3`}
                 >
-                    <span>See details</span>
-                    <ChevronDown className="h-3.5 w-3.5" />
-                </button>
-            </div>}
+                    {detailsButton}
+
+                    <button
+                        data-attr="see-swap-details"
+                        data-page2-quote-disclosure
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onOpen?.();
+                        }}
+                        className="flex items-center text-secondary-text text-sm whitespace-nowrap gap-0.5 hover:text-primary-text"
+                        aria-label="See details"
+                        aria-expanded={!!isOpen}
+                    >
+                        <span>See details</span>
+                        <ChevronDown className="h-3.5 w-3.5" />
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

@@ -3,6 +3,7 @@ import type { GasFeePresentation } from '../../Form/FeeDetails/SwapQuote/GasFeeV
 import type { Network, Token } from '@layerswap/widget-types';
 import type {
     GaslessAuthorizationResult,
+    DepositAction,
     SwapBasicData,
     SwapDetails,
     SwapQuote,
@@ -22,7 +23,7 @@ export type Page2WalletState =
           kind: 'send';
           pending?: boolean;
           label?: string;
-          confirming?: boolean;
+          isSignatureError?: boolean;
           error?: ActionMessageType | 'unknown';
           swapError?: boolean;
           errorExpanded?: boolean;
@@ -46,6 +47,8 @@ export type Page2LoadedSnapshot = {
     kind: 'swap';
     swap: SwapBasicData;
     details: SwapDetails;
+    swapId?: string;
+    depositActions?: DepositAction[];
     quote?: SwapQuote;
     refuel?: Refuel;
     sourceAddress: string;

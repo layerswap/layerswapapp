@@ -46,12 +46,51 @@
     background: var(--color-secondary-800);
     overflow: hidden;
 }
+.groupPicker {
+    padding: 18px;
+    border-bottom: 1px solid var(--color-secondary-400);
+}
+.groupPicker label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--color-secondary-text);
+    font-size: 12px;
+}
+.selectField {
+    position: relative;
+}
+.selectField select {
+    appearance: none;
+    color-scheme: dark;
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 36px 10px 12px;
+    border: 1px solid var(--color-secondary-300);
+    border-radius: 9px;
+    background: var(--color-secondary-500);
+    color: var(--color-primary-text);
+    font: inherit;
+    font-size: 14px;
+    cursor: pointer;
+}
+.selectField select:hover {
+    border-color: var(--color-secondary-200);
+}
+.selectField > svg {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    width: 16px;
+    height: 16px;
+    transform: translateY(-50%);
+    color: var(--color-secondary-text);
+    pointer-events: none;
+}
 .listHeading {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 18px;
-    border-bottom: 1px solid var(--color-secondary-400);
+    padding: 16px 18px 4px;
 }
 .listHeading h2 {
     font-size: 15px;
@@ -71,13 +110,6 @@
     scrollbar-width: thin;
     scrollbar-color: var(--color-secondary-200) transparent;
 }
-.scenarioList h3 {
-    padding: 14px 10px 7px;
-    color: var(--color-secondary-text);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-}
 .scenarioButton {
     display: flex;
     align-items: center;
@@ -95,6 +127,7 @@
 .scenarioButton > span:last-child {
     font-size: 11px;
     opacity: 0.65;
+    white-space: nowrap;
 }
 .scenarioButton:hover {
     background: var(--color-secondary-500);
@@ -275,7 +308,7 @@
     line-height: 1.6;
     margin-top: 4px;
 }
-.timeline :is(button, input, a, [tabindex]):focus-visible {
+.timeline :is(button, input, select, a, [tabindex]):focus-visible {
     outline: 2px solid var(--color-primary-text) !important;
     outline-offset: 3px !important;
     box-shadow: none !important;
@@ -301,6 +334,9 @@
         max-height: 210px;
     }
     .listHeading {
+        padding: 13px 16px 4px;
+    }
+    .groupPicker {
         padding: 13px 16px;
     }
     .controls {

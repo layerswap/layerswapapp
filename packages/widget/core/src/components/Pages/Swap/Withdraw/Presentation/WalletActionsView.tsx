@@ -3,8 +3,14 @@ import SubmitButton, {
 } from '@/components/Buttons/submitButton';
 import FailIcon from '@/components/Icons/FailIcon';
 import InfoIcon from '@/components/Icons/InfoIcon';
-import type { DepositAction, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
-import { getActionableDepositAction, getDepositActionLabel } from '@/helpers/depositActions';
+import type {
+    DepositAction,
+    SwapQuote,
+} from '@/lib/apiClients/layerSwapApiClient';
+import {
+    getActionableDepositAction,
+    getDepositActionLabel,
+} from '@/helpers/depositActions';
 import { DepositWorkflowView } from './DepositWorkflowView';
 import { resolvePriceImpactValues } from '@/lib/fees';
 import { WalletIcon } from '@layerswap/ui-kit/components';
@@ -154,27 +160,37 @@ export function SendTransactionView({
     onCancelWithdrawal,
     ...props
 }: SendTransactionViewProps) {
-    const isMultiStepWorkflow = (depositActions?.filter(action => !!action.step).length ?? 0) > 1;
-    const workflowCompleted = !!depositActions?.length && depositActions.every(action => action.status === 'completed');
+    const isMultiStepWorkflow =
+        (depositActions?.filter((action) => !!action.step).length ?? 0) > 1;
+    const workflowCompleted =
+        !!depositActions?.length &&
+        depositActions.every((action) => action.status === 'completed');
     const actionableAction = getActionableDepositAction(depositActions);
-    const primaryActionText = actionableAction ? getDepositActionLabel(actionableAction) : actionButtonText || 'Swap now';
+    const primaryActionText = actionableAction
+        ? getDepositActionLabel(actionableAction)
+        : actionButtonText || 'Swap now';
     const workflowProgress = (
-        <DepositWorkflowView actions={depositActions} loading={loading} error={error || swapError} actionStateText={actionStateText} />
+        <DepositWorkflowView
+            actions={depositActions}
+            loading={loading}
+            error={error || swapError}
+            actionStateText={actionStateText}
+        />
     );
     if (quoteIsLoading || loading)
         return (
             <>
-            {workflowProgress}
-            {isMultiStepWorkflow && loading ? null : (
-            <ButtonWrapper
-                icon={icon}
-                {...props}
-                isSubmitting={true}
-                isDisabled={true}
-            >
-                {actionStateText || 'Preparing…'}
-            </ButtonWrapper>
-            )}
+                {workflowProgress}
+                {isMultiStepWorkflow && loading ? null : (
+                    <ButtonWrapper
+                        icon={icon}
+                        {...props}
+                        isSubmitting={true}
+                        isDisabled={true}
+                    >
+                        {actionStateText || 'Preparing…'}
+                    </ButtonWrapper>
+                )}
             </>
         );
 
@@ -269,11 +285,15 @@ export function SendTransactionView({
                         props.isSubmitting || loading || quoteIsLoading
                     }
                     onClick={handleClick}
-                    isDisabled={quoteIsLoading || !!quoteError || workflowCompleted}
+                    isDisabled={
+                        quoteIsLoading || !!quoteError || workflowCompleted
+                    }
                 >
                     {error || swapError
                         ? 'Try again'
-                        : workflowCompleted ? 'Completed' : primaryActionText}
+                        : workflowCompleted
+                          ? 'Completed'
+                          : primaryActionText}
                 </ButtonWrapper>
             )}
         </>

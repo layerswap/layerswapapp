@@ -18,7 +18,11 @@ import {
 import { Page2PreviewFrame, type Page2PreviewMode } from './Page2PreviewFrame';
 import { ElapsedTime } from '@/components/Common/ElapsedTime';
 import { SwapDetailsSceleton } from '@/components/Common/Sceletons';
-import { resolveSwapPhase } from '@/components/utils/resolveSwapPhase';
+import {
+    resolveSwapPhase,
+    SwapPhase,
+} from '@/components/utils/resolveSwapPhase';
+import { shouldShowCompactSwapQuote } from '@/helpers/swapFlow';
 import { gaslessFailureMessage } from '@/helpers/gaslessFailureMessage';
 import {
     TransactionStatus,
@@ -143,6 +147,10 @@ function LoadedPreview({
         gaslessAuthorizationFailed: gaslessFailed,
         isDepositFlow: s.isDepositFlow,
     });
+    const compactQuote = shouldShowCompactSwapQuote({
+        swapData: s.swap,
+        isGaslessActive: !!s.quoteState.gasless,
+    });
     const summary = (
         <SummaryView
             swap={{
@@ -169,6 +177,16 @@ function LoadedPreview({
                     resolved={resolved}
                     isDepositFlow={s.isDepositFlow}
                     summary={summary}
+                    quoteDetails={
+                        compactQuote &&
+                        resolved.phase !== SwapPhase.Completed ? (
+                            <PreviewQuote
+                                snapshot={s}
+                                compact
+                                onExpandedChange={onQuoteExpandedChange}
+                            />
+                        ) : null
+                    }
                     readOnly
                     transactionHash={
                         input?.transaction_hash ||
@@ -275,6 +293,7 @@ function LoadedPreview({
                 quote={
                     <PreviewQuote
                         snapshot={s}
+                        compact={!!s.swapId && compactQuote}
                         onExpandedChange={onQuoteExpandedChange}
                     />
                 }
@@ -301,9 +320,11 @@ function LoadedPreview({
 function PreviewQuote({
     snapshot: s,
     onExpandedChange,
+    compact,
 }: {
     snapshot: Page2LoadedSnapshot;
     onExpandedChange?: (expanded: boolean) => void;
+    compact?: boolean;
 }) {
     if (
         !s.swap.use_deposit_address &&
@@ -375,10 +396,12 @@ function PreviewQuote({
         );
     return (
         <QuoteView
+            compact={compact}
             isOpen={s.quoteState.expanded}
             setIsOpen={onExpandedChange}
             summary={
                 <QuoteSummaryView
+                    compact={compact}
                     quoteData={{ quote: s.quote!, refuel: s.refuel }}
                     values={values}
                     isOpen={s.quoteState.expanded}
@@ -476,7 +499,7 @@ function PreviewWallet({ snapshot: s }: { snapshot: Page2LoadedSnapshot }) {
                 message={
                     <ActionMessageView
                         error={state.error ? { name: state.error } : undefined}
-                        isLoading={state.confirming}
+                        isSignatureError={state.isSignatureError}
                         sourceNetwork={s.swap.source_network}
                         selectedSourceAddress={s.sourceAddress}
                         expanded={state.errorExpanded ?? false}
@@ -486,31 +509,28 @@ function PreviewWallet({ snapshot: s }: { snapshot: Page2LoadedSnapshot }) {
                     />
                 }
                 action={
-                    !state.confirming && (
-                        <SendTransactionView
-                            quote={s.quote}
-                            quoteIsLoading={s.quoteState.status === 'loading'}
-                            quoteError={s.quoteState.status === 'error'}
-                            loading={state.pending}
-                            actionStateText={state.label}
-                            error={!!state.error}
-                            swapError={state.swapError}
-                            criticalMarketPriceImpact={!!state.critical}
-                            showCriticalMarketPriceImpactButtons={
-                                state.critical === 'confirmation'
-                            }
-                            priceImpactValues={
-                                s.quote
-                                    ? resolvePriceImpactValues(
-                                          s.quote,
-                                          s.refuel,
-                                      )
-                                    : undefined
-                            }
-                            gaslessUnavailable={state.gaslessUnavailable}
-                            gaslessFailureStage={state.gaslessFailureStage}
-                        />
-                    )
+                    <SendTransactionView
+                        swapId={s.swapId}
+                        depositActions={s.depositActions}
+                        quote={s.quote}
+                        quoteIsLoading={s.quoteState.status === 'loading'}
+                        quoteError={s.quoteState.status === 'error'}
+                        loading={state.pending}
+                        actionStateText={state.label}
+                        error={!!state.error}
+                        swapError={state.swapError}
+                        criticalMarketPriceImpact={!!state.critical}
+                        showCriticalMarketPriceImpactButtons={
+                            state.critical === 'confirmation'
+                        }
+                        priceImpactValues={
+                            s.quote
+                                ? resolvePriceImpactValues(s.quote, s.refuel)
+                                : undefined
+                        }
+                        gaslessUnavailable={state.gaslessUnavailable}
+                        gaslessFailureStage={state.gaslessFailureStage}
+                    />
                 }
             />
         </>

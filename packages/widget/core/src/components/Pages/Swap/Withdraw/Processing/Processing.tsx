@@ -49,7 +49,10 @@ const Processing: FC<Props> = ({
     failureReason,
 }) => {
     const isGaslessActive = useIsGaslessActive(swapBasicData);
-    const showCompactQuote = shouldShowCompactSwapQuote({ swapData: swapBasicData, isGaslessActive });
+    const showCompactQuote = shouldShowCompactSwapQuote({
+        swapData: swapBasicData,
+        isGaslessActive,
+    });
     const { boot, show, update } = useIntercom();
     const { onSwapStatusChange } = useCallbacks();
     const { isDepositFlow } = useDepositSettings();
@@ -224,9 +227,18 @@ const Processing: FC<Props> = ({
             inputMaxConfirmations={inputMaxConfirmations}
             isDepositFlow={isDepositFlow}
             summary={<SwapSummary />}
-            quoteDetails={showCompactQuote && resolved.phase !== SwapPhase.Completed ? (
-                <SwapQuoteDetails compact swapBasicData={swapBasicData} quote={quote} refuel={refuel} quoteIsLoading={false} quoteError={undefined} />
-            ) : null}
+            quoteDetails={
+                showCompactQuote && resolved.phase !== SwapPhase.Completed ? (
+                    <SwapQuoteDetails
+                        compact
+                        swapBasicData={swapBasicData}
+                        quote={quote}
+                        refuel={refuel}
+                        quoteIsLoading={false}
+                        quoteError={undefined}
+                    />
+                ) : null
+            }
             failedPanel={<Failed />}
             onGetHelp={startIntercom}
             elapsedTime={

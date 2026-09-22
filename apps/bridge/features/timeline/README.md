@@ -4,7 +4,13 @@ Open `/timeline` directly with `pnpm dev` or on a Vercel Preview/Development dep
 
 The `.mjs` ending matters: Next's default page extensions include `tsx`, `ts`, `jsx`, and `js`, so `.dev.tsx` would still be discovered in production. The `.dev.mjs` entry needs no custom loader, private Next APIs, environment overrides, or Webpack entry filtering. All UI remains in normal TypeScript files. The timeline uses Next.js's documented [per-page getLayout](https://nextjs.org/docs/15/pages/building-your-application/routing/pages-and-layouts#per-page-layouts) to render without the app's live providers and analytics. `_app.js` only applies the chosen layout, with the normal app layout as its default; it contains no timeline path check.
 
+The Scenario group picker shows only the selected group's scenarios. Changing groups selects its first scenario and resets time and quote disclosure; the Component/Modal mode stays selected. The native picker supports keyboard navigation, and each scenario shows its number of steps.
+
 `model.ts` clamps time to each scenario's range, selects the latest preceding snapshot, and finds strictly earlier/later milestones. Every milestone supplies a complete `Page2Snapshot`; the selected second is passed separately as `now`. Scenario changes reset to the first milestone. Component/Modal mode switches preserve the selected scenario and time.
+
+`Page2Snapshot` includes typed backend `DepositAction[]`, the created swap ID, and controlled signature-error state. Frontend workflow snapshots pass these to the same wallet progress and action presenters as production. Compact quote selection uses `shouldShowCompactSwapQuote`: the full quote is shown before creation, a self-paid same-network swap becomes compact after creation and during processing, and the compact panel disappears at completion. Gasless quotes remain expandable.
+
+Frontend execution stays pending continuously from approval through signing and publication, including backend refreshes between prompts. These milestones have no intermediate action buttons, matching the live controller's single execution loop. Publication moves directly to processing. Only the initial start, explicit receiving-amount confirmation, and error/retry states offer actions; a single-step flow retains its real disabled submitting button. Timeline navigation still advances simulated time manually.
 
 `Page2Preview` is an internal widget export. It composes the same presentation components used by production Page 2 controllers, resolves lifecycle states with `resolveSwapPhase`, and never mounts those controllers. Live clocks, wallet execution, requests, persistence, logging, and support callbacks remain in the production controllers. Only quote disclosure controls have a callback, which updates local presentation state; moving through time or choosing a scenario restores the fixture's expanded state. Switching preview modes preserves the disclosure. Transaction actions remain blocked, and explorer links have no destination. The bridge app bypasses its live providers and analytics for this route.
 
@@ -22,6 +28,7 @@ Spinners, pending indicators, number changes, accordions, wallet-action transiti
 | Recipient and address details | `RecipientAddressView`, `AddressDetailsView`, `AddressIconView`, `AddressLabelView` |
 | Manual deposit | `ManualInstructionsView`, `ManualSourceSelectorView`, `DepositQRCodeView`, UI kit `CopyButtonView`, `ManualDepositButtonView` |
 | Wallet actions and warnings | `WalletActionsView`, `WalletSubmissionView`, `WalletTransferView`, balance/RPC/action-message and specialized-withdrawal presenters |
+| Frontend wallet workflow | `DepositWorkflowView`, `SendTransactionView`, shared deposit-action labels and selection |
 | Processing and errors | `ProcessingView`, `ProcessingSectionView`, `ElapsedTime`, failure/retry/not-found presenters |
 | Layout and dialogs | `WidgetFrame`, `WidgetHeaderView`, shared navigation buttons and wallet header, `WidgetFooterView`, `Page2Contained`, `WithdrawContentView`, `PendingSwapView`, `DrawerPresentation`, `ConfirmationContent` |
 
@@ -36,6 +43,7 @@ The tests enforce that neither Page 2 controllers nor snapshot adapters contain 
 | Fixture group | Rendering branches |
 | --- | --- |
 | Lifecycle and outcomes | Wallet success, input publishing/confirmations, output pending, completed before output, input/output failure, amount limits, expiration, refunds, deposit-flow wording |
+| Frontend swaps | Permit2 approval → signature → publication, existing allowance, native-token publication, pending/completed actions, per-step rejection and retry, refresh/server failures, quote confirmation, gasless-to-standard fallback, full/compact quotes through processing |
 | Refuel | Upcoming, pending after output, complete |
 | Manual deposit | Loading, address pending/ready, network/exchange source, expanded details, adjusted withdrawal limits |
 | Wallet | Connection, network switching, preparation, confirmation, all current action error messages, balance refresh |

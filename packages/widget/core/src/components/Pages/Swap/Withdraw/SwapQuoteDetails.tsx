@@ -54,7 +54,7 @@ export const SwapQuoteDetails: FC<Props> = ({
                     swapValues={values}
                     isQuoteLoading={quoteIsLoading}
                     partner={partner}
-            compact={compact}
+                    compact={compact}
                 />
             )}
         </QuoteAvailabilityView>

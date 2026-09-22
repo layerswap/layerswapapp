@@ -17,6 +17,7 @@ import {
     type SwapDetails,
     type SwapQuote,
     type Transaction,
+    type DepositAction,
 } from '@layerswap/widget/internal';
 import type { TimelineMilestone, TimelineScenario } from './model';
 
@@ -237,7 +238,7 @@ const standard: TimelineScenario = {
             'confirm',
             'Confirm in wallet',
             'The wallet is waiting for transaction approval.',
-            { kind: 'send', confirming: true },
+            { kind: 'send', pending: true, label: 'Confirm in your wallet' },
         ),
         m(
             10,
@@ -534,7 +535,11 @@ const walletScenarios: TimelineScenario[] = [
                     'confirm',
                     'Confirm in wallet',
                     'The wallet has received the transaction request.',
-                    { kind: 'send', confirming: true },
+                    {
+                        kind: 'send',
+                        pending: true,
+                        label: 'Confirm in your wallet',
+                    },
                 ),
                 milestoneWallet(
                     12,
@@ -751,7 +756,11 @@ const quoteScenarios: TimelineScenario[] = [
                 'confirmed',
                 'Confirm in wallet',
                 'The user accepted the critical receiving amount.',
-                { kind: 'send', confirming: true },
+                {
+                    kind: 'send',
+                    pending: true,
+                    label: 'Confirm in your wallet',
+                },
                 {
                     quote: {
                         ...quote,
@@ -1384,8 +1393,675 @@ const supporting: TimelineScenario[] = [
         ],
     },
 ];
+// The backend owns these actions. Snapshots preserve its order/status while the
+// wallet fields represent the prompt or error currently shown by the controller.
+const frontendToken: Token = {
+    ...usdc,
+    supports_gasless_deposit: true,
+    gasless_standard: 'permit2',
+};
+const frontendQuote: SwapQuote = {
+    ...quote,
+    source_network: base,
+    destination_network: base,
+    source_token: frontendToken,
+    destination_token: eth,
+    receive_amount: 0.0396,
+    min_receive_amount: 0.0394,
+    rate: 0.0004,
+};
+const frontend = (
+    patch: Partial<Page2LoadedSnapshot> = {},
+): Page2LoadedSnapshot =>
+    snapshot({
+        swap: {
+            ...snapshot().swap,
+            source_network: base,
+            destination_network: base,
+            source_token: frontendToken,
+            destination_token: eth,
+        },
+        swapId: details().id,
+        quote: frontendQuote,
+        ...patch,
+    });
+type WorkflowStep = 'approve_permit2' | 'sign' | 'publish' | 'deposit';
+type WorkflowStatus =
+    | 'action_required'
+    | 'pending'
+    | 'waiting'
+    | 'completed'
+    | 'failed';
+const workflow = (
+    entries: [WorkflowStep, WorkflowStatus, string?][],
+): DepositAction[] =>
+    entries.map(([step, status, detail], order) => {
+        const common = {
+            step,
+            status,
+            detail,
+            order,
+            network: base,
+            token: frontendToken,
+            expires_at: date(600),
+        };
+        if (status === 'waiting') return common;
+        if (step === 'sign')
+            return {
+                ...common,
+                type: 'sign',
+                typed_data: {
+                    types: {
+                        Swap: [
+                            { name: 'owner', type: 'address' },
+                            { name: 'amount', type: 'uint256' },
+                        ],
+                    },
+                    primaryType: 'Swap',
+                    domain: {
+                        name: 'Sample Swap',
+                        chainId: 8453,
+                        verifyingContract: deposit,
+                    },
+                    message: { owner: account, amount: '100000000' },
+                },
+                valid_before: Math.floor(EPOCH / 1000) + 600,
+            };
+        return {
+            ...common,
+            type: 'transfer',
+            amount: 100,
+            amount_in_base_units: '100000000',
+            from_address: account,
+            to_address: deposit,
+            call_data: '0x',
+        };
+    });
+const approvalRequired = workflow([
+    ['approve_permit2', 'action_required'],
+    ['sign', 'waiting'],
+    ['publish', 'waiting'],
+]);
+const approvalPending = workflow([
+    ['approve_permit2', 'pending'],
+    ['sign', 'waiting'],
+    ['publish', 'waiting'],
+]);
+const signatureRequired = workflow([
+    ['approve_permit2', 'completed'],
+    ['sign', 'action_required'],
+    ['publish', 'waiting'],
+]);
+const publishWaiting = workflow([
+    ['approve_permit2', 'completed'],
+    ['sign', 'completed'],
+    ['publish', 'waiting'],
+]);
+const publishRequired = workflow([
+    ['approve_permit2', 'completed'],
+    ['sign', 'completed'],
+    ['publish', 'action_required'],
+]);
+const workflowComplete = workflow([
+    ['approve_permit2', 'completed'],
+    ['sign', 'completed'],
+    ['publish', 'completed'],
+]);
+const frontendMilestone = (
+    at: number,
+    id: string,
+    label: string,
+    description: string,
+    actions: DepositAction[] | undefined,
+    wallet: Page2WalletState,
+    extra: Partial<Page2LoadedSnapshot> = {},
+    expectedPhase = SwapPhase.AwaitingUserDeposit,
+) =>
+    m(
+        at,
+        id,
+        label,
+        description,
+        frontend({ depositActions: actions, wallet, ...extra }),
+        expectedPhase,
+    );
+const frontendCompleted = frontendMilestone(
+    90,
+    'completed',
+    'Swap completed',
+    'The output amount arrives and the compact quote is removed.',
+    workflowComplete,
+    { kind: 'send' },
+    {
+        details: details({
+            status: SwapStatus.Completed,
+            transactions: [
+                input,
+                transaction(TransactionType.Output, {
+                    amount: 0.0396,
+                    timestamp: date(90),
+                }),
+            ],
+        }),
+    },
+    SwapPhase.Completed,
+);
+const nativeFrontendState: Partial<Page2LoadedSnapshot> = {
+    swap: {
+        ...frontend().swap,
+        source_token: eth,
+        destination_token: usdc,
+        requested_amount: '0.04',
+    },
+    quote: {
+        ...frontendQuote,
+        source_token: eth,
+        destination_token: usdc,
+        requested_amount: 0.04,
+        receive_amount: 99,
+        min_receive_amount: 98.5,
+        rate: 2500,
+    },
+};
+const gaslessFrontendToken: Token = {
+    ...usdc,
+    supports_gasless_deposit: true,
+    gasless_standard: 'eip3009',
+};
+const gaslessFrontendState: Partial<Page2LoadedSnapshot> = {
+    swap: { ...frontend().swap, source_token: gaslessFrontendToken },
+    quote: { ...frontendQuote, source_token: gaslessFrontendToken },
+    quoteState: { status: 'ready', expanded: false, gasless: true },
+};
+const gaslessFrontendActions = workflow([['sign', 'action_required']]).map(
+    (action) => ({ ...action, token: gaslessFrontendToken }),
+);
+const frontendScenarios: TimelineScenario[] = [
+    {
+        id: 'frontend-permit2',
+        label: 'Frontend swap: approve, sign, confirm',
+        group: 'Frontend swaps',
+        milestones: [
+            frontendMilestone(
+                0,
+                'ready',
+                'Quote ready',
+                'Before swap creation, the full quote includes gas and expandable details.',
+                undefined,
+                { kind: 'send' },
+                { swapId: undefined },
+            ),
+            frontendMilestone(
+                3,
+                'preparing',
+                'Preparing swap',
+                'Creating the swap while the full quote remains visible.',
+                undefined,
+                { kind: 'send', pending: true, label: 'Preparing swap…' },
+                { swapId: undefined },
+            ),
+            frontendMilestone(
+                5,
+                'approving',
+                'Approve in wallet',
+                'Creating the swap opens the approval prompt automatically and makes the quote compact.',
+                approvalRequired,
+                {
+                    kind: 'send',
+                    pending: true,
+                    label: 'Approve in your wallet',
+                },
+            ),
+            frontendMilestone(
+                15,
+                'approval-pending',
+                'Confirming approval',
+                'Approval is pending on-chain; it is not recorded as the swap deposit.',
+                approvalPending,
+                { kind: 'send', pending: true, label: 'Confirming approval…' },
+            ),
+            frontendMilestone(
+                25,
+                'signing',
+                'Sign in wallet',
+                'After approval confirms, the signature prompt opens automatically; approval stays checked.',
+                signatureRequired,
+                { kind: 'send', pending: true, label: 'Sign in your wallet' },
+            ),
+            frontendMilestone(
+                35,
+                'prepare-publish',
+                'Preparing transaction',
+                'The signature is accepted; the backend is preparing publication.',
+                publishWaiting,
+                {
+                    kind: 'send',
+                    pending: true,
+                    label: 'Preparing transaction…',
+                },
+            ),
+            frontendMilestone(
+                40,
+                'publishing',
+                'Confirm in wallet',
+                'Once publication is prepared, the final wallet prompt opens automatically.',
+                publishRequired,
+                {
+                    kind: 'send',
+                    pending: true,
+                    label: 'Confirm in your wallet',
+                },
+            ),
+            frontendMilestone(
+                50,
+                'input',
+                'Confirming swap transaction',
+                'A real transaction hash moves to processing and retains the compact quote.',
+                workflowComplete,
+                { kind: 'send' },
+                {
+                    storedWalletTransaction: {
+                        ...stored,
+                        timestamp: EPOCH + 50_000,
+                    },
+                    details: details({
+                        transactions: [
+                            transaction(TransactionType.Input, {
+                                confirmations: 3,
+                                timestamp: date(50),
+                            }),
+                        ],
+                    }),
+                },
+                SwapPhase.InputPending,
+            ),
+            frontendMilestone(
+                70,
+                'finalizing',
+                'Finalizing swap',
+                'A completed status without output still shows the compact quote and finalizing state.',
+                workflowComplete,
+                { kind: 'send' },
+                {
+                    details: details({
+                        status: SwapStatus.Completed,
+                        transactions: [input],
+                    }),
+                },
+                SwapPhase.SettlingOutput,
+            ),
+            frontendCompleted,
+        ],
+    },
+    {
+        id: 'frontend-approved',
+        label: 'Frontend swap: token already approved',
+        group: 'Frontend swaps',
+        milestones: [
+            frontendMilestone(
+                0,
+                'signing',
+                'Sign in wallet',
+                'Existing allowance skips approval and opens the signature prompt automatically.',
+                signatureRequired.slice(1),
+                { kind: 'send', pending: true, label: 'Sign in your wallet' },
+            ),
+            frontendMilestone(
+                15,
+                'publish',
+                'Confirm in wallet',
+                'After signing, the final wallet prompt opens automatically.',
+                publishRequired.slice(1),
+                {
+                    kind: 'send',
+                    pending: true,
+                    label: 'Confirm in your wallet',
+                },
+            ),
+            frontendMilestone(
+                25,
+                'input',
+                'Confirming swap transaction',
+                'Publication stores the transaction hash and moves directly to processing.',
+                workflowComplete.slice(1),
+                { kind: 'send' },
+                {
+                    storedWalletTransaction: {
+                        ...stored,
+                        timestamp: EPOCH + 25_000,
+                    },
+                    details: details({
+                        transactions: [
+                            transaction(TransactionType.Input, {
+                                confirmations: 3,
+                                timestamp: date(25),
+                            }),
+                        ],
+                    }),
+                },
+                SwapPhase.InputPending,
+            ),
+            frontendCompleted,
+        ],
+    },
+    {
+        id: 'frontend-native',
+        label: 'Frontend swap: native token',
+        group: 'Frontend swaps',
+        milestones: [
+            frontendMilestone(
+                0,
+                'ready',
+                'Quote ready',
+                'The native-token quote is ready to start the swap.',
+                undefined,
+                { kind: 'send' },
+                { ...nativeFrontendState, swapId: undefined },
+            ),
+            frontendMilestone(
+                5,
+                'publishing',
+                'Confirm in wallet',
+                'Starting the swap opens its only wallet prompt automatically, without approval or signature steps.',
+                workflow([['publish', 'action_required']]).map((action) => ({
+                    ...action,
+                    token: eth,
+                    amount: 0.04,
+                    amount_in_base_units: '40000000000000000',
+                })),
+                {
+                    kind: 'send',
+                    pending: true,
+                    label: 'Confirm in your wallet',
+                },
+                nativeFrontendState,
+            ),
+        ],
+    },
+    ...(['approve_permit2', 'sign', 'publish'] as const).map(
+        (step): TimelineScenario => {
+            const actions =
+                step === 'approve_permit2'
+                    ? approvalRequired
+                    : step === 'sign'
+                      ? signatureRequired
+                      : publishRequired;
+            const label =
+                step === 'approve_permit2'
+                    ? 'approval'
+                    : step === 'sign'
+                      ? 'signature'
+                      : 'publication';
+            const prompt =
+                step === 'approve_permit2'
+                    ? 'Approve in your wallet'
+                    : step === 'sign'
+                      ? 'Sign in your wallet'
+                      : 'Confirm in your wallet';
+            return {
+                id: `frontend-${step}-retry`,
+                label: `Frontend ${label}: rejection and retry`,
+                group: 'Frontend swaps',
+                milestones: [
+                    frontendMilestone(
+                        0,
+                        'prompt',
+                        'Wallet prompt',
+                        `The ${label} step is awaiting wallet confirmation.`,
+                        actions,
+                        { kind: 'send', pending: true, label: prompt },
+                    ),
+                    frontendMilestone(
+                        5,
+                        'rejected',
+                        'Wallet request rejected',
+                        'The current step fails visually; completed prerequisites and the same swap are retained.',
+                        actions,
+                        {
+                            kind: 'send',
+                            error: ActionMessageType.TransactionRejected,
+                            isSignatureError: step === 'sign',
+                        },
+                    ),
+                    frontendMilestone(
+                        10,
+                        'refresh',
+                        'Refreshing swap',
+                        'Retry clears the rejection and fetches fresh action data without losing prior steps.',
+                        actions,
+                        {
+                            kind: 'send',
+                            pending: true,
+                            label: 'Refreshing swap…',
+                        },
+                    ),
+                    frontendMilestone(
+                        15,
+                        'retry',
+                        'Fresh wallet prompt',
+                        'Fresh payloads are presented for the same current step.',
+                        actions.map((action) => ({
+                            ...action,
+                            expires_at: date(900),
+                        })),
+                        { kind: 'send', pending: true, label: prompt },
+                    ),
+                    frontendCompleted,
+                ],
+            };
+        },
+    ),
+    {
+        id: 'frontend-errors',
+        label: 'Frontend workflow failures and refresh',
+        group: 'Frontend swaps',
+        milestones: [
+            frontendMilestone(
+                0,
+                'ready',
+                'Approve in wallet',
+                'The approval prompt opens automatically before authorization.',
+                approvalRequired,
+                {
+                    kind: 'send',
+                    pending: true,
+                    label: 'Approve in your wallet',
+                },
+            ),
+            frontendMilestone(
+                5,
+                'failed',
+                'Approval failed',
+                'A server-reported failed step displays its failure detail.',
+                workflow([
+                    [
+                        'approve_permit2',
+                        'failed',
+                        'Token approval reverted. Try again.',
+                    ],
+                    ['sign', 'waiting'],
+                    ['publish', 'waiting'],
+                ]),
+                { kind: 'send', swapError: true },
+            ),
+            frontendMilestone(
+                10,
+                'refresh-error',
+                'Could not refresh actions',
+                'An action refresh error marks only the current step and offers retry.',
+                signatureRequired,
+                { kind: 'send', swapError: true },
+            ),
+            frontendMilestone(
+                15,
+                'refresh',
+                'Refreshing swap',
+                'A retry removes the error and preserves completed approval.',
+                signatureRequired,
+                { kind: 'send', pending: true, label: 'Refreshing swap…' },
+            ),
+            frontendMilestone(
+                25,
+                'pending-error',
+                'Published transaction pending',
+                'A pending server step remains in progress even when a stale wallet error is present.',
+                workflow([
+                    ['approve_permit2', 'completed'],
+                    ['sign', 'completed'],
+                    ['publish', 'pending'],
+                ]),
+                { kind: 'send', swapError: true },
+            ),
+            frontendCompleted,
+        ],
+    },
+    {
+        id: 'frontend-critical',
+        label: 'Frontend quote update and confirmation',
+        group: 'Frontend swaps',
+        milestones: [
+            frontendMilestone(
+                0,
+                'ready',
+                'Quote ready',
+                'The full quote appears before swap creation.',
+                undefined,
+                { kind: 'send' },
+                { swapId: undefined },
+            ),
+            frontendMilestone(
+                5,
+                'preparing',
+                'Preparing swap',
+                'Swap creation checks the new receiving amount before opening any wallet prompts.',
+                undefined,
+                { kind: 'send', pending: true, label: 'Preparing swap…' },
+                { swapId: undefined },
+            ),
+            frontendMilestone(
+                10,
+                'critical',
+                'Confirm receiving amount',
+                'A changed receiving amount requires explicit confirmation before wallet execution.',
+                approvalRequired,
+                { kind: 'send', critical: 'confirmation' },
+                {
+                    quote: {
+                        ...frontendQuote,
+                        receive_amount: 0.032,
+                        min_receive_amount: 0.03,
+                    },
+                },
+            ),
+            frontendMilestone(
+                20,
+                'continue',
+                'Continue with approval',
+                'Accepting the amount resumes the same workflow.',
+                approvalRequired,
+                {
+                    kind: 'send',
+                    pending: true,
+                    label: 'Approve in your wallet',
+                },
+                {
+                    quote: {
+                        ...frontendQuote,
+                        receive_amount: 0.032,
+                        min_receive_amount: 0.03,
+                    },
+                },
+            ),
+        ],
+    },
+    {
+        id: 'frontend-gasless',
+        label: 'Frontend gasless and standard fallback',
+        group: 'Frontend swaps',
+        milestones: [
+            frontendMilestone(
+                0,
+                'gasless',
+                'Gasless quote ready',
+                'An EIP-3009 token supports a sign-only flow; the initial quote is ready to start the swap.',
+                undefined,
+                { kind: 'send' },
+                { ...gaslessFrontendState, swapId: undefined },
+            ),
+            frontendMilestone(
+                5,
+                'signing',
+                'Sign in wallet',
+                'A single signature uses the submitting button without a multi-step panel.',
+                gaslessFrontendActions,
+                { kind: 'send', pending: true, label: 'Sign in your wallet' },
+                gaslessFrontendState,
+            ),
+            frontendMilestone(
+                10,
+                'unavailable',
+                'Gasless unavailable',
+                'Authorization submission failed; retry and standard transfer are available before funds move.',
+                gaslessFrontendActions,
+                {
+                    kind: 'send',
+                    gaslessUnavailable: true,
+                    gaslessFailureStage: 'deposit',
+                    gaslessMessage:
+                        'The gasless deposit could not be completed.',
+                },
+                gaslessFrontendState,
+            ),
+            frontendMilestone(
+                20,
+                'standard',
+                'Sign standard swap in wallet',
+                'Switching to standard transfer starts a fresh self-paid workflow and opens the signature prompt automatically.',
+                signatureRequired.slice(1).map((action) => ({
+                    ...action,
+                    token: gaslessFrontendToken,
+                })),
+                { kind: 'send', pending: true, label: 'Sign in your wallet' },
+                {
+                    ...gaslessFrontendState,
+                    quoteState: {
+                        status: 'ready',
+                        expanded: false,
+                        gasless: false,
+                    },
+                },
+            ),
+            frontendMilestone(
+                30,
+                'publish',
+                'Publish standard swap',
+                'After signing, the user pays gas for publication.',
+                publishRequired.slice(1).map((action) => ({
+                    ...action,
+                    token: gaslessFrontendToken,
+                })),
+                {
+                    kind: 'send',
+                    pending: true,
+                    label: 'Confirm in your wallet',
+                },
+                {
+                    ...gaslessFrontendState,
+                    quoteState: {
+                        status: 'ready',
+                        expanded: false,
+                        gasless: false,
+                    },
+                },
+            ),
+            frontendCompleted,
+        ],
+    },
+];
+
 export const scenarios: readonly TimelineScenario[] = [
     standard,
+    ...frontendScenarios,
     ...failures,
     {
         id: 'refuel',

@@ -39,6 +39,6 @@ export { Page2Preview } from '../components/Pages/Swap/Withdraw/Presentation/Pag
 export type { Page2Snapshot, Page2LoadedSnapshot, Page2WalletState } from '../components/Pages/Swap/Withdraw/Presentation/Page2Snapshot';
 export { resolveSwapPhase, SwapPhase } from '../components/utils/resolveSwapPhase';
 export { BackendTransactionStatus, TransactionStatus, TransactionType } from '../lib/apiClients/layerSwapApiClient';
-export type { SwapDetails, SwapQuote, Transaction } from '../lib/apiClients/layerSwapApiClient';
+export type { SwapDetails, SwapQuote, Transaction, DepositAction } from '../lib/apiClients/layerSwapApiClient';
 
 export type { Page2PreviewMode } from '../components/Pages/Swap/Withdraw/Presentation/Page2PreviewFrame';
