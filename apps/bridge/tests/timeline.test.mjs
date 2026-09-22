@@ -286,6 +286,59 @@ test('lifecycle fixtures agree with the existing resolver, including refuel, ref
     }
 });
 
+test('fixture quotes match their route and gas adjustments use the native token', () => {
+    for (const scenario of scenarios)
+        for (const { id, snapshot: s } of scenario.milestones) {
+            if (s.kind !== 'swap') continue;
+            const context = `${scenario.id}/${id}`;
+            if (s.quote) {
+                for (const side of ['source', 'destination']) {
+                    assert.equal(
+                        s.quote[`${side}_network`].name,
+                        s.swap[`${side}_network`].name,
+                        context,
+                    );
+                    assert.equal(
+                        s.quote[`${side}_token`].symbol,
+                        s.swap[`${side}_token`].symbol,
+                        context,
+                    );
+                }
+                assert.equal(
+                    s.quote.requested_amount,
+                    Number(s.swap.requested_amount),
+                    context,
+                );
+            }
+            if (s.balanceWarning?.kind === 'gas') {
+                assert.equal(
+                    s.swap.source_token.symbol,
+                    s.swap.source_network.token.symbol,
+                    context,
+                );
+            }
+        }
+});
+
+test('published transaction timestamps stay stable as each scenario advances', () => {
+    for (const scenario of scenarios) {
+        const timestamps = new Map();
+        for (const { id, at, snapshot: s } of scenario.milestones) {
+            if (s.kind !== 'swap') continue;
+            for (const transaction of s.details.transactions) {
+                const context = `${scenario.id}/${id}/${transaction.type}`;
+                const key = `${transaction.type}/${transaction.transaction_hash}`;
+                const timestamp = Date.parse(transaction.timestamp);
+                assert.ok(timestamp <= EPOCH + at * 1000, context);
+                if (timestamps.has(key)) {
+                    assert.equal(timestamp, timestamps.get(key), context);
+                }
+                timestamps.set(key, timestamp);
+            }
+        }
+    }
+});
+
 test('every fixture renders in both modes without application providers or incomplete values', () => {
     for (const mode of ['component', 'modal'])
         for (const scenario of scenarios)

@@ -781,7 +781,20 @@ const quoteScenarios: TimelineScenario[] = [
                 'gas',
                 'Insufficient gas',
                 'The wallet needs a balance remaining for the network fee.',
-                snapshot({ balanceWarning: { kind: 'gas' } }),
+                snapshot({
+                    swap: {
+                        ...snapshot().swap,
+                        source_token: eth,
+                        requested_amount: '0.04',
+                    },
+                    quote: {
+                        ...quote,
+                        source_token: eth,
+                        requested_amount: 0.04,
+                        rate: 2500,
+                    },
+                    balanceWarning: { kind: 'gas' },
+                }),
             ),
             m(
                 10,
@@ -789,12 +802,18 @@ const quoteScenarios: TimelineScenario[] = [
                 'Amount adjusted',
                 'The send amount was reduced to leave enough for gas.',
                 snapshot({
-                    swap: { ...snapshot().swap, requested_amount: '99.5' },
+                    swap: {
+                        ...snapshot().swap,
+                        source_token: eth,
+                        requested_amount: '0.0398',
+                    },
                     quote: {
                         ...quote,
-                        requested_amount: 99.5,
+                        source_token: eth,
+                        requested_amount: 0.0398,
                         receive_amount: 98.5,
                         min_receive_amount: 98,
+                        rate: 2500,
                     },
                 }),
             ),
@@ -1102,26 +1121,29 @@ const gaslessScenarios: TimelineScenario[] = [
 const specialized = (
     provider: 'Hyperliquid' | 'Polymarket',
     wallet: Partial<Extract<Page2WalletState, { kind: 'specialized' }>> = {},
-) =>
-    snapshot({
+) => {
+    const network: Network = {
+        ...ethereum,
+        type:
+            provider === 'Hyperliquid'
+                ? NetworkType.Hyperliquid
+                : NetworkType.Polymarket,
+        name: `${provider.toUpperCase()}_MAINNET`,
+        display_name: provider,
+        logo: icon(
+            provider[0],
+            provider === 'Hyperliquid' ? '#178a76' : '#315de6',
+        ),
+    };
+    return snapshot({
         swap: {
             ...snapshot().swap,
-            source_network: {
-                ...ethereum,
-                type:
-                    provider === 'Hyperliquid'
-                        ? NetworkType.Hyperliquid
-                        : NetworkType.Polymarket,
-                name: provider.toUpperCase(),
-                display_name: provider,
-                logo: icon(
-                    provider[0],
-                    provider === 'Hyperliquid' ? '#178a76' : '#315de6',
-                ),
-            },
+            source_network: network,
         },
+        quote: { ...quote, source_network: network },
         wallet: { kind: 'specialized', provider, connected: true, ...wallet },
     });
+};
 const specializedScenarios = (['Hyperliquid', 'Polymarket'] as const).flatMap(
     (provider): TimelineScenario[] => [
         {
@@ -1525,27 +1547,31 @@ const frontendMilestone = (
         frontend({ depositActions: actions, wallet, ...extra }),
         expectedPhase,
     );
-const frontendCompleted = frontendMilestone(
-    90,
-    'completed',
-    'Swap completed',
-    'The output amount arrives and the compact quote is removed.',
-    workflowComplete,
-    { kind: 'send' },
-    {
-        details: details({
-            status: SwapStatus.Completed,
-            transactions: [
-                input,
-                transaction(TransactionType.Output, {
-                    amount: 0.0396,
-                    timestamp: date(90),
-                }),
-            ],
-        }),
-    },
-    SwapPhase.Completed,
-);
+const frontendCompleted = (inputAt = 20) =>
+    frontendMilestone(
+        90,
+        'completed',
+        'Swap completed',
+        'The output amount arrives and the compact quote is removed.',
+        workflowComplete,
+        { kind: 'send' },
+        {
+            details: details({
+                status: SwapStatus.Completed,
+                transactions: [
+                    transaction(TransactionType.Input, {
+                        timestamp: date(inputAt),
+                        created_date: date(inputAt),
+                    }),
+                    transaction(TransactionType.Output, {
+                        amount: 0.0396,
+                        timestamp: date(90),
+                    }),
+                ],
+            }),
+        },
+        SwapPhase.Completed,
+    );
 const nativeFrontendState: Partial<Page2LoadedSnapshot> = {
     swap: {
         ...frontend().swap,
@@ -1669,6 +1695,7 @@ const frontendScenarios: TimelineScenario[] = [
                             transaction(TransactionType.Input, {
                                 confirmations: 3,
                                 timestamp: date(50),
+                                created_date: date(50),
                             }),
                         ],
                     }),
@@ -1685,12 +1712,17 @@ const frontendScenarios: TimelineScenario[] = [
                 {
                     details: details({
                         status: SwapStatus.Completed,
-                        transactions: [input],
+                        transactions: [
+                            transaction(TransactionType.Input, {
+                                timestamp: date(50),
+                                created_date: date(50),
+                            }),
+                        ],
                     }),
                 },
                 SwapPhase.SettlingOutput,
             ),
-            frontendCompleted,
+            frontendCompleted(50),
         ],
     },
     {
@@ -1735,13 +1767,14 @@ const frontendScenarios: TimelineScenario[] = [
                             transaction(TransactionType.Input, {
                                 confirmations: 3,
                                 timestamp: date(25),
+                                created_date: date(25),
                             }),
                         ],
                     }),
                 },
                 SwapPhase.InputPending,
             ),
-            frontendCompleted,
+            frontendCompleted(25),
         ],
     },
     {
@@ -1846,7 +1879,7 @@ const frontendScenarios: TimelineScenario[] = [
                         })),
                         { kind: 'send', pending: true, label: prompt },
                     ),
-                    frontendCompleted,
+                    frontendCompleted(),
                 ],
             };
         },
@@ -1912,7 +1945,7 @@ const frontendScenarios: TimelineScenario[] = [
                 ]),
                 { kind: 'send', swapError: true },
             ),
-            frontendCompleted,
+            frontendCompleted(),
         ],
     },
     {
@@ -2054,7 +2087,7 @@ const frontendScenarios: TimelineScenario[] = [
                     },
                 },
             ),
-            frontendCompleted,
+            frontendCompleted(40),
         ],
     },
 ];

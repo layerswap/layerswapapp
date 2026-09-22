@@ -87,7 +87,7 @@ export function QuoteSummaryView({
             {!compact && isOpen && gasFee}
             {!compact && (
                 <div
-                    className={`${isOpen ? 'hidden' : ''} flex items-center w-full justify-between px-2 py-3`}
+                    className={`${isOpen ? 'hidden' : ''} flex flex-wrap items-center w-full justify-between gap-2 px-2 py-3`}
                 >
                     {detailsButton}
 
@@ -99,7 +99,7 @@ export function QuoteSummaryView({
                             e.stopPropagation();
                             onOpen?.();
                         }}
-                        className="flex items-center text-secondary-text text-sm whitespace-nowrap gap-0.5 hover:text-primary-text"
+                        className="ml-auto flex shrink-0 items-center text-secondary-text text-sm whitespace-nowrap gap-0.5 hover:text-primary-text"
                         aria-label="See details"
                         aria-expanded={!!isOpen}
                     >
