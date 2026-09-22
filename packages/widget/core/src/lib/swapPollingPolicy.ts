@@ -10,9 +10,6 @@ const HOT_WINDOW_MS = 6_000
 /** A swap with no payload change for this long is an outlier — relax polling. */
 const MIN_OUTLIER_THRESHOLD_MS = 60_000
 
-// Terminal swaps never change again; Delayed swaps change too slowly to be worth polling.
-const NO_POLL_PHASES: ReadonlySet<SwapPhase> = new Set([...TERMINAL_PHASES, SwapPhase.Delayed])
-
 export type SwapPollingInput = {
     phase: SwapPhase
     now: number
@@ -31,7 +28,7 @@ type Step = [belowMs: number, intervalMs: number]
 export function resolveSwapPollingInterval(input: SwapPollingInput): number {
     const { phase, now, lastChangeAt, txSubmittedAt, avgCompletionTime, isDepositAddressFlow } = input
 
-    if (NO_POLL_PHASES.has(phase)) return 0
+    if (TERMINAL_PHASES.has(phase)) return 0
 
 
     const sinceActivity = Math.max(0, now - Math.max(lastChangeAt, txSubmittedAt ?? 0))

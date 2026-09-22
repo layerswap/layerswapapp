@@ -428,16 +428,6 @@ export enum WithdrawType {
     External = 'external'
 }
 
-export enum SwapStatusInNumbers {
-    Pending = 0,
-    Completed = 1,
-    Failed = 2,
-    Expired = 3,
-    Delayed = 4,
-    Cancelled = 5,
-    SwapsWithoutCancelledAndExpired = '0&status=1&status=2&status=3&status=4'
-}
-
 export type Campaign = {
     id: number,
     name: string,
