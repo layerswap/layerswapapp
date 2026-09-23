@@ -228,6 +228,7 @@ test('(f) a second swap gets its own deliveries and a late update of the first o
   for (const [, details] of steps) await screen.render({ swapDetails: details })
   const [, completed] = steps.at(-1)
 
+  act(() => captured.onSwapLifecycle({ step: 'swap_created', stage: 'swap_creation', outcome: 'succeeded', path: 'test', swapId: 's2' }))
   await screen.render({ swapDetails: swap('s2', 'ls_transfer_pending', [inputTx()]) })
   assert.deepEqual(screen.statusIds(), [['s1', 'ls_transfer_pending'], ['s1', 'completed'], ['s2', 'ls_transfer_pending']])
   assert.equal(screen.phaseSteps().at(-1), 'output_transfer_pending')
@@ -252,10 +253,12 @@ test('(g) an input transaction failure is a lifecycle observation, not an API st
 test('(h) an expired swap is reported once on both streams', async () => {
   const screen = host()
   const expired = swap('s1', 'expired', [inputTx()])
+  await screen.render(null)
+  act(() => captured.onSwapLifecycle({ step: 'swap_created', stage: 'swap_creation', outcome: 'succeeded', path: 'test', swapId: 's1' }))
   await screen.render({ swapDetails: expired })
   await screen.render({ swapDetails: { ...expired } })
   assert.deepEqual(screen.statusIds(), [['s1', 'expired']])
-  assert.deepEqual(screen.phaseSteps(), ['swap_expired'])
+  assert.deepEqual(screen.phaseSteps(), ['swap_created', 'swap_expired'])
   assert.deepEqual(screen.state.captures, ['swap_failed'])
 })
 
@@ -270,4 +273,29 @@ test('(i) created and user_transfer_pending never reach the status stream', asyn
   assert.deepEqual(screen.phaseSteps(), ['awaiting_user_deposit', 'awaiting_user_deposit', 'input_transfer_pending'])
   assert.deepEqual(screen.state.lifecycle.map(event => event.status), ['created', 'user_transfer_pending', 'user_transfer_pending'])
   assert.deepEqual([...REPORTED_SWAP_STATUSES].sort(), ['completed', 'expired', 'failed', 'ls_transfer_pending'])
+})
+
+test('(l) reopening a swap that is already finished reports no status; a change seen while open does', async () => {
+  const screen = host()
+  const completed = swap('s1', 'completed', [inputTx(), outputTx], { source_address: '0xfrom' })
+  // Reloading /swap/<id> of a finished swap: the status is its state at load, not a transition.
+  await screen.render({ swapDetails: completed })
+  await screen.render({ swapDetails: { ...completed } })
+  assert.deepEqual(screen.statusIds(), [])
+
+  // A swap opened mid-flight reports what changes while it is watched.
+  await screen.render({ swapDetails: swap('s2', 'ls_transfer_pending', [inputTx()]) })
+  await screen.render({ swapDetails: swap('s2', 'completed', [inputTx(), outputTx]) })
+  assert.deepEqual(screen.statusIds(), [['s2', 'completed']])
+})
+
+test('(m) a swap created in this session reports its first status even though Processing mounts after the transfer', async () => {
+  const screen = host()
+  await screen.render(null)
+  act(() => captured.onSwapLifecycle({ step: 'swap_created', stage: 'swap_creation', outcome: 'succeeded', path: 'test', swapId: 's1', status: 'user_transfer_pending' }))
+  // The swap modal opens after creation and resets the per-attempt dedup.
+  act(() => captured.onSwapModalStateChange(true))
+  await screen.render({ swapDetails: swap('s1', 'ls_transfer_pending', [inputTx()]) })
+  await screen.render({ swapDetails: swap('s1', 'completed', [inputTx(), outputTx]) })
+  assert.deepEqual(screen.statusIds(), [['s1', 'ls_transfer_pending'], ['s1', 'completed']])
 })

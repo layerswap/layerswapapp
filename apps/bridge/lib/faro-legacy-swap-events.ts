@@ -6,6 +6,11 @@ import { SwapStatus, type SwapLifecycleEvent, type SwapStatusEvent } from '@laye
 // lifecycle stream reports completion/failure the UI resolves before (or
 // without) a terminal API status. The recorder's name+swap dedupe makes
 // whichever feeder arrives first win, so cardinality stays one per name per swap.
+// The widget's own dedupe does not make this redundant: it is per stream and per
+// attempt (a retry or reopened modal may repeat a status), onSwapComplete is a
+// third feeder of swap_completed, and lifecycle phase steps (swap_completed,
+// swap_failed) are observations of the current phase, reported when a finished
+// swap is opened, not transitions like onSwapStatusChange.
 // Pure module (no React/Next imports) so it runs under `test:faro`.
 
 export type LegacySwapEventName = 'swap_pending' | 'swap_completed' | 'swap_failed'

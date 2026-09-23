@@ -91,7 +91,10 @@ export type WidgetCallbacks = {
   onSwapModalStateChange?: (open: boolean) => void;
   onBackClick?: () => void;
   onError?: (error: ErrorEventType) => void;
-  /** Reports each API status transition once per (swapId, type) per attempt for ls_transfer_pending, completed, failed, expired; other fields are context. */
+  /**
+   * Reports each API status transition once per (swapId, type) per attempt for ls_transfer_pending, completed, failed, expired; other fields are context.
+   * Only transitions are reported: a swap opened from a URL or history in a status it already had (e.g. reloading a completed swap) is not reported until its status changes. Swaps created or shown awaiting the user's transfer in this widget report from their first status.
+   */
   onSwapStatusChange?: (event: SwapStatusEvent) => void;
   /** Phase/transaction observations are deduplicated; user actions and wallet retries remain repeatable. */
   onSwapLifecycle?: (event: SwapLifecycleEvent) => void;

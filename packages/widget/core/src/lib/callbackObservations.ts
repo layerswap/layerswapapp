@@ -4,6 +4,15 @@ import {
 } from '@layerswap/widget-types'
 
 const ATTEMPT_START_STEPS = new Set<SwapLifecycleStep>(SWAP_LIFECYCLE_ATTEMPT_START_STEPS)
+/**
+ * Steps that show this widget instance watching a swap before its outcome: it
+ * created the swap, showed it awaiting the user's transfer, or the user acted
+ * on it. A swap never seen in one of these (opened from a URL or history) is
+ * baselined at its first status instead of reported.
+ */
+const TRACKING_STEPS = new Set<SwapLifecycleStep>([
+    'swap_created', 'awaiting_wallet_action', 'awaiting_user_deposit', ...SWAP_LIFECYCLE_ATTEMPT_START_STEPS,
+])
 /** Keeps a long session that browses many swaps from growing without bound. */
 const MAX_TRACKED_SWAPS = 64
 
@@ -37,19 +46,29 @@ export const SWAP_STATUS_CONTEXT_FIELDS = Object.keys({
 export function createCallbackObservations() {
     const statuses = new Map<string, string>()
     const lifecycle = new Map<string | undefined, Map<SwapLifecycleObservationKey, string>>()
+    // Outlives reset(): the swap modal opens (and resets) after the swap it shows was created.
+    const tracked = new Map<string, true>()
     const reset = () => { statuses.clear(); lifecycle.clear() }
 
     return {
         reset,
         status(event: SwapStatusIdentity): boolean {
             const fingerprint = event.type
-            if (touch(statuses, event.swapId) === fingerprint) return false
+            const isTracked = touch(tracked, event.swapId) !== undefined
+            const previous = touch(statuses, event.swapId)
+            if (previous === fingerprint) return false
             statuses.set(event.swapId, fingerprint)
             evictLeastRecent(statuses)
-            return true
+            // The first status of a swap this instance only opened is its state
+            // at load, not a transition: reloading a finished swap reports nothing.
+            return previous !== undefined || isTracked
         },
         lifecycle(event: SwapLifecycleEvent): boolean {
             if (event.step === 'form_submitted') reset()
+            if (event.swapId && TRACKING_STEPS.has(event.step)) {
+                tracked.set(event.swapId, true)
+                evictLeastRecent(tracked)
+            }
             if (ATTEMPT_START_STEPS.has(event.step)) {
                 lifecycle.delete(event.swapId)
                 // Withdraw may not emit a status between two failed attempts.

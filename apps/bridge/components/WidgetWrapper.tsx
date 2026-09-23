@@ -195,15 +195,12 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
     // swap_pending, while the lifecycle stream reports completion/failure the UI resolves before
     // (or without) a terminal API status. The recorder dedupes per name and swap, so whichever
     // feeder arrives first wins and cardinality stays one per name per swap.
+    // Every status the widget reports maps to a legacy name, so there is no unnamed branch.
     const handleSwapStatusChange = useCallback((event: SwapStatusEvent) => {
-        const attributes = legacyAttributesFromStatus(event)
         const name = legacyEventFromStatus(event)
-
-        if (name) recordSwapEvent(name, attributes)
-        else setLegacyContext(attributes)
-
+        if (name) recordSwapEvent(name, legacyAttributesFromStatus(event))
         baseOnSwapStatusChange?.(event)
-    }, [baseOnSwapStatusChange, recordSwapEvent, setLegacyContext])
+    }, [baseOnSwapStatusChange, recordSwapEvent])
 
     const handleSwapLifecycle = useCallback((event: SwapLifecycleEvent) => {
         const name = legacyEventFromLifecycle(event)
