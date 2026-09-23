@@ -160,7 +160,7 @@ The following implemented steps are expected under event name `swap_lifecycle`; 
 
 | Stage | Representative steps | Normal cadence |
 | --- | --- | --- |
-| form | `form_submitted`, `form_confirmation_cancelled` | once per submit/cancel; submission can repeat |
+| form | `form_submitted`, `form_confirmation_cancelled` | once per submit/cancel; submission can repeat. `widget_flow` rows carry `form_mode` (`cross-chain`, `exchange`, `deposit-address` on the swap widget; `deposit-widget-address`, `deposit-widget-wallet` on the deposit widget, which the bridge does not mount) |
 | swap creation | `swap_creation_started`, `swap_created`, `swap_creation_failed` | one attempt sequence; start can repeat; `swap_created` and `swap_creation_failed` are mutually exclusive per attempt |
 | wallet | `wallet_connection_started`, `wallet_connected`, `wallet_connection_failed`, network-switch and wallet-action steps | per provider/user attempt; selected start/prompt steps can repeat |
 | transaction | `transaction_submitted`, `gasless_authorization_submitted` | normally once per relevant attempt |

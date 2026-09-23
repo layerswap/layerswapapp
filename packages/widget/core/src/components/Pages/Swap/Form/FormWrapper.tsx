@@ -1,4 +1,3 @@
-import { Formik } from "formik";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useSettingsState } from "@/context/settings";
 import { UpdateSwapInterface, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
@@ -31,7 +30,7 @@ import ContractAddressValidationCache, { ContractSourceAddressValidationCache } 
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
 import { lifecycleContextFromForm, lifecycleContextFromSwap, resolveFlowClosedEvent } from "@/lib/swapLifecycle";
 import { useResolvedSwapStatus } from "@/hooks/useResolvedSwapStatus";
-import FormTelemetry from './FormTelemetry';
+import SwapForm, { type SwapFormMode } from './SwapForm';
 const SwapDetails = lazy(() => import("../Withdraw/SwapDetails"))
 
 type NetworkToConnect = {
@@ -39,7 +38,10 @@ type NetworkToConnect = {
     AppURL: string;
 }
 
-export default function FormWrapper({ children, type, partner }: { children?: React.ReactNode, type: 'cross-chain' | 'exchange' | 'deposit-address', partner?: Partner }) {
+/** The Swap page tabs. The standalone Deposit widget owns the deposit-widget-* modes. */
+type SwapPageFormMode = Extract<SwapFormMode, 'cross-chain' | 'exchange' | 'deposit-address'>
+
+export default function FormWrapper({ children, type, partner }: { children?: React.ReactNode, type: SwapPageFormMode, partner?: Partner }) {
 
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
     const [isAddressFromQueryConfirmed, setIsAddressFromQueryConfirmed] = useState(false);
@@ -74,15 +76,8 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
     const { setConfirmed, isConfirmed, checkContractStatus } = useContractAddressStore();
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
+        // form_submitted is emitted by SwapForm before this runs.
         const lifecycleContext = lifecycleContextFromForm(values)
-        onSwapLifecycle({
-            step: 'form_submitted',
-            stage: 'form',
-            outcome: 'started',
-            path: 'SwapForm',
-            action: 'submit',
-            ...lifecycleContext,
-        })
 
         setSwapError && setSwapError(null)
         useGaslessPreferenceStore.getState().clearGaslessUnavailable()
@@ -209,14 +204,15 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
 
 
     return <>
-        <Formik
+        <SwapForm
+            mode={type}
+            submitPath="SwapForm"
             initialValues={initialValues}
             validateOnMount={true}
             onSubmit={handleSubmit}
         >
             {({ setFieldValue, values }) => (
                 <>
-                    <FormTelemetry mode={type} />
                     <VaulDrawer
                         show={showConnectNetworkModal}
                         setShow={setShowConnectNetworkModal}
@@ -263,7 +259,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                 </>
             )
             }
-        </Formik >
+        </SwapForm>
     </>
 }
 
@@ -278,7 +274,7 @@ type SubmitProps = {
     setShowSwapModal: (value: boolean) => void;
     setNetworkToConnect: (value: NetworkToConnect) => void;
     setShowConnectNetworkModal: (value: boolean) => void;
-    type: 'cross-chain' | 'exchange' | 'deposit-address';
+    type: SwapPageFormMode;
 }
 
 const handleCreateSwap = async ({ query, values, partner, setShowSwapModal, createSwap, setNetworkToConnect, setShowConnectNetworkModal, setSwapId, setSubmitedFormValues, type }: SubmitProps) => {

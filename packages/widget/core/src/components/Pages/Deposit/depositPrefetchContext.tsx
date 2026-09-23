@@ -36,7 +36,14 @@ type DepositPrefetchContextValue = {
     /** Reports that a swap is now driving the flow. Fires integrator callbacks
      * for prefetched swaps (deferred from creation so they only fire for swaps
      * the user actually sees) and records form-created swaps as the latest for
-     * their tuple so re-entering the flow restores them. */
+     * their tuple so re-entering the flow restores them.
+     *
+     * Without `values` (the mount-seeded hand-over) the form never submits, so
+     * a prefetched swap also gets a synthesized `form_submitted` (path
+     * `DepositPrefetchProvider`, action `auto`) before its `swap_created`:
+     * that is what starts the telemetry journey the swap attaches to. With
+     * `values` the submit path already went through SwapForm's form_submitted
+     * and it is not repeated (it would double `submission_count`). */
     markSwapUsed: (swap: SwapResponse, values?: SwapFormValues) => void;
 };
 
@@ -211,6 +218,16 @@ export function DepositPrefetchProvider({ children }: { children: ReactNode }) {
                     destinationNetwork: swap.swap.destination_network?.name,
                     sourceToken: swap.swap.source_token?.symbol,
                     destinationToken: swap.swap.destination_token?.symbol,
+                }
+                if (!values) {
+                    onSwapLifecycle({
+                        step: 'form_submitted',
+                        stage: 'form',
+                        outcome: 'started',
+                        path: 'DepositPrefetchProvider',
+                        action: 'auto',
+                        ...lifecycleContext,
+                    });
                 }
                 onSwapLifecycle({
                     step: 'swap_created',

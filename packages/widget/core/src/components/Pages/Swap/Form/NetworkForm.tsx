@@ -79,7 +79,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     return (
         <>
             <DepositMethodComponent />
-            <Form data-ls-form="cross-chain" className="h-full grow flex flex-col flex-1 justify-between w-full gap-2">
+            <Form className="h-full grow flex flex-col flex-1 justify-between w-full gap-2">
                 <Widget.Content>
                     <div className="w-full flex flex-col justify-between flex-1">
                         <div className='flex-col relative flex justify-between gap-2 w-full leading-4'>

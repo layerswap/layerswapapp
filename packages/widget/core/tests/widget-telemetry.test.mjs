@@ -316,3 +316,66 @@ test('a swap created from the transfer screen produces one awaiting_wallet_actio
     assert.equal(events.at(-1).attributes.transfer_prompted, true)
     assert.equal(events.at(-1).attributes.transfer_submitted, true)
 })
+
+test('without a mounted form, editing is dropped, lifecycle and validation produce no widget_flow, and clicks/operations lack flow context', async () => {
+    const events = []
+    const telemetry = createWidgetTelemetry(() => 0, () => 0)
+    telemetry.register(e => events.push(e))
+    for (let i = 0; i < 20; i++) telemetry.interaction('form_edited', 'change', true)
+    assert.equal(events.filter(e => e.name === 'widget_interaction').length, 0)
+    telemetry.interaction('connect_wallet', 'click', false)
+    const [click] = events.filter(e => e.name === 'widget_interaction')
+    assert.equal(click.attributes.action, 'connect_wallet')
+    assert.equal(click.attributes.flow_id, undefined)
+    for (const step of ['swap_creation_started', 'swap_created', 'swap_completed']) telemetry.lifecycle(event(step, 'swap-x'))
+    telemetry.validation('amount_required')
+    await Promise.resolve()
+    assert.equal(events.filter(e => e.name === 'widget_flow').length, 0)
+    telemetry.beginOperation('quote_request')('succeeded')
+    const [operation] = events.filter(e => e.name === 'widget_operation')
+    assert.equal(operation.attributes.operation, 'quote_request')
+    assert.equal(operation.attributes.flow_id, undefined)
+    assert.equal(events.length, 2)
+})
+
+test('a prefetched deposit swap attaches through the synthesized submission without a creation start', () => {
+    const events = []
+    const telemetry = createWidgetTelemetry(() => 0, () => 0)
+    telemetry.register(e => events.push(e))
+    telemetry.mount(telemetry.createFlow({ form_mode: 'deposit-widget-address' }))
+    telemetry.lifecycle(event('form_submitted'))
+    telemetry.lifecycle(event('swap_created', 'pre'))
+    assert.equal(events.at(-1).attributes.step, 'swap_created')
+    assert.equal(events.at(-1).attributes.swap_id, 'pre')
+    assert.equal(events.at(-1).attributes.submitted, true)
+    assert.equal(events.at(-1).attributes.form_mode, 'deposit-widget-address')
+    telemetry.lifecycle(event('input_transaction_detected', 'pre'))
+    // "Deposit more": the auto-submit creates the next swap on the same form.
+    telemetry.lifecycle(event('form_submitted'))
+    telemetry.lifecycle(event('swap_created', 'next'))
+    assert.equal(events.at(-1).attributes.swap_id, 'next')
+    assert.equal(events.at(-1).attributes.submission_count, 2)
+    assert.equal(events.at(-1).attributes.deposit_observed, false)
+})
+
+test('the deposit wallet journey stays on one flow from continue to completion', () => {
+    const events = []
+    const telemetry = createWidgetTelemetry(() => 0, () => 0)
+    telemetry.register(e => events.push(e))
+    telemetry.mount(telemetry.createFlow({ form_mode: 'deposit-widget-wallet' }))
+    telemetry.lifecycle(event('form_submitted'))
+    telemetry.lifecycle(event('swap_creation_started'))
+    for (const step of ['swap_created', 'wallet_prompt_opened', 'transaction_submitted', 'input_transaction_detected', 'swap_completed']) {
+        telemetry.lifecycle(event(step, 'w'))
+    }
+    const flow = events.filter(e => e.name === 'widget_flow')
+    assert.deepEqual(flow.map(e => e.attributes.step), [
+        'form_viewed', 'form_submitted', 'swap_creation_started', 'swap_created', 'wallet_prompt_opened', 'transaction_submitted', 'input_transaction_detected', 'swap_completed',
+    ])
+    assert.equal(new Set(flow.map(e => e.attributes.flow_id)).size, 1)
+    assert.equal(flow.at(-1).attributes.swap_id, 'w')
+    assert.equal(flow.at(-1).attributes.transfer_prompted, true)
+    assert.equal(flow.at(-1).attributes.transfer_submitted, true)
+    assert.equal(flow.at(-1).attributes.deposit_observed, true)
+    assert.equal(flow.at(-1).attributes.completion_observed, true)
+})

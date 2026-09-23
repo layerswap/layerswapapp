@@ -2,11 +2,12 @@ import { useRef } from 'react'
 import { useClientLayoutEffect } from '@/hooks/useClientLayoutEffect'
 import { useFormikContext } from 'formik'
 import type { SwapFormValues } from './SwapFormValues'
+import type { SwapFormMode } from './SwapForm'
 import { widgetTelemetry } from '@/lib/widgetTelemetry'
 
 
-/** Owns the pre-submit flow independently from the existing swap lifecycle. */
-export default function FormTelemetry({ mode }: { mode: string }) {
+/** Owns the pre-submit flow independently from the existing swap lifecycle. Rendered only by SwapForm. */
+export default function FormTelemetry({ mode }: { mode: SwapFormMode }) {
     const { values } = useFormikContext<SwapFormValues>()
     const current = useRef<ReturnType<typeof widgetTelemetry.createFlow> | null>(null)
     current.current ??= widgetTelemetry.createFlow({ form_mode: mode })

@@ -75,8 +75,9 @@ export function createWidgetTelemetry(clock = now, wallClock = Date.now) {
                 progress('form_started')
                 if (flow.validation) progress('validation_shown', { reason_code: flow.validation })
             }
-            // Text editing starts a flow once. Never emit every keystroke.
-            if (action === 'form_edited' && alreadyEngaged) return
+            // Text editing starts a flow once. Never emit every keystroke, and
+            // never outside a mounted form (there is no flow to start).
+            if (action === 'form_edited' && (!flow || alreadyEngaged)) return
             emit(registration, 'widget_interaction', { ...snapshot(), ...attributes, action, trigger })
         },
         validation(code?: string) {

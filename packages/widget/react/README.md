@@ -191,6 +191,24 @@ transaction observations the same way `onSwapLifecycle` does; a new journey
 starts on every `form_submitted`. Form text editing reports `form_started`
 once rather than an interaction per keystroke.
 
+`widget_flow` is emitted only while a widget form is mounted; every such event
+carries `form_mode`, which names the form that owns the journey:
+
+| `form_mode` | Surface |
+|---|---|
+| `cross-chain` | Swap widget, network-to-network tab |
+| `exchange` | Swap widget, exchange tab |
+| `deposit-address` | Swap widget, deposit-address tab |
+| `deposit-widget-address` | Deposit widget, "Deposit address" (transfer crypto) method |
+| `deposit-widget-wallet` | Deposit widget, "Wallet" method |
+
+The deposit widget emits `form_submitted` on `onSwapLifecycle` with `action`
+`auto` for the deposit-address method (including a prefetched swap that is
+handed over at mount, reported with `path: 'DepositPrefetchProvider'`) and
+`continue` for the wallet method, so `submission_count` counts swap creation
+attempts, not clicks. The `form_edited` interaction is never emitted outside a
+mounted form.
+
 ```tsx
 import type { WidgetTelemetryEvent } from '@layerswap/widget-react';
 
