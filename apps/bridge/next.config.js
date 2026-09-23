@@ -1,28 +1,10 @@
 const { PHASE_PRODUCTION_BUILD, PHASE_PRODUCTION_SERVER } = require('next/constants');
-const { withPostHogConfig } = require('@posthog/nextjs-config');
 
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 });
 
 const { resolveFaroRelease, resolveFaroDeployment } = require('./lib/faro-release.cjs');
-
-const posthogConfigsAreSet = Boolean(
-  process.env.POSTHOG_PROJECT_ID
-  && process.env.POSTHOG_API_KEY
-  && process.env.NEXT_PUBLIC_POSTHOG_HOST
-);
-
-const posthogOptions = {
-  personalApiKey: process.env.POSTHOG_API_KEY,
-  projectId: process.env.POSTHOG_PROJECT_ID,
-  host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-  sourcemaps: {
-    enabled: true,
-    project: 'Layerswap',
-    deleteAfterUpload: true,
-  },
-};
 
 // Framing policy (Content-Security-Policy: frame-ancestors / X-Frame-Options) is
 // intentionally absent. The 2022 values were never served (the phase gate was dead
@@ -99,14 +81,6 @@ const buildNextConfig = (phase) => {
     async rewrites() {
       return [
         {
-          source: `/lsph/static/:path*`,
-          destination: "https://us-assets.i.posthog.com/static/:path*",
-        },
-        {
-          source: `/lsph/:path*`,
-          destination: "https://us.i.posthog.com/:path*",
-        },
-        {
           source: `/.well-known/vercel/flags`,
           destination: `/api/vercel/flags`,
         },
@@ -124,7 +98,4 @@ const buildNextConfig = (phase) => {
   return withBundleAnalyzer(nextConfig)
 }
 
-// PostHog must remain the outer wrapper for its compiler/webpack hooks to run.
-module.exports = posthogConfigsAreSet
-  ? withPostHogConfig(buildNextConfig, posthogOptions)
-  : buildNextConfig;
+module.exports = buildNextConfig;

@@ -59,6 +59,32 @@ test('approved ordinary URL queries/fragments and financial investigation fields
     assert.equal(sanitizeValue(url + '&api_key=synthetic-secret'), url + '&api_key=[REDACTED]')
 })
 
+test('WalletConnect relay auth and other credential query params are redacted inside console arguments', () => {
+    const relay = 'wss://relay.walletconnect.org/?auth=eyJhbGciOiJFZERTQSJ9.synthetic-jwt&projectId=test-project&ua=wc-2'
+    const serialized = serializeConsoleArgs(['WebSocket connection failed:', relay, { url: relay }])
+    assert(!serialized.includes('synthetic-jwt'))
+    assert(serialized.includes('projectId=test-project&ua=wc-2'))
+    assert.equal(sanitizeValue(relay), 'wss://relay.walletconnect.org/?auth=[REDACTED]&projectId=test-project&ua=wc-2')
+    for (const param of ['token', 'key', 'sig', 'secret', 'jwt', 'session_token', 'credential']) {
+        assert.equal(sanitizeValue(`https://test.invalid/p?from=ETH&${param}=synthetic-secret&safe=ok`),
+            `https://test.invalid/p?from=ETH&${param}=[REDACTED]&safe=ok`)
+    }
+    assert.equal(sanitizeValue('{"jwt":"synthetic-secret","safe":1}'), '{"jwt":"[REDACTED]","safe":1}')
+})
+
+test('credential-like nested keys are redacted by whole segment, ordinary lookalikes survive', () => {
+    const redacted = {
+        auth: 's', authToken: 's', 'x-auth-token': 's', clientSecret: 's', secret: 's', jwt: 's', idJwt: 's',
+        sessionToken: 's', session_key: 's', credentials: { user: 's' }, password: 's', signature: 's', txSignature: 's',
+    }
+    const kept = {
+        signatureRequired: true, author: 'Ada', isAuthenticated: true, oauthProvider: 'test',
+        sessionId: 'test-session', session_id: 'test-session', session: { id: 'test-session' }, previousSession: 'prev',
+    }
+    const output = sanitizeValue({ outer: { inner: { ...redacted, ...kept } } }).outer.inner
+    assert.deepEqual(output, { ...Object.fromEntries(Object.keys(redacted).map(key => [key, '[REDACTED]'])), ...kept })
+})
+
 test('OAuth callback query and fragment credentials are redacted in metadata and OTLP URLs', () => {
     for (const separator of ['?', '#']) {
         const url = `https://test.invalid/app/imtblRedirect${separator}code=synthetic-code&state=synthetic-state&code_verifier=synthetic-verifier&from=ETH&error_code=4001#details`

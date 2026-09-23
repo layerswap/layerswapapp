@@ -19,13 +19,13 @@ export const logError = (event: ErrorEventType) => {
     if (stack) error.stack = stack
 
     const captured = captureException(error, {
+        ...details,
         source: 'layerswap-widget',
         eventType: type,
         impact,
         occurrence_id: occurrenceId,
         reason_code: reasonCode,
         cause,
-        ...details,
     })
 
     // Keep a useful local fallback when Faro is intentionally unconfigured or
