@@ -24,10 +24,13 @@ const posthogOptions = {
   },
 };
 
+// Framing policy (Content-Security-Policy: frame-ancestors / X-Frame-Options) is
+// intentionally absent. The 2022 values were never served (the phase gate was dead
+// config) and the bridge is iframed by partners (settings.isEmbedded, NoCookies).
+// Do not add framing headers here; see follow-up "env-driven security headers":
+// lib/security-headers.cjs + partner-embedder allowlist.
 const securityHeaders = [
-  { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
-  { key: 'Content-Security-Policy', value: 'frame-ancestors *.immutable.com' },
 ]
 
 const REMOTE_PATTERNS = [
@@ -115,19 +118,9 @@ const buildNextConfig = (phase) => {
   if (process.env.APP_BASE_PATH) {
     nextConfig.basePath = process.env.APP_BASE_PATH
   }
-  // Next.js records headers() into the routes manifest at build time, so the
-  // server phase alone is too late: `next start` never sees these otherwise.
-  if (productionBuild) {
-    nextConfig.headers = async () => {
-      return [
-        {
-          // Apply these headers to all routes in your application.
-          source: '/:path*',
-          headers: securityHeaders,
-        },
-      ]
-    }
-  }
+  // Route headers are recorded into the routes manifest by `next build` and loaded
+  // from next.config.js by `next dev`; keep them phase-independent.
+  nextConfig.headers = async () => [{ source: '/:path*', headers: securityHeaders }]
   return withBundleAnalyzer(nextConfig)
 }
 

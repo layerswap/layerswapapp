@@ -11,6 +11,7 @@ import * as sessionContext from '../faro-session-context.ts'
 import * as policy from '../faro-policy.ts'
 import * as sampling from '../faro-sampling.ts'
 import { resolveFaroDeployment } from '../faro-release.cjs'
+import { buildConfig } from './helpers/next-config.mjs'
 
 const require = createRequire(import.meta.url)
 const sdkRequire = createRequire(require.resolve('@grafana/faro-web-sdk'))
@@ -19,23 +20,6 @@ const { initializeFaro } = sdkRequire('@grafana/faro-core')
 const { mockConfig } = require(join(coreDir, 'testUtils/mockConfig.js'))
 const { MockTransport } = require(join(coreDir, 'testUtils/mockTransport.js'))
 const { createPageMeta } = require(join(dirname(require.resolve('@grafana/faro-web-sdk')), 'metas/page/meta.js'))
-const phases = require('next/constants')
-
-// Execute the real build configuration with synthetic environment values. Only
-// the outer wrappers are replaced.
-function buildConfig(env) {
-    const module = { exports: {} }
-    vm.runInNewContext(readFileSync(new URL('../../next.config.js', import.meta.url), 'utf8'), {
-        module, process: { env }, console,
-        require: name => {
-            if (name === '@next/bundle-analyzer') return () => config => config
-            if (name === '@posthog/nextjs-config') return { withPostHogConfig: config => config }
-            if (name === './lib/faro-release.cjs') return require('../faro-release.cjs')
-            return require(name)
-        },
-    })
-    return module.exports(phases.PHASE_PRODUCTION_BUILD)
-}
 
 // Capture the actual initFaro options, then exercise their page metadata using
 // the installed SDK below. This harness never contacts a collector.

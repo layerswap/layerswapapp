@@ -10,7 +10,8 @@
     "analyze": "cross-env ANALYZE=true next build",
     "lint": "next lint",
     "check:types": "tsc --noEmit",
-    "test:faro": "node --experimental-strip-types --test lib/__tests__/faro-*.test.mjs"
+    "test": "node --experimental-strip-types --test lib/__tests__/*.test.mjs",
+    "test:faro": "pnpm test"
   },
   "packageManager": "pnpm@10.20.0",
   "dependencies": {

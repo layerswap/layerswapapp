@@ -50,5 +50,5 @@ jobs:
           pnpm --filter @layerswap/wallet-bitcoin test
           pnpm --filter @layerswap/widget check:types
           pnpm --filter @layerswap/bridge check:types
-          pnpm --filter @layerswap/bridge test:faro
+          pnpm --filter @layerswap/bridge test
           pnpm --filter @layerswap/widget test
