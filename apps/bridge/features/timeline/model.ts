@@ -1,5 +1,54 @@
 import type { Page2Snapshot, SwapPhase } from '@layerswap/widget/internal';
 
+export const timelineGroups = [
+    {
+        id: 'wallet-transfer',
+        label: 'Wallet transfers',
+        description: 'Send funds across networks from a connected wallet.',
+    },
+    {
+        id: 'token-swap',
+        label: 'Token swaps',
+        description:
+            'Swap tokens on the same network, with approval, signing and publication.',
+    },
+    {
+        id: 'gasless',
+        label: 'Gasless transfers',
+        description:
+            'Authorize a transfer with the source network fee covered.',
+    },
+    {
+        id: 'manual-deposit',
+        label: 'Manual deposits',
+        description: 'Send to a deposit address from a network or exchange.',
+    },
+    {
+        id: 'hyperliquid',
+        label: 'Hyperliquid withdrawals',
+        description: 'Withdraw from a Hyperliquid balance.',
+    },
+    {
+        id: 'polymarket',
+        label: 'Polymarket withdrawals',
+        description: 'Withdraw from a Polymarket account.',
+    },
+    {
+        id: 'page-states',
+        label: 'Page states',
+        description:
+            'Loading and unavailable swaps, before a transfer flow is shown.',
+    },
+] as const;
+
+export const timelineSections = [
+    { id: 'main-flow', label: 'Main flow' },
+    { id: 'wallet-setup', label: 'Wallet setup' },
+    { id: 'quotes-and-balances', label: 'Quotes and balances' },
+    { id: 'errors-and-retries', label: 'Errors and retries' },
+    { id: 'outcomes', label: 'Transfer outcomes' },
+] as const;
+
 export type TimelineMilestone = {
     id: string;
     at: number;
@@ -11,7 +60,8 @@ export type TimelineMilestone = {
 export type TimelineScenario = {
     id: string;
     label: string;
-    group: string;
+    group: (typeof timelineGroups)[number]['id'];
+    section: (typeof timelineSections)[number]['id'];
     milestones: readonly [TimelineMilestone, ...TimelineMilestone[]];
 };
 export type TimelineSelection = {

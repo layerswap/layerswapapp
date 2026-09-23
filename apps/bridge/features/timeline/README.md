@@ -4,11 +4,25 @@ Open `/timeline` directly with `pnpm dev` or on a Vercel Preview/Development dep
 
 The `.mjs` ending matters: Next's default page extensions include `tsx`, `ts`, `jsx`, and `js`, so `.dev.tsx` would still be discovered in production. The `.dev.mjs` entry needs no custom loader, private Next APIs, environment overrides, or Webpack entry filtering. All UI remains in normal TypeScript files. The timeline uses Next.js's documented [per-page getLayout](https://nextjs.org/docs/15/pages/building-your-application/routing/pages-and-layouts#per-page-layouts) to render without the app's live providers and analytics. `_app.js` only applies the chosen layout, with the normal app layout as its default; it contains no timeline path check.
 
-The Scenario group picker shows only the selected group's scenarios. Changing groups selects its first scenario and resets time and quote disclosure; the Component/Modal mode stays selected. The shared `Select` supports keyboard navigation, and each scenario shows its number of steps.
+The Transfer flow picker organizes scenarios by the flow being exercised. Each flow keeps its setup, quotes, errors and outcomes together under section headings. Changing flows selects its first scenario and resets time and quote disclosure; the Component/Modal mode stays selected. The shared `Select` supports keyboard navigation, and each scenario shows its number of steps.
+
+| Flow | Cases |
+| --- | --- |
+| Wallet transfers | Successful transfer, refuel, wallet setup, quotes and balances, submission errors, failures, expiration and refunds |
+| Token swaps | Approval/sign/publication, existing allowance, native tokens, quote confirmation, retries and gasless fallback |
+| Gasless transfers | Gasless transfer, authorization failures, submission failures and standard fallback |
+| Manual deposits | Network/exchange instructions and changes to withdrawal limits |
+| Hyperliquid withdrawals | Hyperliquid prerequisites, withdrawal, rejection and provider errors |
+| Polymarket withdrawals | Polymarket prerequisites, withdrawal, rejection and provider errors |
+| Page states | Initial loading and swap not found |
+
+`model.ts` defines stable group/section IDs, labels and their display order. Every fixture declares a typed `group` and `section`; `scenarioGroups` in `fixtures.ts` builds the navigation, omitting empty sections. Declaration order only controls scenario order within each section. Add new cases to their transfer flow instead of creating top-level categories for errors, quotes or individual features.
 
 Timeline controls reuse `Select`, `Tabs`, and `SecondaryButton` from `@layerswap/widget/internal`, including the group picker, mode switch, scenario rows, milestones, and Previous/Next actions. Tailwind handles the page layout and selected states. The widget's `layerswap-styles` scope wraps the shared preview; the shared select supplies its own scoped portal.
 
 `model.ts` clamps time to each scenario's range, selects the latest preceding snapshot, and finds strictly earlier/later milestones. Every milestone supplies a complete `Page2Snapshot`; the selected second is passed separately as `now`. Scenario changes reset to the first milestone. Component/Modal mode switches preserve the selected scenario and time.
+
+The **Timeline / Side by side** layout switch is independent of Component/Modal mode. Timeline shows one snapshot with time controls. Side by side uses the available page width to show every milestone in chronological order in a horizontal, keyboard-focusable scroll region, with its step number, timestamp, label and description. Each preview uses its own milestone time and independent quote disclosure. Changing scenarios resets the strip and its disclosures; returning to Timeline restores its selected time and disclosure. Both layouts use the same read-only `Page2Preview`, and each widget frame has a unique ID so multiple previews can coexist.
 
 `Page2Snapshot` includes typed backend `DepositAction[]`, the created swap ID, and controlled signature-error state. Frontend workflow snapshots pass these to the same wallet progress and action presenters as production. Compact quote selection uses `shouldShowCompactSwapQuote`: the full quote is shown before creation, a self-paid same-network swap becomes compact after creation and during processing, and the compact panel disappears at completion. Gasless quotes remain expandable.
 
@@ -42,7 +56,7 @@ The tests enforce that neither Page 2 controllers nor snapshot adapters contain 
 
 ## Coverage
 
-| Fixture group | Rendering branches |
+| Coverage area | Rendering branches |
 | --- | --- |
 | Lifecycle and outcomes | Wallet success, input publishing/confirmations, output pending, completed before output, input/output failure, amount limits, expiration, refunds, deposit-flow wording |
 | Frontend swaps | Permit2 approval → signature → publication, existing allowance, native-token publication, pending/completed actions, per-step rejection and retry, refresh/server failures, quote confirmation, gasless-to-standard fallback, full/compact quotes through processing |

@@ -19,7 +19,12 @@ import {
     type Transaction,
     type DepositAction,
 } from '@layerswap/widget/internal';
-import type { TimelineMilestone, TimelineScenario } from './model';
+import {
+    timelineGroups,
+    timelineSections,
+    type TimelineMilestone,
+    type TimelineScenario,
+} from './model';
 
 // All dates, accounts, hashes and values are synthetic. Fixtures are imported only by /timeline.
 export const EPOCH = Date.parse('2025-01-01T12:00:00.000Z');
@@ -223,7 +228,8 @@ const milestoneWallet = (
 const standard: TimelineScenario = {
     id: 'wallet-success',
     label: 'Successful wallet transfer',
-    group: 'Lifecycle',
+    group: 'wallet-transfer',
+    section: 'main-flow',
     milestones: [
         ready,
         milestoneWallet(
@@ -283,7 +289,8 @@ const failures: TimelineScenario[] = [
     {
         id: 'input-failure',
         label: 'Input failure and retry',
-        group: 'Outcomes',
+        group: 'wallet-transfer',
+        section: 'outcomes',
         milestones: [
             ready,
             pendingInput,
@@ -323,7 +330,8 @@ const failures: TimelineScenario[] = [
     {
         id: 'output-failure',
         label: 'Output failure',
-        group: 'Outcomes',
+        group: 'wallet-transfer',
+        section: 'outcomes',
         milestones: [
             pendingInput,
             confirmed,
@@ -340,7 +348,8 @@ const failures: TimelineScenario[] = [
     ...(['below-minimum', 'above-maximum'] as const).map(
         (id): TimelineScenario => ({
             id,
-            group: 'Outcomes',
+            group: 'wallet-transfer',
+            section: 'outcomes',
             label:
                 id === 'below-minimum'
                     ? 'Deposit below minimum'
@@ -389,7 +398,8 @@ const failures: TimelineScenario[] = [
     {
         id: 'expired',
         label: 'Deposit window expires',
-        group: 'Outcomes',
+        group: 'wallet-transfer',
+        section: 'outcomes',
         milestones: [
             ready,
             m(
@@ -405,7 +415,8 @@ const failures: TimelineScenario[] = [
     {
         id: 'refund',
         label: 'Pending refund → refunded',
-        group: 'Outcomes',
+        group: 'wallet-transfer',
+        section: 'outcomes',
         milestones: [
             pendingInput,
             confirmed,
@@ -453,7 +464,8 @@ const walletScenarios: TimelineScenario[] = [
     {
         id: 'wallet-connect',
         label: 'Connect wallet and recover',
-        group: 'Wallet',
+        group: 'wallet-transfer',
+        section: 'wallet-setup',
         milestones: [
             milestoneWallet(
                 0,
@@ -491,7 +503,8 @@ const walletScenarios: TimelineScenario[] = [
     {
         id: 'wallet-network',
         label: 'Switch network and recover',
-        group: 'Wallet',
+        group: 'wallet-transfer',
+        section: 'wallet-setup',
         milestones: [
             milestoneWallet(
                 0,
@@ -527,7 +540,8 @@ const walletScenarios: TimelineScenario[] = [
         ([id, label, error]): TimelineScenario => ({
             id: `wallet-${id}`,
             label,
-            group: 'Wallet',
+            group: 'wallet-transfer',
+            section: 'errors-and-retries',
             milestones: [
                 ready,
                 milestoneWallet(
@@ -579,7 +593,8 @@ const walletScenarios: TimelineScenario[] = [
     {
         id: 'same-account',
         label: 'Same-account restriction',
-        group: 'Wallet',
+        group: 'wallet-transfer',
+        section: 'wallet-setup',
         milestones: [
             milestoneWallet(
                 0,
@@ -601,7 +616,8 @@ const walletScenarios: TimelineScenario[] = [
     {
         id: 'balance',
         label: 'Insufficient balance and refresh',
-        group: 'Wallet',
+        group: 'wallet-transfer',
+        section: 'quotes-and-balances',
         milestones: [
             m(
                 0,
@@ -637,7 +653,8 @@ const quoteScenarios: TimelineScenario[] = [
     {
         id: 'quote-loading',
         label: 'Quote loading and error',
-        group: 'Quotes and gas',
+        group: 'wallet-transfer',
+        section: 'quotes-and-balances',
         milestones: [
             m(
                 0,
@@ -684,7 +701,8 @@ const quoteScenarios: TimelineScenario[] = [
     {
         id: 'quote-update',
         label: 'Quote update during preparation',
-        group: 'Quotes and gas',
+        group: 'wallet-transfer',
+        section: 'quotes-and-balances',
         milestones: [
             ready,
             milestoneWallet(
@@ -721,7 +739,8 @@ const quoteScenarios: TimelineScenario[] = [
     {
         id: 'critical-quote',
         label: 'Critical receiving amount',
-        group: 'Quotes and gas',
+        group: 'wallet-transfer',
+        section: 'quotes-and-balances',
         milestones: [
             milestoneWallet(
                 0,
@@ -774,7 +793,8 @@ const quoteScenarios: TimelineScenario[] = [
     {
         id: 'insufficient-gas',
         label: 'Insufficient balance for gas',
-        group: 'Quotes and gas',
+        group: 'wallet-transfer',
+        section: 'quotes-and-balances',
         milestones: [
             m(
                 0,
@@ -843,7 +863,8 @@ const manualScenarios = [false, true].map(
         label: exchange
             ? 'Manual deposit from exchange'
             : 'Manual deposit from network',
-        group: 'Manual deposit',
+        group: 'manual-deposit',
+        section: 'main-flow',
         milestones: [
             m(
                 0,
@@ -906,7 +927,8 @@ const gaslessScenarios: TimelineScenario[] = [
     {
         id: 'gasless-success',
         label: 'Gasless signing and publishing',
-        group: 'Gasless',
+        group: 'gasless',
+        section: 'main-flow',
         milestones: [
             m(
                 0,
@@ -981,7 +1003,8 @@ const gaslessScenarios: TimelineScenario[] = [
         (status): TimelineScenario => ({
             id: `gasless-${status}`,
             label: `Gasless authorization ${status}`,
-            group: 'Gasless',
+            group: 'gasless',
+            section: 'errors-and-retries',
             milestones: [
                 m(
                     0,
@@ -1038,7 +1061,8 @@ const gaslessScenarios: TimelineScenario[] = [
     {
         id: 'gasless-unavailable',
         label: 'Gasless unavailable and fallback',
-        group: 'Gasless',
+        group: 'gasless',
+        section: 'errors-and-retries',
         milestones: [
             m(
                 0,
@@ -1072,7 +1096,8 @@ const gaslessScenarios: TimelineScenario[] = [
     {
         id: 'gasless-submit-failed',
         label: 'Gasless submission failure',
-        group: 'Gasless',
+        group: 'gasless',
+        section: 'errors-and-retries',
         milestones: [
             m(
                 0,
@@ -1149,7 +1174,8 @@ const specializedScenarios = (['Hyperliquid', 'Polymarket'] as const).flatMap(
         {
             id: `${provider}-withdraw`,
             label: `${provider} withdrawal`,
-            group: 'Specialized withdrawals',
+            group: provider === 'Hyperliquid' ? 'hyperliquid' : 'polymarket',
+            section: 'main-flow',
             milestones: [
                 m(
                     0,
@@ -1236,7 +1262,8 @@ const specializedScenarios = (['Hyperliquid', 'Polymarket'] as const).flatMap(
         {
             id: `${provider}-rejected`,
             label: `${provider} rejection`,
-            group: 'Specialized withdrawals',
+            group: provider === 'Hyperliquid' ? 'hyperliquid' : 'polymarket',
+            section: 'errors-and-retries',
             milestones: [
                 m(
                     0,
@@ -1296,7 +1323,9 @@ const specializedScenarios = (['Hyperliquid', 'Polymarket'] as const).flatMap(
             (error, i): TimelineScenario => ({
                 id: `${provider}-error-${i}`,
                 label: `${provider}: ${error.header.toLowerCase()}`,
-                group: 'Specialized withdrawals',
+                group:
+                    provider === 'Hyperliquid' ? 'hyperliquid' : 'polymarket',
+                section: 'errors-and-retries',
                 milestones: [
                     m(
                         0,
@@ -1328,7 +1357,8 @@ const supporting: TimelineScenario[] = [
     {
         id: 'initial-loading',
         label: 'Initial loading → ready',
-        group: 'Supporting states',
+        group: 'page-states',
+        section: 'main-flow',
         milestones: [
             m(0, 'loading', 'Loading swap', 'Swap data has not arrived.', {
                 kind: 'loading',
@@ -1339,7 +1369,8 @@ const supporting: TimelineScenario[] = [
     {
         id: 'not-found',
         label: 'Swap not found',
-        group: 'Supporting states',
+        group: 'page-states',
+        section: 'main-flow',
         milestones: [
             m(
                 0,
@@ -1360,7 +1391,8 @@ const supporting: TimelineScenario[] = [
     {
         id: 'swap-error',
         label: 'Swap creation error',
-        group: 'Supporting states',
+        group: 'wallet-transfer',
+        section: 'errors-and-retries',
         milestones: [
             ready,
             milestoneWallet(
@@ -1375,7 +1407,8 @@ const supporting: TimelineScenario[] = [
     {
         id: 'rpc',
         label: 'RPC warning and update',
-        group: 'Supporting states',
+        group: 'wallet-transfer',
+        section: 'wallet-setup',
         milestones: [
             m(
                 0,
@@ -1605,8 +1638,9 @@ const gaslessFrontendActions = workflow([['sign', 'action_required']]).map(
 const frontendScenarios: TimelineScenario[] = [
     {
         id: 'frontend-permit2',
-        label: 'Frontend swap: approve, sign, confirm',
-        group: 'Frontend swaps',
+        label: 'Approve, sign and confirm',
+        group: 'token-swap',
+        section: 'main-flow',
         milestones: [
             frontendMilestone(
                 0,
@@ -1727,8 +1761,9 @@ const frontendScenarios: TimelineScenario[] = [
     },
     {
         id: 'frontend-approved',
-        label: 'Frontend swap: token already approved',
-        group: 'Frontend swaps',
+        label: 'Token already approved',
+        group: 'token-swap',
+        section: 'main-flow',
         milestones: [
             frontendMilestone(
                 0,
@@ -1779,8 +1814,9 @@ const frontendScenarios: TimelineScenario[] = [
     },
     {
         id: 'frontend-native',
-        label: 'Frontend swap: native token',
-        group: 'Frontend swaps',
+        label: 'Native token swap',
+        group: 'token-swap',
+        section: 'main-flow',
         milestones: [
             frontendMilestone(
                 0,
@@ -1833,8 +1869,9 @@ const frontendScenarios: TimelineScenario[] = [
                       : 'Confirm in your wallet';
             return {
                 id: `frontend-${step}-retry`,
-                label: `Frontend ${label}: rejection and retry`,
-                group: 'Frontend swaps',
+                label: `${label[0].toUpperCase()}${label.slice(1)} rejected and retried`,
+                group: 'token-swap',
+                section: 'errors-and-retries',
                 milestones: [
                     frontendMilestone(
                         0,
@@ -1886,8 +1923,9 @@ const frontendScenarios: TimelineScenario[] = [
     ),
     {
         id: 'frontend-errors',
-        label: 'Frontend workflow failures and refresh',
-        group: 'Frontend swaps',
+        label: 'Workflow failures and refresh',
+        group: 'token-swap',
+        section: 'errors-and-retries',
         milestones: [
             frontendMilestone(
                 0,
@@ -1950,8 +1988,9 @@ const frontendScenarios: TimelineScenario[] = [
     },
     {
         id: 'frontend-critical',
-        label: 'Frontend quote update and confirmation',
-        group: 'Frontend swaps',
+        label: 'Quote update and confirmation',
+        group: 'token-swap',
+        section: 'quotes-and-balances',
         milestones: [
             frontendMilestone(
                 0,
@@ -2009,8 +2048,9 @@ const frontendScenarios: TimelineScenario[] = [
     },
     {
         id: 'frontend-gasless',
-        label: 'Frontend gasless and standard fallback',
-        group: 'Frontend swaps',
+        label: 'Gasless swap and standard fallback',
+        group: 'token-swap',
+        section: 'errors-and-retries',
         milestones: [
             frontendMilestone(
                 0,
@@ -2099,7 +2139,8 @@ export const scenarios: readonly TimelineScenario[] = [
     {
         id: 'refuel',
         label: 'Transfer with refuel',
-        group: 'Refuel',
+        group: 'wallet-transfer',
+        section: 'main-flow',
         milestones: [
             m(
                 0,
@@ -2169,7 +2210,8 @@ export const scenarios: readonly TimelineScenario[] = [
             label: isBelowMin
                 ? 'Minimum amount adjusted'
                 : 'Maximum amount adjusted',
-            group: 'Quotes and gas',
+            group: 'manual-deposit',
+            section: 'quotes-and-balances',
             milestones: [
                 m(
                     0,
@@ -2219,3 +2261,22 @@ export const scenarios: readonly TimelineScenario[] = [
     ...specializedScenarios,
     ...supporting,
 ];
+
+// Navigation order is explicit; fixture declaration order only orders cases within a section.
+export const scenarioGroups = timelineGroups.map((group) => {
+    const sections = timelineSections
+        .map((section) => ({
+            ...section,
+            scenarios: scenarios.filter(
+                (scenario) =>
+                    scenario.group === group.id &&
+                    scenario.section === section.id,
+            ),
+        }))
+        .filter((section) => section.scenarios.length > 0);
+    return {
+        ...group,
+        sections,
+        scenarios: sections.flatMap((section) => section.scenarios),
+    };
+});

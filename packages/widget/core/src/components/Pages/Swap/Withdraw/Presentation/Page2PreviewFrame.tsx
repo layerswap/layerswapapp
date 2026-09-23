@@ -17,7 +17,7 @@ import {
     WidgetBackButton,
     WidgetMenuButton,
 } from '@/components/Widget/WidgetNavigationView';
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 
 export type Page2PreviewMode = 'component' | 'modal';
 export function Page2PreviewFrame({
@@ -31,9 +31,10 @@ export function Page2PreviewFrame({
     wallets?: WalletsIconsProps['wallets'];
     confirmation?: ReactNode;
 }) {
+    const previewId = useId();
     return (
         <WidgetFrame
-            id="page2-preview-widget"
+            id={`page2-preview-widget-${previewId}`}
             enableWideVersion
             header={
                 <WidgetHeaderView
@@ -63,7 +64,7 @@ export function Page2PreviewFrame({
                                 data-vaul-drawer-direction="bottom"
                                 data-vaul-snap-points="false"
                                 data-vaul-custom-container="true"
-                                style={{ maxHeight: '100%', touchAction: 'pan-y' }}
+                                style={{ maxHeight: '100%', touchAction: 'auto' }}
                             >
                                 <DrawerHeadingGroup
                                     handleMobileOnly
@@ -74,7 +75,7 @@ export function Page2PreviewFrame({
                                     }
                                     close={<DrawerCloseButton />}
                                     handle={
-                                        <DrawerHandleView className="sm:hidden w-12! bg-primary-text-tertiary!" />
+                                        <DrawerHandleView className="sm:hidden w-12! bg-primary-text-tertiary!" style={{ touchAction: 'inherit' }} />
                                     }
                                 />
                                 <DrawerBodyView
@@ -105,14 +106,14 @@ export function Page2PreviewFrame({
                                 data-vaul-drawer-direction="bottom"
                                 data-vaul-snap-points="false"
                                 data-vaul-custom-container="true"
-                                style={{ maxHeight: '100%', touchAction: 'pan-y' }}
+                                style={{ maxHeight: '100%', touchAction: 'auto' }}
                             >
                                 <DrawerHeadingGroup
                                     handleMobileOnly
                                     title={<DrawerTitleView />}
                                     close={<DrawerCloseButton />}
                                     handle={
-                                        <DrawerHandleView className="sm:hidden w-12! bg-primary-text-tertiary!" />
+                                        <DrawerHandleView className="sm:hidden w-12! bg-primary-text-tertiary!" style={{ touchAction: 'inherit' }} />
                                     }
                                 />
                                 <DrawerBodyView

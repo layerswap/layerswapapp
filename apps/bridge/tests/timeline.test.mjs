@@ -75,7 +75,7 @@ globalThis.setInterval = reject('setInterval');
 const result = await build({
     stdin: {
         contents: `export { Page2Preview, resolveSwapPhase, SwapPhase } from '@layerswap/widget/internal';
-        export { scenarios, EPOCH } from './features/timeline/fixtures';
+        export { scenarios, scenarioGroups, EPOCH } from './features/timeline/fixtures';
         export { selectTime, selectScenario } from './features/timeline/model';
         export { default as TimelinePage } from './pages/timeline.dev.mjs';
         export { default as App } from './pages/_app';
@@ -144,6 +144,7 @@ const {
     resolveSwapPhase,
     SwapPhase,
     scenarios,
+    scenarioGroups,
     EPOCH,
     selectTime,
     selectScenario,
@@ -199,6 +200,29 @@ const phase = (s) =>
         ].includes(s.gaslessAuthorization?.status),
         isDepositFlow: s.isDepositFlow,
     });
+
+test('flow navigation includes every scenario once and keeps related cases together', () => {
+    const visible = scenarioGroups.flatMap(group => group.scenarios);
+    assert.equal(visible.length, scenarios.length);
+    assert.equal(new Set(visible.map(scenario => scenario.id)).size, scenarios.length);
+    assert.deepEqual([...visible].map(scenario => scenario.id).sort(), scenarios.map(scenario => scenario.id).sort());
+    assert.equal(scenarioGroups[0].scenarios[0].id, 'wallet-success');
+    for (const group of scenarioGroups) {
+        assert.ok(group.scenarios.length > 0, group.id);
+        for (const section of group.sections) {
+            assert.ok(section.scenarios.length > 0, `${group.id}/${section.id}`);
+        }
+    }
+    const groupIds = id => scenarioGroups.find(group => group.id === id).scenarios.map(scenario => scenario.id);
+    assert.deepEqual(groupIds('manual-deposit'), ['manual-network', 'manual-exchange', 'minimum-update', 'maximum-update']);
+    assert.deepEqual(groupIds('page-states'), ['initial-loading', 'not-found']);
+    for (const provider of ['Hyperliquid', 'Polymarket']) {
+        assert.deepEqual(groupIds(provider.toLowerCase()), scenarios.filter(scenario => scenario.id.startsWith(`${provider}-`)).map(scenario => scenario.id));
+    }
+    for (const id of ['wallet-success', 'refuel', 'rpc', 'swap-error', 'input-failure', 'refund']) {
+        assert.ok(groupIds('wallet-transfer').includes(id), id);
+    }
+});
 
 test('chronological, identified fixtures select exact, intermediate and boundary snapshots', () => {
     assert.equal(scenarios[0].id, 'wallet-success');
@@ -401,9 +425,9 @@ test('limit changes show a separate confirmation drawer over loading instruction
                         confirmation.hasAttribute('data-vaul-drawer'),
                         context,
                     );
-                    assert.equal(
+                    assert.match(
                         confirmation.parentElement.id,
-                        'page2-preview-widget',
+                        /^page2-preview-widget-/,
                         context,
                     );
                     assert.equal(
@@ -569,6 +593,85 @@ const chooseMode = async (container, mode) => {
     assert.ok(tab, mode);
     await act(async () => tab.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
 };
+const chooseLayout = async (container, label) => {
+    const button = [...container.querySelectorAll('[aria-label="Preview layout"] button')].find(button => button.textContent === label);
+    assert.ok(button, label);
+    await act(async () => button.click());
+    assert.equal(button.getAttribute('aria-pressed'), 'true');
+};
+
+test('side-by-side shows ordered snapshots at their own times and restores the timeline position', async () => {
+    const container = document.getElementById('root');
+    const root = createRoot(container);
+    const scenario = scenarios[0];
+    try {
+        await act(async () => root.render(React.createElement(TimelinePage)));
+        const next = [...container.querySelectorAll('button')].find(button => button.textContent === 'Next →');
+        await act(async () => next.click());
+        const timelineTime = container.querySelector('#timeline-time').value;
+        const timelineTitle = container.querySelector('#scenario-title').textContent;
+        await chooseLayout(container, 'Side by side');
+        assert.equal(container.querySelector('[aria-label="Timeline controls"]'), null);
+        const strip = container.querySelector('[aria-label="Scenario steps"]');
+        assert.equal(strip.tabIndex, 0, 'the horizontal strip is keyboard-focusable');
+        const cards = [...strip.querySelectorAll('[data-milestone-id]')];
+        assert.deepEqual(cards.map(card => card.dataset.milestoneId), scenario.milestones.map(milestone => milestone.id));
+        for (const [index, card] of cards.entries()) {
+            const milestone = scenario.milestones[index];
+            assert.equal(card.querySelector('h3').textContent, milestone.label);
+            assert.ok(card.querySelector('header').textContent.includes(`Step ${index + 1}`));
+            assert.ok(card.querySelector('[data-page2-preview]'), milestone.id);
+        }
+        assert.match(strip.querySelector('[data-milestone-id="confirmations"]').textContent, /Elapsed time:00:00/);
+        assert.match(strip.querySelector('[data-milestone-id="more-confirmations"]').textContent, /Elapsed time:00:15/);
+        assert.match(strip.querySelector('[data-milestone-id="output-pending"]').textContent, /Elapsed time:00:30/);
+        assert.match(strip.querySelector('[data-milestone-id="completed"]').textContent, /Transfer complete/);
+        await chooseMode(container, 'modal');
+        assert.equal(container.querySelectorAll('[data-page2-modal]').length, scenario.milestones.length);
+        const frameIds = [...container.querySelectorAll('[data-page2-modal]')].map(modal => modal.parentElement.id);
+        assert.equal(new Set(frameIds).size, frameIds.length, 'each preview has its own widget and portal root');
+        await chooseLayout(container, 'Timeline');
+        assert.equal(container.querySelectorAll('[data-page2-preview]').length, 1);
+        assert.equal(container.querySelector('#timeline-time').value, timelineTime);
+        assert.equal(container.querySelector('#scenario-title').textContent, timelineTitle);
+        assert.ok(container.querySelector('[data-page2-modal]'));
+        assert.deepEqual(forbidden, []);
+    } finally {
+        await act(async () => root.unmount());
+    }
+});
+
+test('side-by-side quote disclosures are independent and reset when the scenario changes', async () => {
+    const container = document.getElementById('root');
+    const root = createRoot(container);
+    const expanded = card => card.querySelector('[data-value="quote"] [aria-expanded]')?.getAttribute('aria-expanded') === 'true';
+    try {
+        await act(async () => root.render(React.createElement(TimelinePage)));
+        await act(async () => container.querySelector('[aria-label="See details"]').click());
+        await chooseLayout(container, 'Side by side');
+        const cards = [...container.querySelectorAll('[data-milestone-id]')];
+        assert.equal(expanded(cards[0]), false, 'sequence starts from the fixture, independently of timeline disclosure');
+        await act(async () => cards[0].querySelector('[aria-label="See details"]').click());
+        assert.equal(expanded(cards[0]), true);
+        assert.equal(expanded(cards[1]), false);
+        await chooseMode(container, 'modal');
+        assert.equal(expanded(container.querySelector('[data-milestone-id]')), true);
+        await chooseLayout(container, 'Timeline');
+        assert.equal(expanded(container), true, 'timeline disclosure survives a layout switch');
+        await chooseLayout(container, 'Side by side');
+        await chooseGroup(container, 'Page states');
+        assert.deepEqual([...container.querySelectorAll('[data-milestone-id]')].map(card => card.dataset.milestoneId), ['loading', 'ready']);
+        const notFound = container.querySelector('aside button[aria-label="Swap not found"]');
+        await act(async () => notFound.click());
+        assert.deepEqual([...container.querySelectorAll('[data-milestone-id]')].map(card => card.dataset.milestoneId), ['loading', 'not-found']);
+        await chooseGroup(container, 'Wallet transfers');
+        assert.equal(expanded(container.querySelector('[data-milestone-id]')), false);
+        assert.equal(container.querySelectorAll('[data-page2-modal]').length, scenarios[0].milestones.length);
+        assert.deepEqual(forbidden, []);
+    } finally {
+        await act(async () => root.unmount());
+    }
+});
 
 test('the viewer hydrates shared selection controls without replacing server markup', async () => {
     const container = document.getElementById('root');
@@ -584,9 +687,9 @@ test('the viewer hydrates shared selection controls without replacing server mar
             });
         });
         assert.equal(container.querySelector('#timeline-group'), serverPicker);
-        await chooseGroup(container, 'Frontend swaps');
+        await chooseGroup(container, 'Token swaps');
         await chooseMode(container, 'modal');
-        assert.equal(container.querySelector('#scenario-title').textContent, 'Frontend swap: approve, sign, confirm');
+        assert.equal(container.querySelector('#scenario-title').textContent, 'Approve, sign and confirm');
         assert.ok(container.querySelector('[data-page2-modal]'));
         assert.deepEqual(errors, []);
         assert.deepEqual(forbidden, []);
@@ -605,8 +708,8 @@ test('viewer filters scenario groups, resets selections and preserves strictly e
         );
     const groupPicker = container.querySelector('#timeline-group');
     const visibleScenarios = () => [...container.querySelectorAll('aside button[aria-pressed]')].map(b => b.getAttribute('aria-label'));
-    assert.equal(groupPicker.textContent, 'Lifecycle');
-    assert.deepEqual(visibleScenarios(), scenarios.filter(s => s.group === 'Lifecycle').map(s => s.label));
+    assert.equal(groupPicker.textContent, 'Wallet transfers');
+    assert.deepEqual(visibleScenarios(), scenarioGroups[0].scenarios.map(s => s.label));
     assert.equal(button('← Previous').disabled, true);
     await act(async () => button('Next →').click());
     assert.equal(container.querySelector('input[type="range"]').value, '5');
@@ -622,7 +725,6 @@ test('viewer filters scenario groups, resets selections and preserves strictly e
     assert.equal(container.querySelector('[role="dialog"]'), null);
     await act(async () => button('← Previous').click());
     assert.equal(container.querySelector('input[type="range"]').value, '0');
-    await chooseGroup(container, 'Outcomes');
     const failure = [...container.querySelectorAll('aside button[aria-pressed]')].find((b) =>
         b.textContent.startsWith('Output failure'),
     );
@@ -636,9 +738,14 @@ test('viewer filters scenario groups, resets selections and preserves strictly e
         true,
     );
     await chooseMode(container, 'modal');
-    for (const group of [...new Set(scenarios.map(s => s.group))]) {
-        await chooseGroup(container, group);
-        const groupScenarios = scenarios.filter(s => s.group === group);
+    await chooseGroup(container, 'Wallet transfers');
+    assert.equal(container.querySelector('#scenario-title').textContent, 'Output failure');
+    await chooseGroup(container, 'Token swaps');
+    for (const group of scenarioGroups) {
+        await chooseGroup(container, group.label);
+        const groupScenarios = group.scenarios;
+        assert.deepEqual([...container.querySelectorAll('#timeline-scenarios h3')].map(heading => heading.textContent), group.sections.map(section => section.label));
+        assert.equal(container.querySelector('#timeline-group-description').textContent, group.description);
         assert.deepEqual(visibleScenarios(), groupScenarios.map(s => s.label));
         assert.equal(container.querySelector('#scenario-title').textContent, groupScenarios[0].label);
         assert.equal(container.querySelector('input[type="range"]').value, String(groupScenarios[0].milestones[0].at));
@@ -665,7 +772,8 @@ test('quote disclosures work in both modes and reset on timeline navigation with
         await act(async () => (button.querySelector('span') ?? button).click());
     };
     const choose = async (label) => {
-        const group = scenarios.find(s => s.label === label).group;
+        const groupId = scenarios.find(s => s.label === label).group;
+        const group = scenarioGroups.find(group => group.id === groupId).label;
         if (container.querySelector('#timeline-group').textContent !== group) await chooseGroup(container, group);
         const button = [...container.querySelectorAll('aside button[aria-pressed]')].find(
             (b) => b.getAttribute('aria-label') === label,
@@ -1020,7 +1128,7 @@ test('frontend wallet progress preserves completed steps, pending indicators and
 });
 
 test('frontend snapshots keep automatic wallet execution busy until processing or a real interruption', () => {
-    for (const scenario of scenarios.filter(s => s.group === 'Frontend swaps')) {
+    for (const scenario of scenarios.filter(s => s.group === 'token-swap')) {
         for (const milestone of scenario.milestones) {
             const s = milestone.snapshot;
             const wallet = s.wallet;
@@ -1048,7 +1156,7 @@ test('frontend quotes match the real full-to-compact lifecycle and sign-only/nat
     assert.ok(fixtureDOM('frontend-permit2', 'ready').querySelector('[aria-label="See details"]'));
     for (const milestone of ['approving', 'signing', 'input', 'finalizing']) {
         const view = fixtureDOM('frontend-permit2', milestone);
-        assert.match(view.textContent, /To address/);
+        assert.match(view.textContent, /Send to/);
         assert.ok(view.querySelector('[data-recipient-address]'));
         assert.equal(view.querySelector('[aria-label="See details"]'), null);
         assert.equal(view.querySelector('[data-attr="edit-slippage"]'), null);
