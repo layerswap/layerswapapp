@@ -21,12 +21,27 @@ const resetJourney = (flow: Flow) => {
     flow.completed = false
 }
 
+type Registration = { handler?: WidgetTelemetryHandler; active: boolean }
+const isLive = (owner?: Registration): owner is Registration & { handler: WidgetTelemetryHandler } => !!owner?.active && !!owner.handler
+
+/** Removes an entry and returns the new top; a no-op for an entry that is already gone. */
+function removeEntry<T>(stack: T[], entry: T): T | undefined {
+    const index = stack.indexOf(entry)
+    if (index !== -1) stack.splice(index, 1)
+    return stack[stack.length - 1]
+}
+
 /** One live widget is enforced by LayerswapProvider. Kept factory-based for isolation tests. */
 export function createWidgetTelemetry(clock = now, wallClock = Date.now) {
-    let registration: { handler: WidgetTelemetryHandler; active: boolean } | undefined
+    // Stacks, like logStore.registerLogger: providers and forms can overlap during
+    // replacement, StrictMode replay or a second widget instance, and a cleanup
+    // must restore the previous owner instead of clearing a newer one.
+    const registrations: Registration[] = []
+    const mounts: { flow: Flow }[] = []
+    let registration: Registration | undefined
     let flow: Flow | undefined
-    const emit = <Name extends keyof WidgetTelemetryData>(owner: typeof registration, name: Name, attributes: WidgetTelemetryData[Name]) => {
-        if (!owner?.active) return
+    const emit = <Name extends keyof WidgetTelemetryData>(owner: Registration | undefined, name: Name, attributes: WidgetTelemetryData[Name]) => {
+        if (!isLive(owner)) return
         // The keyed arguments preserve the name/payload relationship across the
         // shared envelope; metadata cannot be overwritten by extra attributes.
         try { owner.handler({ name, attributes: { ...attributes, schema_version: 1, event_id: id() } } as WidgetTelemetryEvent) }
@@ -41,18 +56,24 @@ export function createWidgetTelemetry(clock = now, wallClock = Date.now) {
     } : {}
     const progress = (step: WidgetFlowStep, extra: Attributes = {}) => emit(registration, 'widget_flow', { ...snapshot(), ...extra, step })
     const open = () => {
-        if (!flow || flow.opened || !registration?.active) return
+        if (!flow || flow.opened || !isLive(registration)) return
         flow.opened = true
         progress('form_viewed')
     }
     return {
+        /** A registration without a handler still owns the slot: it silences the ones below it. */
         register(handler?: WidgetTelemetryHandler) {
             if (registration) registration.active = false
-            const owner = handler ? { handler, active: true } : undefined
+            const owner: Registration = { handler, active: true }
+            registrations.push(owner)
             registration = owner
             return () => {
-                if (owner) owner.active = false
-                if (registration === owner) registration = undefined
+                const wasActive = registration === owner
+                owner.active = false
+                const top = removeEntry(registrations, owner)
+                if (!wasActive) return
+                registration = top
+                if (top) top.active = true
             }
         },
         createFlow(attributes: Attributes): Flow {
@@ -61,10 +82,12 @@ export function createWidgetTelemetry(clock = now, wallClock = Date.now) {
                 attempts: 0, observations: new Map() }
         },
         mount(current: Flow) {
+            const entry = { flow: current }
+            mounts.push(entry)
             flow = current
             // Parent registration and StrictMode layout-effect replay finish before this runs.
             queueMicrotask(() => { if (flow === current) open() })
-            return () => { if (flow === current) flow = undefined }
+            return () => { flow = removeEntry(mounts, entry)?.flow }
         },
         update(current: Flow, attributes: Attributes) { current.attributes = { ...attributes } },
         interaction(action: string, trigger: string, inForm: boolean, attributes: Attributes = {}) {
@@ -99,7 +122,7 @@ export function createWidgetTelemetry(clock = now, wallClock = Date.now) {
             // callback. Four slots stay with the form across StrictMode replay;
             // the swap id scopes them because the flow outlives one swap.
             const observationKey = lifecycleObservationKey(event)
-            if (observationKey && registration?.active) {
+            if (observationKey && isLive(registration)) {
                 const fingerprint = JSON.stringify([event.swapId ?? flow.swapId, lifecycleObservationFingerprint(event)])
                 if (flow.observations.get(observationKey) === fingerprint) return
                 flow.observations.set(observationKey, fingerprint)
@@ -128,7 +151,7 @@ export function createWidgetTelemetry(clock = now, wallClock = Date.now) {
         },
         beginOperation(operation: WidgetOperation, attributes: Attributes = {}) {
             const owner = registration
-            if (!owner?.active) return (_outcome: WidgetOperationOutcome, _extra?: Attributes) => {}
+            if (!isLive(owner)) return (_outcome: WidgetOperationOutcome, _extra?: Attributes) => {}
             const context = { ...snapshot(), ...attributes, operation, operation_id: id() }
             const started = clock()
             let finished = false
