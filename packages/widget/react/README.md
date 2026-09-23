@@ -148,12 +148,13 @@ widget's behavior, not where it comes from.
 | `onReady` | `() => void` | Fires once the widget mounts. |
 | `onError` | `(err) => void` | Fires on load/render failure; receives a `ManifestError` for manifest issues. |
 
-`callbacks.onSwapStatusChange` reports changes to `(swapId, type, phase)`;
-late address data does not repeat the same notification. `type` is the API
-status and `phase` is the UI state, which can become `completed` or `failed`
-before the API status catches up. A later API status change is a separate event.
-Starting another wallet attempt permits a new notification even if it reaches
-the same status and phase as the previous attempt.
+`callbacks.onSwapStatusChange` reports each API status transition once per
+`(swapId, type)` per attempt (`ls_transfer_pending`, `completed`, `failed`,
+`expired`). Address and route fields are a snapshot and never repeat a
+notification. UI phase transitions, including completion before the API
+confirms and input-transaction failure, are delivered by `onSwapLifecycle`
+(`swap_completed`, `swap_failed`, `swap_expired`). Starting another wallet
+attempt permits a new notification for the same status.
 
 `callbacks.onSwapLifecycle` delivers phase and transaction observations once
 per meaningful transition. Confirmation counts, context enrichment, and React

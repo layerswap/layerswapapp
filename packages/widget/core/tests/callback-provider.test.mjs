@@ -348,7 +348,7 @@ test('StrictMode and confirmation updates deduplicate both telemetry and public 
   assert.equal(forwarded.length, 4)
 })
 
-test('status callbacks deduplicate late context but retain API and UI phase transitions per swap', async () => {
+test('status callbacks deliver one notification per API status; context is a snapshot', async () => {
   const events = []
   function Status({ event }) {
     const { onSwapStatusChange } = useCallbacks()
@@ -359,30 +359,29 @@ test('status callbacks deduplicate late context but retain API and UI phase tran
     createElement(CallbackProvider, { callbacks: { onSwapStatusChange: e => events.push(e) } },
       createElement(Status, { event })),
   )))
-  const pending = { swapId: 'swap-a', type: 'ls_transfer_pending', phase: 'output_pending' }
+  const pending = { swapId: 'swap-a', type: 'ls_transfer_pending' }
   await render(pending)
   await render({ ...pending, fromAddress: 'arrived-later' })
-  await render({ ...pending, phase: 'completed' })
-  await render({ ...pending, phase: 'completed', fromAddress: 'enriched' })
-  await render({ ...pending, type: 'completed', phase: 'completed' })
-  await render({ ...pending, swapId: 'swap-b', type: 'completed', phase: 'completed' })
-  await render({ ...pending, type: 'completed', phase: 'completed', fromAddress: 'late-swap-a' })
-  assert.deepEqual(events.map(({ swapId, type, phase }) => [swapId, type, phase]), [
-    ['swap-a', 'ls_transfer_pending', 'output_pending'],
-    ['swap-a', 'ls_transfer_pending', 'completed'],
-    ['swap-a', 'completed', 'completed'],
-    ['swap-b', 'completed', 'completed'],
+  await render({ ...pending, fromAddress: 'enriched' })
+  await render({ ...pending, type: 'completed' })
+  await render({ ...pending, swapId: 'swap-b', type: 'completed' })
+  await render({ ...pending, type: 'completed', fromAddress: 'late-swap-a' })
+  assert.deepEqual(events.map(({ swapId, type }) => [swapId, type]), [
+    ['swap-a', 'ls_transfer_pending'],
+    ['swap-a', 'completed'],
+    ['swap-b', 'completed'],
   ])
+  assert.ok(events.every(event => !('phase' in event)), 'UI phase is reported on onSwapLifecycle only')
 })
 
-test('a retried wallet failure reports status again even when the API status and UI phase are unchanged', async () => {
+test('a retried wallet failure reports status again even when the API status is unchanged', async () => {
   const events = []
   let callbacks
   function Capture() { callbacks = useCallbacks(); return null }
   await act(() => root.render(createElement(CallbackProvider, {
     callbacks: { onSwapStatusChange: e => events.push(e) },
   }, createElement(Capture))))
-  const failed = { swapId: 'swap-a', type: 'user_transfer_pending', phase: 'failed' }
+  const failed = { swapId: 'swap-a', type: 'failed' }
   const other = { ...failed, swapId: 'swap-b' }
   callbacks.onSwapStatusChange(failed)
   callbacks.onSwapStatusChange(other)
@@ -428,7 +427,7 @@ test('lifecycle observations preserve recovery, attempts, new transactions and s
   emit('transfer_blocked', { reasonCode: 'rpc_unhealthy' })
   emit('transfer_blocked', { reasonCode: 'rpc_unhealthy' })
   assert.equal(events.length, 14, 'the block hook already deduplicates reason transitions')
-  const completed = { type: 'completed', phase: 'completed', swapId: 'swap-a' }
+  const completed = { type: 'completed', swapId: 'swap-a' }
   callbacks.onSwapStatusChange(completed)
   callbacks.onSwapStatusChange(completed)
   assert.equal(events.length, 15)

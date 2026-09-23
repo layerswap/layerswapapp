@@ -20,6 +20,19 @@ function evictLeastRecent(map: Map<unknown, unknown>) {
     while (map.size > MAX_TRACKED_SWAPS) map.delete(map.keys().next().value)
 }
 
+/** The identity of a status notification: one delivery per (swapId, type) per attempt. */
+export type SwapStatusIdentity = Pick<SwapStatusEvent, 'swapId' | 'type'>
+
+/**
+ * Every non-identity field of a status notification. These are a snapshot at
+ * transition time and never trigger or repeat a delivery. Adding a field to
+ * SwapStatusEvent fails check:types until it is classified here.
+ */
+export const SWAP_STATUS_CONTEXT_FIELDS = Object.keys({
+    path: true, fromAddress: true, toAddress: true,
+    sourceNetwork: true, destinationNetwork: true, sourceToken: true, destinationToken: true,
+} satisfies Record<Exclude<keyof SwapStatusEvent, keyof SwapStatusIdentity>, true>) as readonly Exclude<keyof SwapStatusEvent, keyof SwapStatusIdentity>[]
+
 /** Host callbacks observe transitions, while user actions always remain repeatable. */
 export function createCallbackObservations() {
     const statuses = new Map<string, string>()
@@ -28,8 +41,8 @@ export function createCallbackObservations() {
 
     return {
         reset,
-        status(event: SwapStatusEvent): boolean {
-            const fingerprint = JSON.stringify([event.type, event.phase])
+        status(event: SwapStatusIdentity): boolean {
+            const fingerprint = event.type
             if (touch(statuses, event.swapId) === fingerprint) return false
             statuses.set(event.swapId, fingerprint)
             evictLeastRecent(statuses)

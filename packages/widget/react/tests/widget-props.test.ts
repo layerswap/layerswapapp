@@ -91,6 +91,8 @@ const typedCallbacks: WidgetCallbacks = {
     const id: string = event.swapId;
     // @ts-expect-error API status events do not include lifecycle steps.
     event.step;
+    // @ts-expect-error UI phase is reported on onSwapLifecycle.
+    event.phase;
     void id;
   },
   onError(event) {

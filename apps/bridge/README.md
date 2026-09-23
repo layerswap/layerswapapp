@@ -53,9 +53,10 @@ Full page and request URLs retain their query strings for diagnosis; only
 credential values are redacted. PostHog remains enabled independently for
 product analytics.
 
-Swap callbacks also publish the dashboard-compatible `swap_initiated`,
-`swap_pending`, `swap_completed`, and `swap_failed` events and attach the
-active swap ID, route, tokens, and addresses to the Faro session.
+Swap callbacks (status and lifecycle) publish the dashboard-compatible
+`swap_initiated`, `swap_pending`, `swap_completed`, and `swap_failed` events
+once per swap and attach the active swap ID, route, tokens, and addresses to
+the Faro session.
 
 Every meaningful user or system transition is additionally published as one
 `swap_lifecycle` event stream. Filter it in Loki with:

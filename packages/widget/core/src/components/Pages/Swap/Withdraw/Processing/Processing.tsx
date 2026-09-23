@@ -25,6 +25,7 @@ import { useSettingsState } from '@/context/settings';
 import { useExtendedRoutesStore } from '@/stores/extendedRoutesStore';
 import { lifecycleContextFromSwap, PHASE_LIFECYCLE_EVENTS } from '@/lib/swapLifecycle';
 import { useLifecycleObservation } from '@/hooks/useLifecycleObservation';
+import { useSwapStatusNotification } from '@/hooks/useSwapStatusNotification';
 
 type Props = {
     swapBasicData: SwapBasicData;
@@ -35,7 +36,7 @@ type Props = {
 
 const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) => {
     const { boot, show, update } = useIntercom();
-    const { onSwapLifecycle, onSwapStatusChange } = useCallbacks()
+    const { onSwapLifecycle } = useCallbacks()
     const { isDepositFlow } = useDepositSettings()
     const setSwapTransaction = useSwapTransactionStore(state => state.setSwapTransaction);
     const storedWalletTransaction = useSwapTransactionStore(
@@ -201,44 +202,16 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
         reasonCode: swapDetails.fail_reason || failureReason,
     }, lifecycleContext)
 
-    useEffect(() => {
-        const status = swapDetails?.status
-        if (!status) return
-
-        if (
-            phase === SwapPhase.Completed ||
-            phase === SwapPhase.Failed ||
-            status === SwapStatus.Completed ||
-            status === SwapStatus.Failed ||
-            status === SwapStatus.Expired ||
-            status === SwapStatus.LsTransferPending
-        ) {
-            onSwapStatusChange({
-                type: status,
-                swapId: swapDetails?.id!,
-                path: 'Processing',
-                phase,
-                fromAddress: swapDetails.source_address ?? swapInputTransaction?.from,
-                toAddress: swapBasicData.destination_address,
-                sourceNetwork: source_network.name,
-                destinationNetwork: destination_network.name,
-                sourceToken: source_token.symbol,
-                destinationToken: destination_token.symbol,
-            })
-        }
-    }, [
-        destination_network.name,
-        destination_token.symbol,
-        onSwapStatusChange,
-        phase,
-        source_network.name,
-        source_token.symbol,
-        swapBasicData.destination_address,
-        swapDetails?.id,
-        swapDetails?.source_address,
-        swapDetails?.status,
-        swapInputTransaction?.from,
-    ])
+    // API status stream: identity is (swapId, status); everything else is a snapshot.
+    useSwapStatusNotification(swapDetails?.id, swapDetails?.status, {
+        path: 'Processing',
+        fromAddress: swapDetails.source_address ?? swapInputTransaction?.from,
+        toAddress: swapBasicData.destination_address,
+        sourceNetwork: source_network.name,
+        destinationNetwork: destination_network.name,
+        sourceToken: source_token.symbol,
+        destinationToken: destination_token.symbol,
+    })
 
     const truncatedRefuelAmount = refuel && truncateDecimals(refuel.amount, refuel.token?.precision)
 

@@ -77,12 +77,16 @@ export type CallbackError = ({ type: 'CallbackError' } & BaseErrorProps);
 
 export type ErrorEventType = WidgetError | APIError | BalanceError | GasFeeError | WalletWithdrawalError | GasMiscalculationError | AlertUIEvent | TransactionNotDetectedError | ChainError | TransferError | WalletError | CallbackError;
 
+/**
+ * One notification per (swapId, type) per attempt. `type` is the API status.
+ * All other fields are a snapshot at transition time and never trigger a
+ * notification. UI phase transitions, including completion before the API
+ * confirms and input-transaction failure, are reported on `onSwapLifecycle`.
+ */
 export type SwapStatusEvent = {
   type: SwapStatus;
   swapId: string;
   path?: string;
-  /** UI-resolved phase; it can reach completed before the API status catches up. */
-  phase?: string;
   fromAddress?: string;
   toAddress?: string;
   sourceNetwork?: string;

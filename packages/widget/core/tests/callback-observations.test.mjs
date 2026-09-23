@@ -25,6 +25,28 @@ test('recently observed swaps survive eviction while idle swaps are forgotten', 
     assert.equal(observations.lifecycle(lifecycle('swap-1')), true)
 })
 
+test('status identity is (swapId, type); every other field is a snapshot that never repeats a delivery', async () => {
+    const { SWAP_STATUS_CONTEXT_FIELDS } = await import('../dist/esm/lib/callbackObservations.js')
+    const event = {
+        swapId: 'swap-a', type: 'ls_transfer_pending', path: 'Processing', fromAddress: '0xa', toAddress: '0xb',
+        sourceNetwork: 'A', destinationNetwork: 'B', sourceToken: 'X', destinationToken: 'Y',
+    }
+    // The fixture is fully populated: every classified context field is present.
+    assert.deepEqual([...SWAP_STATUS_CONTEXT_FIELDS].sort(), Object.keys(event).filter(k => k !== 'swapId' && k !== 'type').sort())
+    const observations = createCallbackObservations()
+    assert.equal(observations.status(event), true)
+    for (const field of SWAP_STATUS_CONTEXT_FIELDS) {
+        assert.equal(observations.status({ ...event, [field]: `${event[field]}-changed` }), false, field)
+    }
+    assert.equal(observations.status({ ...event, phase: 'completed' }), false, 'an unknown field is not part of the identity')
+    assert.equal(observations.status({ ...event, type: 'completed' }), true, 'the API status is identity')
+    assert.equal(observations.status({ ...event, type: 'completed' }), false)
+    assert.equal(observations.status({ ...event, swapId: 'swap-b' }), true, 'the swap id is identity')
+    observations.lifecycle({ step: 'retry_requested', swapId: 'swap-a', stage: 'wallet_action', outcome: 'started', path: 'test' })
+    assert.equal(observations.status({ ...event, type: 'completed' }), true, 'a new attempt permits the same status again')
+    assert.equal(observations.status({ ...event, swapId: 'swap-b' }), false, 'the retry resets only its own swap')
+})
+
 test('the shared observation fingerprint ignores context and enrichment but tracks identity fields', async () => {
     const { lifecycleObservationFingerprint } = await import('@layerswap/widget-types')
     const base = {

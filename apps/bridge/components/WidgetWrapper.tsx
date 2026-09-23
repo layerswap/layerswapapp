@@ -1,6 +1,5 @@
 import { LayerswapProvider, LayerSwapSettings, ThemeData } from "@layerswap/widget"
 import {
-    SwapStatus,
     type ErrorEventType,
     type SwapLifecycleEvent,
     type SwapStatusEvent,
@@ -16,8 +15,14 @@ import { logError } from "./utils/logError"
 import { captureEvent } from "../lib/faro"
 import { useSwapLifecycleTelemetry } from "../hooks/useSwapLifecycleTelemetry"
 import FaroWalletContext from './FaroWalletContext'
-
-const MAX_EMITTED_SWAP_EVENTS = 256
+import {
+    createLegacySwapEventRecorder,
+    legacyAttributesFromLifecycle,
+    legacyAttributesFromStatus,
+    legacyEventFromLifecycle,
+    legacyEventFromStatus,
+    type LegacySwapEventName,
+} from "../lib/faro-legacy-swap-events"
 
 type LayerswapProviderComponentProps = ComponentProps<typeof LayerswapProvider>;
 type WidgetCallbacks = NonNullable<LayerswapProviderComponentProps['callbacks']>;
@@ -36,28 +41,6 @@ function getSwapAttributes(swapData: SwapCallbackData): Record<string, unknown> 
         destination_token: swap.destination_token?.symbol,
         status: swap.status,
     }
-}
-
-function getStatusAttributes(event: SwapStatusEvent): Record<string, unknown> {
-    return {
-        swap_id: event.swapId,
-        from_address: event.fromAddress,
-        to_address: event.toAddress,
-        source_network: event.sourceNetwork,
-        destination_network: event.destinationNetwork,
-        source_token: event.sourceToken,
-        destination_token: event.destinationToken,
-        status: event.type,
-        phase: event.phase,
-        path: event.path,
-    }
-}
-
-function getSwapStatusEventName(event: SwapStatusEvent): string | undefined {
-    if (event.phase === 'completed' || event.type === SwapStatus.Completed) return 'swap_completed'
-    if (event.phase === 'failed' || event.type === SwapStatus.Failed || event.type === SwapStatus.Expired) return 'swap_failed'
-    if (event.type === SwapStatus.LsTransferPending) return 'swap_pending'
-    return undefined
 }
 
 // Hoisted to module scope — all values are build-time constants, so a single
@@ -95,8 +78,11 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
     enableSwapCallbacks = false,
 }: WidgetWrapperProps<T>) => {
     const router = useRouter()
-    const emittedSwapEventsRef = useRef(new Set<string>())
     const { record: recordLifecycleEvent, setLegacyContext, openFlow, closeFlow } = useSwapLifecycleTelemetry()
+    // `setLegacyContext` is a method on the controller the telemetry hook holds in a ref, so its
+    // identity is stable and the recorder (with its name+swap dedupe memory) is created once.
+    const legacyRecorderRef = useRef<ReturnType<typeof createLegacySwapEventRecorder> | null>(null)
+    legacyRecorderRef.current ??= createLegacySwapEventRecorder({ captureEvent, setLegacyContext })
 
     const immutablePassportConfig = useMemo(() => {
         const clientId = process.env.NEXT_PUBLIC_IMMUTABLE_CLIENT_ID
@@ -191,32 +177,9 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
         hostOnTelemetry?.(event)
     }, [hostOnTelemetry, router.pathname])
 
-    const recordSwapEvent = useCallback((name: string, attributes: Record<string, unknown>) => {
-        const swapId = attributes.swap_id
-        const dedupeKey = `${name}:${String(swapId ?? '')}`
-        const emitted = emittedSwapEventsRef.current
-        if (emitted.has(dedupeKey)) {
-            // Re-insert so a swap that is still being replayed outlives idle ones
-            // (Set iteration order is insertion order).
-            emitted.delete(dedupeKey)
-            emitted.add(dedupeKey)
-            return
-        }
-
-        setLegacyContext(attributes)
-
-        const accepted = captureEvent(name, {
-            ...attributes,
-            page_url: typeof window !== 'undefined' ? window.location.href : undefined,
-        })
-        if (!accepted) return
-        emitted.add(dedupeKey)
-        // Bound the dedupe memory for very long multi-swap sessions by
-        // dropping the least recently observed key.
-        while (emitted.size > MAX_EMITTED_SWAP_EVENTS) {
-            emitted.delete(emitted.values().next().value as string)
-        }
-    }, [setLegacyContext])
+    const recordSwapEvent = useCallback((name: LegacySwapEventName | 'swap_initiated', attributes: Record<string, unknown>) => {
+        legacyRecorderRef.current!.record(name, attributes)
+    }, [])
 
     const handleSwapCreate = useCallback((swapData: SwapCallbackData) => {
         recordSwapEvent('swap_initiated', getSwapAttributes(swapData))
@@ -228,20 +191,26 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
         baseOnSwapComplete?.(swapData)
     }, [baseOnSwapComplete, recordSwapEvent])
 
+    // Legacy swap events are derived from both streams: the API status is the only feeder of
+    // swap_pending, while the lifecycle stream reports completion/failure the UI resolves before
+    // (or without) a terminal API status. The recorder dedupes per name and swap, so whichever
+    // feeder arrives first wins and cardinality stays one per name per swap.
     const handleSwapStatusChange = useCallback((event: SwapStatusEvent) => {
-        const attributes = getStatusAttributes(event)
-        const eventName = getSwapStatusEventName(event)
+        const attributes = legacyAttributesFromStatus(event)
+        const name = legacyEventFromStatus(event)
 
-        if (eventName) recordSwapEvent(eventName, attributes)
+        if (name) recordSwapEvent(name, attributes)
         else setLegacyContext(attributes)
 
         baseOnSwapStatusChange?.(event)
     }, [baseOnSwapStatusChange, recordSwapEvent, setLegacyContext])
 
     const handleSwapLifecycle = useCallback((event: SwapLifecycleEvent) => {
+        const name = legacyEventFromLifecycle(event)
+        if (name) recordSwapEvent(name, legacyAttributesFromLifecycle(event))
         recordLifecycleEvent(event)
         baseOnSwapLifecycle?.(event)
-    }, [baseOnSwapLifecycle, recordLifecycleEvent])
+    }, [baseOnSwapLifecycle, recordLifecycleEvent, recordSwapEvent])
 
     const handleSwapModalStateChange = useCallback((open: boolean) => {
         if (open) openFlow()
