@@ -11,8 +11,8 @@ const expectedRoutes = [
 
 const framingHeader = /^(x-frame-options|content-security-policy(-report-only)?)$/i
 
-async function routeHeaders(env, phase, options) {
-    const config = await buildConfig(env, phase, options)
+async function routeHeaders(env, phase) {
+    const config = await buildConfig(env, phase)
     assert.equal(typeof config.headers, 'function', `headers() must be defined under ${phase}`)
     // The config runs in a separate vm realm; re-materialise the plain data so strict
     // deep equality compares values rather than cross-realm prototypes.
@@ -36,9 +36,4 @@ test('route headers do not depend on the Next phase', async () => {
         [PHASE_DEVELOPMENT_SERVER, PHASE_PRODUCTION_BUILD, PHASE_PRODUCTION_SERVER].map(phase => routeHeaders({}, phase)),
     )
     for (const routes of perPhase) assert.deepEqual(routes, perPhase[0])
-})
-
-test('headers survive the PostHog wrapper chain', async () => {
-    const env = { POSTHOG_PROJECT_ID: 'p', POSTHOG_API_KEY: 'k', NEXT_PUBLIC_POSTHOG_HOST: 'https://h' }
-    assert.deepEqual(await routeHeaders(env, PHASE_PRODUCTION_BUILD, { posthog: 'wrap' }), expectedRoutes)
 })

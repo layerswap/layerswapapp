@@ -56,8 +56,7 @@ errors as exceptions; other build modes capture all console levels. Faro also
 captures uncaught errors and rejected promises, widget errors, sessions/views,
 CSP and performance events, web vitals, and browser traces.
 Full page and request URLs retain their query strings for diagnosis; only
-credential values are redacted. PostHog remains enabled independently for
-product analytics.
+credential values are redacted.
 
 Swap callbacks (status and lifecycle) publish the dashboard-compatible
 `swap_initiated`, `swap_pending`, `swap_completed`, and `swap_failed` events

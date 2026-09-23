@@ -13,8 +13,7 @@ import { createWalletContextWriter, createSwapContextWriter, SwapContextInstrume
 import { getFaroVolumePolicy } from './faro-policy'
 import { getSessionTrackingConfig } from './faro-sampling'
 
-// Keep this identity aligned with the existing Grafana app configured by the
-// babkenmes/posthog-to-faro branch.
+// Keep this identity aligned with the existing Grafana Faro app configuration.
 const FARO_APP_NAME = 'layerswap-frontend'
 
 let faroClient: Faro | undefined
