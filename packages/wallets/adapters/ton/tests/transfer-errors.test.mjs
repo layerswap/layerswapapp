@@ -36,3 +36,10 @@ test('TON failures keep their labels without a reason code', () => {
         assert.equal(thrown.message, original instanceof Error ? original.message : original)
     }
 })
+
+test('a plain-object TON failure keeps its real message', () => {
+    const original = { code: -32603, message: 'Wallet bridge failure' }
+    const thrown = toTransferError(original)
+    expectNotRejected(thrown, original, 'UnexpectedErrorMessage')
+    assert.equal(thrown.message, 'Wallet bridge failure')
+})

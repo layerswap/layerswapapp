@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { ActionMessageType } from '@layerswap/widget-types'
 import {
-    isUserRejection, isWalletErrorReasonCode, normalizeWalletErrorCode, userRejectedError, walletActionError, walletErrorCode,
+    errorMessage, isUserRejection, isWalletErrorReasonCode, normalizeWalletErrorCode, userRejectedError, walletActionError, walletErrorCode,
 } from '../dist/esm/lib/walletErrors.js'
 import { FIXTURES, GENERIC_WRAPPERS } from './wallet-error-fixtures.mjs'
 
@@ -204,4 +204,14 @@ test('a JSON-RPC server error is only a decline when its text starts with the us
     // Definitive codes are unaffected.
     assert.equal(normalizeWalletErrorCode({ code: 4001 }), 'user_rejected')
     assert.equal(normalizeWalletErrorCode({ code: 4001, message: 'MetaMask Tx Signature: User denied transaction signature.' }), 'user_rejected')
+})
+
+test('errorMessage reads Error, string and plain { message } errors, and falls back to String()', () => {
+    assert.equal(errorMessage(new Error('boom')), 'boom')
+    assert.equal(errorMessage('Reject request'), 'Reject request')
+    assert.equal(errorMessage({ code: 113, message: 'An error occurred (USER_REFUSED_OP)' }), 'An error occurred (USER_REFUSED_OP)')
+    assert.equal(errorMessage({ message: 42 }), '[object Object]')
+    assert.equal(errorMessage(undefined), 'undefined')
+    assert.equal(errorMessage(null), 'null')
+    assert.equal(errorMessage(7), '7')
 })

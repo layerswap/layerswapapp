@@ -22,6 +22,18 @@ export function walletErrorCode(candidate: unknown): string | undefined {
     return undefined
 }
 
+/**
+ * The human-readable text of a thrown value: an Error's message, a string as
+ * is, or a plain `{ message }` object's string message (wallets reject with
+ * those); anything else falls back to `String(error)`.
+ */
+export function errorMessage(error: unknown): string {
+    if (error instanceof Error) return error.message
+    if (typeof error === 'string') return error
+    const message = (error as { message?: unknown } | null | undefined)?.message
+    return typeof message === 'string' ? message : String(error)
+}
+
 // ---- Explicit classification. An adapter that knows why its call failed
 // ---- declares it on the thrown error; the classifier reads that field before
 // ---- any inference. Exhaustive against the WalletErrorReasonCode union, so

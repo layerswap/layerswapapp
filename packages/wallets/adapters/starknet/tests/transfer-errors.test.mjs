@@ -18,6 +18,16 @@ test('a Starknet wallet decline is declared, not inferred from the label', () =>
     assert.equal(isUserRejection(thrown), true)
 })
 
+test('a plain-object Starknet wallet decline keeps its real message', () => {
+    // get-starknet wallets reject with a plain { code, message } object, not an Error.
+    const original = { code: 113, message: 'An error occurred (USER_REFUSED_OP)' }
+    const thrown = toTransferError(original)
+    expectShape(thrown, original, 'TransactionRejected')
+    assert.equal(thrown.message, 'An error occurred (USER_REFUSED_OP)')
+    assert.equal(thrown.reasonCode, 'user_rejected')
+    assert.equal(isUserRejection(thrown), true)
+})
+
 test("'Execute failed' keeps the rejected copy but is reported as a failure until its origin is verified", () => {
     const original = new Error('Execute failed')
     const thrown = toTransferError(original)

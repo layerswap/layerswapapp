@@ -1,14 +1,7 @@
 import { ActionMessageType } from '@layerswap/widget-types'
-import { userRejectedError, walletActionError } from '@layerswap/wallet-core/errors'
+import { errorMessage, userRejectedError, walletActionError } from '@layerswap/wallet-core/errors'
 import type { BaseError } from 'viem'
 import { resolveError } from '../evmUtils/resolveError'
-
-function errorMessage(error: unknown): string {
-    if (error instanceof Error) return error.message
-    if (typeof error === 'string') return error
-    const message = (error as { message?: unknown } | undefined)?.message
-    return typeof message === 'string' ? message : String(error)
-}
 
 /**
  * Map a failed EVM transfer to the error the widget renders and the host is

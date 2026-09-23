@@ -1,15 +1,8 @@
 import { TransactionFailedError } from '@stellar/stellar-sdk'
 import { ActionMessageType } from '@layerswap/widget-types'
-import { isUserRejection, userRejectedError, walletActionError } from '@layerswap/wallet-core/errors'
+import { errorMessage, isUserRejection, userRejectedError, walletActionError } from '@layerswap/wallet-core/errors'
 
 const LABELS = new Set<string>(Object.values(ActionMessageType))
-
-function errorMessage(error: unknown): string {
-    if (error instanceof Error) return error.message
-    if (typeof error === 'string') return error
-    const message = (error as { message?: unknown } | undefined)?.message
-    return typeof message === 'string' ? message : String(error)
-}
 
 /**
  * Only for the wallet prompt (`signTransaction`): a structured decline, or a
