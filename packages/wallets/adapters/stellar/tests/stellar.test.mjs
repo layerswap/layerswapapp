@@ -934,7 +934,8 @@ test('only a declined wallet prompt is a rejection; pre-flight and submit failur
 })
 
 test('Stellar error mapping is pure: prompt vocabulary applies to the signing stage only', () => {
-    for (const message of ['User declined', 'Request cancelled', 'Session closed', 'Popup was closed by the user']) {
+    // Albedo rejects the prompt with a plain Error carrying no code.
+    for (const message of ['User declined', 'Request cancelled', 'Session closed', 'Popup was closed by the user', 'Action request was rejected by the user.']) {
         const original = new Error(message)
         const signing = toSigningError(original)
         assert.equal(signing.name, 'TransactionRejected', message)
