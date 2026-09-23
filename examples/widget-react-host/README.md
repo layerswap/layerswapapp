@@ -7,8 +7,12 @@ wallet adapters, no `framer-motion`, etc.).
 
 ## Run locally
 
+Requires Node.js >= 22.12.0 and Yarn 1.22.22.
+
 ```bash
-pnpm --filter widget-react-host-example dev -- --host 127.0.0.1 --port 3001 --no-open
+cd examples/widget-react-host
+yarn install --frozen-lockfile
+yarn dev --host 127.0.0.1 --port 3001 --no-open
 ```
 
 Then open `http://127.0.0.1:3001/`. The loader fetches and verifies the manifest

@@ -2369,7 +2369,7 @@
   dependencies:
     "@noble/hashes" "1.8.0"
 
-"@noble/curves@1.9.7", "@noble/curves@^1.0.0", "@noble/curves@^1.3.0", "@noble/curves@^1.4.0", "@noble/curves@^1.6.0", "@noble/curves@^1.7.0", "@noble/curves@^1.8.0", "@noble/curves@^1.8.2", "@noble/curves@^1.9.1", "@noble/curves@^1.9.6", "@noble/curves@^1.9.7", "@noble/curves@~1.9.0":
+"@noble/curves@1.9.7", "@noble/curves@^1.0.0", "@noble/curves@^1.3.0", "@noble/curves@^1.4.0", "@noble/curves@^1.6.0", "@noble/curves@^1.7.0", "@noble/curves@^1.8.0", "@noble/curves@^1.8.2", "@noble/curves@^1.9.0", "@noble/curves@^1.9.1", "@noble/curves@^1.9.6", "@noble/curves@^1.9.7", "@noble/curves@~1.9.0":
   version "1.9.7"
   resolved "https://registry.npmjs.org/@noble/curves/-/curves-1.9.7.tgz#79d04b4758a43e4bca2cbdc62e7771352fa6b951"
   integrity sha512-gbKGcRUYIjA3/zCCNaWDciTMFI0dCkvou3TL8Zmy5Nc7sJ47a0jtOeZoTaMxkuqRo9cRhjOdZJXegxYE5FN/xw==
@@ -3908,7 +3908,7 @@
   resolved "https://registry.npmjs.org/@safe-global/safe-gateway-typescript-sdk/-/safe-gateway-typescript-sdk-3.23.1.tgz#1e86d471bcd2adb0f777246ccbea6fa39618e02c"
   integrity sha512-6ORQfwtEJYpalCeVO21L4XXGSdbEMfyp2hEv6cP82afKXSwvse6d3sdelgaPWUxHIsFRkWvHDdzh8IyyKHZKxw==
 
-"@scure/base@1.2.6", "@scure/base@^1.1.3", "@scure/base@^1.2.1", "@scure/base@~1.2.1", "@scure/base@~1.2.5":
+"@scure/base@1.2.6", "@scure/base@^1.1.3", "@scure/base@^1.2.1", "@scure/base@^1.2.6", "@scure/base@~1.2.1", "@scure/base@~1.2.5":
   version "1.2.6"
   resolved "https://registry.npmjs.org/@scure/base/-/base-1.2.6.tgz#ca917184b8231394dd8847509c67a0be522e59f6"
   integrity sha512-g/nm5FgUa//MCj1gV09zTJTaM6KBAHqLN907YVQqf7zC49+DcO4B1so4ZX07Ef10Twr6nuqYEH9GEggFXA4Fmg==
@@ -3981,6 +3981,21 @@
     "@noble/curves" "~1.7.0"
     "@noble/hashes" "~1.6.0"
 
+"@signinwithethereum/siwe-parser@^4.2.1":
+  version "4.2.1"
+  resolved "https://registry.npmjs.org/@signinwithethereum/siwe-parser/-/siwe-parser-4.2.1.tgz#1ffc3df11c692606ebac3218b1ae3056df8c2a6c"
+  integrity sha512-GAdwNiBaRpUMTiFfPrbQ3e/RBhPbEhRRN1sZmDMLgLEZuKqKwO7V0ksVzCerE9l8HFKTNw5R/q3kPDCWJRz4zA==
+  dependencies:
+    "@noble/hashes" "^1.7.0"
+    apg-js "^4.4.0"
+
+"@signinwithethereum/siwe@^4.1.0":
+  version "4.2.1"
+  resolved "https://registry.npmjs.org/@signinwithethereum/siwe/-/siwe-4.2.1.tgz#5f669d136911812cd84af425e917265bbb63d45a"
+  integrity sha512-CQEQhCIgN9blil1YpaGR+wvGPdsBVK6zed5DBu03s1IdbSO3kA/n7Zp+SAkZGiHy3HY6OJm1Su0/Bd33vKK6nQ==
+  dependencies:
+    "@signinwithethereum/siwe-parser" "^4.2.1"
+
 "@sinclair/typebox@^0.33.7":
   version "0.33.24"
   resolved "https://registry.npmjs.org/@sinclair/typebox/-/typebox-0.33.24.tgz#ef869593ecb6dcbd69ef70226cdb0281ee668201"
@@ -3990,6 +4005,11 @@
   version "3.1.2"
   resolved "https://registry.npmjs.org/@socket.io/component-emitter/-/component-emitter-3.1.2.tgz#821f8442f4175d8f0467b9daf26e3a18e2d02af2"
   integrity sha512-9BCxFwvbGg/RsZK9tjXd8s4UcwR0MWeFQ1XEKIQVVvAGJyINdrqKMcTRyLoK8Rse1GjzLV9cwjWV1olXRWEXVA==
+
+"@solana-program/compute-budget@^0.11.0":
+  version "0.11.0"
+  resolved "https://registry.npmjs.org/@solana-program/compute-budget/-/compute-budget-0.11.0.tgz#0c18ac6fd9641fd8fe3d882f5784a626f57c965c"
+  integrity sha512-7f1ePqB/eURkTwTOO9TNIdUXZcyrZoX3Uy2hNo7cXMfNhPFWp9AVgIyRNBc2jf15sdUa9gNpW+PfP2iV8AYAaw==
 
 "@solana-program/compute-budget@^0.8.0":
   version "0.8.0"
@@ -4015,6 +4035,11 @@
   version "0.4.2"
   resolved "https://registry.npmjs.org/@solana-program/token-2022/-/token-2022-0.4.2.tgz#f90a638de82acb7933a114e884a24ac4be8ef635"
   integrity sha512-zIpR5t4s9qEU3hZKupzIBxJ6nUV5/UVyIT400tu9vT1HMs5JHxaTTsb5GUhYjiiTvNwU0MQavbwc4Dl29L0Xvw==
+
+"@solana-program/token-2022@^0.6.1":
+  version "0.6.1"
+  resolved "https://registry.npmjs.org/@solana-program/token-2022/-/token-2022-0.6.1.tgz#dcc44d56228e34c3b90099d9d3cab97d84c12367"
+  integrity sha512-Ex02cruDMGfBMvZZCrggVR45vdQQSI/unHVpt/7HPt/IwFYB4eTlXtO8otYZyqV/ce5GqZ8S6uwyRf0zy6fdbA==
 
 "@solana-program/token@^0.5.1":
   version "0.5.1"
@@ -4353,7 +4378,7 @@
     "@solana/transaction-messages" "2.3.0"
     "@solana/transactions" "2.3.0"
 
-"@solana/kit@^5.5.1":
+"@solana/kit@^5.1.0", "@solana/kit@^5.5.1":
   version "5.5.1"
   resolved "https://registry.npmjs.org/@solana/kit/-/kit-5.5.1.tgz#5baf7def33dcd5673fc86f8af9c7f326faa01959"
   integrity sha512-irKUGiV2yRoyf+4eGQ/ZeCRxa43yjFEL1DUI5B0DkcfZw3cr0VJtVJnrG8OtVF01vT0OUfYOcUn6zJW5TROHvQ==
@@ -6881,6 +6906,48 @@
     "@walletconnect/window-getters" "^1.0.1"
     tslib "1.14.1"
 
+"@x402/core@^2.25.0", "@x402/core@~2.27.0":
+  version "2.27.0"
+  resolved "https://registry.npmjs.org/@x402/core/-/core-2.27.0.tgz#9b3f6d60e52fa14309907a534f2820cbb42d7b45"
+  integrity sha512-UbxCKnoTsg5nQX9fYER3g9tt5l80jHm1IZOmDczQRqE0cwskls5r+VAAj0iUQfHVshnpv0qo/rLFI7UntqL96g==
+  dependencies:
+    zod "^3.24.2"
+
+"@x402/evm@^2.25.0":
+  version "2.27.0"
+  resolved "https://registry.npmjs.org/@x402/evm/-/evm-2.27.0.tgz#3bce4083328fd7be1b44a9eebe1b88bbeb0fec3a"
+  integrity sha512-WKVFq5VaSrDJfo6lHNG7/4hT0iZdpsmd53W/a+gZqmE1CiVT8wyRpwIPue4f/YKqNfgHHhZ00AcfPho0xLr2eQ==
+  dependencies:
+    "@x402/core" "~2.27.0"
+    viem "^2.48.11"
+    zod "^3.24.2"
+
+"@x402/extensions@^2.25.0":
+  version "2.27.0"
+  resolved "https://registry.npmjs.org/@x402/extensions/-/extensions-2.27.0.tgz#ec9376f827fcf62f72a3f60da02908ae75b78e51"
+  integrity sha512-eGBZZCTNtJsbzYoOe72Mfo/HN7Ir4i8+gmBUQ3ScrTiO91Q0bscO6LjGg2d3oJiFQ6g+YVXn+5fLxCEwoqgFsA==
+  dependencies:
+    "@noble/curves" "^1.9.0"
+    "@scure/base" "^1.2.6"
+    "@signinwithethereum/siwe" "^4.1.0"
+    "@x402/core" "~2.27.0"
+    ajv "^8.17.1"
+    jose "^5.9.6"
+    tweetnacl "^1.0.3"
+    viem "^2.48.11"
+    zod "^3.24.2"
+
+"@x402/svm@^2.25.0":
+  version "2.27.0"
+  resolved "https://registry.npmjs.org/@x402/svm/-/svm-2.27.0.tgz#178fa004dffac57121b57ccebd969da05a81d9b3"
+  integrity sha512-ObRKE5qAVit/oSdscfno3M52PX4PDV2VuyYJPOE4rIzR6fzHNRaAjRi9EgzU6otvYhVhm7ejiZbYlp1DEwMJag==
+  dependencies:
+    "@noble/hashes" "^1.8.0"
+    "@solana-program/compute-budget" "^0.11.0"
+    "@solana-program/token" "^0.9.0"
+    "@solana-program/token-2022" "^0.6.1"
+    "@x402/core" "~2.27.0"
+
 "@xrplf/isomorphic@^1.0.0", "@xrplf/isomorphic@^1.0.1", "@xrplf/isomorphic@^1.0.2":
   version "1.0.2"
   resolved "https://registry.npmjs.org/@xrplf/isomorphic/-/isomorphic-1.0.2.tgz#15e6f1e9dba25690f0e7585568554a7a1cb01cdd"
@@ -6969,6 +7036,16 @@ agentkeepalive@^4.6.0:
   dependencies:
     humanize-ms "^1.2.1"
 
+ajv@^8.17.1:
+  version "8.20.0"
+  resolved "https://registry.npmjs.org/ajv/-/ajv-8.20.0.tgz#304b3636add88ba7d936760dd50ece006dea95f9"
+  integrity sha512-Thbli+OlOj+iMPYFBVBfJ3OmCAnaSyNn4M1vz9T6Gka5Jt9ba/HIR56joy65tY6kx/FCF5VXNB819Y7/GUrBGA==
+  dependencies:
+    fast-deep-equal "^3.1.3"
+    fast-uri "^3.0.1"
+    json-schema-traverse "^1.0.0"
+    require-from-string "^2.0.2"
+
 ansi-regex@^5.0.1:
   version "5.0.1"
   resolved "https://registry.npmjs.org/ansi-regex/-/ansi-regex-5.0.1.tgz#082cb2c89c9fe8659a311a53bd6a4dc5301db304"
@@ -7003,6 +7080,11 @@ anymatch@^3.1.3, anymatch@~3.1.2:
   dependencies:
     normalize-path "^3.0.0"
     picomatch "^2.0.4"
+
+apg-js@^4.4.0:
+  version "4.4.0"
+  resolved "https://registry.npmjs.org/apg-js/-/apg-js-4.4.0.tgz#09dcecab0731fbde233b9f2352fdd2d07e56b2cf"
+  integrity sha512-fefmXFknJmtgtNEXfPwZKYkMFX4Fyeyz+fNF6JWp87biGOPslJbCBVU158zvKRZfHBKnJDy8CMM40oLFGkXT8Q==
 
 aria-hidden@^1.1.1, aria-hidden@^1.2.3, aria-hidden@^1.2.4:
   version "1.2.6"
@@ -8924,6 +9006,11 @@ fast-stable-stringify@^1.0.0:
   resolved "https://registry.npmjs.org/fast-stable-stringify/-/fast-stable-stringify-1.0.0.tgz#5c5543462b22aeeefd36d05b34e51c78cb86d313"
   integrity sha512-wpYMUmFu5f00Sm0cj2pfivpmawLZ0NKdviQ4w9zJeR8JVtOpOxHmLaJuj0vxvGqMJQWyP/COUkF75/57OKyRag==
 
+fast-uri@^3.0.1:
+  version "3.1.8"
+  resolved "https://registry.npmjs.org/fast-uri/-/fast-uri-3.1.8.tgz#f7db8d942e20eead3cfe93b0beeb4eb0169e938b"
+  integrity sha512-GZMtZUTNRpOVIECoXwLNZS5xUGE+mVNbTB8h/7Rwh2TFWcBQiPzTgyZi05BF9UMZKkLJv8XBRJTlU7zg8+ZfMg==
+
 fastq@^1.6.0:
   version "1.20.3"
   resolved "https://registry.npmjs.org/fastq/-/fastq-1.20.3.tgz#7ab8731e647b56abcfeee997dae333ca3ee1d04d"
@@ -9785,6 +9872,11 @@ jju@^1.4.0:
   resolved "https://registry.npmjs.org/jju/-/jju-1.4.0.tgz#a3abe2718af241a2b2904f84a625970f389ae32a"
   integrity sha512-8wb9Yw966OSxApiCt0K3yNJL8pnNeIv+OEq2YMidz4FKP6nonSRoOXc80iXY4JaN2FC11B9qsNmDsm+ZOfMROA==
 
+jose@^5.9.6:
+  version "5.10.0"
+  resolved "https://registry.npmjs.org/jose/-/jose-5.10.0.tgz#c37346a099d6467c401351a9a0c2161e0f52c4be"
+  integrity sha512-s+3Al/p9g32Iq+oqXxkW//7jk2Vig6FF1CFqzVXoTUXt2qz89YWbL+OwS17NFYEvxC35n0FKeGO2LGYSxeM2Gg==
+
 jose@^6.2.0:
   version "6.2.12"
   resolved "https://registry.npmjs.org/jose/-/jose-6.2.12.tgz#65663e146edd010b98ece83f81737d3aa95fd0d7"
@@ -9827,6 +9919,11 @@ json-rpc-random-id@^1.0.0, json-rpc-random-id@^1.0.1:
   version "1.0.1"
   resolved "https://registry.npmjs.org/json-rpc-random-id/-/json-rpc-random-id-1.0.1.tgz#ba49d96aded1444dbb8da3d203748acbbcdec8c8"
   integrity sha512-RJ9YYNCkhVDBuP4zN5BBtYAzEl03yq/jIIsyif0JY9qyJuQQZNeDK7anAPKKlyEtLSj2s8h6hNh2F8zO5q7ScA==
+
+json-schema-traverse@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/json-schema-traverse/-/json-schema-traverse-1.0.0.tgz#ae7bcb3656ab77a73ba5c49bf654f38e6b6860e2"
+  integrity sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug==
 
 json-stable-stringify@^1.1.1:
   version "1.3.0"
@@ -11376,6 +11473,11 @@ require-directory@^2.1.1:
   resolved "https://registry.npmjs.org/require-directory/-/require-directory-2.1.1.tgz#8c64ad5fd30dab1c976e2344ffe7f792a6a6df42"
   integrity sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==
 
+require-from-string@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.npmjs.org/require-from-string/-/require-from-string-2.0.2.tgz#89a7fdd938261267318eafe14f9c32e598c36909"
+  integrity sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw==
+
 require-main-filename@^2.0.0:
   version "2.0.0"
   resolved "https://registry.npmjs.org/require-main-filename/-/require-main-filename-2.0.0.tgz#d0b329ecc7cc0f61649f62215be69af54aa8989b"
@@ -12656,7 +12758,7 @@ varuint-bitcoin@^2.0.0, varuint-bitcoin@^2.0.1:
   dependencies:
     uint8array-tools "^0.0.10"
 
-viem@>=2.55.13, viem@^2.1.1, viem@^2.21.1, viem@^2.21.35, viem@^2.27.2, viem@^2.31.7, viem@^2.38.6, viem@^2.47.0:
+viem@>=2.55.13, viem@^2.1.1, viem@^2.21.1, viem@^2.21.35, viem@^2.27.2, viem@^2.31.7, viem@^2.38.6, viem@^2.47.0, viem@^2.48.11:
   version "2.56.8"
   resolved "https://registry.npmjs.org/viem/-/viem-2.56.8.tgz#7fe17f76e11730c8f72ab7ecaf671d02054ea6f3"
   integrity sha512-vD1DsnYxySMml5/02m/+boWQYfZtWug2VYzm6+hdVT+VDmULBZfpoh9gPDAENdMMBmQKW/2QJ/1DuZaslBJDAg==
@@ -12969,7 +13071,7 @@ zod@3.22.4:
   resolved "https://registry.npmjs.org/zod/-/zod-3.22.4.tgz#f31c3a9386f61b1f228af56faa9255e845cf3fff"
   integrity sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==
 
-zod@^3.21.4, zod@^3.22.4, zod@^3.25.76:
+zod@^3.21.4, zod@^3.22.4, zod@^3.24.2, zod@^3.25.76:
   version "3.25.76"
   resolved "https://registry.npmjs.org/zod/-/zod-3.25.76.tgz#26841c3f6fd22a6a2760e7ccb719179768471e34"
   integrity sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==

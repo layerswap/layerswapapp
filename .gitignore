@@ -35,6 +35,7 @@ yarn-error.log*
 # lockfiles from other package managers (project uses pnpm)
 package-lock.json
 yarn.lock
+!examples/*/yarn.lock
 storybook-static/*
 
 # Sentry Config File

@@ -6,7 +6,8 @@
     "dev": "next dev ",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "audit": "audit-ci --config audit-ci.json"
   },
   "dependencies": {
     "@bigmi/client": "^0.10.1",
@@ -16,20 +17,58 @@
     "@layerswap/widget": "next",
     "@tanstack/react-query": "^5.90.7",
     "@ton/crypto": "^3.3.0",
-    "next": "^15.3.3",
-    "react": "19.2.0",
-    "react-dom": "19.2.0",
+    "next": "^15.5.26",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
     "viem": "^2.38.6",
     "wagmi": "^2.19.3",
     "swr": "^2.2.4",
-    "zustand": "4.5.7"
+    "zustand": "4.5.7",
+    "@x402/core": "^2.25.0",
+    "@x402/evm": "^2.25.0",
+    "@x402/extensions": "^2.25.0",
+    "@x402/svm": "^2.25.0",
+    "@solana/kit": "^5.1.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.13",
     "@types/node": "^20.14.8",
     "@types/react": "19.2.0",
-    "eslint-config-next": "^15.1.7",
+    "eslint-config-next": "^15.5.26",
     "tailwindcss": "^4.0.15",
-    "typescript": "5.5.4"
+    "typescript": "5.5.4",
+    "audit-ci": "7.1.0"
+  },
+  "packageManager": "yarn@1.22.22",
+  "resolutions": {
+    "elliptic": "6.6.1",
+    "@metamask/sdk": "0.33.1",
+    "@metamask/sdk-communication-layer": "0.33.1",
+    "lodash": "4.18.0",
+    "postcss": "8.5.23",
+    "protobufjs": "7.6.5",
+    "uuid": "11.1.1",
+    "axios": "1.18.1",
+    "sharp": "0.35.4",
+    "jayson": "5.0.0",
+    "**/fuels/glob": "10.5.0",
+    "**/@fuel-ts/abi-typegen/glob": "10.5.0",
+    "toml": "4.2.0",
+    "@walletconnect/ethereum-provider": "2.25.0",
+    "@walletconnect/universal-provider": "2.25.0",
+    "@walletconnect/sign-client": "2.25.0",
+    "@walletconnect/utils": "2.25.0",
+    "@walletconnect/relay-auth": "1.1.0",
+    "**/jayson/ws": "7.5.11",
+    "**/@ethersproject/providers/ws": "7.5.11",
+    "@reown/appkit": "1.8.24",
+    "**/@fuel-ts/math/bn.js": "5.2.3",
+    "handlebars": "4.7.9",
+    "fflate": "0.8.3",
+    "**/@walletconnect/jsonrpc-ws-connection/ws": "7.5.11",
+    "**/ws": "8.21.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
   }
 }
