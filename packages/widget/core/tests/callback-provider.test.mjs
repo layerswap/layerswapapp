@@ -3,7 +3,7 @@ import test, { after, afterEach, beforeEach } from 'node:test'
 import { registerHooks } from 'node:module'
 import { extname } from 'node:path'
 import { JSDOM } from 'jsdom'
-import { act, createElement, StrictMode, useEffect, useState } from 'react'
+import { act, createElement, StrictMode, useEffect, useMemo, useState } from 'react'
 import { ErrorHandler, getErrorOccurrenceId, setErrorLogger } from '@layerswap/widget-types'
 import { createSwapLifecycleTelemetry } from '../../../../apps/bridge/lib/faro-swap-lifecycle.ts'
 
@@ -35,6 +35,7 @@ const { registerWidgetErrorLogger } = await import('../dist/esm/lib/ErrorHandler
 const { widgetTelemetry } = await import('../dist/esm/lib/widgetTelemetry.js')
 const { logStore } = await import('../dist/esm/stores/logStore.js')
 const { useTransferBlocked } = await import('../dist/esm/hooks/useTransferBlocked.js')
+const { useLifecycleObservation } = await import('../dist/esm/hooks/useLifecycleObservation.js')
 
 let root
 let container
@@ -440,3 +441,155 @@ test('lifecycle observations preserve recovery, attempts, new transactions and s
   callbacks.onSwapStatusChange(completed)
   assert.equal(events.length, 20, 'a new form submission resets previous swap observations')
 })
+
+const AWAITING = { step: 'awaiting_wallet_action', stage: 'wallet_action', outcome: 'pending', path: 'Withdraw', action: 'send_from_wallet' }
+const maybeStrict = (strict, element) => strict ? createElement(StrictMode, null, element) : element
+
+function Observer({ observation, context }) {
+  useLifecycleObservation(observation, context)
+  return null
+}
+
+for (const strict of [false, true]) {
+  test(`useLifecycleObservation reports once per fingerprint transition and re-arms when the observation is gone${strict ? ' under StrictMode' : ''}`, async t => {
+    const events = []
+    const emitted = t.mock.method(widgetTelemetry, 'lifecycle')
+    const callbacks = { onSwapLifecycle: event => events.push(event) }
+    const render = (observation, context) => act(() => root.render(maybeStrict(strict,
+      createElement(CallbackProvider, { callbacks }, createElement(Observer, { observation, context })))))
+    const awaitingEmissions = () => emitted.mock.calls.filter(call => call.arguments[0].step === 'awaiting_wallet_action').length
+
+    await render(AWAITING, { swapId: undefined })
+    assert.equal(events.length, 1)
+    assert.equal(events[0].swapId, undefined)
+    await render(AWAITING, { swapId: 'swap-1', fromAddress: '0x1' })
+    assert.equal(events.length, 1, 'a swap id arriving later is not a transition')
+    await render({ ...AWAITING, confirmations: 2 }, { swapId: 'swap-1', fromAddress: '0x1' })
+    assert.equal(events.length, 1, 'confirmation counts are not part of the observation fingerprint')
+    assert.equal(awaitingEmissions(), 1, 'the emitter itself stays silent; the store is not what absorbs the replay')
+
+    await render({ step: 'input_transfer_pending', stage: 'input_transfer', outcome: 'pending', path: 'Processing', status: 'x' },
+      { swapId: 'swap-1', fromAddress: '0x1' })
+    assert.equal(events.length, 2)
+    assert.equal(events[1].step, 'input_transfer_pending')
+    assert.equal(events[1].swapId, 'swap-1', 'the latest context is spread in at emission time')
+    assert.equal(events[1].fromAddress, '0x1')
+
+    await render(undefined, { swapId: 'swap-1' })
+    assert.equal(events.length, 2)
+    await render(AWAITING, { swapId: 'swap-1' })
+    assert.equal(events.length, 3, 'A → gone → A is reported again')
+    assert.equal(events[2].step, 'awaiting_wallet_action')
+    assert.equal(emitted.mock.callCount(), 3)
+  })
+}
+
+// The finding end to end: Withdraw mounts before the click, the button creates the swap and opens the
+// wallet prompt synchronously, and swapDetails arrives from SWR while the prompt is still open.
+function FakeWithdraw({ swapDetails }) {
+  const context = useMemo(() => ({ swapId: swapDetails?.id, fromAddress: swapDetails?.source_address, depositMethod: 'wallet' }),
+    [swapDetails?.id, swapDetails?.source_address])
+  useLifecycleObservation(AWAITING, context)
+  return null
+}
+
+function transferScreen(strict, events) {
+  const handle = {}
+  function TransferScreen() {
+    handle.callbacks = useCallbacks()
+    const [swapDetails, setSwapDetails] = useState(undefined)
+    handle.setSwapDetails = setSwapDetails
+    return createElement(FakeWithdraw, { swapDetails })
+  }
+  handle.mount = () => act(() => root.render(maybeStrict(strict,
+    createElement(CallbackProvider, { callbacks: { onSwapLifecycle: event => events.push(event) } }, createElement(TransferScreen)))))
+  // SendTransactionButton: creates the swap, opens the prompt, then awaits the wallet.
+  handle.clickSend = async (swapId, prompt) => {
+    const { onSwapLifecycle } = handle.callbacks
+    const creation = { stage: 'swap_creation', path: 'SwapDataProvider.createSwap', depositMethod: 'wallet' }
+    const wallet = { stage: 'wallet_action', path: 'TransferTokenButton', swapId, depositMethod: 'wallet' }
+    onSwapLifecycle({ step: 'swap_creation_started', outcome: 'started', ...creation })
+    onSwapLifecycle({ step: 'swap_created', outcome: 'succeeded', swapId, ...creation })
+    onSwapLifecycle({ step: 'wallet_prompt_opened', outcome: 'started', ...wallet })
+    try {
+      const transactionHash = await prompt
+      onSwapLifecycle({ step: 'transaction_submitted', stage: 'input_transfer', outcome: 'succeeded', transactionHash, ...wallet, path: 'TransferTokenButton' })
+    } catch {
+      onSwapLifecycle({ step: 'wallet_action_rejected', outcome: 'rejected', reasonCode: 'user_rejected', ...wallet })
+    }
+  }
+  return handle
+}
+
+function deferred() {
+  let resolve, reject
+  const promise = new Promise((res, rej) => { resolve = res; reject = rej })
+  return { promise, resolve, reject }
+}
+
+for (const strict of [false, true]) {
+  test(`a swap id arriving while the wallet prompt is open does not repeat awaiting_wallet_action${strict ? ' under StrictMode' : ''}`, async t => {
+    const events = []
+    const screen = transferScreen(strict, events)
+    await screen.mount()
+    const prompt = deferred()
+    const clicked = screen.clickSend('swap-1', prompt.promise)
+    await act(() => screen.setSwapDetails({ id: 'swap-1', source_address: '0xabc' }))
+    prompt.resolve('0xhash')
+    await clicked
+    assert.deepEqual(events.map(event => event.step), [
+      'awaiting_wallet_action', 'swap_creation_started', 'swap_created', 'wallet_prompt_opened', 'transaction_submitted',
+    ])
+    assert.equal(events[0].swapId, undefined, 'the transfer screen is reported before any swap exists')
+    assert.equal(events.at(-1).swapId, 'swap-1')
+
+    // The bridge sees the canonical journey: time in prompt is measured and its 120 s stall is reachable.
+    t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 1000 })
+    const records = []
+    const faro = () => createSwapLifecycleTelemetry({
+      setSwapContext: () => true,
+      captureEvent: (name, attributes) => { records.push(attributes); return true },
+    })
+    const full = faro()
+    for (const event of events) full.record(event)
+    full.dispose()
+    const submitted = records.find(record => record.step === 'transaction_submitted')
+    assert.equal(submitted.previous_step, 'wallet_prompt_opened')
+    assert.equal(submitted.swap_id, 'swap-1')
+    records.length = 0
+    const stalled = faro()
+    t.after(() => stalled.dispose())
+    for (const event of events.slice(0, 4)) stalled.record(event)
+    t.mock.timers.tick(120_001)
+    assert.equal(records.at(-1).step, 'suspected_stall')
+    assert.equal(records.at(-1).stalled_step, 'wallet_prompt_opened')
+  })
+
+  test(`a rejected prompt is reported by its own step; clearing the swap does not repeat the awaiting phase${strict ? ' under StrictMode' : ''}`, async () => {
+    const events = []
+    const screen = transferScreen(strict, events)
+    await screen.mount()
+    const prompt = deferred()
+    const clicked = screen.clickSend('swap-1', prompt.promise)
+    await act(() => screen.setSwapDetails({ id: 'swap-1', source_address: '0xabc' }))
+    prompt.reject(new Error('User rejected the request'))
+    await clicked
+    assert.equal(events.at(-1).step, 'wallet_action_rejected')
+    const reported = events.length
+    // buttons.tsx catch → setSwapId(undefined) → swapDetails is gone again.
+    await act(() => screen.setSwapDetails(undefined))
+    assert.equal(events.length, reported, 'losing the swap id is not a phase transition')
+
+    // The next click creates a new swap while the same transfer screen stays mounted.
+    screen.callbacks.onSwapLifecycle({ step: 'retry_requested', stage: 'swap', outcome: 'started', path: 'SwapDetails', reasonCode: 'user_rejected' })
+    const retry = deferred()
+    const retried = screen.clickSend('swap-2', retry.promise)
+    await act(() => screen.setSwapDetails({ id: 'swap-2', source_address: '0xabc' }))
+    retry.resolve('0xhash-2')
+    await retried
+    assert.deepEqual(events.slice(reported).map(event => event.step), [
+      'retry_requested', 'swap_creation_started', 'swap_created', 'wallet_prompt_opened', 'transaction_submitted',
+    ])
+    assert.equal(events.filter(event => event.step === 'awaiting_wallet_action').length, 1)
+  })
+}

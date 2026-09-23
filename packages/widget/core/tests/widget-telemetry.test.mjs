@@ -300,3 +300,19 @@ test('observations made without an active handler do not suppress later delivery
     assert.equal(events.length, 1)
     assert.equal(events[0].attributes.completion_observed, true)
 })
+
+test('a swap created from the transfer screen produces one awaiting_wallet_action row', () => {
+    const { telemetry, events } = setup()
+    telemetry.lifecycle(event('form_submitted'))
+    telemetry.lifecycle(event('awaiting_wallet_action'))
+    telemetry.lifecycle(event('swap_creation_started'))
+    telemetry.lifecycle(event('swap_created', 'swap-1'))
+    telemetry.lifecycle(event('wallet_prompt_opened', 'swap-1'))
+    telemetry.lifecycle(event('transaction_submitted', 'swap-1'))
+    assert.deepEqual(events.map(e => e.attributes.step).filter(step => step !== 'form_viewed'), [
+        'form_submitted', 'awaiting_wallet_action', 'swap_creation_started', 'swap_created', 'wallet_prompt_opened', 'transaction_submitted',
+    ])
+    assert.equal(events.filter(e => e.attributes.step === 'awaiting_wallet_action').length, 1)
+    assert.equal(events.at(-1).attributes.transfer_prompted, true)
+    assert.equal(events.at(-1).attributes.transfer_submitted, true)
+})

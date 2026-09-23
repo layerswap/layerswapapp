@@ -159,6 +159,11 @@ the same status and phase as the previous attempt.
 per meaningful transition. Confirmation counts, context enrichment, and React
 effect replay do not duplicate them. New transactions, phase recovery, and
 user actions (including every wallet prompt and retry) remain observable.
+`awaiting_wallet_action` is reported when the transfer screen is shown; for a
+swap created from the transfer button this precedes `swap_created` and carries
+no `swapId` (take the id from `swap_created`). A later id, address or
+confirmation count never repeats a phase step, and a rejected or failed attempt
+is reported by its own step rather than by repeating the awaiting phase.
 Reopening the swap, returning to the form, or submitting a new form resets
 observation deduplication. Wallet transfer cancellations declared by the
 adapter (`userRejectedError` from `@layerswap/wallet-core/errors`) use

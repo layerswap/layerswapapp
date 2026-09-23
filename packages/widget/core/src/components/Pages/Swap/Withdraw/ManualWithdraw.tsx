@@ -4,7 +4,7 @@ import { useCopyClipboard } from "@layerswap/ui-kit";
 import QRIcon from '@/components/Icons/QRIcon'
 import useWallet from '@/hooks/useWallet'
 import { DepositAction, SwapBasicData, SwapQuote } from '@/lib/apiClients/layerSwapApiClient'
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { FC, ReactNode, useState } from 'react'
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
 import useExchangeNetworks from '@/hooks/useExchangeNetworks'
@@ -27,6 +27,15 @@ import { Address } from "@/lib/address/Address";
 import AddressIcon from '@/components/Common/AddressIcon'
 import { useCallbacks } from '@/context/callbackProvider'
 import { lifecycleContextFromSwap } from '@/lib/swapLifecycle'
+import { type ObservedLifecycleEvent, useLifecycleObservation } from '@/hooks/useLifecycleObservation'
+
+const AWAITING_USER_DEPOSIT: ObservedLifecycleEvent = {
+    step: 'awaiting_user_deposit',
+    stage: 'input_transfer',
+    outcome: 'pending',
+    path: 'ManualWithdraw',
+    action: 'manual_deposit',
+}
 
 interface Props {
     swapBasicData: SwapBasicData;
@@ -79,17 +88,8 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, part
         ],
     )
 
-    useEffect(() => {
-        if (!swapDetails?.id) return
-        onSwapLifecycle({
-            step: 'awaiting_user_deposit',
-            stage: 'input_transfer',
-            outcome: 'pending',
-            path: 'ManualWithdraw',
-            action: 'manual_deposit',
-            ...lifecycleContext,
-        })
-    }, [lifecycleContext, onSwapLifecycle, swapDetails?.id])
+    // A source address arriving later enriches the report but never repeats it.
+    useLifecycleObservation(swapDetails?.id ? AWAITING_USER_DEPOSIT : undefined, lifecycleContext)
 
     const handleCopy = () => {
         if (depositAddress) {

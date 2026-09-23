@@ -24,6 +24,7 @@ import { useDepositSettings } from '@/context/depositSettings';
 import { useSettingsState } from '@/context/settings';
 import { useExtendedRoutesStore } from '@/stores/extendedRoutesStore';
 import { lifecycleContextFromSwap, PHASE_LIFECYCLE_EVENTS } from '@/lib/swapLifecycle';
+import { useLifecycleObservation } from '@/hooks/useLifecycleObservation';
 
 type Props = {
     swapBasicData: SwapBasicData;
@@ -142,6 +143,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
         }
     }, [swapInputTxStatus, transactionHash, swapDetails?.id, swapInputTransaction?.from, swapBasicData?.destination_address])
 
+    // Once per hash by design: status changes are reported by input_transfer_confirmed. Allowlisted in tests/lifecycle-effect-emitters.test.mjs.
     useEffect(() => {
         if (!swapInputTransaction?.transaction_hash) return
         onSwapLifecycle({
@@ -162,73 +164,42 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
         swapInputTransaction?.transaction_hash,
     ])
 
-    useEffect(() => {
-        if (!inputReady || !swapInputTransaction) return
-        onSwapLifecycle({
-            step: 'input_transfer_confirmed',
-            stage: 'input_transfer',
-            outcome: 'succeeded',
-            path: 'Processing',
-            transactionHash: swapInputTransaction.transaction_hash,
-            inputTransactionHash: swapInputTransaction.transaction_hash,
-            status: swapInputTransaction.status,
-            confirmations: swapInputTransaction.confirmations,
-            maxConfirmations: swapInputTransaction.max_confirmations,
-            ...lifecycleContext,
-        })
-    }, [
-        inputReady,
-        lifecycleContext,
-        onSwapLifecycle,
-        swapInputTransaction?.confirmations,
-        swapInputTransaction?.max_confirmations,
-        swapInputTransaction?.status,
-        swapInputTransaction?.transaction_hash,
-    ])
+    // Transaction and phase observations are keyed on their observation fingerprint
+    // (hash, status, outcome, phase, reason): a later source address or confirmation
+    // count enriches the report without repeating it.
+    useLifecycleObservation(inputReady && swapInputTransaction ? {
+        step: 'input_transfer_confirmed',
+        stage: 'input_transfer',
+        outcome: 'succeeded',
+        path: 'Processing',
+        transactionHash: swapInputTransaction.transaction_hash,
+        inputTransactionHash: swapInputTransaction.transaction_hash,
+        status: swapInputTransaction.status,
+        confirmations: swapInputTransaction.confirmations,
+        maxConfirmations: swapInputTransaction.max_confirmations,
+    } : undefined, lifecycleContext)
 
-    useEffect(() => {
-        if (!swapOutputTransaction?.transaction_hash) return
-        onSwapLifecycle({
-            step: 'output_transaction_detected',
-            stage: 'output_transfer',
-            outcome: swapOutputTransaction.status === BackendTransactionStatus.Completed
-                ? 'succeeded'
-                : swapOutputTransaction.status === BackendTransactionStatus.Failed ? 'failed' : 'pending',
-            path: 'Processing',
-            transactionHash: swapOutputTransaction.transaction_hash,
-            outputTransactionHash: swapOutputTransaction.transaction_hash,
-            status: swapOutputTransaction.status,
-            confirmations: swapOutputTransaction.confirmations,
-            maxConfirmations: swapOutputTransaction.max_confirmations,
-            ...lifecycleContext,
-        })
-    }, [
-        lifecycleContext,
-        onSwapLifecycle,
-        swapOutputTransaction?.confirmations,
-        swapOutputTransaction?.max_confirmations,
-        swapOutputTransaction?.status,
-        swapOutputTransaction?.transaction_hash,
-    ])
+    useLifecycleObservation(swapOutputTransaction?.transaction_hash ? {
+        step: 'output_transaction_detected',
+        stage: 'output_transfer',
+        outcome: swapOutputTransaction.status === BackendTransactionStatus.Completed
+            ? 'succeeded'
+            : swapOutputTransaction.status === BackendTransactionStatus.Failed ? 'failed' : 'pending',
+        path: 'Processing',
+        transactionHash: swapOutputTransaction.transaction_hash,
+        outputTransactionHash: swapOutputTransaction.transaction_hash,
+        status: swapOutputTransaction.status,
+        confirmations: swapOutputTransaction.confirmations,
+        maxConfirmations: swapOutputTransaction.max_confirmations,
+    } : undefined, lifecycleContext)
 
-    useEffect(() => {
-        const lifecycleEvent = PHASE_LIFECYCLE_EVENTS[phase]
-        onSwapLifecycle({
-            ...lifecycleEvent,
-            path: 'Processing',
-            status: swapDetails.status,
-            phase,
-            reasonCode: swapDetails.fail_reason || failureReason,
-            ...lifecycleContext,
-        })
-    }, [
-        failureReason,
-        lifecycleContext,
-        onSwapLifecycle,
+    useLifecycleObservation({
+        ...PHASE_LIFECYCLE_EVENTS[phase],
+        path: 'Processing',
+        status: swapDetails.status,
         phase,
-        swapDetails.fail_reason,
-        swapDetails.status,
-    ])
+        reasonCode: swapDetails.fail_reason || failureReason,
+    }, lifecycleContext)
 
     useEffect(() => {
         const status = swapDetails?.status

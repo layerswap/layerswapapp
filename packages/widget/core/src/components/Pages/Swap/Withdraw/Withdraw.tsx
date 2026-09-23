@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useMemo } from 'react'
+import { FC, useCallback, useMemo } from 'react'
 import type { JSX } from 'react';
 import { useSwapDataState, useSwapDataUpdate } from '@/context/swap';
 import SwapSummary from './Summary';
@@ -23,14 +23,22 @@ import { RefreshBalanceButton } from '../Form/SecondaryComponents/validationErro
 import { AdjustAmountButton } from '../Form/SecondaryComponents/validationError/AdjustAmountButton';
 import { AnimatePresence, motion } from 'framer-motion';
 import { isDepositAddressSwap } from '@/helpers/swapFlow';
-import { useCallbacks } from '@/context/callbackProvider';
 import { lifecycleContextFromSwap } from '@/lib/swapLifecycle';
 import { useTransferBlocked } from '@/hooks/useTransferBlocked';
+import { type ObservedLifecycleEvent, useLifecycleObservation } from '@/hooks/useLifecycleObservation';
+
+// "Transfer screen shown": reported once while the screen is visible, before any swap exists.
+const AWAITING_WALLET_ACTION: ObservedLifecycleEvent = {
+    step: 'awaiting_wallet_action',
+    stage: 'wallet_action',
+    outcome: 'pending',
+    path: 'Withdraw',
+    action: 'send_from_wallet',
+}
 
 const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: () => void, onCancelWithdrawal?: () => void, partner?: Partner }> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal, partner }) => {
     const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading, quoteError } = useSwapDataState()
     const { setSubmitedFormValues } = useSwapDataUpdate()
-    const { onSwapLifecycle } = useCallbacks()
 
     const { networks } = useSettingsState()
     const source_network = swapBasicData?.source_network && networks.find(n => n.name === swapBasicData?.source_network?.name)
@@ -56,17 +64,8 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
         ],
     )
 
-    useEffect(() => {
-        if (!lifecycleContext || swapBasicData?.use_deposit_address) return
-        onSwapLifecycle({
-            step: 'awaiting_wallet_action',
-            stage: 'wallet_action',
-            outcome: 'pending',
-            path: 'Withdraw',
-            action: 'send_from_wallet',
-            ...lifecycleContext,
-        })
-    }, [lifecycleContext, onSwapLifecycle, swapBasicData?.use_deposit_address])
+    // The swap id and source address arrive after creation; they enrich the report but never repeat it.
+    useLifecycleObservation(swapBasicData && !swapBasicData.use_deposit_address ? AWAITING_WALLET_ACTION : undefined, lifecycleContext)
 
     const handleEditAmount = useCallback(() => {
         if (walletBalanceAmount == null || !gasData?.gas || !swapBasicData) return
