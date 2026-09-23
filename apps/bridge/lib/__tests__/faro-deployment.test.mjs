@@ -9,6 +9,7 @@ import * as web from '@grafana/faro-web-sdk'
 import * as sanitizer from '../faro-sanitizer.ts'
 import * as sessionContext from '../faro-session-context.ts'
 import * as policy from '../faro-policy.ts'
+import * as sampling from '../faro-sampling.ts'
 import { resolveFaroDeployment } from '../faro-release.cjs'
 
 const require = createRequire(import.meta.url)
@@ -49,6 +50,7 @@ function browserConfig(env) {
             './faro-sanitizer': sanitizer,
             './faro-session-context': sessionContext,
             './faro-policy': policy,
+            './faro-sampling': sampling,
             '@grafana/faro-web-sdk': { ...web, getInternalFaroFromGlobalObject: () => undefined,
                 initializeFaro: options => { config = options; return {} } },
         })[name] ?? require(name),

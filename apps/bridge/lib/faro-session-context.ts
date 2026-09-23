@@ -68,7 +68,9 @@ export function createWalletContextWriter(
 }
 
 // Include historical/persisted keys, not just keys seen since this page loaded.
-// Other owners (including Faro's isSampled/previousSession) must survive.
+// Other owners (Faro's previousSession) must survive. Note: the SDK overwrites
+// `isSampled` on every attribute resync (sessionManagerUtils.js:72-75); the
+// sampler in faro-sampling.ts is what keeps that value stable.
 const SWAP_CONTEXT_KEYS = new Set([
     'schema_version', 'step', 'stage', 'outcome', 'path', 'swap_id', 'previous_swap_id',
     'reason_code', 'reason', 'action', 'provider', 'transaction_hash', 'input_transaction_hash',

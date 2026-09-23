@@ -42,7 +42,13 @@ is `testnet` and otherwise `mainnet` (matching the widget default), and version
 and release from the build's resolved `NEXT_PUBLIC_FARO_RELEASE`. Deployment
 identity is tracked separately; see [Grafana setup](grafana/README.md).
 `NEXT_PUBLIC_FARO_SAMPLE_RATE` is optional and defaults to
-`1`.
+`1`. At values below `1` the decision is made once per page-load chain when a
+fresh session starts, is inherited when the SDK rotates the session in-page
+after inactivity/expiry (`previousSession` chains share one decision), and is
+never re-rolled by swap/wallet context updates. Known SDK limitation
+(faro-web-sdk 2.11.0): every context update rewrites the stored session's
+`started`, so the 4-hour max session lifetime is effectively disabled while
+context is being written; sessions rotate after 15 minutes of inactivity.
 
 Faro starts in `instrumentation-client.ts` before hydration. Optimized
 (`NODE_ENV=production`) builds capture console warnings as logs and console

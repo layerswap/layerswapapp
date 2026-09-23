@@ -4,12 +4,14 @@ import {
     getWebInstrumentations,
     initializeFaro,
     InternalLoggerLevel,
+    PersistentSessionsManager,
     type Faro,
 } from '@grafana/faro-web-sdk'
 import { TracingInstrumentation } from '@grafana/faro-web-tracing'
 import { beforeSend, MAX_CONTEXT_VALUE_LENGTH, sanitizeValue, serializeConsoleArgs } from './faro-sanitizer'
 import { createWalletContextWriter, createSwapContextWriter, SwapContextInstrumentation } from './faro-session-context'
 import { getFaroVolumePolicy } from './faro-policy'
+import { getSessionTrackingConfig } from './faro-sampling'
 
 // Keep this identity aligned with the existing Grafana app configured by the
 // babkenmes/posthog-to-faro branch.
@@ -19,15 +21,6 @@ let faroClient: Faro | undefined
 let initializationAttempted = false
 const walletContextWriters = new WeakMap<Faro, (attributes: Record<string, string>) => boolean>()
 let writeSwapContext: ReturnType<typeof createSwapContextWriter> | undefined
-
-function parseSamplingRate(value: string | undefined): number {
-    if (!value) return 1
-
-    const parsed = Number(value)
-    if (!Number.isFinite(parsed)) return 1
-
-    return Math.min(1, Math.max(0, parsed))
-}
 
 function getTracePropagationUrls(): RegExp[] | undefined {
     const configuredUrls = process.env.NEXT_PUBLIC_FARO_TRACE_PROPAGATION_URLS
@@ -102,11 +95,7 @@ export function initFaro(): Faro | undefined {
                     },
                 },
             },
-            sessionTracking: {
-                enabled: true,
-                persistent: true,
-                samplingRate: parseSamplingRate(process.env.NEXT_PUBLIC_FARO_SAMPLE_RATE),
-            },
+            sessionTracking: getSessionTrackingConfig(process.env.NEXT_PUBLIC_FARO_SAMPLE_RATE, () => PersistentSessionsManager.fetchUserSession()),
             experimental: {
                 trackNavigation: true,
             },

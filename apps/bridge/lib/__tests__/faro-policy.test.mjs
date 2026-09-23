@@ -33,8 +33,8 @@ test('deployed builds retain warn/error; local builds retain verbosity; sampling
     }
     assert(!('sessionTracking' in production), 'volume policy must not override sampling')
     const source = readFileSync(new URL('../faro.ts', import.meta.url), 'utf8')
-    assert(source.includes('if (!value) return 1'))
-    assert(source.includes('samplingRate: parseSamplingRate(process.env.NEXT_PUBLIC_FARO_SAMPLE_RATE)'))
+    assert(source.includes('sessionTracking: getSessionTrackingConfig(process.env.NEXT_PUBLIC_FARO_SAMPLE_RATE, () => PersistentSessionsManager.fetchUserSession())'))
+    assert(!source.includes('samplingRate:'), 'faro.ts must not configure a rate without the session-bound sampler')
     assert(source.includes('enablePerformanceInstrumentation: true'))
     assert(source.includes('errorSerializer: serializeConsoleArgs'))
     assert(source.includes('new TracingInstrumentation('))
