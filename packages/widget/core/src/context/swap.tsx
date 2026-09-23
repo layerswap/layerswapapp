@@ -30,7 +30,8 @@ import { buildCreateSwapParamsForExtendedRoute } from '@/lib/extendedRoutes/tran
 import { useExtendedRoutesStore } from '@/stores/extendedRoutesStore';
 import { isDepositAddressFlow, isDepositAddressSwap } from '@/helpers/swapFlow';
 import { resolveSwapPollingInterval, SWAP_POLL_DEDUPE_MS } from '@/lib/swapPollingPolicy';
-import { lifecycleContextFromForm, lifecycleErrorDetails } from '@/lib/swapLifecycle';
+import { lifecycleContextFromForm } from '@/lib/swapLifecycle';
+import { createSwapAttempt } from '@/lib/swapCreation';
 import { KnownInternalNames } from '@layerswap/utils';
 
 export const SwapDataStateContext = createContext<SwapContextData | null>(null);
@@ -308,17 +309,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
         if (!depositAddressFlow && !amount)
             throw new Error("Form data is missing")
 
-        const lifecycleContext = lifecycleContextFromForm(values)
-        onSwapLifecycle({
-            step: 'swap_creation_started',
-            stage: 'swap_creation',
-            outcome: 'started',
-            path: 'SwapDataProvider.createSwap',
-            ...lifecycleContext,
-        })
-
-        let useGasless = false
-        try {
+        return createSwapAttempt(async () => {
             const sourceWalletIsSupported = selectedWallet && WalletIsSupportedForSource({
                 sourceNetwork: from,
                 sourceWallet: selectedWallet
@@ -330,7 +321,7 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
             const slippage = useSlippageStore.getState().slippage
             const gaslessEnabled = useGaslessPreferenceStore.getState().gaslessEnabled
 
-            useGasless = isGaslessCapableRoute({
+            const useGasless = isGaslessCapableRoute({
                 depositMethod,
                 supportsGaslessDeposit: fromCurrency.supports_gasless_deposit,
                 gaslessStandard: fromCurrency.gasless_standard,
@@ -378,63 +369,41 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
                 data.slippage = slippage.toString()
             }
 
-            const swapResponse = await layerswapApiClient.CreateSwapAsync(data)
-
-            if (swapResponse?.error) {
-                throw swapResponse?.error
+            return {
+                request: () => layerswapApiClient.CreateSwapAsync(data),
+                useGasless,
+                onCreated: [
+                    { name: 'onSwapCreate', run: onSwapCreate },
+                    // Persist the extended identity so the post-create UI and the withdraw step
+                    // can keep showing the extended source and resume after a reload.
+                    ...(extendedPlan ? [{
+                        name: 'extendedRoutes.setRecord',
+                        run: (swap: SwapResponse) => useExtendedRoutesStore.getState().setRecord(swap.swap.id, {
+                            providerId: extendedPlan.mapping.provider.id,
+                            extendedNetwork: from.name,
+                            extendedToken: fromCurrency.symbol,
+                            realNetwork: extendedPlan.mapping.real.networkName,
+                            realToken: extendedPlan.mapping.real.tokenSymbol,
+                            sourceAddress: selectedSourceAccount?.address || '',
+                            sourceAmount: (amount || '').toString(),
+                            createdAt: Date.now(),
+                        }),
+                    }] : []),
+                    {
+                        name: 'recentRoutes.updateRecentNetworks',
+                        run: () => updateRecentTokens({
+                            from: !fromExchange ? { network: from.name, token: fromCurrency.symbol } : undefined,
+                            to: { network: to.name, token: toCurrency.symbol }
+                        }),
+                    },
+                ],
             }
-
-            const swap = swapResponse?.data;
-            if (!swap?.swap.id)
-                throw new Error("Could not create swap")
-
-            onSwapLifecycle({
-                step: 'swap_created',
-                stage: 'swap_creation',
-                outcome: 'succeeded',
-                path: 'SwapDataProvider.createSwap',
-                ...lifecycleContext,
-                swapId: swap.swap.id,
-                fromAddress: swap.swap.source_address,
-                status: swap.swap.status,
-            })
-
-            onSwapCreate(swap)
-            // Persist the extended identity so the post-create UI and the withdraw step
-            // can keep showing the extended source and resume after a reload.
-            if (extendedPlan) {
-                useExtendedRoutesStore.getState().setRecord(swap.swap.id, {
-                    providerId: extendedPlan.mapping.provider.id,
-                    extendedNetwork: from.name,
-                    extendedToken: fromCurrency.symbol,
-                    realNetwork: extendedPlan.mapping.real.networkName,
-                    realToken: extendedPlan.mapping.real.tokenSymbol,
-                    sourceAddress: selectedSourceAccount?.address || '',
-                    sourceAmount: (amount || '').toString(),
-                    createdAt: Date.now(),
-                })
-            }
-
-            updateRecentTokens({
-                from: !fromExchange ? { network: from.name, token: fromCurrency.symbol } : undefined,
-                to: { network: to.name, token: toCurrency.symbol }
-            });
-
-            return swap;
-        }
-        catch (error) {
-            if (useGasless) useGaslessPreferenceStore.getState().reportGaslessUnavailable('create')
-            onSwapLifecycle({
-                step: 'swap_creation_failed',
-                stage: 'swap_creation',
-                outcome: 'failed',
-                path: 'SwapDataProvider.createSwap',
-                ...lifecycleErrorDetails(error),
-                ...lifecycleContext,
-            })
-            throw error
-        }
-
+        }, {
+            path: 'SwapDataProvider.createSwap',
+            lifecycleContext: lifecycleContextFromForm(values),
+            onLifecycle: onSwapLifecycle,
+            onGaslessUnavailable: () => useGaslessPreferenceStore.getState().reportGaslessUnavailable('create'),
+        })
     }, [selectedSourceAccount, selectedWallet, onSwapCreate, onSwapLifecycle, updateRecentTokens, swapDetails?.id, networks, sourceRoutes])
 
     const updateFns = useMemo<UpdateSwapInterface>(() => ({

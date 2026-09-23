@@ -161,7 +161,7 @@ The following implemented steps are expected under event name `swap_lifecycle`; 
 | Stage | Representative steps | Normal cadence |
 | --- | --- | --- |
 | form | `form_submitted`, `form_confirmation_cancelled` | once per submit/cancel; submission can repeat |
-| swap creation | `swap_creation_started`, `swap_created`, `swap_creation_failed` | one attempt sequence; start can repeat |
+| swap creation | `swap_creation_started`, `swap_created`, `swap_creation_failed` | one attempt sequence; start can repeat; `swap_created` and `swap_creation_failed` are mutually exclusive per attempt |
 | wallet | `wallet_connection_started`, `wallet_connected`, `wallet_connection_failed`, network-switch and wallet-action steps | per provider/user attempt; selected start/prompt steps can repeat |
 | transaction | `transaction_submitted`, `gasless_authorization_submitted` | normally once per relevant attempt |
 | deposit | `awaiting_user_deposit`, `deposit_address_copied`, input transaction steps | event-driven; address copies may repeat depending on caller behavior |

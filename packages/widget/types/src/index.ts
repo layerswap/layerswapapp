@@ -33,6 +33,7 @@ export type {
   TransferError,
   WalletError,
   CallbackError,
+  SideEffectError,
   ErrorEventType,
   SwapStatusEvent,
   SwapLifecycleEvent,

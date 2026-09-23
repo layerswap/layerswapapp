@@ -74,8 +74,19 @@ export type ChainError = ({ type: 'ChainError' } & BaseErrorProps);
 export type TransferError = ({ type: 'TransferError' } & BaseErrorProps);
 export type WalletError = ({ type: 'WalletError' } & BaseErrorProps);
 export type CallbackError = ({ type: 'CallbackError' } & BaseErrorProps);
+/**
+ * A side effect that runs after its operation already succeeded (for example a
+ * persisted store write after a swap was created) threw. The operation itself
+ * is not affected; the event only reports the failed step.
+ */
+export type SideEffectError = ({
+  type: 'SideEffectError';
+  /** e.g. 'extendedRoutes.setRecord' */
+  operation: string;
+  swapId?: string;
+} & BaseErrorProps);
 
-export type ErrorEventType = WidgetError | APIError | BalanceError | GasFeeError | WalletWithdrawalError | GasMiscalculationError | AlertUIEvent | TransactionNotDetectedError | ChainError | TransferError | WalletError | CallbackError;
+export type ErrorEventType = WidgetError | APIError | BalanceError | GasFeeError | WalletWithdrawalError | GasMiscalculationError | AlertUIEvent | TransactionNotDetectedError | ChainError | TransferError | WalletError | CallbackError | SideEffectError;
 
 /**
  * One notification per (swapId, type) per attempt. `type` is the API status.
