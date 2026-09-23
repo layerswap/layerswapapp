@@ -3,6 +3,7 @@ import test, { after } from 'node:test'
 import { registerHooks } from 'node:module'
 import { extname } from 'node:path'
 import { ActionMessageType } from '@layerswap/widget-types'
+import { userRejectedError, walletActionError } from '@layerswap/wallet-core/errors'
 
 const hooks = registerHooks({
   resolve(specifier, context, nextResolve) {
@@ -75,5 +76,35 @@ for (const result of ['success', 'rejected', 'expired-again', 'refresh-failed', 
     assert.equal(successes, result === 'success' ? 1 : 0)
     assert.deepEqual(published, result === 'success' ? [['swap-stellar', 'pending', 'stellar-hash']] : [])
     assert.deepEqual(catchups, result === 'success' ? [['swap-stellar', 'stellar-hash']] : [])
+  })
+}
+
+for (const [label, thrown, expected] of [
+  ['adapter-declared decline', userRejectedError({ cause: { code: 4001 } }), { step: 'wallet_action_rejected', outcome: 'rejected', reasonCode: 'user_rejected', reason: 'Transaction rejected' }],
+  ['rejected label without a declared reason', walletActionError(ActionMessageType.TransactionRejected, { message: 'Execute failed' }), { step: 'wallet_action_failed', outcome: 'failed', reasonCode: 'unknown_error', reason: 'Execute failed' }],
+]) {
+  test(`wallet transfer outcome follows the declared reason, not the UI label: ${label}`, async t => {
+    const lifecycle = []
+    const operations = []
+    t.after(widgetTelemetry.register(event => operations.push(event)))
+    const action = { type: 'transfer', amount: '1', to_address: 'deposit', from_address: 'source', call_data: 'calldata' }
+    const ctx = {
+      swapData: { id: 'swap-label', source_address: 'source', metadata: {} },
+      swapBasicData: { requested_amount: '1', source_network: { name: 'STARKNET_MAINNET' } },
+      depositActions: [action], selectedWallet: { providerName: 'Starknet', address: 'wallet-source' },
+      sourceAddress: 'source', setActionStateText() {},
+      setSwapTransaction: () => assert.fail('nothing is published'), onSuccess: () => assert.fail('no success'),
+      onLifecycle: event => lifecycle.push(event),
+      layerswapApiClient: { GetDepositActionsAsync: async () => assert.fail('no refresh'), SwapCatchup: async () => assert.fail('no catchup') },
+    }
+    await assert.rejects(executeWalletTransfer(ctx, async () => { throw thrown }), error => error === thrown)
+    assert.deepEqual(lifecycle.map(event => event.step), ['wallet_prompt_opened', expected.step])
+    const failure = lifecycle.at(-1)
+    assert.equal(failure.outcome, expected.outcome)
+    assert.equal(failure.reasonCode, expected.reasonCode)
+    assert.equal(failure.reason, expected.reason)
+    assert.equal(operations.length, 1)
+    assert.equal(operations[0].attributes.operation, 'wallet_transfer')
+    assert.equal(operations[0].attributes.outcome, expected.outcome)
   })
 }

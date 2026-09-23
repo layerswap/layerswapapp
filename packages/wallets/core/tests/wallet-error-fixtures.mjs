@@ -9,6 +9,8 @@
 //   'sdk:@ledgerhq/errors src/index.ts:340'                 'Condition of use not satisfied (denied by the user?)'
 //   'sdk:ethers@5 json-rpc-provider.js:487'                 SERVER_ERROR with the JSON-RPC body under `.error`
 //   'review:PR#2166'                                        shapes observed while reviewing the Faro migration
+//   'adapter:<package> <file>'                              the decline phrase that chain adapter matched by hand
+//                                                           before declaring declines through userRejectedError
 
 export const FIXTURES = [
     // --- declines that hide behind the -32603 / SERVER_ERROR buckets
@@ -32,6 +34,28 @@ export const FIXTURES = [
     { label: 'node TransactionRejectedRpcError is not a decline', source: 'sdk:viem', error: { code: -32003, name: 'TransactionRejectedRpcError', message: 'Transaction rejected' }, expected: 'unknown_error' },
     { label: 'EIP-1193 unauthorized', source: 'spec', error: { code: 4100 }, expected: 'unauthorized' },
     { label: 'node -32000 without a known phrase', source: 'review:PR#2166', error: { code: -32000, message: 'invalid sender' }, expected: 'unknown_error' },
+    // --- explicit adapter declarations (walletActionError / userRejectedError shapes)
+    { label: 'adapter-declared decline over a legacy -1 cause', source: 'review:PR#2166', error: { name: 'TransactionRejected', message: 'Transaction rejected', reasonCode: 'user_rejected', cause: { code: -1 } }, expected: 'user_rejected' },
+    { label: 'adapter-declared reason beats the rejected label', source: 'review:PR#2166', error: { name: 'TransactionRejected', message: 'Execute failed', reasonCode: 'contract_reverted' }, expected: 'contract_reverted' },
+    { label: 'unknown reasonCode string is ignored', source: 'review:PR#2166', error: { reasonCode: 'made_up', code: 4001 }, expected: 'user_rejected' },
+    // --- the rejected UI label alone is not evidence
+    { label: 'bare rejected label with an unclassified message', source: 'adapter:wallet-starknet createStarknetTransfer.ts', error: { name: 'TransactionRejected', message: 'Execute failed' }, expected: 'unknown_error' },
+    { label: 'rejected label over a sequencer message', source: 'adapter:wallet-paradex createParadexTransfer.ts', error: { name: 'TransactionRejected', message: 'Transaction rejected by sequencer' }, expected: 'unknown_error' },
+    { label: 'rejected label over a network failure', source: 'adapter:wallet-stellar createStellarTransfer.ts', error: { name: 'TransactionRejected', message: 'The Stellar transaction was rejected', cause: { name: 'HttpRequestError', message: 'WebSocket connection closed' } }, expected: 'network_error' },
+    // --- chain adapter decline phrases
+    { label: 'Starknet wallet decline', source: 'adapter:wallet-starknet createStarknetTransfer.ts', error: { message: 'An error occurred (USER_REFUSED_OP)' }, expected: 'user_rejected' },
+    { label: 'TON Connect decline', source: 'adapter:wallet-ton createTonTransfer.ts', error: { message: '[TON_CONNECT_SDK_ERROR] Reject request' }, expected: 'user_rejected' },
+    { label: 'TRON wallet decline', source: 'adapter:wallet-tron createTronTransfer.ts', error: { message: 'user reject this request' }, expected: 'user_rejected' },
+    { label: 'Fuel wallet decline', source: 'adapter:wallet-fuel createFuelTransfer.ts', error: { message: 'User rejected the transaction!' }, expected: 'user_rejected' },
+    { label: 'Fuel wallet cancel', source: 'adapter:wallet-fuel createFuelTransfer.ts', error: { message: 'User canceled sending transaction' }, expected: 'user_rejected' },
+    { label: 'Bitcoin / Solana wallet decline', source: 'adapter:wallet-bitcoin createBitcoinTransfer.ts', error: { message: 'User rejected the request.' }, expected: 'user_rejected' },
+    // --- near-misses that only the adapter (with prompt-stage context) may declare
+    { label: 'Fuel prompt closed without an answer', source: 'adapter:wallet-fuel createFuelTransfer.ts', error: { message: 'Request cancelled without user response!' }, expected: 'unknown_error' },
+    { label: 'Starknet Execute failed', source: 'adapter:wallet-starknet createStarknetTransfer.ts', error: { message: 'Execute failed' }, expected: 'unknown_error' },
+    { label: 'WalletConnect relay closed', source: 'adapter:wallet-stellar service/StellarWalletConnectModule.ts', error: { message: 'Session closed' }, expected: 'unknown_error' },
+    { label: 'Horizon rejection', source: 'adapter:wallet-stellar createStellarTransfer.ts', error: { message: 'Horizon rejected the Stellar transaction' }, expected: 'unknown_error' },
+    { label: 'Stellar op_underfunded result code as text', source: 'adapter:wallet-stellar createStellarTransfer.ts', error: { message: 'op_underfunded' }, expected: 'unknown_error' },
+    { label: 'node rejection text', source: 'sdk:viem', error: { message: 'Transaction rejected by node' }, expected: 'unknown_error' },
 ]
 
 // Wrappers that SDKs and wallets put around the real failure. Wrapping any

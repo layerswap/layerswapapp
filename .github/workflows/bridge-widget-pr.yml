@@ -38,6 +38,16 @@ jobs:
           pnpm --filter @layerswap/widget-types test
           pnpm --filter @layerswap/wallet-core test
           pnpm --filter @layerswap/wallet-evm test
+          pnpm --filter @layerswap/wallet-starknet test
+          pnpm --filter @layerswap/wallet-paradex test
+          pnpm --filter @layerswap/wallet-stellar test
+          # wallet-svm's pre-existing transaction-confirmation suite fails against the pinned
+          # @solana/web3.js decoder (unrelated to error mapping); gate only the transfer-error contract.
+          pnpm --filter @layerswap/wallet-svm exec node --experimental-strip-types --test tests/transfer-errors.test.mjs
+          pnpm --filter @layerswap/wallet-fuel test
+          pnpm --filter @layerswap/wallet-ton test
+          pnpm --filter @layerswap/wallet-tron test
+          pnpm --filter @layerswap/wallet-bitcoin test
           pnpm --filter @layerswap/widget check:types
           pnpm --filter @layerswap/bridge check:types
           pnpm --filter @layerswap/bridge test:faro

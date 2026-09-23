@@ -12,6 +12,7 @@ import {
     Operation,
     StrKey,
     TransactionBuilder,
+    TransactionFailedError,
     encodeMuxedAccount,
     encodeMuxedAccountToAddress,
     nativeToScVal,
@@ -48,6 +49,8 @@ import { toStellarConnector } from '../dist/esm/service/stellarConnector.js'
 import { stellarStore } from '../dist/esm/service/stellarStore.js'
 import { stellarKitManager } from '../dist/esm/service/stellarKitManager.js'
 import { createStellarTransfer } from '../dist/esm/transferProvider/createStellarTransfer.js'
+import { toSigningError, toTransferError } from '../dist/esm/transferProvider/toTransferError.js'
+import { isUserRejection } from '@layerswap/wallet-core/errors'
 
 const sourceKey = Keypair.random()
 const receiverKey = Keypair.random()
@@ -862,4 +865,102 @@ test('routes Stellar registry wallets through the shared QR modal', async () => 
         stellarStore.getState().setWallets([])
         stellarStore.getState().setActive(undefined, undefined)
     }
+})
+
+test('only a declined wallet prompt is a rejection; pre-flight and submit failures are failures', async t => {
+    const fixture = buildFixture()
+    const params = {
+        selectedWallet: { address: sourceKey.publicKey() },
+        depositAddress: fixture.depository,
+        network: {
+            name: 'STELLAR_TESTNET',
+            type: 'stellar',
+            chain_id: fixture.networkPassphrase,
+            node_url: 'https://error-stage.example',
+        },
+        token: fixture.token,
+        amountInBaseUnits: fixture.amount,
+        encodedArgs: fixture.encodedArgs,
+        sequenceNumber: fixture.depositId,
+        callData: '',
+    }
+    const provider = createStellarTransfer()
+    const thrownBy = promise => promise.then(() => assert.fail('must throw'), error => error)
+    const installHappyPath = () => {
+        t.mock.method(Horizon.Server.prototype, 'root', async () => ({ network_passphrase: fixture.networkPassphrase }))
+        t.mock.method(rpc.Server.prototype, 'getNetwork', async () => ({ passphrase: fixture.networkPassphrase }))
+        t.mock.method(Horizon.Server.prototype, 'loadAccount', async address => new Account(address, sourceSequence))
+        t.mock.method(Horizon.Server.prototype, 'fetchBaseFee', async () => 100)
+        t.mock.method(rpc.Server.prototype, 'prepareTransaction', async () => fixture.transaction)
+        t.mock.method(stellarKitManager, 'revalidate', async () => {})
+        t.mock.method(stellarKitManager, 'signTransaction', async (envelope, passphrase, address) => {
+            const transaction = TransactionBuilder.fromXdr(envelope, passphrase)
+            transaction.sign(sourceKey)
+            return { signedTxXdr: transaction.toXdr(), signerAddress: address }
+        })
+        t.mock.method(Horizon.Server.prototype, 'submitTransaction', async () => ({ successful: true, hash: 'deposit-hash' }))
+    }
+
+    // A closed socket while loading the account contains 'closed' but is not the user's decision.
+    installHappyPath()
+    const socketClosed = new Error('WebSocket connection closed')
+    t.mock.method(Horizon.Server.prototype, 'loadAccount', async () => { throw socketClosed })
+    let thrown = await thrownBy(provider.executeTransfer(params))
+    assert.equal(thrown.name, 'UnexpectedErrorMessage')
+    assert.equal(thrown.cause, socketClosed)
+    assert.equal(isUserRejection(thrown), false)
+    assert.equal(typeof thrown.message, 'string')
+
+    // The wallet prompt is the only stage where a decline can happen.
+    installHappyPath()
+    const declined = new Error('User declined')
+    t.mock.method(stellarKitManager, 'signTransaction', async () => { throw declined })
+    thrown = await thrownBy(provider.executeTransfer(params))
+    assert.equal(thrown.name, 'TransactionRejected')
+    assert.equal(thrown.reasonCode, 'user_rejected')
+    assert.equal(thrown.cause, declined)
+    assert.equal(isUserRejection(thrown), true)
+
+    // Horizon result codes after signing map to funds / failed, never to a decline.
+    installHappyPath()
+    const underfunded = new TransactionFailedError('Transaction submission failed', {
+        data: { extras: { result_codes: { transaction: 'tx_insufficient_balance' } } },
+    })
+    t.mock.method(Horizon.Server.prototype, 'submitTransaction', async () => { throw underfunded })
+    thrown = await thrownBy(provider.executeTransfer(params))
+    assert.equal(thrown.name, 'InsufficientFunds')
+    assert.equal(thrown.cause, underfunded)
+    assert.equal(isUserRejection(thrown), false)
+})
+
+test('Stellar error mapping is pure: prompt vocabulary applies to the signing stage only', () => {
+    for (const message of ['User declined', 'Request cancelled', 'Session closed', 'Popup was closed by the user']) {
+        const original = new Error(message)
+        const signing = toSigningError(original)
+        assert.equal(signing.name, 'TransactionRejected', message)
+        assert.equal(signing.cause, original)
+        assert.equal(isUserRejection(signing), true, message)
+        const elsewhere = toTransferError(original)
+        assert.equal(elsewhere.name, 'UnexpectedErrorMessage', message)
+        assert.equal(elsewhere.cause, original)
+        assert.equal(elsewhere.message, message)
+        assert.equal(isUserRejection(elsewhere), false, message)
+    }
+    const structured = toSigningError({ code: 4001, message: 'User rejected the request.' })
+    assert.equal(isUserRejection(structured), true)
+    const walletFailure = toSigningError(new Error('Signer unavailable'))
+    assert.equal(walletFailure.name, 'UnexpectedErrorMessage')
+    assert.equal(isUserRejection(walletFailure), false)
+
+    const stale = toTransferError(new TransactionFailedError('failed', { data: { extras: { result_codes: { transaction: 'tx_bad_seq' } } } }))
+    assert.equal(stale.name, 'TransactionFailed')
+    assert.equal(stale.message, 'The signed Stellar transaction became stale')
+    const horizon = toTransferError(new TransactionFailedError('failed', { data: { extras: { result_codes: { transaction: 'tx_failed', operations: ['op_bad_auth'] } } } }))
+    assert.equal(horizon.name, 'TransactionFailed')
+    assert.equal(isUserRejection(horizon), false)
+    const reserve = toTransferError(new TransactionFailedError('failed', { data: { extras: { result_codes: { transaction: 'tx_failed', operations: ['op_low_reserve'] } } } }))
+    assert.equal(reserve.name, 'InsufficientFunds')
+    // Errors that already carry a label pass through untouched.
+    const labelled = Object.assign(new Error('expired'), { name: 'TransactionExpired' })
+    assert.equal(toTransferError(labelled), labelled)
 })

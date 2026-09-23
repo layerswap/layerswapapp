@@ -160,9 +160,12 @@ per meaningful transition. Confirmation counts, context enrichment, and React
 effect replay do not duplicate them. New transactions, phase recovery, and
 user actions (including every wallet prompt and retry) remain observable.
 Reopening the swap, returning to the form, or submitting a new form resets
-observation deduplication. Wallet transfer cancellations use
+observation deduplication. Wallet transfer cancellations declared by the
+adapter (`userRejectedError` from `@layerswap/wallet-core/errors`) use
 `wallet_action_rejected` with `reasonCode: 'user_rejected'`; they no longer
-invoke `callbacks.onError`.
+invoke `callbacks.onError`. A custom `TransferProvider` that only sets
+`name = 'TransactionRejected'` shows the rejected copy but is reported as a
+failure through `callbacks.onError` and `wallet_action_failed`.
 
 `callbacks.onTelemetry` is an optional, vendor-neutral analytics stream. Each
 event is `{ name, attributes }`, discriminated by `name`:

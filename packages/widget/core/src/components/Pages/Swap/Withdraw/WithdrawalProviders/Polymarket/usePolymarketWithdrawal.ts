@@ -1,4 +1,4 @@
-import { ActionMessageType } from '@layerswap/widget-types';
+import { isUserRejection } from '@layerswap/wallet-core/errors';
 import { useCallback, useEffect, useRef, useState } from "react";
 import { WithdrawPageProps } from "../../Wallet/Common/sharedTypes";
 import { StepError } from "./resolveError";
@@ -198,7 +198,7 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
         } catch (e) {
             if (!mountedRef.current) return
             // A declined wallet prompt is a user action, not an error to log.
-            if ((e as Error)?.name === ActionMessageType.TransactionRejected) {
+            if (isUserRejection(e)) {
                 onSwapLifecycle({
                     step: 'wallet_action_rejected',
                     stage: 'wallet_action',

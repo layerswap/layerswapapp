@@ -4,6 +4,7 @@ import { widgetErrorImpact } from '../faro-error-policy.ts'
 import { getErrorOccurrenceId } from '@layerswap/widget-types'
 import { resolveFaroRelease } from '../faro-release.cjs'
 import { InternalRpcError } from 'viem'
+import { userRejectedError } from '@layerswap/wallet-core/errors'
 
 test('balance, gas and interceptor diagnostics are not user operation failures', () => {
     for (const type of ['BalanceResolverError', 'BalanceProviderError', 'GasProviderError', 'FeesPerGasError', 'APIError', 'SwapCatchupError', 'GasMiscalculation']) {
@@ -12,7 +13,9 @@ test('balance, gas and interceptor diagnostics are not user operation failures',
     for (const type of ['SwapWithdrawalError', 'TransactionFailed', 'ErrorFallback', 'SwapFailed']) {
         assert.equal(widgetErrorImpact({ type, message: 'failed' }), 'user')
     }
-    assert.equal(widgetErrorImpact({ type: 'SwapWithdrawalError', name: 'TransactionRejected', message: 'declined' }), 'expected')
+    // The rejected UI label carries no classification; only an adapter-declared decline is expected.
+    assert.equal(widgetErrorImpact({ type: 'SwapWithdrawalError', name: 'TransactionRejected', message: 'Execute failed' }), 'user')
+    assert.equal(widgetErrorImpact({ type: 'SwapWithdrawalError', message: 'declined', cause: userRejectedError() }), 'expected')
     assert.equal(widgetErrorImpact({ type: 'APIError', message: 'User denied the request' }), 'expected')
 })
 

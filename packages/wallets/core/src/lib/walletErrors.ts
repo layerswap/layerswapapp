@@ -1,7 +1,9 @@
-import type { WalletErrorReasonCode } from '@layerswap/widget-types'
+import { ActionMessageType, type WalletErrorReasonCode } from '@layerswap/widget-types'
 
 type ErrorCandidate = {
     name?: string
+    /** Set by an adapter through walletActionError / userRejectedError. */
+    reasonCode?: unknown
     code?: string | number
     message?: string
     shortMessage?: string
@@ -18,6 +20,59 @@ export function walletErrorCode(candidate: unknown): string | undefined {
     if (typeof code === 'string' && code) return code.slice(0, RAW_CODE_LIMIT)
     if (typeof code === 'number' && Number.isFinite(code)) return String(code)
     return undefined
+}
+
+// ---- Explicit classification. An adapter that knows why its call failed
+// ---- declares it on the thrown error; the classifier reads that field before
+// ---- any inference. Exhaustive against the WalletErrorReasonCode union, so
+// ---- an unknown string on a foreign error is ignored and the taxonomy stays bounded.
+const REASON_CODES: Record<WalletErrorReasonCode, true> = {
+    user_rejected: true,
+    unauthorized: true,
+    insufficient_funds: true,
+    gas_estimation_failed: true,
+    contract_reverted: true,
+    nonce_or_replacement: true,
+    chain_not_added: true,
+    wallet_disconnected: true,
+    unsupported_method: true,
+    invalid_parameters: true,
+    internal_rpc_error: true,
+    network_error: true,
+    timeout: true,
+    unknown_error: true,
+}
+
+export function isWalletErrorReasonCode(value: unknown): value is WalletErrorReasonCode {
+    return typeof value === 'string' && Object.prototype.hasOwnProperty.call(REASON_CODES, value)
+}
+
+/**
+ * An error thrown by a transfer provider: `name` is the ActionMessageType the
+ * UI renders, `reasonCode` (optional) is what the host and telemetry are told.
+ * The two are independent: a rejected label without a reason code is reported
+ * as a failure.
+ */
+export type WalletActionError = Error & { reasonCode?: WalletErrorReasonCode }
+
+export type WalletActionErrorInit = { message: string; cause?: unknown; reasonCode?: WalletErrorReasonCode }
+
+/** Build the error an adapter throws: UI label plus, when known, the classification. */
+export function walletActionError(name: ActionMessageType, init: WalletActionErrorInit): WalletActionError {
+    const error = new Error(String(init.message), init.cause === undefined ? undefined : { cause: init.cause }) as WalletActionError
+    error.name = name
+    // Own enumerable property: hosts that JSON-serialize the error see it too.
+    if (init.reasonCode !== undefined) error.reasonCode = init.reasonCode
+    return error
+}
+
+/** The only sanctioned way to pair the rejected label with the `user_rejected` classification. */
+export function userRejectedError(init: { message?: string; cause?: unknown } = {}): WalletActionError {
+    return walletActionError(ActionMessageType.TransactionRejected, {
+        message: init.message ?? 'Transaction rejected',
+        cause: init.cause,
+        reasonCode: 'user_rejected',
+    })
 }
 
 // ---- Rule tables. Every rule carries an evidence tier; the tier, not the
@@ -70,9 +125,10 @@ const CODE_RULES: Record<Tier, Record<string, WalletErrorReasonCode>> = {
 
 const NAME_RULES: Record<Tier, NameRules> = {
     definitive: [
-        // TransactionRejected is our adapter sentinel. A node's
-        // TransactionRejectedRpcError does not mean the user declined a prompt.
-        [/^UserRejected|^TransactionRejected$/i, 'user_rejected'],
+        // ActionMessageType labels are UI copy and never classify. Adapters
+        // declare declines with userRejectedError / walletActionError({ reasonCode }).
+        // A node's TransactionRejectedRpcError does not mean the user declined a prompt.
+        [/^UserRejected/i, 'user_rejected'],
         [/UnauthorizedProvider/i, 'unauthorized'],
         [/InsufficientFunds/i, 'insufficient_funds'],
         [/EstimateGas|GasEstimat|UnpredictableGas/i, 'gas_estimation_failed'],
@@ -101,7 +157,10 @@ const MESSAGE_RULES: Record<TextTier, NameRules> = {
     descriptive: [
         // "denied by the user" is Ledger's decline text (@ledgerhq/errors
         // 'Condition of use not satisfied (denied by the user?)'), relayed by MetaMask as -32603.
-        [/user rejected|user denied|rejected the request|user cancel|denied by the user/i, 'user_rejected'],
+        // 'user reject this request' (TRON adapters), 'USER_REFUSED_OP' (Starknet
+        // wallets), 'Reject request' (TON Connect SDK) are the decline phrases the
+        // chain adapters matched by hand before declaring declines explicitly.
+        [/user rejected|user denied|rejected the request|user cancel|user reject\b|USER_REFUSED_OP|Reject request|denied by the user/i, 'user_rejected'],
         [/insufficient funds|insufficient balance|exceeds balance|not enough/i, 'insufficient_funds'],
         [/cannot estimate gas|gas required exceeds|intrinsic gas|estimateGas/i, 'gas_estimation_failed'],
         [/execution reverted|revert/i, 'contract_reverted'],
@@ -125,12 +184,25 @@ const NESTED_KEYS = ['cause', 'data', 'originalError', 'error'] as const
 
 function isErrorLike(value: unknown): value is ErrorCandidate {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return false
-    return 'code' in value || 'message' in value || 'name' in value || 'cause' in value
+    return 'code' in value || 'message' in value || 'name' in value || 'cause' in value || 'reasonCode' in value
         || 'error' in value || 'originalError' in value || 'shortMessage' in value
 }
 
 /** Innermost first: deeper nodes describe the raw failure, wrappers add noise. */
 function collectCandidates(error: unknown): ErrorCandidate[] {
+    return collectNodes(error).sort((a, b) => b.depth - a.depth).map(node => node.value)
+}
+
+/** Outermost first: the adapter that wrapped a failure has the final say on its meaning. */
+function declaredReason(error: unknown): WalletErrorReasonCode | undefined {
+    const nodes = collectNodes(error).sort((a, b) => a.depth - b.depth)
+    for (const { value } of nodes) {
+        if (isWalletErrorReasonCode(value.reasonCode)) return value.reasonCode
+    }
+    return undefined
+}
+
+function collectNodes(error: unknown): Array<{ value: ErrorCandidate; depth: number }> {
     const nodes: Array<{ value: ErrorCandidate; depth: number }> = []
     const seen = new Set<object>()
     const stack: Array<[unknown, number]> = [[error, 0]]
@@ -145,7 +217,7 @@ function collectCandidates(error: unknown): ErrorCandidate[] {
             if (isErrorLike(next)) stack.push([next, depth + 1])
         }
     }
-    return nodes.sort((a, b) => b.depth - a.depth).map(node => node.value)
+    return nodes
 }
 
 function textOf(candidate: ErrorCandidate): string {
@@ -176,17 +248,23 @@ function rawTextReason(error: unknown, tier: TextTier): WalletErrorReasonCode | 
 
 /**
  * Evidence tier decides precedence, not the field a signal came from:
+ *   0. an explicit `reasonCode` set by an adapter (walletActionError /
+ *      userRejectedError) wins anywhere in the chain, outermost first;
  *   1. a definitive cancellation signal anywhere in the tree;
  *   2. definitive codes/names, innermost first;
  *   3. descriptive message text, innermost first (SDK bucket classes contribute no text);
  *   4. fallback buckets (-32603, SERVER_ERROR, InternalRpcError, 'internal error'), innermost first;
  *   5. unknown_error.
+ * ActionMessageType labels (`name`) are UI copy and never classify: a bare
+ * `TransactionRejected` name is a failure until an adapter declares otherwise.
  * -32603 is the JSON-RPC catch-all and @metamask/rpc-errors' serializer fallback,
  * so it can never outrank text or a nested cause. Wrappers under cause/data/
  * originalError/error are transparent. Returns `unknown_error` when nothing
  * recognizable exists, never a guess from arbitrary text.
  */
 export function normalizeWalletErrorCode(error: unknown): WalletErrorReasonCode {
+    const declared = declaredReason(error)
+    if (declared) return declared
     const chain = collectCandidates(error)
     for (const candidate of chain) {
         if (codeReason(candidate, 'definitive') === 'user_rejected' || nameReason(candidate, 'definitive') === 'user_rejected') return 'user_rejected'

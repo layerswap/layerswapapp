@@ -3,12 +3,24 @@ import test from 'node:test'
 import { isUserRejection } from '../dist/esm/components/Pages/Swap/Withdraw/Wallet/Common/isUserRejection.js'
 import { BaseError, UserRejectedRequestError, UnauthorizedProviderError, TransactionRejectedRpcError } from 'viem'
 import { lifecycleErrorDetails } from '../dist/esm/lib/swapLifecycle.js'
+import { ActionMessageType } from '@layerswap/widget-types'
+import { userRejectedError, walletActionError } from '@layerswap/wallet-core/errors'
 
-test('recognizes wallet adapters that classify rejection by error name', () => {
-  const error = new Error('Request was cancelled')
-  error.name = 'TransactionRejected'
+test('the rejected UI label alone is not a rejection; the adapter-declared reason is', () => {
+  const labelOnly = new Error('Request was cancelled')
+  labelOnly.name = 'TransactionRejected'
+  assert.equal(isUserRejection(labelOnly), false)
+  assert.equal(lifecycleErrorDetails(labelOnly).reasonCode, 'unknown_error')
 
-  assert.equal(isUserRejection(error), true)
+  const declared = userRejectedError()
+  assert.equal(isUserRejection(declared), true)
+  assert.equal(lifecycleErrorDetails(declared).reasonCode, 'user_rejected')
+  assert.equal(isUserRejection({ type: 'SwapWithdrawalError', message: 'Withdrawal failed', cause: declared }), true)
+
+  const unverified = walletActionError(ActionMessageType.TransactionRejected, { message: 'Execute failed' })
+  assert.equal(isUserRejection(unverified), false)
+  assert.equal(lifecycleErrorDetails(unverified).reason, 'Execute failed')
+  assert.equal(lifecycleErrorDetails(unverified).reasonCode, 'unknown_error')
 })
 
 test('recognizes the standard EIP-1193 rejection code', () => {
