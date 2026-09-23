@@ -169,16 +169,19 @@ export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, 
     if (!sourceAddress) throw new Error('No selected account')
 
     const lifecycleContext = lifecycleContextFromSwap(swapBasicData, swapData)
-    setActionStateText("Sign in wallet")
-    onLifecycle({
-        step: 'wallet_prompt_opened',
-        stage: 'wallet_action',
-        outcome: 'pending',
-        path: 'GaslessAuthorization',
-        action: 'sign_gasless_authorization',
-        provider: selectedWallet.providerName,
-        ...lifecycleContext,
-    })
+    // Once per wallet request, so the re-sign after an expired authorization is a prompt too.
+    const onWalletPrompt = () => {
+        setActionStateText("Sign in wallet")
+        onLifecycle({
+            step: 'wallet_prompt_opened',
+            stage: 'wallet_action',
+            outcome: 'pending',
+            path: 'GaslessAuthorization',
+            action: 'sign_gasless_authorization',
+            provider: selectedWallet.providerName,
+            ...lifecycleContext,
+        })
+    }
     let authorizedValidBefore: number | undefined
     const finishTelemetry = widgetTelemetry.beginOperation('gasless_authorization', {
         swap_id: swapData.id, provider: selectedWallet.providerName, timing_kind: 'user_wait_included',
@@ -188,14 +191,32 @@ export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, 
             swapId: swapData.id,
             signAction,
             onSign,
+            onWalletPrompt,
             sourceAddress,
             layerswapApiClient,
         })
     } catch (e: any) {
         const rejected = isUserRejection(e)
         const errorDetails = lifecycleErrorDetails(e)
-        finishTelemetry(rejected ? 'rejected' : 'failed', { occurrence_id: errorDetails.occurrenceId })
-        onLifecycle({
+        // Layerswap's API refused the authorization or its refresh failed: not a wallet failure.
+        const apiFailure = !rejected && (e?.[AUTHORIZE_API_ERROR] || e?.[AUTHORIZATION_REFRESH_ERROR])
+        const refreshFailed = !rejected && !!e?.[AUTHORIZATION_REFRESH_ERROR]
+        const reasonCode = rejected ? 'user_rejected' : refreshFailed ? 'deposit_action_refresh_failed' : errorDetails.reasonCode
+        finishTelemetry(rejected ? 'rejected' : 'failed', {
+            occurrence_id: errorDetails.occurrenceId,
+            ...(refreshFailed ? { reason_code: reasonCode } : {}),
+        })
+        onLifecycle(apiFailure ? {
+            step: 'gasless_authorization_failed',
+            stage: 'input_transfer',
+            outcome: 'failed',
+            path: 'GaslessAuthorization',
+            action: 'authorize_deposit',
+            provider: selectedWallet.providerName,
+            ...errorDetails,
+            reasonCode,
+            ...lifecycleContext,
+        } : {
             step: rejected ? 'wallet_action_rejected' : 'wallet_action_failed',
             stage: 'wallet_action',
             outcome: rejected ? 'rejected' : 'failed',
@@ -203,7 +224,7 @@ export const executeGaslessAuthorization = async (ctx: DepositExecutionContext, 
             action: 'sign_gasless_authorization',
             provider: selectedWallet.providerName,
             ...errorDetails,
-            reasonCode: rejected ? 'user_rejected' : errorDetails.reasonCode,
+            reasonCode,
             ...lifecycleContext,
         })
         // Don't flag the route unavailable when the user simply declined.
@@ -262,17 +283,20 @@ const GASLESS_FALLBACK_WINDOW_SECONDS = 30 * 60
 const fallbackGaslessValidBefore = (): number => Math.floor(Date.now() / 1000) + GASLESS_FALLBACK_WINDOW_SECONDS
 
 const AUTHORIZE_API_ERROR = Symbol('authorizeApiError')
+const AUTHORIZATION_REFRESH_ERROR = Symbol('authorizationRefreshError')
 
 const submitGaslessAuthorization = async (args: {
     swapId: string,
     signAction: SignDepositAction,
     onSign: GaslessSigner,
+    onWalletPrompt: () => void,
     sourceAddress: string,
     layerswapApiClient: LayerSwapApiClient,
 }): Promise<number | undefined> => {
-    const { swapId, signAction, onSign, sourceAddress, layerswapApiClient } = args
+    const { swapId, signAction, onSign, onWalletPrompt, sourceAddress, layerswapApiClient } = args
 
     const signAndAuthorize = async (action: SignDepositAction) => {
+        onWalletPrompt()
         const signature = await onSign(action)
         try {
             await layerswapApiClient.AuthorizeSwapAsync(swapId, signature, sourceAddress)
@@ -292,10 +316,16 @@ const submitGaslessAuthorization = async (args: {
                 return resolveGaslessValidBefore(signAction)
             }
             if (message.includes('expired')) {
-                const refreshed = await layerswapApiClient.GetDepositActionsAsync(swapId, sourceAddress)
-                const freshSignAction = refreshed?.data?.find(isSignAction)
-                if (!freshSignAction?.typed_data) {
-                    throw new Error('Could not refresh the gasless deposit authorization. Please try again.')
+                let freshSignAction: SignDepositAction | undefined
+                try {
+                    const refreshed = await layerswapApiClient.GetDepositActionsAsync(swapId, sourceAddress)
+                    freshSignAction = refreshed?.data?.find(isSignAction)
+                    if (!freshSignAction?.typed_data) {
+                        throw new Error('Could not refresh the gasless deposit authorization. Please try again.')
+                    }
+                } catch (refreshError: any) {
+                    if (refreshError && typeof refreshError === 'object') refreshError[AUTHORIZATION_REFRESH_ERROR] = true
+                    throw refreshError
                 }
                 await signAndAuthorize(freshSignAction)
                 return resolveGaslessValidBefore(freshSignAction)

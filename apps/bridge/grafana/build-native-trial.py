@@ -103,10 +103,10 @@ TRANSFER_REACHED = LIFECYCLE + ' | event_data_step="awaiting_wallet_action"'
 TRANSFER_PROMPTED = LIFECYCLE + ' | event_data_step="wallet_prompt_opened"'
 TRANSFER_SUBMITTED = LIFECYCLE + ' | event_data_step=~"transaction_submitted|gasless_authorization_submitted"'
 TRANSFER_BLOCKED = LIFECYCLE + ' | event_data_step="transfer_blocked"'
-TRANSFER_FAILED = LIFECYCLE + ' | event_data_outcome="failed" | event_data_step=~"wallet_action_failed|network_switch_failed|wallet_connection_failed"'
+TRANSFER_FAILED = LIFECYCLE + ' | event_data_outcome="failed" | event_data_step=~"wallet_action_failed|gasless_authorization_failed|network_switch_failed|wallet_connection_failed"'
 TRANSFER_REJECTED = LIFECYCLE + ' | event_data_outcome="rejected" | event_data_step=~"wallet_action_rejected|network_switch_rejected|wallet_connection_failed"'
-TRANSFER_TROUBLE = LIFECYCLE + ' | event_data_step=~"transfer_blocked|wallet_action_failed|network_switch_failed|wallet_connection_failed" | event_data_outcome=~"blocked|failed"'
-TRANSFER_ACTIVITY = LIFECYCLE + ' | event_data_step=~"wallet_prompt_opened|transfer_blocked|wallet_action_failed|wallet_action_rejected|network_switch_failed|network_switch_rejected|wallet_connection_failed|transaction_submitted|gasless_authorization_submitted"'
+TRANSFER_TROUBLE = LIFECYCLE + ' | event_data_step=~"transfer_blocked|wallet_action_failed|gasless_authorization_failed|network_switch_failed|wallet_connection_failed" | event_data_outcome=~"blocked|failed"'
+TRANSFER_ACTIVITY = LIFECYCLE + ' | event_data_step=~"wallet_prompt_opened|transfer_blocked|wallet_action_failed|gasless_authorization_failed|wallet_action_rejected|network_switch_failed|network_switch_rejected|wallet_connection_failed|transaction_submitted|gasless_authorization_submitted"'
 STALLED = LIFECYCLE + ' | event_data_step="suspected_stall"'
 
 

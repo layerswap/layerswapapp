@@ -59,3 +59,69 @@ for (const [code, rejected] of [[4001, true], ['4001', true], ['ACTION_REJECTED'
     assert.equal(telemetry[0].attributes.outcome, rejected ? 'rejected' : 'failed')
   })
 }
+
+function gaslessContext({ authorize, refresh, lifecycle, submitted = [] }) {
+  const signAction = { type: 'sign', typed_data: { message: { validBefore: '123' } } }
+  return {
+    signAction,
+    ctx: {
+      swapData: { id: 'swap-gasless-api', source_address: 'source' },
+      depositActions: [signAction],
+      swapBasicData: { requested_amount: '1', use_deposit_address: false },
+      selectedWallet: { providerName: 'test-wallet' },
+      sourceAddress: 'source',
+      layerswapApiClient: { AuthorizeSwapAsync: authorize, GetDepositActionsAsync: refresh },
+      setActionStateText() {},
+      setSwapTransaction: (...args) => submitted.push(args),
+      onSuccess() {},
+      onLifecycle: event => lifecycle.push(event),
+    },
+  }
+}
+
+test('an API refusal of the signed authorization is a gasless authorization failure, not a wallet failure', async () => {
+  const lifecycle = []
+  const refusal = Object.assign(new Error('Request failed'), { response: { data: { error: { code: 'GASLESS_NOT_SUPPORTED', message: 'Gasless is not supported' } } } })
+  const { ctx } = gaslessContext({
+    authorize: async () => { throw refusal },
+    refresh: () => assert.fail('a refusal is not an expiry'),
+    lifecycle,
+  })
+  await assert.rejects(executeGaslessAuthorization(ctx, async () => '0xsig'), caught => caught === refusal)
+  assert.deepEqual(lifecycle.map(event => event.step), ['wallet_prompt_opened', 'gasless_authorization_failed'])
+  assert.equal(lifecycle.at(-1).stage, 'input_transfer')
+  assert.equal(lifecycle.at(-1).action, 'authorize_deposit')
+  assert.equal(useGaslessPreferenceStore.getState().gaslessUnavailable, true, 'the fallback behaviour is unchanged')
+})
+
+test('a failed refresh of an expired authorization is a gasless authorization failure with its own reason', async () => {
+  const lifecycle = []
+  const expired = Object.assign(new Error('Authorization expired'), {})
+  const { ctx } = gaslessContext({
+    authorize: async () => { throw expired },
+    refresh: async () => ({ data: [] }),
+    lifecycle,
+  })
+  await assert.rejects(executeGaslessAuthorization(ctx, async () => '0xsig'), /Could not refresh the gasless deposit authorization/)
+  assert.deepEqual(lifecycle.map(event => event.step), ['wallet_prompt_opened', 'gasless_authorization_failed'])
+  assert.equal(lifecycle.at(-1).reasonCode, 'deposit_action_refresh_failed')
+})
+
+test('the re-sign after an expired authorization opens a second wallet prompt', async () => {
+  const lifecycle = []
+  const submitted = []
+  let authorizations = 0
+  const freshSignAction = { type: 'sign', typed_data: { message: { validBefore: '456' } } }
+  const { ctx } = gaslessContext({
+    authorize: async () => { if (authorizations++ === 0) throw new Error('Authorization expired') },
+    refresh: async () => ({ data: [freshSignAction] }),
+    lifecycle,
+    submitted,
+  })
+  const signed = []
+  await executeGaslessAuthorization(ctx, async action => { signed.push(action); return '0xsig' })
+  assert.equal(signed.length, 2)
+  assert.equal(signed[1], freshSignAction)
+  assert.deepEqual(lifecycle.map(event => event.step), ['wallet_prompt_opened', 'wallet_prompt_opened', 'gasless_authorization_submitted'])
+  assert.equal(submitted.length, 1)
+})

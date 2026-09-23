@@ -194,7 +194,7 @@ export const SWAP_LIFECYCLE_REPEATABLE_STEPS = [
   'wallet_connection_started', 'wallet_connected', 'wallet_connection_failed',
   'network_switch_started', 'network_switched', 'network_switch_rejected', 'network_switch_failed',
   'wallet_prompt_opened', 'wallet_action_rejected', 'wallet_action_failed',
-  'transaction_submitted', 'gasless_authorization_submitted', 'deposit_address_copied',
+  'transaction_submitted', 'gasless_authorization_submitted', 'gasless_authorization_failed', 'deposit_address_copied',
   'retry_requested', 'transfer_blocked', 'flow_closed', 'flow_error', 'suspected_stall',
 ] as const;
 
