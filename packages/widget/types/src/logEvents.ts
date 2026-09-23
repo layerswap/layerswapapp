@@ -123,6 +123,7 @@ export type SwapLifecycleOutcome =
   | 'started'
   | 'pending'
   | 'succeeded'
+  | 'refunded'
   | 'rejected'
   | 'failed'
   | 'cancelled'

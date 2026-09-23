@@ -1,4 +1,4 @@
-import { SwapStatus, type Refuel } from '@layerswap/widget-types';
+import { SwapStatus, type Refuel, getErrorOccurrenceId } from '@layerswap/widget-types';
 import AppSettings from "../AppSettings";
 import { InitializeUnauthInstance, InitializeAuthInstance } from "../axiosInterceptor"
 import { v4 as uuidv4 } from 'uuid';
@@ -106,7 +106,17 @@ export default class LayerSwapApiClient {
                             message: error.message,
                             name: error.name,
                             stack: error.stack,
-                            cause: reason
+                            // The AxiosError carries the API key header, the request body
+                            // (addresses) and the XHR; hosts only get what identifies the call.
+                            // The occurrence id is registered on `reason` itself, so the
+                            // lifecycle event for the same rejection resolves to it.
+                            occurrenceId: getErrorOccurrenceId(reason),
+                            cause: {
+                                status: reason?.response?.status,
+                                code: reason?.code,
+                                method: reason?.config?.method,
+                                url: reason?.config?.url?.split('?')[0],
+                            }
                         });
                     }
                     return Promise.reject(reason);

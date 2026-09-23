@@ -379,3 +379,51 @@ test('the deposit wallet journey stays on one flow from continue to completion',
     assert.equal(flow.at(-1).attributes.deposit_observed, true)
     assert.equal(flow.at(-1).attributes.completion_observed, true)
 })
+
+test('a second registration shadows the first until it is removed; the first then receives events again', () => {
+    const telemetry = createWidgetTelemetry(() => 0, () => 0)
+    const first = []
+    const second = []
+    const unregisterFirst = telemetry.register(e => first.push(e))
+    const unregisterSecond = telemetry.register(e => second.push(e))
+    telemetry.interaction('connect_wallet', 'click', false)
+    assert.deepEqual([first.length, second.length], [0, 1])
+    unregisterSecond()
+    telemetry.interaction('connect_wallet', 'click', false)
+    telemetry.beginOperation('quote_request')('succeeded')
+    assert.deepEqual([first.length, second.length], [2, 1])
+    // Removing a shadowed registration leaves the active one alone; cleanup is idempotent.
+    const unregisterThird = telemetry.register(e => second.push(e))
+    unregisterFirst()
+    unregisterSecond()
+    telemetry.interaction('connect_wallet', 'click', false)
+    assert.deepEqual([first.length, second.length], [2, 2])
+    unregisterThird()
+    telemetry.interaction('connect_wallet', 'click', false)
+    assert.deepEqual([first.length, second.length], [2, 2])
+})
+
+test('a registration without a handler silences shadowed handlers only while it is registered', () => {
+    const telemetry = createWidgetTelemetry(() => 0, () => 0)
+    const events = []
+    telemetry.register(e => events.push(e))
+    const unregisterSilent = telemetry.register()
+    telemetry.interaction('connect_wallet', 'click', false)
+    assert.equal(events.length, 0)
+    unregisterSilent()
+    telemetry.interaction('connect_wallet', 'click', false)
+    assert.equal(events.length, 1)
+})
+
+test('a second mounted flow shadows the first until it unmounts; the first flow is current again', async () => {
+    const { telemetry, flow, events } = setup()
+    const second = telemetry.createFlow({ form_mode: 'exchange' })
+    const unmountSecond = telemetry.mount(second)
+    await Promise.resolve()
+    telemetry.interaction('connect_wallet', 'click', true)
+    assert.equal(events.at(-1).attributes.flow_id, second.id)
+    unmountSecond()
+    telemetry.interaction('connect_wallet', 'click', true)
+    assert.equal(events.at(-1).attributes.flow_id, flow.id)
+    assert.equal(events.at(-1).attributes.form_mode, 'cross-chain')
+})

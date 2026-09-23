@@ -14,6 +14,9 @@ export type SwapStatusContext = Omit<SwapStatusEvent, keyof SwapStatusIdentity>
 
 /**
  * Reports each API status transition of a swap to the host once per (swapId, type).
+ * The first status seen for a swap only opened from a URL or history is its state
+ * at load and is not reported; swaps this widget created or showed before their
+ * transfer report from their first status (see lib/callbackObservations).
  * The signature is the trigger set: only the swap id and the API status can start
  * a notification. Context (path, addresses, route) is read from a ref at emission
  * time, so later enrichment neither re-triggers nor is lost.

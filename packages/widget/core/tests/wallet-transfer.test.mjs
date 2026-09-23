@@ -66,13 +66,19 @@ for (const result of ['success', 'rejected', 'expired-again', 'refresh-failed', 
     assert.equal(refreshes, 1)
     const retried = !['refresh-failed', 'empty-refresh'].includes(result)
     assert.deepEqual(prompts, retried ? ['original-xdr', 'fresh-xdr'] : ['original-xdr'])
+    // A failed refresh is an API failure between two wallet requests: it opens no prompt and
+    // is not a wallet action outcome; the operation still ends, as failed.
     assert.deepEqual(lifecycle.map(event => event.step), [
-      'wallet_prompt_opened', ...(retried ? ['wallet_prompt_opened'] : []),
-      result === 'success' ? 'transaction_submitted' : result === 'rejected' ? 'wallet_action_rejected' : 'wallet_action_failed',
+      'wallet_prompt_opened',
+      ...(retried ? [
+        'wallet_prompt_opened',
+        result === 'success' ? 'transaction_submitted' : result === 'rejected' ? 'wallet_action_rejected' : 'wallet_action_failed',
+      ] : []),
     ])
     assert.equal(operations.length, 1, 'one operation covers the refresh and both wallet waits')
     assert.equal(operations[0].attributes.operation, 'wallet_transfer')
     assert.equal(operations[0].attributes.outcome, result === 'success' ? 'succeeded' : result === 'rejected' ? 'rejected' : 'failed')
+    assert.equal(operations[0].attributes.reason_code, retried ? undefined : 'deposit_action_refresh_failed')
     assert.equal(successes, result === 'success' ? 1 : 0)
     assert.deepEqual(published, result === 'success' ? [['swap-stellar', 'pending', 'stellar-hash']] : [])
     assert.deepEqual(catchups, result === 'success' ? [['swap-stellar', 'stellar-hash']] : [])

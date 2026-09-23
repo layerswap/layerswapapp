@@ -234,7 +234,7 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
     const [buttonClicked, setButtonClicked] = useState(false)
     const [error, setError] = useState<Error | undefined>()
     const [loading, setLoading] = useState(false)
-    const { swapDetails, swapError, depositActionsError } = useSwapDataState()
+    const { swapDetails, swapError } = useSwapDataState()
     const gaslessUnavailable = useGaslessPreferenceStore(s => s.gaslessUnavailable)
     const gaslessErrorMessage = useGaslessPreferenceStore(s => s.gaslessErrorMessage)
 
@@ -264,18 +264,15 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
         ],
     )
 
-    // Every state that replaces the send button with a message, in display priority.
+    // Every state that replaces the send button with a message, in display priority. A swap or
+    // deposit-actions error keeps the send button rendered, so it is not a block.
     const blockedReason: TransferBlockedReasonCode | undefined =
         rpcHealth?.health.status === 'unhealthy' ? 'rpc_unhealthy'
         : gaslessUnavailable ? 'gasless_unavailable'
-        : depositActionsError ? 'deposit_actions_unavailable'
-        : swapError ? 'swap_error'
         : undefined
     useTransferBlocked(blockedReason, lifecycleContext, 'TransferTokenButton',
         blockedReason === 'rpc_unhealthy' ? (rpcHealth?.health.status === 'unhealthy' ? rpcHealth.health.reason : undefined)
         : blockedReason === 'gasless_unavailable' ? gaslessErrorMessage ?? undefined
-        : blockedReason === 'deposit_actions_unavailable' ? depositActionsError
-        : blockedReason === 'swap_error' ? swapError ?? undefined
         : undefined)
 
     const clickHandler = useCallback(async (transferProps: TransferProps) => {

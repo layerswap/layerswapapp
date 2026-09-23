@@ -58,8 +58,13 @@ after(() => {
   }
 })
 
+// Status notifications report transitions of swaps this widget created or watched before their
+// transfer; a swap only opened in a status is baselined (tests/callback-observations.test.mjs).
+const created = swapId => ({ step: 'swap_created', stage: 'swap_creation', outcome: 'succeeded', path: 'test', swapId })
+
 function SwapEvents({ status }) {
   const { onSwapStatusChange, onSwapLifecycle } = useCallbacks()
+  useEffect(() => { onSwapLifecycle(created('swap-123')) }, [onSwapLifecycle])
   useEffect(() => {
     onSwapStatusChange({ type: status, swapId: 'swap-123' })
   }, [status, onSwapStatusChange])
@@ -142,12 +147,12 @@ test('inline callbacks that store events in host state settle without repeated e
   await act(() => root.render(createElement(Host, { status: 'ls_transfer_pending' })))
   await act(() => root.render(createElement(Host, { status: 'ls_transfer_pending' })))
   assert.equal(statuses.length, 1)
-  assert.equal(lifecycle.length, 1)
+  assert.deepEqual(lifecycle.map(event => event.step), ['swap_created', 'output_transfer_pending'])
   assert.equal(container.textContent, 'ls_transfer_pending:output_transfer_pending')
 
   await act(() => root.render(createElement(Host, { status: 'completed' })))
   assert.deepEqual(statuses.map(event => event.type), ['ls_transfer_pending', 'completed'])
-  assert.deepEqual(lifecycle.map(event => event.step), ['output_transfer_pending', 'swap_completed'])
+  assert.deepEqual(lifecycle.map(event => event.step), ['swap_created', 'output_transfer_pending', 'swap_completed'])
   assert.equal(container.textContent, 'completed:swap_completed')
 })
 
@@ -164,12 +169,12 @@ test('replacement handlers receive the next transition without replaying unchang
 
   await render('ls_transfer_pending', callbacks(first))
   await render('ls_transfer_pending', callbacks(second))
-  assert.deepEqual(first, ['ls_transfer_pending', 'output_transfer_pending'])
+  assert.deepEqual(first, ['swap_created', 'ls_transfer_pending', 'output_transfer_pending'])
   assert.deepEqual(second, [])
 
   // Replace the functions again in the same commit as the real transition.
   await render('completed', callbacks(second))
-  assert.deepEqual(first, ['ls_transfer_pending', 'output_transfer_pending'])
+  assert.deepEqual(first, ['swap_created', 'ls_transfer_pending', 'output_transfer_pending'])
   assert.deepEqual(second, ['completed', 'swap_completed'])
 
   await render('ls_transfer_pending', undefined)
@@ -187,7 +192,8 @@ test('throwing host callbacks retain their error details and lifecycle telemetry
     callbacks: { onSwapStatusChange: fail, onSwapLifecycle: fail },
   }, createElement(SwapEvents, { status: 'completed' }))))
 
-  assert.equal(received.length, 2)
+  // swap_created, the status and the phase: three callbacks, one thrown error object.
+  assert.equal(received.length, 3)
   for (const event of received) {
     assert.equal(event.type, 'CallbackError')
     assert.equal(event.name, error.name)
@@ -197,8 +203,8 @@ test('throwing host callbacks retain their error details and lifecycle telemetry
     assert.ok(event.occurrenceId)
   }
   assert.equal(received[0].occurrenceId, received[1].occurrenceId)
-  assert.equal(telemetry.mock.callCount(), 1)
-  assert.equal(telemetry.mock.calls[0].arguments[0].step, 'swap_completed')
+  assert.equal(received[1].occurrenceId, received[2].occurrenceId)
+  assert.deepEqual(telemetry.mock.calls.map(call => call.arguments[0].step), ['swap_created', 'swap_completed'])
 })
 
 test('all host callback boundaries normalize nullish and primitive failures without interrupting execution', async t => {
@@ -223,6 +229,7 @@ test('all host callback boundaries normalize nullish and primitive failures with
   for (const caught of [null, undefined, 'host failure', 42, new TypeError('native host failure')]) {
     const callbacks = Object.fromEntries(Object.keys(args).map(name => [name, () => { throw caught }]))
     await act(() => root.render(createElement(CallbackProvider, { callbacks }, createElement(CaptureCallbacks))))
+    current.onSwapLifecycle(created('swap-123'))
     for (const [name, arg] of Object.entries(args)) {
       const before = received.length
       assert.doesNotThrow(() => current[name](arg), name)
@@ -351,7 +358,8 @@ test('StrictMode and confirmation updates deduplicate both telemetry and public 
 test('status callbacks deliver one notification per API status; context is a snapshot', async () => {
   const events = []
   function Status({ event }) {
-    const { onSwapStatusChange } = useCallbacks()
+    const { onSwapStatusChange, onSwapLifecycle } = useCallbacks()
+    useEffect(() => { onSwapLifecycle(created('swap-a')); onSwapLifecycle(created('swap-b')) }, [onSwapLifecycle])
     useEffect(() => { onSwapStatusChange(event) }, [event, onSwapStatusChange])
     return null
   }
@@ -383,6 +391,8 @@ test('a retried wallet failure reports status again even when the API status is 
   }, createElement(Capture))))
   const failed = { swapId: 'swap-a', type: 'failed' }
   const other = { ...failed, swapId: 'swap-b' }
+  callbacks.onSwapLifecycle(created('swap-a'))
+  callbacks.onSwapLifecycle(created('swap-b'))
   callbacks.onSwapStatusChange(failed)
   callbacks.onSwapStatusChange(other)
   callbacks.onSwapStatusChange({ ...failed, fromAddress: 'late' })

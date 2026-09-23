@@ -10,7 +10,7 @@ import { join, relative } from 'node:path'
 const srcDir = new URL('../src/', import.meta.url).pathname
 const EXCLUDED = new Set(['hooks/useTransferBlocked.ts', 'hooks/useLifecycleObservation.ts'])
 const ALLOWLIST = new Set([
-  // Once per hash by design: its deps exclude `status`, and the fingerprint contains it.
+  // Once per hash by design: its deps exclude `status` and the lifecycle context (see below).
   'components/Pages/Swap/Withdraw/Processing/Processing.tsx#input_transaction_detected',
 ])
 const EFFECT_HOOKS = /\b(useEffect|useClientLayoutEffect|useLayoutEffect)\s*\(/g
@@ -68,4 +68,25 @@ test('effect-driven lifecycle observations go through useLifecycleObservation', 
     'or add a justified allowlist entry in tests/lifecycle-effect-emitters.test.mjs.',
   ].join(' '))
   assert.deepEqual(stale, [], 'allowlisted effect emitters that no longer exist should be removed from the allowlist')
+})
+
+test('input_transaction_detected re-runs only for a new hash, never for later context', () => {
+  const text = readFileSync(join(srcDir, 'components/Pages/Swap/Withdraw/Processing/Processing.tsx'), 'utf8')
+  const bodies = [...text.matchAll(EFFECT_HOOKS)]
+    .map(match => effectBody(text, match.index + match[0].length - 1))
+    .filter(body => body.includes("step: 'input_transaction_detected'"))
+  assert.equal(bodies.length, 1)
+  // The fingerprint carries the status, so any other dep (e.g. a source address arriving in the
+  // lifecycle context) would re-deliver the detection whenever the status moved in between.
+  const deps = bodies[0].slice(bodies[0].lastIndexOf('[') + 1, bodies[0].lastIndexOf(']'))
+    .split(',').map(dep => dep.trim()).filter(Boolean).sort()
+  assert.deepEqual(deps, ['onSwapLifecycle', 'swapInputTransaction?.transaction_hash'])
+})
+
+test('transfer_blocked is not reported for states that keep the send button', () => {
+  // A swap or deposit-actions error leaves TransferTokenButton's send button rendered ("Try again").
+  const text = readFileSync(join(srcDir, 'components/Pages/Swap/Withdraw/Wallet/index.tsx'), 'utf8')
+  const start = text.indexOf('const blockedReason', text.indexOf('const TransferTokenButton'))
+  const reasons = text.slice(start, text.indexOf('useTransferBlocked(blockedReason', start))
+  assert.deepEqual([...reasons.matchAll(/'([a-z_]+)'/g)].map(m => m[1]).filter(r => r !== 'unhealthy'), ['rpc_unhealthy', 'gasless_unavailable'])
 })

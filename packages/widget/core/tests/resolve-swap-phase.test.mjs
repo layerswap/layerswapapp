@@ -82,6 +82,25 @@ test('the API input transaction is authoritative over a stale stored failure', (
   assert.equal(resolved.failureReason, undefined)
 })
 
+test('a transient stored failure yields to the input status the API reports afterwards', () => {
+  const storedWalletTransaction = { hash: '0x1', status: 'failed' }
+  // The tx-status poll now sees the transaction: the stored failure no longer applies, and the
+  // input stays pending until the API lists it (as without a stored failure).
+  for (const status of ['pending', 'completed']) {
+    const polled = resolve(pendingSwap(), { storedWalletTransaction, inputTxStatusFromApi: status })
+    assert.equal(polled.swapInputTxStatus, 'pending', status)
+    assert.equal(polled.phase, SwapPhase.InputPending)
+    assert.equal(polled.failureReason, undefined)
+  }
+  // The API lists the input transaction: Processing writes this status back over the stored failure.
+  const listedPending = resolve(pendingSwap({ transactions: [inputTx({ status: 'pending', confirmations: 0 })] }), { storedWalletTransaction })
+  assert.equal(listedPending.swapInputTxStatus, 'pending')
+  assert.equal(listedPending.phase, SwapPhase.InputPending)
+  const listedCompleted = resolve(pendingSwap({ transactions: [inputTx()] }), { storedWalletTransaction, inputTxStatusFromApi: 'failed' })
+  assert.equal(listedCompleted.swapInputTxStatus, 'completed')
+  assert.equal(listedCompleted.failureReason, undefined)
+})
+
 test('the API swap status wins over a stored failure', () => {
   const resolved = resolve(pendingSwap({ status: 'expired' }), { storedWalletTransaction: { hash: '0x1', status: 'failed' } })
   assert.equal(resolved.phase, SwapPhase.Expired)

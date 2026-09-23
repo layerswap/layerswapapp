@@ -158,6 +158,7 @@ test('flow_closed outcome follows the phase table for every phase', () => {
     const closed = resolveFlowClosedEvent({ phase })
     const expected = !TERMINAL_PHASES.has(phase)
       ? 'abandoned'
+      : phase === SwapPhase.Refunded ? 'refunded'
       : PHASE_LIFECYCLE_EVENTS[phase].outcome === 'succeeded' ? 'succeeded' : 'failed'
     assert.equal(closed.outcome, expected, phase)
     assert.equal(closed.step, 'flow_closed', phase)
@@ -174,5 +175,11 @@ test('flow_closed after a failure carries the same reason code as the swap_faile
   assert.equal(resolveFlowClosedEvent({ phase: 'input_pending' }).reasonCode, 'user_closed_non_terminal_flow')
   assert.equal(resolveFlowClosedEvent({ phase: 'input_pending', failureReason: 'transfer_failed' }).outcome, 'abandoned')
   assert.equal(resolveFlowClosedEvent({ phase: 'completed' }).reasonCode, 'completed_flow_closed')
-  assert.equal(resolveFlowClosedEvent({ phase: 'refunded' }).reasonCode, 'completed_flow_closed')
+})
+
+test('flow_closed after a refund is refunded, not succeeded', () => {
+  assert.equal(resolveFlowClosedEvent({ phase: 'refunded' }).outcome, 'refunded')
+  assert.equal(resolveFlowClosedEvent({ phase: 'refunded' }).reasonCode, 'refunded_flow_closed')
+  assert.equal(resolveFlowClosedEvent({ phase: 'refunded' }, { fail_reason: 'X' }).reasonCode, 'X')
+  assert.equal(resolveFlowClosedEvent({ phase: 'pending_refund' }).outcome, 'abandoned')
 })
