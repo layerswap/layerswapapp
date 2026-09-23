@@ -56,15 +56,40 @@ const normalizedSensitiveKeys = [
     'mnemonic',
     'seedphrase',
     'bearertoken',
-    'signature',
+    'authtoken',
+    'sessiontoken',
+    'sessionkey',
+    'secret',
+    'jwt',
+    'credential',
 ]
+
+// Short words that are only credentials as a whole key segment: `auth` but not
+// `author`/`isAuthenticated`. `session` alone is Faro's own session metadata
+// (`session.id`, `sessionId`), so only its token/key forms are listed above.
+const sensitiveKeySegments = ['auth']
+// A signature is the value only when it is the key's head noun (`txSignature`),
+// not a qualifier (`signatureRequired`).
+const sensitiveFinalSegments = ['signature', 'signatures']
+
+function keySegments(key: string): string[] {
+    return key
+        .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+        .replace(/([A-Z])([A-Z][a-z])/g, '$1 $2')
+        .toLowerCase()
+        .split(/[^a-z0-9]+/)
+        .filter(Boolean)
+}
 
 function isSensitiveKey(key: string): boolean {
     const normalizedKey = key.replace(/[^a-z0-9]/gi, '').toLowerCase()
-    return normalizedSensitiveKeys.some(sensitiveKey => normalizedKey.includes(sensitiveKey))
+    if (normalizedSensitiveKeys.some(sensitiveKey => normalizedKey.includes(sensitiveKey))) return true
+    const segments = keySegments(key)
+    return segments.some(segment => sensitiveKeySegments.includes(segment))
+        || sensitiveFinalSegments.includes(segments[segments.length - 1])
 }
 
-const SENSITIVE_TEXT_KEYS = 'authorization|cookie|set[_-]?cookie|api[_-]?key|access[_-]?token|refresh[_-]?token|id[_-]?token|bearer[_-]?token|password|passphrase|private[_-]?key|client[_-]?secret|mnemonic|seed[_-]?phrase|signature'
+const SENSITIVE_TEXT_KEYS = 'authorization|auth|auth[_-]?token|cookie|set[_-]?cookie|api[_-]?key|access[_-]?token|refresh[_-]?token|id[_-]?token|bearer[_-]?token|session[_-]?token|password|passphrase|private[_-]?key|client[_-]?secret|secret|jwt|credentials?|mnemonic|seed[_-]?phrase|signature'
 const SENSITIVE_KEY_VALUE_PATTERN = new RegExp(
     `((?:${SENSITIVE_TEXT_KEYS})["']?\\s*[:=]\\s*)("(?:[^"\\\\]|\\\\.)*"|'(?:[^'\\\\]|\\\\.)*'|\\[[^\\]]*\\]|\\{[^}]*\\}|[^,&}\\n]+)`,
     'gi',
@@ -78,7 +103,7 @@ function redactSensitiveText(value: string): string {
         )
         .replace(/(bearer\s+)[a-z0-9._~+/=-]+/gi, `$1${REDACTED}`)
         .replace(
-            /([?&](?:api[_-]?key|access[_-]?token|refresh[_-]?token|id[_-]?token|password|passphrase|private[_-]?key|client[_-]?secret|mnemonic|seed[_-]?phrase|signature)=)[^&#\s]*/gi,
+            /([?&](?:auth|token|key|sig|secret|jwt|session[_-]?token|credentials?|api[_-]?key|access[_-]?token|refresh[_-]?token|id[_-]?token|password|passphrase|private[_-]?key|client[_-]?secret|mnemonic|seed[_-]?phrase|signature)=)[^&#\s]*/gi,
             `$1${REDACTED}`,
         )
         // Quoted, bracketed and braced values are redacted whole, escapes
