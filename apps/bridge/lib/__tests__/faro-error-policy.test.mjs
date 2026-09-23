@@ -3,6 +3,7 @@ import test from 'node:test'
 import { widgetErrorImpact } from '../faro-error-policy.ts'
 import { getErrorOccurrenceId } from '@layerswap/widget-types'
 import { resolveFaroRelease } from '../faro-release.cjs'
+import { InternalRpcError } from 'viem'
 
 test('balance, gas and interceptor diagnostics are not user operation failures', () => {
     for (const type of ['BalanceResolverError', 'BalanceProviderError', 'GasProviderError', 'FeesPerGasError', 'APIError', 'SwapCatchupError', 'GasMiscalculation']) {
@@ -35,6 +36,13 @@ test('error reporting classifies the same occurrence without a lifecycle event o
     assert.equal(widgetErrorImpact({ type: 'WalletError', message: 'Declined', reasonCode: 'user_rejected' }), 'expected')
     assert.equal(widgetErrorImpact({ type: 'WalletError', message: 'user rejected', reasonCode: 'unauthorized' }), 'user')
     assert.equal(widgetErrorImpact({ type: 'WalletError', message: 'Account unavailable', cause: { code: 4100 } }), 'user')
+})
+
+test('a viem-wrapped -32603 decline is an expected outcome; a bare -32603 is a user-impacting failure', () => {
+    const decline = new InternalRpcError(Object.assign(new Error('User rejected the request.'), { code: -32603 }))
+    assert.equal(widgetErrorImpact({ type: 'SwapWithdrawalError', message: 'Withdrawal failed', cause: decline }), 'expected')
+    const bare = new InternalRpcError(Object.assign(new Error('Internal JSON-RPC error.'), { code: -32603 }))
+    assert.equal(widgetErrorImpact({ type: 'SwapWithdrawalError', message: 'Withdrawal failed', cause: bare }), 'user')
 })
 
 test('release uses CI identity, never labels an unidentified production build local', () => {
