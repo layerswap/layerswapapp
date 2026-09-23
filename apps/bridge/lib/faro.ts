@@ -8,7 +8,7 @@ import {
     type Faro,
 } from '@grafana/faro-web-sdk'
 import { TracingInstrumentation } from '@grafana/faro-web-tracing'
-import { beforeSend, MAX_CONTEXT_VALUE_LENGTH, sanitizeValue, serializeConsoleArgs } from './faro-sanitizer'
+import { beforeSend, flattenContext, serializeConsoleArgs } from './faro-sanitizer'
 import { createWalletContextWriter, createSwapContextWriter, SwapContextInstrumentation } from './faro-session-context'
 import { getFaroVolumePolicy } from './faro-policy'
 import { getSessionTrackingConfig } from './faro-sampling'
@@ -130,48 +130,6 @@ export function initFaro(): Faro | undefined {
 
 export function getFaro(): Faro | undefined {
     return faroClient ?? getInternalFaroFromGlobalObject()
-}
-
-function flattenContext(
-    value: Record<string, unknown>,
-    prefix = '',
-    result: Record<string, string> = {},
-    seen = new WeakSet<object>(),
-): Record<string, string> {
-    if (seen.has(value)) {
-        if (prefix) result[prefix] = '[Circular]'
-        return result
-    }
-
-    seen.add(value)
-
-    for (const [key, rawValue] of Object.entries(value)) {
-        if (rawValue === undefined || rawValue === null) continue
-
-        const outputKey = prefix ? `${prefix}.${key}` : key
-        const sanitizedValue = sanitizeValue(rawValue, key)
-
-        if (
-            sanitizedValue !== null
-            && !Array.isArray(sanitizedValue)
-            && typeof sanitizedValue === 'object'
-        ) {
-            flattenContext(sanitizedValue as Record<string, unknown>, outputKey, result, seen)
-            continue
-        }
-
-        const serialized = typeof sanitizedValue === 'string'
-            ? sanitizedValue
-            : JSON.stringify(sanitizedValue)
-
-        if (serialized !== undefined) {
-            result[outputKey] = serialized.length > MAX_CONTEXT_VALUE_LENGTH
-                ? `${serialized.slice(0, MAX_CONTEXT_VALUE_LENGTH)}...[truncated]`
-                : serialized
-        }
-    }
-
-    return result
 }
 
 /** Returns true when the exception was accepted by Faro. */

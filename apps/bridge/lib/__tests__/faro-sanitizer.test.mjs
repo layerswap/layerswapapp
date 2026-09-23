@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import test from 'node:test'
-import { beforeSend, MAX_CONTEXT_VALUE_LENGTH, sanitizeValue, serializeConsoleArgs } from '../faro-sanitizer.ts'
+import { beforeSend, flattenContext, MAX_CONTEXT_VALUE_LENGTH, MAX_NODES, sanitizeValue, serializeConsoleArgs } from '../faro-sanitizer.ts'
 
 const require = createRequire(import.meta.url)
 const { FaroTraceExporter } = require('@grafana/faro-web-tracing')
@@ -312,4 +312,112 @@ test('malformed trace attributes are dropped instead of leaking uninspected valu
         spansOf(payload)[0].attributes = [attribute('unknown', { [variant]: { authorization: 'synthetic-secret' } })]
         assert.equal(beforeSend(transportItem(payload)), null)
     }
+})
+
+const MAX_DEPTH = 8 // mirrors the module-private constant in faro-sanitizer.ts
+const token = { symbol: 'ETH', decimals: 18 }
+const countValues = value => {
+    if (value === null || typeof value !== 'object') return 1
+    return 1 + Object.values(value).reduce((sum, child) => sum + countValues(child), 0)
+}
+const dag = (fanout, height) => {
+    let node = { leaf: 1 }
+    for (let level = 0; level < height; level++) {
+        const parent = {}
+        for (let i = 0; i < fanout; i++) parent['k' + i] = node
+        node = parent
+    }
+    return node
+}
+
+test('shared non-cyclic references serialize as copies, never as [Circular]', () => {
+    const outputs = [
+        [sanitizeValue({ source: token, destination: token }), { source: token, destination: token }],
+        [sanitizeValue([token, token]), [token, token]],
+        [sanitizeValue({ swap: { source: token, destination: token } }), { swap: { source: token, destination: token } }],
+    ]
+    for (const [output, expected] of outputs) {
+        assert.deepEqual(output, expected)
+        assert(!JSON.stringify(output).includes('[Circular]'))
+    }
+    const error = new Error('boom')
+    const errorOutput = sanitizeValue({ cause: error, context: error })
+    assert.equal(typeof errorOutput.context, 'object')
+    assert.deepEqual(errorOutput.context, errorOutput.cause)
+    assert(!JSON.stringify(errorOutput).includes('[Circular]'))
+    const consoleOutput = serializeConsoleArgs([{ a: token, b: token }])
+    assert.equal(consoleOutput, JSON.stringify({ a: token, b: token }))
+    const logOutput = beforeSend({ type: 'log', payload: { context: { a: token, b: token } }, meta })
+    assert.deepEqual(logOutput.payload.context, { a: token, b: token })
+    assert(!JSON.stringify(logOutput).includes('[Circular]'))
+})
+
+test('true cycles are still marked and ancestors are released on the cycle-return path', () => {
+    const cyclic = { safe: 'ok' }
+    cyclic.self = cyclic
+    const output = sanitizeValue({ x: cyclic, y: cyclic })
+    assert.equal(output.x.self, '[Circular]')
+    assert.equal(output.y.safe, 'ok')
+    assert.equal(output.y.self, '[Circular]')
+    const a = {}
+    const b = { a }
+    a.b = b
+    assert.deepEqual(sanitizeValue(a), { b: { a: '[Circular]' } })
+})
+
+test('reference identity is unobservable and inputs are not mutated', () => {
+    for (const input of [{ swap: { source: token, destination: token } }, dag(3, 4)]) {
+        const before = structuredClone(input)
+        assert.deepEqual(sanitizeValue(input), sanitizeValue(structuredClone(input)))
+        assert.deepEqual(input, before)
+    }
+})
+
+test('node budget bounds width on the raw-value path', () => {
+    for (const input of [dag(8, 12), Array(200_000).fill(token), Object.fromEntries(Array.from({ length: 50_000 }, (_, i) => ['k' + i, i]))]) {
+        const output = sanitizeValue(input)
+        assert(countValues(output) <= MAX_NODES + MAX_DEPTH + 1)
+        const serialized = JSON.stringify(output)
+        assert(serialized.includes('[Maximum size reached]'))
+        assert(!serialized.includes('[Circular]'))
+    }
+})
+
+test('node budget bounds width on the OTLP path', async () => {
+    const { payload } = await sdkPayload()
+    let shared = { stringValue: 'leaf' }
+    for (let level = 0; level < 12; level++) shared = { arrayValue: { values: Array(12).fill(shared) } }
+    const wide = { arrayValue: { values: Array(200_000).fill({ stringValue: 'x' }) } }
+    spansOf(payload)[0].attributes = [attribute('dag', shared), attribute('wide', wide)]
+    const sanitized = beforeSend(transportItem(payload))
+    assert(sanitized)
+    const span = spansOf(sanitized.payload)[0]
+    assertAttributes(span.attributes)
+    const serialized = JSON.stringify(span)
+    assert(serialized.length < 400_000)
+    assert(serialized.includes('"stringValue":"[Maximum size reached]"'))
+    assert(!serialized.includes('[Circular]'))
+})
+
+test('flattenContext keeps shared references, marks cycles, redacts and truncates leaves', () => {
+    assert.deepEqual(flattenContext({ swap: { source: token, destination: token } }), {
+        'swap.source.symbol': 'ETH',
+        'swap.source.decimals': '18',
+        'swap.destination.symbol': 'ETH',
+        'swap.destination.decimals': '18',
+    })
+    const c = { safe: 'ok' }
+    c.self = c
+    const cyclic = flattenContext({ c })
+    assert.equal(cyclic['c.safe'], 'ok')
+    assert.equal(cyclic['c.self'], '[Circular]')
+    assert.equal(flattenContext({ nested: { api_key: 'x' } })['nested.api_key'], '[REDACTED]')
+    const long = flattenContext({ long: 'y'.repeat(MAX_CONTEXT_VALUE_LENGTH + 10) })
+    assert(long.long.endsWith('...[truncated]'))
+})
+
+test('non-OTLP depth limit still applies through sanitizeValue', () => {
+    let deep = { leaf: 'value' }
+    for (let i = 0; i < 20; i++) deep = { nested: deep }
+    assert(JSON.stringify(sanitizeValue(deep)).includes('[Maximum depth reached]'))
 })
