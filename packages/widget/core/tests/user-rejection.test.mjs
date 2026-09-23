@@ -1,10 +1,23 @@
 import assert from 'node:assert/strict'
-import test from 'node:test'
+import test, { after } from 'node:test'
+import { registerHooks } from 'node:module'
+import { extname } from 'node:path'
 import { isUserRejection } from '../dist/esm/components/Pages/Swap/Withdraw/Wallet/Common/isUserRejection.js'
 import { BaseError, UserRejectedRequestError, UnauthorizedProviderError, TransactionRejectedRpcError } from 'viem'
-import { lifecycleErrorDetails } from '../dist/esm/lib/swapLifecycle.js'
 import { ActionMessageType } from '@layerswap/widget-types'
 import { userRejectedError, walletActionError } from '@layerswap/wallet-core/errors'
+
+// The widget emits extensionless relative imports for bundlers; resolve those in Node.
+const hooks = registerHooks({
+  resolve(specifier, context, nextResolve) {
+    if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
+      return nextResolve(`${specifier}.js`, context)
+    }
+    return nextResolve(specifier, context)
+  },
+})
+after(() => hooks.deregister())
+const { lifecycleErrorDetails } = await import('../dist/esm/lib/swapLifecycle.js')
 
 test('the rejected UI label alone is not a rejection; the adapter-declared reason is', () => {
   const labelOnly = new Error('Request was cancelled')

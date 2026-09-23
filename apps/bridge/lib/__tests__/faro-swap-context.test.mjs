@@ -28,16 +28,20 @@ function harness() {
     } })
     const records = []
     let accepts = true
+    let contextClears = 0
     const controller = createSwapLifecycleTelemetry({
-        setSwapContext: (attrs, options) => write(Object.fromEntries(Object.entries(attrs)
-            .filter(([, value]) => value !== undefined && value !== null).map(([key, value]) => [key, String(value)])), options?.replaceAttributes),
+        setSwapContext: (attrs, options) => {
+            if (options?.replaceAttributes && Object.keys(attrs).length === 0) contextClears += 1
+            return write(Object.fromEntries(Object.entries(attrs)
+                .filter(([, value]) => value !== undefined && value !== null).map(([key, value]) => [key, String(value)])), options?.replaceAttributes)
+        },
         captureEvent: (name, attrs) => {
             records.push({ name, attrs: structuredClone(attrs), meta: structuredClone(metas.value) })
             return accepts
         },
     })
     return { api, metas, write, controller, records, listen, attrs: () => api.getSession().attributes,
-        reject: () => { accepts = false } }
+        reject: () => { accepts = false }, contextClears: () => contextClears }
 }
 const event = (step, swapId, extra = {}) => ({ step, swapId, stage: 'flow', outcome: 'pending', path: 'unit-test', ...extra })
 
@@ -283,6 +287,30 @@ test('modal close clears pre-creation context and cannot clear a newly opened fl
     const current = h.attrs().journey_id
     await Promise.resolve()
     assert.equal(h.attrs().journey_id, current)
+    h.controller.dispose()
+})
+
+test('closing after a client-detected failure records a failed close with the failure reason, departing once', () => {
+    const h = harness()
+    h.controller.record(event('swap_created', 'swap-a'))
+    h.controller.record(event('swap_failed', 'swap-a', { stage: 'swap', outcome: 'failed', reasonCode: 'gasless_deposit_failed', phase: 'failed' }))
+    const journey = h.attrs().journey_id
+    // The widget derives flow_closed from the same resolved status the panel rendered, so the
+    // close row agrees with the preceding swap_failed row instead of reporting abandonment.
+    h.controller.record(event('flow_closed', 'swap-a', { outcome: 'failed', reasonCode: 'gasless_deposit_failed', phase: 'failed' }))
+    assert.deepEqual(h.records.map(record => record.attrs.step), ['swap_created', 'swap_failed', 'flow_closed'])
+    // Loki exposes these as event_data_outcome / event_data_reason_code / event_data_previous_step.
+    const closed = h.records.at(-1).attrs
+    assert.equal(closed.outcome, 'failed')
+    assert.equal(closed.reason_code, 'gasless_deposit_failed')
+    assert.equal(closed.previous_step, 'swap_failed')
+    assert.equal(closed.previous_outcome, 'failed')
+    assert.equal(closed.journey_id, journey)
+    assert.equal(h.contextClears(), 1, 'the journey departs exactly once')
+    assert.equal(h.attrs().swap_id, undefined)
+    h.controller.record(event('flow_closed', 'swap-a', { outcome: 'failed', reasonCode: 'gasless_deposit_failed', phase: 'failed' }))
+    assert.equal(h.records.length, 4, 'a repeated close is a background row')
+    assert.equal(h.contextClears(), 1, 'a departed journey is not departed again')
     h.controller.dispose()
 })
 

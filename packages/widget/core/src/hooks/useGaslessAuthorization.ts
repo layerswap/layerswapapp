@@ -1,8 +1,7 @@
 import { SwapStatus } from '@layerswap/widget-types';
 import { useEffect, useState } from 'react'
-import { useSwapDataState } from '@/context/swap'
 import { useGaslessAuthorizationStore } from '@/stores/swapTransactionStore'
-import { GaslessAuthorizationStatus, TransactionType } from '@/lib/apiClients/layerSwapApiClient'
+import { GaslessAuthorizationStatus, SwapDetails, TransactionType } from '@/lib/apiClients/layerSwapApiClient'
 
 // Grace for client clock skew before the fallback timer declares expiry.
 const EXPIRY_GRACE_SECONDS = 30
@@ -16,8 +15,8 @@ type UseGaslessAuthorizationResult = {
 const FAILURE_STATUSES: ReadonlySet<GaslessAuthorizationStatus> = new Set(['expired', 'insufficient', 'rejected'])
 
 // Poll status is authoritative; the valid_before timer is a fallback until a status arrives.
-export function useGaslessAuthorization(): UseGaslessAuthorizationResult {
-    const { swapDetails } = useSwapDataState()
+// Takes the swap as a parameter (no context read) so SwapDataProvider can own the single instance.
+export function useGaslessAuthorization(swapDetails: SwapDetails | undefined): UseGaslessAuthorizationResult {
     const swapId = swapDetails?.id
 
     const authorization = useGaslessAuthorizationStore(

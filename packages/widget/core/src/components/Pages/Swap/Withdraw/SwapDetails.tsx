@@ -70,7 +70,7 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, partner, onCa
                         ? <ManualWithdraw swapBasicData={swapBasicData} depositActions={depositActionsResponse} refuel={refuel} partner={partner} type={type} quote={quote} isQuoteLoading={quoteIsLoading} />
                         : <Withdraw type={type} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} onCancelWithdrawal={onCancelWithdrawal} partner={partner} />
                     : <div className='space-y-3 w-full h-full'>
-                        <Processing failureReason={failureReason} />
+                        <Processing />
                         {
                             canRetry &&
                             <div className='space-y-2'>

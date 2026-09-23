@@ -29,8 +29,7 @@ import UrlAddressNote from "@/components/Input/Address/UrlAddressNote";
 import { Address } from "@/lib/address/Address";
 import ContractAddressValidationCache, { ContractSourceAddressValidationCache } from "./SecondaryComponents/validationError/ContractAddressValidationCache";
 import { useGaslessPreferenceStore } from "@/stores/gaslessPreferenceStore";
-import { lifecycleContextFromForm, lifecycleContextFromSwap } from "@/lib/swapLifecycle";
-import { SwapPhase } from "@/components/utils/resolveSwapPhase";
+import { lifecycleContextFromForm, lifecycleContextFromSwap, resolveFlowClosedEvent } from "@/lib/swapLifecycle";
 import { useResolvedSwapStatus } from "@/hooks/useResolvedSwapStatus";
 import FormTelemetry from './FormTelemetry';
 const SwapDetails = lazy(() => import("../Withdraw/SwapDetails"))
@@ -49,9 +48,9 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
     const settings = useSettingsState();
     const { swapBasicData, swapDetails, swapModalOpen } = useSwapDataState()
-    // The Processing panel shows "Transfer complete" from this resolved phase,
-    // which can lead the API status; closing then must not report abandonment.
-    const { phase: resolvedPhase } = useResolvedSwapStatus()
+    // The same resolved status object the Processing panel renders ("Transfer complete",
+    // "Transfer failed"); it can lead the API status, so flow_closed reports from it.
+    const resolved = useResolvedSwapStatus()
     const sourceNetworkWithTokens = settings.networks.find(n => n.name === swapBasicData?.source_network.name)
     const { getProvider } = useWallet(sourceNetworkWithTokens, "withdrawal")
     const { wallets: allConnectedWallets } = useWallet()
@@ -192,17 +191,12 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
         onSwapModalStateChange(value)
         if (!value) {
             if (swapBasicData) {
-                const status = swapDetails?.status
-                const completed = resolvedPhase === SwapPhase.Completed || resolvedPhase === SwapPhase.Refunded
-                const failed = resolvedPhase === SwapPhase.Failed || resolvedPhase === SwapPhase.Expired
+                // Synchronous, after onSwapModalStateChange(false): the host's close handler
+                // defers its cleanup so this event keeps its journey context.
                 onSwapLifecycle({
-                    step: 'flow_closed',
-                    stage: 'flow',
-                    outcome: completed ? 'succeeded' : failed ? 'failed' : 'abandoned',
+                    ...resolveFlowClosedEvent(resolved, swapDetails),
                     path: 'SwapModal',
-                    reasonCode: completed ? 'completed_flow_closed' : failed ? resolvedPhase : 'user_closed_non_terminal_flow',
-                    status,
-                    phase: resolvedPhase,
+                    status: swapDetails?.status,
                     ...lifecycleContextFromSwap(swapBasicData, swapDetails),
                 })
             }
@@ -211,7 +205,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                 setWalletWihdrawDone(false)
             }
         }
-    }, [swapBasicData, swapDetails, resolvedPhase, walletWihdrawDone, mutateBalances, onSwapLifecycle, onSwapModalStateChange, setSwapModalOpen])
+    }, [swapBasicData, swapDetails, resolved, walletWihdrawDone, mutateBalances, onSwapLifecycle, onSwapModalStateChange, setSwapModalOpen])
 
 
     return <>

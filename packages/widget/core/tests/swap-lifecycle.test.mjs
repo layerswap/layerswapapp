@@ -1,12 +1,29 @@
 import assert from 'node:assert/strict'
-import test from 'node:test'
+import test, { after } from 'node:test'
+import { registerHooks } from 'node:module'
+import { extname } from 'node:path'
 import { getErrorOccurrenceId } from '@layerswap/widget-types'
 import { normalizeWalletErrorCode } from '@layerswap/wallet-core/errors'
-import {
+
+// The widget emits extensionless relative imports for bundlers; resolve those in Node.
+const hooks = registerHooks({
+  resolve(specifier, context, nextResolve) {
+    if (specifier.startsWith('.') && !extname(specifier) && context.parentURL?.includes('/dist/esm/')) {
+      return nextResolve(`${specifier}.js`, context)
+    }
+    return nextResolve(specifier, context)
+  },
+})
+after(() => hooks.deregister())
+
+const {
   lifecycleContextFromForm,
   lifecycleContextFromSwap,
   lifecycleErrorDetails,
-} from '../dist/esm/lib/swapLifecycle.js'
+  resolveFlowClosedEvent,
+  PHASE_LIFECYCLE_EVENTS,
+} = await import('../dist/esm/lib/swapLifecycle.js')
+const { SwapPhase, TERMINAL_PHASES } = await import('../dist/esm/components/utils/swapPhase.js')
 
 test('normalizes form data into stable lifecycle fields', () => {
   assert.deepEqual(lifecycleContextFromForm({
@@ -132,4 +149,30 @@ test('ambiguous -32000 RPC codes do not override typed or nested wallet errors',
     cause: new Error('execution reverted'),
   }), { code: -32000 })
   assert.equal(normalizeWalletErrorCode(wrapped), 'contract_reverted')
+})
+
+test('flow_closed outcome follows the phase table for every phase', () => {
+  const phases = Object.values(SwapPhase)
+  assert.equal(phases.length, Object.keys(PHASE_LIFECYCLE_EVENTS).length)
+  for (const phase of phases) {
+    const closed = resolveFlowClosedEvent({ phase })
+    const expected = !TERMINAL_PHASES.has(phase)
+      ? 'abandoned'
+      : PHASE_LIFECYCLE_EVENTS[phase].outcome === 'succeeded' ? 'succeeded' : 'failed'
+    assert.equal(closed.outcome, expected, phase)
+    assert.equal(closed.step, 'flow_closed', phase)
+    assert.equal(closed.stage, 'flow', phase)
+    assert.equal(closed.phase, phase)
+  }
+})
+
+test('flow_closed after a failure carries the same reason code as the swap_failed row', () => {
+  assert.equal(resolveFlowClosedEvent({ phase: 'failed', failureReason: 'gasless_deposit_failed' }).reasonCode, 'gasless_deposit_failed')
+  assert.equal(resolveFlowClosedEvent({ phase: 'failed', failureReason: 'gasless_deposit_failed' }, { fail_reason: 'X' }).reasonCode, 'X')
+  assert.equal(resolveFlowClosedEvent({ phase: 'failed' }).reasonCode, 'failed')
+  assert.equal(resolveFlowClosedEvent({ phase: 'expired' }).reasonCode, 'expired')
+  assert.equal(resolveFlowClosedEvent({ phase: 'input_pending' }).reasonCode, 'user_closed_non_terminal_flow')
+  assert.equal(resolveFlowClosedEvent({ phase: 'input_pending', failureReason: 'transfer_failed' }).outcome, 'abandoned')
+  assert.equal(resolveFlowClosedEvent({ phase: 'completed' }).reasonCode, 'completed_flow_closed')
+  assert.equal(resolveFlowClosedEvent({ phase: 'refunded' }).reasonCode, 'completed_flow_closed')
 })

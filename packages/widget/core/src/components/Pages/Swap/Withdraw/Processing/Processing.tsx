@@ -1,10 +1,10 @@
 'use client'
-import { SwapStatus, type Refuel, type SwapLifecycleEvent } from '@layerswap/widget-types';
+import { SwapStatus, type Refuel } from '@layerswap/widget-types';
 import LinkWithIcon from '@/components/Common/LinkWithIcon';
 import { FC, useCallback, useEffect, useMemo, useRef } from 'react'
 import { Widget } from '@/components/Widget/Index';
 import SwapSummary from '../Summary';
-import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, SwapBasicData, SwapDetails, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
+import { BackendTransactionStatus, TransactionType, TransactionStatus, SwapBasicData, SwapDetails, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
 import { truncateDecimals } from '@/components/utils/RoundDecimals';
 import { SwapFailReasons } from '@/Models/RangeError';
 import { Gauge } from './gauge';
@@ -13,8 +13,6 @@ import Failed from '../Failed';
 import { ProgressStates, ProgressStatus, StatusStep } from './types';
 import { useSwapTransactionStore, useGaslessAuthorizationStore } from '@/stores/swapTransactionStore';
 import CountdownTimer from '@/components/Common/CountDownTimer';
-import useSWR from 'swr';
-import { ApiResponse } from '@/Models/ApiResponse';
 import { useIntercom } from 'react-use-intercom';
 import Steps from './StepsComponent';
 import { useCallbacks } from '@/context/callbackProvider';
@@ -25,70 +23,16 @@ import { SwapPhase } from '@/components/utils/resolveSwapPhase';
 import { useDepositSettings } from '@/context/depositSettings';
 import { useSettingsState } from '@/context/settings';
 import { useExtendedRoutesStore } from '@/stores/extendedRoutesStore';
-import { SwapFailureReason } from '@/hooks/useSwapRetry';
-import { lifecycleContextFromSwap } from '@/lib/swapLifecycle';
-
-const apiClient = new LayerSwapApiClient();
+import { lifecycleContextFromSwap, PHASE_LIFECYCLE_EVENTS } from '@/lib/swapLifecycle';
 
 type Props = {
     swapBasicData: SwapBasicData;
     swapDetails: SwapDetails;
     quote: SwapQuote | undefined;
     refuel: Refuel | undefined;
-    failureReason?: SwapFailureReason;
 }
 
-type PhaseLifecycleEvent = Pick<SwapLifecycleEvent, 'step' | 'stage' | 'outcome'>
-
-const PHASE_LIFECYCLE_EVENTS: Record<SwapPhase, PhaseLifecycleEvent> = {
-    [SwapPhase.AwaitingUserDeposit]: {
-        step: 'awaiting_user_deposit',
-        stage: 'input_transfer',
-        outcome: 'pending',
-    },
-    [SwapPhase.InputPending]: {
-        step: 'input_transfer_pending',
-        stage: 'input_transfer',
-        outcome: 'pending',
-    },
-    [SwapPhase.OutputPending]: {
-        step: 'output_transfer_pending',
-        stage: 'output_transfer',
-        outcome: 'pending',
-    },
-    [SwapPhase.SettlingOutput]: {
-        step: 'output_settling',
-        stage: 'output_transfer',
-        outcome: 'pending',
-    },
-    [SwapPhase.Completed]: {
-        step: 'swap_completed',
-        stage: 'swap',
-        outcome: 'succeeded',
-    },
-    [SwapPhase.Failed]: {
-        step: 'swap_failed',
-        stage: 'swap',
-        outcome: 'failed',
-    },
-    [SwapPhase.Expired]: {
-        step: 'swap_expired',
-        stage: 'swap',
-        outcome: 'expired',
-    },
-    [SwapPhase.PendingRefund]: {
-        step: 'refund_pending',
-        stage: 'refund',
-        outcome: 'pending',
-    },
-    [SwapPhase.Refunded]: {
-        step: 'refund_completed',
-        stage: 'refund',
-        outcome: 'succeeded',
-    },
-}
-
-const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel, failureReason }) => {
+const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) => {
     const { boot, show, update } = useIntercom();
     const { onSwapLifecycle, onSwapStatusChange } = useCallbacks()
     const { isDepositFlow } = useDepositSettings()
@@ -142,11 +86,8 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel, fail
         ],
     )
 
-    const { data: inputTxStatusData } = useSWR<ApiResponse<{ status: TransactionStatus }>>((transactionHash && swapInputTransaction?.status !== BackendTransactionStatus.Completed) ? [source_network?.name, transactionHash] : null, ([network, tx_id]) => apiClient.GetTransactionStatus(network, tx_id as any), { dedupingInterval: 6000 })
-
-    const inputTxStatusFromApi = inputTxStatusData?.data?.status?.toLowerCase() as TransactionStatus | undefined
-    const resolved = useResolvedSwapStatus({ inputTxStatusFromApi, gaslessAuthorizationFailed: failureReason === 'gasless_deposit_failed' })
-    const { stepStatuses, generalStatus, phase, swapInputTxStatus, inputReady, isRefundFlow, hidesSteps, showsFailedPanel, showsEstimatedTime } = resolved
+    const resolved = useResolvedSwapStatus()
+    const { stepStatuses, generalStatus, phase, swapInputTxStatus, inputReady, isRefundFlow, hidesSteps, showsFailedPanel, showsEstimatedTime, failureReason } = resolved
 
     const loggedNotDetectedTxAt = useRef<number | null>(null);
 
