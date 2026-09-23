@@ -1,16 +1,14 @@
-import type { SwapLifecycleEvent, SwapLifecycleStep, WidgetTelemetryEvent, WidgetTelemetryHandler, WidgetTelemetryAttributes, WidgetTelemetryData, WidgetFlowStep, WidgetOperation, WidgetOperationOutcome } from '@layerswap/widget-types'
-import { SWAP_LIFECYCLE_ATTEMPT_START_STEPS, SWAP_LIFECYCLE_PHASE_STEPS, SWAP_LIFECYCLE_TRANSACTION_STEPS, createRandomId } from '@layerswap/widget-types'
+import type { SwapLifecycleEvent, SwapLifecycleObservationKey, SwapLifecycleStep, WidgetTelemetryEvent, WidgetTelemetryHandler, WidgetTelemetryAttributes, WidgetTelemetryData, WidgetFlowStep, WidgetOperation, WidgetOperationOutcome } from '@layerswap/widget-types'
+import { SWAP_LIFECYCLE_ATTEMPT_START_STEPS, createRandomId, lifecycleObservationFingerprint, lifecycleObservationKey } from '@layerswap/widget-types'
 
 type Attributes = WidgetTelemetryAttributes
 type Flow = {
     id: string; started: number; attributes: Attributes; opened: boolean; engaged: boolean;
     submitted: boolean; prompted: boolean; transferSubmitted: boolean; deposited: boolean; completed: boolean;
     attempts: number; swapId?: string; validation?: string;
-    observations: Map<SwapLifecycleStep | 'phase', string>;
+    observations: Map<SwapLifecycleObservationKey, string>;
 }
 
-const TRANSACTION_OBSERVATION_STEPS = new Set(SWAP_LIFECYCLE_TRANSACTION_STEPS)
-const PHASE_OBSERVATION_STEPS = new Set(SWAP_LIFECYCLE_PHASE_STEPS)
 // Unlike host callbacks, the form flow also restarts on every submission.
 const ATTEMPT_START_STEPS = new Set<SwapLifecycleStep>(['form_submitted', ...SWAP_LIFECYCLE_ATTEMPT_START_STEPS])
 
@@ -95,19 +93,13 @@ export function createWidgetTelemetry(clock = now, wallClock = Date.now) {
             if (ATTEMPT_START_STEPS.has(event.step)
                 || (event.step === 'swap_created' && event.swapId !== flow.swapId)) flow.observations.clear()
 
-            // Each transaction effect owns a slot; phases share one so a real
-            // A → B → A transition survives. Four slots stay with the form across
-            // StrictMode replay, without accumulating every swap or confirmation.
-            const observationKey = TRANSACTION_OBSERVATION_STEPS.has(event.step) ? event.step
-                : PHASE_OBSERVATION_STEPS.has(event.step) ? 'phase' : undefined
+            // The shared slot and fingerprint (@layerswap/widget-types
+            // lifecycleObservation) keep this funnel aligned with the host
+            // callback. Four slots stay with the form across StrictMode replay;
+            // the swap id scopes them because the flow outlives one swap.
+            const observationKey = lifecycleObservationKey(event)
             if (observationKey && registration?.active) {
-                // Confirmation counts and context enrichment do not advance the
-                // funnel. Preserve new transactions, outcomes and failure causes.
-                const fingerprint = JSON.stringify([
-                    event.swapId ?? flow.swapId, event.step, event.outcome, event.status, event.phase,
-                    event.reasonCode, event.occurrenceId, event.transactionHash, event.inputTransactionHash,
-                    event.outputTransactionHash, event.refundTransactionHash,
-                ])
+                const fingerprint = JSON.stringify([event.swapId ?? flow.swapId, lifecycleObservationFingerprint(event)])
                 if (flow.observations.get(observationKey) === fingerprint) return
                 flow.observations.set(observationKey, fingerprint)
             }

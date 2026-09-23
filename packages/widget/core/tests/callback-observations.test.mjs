@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { createCallbackObservations } from '../src/lib/callbackObservations.ts'
+import { createCallbackObservations } from '../dist/esm/lib/callbackObservations.js'
 
 const status = (swapId, type = 'user_transfer_pending') => ({ type, swapId })
 const lifecycle = (swapId, step = 'output_transfer_pending') => ({ step, swapId, stage: 'flow', outcome: 'pending', path: 'test' })

@@ -1,9 +1,9 @@
 import {
-    SWAP_LIFECYCLE_ATTEMPT_START_STEPS, SWAP_LIFECYCLE_PHASE_STEPS, createRandomId,
-    type SwapLifecycleEvent, type SwapLifecycleStep,
+    SWAP_LIFECYCLE_ATTEMPT_START_STEPS, createRandomId, lifecycleObservationFingerprint, lifecycleObservationKey,
+    type SwapLifecycleEvent, type SwapLifecycleObservationKey, type SwapLifecycleStep,
 } from '@layerswap/widget-types'
 
-const PHASE_OBSERVATION_STEPS = new Set(SWAP_LIFECYCLE_PHASE_STEPS)
+const ATTEMPT_START_STEPS = new Set<SwapLifecycleStep>(SWAP_LIFECYCLE_ATTEMPT_START_STEPS)
 /** Bounds per-swap state for long sessions that revisit many swaps. */
 const MAX_TRACKED_SWAPS = 64
 
@@ -46,23 +46,20 @@ type LifecycleState = {
     lastEventAt: number
     lastStep?: SwapLifecycleStep
     lastOutcome?: SwapLifecycleEvent['outcome']
-    lastFingerprintByStep: Map<SwapLifecycleStep | 'phase', string>
+    /**
+     * Dedupe slots scoped per swap id exactly like the host callback's, so the
+     * bridge never drops an observation the public onSwapLifecycle delivered.
+     */
+    observations: Map<string | undefined, Map<SwapLifecycleObservationKey, string>>
     sequence: number
     attempt: number
+    /** Journey metadata: how many wallet, connection, switch or creation attempts were started. */
     operationSequence: number
     swapId?: string
     terminal: boolean
     departed?: boolean
     stallTimer?: ReturnType<typeof setTimeout>
 }
-
-const REPEATABLE_LIFECYCLE_STEPS = new Set<SwapLifecycleStep>([
-    ...SWAP_LIFECYCLE_ATTEMPT_START_STEPS,
-    'form_submitted',
-    // The widget emits one record per reason transition; a later re-block
-    // after recovery is a distinct observation.
-    'transfer_blocked',
-])
 
 const TERMINAL_LIFECYCLE_STEPS = new Set<SwapLifecycleStep>([
     'swap_completed',
@@ -111,7 +108,7 @@ function createLifecycleState(now: number): LifecycleState {
         attempt: 0,
         operationSequence: 0,
         terminal: false,
-        lastFingerprintByStep: new Map(),
+        observations: new Map(),
     }
 }
 
@@ -218,26 +215,15 @@ export function createSwapLifecycleTelemetry({ captureEvent, setSwapContext }: {
         }
 
         const attributes = getLifecycleAttributes(event)
-        // A -> B -> A is a real recovery, while replaying A alone is a duplicate.
-        const observationKey = PHASE_OBSERVATION_STEPS.has(event.step) ? 'phase' : event.step
-        const fingerprint = JSON.stringify([
-            state.operationSequence,
-            event.occurrenceId,
-            event.step,
-            event.swapId,
-            event.outcome,
-            event.reasonCode,
-            event.transactionHash,
-            event.inputTransactionHash,
-            event.outputTransactionHash,
-            event.refundTransactionHash,
-            event.status,
-            event.phase,
-        ])
-        if (
-            state.lastFingerprintByStep.get(observationKey) === fingerprint
-            && !REPEATABLE_LIFECYCLE_STEPS.has(event.step)
-        ) return
+        // The shared slot and fingerprint (@layerswap/widget-types
+        // lifecycleObservation) decide what is a duplicate, with the same
+        // per-swap scope and attempt-start reset as the host callback: phases
+        // share a slot (A -> B -> A is a recovery), transactions own one, and
+        // every other step is always recorded.
+        if (ATTEMPT_START_STEPS.has(event.step)) state.observations.delete(event.swapId)
+        const observationKey = lifecycleObservationKey(event)
+        const fingerprint = observationKey ? lifecycleObservationFingerprint(event) : undefined
+        if (observationKey && state.observations.get(event.swapId)?.get(observationKey) === fingerprint) return
 
         if (state.stallTimer) {
             clearTimeout(state.stallTimer)
@@ -283,7 +269,14 @@ export function createSwapLifecycleTelemetry({ captureEvent, setSwapContext }: {
         state.lastEventAt = now
         state.lastStep = event.step
         state.lastOutcome = event.outcome
-        state.lastFingerprintByStep.set(observationKey, fingerprint)
+        if (observationKey && fingerprint) {
+            let slots = state.observations.get(event.swapId)
+            if (!slots) {
+                slots = new Map()
+                state.observations.set(event.swapId, slots)
+            }
+            slots.set(observationKey, fingerprint)
+        }
         state.terminal = TERMINAL_LIFECYCLE_STEPS.has(event.step)
 
         const stallThreshold = STALL_THRESHOLDS_MS[event.step]

@@ -347,7 +347,7 @@ test('generic flow diagnostics preserve route context and do not cancel progress
     h.controller.dispose()
 })
 
-test('identical failures after separate wallet, connection and network attempts survive dedupe and stop timers', t => {
+test('identical failures after wallet, connection and network attempts are recorded like the host delivers them and stop timers', t => {
     t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: 1000 })
     for (const [start, end] of [['wallet_prompt_opened', 'wallet_action_rejected'], ['wallet_connection_started', 'wallet_connection_failed'], ['network_switch_started', 'network_switch_failed']]) {
         const h = harness()
@@ -356,7 +356,9 @@ test('identical failures after separate wallet, connection and network attempts 
             h.controller.record(event(end, 'swap-a', { outcome: 'failed', reasonCode: 'same-reason' }))
             h.controller.record(event(end, 'swap-a', { outcome: 'failed', reasonCode: 'same-reason' }))
         }
-        assert.equal(h.records.filter(r => r.attrs.step === end).length, 2)
+        // Attempt results are unslotted for every consumer (lifecycle-sequences.json
+        // "repeated_rejection_reports"): the bridge is never stricter than onSwapLifecycle.
+        assert.equal(h.records.filter(r => r.attrs.step === end).length, 4)
         t.mock.timers.tick(120001)
         assert(!h.records.some(r => r.attrs.step === 'suspected_stall'))
         h.controller.dispose()

@@ -153,69 +153,66 @@ export type WalletErrorReasonCode =
   | 'unknown_error';
 
 /**
- * Semantic steps emitted by the widget. These deliberately describe user and
- * application intent instead of mirroring raw console messages or API calls.
+ * Mutually exclusive UI phase observations. Consumers dedupe these in one
+ * shared slot per swap, so a real A → B → A recovery is still delivered while
+ * a replay of A alone is not.
  */
-export type SwapLifecycleStep =
-  | 'form_submitted'
-  | 'form_confirmation_cancelled'
-  | 'swap_creation_started'
-  | 'swap_created'
-  | 'swap_creation_failed'
-  | 'wallet_connection_started'
-  | 'wallet_connected'
-  | 'wallet_connection_failed'
-  | 'network_switch_started'
-  | 'network_switched'
-  | 'network_switch_rejected'
-  | 'network_switch_failed'
-  | 'awaiting_wallet_action'
-  | 'wallet_prompt_opened'
-  | 'wallet_action_rejected'
-  | 'wallet_action_failed'
-  | 'transaction_submitted'
-  | 'gasless_authorization_submitted'
-  | 'awaiting_user_deposit'
-  | 'deposit_address_copied'
-  | 'input_transaction_detected'
-  | 'input_transfer_pending'
-  | 'input_transfer_confirmed'
-  | 'output_transfer_pending'
-  | 'output_transaction_detected'
-  | 'output_settling'
-  | 'swap_delayed'
-  | 'swap_completed'
-  | 'swap_failed'
-  | 'swap_expired'
-  | 'swap_cancelled'
-  | 'refund_pending'
-  | 'refund_completed'
-  | 'retry_requested'
-  | 'transfer_blocked'
-  | 'flow_closed'
-  | 'flow_error'
-  | 'suspected_stall';
-
-/** Mutually exclusive UI phase observations; consumers dedupe these in one slot. */
-export const SWAP_LIFECYCLE_PHASE_STEPS: readonly SwapLifecycleStep[] = [
+export const SWAP_LIFECYCLE_PHASE_STEPS = [
   'awaiting_wallet_action', 'awaiting_user_deposit', 'input_transfer_pending', 'output_transfer_pending',
   'output_settling', 'swap_completed', 'swap_failed', 'swap_delayed', 'swap_expired', 'swap_cancelled',
   'refund_pending', 'refund_completed',
-];
+] as const;
 
-/** Each on-chain transaction observation owns its own dedupe slot. */
-export const SWAP_LIFECYCLE_TRANSACTION_STEPS: readonly SwapLifecycleStep[] = [
+/** Each on-chain transaction observation owns its own dedupe slot per swap. */
+export const SWAP_LIFECYCLE_TRANSACTION_STEPS = [
   'input_transaction_detected', 'input_transfer_confirmed', 'output_transaction_detected',
-];
+] as const;
+
+/**
+ * Every other step: user actions, attempts, their results and diagnostics.
+ * These are never slotted, so every emission is delivered by every consumer.
+ */
+export const SWAP_LIFECYCLE_REPEATABLE_STEPS = [
+  'form_submitted', 'form_confirmation_cancelled',
+  'swap_creation_started', 'swap_created', 'swap_creation_failed',
+  'wallet_connection_started', 'wallet_connected', 'wallet_connection_failed',
+  'network_switch_started', 'network_switched', 'network_switch_rejected', 'network_switch_failed',
+  'wallet_prompt_opened', 'wallet_action_rejected', 'wallet_action_failed',
+  'transaction_submitted', 'gasless_authorization_submitted', 'deposit_address_copied',
+  'retry_requested', 'transfer_blocked', 'flow_closed', 'flow_error', 'suspected_stall',
+] as const;
+
+export type SwapLifecyclePhaseStep = (typeof SWAP_LIFECYCLE_PHASE_STEPS)[number];
+export type SwapLifecycleTransactionStep = (typeof SWAP_LIFECYCLE_TRANSACTION_STEPS)[number];
+export type SwapLifecycleRepeatableStep = (typeof SWAP_LIFECYCLE_REPEATABLE_STEPS)[number];
+
+/**
+ * Semantic steps emitted by the widget. These deliberately describe user and
+ * application intent instead of mirroring raw console messages or API calls.
+ *
+ * The union is derived from the three category tuples above: a new step must
+ * be placed in exactly one of them or it does not exist as a step.
+ */
+export type SwapLifecycleStep = SwapLifecyclePhaseStep | SwapLifecycleTransactionStep | SwapLifecycleRepeatableStep;
+
+// Compile-time guard that the categories do not overlap (a step listed twice
+// fails the `never` constraint); tests/lifecycle-steps.test.mjs checks the same
+// property on the built output.
+type AssertNever<T extends never> = T;
+type OverlappingSwapLifecycleSteps =
+  | Extract<SwapLifecyclePhaseStep, SwapLifecycleTransactionStep | SwapLifecycleRepeatableStep>
+  | Extract<SwapLifecycleTransactionStep, SwapLifecycleRepeatableStep>;
+type SwapLifecycleCategoriesAreDisjoint = AssertNever<OverlappingSwapLifecycleSteps>;
 
 /**
  * User or application actions that begin a new attempt. Earlier observations
  * for the same swap no longer suppress later ones once any of these is seen.
+ * Always a subset of the repeatable steps.
  */
-export const SWAP_LIFECYCLE_ATTEMPT_START_STEPS: readonly SwapLifecycleStep[] = [
+export const SWAP_LIFECYCLE_ATTEMPT_START_STEPS = [
   'swap_creation_started', 'wallet_connection_started', 'network_switch_started',
   'wallet_prompt_opened', 'retry_requested',
-];
+] as const satisfies readonly SwapLifecycleRepeatableStep[];
 
 export type SwapLifecycleEvent = {
   occurrenceId?: string;

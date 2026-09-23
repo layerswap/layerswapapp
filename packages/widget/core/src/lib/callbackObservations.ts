@@ -1,11 +1,9 @@
 import {
-    SWAP_LIFECYCLE_ATTEMPT_START_STEPS, SWAP_LIFECYCLE_PHASE_STEPS, SWAP_LIFECYCLE_TRANSACTION_STEPS,
-    type SwapLifecycleEvent, type SwapLifecycleStep, type SwapStatusEvent,
+    SWAP_LIFECYCLE_ATTEMPT_START_STEPS, lifecycleObservationFingerprint, lifecycleObservationKey,
+    type SwapLifecycleEvent, type SwapLifecycleObservationKey, type SwapLifecycleStep, type SwapStatusEvent,
 } from '@layerswap/widget-types'
 
-const PHASE_STEPS = new Set(SWAP_LIFECYCLE_PHASE_STEPS)
-const TRANSACTION_STEPS = new Set(SWAP_LIFECYCLE_TRANSACTION_STEPS)
-const ATTEMPT_START_STEPS = new Set(SWAP_LIFECYCLE_ATTEMPT_START_STEPS)
+const ATTEMPT_START_STEPS = new Set<SwapLifecycleStep>(SWAP_LIFECYCLE_ATTEMPT_START_STEPS)
 /** Keeps a long session that browses many swaps from growing without bound. */
 const MAX_TRACKED_SWAPS = 64
 
@@ -25,7 +23,7 @@ function evictLeastRecent(map: Map<unknown, unknown>) {
 /** Host callbacks observe transitions, while user actions always remain repeatable. */
 export function createCallbackObservations() {
     const statuses = new Map<string, string>()
-    const lifecycle = new Map<string | undefined, Map<SwapLifecycleStep | 'phase', string>>()
+    const lifecycle = new Map<string | undefined, Map<SwapLifecycleObservationKey, string>>()
     const reset = () => { statuses.clear(); lifecycle.clear() }
 
     return {
@@ -46,10 +44,10 @@ export function createCallbackObservations() {
                 if (event.swapId) statuses.delete(event.swapId)
             }
 
-            // Separate transaction slots survive interleaved effect replay. All
-            // phases share a slot so a real A → B → A recovery is still delivered.
-            const key = PHASE_STEPS.has(event.step) ? 'phase'
-                : TRANSACTION_STEPS.has(event.step) ? event.step : undefined
+            // The slot and fingerprint are the shared contract every consumer
+            // applies (see @layerswap/widget-types lifecycleObservation); this
+            // callback only adds the per-swap scope and its LRU bound.
+            const key = lifecycleObservationKey(event)
             if (!key) return true
             let observations = touch(lifecycle, event.swapId)
             if (!observations) {
@@ -57,13 +55,7 @@ export function createCallbackObservations() {
                 lifecycle.set(event.swapId, observations)
                 evictLeastRecent(lifecycle)
             }
-            // Addresses and confirmation counts enrich context without advancing
-            // the journey. New transactions, outcomes and failures do advance it.
-            const fingerprint = JSON.stringify([
-                event.step, event.outcome, event.status, event.phase, event.reasonCode,
-                event.occurrenceId, event.transactionHash, event.inputTransactionHash,
-                event.outputTransactionHash, event.refundTransactionHash,
-            ])
+            const fingerprint = lifecycleObservationFingerprint(event)
             if (observations.get(key) === fingerprint) return false
             observations.set(key, fingerprint)
             return true

@@ -13,7 +13,12 @@ export type {
 export { NetworkType } from './network';
 export type { Refuel, AvailableSourceNetworkTypes } from './network';
 export { SwapStatus } from './SwapStatus';
-export { SWAP_LIFECYCLE_PHASE_STEPS, SWAP_LIFECYCLE_TRANSACTION_STEPS, SWAP_LIFECYCLE_ATTEMPT_START_STEPS } from './logEvents';
+export {
+  SWAP_LIFECYCLE_PHASE_STEPS, SWAP_LIFECYCLE_TRANSACTION_STEPS, SWAP_LIFECYCLE_REPEATABLE_STEPS,
+  SWAP_LIFECYCLE_ATTEMPT_START_STEPS,
+} from './logEvents';
+export { lifecycleObservationKey, lifecycleObservationFingerprint } from './lifecycleObservation';
+export type { SwapLifecycleObservationKey } from './lifecycleObservation';
 export type {
   BaseErrorProps,
   AlertUIEvent,
@@ -34,6 +39,9 @@ export type {
   SwapLifecycleOutcome,
   SwapLifecycleStage,
   SwapLifecycleStep,
+  SwapLifecyclePhaseStep,
+  SwapLifecycleTransactionStep,
+  SwapLifecycleRepeatableStep,
   TransferBlockedReasonCode,
   WalletErrorReasonCode,
 } from './logEvents';
