@@ -26,6 +26,7 @@ import { useExtendedRoutesStore } from '@/stores/extendedRoutesStore';
 import { lifecycleContextFromSwap, PHASE_LIFECYCLE_EVENTS } from '@/lib/swapLifecycle';
 import { useLifecycleObservation } from '@/hooks/useLifecycleObservation';
 import { useSwapStatusNotification } from '@/hooks/useSwapStatusNotification';
+import { useClientLayoutEffect } from '@/hooks/useClientLayoutEffect';
 
 type Props = {
     swapBasicData: SwapBasicData;
@@ -144,7 +145,10 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
         }
     }, [swapInputTxStatus, transactionHash, swapDetails?.id, swapInputTransaction?.from, swapBasicData?.destination_address])
 
-    // Once per hash by design: status changes are reported by input_transfer_confirmed. Allowlisted in tests/lifecycle-effect-emitters.test.mjs.
+    // Once per hash by design: status changes are reported by input_transfer_confirmed, and the
+    // context is read from a ref so later enrichment cannot re-run it. Allowlisted in tests/lifecycle-effect-emitters.test.mjs.
+    const lifecycleContextRef = useRef(lifecycleContext)
+    useClientLayoutEffect(() => { lifecycleContextRef.current = lifecycleContext })
     useEffect(() => {
         if (!swapInputTransaction?.transaction_hash) return
         onSwapLifecycle({
@@ -157,10 +161,9 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             status: swapInputTransaction.status,
             confirmations: swapInputTransaction.confirmations,
             maxConfirmations: swapInputTransaction.max_confirmations,
-            ...lifecycleContext,
+            ...lifecycleContextRef.current,
         })
     }, [
-        lifecycleContext,
         onSwapLifecycle,
         swapInputTransaction?.transaction_hash,
     ])

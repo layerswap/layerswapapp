@@ -66,12 +66,17 @@ export function resolveFlowClosedEvent(
     const { phase } = resolved
     const terminal = TERMINAL_PHASES.has(phase)
     const phaseOutcome = PHASE_LIFECYCLE_EVENTS[phase].outcome
-    const outcome = !terminal ? 'abandoned' : phaseOutcome === 'succeeded' ? 'succeeded' : 'failed'
+    // A completed refund is the refund succeeding, not the swap: the swap did not deliver.
+    const outcome = !terminal ? 'abandoned'
+        : phase === SwapPhase.Refunded ? 'refunded'
+        : phaseOutcome === 'succeeded' ? 'succeeded' : 'failed'
     const reasonCode = outcome === 'succeeded'
         ? 'completed_flow_closed'
-        : outcome === 'failed'
-            ? (swapDetails?.fail_reason || resolved.failureReason || phase)
-            : 'user_closed_non_terminal_flow'
+        : outcome === 'refunded'
+            ? (swapDetails?.fail_reason || 'refunded_flow_closed')
+            : outcome === 'failed'
+                ? (swapDetails?.fail_reason || resolved.failureReason || phase)
+                : 'user_closed_non_terminal_flow'
     return { step: 'flow_closed', stage: 'flow', outcome, reasonCode, phase }
 }
 

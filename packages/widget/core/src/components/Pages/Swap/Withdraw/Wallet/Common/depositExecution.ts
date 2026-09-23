@@ -33,48 +33,41 @@ export type DepositExecutionContext = {
 
 export const isSignAction = (action: DepositAction): action is SignDepositAction => action.type === 'sign'
 
+const isExpiredTransaction = (error: unknown) => (error as Error)?.name === ActionMessageType.TransactionExpired
+
 export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClick: WalletTransfer): Promise<void> => {
     const { swapData, depositActions, swapBasicData, selectedWallet, sourceAddress, layerswapApiClient, setActionStateText, setSwapTransaction, onSuccess, onLifecycle } = ctx
 
-    let transferProps = resolveTransactionData(swapData, depositActions, swapBasicData, selectedWallet)
+    const transferProps = resolveTransactionData(swapData, depositActions, swapBasicData, selectedWallet)
     const lifecycleContext = lifecycleContextFromSwap(swapBasicData, swapData)
     setActionStateText("Opening Wallet")
-    const reportWalletPrompt = () => onLifecycle({
-        step: 'wallet_prompt_opened',
-        stage: 'wallet_action',
-        outcome: 'pending',
-        path: 'WalletTransfer',
-        action: 'send_transaction',
-        provider: selectedWallet.providerName,
-        ...lifecycleContext,
-    })
-    reportWalletPrompt()
 
     let hash: string | undefined
     const finishTelemetry = widgetTelemetry.beginOperation('wallet_transfer', {
         swap_id: swapData.id, provider: selectedWallet.providerName, timing_kind: 'user_wait_included',
     })
-    try {
+    // Prompt and wallet outcome bracket the wallet request itself: one prompt event per
+    // request, and only a wallet request can end as a wallet_action rejection or failure.
+    const requestWallet = async (props: TransferProps, { retriesExpiry }: { retriesExpiry: boolean }) => {
+        onLifecycle({
+            step: 'wallet_prompt_opened',
+            stage: 'wallet_action',
+            outcome: 'pending',
+            path: 'WalletTransfer',
+            action: 'send_transaction',
+            provider: selectedWallet.providerName,
+            ...lifecycleContext,
+        })
         try {
-            hash = await onClick(transferProps)
+            return await onClick(props)
         } catch (error) {
-            if ((error as Error)?.name !== ActionMessageType.TransactionExpired) throw error
-
-            setActionStateText("Refreshing transfer")
-            const refreshed = await layerswapApiClient.GetDepositActionsAsync(
-                swapData.id,
-                sourceAddress ?? selectedWallet.address,
-            )
-            if (!refreshed?.data?.length) {
-                throw new Error('Could not refresh the expired Stellar deposit action. Please try again.')
-            }
-            transferProps = resolveTransactionData(swapData, refreshed.data, swapBasicData, selectedWallet)
-            setActionStateText("Opening Wallet")
-            reportWalletPrompt()
-            hash = await onClick(transferProps)
+            // An expired Stellar transaction is retried below, not a wallet outcome.
+            if (retriesExpiry && isExpiredTransaction(error)) throw error
+            reportWalletFailure(error)
+            throw error
         }
     }
-    catch (error) {
+    const reportWalletFailure = (error: unknown) => {
         const rejected = isUserRejection(error)
         const errorDetails = lifecycleErrorDetails(error)
         finishTelemetry(rejected ? 'rejected' : 'failed', { occurrence_id: errorDetails.occurrenceId })
@@ -89,7 +82,35 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
             reasonCode: rejected ? 'user_rejected' : errorDetails.reasonCode,
             ...lifecycleContext,
         })
-        throw error
+    }
+
+    try {
+        hash = await requestWallet(transferProps, { retriesExpiry: true })
+    } catch (error) {
+        if (!isExpiredTransaction(error)) throw error
+
+        setActionStateText("Refreshing transfer")
+        // An API step between two wallet requests: its failure ends the operation but is
+        // neither a wallet prompt nor a wallet action failure (onError reports the API error).
+        let refreshedProps: TransferProps
+        try {
+            const refreshed = await layerswapApiClient.GetDepositActionsAsync(
+                swapData.id,
+                sourceAddress ?? selectedWallet.address,
+            )
+            if (!refreshed?.data?.length) {
+                throw new Error('Could not refresh the expired Stellar deposit action. Please try again.')
+            }
+            refreshedProps = resolveTransactionData(swapData, refreshed.data, swapBasicData, selectedWallet)
+        } catch (refreshError) {
+            finishTelemetry('failed', {
+                reason_code: 'deposit_action_refresh_failed',
+                occurrence_id: lifecycleErrorDetails(refreshError).occurrenceId,
+            })
+            throw refreshError
+        }
+        setActionStateText("Opening Wallet")
+        hash = await requestWallet(refreshedProps, { retriesExpiry: false })
     }
     if (!hash) {
         finishTelemetry('failed', { reason_code: 'missing_transaction_hash' })
