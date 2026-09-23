@@ -581,13 +581,15 @@ test('all mounted previews ignore clicks and keyboard activation without request
     }
 });
 
-const chooseGroup = async (container, group) => {
-    const picker = container.querySelector('#timeline-group');
+const chooseOption = async (container, selector, label) => {
+    const picker = container.querySelector(selector);
     await act(async () => picker.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })));
-    const option = [...document.querySelectorAll('[role="option"]')].find(item => item.textContent === group);
-    assert.ok(option, group);
+    const option = [...document.querySelectorAll('[role="option"]')].find(item => item.textContent === label);
+    assert.ok(option, label);
     await act(async () => option.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
 };
+const chooseGroup = (container, group) => chooseOption(container, '#timeline-group', group);
+const chooseScenario = (container, scenario) => chooseOption(container, '#timeline-scenario', scenario);
 const chooseMode = async (container, mode) => {
     const tab = [...container.querySelectorAll('[role="tab"]')].find(item => item.textContent.toLowerCase() === mode);
     assert.ok(tab, mode);
@@ -600,20 +602,64 @@ const chooseLayout = async (container, label) => {
     assert.equal(button.getAttribute('aria-pressed'), 'true');
 };
 
-test('side-by-side shows ordered snapshots at their own times and restores the timeline position', async () => {
+test('canvas is the default and its controls panel can hide without resetting previews', async () => {
+    const container = document.getElementById('root');
+    const root = createRoot(container);
+    try {
+        await act(async () => root.render(React.createElement(TimelinePage)));
+        assert.equal(container.querySelector('[aria-label="Preview layout"] [aria-pressed="true"]').textContent, 'Canvas');
+        assert.equal(container.querySelector('[aria-label="Timeline controls"]'), null);
+        const panel = container.querySelector('#canvas-controls');
+        assert.equal(panel.hidden, false);
+        assert.ok(panel.querySelector('#timeline-group'));
+        assert.ok(panel.querySelector('#timeline-scenario'));
+        assert.ok(panel.querySelector('[role="tablist"]'));
+        const firstPreview = container.querySelector('[data-page2-preview]');
+        await act(async () => firstPreview.querySelector('[aria-label="See details"]').click());
+        await chooseOption(container, '#canvas-pages-per-row', '4');
+        const world = container.querySelector('[data-canvas-transform]');
+        const before = world.style.transform;
+        const toggle = container.querySelector('[aria-controls="canvas-controls"]');
+        await act(async () => toggle.click());
+        assert.equal(panel.hidden, true);
+        assert.equal(toggle.getAttribute('aria-expanded'), 'false');
+        assert.equal(toggle.getAttribute('aria-label'), 'Show canvas controls');
+        assert.equal(container.querySelector('[data-page2-preview]'), firstPreview);
+        assert.equal(container.querySelector('[data-milestone-id] [data-value="quote"] [aria-expanded]').getAttribute('aria-expanded'), 'true');
+        assert.equal(world.style.transform, before);
+        await act(async () => toggle.click());
+        assert.equal(panel.hidden, false);
+        assert.equal(toggle.getAttribute('aria-expanded'), 'true');
+        assert.equal(container.querySelector('#canvas-pages-per-row').textContent, '4');
+        await chooseMode(container, 'modal');
+        assert.equal(container.querySelectorAll('[data-page2-modal]').length, scenarios[0].milestones.length);
+        await act(async () => toggle.click());
+        await chooseLayout(container, 'Timeline');
+        assert.equal(container.querySelector('#canvas-controls'), null);
+        assert.ok(container.querySelector('aside[aria-label="Scenarios"]'));
+        await chooseLayout(container, 'Canvas');
+        assert.equal(container.querySelector('#canvas-controls').hidden, true);
+        assert.deepEqual(forbidden, []);
+    } finally {
+        await act(async () => root.unmount());
+    }
+});
+
+test('canvas shows ordered snapshots at their own times and restores the timeline position', async () => {
     const container = document.getElementById('root');
     const root = createRoot(container);
     const scenario = scenarios[0];
     try {
         await act(async () => root.render(React.createElement(TimelinePage)));
+        await chooseLayout(container, 'Timeline');
         const next = [...container.querySelectorAll('button')].find(button => button.textContent === 'Next →');
         await act(async () => next.click());
         const timelineTime = container.querySelector('#timeline-time').value;
         const timelineTitle = container.querySelector('#scenario-title').textContent;
-        await chooseLayout(container, 'Side by side');
+        await chooseLayout(container, 'Canvas');
         assert.equal(container.querySelector('[aria-label="Timeline controls"]'), null);
-        const strip = container.querySelector('[aria-label="Scenario steps"]');
-        assert.equal(strip.tabIndex, 0, 'the horizontal strip is keyboard-focusable');
+        const strip = container.querySelector('[aria-label="Scenario canvas"]');
+        assert.equal(strip.tabIndex, 0, 'the canvas is keyboard-focusable');
         const cards = [...strip.querySelectorAll('[data-milestone-id]')];
         assert.deepEqual(cards.map(card => card.dataset.milestoneId), scenario.milestones.map(milestone => milestone.id));
         for (const [index, card] of cards.entries()) {
@@ -641,14 +687,15 @@ test('side-by-side shows ordered snapshots at their own times and restores the t
     }
 });
 
-test('side-by-side quote disclosures are independent and reset when the scenario changes', async () => {
+test('canvas quote disclosures are independent and reset when the scenario changes', async () => {
     const container = document.getElementById('root');
     const root = createRoot(container);
     const expanded = card => card.querySelector('[data-value="quote"] [aria-expanded]')?.getAttribute('aria-expanded') === 'true';
     try {
         await act(async () => root.render(React.createElement(TimelinePage)));
+        await chooseLayout(container, 'Timeline');
         await act(async () => container.querySelector('[aria-label="See details"]').click());
-        await chooseLayout(container, 'Side by side');
+        await chooseLayout(container, 'Canvas');
         const cards = [...container.querySelectorAll('[data-milestone-id]')];
         assert.equal(expanded(cards[0]), false, 'sequence starts from the fixture, independently of timeline disclosure');
         await act(async () => cards[0].querySelector('[aria-label="See details"]').click());
@@ -658,15 +705,130 @@ test('side-by-side quote disclosures are independent and reset when the scenario
         assert.equal(expanded(container.querySelector('[data-milestone-id]')), true);
         await chooseLayout(container, 'Timeline');
         assert.equal(expanded(container), true, 'timeline disclosure survives a layout switch');
-        await chooseLayout(container, 'Side by side');
+        await chooseLayout(container, 'Canvas');
         await chooseGroup(container, 'Page states');
         assert.deepEqual([...container.querySelectorAll('[data-milestone-id]')].map(card => card.dataset.milestoneId), ['loading', 'ready']);
-        const notFound = container.querySelector('aside button[aria-label="Swap not found"]');
-        await act(async () => notFound.click());
+        await chooseScenario(container, 'Swap not found');
         assert.deepEqual([...container.querySelectorAll('[data-milestone-id]')].map(card => card.dataset.milestoneId), ['loading', 'not-found']);
         await chooseGroup(container, 'Wallet transfers');
         assert.equal(expanded(container.querySelector('[data-milestone-id]')), false);
         assert.equal(container.querySelectorAll('[data-page2-modal]').length, scenarios[0].milestones.length);
+        assert.deepEqual(forbidden, []);
+    } finally {
+        await act(async () => root.unmount());
+    }
+});
+
+test('canvas uses dependent flow and scenario selectors while timeline keeps its sidebar', async () => {
+    const container = document.getElementById('root');
+    const root = createRoot(container);
+    try {
+        await act(async () => root.render(React.createElement(TimelinePage)));
+        await chooseLayout(container, 'Timeline');
+        assert.ok(container.querySelector('aside[aria-label="Scenarios"]'));
+        assert.equal(container.querySelector('#timeline-scenario'), null);
+        await chooseMode(container, 'modal');
+        await chooseLayout(container, 'Canvas');
+        assert.equal(container.querySelector('aside[aria-label="Scenarios"]'), null);
+        assert.ok(container.querySelector('aside[aria-label="Canvas controls"]'));
+        assert.equal(container.querySelector('#timeline-group').textContent, 'Wallet transfers');
+        assert.equal(container.querySelector('#timeline-scenario').textContent, 'Successful wallet transfer');
+        await chooseGroup(container, 'Token swaps');
+        assert.equal(container.querySelector('#timeline-scenario').textContent, 'Approve, sign and confirm');
+        const picker = container.querySelector('#timeline-scenario');
+        await act(async () => picker.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })));
+        const options = [...document.querySelectorAll('[role="option"]')];
+        assert.deepEqual(options.map(option => option.textContent), scenarioGroups.find(group => group.id === 'token-swap').scenarios.map(scenario => scenario.label));
+        await act(async () => options.find(option => option.textContent === 'Native token swap').dispatchEvent(new window.KeyboardEvent('keydown', {key: 'Enter', bubbles: true})));
+        assert.equal(container.querySelectorAll('[data-milestone-id]').length, 2);
+        assert.equal(container.querySelectorAll('[data-page2-modal]').length, 2);
+        await chooseLayout(container, 'Timeline');
+        assert.equal(container.querySelector('#timeline-scenario'), null);
+        assert.equal(container.querySelector('aside button[aria-pressed="true"]').getAttribute('aria-label'), 'Native token swap');
+        assert.equal(container.querySelector('#scenario-title').textContent, 'Native token swap');
+        await chooseLayout(container, 'Canvas');
+        assert.equal(container.querySelector('#timeline-scenario').textContent, 'Native token swap');
+        await chooseGroup(container, 'Manual deposits');
+        assert.equal(container.querySelector('#timeline-scenario').textContent, 'Manual deposit from network');
+        assert.deepEqual(forbidden, []);
+    } finally {
+        await act(async () => root.unmount());
+    }
+});
+
+test('canvas fits, zooms, pans and focuses frames without remounting previews', async () => {
+    const container = document.getElementById('root');
+    const root = createRoot(container);
+    const click = async label => {
+        const button = [...container.querySelectorAll('button')].find(button => button.getAttribute('aria-label') === label || button.textContent === label);
+        assert.ok(button, label);
+        await act(async () => button.click());
+    };
+    try {
+        await act(async () => root.render(React.createElement(TimelinePage)));
+        await chooseLayout(container, 'Canvas');
+        const canvas = container.querySelector('[aria-label="Scenario canvas"]');
+        const world = container.querySelector('[data-canvas-transform]');
+        const content = world.querySelector('ol');
+        const firstPreview = world.querySelector('[data-page2-preview]');
+        Object.defineProperties(canvas, { clientWidth: {value: 1000}, clientHeight: {value: 700} });
+        Object.defineProperties(content, { offsetWidth: {value: 1536}, offsetHeight: {value: 2500} });
+        await click('Fit all');
+        assert.equal(container.querySelector('[aria-label="Reset zoom to 100%"] ').textContent, '25%');
+        await click('Reset zoom to 100%');
+        const beforeZoom = world.style.transform;
+        const wheel = new window.WheelEvent('wheel', {deltaY: -50, ctrlKey: true, clientX: 300, clientY: 200, bubbles: true, cancelable: true});
+        await act(async () => canvas.dispatchEvent(wheel));
+        assert.equal(wheel.defaultPrevented, true, 'zoom belongs to the canvas, not the browser');
+        assert.notEqual(world.style.transform, beforeZoom);
+        assert.equal(container.querySelector('[aria-label="Reset zoom to 100%"] ').textContent, '165%');
+        await click('Zoom in');
+        await click('Zoom in');
+        assert.equal(container.querySelector('[aria-label="Zoom in"]').disabled, true, 'zoom is bounded');
+
+        const beforePan = world.style.transform;
+        await act(async () => canvas.dispatchEvent(new window.KeyboardEvent('keydown', {key: 'ArrowRight', bubbles: true})));
+        assert.notEqual(world.style.transform, beforePan);
+        const afterKeyPan = world.style.transform;
+        canvas.setPointerCapture = () => {};
+        canvas.hasPointerCapture = () => false;
+        const pointer = (type, x, y) => {
+            const event = new window.MouseEvent(type, {clientX:x, clientY:y, button:0, bubbles:true, cancelable:true});
+            Object.defineProperties(event, {pointerId:{value:1}, pointerType:{value:'mouse'}});
+            return event;
+        };
+        await act(async () => canvas.dispatchEvent(pointer('pointerdown', 20, 20)));
+        await act(async () => canvas.dispatchEvent(pointer('pointermove', 90, 70)));
+        await act(async () => canvas.dispatchEvent(pointer('pointerup', 90, 70)));
+        assert.notEqual(world.style.transform, afterKeyPan);
+        const afterDrag = world.style.transform;
+        await act(async () => canvas.dispatchEvent(pointer('pointermove', 150, 150)));
+        assert.equal(world.style.transform, afterDrag, 'released gestures stop panning');
+
+        const frame = world.querySelector('[data-milestone-id]');
+        Object.defineProperties(frame, { offsetWidth:{value:472}, offsetHeight:{value:750}, offsetLeft:{value:536}, offsetTop:{value:800} });
+        await click('Focus step 1: Ready to send');
+        assert.equal(container.querySelector('[aria-label="Reset zoom to 100%"] ').textContent, '85%');
+        assert.equal(world.querySelector('[data-page2-preview]'), firstPreview);
+        await click('Fit all');
+        assert.equal(container.querySelector('[aria-label="Reset zoom to 100%"] ').textContent, '25%');
+        await act(async () => frame.querySelector('h3').dispatchEvent(new window.MouseEvent('dblclick', {bubbles: true})));
+        assert.equal(container.querySelector('[aria-label="Reset zoom to 100%"] ').textContent, '85%');
+        await chooseOption(container, '#canvas-pages-per-row', '1');
+        assert.equal(container.querySelector('[aria-label="Reset zoom to 100%"]').textContent, '25%', 'changing row size refits even after manual navigation');
+        assert.equal(world.querySelector('[data-page2-preview]'), firstPreview, 'reflow preserves preview identity');
+        assert.equal(content.style.gridTemplateColumns, 'repeat(1, 472px)');
+        await chooseOption(container, '#canvas-pages-per-row', '9');
+        assert.equal(content.style.gridTemplateColumns, 'repeat(9, 472px)');
+        assert.deepEqual([...content.querySelectorAll('[data-milestone-id]')].map(card => card.dataset.milestoneId), scenarios[0].milestones.map(milestone => milestone.id));
+        await chooseLayout(container, 'Timeline');
+        assert.equal(container.querySelector('#canvas-pages-per-row'), null);
+        await chooseLayout(container, 'Canvas');
+        assert.equal(container.querySelector('#canvas-pages-per-row').textContent, '9');
+        await chooseGroup(container, 'Page states');
+        assert.equal(container.querySelector('#canvas-pages-per-row').textContent, '2', 'short scenarios use only the columns they need');
+        await chooseGroup(container, 'Wallet transfers');
+        assert.equal(container.querySelector('#canvas-pages-per-row').textContent, '9', 'short scenarios preserve the preferred row size');
         assert.deepEqual(forbidden, []);
     } finally {
         await act(async () => root.unmount());
@@ -702,6 +864,7 @@ test('viewer filters scenario groups, resets selections and preserves strictly e
     const container = document.getElementById('root');
     const root = createRoot(container);
     await act(async () => root.render(React.createElement(TimelinePage)));
+        await chooseLayout(container, 'Timeline');
     const button = (label) =>
         [...container.querySelectorAll('button')].find(
             (b) => b.textContent === label,
@@ -783,6 +946,7 @@ test('quote disclosures work in both modes and reset on timeline navigation with
     };
     try {
         await act(async () => root.render(React.createElement(TimelinePage)));
+        await chooseLayout(container, 'Timeline');
         for (const mode of ['component', 'modal']) {
             await chooseMode(container, mode);
             await choose('Successful wallet transfer');
