@@ -299,8 +299,10 @@ function resolveSwapInputTxStatus(
     // Gasless deposit failed terminally with no input tx published.
     if (gaslessFailureStatus) return TransactionStatus.Failed;
     // A failure observed in a previous session (Processing persists the polled status);
-    // the enums share the string value 'failed'.
-    if (storedWalletTransaction?.status === BackendTransactionStatus.Failed) return TransactionStatus.Failed;
+    // the enums share the string value 'failed'. Only while the API has nothing newer:
+    // once the tx-status poll (or the listed input tx, above) reports the transaction,
+    // that status wins, and Processing writes it back over the stored failure.
+    if (storedWalletTransaction?.status === BackendTransactionStatus.Failed && !inputTxStatusFromApi) return TransactionStatus.Failed;
     return TransactionStatus.Pending;
 }
 
