@@ -186,16 +186,17 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
         baseOnSwapCreate?.(swapData)
     }, [baseOnSwapCreate, recordSwapEvent])
 
+    // onSwapComplete also fires when a finished swap is opened, so it counts only for watched swaps.
     const handleSwapComplete = useCallback((swapData: SwapCallbackData) => {
-        recordSwapEvent('swap_completed', getSwapAttributes(swapData))
+        legacyRecorderRef.current!.recordObservation('swap_completed', getSwapAttributes(swapData))
         baseOnSwapComplete?.(swapData)
-    }, [baseOnSwapComplete, recordSwapEvent])
+    }, [baseOnSwapComplete])
 
     // Legacy swap events are derived from both streams: the API status is the only feeder of
     // swap_pending, while the lifecycle stream reports completion/failure the UI resolves before
     // (or without) a terminal API status. The recorder dedupes per name and swap, so whichever
-    // feeder arrives first wins and cardinality stays one per name per swap.
-    // Every status the widget reports maps to a legacy name, so there is no unnamed branch.
+    // feeder arrives first wins and cardinality stays one per name per swap. Status changes are
+    // transitions; lifecycle phases are observations, recorded only for swaps this page watched.
     const handleSwapStatusChange = useCallback((event: SwapStatusEvent) => {
         const name = legacyEventFromStatus(event)
         if (name) recordSwapEvent(name, legacyAttributesFromStatus(event))
@@ -203,11 +204,13 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
     }, [baseOnSwapStatusChange, recordSwapEvent])
 
     const handleSwapLifecycle = useCallback((event: SwapLifecycleEvent) => {
+        const recorder = legacyRecorderRef.current!
+        recorder.observeLifecycle(event)
         const name = legacyEventFromLifecycle(event)
-        if (name) recordSwapEvent(name, legacyAttributesFromLifecycle(event))
+        if (name) recorder.recordObservation(name, legacyAttributesFromLifecycle(event))
         recordLifecycleEvent(event)
         baseOnSwapLifecycle?.(event)
-    }, [baseOnSwapLifecycle, recordLifecycleEvent, recordSwapEvent])
+    }, [baseOnSwapLifecycle, recordLifecycleEvent])
 
     const handleSwapModalStateChange = useCallback((open: boolean) => {
         if (open) openFlow()

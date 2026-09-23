@@ -1,4 +1,4 @@
-import { SwapStatus, type SwapLifecycleEvent, type SwapStatusEvent } from '@layerswap/widget-types'
+import { SWAP_LIFECYCLE_TRACKING_STEPS, SwapStatus, type SwapLifecycleEvent, type SwapStatusEvent } from '@layerswap/widget-types'
 
 // Dashboard-compatible legacy swap events (`swap_initiated`, `swap_pending`,
 // `swap_completed`, `swap_failed`). They are derived from BOTH widget streams:
@@ -11,7 +11,13 @@ import { SwapStatus, type SwapLifecycleEvent, type SwapStatusEvent } from '@laye
 // third feeder of swap_completed, and lifecycle phase steps (swap_completed,
 // swap_failed) are observations of the current phase, reported when a finished
 // swap is opened, not transitions like onSwapStatusChange.
+// So only transitions (swap creation, API status changes) are recorded for any
+// swap; phase observations and onSwapComplete are recorded only for swaps this
+// page watched (see SWAP_LIFECYCLE_TRACKING_STEPS). Reloading a finished swap
+// therefore sends nothing.
 // Pure module (no React/Next imports) so it runs under `test:faro`.
+
+const TRACKING_STEPS = new Set<string>(SWAP_LIFECYCLE_TRACKING_STEPS)
 
 export type LegacySwapEventName = 'swap_pending' | 'swap_completed' | 'swap_failed'
 
@@ -66,34 +72,55 @@ export function legacyAttributesFromLifecycle(event: SwapLifecycleEvent): Record
 export function createLegacySwapEventRecorder({ captureEvent, setLegacyContext, maxEntries = 256 }: {
     captureEvent: (name: string, attributes: Record<string, unknown>) => boolean
     setLegacyContext: (attributes: Record<string, unknown>) => void
-    /** Bounds the dedupe memory for very long multi-swap sessions. */
+    /** Bounds the dedupe and tracking memory for very long multi-swap sessions. */
     maxEntries?: number
 }) {
     const emitted = new Set<string>()
+    const tracked = new Set<string>()
+    // Re-insert so recently observed keys outlive idle ones (Set iteration order
+    // is insertion order), then drop the least recently observed beyond the bound.
+    const remember = (set: Set<string>, key: string) => {
+        set.delete(key)
+        set.add(key)
+        while (set.size > maxEntries) {
+            set.delete(set.values().next().value as string)
+        }
+    }
+    const track = (swapId: unknown) => {
+        if (swapId !== undefined && swapId !== null && swapId !== '') remember(tracked, String(swapId))
+    }
+
+    const capture = (name: LegacySwapEventName | 'swap_initiated', attributes: Record<string, unknown>) => {
+        const dedupeKey = `${name}:${String(attributes.swap_id ?? '')}`
+        if (emitted.has(dedupeKey)) {
+            remember(emitted, dedupeKey)
+            return
+        }
+
+        setLegacyContext(attributes)
+
+        const accepted = captureEvent(name, {
+            ...attributes,
+            page_url: typeof window !== 'undefined' ? window.location.href : undefined,
+        })
+        if (!accepted) return
+        remember(emitted, dedupeKey)
+    }
+
     return {
+        /** A transition (swap creation or an API status change): recorded for any swap, and marks it watched. */
         record(name: LegacySwapEventName | 'swap_initiated', attributes: Record<string, unknown>) {
-            const swapId = attributes.swap_id
-            const dedupeKey = `${name}:${String(swapId ?? '')}`
-            if (emitted.has(dedupeKey)) {
-                // Re-insert so a swap that is still being replayed outlives idle ones
-                // (Set iteration order is insertion order).
-                emitted.delete(dedupeKey)
-                emitted.add(dedupeKey)
-                return
-            }
-
-            setLegacyContext(attributes)
-
-            const accepted = captureEvent(name, {
-                ...attributes,
-                page_url: typeof window !== 'undefined' ? window.location.href : undefined,
-            })
-            if (!accepted) return
-            emitted.add(dedupeKey)
-            // Drop the least recently observed key beyond the bound.
-            while (emitted.size > maxEntries) {
-                emitted.delete(emitted.values().next().value as string)
-            }
+            track(attributes.swap_id)
+            capture(name, attributes)
+        },
+        /** The swap's current phase or onSwapComplete: recorded only for swaps this page watched. */
+        recordObservation(name: LegacySwapEventName, attributes: Record<string, unknown>) {
+            if (!tracked.has(String(attributes.swap_id ?? ''))) return
+            capture(name, attributes)
+        },
+        /** Marks the swap watched when the step shows this page following it before its outcome. */
+        observeLifecycle(event: Pick<SwapLifecycleEvent, 'step' | 'swapId'>) {
+            if (TRACKING_STEPS.has(event.step)) track(event.swapId)
         },
     }
 }

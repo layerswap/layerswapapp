@@ -230,6 +230,16 @@ export const SWAP_LIFECYCLE_ATTEMPT_START_STEPS = [
   'wallet_prompt_opened', 'retry_requested',
 ] as const satisfies readonly SwapLifecycleRepeatableStep[];
 
+/**
+ * Steps that show a widget instance watching a swap before its outcome: it
+ * created the swap, showed it awaiting the user's transfer, or the user acted
+ * on it. A swap never seen in one of these (opened from a URL or history) is
+ * only being viewed, so its current phase is not an outcome of this session.
+ */
+export const SWAP_LIFECYCLE_TRACKING_STEPS = [
+  'swap_created', 'awaiting_wallet_action', 'awaiting_user_deposit', ...SWAP_LIFECYCLE_ATTEMPT_START_STEPS,
+] as const satisfies readonly SwapLifecycleStep[];
+
 export type SwapLifecycleEvent = {
   occurrenceId?: string;
   step: SwapLifecycleStep;

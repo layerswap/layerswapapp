@@ -1,18 +1,11 @@
 import {
-    SWAP_LIFECYCLE_ATTEMPT_START_STEPS, lifecycleObservationFingerprint, lifecycleObservationKey,
+    SWAP_LIFECYCLE_ATTEMPT_START_STEPS, SWAP_LIFECYCLE_TRACKING_STEPS, lifecycleObservationFingerprint, lifecycleObservationKey,
     type SwapLifecycleEvent, type SwapLifecycleObservationKey, type SwapLifecycleStep, type SwapStatusEvent,
 } from '@layerswap/widget-types'
 
 const ATTEMPT_START_STEPS = new Set<SwapLifecycleStep>(SWAP_LIFECYCLE_ATTEMPT_START_STEPS)
-/**
- * Steps that show this widget instance watching a swap before its outcome: it
- * created the swap, showed it awaiting the user's transfer, or the user acted
- * on it. A swap never seen in one of these (opened from a URL or history) is
- * baselined at its first status instead of reported.
- */
-const TRACKING_STEPS = new Set<SwapLifecycleStep>([
-    'swap_created', 'awaiting_wallet_action', 'awaiting_user_deposit', ...SWAP_LIFECYCLE_ATTEMPT_START_STEPS,
-])
+/** A swap never seen in one of these is baselined at its first status instead of reported. */
+const TRACKING_STEPS = new Set<SwapLifecycleStep>(SWAP_LIFECYCLE_TRACKING_STEPS)
 /** Keeps a long session that browses many swaps from growing without bound. */
 const MAX_TRACKED_SWAPS = 64
 

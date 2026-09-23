@@ -15,7 +15,7 @@ export type { Refuel, AvailableSourceNetworkTypes } from './network';
 export { SwapStatus } from './SwapStatus';
 export {
   SWAP_LIFECYCLE_PHASE_STEPS, SWAP_LIFECYCLE_TRANSACTION_STEPS, SWAP_LIFECYCLE_REPEATABLE_STEPS,
-  SWAP_LIFECYCLE_ATTEMPT_START_STEPS,
+  SWAP_LIFECYCLE_ATTEMPT_START_STEPS, SWAP_LIFECYCLE_TRACKING_STEPS,
 } from './logEvents';
 export { lifecycleObservationKey, lifecycleObservationFingerprint } from './lifecycleObservation';
 export type { SwapLifecycleObservationKey } from './lifecycleObservation';

@@ -113,3 +113,54 @@ test('page_url is attached only when a browser location exists', () => {
     assert.equal(r.captures[0][1].page_url, undefined)
     assert.deepEqual(r.contexts[0], { swap_id: 's1' }, 'legacy context receives the attributes without page_url')
 })
+
+function trackingRecorder() {
+    const captures = []
+    const r = createLegacySwapEventRecorder({
+        captureEvent: (name, attributes) => { captures.push(`${name}:${attributes.swap_id}`); return true },
+        setLegacyContext: () => {},
+    })
+    return { captures, r }
+}
+
+test('opening a finished swap sends nothing: phase observations and onSwapComplete need a watched swap', () => {
+    const { captures, r } = trackingRecorder()
+    // Reload of /swap/s1 after completion: lifecycle phase step, then onSwapComplete.
+    r.observeLifecycle({ step: 'swap_completed', swapId: 's1' })
+    r.recordObservation('swap_completed', { swap_id: 's1', phase: 'completed' })
+    r.recordObservation('swap_completed', { swap_id: 's1' })
+    r.observeLifecycle({ step: 'swap_failed', swapId: 's2' })
+    r.recordObservation('swap_failed', { swap_id: 's2', phase: 'failed' })
+    assert.deepEqual(captures, [])
+})
+
+test('a swap this page created or watched records its phase outcome once', () => {
+    const { captures, r } = trackingRecorder()
+    r.record('swap_initiated', { swap_id: 's1' })
+    r.recordObservation('swap_completed', { swap_id: 's1', phase: 'completed' })
+    r.recordObservation('swap_completed', { swap_id: 's1' })
+    // Awaiting the user's transfer shows the page following the swap before its outcome.
+    r.observeLifecycle({ step: 'awaiting_user_deposit', swapId: 's2' })
+    r.recordObservation('swap_failed', { swap_id: 's2', phase: 'failed' })
+    assert.deepEqual(captures, ['swap_initiated:s1', 'swap_completed:s1', 'swap_failed:s2'])
+})
+
+test('an API status transition is recorded for an opened swap and marks it watched', () => {
+    const { captures, r } = trackingRecorder()
+    // Opened from history while in progress: the widget baselines the first status and reports
+    // only the later change, so the transition is real and the swap becomes watched.
+    r.record('swap_completed', { swap_id: 's1', status: 'completed' })
+    r.recordObservation('swap_completed', { swap_id: 's1', phase: 'completed' })
+    r.recordObservation('swap_failed', { swap_id: 's1', phase: 'failed' })
+    assert.deepEqual(captures, ['swap_completed:s1', 'swap_failed:s1'])
+})
+
+test('non-tracking lifecycle steps and id-less steps do not mark a swap watched', () => {
+    const { captures, r } = trackingRecorder()
+    r.observeLifecycle({ step: 'output_transfer_pending', swapId: 's1' })
+    r.observeLifecycle({ step: 'flow_closed', swapId: 's1' })
+    r.observeLifecycle({ step: 'swap_created', swapId: undefined })
+    r.recordObservation('swap_completed', { swap_id: 's1' })
+    r.recordObservation('swap_completed', { swap_id: undefined })
+    assert.deepEqual(captures, [])
+})
