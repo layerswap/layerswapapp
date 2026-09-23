@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
+import { UserRejectsError } from '@tonconnect/sdk'
 import { isUserRejection, normalizeWalletErrorCode } from '@layerswap/wallet-core/errors'
 
 function expectShape(thrown, original, name) {
@@ -35,4 +36,25 @@ test('TON failures keep their labels without a reason code', () => {
         expectNotRejected(thrown, original, 'UnexpectedErrorMessage')
         assert.equal(thrown.message, original instanceof Error ? original.message : original)
     }
+})
+
+test('a plain-object TON failure keeps its real message', () => {
+    const original = { code: -32603, message: 'Wallet bridge failure' }
+    const thrown = toTransferError(original)
+    expectNotRejected(thrown, original, 'UnexpectedErrorMessage')
+    assert.equal(thrown.message, 'Wallet bridge failure')
+})
+
+test('a TON Connect UserRejectsError is a declared rejection', () => {
+    const original = new UserRejectsError()
+    assert.equal(original.message, '[TON_CONNECT_SDK_ERROR] UserRejectsError: User rejects the action in the wallet.')
+    const thrown = toTransferError(original)
+    expectRejected(thrown, original)
+    assert.equal(thrown.message, original.message)
+
+    // A second copy of the SDK in the bundle breaks instanceof; its name/message still identify it.
+    for (const duplicate of [
+        new Error('[TON_CONNECT_SDK_ERROR] UserRejectsError: User rejects the action in the wallet.'),
+        Object.assign(new Error('User rejects the action in the wallet.'), { name: 'UserRejectsError' }),
+    ]) expectRejected(toTransferError(duplicate), duplicate)
 })

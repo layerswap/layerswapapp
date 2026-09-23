@@ -21,6 +21,11 @@ export const resolveError = (error: BaseError): ResolvedError | undefined => {
         || error?.['cause']?.['code']
         || error?.["cause"]?.["cause"]?.["cause"]?.["code"]
 
+    // Decline evidence first: a nested -32000 is also what WalletConnect wallets
+    // answer a declined prompt with, so it must not shadow the rejection.
+    if (code_name === 4001 || inner_code === -1 || isUserRejection(error))
+        return "transaction_rejected"
+
     if (code_name === 'INSUFFICIENT_FUNDS'
         || code_name === 'UNPREDICTABLE_GAS_LIMIT'
         || (code_name === -32603 && inner_code === 3)
@@ -28,9 +33,6 @@ export const resolveError = (error: BaseError): ResolvedError | undefined => {
         || code_name === 'EstimateGasExecutionError'
         || code_name === 3)
         return "insufficient_funds"
-    else if (code_name === 4001 || inner_code === -1 || isUserRejection(error)) {
-        return "transaction_rejected"
-    }
 }
 
 /**

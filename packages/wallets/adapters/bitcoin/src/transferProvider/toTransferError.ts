@@ -1,12 +1,5 @@
 import { ActionMessageType } from '@layerswap/widget-types'
-import { userRejectedError, walletActionError } from '@layerswap/wallet-core/errors'
-
-function errorMessage(error: unknown): string {
-    if (error instanceof Error) return error.message
-    if (typeof error === 'string') return error
-    const message = (error as { message?: unknown } | undefined)?.message
-    return typeof message === 'string' ? message : String(error)
-}
+import { errorMessage, userRejectedError, walletActionError } from '@layerswap/wallet-core/errors'
 
 /**
  * Map a failed Bitcoin transfer to the error the widget renders and the host

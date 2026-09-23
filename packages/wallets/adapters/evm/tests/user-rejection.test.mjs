@@ -56,6 +56,20 @@ test('EVM compatibility keeps generic failures visible and preserves funds class
     assert.equal(resolveError({ cause: { code: -32000 } }), 'insufficient_funds')
 })
 
+test('a decline relayed with a nested -32000 is a rejection, not insufficient funds', () => {
+    // WalletConnect wallets can answer a declined prompt with -32000; viem nests it under cause.
+    for (const error of [
+        { cause: { code: -32000, message: 'User rejected the request.' } },
+        { data: { code: -32000 }, cause: { code: 4001 } },
+    ]) {
+        assert.equal(resolveError(error), 'transaction_rejected')
+        assert.equal(isEvmUserRejection(error), true)
+    }
+    // A node -32000 without decline evidence keeps the funds classification.
+    assert.equal(resolveError({ cause: { code: -32000, message: 'insufficient funds for gas * price + value' } }), 'insufficient_funds')
+    assert.equal(resolveError({ cause: { code: -32000, message: 'execution reverted: user rejected' } }), 'insufficient_funds')
+})
+
 // ---- Thrown transfer errors declare their classification; the rejected label alone never does.
 
 test('EVM transfer errors carry the UI label, a string message, the original cause and an explicit reason', async () => {

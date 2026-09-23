@@ -22,6 +22,18 @@ export function walletErrorCode(candidate: unknown): string | undefined {
     return undefined
 }
 
+/**
+ * The human-readable text of a thrown value: an Error's message, a string as
+ * is, or a plain `{ message }` object's string message (wallets reject with
+ * those); anything else falls back to `String(error)`.
+ */
+export function errorMessage(error: unknown): string {
+    if (error instanceof Error) return error.message
+    if (typeof error === 'string') return error
+    const message = (error as { message?: unknown } | null | undefined)?.message
+    return typeof message === 'string' ? message : String(error)
+}
+
 // ---- Explicit classification. An adapter that knows why its call failed
 // ---- declares it on the thrown error; the classifier reads that field before
 // ---- any inference. Exhaustive against the WalletErrorReasonCode union, so
@@ -153,14 +165,35 @@ const NAME_RULES: Record<Tier, NameRules> = {
 // although geth uses -32000 for funds / nonce / revert failures.
 const BUCKET_NAMES = /InternalRpc|UnknownRpc|InvalidInputRpc|^RpcError$|^RpcRequestError$|^BaseError$/i
 
+// ---- Decline text. Only phrasing that names the user (or a wallet SDK's own
+// ---- decline token) counts: "origin rejected the request" is a node or relay
+// ---- refusing, not the user. A revert reason is contract output and never counts.
+// "denied by the user" is Ledger's decline text (@ledgerhq/errors
+// 'Condition of use not satisfied (denied by the user?)'), relayed by MetaMask as -32603.
+// 'user reject this request' (TRON adapters), 'USER_REFUSED_OP' (Starknet
+// wallets), 'Reject request' (TON Connect SDK) are the decline phrases the
+// chain adapters matched by hand before declaring declines explicitly.
+const DECLINE_TEXT = /user rejected|user denied|user cancel|user reject\b|USER_REFUSED_OP|Reject request|denied by the user/i
+// JSON-RPC 2.0 reserves -32000..-32099 for server errors: the text is the
+// node's (geth: funds, nonce, "execution reverted: <reason>"). Some WalletConnect
+// wallets still answer a declined prompt with -32000 "User rejected ...", so on
+// these codes only text that *starts* with the user declining counts.
+const SERVER_ERROR_DECLINE_TEXT = /^\s*user (rejected|denied)\b/i
+const REVERT_TEXT = /revert/i
+
+function isServerErrorCode(code: string | undefined): boolean {
+    const value = Number(code)
+    return Number.isInteger(value) && value <= -32000 && value >= -32099
+}
+
+function isDeclineText(text: string, code?: string): boolean {
+    if (REVERT_TEXT.test(text)) return false
+    return (isServerErrorCode(code) ? SERVER_ERROR_DECLINE_TEXT : DECLINE_TEXT).test(text)
+}
+
 const MESSAGE_RULES: Record<TextTier, NameRules> = {
     descriptive: [
-        // "denied by the user" is Ledger's decline text (@ledgerhq/errors
-        // 'Condition of use not satisfied (denied by the user?)'), relayed by MetaMask as -32603.
-        // 'user reject this request' (TRON adapters), 'USER_REFUSED_OP' (Starknet
-        // wallets), 'Reject request' (TON Connect SDK) are the decline phrases the
-        // chain adapters matched by hand before declaring declines explicitly.
-        [/user rejected|user denied|rejected the request|user cancel|user reject\b|USER_REFUSED_OP|Reject request|denied by the user/i, 'user_rejected'],
+        // user_rejected is decided by isDeclineText, ahead of these rules.
         [/insufficient funds|insufficient balance|exceeds balance|not enough/i, 'insufficient_funds'],
         [/cannot estimate gas|gas required exceeds|intrinsic gas|estimateGas/i, 'gas_estimation_failed'],
         [/execution reverted|revert/i, 'contract_reverted'],
@@ -238,11 +271,14 @@ function nameReason(candidate: ErrorCandidate, tier: Tier): WalletErrorReasonCod
 function messageReason(candidate: ErrorCandidate, tier: TextTier): WalletErrorReasonCode | undefined {
     if (tier === 'descriptive' && typeof candidate.name === 'string' && BUCKET_NAMES.test(candidate.name)) return undefined
     const text = textOf(candidate)
-    return text ? MESSAGE_RULES[tier].find(([pattern]) => pattern.test(text))?.[1] : undefined
+    if (!text) return undefined
+    if (tier === 'descriptive' && isDeclineText(text, walletErrorCode(candidate))) return 'user_rejected'
+    return MESSAGE_RULES[tier].find(([pattern]) => pattern.test(text))?.[1]
 }
 
 function rawTextReason(error: unknown, tier: TextTier): WalletErrorReasonCode | undefined {
     if (typeof error !== 'string') return undefined
+    if (tier === 'descriptive' && isDeclineText(error)) return 'user_rejected'
     return MESSAGE_RULES[tier].find(([pattern]) => pattern.test(error))?.[1]
 }
 
@@ -253,6 +289,8 @@ function rawTextReason(error: unknown, tier: TextTier): WalletErrorReasonCode | 
  *   1. a definitive cancellation signal anywhere in the tree;
  *   2. definitive codes/names, innermost first;
  *   3. descriptive message text, innermost first (SDK bucket classes contribute no text);
+ *      decline text must name the user, never inside a revert reason, and on a
+ *      JSON-RPC server error (-32000..-32099) must start with "user rejected/denied";
  *   4. fallback buckets (-32603, SERVER_ERROR, InternalRpcError, 'internal error'), innermost first;
  *   5. unknown_error.
  * ActionMessageType labels (`name`) are UI copy and never classify: a bare

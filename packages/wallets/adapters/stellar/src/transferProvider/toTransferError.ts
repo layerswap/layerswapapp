@@ -1,25 +1,19 @@
 import { TransactionFailedError } from '@stellar/stellar-sdk'
 import { ActionMessageType } from '@layerswap/widget-types'
-import { isUserRejection, userRejectedError, walletActionError } from '@layerswap/wallet-core/errors'
+import { errorMessage, isUserRejection, userRejectedError, walletActionError } from '@layerswap/wallet-core/errors'
 
 const LABELS = new Set<string>(Object.values(ActionMessageType))
 
-function errorMessage(error: unknown): string {
-    if (error instanceof Error) return error.message
-    if (typeof error === 'string') return error
-    const message = (error as { message?: unknown } | undefined)?.message
-    return typeof message === 'string' ? message : String(error)
-}
-
 /**
  * Only for the wallet prompt (`signTransaction`): a structured decline, or a
- * prompt that was declined, cancelled or closed, is the user's action. Applied
+ * prompt that was rejected, declined, cancelled or closed (Albedo: "Action request
+ * was rejected by the user."), is the user's action. Applied
  * to pre-flight or submit failures this vocabulary would turn a closed relay or
  * RPC socket into a "rejection", so those go through {@link toTransferError}.
  */
 export function toSigningError(error: unknown): Error {
     const message = errorMessage(error)
-    if (isUserRejection(error) || /declin|cancel|closed/i.test(message)) {
+    if (isUserRejection(error) || /reject|declin|cancel|closed/i.test(message)) {
         return userRejectedError({ message: 'The Stellar transaction was rejected', cause: error })
     }
     return walletActionError(ActionMessageType.UnexpectedErrorMessage, { message: message || 'Stellar transaction failed', cause: error })

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { ActionMessageType } from '@layerswap/widget-types'
 import {
-    isUserRejection, isWalletErrorReasonCode, normalizeWalletErrorCode, userRejectedError, walletActionError, walletErrorCode,
+    errorMessage, isUserRejection, isWalletErrorReasonCode, normalizeWalletErrorCode, userRejectedError, walletActionError, walletErrorCode,
 } from '../dist/esm/lib/walletErrors.js'
 import { FIXTURES, GENERIC_WRAPPERS } from './wallet-error-fixtures.mjs'
 
@@ -98,6 +98,9 @@ test('chain adapter decline phrases classify without the sentinel; near-misses d
         'Request cancelled without user response!',
         'op_underfunded',
         'Horizon rejected the Stellar transaction',
+        // Decline text must name the user; a revert reason never counts.
+        'origin rejected the request',
+        'execution reverted: user rejected',
     ]) {
         assert.equal(isUserRejection(new Error(message)), false, message)
         assert.equal(isUserRejection(message), false, message)
@@ -180,4 +183,35 @@ test('tree walk survives throwing data getters, data cycles and deep cause chain
     let reachable = { code: 4001 }
     for (let i = 0; i < 10; i++) reachable = { code: -32603, cause: reachable }
     assert.equal(normalizeWalletErrorCode(reachable), 'user_rejected')
+})
+
+test('a JSON-RPC server error is only a decline when its text starts with the user declining', () => {
+    for (const error of [
+        { code: -32000, message: 'origin rejected the request' },
+        { code: -32000, message: 'execution reverted: user rejected' },
+        { code: '-32000', message: 'execution reverted: User rejected the request' },
+        { code: -32099, message: 'relayer: user rejected fee quote' },
+        { code: -32005, message: 'Request rejected: user denied rate limit exemption' },
+    ]) {
+        assert.equal(isUserRejection(error), false, error.message)
+        assert.notEqual(normalizeWalletErrorCode(error), 'user_rejected', error.message)
+    }
+    assert.equal(normalizeWalletErrorCode({ code: -32000, message: 'execution reverted: user rejected' }), 'contract_reverted')
+    // A WalletConnect wallet that answers a declined prompt with -32000 still reports the user.
+    for (const message of ['User rejected the request.', 'User rejected.', 'user denied transaction signature']) {
+        assert.equal(normalizeWalletErrorCode({ code: -32000, message }), 'user_rejected', message)
+    }
+    // Definitive codes are unaffected.
+    assert.equal(normalizeWalletErrorCode({ code: 4001 }), 'user_rejected')
+    assert.equal(normalizeWalletErrorCode({ code: 4001, message: 'MetaMask Tx Signature: User denied transaction signature.' }), 'user_rejected')
+})
+
+test('errorMessage reads Error, string and plain { message } errors, and falls back to String()', () => {
+    assert.equal(errorMessage(new Error('boom')), 'boom')
+    assert.equal(errorMessage('Reject request'), 'Reject request')
+    assert.equal(errorMessage({ code: 113, message: 'An error occurred (USER_REFUSED_OP)' }), 'An error occurred (USER_REFUSED_OP)')
+    assert.equal(errorMessage({ message: 42 }), '[object Object]')
+    assert.equal(errorMessage(undefined), 'undefined')
+    assert.equal(errorMessage(null), 'null')
+    assert.equal(errorMessage(7), '7')
 })

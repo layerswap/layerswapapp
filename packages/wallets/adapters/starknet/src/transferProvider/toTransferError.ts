@@ -1,5 +1,5 @@
 import { ActionMessageType } from '@layerswap/widget-types'
-import { userRejectedError, walletActionError } from '@layerswap/wallet-core/errors'
+import { errorMessage, userRejectedError, walletActionError } from '@layerswap/wallet-core/errors'
 
 /**
  * Map a failed Starknet `execute()` to the error the widget renders and the
@@ -7,7 +7,7 @@ import { userRejectedError, walletActionError } from '@layerswap/wallet-core/err
  * `reasonCode` and is only declared for a known wallet decline.
  */
 export function toTransferError(error: unknown): Error {
-    const message = error instanceof Error ? error.message : String(error)
+    const message = errorMessage(error)
 
     if (message === 'An error occurred (USER_REFUSED_OP)') {
         return userRejectedError({ message, cause: error })

@@ -34,6 +34,11 @@ export const FIXTURES = [
     { label: 'node TransactionRejectedRpcError is not a decline', source: 'sdk:viem', error: { code: -32003, name: 'TransactionRejectedRpcError', message: 'Transaction rejected' }, expected: 'unknown_error' },
     { label: 'EIP-1193 unauthorized', source: 'spec', error: { code: 4100 }, expected: 'unauthorized' },
     { label: 'node -32000 without a known phrase', source: 'review:PR#2166', error: { code: -32000, message: 'invalid sender' }, expected: 'unknown_error' },
+    // --- JSON-RPC server errors (-32000..-32099) are the node's words, not the user's
+    { label: 'node -32000 origin rejection', source: 'review:PR#2166', error: { code: -32000, message: 'origin rejected the request' }, expected: 'unknown_error' },
+    { label: 'node -32000 revert whose reason reads like a decline', source: 'review:PR#2166', error: { code: -32000, message: 'execution reverted: user rejected' }, expected: 'contract_reverted' },
+    { label: 'WalletConnect wallet decline relayed as -32000', source: 'review:PR#2166', error: { code: -32000, message: 'User rejected the request.' }, expected: 'user_rejected' },
+    { label: 'MetaMask EIP-1193 decline', source: 'spec', error: { code: 4001, message: 'MetaMask Tx Signature: User denied transaction signature.' }, expected: 'user_rejected' },
     // --- explicit adapter declarations (walletActionError / userRejectedError shapes)
     { label: 'adapter-declared decline over a legacy -1 cause', source: 'review:PR#2166', error: { name: 'TransactionRejected', message: 'Transaction rejected', reasonCode: 'user_rejected', cause: { code: -1 } }, expected: 'user_rejected' },
     { label: 'adapter-declared reason beats the rejected label', source: 'review:PR#2166', error: { name: 'TransactionRejected', message: 'Execute failed', reasonCode: 'contract_reverted' }, expected: 'contract_reverted' },
