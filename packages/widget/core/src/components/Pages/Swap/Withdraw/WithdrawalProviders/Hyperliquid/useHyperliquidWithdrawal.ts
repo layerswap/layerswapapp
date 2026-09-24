@@ -8,6 +8,7 @@ import { useSelectedAccount } from "@/context/swapAccounts";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
 import useWallet from "@/hooks/useWallet";
 import { useTransfer } from "@/hooks/useTransfer";
+import { executeWalletOperation } from "@/components/Pages/Swap/Withdraw/Wallet/Common/executeWalletOperation";
 import { ActionMessageType, TransferProgress } from "@layerswap/widget-types";
 import { NetworkRoute } from "@layerswap/widget-types";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
@@ -15,7 +16,7 @@ import { BackendTransactionStatus, DepositAction } from "@/lib/apiClients/layerS
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 import { ErrorHandler } from "@/lib/ErrorHandler";
 import { useCallbacks } from "@/context/callbackProvider";
-import { lifecycleContextFromSwap, lifecycleErrorDetails } from "@/lib/swapLifecycle";
+import { lifecycleContextFromSwap } from "@/lib/swapLifecycle";
 
 /** Deposit-action kinds that carry the destination deposit address. */
 const DEPOSIT_ACTION_TYPES = ['transfer', 'manual_transfer']
@@ -137,7 +138,6 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
         }
 
         let lifecycleSwapId = swapId
-        let walletPromptOpened = false
         try {
             if (!sourceAddress) throw new Error('No connected Hyperliquid account')
             if (!source_network || !destination_network || !destination_token) throw new Error('Unsupported Hyperliquid network')
@@ -155,20 +155,18 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
 
             const { destination, activeSwapId } = await resolveSwapAndDepositAddress(amount)
             lifecycleSwapId = activeSwapId
-            walletPromptOpened = true
-            onSwapLifecycle({
-                step: 'wallet_prompt_opened',
-                stage: 'wallet_action',
-                outcome: 'pending',
-                path: 'HyperliquidWithdrawal',
-                action: 'hyperliquid_withdrawal',
-                provider: wallet?.providerName,
-                ...lifecycleContextFromSwap(swapBasicData, swapDetails),
-                swapId: activeSwapId,
-            })
-
-            // Resolves with a (possibly empty) hash on success; throws on rejection/failure.
-            const txHash = await executeTransfer({
+            const txHash = await executeWalletOperation({
+                context: {
+                    ...lifecycleContextFromSwap(swapBasicData, swapDetails),
+                    swapId: activeSwapId,
+                    path: 'HyperliquidWithdrawal',
+                    action: 'hyperliquid_withdrawal',
+                    provider: wallet?.providerName,
+                },
+                onLifecycle: onSwapLifecycle,
+                allowEmptyHash: true,
+                isActive: () => mountedRef.current,
+            }, () => executeTransfer({
                 network: source_network,
                 token: source_token,
                 destinationNetwork: destination_network,
@@ -181,59 +179,22 @@ export function useHyperliquidWithdrawal({ swapBasicData, refuel, swapId }: With
                 amountExact: amount,
                 callData: '',
                 selectedWallet: wallet!,
-            }, wallet, (info) => { if (mountedRef.current) setProgress(info) })
+            }, wallet, (info) => { if (mountedRef.current) setProgress(info) }))
 
             if (!mountedRef.current) return
-
-            onSwapLifecycle({
-                step: 'transaction_submitted',
-                stage: 'input_transfer',
-                outcome: 'succeeded',
-                path: 'HyperliquidWithdrawal',
-                action: 'hyperliquid_withdrawal',
-                provider: wallet?.providerName,
-                transactionHash: txHash || undefined,
-                ...lifecycleContextFromSwap(swapBasicData, swapDetails),
-                swapId: activeSwapId,
-            })
 
             // Success — hand off to the standard Processing screen by recording a pending input.
             // There is usually no real source tx hash (the backend detects the CCTP deposit), so
             // the empty hash just flips the swap off the withdraw screen.
-            useSwapTransactionStore.getState().setSwapTransaction(activeSwapId, BackendTransactionStatus.Pending, txHash || '')
+            useSwapTransactionStore.getState().setSwapTransaction(activeSwapId, BackendTransactionStatus.Pending, txHash)
             onWalletWithdrawalSuccess?.()
         } catch (e) {
             if (!mountedRef.current) return
             lastFailureWasUserRejection.current = isUserRejection(e)
             // A declined wallet prompt is a user action, not an error to log.
             if (lastFailureWasUserRejection.current) {
-                onSwapLifecycle({
-                    step: 'wallet_action_rejected',
-                    stage: 'wallet_action',
-                    outcome: 'rejected',
-                    path: 'HyperliquidWithdrawal',
-                    action: 'hyperliquid_withdrawal',
-                    provider: wallet?.providerName,
-                    ...lifecycleErrorDetails(e),
-                    reasonCode: 'user_rejected',
-                    ...lifecycleContextFromSwap(swapBasicData, swapDetails),
-                    swapId: lifecycleSwapId,
-                })
                 setRejected(true)
                 return
-            }
-            if (walletPromptOpened) {
-                onSwapLifecycle({
-                    step: 'wallet_action_failed',
-                    stage: 'wallet_action',
-                    outcome: 'failed',
-                    path: 'HyperliquidWithdrawal',
-                    action: 'hyperliquid_withdrawal',
-                    provider: wallet?.providerName,
-                    ...lifecycleErrorDetails(e),
-                    ...lifecycleContextFromSwap(swapBasicData, swapDetails),
-                    swapId: lifecycleSwapId,
-                })
             }
             logWithdrawalError(e, { swapId: lifecycleSwapId, fromAddress: sourceAddress })
             // Preserve the provider's UI label even when it cannot establish a cancellation for telemetry.

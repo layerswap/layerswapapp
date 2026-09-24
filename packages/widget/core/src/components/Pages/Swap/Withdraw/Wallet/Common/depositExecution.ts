@@ -13,6 +13,7 @@ import { TransferProps } from "@layerswap/widget-types";
 import { ErrorHandler } from "@/lib/ErrorHandler";
 import { lifecycleContextFromSwap, lifecycleErrorDetails } from "@/lib/swapLifecycle";
 import { widgetTelemetry } from '@/lib/widgetTelemetry';
+import { executeWalletOperation } from './executeWalletOperation';
 
 export type WalletTransfer = (props: TransferProps) => Promise<string | undefined>
 export type GaslessSigner = (signAction: SignDepositAction) => Promise<string>
@@ -42,47 +43,22 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
     const lifecycleContext = lifecycleContextFromSwap(swapBasicData, swapData)
     setActionStateText("Opening Wallet")
 
-    let hash: string | undefined
+    let hash: string
     const finishTelemetry = widgetTelemetry.beginOperation('wallet_transfer', {
         swap_id: swapData.id, provider: selectedWallet.providerName, timing_kind: 'user_wait_included',
     })
-    // Prompt and wallet outcome bracket the wallet request itself: one prompt event per
-    // request, and only a wallet request can end as a wallet_action rejection or failure.
-    const requestWallet = async (props: TransferProps, { retriesExpiry }: { retriesExpiry: boolean }) => {
-        onLifecycle({
-            step: 'wallet_prompt_opened',
-            stage: 'wallet_action',
-            outcome: 'pending',
+    const requestWallet = (props: TransferProps, { retriesExpiry }: { retriesExpiry: boolean }) => executeWalletOperation({
+        context: {
+            ...lifecycleContext,
             path: 'WalletTransfer',
             action: 'send_transaction',
             provider: selectedWallet.providerName,
-            ...lifecycleContext,
-        })
-        try {
-            return await onClick(props)
-        } catch (error) {
-            // An expired Stellar transaction is retried below, not a wallet outcome.
-            if (retriesExpiry && isExpiredTransaction(error)) throw error
-            reportWalletFailure(error)
-            throw error
-        }
-    }
-    const reportWalletFailure = (error: unknown) => {
-        const rejected = isUserRejection(error)
-        const errorDetails = lifecycleErrorDetails(error)
-        finishTelemetry(rejected ? 'rejected' : 'failed', { occurrence_id: errorDetails.occurrenceId })
-        onLifecycle({
-            step: rejected ? 'wallet_action_rejected' : 'wallet_action_failed',
-            stage: 'wallet_action',
-            outcome: rejected ? 'rejected' : 'failed',
-            path: 'WalletTransfer',
-            action: 'send_transaction',
-            provider: selectedWallet.providerName,
-            ...errorDetails,
-            reasonCode: rejected ? 'user_rejected' : errorDetails.reasonCode,
-            ...lifecycleContext,
-        })
-    }
+        },
+        onLifecycle,
+        // Keep one timing operation across the Stellar refresh and both wallet requests.
+        onSettled: finishTelemetry,
+        shouldReportError: error => !(retriesExpiry && isExpiredTransaction(error)),
+    }, () => onClick(props))
 
     try {
         hash = await requestWallet(transferProps, { retriesExpiry: true })
@@ -112,35 +88,6 @@ export const executeWalletTransfer = async (ctx: DepositExecutionContext, onClic
         setActionStateText("Opening Wallet")
         hash = await requestWallet(refreshedProps, { retriesExpiry: false })
     }
-    if (!hash) {
-        finishTelemetry('failed', { reason_code: 'missing_transaction_hash' })
-        const error = new Error('Wallet returned no transaction hash')
-        onLifecycle({
-            step: 'wallet_action_failed',
-            stage: 'wallet_action',
-            outcome: 'failed',
-            path: 'WalletTransfer',
-            action: 'send_transaction',
-            provider: selectedWallet.providerName,
-            reasonCode: 'missing_transaction_hash',
-            reason: error.message,
-            occurrenceId: lifecycleErrorDetails(error).occurrenceId,
-            ...lifecycleContext,
-        })
-        throw error
-    }
-
-    finishTelemetry('succeeded')
-    onLifecycle({
-        step: 'transaction_submitted',
-        stage: 'input_transfer',
-        outcome: 'succeeded',
-        path: 'WalletTransfer',
-        action: 'send_transaction',
-        provider: selectedWallet.providerName,
-        transactionHash: hash,
-        ...lifecycleContext,
-    })
 
     onSuccess()
     setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, hash)

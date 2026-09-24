@@ -114,3 +114,42 @@ for (const [label, thrown, expected] of [
     assert.equal(operations[0].attributes.outcome, expected.outcome)
   })
 }
+
+for (const hash of ['transaction-hash', '', undefined]) {
+  test(`standard transfers require a hash and report one terminal outcome: ${JSON.stringify(hash)}`, async t => {
+    const lifecycle = []
+    const operations = []
+    const published = []
+    let successes = 0
+    t.after(widgetTelemetry.register(event => operations.push(event)))
+    const ctx = {
+      swapData: { id: 'swap-standard', metadata: {} },
+      swapBasicData: { requested_amount: '1', source_network: { name: 'ETHEREUM_MAINNET' } },
+      depositActions: [{ type: 'transfer', amount: '1', to_address: 'deposit' }],
+      selectedWallet: { providerName: 'EVM', address: 'source' },
+      setActionStateText() {},
+      setSwapTransaction: (...args) => published.push(args), onSuccess: () => { successes++ },
+      onLifecycle: event => lifecycle.push(event),
+      layerswapApiClient: {
+        GetDepositActionsAsync: async () => assert.fail('no refresh'),
+        SwapCatchup: async (swapId, transactionHash) => {
+          assert.equal(swapId, 'swap-standard')
+          assert.equal(transactionHash, hash)
+        },
+      },
+    }
+    const transfer = executeWalletTransfer(ctx, async () => hash)
+    if (hash) await transfer
+    else await assert.rejects(transfer, /Wallet returned no transaction hash/)
+    assert.deepEqual(lifecycle.map(event => event.step), [
+      'wallet_prompt_opened', hash ? 'transaction_submitted' : 'wallet_action_failed',
+    ])
+    assert.equal(lifecycle[1].reasonCode, hash ? undefined : 'missing_transaction_hash')
+    assert.equal(lifecycle[1].transactionHash, hash || undefined)
+    assert.equal(operations.length, 1)
+    assert.equal(operations[0].attributes.outcome, hash ? 'succeeded' : 'failed')
+    assert.equal(operations[0].attributes.reason_code, hash ? undefined : 'missing_transaction_hash')
+    assert.equal(successes, hash ? 1 : 0)
+    assert.deepEqual(published, hash ? [['swap-standard', 'pending', hash]] : [])
+  })
+}
