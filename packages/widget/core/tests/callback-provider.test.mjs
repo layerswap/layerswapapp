@@ -89,7 +89,7 @@ test('the widget attaches classification to the error occurrence before calling 
   ErrorHandler({ type: 'WalletError', message: 'Account unavailable', cause: { code: 4100 } })
   assert.equal(received[0].reasonCode, 'user_rejected')
   assert.equal(received[0].occurrenceId, getErrorOccurrenceId(cause))
-  assert.equal(received[0].cause, cause)
+  assert.deepEqual(received[0].cause, { name: cause.name, message: cause.message, stack: cause.stack, code: 'ACTION_REJECTED' })
   assert.equal(received[0].swapId, 'swap-a')
   assert.equal(received[1].reasonCode, 'unauthorized')
 })
@@ -112,7 +112,7 @@ test('error enrichment leaves background diagnostics and unknown wallet reasons 
     assert.equal(Object.hasOwn(event, 'reasonCode'), false)
     assert.equal(event.type, events[i].type)
     assert.equal(event.message, events[i].message)
-    assert.equal(event.cause, events[i].cause)
+    assert.deepEqual(event.cause, events[i].cause)
     assert.ok(event.occurrenceId)
   }
 })
@@ -199,7 +199,7 @@ test('throwing host callbacks retain their error details and lifecycle telemetry
     assert.equal(event.name, error.name)
     assert.equal(event.message, error.message)
     assert.equal(event.stack, error.stack)
-    assert.equal(event.cause, error)
+    assert.deepEqual(event.cause, { name: error.name, message: error.message, stack: error.stack, cause: { name: error.cause.name, message: error.cause.message, stack: error.cause.stack } })
     assert.ok(event.occurrenceId)
   }
   assert.equal(received[0].occurrenceId, received[1].occurrenceId)
@@ -229,7 +229,9 @@ test('all host callback boundaries normalize nullish and primitive failures with
   for (const caught of [null, undefined, 'host failure', 42, new TypeError('native host failure')]) {
     const callbacks = Object.fromEntries(Object.keys(args).map(name => [name, () => { throw caught }]))
     await act(() => root.render(createElement(CallbackProvider, { callbacks }, createElement(CaptureCallbacks))))
-    current.onSwapLifecycle(created('swap-123'))
+    args.onSwapCreate.swap.id = `swap-${String(caught)}`
+    args.onSwapStatusChange.swapId = args.onSwapCreate.swap.id
+    current.onSwapLifecycle(created(args.onSwapCreate.swap.id))
     for (const [name, arg] of Object.entries(args)) {
       const before = received.length
       assert.doesNotThrow(() => current[name](arg), name)
@@ -238,7 +240,10 @@ test('all host callback boundaries normalize nullish and primitive failures with
       assert.equal(event.type, 'CallbackError')
       assert.equal(event.message, caught instanceof Error ? caught.message : String(caught))
       assert.equal(event.name, caught instanceof Error ? caught.name : 'Error')
-      assert.equal(event.cause, caught)
+      if (caught instanceof Error) {
+        assert.notEqual(event.cause, caught)
+        assert.equal(event.cause.message, caught.message)
+      } else assert.deepEqual(event.cause, typeof caught === 'string' ? { message: caught } : undefined)
       assert.ok(event.occurrenceId)
       if (caught instanceof Error) assert.equal(event.stack, caught.stack)
     }
@@ -382,7 +387,7 @@ test('status callbacks deliver one notification per API status; context is a sna
   assert.ok(events.every(event => !('phase' in event)), 'UI phase is reported on onSwapLifecycle only')
 })
 
-test('a retried wallet failure reports status again even when the API status is unchanged', async () => {
+test('wallet retries preserve backend history when the API status is unchanged', async () => {
   const events = []
   let callbacks
   function Capture() { callbacks = useCallbacks(); return null }
@@ -402,7 +407,7 @@ test('a retried wallet failure reports status again even when the API status is 
   callbacks.onSwapStatusChange(failed)
   callbacks.onSwapStatusChange(other)
   callbacks.onSwapStatusChange(failed)
-  assert.deepEqual(events, [failed, other, failed], 'retry resets only its own swap status')
+  assert.deepEqual(events, [failed, other], 'wallet attempts cannot manufacture backend transitions')
 })
 
 test('lifecycle observations preserve recovery, attempts, new transactions and separate swap identities', async () => {
@@ -438,17 +443,18 @@ test('lifecycle observations preserve recovery, attempts, new transactions and s
   emit('transfer_blocked', { reasonCode: 'rpc_unhealthy' })
   assert.equal(events.length, 14, 'the block hook already deduplicates reason transitions')
   const completed = { type: 'completed', swapId: 'swap-a' }
+  callbacks.onSwapCreate({ swap: { id: 'swap-a' } })
   callbacks.onSwapStatusChange(completed)
   callbacks.onSwapStatusChange(completed)
   assert.equal(events.length, 15)
   callbacks.onSwapModalStateChange(true)
   emit('awaiting_wallet_action')
   callbacks.onSwapStatusChange(completed)
-  assert.equal(events.length, 17, 'reopening starts a fresh observation scope')
+  assert.equal(events.length, 16, 'reopening resets lifecycle observations, not backend history')
   emit('form_submitted', { swapId: undefined })
   emit('awaiting_wallet_action')
   callbacks.onSwapStatusChange(completed)
-  assert.equal(events.length, 20, 'a new form submission resets previous swap observations')
+  assert.equal(events.length, 18, 'a form submission cannot repeat an old backend status')
 })
 
 const AWAITING = { step: 'awaiting_wallet_action', stage: 'wallet_action', outcome: 'pending', path: 'Withdraw', action: 'send_from_wallet' }

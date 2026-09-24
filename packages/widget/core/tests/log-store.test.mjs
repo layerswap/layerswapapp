@@ -38,7 +38,9 @@ test('a throwing error logger falls back without invoking itself again', () => {
       assert.equal(handlerCalls, 1)
       assert.equal(errors.length, 1)
       assert.equal(logs.length, 1)
-      assert.deepEqual(logs[0], ['[layerswap:log]', event])
+      assert.equal(logs[0][0], '[layerswap:log]')
+      assert.deepEqual(logs[0][1], { ...event, occurrenceId: logs[0][1].occurrenceId })
+      assert.ok(logs[0][1].occurrenceId)
     })
   } finally {
     unregister()
@@ -58,7 +60,7 @@ test('a re-entrant error logger is blocked after one invocation', () => {
       assert.doesNotThrow(() => store.getState().logger(event))
       assert.equal(handlerCalls, 1)
       assert.equal(errors.length, 1)
-      assert.match(String(errors[0][1]), /Recursive onError callback invocation blocked/)
+      assert.match(errors[0][1].message, /Recursive onError callback invocation blocked/)
       assert.equal(logs.length, 1)
     })
   } finally {
@@ -92,7 +94,9 @@ test('registration cleanup cannot remove a newer logger and restores the previou
   captureConsole(({ logs }) => {
     store.getState().logger(event)
     assert.equal(logs.length, 1)
-    assert.deepEqual(logs[0], ['[layerswap:log]', event])
+    assert.equal(logs[0][0], '[layerswap:log]')
+      assert.deepEqual(logs[0][1], { ...event, occurrenceId: logs[0][1].occurrenceId })
+      assert.ok(logs[0][1].occurrenceId)
   })
 })
 

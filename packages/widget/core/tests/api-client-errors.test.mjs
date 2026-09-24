@@ -3,7 +3,7 @@ import test, { after, afterEach } from 'node:test'
 import { registerHooks } from 'node:module'
 import { extname } from 'node:path'
 import { AxiosError } from 'axios'
-import { setErrorLogger } from '@layerswap/widget-types'
+import { ErrorHandler, setErrorLogger } from '@layerswap/widget-types'
 
 const hooks = registerHooks({
   resolve(specifier, context, nextResolve) {
@@ -51,7 +51,12 @@ test('an API failure reaches onError without the axios config, headers, request 
   const [event] = reported
   assert.equal(event.type, 'APIError')
   assert.equal(event.status, 500)
-  assert.deepEqual(event.cause, { status: 500, code: 'ERR_BAD_RESPONSE', method: 'post', url: 'https://api.test/api/v2/swaps' })
+  assert.equal(event.cause.status, 500)
+  assert.equal(event.cause.code, 'ERR_BAD_RESPONSE')
+  assert.equal(event.cause.method, 'post')
+  // A foreign error's URL may be a provider URL with a key in its path; the route lives in `endpoint`.
+  assert.equal(event.cause.url, 'https://api.test')
+  assert.equal(event.endpoint, '/swaps')
   for (const field of ['config', 'headers', 'request', 'data', 'response']) {
     assert.equal(Object.hasOwn(event.cause, field), false, `cause must not carry ${field}`)
   }
@@ -60,12 +65,28 @@ test('an API failure reaches onError without the axios config, headers, request 
   assert.doesNotMatch(serialized, new RegExp(`${SOURCE_ADDRESS}|${DESTINATION_ADDRESS}`))
 })
 
-test('the reported url drops the query string', async () => {
+test('the reported route drops the query string', async () => {
   const reported = []
   setErrorLogger(event => reported.push(event))
   await assert.rejects(failingClient().GetDepositActionsAsync('swap-1', SOURCE_ADDRESS))
-  assert.equal(reported[0].cause.url, 'https://api.test/api/v2/swaps/swap-1/deposit_actions')
+  assert.equal(reported[0].endpoint, '/swaps/swap-1/deposit_actions')
+  assert.equal(reported[0].cause.url, 'https://api.test')
   assert.equal(reported[0].cause.method, 'get')
+})
+
+test('re-reporting an authorization failure through the withdrawal boundary cannot expose request internals', async () => {
+  const reported = []
+  setErrorLogger(event => reported.push(event))
+  try {
+    await failingClient().AuthorizeSwapAsync('swap-1', 'secret-signed-authorization', SOURCE_ADDRESS)
+  } catch (error) {
+    // The withdrawal handler must retain this original error for recovery/classification.
+    assert.ok(error instanceof AxiosError)
+    ErrorHandler({ type: 'SwapWithdrawalError', message: error.message, cause: error, swapId: 'swap-1' })
+  }
+  assert.deepEqual(reported.map(event => event.type), ['APIError', 'SwapWithdrawalError'])
+  assert.equal(reported[0].occurrenceId, reported[1].occurrenceId)
+  assert.doesNotMatch(JSON.stringify(reported), /secret-api-key|X-LS-APIKEY|secret-signed-authorization/i)
 })
 
 test('the onError occurrence id matches the swap_creation_failed lifecycle event for the same failure', async () => {

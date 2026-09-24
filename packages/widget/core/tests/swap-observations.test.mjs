@@ -194,7 +194,7 @@ for (const withRefuel of [false, true]) {
   })
 }
 
-test('(c)(d)(e) re-render, remount and retry: only a new attempt repeats a delivered status', async () => {
+test('(c)(d)(e) re-render, remount and retry preserve backend status history', async () => {
   const screen = host()
   const steps = walk()
   for (const [, details] of steps) await screen.render({ swapDetails: details })
@@ -213,11 +213,11 @@ test('(c)(d)(e) re-render, remount and retry: only a new attempt repeats a deliv
   assert.equal(screen.state.statuses.length, delivered.statuses, 'a remount is not a transition')
   assert.equal(screen.state.lifecycle.length, delivered.lifecycle)
 
-  // (e) a new attempt for the swap permits the same status again
+  // (e) a wallet attempt re-arms lifecycle observations, not backend status
   await screen.render(null)
   act(() => captured.onSwapLifecycle({ step: 'retry_requested', stage: 'wallet_action', outcome: 'started', path: 'SwapDetails', swapId: 's1' }))
   await screen.render({ swapDetails: completed })
-  assert.deepEqual(screen.statusIds().slice(delivered.statuses), [['s1', 'completed']])
+  assert.deepEqual(screen.statusIds().slice(delivered.statuses), [])
   assert.deepEqual(screen.phaseSteps().slice(delivered.lifecycle + 1), ['swap_completed'])
   assert.deepEqual(screen.state.captures, ['swap_pending', 'swap_completed'], 'the bridge dedupe is per name and swap, not per attempt')
 })
@@ -298,4 +298,15 @@ test('(m) a swap created in this session reports its first status even though Pr
   await screen.render({ swapDetails: swap('s1', 'ls_transfer_pending', [inputTx()]) })
   await screen.render({ swapDetails: swap('s1', 'completed', [inputTx(), outputTx]) })
   assert.deepEqual(screen.statusIds(), [['s1', 'ls_transfer_pending'], ['s1', 'completed']])
+})
+
+test('reloading during input processing observes a direct terminal transition', async () => {
+  for (const status of ['completed', 'failed', 'expired']) {
+    const screen = host()
+    const id = `reloaded-${status}`
+    await screen.render({ swapDetails: swap(id, 'user_transfer_pending', [inputTx({ status: 'pending', confirmations: 0 })]) })
+    assert.deepEqual(screen.statusIds(), [])
+    await screen.render({ swapDetails: swap(id, status, [inputTx(), outputTx]) })
+    assert.deepEqual(screen.statusIds(), [[id, status]])
+  }
 })

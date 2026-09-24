@@ -13,7 +13,7 @@ export function getErrorOccurrenceId(error: unknown): string | undefined {
         chain.push(current)
         id = occurrences.get(current)
         if (id) break
-        try { current = (current as { cause?: unknown }).cause }
+        try { current = Object.getOwnPropertyDescriptor(current, 'cause')?.value }
         catch { break }
     }
     id ??= createRandomId()

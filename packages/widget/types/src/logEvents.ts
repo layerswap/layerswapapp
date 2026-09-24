@@ -1,5 +1,17 @@
 import { SwapStatus } from './SwapStatus';
 
+/** Data-only public diagnostics. Never a provider error, request, or response object. */
+export type ErrorSummary = {
+  name?: string; message?: string; stack?: string; code?: string | number;
+  status?: string | number; method?: string; url?: string; cause?: ErrorSummary;
+};
+export type ErrorResponseSummary = { code?: string | number; message?: string; error?: ErrorSummary };
+export type FailedTokenSummary = {
+  token?: string; error_message?: string; error_name?: string; error_code?: string | number;
+  error_category?: string; response_status?: number; response_status_text?: string;
+  request_url?: string; error_stack?: string; response_data?: ErrorResponseSummary;
+};
+
 export interface BaseErrorProps {
   /** Shared only by observations of the same thrown error object/cause. */
   occurrenceId?: string;
@@ -8,7 +20,7 @@ export interface BaseErrorProps {
   name?: string;
   message: string;
   stack?: string;
-  cause?: unknown;
+  cause?: ErrorSummary;
 }
 
 export type AlertUIEvent = { type: 'AlertUI' } & BaseErrorProps;
@@ -20,7 +32,7 @@ export type APIError = ({
   endpoint: string;
   status: string;
   statusText: string;
-  responseData: any;
+  responseData: ErrorResponseSummary;
   requestUrl: string;
   requestMethod: string;
 } & BaseErrorProps);
@@ -35,10 +47,10 @@ export type BalanceError = ({
   error_category?: string;
   error_codes?: (string | undefined)[];
   http_statuses?: (number | undefined)[];
-  failed_tokens?: any[];
+  failed_tokens?: FailedTokenSummary[];
   nodes?: string[];
   request_url?: string;
-  response_data?: unknown;
+  response_data?: ErrorResponseSummary;
   response_status?: number;
   response_status_text?: string;
   error_code?: string;
@@ -88,8 +100,16 @@ export type SideEffectError = ({
 
 export type ErrorEventType = WidgetError | APIError | BalanceError | GasFeeError | WalletWithdrawalError | GasMiscalculationError | AlertUIEvent | TransactionNotDetectedError | ChainError | TransferError | WalletError | CallbackError | SideEffectError;
 
+/** Internal reporting input. Classification/recovery may inspect raw errors before serialization. */
+type RawDiagnostics<T> = T extends unknown ? Omit<T, 'cause' | 'responseData' | 'response_data' | 'failed_tokens'>
+  & { cause?: unknown }
+  & (T extends { responseData: unknown } ? { responseData: unknown } : {})
+  & (T extends BalanceError ? { response_data?: unknown; failed_tokens?: unknown[] } : {}) : never;
+export type ErrorReportInput = RawDiagnostics<ErrorEventType>;
+
 /**
- * One notification per (swapId, type) per attempt. `type` is the API status.
+ * One notification per observed backend transition. `type` is the API status.
+ * Wallet attempts and UI remounts do not reset backend history.
  * All other fields are a snapshot at transition time and never trigger a
  * notification. UI phase transitions, including completion before the API
  * confirms and input-transaction failure, are reported on `onSwapLifecycle`.

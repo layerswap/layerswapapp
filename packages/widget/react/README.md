@@ -148,13 +148,33 @@ widget's behavior, not where it comes from.
 | `onReady` | `() => void` | Fires once the widget mounts. |
 | `onError` | `(err) => void` | Fires on load/render failure; receives a `ManifestError` for manifest issues. |
 
-`callbacks.onSwapStatusChange` reports each API status transition once per
-`(swapId, type)` per attempt (`ls_transfer_pending`, `completed`, `failed`,
-`expired`). Address and route fields are a snapshot and never repeat a
-notification. UI phase transitions, including completion before the API
-confirms and input-transaction failure, are delivered by `onSwapLifecycle`
-(`swap_completed`, `swap_failed`, `swap_expired`). Starting another wallet
-attempt permits a new notification for the same status.
+`callbacks.onSwapStatusChange` reports observed backend transitions into
+`ls_transfer_pending`, `completed`, `failed`, and `expired`. Every backend
+status establishes history before this notification filter is applied.
+Opening an existing swap establishes a silent baseline; a subsequent change
+is reported, including `user_transfer_pending` directly to `completed`.
+A swap explicitly created in the widget may report its first status.
+Address/route enrichment, callback replacement, wallet retries and modal
+remounts do not repeat an unchanged status. History is scoped to the widget
+provider and bounded to the 64 most recently observed swaps; an evicted or
+newly loaded swap starts with a fresh baseline. UI phase changes, including
+early completion and local input failures, remain on `onSwapLifecycle`.
+
+`callbacks.onError` receives data-only diagnostics. `cause` is an
+`ErrorSummary` with optional name, message, stack, code, HTTP status, method,
+URL and a bounded cause summary. `responseData` / `response_data` contain
+only server error codes/messages; unknown response fields, request bodies,
+headers, and provider objects are omitted. Diagnostic URLs never include
+query, fragment or userinfo. Layerswap API routes (`endpoint`, `requestUrl`)
+keep their path; RPC/provider URLs (`node_url`, `nodes`, `request_url`,
+`cause.url` and URLs inside messages) keep only scheme and host, because
+providers often put API keys in the path. Stack-frame locations keep their
+path. `occurrenceId` links reports of the same original
+failure. Custom adapters may still pass original errors to `ErrorHandler`;
+classification runs before the shared reporting boundary constructs the
+public report. Recovery code continues to receive the original thrown error.
+Hosts that inspected raw Axios/provider objects must migrate to these summary
+fields. Failed-token diagnostics use the same response policy.
 
 `callbacks.onSwapLifecycle` delivers phase and transaction observations once
 per meaningful transition. Confirmation counts, context enrichment, and React
@@ -166,7 +186,7 @@ no `swapId` (take the id from `swap_created`). A later id, address or
 confirmation count never repeats a phase step, and a rejected or failed attempt
 is reported by its own step rather than by repeating the awaiting phase.
 Reopening the swap, returning to the form, or submitting a new form resets
-observation deduplication. Wallet transfer cancellations declared by the
+lifecycle observation deduplication. Backend status history is preserved. Wallet transfer cancellations declared by the
 adapter (`userRejectedError` from `@layerswap/wallet-core/errors`) use
 `wallet_action_rejected` with `reasonCode: 'user_rejected'`; they no longer
 invoke `callbacks.onError`. A custom `TransferProvider` that only sets

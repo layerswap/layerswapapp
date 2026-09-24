@@ -216,3 +216,10 @@ For each captured scenario—initialization, route navigation, successful/failed
 6. Keep fields absent from the controlled capture at `Found only in source code`; absence in a single scenario is not proof of non-emission.
 
 This contract must be reconciled again after enough production telemetry exists. Controlled telemetry can validate schema and linking mechanics, but not production baselines, thresholds, percentiles, volume, retention, cardinality at scale, query cost, or sampling effects.
+
+## Observation and error boundaries
+
+- Backend status notifications originate in `SwapDataProvider`, regardless of the rendered panel. All backend statuses establish history before notification filtering. Opening an existing swap is a silent baseline; wallet retries, form submissions and modal resets do not repeat an unchanged backend status. The callback `path` is `SwapDataProvider`.
+- Backend polling uses backend status plus output/refuel settlement data. Local transaction failure and gasless expiry affect presentation and lifecycle events but cannot stop polling. Early UI completion also keeps polling until backend completion is observed.
+- All widget `onError` records are converted by the shared error reporter before reaching the bridge or other hosts. Causes are allowlisted summaries; response bodies contribute only error codes/messages. Headers, request bodies and provider objects are omitted. Error classification and occurrence identity use the original error before conversion. Faro's sanitizer remains an additional boundary for browser-generated signals.
+- Lifecycle phase observations and legacy-event attribution retain their existing meanings; they do not determine backend polling or reset backend status history. Existing-swap API transitions are delivered even when that swap was not created in the current session.

@@ -127,7 +127,7 @@ test('a throwing post-creation effect is reported as SideEffectError and neither
   assert.equal(event.swapId, 'swap-1')
   assert.equal(event.name, 'QuotaExceededError')
   assert.equal(event.message, 'The quota has been exceeded.')
-  assert.equal(event.cause, quota)
+  assert.deepEqual(event.cause, { name: quota.name, message: quota.message, stack: quota.stack })
   assert.equal(event.occurrenceId, getErrorOccurrenceId(quota))
   assert.equal(Object.hasOwn(event, 'reasonCode'), false)
 })
@@ -160,7 +160,7 @@ test('non-Error throws from effects are still reported with a message', () => {
   assert.equal(reported.length, 1)
   assert.equal(reported[0].type, 'SideEffectError')
   assert.equal(reported[0].message, 'plain string')
-  assert.equal(reported[0].cause, 'plain string')
+  assert.deepEqual(reported[0].cause, { message: 'plain string' })
 })
 
 test('requestSwap flips gasless only for a refused use_gasless request', async () => {

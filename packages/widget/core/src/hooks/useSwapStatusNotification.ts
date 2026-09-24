@@ -1,22 +1,18 @@
 import { useEffect, useRef } from 'react'
-import { SwapStatus, type SwapStatusEvent } from '@layerswap/widget-types'
+import { type SwapStatus, type SwapStatusEvent } from '@layerswap/widget-types'
 import { useClientLayoutEffect } from '@/hooks/useClientLayoutEffect'
 import { useCallbacks } from '@/context/callbackProvider'
-import type { SwapStatusIdentity } from '@/lib/callbackObservations'
+import type { SwapStatusIdentity } from '@/lib/swapStatusObserver'
 
-/** API statuses hosts are notified about. UI phases (early completion, input-tx failure) belong to onSwapLifecycle. */
-export const REPORTED_SWAP_STATUSES: ReadonlySet<SwapStatus> = new Set([
-    SwapStatus.LsTransferPending, SwapStatus.Completed, SwapStatus.Failed, SwapStatus.Expired,
-])
+export { REPORTED_SWAP_STATUSES } from '@/lib/swapStatusObserver'
 
 /** Snapshot fields of a status notification; never part of its identity. */
 export type SwapStatusContext = Omit<SwapStatusEvent, keyof SwapStatusIdentity>
 
 /**
- * Reports each API status transition of a swap to the host once per (swapId, type).
+ * Provider-owned observation of every committed backend status, before notification filtering.
  * The first status seen for a swap only opened from a URL or history is its state
- * at load and is not reported; swaps this widget created or showed before their
- * transfer report from their first status (see lib/callbackObservations).
+ * at load and is not reported; explicitly created swaps can report their first status.
  * The signature is the trigger set: only the swap id and the API status can start
  * a notification. Context (path, addresses, route) is read from a ref at emission
  * time, so later enrichment neither re-triggers nor is lost.
@@ -26,7 +22,7 @@ export function useSwapStatusNotification(swapId: string | undefined, status: Sw
     const contextRef = useRef(context)
     useClientLayoutEffect(() => { contextRef.current = context })
     useEffect(() => {
-        if (!swapId || !status || !REPORTED_SWAP_STATUSES.has(status)) return
+        if (!swapId || !status) return
         onSwapStatusChange({ swapId, type: status, ...contextRef.current })
     }, [swapId, status, onSwapStatusChange])
 }

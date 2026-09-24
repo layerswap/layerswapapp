@@ -25,7 +25,6 @@ import { useSettingsState } from '@/context/settings';
 import { useExtendedRoutesStore } from '@/stores/extendedRoutesStore';
 import { lifecycleContextFromSwap, PHASE_LIFECYCLE_EVENTS } from '@/lib/swapLifecycle';
 import { useLifecycleObservation } from '@/hooks/useLifecycleObservation';
-import { useSwapStatusNotification } from '@/hooks/useSwapStatusNotification';
 import { useClientLayoutEffect } from '@/hooks/useClientLayoutEffect';
 
 type Props = {
@@ -204,17 +203,6 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
         phase,
         reasonCode: swapDetails.fail_reason || failureReason,
     }, lifecycleContext)
-
-    // API status stream: identity is (swapId, status); everything else is a snapshot.
-    useSwapStatusNotification(swapDetails?.id, swapDetails?.status, {
-        path: 'Processing',
-        fromAddress: swapDetails.source_address ?? swapInputTransaction?.from,
-        toAddress: swapBasicData.destination_address,
-        sourceNetwork: source_network.name,
-        destinationNetwork: destination_network.name,
-        sourceToken: source_token.symbol,
-        destinationToken: destination_token.symbol,
-    })
 
     const truncatedRefuelAmount = refuel && truncateDecimals(refuel.amount, refuel.token?.precision)
 

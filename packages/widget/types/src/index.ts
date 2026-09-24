@@ -35,6 +35,10 @@ export type {
   CallbackError,
   SideEffectError,
   ErrorEventType,
+  ErrorReportInput,
+  ErrorSummary,
+  ErrorResponseSummary,
+  FailedTokenSummary,
   SwapStatusEvent,
   SwapLifecycleEvent,
   SwapLifecycleOutcome,
@@ -50,8 +54,8 @@ export type { InternalConnector, Wallet, WalletConnectConfig, WalletConnectLink 
 export { ActionMessageType } from './actionMessage';
 export { GasCalculation } from './GasCalculation';
 export { Network, NetworkWithTokens, Token, Metadata, NetworkRoute, NetworkRouteToken } from './types';
-export { ErrorHandler, setErrorLogger, createSafeErrorLogger, defaultErrorLogger, reportErrorLoggerFailure } from './errorHandler';
-export type { ErrorLogger } from './errorHandler';
+export { ErrorHandler, setErrorLogger, setErrorClassifier, createSafeErrorLogger, defaultErrorLogger, reportErrorLoggerFailure } from './errorHandler';
+export type { ErrorLogger, ErrorClassifier } from './errorHandler';
 export { getErrorOccurrenceId } from './errorOccurrence';
 export { createRandomId } from './randomId';
 export type { WidgetTelemetryEvent, WidgetTelemetryHandler, WidgetTelemetryAttributes, WidgetTelemetryData, WidgetFlowStep, WidgetOperation, WidgetOperationOutcome } from './telemetry';
