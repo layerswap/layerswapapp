@@ -116,7 +116,8 @@ export function resolveSwapPhase(input: ResolveSwapPhaseInput): ResolvedSwapStat
     const isRefundFlow = phase === SwapPhase.PendingRefund || phase === SwapPhase.Refunded;
     const hidesSteps = phase === SwapPhase.Expired;
     const showsFailedPanel = phase === SwapPhase.Expired;
-    const showsEstimatedTime = !outputReady && !isTerminal && phase !== SwapPhase.PendingRefund;
+    // Backend completion can precede output/refuel delivery; keep timing until the resolved flow ends.
+    const showsEstimatedTime = !isTerminal && phase !== SwapPhase.PendingRefund;
 
     return {
         phase,

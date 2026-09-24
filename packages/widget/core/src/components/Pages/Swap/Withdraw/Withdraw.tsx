@@ -1,16 +1,13 @@
-import { useIsGaslessActive } from '@/hooks/useIsGaslessActive';
-import { WithdrawContentView } from './Presentation/Page2Sections';
 import { truncateDecimals } from '@/components/utils/RoundDecimals';
 import { Widget } from '@/components/Widget/Index';
 import { useSettingsState } from '@/context/settings';
 import { useSwapDataState, useSwapDataUpdate } from '@/context/swap';
 import { useSelectedAccount } from '@/context/swapAccounts';
-import { isDepositAddressSwap, shouldShowCompactSwapQuote } from '@/helpers/swapFlow';
+import { isDepositAddressSwap } from '@/helpers/swapFlow';
 import { transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { useBalance } from '@/lib/balances/useBalance';
 import useOutOfGas from '@/lib/gases/useOutOfGas';
 import useSWRGas from '@/lib/gases/useSWRGas';
-import { Partner } from '@/Models';
 import { NetworkRoute } from '@layerswap/widget-types';
 import { useFormikContext } from 'formik';
 import type { JSX } from 'react';
@@ -22,8 +19,6 @@ import {
     BalanceWarningView,
     GasWarningView,
 } from './Presentation/BalanceWarningView';
-import SwapSummary from './Summary';
-import { SwapQuoteDetails } from './SwapQuoteDetails';
 import WalletTransferButton from './WalletTransferButton';
 import { WalletActionTransition } from './Presentation/WalletActionTransition';
 
@@ -31,19 +26,9 @@ const Withdraw: FC<{
     type: 'widget' | 'contained';
     onWalletWithdrawalSuccess?: () => void;
     onCancelWithdrawal?: () => void;
-    partner?: Partner;
-}> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal, partner }) => {
-    const {
-        swapBasicData,
-        swapDetails,
-        swapId,
-        quote,
-        refuel,
-        quoteIsLoading,
-        quoteError,
-    } = useSwapDataState();
-    const isGaslessActive = useIsGaslessActive(swapBasicData);
-    const showCompactQuote = shouldShowCompactSwapQuote({ swapData: swapBasicData, isGaslessActive });
+}> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal }) => {
+    const { swapBasicData, swapDetails, refuel, quoteIsLoading } =
+        useSwapDataState();
     const { setSubmitedFormValues } = useSwapDataUpdate();
 
     const { networks } = useSettingsState();
@@ -108,7 +93,6 @@ const Withdraw: FC<{
     ]);
 
     let withdraw: {
-        content?: JSX.Element | JSX.Element[];
         footer?: JSX.Element | JSX.Element[];
         footerKey?: string;
     } = {};
@@ -202,22 +186,6 @@ const Withdraw: FC<{
 
     return (
         <>
-            <WithdrawContentView
-                summary={<SwapSummary />}
-                quote={
-                    <SwapQuoteDetails
-                        swapBasicData={swapBasicData}
-                        quote={quote}
-                        refuel={refuel}
-                        quoteIsLoading={quoteIsLoading}
-                        quoteError={quoteError}
-                        partner={partner}
-                        compact={!!swapId && showCompactQuote}
-                    />
-                }
-            >
-                {withdraw?.content}
-            </WithdrawContentView>
             {withdraw?.footer && (
                 <Widget.Footer sticky={type == 'widget'}>
                     <WalletActionTransition actionKey={withdraw.footerKey}>

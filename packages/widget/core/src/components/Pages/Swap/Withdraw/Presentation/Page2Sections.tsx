@@ -1,25 +1,114 @@
+import { swapFlowTransitionStyle } from './swapFlowAnimation';
 import type { ReactNode } from 'react';
-import Content from '@/components/Widget/Content';
+import { WalletExecutionTransition } from './WalletExecutionTransition';
+import { StepsPanelProvider } from '../Processing/StepsComponent';
 
-export function WithdrawContentView({
+export function SwapOverviewView({
     summary,
     quote,
+    compactQuote = false,
+}: {
+    summary: ReactNode;
+    quote?: ReactNode;
+    compactQuote?: boolean;
+}) {
+    return (
+        <div
+            className="w-full"
+            data-quote-layout={compactQuote ? 'attached' : 'separate'}
+        >
+            <div
+                className="relative z-10 rounded-2xl bg-secondary-500 transition-[border-radius] motion-reduce:transition-none"
+                style={{
+                    ...swapFlowTransitionStyle,
+                    borderBottomLeftRadius: compactQuote && quote ? 0 : 16,
+                    borderBottomRightRadius: compactQuote && quote ? 0 : 16,
+                }}
+            >
+                {summary}
+            </div>
+            <div
+                data-quote-transition
+                hidden={!quote}
+                className="transition-[margin-top] motion-reduce:transition-none"
+                style={{
+                    ...swapFlowTransitionStyle,
+                    marginTop: compactQuote ? 0 : 8,
+                }}
+            >
+                <div
+                    className="overflow-hidden rounded-2xl bg-secondary-500 transition-[border-radius] motion-reduce:transition-none"
+                    style={{
+                        ...swapFlowTransitionStyle,
+                        borderTopLeftRadius: compactQuote ? 0 : 16,
+                        borderTopRightRadius: compactQuote ? 0 : 16,
+                    }}
+                >
+                    <div
+                        className="grid transition-[grid-template-rows,opacity] motion-reduce:transition-none"
+                        style={{
+                            ...swapFlowTransitionStyle,
+                            gridTemplateRows: compactQuote ? '1fr' : '0fr',
+                            opacity: compactQuote ? 1 : 0,
+                        }}
+                        aria-hidden="true"
+                    >
+                        <div className="min-h-0 overflow-hidden">
+                            <div className="mx-3 border-t border-secondary-400" />
+                        </div>
+                    </div>
+                    {quote}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// Keep the overview mounted when wallet controls give way to processing steps.
+export function SwapContentView({
+    summary,
+    quote,
+    compactQuote = false,
+    transferStage,
     children,
 }: {
     summary: ReactNode;
-    quote: ReactNode;
+    quote?: ReactNode;
+    compactQuote?: boolean;
+    transferStage?: 'withdraw' | 'processing';
     children?: ReactNode;
 }) {
+    const overview = summary ? (
+        <SwapOverviewView
+            summary={summary}
+            quote={quote}
+            compactQuote={compactQuote}
+        />
+    ) : undefined;
+
     return (
-        <Content>
-            <div className="w-full flex flex-col justify-between text-secondary-text">
-                <div className="grid grid-cols-1 gap-2">
-                    {summary}
-                    {quote}
-                    {children}
-                </div>
+        <StepsPanelProvider>
+            <div className="w-full flex flex-col gap-2 text-secondary-text">
+                {transferStage ? (
+                    <WalletExecutionTransition
+                        overview={overview}
+                        workflow={
+                            transferStage === 'processing'
+                                ? children
+                                : undefined
+                        }
+                        controls={
+                            transferStage === 'withdraw' ? children : undefined
+                        }
+                    />
+                ) : (
+                    <>
+                        {overview}
+                        {children}
+                    </>
+                )}
             </div>
-        </Content>
+        </StepsPanelProvider>
     );
 }
 export function WalletTransferView({

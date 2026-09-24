@@ -1,3 +1,4 @@
+import { swapFlowTransitionStyle } from './swapFlowAnimation';
 import NumFlowWithFallback from '@/components/Common/NumFlowWithFallback';
 import {
     RecipientAddressView,
@@ -37,9 +38,13 @@ export function QuoteSummaryView({
 }) {
     return (
         <div
-            className={clsx('flex flex-col w-full p-2', {
-                '!pb-0 !-mb-1': !compact && isOpen,
-            })}
+            style={swapFlowTransitionStyle}
+            className={clsx(
+                'flex flex-col w-full p-2 transition-[padding-bottom,margin-bottom] motion-reduce:transition-none',
+                {
+                    '!pb-0 !-mb-1': !compact && isOpen,
+                },
+            )}
         >
             {showDestinationAddress &&
                 values.destination_address &&
@@ -83,31 +88,42 @@ export function QuoteSummaryView({
                         )}
                 </div>
             </div>
-            {!compact && slippage}
-            {!compact && isOpen && gasFee}
-            {!compact && (
-                <div
-                    className={`${isOpen ? 'hidden' : ''} flex flex-wrap items-center w-full justify-between gap-2 px-2 py-3`}
-                >
-                    {detailsButton}
-
-                    <button
-                        data-attr="see-swap-details"
-                        data-page2-quote-disclosure
-                        type="button"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onOpen?.();
-                        }}
-                        className="ml-auto flex shrink-0 items-center text-secondary-text text-sm whitespace-nowrap gap-0.5 hover:text-primary-text"
-                        aria-label="See details"
-                        aria-expanded={!!isOpen}
+            <div
+                className="grid transition-[grid-template-rows,opacity] motion-reduce:transition-none"
+                style={{
+                    ...swapFlowTransitionStyle,
+                    gridTemplateRows: compact ? '0fr' : '1fr',
+                    opacity: compact ? 0 : 1,
+                }}
+                aria-hidden={compact}
+                inert={compact}
+            >
+                <div className="min-h-0 overflow-hidden">
+                    {slippage}
+                    {isOpen && gasFee}
+                    <div
+                        className={`${isOpen ? 'hidden' : ''} flex flex-wrap items-center w-full justify-between gap-2 px-2 py-3`}
                     >
-                        <span>See details</span>
-                        <ChevronDown className="h-3.5 w-3.5" />
-                    </button>
+                        {detailsButton}
+
+                        <button
+                            data-attr="see-swap-details"
+                            data-page2-quote-disclosure
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onOpen?.();
+                            }}
+                            className="ml-auto flex shrink-0 items-center text-secondary-text text-sm whitespace-nowrap gap-0.5 hover:text-primary-text"
+                            aria-label="See details"
+                            aria-expanded={!!isOpen}
+                        >
+                            <span>See details</span>
+                            <ChevronDown className="h-3.5 w-3.5" />
+                        </button>
+                    </div>
                 </div>
-            )}
+            </div>
         </div>
     );
 }

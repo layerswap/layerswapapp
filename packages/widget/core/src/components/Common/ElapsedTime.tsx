@@ -3,7 +3,7 @@ import {
     TransactionType,
     type SwapDetails,
 } from '@/lib/apiClients/layerSwapApiClient';
-import { SwapStatus } from '@layerswap/widget-types';
+import { Clock3 } from 'lucide-react';
 
 export function ElapsedTime({
     swapDetails,
@@ -17,24 +17,21 @@ export function ElapsedTime({
         (t) => t.type === TransactionType.Input,
     );
 
-    if (swapDetails.status === SwapStatus.Completed) return null;
-
     if (!swapInputTransaction?.timestamp) {
         return (
-            <div className="flex items-center justify-center space-x-1">
-                <span className="text-secondary-text">
-                    Transaction is publishing
-                </span>
-            </div>
+            <span className="text-xs text-secondary-text">Publishing…</span>
         );
     }
 
     return (
-        <div className="flex items-center justify-center space-x-1">
-            <div className="text-secondary-text flex items-center">
-                <span>Elapsed time:</span>
-                <span className="text-primary-text ml-0.5">{formatted}</span>
-            </div>
-        </div>
+        <span
+            className="inline-flex items-center gap-1.5 whitespace-nowrap text-xs text-secondary-text tabular-nums"
+            role="timer"
+            title="Elapsed time"
+        >
+            <Clock3 className="h-3.5 w-3.5" aria-hidden="true" />
+            <span className="sr-only">Elapsed time:</span>
+            <span>{formatted}</span>
+        </span>
     );
 }

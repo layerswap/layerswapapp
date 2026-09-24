@@ -1,28 +1,30 @@
-import LinkWithIcon from '@/components/Common/LinkWithIcon';
 import {
     SwapPhase,
     type ResolvedSwapStatus,
 } from '@/components/utils/resolveSwapPhase';
 import { truncateDecimals } from '@/components/utils/RoundDecimals';
-import Content from '@/components/Widget/Content';
 import { getExplorerUrl } from '@/lib/address/explorerUrl';
 import {
     TransactionStatus,
     TransactionType,
     type SwapBasicData,
     type SwapDetails,
+    type DepositAction,
+    type SwapQuote,
 } from '@/lib/apiClients/layerSwapApiClient';
 import { SwapFailReasons } from '@/Models/RangeError';
 import { SwapStatus, type Refuel } from '@layerswap/widget-types';
 import { CircleCheck, Undo2 } from 'lucide-react';
 import { useMemo, type ReactNode } from 'react';
-import { Gauge } from '../Processing/gauge';
-import Steps from '../Processing/StepsComponent';
+import { TransferStatusHeader } from './TransferStatusHeader';
+import Steps, { StepsPanel } from '../Processing/StepsComponent';
 import {
     ProgressStates,
     ProgressStatus,
     StatusStep,
 } from '../Processing/types';
+import { DepositWorkflowView } from './DepositWorkflowView';
+import shortenString from '@/components/utils/ShortenString';
 
 export function ProcessingView({
     swapBasicData,
@@ -33,12 +35,12 @@ export function ProcessingView({
     inputConfirmations,
     inputMaxConfirmations,
     isDepositFlow = false,
-    summary,
-    quoteDetails,
     elapsedTime,
     failedPanel,
     onGetHelp,
     readOnly,
+    depositActions,
+    quote,
 }: {
     swapBasicData: SwapBasicData;
     swapDetails: SwapDetails;
@@ -48,12 +50,12 @@ export function ProcessingView({
     inputConfirmations?: number;
     inputMaxConfirmations?: number;
     isDepositFlow?: boolean;
-    summary: ReactNode;
-    quoteDetails?: ReactNode;
     elapsedTime: ReactNode;
     failedPanel: ReactNode;
     onGetHelp?: () => void;
     readOnly?: boolean;
+    depositActions?: DepositAction[];
+    quote?: SwapQuote;
 }) {
     const { source_network, destination_network, destination_token } =
         swapBasicData;
@@ -61,9 +63,6 @@ export function ProcessingView({
     const input_tx_explorer = source_network.transaction_explorer_template;
     const output_tx_explorer =
         destination_network.transaction_explorer_template;
-    const swapInputTransaction = swapDetails.transactions.find(
-        (t) => t.type === TransactionType.Input,
-    );
     const swapOutputTransaction = swapDetails.transactions.find(
         (t) => t.type === TransactionType.Output,
     );
@@ -73,12 +72,24 @@ export function ProcessingView({
     const swapRefundTransaction = swapDetails.transactions.find(
         (t) => t.type === TransactionType.Refund,
     );
+    const inputExplorerUrl = getExplorerUrl(input_tx_explorer, transactionHash);
+    const outputExplorerUrl = getExplorerUrl(
+        output_tx_explorer,
+        swapOutputTransaction?.transaction_hash,
+    );
+    const refuelExplorerUrl = getExplorerUrl(
+        output_tx_explorer,
+        swapRefuelTransaction?.transaction_hash,
+    );
+    const refundExplorerUrl = getExplorerUrl(
+        input_tx_explorer,
+        swapRefundTransaction?.transaction_hash,
+    );
     const {
         stepStatuses,
         generalStatus,
         phase,
         swapInputTxStatus,
-        isRefundFlow,
         hidesSteps,
         showsFailedPanel,
         showsEstimatedTime,
@@ -97,61 +108,27 @@ export function ProcessingView({
                     name: isDepositFlow
                         ? 'Processing your transfer'
                         : 'Processing your deposit',
-                    description: transactionHash ? (
-                        <div className="flex space-x-1">
-                            <div>
-                                <LinkWithIcon
-                                    disabled={readOnly}
-                                    name={'View in explorer'}
-                                    url={getExplorerUrl(
-                                        input_tx_explorer,
-                                        transactionHash,
+                    description:
+                        inputConfirmations != null &&
+                        inputMaxConfirmations != null &&
+                        inputConfirmations > 0 ? (
+                            <span>
+                                Confirmations{' '}
+                                <span className="text-primary-text">
+                                    {Math.min(
+                                        inputConfirmations,
+                                        inputMaxConfirmations,
                                     )}
-                                />
-                            </div>
-                            <div>
-                                <span>
-                                    {inputConfirmations != null &&
-                                        inputMaxConfirmations != null &&
-                                        inputConfirmations > 0 && (
-                                            <div>
-                                                <span className="whitespace-nowrap">
-                                                    | Confirmations{' '}
-                                                </span>
-                                                <span className="text-primary-text ml-1">
-                                                    <span>
-                                                        {Math.min(
-                                                            inputConfirmations,
-                                                            inputMaxConfirmations,
-                                                        )}
-                                                    </span>
-                                                    <span>/</span>
-                                                    {inputMaxConfirmations}
-                                                </span>
-                                            </div>
-                                        )}
+                                    /{inputMaxConfirmations}
                                 </span>
-                            </div>
-                        </div>
-                    ) : null,
+                            </span>
+                        ) : null,
                 },
                 complete: {
                     name: isDepositFlow
                         ? `Transfer confirmed`
                         : `Deposit confirmed`,
-                    description: (
-                        <div>
-                            <span>{`We've received your ${isDepositFlow ? 'transfer' : 'deposit'}.`}</span>{' '}
-                            <LinkWithIcon
-                                disabled={readOnly}
-                                name={'View in explorer'}
-                                url={getExplorerUrl(
-                                    input_tx_explorer,
-                                    transactionHash,
-                                )}
-                            />
-                        </div>
-                    ),
+                    description: `We've received your ${isDepositFlow ? 'transfer' : 'deposit'}.`,
                 },
                 failed: {
                     name: `The transfer failed`,
@@ -161,19 +138,7 @@ export function ProcessingView({
                                 {swapInputTxStatus ===
                                     TransactionStatus.Failed &&
                                 transactionHash ? (
-                                    <div className="flex flex-col">
-                                        <p>
-                                            Check the transfer in the explorer
-                                        </p>
-                                        <LinkWithIcon
-                                            disabled={readOnly}
-                                            name={'View in explorer'}
-                                            url={getExplorerUrl(
-                                                input_tx_explorer,
-                                                transactionHash,
-                                            )}
-                                        />
-                                    </div>
+                                    <p>Check the transfer in the explorer</p>
                                 ) : fail_reason ==
                                   SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? (
                                     "Your deposit is higher than the max limit. We'll review and approve your transaction in up to 2 hours."
@@ -219,21 +184,7 @@ export function ProcessingView({
                 },
                 complete: {
                     name: `${swapOutputTransaction?.amount && truncateDecimals(swapOutputTransaction?.amount, destination_token.decimals)} ${destination_token.asset} ${isDepositFlow ? 'deposited' : 'was sent to your address'}`,
-                    description: swapOutputTransaction?.amount ? (
-                        <div className="flex flex-col">
-                            <div>
-                                <span>Transaction: </span>{' '}
-                                <LinkWithIcon
-                                    disabled={readOnly}
-                                    name={'View in explorer'}
-                                    url={getExplorerUrl(
-                                        output_tx_explorer,
-                                        swapOutputTransaction?.transaction_hash,
-                                    )}
-                                />
-                            </div>
-                        </div>
-                    ) : null,
+                    description: null,
                 },
                 failed: {
                     name:
@@ -292,21 +243,7 @@ export function ProcessingView({
                 },
                 complete: {
                     name: `${truncatedRefuelAmount} ${refuel?.token?.asset} was sent to your address`,
-                    description: (
-                        <div>
-                            <span>Transaction: </span>{' '}
-                            {swapRefuelTransaction && (
-                                <LinkWithIcon
-                                    disabled={readOnly}
-                                    name={'View in explorer'}
-                                    url={getExplorerUrl(
-                                        output_tx_explorer,
-                                        swapRefuelTransaction?.transaction_hash,
-                                    )}
-                                />
-                            )}
-                        </div>
-                    ),
+                    description: null,
                 },
                 delayed: {
                     name: `This transfers is being delayed`,
@@ -328,25 +265,8 @@ export function ProcessingView({
                 },
                 complete: {
                     name: 'Refund sent',
-                    description: (
-                        <div className="text-secondary-text">
-                            <span>
-                                The full deposit amount has been sent back to
-                                your wallet.
-                            </span>{' '}
-                            {swapRefundTransaction && (
-                                <LinkWithIcon
-                                    disabled={readOnly}
-                                    name={'View in explorer'}
-                                    url={getExplorerUrl(
-                                        input_tx_explorer,
-                                        swapRefundTransaction?.transaction_hash ||
-                                            '',
-                                    )}
-                                />
-                            )}
-                        </div>
-                    ),
+                    description:
+                        'The full deposit amount has been sent back to your wallet.',
                 },
                 failed: {
                     name: 'Refund Failed',
@@ -369,15 +289,10 @@ export function ProcessingView({
             },
         }),
         [
-            input_tx_explorer,
-            output_tx_explorer,
             transactionHash,
-            swapInputTransaction,
             inputConfirmations,
             inputMaxConfirmations,
             swapOutputTransaction,
-            swapRefuelTransaction,
-            swapRefundTransaction,
             destination_token.asset,
             destination_token.decimals,
             refuel?.token?.asset,
@@ -387,7 +302,6 @@ export function ProcessingView({
             swapInputTxStatus,
             onGetHelp,
             isDepositFlow,
-            readOnly,
         ],
     );
 
@@ -401,6 +315,8 @@ export function ProcessingView({
                 description:
                     progressStates.input_transfer?.[stepStatuses.input_transfer]
                         ?.description,
+                explorerUrl: inputExplorerUrl,
+                readOnly,
                 index: 1,
             },
             {
@@ -412,6 +328,8 @@ export function ProcessingView({
                     progressStates.output_transfer?.[
                         stepStatuses.output_transfer
                     ]?.description,
+                explorerUrl: outputExplorerUrl,
+                readOnly,
                 index: 2,
             },
             {
@@ -419,6 +337,8 @@ export function ProcessingView({
                 status: stepStatuses.refuel,
                 description:
                     progressStates.refuel?.[stepStatuses.refuel]?.description,
+                explorerUrl: refuelExplorerUrl,
+                readOnly,
                 index: 3,
             },
             {
@@ -426,6 +346,8 @@ export function ProcessingView({
                 status: stepStatuses.refund,
                 description:
                     progressStates.refund?.[stepStatuses.refund]?.description,
+                explorerUrl: refundExplorerUrl,
+                readOnly,
                 index: 4,
             },
         ];
@@ -439,81 +361,122 @@ export function ProcessingView({
             ? (completed / current.length) * 100
             : 0;
         return { currentSteps: current, stepsProgressPercentage: percentage };
-    }, [progressStates, stepStatuses]);
+    }, [
+        progressStates,
+        stepStatuses,
+        inputExplorerUrl,
+        outputExplorerUrl,
+        refuelExplorerUrl,
+        refundExplorerUrl,
+        readOnly,
+    ]);
+
+    const hasSwapWorkflow = !!depositActions?.some(
+        (action) => action.step === 'publish',
+    );
+    const isTokenSwap =
+        !isDepositFlow &&
+        !swapBasicData.use_deposit_address &&
+        (hasSwapWorkflow ||
+            (source_network.name === destination_network.name &&
+                swapBasicData.source_token.asset !== destination_token.asset));
+    const showUnifiedProgress =
+        isTokenSwap &&
+        hasSwapWorkflow &&
+        !refuel &&
+        (phase === SwapPhase.InputPending ||
+            phase === SwapPhase.OutputPending ||
+            phase === SwapPhase.SettlingOutput);
+
+    if (isTokenSwap && (showUnifiedProgress || phase === SwapPhase.Completed)) {
+        return (
+            <DepositWorkflowView
+                actions={depositActions}
+                readOnly={readOnly}
+                destinationToken={destination_token}
+                receiveAmount={
+                    phase === SwapPhase.Completed
+                        ? swapOutputTransaction?.amount
+                        : quote?.receive_amount
+                }
+                completed={
+                    phase === SwapPhase.Completed
+                        ? {
+                              completionTime: generalStatus.subTitle,
+                              explorerUrl: outputExplorerUrl,
+                          }
+                        : undefined
+                }
+                processing={{
+                    title: generalStatus.title,
+                    inputExplorerUrl,
+                    outputExplorerUrl,
+                    inputStatus: stepStatuses.input_transfer,
+                    outputStatus: stepStatuses.output_transfer,
+                    elapsedTime,
+                    inputDescription:
+                        stepStatuses.input_transfer ===
+                        ProgressStatus.Current ? (
+                            <div className="space-y-1">
+                                <p>Confirming transaction · no action needed</p>
+                                <div>
+                                    {inputConfirmations != null &&
+                                        !!inputMaxConfirmations && (
+                                            <span>
+                                                Confirmations{' '}
+                                                {Math.min(
+                                                    inputConfirmations,
+                                                    inputMaxConfirmations,
+                                                )}
+                                                /{inputMaxConfirmations}
+                                            </span>
+                                        )}
+                                </div>
+                            </div>
+                        ) : undefined,
+                    outputDescription:
+                        stepStatuses.output_transfer === ProgressStatus.Current
+                            ? `Sending to ${shortenString(swapBasicData.destination_address)}`
+                            : undefined,
+                }}
+            />
+        );
+    }
 
     return (
-        <Content fitContent>
-            <div
-                className={`w-full min-h-102.5 h-full space-y-2 flex flex-col justify-between text-primary-text`}
-            >
-                {summary}
-                {quoteDetails}
-                <div className="bg-secondary-500 font-normal px-3 pt-6 pb-3 rounded-2xl space-y-4 flex flex-col w-full relative z-10 divide-y-2 divide-secondary-300 divide-dashed">
-                    <div className="pb-4">
-                        <div className="flex flex-col gap-2 items-center">
-                            <div className="flex items-center">
-                                {phase === SwapPhase.PendingRefund && (
-                                    <span className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
-                                        <Undo2
-                                            className="h-7 w-7 text-primary"
-                                            aria-hidden="true"
-                                        />
-                                    </span>
-                                )}
-
-                                {phase === SwapPhase.Refunded && (
-                                    <span className="relative z-10 flex h-10 w-10 items-center justify-center">
-                                        <CircleCheck
-                                            className="h-10 w-10 text-primary"
-                                            strokeWidth={2}
-                                            aria-hidden="true"
-                                        />
-                                    </span>
-                                )}
-
-                                {!isRefundFlow && (
-                                    <Gauge
-                                        value={stepsProgressPercentage}
-                                        size="small"
-                                        showCheckmark={
-                                            stepsProgressPercentage == 100
-                                        }
-                                    />
-                                )}
-                            </div>
-                            <div className="flex-col text-center">
-                                <span className="font-medium text-primary-text">
-                                    {generalStatus.title}
-                                </span>
-                                {generalStatus.subTitle && (
-                                    <span className="text-sm block text-secondary-text">
-                                        {generalStatus.subTitle}
-                                    </span>
-                                )}
-                                {showsEstimatedTime && (
-                                    <span className="text-sm block space-x-1 text-secondary-text">
-                                        <span>
-                                            {elapsedTime ? (
-                                                <div className="text-primary-text">
-                                                    {elapsedTime}
-                                                </div>
-                                            ) : null}
-                                        </span>
-                                    </span>
-                                )}
-                            </div>
-                        </div>
+        <StepsPanel>
+            <TransferStatusHeader
+                title={generalStatus.title}
+                description={
+                    showsEstimatedTime ? elapsedTime : generalStatus.subTitle
+                }
+                progress={stepsProgressPercentage}
+                completed={phase === SwapPhase.Completed}
+                icon={
+                    phase === SwapPhase.PendingRefund ? (
+                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
+                            <Undo2
+                                className="h-5 w-5 text-primary"
+                                aria-hidden="true"
+                            />
+                        </span>
+                    ) : phase === SwapPhase.Refunded ? (
+                        <CircleCheck
+                            className="h-8 w-8 text-primary"
+                            strokeWidth={2}
+                            aria-hidden="true"
+                        />
+                    ) : undefined
+                }
+            />
+            <div className="pt-4">
+                {!hidesSteps && currentSteps.length > 0 && (
+                    <div className="flex flex-col justify-center space-y-4">
+                        <Steps steps={currentSteps} />
                     </div>
-                    <div className="pt-4">
-                        {!hidesSteps && currentSteps.length > 0 && (
-                            <div className="flex flex-col justify-center space-y-4">
-                                <Steps steps={currentSteps} />
-                            </div>
-                        )}
-                        {showsFailedPanel && failedPanel}
-                    </div>
-                </div>
+                )}
+                {showsFailedPanel && failedPanel}
             </div>
-        </Content>
+        </StepsPanel>
     );
 }

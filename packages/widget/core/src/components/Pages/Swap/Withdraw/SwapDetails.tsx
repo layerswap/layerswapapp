@@ -1,4 +1,11 @@
-import { ProcessingSectionView } from './Presentation/Page2Sections';
+import {
+    ProcessingSectionView,
+    SwapContentView,
+} from './Presentation/Page2Sections';
+import { shouldShowCompactSwapQuote } from '@/helpers/swapFlow';
+import { useIsGaslessActive } from '@/hooks/useIsGaslessActive';
+import SwapSummary from './Summary';
+import { SwapQuoteDetails } from './SwapQuoteDetails';
 import { Page2Contained } from './Presentation/Page2Contained';
 import { Partner } from '@/Models';
 import { SwapDetailsSceleton } from '@/components/Common/Sceletons';
@@ -35,8 +42,11 @@ const SwapDetails: FC<Props> = ({
         depositActionsResponse,
         quote,
         quoteIsLoading,
+        quoteError,
+        swapId,
     } = useSwapDataState();
     const { onBackClick } = useCallbacks();
+    const isGaslessActive = useIsGaslessActive(swapBasicData);
 
     // Polls the gasless deposit (paymaster) authorization while it's in flight; self-gates on
     // the authorization marker, so it's a no-op for non-gasless swaps.
@@ -54,40 +64,80 @@ const SwapDetails: FC<Props> = ({
 
     if (!swapBasicData) return <SwapDetailsSceleton />;
 
+    const compactsDuringWalletExecution = shouldShowCompactSwapQuote({
+        swapData: swapBasicData,
+        isGaslessActive,
+    });
+    const compactQuote =
+        !swapBasicData.use_deposit_address &&
+        (!resolved.showWithdrawScreen ||
+            (compactsDuringWalletExecution && !!swapId));
+
     return (
         <Container type={type} goBack={onBackClick}>
-            {resolved.showWithdrawScreen ? (
-                swapBasicData?.use_deposit_address === true ? (
-                    <ManualWithdraw
-                        swapBasicData={swapBasicData}
-                        depositActions={depositActionsResponse}
-                        refuel={refuel}
-                        partner={partner}
-                        type={type}
-                        quote={quote}
-                        isQuoteLoading={quoteIsLoading}
-                    />
-                ) : (
-                    <Withdraw
-                        type={type}
-                        onWalletWithdrawalSuccess={onWalletWithdrawalSuccess}
-                        onCancelWithdrawal={onCancelWithdrawal}
-                        partner={partner}
-                    />
-                )
-            ) : (
-                <ProcessingSectionView>
-                    <Processing failureReason={failureReason} />
-                    {canRetry && (
-                        <RetryView
-                            message={gaslessFailureMessage}
-                            canSwitchToStandard={canSwitchToStandard}
-                            onRetry={retry}
-                            onSwitchToStandard={switchToStandard}
+            <SwapContentView
+                transferStage={
+                    !compactsDuringWalletExecution
+                        ? resolved.showWithdrawScreen
+                            ? 'withdraw'
+                            : 'processing'
+                        : undefined
+                }
+                summary={
+                    swapBasicData.use_deposit_address &&
+                    resolved.showWithdrawScreen ? null : (
+                        <SwapSummary />
+                    )
+                }
+                compactQuote={compactQuote}
+                quote={
+                    !swapBasicData.use_deposit_address && (
+                        <SwapQuoteDetails
+                            swapBasicData={swapBasicData}
+                            quote={quote}
+                            refuel={refuel}
+                            quoteIsLoading={quoteIsLoading}
+                            quoteError={quoteError}
+                            partner={partner}
+                            compact={compactQuote}
                         />
-                    )}
-                </ProcessingSectionView>
-            )}
+                    )
+                }
+            >
+                {resolved.showWithdrawScreen ? (
+                    swapBasicData?.use_deposit_address === true ? (
+                        <ManualWithdraw
+                            swapBasicData={swapBasicData}
+                            depositActions={depositActionsResponse}
+                            refuel={refuel}
+                            partner={partner}
+                            type={type}
+                            quote={quote}
+                            isQuoteLoading={quoteIsLoading}
+                        />
+                    ) : (
+                        <Withdraw
+                            type={type}
+                            onWalletWithdrawalSuccess={
+                                onWalletWithdrawalSuccess
+                            }
+                            onCancelWithdrawal={onCancelWithdrawal}
+                        />
+                    )
+                ) : (
+                    <ProcessingSectionView>
+                        <Processing failureReason={failureReason} />
+                        {canRetry && (
+                            <RetryView
+                                message={gaslessFailureMessage}
+                                canSwitchToStandard={canSwitchToStandard}
+                                onRetry={retry}
+                                onSwitchToStandard={switchToStandard}
+                            />
+                        )}
+                    </ProcessingSectionView>
+                )}
+            </SwapContentView>
         </Container>
     );
 };

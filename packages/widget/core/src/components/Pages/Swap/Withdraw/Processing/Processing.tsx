@@ -1,8 +1,4 @@
 'use client';
-import { useIsGaslessActive } from '@/hooks/useIsGaslessActive';
-import { shouldShowCompactSwapQuote } from '@/helpers/swapFlow';
-import { SwapPhase } from '@/components/utils/resolveSwapPhase';
-import { SwapQuoteDetails } from '../SwapQuoteDetails';
 import CountdownTimer from '@/components/Common/CountDownTimer';
 import { useCallbacks } from '@/context/callbackProvider';
 import { useDepositSettings } from '@/context/depositSettings';
@@ -29,7 +25,7 @@ import { useIntercom } from 'react-use-intercom';
 import useSWR from 'swr';
 import Failed from '../Failed';
 import { ProcessingView } from '../Presentation/ProcessingView';
-import SwapSummary from '../Summary';
+import { useSwapDataState } from '@/context/swap';
 
 const apiClient = new LayerSwapApiClient();
 
@@ -48,13 +44,9 @@ const Processing: FC<Props> = ({
     refuel,
     failureReason,
 }) => {
-    const isGaslessActive = useIsGaslessActive(swapBasicData);
-    const showCompactQuote = shouldShowCompactSwapQuote({
-        swapData: swapBasicData,
-        isGaslessActive,
-    });
     const { boot, show, update } = useIntercom();
     const { onSwapStatusChange } = useCallbacks();
+    const { depositActionsResponse } = useSwapDataState();
     const { isDepositFlow } = useDepositSettings();
     const setSwapTransaction = useSwapTransactionStore(
         (state) => state.setSwapTransaction,
@@ -220,25 +212,14 @@ const Processing: FC<Props> = ({
         <ProcessingView
             swapBasicData={swapBasicData}
             swapDetails={swapDetails}
+            depositActions={depositActionsResponse}
+            quote={quote}
             refuel={refuel}
             resolved={resolved}
             transactionHash={transactionHash}
             inputConfirmations={inputConfirmations}
             inputMaxConfirmations={inputMaxConfirmations}
             isDepositFlow={isDepositFlow}
-            summary={<SwapSummary />}
-            quoteDetails={
-                showCompactQuote && resolved.phase !== SwapPhase.Completed ? (
-                    <SwapQuoteDetails
-                        compact
-                        swapBasicData={swapBasicData}
-                        quote={quote}
-                        refuel={refuel}
-                        quoteIsLoading={false}
-                        quoteError={undefined}
-                    />
-                ) : null
-            }
             failedPanel={<Failed />}
             onGetHelp={startIntercom}
             elapsedTime={

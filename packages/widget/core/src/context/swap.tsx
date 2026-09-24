@@ -245,7 +245,9 @@ export function SwapDataProvider({ children, initialSwapData }: { children: Reac
     const use_deposit_address = swapBasicData?.use_deposit_address
     const deposit_actions_endpoint = swapId ? `/swaps/${swapId}/deposit_actions${(use_deposit_address || !selectedSourceAccount || !sourceIsSupported) ? "" : `?source_address=${selectedSourceAccount?.address}`}` : null
     const inputTransfer = swapDetails?.transactions.find(t => t.type === TransactionType.Input);
-    const { data: depositActions, error: depositActionsSwrError, mutate: mutateDepositActions } = useSWR<ApiResponse<DepositAction[]>>(!inputTransfer ? deposit_actions_endpoint : null, layerswapApiClient.fetcher, { keepPreviousData: false })
+    // Keep the swap-scoped action history visible after broadcast, without fetching
+    // more wallet actions once the input transaction is detected.
+    const { data: depositActions, error: depositActionsSwrError, mutate: mutateDepositActions } = useSWR<ApiResponse<DepositAction[]>>(deposit_actions_endpoint, layerswapApiClient.fetcher, { keepPreviousData: false, isPaused: () => !!inputTransfer })
 
     // The create-swap response may already carry deposit actions — use them as
     // a fallback (only while the seeded swap is still the active one) so the

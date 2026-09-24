@@ -2,7 +2,6 @@ import {
     Accordion,
     AccordionContent,
     AccordionItem,
-    AccordionTrigger,
 } from '@/components/shadcn/accordion';
 import { ChevronDown } from 'lucide-react';
 import type { ReactNode } from 'react';
@@ -21,35 +20,24 @@ export function QuoteView({
     animate?: boolean;
     compact?: boolean;
 }) {
-    if (compact)
-        return (
-            <div className="w-full rounded-2xl bg-secondary-500">{summary}</div>
-        );
     return (
         <Accordion
             type="single"
             collapsible
             className="w-full"
-            value={isOpen ? 'quote' : ''}
+            value={!compact && isOpen ? 'quote' : ''}
             onValueChange={(v) => setIsOpen?.(v === 'quote')}
         >
             <AccordionItem
                 value="quote"
                 className="bg-secondary-500 rounded-2xl"
             >
-                <AccordionTrigger
-                    as="div"
-                    onClick={(e) => e.preventDefault()}
-                    className="w-full rounded-2xl flex items-center justify-between cursor-auto"
-                >
+                <div className="w-full rounded-2xl flex items-center justify-between">
                     {summary}
-                </AccordionTrigger>
+                </div>
 
                 <AccordionContent className="rounded-2xl" animate={animate}>
                     {details}
-                </AccordionContent>
-
-                {isOpen && (
                     <div className="px-3.5 pb-3">
                         <button
                             type="button"
@@ -62,7 +50,7 @@ export function QuoteView({
                             <ChevronDown className="h-3.5 w-3.5 rotate-180 transition-transform" />
                         </button>
                     </div>
-                )}
+                </AccordionContent>
             </AccordionItem>
         </Accordion>
     );

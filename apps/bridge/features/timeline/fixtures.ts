@@ -1585,7 +1585,7 @@ const frontendCompleted = (inputAt = 20) =>
         90,
         'completed',
         'Swap completed',
-        'The output amount arrives and the compact quote is removed.',
+        'The shared inline header keeps the small gauge and Transfer complete on the left, with completion time on the right. Completed steps remain visible, with the explorer link on the receive step; quote details and action buttons are hidden.',
         workflowComplete,
         { kind: 'send' },
         {
@@ -1716,7 +1716,7 @@ const frontendScenarios: TimelineScenario[] = [
                 50,
                 'input',
                 'Confirming swap transaction',
-                'A real transaction hash moves to processing and retains the compact quote.',
+                'The same timeline keeps approval and signing checked while the swap transaction confirms.',
                 workflowComplete,
                 { kind: 'send' },
                 {
@@ -1740,7 +1740,7 @@ const frontendScenarios: TimelineScenario[] = [
                 70,
                 'finalizing',
                 'Finalizing swap',
-                'A completed status without output still shows the compact quote and finalizing state.',
+                'The deposit is confirmed. The fourth timeline step stays active until the output arrives.',
                 workflowComplete,
                 { kind: 'send' },
                 {

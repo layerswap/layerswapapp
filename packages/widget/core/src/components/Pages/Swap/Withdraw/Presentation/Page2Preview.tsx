@@ -9,7 +9,7 @@ import { ManualSourceSelectorView } from './ManualSourceSelectorView';
 import { DepositQRCodeView } from './DepositQRCodeView';
 import { ManualDepositButtonView } from './ManualDepositButtonView';
 import {
-    WithdrawContentView,
+    SwapContentView,
     WalletSubmissionView,
     WalletTransferView,
     ProcessingSectionView,
@@ -18,10 +18,7 @@ import {
 import { Page2PreviewFrame, type Page2PreviewMode } from './Page2PreviewFrame';
 import { ElapsedTime } from '@/components/Common/ElapsedTime';
 import { SwapDetailsSceleton } from '@/components/Common/Sceletons';
-import {
-    resolveSwapPhase,
-    SwapPhase,
-} from '@/components/utils/resolveSwapPhase';
+import { resolveSwapPhase } from '@/components/utils/resolveSwapPhase';
 import { shouldShowCompactSwapQuote } from '@/helpers/swapFlow';
 import { gaslessFailureMessage } from '@/helpers/gaslessFailureMessage';
 import {
@@ -147,10 +144,14 @@ function LoadedPreview({
         gaslessAuthorizationFailed: gaslessFailed,
         isDepositFlow: s.isDepositFlow,
     });
-    const compactQuote = shouldShowCompactSwapQuote({
+    const compactsDuringWalletExecution = shouldShowCompactSwapQuote({
         swapData: s.swap,
         isGaslessActive: !!s.quoteState.gasless,
     });
+    const compactQuote =
+        !s.swap.use_deposit_address &&
+        (!resolved.showWithdrawScreen ||
+            (compactsDuringWalletExecution && !!s.swapId));
     const summary = (
         <SummaryView
             swap={{
@@ -166,27 +167,19 @@ function LoadedPreview({
             isUsdMode={s.usdMode}
         />
     );
+    let content;
     if (!resolved.showWithdrawScreen) {
         const authTx = s.gaslessAuthorization?.transaction;
-        return (
+        content = (
             <ProcessingSectionView>
                 <ProcessingView
                     swapBasicData={s.swap}
                     swapDetails={s.details}
+                    depositActions={s.depositActions}
+                    quote={s.quote}
                     refuel={s.refuel}
                     resolved={resolved}
                     isDepositFlow={s.isDepositFlow}
-                    summary={summary}
-                    quoteDetails={
-                        compactQuote &&
-                        resolved.phase !== SwapPhase.Completed ? (
-                            <PreviewQuote
-                                snapshot={s}
-                                compact
-                                onExpandedChange={onQuoteExpandedChange}
-                            />
-                        ) : null
-                    }
                     readOnly
                     transactionHash={
                         input?.transaction_hash ||
@@ -237,9 +230,8 @@ function LoadedPreview({
                 )}
             </ProcessingSectionView>
         );
-    }
-    if (s.swap.use_deposit_address)
-        return (
+    } else if (s.swap.use_deposit_address) {
+        content = (
             <>
                 <ManualInstructionsView
                     swapBasicData={s.swap}
@@ -286,34 +278,54 @@ function LoadedPreview({
                 </WidgetFooterView>
             </>
         );
+    } else {
+        content = (
+            <>
+                <WidgetFooterView sticky={false}>
+                    <WalletActionTransition
+                        actionKey={
+                            s.balanceWarning?.kind === 'balance'
+                                ? 'insufficient'
+                                : s.balanceWarning?.kind === 'gas'
+                                  ? 'outOfGas'
+                                  : 'transfer'
+                        }
+                    >
+                        <WalletTransferView>
+                            <PreviewWallet snapshot={s} />
+                        </WalletTransferView>
+                    </WalletActionTransition>
+                </WidgetFooterView>
+            </>
+        );
+    }
     return (
-        <>
-            <WithdrawContentView
-                summary={summary}
-                quote={
+        <SwapContentView
+            transferStage={
+                !compactsDuringWalletExecution
+                    ? resolved.showWithdrawScreen
+                        ? 'withdraw'
+                        : 'processing'
+                    : undefined
+            }
+            summary={
+                s.swap.use_deposit_address && resolved.showWithdrawScreen
+                    ? null
+                    : summary
+            }
+            compactQuote={compactQuote}
+            quote={
+                !s.swap.use_deposit_address && (
                     <PreviewQuote
                         snapshot={s}
-                        compact={!!s.swapId && compactQuote}
+                        compact={compactQuote}
                         onExpandedChange={onQuoteExpandedChange}
                     />
-                }
-            />
-            <WidgetFooterView sticky={false}>
-                <WalletActionTransition
-                    actionKey={
-                        s.balanceWarning?.kind === 'balance'
-                            ? 'insufficient'
-                            : s.balanceWarning?.kind === 'gas'
-                              ? 'outOfGas'
-                              : 'transfer'
-                    }
-                >
-                    <WalletTransferView>
-                        <PreviewWallet snapshot={s} />
-                    </WalletTransferView>
-                </WalletActionTransition>
-            </WidgetFooterView>
-        </>
+                )
+            }
+        >
+            {content}
+        </SwapContentView>
     );
 }
 

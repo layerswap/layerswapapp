@@ -12,6 +12,7 @@ import {
     getDepositActionLabel,
 } from '@/helpers/depositActions';
 import { DepositWorkflowView } from './DepositWorkflowView';
+import { WalletExecutionTransition } from './WalletExecutionTransition';
 import { resolvePriceImpactValues } from '@/lib/fees';
 import { WalletIcon } from '@layerswap/ui-kit/components';
 import { Loader2 } from 'lucide-react';
@@ -161,7 +162,9 @@ export function SendTransactionView({
     ...props
 }: SendTransactionViewProps) {
     const isMultiStepWorkflow =
-        (depositActions?.filter((action) => !!action.step).length ?? 0) > 1;
+        (depositActions?.filter((action) => !!action.step).length ?? 0) > 1 ||
+        (!!quote?.destination_token &&
+            !!depositActions?.some((action) => action.step === 'publish'));
     const workflowCompleted =
         !!depositActions?.length &&
         depositActions.every((action) => action.status === 'completed');
@@ -169,134 +172,156 @@ export function SendTransactionView({
     const primaryActionText = actionableAction
         ? getDepositActionLabel(actionableAction)
         : actionButtonText || 'Swap now';
-    const workflowProgress = (
+    const workflowProgress = isMultiStepWorkflow ? (
         <DepositWorkflowView
             actions={depositActions}
             loading={loading}
             error={error || swapError}
             actionStateText={actionStateText}
+            destinationToken={quote?.destination_token}
+            receiveAmount={quote?.receive_amount}
         />
-    );
+    ) : undefined;
     if (quoteIsLoading || loading)
         return (
-            <>
-                {workflowProgress}
-                {isMultiStepWorkflow && loading ? null : (
-                    <ButtonWrapper
-                        icon={icon}
-                        {...props}
-                        isSubmitting={true}
-                        isDisabled={true}
-                    >
-                        {actionStateText || 'Preparing…'}
-                    </ButtonWrapper>
-                )}
-            </>
+            <WalletExecutionTransition
+                workflow={workflowProgress}
+                controls={
+                    isMultiStepWorkflow && loading ? undefined : (
+                        <ButtonWrapper
+                            icon={icon}
+                            {...props}
+                            isSubmitting={true}
+                            isDisabled={true}
+                        >
+                            {actionStateText || 'Preparing…'}
+                        </ButtonWrapper>
+                    )
+                }
+            />
         );
 
     if (showCriticalMarketPriceImpactButtons) {
         return (
-            <>
-                {workflowProgress}
-                {quote && priceImpactValues && (
-                    <ErrorDisplay
-                        icon={<InfoIcon className={ICON_CLASSES_WARNING} />}
-                        title="Critical receiving amount"
-                        message={`By continuing, you agree to receive as low as ${quote.min_receive_amount} ${quote.destination_token?.asset} ($ ${priceImpactValues.minReceiveAmountUSD})`}
-                    />
-                )}
-                <ButtonWrapper
-                    icon={icon}
-                    {...props}
-                    onClick={handleCriticalContinue ?? handleClick}
-                    buttonStyle="secondary"
-                    size="small"
-                    isSubmitting={false}
-                    isDisabled={false}
-                >
-                    Continue anyway
-                </ButtonWrapper>
-                <ButtonWrapper
-                    icon={icon}
-                    {...props}
-                    size="small"
-                    onClick={() => onCancelWithdrawal?.()}
-                    isSubmitting={false}
-                    isDisabled={false}
-                >
-                    Cancel & try another route
-                </ButtonWrapper>
-            </>
+            <WalletExecutionTransition
+                workflow={workflowProgress}
+                controls={
+                    <>
+                        {quote && priceImpactValues && (
+                            <ErrorDisplay
+                                icon={
+                                    <InfoIcon
+                                        className={ICON_CLASSES_WARNING}
+                                    />
+                                }
+                                title="Critical receiving amount"
+                                message={`By continuing, you agree to receive as low as ${quote.min_receive_amount} ${quote.destination_token?.asset} ($ ${priceImpactValues.minReceiveAmountUSD})`}
+                            />
+                        )}
+                        <ButtonWrapper
+                            icon={icon}
+                            {...props}
+                            onClick={handleCriticalContinue ?? handleClick}
+                            buttonStyle="secondary"
+                            size="small"
+                            isSubmitting={false}
+                            isDisabled={false}
+                        >
+                            Continue anyway
+                        </ButtonWrapper>
+                        <ButtonWrapper
+                            icon={icon}
+                            {...props}
+                            size="small"
+                            onClick={() => onCancelWithdrawal?.()}
+                            isSubmitting={false}
+                            isDisabled={false}
+                        >
+                            Cancel & try another route
+                        </ButtonWrapper>
+                    </>
+                }
+            />
         );
     }
     return (
-        <>
-            {!!(
-                !swapId &&
-                criticalMarketPriceImpact &&
-                quote?.destination_token &&
-                priceImpactValues &&
-                !error
-            ) && (
-                <ErrorDisplay
-                    icon={<InfoIcon className={ICON_CLASSES_WARNING} />}
-                    title="Critical receiving amount"
-                    message={`The “receive at least” amount is affected by high price impact. You will receive at least ${quote.min_receive_amount} ${quote.destination_token.asset} ($ ${priceImpactValues.minReceiveAmountUSD})`}
-                />
-            )}
-            {workflowProgress}
-            {gaslessUnavailable ? (
-                <div className="space-y-2">
-                    {gaslessFailureStage === 'deposit' && (
+        <WalletExecutionTransition
+            workflow={workflowProgress}
+            controls={
+                <>
+                    {!!(
+                        !swapId &&
+                        criticalMarketPriceImpact &&
+                        quote?.destination_token &&
+                        priceImpactValues &&
+                        !error
+                    ) && (
+                        <ErrorDisplay
+                            icon={<InfoIcon className={ICON_CLASSES_WARNING} />}
+                            title="Critical receiving amount"
+                            message={`The “receive at least” amount is affected by high price impact. You will receive at least ${quote.min_receive_amount} ${quote.destination_token.asset} ($ ${priceImpactValues.minReceiveAmountUSD})`}
+                        />
+                    )}
+                    {gaslessUnavailable ? (
+                        <div className="space-y-2">
+                            {gaslessFailureStage === 'deposit' && (
+                                <ButtonWrapper
+                                    icon={icon}
+                                    {...props}
+                                    isSubmitting={
+                                        props.isSubmitting ||
+                                        loading ||
+                                        quoteIsLoading
+                                    }
+                                    onClick={retryGasless}
+                                    isDisabled={quoteIsLoading || !!quoteError}
+                                >
+                                    Try again
+                                </ButtonWrapper>
+                            )}
+                            <ButtonWrapper
+                                icon={icon}
+                                {...props}
+                                buttonStyle={
+                                    gaslessFailureStage === 'deposit'
+                                        ? 'secondary'
+                                        : 'filled'
+                                }
+                                isSubmitting={
+                                    props.isSubmitting ||
+                                    loading ||
+                                    quoteIsLoading
+                                }
+                                onClick={switchToStandard}
+                                isDisabled={quoteIsLoading || !!quoteError}
+                            >
+                                Switch to standard transfer
+                            </ButtonWrapper>
+                        </div>
+                    ) : (
                         <ButtonWrapper
                             icon={icon}
                             {...props}
                             isSubmitting={
                                 props.isSubmitting || loading || quoteIsLoading
                             }
-                            onClick={retryGasless}
-                            isDisabled={quoteIsLoading || !!quoteError}
+                            onClick={handleClick}
+                            isDisabled={
+                                quoteIsLoading ||
+                                !!quoteError ||
+                                workflowCompleted
+                            }
                         >
-                            Try again
+                            {error || swapError
+                                ? 'Try again'
+                                : workflowCompleted
+                                  ? 'Completed'
+                                  : primaryActionText}
                         </ButtonWrapper>
                     )}
-                    <ButtonWrapper
-                        icon={icon}
-                        {...props}
-                        buttonStyle={
-                            gaslessFailureStage === 'deposit'
-                                ? 'secondary'
-                                : 'filled'
-                        }
-                        isSubmitting={
-                            props.isSubmitting || loading || quoteIsLoading
-                        }
-                        onClick={switchToStandard}
-                        isDisabled={quoteIsLoading || !!quoteError}
-                    >
-                        Switch to standard transfer
-                    </ButtonWrapper>
-                </div>
-            ) : (
-                <ButtonWrapper
-                    icon={icon}
-                    {...props}
-                    isSubmitting={
-                        props.isSubmitting || loading || quoteIsLoading
-                    }
-                    onClick={handleClick}
-                    isDisabled={
-                        quoteIsLoading || !!quoteError || workflowCompleted
-                    }
-                >
-                    {error || swapError
-                        ? 'Try again'
-                        : workflowCompleted
-                          ? 'Completed'
-                          : primaryActionText}
-                </ButtonWrapper>
-            )}
-        </>
+                </>
+            }
+        />
     );
 }
 

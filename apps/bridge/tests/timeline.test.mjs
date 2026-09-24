@@ -80,6 +80,7 @@ const result = await build({
         export { default as TimelinePage } from './pages/timeline.dev.mjs';
         export { default as App } from './pages/_app';
         export { SendTransactionView, ConnectWalletView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/WalletActionsView.js';
+        export { ProcessingView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/ProcessingView.js';
         export { SpecializedWithdrawalView } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Presentation/SpecializedWithdrawalView.js';
         export { default as ProductionSummary } from '../../packages/widget/core/dist/esm/components/Pages/Swap/Withdraw/Summary/Summary.js';
         export { default as ProductionAddressIcon } from '../../packages/widget/core/dist/esm/components/Common/AddressIcon/index.js';
@@ -151,6 +152,7 @@ const {
     TimelinePage,
     App,
     SendTransactionView,
+    ProcessingView,
     ConnectWalletView,
     SpecializedWithdrawalView,
     ProductionSummary,
@@ -493,6 +495,27 @@ test('time between milestones updates elapsed text; rewind restores amounts, mes
     );
 });
 
+test('standard and token swaps keep elapsed time running through finalizing', () => {
+    for (const [scenarioId, milestoneId, currentTime, laterTime] of [
+        ['wallet-success', 'finalizing', '00:55', '01:04'],
+        ['frontend-permit2', 'finalizing', '00:20', '00:29'],
+        ['refuel', 'pending', '01:10', '01:19'],
+    ]) {
+        const scenario = scenarios.find(s => s.id === scenarioId);
+        const milestone = scenario.milestones.find(m => m.id === milestoneId);
+        assert.equal(phase(milestone.snapshot).phase, SwapPhase.SettlingOutput);
+        const container = document.createElement('div');
+        for (const [at, expected] of [[milestone.at, currentTime], [milestone.at + 9, laterTime]]) {
+            container.innerHTML = renderToStaticMarkup(preview(milestone.snapshot, at));
+            assert.equal(container.querySelector('[role="timer"]')?.textContent, `Elapsed time:${expected}`, scenarioId);
+            assert.doesNotMatch(container.textContent, /Finalizing…/);
+        }
+        const completed = scenario.milestones.at(-1);
+        container.innerHTML = renderToStaticMarkup(preview(completed.snapshot, completed.at));
+        assert.equal(container.querySelector('[role="timer"]'), null, scenarioId);
+    }
+});
+
 test('reduced-motion hydration matches the server markup in both modes', async () => {
     const container = document.getElementById('root');
     const errors = [];
@@ -528,6 +551,14 @@ test('all mounted previews ignore clicks and keyboard activation without request
                     await act(async () =>
                         root.render(preview(m.snapshot, m.at, mode)),
                     );
+                    for (const progress of container.querySelectorAll('nav[aria-label="Progress"]')) {
+                        const panel = progress.closest('[data-steps-panel]');
+                        const label = `${scenario.id}/${m.id}/${mode}`;
+                        assert.ok(panel, `${label}: every flow uses the shared steps animation`);
+                        assert.equal(panel.style.height, 'auto', `${label}: reduced motion shows steps immediately`);
+                        assert.equal(panel.style.opacity, '1', label);
+                        assert.equal(panel.parentElement.closest('[data-steps-panel]'), null, `${label}: no nested panel animations`);
+                    }
                     const before = container.textContent;
                     displayed.set(m.id, before);
                     await act(async () => {
@@ -625,7 +656,7 @@ test('canvas is the default and its controls panel can hide without resetting pr
         assert.equal(toggle.getAttribute('aria-expanded'), 'false');
         assert.equal(toggle.getAttribute('aria-label'), 'Show canvas controls');
         assert.equal(container.querySelector('[data-page2-preview]'), firstPreview);
-        assert.equal(container.querySelector('[data-milestone-id] [data-value="quote"] [aria-expanded]').getAttribute('aria-expanded'), 'true');
+        assert.equal(container.querySelector('[data-milestone-id] [data-value="quote"] [data-page2-quote-disclosure][aria-expanded]').getAttribute('aria-expanded'), 'true');
         assert.equal(world.style.transform, before);
         await act(async () => toggle.click());
         assert.equal(panel.hidden, false);
@@ -690,7 +721,7 @@ test('canvas shows ordered snapshots at their own times and restores the timelin
 test('canvas quote disclosures are independent and reset when the scenario changes', async () => {
     const container = document.getElementById('root');
     const root = createRoot(container);
-    const expanded = card => card.querySelector('[data-value="quote"] [aria-expanded]')?.getAttribute('aria-expanded') === 'true';
+    const expanded = card => card.querySelector('[data-value="quote"] [data-page2-quote-disclosure][aria-expanded]')?.getAttribute('aria-expanded') === 'true';
     try {
         await act(async () => root.render(React.createElement(TimelinePage)));
         await chooseLayout(container, 'Timeline');
@@ -925,7 +956,7 @@ test('quote disclosures work in both modes and reset on timeline navigation with
     const root = createRoot(container);
     const previewElement = () => container.querySelector('[data-page2-preview]');
     const expanded = () =>
-        previewElement().querySelector('[data-value="quote"] [aria-expanded]')
+        previewElement().querySelector('[data-value="quote"] [data-page2-quote-disclosure][aria-expanded]')
             ?.getAttribute('aria-expanded') === 'true';
     const click = async (label, scope = container) => {
         const button = [...scope.querySelectorAll('button')].find(
@@ -1263,20 +1294,101 @@ const fixtureDOM = (scenario, milestone) => {
     return container;
 };
 
+const processingElement = (s) => {
+    const input = s.details.transactions.find(transaction => transaction.type === 'input');
+    return React.createElement(ProcessingView, {
+        swapBasicData: s.swap, swapDetails: s.details, refuel: s.refuel,
+        resolved: phase(s), depositActions: s.depositActions, quote: s.quote,
+        isDepositFlow: s.isDepositFlow,
+        transactionHash: input?.transaction_hash || s.storedWalletTransaction?.hash,
+        inputConfirmations: input?.confirmations,
+        inputMaxConfirmations: input?.max_confirmations,
+        elapsedTime: null, failedPanel: null,
+    });
+};
+
+test('transaction icons belong to their steps and use the correct network and hash', () => {
+    const cases = [
+        ['wallet-success', 'publishing', [[0, 'input', 'source']]],
+        ['wallet-success', 'completed', [[0, 'input', 'source'], [1, 'output', 'destination']]],
+        ['frontend-permit2', 'input', [[2, 'input', 'source']]],
+        ['frontend-permit2', 'completed', [[2, 'input', 'source'], [3, 'output', 'destination']]],
+        ['refuel', 'complete', [[0, 'input', 'source'], [1, 'output', 'destination'], [2, 'refuel', 'destination']]],
+        ['refund', 'refunded', [[0, 'input', 'source'], [2, 'refund', 'source']]],
+    ];
+    for (const [scenario, milestone, expected] of cases) {
+        const original = frontendMilestone(scenario, milestone).snapshot;
+        const snapshot = {
+            ...original,
+            swap: { ...original.swap,
+                source_network: { ...original.swap.source_network, transaction_explorer_template: 'https://source.example.invalid/tx/{0}' },
+                destination_network: { ...original.swap.destination_network, transaction_explorer_template: 'https://destination.example.invalid/tx/{0}' },
+            },
+            storedWalletTransaction: { ...original.storedWalletTransaction, hash: 'input/hash' },
+            details: { ...original.details, transactions: original.details.transactions.map(transaction => ({
+                ...transaction, transaction_hash: `${transaction.type}/hash`,
+            })) },
+        };
+        const container = document.createElement('div');
+        container.innerHTML = renderToStaticMarkup(processingElement(snapshot));
+        const rows = container.querySelectorAll('li');
+        assert.equal(container.querySelectorAll('[data-step-transaction]').length, expected.length, `${scenario}/${milestone}`);
+        for (const [index, type, network] of expected) {
+            const link = rows[index].querySelector('a[data-step-transaction]');
+            assert.ok(link, `${scenario}/${milestone}/${type}`);
+            assert.equal(link.href, `https://${network}.example.invalid/tx/${type}%2Fhash`);
+            assert.equal(link.target, '_blank');
+            assert.equal(link.rel, 'noopener noreferrer');
+            assert.match(link.getAttribute('aria-label'), /^View transaction: .+/);
+            assert.equal(link.textContent, '', 'the row uses an icon instead of an inline text link');
+            assert.ok(link.querySelector('svg[aria-hidden="true"]'));
+        }
+        assert.doesNotMatch(container.textContent, /View in explorer|Transaction:/);
+    }
+
+    const original = frontendMilestone('wallet-success', 'completed').snapshot;
+    for (const snapshot of [
+        { ...original, details: { ...original.details, transactions: original.details.transactions.map(transaction => ({ ...transaction, transaction_hash: '' })) } },
+        { ...original, swap: { ...original.swap,
+            source_network: { ...original.swap.source_network, transaction_explorer_template: '' },
+            destination_network: { ...original.swap.destination_network, transaction_explorer_template: '' },
+        } },
+    ]) {
+        const container = document.createElement('div');
+        container.innerHTML = renderToStaticMarkup(processingElement(snapshot));
+        assert.equal(container.querySelector('[data-step-transaction]'), null, 'no icon without both a hash and explorer URL');
+    }
+});
+
+test('transaction icons expose the View transaction tooltip on keyboard focus', async () => {
+    const root = createRoot(document.getElementById('root'));
+    try {
+        await act(async () => root.render(processingElement(frontendMilestone('wallet-success', 'completed').snapshot)));
+        const link = document.querySelector('a[data-step-transaction]');
+        await act(async () => link.focus());
+        assert.equal(document.querySelector('[role="tooltip"]').textContent, 'View transaction');
+        assert.ok(link.getAttribute('aria-describedby'));
+        await act(async () => link.blur());
+        assert.equal(document.querySelector('[role="tooltip"]'), null);
+    } finally {
+        await act(async () => root.unmount());
+    }
+});
+
 test('frontend wallet progress preserves completed steps, pending indicators and production presentation', () => {
-    const progress = (milestone) => fixtureDOM('frontend-permit2', milestone).querySelector('[aria-label="Wallet confirmation progress"]');
+    const progress = (milestone) => fixtureDOM('frontend-permit2', milestone).querySelector('[aria-label="Swap progress"]');
     const approving = progress('approving');
-    assert.match(approving.textContent, /Step 1 of 3: Approve token/);
-    assert.deepEqual([...approving.querySelectorAll('li')].map(li => li.textContent), ['Approve tokenApprove in your wallet', 'Sign to swap', 'Confirm swap']);
+    assert.match(approving.textContent, /Step 1 of 4: Approve token/);
+    assert.deepEqual([...approving.querySelectorAll('li')].map(li => li.textContent), ['Approve tokenApprove in your wallet', 'Sign to swap', 'Confirm swap', 'Receive 0.0396 ETH']);
     assert.equal(approving.querySelectorAll('.animate-spin').length, 1);
     assert.match(progress('approval-pending').textContent, /Confirming approval/);
     const signing = progress('signing');
     assert.equal(signing.querySelectorAll('.lucide-check').length, 1);
     assert.equal(signing.querySelectorAll('.animate-spin').length, 1);
-    assert.match(signing.textContent, /Step 2 of 3: Sign to swap/);
+    assert.match(signing.textContent, /Step 2 of 4: Sign to swap/);
     const publishing = progress('publishing');
     assert.equal(publishing.querySelectorAll('.lucide-check').length, 2);
-    assert.match(publishing.textContent, /Step 3 of 3: Confirm swap/);
+    assert.match(publishing.textContent, /Step 3 of 4: Confirm swap/);
 
     const snapshot = frontendMilestone('frontend-permit2', 'signing').snapshot;
     const production = document.createElement('div');
@@ -1284,11 +1396,158 @@ test('frontend wallet progress preserves completed steps, pending indicators and
         quote: snapshot.quote, depositActions: snapshot.depositActions,
         loading: snapshot.wallet.pending, actionStateText: snapshot.wallet.label,
     }));
-    assert.equal(signing.outerHTML, production.querySelector('[aria-label="Wallet confirmation progress"]').outerHTML);
+    assert.equal(signing.outerHTML, production.querySelector('[aria-label="Swap progress"]').outerHTML);
     const submitted = fixtureDOM('frontend-approved', 'input');
-    assert.equal(submitted.querySelector('[aria-label="Wallet confirmation progress"]'), null);
+    assert.ok(submitted.querySelector('[aria-label="Swap progress"]'));
+    assert.match(submitted.textContent, /Confirming transaction/);
     assert.equal(phase(frontendMilestone('frontend-approved', 'input').snapshot).phase, SwapPhase.InputPending);
     assert.deepEqual(forbidden, []);
+});
+
+test('token swap timeline keeps wallet steps through confirmations and delivery', () => {
+    const submitted = fixtureDOM('frontend-permit2', 'input').querySelector('[aria-label="Swap progress"]');
+    assert.equal(submitted.querySelectorAll('li').length, 4);
+    assert.equal(submitted.querySelectorAll('.lucide-check').length, 2);
+    assert.match(submitted.textContent, /Step 3 of 4: Confirm swap/);
+    assert.match(submitted.textContent, /Confirmations 3\/12/);
+    assert.doesNotMatch(submitted.textContent, /\[object Object\]/);
+
+    const finalizing = fixtureDOM('frontend-permit2', 'finalizing');
+    assert.equal(finalizing.querySelectorAll('[aria-label="Swap progress"] .lucide-check').length, 3);
+    assert.match(finalizing.textContent, /Step 4 of 4: Receive 0.0396 ETH/);
+    assert.match(finalizing.textContent, /Sending to/);
+    assert.equal(finalizing.querySelector('[aria-label="Swap complete"]'), null);
+
+    const completed = fixtureDOM('frontend-permit2', 'completed');
+    const card = completed.querySelector('[aria-label="Swap complete"]');
+    assert.match(card.textContent, /Transfer complete/);
+    assert.equal(card.querySelector('[role="progressbar"]').getAttribute('aria-valuenow'), '100');
+    assert.match(card.textContent, /Completed in 40s/);
+    assert.doesNotMatch(card.textContent, /steps|quoted|Receipt|New swap/);
+    assert.equal(completed.querySelector('[data-recipient-address]').closest('[hidden], [aria-hidden="true"], [inert]'), null);
+    const steps = card.querySelector('[aria-label="Progress"]');
+    assert.equal(steps.closest('[hidden], [aria-hidden="true"], [inert]'), null);
+    assert.deepEqual([...steps.querySelectorAll('li')].map(li => li.textContent), [
+        'Approve token', 'Sign to swap', 'Confirm swap', 'Received 0.0396 ETH',
+    ]);
+    assert.equal(steps.querySelectorAll('.lucide-check').length, 4);
+    assert.equal(steps.querySelectorAll('.animate-spin').length, 0);
+    assert.equal(card.querySelectorAll('button').length, 0);
+    assert.equal(completed.querySelector('[aria-label="Swap progress"]'), null);
+});
+
+test('token swap keeps its inline gauge and header unchanged through completion', async () => {
+    const root = createRoot(document.getElementById('root'));
+    const input = frontendMilestone('frontend-permit2', 'input');
+    const completed = frontendMilestone('frontend-permit2', 'completed');
+    try {
+        await act(async () => root.render(preview(input.snapshot, input.at)));
+        const progressbar = document.querySelector('[role="progressbar"]');
+        const gauge = progressbar.querySelector('svg');
+        const summaryToken = document.querySelector('img[alt="Token Logo"]');
+        const steps = document.querySelector('[aria-label="Progress"]');
+        const recipient = document.querySelector('[data-recipient-address]');
+        assert.equal(progressbar.getAttribute('aria-valuenow'), '50');
+        assert.equal(gauge.getAttribute('width'), '32');
+        assert.match(progressbar.parentElement.textContent, /Transfer in progress/);
+        assert.ok(progressbar.parentElement.querySelector('[role="timer"]'));
+
+        await act(async () => root.render(preview(completed.snapshot, completed.at)));
+        assert.equal(document.querySelector('[role="progressbar"]'), progressbar);
+        assert.equal(progressbar.querySelector('svg'), gauge);
+        assert.equal(progressbar.getAttribute('aria-valuenow'), '100');
+        assert.equal(gauge.getAttribute('width'), '32');
+        assert.equal(progressbar.parentElement.querySelector('h3').textContent, 'Transfer complete');
+        assert.equal(progressbar.parentElement.querySelector('[style*="transition"], [class*="animate-"], [class*="transition-"]'), null);
+        assert.ok(progressbar.querySelector('.lucide-check'));
+        assert.match(progressbar.parentElement.textContent, /Transfer completeCompleted in 40s/);
+        assert.equal(document.querySelector('img[alt="Token Logo"]'), summaryToken);
+        assert.equal(document.querySelector('[aria-label="Progress"]'), steps);
+        assert.equal(steps.closest('[hidden], [aria-hidden="true"], [inert]'), null);
+        assert.equal(steps.querySelectorAll('.lucide-check').length, 4);
+        assert.equal(document.querySelector('[data-recipient-address]'), recipient);
+        assert.equal(recipient.closest('[hidden], [aria-hidden="true"], [inert]'), null);
+        assert.equal(document.querySelector('[role="timer"]'), null);
+
+        // Rewinding reuses the same nodes and restores their in-progress statuses.
+        await act(async () => root.render(preview(input.snapshot, input.at)));
+        assert.equal(document.querySelector('[role="progressbar"]'), progressbar);
+        assert.equal(document.querySelector('img[alt="Token Logo"]'), summaryToken);
+        assert.equal(document.querySelector('[aria-label="Progress"]'), steps);
+        assert.equal(steps.closest('[aria-hidden="true"]'), null);
+        assert.equal(recipient.closest('[inert]'), null);
+        assert.equal(document.querySelectorAll('[aria-label="Progress"]').length, 1);
+    } finally {
+        await act(async () => root.unmount());
+    }
+});
+
+test('wallet execution exchanges the preparing button for persistent steps and respects reduced motion', async () => {
+    const container = document.getElementById('root');
+    const root = createRoot(container);
+    const preparing = frontendMilestone('frontend-permit2', 'preparing');
+    const approving = frontendMilestone('frontend-permit2', 'approving');
+    const signing = frontendMilestone('frontend-permit2', 'signing');
+    try {
+        await act(async () => root.render(preview(preparing.snapshot, preparing.at)));
+        assert.match(container.querySelector('[data-wallet-execution-panel="controls"]').textContent, /Preparing swap/);
+        assert.equal(container.querySelector('[data-wallet-execution-panel="workflow"]'), null);
+
+        await act(async () => root.render(preview(approving.snapshot, approving.at)));
+        const workflow = container.querySelector('[data-wallet-execution-panel="workflow"]');
+        const steps = workflow.querySelector('[aria-label="Progress"]');
+        const panel = workflow.querySelector('[data-steps-panel]');
+        assert.equal(panel.style.height, 'auto', 'reduced motion shows the final height immediately');
+        assert.equal(panel.style.opacity, '1');
+        assert.equal(workflow.style.height, '', 'the wallet wrapper does not run a second height animation');
+        assert.equal(container.querySelector('[data-wallet-execution-panel="controls"]'), null, 'reduced motion removes the old button immediately');
+
+        await act(async () => root.render(preview(signing.snapshot, signing.at)));
+        assert.equal(container.querySelector('[data-wallet-execution-panel="workflow"]'), workflow);
+        assert.equal(workflow.querySelector('[aria-label="Progress"]'), steps);
+        assert.match(steps.textContent, /Sign in your wallet/);
+
+        await act(async () => root.render(preview(preparing.snapshot, preparing.at)));
+        assert.equal(container.querySelector('[data-wallet-execution-panel="workflow"]'), null);
+        assert.match(container.querySelector('[data-wallet-execution-panel="controls"]').textContent, /Preparing swap/);
+    } finally {
+        await act(async () => root.unmount());
+    }
+
+    const initial = fixtureDOM('frontend-permit2', 'approving').querySelector('[data-steps-panel]');
+    assert.equal(initial.style.height, 'auto', 'opening an existing workflow does not start it collapsed');
+    assert.equal(initial.style.opacity, '1');
+});
+
+test('completed token swaps use the actual output and do not invent missing action history', async () => {
+    const original = frontendMilestone('frontend-permit2', 'completed').snapshot;
+    const snapshot = {
+        ...original,
+        depositActions: undefined,
+        details: { ...original.details, transactions: original.details.transactions.map(transaction =>
+            transaction.type === 'output' ? { ...transaction, amount: 0.0395 } : transaction) },
+    };
+    const container = document.getElementById('root');
+    const root = createRoot(container);
+    try {
+        await act(async () => root.render(preview(snapshot, 90)));
+        const card = container.querySelector('[aria-label="Swap complete"]');
+        assert.match(container.textContent, /0\.0395 ETH/, 'summary shows the actual received amount');
+        assert.match(card.textContent, /Transfer complete/);
+        assert.equal(card.querySelector('[aria-label="Progress"]'), null, 'missing action history does not invent wallet steps');
+        const transaction = card.querySelector('a[data-step-transaction]');
+        assert.equal(transaction.getAttribute('aria-label'), 'View transaction');
+        assert.equal(transaction.hasAttribute('href'), false, 'preview transaction links remain read-only');
+        assert.doesNotMatch(card.textContent, /4 of 4/);
+
+        await act(async () => root.render(preview({ ...snapshot, depositActions: original.depositActions }, 90)));
+        const steps = container.querySelector('[aria-label="Progress"]');
+        assert.match(steps.textContent, /Received 0\.0395 ETH/);
+        assert.doesNotMatch(steps.textContent, /0\.0396 ETH/);
+        assert.equal(steps.querySelectorAll('.lucide-check').length, 4);
+    } finally {
+        await act(async () => root.unmount());
+    }
 });
 
 test('frontend snapshots keep automatic wallet execution busy until processing or a real interruption', () => {
@@ -1303,10 +1562,10 @@ test('frontend snapshots keep automatic wallet execution busy until processing o
             assert.equal(wallet.pending, true, `${label}: automatic execution never becomes idle between wallet prompts`);
             const container = document.createElement('div');
             container.innerHTML = renderToStaticMarkup(React.createElement(SendTransactionView, {
-                depositActions: s.depositActions, loading: wallet.pending, actionStateText: wallet.label,
+                quote: s.quote, depositActions: s.depositActions, loading: wallet.pending, actionStateText: wallet.label,
             }));
             const buttons = [...container.querySelectorAll('button')];
-            if (s.depositActions.filter(action => action.step).length > 1) {
+            if (s.depositActions.filter(action => action.step).length > 1 || s.depositActions.some(action => action.step === 'publish')) {
                 assert.equal(buttons.length, 0, `${label}: multistep execution has no intermediate action button`);
             } else {
                 assert.equal(buttons.length, 1, label);
@@ -1317,35 +1576,142 @@ test('frontend snapshots keep automatic wallet execution busy until processing o
 });
 
 test('frontend quotes match the real full-to-compact lifecycle and sign-only/native variants', () => {
-    assert.ok(fixtureDOM('frontend-permit2', 'ready').querySelector('[aria-label="See details"]'));
-    for (const milestone of ['approving', 'signing', 'input', 'finalizing']) {
+    const ready = fixtureDOM('frontend-permit2', 'ready');
+    assert.ok(ready.querySelector('[aria-label="See details"]'));
+    assert.equal(ready.querySelector('[data-quote-layout]').dataset.quoteLayout, 'separate');
+    for (const milestone of ['approving', 'signing', 'input', 'finalizing', 'completed']) {
         const view = fixtureDOM('frontend-permit2', milestone);
         assert.match(view.textContent, /Send to/);
         assert.ok(view.querySelector('[data-recipient-address]'));
-        assert.equal(view.querySelector('[aria-label="See details"]'), null);
-        assert.equal(view.querySelector('[data-attr="edit-slippage"]'), null);
+        assert.equal(view.querySelector('[data-quote-layout]').dataset.quoteLayout, 'attached');
+        assert.ok(view.querySelector('[aria-label="See details"]').closest('[aria-hidden="true"][inert]'));
+        assert.ok(view.querySelector('[data-attr="edit-slippage"]').closest('[aria-hidden="true"][inert]'));
     }
-    assert.equal(fixtureDOM('frontend-permit2', 'completed').querySelector('[data-recipient-address]'), null);
+    assert.equal(fixtureDOM('frontend-permit2', 'completed').querySelector('[data-recipient-address]').closest('[hidden], [aria-hidden="true"], [inert]'), null);
     const gasless = fixtureDOM('frontend-gasless', 'gasless');
     assert.ok(gasless.querySelector('[aria-label="See details"]'));
-    assert.equal(gasless.querySelector('[aria-label="Wallet confirmation progress"]'), null);
+    assert.equal(gasless.querySelector('[data-quote-layout]').dataset.quoteLayout, 'separate');
+    assert.equal(fixtureDOM('wallet-success', 'ready').querySelector('[data-quote-layout]').dataset.quoteLayout, 'separate');
+    assert.equal(gasless.querySelector('[aria-label="Swap progress"]'), null);
     assert.match(fixtureDOM('frontend-native', 'ready').textContent, /Swap now/);
-    assert.equal(fixtureDOM('frontend-native', 'publishing').querySelector('[aria-label="Wallet confirmation progress"]'), null);
+    assert.match(fixtureDOM('frontend-native', 'publishing').textContent, /Step 1 of 2: Confirm swap/);
     assert.match(fixtureDOM('frontend-native', 'publishing').textContent, /Confirm in your wallet/);
     assert.match(fixtureDOM('frontend-critical', 'critical').textContent, /receive as low as 0.03 ETH/);
+});
+
+test('compacting and attaching preserves one quote and recipient through repeated reversals', async () => {
+    const container = document.getElementById('root');
+    const root = createRoot(container);
+    const ready = frontendMilestone('frontend-permit2', 'ready');
+    const approving = frontendMilestone('frontend-permit2', 'approving');
+    try {
+        await act(async () => root.render(preview(ready.snapshot, ready.at)));
+        const overview = container.querySelector('[data-quote-layout]');
+        const summaryToken = overview.querySelector('img[alt="Token Logo"]');
+        const recipient = overview.querySelector('[data-recipient-address]');
+        const disclosure = overview.querySelector('[aria-label="See details"]');
+        for (const milestone of [approving, ready, approving, ready]) {
+            await act(async () => root.render(preview(milestone.snapshot, milestone.at)));
+            const compact = milestone === approving;
+            assert.equal(container.querySelector('[data-quote-layout]'), overview);
+            assert.equal(overview.dataset.quoteLayout, compact ? 'attached' : 'separate');
+            assert.equal(overview.querySelector('img[alt="Token Logo"]'), summaryToken);
+            assert.equal(overview.querySelector('[data-recipient-address]'), recipient);
+            assert.equal(overview.querySelector('[aria-label="See details"]'), disclosure);
+            assert.equal(overview.querySelectorAll('[data-recipient-address]').length, 1);
+            assert.equal(!!disclosure.closest('[aria-hidden="true"][inert]'), compact);
+        }
+    } finally {
+        await act(async () => root.unmount());
+    }
+});
+
+test('standard quotes compact and attach through completion while preserving recipient and quote identity', async () => {
+    const container = document.getElementById('root');
+    const root = createRoot(container);
+    try {
+        for (const scenarioId of ['wallet-success', 'gasless-success', 'refuel']) {
+            const scenario = scenarios.find(s => s.id === scenarioId);
+            const ready = scenario.milestones.find(m => phase(m.snapshot).showWithdrawScreen);
+            const processing = scenario.milestones.find(m => !phase(m.snapshot).showWithdrawScreen);
+            for (const mode of ['component', 'modal']) {
+                await act(async () => root.render(preview(ready.snapshot, ready.at, mode)));
+                const overview = container.querySelector('[data-quote-layout]');
+                const quote = overview.querySelector('[data-quote-transition]');
+                const disclosure = quote.querySelector('[aria-label="See details"]');
+                const summaryToken = overview.querySelector('img[alt="Token Logo"]');
+                assert.ok(disclosure);
+                for (const milestone of [processing, ready, processing, scenario.milestones.at(-1), ready]) {
+                    await act(async () => root.render(preview(milestone.snapshot, milestone.at, mode)));
+                    const compact = !phase(milestone.snapshot).showWithdrawScreen;
+                    assert.equal(container.querySelector('[data-quote-layout]'), overview);
+                    assert.equal(overview.dataset.quoteLayout, compact ? 'attached' : 'separate');
+                    assert.equal(overview.querySelector('img[alt="Token Logo"]'), summaryToken);
+                    assert.equal(overview.querySelector('[data-quote-transition]'), quote);
+                    assert.equal(quote.querySelector('[aria-label="See details"]'), disclosure);
+                    assert.equal(quote.closest('[hidden], [inert], [aria-hidden="true"]'), null);
+                    assert.equal(!!disclosure.closest('[aria-hidden="true"][inert]'), compact);
+                    const recipient = quote.querySelector('[data-recipient-address]');
+                    assert.ok(recipient);
+                    assert.equal(recipient.closest('[hidden], [inert], [aria-hidden="true"]'), null);
+                    const minimum = [...quote.querySelectorAll('label')].find(label => label.textContent === 'Receive at least');
+                    assert.ok(minimum);
+                    assert.equal(minimum.closest('[hidden], [inert], [aria-hidden="true"]'), null);
+                    assert.equal(container.querySelectorAll('[data-quote-transition]').length, 1);
+                    assert.equal(container.querySelectorAll('[data-steps-panel]').length, compact ? 1 : 0);
+                }
+            }
+        }
+    } finally {
+        await act(async () => root.unmount());
+    }
+});
+
+test('manual network and exchange deposits use the shared instructions-to-progress transition in both modes', async () => {
+    const container = document.getElementById('root');
+    const root = createRoot(container);
+    try {
+        for (const scenarioId of ['manual-network', 'manual-exchange']) {
+            const ready = frontendMilestone(scenarioId, 'address-ready');
+            const detected = frontendMilestone(scenarioId, 'deposit-detected');
+            for (const mode of ['component', 'modal']) {
+                for (const milestone of [ready, detected, ready, detected]) {
+                    await act(async () => root.render(preview(milestone.snapshot, milestone.at, mode)));
+                    const processing = milestone === detected;
+                    const overview = container.querySelector('[data-wallet-execution-panel="overview"]');
+                    const controls = container.querySelector('[data-wallet-execution-panel="controls"]');
+                    const steps = container.querySelector('[data-steps-panel]');
+                    assert.equal(!!overview, processing);
+                    assert.equal(!!steps, processing);
+                    assert.equal(!!controls, !processing);
+                    if (processing) {
+                        assert.equal(overview.style.height, 'auto');
+                        assert.equal(steps.style.height, 'auto');
+                        assert.match(steps.textContent, /Processing your deposit/);
+                        assert.doesNotMatch(container.textContent, /Copy the deposit address/);
+                    } else {
+                        assert.match(controls.textContent, /Copy the deposit address/);
+                        assert.equal(controls.closest('[inert]'), null);
+                    }
+                }
+            }
+        }
+    } finally {
+        await act(async () => root.unmount());
+    }
 });
 
 test('frontend rejection and failed-step fixtures distinguish signature errors from transaction errors', () => {
     for (const [step, message] of [['approve_permit2', 'Transaction rejected'], ['sign', 'Signing rejected'], ['publish', 'Transaction rejected']]) {
         const rejected = fixtureDOM(`frontend-${step}-retry`, 'rejected');
         assert.match(rejected.textContent, new RegExp(message));
-        assert.equal(rejected.querySelectorAll('[aria-label="Wallet confirmation progress"] .lucide-x').length, 1);
+        assert.equal(rejected.querySelectorAll('[aria-label="Swap progress"] .lucide-x').length, 1);
         const refresh = fixtureDOM(`frontend-${step}-retry`, 'refresh');
         assert.match(refresh.textContent, /Refreshing swap/);
-        assert.equal(refresh.querySelectorAll('[aria-label="Wallet confirmation progress"] .lucide-x').length, 0);
+        assert.equal(refresh.querySelectorAll('[aria-label="Swap progress"] .lucide-x').length, 0);
     }
     assert.match(fixtureDOM('frontend-errors', 'failed').textContent, /Token approval reverted/);
-    const pending = fixtureDOM('frontend-errors', 'pending-error').querySelector('[aria-label="Wallet confirmation progress"]');
+    const pending = fixtureDOM('frontend-errors', 'pending-error').querySelector('[aria-label="Swap progress"]');
     assert.equal(pending.querySelectorAll('.lucide-x').length, 0);
     assert.equal(pending.querySelectorAll('.animate-spin').length, 1);
 });
