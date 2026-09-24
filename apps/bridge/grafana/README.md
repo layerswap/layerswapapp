@@ -133,10 +133,14 @@ Quiet traffic, sampling and broken collection can all produce missing telemetry.
 Alert recovery is not durable issue resolution or assignment state.
 
 Tempo is optional for the Loki-based speed, interaction, error and session views.
-Datasource correlation and browser-to-API propagation instructions are in the
-[infrastructure README](infra/README.md). Its proposed patch has not been
-applied. Verify actual destination UIDs and API CORS/context extraction before
-enabling propagation; verify an exact trace ID across browser and API spans.
+Grafana's log/trace/metric cross-navigation depends on datasource UIDs in
+`layerswap/layerswap-fluxcd`, not on this repo.
+
+For browser → API → backend traces, set `NEXT_PUBLIC_FARO_TRACE_PROPAGATION_URLS`
+to only the API origins that accept W3C context, then rebuild. The API CORS
+response must allow `traceparent` (and `tracestate` if sent), and the backend
+must extract the incoming context. Verify one fresh request by its exact trace
+ID across browser and API spans before claiming end-to-end tracing.
 
 ## Rollout acceptance
 
