@@ -5,15 +5,14 @@ import { errorMessage, isUserRejection, userRejectedError, walletActionError } f
 const LABELS = new Set<string>(Object.values(ActionMessageType))
 
 /**
- * Only for the wallet prompt (`signTransaction`): a structured decline, or a
- * prompt that was rejected, declined, cancelled or closed (Albedo: "Action request
- * was rejected by the user."), is the user's action. Applied
- * to pre-flight or submit failures this vocabulary would turn a closed relay or
- * RPC socket into a "rejection", so those go through {@link toTransferError}.
+ * Map signing-prompt errors, including wallets that report user rejection
+ * only through message text. Use toTransferError for other stages, where
+ * words like "closed" can indicate a connection failure instead.
  */
 export function toSigningError(error: unknown): Error {
+    if (error instanceof Error && LABELS.has(error.name)) return error
     const message = errorMessage(error)
-    if (isUserRejection(error) || /reject|declin|cancel|closed/i.test(message)) {
+    if (isUserRejection(error) || /reject|declin|cancel|denied|closed/i.test(message)) {
         return userRejectedError({ message: 'The Stellar transaction was rejected', cause: error })
     }
     return walletActionError(ActionMessageType.UnexpectedErrorMessage, { message: message || 'Stellar transaction failed', cause: error })
@@ -42,5 +41,10 @@ export function toTransferError(error: unknown): Error {
         return walletActionError(ActionMessageType.TransactionFailed, { message: 'Horizon rejected the Stellar transaction', cause: error })
     }
     const message = errorMessage(error)
-    return walletActionError(ActionMessageType.UnexpectedErrorMessage, { message: message || 'Stellar transaction failed', cause: error })
+    return walletActionError(ActionMessageType.UnexpectedErrorMessage, {
+        message: message || 'Stellar transaction failed',
+        cause: error,
+        // Outside signing, decline-like cause text must not override this failure.
+        reasonCode: isUserRejection(error) ? 'unknown_error' : undefined,
+    })
 }

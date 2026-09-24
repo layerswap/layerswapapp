@@ -242,7 +242,6 @@ class StellarKitManager {
             if (knownNetwork) kit.setNetwork(knownNetwork)
         }
         return kit.signTransaction(xdr, { networkPassphrase, address })
-            .catch((error: { message: string }) => { throw new Error(error.message) })
     }
 
     async refreshWallets(): Promise<void> {

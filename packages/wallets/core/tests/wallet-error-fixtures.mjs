@@ -54,6 +54,9 @@ export const FIXTURES = [
     { label: 'Fuel wallet decline', source: 'adapter:wallet-fuel createFuelTransfer.ts', error: { message: 'User rejected the transaction!' }, expected: 'user_rejected' },
     { label: 'Fuel wallet cancel', source: 'adapter:wallet-fuel createFuelTransfer.ts', error: { message: 'User canceled sending transaction' }, expected: 'user_rejected' },
     { label: 'Bitcoin / Solana wallet decline', source: 'adapter:wallet-bitcoin createBitcoinTransfer.ts', error: { message: 'User rejected the request.' }, expected: 'user_rejected' },
+    // Compatibility cases accepted by dev's message matchers before centralization.
+    { label: 'user has rejected the request', source: 'compat:dev widget Common/isUserRejection.ts rejected-the-request matcher', error: new Error('User has rejected the request.'), expected: 'user_rejected' },
+    { label: 'request rejected by the user', source: 'compat:dev wallet-paradex createParadexTransfer.ts reject matcher', error: new Error('Request rejected by the user.'), expected: 'user_rejected' },
     // --- near-misses that only the adapter (with prompt-stage context) may declare
     { label: 'Fuel prompt closed without an answer', source: 'adapter:wallet-fuel createFuelTransfer.ts', error: { message: 'Request cancelled without user response!' }, expected: 'unknown_error' },
     { label: 'Starknet Execute failed', source: 'adapter:wallet-starknet createStarknetTransfer.ts', error: { message: 'Execute failed' }, expected: 'unknown_error' },

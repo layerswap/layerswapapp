@@ -14,6 +14,8 @@ test('structured declines from the backing EVM or Starknet wallet are declared a
         { code: 4001 },
         Object.assign(new Error('User rejected the request.'), { code: 4001 }),
         new Error('An error occurred (USER_REFUSED_OP)'),
+        new Error('User has rejected the request.'),
+        new Error('Request rejected by the user.'),
     ]) {
         const thrown = toTransferError(original)
         expectShape(thrown, original, 'TransactionRejected')

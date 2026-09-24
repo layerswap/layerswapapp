@@ -23,12 +23,12 @@ const { useGaslessPreferenceStore } = await import('../dist/esm/stores/gaslessPr
 const { widgetTelemetry } = await import('../dist/esm/lib/widgetTelemetry.js')
 afterEach(() => useGaslessPreferenceStore.getState().resetGaslessPreference())
 
-for (const [code, rejected] of [[4001, true], ['4001', true], ['ACTION_REJECTED', true], [-32603, false]]) {
+for (const [code, rejected, message = 'Wallet request failed'] of [[4001, true], ['4001', true], ['ACTION_REJECTED', true], [-32603, false], [undefined, true, 'User has rejected the request.']]) {
   test(`gasless signing with code ${JSON.stringify(code)} and a nested RPC error records ${rejected ? 'cancellation' : 'failure'}`, async t => {
     const lifecycle = []
     const telemetry = []
     t.after(widgetTelemetry.register(event => telemetry.push(event)))
-    const error = Object.assign(new Error('Wallet request failed'), { code, cause: { code: -32603 } })
+    const error = Object.assign(new Error(message), { code, cause: { code: -32603 } })
     const unexpected = () => assert.fail('a failed signature must not authorize or submit a transfer')
     const signAction = { type: 'sign', typed_data: { message: { validBefore: '123' } } }
     const ctx = {
@@ -52,7 +52,7 @@ for (const [code, rejected] of [[4001, true], ['4001', true], ['ACTION_REJECTED'
     assert.equal(signed, true)
     assert.deepEqual(lifecycle.map(event => event.step), ['wallet_prompt_opened', rejected ? 'wallet_action_rejected' : 'wallet_action_failed'])
     assert.equal(lifecycle.at(-1).reasonCode, rejected ? 'user_rejected' : 'internal_rpc_error')
-    assert.equal(lifecycle.at(-1).errorCode, String(code))
+    assert.equal(lifecycle.at(-1).errorCode, code === undefined ? undefined : String(code))
     assert.equal(useGaslessPreferenceStore.getState().gaslessUnavailable, !rejected)
     assert.equal(useGaslessPreferenceStore.getState().gaslessFailureStage, rejected ? null : 'deposit')
     assert.equal(telemetry.length, 1)

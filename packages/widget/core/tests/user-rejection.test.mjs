@@ -40,6 +40,14 @@ test('recognizes the standard EIP-1193 rejection code', () => {
   assert.equal(isUserRejection({ code: 4001 }), true)
 })
 
+test('explicit user rejection wording accepted before centralization remains a cancellation', () => {
+  for (const message of ['User rejected the request.', 'User denied transaction signature.', 'User has rejected the request.']) {
+    const error = new Error(message)
+    assert.equal(isUserRejection(error), true, message)
+    assert.equal(lifecycleErrorDetails(error).reasonCode, 'user_rejected', message)
+  }
+})
+
 test('does not classify an unexpected wallet failure as user rejection', () => {
   assert.equal(isUserRejection(new Error('RPC endpoint unavailable')), false)
 })

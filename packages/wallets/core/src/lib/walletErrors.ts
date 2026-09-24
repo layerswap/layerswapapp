@@ -173,12 +173,12 @@ const BUCKET_NAMES = /InternalRpc|UnknownRpc|InvalidInputRpc|^RpcError$|^RpcRequ
 // 'user reject this request' (TRON adapters), 'USER_REFUSED_OP' (Starknet
 // wallets), 'Reject request' (TON Connect SDK) are the decline phrases the
 // chain adapters matched by hand before declaring declines explicitly.
-const DECLINE_TEXT = /user rejected|user denied|user cancel|user reject\b|USER_REFUSED_OP|Reject request|denied by the user/i
+const DECLINE_TEXT = /user (?:has )?rejected|user denied|user cancel|user reject\b|USER_REFUSED_OP|Reject request|(?:rejected|denied) by (?:the )?user/i
 // JSON-RPC 2.0 reserves -32000..-32099 for server errors: the text is the
 // node's (geth: funds, nonce, "execution reverted: <reason>"). Some WalletConnect
 // wallets still answer a declined prompt with -32000 "User rejected ...", so on
 // these codes only text that *starts* with the user declining counts.
-const SERVER_ERROR_DECLINE_TEXT = /^\s*user (rejected|denied)\b/i
+const SERVER_ERROR_DECLINE_TEXT = /^\s*(?:the )?user (?:has )?(rejected|denied)\b/i
 const REVERT_TEXT = /revert/i
 
 function isServerErrorCode(code: string | undefined): boolean {

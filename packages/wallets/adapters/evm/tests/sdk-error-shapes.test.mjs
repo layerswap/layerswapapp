@@ -40,6 +40,8 @@ const DECLINES = [
     ['EIP-1193 4001', { code: 4001, message: 'User rejected the request.' }],
     ['CAIP-25 5000', { code: 5000, message: 'User rejected.' }],
     ['Error without a code', new Error('User rejected the request.')],
+    ['legacy user rejection wording', new Error('User has rejected the request.')],
+    ['legacy rejection wording relayed as -32000', { code: -32000, message: 'User has rejected the request.' }],
 ]
 
 test('viem-wrapped wallet declines are rejections for classification, adapter and resolveError', async () => {

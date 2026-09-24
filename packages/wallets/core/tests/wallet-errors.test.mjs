@@ -198,7 +198,7 @@ test('a JSON-RPC server error is only a decline when its text starts with the us
     }
     assert.equal(normalizeWalletErrorCode({ code: -32000, message: 'execution reverted: user rejected' }), 'contract_reverted')
     // A WalletConnect wallet that answers a declined prompt with -32000 still reports the user.
-    for (const message of ['User rejected the request.', 'User rejected.', 'user denied transaction signature']) {
+    for (const message of ['User rejected the request.', 'User rejected.', 'user denied transaction signature', 'User has rejected the request.', 'The user has rejected the request.']) {
         assert.equal(normalizeWalletErrorCode({ code: -32000, message }), 'user_rejected', message)
     }
     // Definitive codes are unaffected.

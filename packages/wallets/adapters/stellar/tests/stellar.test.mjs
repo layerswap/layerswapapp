@@ -868,6 +868,7 @@ test('routes Stellar registry wallets through the shared QR modal', async () => 
 })
 
 test('only a declined wallet prompt is a rejection; pre-flight and submit failures are failures', async t => {
+    const signTransaction = stellarKitManager.signTransaction
     const fixture = buildFixture()
     const params = {
         selectedWallet: { address: sourceKey.publicKey() },
@@ -921,6 +922,47 @@ test('only a declined wallet prompt is a rejection; pre-flight and submit failur
     assert.equal(thrown.cause, declined)
     assert.equal(isUserRejection(thrown), true)
 
+    // Exercise the real manager as well: wrapping SDK errors must not erase
+    // rejection codes, nested causes, or any of dev's signing-prompt wording.
+    for (const original of [
+        ...['User rejected', 'User declined', 'Request cancelled', 'Request denied', 'Permission denied',
+            'User denied transaction signature', 'Popup was closed by the user',
+            'Action request was rejected by the user.'].map(message => new Error(message)),
+        { code: 4001 },
+        { code: '4001', message: 'Wallet request failed' },
+        { code: 5000, message: 'Wallet request failed' },
+        new Error('Wallet request failed', { cause: { code: 4001 } }),
+        'User rejected the request',
+    ]) {
+        installHappyPath()
+        t.mock.method(stellarKitManager, 'signTransaction', signTransaction)
+        t.mock.method(stellarKitManager, 'requireKit', () => ({
+            setNetwork() {},
+            signTransaction: async () => { throw original },
+        }))
+        const submit = t.mock.method(Horizon.Server.prototype, 'submitTransaction', async () => assert.fail('a cancellation must not submit'))
+        thrown = await thrownBy(provider.executeTransfer(params))
+        assert.equal(thrown.name, 'TransactionRejected')
+        assert.equal(thrown.reasonCode, 'user_rejected')
+        assert.equal(thrown.cause, original)
+        assert.equal(isUserRejection(thrown), true)
+        assert.equal(submit.mock.callCount(), 0)
+    }
+
+    // Signing must preserve an existing UI label, cause and classification.
+    for (const [name, message, reasonCode] of [
+        ['InsufficientFunds', 'Transaction rejected: insufficient balance', 'insufficient_funds'],
+        ['WaletMismatch', 'The selected account does not match', undefined],
+        ['TransactionRejected', 'User declined', 'user_rejected'],
+    ]) {
+        installHappyPath()
+        const labelled = Object.assign(new Error(message, { cause: new Error('Wallet response') }), { name, reasonCode })
+        t.mock.method(stellarKitManager, 'signTransaction', async () => { throw labelled })
+        thrown = await thrownBy(provider.executeTransfer(params))
+        assert.equal(thrown, labelled)
+        assert.equal(isUserRejection(thrown), reasonCode === 'user_rejected')
+    }
+
     // Horizon result codes after signing map to funds / failed, never to a decline.
     installHappyPath()
     const underfunded = new TransactionFailedError('Transaction submission failed', {
@@ -935,7 +977,7 @@ test('only a declined wallet prompt is a rejection; pre-flight and submit failur
 
 test('Stellar error mapping is pure: prompt vocabulary applies to the signing stage only', () => {
     // Albedo rejects the prompt with a plain Error carrying no code.
-    for (const message of ['User declined', 'Request cancelled', 'Session closed', 'Popup was closed by the user', 'Action request was rejected by the user.']) {
+    for (const message of ['User declined', 'Request cancelled', 'Request denied', 'Session closed', 'Popup was closed by the user', 'Action request was rejected by the user.']) {
         const original = new Error(message)
         const signing = toSigningError(original)
         assert.equal(signing.name, 'TransactionRejected', message)

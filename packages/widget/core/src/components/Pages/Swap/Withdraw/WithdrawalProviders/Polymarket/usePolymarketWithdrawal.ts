@@ -8,7 +8,7 @@ import { useSelectedAccount } from "@/context/swapAccounts";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
 import useWallet from "@/hooks/useWallet";
 import { useTransfer } from "@/hooks/useTransfer";
-import { TransferProgress } from "@layerswap/widget-types";
+import { ActionMessageType, TransferProgress } from "@layerswap/widget-types";
 import { NetworkRoute } from "@layerswap/widget-types";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { BackendTransactionStatus, DepositAction } from "@/lib/apiClients/layerSwapApiClient";
@@ -76,6 +76,8 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
     const [progress, setProgress] = useState<TransferProgress | undefined>()
     const [error, setError] = useState<StepError | undefined>()
     const [rejected, setRejected] = useState(false)
+    // The rejected UI label alone does not establish a user cancellation.
+    const lastFailureWasUserRejection = useRef(false)
     // Synchronous double-submit guard: covers the click→re-render gap that `loading` can't.
     const submittingRef = useRef(false)
     // The flow widens the async window (deploy + sign + submit); avoid setting state after unmount.
@@ -93,7 +95,7 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
                 stage: 'wallet_action',
                 outcome: 'started',
                 path: 'PolymarketWithdrawal',
-                reasonCode: rejected ? 'user_rejected' : 'provider_withdrawal_failed',
+                reasonCode: lastFailureWasUserRejection.current ? 'user_rejected' : 'provider_withdrawal_failed',
                 action: 'polymarket_withdrawal',
                 provider: wallet?.providerName,
                 ...lifecycleContextFromSwap(swapBasicData, swapDetails),
@@ -197,8 +199,9 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
             onWalletWithdrawalSuccess?.()
         } catch (e) {
             if (!mountedRef.current) return
+            lastFailureWasUserRejection.current = isUserRejection(e)
             // A declined wallet prompt is a user action, not an error to log.
-            if (isUserRejection(e)) {
+            if (lastFailureWasUserRejection.current) {
                 onSwapLifecycle({
                     step: 'wallet_action_rejected',
                     stage: 'wallet_action',
@@ -228,7 +231,12 @@ export function usePolymarketWithdrawal({ swapBasicData, refuel, swapId }: Withd
                 })
             }
             logWithdrawalError(e, { swapId: lifecycleSwapId, fromAddress: sourceAddress })
-            setError({ header: (e as any)?.header ?? 'Withdrawal failed', details: (e as Error)?.message || 'Unexpected error occurred.' })
+            // Preserve the provider's UI label even when it cannot establish a cancellation for telemetry.
+            if ((e as Error)?.name === ActionMessageType.TransactionRejected) {
+                setRejected(true)
+            } else {
+                setError({ header: (e as any)?.header ?? 'Withdrawal failed', details: (e as Error)?.message || 'Unexpected error occurred.' })
+            }
         } finally {
             if (mountedRef.current) {
                 setLoading(false)
