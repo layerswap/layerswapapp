@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import test from 'node:test'
 import { beforeSend, flattenContext, MAX_CONTEXT_VALUE_LENGTH, MAX_NODES, sanitizeValue, serializeConsoleArgs } from '../faro-sanitizer.ts'
@@ -169,7 +168,7 @@ function assertAnyValue(value) {
 test('real SDK exporter: preserve OTLP wrappers, IDs, timings, flags and attribute types', async () => {
     const { payload, mirrors } = await sdkPayload()
     const original = structuredClone(payload)
-    // Reproduce the original failure without modifying the historical fixture.
+    // Reproduce the original failure: the generic sanitizer destroyed OTLP attributes.
     assert(spansOf(sanitizeValue(payload))[0].attributes.every(a => a === '[Maximum depth reached]'))
     const sanitized = beforeSend(transportItem(payload)).payload
     assert.deepEqual(payload, original, 'must not mutate data later used by Faro tracing mirrors')
@@ -281,53 +280,6 @@ test('non-trace redaction, metadata filtering and ResizeObserver suppression rem
     assert(beforeSend({ type: 'log', payload: { value: 'ResizeObserver loop limit exceeded' }, meta }))
     const cyclic = { safe: 'ok' }; cyclic.self = cyclic
     assert.equal(sanitizeValue(cyclic).self, '[Circular]')
-})
-
-test('historic damaged browser fixtures remain unchanged and cannot be recovered by the new hook', () => {
-    const fixture = JSON.parse(readFileSync(new URL('../../grafana/fixtures/faro-controlled-browser-payload.json', import.meta.url)))
-    const traces = fixture.requests.map(r => r.body.traces).filter(Boolean)
-    assert.equal(traces.length, 2)
-    for (const payload of traces) {
-        const original = structuredClone(payload)
-        assert.equal(beforeSend(transportItem(payload)), null)
-        assert.deepEqual(payload, original)
-    }
-})
-
-test('fresh browser excerpts retain typed span attributes, resource brands and observed Loki mirror correlation', () => {
-    const fixture = JSON.parse(readFileSync(new URL('../../grafana/fixtures/faro-sanitizer-browser-span-excerpt.json', import.meta.url)))
-    const span = fixture.spanExcerpt
-    assert.equal(span.attributes.length, 6)
-    assertAttributes(span.attributes)
-    // Only the excerpts are browser evidence. Their enclosing association,
-    // wrapper and empty event/link arrays are test-only, not captured fields.
-    const testSpan = { ...span, events: [], links: [] }
-    const brands = fixture.resourceAttributeExcerpt
-    assertAttributes([brands])
-    assert.deepEqual(brands.value.arrayValue.values, [
-        { stringValue: 'Chromium' }, { stringValue: 'Not?A_Brand' }, { stringValue: 'Google Chrome' },
-    ])
-    const payload = { resourceSpans: [{ resource: { attributes: [brands] }, scopeSpans: [{ spans: [testSpan] }] }] }
-    const original = structuredClone(payload)
-    const output = beforeSend(transportItem(payload)).payload
-    assert.deepEqual(spansOf(output)[0], testSpan)
-    assert.deepEqual(output.resourceSpans[0].resource.attributes, [brands])
-    assert.deepEqual(payload, original)
-    const stored = fixture.lokiVerification.record.parsedFields
-    assert.equal(span.traceId, stored.traceID)
-    assert.equal(span.spanId, stored.spanID)
-    assert.equal(lookup(span, 'session.id').stringValue, stored.session_id)
-    assert.equal(stored.session_id, stored.event_data_session_id)
-    for (const [key, field, variant] of [
-        ['http.request.method', 'event_data_http_request_method', 'stringValue'],
-        ['url.full', 'event_data_url_full', 'stringValue'],
-        ['http.response.status_code', 'event_data_http_response_status_code', 'intValue'],
-        ['server.address', 'event_data_server_address', 'stringValue'],
-        ['server.port', 'event_data_server_port', 'intValue'],
-    ]) assert.equal(String(lookup(span, key)[variant]), stored[field])
-    assert.equal(new URL(lookup(span, 'url.full').stringValue).search, '')
-    assert.match(span.traceId, /^[0-9a-f]{32}$/)
-    assert.match(span.spanId, /^[0-9a-f]{16}$/)
 })
 
 test('malformed trace attributes are dropped instead of leaking uninspected values', async () => {

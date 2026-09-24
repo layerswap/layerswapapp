@@ -2,7 +2,6 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
-import { readFileSync } from 'node:fs'
 import { createSwapContextWriter, createWalletContextWriter, SwapContextInstrumentation } from '../faro-session-context.ts'
 import { createSwapLifecycleTelemetry } from '../faro-swap-lifecycle.ts'
 import { beforeSend } from '../faro-sanitizer.ts'
@@ -65,25 +64,6 @@ test('a returning phase updates Faro context and restarts its stall timer withou
     assert.equal(h.attrs().journey_id, journeyId)
     t.mock.timers.tick(30 * 60_000 + 1)
     assert.equal(h.records.at(-1).attrs.stalled_step, 'output_transfer_pending')
-})
-
-test('stored flow-close fixture retains closing context and wallet/session equality after cleanup', () => {
-    const fixture = JSON.parse(readFileSync(new URL('../../grafana/fixtures/faro-flow-close-loki-observed.json', import.meta.url)))
-    assert.equal(fixture.verification, 'Verified in Loki')
-    assert.equal(fixture.afterClientTimeRecords, 43)
-    assert.equal(fixture.cleanedContextRecords, 43)
-    assert.equal(fixture.oldContextRetainedRecords, 0)
-    const closing = fixture.closed.parsedFields
-    assert.equal(closing.event_data_step, 'flow_closed')
-    assert.equal(closing.event_data_swap_id, closing.session_attr_swap_id)
-    assert.equal(closing.event_data_journey_id, closing.session_attr_journey_id)
-    for (const record of fixture.afterExamples) {
-        assert(BigInt(record.timestampNs) > BigInt(fixture.closed.timestampNs))
-        assert.equal(record.parsedFields.session_id, closing.session_id)
-        assert.equal(record.parsedFields.session_attr_connected_wallets, closing.session_attr_connected_wallets)
-        assert(!('session_attr_swap_id' in record.parsedFields))
-        assert(!('session_attr_journey_id' in record.parsedFields))
-    }
 })
 
 test('SDK instrumentation registration clears restored metadata before startup events enqueue', () => {

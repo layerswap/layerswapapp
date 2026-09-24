@@ -1,10 +1,10 @@
 # Frontend observability
 
 This directory contains the [telemetry contract](faro-telemetry-contract.md),
-Grafana dashboards, paused alert rules, generators, offline regression tests,
-and [sanitized verification fixtures](fixtures/README.md). Fixture observations
-describe bounded development checks, not production baselines or confirmation
-that the current frontend and dashboards have been deployed.
+Grafana dashboards, paused alert rules, generators and offline regression tests.
+Records of the September development checks were retired on 2026-09-24 and
+remain in git history; they were bounded development observations, not
+production baselines.
 
 ## Dashboards and investigation
 

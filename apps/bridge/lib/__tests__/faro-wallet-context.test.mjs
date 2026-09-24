@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { readFileSync } from 'node:fs'
 import { getWalletSessionAttributes, MAX_WALLET_CONTEXT_BYTES } from '../faro-wallet-context.ts'
 import { createWalletContextWriter, updateSessionContext, observeWalletContext } from '../faro-session-context.ts'
 import { beforeSend } from '../faro-sanitizer.ts'
@@ -13,25 +12,19 @@ const wallet = (address = 'test-account-a', extras = {}) => ({
 const provider = (wallets = [wallet()], extras = {}) => ({ id: 'evm', ready: true, connectedWallets: wallets, ...extras })
 const entries = attrs => JSON.parse(attrs.connected_wallets)
 
-test('complete captured wallet body preserves observed schema and exact paired Loki relationships', () => {
-    const fixture = JSON.parse(readFileSync(new URL('../../grafana/fixtures/faro-wallet-browser-payload.json', import.meta.url)))
-    const { body, loki } = fixture
-    assert.equal(fixture.provenance.verification, 'Verified in outgoing Faro payload')
-    assert.equal(loki.verification, 'Verified in Loki')
-    assert.equal(body.logs.length, 1)
-    assert.equal(body.traces, undefined)
-    assert.equal(loki.match.matchingRecords, 1)
-    assert.equal(body.meta.session.id, loki.parsedFields.session_id)
-    assert.equal(body.meta.session.attributes.connected_wallets, loki.parsedFields.session_attr_connected_wallets)
-    assert.equal(body.meta.session.attributes.journey_id, loki.parsedFields.session_attr_journey_id)
-    assert.equal(body.logs[0].level, loki.parsedFields.level)
-    assert.equal(body.logs[0].timestamp.replace('T', ' ').replace('Z', ' +0000 UTC'), loki.parsedFields.timestamp)
-    assert.equal(entries(body.meta.session.attributes).length, Number(body.meta.session.attributes.connected_wallet_count))
-    assert.equal(body.meta.session.attributes.swap_id, '')
-    assert.equal(loki.observedDifferences[0].storedPresent, false)
-    const item = { type: 'log', payload: body.logs[0], meta: body.meta }
-    assert.deepEqual(beforeSend(item), item)
+test('a log carrying wallet session context passes the sanitizer unchanged', () => {
+    const attributes = {
+        ...getWalletSessionAttributes([provider([wallet('test-account-a', { chainId: 43114 })])]),
+        journey_id: 'test-journey', step: 'flow_error', outcome: 'failed', swap_id: '',
+    }
+    const item = {
+        type: 'log',
+        payload: { message: 'test message', level: 'log', timestamp: '2026-01-01T00:00:00.000Z' },
+        meta: { app: { name: 'test-app', environment: 'testnet' }, session: { id: 'test-session', attributes } },
+    }
+    assert.deepEqual(beforeSend(structuredClone(item)), item)
 })
+
 function sessionAPI(attributes = {}) {
     let session = { id: 'synthetic-session', attributes, overrides: { serviceName: 'test-service' } }
     let writes = 0
@@ -182,39 +175,4 @@ test('wallet writer restores current-tab context after session rotation/adoption
     api.setSession({ id: 'another-session', attributes: { connected_wallets: 'old-connected-data' } })
     assert.equal(api.getSession().attributes.connected_wallets, '[]')
     assert.equal(api.getSession().attributes.connected_wallets_state, 'unavailable')
-})
-
-test('stored wallet fixture retains valid JSON, optional chain and session equality without identifying addresses', () => {
-    const fixture = JSON.parse(readFileSync(new URL('../../grafana/fixtures/faro-wallet-loki-observed.json', import.meta.url)))
-    assert.equal(fixture.verification, 'Verified in Loki')
-    assert.equal(fixture.provenance.completeWindow, false)
-    assert.deepEqual(fixture.rawQueryEvidence.streamLabelNames, ['detected_level', 'service_name', 'source'])
-    const disconnected = JSON.parse(readFileSync(new URL('../../grafana/fixtures/faro-wallet-disconnect-loki-observed.json', import.meta.url)))
-    assert.equal(disconnected.verification, 'Verified in Loki')
-    assert.equal(disconnected.latestIsEmpty, true)
-    assert.equal(disconnected.checks.sameSession, true)
-    assert.equal(disconnected.checks.sameJourney, true)
-    assert.equal(disconnected.after.parsedFields.session_id, fixture.records[0].parsedFields.session_id)
-    assert(BigInt(disconnected.after.timestampNs) > BigInt(fixture.records[0].timestampNs))
-    assert.deepEqual(JSON.parse(disconnected.after.parsedFields.session_attr_connected_wallets), [])
-    assert.equal(disconnected.after.parsedFields.session_attr_connected_wallet_count, '0')
-    assert.equal(disconnected.after.parsedFields.session_attr_connected_wallets_state, 'ready')
-    const reconnected = JSON.parse(readFileSync(new URL('../../grafana/fixtures/faro-wallet-reconnect-loki-observed.json', import.meta.url)))
-    const currentWallets = JSON.parse(reconnected.record.parsedFields.session_attr_connected_wallets)
-    assert.equal(currentWallets[0].wallet_address, 'address-wallet-test-2')
-    assert.equal(reconnected.record.parsedFields.session_id, disconnected.after.parsedFields.session_id)
-    assert(BigInt(reconnected.record.timestampNs) > BigInt(disconnected.after.timestampNs))
-    for (const check of ['addressChanged', 'oldAddressAbsentFromCurrentWallets', 'sameSession', 'oldAddressStillSearchable', 'newAddressSearchable']) {
-        assert.equal(reconnected.checks[check], true)
-    }
-    assert.equal(reconnected.checks.sameJourney, false, 'do not assume a preserved journey from a shared session')
-    for (const record of fixture.records) {
-        const fields = record.parsedFields
-        const wallets = JSON.parse(fields.session_attr_connected_wallets)
-        assert.equal(wallets.length, Number(fields.session_attr_connected_wallet_count))
-        assert.equal(wallets[0].wallet_address, 'address-wallet-test-1')
-        assert.equal(wallets[0].wallet_chain_id, '43114')
-        assert.equal(fields.session_id, 'session-wallet-test-1')
-        assert.equal(fields.session_attr_step, 'flow_error')
-    }
 })

@@ -5,10 +5,15 @@ import test from 'node:test';
 const read = path => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
 const dashboard = read('../faro-dev-vertical-slice.json');
 const overview = read('../faro-dev-error-overview.json');
-const fixture = read('../fixtures/faro-loki-observed-records.json');
+// Fields the timeline projects, each observed in dev Loki (| logfmt) on 2026-09-07/08.
+// A newly projected field must be confirmed in Loki before it is added here.
+const OBSERVED_LOKI_FIELDS = new Set(['timestamp', 'kind', 'type', 'session_id', 'event_name', 'traceID', 'spanID',
+  'event_data_step', 'event_data_outcome', 'event_data_action', 'event_data_reason_code', 'event_data_journey_id',
+  'event_data_sequence', 'event_data_attempt', 'event_data_source_network', 'event_data_destination_network']);
 const panels = new Map(dashboard.panels.map(panel => [panel.id, panel]));
 const variables = Object.fromEntries(dashboard.templating.list.map(v => [v.name, v.current.value]));
-const error = {...fixture.records.find(r => r.parsedFields.kind === 'exception').parsedFields, stored_ns:'1788853949049000000'};
+const error = {kind:'exception', type:'test_error', value:'TEST_ERROR', hash:'test-error-hash', session_id:'test-session',
+  timestamp:'2026-01-01 00:00:00.000 +0000 UTC', stored_ns:'1788853949049000000'};
 
 // Scalar behavior checked against Grafana Scenes formatRegistry.ts:
 // https://github.com/grafana/scenes/blob/main/packages/scenes/src/variables/interpolation/formatRegistry.ts
@@ -124,7 +129,7 @@ test('selection sentinels cannot broaden an empty session query', () => {
 
 test('timeline uses observed fields, numeric sequence, client time and a bounded query', () => {
   const panel = panels.get(5);
-  const observed = new Set(fixture.records.flatMap(r => Object.keys(r.parsedFields)));
+  const observed = new Set(OBSERVED_LOKI_FIELDS);
   // Query-derived display fields, not newly emitted/stored attributes.
   observed.add('stored_ns'); observed.add('message_summary');
   const projected = [...panel.targets[0].expr.matchAll(/printf "%q" \.(\w+)/g)].map(m => m[1]);
@@ -137,19 +142,6 @@ test('timeline uses observed fields, numeric sequence, client time and a bounded
   assert.equal(panel.transformations[2].options.sort[0].field, 'timestamp');
   const sequence = ['10', '9'].sort((a, b) => Number(a) - Number(b));
   assert.deepEqual(sequence, ['9', '10']);
-});
-
-test('fixtures distinguish contextual HTTP traces from uncorrelated errors', () => {
-  const rows = fixture.records.filter(r => r.scenario === 'controlled_replay').map(r => r.parsedFields);
-  assert.equal(rows.length, 9);
-  const errors = rows.filter(r => r.kind === 'exception');
-  assert.equal(errors.length, 2);
-  assert(errors.every(r => !r.traceID));
-  const http = rows.filter(r => r.event_name === 'faro.tracing.fetch');
-  assert.equal(http.length, 3);
-  assert(http.every(r => r.traceID && r.spanID && r.session_id === error.session_id));
-  assert.equal(fixture.streamLabelsObserved.includes('session_id'), false);
-  assert.equal(fixture.streamLabelsObserved.includes('traceID'), false);
 });
 
 test('wallet search inspects every JSON element, rejects blank search and leaves session timeline unfiltered', () => {
