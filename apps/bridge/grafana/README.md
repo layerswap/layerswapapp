@@ -6,6 +6,40 @@ Records of the September development checks were retired on 2026-09-24 and
 remain in git history; they were bounded development observations, not
 production baselines.
 
+## Browser configuration
+
+Set `NEXT_PUBLIC_FARO_COLLECTOR_URL` and restart/rebuild the app. It is the
+only required Faro runtime variable.
+
+```yaml
+NEXT_PUBLIC_FARO_COLLECTOR_URL: https://your-faro-collector.example/collect
+NEXT_PUBLIC_FARO_SAMPLE_RATE: 1 # optional; defaults to all sessions
+NEXT_PUBLIC_FARO_DEBUG: false # optional SDK diagnostics
+```
+
+The app name is `layerswap-frontend`. API environment is `testnet` when
+`NEXT_PUBLIC_API_VERSION` is `testnet`, otherwise `mainnet` (matching the
+widget default). Version and release use the build's resolved
+`NEXT_PUBLIC_FARO_RELEASE`; deployment identity is tracked separately (see
+[Deployment identity and source maps](#deployment-identity-and-source-maps)).
+
+`NEXT_PUBLIC_FARO_SAMPLE_RATE` is optional and defaults to
+`1`. At values below `1` the decision is made once per page-load chain when a
+fresh session starts, is inherited when the SDK rotates the session in-page
+after inactivity/expiry (`previousSession` chains share one decision), and is
+never re-rolled by swap/wallet context updates. Known SDK limitation
+(faro-web-sdk 2.11.0): every context update rewrites the stored session's
+`started`, so the 4-hour max session lifetime is effectively disabled while
+context is being written; sessions rotate after 15 minutes of inactivity.
+
+Faro starts in `instrumentation-client.ts` before hydration. Optimized
+(`NODE_ENV=production`) builds capture console warnings as logs and console
+errors as exceptions; other build modes capture all console levels. Faro also
+captures uncaught errors and rejected promises, widget errors, sessions/views,
+CSP and performance events, web vitals, and browser traces.
+Full page and request URLs retain their query strings for diagnosis; only
+credential values are redacted.
+
 ## Dashboards and investigation
 
 The native dashboard set consists of four Grafana V2 resources:
@@ -46,6 +80,39 @@ days. The older [error overview](faro-dev-error-overview.json),
 with their existing API-mode scope. Their counters describe recorded events;
 they do not establish unique people, incidents or backend swap conversion.
 
+### Standalone lifecycle dashboard
+
+The repository includes a standalone lifecycle dashboard at
+[swap-lifecycle-dashboard.json](swap-lifecycle-dashboard.json). In Grafana, choose **Dashboards →
+New → Import**, upload that file, and select the Loki datasource receiving Faro
+events. It adds journey health counters, outcome trends, a per-step funnel,
+p95 transition timings, problem reasons, and an ordered journey timeline.
+
+The dashboard's **Journey ID**, **Swap ID**, and **Lifecycle Step** filters
+accept regular expressions and default to `.*`. For a complete investigation,
+copy a journey ID from **Problem Journeys** into **Journey ID**; this retains
+form events that happened before the API assigned a swap ID.
+
+For a one-journey drilldown, use **Journey Index — click an ID to inspect**.
+Its link sets the exact Journey ID while resetting the Swap ID and step filters,
+so the **Selected Journey Summary** and chronological **Journey Timeline** show
+the entire flow. Start at the first rejected, failed, stalled, or abandoned row
+and inspect the preceding successful row, timing, reason code, route, provider,
+swap ID, transaction hashes, and emitting code path.
+
+### Lifecycle queries
+
+Filter the `swap_lifecycle` event stream in Loki with:
+
+```logql
+{source="faro"} | logfmt | app_name="layerswap-frontend" | event_name="swap_lifecycle"
+```
+
+Use the journey ID to retain form events emitted before a swap ID exists.
+See the [field dictionary](faro-telemetry-contract.md#field-dictionary) and
+[lifecycle emission contract](faro-telemetry-contract.md#layerswap-lifecycle-emission-contract)
+for attributes, event behavior and verification status.
+
 ## Regeneration and local checks
 
 Both generators are offline and use Python's standard library. Run these from
@@ -79,8 +146,11 @@ the native queries expect `page_attr_deployment_environment` in Loki.
 Application `version` and `release` share one resolved release identity (the
 CI commit unless `NEXT_PUBLIC_FARO_RELEASE` is set), which is also the key a
 receiver-side source-map `location` should use. `unknown-release` is not an
-identified build. The build does not upload source maps; runtime configuration
-is documented in the [bridge README](../README.md#faro-browser-observability).
+identified build. The build does not upload source maps. The receiver is a
+self-hosted Alloy `faro.receiver`, which resolves minified stacks from its own
+`sourcemaps` configuration: downloaded from the site or read from a filesystem
+`location` keyed by release. Until that is configured, stored stacks refer to
+minified code.
 
 To accept source-map delivery, trigger a controlled error at a known location
 in a deployed minified build. Match its outgoing application version, bundle
@@ -137,8 +207,13 @@ Grafana's log/trace/metric cross-navigation depends on datasource UIDs in
 `layerswap/layerswap-fluxcd`, not on this repo.
 
 For browser → API → backend traces, set `NEXT_PUBLIC_FARO_TRACE_PROPAGATION_URLS`
-to only the API origins that accept W3C context, then rebuild. The API CORS
-response must allow `traceparent` (and `tracestate` if sent), and the backend
+to comma-separated URL prefixes for APIs that accept W3C context, then rebuild:
+
+```yaml
+NEXT_PUBLIC_FARO_TRACE_PROPAGATION_URLS: https://api.layerswap.io,https://api-dev.layerswap.cloud
+```
+
+The API CORS response must allow `traceparent` (and `tracestate` if sent), and the backend
 must extract the incoming context. Verify one fresh request by its exact trace
 ID across browser and API spans before claiming end-to-end tracing.
 

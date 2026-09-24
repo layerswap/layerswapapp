@@ -180,6 +180,25 @@ The following implemented steps are expected under event name `swap_lifecycle`; 
 
 A row carries `context_write_failed: true` when the bridge could not apply the swap session context before emitting it (no Faro client, no session yet, or an SDK error). The row is still emitted; the flag only marks that surrounding signals from that moment may lack `swap_id`/`journey_id` context. The context writer retries automatically once a session exists.
 
+### Reading lifecycle records
+
+Use `journey_id` and `sequence` to reconstruct the ordered journey, even for
+events before the API creates a `swap_id`. `attempt`, `previous_step`,
+`previous_step_duration_ms`, and `journey_duration_ms` make retries and slow
+stages visible without reading the entire browser session. The main diagnostic
+columns are `step`, `stage`, `outcome`, `reason_code`, `swap_id`, `session`,
+the route fields, and the input/output/refund transaction hashes.
+In raw Loki records Faro prefixes event attributes with `event_data_` (for
+example `event_data_step`); dashboard transformations can rename those fields
+to the shorter column labels above.
+
+A wallet rejection is recorded with `outcome="rejected"` and
+`reason_code="user_rejected"`; it is not reported as an exception.
+
+Pending steps also produce a non-terminal `suspected_stall` event after a
+conservative stage-specific threshold. This is an investigation signal rather
+than proof of failure: any later transition remains in the same journey.
+
 ## Correlation contract, observed and proposed
 
 Observed: a paired replay retained the exact session ID on both errors and all three fetch mirrors. The mirrors retained exact trace/span IDs in Loki. The errors had no active trace context. An equality query on traceID returned its one matching mirror. This verifies an event's own ID, not a causal relationship between an error and a nearby request.
