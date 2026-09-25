@@ -1,5 +1,15 @@
 # @layerswap/utils
 
+## 2.3.0
+
+### Patch Changes
+
+- Updated dependencies [95d95a1]
+- Updated dependencies [31d0d1f]
+- Updated dependencies [5bd03c7]
+- Updated dependencies [bdf46a0]
+  - @layerswap/widget-types@2.3.0
+
 ## 2.2.0
 
 ### Minor Changes
