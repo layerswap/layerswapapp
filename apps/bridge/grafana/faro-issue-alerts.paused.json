@@ -29,7 +29,7 @@
           "data": [
             {
               "refId": "A",
-              "datasourceUid": "P8E80F9AEF21F6940",
+              "datasourceUid": "${DS_LOKI}",
               "relativeTimeRange": {
                 "from": 300,
                 "to": 0
@@ -38,7 +38,7 @@
                 "refId": "A",
                 "datasource": {
                   "type": "loki",
-                  "uid": "P8E80F9AEF21F6940"
+                  "uid": "${DS_LOKI}"
                 },
                 "expr": "sum by (group_key, type) (count_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=\"layerswap-frontend\" | app_environment=\"mainnet\" | kind=\"exception\" | context_impact!=\"diagnostic\" | context_eventType!~\"BalanceResolverError|BalanceProviderError|MaxPriorityFeePerGasError|FeesPerGasError|GasPriceError|GasProviderError|GasMiscalculation|APIError|SwapCatchupError\" | type!=\"TransactionRejected\" | label_format type=`{{ if .type }}{{ .type }}{{ else }}(unknown type){{ end }}` | label_format group_key=`{{ $m := .value | trim }}{{ $m = regexReplaceAll \"(?s)\\\\n.*\" $m \"\" }}{{ $m = regexReplaceAll \"0x[0-9a-fA-F]{8,}\" $m \"<hex>\" }}{{ $m = regexReplaceAll \"\\\\b[1-9A-HJ-NP-Za-km-z]{32,64}\\\\b\" $m \"<address>\" }}{{ $m = regexReplaceAll \"\\\\b(bc1|tb1)[a-z0-9]{20,}\\\\b\" $m \"<address>\" }}{{ $m = regexReplaceAll \"\\\\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\\\\b\" $m \"<id>\" }}{{ $m = regexReplaceAll \"https?://[^\\\\s]+\" $m \"<url>\" }}{{ $m = regexReplaceAll \"(?i)\\\\b(amount|value|balance)([ :=]+)[0-9]+(\\\\.[0-9]+)?\\\\b\" $m \"${1}${2}<amount>\" }}{{ $m = regexReplaceAll \"\\\\b[0-9]+\\\\.[0-9]+\\\\b\" $m \"<amount>\" }}{{ $m = regexReplaceAll \"\\\\b[0-9]{6,}\\\\b\" $m \"<number>\" }}{{ $m = regexReplaceAll \"Could not fetch balance for .* in \" $m \"Could not fetch balance in \" }}{{ $m = regexReplaceAll \"\\\\s+\" $m \" \" }}{{ printf \"v2:%s:%s\" .type $m }}` | keep group_key, type [5m])) or vector(0)",
                 "queryType": "instant",
@@ -112,7 +112,7 @@
           "data": [
             {
               "refId": "A",
-              "datasourceUid": "P8E80F9AEF21F6940",
+              "datasourceUid": "${DS_LOKI}",
               "relativeTimeRange": {
                 "from": 300,
                 "to": 0
@@ -121,7 +121,7 @@
                 "refId": "A",
                 "datasource": {
                   "type": "loki",
-                  "uid": "P8E80F9AEF21F6940"
+                  "uid": "${DS_LOKI}"
                 },
                 "expr": "(sum by (group_key, type) (count_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=\"layerswap-frontend\" | app_environment=\"mainnet\" | kind=\"exception\" | context_impact!=\"diagnostic\" | context_eventType!~\"BalanceResolverError|BalanceProviderError|MaxPriorityFeePerGasError|FeesPerGasError|GasPriceError|GasProviderError|GasMiscalculation|APIError|SwapCatchupError\" | type!=\"TransactionRejected\" | label_format type=`{{ if .type }}{{ .type }}{{ else }}(unknown type){{ end }}` | label_format group_key=`{{ $m := .value | trim }}{{ $m = regexReplaceAll \"(?s)\\\\n.*\" $m \"\" }}{{ $m = regexReplaceAll \"0x[0-9a-fA-F]{8,}\" $m \"<hex>\" }}{{ $m = regexReplaceAll \"\\\\b[1-9A-HJ-NP-Za-km-z]{32,64}\\\\b\" $m \"<address>\" }}{{ $m = regexReplaceAll \"\\\\b(bc1|tb1)[a-z0-9]{20,}\\\\b\" $m \"<address>\" }}{{ $m = regexReplaceAll \"\\\\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\\\\b\" $m \"<id>\" }}{{ $m = regexReplaceAll \"https?://[^\\\\s]+\" $m \"<url>\" }}{{ $m = regexReplaceAll \"(?i)\\\\b(amount|value|balance)([ :=]+)[0-9]+(\\\\.[0-9]+)?\\\\b\" $m \"${1}${2}<amount>\" }}{{ $m = regexReplaceAll \"\\\\b[0-9]+\\\\.[0-9]+\\\\b\" $m \"<amount>\" }}{{ $m = regexReplaceAll \"\\\\b[0-9]{6,}\\\\b\" $m \"<number>\" }}{{ $m = regexReplaceAll \"Could not fetch balance for .* in \" $m \"Could not fetch balance in \" }}{{ $m = regexReplaceAll \"\\\\s+\" $m \" \" }}{{ printf \"v2:%s:%s\" .type $m }}` | keep group_key, type [5m])) unless sum by (group_key, type) (count_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=\"layerswap-frontend\" | app_environment=\"mainnet\" | kind=\"exception\" | context_impact!=\"diagnostic\" | context_eventType!~\"BalanceResolverError|BalanceProviderError|MaxPriorityFeePerGasError|FeesPerGasError|GasPriceError|GasProviderError|GasMiscalculation|APIError|SwapCatchupError\" | type!=\"TransactionRejected\" | label_format type=`{{ if .type }}{{ .type }}{{ else }}(unknown type){{ end }}` | label_format group_key=`{{ $m := .value | trim }}{{ $m = regexReplaceAll \"(?s)\\\\n.*\" $m \"\" }}{{ $m = regexReplaceAll \"0x[0-9a-fA-F]{8,}\" $m \"<hex>\" }}{{ $m = regexReplaceAll \"\\\\b[1-9A-HJ-NP-Za-km-z]{32,64}\\\\b\" $m \"<address>\" }}{{ $m = regexReplaceAll \"\\\\b(bc1|tb1)[a-z0-9]{20,}\\\\b\" $m \"<address>\" }}{{ $m = regexReplaceAll \"\\\\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\\\\b\" $m \"<id>\" }}{{ $m = regexReplaceAll \"https?://[^\\\\s]+\" $m \"<url>\" }}{{ $m = regexReplaceAll \"(?i)\\\\b(amount|value|balance)([ :=]+)[0-9]+(\\\\.[0-9]+)?\\\\b\" $m \"${1}${2}<amount>\" }}{{ $m = regexReplaceAll \"\\\\b[0-9]+\\\\.[0-9]+\\\\b\" $m \"<amount>\" }}{{ $m = regexReplaceAll \"\\\\b[0-9]{6,}\\\\b\" $m \"<number>\" }}{{ $m = regexReplaceAll \"Could not fetch balance for .* in \" $m \"Could not fetch balance in \" }}{{ $m = regexReplaceAll \"\\\\s+\" $m \" \" }}{{ printf \"v2:%s:%s\" .type $m }}` | keep group_key, type [24h] offset 5m))) or vector(0)",
                 "queryType": "instant",
@@ -195,7 +195,7 @@
           "data": [
             {
               "refId": "A",
-              "datasourceUid": "P8E80F9AEF21F6940",
+              "datasourceUid": "${DS_LOKI}",
               "relativeTimeRange": {
                 "from": 300,
                 "to": 0
@@ -204,7 +204,7 @@
                 "refId": "A",
                 "datasource": {
                   "type": "loki",
-                  "uid": "P8E80F9AEF21F6940"
+                  "uid": "${DS_LOKI}"
                 },
                 "expr": "absent_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=\"layerswap-frontend\" | app_environment=\"mainnet\" | keep app_name [15m]) or vector(0)",
                 "queryType": "instant",
@@ -278,7 +278,7 @@
           "data": [
             {
               "refId": "A",
-              "datasourceUid": "P8E80F9AEF21F6940",
+              "datasourceUid": "${DS_LOKI}",
               "relativeTimeRange": {
                 "from": 1800,
                 "to": 0
@@ -287,7 +287,7 @@
                 "refId": "A",
                 "datasource": {
                   "type": "loki",
-                  "uid": "P8E80F9AEF21F6940"
+                  "uid": "${DS_LOKI}"
                 },
                 "expr": "((count(sum by (journey) (count_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=\"layerswap-frontend\" | app_environment=\"mainnet\" | label_format journey=`{{ if .event_data_journey_id }}{{ .event_data_journey_id }}{{ else }}{{ .session_attr_journey_id }}{{ end }}` | label_format swap=`{{ if .event_data_swap_id }}{{ .event_data_swap_id }}{{ else }}{{ .session_attr_swap_id }}{{ end }}` | event_name=\"swap_lifecycle\" | event_data_step=~\"transfer_blocked|wallet_action_failed|gasless_authorization_failed|network_switch_failed|wallet_connection_failed\" | event_data_outcome=~\"blocked|failed\" | journey!=\"\" | keep journey [30m]))) or vector(0)) / (count(sum by (journey) (count_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=\"layerswap-frontend\" | app_environment=\"mainnet\" | label_format journey=`{{ if .event_data_journey_id }}{{ .event_data_journey_id }}{{ else }}{{ .session_attr_journey_id }}{{ end }}` | label_format swap=`{{ if .event_data_swap_id }}{{ .event_data_swap_id }}{{ else }}{{ .session_attr_swap_id }}{{ end }}` | event_name=\"swap_lifecycle\" | event_data_step=\"awaiting_wallet_action\" | journey!=\"\" | keep journey [30m]))) > 4)) or vector(0)",
                 "queryType": "instant",
@@ -361,7 +361,7 @@
           "data": [
             {
               "refId": "A",
-              "datasourceUid": "P8E80F9AEF21F6940",
+              "datasourceUid": "${DS_LOKI}",
               "relativeTimeRange": {
                 "from": 7200,
                 "to": 0
@@ -370,7 +370,7 @@
                 "refId": "A",
                 "datasource": {
                   "type": "loki",
-                  "uid": "P8E80F9AEF21F6940"
+                  "uid": "${DS_LOKI}"
                 },
                 "expr": "((count(sum by (journey) (count_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=\"layerswap-frontend\" | app_environment=\"mainnet\" | label_format journey=`{{ if .event_data_journey_id }}{{ .event_data_journey_id }}{{ else }}{{ .session_attr_journey_id }}{{ end }}` | label_format swap=`{{ if .event_data_swap_id }}{{ .event_data_swap_id }}{{ else }}{{ .session_attr_swap_id }}{{ end }}` | event_name=\"swap_lifecycle\" | event_data_step=\"awaiting_wallet_action\" | journey!=\"\" | keep journey [2h]))) or vector(0)) * (absent_over_time({source=\"faro\"} | logfmt | __error__=\"\" | app_name=\"layerswap-frontend\" | app_environment=\"mainnet\" | event_name=\"swap_lifecycle\" | event_data_step=~\"transaction_submitted|gasless_authorization_submitted\" | keep app_name [2h]) or vector(0)))",
                 "queryType": "instant",

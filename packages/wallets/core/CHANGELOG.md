@@ -1,5 +1,11 @@
 # @layerswap/wallet-core
 
+## 2.3.1
+
+### Patch Changes
+
+- @layerswap/utils@2.3.1
+
 ## 2.3.0
 
 ### Minor Changes

@@ -1,5 +1,22 @@
 # @layerswap/wallets
 
+## 2.3.1
+
+### Patch Changes
+
+- @layerswap/wallet-bitcoin@2.3.1
+- @layerswap/wallet-evm@2.3.1
+- @layerswap/wallet-fuel@2.3.1
+- @layerswap/wallet-imtbl-passport@2.3.1
+- @layerswap/wallet-paradex@2.3.1
+- @layerswap/wallet-starknet@2.3.1
+- @layerswap/wallet-stellar@2.3.1
+- @layerswap/wallet-svm@2.3.1
+- @layerswap/wallet-ton@2.3.1
+- @layerswap/wallet-tron@2.3.1
+- @layerswap/wallet-core@2.3.1
+- @layerswap/utils@2.3.1
+
 ## 2.3.0
 
 ### Patch Changes

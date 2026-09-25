@@ -41,6 +41,10 @@ function withAncestor<T>(traversal: Traversal, node: object, onCycle: () => T, v
     }
 }
 
+// Matched as substrings of the lower-cased, alphanumeric-only key, so `Set-Cookie`,
+// `api_key` and `x-api-key` all match. A new telemetry field whose name contains
+// none of these (e.g. `pin`, `otp`) is not covered: add its fragment here and a
+// case to `lib/__tests__/faro-sanitizer.test.mjs` before emitting it.
 const normalizedSensitiveKeys = [
     'authorization',
     'cookie',
