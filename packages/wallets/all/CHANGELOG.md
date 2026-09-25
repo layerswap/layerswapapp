@@ -1,5 +1,47 @@
 # @layerswap/wallets
 
+## 2.3.1
+
+### Patch Changes
+
+- @layerswap/wallet-bitcoin@2.3.1
+- @layerswap/wallet-evm@2.3.1
+- @layerswap/wallet-fuel@2.3.1
+- @layerswap/wallet-imtbl-passport@2.3.1
+- @layerswap/wallet-paradex@2.3.1
+- @layerswap/wallet-starknet@2.3.1
+- @layerswap/wallet-stellar@2.3.1
+- @layerswap/wallet-svm@2.3.1
+- @layerswap/wallet-ton@2.3.1
+- @layerswap/wallet-tron@2.3.1
+- @layerswap/wallet-core@2.3.1
+- @layerswap/utils@2.3.1
+
+## 2.3.0
+
+### Patch Changes
+
+- Updated dependencies [dc962d6]
+- Updated dependencies [95d95a1]
+- Updated dependencies [31d0d1f]
+- Updated dependencies [5bd03c7]
+- Updated dependencies [bdf46a0]
+- Updated dependencies [f26c1e7]
+- Updated dependencies [bdf46a0]
+  - @layerswap/wallet-starknet@2.3.0
+  - @layerswap/wallet-paradex@2.3.0
+  - @layerswap/wallet-stellar@2.3.0
+  - @layerswap/wallet-fuel@2.3.0
+  - @layerswap/wallet-ton@2.3.0
+  - @layerswap/wallet-tron@2.3.0
+  - @layerswap/wallet-bitcoin@2.3.0
+  - @layerswap/wallet-svm@2.3.0
+  - @layerswap/widget-types@2.3.0
+  - @layerswap/wallet-core@2.3.0
+  - @layerswap/wallet-evm@2.3.0
+  - @layerswap/wallet-imtbl-passport@2.3.0
+  - @layerswap/utils@2.3.0
+
 ## 2.2.0
 
 ### Minor Changes
