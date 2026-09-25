@@ -1,10 +1,7 @@
 # Frontend observability
 
-This directory contains the [telemetry contract](faro-telemetry-contract.md),
-Grafana dashboards, paused alert rules, generators and offline regression tests.
-Records of the September development checks were retired on 2026-09-24 and
-remain in git history; they were bounded development observations, not
-production baselines.
+This directory contains Grafana dashboards, paused alert rules, generators and
+offline regression tests.
 
 ## Browser configuration
 
@@ -42,6 +39,24 @@ credential values are redacted.
 
 ## Dashboards and investigation
 
+### Publishing to production
+
+Generate the resources with the target instance's datasource UIDs (see
+[Datasource UIDs](#datasource-uids)). Before saving them, apply the production
+overrides: keep the linked dashboard UIDs, use `Production` titles and tags,
+default Deployment to `production`, and set the time range to the last 24
+hours. The development JSON keeps its own defaults.
+
+Dashboard and panel titles must be printable ASCII. Grafana forwards them in
+`X-Dashboard-Title` / `X-Panel-Title` headers, and non-ASCII characters (e.g. `·`)
+caused production queries to be rejected with `403`
+([grafana#130448](https://github.com/grafana/grafana/issues/130448)). The
+generator and a regression check enforce this. API checks on the query body
+don't catch header failures, so after publishing, also verify the dashboards
+in a signed-in browser.
+
+### Dashboard resources
+
 The native dashboard set consists of four Grafana V2 resources:
 
 | File | Purpose |
@@ -58,11 +73,27 @@ For API creation, preserve the generated
 `grafana.app/grant-permissions: default` annotation, which requests normal access
 grants. Read back each resource and test it through a signed-in browser.
 
-The native generator uses Loki UID `P8E80F9AEF21F6940` and Tempo UID
-`P214B5B846CF3925F`. These are development datasource IDs, not portable names.
-Before targeting another instance, update the datasource references in
-`build-native-trial.py` and regenerate. Dashboard navigation uses relative paths;
-open `/d/layerswap-faro-trial-home` on your own Grafana instance.
+Dashboard navigation uses relative paths; open `/d/layerswap-faro-trial-home`
+on your own Grafana instance.
+
+### Datasource UIDs
+
+Datasource UIDs are instance-specific and are not committed. The committed
+resources reference `${DS_LOKI}` and `${DS_TEMPO}` placeholders:
+
+- The older dashboards ([error overview](faro-dev-error-overview.json),
+  [investigation slice](faro-dev-vertical-slice.json),
+  [lifecycle](swap-lifecycle-dashboard.json)) declare `DS_LOKI` as an import
+  input; Grafana asks for the Loki datasource on **Import**.
+- The native V2 resources and alert rules must be generated with real UIDs
+  before publishing. Look them up under **Connections → Data sources** and write
+  the output outside the repository (the generators refuse a path inside it):
+
+```sh
+export GRAFANA_LOKI_UID=... GRAFANA_TEMPO_UID=...
+python3 apps/bridge/grafana/build-native-trial.py /tmp/grafana-publish
+python3 apps/bridge/grafana/build-issue-alerts.py /tmp/grafana-publish
+```
 
 Start in **Issues**, select a summary, then an occurrence to open its session.
 Use **Back to results** to restore the original tab, range and filters, or
@@ -108,15 +139,43 @@ Filter the `swap_lifecycle` event stream in Loki with:
 {source="faro"} | logfmt | app_name="layerswap-frontend" | event_name="swap_lifecycle"
 ```
 
-Use the journey ID to retain form events emitted before a swap ID exists.
-See the [field dictionary](faro-telemetry-contract.md#field-dictionary) and
-[lifecycle emission contract](faro-telemetry-contract.md#layerswap-lifecycle-emission-contract)
-for attributes, event behavior and verification status.
+Faro stores event attributes with an `event_data_` prefix (`step` is
+`event_data_step`); session attributes use `session_attr_`. Attributes are
+optional unless the emitting code has them at that step.
+
+| Stage | Representative steps | Normal cadence |
+| --- | --- | --- |
+| form | `form_submitted`, `form_confirmation_cancelled` | once per submit/cancel; submission can repeat. `widget_flow` rows carry `form_mode` (`cross-chain`, `exchange`, `deposit-address` on the swap widget; `deposit-widget-address`, `deposit-widget-wallet` on the deposit widget, which the bridge does not mount) |
+| swap creation | `swap_creation_started`, `swap_created`, `swap_creation_failed` | one attempt sequence; start can repeat; `swap_created` and `swap_creation_failed` are mutually exclusive per attempt |
+| wallet | `wallet_connection_started`, `wallet_connected`, `wallet_connection_failed`, network-switch and wallet-action steps | per provider/user attempt; selected start/prompt steps can repeat |
+| transaction | `transaction_submitted`, `gasless_authorization_submitted` | normally once per relevant attempt |
+| deposit | `awaiting_user_deposit`, `deposit_address_copied`, input transaction steps | event-driven; address copies may repeat |
+| settlement | output pending/detected/settling and delay | status-driven, deduplicated by lifecycle fingerprint |
+| terminal | completion, failure, expiry, cancellation, refund completion, flow close/error | normally once per fingerprint; terminal state ends journey timers |
+| diagnostic | `retry_requested`, `suspected_stall`, `transfer_blocked` | per retry, timer threshold or blocking-state transition |
+
+Use `journey_id` and `sequence` to reconstruct the ordered journey, including
+events before the API creates a `swap_id`. `attempt`, `previous_step`,
+`previous_step_duration_ms` and `journey_duration_ms` make retries and slow
+stages visible without reading the entire session. The main diagnostic fields
+are `step`, `stage`, `outcome`, `reason_code`, `swap_id`, the route fields and
+the input/output/refund transaction hashes.
+
+- A wallet rejection is `outcome="rejected"`, `reason_code="user_rejected"`; it
+  is not reported as an exception.
+- `suspected_stall` fires after a stage-specific threshold on a pending step. It
+  is an investigation signal, not proof of failure; later transitions stay in
+  the same journey.
+- `context_write_failed: true` marks a row emitted before the swap session
+  context could be applied (no Faro client or session yet, or an SDK error).
+  Surrounding signals from that moment may lack `swap_id`/`journey_id`; the
+  context writer retries once a session exists.
 
 ## Regeneration and local checks
 
 Both generators are offline and use Python's standard library. Run these from
-the repository root after changing a generator, and commit its generated JSON:
+the repository root after changing a generator, with `GRAFANA_LOKI_UID` and
+`GRAFANA_TEMPO_UID` unset, and commit its generated JSON:
 
 ```sh
 python3 apps/bridge/grafana/build-native-trial.py
@@ -146,10 +205,9 @@ the native queries expect `page_attr_deployment_environment` in Loki.
 Application `version` and `release` share one resolved release identity (the
 CI commit unless `NEXT_PUBLIC_FARO_RELEASE` is set), which is also the key a
 receiver-side source-map `location` should use. `unknown-release` is not an
-identified build. The build does not upload source maps. The receiver is a
-self-hosted Alloy `faro.receiver`, which resolves minified stacks from its own
-`sourcemaps` configuration: downloaded from the site or read from a filesystem
-`location` keyed by release. Until that is configured, stored stacks refer to
+identified build. The build does not upload source maps. The Faro receiver
+resolves minified stacks from its own source-map configuration: downloaded from
+the site or read from a location keyed by release. Until that is configured, stored stacks refer to
 minified code.
 
 To accept source-map delivery, trigger a controlled error at a known location
@@ -189,8 +247,8 @@ resolution.
 
 [faro-issue-alerts.paused.json](faro-issue-alerts.paused.json) is an alert
 file-provisioning artifact, not a dashboard. All five rules are paused and no
-contact points or notification policies are created. Review datasource IDs,
-API-mode scope, thresholds, traffic and contact routing before enabling them.
+contact points or notification policies are created. Generate it with real
+datasource UIDs (see [Datasource UIDs](#datasource-uids)) and review API-mode scope, thresholds, traffic and contact routing before enabling them.
 The generated `__dashboardUid__` and `__panelId__` annotations let Grafana resolve
 its own dashboard and panel URLs without a committed hostname.
 [Grafana annotations](https://grafana.com/docs/grafana/latest/alerting/fundamentals/alert-rules/annotation-label/)
@@ -203,8 +261,8 @@ Quiet traffic, sampling and broken collection can all produce missing telemetry.
 Alert recovery is not durable issue resolution or assignment state.
 
 Tempo is optional for the Loki-based speed, interaction, error and session views.
-Grafana's log/trace/metric cross-navigation depends on datasource UIDs in
-`layerswap/layerswap-fluxcd`, not on this repo.
+Grafana's own log/trace/metric cross-navigation is configured on the datasources,
+not in this repo.
 
 For browser → API → backend traces, set `NEXT_PUBLIC_FARO_TRACE_PROPAGATION_URLS`
 to comma-separated URL prefixes for APIs that accept W3C context, then rebuild:
