@@ -3,8 +3,8 @@ import test from 'node:test'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 import { readFileSync } from 'node:fs'
-import { LogLevel, ConsoleInstrumentation } from '@grafana/faro-web-sdk'
-import { getFaroVolumePolicy } from '../faro-policy.ts'
+import { LogLevel, ConsoleInstrumentation, TransportItemType } from '@grafana/faro-web-sdk'
+import { createRequestTelemetryFilter, getFaroVolumePolicy, shouldCaptureWidgetTelemetry } from '../faro-policy.ts'
 import { serializeConsoleArgs } from '../faro-sanitizer.ts'
 import { createSwapLifecycleTelemetry } from '../faro-swap-lifecycle.ts'
 
@@ -20,9 +20,9 @@ const { observeResourceTimings } = require(join(webDir, 'instrumentations/perfor
 const { __resetConsoleMonitorForTests } = require(join(webDir, 'instrumentations/_internal/monitors/consoleMonitor.js'))
 const logger = { debug() {}, error() {}, warn() {} }
 
-test('deployed builds retain warn/error; local builds retain verbosity; sampling unchanged', () => {
+test('deployed builds retain errors only; local builds retain verbosity; sampling unchanged', () => {
     const production = getFaroVolumePolicy('production')
-    assert.deepEqual(production.consoleInstrumentation.disabledLevels, [LogLevel.DEBUG, LogLevel.TRACE, LogLevel.LOG, LogLevel.INFO])
+    assert.deepEqual(production.consoleInstrumentation.disabledLevels, [LogLevel.DEBUG, LogLevel.TRACE, LogLevel.LOG, LogLevel.INFO, LogLevel.WARN])
     assert.equal(production.consoleInstrumentation.consoleErrorAsLog, false)
     assert.equal(production.trackResources, false)
     assert.equal(production.dedupe, true)
@@ -70,7 +70,7 @@ test('installed SDK dedupes identical errors/events but preserves real lifecycle
     controller.dispose()
 })
 
-test('installed console instrumentation actually filters deployed debug/log/info but keeps warn/error', () => {
+test('installed console instrumentation actually filters deployed debug/log/info/warn but keeps error', () => {
     const logs = [], errors = []
     const instrumentation = new ConsoleInstrumentation()
     // Same shape faro.ts builds: the volume policy plus the redacting serializer.
@@ -88,7 +88,7 @@ test('installed console instrumentation actually filters deployed debug/log/info
         instrumentation.destroy()
         __resetConsoleMonitorForTests()
     }
-    assert.deepEqual(logs, ['warn'])
+    assert.deepEqual(logs, [])
     assert.equal(errors.length, 2)
     assert.match(errors[0].message, /synthetic console test/)
     assert.match(errors[1].message, /request failed .*"cookie":"\[REDACTED\]".*"Authorization":"\[REDACTED\]".*"safe":"kept"/)
@@ -122,4 +122,57 @@ test('installed resource observer suppresses deployed resource events, retains l
         if (originalDocument === undefined) delete globalThis.document
         else globalThis.document = originalDocument
     }
+})
+
+const filterRequests = createRequestTelemetryFilter(['https://layerswap.io/app', 'https://api.layerswap.io/', undefined, 'not a url'])
+const requestEvent = (url, status) => ({
+    type: TransportItemType.EVENT, meta: {},
+    payload: { name: 'faro.tracing.fetch', attributes: { 'url.full': url, ...(status === undefined ? {} : { 'http.response.status_code': String(status) }) } },
+})
+const span = (url, status, statusCode = 0) => ({
+    kind: 3, status: { code: statusCode },
+    attributes: [
+        ...(url ? [{ key: 'url.full', value: { stringValue: url } }] : []),
+        ...(status === undefined ? [] : [{ key: 'http.response.status_code', value: { intValue: status } }]),
+    ],
+})
+const traceItem = spans => ({ type: TransportItemType.TRACE, meta: {}, payload: { resourceSpans: [{ resource: {}, scopeSpans: [{ scope: { name: 'fetch' }, spans }] }] } })
+
+test('request events are reported only for failed first-party requests', () => {
+    for (const [url, status, kept] of [
+        ['https://api.layerswap.io/api/v2/limits?x=1', 404, true],
+        ['https://api.layerswap.io/api/v2/quote', 0, true],
+        ['https://api.layerswap.io/api/v2/quote', undefined, true],
+        ['https://layerswap.io/app/_next/data/x.json', 500, true],
+        ['https://api.layerswap.io/api/v2/quote', 200, false],
+        ['https://api.layerswap.io/api/v2/quote', 302, false],
+        ['https://rpc.mainnet.chain.robinhood.com/', 0, false],
+        ['https://ethereum-rpc.publicnode.com/', 500, false],
+        ['https://api.layerswap.io.evil.test/', 500, false],
+    ]) assert.equal(filterRequests(requestEvent(url, status)) !== null, kept, `${url} ${status}`)
+})
+
+test('non-request items pass through the request filter untouched', () => {
+    const event = { type: TransportItemType.EVENT, meta: {}, payload: { name: 'widget_flow', attributes: {} } }
+    const log = { type: TransportItemType.LOG, meta: {}, payload: { message: 'x' } }
+    assert.equal(filterRequests(event), event)
+    assert.equal(filterRequests(log), log)
+})
+
+test('trace items keep failed first-party and non-request spans, and are dropped when empty', () => {
+    const failed = span('https://api.layerswap.io/api/v2/swaps', 500)
+    const erroredOk = span('https://api.layerswap.io/api/v2/swaps', 200, 2)
+    const action = span(undefined, undefined)
+    const kept = filterRequests(traceItem([span('https://api.layerswap.io/api/v2/quote', 200), failed, erroredOk, action, span('https://rpc.ankr.com/eth', 0)]))
+    assert.deepEqual(kept.payload.resourceSpans[0].scopeSpans[0].spans, [failed, erroredOk, action])
+    assert.equal(filterRequests(traceItem([span('https://api.layerswap.io/api/v2/quote', 200), span('https://rpc.ankr.com/eth', 0)])), null)
+})
+
+test('successful balance reads are not captured; other operations and failed reads are', () => {
+    const operation = (operation, outcome) => ({ name: 'widget_operation', attributes: { operation, outcome } })
+    assert.equal(shouldCaptureWidgetTelemetry(operation('balance_fetch', 'succeeded')), false)
+    assert.equal(shouldCaptureWidgetTelemetry(operation('balance_fetch', 'partial')), true)
+    assert.equal(shouldCaptureWidgetTelemetry(operation('balance_fetch', 'failed')), true)
+    assert.equal(shouldCaptureWidgetTelemetry(operation('quote_request', 'succeeded')), true)
+    assert.equal(shouldCaptureWidgetTelemetry({ name: 'widget_flow', attributes: { operation: 'balance_fetch', outcome: 'succeeded' } }), true)
 })
