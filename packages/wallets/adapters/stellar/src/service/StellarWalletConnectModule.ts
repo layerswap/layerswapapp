@@ -2,6 +2,7 @@ import type { DisplayUriSource } from '@layerswap/wallet-core'
 import type { WalletConnectConfig } from '@layerswap/widget-types'
 import { ModuleType, Networks, type ModuleInterface } from '@creit.tech/stellar-wallets-kit/types'
 import type SignClientClass from '@walletconnect/sign-client'
+import { StellarWalletConnectChain, stellarWalletConnectChain } from '../constants'
 
 type SignClient = InstanceType<typeof SignClientClass>
 type WalletConnectSession = SignClient['session']['values'][number]
@@ -13,11 +14,6 @@ export const STELLAR_WALLET_CONNECT_ID = 'wallet_connect'
 
 export const STELLAR_APPKIT_WALLET_CONNECT_ID = 'wallet_connect_appkit'
 
-export const StellarWalletConnectChain = {
-    Public: 'stellar:pubnet',
-    Testnet: 'stellar:testnet',
-} as const
-
 const StellarWalletConnectMethod = {
     Sign: 'stellar_signXDR',
     SignAndSubmit: 'stellar_signAndSubmitXDR',
@@ -26,7 +22,7 @@ const StellarWalletConnectMethod = {
 } as const
 
 const stellarAccounts = (session: WalletConnectSession): string[] =>
-    session.namespaces.stellar?.accounts
+    session.namespaces[stellarWalletConnectChain.namespace]?.accounts
         ?.map(account => account.split(':')[2])
         .filter((address): address is string => !!address) ?? []
 
@@ -110,14 +106,14 @@ export class StellarWalletConnectModule implements ModuleInterface, DisplayUriSo
         const chains = this.chains
         const { uri, approval } = await client.connect({
             requiredNamespaces: {
-                stellar: {
+                [stellarWalletConnectChain.namespace]: {
                     chains,
                     methods: [StellarWalletConnectMethod.Sign],
                     events: [],
                 },
             },
             optionalNamespaces: {
-                stellar: {
+                [stellarWalletConnectChain.namespace]: {
                     chains,
                     methods: [
                         StellarWalletConnectMethod.SignAndSubmit,

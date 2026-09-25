@@ -19,6 +19,7 @@ import {
     getAddress,
     numberToHex,
 } from 'viem'
+import { EIP155_NAMESPACE } from '../../constants'
 
 type WalletConnectConnector = Connector & {
     onDisplayUri(uri: string): void
@@ -114,7 +115,7 @@ export function walletConnect(parameters: Params) {
 
     let provider_: Provider | undefined
     let providerPromise: Promise<typeof provider_>
-    const NAMESPACE = 'eip155'
+    const NAMESPACE = EIP155_NAMESPACE
 
     let accountsChanged: WalletConnectConnector['onAccountsChanged'] | undefined
     let chainChanged: WalletConnectConnector['onChainChanged'] | undefined
