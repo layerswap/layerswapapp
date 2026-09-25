@@ -98,6 +98,7 @@ test('connector composition preserves configured transport and synthesizes regis
     const variants = resolveChainConnectors(
         [configuredConnector, registryConnector],
         providers,
+        false,
     ).get('rainbow')
 
     assert.equal(variants?.length, 2)
