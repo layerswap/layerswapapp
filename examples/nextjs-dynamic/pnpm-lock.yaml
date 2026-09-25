@@ -126,8 +126,8 @@ importers:
         specifier: ^15.5.26
         version: 15.5.26(eslint@8.57.1)(typescript@5.9.3)
       eslint-plugin-no-conditional-literals-in-jsx:
-        specifier: file:eslint-plugins/eslint-plugin-no-conditional-literals-in-jsx
-        version: file:eslint-plugins/eslint-plugin-no-conditional-literals-in-jsx
+        specifier: file:../../eslint-plugins/eslint-plugin-no-conditional-literals-in-jsx
+        version: file:../../eslint-plugins/eslint-plugin-no-conditional-literals-in-jsx
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -5548,8 +5548,8 @@ packages:
     peerDependencies:
       eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9
 
-  eslint-plugin-no-conditional-literals-in-jsx@file:eslint-plugins/eslint-plugin-no-conditional-literals-in-jsx:
-    resolution: {directory: eslint-plugins/eslint-plugin-no-conditional-literals-in-jsx, type: directory}
+  eslint-plugin-no-conditional-literals-in-jsx@file:../../eslint-plugins/eslint-plugin-no-conditional-literals-in-jsx:
+    resolution: {directory: ../../eslint-plugins/eslint-plugin-no-conditional-literals-in-jsx, type: directory}
 
   eslint-plugin-react-hooks@5.2.0:
     resolution: {integrity: sha512-+f15FfK64YQwZdJNELETdn5ibXEUQmW1DZL6KXhNnc2heoy/sg9VJJeT7n8TlMWouzWqSWavFkIhHyIbIAEapg==}
@@ -16992,7 +16992,7 @@ snapshots:
       safe-regex-test: 1.1.0
       string.prototype.includes: 2.0.1
 
-  eslint-plugin-no-conditional-literals-in-jsx@file:eslint-plugins/eslint-plugin-no-conditional-literals-in-jsx: {}
+  eslint-plugin-no-conditional-literals-in-jsx@file:../../eslint-plugins/eslint-plugin-no-conditional-literals-in-jsx: {}
 
   eslint-plugin-react-hooks@5.2.0(eslint@8.57.1):
     dependencies:
