@@ -20,6 +20,16 @@ const PERIOD_LABELS: Record<AnalyticsPeriod, string> = {
     "90d": "Last 90 days",
 };
 
+const selectedNetwork: AnalyticsNetwork = {
+    name: process.env.NEXT_PUBLIC_API_VERSION === "sandbox"
+        ? "IMMUTABLEZK_TESTNET"
+        : "IMMUTABLEZK_MAINNET",
+    display_name: process.env.NEXT_PUBLIC_API_VERSION === "sandbox"
+        ? "Immutable zkEVM Testnet"
+        : "Immutable zkEVM",
+    logo: "",
+};
+
 function buildKey(period: AnalyticsPeriod) {
     const params = new URLSearchParams();
     if (process.env.NEXT_PUBLIC_API_VERSION)
@@ -160,16 +170,6 @@ export default function Analytics() {
     //     [networksData]
     // );
 
-    const selectedNetwork: AnalyticsNetwork = {
-        name: process.env.NEXT_PUBLIC_API_VERSION === "sandbox"
-            ? "IMMUTABLEZK_TESTNET"
-            : "IMMUTABLEZK_MAINNET",
-        display_name: process.env.NEXT_PUBLIC_API_VERSION === "sandbox"
-            ? "Immutable zkEVM Testnet"
-            : "Immutable zkEVM",
-        logo: "",
-    };
-
     const networkAnalytics = useMemo(() => {
         if (!response || !selectedNetwork) return null;
 
@@ -178,7 +178,7 @@ export default function Analytics() {
                 (item) => item.network.name === selectedNetwork.name
             ) ?? emptyNetworkAnalytics(selectedNetwork)
         );
-    }, [response, selectedNetwork]);
+    }, [response]);
 
     const timeline = useMemo(
         () =>
@@ -217,7 +217,7 @@ export default function Analytics() {
                             <div className="flex flex-col gap-1 sm:items-end">
                                 {networkAnalytics && selectedNetwork ? (
                                     <span className="text-sm text-secondary-text">
-                                        {`${selectedNetwork.display_name} · ${PERIOD_LABELS[period]} · Total volume `}
+                                        <span>{`${selectedNetwork.display_name} · ${PERIOD_LABELS[period]} · Total volume `}</span>
                                         <span className="font-semibold tabular-nums text-primary-text">
                                             {fmtUsd(networkAnalytics.totals.inflow.amount_in_usd + networkAnalytics.totals.outflow.amount_in_usd)}
                                         </span>

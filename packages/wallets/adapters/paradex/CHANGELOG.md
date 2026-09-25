@@ -1,5 +1,14 @@
 # @layerswap/wallet-paradex
 
+## 2.3.1
+
+### Patch Changes
+
+- @layerswap/wallet-evm@2.3.1
+- @layerswap/wallet-starknet@2.3.1
+- @layerswap/wallet-core@2.3.1
+- @layerswap/utils@2.3.1
+
 ## 2.3.0
 
 ### Patch Changes

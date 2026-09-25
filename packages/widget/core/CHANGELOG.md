@@ -1,5 +1,14 @@
 # @layerswap/widget
 
+## 2.3.1
+
+### Patch Changes
+
+- Fix widget loading failures when the host and CDN use different React versions by removing the React DOM server renderer from the browser bundle. Copy logo and symbol SVGs using browser serialization instead.
+  - @layerswap/wallet-core@2.3.1
+  - @layerswap/utils@2.3.1
+  - @layerswap/ui-kit@2.3.1
+
 ## 2.3.0
 
 ### Minor Changes
